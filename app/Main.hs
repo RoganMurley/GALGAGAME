@@ -1,13 +1,10 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Main where
 
--- This is the Haskell implementation of the example for the WebSockets library. We
--- implement a simple multi-user chat program. A live demo of the example is
--- available [here](http://jaspervdj.be/websockets-example). In order to understand
--- this example, keep the [reference](http://jaspervdj.be/websockets/reference)
--- nearby to check out the functions we use.
+import Prelude hiding (lookup)
 
 import Data.Char (isPunctuation, isSpace)
+import Data.Map.Strict (Map, empty, insert, lookup)
 import Data.Monoid (mappend)
 import Data.Text (Text)
 import Control.Exception (finally)
@@ -27,40 +24,46 @@ type Client = (Text, WS.Connection)
 -- an alias and some utility functions, so it will be easier to extend this state
 -- later on.
 
-type ServerState = [Client]
+type ServerState = Map RoomName Room
+type RoomName = Text
+type Room = [Client]
 
--- Create a new, initial state:
 
 newServerState :: ServerState
-newServerState = []
+newServerState = empty
 
--- Get the number of active clients:
 
-numClients :: ServerState -> Int
-numClients = length
+numClients :: RoomName -> ServerState -> Int
+numClients name state = length (getRoom name state)
 
--- Check if a user already exists (based on username):
 
-clientExists :: Client -> ServerState -> Bool
-clientExists client = any ((== fst client) . fst)
+clientExists :: RoomName -> Client -> ServerState -> Bool
+clientExists name client state = any ((== fst client) . fst) (getRoom name state)
+
+getRoom :: RoomName -> ServerState -> Room
+getRoom name state = concat (lookup name state)
 
 -- Add a client (this does not check if the client already exists, you should do
 -- this yourself using `clientExists`):
 
-addClient :: Client -> ServerState -> ServerState
-addClient client clients = client : clients
+addClient :: RoomName -> Client -> ServerState -> ServerState
+addClient name client state = insert name (client:room) state
+  where
+  room = getRoom name state
 
--- Remove a client:
 
-removeClient :: Client -> ServerState -> ServerState
-removeClient client = filter ((/= fst client) . fst)
+removeClient :: RoomName -> Client -> ServerState -> ServerState
+removeClient name client state =
+  insert name (filter ((/= fst client) . fst) room) state
+  where
+  room = getRoom name state
 
 -- Send a message to all clients, and log it on stdout:
 
-broadcast :: Text -> ServerState -> IO ()
-broadcast message clients = do
+broadcast :: Text -> RoomName -> ServerState -> IO ()
+broadcast message name state = do
    T.putStrLn message
-   forM_ clients $ \(_, conn) -> WS.sendTextData conn message
+   forM_ (getRoom name state) $ \(_, conn) -> WS.sendTextData conn message
 
 -- The main function first creates a new state for the server, then spawns the
 -- actual server. For this purpose, we use the simple server provided by
@@ -93,7 +96,7 @@ application state pending = do
 -- be in the format of "Hi! I am Jasper", where Jasper is the requested username.
 
    msg <- WS.receiveData conn
-   clients <- readMVar state
+   rooms <- readMVar state
    case msg of
 
 -- Check that the first message has the right format:
@@ -111,7 +114,7 @@ application state pending = do
 
 -- Check that the given username is not already taken:
 
-           | clientExists client clients ->
+           | clientExists "default" client rooms ->
                WS.sendTextData conn ("User already exists" :: Text)
 
 -- All is right! We're going to allow the client, but for safety reasons we *first*
@@ -124,11 +127,11 @@ application state pending = do
 -- 'talk' function.
 
               modifyMVar_ state $ \s -> do
-                  let s' = addClient client s
+                  let s' = addClient "default" client s
                   WS.sendTextData conn $
                       "Welcome! Users: " `mappend`
-                      T.intercalate ", " (map fst s)
-                  broadcast (fst client `mappend` " joined") s'
+                      T.intercalate ", " (map fst (getRoom "default" s))
+                  broadcast (fst client `mappend` " joined") "default" s'
                   return s'
               talk conn state client
          where
@@ -137,8 +140,8 @@ application state pending = do
            disconnect = do
                -- Remove client and return new state
                s <- modifyMVar state $ \s ->
-                   let s' = removeClient client s in return (s', s')
-               broadcast (fst client `mappend` " disconnected") s
+                   let s' = removeClient "default" client s in return (s', s')
+               broadcast (fst client `mappend` " disconnected") "default" s
 
 -- The talk function continues to read messages from a single client until he
 -- disconnects. All messages are broadcasted to the other clients.
@@ -146,5 +149,4 @@ application state pending = do
 talk :: WS.Connection -> MVar ServerState -> Client -> IO ()
 talk conn state (user, _) = forever $ do
    msg <- WS.receiveData conn
-   readMVar state >>= broadcast
-       (user `mappend` ": " `mappend` msg)
+   readMVar state >>= broadcast (user `mappend` ": " `mappend` msg) "default"
