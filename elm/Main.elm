@@ -19,12 +19,13 @@ main =
 type alias Model =
   { input : String
   , messages : List String
+  , hand : List String
   }
 
 
 init : (Model, Cmd Msg)
 init =
-  (Model "" [], Cmd.none)
+  (Model "" [] [ "start" ], Cmd.none)
 
 
 -- UPDATE
@@ -36,16 +37,16 @@ type Msg
 
 
 update : Msg -> Model -> (Model, Cmd Msg)
-update msg {input, messages} =
+update msg {input, messages, hand} =
   case msg of
     Input newInput ->
-      (Model newInput messages, Cmd.none)
+      (Model newInput messages hand, Cmd.none)
 
     Send ->
-      (Model "" messages, WebSocket.send "ws://localhost:9160" ("Hi! I am " ++ input))
+      (Model "" messages hand, WebSocket.send "ws://localhost:9160" ("Hi! I am " ++ input))
 
     NewMessage str ->
-      (Model input (str :: messages), Cmd.none)
+      (Model input (str :: messages) hand, Cmd.none)
 
 
 -- SUBSCRIPTIONS
@@ -60,11 +61,22 @@ subscriptions model =
 view : Model -> Html Msg
 view model =
   div []
-    [ div [] (List.map viewMessage model.messages)
-    , input [onInput Input] []
-    , button [onClick Send] [text "Send"]
+    [
+      div [ class "chat" ]
+        [
+          div [ class "chat-input" ]
+            [
+              input [ onInput Input ] []
+              , button [ onClick Send ] [text "Send"]
+            ]
+          , div [ class "messages" ] (List.map viewMessage model.messages)
+        ]
+      , div [ class "hand" ] (List.map viewCard model.hand)
     ]
 
+viewCard : String -> Html Msg
+viewCard card =
+  div [ class "card" ] []
 
 viewMessage : String -> Html msg
 viewMessage msg =

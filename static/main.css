@@ -1,0 +1,39 @@
+.chat {
+  width: 300px;
+  padding: 20px;
+  border-radius: 12px;
+
+  color: #fff;
+  background-color: rgba(0, 0, 0, 0.2);
+}
+
+.chat-input {
+  display: flex;
+  justify-content: center;
+
+  padding-bottom: 20px;
+}
+
+.hand {
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+
+  display: flex;
+  justify-content: center;
+}
+
+.card {
+  display: flex;
+
+  width: 245px;
+  height: 339px;
+
+  background-image: url("img/blacklotus.jpg");
+}
+
+
+body {
+    background-image: url("/img/bg.png");
+    overflow: hidden;
+}
