@@ -2,6 +2,8 @@ import Html exposing (..)
 import Html.App as App
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
+import Json.Decode as Json exposing ((:=))
+import Mouse exposing (Position)
 import WebSocket
 
 
@@ -17,10 +19,24 @@ main =
 -- MODEL
 
 type alias Model =
-  { input : String
-  , messages : List String
+  {
+    chat : ChatModel
   , mode : SendMode
   , hand : List String
+  }
+
+type alias ChatModel =
+  {
+    input : String
+  , messages : List String
+  , pos : Position
+  , drag : Maybe Drag
+  }
+
+type alias Drag =
+  {
+    start : Position
+  , current : Position
   }
 
 type SendMode
@@ -29,7 +45,7 @@ type SendMode
 
 init : (Model, Cmd Msg)
 init =
-  (Model "" [] Connecting [ "start" ], Cmd.none)
+  (Model (ChatModel "" [] (Position 0 0) Nothing) Connecting [ "start" ], Cmd.none)
 
 
 -- UPDATE
@@ -38,54 +54,102 @@ type Msg
   = Input String
   | Send
   | NewMessage String
+  | DragStart Position
+  | DragAt Position
+  | DragEnd Position
 
 
 update : Msg -> Model -> (Model, Cmd Msg)
-update msg {input, messages, mode, hand} =
+update msg {chat, mode, hand} =
   case msg of
     Input newInput ->
-      (Model newInput messages mode hand, Cmd.none)
+      (Model { chat | input = newInput } mode hand, Cmd.none)
 
     Send ->
       case mode of
         Connecting ->
-          (Model "" messages mode hand, WebSocket.send "ws://localhost:9160" ("Hi! I am " ++ input))
+          (Model { chat | input = "" } mode hand, WebSocket.send "ws://localhost:9160" ("Hi! I am " ++ chat.input))
         Connected ->
-          (Model "" messages mode hand, WebSocket.send "ws://localhost:9160" input)
+          (Model { chat | input = "" } mode hand, WebSocket.send "ws://localhost:9160" chat.input)
 
     NewMessage str ->
-      (Model input (str :: messages) Connected hand, Cmd.none)
+      (Model (addChatMessage str chat) Connected hand, Cmd.none)
+
+    DragStart xy ->
+      (Model { chat | drag = (Just (Drag xy xy)) } mode hand, Cmd.none)
+
+    DragAt xy ->
+      (Model { chat | drag = (Maybe.map (\{start} -> Drag start xy) chat.drag) } mode hand, Cmd.none)
+
+    DragEnd _ ->
+      (Model { chat | pos = (getPosition chat), drag = Nothing } mode hand, Cmd.none)
+
+
+addChatMessage : String -> ChatModel -> ChatModel
+addChatMessage message model =
+  { model | messages = (message :: model.messages) }
 
 
 -- SUBSCRIPTIONS
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-  WebSocket.listen "ws://localhost:9160" NewMessage
+  Sub.batch [
+      WebSocket.listen "ws://localhost:9160" NewMessage
+    , Mouse.moves DragAt
+    , Mouse.ups DragEnd
+  ]
 
 
 -- VIEW
 
 view : Model -> Html Msg
 view model =
-  div []
-    [
-      div [ class "chat" ]
-        [
-          div [ class "chat-input" ]
-            [
-                input [ onInput Input, value model.input ] []
-              , button [ onClick Send ] [text "Send"]
-            ]
-          , div [ class "messages" ] (List.map viewMessage model.messages)
-        ]
-      , div [ class "hand" ] (List.map viewCard model.hand)
-    ]
+  let
+    realPos = getPosition model.chat
+  in
+    div []
+      [
+        div [ class "chat", draggable, style [("top", px realPos.y), ("left", px realPos.x)] ]
+          [
+            div [ class "chat-input" ]
+              [
+                  input [ onInput Input, value model.chat.input ] []
+                , button [ onClick Send ] [text "Send"]
+              ]
+            , div [ class "messages" ] (List.map viewMessage model.chat.messages)
+          ]
+        , div [ class "hand" ] (List.map viewCard model.hand)
+      ]
+
 
 viewCard : String -> Html Msg
 viewCard card =
   div [ class "card" ] []
 
+
 viewMessage : String -> Html msg
 viewMessage msg =
   div [ class "message" ] [ text msg ]
+
+
+px : Int -> String
+px number =
+  toString number ++ "px"
+
+
+getPosition : ChatModel -> Position
+getPosition {pos, drag} =
+  case drag of
+    Nothing ->
+      pos
+
+    Just {start,current} ->
+      Position
+        (pos.x + current.x - start.x)
+        (pos.y + current.y - start.y)
+
+
+draggable : Attribute Msg
+draggable =
+  on "mousedown" (Json.map DragStart Mouse.position)
