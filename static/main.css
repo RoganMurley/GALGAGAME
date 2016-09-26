@@ -14,6 +14,12 @@
   padding-bottom: 20px;
 }
 
+.message {
+  padding-bottom: 2px;
+
+  overflow-wrap: break-word;
+}
+
 .hand {
   position: fixed;
   bottom: 0;
@@ -30,8 +36,15 @@
   height: 339px;
 
   background-image: url("img/blacklotus.jpg");
+
+  margin-bottom: -126px;
+  transition: margin-bottom 0.1s ease-out;
+  cursor: pointer; cursor: hand;
 }
 
+.card:hover {
+    margin-bottom: 0;
+}
 
 body {
     background-image: url("/img/bg.png");
