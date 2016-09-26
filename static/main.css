@@ -1,10 +1,16 @@
 .chat {
+  position: absolute;
+
   width: 300px;
   padding: 20px;
   border-radius: 12px;
 
+  z-index: 99;
+
   color: #fff;
-  background-color: rgba(0, 0, 0, 0.2);
+  background-color: rgba(0, 0, 0, 0.5);
+
+  cursor: grab; cursor: -webkit-grab;
 }
 
 .chat-input {
@@ -14,6 +20,11 @@
   padding-bottom: 20px;
 }
 
+.messages {
+  max-height: 140px;
+  overflow-y: overlay;
+}
+
 .message {
   padding-bottom: 2px;
 
@@ -21,7 +32,7 @@
 }
 
 .hand {
-  position: fixed;
+  position: absolute;
   bottom: 0;
   width: 100%;
 
@@ -38,7 +49,7 @@
   background-image: url("img/blacklotus.jpg");
 
   margin-bottom: -126px;
-  transition: margin-bottom 0.1s ease-out;
+  transition: margin-bottom 0.15s ease-out;
   cursor: pointer; cursor: hand;
 }
 
@@ -49,4 +60,16 @@
 body {
     background-image: url("/img/bg.png");
     overflow: hidden;
+
+    font-family: Arial, sans-serif;
+}
+
+.no-select {
+    -webkit-user-select: none; /* Chrome/Safari */
+    -moz-user-select: none; /* Firefox */
+    -ms-user-select: none; /* IE10+ */
+
+    /* Rules below not implemented in browsers yet */
+    -o-user-select: none;
+    user-select: none;
 }
