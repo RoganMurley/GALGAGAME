@@ -28,6 +28,8 @@ type ServerState = Map RoomName Room
 type RoomName = Text
 type Room = [Client]
 
+data Command = Chat Text | Join Text | Leave Text | ErrorCommand Text
+
 
 newServerState :: ServerState
 newServerState = empty
@@ -58,12 +60,17 @@ removeClient name client state =
   where
   room = getRoom name state
 
--- Send a message to all clients, and log it on stdout:
+broadcast :: Command -> RoomName -> ServerState -> IO ()
+broadcast command name state = do
+  T.putStrLn (process command)
+  forM_ (getRoom name state) $ \(_, conn) -> WS.sendTextData conn (process command)
 
-broadcast :: Text -> RoomName -> ServerState -> IO ()
-broadcast message name state = do
-   T.putStrLn message
-   forM_ (getRoom name state) $ \(_, conn) -> WS.sendTextData conn message
+
+process :: Command -> Text
+process (Join name) = name `mappend` " joined"
+process (Leave name) = name `mappend` " disconnected"
+process (Chat message) = message
+process (ErrorCommand err) = err
 
 -- The main function first creates a new state for the server, then spawns the
 -- actual server. For this purpose, we use the simple server provided by
@@ -92,30 +99,30 @@ application state pending = do
    conn <- WS.acceptRequest pending
    WS.forkPingThread conn 30
 
--- When a client is succesfully connected, we read the first message. This should
+-- When a client is succesfully connected, we read the first Command. This should
 -- be in the format of "Hi! I am Jasper", where Jasper is the requested username.
 
    msg <- WS.receiveData conn
    rooms <- readMVar state
    case msg of
 
--- Check that the first message has the right format:
+-- Check that the first Command has the right format:
 
        _   | not (prefix `T.isPrefixOf` msg) ->
-               WS.sendTextData conn ("Wrong announcement" :: Text)
+               WS.sendTextData conn (process (ErrorCommand ("Connection protocol failure" :: Text)))
 
 -- Check the validity of the username:
 
            | any ($ fst client)
                [T.null, T.any isPunctuation, T.any isSpace] ->
-                   WS.sendTextData conn ("Name cannot " `mappend`
+                   WS.sendTextData conn (process (ErrorCommand ("Name cannot " `mappend`
                        "contain punctuation or whitespace, and " `mappend`
-                       "cannot be empty" :: Text)
+                       "cannot be empty" :: Text)))
 
 -- Check that the given username is not already taken:
 
            | clientExists "default" client rooms ->
-               WS.sendTextData conn ("User already exists" :: Text)
+               WS.sendTextData conn (process (ErrorCommand ("User already exists" :: Text)))
 
 -- All is right! We're going to allow the client, but for safety reasons we *first*
 -- setup a `disconnect` function that will be run when the connection is closed.
@@ -131,7 +138,7 @@ application state pending = do
                   WS.sendTextData conn $
                       "Welcome! Users: " `mappend`
                       T.intercalate ", " (map fst (getRoom "default" s))
-                  broadcast (fst client `mappend` " joined") "default" s'
+                  broadcast (Join (fst client)) "default" s'
                   return s'
               talk conn state client
          where
@@ -141,12 +148,9 @@ application state pending = do
                -- Remove client and return new state
                s <- modifyMVar state $ \s ->
                    let s' = removeClient "default" client s in return (s', s')
-               broadcast (fst client `mappend` " disconnected") "default" s
-
--- The talk function continues to read messages from a single client until he
--- disconnects. All messages are broadcasted to the other clients.
+               broadcast (Leave (fst client)) "default" s
 
 talk :: WS.Connection -> MVar ServerState -> Client -> IO ()
 talk conn state (user, _) = forever $ do
    msg <- WS.receiveData conn
-   readMVar state >>= broadcast (user `mappend` ": " `mappend` msg) "default"
+   readMVar state >>= broadcast (Chat (user `mappend` ": " `mappend` msg)) "default"

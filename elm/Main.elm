@@ -41,7 +41,6 @@ type Msg
 
 
 update : Msg -> Model -> (Model, Cmd Msg)
-<<<<<<< HEAD
 update msg {input, messages, mode, hand} =
   case msg of
     Input newInput ->
@@ -55,9 +54,7 @@ update msg {input, messages, mode, hand} =
           (Model "" messages mode hand, WebSocket.send "ws://localhost:9160" input)
 
     NewMessage str ->
-      case str of
-        otherwise ->
-          (Model input (str :: messages) Connecting hand, Cmd.none)
+      (Model input (str :: messages) Connected hand, Cmd.none)
 
 
 -- SUBSCRIPTIONS
@@ -77,7 +74,7 @@ view model =
         [
           div [ class "chat-input" ]
             [
-              input [ onInput Input ] []
+                input [ onInput Input, value model.input ] []
               , button [ onClick Send ] [text "Send"]
             ]
           , div [ class "messages" ] (List.map viewMessage model.messages)
@@ -91,4 +88,4 @@ viewCard card =
 
 viewMessage : String -> Html msg
 viewMessage msg =
-  div [] [ text msg ]
+  div [ class "message" ] [ text msg ]
