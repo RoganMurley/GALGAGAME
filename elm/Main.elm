@@ -20,6 +20,7 @@ type alias Model =
   { input : String
   , messages : List String
   , mode : SendMode
+  , hand : List String
   }
 
 type SendMode
@@ -28,7 +29,7 @@ type SendMode
 
 init : (Model, Cmd Msg)
 init =
-  (Model "" [] Connecting, Cmd.none)
+  (Model "" [] Connecting [ "start" ], Cmd.none)
 
 
 -- UPDATE
@@ -40,22 +41,23 @@ type Msg
 
 
 update : Msg -> Model -> (Model, Cmd Msg)
-update msg {input, messages, mode} =
+<<<<<<< HEAD
+update msg {input, messages, mode, hand} =
   case msg of
     Input newInput ->
-      (Model newInput messages mode, Cmd.none)
+      (Model newInput messages mode hand, Cmd.none)
 
     Send ->
       case mode of
         Connecting ->
-          (Model "" messages mode, WebSocket.send "ws://localhost:9160" ("Hi! I am " ++ input))
+          (Model "" messages mode hand, WebSocket.send "ws://localhost:9160" ("Hi! I am " ++ input))
         Connected ->
-          (Model "" messages mode, WebSocket.send "ws://localhost:9160" input)
+          (Model "" messages mode hand, WebSocket.send "ws://localhost:9160" input)
 
     NewMessage str ->
       case str of
         otherwise ->
-          (Model input (str :: messages) Connecting, Cmd.none)
+          (Model input (str :: messages) Connecting hand, Cmd.none)
 
 
 -- SUBSCRIPTIONS
@@ -70,11 +72,22 @@ subscriptions model =
 view : Model -> Html Msg
 view model =
   div []
-    [ div [] (List.map viewMessage model.messages)
-    , input [onInput Input, value model.input] []
-    , button [onClick Send] [text "Send"]
+    [
+      div [ class "chat" ]
+        [
+          div [ class "chat-input" ]
+            [
+              input [ onInput Input ] []
+              , button [ onClick Send ] [text "Send"]
+            ]
+          , div [ class "messages" ] (List.map viewMessage model.messages)
+        ]
+      , div [ class "hand" ] (List.map viewCard model.hand)
     ]
 
+viewCard : String -> Html Msg
+viewCard card =
+  div [ class "card" ] []
 
 viewMessage : String -> Html msg
 viewMessage msg =
