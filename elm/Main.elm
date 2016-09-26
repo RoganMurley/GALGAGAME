@@ -19,12 +19,16 @@ main =
 type alias Model =
   { input : String
   , messages : List String
+  , mode : SendMode
   }
 
+type SendMode
+  = Connecting
+  | Connected
 
 init : (Model, Cmd Msg)
 init =
-  (Model "" [], Cmd.none)
+  (Model "" [] Connecting, Cmd.none)
 
 
 -- UPDATE
@@ -36,16 +40,22 @@ type Msg
 
 
 update : Msg -> Model -> (Model, Cmd Msg)
-update msg {input, messages} =
+update msg {input, messages, mode} =
   case msg of
     Input newInput ->
-      (Model newInput messages, Cmd.none)
+      (Model newInput messages mode, Cmd.none)
 
     Send ->
-      (Model "" messages, WebSocket.send "ws://localhost:9160" ("Hi! I am " ++ input))
+      case mode of
+        Connecting ->
+          (Model "" messages mode, WebSocket.send "ws://localhost:9160" ("Hi! I am " ++ input))
+        Connected ->
+          (Model "" messages mode, WebSocket.send "ws://localhost:9160" input)
 
     NewMessage str ->
-      (Model input (str :: messages), Cmd.none)
+      case str of
+        otherwise ->
+          (Model input (str :: messages) Connecting, Cmd.none)
 
 
 -- SUBSCRIPTIONS
@@ -61,7 +71,7 @@ view : Model -> Html Msg
 view model =
   div []
     [ div [] (List.map viewMessage model.messages)
-    , input [onInput Input] []
+    , input [onInput Input, value model.input] []
     , button [onClick Send] [text "Send"]
     ]
 
