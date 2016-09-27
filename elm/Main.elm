@@ -22,7 +22,8 @@ type alias Model =
   {
     chat : ChatModel
   , mode : SendMode
-  , hand : List String
+  , hand : Hand
+  , otherHand : Hand
   }
 
 type alias ChatModel =
@@ -39,13 +40,19 @@ type alias Drag =
   , current : Position
   }
 
+type alias Hand =
+  List Card
+
+type alias Card =
+  String
+
 type SendMode
   = Connecting
   | Connected
 
 init : (Model, Cmd Msg)
 init =
-  (Model (ChatModel "" [] (Position 0 0) Nothing) Connecting [ "start" ], Cmd.none)
+  (Model (ChatModel "" [] (Position 0 0) Nothing) Connecting [ "start" ] [ "start" ], Cmd.none)
 
 
 -- UPDATE
@@ -60,29 +67,29 @@ type Msg
 
 
 update : Msg -> Model -> (Model, Cmd Msg)
-update msg {chat, mode, hand} =
+update msg {chat, mode, hand, otherHand} =
   case msg of
     Input newInput ->
-      (Model { chat | input = newInput } mode hand, Cmd.none)
+      (Model { chat | input = newInput } mode hand otherHand, Cmd.none)
 
     Send ->
       case mode of
         Connecting ->
-          (Model { chat | input = "" } mode hand, WebSocket.send "ws://localhost:9160" ("Hi! I am " ++ chat.input))
+          (Model { chat | input = "" } mode hand otherHand, WebSocket.send "ws://localhost:9160" ("Hi! I am " ++ chat.input))
         Connected ->
-          (Model { chat | input = "" } mode hand, WebSocket.send "ws://localhost:9160" chat.input)
+          (Model { chat | input = "" } mode hand otherHand, WebSocket.send "ws://localhost:9160" chat.input)
 
     NewMessage str ->
-      (Model (addChatMessage str chat) Connected hand, Cmd.none)
+      (Model (addChatMessage str chat) Connected hand otherHand, Cmd.none)
 
     DragStart xy ->
-      (Model { chat | drag = (Just (Drag xy xy)) } mode hand, Cmd.none)
+      (Model { chat | drag = (Just (Drag xy xy)) } mode hand otherHand, Cmd.none)
 
     DragAt xy ->
-      (Model { chat | drag = (Maybe.map (\{start} -> Drag start xy) chat.drag) } mode hand, Cmd.none)
+      (Model { chat | drag = (Maybe.map (\{start} -> Drag start xy) chat.drag) } mode hand otherHand, Cmd.none)
 
     DragEnd _ ->
-      (Model { chat | pos = (getPosition chat), drag = Nothing } mode hand, Cmd.none)
+      (Model { chat | pos = (getPosition chat), drag = Nothing } mode hand otherHand, Cmd.none)
 
 
 addChatMessage : String -> ChatModel -> ChatModel
@@ -119,13 +126,27 @@ view model =
               ]
             , div [ class "messages" ] (List.map viewMessage model.chat.messages)
           ]
-        , div [ class "hand" ] (List.map viewCard model.hand)
+        , viewOtherHand model.otherHand
+        , viewHand model.hand
       ]
 
 
-viewCard : String -> Html Msg
-viewCard card =
-  div [ class "card" ] []
+viewHand : Hand -> Html Msg
+viewHand hand =
+  let
+    viewCard : Card -> Html Msg
+    viewCard card = div [ class "card my-card" ] []
+  in
+    div [ class "hand my-hand" ] (List.map viewCard hand)
+
+
+viewOtherHand : Hand -> Html Msg
+viewOtherHand hand =
+  let
+    viewCard : Card -> Html Msg
+    viewCard card = div [ class "card other-card" ] []
+  in
+    div [ class "hand other-hand" ] (List.map viewCard hand)
 
 
 viewMessage : String -> Html msg
