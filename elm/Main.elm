@@ -6,6 +6,8 @@ import Json.Decode as Json exposing ((:=))
 import Mouse exposing (Position)
 import WebSocket
 
+import Messages exposing (Msg(..))
+
 
 main =
   App.program
@@ -56,15 +58,6 @@ init =
 
 
 -- UPDATE
-
-type Msg
-  = Input String
-  | Send
-  | NewMessage String
-  | DragStart Position
-  | DragAt Position
-  | DragEnd Position
-
 
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg {chat, mode, hand, otherHand} =
@@ -124,7 +117,7 @@ view model =
                   input [ onInput Input, value model.chat.input ] []
                 , button [ onClick Send ] [text "Send"]
               ]
-            , div [ class "messages" ] (List.map viewMessage model.chat.messages)
+            , viewMessages model.chat
           ]
         , viewOtherHand model.otherHand
         , viewHand model.hand
@@ -149,9 +142,13 @@ viewOtherHand hand =
     div [ class "hand other-hand" ] (List.map viewCard hand)
 
 
-viewMessage : String -> Html msg
-viewMessage msg =
-  div [ class "message" ] [ text msg ]
+viewMessages : ChatModel -> Html Msg
+viewMessages model =
+  let
+    viewMessage : String -> Html Msg
+    viewMessage msg = div [ class "message" ] [ text msg ]
+  in
+    div [ class "messages" ] (List.map viewMessage model.messages)
 
 
 px : Int -> String
