@@ -58,7 +58,22 @@ type SendMode
 
 init : (Model, Cmd Msg)
 init =
-  (Model (ChatModel "" [] (Position 0 0) Nothing) Connecting [ "start" ] [ "start" ] [], Cmd.none)
+  let
+    model : Model
+    model = {
+        chat = {
+            input = ""
+          , messages = []
+          , pos = Position 0 0
+          , drag = Nothing
+        }
+      , mode = Connecting
+      , hand = [ "start" ]
+      , otherHand = [ "start" ]
+      , stack = [ "start" ]
+    }
+  in
+    (model, Cmd.none)
 
 
 -- UPDATE
