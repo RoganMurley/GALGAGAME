@@ -26,6 +26,7 @@ type alias Model =
   , mode : SendMode
   , hand : Hand
   , otherHand : Hand
+  , stack : PlayStack
   }
 
 type alias ChatModel =
@@ -45,6 +46,9 @@ type alias Drag =
 type alias Hand =
   List Card
 
+type alias PlayStack =
+  List Card
+
 type alias Card =
   String
 
@@ -54,40 +58,47 @@ type SendMode
 
 init : (Model, Cmd Msg)
 init =
-  (Model (ChatModel "" [] (Position 0 0) Nothing) Connecting [ "start" ] [ "start" ], Cmd.none)
+  (Model (ChatModel "" [] (Position 0 0) Nothing) Connecting [ "start" ] [ "start" ] [], Cmd.none)
 
 
 -- UPDATE
 
 update : Msg -> Model -> (Model, Cmd Msg)
-update msg {chat, mode, hand, otherHand} =
-  case msg of
-    Input newInput ->
-      (Model { chat | input = newInput } mode hand otherHand, Cmd.none)
-
-    Send ->
-      case mode of
+update msg model =
+  let
+    chat : ChatModel
+    chat = model.chat
+    buildChat : SendMode -> String -> String
+    buildChat m s =
+      case m of
         Connecting ->
-          (Model { chat | input = "" } mode hand otherHand, WebSocket.send "ws://localhost:9160" ("Hi! I am " ++ chat.input))
+          "Hi! I am " ++ s
         Connected ->
-          (Model { chat | input = "" } mode hand otherHand, WebSocket.send "ws://localhost:9160" chat.input)
+          s
+  in
+    case msg of
+      Input input ->
+        ({ model | chat = { chat | input = input } }, Cmd.none)
 
-    NewMessage str ->
-      (Model (addChatMessage str chat) Connected hand otherHand, Cmd.none)
+      Send ->
+        ({ model | chat = { chat | input = "" } }, WebSocket.send "ws://localhost:9160" (buildChat model.mode chat.input))
 
-    DragStart xy ->
-      (Model { chat | drag = (Just (Drag xy xy)) } mode hand otherHand, Cmd.none)
+      NewMessage str ->
+        ({ model | chat = addChatMessage str chat, mode = Connected }, Cmd.none)
 
-    DragAt xy ->
-      (Model { chat | drag = (Maybe.map (\{start} -> Drag start xy) chat.drag) } mode hand otherHand, Cmd.none)
+      DragStart xy ->
+        ({ model | chat = { chat | drag = (Just (Drag xy xy)) } }, Cmd.none)
 
-    DragEnd _ ->
-      (Model { chat | pos = (getPosition chat), drag = Nothing } mode hand otherHand, Cmd.none)
+      DragAt xy ->
+        ({ model | chat = { chat | drag = (Maybe.map (\{start} -> Drag start xy) chat.drag) } }, Cmd.none)
+
+      DragEnd _ ->
+        ({ model | chat = { chat | pos = (getPosition chat), drag = Nothing } }, Cmd.none)
 
 
 addChatMessage : String -> ChatModel -> ChatModel
 addChatMessage message model =
-  { model | messages = (message :: model.messages) }
+  { model | messages = message :: model.messages }
 
 
 -- SUBSCRIPTIONS
