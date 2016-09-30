@@ -62,6 +62,14 @@ getRoomCount :: Room -> Int
 getRoomCount (Room _ count) = count
 
 
+incCount :: RoomName -> ServerState -> ServerState
+incCount name state = insert name newRoom state
+  where
+  room = getRoom name state :: Room
+  count = getRoomCount room :: Int
+  clients = getRoomClients room :: [Client]
+  newRoom = Room clients (count + 1) :: Room
+
 -- Add a client (this does not check if the client already exists, you should do
 -- this yourself using `clientExists`):
 
@@ -183,5 +191,11 @@ application state pending = do
 
 talk :: WS.Connection -> MVar ServerState -> Client -> IO ()
 talk conn state (user, _) = forever $ do
-   msg <- WS.receiveData conn
-   readMVar state >>= broadcast (Chat (user `mappend` ": " `mappend` msg)) "default"
+  msg <- WS.receiveData conn
+  s <- readMVar state
+  loop msg s
+  where
+  loop :: Text -> ServerState -> IO ()
+  loop m s = broadcast (Chat (user `mappend` ": " `mappend` m `mappend` (countText s))) "default" s
+  countText :: ServerState -> Text
+  countText s = "(count: " `mappend` (T.pack $ show $ getRoomCount $ getRoom "default" s) `mappend` ")"
