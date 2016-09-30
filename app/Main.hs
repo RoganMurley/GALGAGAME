@@ -76,13 +76,13 @@ addClient name client state = insert name newRoom state
 
 
 removeClient :: RoomName -> Client -> ServerState -> ServerState
-removeClient name client state = Room newRoom count
+removeClient name client state = insert name newRoom state
   where
   room = getRoom name state :: Room
   count = getRoomCount room :: Int
   clients = getRoomClients room :: [Client]
   newClients :: [Client]
-  newClients = insert name (filter ((/= fst client) . fst) room) state
+  newClients = filter ((/= fst client) . fst) clients
   newRoom = Room newClients count :: Room
 
 
@@ -166,7 +166,7 @@ application state pending = do
                   let s' = addClient "default" client s
                   WS.sendTextData conn $
                       "Welcome! Users: " `mappend`
-                      T.intercalate ", " (map fst (getRoom "default" s))
+                      T.intercalate ", " (map fst (getRoomClients (getRoom "default" s)))
                   broadcast (Join (fst client)) "default" s'
                   return s'
               talk conn state client
