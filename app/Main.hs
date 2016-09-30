@@ -4,7 +4,7 @@ module Main where
 import Prelude hiding (lookup)
 
 import Data.Char (isPunctuation, isSpace)
-import Data.Map.Strict (Map, empty, insert, lookup)
+import Data.Map.Strict (Map, delete, empty, insert, lookup)
 import Data.Monoid (mappend)
 import Data.Text (Text)
 import Control.Exception (finally)
@@ -76,7 +76,9 @@ addClient name client state = insert name newRoom state
 
 
 removeClient :: RoomName -> Client -> ServerState -> ServerState
-removeClient name client state = insert name newRoom state
+removeClient name client state
+  | null newClients = delete name state
+  | otherwise = insert name newRoom state
   where
   room = getRoom name state :: Room
   count = getRoomCount room :: Int
