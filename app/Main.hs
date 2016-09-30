@@ -192,7 +192,9 @@ application state pending = do
 talk :: WS.Connection -> MVar ServerState -> Client -> IO ()
 talk conn state (user, _) = forever $ do
   msg <- WS.receiveData conn
-  s <- modifyMVar_ state (\x -> (incCount "default" (pure x)))
+  s <- modifyMVar state $ \x -> do
+    let s' = incCount "default" x
+    return (s', s')
   loop msg s
   where
   loop :: Text -> ServerState -> IO ()
