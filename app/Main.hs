@@ -15,18 +15,12 @@ import qualified Data.Text.IO as T
 
 import qualified Network.WebSockets as WS
 
--- We represent a client by their username and a `WS.Connection`. We will see how we
--- obtain this `WS.Connection` later on.
 
 type Client = (Text, WS.Connection)
 
--- The state kept on the server is simply a list of connected clients. We've added
--- an alias and some utility functions, so it will be easier to extend this state
--- later on.
-
 type ServerState = Map RoomName Room
 type RoomName = Text
-type Room = [Client]
+data Room = Room [Client] Int
 
 data Command = Chat Text | Join Text | Leave Text | ErrorCommand Text
 
@@ -36,34 +30,69 @@ newServerState = empty
 
 
 numClients :: RoomName -> ServerState -> Int
-numClients name state = length (getRoom name state)
+numClients name state = length (getRoomClients room)
+  where
+  room = getRoom name state :: Room
 
 
 clientExists :: RoomName -> Client -> ServerState -> Bool
-clientExists name client state = any ((== fst client) . fst) (getRoom name state)
+clientExists name client state = any ((== fst client) . fst) (getRoomClients room)
+  where
+  room = getRoom name state :: Room
+
+
+newRoom :: Room
+newRoom = Room [] 0
+
 
 getRoom :: RoomName -> ServerState -> Room
-getRoom name state = concat (lookup name state)
+getRoom name state = makeRoomIfNotExisting existingRoom
+  where
+  existingRoom = lookup name state :: Maybe Room
+  makeRoomIfNotExisting :: Maybe Room -> Room
+  makeRoomIfNotExisting (Just room) = room
+  makeRoomIfNotExisting Nothing = newRoom
+
+
+getRoomClients :: Room -> [Client]
+getRoomClients (Room clients _) = clients
+
+
+getRoomCount :: Room -> Int
+getRoomCount (Room _ count) = count
+
 
 -- Add a client (this does not check if the client already exists, you should do
 -- this yourself using `clientExists`):
 
 addClient :: RoomName -> Client -> ServerState -> ServerState
-addClient name client state = insert name (client:room) state
+addClient name client state = insert name newRoom state
   where
-  room = getRoom name state
+  room = getRoom name state :: Room
+  count = getRoomCount room :: Int
+  clients = getRoomClients room :: [Client]
+  newClients = client:clients :: [Client]
+  newRoom = Room newClients count :: Room
 
 
 removeClient :: RoomName -> Client -> ServerState -> ServerState
-removeClient name client state =
-  insert name (filter ((/= fst client) . fst) room) state
+removeClient name client state = Room newRoom count
   where
-  room = getRoom name state
+  room = getRoom name state :: Room
+  count = getRoomCount room :: Int
+  clients = getRoomClients room :: [Client]
+  newClients :: [Client]
+  newClients = insert name (filter ((/= fst client) . fst) room) state
+  newRoom = Room newClients count :: Room
+
 
 broadcast :: Command -> RoomName -> ServerState -> IO ()
 broadcast command name state = do
   T.putStrLn (process command)
-  forM_ (getRoom name state) $ \(_, conn) -> WS.sendTextData conn (process command)
+  forM_ clients $ \(_, conn) -> WS.sendTextData conn (process command)
+  where
+  room = getRoom name state :: Room
+  clients = getRoomClients room :: [Client]
 
 
 process :: Command -> Text
