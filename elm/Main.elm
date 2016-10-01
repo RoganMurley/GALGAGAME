@@ -87,9 +87,9 @@ update msg model =
     buildChat m s =
       case m of
         Connecting ->
-          "Hi! I am " ++ s
+          "join:" ++ s
         Connected ->
-          s
+          "chat:" ++ s
   in
     case msg of
       Input input ->
