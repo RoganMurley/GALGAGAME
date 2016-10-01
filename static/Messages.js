@@ -6630,6 +6630,7 @@ var _elm_lang$mouse$Mouse$subMap = F2(
 	});
 _elm_lang$core$Native_Platform.effectManagers['Mouse'] = {pkg: 'elm-lang/mouse', init: _elm_lang$mouse$Mouse$init, onEffects: _elm_lang$mouse$Mouse$onEffects, onSelfMsg: _elm_lang$mouse$Mouse$onSelfMsg, tag: 'sub', subMap: _elm_lang$mouse$Mouse$subMap};
 
+var _user$project$Messages$IncCount = {ctor: 'IncCount'};
 var _user$project$Messages$DragEnd = function (a) {
 	return {ctor: 'DragEnd', _0: a};
 };

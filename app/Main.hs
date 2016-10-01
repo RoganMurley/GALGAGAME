@@ -27,6 +27,7 @@ data Command =
     ChatCommand Username Text
   | JoinCommand Username
   | LeaveCommand Username
+  | IncCommand
   | ErrorCommand Text
 
 
@@ -201,23 +202,29 @@ gameLoop conn state (user, _) = forever $ do
   s <- modifyMVar state $ \x -> do
     let s' = incCount "default" x
     return (s', s')
-  talk user msg s
+  talk (parsedInput msg) s
+  where
+  parsedInput :: Text -> Command
+  parsedInput msg = parseMsg user msg
 
-talk :: Text -> Text -> ServerState -> IO ()
-talk user msg state = broadcast (parseMsg user msg) "default" state
-  -- where
-  -- countText :: ServerState -> Text
-  -- countText s = "(count: " <> (T.pack $ show $ getRoomCount $ getRoom "default" s) <> ")"
+talk :: Command -> ServerState -> IO ()
+talk cmd state = do
+  broadcast cmd "default" state
+  where
+  countText :: ServerState -> Text
+  countText s = "(count: " <> (T.pack $ show $ getRoomCount $ getRoom "default" s) <> ")"
 
 process :: Command -> Text
 process (JoinCommand name)         = name <> " joined"
 process (LeaveCommand name)        = name <> " disconnected"
 process (ChatCommand name message) = name <> ": " <> message
+process (IncCommand)               = "Count incremented"
 process (ErrorCommand err)  = err
 
 parseMsg :: Username -> Text -> Command
 parseMsg _ ""           = ErrorCommand "Command not found"
 parseMsg name msg
+  | (command == "inc")  = IncCommand
   | (command == "chat") = ChatCommand name content
   | otherwise           = ErrorCommand "Unknown command"
   where

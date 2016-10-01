@@ -110,6 +110,9 @@ update msg model =
       DragEnd _ ->
         ({ model | chat = { chat | pos = (getPosition chat), drag = Nothing } }, Cmd.none)
 
+      IncCount ->
+        (model, WebSocket.send "ws://localhost:9160" "inc:")
+
 
 addChatMessage : String -> ChatModel -> ChatModel
 addChatMessage message model =
@@ -154,7 +157,7 @@ viewHand : Hand -> Html Msg
 viewHand hand =
   let
     viewCard : Card -> Html Msg
-    viewCard card = div [ class "card my-card" ] []
+    viewCard card = div [ class "card my-card", onClick IncCount ] []
   in
     div [ class "hand my-hand" ] (List.map viewCard hand)
 
