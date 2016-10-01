@@ -1,9 +1,11 @@
+import Cmd.Extra exposing (message)
 import Html exposing (..)
 import Html.App as App
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Json.Decode as Json exposing ((:=))
 import Mouse exposing (Position)
+import String exposing (dropLeft, length, startsWith)
 import WebSocket
 
 import Messages exposing (Msg(..))
@@ -96,10 +98,10 @@ update msg model =
         ({ model | chat = { chat | input = input } }, Cmd.none)
 
       Send ->
-        ({ model | chat = { chat | input = "" } }, WebSocket.send "ws://localhost:9160" (buildChat model.mode chat.input))
+        ({ model | chat = { chat | input = "" } }, send (buildChat model.mode chat.input))
 
-      NewMessage str ->
-        ({ model | chat = addChatMessage str chat, mode = Connected }, Cmd.none)
+      Receive str ->
+        (model, receive str)
 
       DragStart xy ->
         ({ model | chat = { chat | drag = (Just (Drag xy xy)) } }, Cmd.none)
@@ -111,7 +113,22 @@ update msg model =
         ({ model | chat = { chat | pos = (getPosition chat), drag = Nothing } }, Cmd.none)
 
       IncCount ->
-        (model, WebSocket.send "ws://localhost:9160" "inc:")
+        (model, send "inc:")
+
+      NewChatMsg str ->
+        ({ model | chat = addChatMessage str chat, mode = Connected }, Cmd.none)
+
+
+receive : String -> Cmd Msg
+receive msg =
+  if (startsWith "chat:" msg) then
+    message (NewChatMsg (dropLeft (length "chat:") msg))
+  else
+    message (NewChatMsg ("An error occured in decoding message from server... " ++ msg))
+
+
+send : String -> Cmd Msg
+send = WebSocket.send "ws://localhost:9160"
 
 
 addChatMessage : String -> ChatModel -> ChatModel
@@ -124,7 +141,7 @@ addChatMessage message model =
 subscriptions : Model -> Sub Msg
 subscriptions model =
   Sub.batch [
-      WebSocket.listen "ws://localhost:9160" NewMessage
+      WebSocket.listen "ws://localhost:9160" Receive
     , Mouse.moves DragAt
     , Mouse.ups DragEnd
   ]
