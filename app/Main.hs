@@ -174,19 +174,26 @@ application state pending = do
               modifyMVar_ state $ \s -> do
                   let s' = addClient "default" client s
                   WS.sendTextData conn $
-                      "Welcome! Users: " <>
-                      T.intercalate ", " (map fst (getRoomClients (getRoom "default" s)))
+                      "Welcome! " <> userList s
                   broadcast (JoinCommand (fst client)) "default" s'
                   return s'
               gameLoop conn state client
          where
-           prefix     = "join:"
-           client     = (T.drop (T.length prefix) msg, conn)
-           disconnect = do
-               -- Remove client and return new state
-               s <- modifyMVar state $ \s ->
-                   let s' = removeClient "default" client s in return (s', s')
-               broadcast (LeaveCommand (fst client)) "default" s
+          prefix     = "join:"
+          client     = (T.drop (T.length prefix) msg, conn)
+          disconnect = do
+              -- Remove client and return new state
+              s <- modifyMVar state $ \s ->
+                  let s' = removeClient "default" client s in return (s', s')
+              broadcast (LeaveCommand (fst client)) "default" s
+
+userList :: ServerState -> Text
+userList s
+  | (users == "") = "You're the only one here..."
+  | otherwise     = "Users: " <> users
+  where
+  users :: Text
+  users = T.intercalate ", " (map fst  (getRoomClients (getRoom "default" s)))
 
 gameLoop :: WS.Connection -> MVar ServerState -> Client -> IO ()
 gameLoop conn state (user, _) = forever $ do
