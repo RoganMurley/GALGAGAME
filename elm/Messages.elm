@@ -12,3 +12,4 @@ type Msg
   | DragEnd Position
   | IncCount
   | NewChatMsg String
+  | Sync String
