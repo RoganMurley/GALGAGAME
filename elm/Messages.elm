@@ -10,3 +10,4 @@ type Msg
   | DragStart Position
   | DragAt Position
   | DragEnd Position
+  | IncCount
