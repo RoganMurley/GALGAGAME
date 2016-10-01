@@ -6630,6 +6630,9 @@ var _elm_lang$mouse$Mouse$subMap = F2(
 	});
 _elm_lang$core$Native_Platform.effectManagers['Mouse'] = {pkg: 'elm-lang/mouse', init: _elm_lang$mouse$Mouse$init, onEffects: _elm_lang$mouse$Mouse$onEffects, onSelfMsg: _elm_lang$mouse$Mouse$onSelfMsg, tag: 'sub', subMap: _elm_lang$mouse$Mouse$subMap};
 
+var _user$project$Messages$NewChatMsg = function (a) {
+	return {ctor: 'NewChatMsg', _0: a};
+};
 var _user$project$Messages$IncCount = {ctor: 'IncCount'};
 var _user$project$Messages$DragEnd = function (a) {
 	return {ctor: 'DragEnd', _0: a};
@@ -6640,8 +6643,8 @@ var _user$project$Messages$DragAt = function (a) {
 var _user$project$Messages$DragStart = function (a) {
 	return {ctor: 'DragStart', _0: a};
 };
-var _user$project$Messages$NewMessage = function (a) {
-	return {ctor: 'NewMessage', _0: a};
+var _user$project$Messages$Receive = function (a) {
+	return {ctor: 'Receive', _0: a};
 };
 var _user$project$Messages$Send = {ctor: 'Send'};
 var _user$project$Messages$Input = function (a) {

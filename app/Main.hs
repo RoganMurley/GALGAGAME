@@ -102,10 +102,10 @@ removeClient name client state
   newRoom = Room newClients count :: Room
 
 
-broadcast :: Command -> RoomName -> ServerState -> IO ()
-broadcast command name state = do
-  T.putStrLn (process command)
-  forM_ clients $ \(_, conn) -> WS.sendTextData conn (process command)
+broadcast :: Text -> RoomName -> ServerState -> IO ()
+broadcast msg name state = do
+  T.putStrLn msg
+  forM_ clients $ \(_, conn) -> WS.sendTextData conn msg
   where
   room = getRoom name state :: Room
   clients = getRoomClients room :: [Client]
@@ -175,8 +175,8 @@ application state pending = do
               modifyMVar_ state $ \s -> do
                   let s' = addClient "default" client s
                   WS.sendTextData conn $
-                      "Welcome! " <> userList s
-                  broadcast (JoinCommand (fst client)) "default" s'
+                      "chat:Welcome! " <> userList s
+                  broadcast (process (JoinCommand (fst client))) "default" s'
                   return s'
               gameLoop conn state client
          where
@@ -186,7 +186,7 @@ application state pending = do
               -- Remove client and return new state
               s <- modifyMVar state $ \s ->
                   let s' = removeClient "default" client s in return (s', s')
-              broadcast (LeaveCommand (fst client)) "default" s
+              broadcast (process (LeaveCommand (fst client))) "default" s
 
 userList :: ServerState -> Text
 userList s
@@ -199,27 +199,36 @@ userList s
 gameLoop :: WS.Connection -> MVar ServerState -> Client -> IO ()
 gameLoop conn state (user, _) = forever $ do
   msg <- WS.receiveData conn
-  s <- modifyMVar state $ \x -> do
-    let s' = incCount "default" x
-    return (s', s')
-  talk (parsedInput msg) s
+  act (parsedInput msg) state
   where
   parsedInput :: Text -> Command
   parsedInput msg = parseMsg user msg
 
-talk :: Command -> ServerState -> IO ()
-talk cmd state = do
-  broadcast cmd "default" state
+act :: Command -> MVar ServerState -> IO ()
+act cmd@IncCommand state = do
+    s <- modifyMVar state $ \x -> do
+      let s' = incCount "default" x
+      return (s', s')
+    syncClients s
+act cmd state = do
+    s <- readMVar state
+    broadcast (process cmd) "default" s
+
+syncClients :: ServerState -> IO ()
+syncClients s = broadcast syncMsg "default" s
   where
-  countText :: ServerState -> Text
-  countText s = "(count: " <> (T.pack $ show $ getRoomCount $ getRoom "default" s) <> ")"
+  syncMsg :: Text
+  syncMsg = "chat:attempting to sync"
+
+countText :: ServerState -> Text
+countText s = "(count: " <> (T.pack $ show $ getRoomCount $ getRoom "default" s) <> ")"
 
 process :: Command -> Text
-process (JoinCommand name)         = name <> " joined"
-process (LeaveCommand name)        = name <> " disconnected"
-process (ChatCommand name message) = name <> ": " <> message
-process (IncCommand)               = "Count incremented"
-process (ErrorCommand err)  = err
+process (JoinCommand name)         = "chat:" <> name <> " joined"
+process (LeaveCommand name)        = "chat:" <> name <> " disconnected"
+process (ChatCommand name message) = "chat:" <> name <> ": " <> message
+process (IncCommand)               = "chat:" <> "Count incremented"
+process (ErrorCommand err)         = "chat:" <> err
 
 parseMsg :: Username -> Text -> Command
 parseMsg _ ""           = ErrorCommand "Command not found"
