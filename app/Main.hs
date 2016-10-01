@@ -5,7 +5,7 @@ import Prelude hiding (lookup)
 
 import Data.Char (isPunctuation, isSpace)
 import Data.Map.Strict (Map, delete, empty, insert, lookup)
-import Data.Monoid (mappend)
+import Data.Monoid ((<>))
 import Data.Text (Text)
 import Control.Exception (finally)
 import Control.Monad (forM_, forever)
@@ -16,13 +16,18 @@ import qualified Data.Text.IO as T
 import qualified Network.WebSockets as WS
 
 
-type Client = (Text, WS.Connection)
+type Username = Text
+type Client = (Username, WS.Connection)
 
 type ServerState = Map RoomName Room
 type RoomName = Text
 data Room = Room [Client] Int
 
-data Command = Chat Text | Join Text | Leave Text | ErrorCommand Text
+data Command =
+    ChatCommand Username Text
+  | JoinCommand Username
+  | LeaveCommand Username
+  | ErrorCommand Text
 
 
 newServerState :: ServerState
@@ -105,12 +110,6 @@ broadcast command name state = do
   clients = getRoomClients room :: [Client]
 
 
-process :: Command -> Text
-process (Join name) = name `mappend` " joined"
-process (Leave name) = name `mappend` " disconnected"
-process (Chat message) = message
-process (ErrorCommand err) = err
-
 -- The main function first creates a new state for the server, then spawns the
 -- actual server. For this purpose, we use the simple server provided by
 -- `WS.runServer`.
@@ -154,8 +153,8 @@ application state pending = do
 
            | any ($ fst client)
                [T.null, T.any isPunctuation, T.any isSpace] ->
-                   WS.sendTextData conn (process (ErrorCommand ("Name cannot " `mappend`
-                       "contain punctuation or whitespace, and " `mappend`
+                   WS.sendTextData conn (process (ErrorCommand ("Name cannot " <>
+                       "contain punctuation or whitespace, and " <>
                        "cannot be empty" :: Text)))
 
 -- Check that the given username is not already taken:
@@ -170,34 +169,52 @@ application state pending = do
 
 -- We send a "Welcome!", according to our own little protocol. We add the client to
 -- the list and broadcast the fact that he has joined. Then, we give control to the
--- 'talk' function.
+-- 'gameloop' function.
 
               modifyMVar_ state $ \s -> do
                   let s' = addClient "default" client s
                   WS.sendTextData conn $
-                      "Welcome! Users: " `mappend`
+                      "Welcome! Users: " <>
                       T.intercalate ", " (map fst (getRoomClients (getRoom "default" s)))
-                  broadcast (Join (fst client)) "default" s'
+                  broadcast (JoinCommand (fst client)) "default" s'
                   return s'
-              talk conn state client
+              gameLoop conn state client
          where
-           prefix     = "Hi! I am "
+           prefix     = "join:"
            client     = (T.drop (T.length prefix) msg, conn)
            disconnect = do
                -- Remove client and return new state
                s <- modifyMVar state $ \s ->
                    let s' = removeClient "default" client s in return (s', s')
-               broadcast (Leave (fst client)) "default" s
+               broadcast (LeaveCommand (fst client)) "default" s
 
-talk :: WS.Connection -> MVar ServerState -> Client -> IO ()
-talk conn state (user, _) = forever $ do
+gameLoop :: WS.Connection -> MVar ServerState -> Client -> IO ()
+gameLoop conn state (user, _) = forever $ do
   msg <- WS.receiveData conn
   s <- modifyMVar state $ \x -> do
     let s' = incCount "default" x
     return (s', s')
-  loop msg s
+  talk user msg s
+
+talk :: Text -> Text -> ServerState -> IO ()
+talk user msg state = broadcast (parseMsg user msg) "default" state
+  -- where
+  -- countText :: ServerState -> Text
+  -- countText s = "(count: " <> (T.pack $ show $ getRoomCount $ getRoom "default" s) <> ")"
+
+process :: Command -> Text
+process (JoinCommand name)         = name <> " joined"
+process (LeaveCommand name)        = name <> " disconnected"
+process (ChatCommand name message) = name <> ": " <> message
+process (ErrorCommand err)  = err
+
+parseMsg :: Username -> Text -> Command
+parseMsg _ ""           = ErrorCommand "Command not found"
+parseMsg name msg
+  | (command == "chat") = ChatCommand name content
+  | otherwise           = ErrorCommand "Unknown command"
   where
-  loop :: Text -> ServerState -> IO ()
-  loop m s = broadcast (Chat (user `mappend` ": " `mappend` m `mappend` (countText s))) "default" s
-  countText :: ServerState -> Text
-  countText s = "(count: " `mappend` (T.pack $ show $ getRoomCount $ getRoom "default" s) `mappend` ")"
+  parsed :: (Text, Text)
+  parsed = T.breakOn ":" msg
+  command = fst parsed :: Text
+  content = T.drop 1 (snd parsed) :: Text
