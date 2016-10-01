@@ -118,11 +118,16 @@ update msg model =
       NewChatMsg str ->
         ({ model | chat = addChatMessage str chat, mode = Connected }, Cmd.none)
 
+      Sync str ->
+        ({ model | hand = model.hand ++ [ str ] }, Cmd.none)
+
 
 receive : String -> Cmd Msg
 receive msg =
   if (startsWith "chat:" msg) then
     message (NewChatMsg (dropLeft (length "chat:") msg))
+  else if (startsWith "sync:" msg) then
+    message (Sync msg)
   else
     message (NewChatMsg ("An error occured in decoding message from server... " ++ msg))
 

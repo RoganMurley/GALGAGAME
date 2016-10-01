@@ -215,13 +215,13 @@ act cmd state = do
     broadcast (process cmd) "default" s
 
 syncClients :: ServerState -> IO ()
-syncClients s = broadcast syncMsg "default" s
+syncClients state = broadcast syncMsg "default" state
   where
-  syncMsg :: Text
-  syncMsg = "chat:attempting to sync"
+  syncMsg = "sync:" <> (countText state) :: Text
+
 
 countText :: ServerState -> Text
-countText s = "(count: " <> (T.pack $ show $ getRoomCount $ getRoom "default" s) <> ")"
+countText state = "(count: " <> (T.pack $ show $ getRoomCount $ getRoom "default" state) <> ")"
 
 process :: Command -> Text
 process (JoinCommand name)         = "chat:" <> name <> " joined"
