@@ -5,6 +5,7 @@ import Prelude hiding (lookup)
 
 import Data.Char (isPunctuation, isSpace)
 import Data.Map.Strict (Map, delete, empty, insert, lookup)
+import Data.Maybe (maybeToList)
 import Data.Monoid ((<>))
 import Data.Text (Text)
 import Control.Exception (finally)
@@ -21,7 +22,9 @@ type Client = (Username, WS.Connection)
 
 type ServerState = Map RoomName Room
 type RoomName = Text
-data Room = Room [Client] Int
+type Player = Maybe Client
+type Spectators = [Client]
+data Room = Room Player Player Spectators Int
 
 data Command =
     ChatCommand Username Text
@@ -35,12 +38,6 @@ newServerState :: ServerState
 newServerState = empty
 
 
-numClients :: RoomName -> ServerState -> Int
-numClients name state = length (getRoomClients room)
-  where
-  room = getRoom name state :: Room
-
-
 clientExists :: RoomName -> Client -> ServerState -> Bool
 clientExists name client state = any ((== fst client) . fst) (getRoomClients room)
   where
@@ -48,7 +45,7 @@ clientExists name client state = any ((== fst client) . fst) (getRoomClients roo
 
 
 newRoom :: Room
-newRoom = Room [] 0
+newRoom = Room Nothing Nothing [] 0
 
 
 getRoom :: RoomName -> ServerState -> Room
@@ -61,20 +58,21 @@ getRoom name state = makeRoomIfNotExisting existingRoom
 
 
 getRoomClients :: Room -> [Client]
-getRoomClients (Room clients _) = clients
+getRoomClients (Room pa pb specs _) = (maybeToList pa) ++ (maybeToList pb) ++ specs
 
 
 getRoomCount :: Room -> Int
-getRoomCount (Room _ count) = count
+getRoomCount (Room _ _ _ count) = count
 
 
 incCount :: RoomName -> ServerState -> ServerState
 incCount name state = insert name newRoom state
   where
   room = getRoom name state :: Room
-  count = getRoomCount room :: Int
-  clients = getRoomClients room :: [Client]
-  newRoom = Room clients (count + 1) :: Room
+  newRoom = addCount 1 room :: Room
+
+addCount :: Int -> Room -> Room
+addCount n (Room pa pb specs count) = Room pa pb specs (count + n)
 
 -- Add a client (this does not check if the client already exists, you should do
 -- this yourself using `clientExists`):
@@ -84,9 +82,11 @@ addClient name client state = insert name newRoom state
   where
   room = getRoom name state :: Room
   count = getRoomCount room :: Int
-  clients = getRoomClients room :: [Client]
-  newClients = client:clients :: [Client]
-  newRoom = Room newClients count :: Room
+  newRoom = addSpec client room :: Room
+
+
+addSpec :: Client -> Room -> Room
+addSpec client (Room pa pb specs count) = Room pa pb (client:specs) count
 
 
 removeClient :: RoomName -> Client -> ServerState -> ServerState
@@ -95,11 +95,18 @@ removeClient name client state
   | otherwise = insert name newRoom state
   where
   room = getRoom name state :: Room
-  count = getRoomCount room :: Int
-  clients = getRoomClients room :: [Client]
-  newClients :: [Client]
-  newClients = filter ((/= fst client) . fst) clients
-  newRoom = Room newClients count :: Room
+  newRoom = removeClientRoom client room :: Room
+  newClients = getRoomClients newRoom :: [Client]
+
+removeClientRoom :: Client -> Room -> Room
+removeClientRoom client (Room pa pb specs count) =
+  Room (newPlayer pa) (newPlayer pb) newSpecs count
+  where
+  newSpecs :: Spectators
+  newSpecs = filter ((/= fst client) . fst) specs
+  newPlayer :: Player -> Player
+  newPlayer Nothing = Nothing
+  newPlayer (Just c) = if fst c == fst client then Nothing else Just c
 
 
 broadcast :: Text -> RoomName -> ServerState -> IO ()
