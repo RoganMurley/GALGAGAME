@@ -171,9 +171,25 @@ view model =
               ]
             , viewMessages model.chat
           ]
-        , viewOtherHand model.otherHand
-        , viewHand model.hand
+        , viewGameState model
       ]
+
+
+viewGameState : Model -> Html Msg
+viewGameState model =
+  let
+    mode : SendMode
+    mode = model.mode
+  in
+    case mode of
+      Connected ->
+        div []
+          [
+              viewOtherHand model.otherHand
+            , viewHand model.hand
+          ]
+      otherwise ->
+        div [] []
 
 
 viewHand : Hand -> Html Msg
