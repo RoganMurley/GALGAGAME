@@ -28,7 +28,7 @@ data Room = Room Player Player Spectators Int
 
 data Command =
     ChatCommand Username Text
-  | JoinCommand Username
+  | SpectateCommand Username
   | LeaveCommand Username
   | IncCommand
   | ErrorCommand Text
@@ -181,13 +181,14 @@ application state pending = do
 
               modifyMVar_ state $ \s -> do
                   let s' = addClient "default" client s
+                  WS.sendTextData conn ("accept:" :: Text)
                   WS.sendTextData conn $
                       "chat:Welcome! " <> userList s
-                  broadcast (process (JoinCommand (fst client))) "default" s'
+                  broadcast (process (SpectateCommand (fst client))) "default" s'
                   return s'
               gameLoop conn state client
          where
-          prefix     = "join:"
+          prefix     = "spectate:"
           client     = (T.drop (T.length prefix) msg, conn)
           disconnect = do
               -- Remove client and return new state
@@ -231,7 +232,7 @@ countText :: ServerState -> Text
 countText state = "(count: " <> (T.pack $ show $ getRoomCount $ getRoom "default" state) <> ")"
 
 process :: Command -> Text
-process (JoinCommand name)         = "chat:" <> name <> " joined"
+process (SpectateCommand name)     = "chat:" <> name <> " started spectating"
 process (LeaveCommand name)        = "chat:" <> name <> " disconnected"
 process (ChatCommand name message) = "chat:" <> name <> ": " <> message
 process (IncCommand)               = "chat:" <> "Count incremented"
