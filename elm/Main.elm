@@ -89,7 +89,7 @@ update msg model =
     buildChat m s =
       case m of
         Connecting ->
-          "join:" ++ s
+          "spectate:" ++ s
         Connected ->
           "chat:" ++ s
   in
@@ -101,7 +101,7 @@ update msg model =
         ({ model | chat = { chat | input = "" } }, send (buildChat model.mode chat.input))
 
       Receive str ->
-        (model, receive str)
+        receive model str
 
       DragStart xy ->
         ({ model | chat = { chat | drag = (Just (Drag xy xy)) } }, Cmd.none)
@@ -116,20 +116,22 @@ update msg model =
         (model, send "inc:")
 
       NewChatMsg str ->
-        ({ model | chat = addChatMessage str chat, mode = Connected }, Cmd.none)
+        ({ model | chat = addChatMessage str chat}, Cmd.none)
 
       Sync str ->
         ({ model | hand = model.hand ++ [ str ] }, Cmd.none)
 
 
-receive : String -> Cmd Msg
-receive msg =
+receive : Model -> String -> (Model, Cmd Msg)
+receive model msg =
   if (startsWith "chat:" msg) then
-    message (NewChatMsg (dropLeft (length "chat:") msg))
+    (model, message (NewChatMsg (dropLeft (length "chat:") msg)))
   else if (startsWith "sync:" msg) then
-    message (Sync msg)
+    (model, message (Sync msg))
+  else if (startsWith "accept:" msg) then
+    ({ model | mode = Connected }, Cmd.none)
   else
-    message (NewChatMsg ("An error occured in decoding message from server... " ++ msg))
+    (model, message (NewChatMsg ("An error occured in decoding message from server... " ++ msg)))
 
 
 send : String -> Cmd Msg
@@ -139,7 +141,6 @@ send = WebSocket.send "ws://localhost:9160"
 addChatMessage : String -> ChatModel -> ChatModel
 addChatMessage message model =
   { model | messages = message :: model.messages }
-
 
 -- SUBSCRIPTIONS
 
