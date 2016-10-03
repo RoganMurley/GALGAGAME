@@ -52,18 +52,22 @@
 .card {
   display: flex;
 
-  width: 245px;
-  height: 339px;
+  min-width: 245px;
+  min-height: 339px;
 }
 
 .my-card {
-  margin-bottom: -146px;
-  transition: margin-bottom 0.15s ease-out;
+  -webkit-transform: translate(146px);
+  transform: translateY(146px);
+
+  -webkit-transition: transform 0.15s ease-out;
+  transition: transform 0.15s ease-out;
   cursor: pointer; cursor: hand;
 }
 
 .my-card:hover {
-    margin-bottom: 0;
+  -webkit-transform: translateY(0);
+  transform: : translateY(0);
 }
 
 .other-card {
