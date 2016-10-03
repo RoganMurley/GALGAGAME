@@ -57,8 +57,6 @@
 }
 
 .my-card {
-  background-image: url("img/blacklotus.jpg");
-
   margin-bottom: -146px;
   transition: margin-bottom 0.15s ease-out;
   cursor: pointer; cursor: hand;
