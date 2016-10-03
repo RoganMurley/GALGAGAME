@@ -1,17 +1,21 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE DeriveGeneric #-}
 module Main where
 
 import Prelude hiding (lookup)
 
+import Data.Aeson (encode)
 import Data.Char (isPunctuation, isSpace)
 import Data.Map.Strict (Map, delete, empty, insert, lookup)
 import Data.Maybe (maybeToList)
 import Data.Monoid ((<>))
+import Data.String.Conversions (cs)
 import Data.Text (Text)
 import Control.Exception (finally)
 import Control.Monad (forM_, forever)
 import Control.Concurrent (MVar, newMVar, modifyMVar_, modifyMVar, readMVar)
 import qualified Data.Text as T
+import qualified Data.Text.Encoding as T
 import qualified Data.Text.IO as T
 
 import qualified Network.WebSockets as WS
@@ -234,10 +238,8 @@ syncClients state = broadcast syncMsg "default" state
   room = getRoom "default" state :: Room
   game = getRoomCount room :: GameState
   syncMsg = "sync:" <> (countText state) :: Text
-  quoteWrap :: Text -> Text
-  quoteWrap t = "\"" <> t <> "\""
   countText :: ServerState -> Text
-  countText state = "[" <> (T.intercalate "," (fmap quoteWrap game)) <> "]"
+  countText state = cs $ encode game
 
 process :: Command -> Text
 process (SpectateCommand name)     = "chat:" <> name <> " started spectating"
