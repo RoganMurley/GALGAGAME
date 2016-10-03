@@ -24,7 +24,8 @@ type ServerState = Map RoomName Room
 type RoomName = Text
 type Player = Maybe Client
 type Spectators = [Client]
-data Room = Room Player Player Spectators Int
+type GameState = [Int]
+data Room = Room Player Player Spectators GameState
 
 data Command =
     ChatCommand Username Text
@@ -45,7 +46,7 @@ clientExists name client state = any ((== fst client) . fst) (getRoomClients roo
 
 
 newRoom :: Room
-newRoom = Room Nothing Nothing [] 0
+newRoom = Room Nothing Nothing [] [ 0 ]
 
 
 getRoom :: RoomName -> ServerState -> Room
@@ -61,18 +62,18 @@ getRoomClients :: Room -> [Client]
 getRoomClients (Room pa pb specs _) = (maybeToList pa) ++ (maybeToList pb) ++ specs
 
 
-getRoomCount :: Room -> Int
-getRoomCount (Room _ _ _ count) = count
+getRoomCount :: Room -> GameState
+getRoomCount (Room _ _ _ game) = game
 
 
 incCount :: RoomName -> ServerState -> ServerState
 incCount name state = insert name newRoom state
   where
   room = getRoom name state :: Room
-  newRoom = addCount 1 room :: Room
+  newRoom = addCount (length (getRoomCount room)) room :: Room
 
 addCount :: Int -> Room -> Room
-addCount n (Room pa pb specs count) = Room pa pb specs (count + n)
+addCount n (Room pa pb specs game) = Room pa pb specs (n:game)
 
 -- Add a client (this does not check if the client already exists, you should do
 -- this yourself using `clientExists`):
@@ -81,7 +82,6 @@ addClient :: RoomName -> Client -> ServerState -> ServerState
 addClient name client state = insert name newRoom state
   where
   room = getRoom name state :: Room
-  count = getRoomCount room :: Int
   newRoom = addSpec client room :: Room
 
 
@@ -185,6 +185,7 @@ application state pending = do
                   WS.sendTextData conn $
                       "chat:Welcome! " <> userList s
                   broadcast (process (SpectateCommand (fst client))) "default" s'
+                  syncClients s'
                   return s'
               gameLoop conn state client
          where
@@ -225,11 +226,13 @@ act cmd state = do
 syncClients :: ServerState -> IO ()
 syncClients state = broadcast syncMsg "default" state
   where
+  room = getRoom "default" state :: Room
+  game = getRoomCount room :: GameState
   syncMsg = "sync:" <> (countText state) :: Text
-
-
-countText :: ServerState -> Text
-countText state = "(count: " <> (T.pack $ show $ getRoomCount $ getRoom "default" state) <> ")"
+  quoteWrap :: Text -> Text
+  quoteWrap t = "\"" <> t <> "\""
+  countText :: ServerState -> Text
+  countText state = "[" <> (T.intercalate "," (fmap (quoteWrap . T.pack . show) game)) <> "]"
 
 process :: Command -> Text
 process (SpectateCommand name)     = "chat:" <> name <> " started spectating"
