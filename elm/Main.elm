@@ -3,7 +3,7 @@ import Html exposing (..)
 import Html.App as App
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import Json.Decode as Json exposing ((:=))
+import Json.Decode as Json
 import Mouse exposing (Position)
 import String exposing (dropLeft, length, startsWith)
 import WebSocket
@@ -70,7 +70,7 @@ init =
           , drag = Nothing
         }
       , mode = Connecting
-      , hand = [ "start" ]
+      , hand = []
       , otherHand = [ "start" ]
       , stack = [ "start" ]
     }
@@ -119,7 +119,7 @@ update msg model =
         ({ model | chat = addChatMessage str chat}, Cmd.none)
 
       Sync str ->
-        ({ model | hand = model.hand ++ [ str ] }, Cmd.none)
+        syncHand model str
 
 
 receive : Model -> String -> (Model, Cmd Msg)
@@ -127,7 +127,7 @@ receive model msg =
   if (startsWith "chat:" msg) then
     (model, message (NewChatMsg (dropLeft (length "chat:") msg)))
   else if (startsWith "sync:" msg) then
-    (model, message (Sync msg))
+    (model, message (Sync (dropLeft (length "sync:") msg)))
   else if (startsWith "accept:" msg) then
     ({ model | mode = Connected }, Cmd.none)
   else
@@ -196,7 +196,7 @@ viewHand : Hand -> Html Msg
 viewHand hand =
   let
     viewCard : Card -> Html Msg
-    viewCard card = div [ class "card my-card", onClick IncCount ] []
+    viewCard card = div [ class "card my-card", onClick IncCount ] [ text card ]
   in
     div [ class "hand my-hand" ] (List.map viewCard hand)
 
@@ -239,3 +239,25 @@ getPosition {pos, drag} =
 draggable : Attribute Msg
 draggable =
   on "mousedown" (Json.map DragStart Mouse.position)
+
+decodeHand : String -> Result String Hand
+decodeHand msg =
+  let
+    result : Result String Hand
+    result = Json.decodeString decoder msg
+    decoder : Json.Decoder (List String)
+    decoder = Json.list Json.string
+  in
+    result
+
+syncHand : Model -> String -> (Model, Cmd Msg)
+syncHand model msg =
+  let
+    result : Result String Hand
+    result = decodeHand msg
+  in
+    case result of
+      Ok value ->
+        ({ model | hand = value }, Cmd.none)
+      Err err ->
+        (model, message (NewChatMsg ("Sync hand error: " ++ err)))
