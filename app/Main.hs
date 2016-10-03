@@ -24,7 +24,10 @@ type ServerState = Map RoomName Room
 type RoomName = Text
 type Player = Maybe Client
 type Spectators = [Client]
-type GameState = [Int]
+
+type Card = Text
+type GameState = [Card]
+
 data Room = Room Player Player Spectators GameState
 
 data Command =
@@ -46,7 +49,7 @@ clientExists name client state = any ((== fst client) . fst) (getRoomClients roo
 
 
 newRoom :: Room
-newRoom = Room Nothing Nothing [] [ 0 ]
+newRoom = Room Nothing Nothing [] [ "blacklotus.jpg" ]
 
 
 getRoom :: RoomName -> ServerState -> Room
@@ -70,10 +73,12 @@ incCount :: RoomName -> ServerState -> ServerState
 incCount name state = insert name newRoom state
   where
   room = getRoom name state :: Room
-  newRoom = addCount (length (getRoomCount room)) room :: Room
+  newRoom = addCount room :: Room
 
-addCount :: Int -> Room -> Room
-addCount n (Room pa pb specs game) = Room pa pb specs (n:game)
+addCount :: Room -> Room
+addCount (Room pa pb specs game) = Room pa pb specs (new:game)
+  where
+  new = "blacklotus.jpg" :: Text
 
 -- Add a client (this does not check if the client already exists, you should do
 -- this yourself using `clientExists`):
@@ -232,7 +237,7 @@ syncClients state = broadcast syncMsg "default" state
   quoteWrap :: Text -> Text
   quoteWrap t = "\"" <> t <> "\""
   countText :: ServerState -> Text
-  countText state = "[" <> (T.intercalate "," (fmap (quoteWrap . T.pack . show) game)) <> "]"
+  countText state = "[" <> (T.intercalate "," (fmap quoteWrap game)) <> "]"
 
 process :: Command -> Text
 process (SpectateCommand name)     = "chat:" <> name <> " started spectating"

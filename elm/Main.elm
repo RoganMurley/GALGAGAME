@@ -196,7 +196,13 @@ viewHand : Hand -> Html Msg
 viewHand hand =
   let
     viewCard : Card -> Html Msg
-    viewCard card = div [ class "card my-card", onClick IncCount ] [ text card ]
+    viewCard card = div
+      [
+          class "card my-card"
+        , onClick IncCount
+        , style [ ("background-image", "url(\"img/" ++ card ++ "\")") ]
+      ]
+      []
   in
     div [ class "hand my-hand" ] (List.map viewCard hand)
 
