@@ -112,8 +112,8 @@ update msg model =
       DragEnd _ ->
         ({ model | chat = { chat | pos = (getPosition chat), drag = Nothing } }, Cmd.none)
 
-      IncCount ->
-        (model, send "inc:")
+      DrawCard ->
+        (model, send "draw:")
 
       NewChatMsg str ->
         ({ model | chat = addChatMessage str chat}, Cmd.none)
@@ -199,7 +199,7 @@ viewHand hand =
     viewCard card = div
       [
           class "card my-card"
-        , onClick IncCount
+        , onClick DrawCard
         , style [ ("background-image", "url(\"img/" ++ card ++ "\")") ]
       ]
       []

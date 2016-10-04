@@ -14,11 +14,13 @@ import Data.Text (Text)
 import Control.Exception (finally)
 import Control.Monad (forM_, forever)
 import Control.Concurrent (MVar, newMVar, modifyMVar_, modifyMVar, readMVar)
+
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as T
 import qualified Data.Text.IO as T
-
 import qualified Network.WebSockets as WS
+
+import GameState (Card, GameCommand(..), Model, update)
 
 
 type Username = Text
@@ -29,16 +31,13 @@ type RoomName = Text
 type Player = Maybe Client
 type Spectators = [Client]
 
-type Card = Text
-type GameState = [Card]
-
-data Room = Room Player Player Spectators GameState
+data Room = Room Player Player Spectators Model
 
 data Command =
     ChatCommand Username Text
   | SpectateCommand Username
   | LeaveCommand Username
-  | IncCommand
+  | DrawCommand
   | ErrorCommand Text
 
 
@@ -69,20 +68,18 @@ getRoomClients :: Room -> [Client]
 getRoomClients (Room pa pb specs _) = (maybeToList pa) ++ (maybeToList pb) ++ specs
 
 
-getRoomCount :: Room -> GameState
-getRoomCount (Room _ _ _ game) = game
+getRoomModel :: Room -> Model
+getRoomModel (Room _ _ _ model) = model
 
 
-incCount :: RoomName -> ServerState -> ServerState
-incCount name state = insert name newRoom state
+stateUpdate :: GameCommand -> RoomName -> ServerState -> ServerState
+stateUpdate cmd name state = insert name newRoom state
   where
   room = getRoom name state :: Room
-  newRoom = addCount room :: Room
+  newRoom = gameUpdate cmd room :: Room
+  gameUpdate :: GameCommand -> Room -> Room
+  gameUpdate cmd (Room pa pb specs model) = Room pa pb specs (update cmd model)
 
-addCount :: Room -> Room
-addCount (Room pa pb specs game) = Room pa pb specs (new:game)
-  where
-  new = "blacklotus.jpg" :: Text
 
 -- Add a client (this does not check if the client already exists, you should do
 -- this yourself using `clientExists`):
@@ -223,9 +220,9 @@ gameLoop conn state (user, _) = forever $ do
   parsedInput msg = parseMsg user msg
 
 act :: Command -> MVar ServerState -> IO ()
-act cmd@IncCommand state = do
+act cmd@DrawCommand state = do
     s <- modifyMVar state $ \x -> do
-      let s' = incCount "default" x
+      let s' = stateUpdate Draw "default" x
       return (s', s')
     syncClients s
 act cmd state = do
@@ -236,22 +233,21 @@ syncClients :: ServerState -> IO ()
 syncClients state = broadcast syncMsg "default" state
   where
   room = getRoom "default" state :: Room
-  game = getRoomCount room :: GameState
-  syncMsg = "sync:" <> (countText state) :: Text
-  countText :: ServerState -> Text
-  countText state = cs $ encode game
+  game = getRoomModel room :: Model
+  syncMsg = "sync:" <> (cs $ encode $ game) :: Text
+
 
 process :: Command -> Text
 process (SpectateCommand name)     = "chat:" <> name <> " started spectating"
 process (LeaveCommand name)        = "chat:" <> name <> " disconnected"
 process (ChatCommand name message) = "chat:" <> name <> ": " <> message
-process (IncCommand)               = "chat:" <> "Count incremented"
 process (ErrorCommand err)         = "chat:" <> err
+
 
 parseMsg :: Username -> Text -> Command
 parseMsg _ ""           = ErrorCommand "Command not found"
 parseMsg name msg
-  | (command == "inc")  = IncCommand
+  | (command == "draw") = DrawCommand
   | (command == "chat") = ChatCommand name content
   | otherwise           = ErrorCommand "Unknown command"
   where

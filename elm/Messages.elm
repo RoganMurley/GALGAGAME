@@ -10,6 +10,6 @@ type Msg
   | DragStart Position
   | DragAt Position
   | DragEnd Position
-  | IncCount
+  | DrawCard
   | NewChatMsg String
   | Sync String

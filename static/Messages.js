@@ -6636,7 +6636,7 @@ var _user$project$Messages$Sync = function (a) {
 var _user$project$Messages$NewChatMsg = function (a) {
 	return {ctor: 'NewChatMsg', _0: a};
 };
-var _user$project$Messages$IncCount = {ctor: 'IncCount'};
+var _user$project$Messages$DrawCard = {ctor: 'DrawCard'};
 var _user$project$Messages$DragEnd = function (a) {
 	return {ctor: 'DragEnd', _0: a};
 };
