@@ -3,7 +3,7 @@ import Html exposing (..)
 import Html.App as App
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import Json.Decode as Json
+import Json.Decode as Json exposing ((:=))
 import Mouse exposing (Position)
 import String exposing (dropLeft, length, startsWith)
 import WebSocket
@@ -119,7 +119,7 @@ update msg model =
         ({ model | chat = addChatMessage str chat}, Cmd.none)
 
       Sync str ->
-        syncHand model str
+        syncHands model str
 
 
 receive : Model -> String -> (Model, Cmd Msg)
@@ -246,24 +246,27 @@ draggable : Attribute Msg
 draggable =
   on "mousedown" (Json.map DragStart Mouse.position)
 
-decodeHand : String -> Result String Hand
-decodeHand msg =
+decodeHands : String -> Result String (Hand, Hand)
+decodeHands msg =
   let
-    result : Result String Hand
+    result : Result String (Hand, Hand)
     result = Json.decodeString decoder msg
-    decoder : Json.Decoder (List String)
-    decoder = Json.list Json.string
+    decoder : Json.Decoder (List String, List String)
+    decoder =
+      Json.object2 (,)
+        ("paHand" := Json.list Json.string)
+        ("pbHand" := Json.list Json.string)
   in
     result
 
-syncHand : Model -> String -> (Model, Cmd Msg)
-syncHand model msg =
+syncHands : Model -> String -> (Model, Cmd Msg)
+syncHands model msg =
   let
-    result : Result String Hand
-    result = decodeHand msg
+    result : Result String (Hand, Hand)
+    result = decodeHands msg
   in
     case result of
-      Ok value ->
-        ({ model | hand = value }, Cmd.none)
+      Ok (paHand, pbHand) ->
+        ({ model | hand = paHand, otherHand = pbHand }, Cmd.none)
       Err err ->
         (model, message (NewChatMsg ("Sync hand error: " ++ err)))

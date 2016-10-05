@@ -1,5 +1,4 @@
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE DeriveGeneric #-}
 module Main where
 
 import Prelude hiding (lookup)
@@ -20,7 +19,7 @@ import qualified Data.Text.Encoding as T
 import qualified Data.Text.IO as T
 import qualified Network.WebSockets as WS
 
-import GameState (Card, GameCommand(..), Model, update)
+import GameState (Card, GameCommand(..), Model(..), update)
 
 
 type Username = Text
@@ -52,7 +51,7 @@ clientExists name client state = any ((== fst client) . fst) (getRoomClients roo
 
 
 newRoom :: Room
-newRoom = Room Nothing Nothing [] [ "blacklotus.jpg" ]
+newRoom = Room Nothing Nothing [] (Model [ "blacklotus.jpg" ] [])
 
 
 getRoom :: RoomName -> ServerState -> Room
