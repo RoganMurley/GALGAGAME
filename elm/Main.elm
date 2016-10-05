@@ -26,7 +26,12 @@ type alias Model =
   {
     chat : ChatModel
   , mode : SendMode
-  , hand : Hand
+  , game : GameModel
+  }
+
+type alias GameModel =
+  {
+    hand : Hand
   , otherHand : Hand
   , stack : PlayStack
   }
@@ -70,9 +75,11 @@ init =
           , drag = Nothing
         }
       , mode = Connecting
-      , hand = []
-      , otherHand = [ "start" ]
-      , stack = [ "start" ]
+      , game = {
+          hand = []
+        , otherHand = [ "start" ]
+        , stack = [ "start" ]
+      }
     }
   in
     (model, Cmd.none)
@@ -83,6 +90,8 @@ init =
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
   let
+    game : GameModel
+    game = model.game
     chat : ChatModel
     chat = model.chat
     buildChat : SendMode -> String -> String
@@ -178,6 +187,8 @@ view model =
 viewGameState : Model -> Html Msg
 viewGameState model =
   let
+    game : GameModel
+    game = model.game
     mode : SendMode
     mode = model.mode
   in
@@ -185,8 +196,8 @@ viewGameState model =
       Connected ->
         div []
           [
-              viewOtherHand model.otherHand
-            , viewHand model.hand
+              viewOtherHand game.otherHand
+            , viewHand game.hand
           ]
       otherwise ->
         div [] []
@@ -262,11 +273,13 @@ decodeHands msg =
 syncHands : Model -> String -> (Model, Cmd Msg)
 syncHands model msg =
   let
+    game : GameModel
+    game = model.game
     result : Result String (Hand, Hand)
     result = decodeHands msg
   in
     case result of
       Ok (paHand, pbHand) ->
-        ({ model | hand = paHand, otherHand = pbHand }, Cmd.none)
+        ({ model | game = { game | hand = paHand, otherHand = pbHand } }, Cmd.none)
       Err err ->
         (model, message (NewChatMsg ("Sync hand error: " ++ err)))
