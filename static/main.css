@@ -51,9 +51,34 @@
 
 .card {
   display: flex;
+  justify-content: center;
+  flex-flow: column;
 
-  min-width: 245px;
-  min-height: 339px;
+  width: 245px;
+  height: 339px;
+
+  margin: 0 4px;
+
+  border-radius: 12px;
+
+  color: #fff;
+  background-color: #fd084a;
+}
+
+.card-title {
+  display: flex;
+  justify-content: center;
+
+  margin: 14px;
+  font-size: 36px;
+  font-weight: bolder;
+}
+
+.card-picture {
+  width: 200px;
+  height: 200px;
+
+  margin: auto;
 }
 
 .my-card {

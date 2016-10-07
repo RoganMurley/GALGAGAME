@@ -20,4 +20,4 @@ update :: GameCommand -> Model -> Model
 update Draw model = drawCard model
 
 drawCard :: Model -> Model
-drawCard (Model paHand pbHand) = Model ("blacklotus.jpg" : paHand) pbHand
+drawCard (Model paHand pbHand) = Model ("plain-dagger.svg" : paHand) pbHand
