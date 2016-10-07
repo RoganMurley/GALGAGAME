@@ -12,7 +12,7 @@ import Messages exposing (Msg(..))
 
 
 main =
-  App.program
+  App.programWithFlags
     { init = init
     , view = view
     , update = update
@@ -27,6 +27,7 @@ type alias Model =
     chat : ChatModel
   , mode : SendMode
   , game : GameModel
+  , hostname : String
   }
 
 type alias GameModel =
@@ -63,8 +64,13 @@ type SendMode
   = Connecting
   | Connected
 
-init : (Model, Cmd Msg)
-init =
+type alias Flags =
+  {
+    hostname : String
+  }
+
+init : Flags -> (Model, Cmd Msg)
+init { hostname } =
   let
     model : Model
     model = {
@@ -80,6 +86,7 @@ init =
         , otherHand = [ "start" ]
         , stack = [ "start" ]
       }
+      , hostname = hostname
     }
   in
     (model, Cmd.none)
@@ -107,7 +114,7 @@ update msg model =
         ({ model | chat = { chat | input = input } }, Cmd.none)
 
       Send ->
-        ({ model | chat = { chat | input = "" } }, send (buildChat model.mode chat.input))
+        ({ model | chat = { chat | input = "" } }, send model (buildChat model.mode chat.input))
 
       Receive str ->
         receive model str
@@ -122,7 +129,7 @@ update msg model =
         ({ model | chat = { chat | pos = (getPosition chat), drag = Nothing } }, Cmd.none)
 
       DrawCard ->
-        (model, send "draw:")
+        (model, send model "draw:")
 
       NewChatMsg str ->
         ({ model | chat = addChatMessage str chat}, Cmd.none)
@@ -143,8 +150,8 @@ receive model msg =
     (model, message (NewChatMsg ("An error occured in decoding message from server... " ++ msg)))
 
 
-send : String -> Cmd Msg
-send = WebSocket.send "ws://localhost:9160"
+send : Model -> String -> Cmd Msg
+send model = WebSocket.send ("ws://" ++ model.hostname ++ ":9160")
 
 
 addChatMessage : String -> ChatModel -> ChatModel
@@ -156,7 +163,7 @@ addChatMessage message model =
 subscriptions : Model -> Sub Msg
 subscriptions model =
   Sub.batch [
-      WebSocket.listen "ws://localhost:9160" Receive
+      WebSocket.listen ("ws://" ++ model.hostname ++ ":9160") Receive
     , Mouse.moves DragAt
     , Mouse.ups DragEnd
   ]
