@@ -92,7 +92,7 @@
 
 .my-card:hover {
   -webkit-transform: translateY(0);
-  transform: : translateY(0);
+  transform: translateY(0);
 }
 
 .other-card {
