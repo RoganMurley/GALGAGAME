@@ -15,4 +15,4 @@ gulp.task('watch', function(){
   return gulp.watch('elm/*.elm', ['multi']);
 });
 
-gulp.task('default', ['multi', 'watch']);
+gulp.task('default', ['multi']);
