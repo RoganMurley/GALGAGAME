@@ -51,7 +51,7 @@ clientExists name client state = any ((== fst client) . fst) (getRoomClients roo
 
 
 newRoom :: Room
-newRoom = Room Nothing Nothing [] (Model [ "blacklotus.jpg" ] [])
+newRoom = Room Nothing Nothing [] (Model [ "plain-dagger.svg" ] [])
 
 
 getRoom :: RoomName -> ServerState -> Room

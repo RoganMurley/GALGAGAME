@@ -218,9 +218,16 @@ viewHand hand =
       [
           class "card my-card"
         , onClick DrawCard
-        , style [ ("background-image", "url(\"img/" ++ card ++ "\")") ]
       ]
-      []
+      [
+          div [ class "card-title" ] [ text "Dagger" ]
+        , div
+          [
+              class "card-picture"
+            , style [ ("background-image", "url(\"img/" ++ card ++ "\")") ]
+          ] []
+        , div [ class "card-desc" ] [ text "Hurt for 100" ]
+      ]
   in
     div [ class "hand my-hand" ] (List.map viewCard hand)
 
