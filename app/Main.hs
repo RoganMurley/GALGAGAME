@@ -19,7 +19,7 @@ import qualified Data.Text.Encoding as T
 import qualified Data.Text.IO as T
 import qualified Network.WebSockets as WS
 
-import GameState (Card, GameCommand(..), Model(..), update)
+import GameState (Card, GameCommand(..), Model(..), cardDagger, update)
 
 
 type Username = Text
@@ -51,7 +51,7 @@ clientExists name client state = any ((== fst client) . fst) (getRoomClients roo
 
 
 newRoom :: Room
-newRoom = Room Nothing Nothing [] (Model [ "plain-dagger.svg" ] [])
+newRoom = Room Nothing Nothing [] (Model [ cardDagger ] [])
 
 
 getRoom :: RoomName -> ServerState -> Room
