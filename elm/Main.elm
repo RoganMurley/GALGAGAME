@@ -4,10 +4,12 @@ import Html.App as App
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Json.Decode as Json exposing ((:=))
-import Mouse exposing (Position)
+import Mouse
 import String exposing (dropLeft, length, startsWith)
 import WebSocket
 
+import Chat exposing (addChatMessage, dragAt, dragEnd, dragStart, getPosition)
+import GameState exposing (Card, Hand, Model, view)
 import Messages exposing (Msg(..))
 
 
@@ -24,45 +26,10 @@ main =
 
 type alias Model =
   {
-    chat : ChatModel
+    chat : Chat.Model
   , mode : SendMode
-  , game : GameModel
+  , game : GameState.Model
   , hostname : String
-  }
-
-type alias GameModel =
-  {
-    hand : Hand
-  , otherHand : Hand
-  , stack : PlayStack
-  }
-
-type alias ChatModel =
-  {
-    input : String
-  , messages : List String
-  , pos : Position
-  , drag : Maybe Drag
-  }
-
-type alias Drag =
-  {
-    start : Position
-  , current : Position
-  }
-
-type alias Hand =
-  List Card
-
-type alias PlayStack =
-  List Card
-
-type alias Card =
-  {
-      name : String
-    , desc : String
-    , imgURL: String
-    , cardColor : String
   }
 
 type SendMode
@@ -79,19 +46,10 @@ init { hostname } =
   let
     model : Model
     model = {
-        chat = {
-            input = ""
-          , messages = []
-          , pos = Position 0 0
-          , drag = Nothing
-        }
-      , mode = Connecting
-      , game = {
-          hand = []
-        , otherHand = []
-        , stack = []
-      }
-      , hostname = hostname
+      chat = Chat.init
+    , mode = Connecting
+    , game = GameState.init
+    , hostname = hostname
     }
   in
     (model, Cmd.none)
@@ -102,9 +60,7 @@ init { hostname } =
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
   let
-    game : GameModel
-    game = model.game
-    chat : ChatModel
+    chat : Chat.Model
     chat = model.chat
     buildChat : SendMode -> String -> String
     buildChat m s =
@@ -124,14 +80,14 @@ update msg model =
       Receive str ->
         receive model str
 
-      DragStart xy ->
-        ({ model | chat = { chat | drag = (Just (Drag xy xy)) } }, Cmd.none)
+      DragStart pos ->
+        ({ model | chat = dragStart model.chat pos }, Cmd.none)
 
-      DragAt xy ->
-        ({ model | chat = { chat | drag = (Maybe.map (\{start} -> Drag start xy) chat.drag) } }, Cmd.none)
+      DragAt pos ->
+        ({ model | chat = dragAt model.chat pos }, Cmd.none)
 
       DragEnd _ ->
-        ({ model | chat = { chat | pos = (getPosition chat), drag = Nothing } }, Cmd.none)
+        ({ model | chat = dragEnd model.chat }, Cmd.none)
 
       DrawCard ->
         (model, send model "draw:")
@@ -159,18 +115,14 @@ send : Model -> String -> Cmd Msg
 send model = WebSocket.send ("ws://" ++ model.hostname ++ ":9160")
 
 
-addChatMessage : String -> ChatModel -> ChatModel
-addChatMessage message model =
-  { model | messages = message :: model.messages }
-
 -- SUBSCRIPTIONS
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
   Sub.batch [
-      WebSocket.listen ("ws://" ++ model.hostname ++ ":9160") Receive
-    , Mouse.moves DragAt
-    , Mouse.ups DragEnd
+    WebSocket.listen ("ws://" ++ model.hostname ++ ":9160") Receive
+  , Mouse.moves DragAt
+  , Mouse.ups DragEnd
   ]
 
 
@@ -178,104 +130,19 @@ subscriptions model =
 
 view : Model -> Html Msg
 view model =
-  let
-    realPos = getPosition model.chat
-  in
-    div []
-      [
-        div [ class "chat", draggable, style [("top", px realPos.y), ("left", px realPos.x)] ]
-          [
-            div [ class "chat-input" ]
-              [
-                  input [ onInput Input, value model.chat.input ] []
-                , button [ onClick Send ] [text "Send"]
-              ]
-            , viewMessages model.chat
-          ]
-        , viewGameState model
-      ]
-
-
-viewGameState : Model -> Html Msg
-viewGameState model =
-  let
-    game : GameModel
-    game = model.game
-    mode : SendMode
-    mode = model.mode
-  in
-    case mode of
-      Connected ->
-        div []
-          [
-              viewOtherHand game.otherHand
-            , viewHand game.hand
-          ]
-      otherwise ->
-        div [] []
-
-
-viewHand : Hand -> Html Msg
-viewHand hand =
-  let
-    viewCard : Card -> Html Msg
-    viewCard { name, desc, imgURL, cardColor } = div
-      [
-          class "card my-card"
-        , onClick DrawCard
-        , style [ ("background-color", cardColor) ]
-      ]
-      [
-          div [ class "card-title" ] [ text name ]
-        , div
-          [
-              class "card-picture"
-            , style [ ("background-image", "url(\"img/" ++ imgURL ++ "\")") ]
-          ] []
-        , div [ class "card-desc" ] [ text desc ]
-      ]
-  in
-    div [ class "hand my-hand" ] (List.map viewCard hand)
-
-
-viewOtherHand : Hand -> Html Msg
-viewOtherHand hand =
-  let
-    viewCard : Card -> Html Msg
-    viewCard card = div [ class "card other-card" ] []
-  in
-    div [ class "hand other-hand" ] (List.map viewCard hand)
-
-
-viewMessages : ChatModel -> Html Msg
-viewMessages model =
-  let
-    viewMessage : String -> Html Msg
-    viewMessage msg = div [ class "message" ] [ text msg ]
-  in
-    div [ class "messages" ] (List.map viewMessage model.messages)
-
-
-px : Int -> String
-px number =
-  toString number ++ "px"
-
-
-getPosition : ChatModel -> Position
-getPosition {pos, drag} =
-  case drag of
-    Nothing ->
-      pos
-
-    Just {start,current} ->
-      Position
-        (pos.x + current.x - start.x)
-        (pos.y + current.y - start.y)
-
-
-draggable : Attribute Msg
-draggable =
-  on "mousedown" (Json.map DragStart Mouse.position)
+  case model.mode of
+    Connected ->
+      div []
+        [
+          Chat.view model.chat
+        , GameState.view model.game
+        ]
+    otherwise ->
+      div []
+        [
+          input [ onInput Input, value model.chat.input ] []
+        , button [ onClick Send ] [ text "Spectate" ]
+        ]
 
 decodeHands : String -> Result String (Hand, Hand)
 decodeHands msg =
@@ -301,7 +168,7 @@ decodeHands msg =
 syncHands : Model -> String -> (Model, Cmd Msg)
 syncHands model msg =
   let
-    game : GameModel
+    game : GameState.Model
     game = model.game
     result : Result String (Hand, Hand)
     result = decodeHands msg
