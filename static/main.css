@@ -54,8 +54,8 @@
   justify-content: center;
   flex-flow: column;
 
-  width: 245px;
-  height: 339px;
+  min-width: 245px;
+  min-height: 339px;
 
   margin: 0 4px;
 
@@ -79,6 +79,14 @@
   height: 200px;
 
   margin: auto;
+}
+
+.card-desc {
+  display: flex;
+  justify-content: center;
+
+  margin: 18px;
+  font-size: 21px;
 }
 
 .my-card {

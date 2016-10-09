@@ -58,7 +58,11 @@ type alias PlayStack =
   List Card
 
 type alias Card =
-  String
+  {
+      name : String
+    , desc : String
+    , imgURL: String
+  }
 
 type SendMode
   = Connecting
@@ -83,8 +87,8 @@ init { hostname } =
       , mode = Connecting
       , game = {
           hand = []
-        , otherHand = [ "start" ]
-        , stack = [ "start" ]
+        , otherHand = []
+        , stack = []
       }
       , hostname = hostname
     }
@@ -214,19 +218,19 @@ viewHand : Hand -> Html Msg
 viewHand hand =
   let
     viewCard : Card -> Html Msg
-    viewCard card = div
+    viewCard { name, desc, imgURL } = div
       [
           class "card my-card"
         , onClick DrawCard
       ]
       [
-          div [ class "card-title" ] [ text "Dagger" ]
+          div [ class "card-title" ] [ text name ]
         , div
           [
               class "card-picture"
-            , style [ ("background-image", "url(\"img/" ++ card ++ "\")") ]
+            , style [ ("background-image", "url(\"img/" ++ imgURL ++ "\")") ]
           ] []
-        , div [ class "card-desc" ] [ text "Hurt for 100" ]
+        , div [ class "card-desc" ] [ text desc ]
       ]
   in
     div [ class "hand my-hand" ] (List.map viewCard hand)
@@ -275,12 +279,19 @@ decodeHands : String -> Result String (Hand, Hand)
 decodeHands msg =
   let
     result : Result String (Hand, Hand)
-    result = Json.decodeString decoder msg
-    decoder : Json.Decoder (List String, List String)
-    decoder =
+    result = Json.decodeString handDecoder msg
+    handDecoder : Json.Decoder (Hand, Hand)
+    handDecoder =
       Json.object2 (,)
-        ("paHand" := Json.list Json.string)
-        ("pbHand" := Json.list Json.string)
+        ("paHand" := Json.list cardDecoder)
+        ("pbHand" := Json.list cardDecoder)
+    cardDecoder : Json.Decoder Card
+    cardDecoder =
+      Json.object3 Card
+        ("name" := Json.string)
+        ("desc" := Json.string)
+        ("imageURL" := Json.string)
+
   in
     result
 
