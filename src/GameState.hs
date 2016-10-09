@@ -40,4 +40,4 @@ cardDagger :: Card
 cardDagger = Card "Dagger" "Hurt for 100" "plain-dagger.svg" "#bf1131"
 
 cardHubris :: Card
-cardHubris = Card "Hubris" "If combo is > 3 then negate everything" "tower-fall.svg" "#1c1f26"
+cardHubris = Card "Hubris" "If combo is > 4 then negate everything" "tower-fall.svg" "#1c1f26"
