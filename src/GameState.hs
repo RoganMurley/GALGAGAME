@@ -7,18 +7,19 @@ import Data.Text (Text)
 
 data Model = Model Hand Hand
 type Hand = [Card]
-data Card = Card CardName CardDesc CardImgURL
+data Card = Card CardName CardDesc CardImgURL CardColor
 type CardName = Text
 type CardDesc = Text
 type CardImgURL = Text
+type CardColor = Text
 
 instance ToJSON Model where
   toJSON (Model paHand pbHand) =
     object ["paHand" .= paHand, "pbHand" .= pbHand]
 
 instance ToJSON Card where
-  toJSON (Card name desc imageURL) =
-    object ["name" .= name, "desc" .= desc, "imageURL" .= imageURL]
+  toJSON (Card name desc imageURL color) =
+    object ["name" .= name, "desc" .= desc, "imageURL" .= imageURL, "cardColor" .= color]
 
 data GameCommand = Draw
 
@@ -27,7 +28,7 @@ handMaxLength = 6
 
 
 update :: GameCommand -> Model -> Model
-update Draw model = drawCard cardDagger model
+update Draw model = drawCard cardHubris model
 
 drawCard :: Card -> Model -> Model
 drawCard card model@(Model paHand pbHand)
@@ -36,4 +37,7 @@ drawCard card model@(Model paHand pbHand)
 
 -- Cards
 cardDagger :: Card
-cardDagger = Card "Dagger" "Hurts a little" "plain-dagger.svg"
+cardDagger = Card "Dagger" "Hurt for 100" "plain-dagger.svg" "#bf1131"
+
+cardHubris :: Card
+cardHubris = Card "Hubris" "If combo is > 3 then negate everything" "tower-fall.svg" "#1c1f26"

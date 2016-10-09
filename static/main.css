@@ -54,6 +54,9 @@
   justify-content: center;
   flex-flow: column;
 
+  width: 245px;
+  height: 339px;
+
   min-width: 245px;
   min-height: 339px;
 
@@ -62,7 +65,6 @@
   border-radius: 12px;
 
   color: #fff;
-  background-color: #fd084a;
 }
 
 .card-title {
@@ -85,6 +87,8 @@
   display: flex;
   justify-content: center;
 
+  text-align: center;
+
   margin: 18px;
   font-size: 21px;
 }
@@ -104,23 +108,23 @@
 }
 
 .other-card {
-  background-image: url("img/cardback.jpg");
+  background-color: #682128;
   cursor: pointer; cursor: hand;
 }
 
 body {
-    background-image: url("/img/bg.png");
-    overflow: hidden;
+  background-color: #3e608c;
+  overflow: hidden;
 
-    font-family: Arial, sans-serif;
+  font-family: Arial, sans-serif;
 }
 
 .no-select {
-    -webkit-user-select: none; /* Chrome/Safari */
-    -moz-user-select: none; /* Firefox */
-    -ms-user-select: none; /* IE10+ */
+  -webkit-user-select: none; /* Chrome/Safari */
+  -moz-user-select: none; /* Firefox */
+  -ms-user-select: none; /* IE10+ */
 
-    /* Rules below not implemented in browsers yet */
-    -o-user-select: none;
-    user-select: none;
+  /* Rules below not implemented in browsers yet */
+  -o-user-select: none;
+  user-select: none;
 }
