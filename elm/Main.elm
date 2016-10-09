@@ -62,6 +62,7 @@ type alias Card =
       name : String
     , desc : String
     , imgURL: String
+    , cardColor : String
   }
 
 type SendMode
@@ -218,10 +219,11 @@ viewHand : Hand -> Html Msg
 viewHand hand =
   let
     viewCard : Card -> Html Msg
-    viewCard { name, desc, imgURL } = div
+    viewCard { name, desc, imgURL, cardColor } = div
       [
           class "card my-card"
         , onClick DrawCard
+        , style [ ("background-color", cardColor) ]
       ]
       [
           div [ class "card-title" ] [ text name ]
@@ -287,10 +289,11 @@ decodeHands msg =
         ("pbHand" := Json.list cardDecoder)
     cardDecoder : Json.Decoder Card
     cardDecoder =
-      Json.object3 Card
+      Json.object4 Card
         ("name" := Json.string)
         ("desc" := Json.string)
         ("imageURL" := Json.string)
+        ("cardColor" := Json.string)
 
   in
     result
