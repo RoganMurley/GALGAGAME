@@ -1,10 +1,11 @@
-module GameState exposing (Card, Hand, Model, init, view)
+module GameState exposing (Card, Hand, Model, init, update, view)
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
+import Json.Decode as Json exposing ((:=))
 
-import Messages exposing (..)
+import Messages exposing (GameMsg(Sync), Msg(DrawCard))
 
 
 -- TYPES.
@@ -29,6 +30,8 @@ type alias Card =
   , imgURL: String
   , cardColor : String
   }
+
+-- INITIAL MODEL.
 
 init : Model
 init =
@@ -79,3 +82,43 @@ viewOtherHand hand =
     viewCard card = div [ class "card other-card" ] []
   in
     div [ class "hand other-hand" ] (List.map viewCard hand)
+
+
+-- UPDATE
+update : GameMsg -> Model -> Model
+update msg model =
+  case msg of
+    Sync str ->
+      syncHands model str
+
+syncHands : Model -> String -> Model
+syncHands model msg =
+  let
+    result : Result String (Hand, Hand)
+    result = decodeHands msg
+  in
+    case result of
+      Ok (paHand, pbHand) ->
+        { model | hand = paHand, otherHand = pbHand }
+      Err err ->
+        Debug.crash ("Sync hand error: " ++ err)
+
+decodeHands : String -> Result String (Hand, Hand)
+decodeHands msg =
+  let
+    result : Result String (Hand, Hand)
+    result = Json.decodeString handDecoder msg
+    handDecoder : Json.Decoder (Hand, Hand)
+    handDecoder =
+      Json.object2 (,)
+        ("handPA" := Json.list cardDecoder)
+        ("handPB" := Json.list cardDecoder)
+    cardDecoder : Json.Decoder Card
+    cardDecoder =
+      Json.object4 Card
+        ("name" := Json.string)
+        ("desc" := Json.string)
+        ("imageURL" := Json.string)
+        ("cardColor" := Json.string)
+  in
+    result
