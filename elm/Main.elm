@@ -27,14 +27,16 @@ main =
 type alias Model =
   {
     chat : Chat.Model
-  , mode : SendMode
-  , game : GameState.Model
+  , room : RoomModel
   , hostname : String
   }
 
-type SendMode
-  = Connecting
+type RoomModel =
+    Connecting
   | Connected
+  {
+    game : GameState.Model
+  }
 
 type alias Flags =
   {
@@ -47,8 +49,7 @@ init { hostname } =
     model : Model
     model = {
       chat = Chat.init
-    , mode = Connecting
-    , game = GameState.init
+    , room = Connecting
     , hostname = hostname
     }
   in
@@ -62,12 +63,12 @@ update msg model =
   let
     chat : Chat.Model
     chat = model.chat
-    buildChat : SendMode -> String -> String
+    buildChat : RoomModel -> String -> String
     buildChat m s =
       case m of
         Connecting ->
           "spectate:" ++ s
-        Connected ->
+        Connected _ ->
           "chat:" ++ s
   in
     case msg of
@@ -75,7 +76,7 @@ update msg model =
         ({ model | chat = { chat | input = input } }, Cmd.none)
 
       Send ->
-        ({ model | chat = { chat | input = "" } }, send model (buildChat model.mode chat.input))
+        ({ model | chat = { chat | input = "" } }, send model (buildChat model.room chat.input))
 
       Receive str ->
         receive model str
@@ -106,7 +107,7 @@ receive model msg =
   else if (startsWith "sync:" msg) then
     (model, message (Sync (dropLeft (length "sync:") msg)))
   else if (startsWith "accept:" msg) then
-    ({ model | mode = Connected }, Cmd.none)
+    ({ model | room = Connected { game = GameState.init } }, Cmd.none)
   else
     (model, message (NewChatMsg ("An error occured in decoding message from server... " ++ msg)))
 
@@ -130,12 +131,12 @@ subscriptions model =
 
 view : Model -> Html Msg
 view model =
-  case model.mode of
-    Connected ->
+  case model.room of
+    Connected { game } ->
       div []
         [
           Chat.view model.chat
-        , GameState.view model.game
+        , GameState.view game
         ]
     otherwise ->
       div []
@@ -168,13 +169,17 @@ decodeHands msg =
 syncHands : Model -> String -> (Model, Cmd Msg)
 syncHands model msg =
   let
-    game : GameState.Model
-    game = model.game
+    room : RoomModel
+    room = model.room
     result : Result String (Hand, Hand)
     result = decodeHands msg
   in
-    case result of
-      Ok (paHand, pbHand) ->
-        ({ model | game = { game | hand = paHand, otherHand = pbHand } }, Cmd.none)
-      Err err ->
-        (model, message (NewChatMsg ("Sync hand error: " ++ err)))
+    case room of
+      Connecting ->
+        Debug.crash "Not connected yet received message, should never happen."
+      Connected { game } ->
+        case result of
+          Ok (paHand, pbHand) ->
+            ({ model | room = Connected { game = { game | hand = paHand, otherHand = pbHand } } }, Cmd.none)
+          Err err ->
+            (model, message (NewChatMsg ("Sync hand error: " ++ err)))
