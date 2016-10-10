@@ -3,14 +3,13 @@ import Html exposing (..)
 import Html.App as App
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import Json.Decode as Json exposing ((:=))
 import Mouse
 import String exposing (dropLeft, length, startsWith)
 import WebSocket
 
 import Chat exposing (addChatMessage, dragAt, dragEnd, dragStart, getPosition)
 import GameState exposing (Card, Hand, Model, view)
-import Messages exposing (Msg(..))
+import Messages exposing (GameMsg(..), Msg(..))
 
 
 main =
@@ -33,6 +32,9 @@ type alias Model =
 
 type RoomModel =
     Connecting
+  {
+    name : String
+  }
   | Connected
   {
     game : GameState.Model
@@ -49,7 +51,7 @@ init { hostname } =
     model : Model
     model = {
       chat = Chat.init
-    , room = Connecting
+    , room = Connecting { name = "" }
     , hostname = hostname
     }
   in
@@ -63,20 +65,23 @@ update msg model =
   let
     chat : Chat.Model
     chat = model.chat
-    buildChat : RoomModel -> String -> String
-    buildChat m s =
-      case m of
-        Connecting ->
-          "spectate:" ++ s
-        Connected _ ->
-          "chat:" ++ s
+    room : RoomModel
+    room = model.room
   in
     case msg of
       Input input ->
-        ({ model | chat = { chat | input = input } }, Cmd.none)
+        case room of
+          Connecting { name } ->
+            ({ model | room = Connecting { name = input } }, Cmd.none)
+          Connected _ ->
+            ({ model | chat = { chat | input = input } }, Cmd.none)
 
       Send ->
-        ({ model | chat = { chat | input = "" } }, send model (buildChat model.room chat.input))
+        case room of
+          Connecting { name } ->
+            (model, send model ("spectate:" ++ name))
+          Connected _ ->
+            ({ model | chat = { chat | input = "" } }, send model ("chat:" ++ chat.input))
 
       Receive str ->
         receive model str
@@ -96,8 +101,12 @@ update msg model =
       NewChatMsg str ->
         ({ model | chat = addChatMessage str chat}, Cmd.none)
 
-      Sync str ->
-        syncHands model str
+      GameStateMsg gameMsg ->
+        case room of
+          Connecting { name } ->
+            Debug.crash "Updating gamestate while disconnected!"
+          Connected { game } ->
+            ({ model | room = Connected { game = GameState.update gameMsg game } }, Cmd.none)
 
 
 receive : Model -> String -> (Model, Cmd Msg)
@@ -105,7 +114,7 @@ receive model msg =
   if (startsWith "chat:" msg) then
     (model, message (NewChatMsg (dropLeft (length "chat:") msg)))
   else if (startsWith "sync:" msg) then
-    (model, message (Sync (dropLeft (length "sync:") msg)))
+    (model, message (GameStateMsg (Sync (dropLeft (length "sync:") msg))))
   else if (startsWith "accept:" msg) then
     ({ model | room = Connected { game = GameState.init } }, Cmd.none)
   else
@@ -141,45 +150,6 @@ view model =
     otherwise ->
       div []
         [
-          input [ onInput Input, value model.chat.input ] []
+          input [ onInput Input ] []
         , button [ onClick Send ] [ text "Spectate" ]
         ]
-
-decodeHands : String -> Result String (Hand, Hand)
-decodeHands msg =
-  let
-    result : Result String (Hand, Hand)
-    result = Json.decodeString handDecoder msg
-    handDecoder : Json.Decoder (Hand, Hand)
-    handDecoder =
-      Json.object2 (,)
-        ("handPA" := Json.list cardDecoder)
-        ("handPB" := Json.list cardDecoder)
-    cardDecoder : Json.Decoder Card
-    cardDecoder =
-      Json.object4 Card
-        ("name" := Json.string)
-        ("desc" := Json.string)
-        ("imageURL" := Json.string)
-        ("cardColor" := Json.string)
-
-  in
-    result
-
-syncHands : Model -> String -> (Model, Cmd Msg)
-syncHands model msg =
-  let
-    room : RoomModel
-    room = model.room
-    result : Result String (Hand, Hand)
-    result = decodeHands msg
-  in
-    case room of
-      Connecting ->
-        Debug.crash "Not connected yet received message, should never happen."
-      Connected { game } ->
-        case result of
-          Ok (paHand, pbHand) ->
-            ({ model | room = Connected { game = { game | hand = paHand, otherHand = pbHand } } }, Cmd.none)
-          Err err ->
-            (model, message (NewChatMsg ("Sync hand error: " ++ err)))

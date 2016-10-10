@@ -8672,8 +8672,8 @@ var _elm_lang$mouse$Mouse$subMap = F2(
 	});
 _elm_lang$core$Native_Platform.effectManagers['Mouse'] = {pkg: 'elm-lang/mouse', init: _elm_lang$mouse$Mouse$init, onEffects: _elm_lang$mouse$Mouse$onEffects, onSelfMsg: _elm_lang$mouse$Mouse$onSelfMsg, tag: 'sub', subMap: _elm_lang$mouse$Mouse$subMap};
 
-var _user$project$Messages$Sync = function (a) {
-	return {ctor: 'Sync', _0: a};
+var _user$project$Messages$GameStateMsg = function (a) {
+	return {ctor: 'GameStateMsg', _0: a};
 };
 var _user$project$Messages$NewChatMsg = function (a) {
 	return {ctor: 'NewChatMsg', _0: a};
@@ -8694,6 +8694,9 @@ var _user$project$Messages$Receive = function (a) {
 var _user$project$Messages$Send = {ctor: 'Send'};
 var _user$project$Messages$Input = function (a) {
 	return {ctor: 'Input', _0: a};
+};
+var _user$project$Messages$Sync = function (a) {
+	return {ctor: 'Sync', _0: a};
 };
 
 var _user$project$GameState$viewOtherHand = function (hand) {
@@ -8808,6 +8811,55 @@ var _user$project$GameState$Model = F3(
 var _user$project$GameState$Card = F4(
 	function (a, b, c, d) {
 		return {name: a, desc: b, imgURL: c, cardColor: d};
+	});
+var _user$project$GameState$decodeHands = function (msg) {
+	var cardDecoder = A5(
+		_elm_lang$core$Json_Decode$object4,
+		_user$project$GameState$Card,
+		A2(_elm_lang$core$Json_Decode_ops[':='], 'name', _elm_lang$core$Json_Decode$string),
+		A2(_elm_lang$core$Json_Decode_ops[':='], 'desc', _elm_lang$core$Json_Decode$string),
+		A2(_elm_lang$core$Json_Decode_ops[':='], 'imageURL', _elm_lang$core$Json_Decode$string),
+		A2(_elm_lang$core$Json_Decode_ops[':='], 'cardColor', _elm_lang$core$Json_Decode$string));
+	var handDecoder = A3(
+		_elm_lang$core$Json_Decode$object2,
+		F2(
+			function (v0, v1) {
+				return {ctor: '_Tuple2', _0: v0, _1: v1};
+			}),
+		A2(
+			_elm_lang$core$Json_Decode_ops[':='],
+			'handPA',
+			_elm_lang$core$Json_Decode$list(cardDecoder)),
+		A2(
+			_elm_lang$core$Json_Decode_ops[':='],
+			'handPB',
+			_elm_lang$core$Json_Decode$list(cardDecoder)));
+	var result = A2(_elm_lang$core$Json_Decode$decodeString, handDecoder, msg);
+	return result;
+};
+var _user$project$GameState$syncHands = F2(
+	function (model, msg) {
+		var result = _user$project$GameState$decodeHands(msg);
+		var _p2 = result;
+		if (_p2.ctor === 'Ok') {
+			return _elm_lang$core$Native_Utils.update(
+				model,
+				{hand: _p2._0._0, otherHand: _p2._0._1});
+		} else {
+			return _elm_lang$core$Native_Utils.crashCase(
+				'GameState',
+				{
+					start: {line: 100, column: 5},
+					end: {line: 104, column: 49}
+				},
+				_p2)(
+				A2(_elm_lang$core$Basics_ops['++'], 'Sync hand error: ', _p2._0));
+		}
+	});
+var _user$project$GameState$update = F2(
+	function (msg, model) {
+		var _p4 = msg;
+		return A2(_user$project$GameState$syncHands, model, _p4._0);
 	});
 
 var Elm = {};

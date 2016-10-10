@@ -1,4 +1,4 @@
-module Messages exposing (Msg(..))
+module Messages exposing (GameMsg(..), Msg(..))
 
 import Mouse exposing (Position)
 
@@ -12,4 +12,7 @@ type Msg
   | DragEnd Position
   | DrawCard
   | NewChatMsg String
-  | Sync String
+  | GameStateMsg GameMsg
+
+type GameMsg
+  = Sync String
