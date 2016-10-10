@@ -152,8 +152,8 @@ decodeHands msg =
     handDecoder : Json.Decoder (Hand, Hand)
     handDecoder =
       Json.object2 (,)
-        ("paHand" := Json.list cardDecoder)
-        ("pbHand" := Json.list cardDecoder)
+        ("handPA" := Json.list cardDecoder)
+        ("handPB" := Json.list cardDecoder)
     cardDecoder : Json.Decoder Card
     cardDecoder =
       Json.object4 Card
