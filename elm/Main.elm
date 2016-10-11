@@ -66,60 +66,66 @@ update msg model =
     room : RoomModel
     room = model.room
   in
-    case msg of
-      Input input ->
-        case room of
-          Connecting { name } ->
+    case room of
+
+      Connecting { name } ->
+        case msg of
+
+          Input input ->
             ({ model | room = Connecting { name = input } }, Cmd.none)
-          Connected { chat, game } ->
+
+          Send ->
+            (model, send model ("spectate:" ++ name))
+
+          Receive str ->
+            receive model str
+
+          DragStart pos ->
+            Debug.crash "Dragging chatbox while not connected :/ WTF"
+
+          DragAt pos ->
+            (model, Cmd.none)
+
+          DragEnd pos ->
+            (model, Cmd.none)
+
+          DrawCard ->
+            Debug.crash "Drawing a card while not connected"
+
+          NewChatMsg str ->
+            Debug.crash "New chat message while not connected :/ WTF"
+
+          GameStateMsg gameMsg ->
+            Debug.crash "Updating gamestate while disconnected!"
+
+      Connected { chat, game } ->
+        case msg of
+
+          Input input ->
             ({ model | room = Connected { chat = { chat | input = input }, game = game }}, Cmd.none)
 
-      Send ->
-        case room of
-          Connecting { name } ->
-            (model, send model ("spectate:" ++ name))
-          Connected { chat, game } ->
+          Send ->
             ({ model | room = Connected { chat = { chat | input = "" }, game = game } }, send model ("chat:" ++ chat.input))
 
-      Receive str ->
-        receive model str
+          Receive str ->
+            receive model str
 
-      DragStart pos ->
-        case room of
-          Connecting _ ->
-            Debug.crash "Dragging chatbox while not connected :/ WTF"
-          Connected { chat, game } ->
+          DragStart pos ->
             ({ model | room = Connected { chat = dragStart chat pos, game = game } }, Cmd.none)
 
-      DragAt pos ->
-        case room of
-          Connecting m ->
-            ({ model | room = Connecting m }, Cmd.none)
-          Connected { chat, game } ->
+          DragAt pos ->
             ({ model | room = Connected { chat = dragAt chat pos, game = game } }, Cmd.none)
 
-      DragEnd _ ->
-        case room of
-          Connecting m ->
-            ({ model | room = Connecting m }, Cmd.none)
-          Connected { chat, game } ->
+          DragEnd pos ->
             ({ model | room = Connected { chat = dragEnd chat, game = game } }, Cmd.none)
 
-      DrawCard ->
-        (model, send model "draw:")
+          DrawCard ->
+            (model, send model "draw:")
 
-      NewChatMsg str ->
-        case room of
-          Connecting _ ->
-            Debug.crash "New chat message while not connected :/ WTF"
-          Connected { chat, game } ->
+          NewChatMsg str ->
             ({ model | room = Connected { chat = addChatMessage str chat, game = game } }, Cmd.none)
 
-      GameStateMsg gameMsg ->
-        case room of
-          Connecting { name } ->
-            Debug.crash "Updating gamestate while disconnected!"
-          Connected { chat, game } ->
+          GameStateMsg gameMsg ->
             ({ model | room = Connected { chat = chat, game = GameState.update gameMsg game } }, Cmd.none)
 
 
