@@ -160,7 +160,7 @@ application state pending = do
 -- Check that the first Command has the right format:
 
        _   | not (prefix `T.isPrefixOf` msg) ->
-               WS.sendTextData conn (process (ErrorCommand ("Connection protocol failure" :: Text)))
+               WS.sendTextData conn (process (ErrorCommand ("Connection protocol failure" <> msg :: Text)))
 
 -- Check the validity of the username:
 
