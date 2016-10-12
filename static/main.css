@@ -121,6 +121,12 @@
   height: 100%;
 }
 
+.error {
+  display: block;
+  color: red;
+  font-weight: 600;
+}
+
 html {
   height: 100%;
 }
