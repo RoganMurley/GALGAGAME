@@ -5,7 +5,7 @@ import Mouse exposing (Position)
 
 type Msg
   = Input String
-  | Send
+  | Send String
   | Receive String
   | DragStart Position
   | DragAt Position

@@ -74,14 +74,11 @@ update msg model =
           Input input ->
             ({ model | room = Connecting { name = input } }, Cmd.none)
 
-          Send ->
-            (model, send model ("spectate:" ++ name))
+          Send str ->
+            (model, send model str)
 
           Receive str ->
             receive model str
-
-          DragStart pos ->
-            Debug.crash "Dragging chatbox while not connected :/ WTF"
 
           DragAt pos ->
             (model, Cmd.none)
@@ -89,14 +86,8 @@ update msg model =
           DragEnd pos ->
             (model, Cmd.none)
 
-          DrawCard ->
-            Debug.crash "Drawing a card while not connected"
-
-          NewChatMsg str ->
-            Debug.crash "New chat message while not connected :/ WTF"
-
-          GameStateMsg gameMsg ->
-            Debug.crash "Updating gamestate while disconnected!"
+          otherwise ->
+            Debug.crash "Unexpected action while not connected ;_;"
 
       Connected { chat, game } ->
         case msg of
@@ -104,8 +95,8 @@ update msg model =
           Input input ->
             ({ model | room = Connected { chat = { chat | input = input }, game = game }}, Cmd.none)
 
-          Send ->
-            ({ model | room = Connected { chat = { chat | input = "" }, game = game } }, send model ("chat:" ++ chat.input))
+          Send str ->
+            ({ model | room = Connected { chat = { chat | input = "" }, game = game } }, send model str)
 
           Receive str ->
             receive model str
@@ -167,9 +158,10 @@ view model =
           Chat.view chat
         , GameState.view game
         ]
-    otherwise ->
+    Connecting { name } ->
       div []
         [
           input [ onInput Input ] []
-        , button [ onClick Send ] [ text "Spectate" ]
+        , button [ onClick (Send ("play:" ++ name)) ] [ text "Play" ]
+        , button [ onClick (Send ("spectate:" ++ name)) ] [ text "Spec" ]
         ]
