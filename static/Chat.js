@@ -8691,7 +8691,9 @@ var _user$project$Messages$DragStart = function (a) {
 var _user$project$Messages$Receive = function (a) {
 	return {ctor: 'Receive', _0: a};
 };
-var _user$project$Messages$Send = {ctor: 'Send'};
+var _user$project$Messages$Send = function (a) {
+	return {ctor: 'Send', _0: a};
+};
 var _user$project$Messages$Input = function (a) {
 	return {ctor: 'Input', _0: a};
 };
@@ -8798,7 +8800,9 @@ var _user$project$Chat$view = function (model) {
 						_elm_lang$html$Html$button,
 						_elm_lang$core$Native_List.fromArray(
 							[
-								_elm_lang$html$Html_Events$onClick(_user$project$Messages$Send)
+								_elm_lang$html$Html_Events$onClick(
+								_user$project$Messages$Send(
+									A2(_elm_lang$core$Basics_ops['++'], 'chat:', model.input)))
 							]),
 						_elm_lang$core$Native_List.fromArray(
 							[

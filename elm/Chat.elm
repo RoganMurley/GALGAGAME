@@ -80,7 +80,7 @@ view model =
         div [ class "chat-input" ]
           [
             input [ onInput Input, value model.input ] []
-          , button [ onClick Send ] [ text "Send" ]
+          , button [ onClick (Send ("chat:" ++ model.input)) ] [ text "Send" ]
           ]
       , viewMessages model
       ]

@@ -8691,7 +8691,9 @@ var _user$project$Messages$DragStart = function (a) {
 var _user$project$Messages$Receive = function (a) {
 	return {ctor: 'Receive', _0: a};
 };
-var _user$project$Messages$Send = {ctor: 'Send'};
+var _user$project$Messages$Send = function (a) {
+	return {ctor: 'Send', _0: a};
+};
 var _user$project$Messages$Input = function (a) {
 	return {ctor: 'Input', _0: a};
 };
