@@ -1,3 +1,4 @@
+import Char exposing (isLower)
 import Cmd.Extra exposing (message)
 import Html exposing (..)
 import Html.App as App
@@ -33,6 +34,8 @@ type RoomModel =
     Connecting
   {
     name : String
+  , error : String
+  , valid : Bool
   }
   | Connected
   {
@@ -51,7 +54,7 @@ init { hostname } =
     model : Model
     model =
     {
-      room = Connecting { name = "" }
+      room = Connecting { name = "", error = "", valid = False }
     , hostname = hostname
     }
   in
@@ -72,7 +75,7 @@ update msg model =
         case msg of
 
           Input input ->
-            ({ model | room = Connecting { name = input } }, Cmd.none)
+            ({ model | room = Connecting { name = input, error = snd (validateName name), valid = fst (validateName name) } }, Cmd.none)
 
           Send str ->
             (model, send model str)
@@ -85,6 +88,9 @@ update msg model =
 
           DragEnd pos ->
             (model, Cmd.none)
+
+          NewChatMsg str ->
+            ({ model | room = Connecting { name = "", error = str, valid = True } }, Cmd.none)
 
           otherwise ->
             Debug.crash "Unexpected action while not connected ;_;"
@@ -136,6 +142,21 @@ send : Model -> String -> Cmd Msg
 send model = WebSocket.send ("ws://" ++ model.hostname ++ ":9160")
 
 
+-- VALIDATION
+validateName : String -> (Bool, String)
+validateName name =
+  if length name > 12 then
+    (False, "Userame too long!")
+  else if String.isEmpty name then
+    (False, "")
+  else if String.contains " " name then
+    (False, "Username cannot contain whitespace!")
+  -- else if not (String.any Char.isLower name) then
+  --   (False, "Username should be alphanumeric!")
+  else
+    (True, "")
+
+
 -- SUBSCRIPTIONS
 
 subscriptions : Model -> Sub Msg
@@ -158,10 +179,14 @@ view model =
           Chat.view chat
         , GameState.view game
         ]
-    Connecting { name } ->
+    Connecting { name, error, valid } ->
       div [ class "connecting-box" ]
         [
-          input [ onInput Input ] []
-        , button [ onClick (Send ("play:" ++ name)) ] [ text "Play" ]
-        , button [ onClick (Send ("spectate:" ++ name)) ] [ text "Spec" ]
+          div []
+          [
+            input [ onInput Input, placeholder "Username" ] []
+          , button [ onClick (Send ("play:" ++ name)), disabled (not valid) ] [ text "Play" ]
+          , button [ onClick (Send ("spectate:" ++ name)), disabled (not valid) ] [ text "Spec" ]
+          ]
+        , div [ class "error" ] [ text error ]
         ]
