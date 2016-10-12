@@ -30,7 +30,7 @@ handMaxLength :: Int
 handMaxLength = 6
 
 initModel :: Model
-initModel = Model TurnPA [ cardDagger ] [ cardDagger ] (repeat cardHubris) (repeat cardHubris)
+initModel = Model TurnPA [ cardDagger ] [ cardDagger ] (cycle [cardHubris, cardFireball, cardDagger]) (cycle [cardHubris, cardDagger])
 
 
 -- UPDATE
@@ -70,7 +70,10 @@ setDeck newDeck (Model TurnPB handPA handPB deckPA deckPB) = Model TurnPB handPA
 -- CARDS
 
 cardDagger :: Card
-cardDagger = Card "Dagger" "Hurt for 100" "plain-dagger.svg" "#bf1131"
+cardDagger = Card "Blade's Edge" "Hurt for 100" "plain-dagger.svg" "#bf1131"
 
 cardHubris :: Card
 cardHubris = Card "Hubris" "If combo is > 4 then negate everything" "tower-fall.svg" "#1c1f26"
+
+cardFireball :: Card
+cardFireball = Card "Fireball" "Hurt for 40 per combo" "fire-ray.svg" "#bf1131"
