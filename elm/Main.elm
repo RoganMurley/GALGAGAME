@@ -159,7 +159,7 @@ view model =
         , GameState.view game
         ]
     Connecting { name } ->
-      div []
+      div [ class "connecting-box" ]
         [
           input [ onInput Input ] []
         , button [ onClick (Send ("play:" ++ name)) ] [ text "Play" ]
