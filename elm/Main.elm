@@ -145,14 +145,10 @@ send model = WebSocket.send ("ws://" ++ model.hostname ++ ":9160")
 -- VALIDATION
 validateName : String -> (Bool, String)
 validateName name =
-  if length name > 12 then
+  if length name > 20 then
     (False, "Userame too long!")
   else if String.isEmpty name then
     (False, "")
-  else if String.contains " " name then
-    (False, "Username cannot contain whitespace!")
-  -- else if not (String.any Char.isLower name) then
-  --   (False, "Username should be alphanumeric!")
   else
     (True, "")
 
