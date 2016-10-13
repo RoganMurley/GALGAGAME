@@ -91,14 +91,24 @@ addSpecClient name client state = insert name newRoom state
   newRoom = addSpec client room :: Room
 
 addPlayerClient :: RoomName -> Client -> ServerState -> (ServerState, Bool)
-addPlayerClient name client state = (insert name newRoom state, True)
+addPlayerClient name client state = (insert name newRoom state, not (roomFull room))
   where
   room = getRoom name state :: Room
-  newRoom = addSpec client room :: Room
+  newRoom = addPlayer client room :: Room
 
 
 addSpec :: Client -> Room -> Room
 addSpec client (Room pa pb specs count) = Room pa pb (client:specs) count
+
+addPlayer :: Client -> Room -> Room
+addPlayer client (Room Nothing pb specs count) = Room (Just client) pb specs count
+addPlayer client (Room pa Nothing specs count) = Room pa (Just client) specs count
+addPlayer client (Room (Just a) (Just b) specs count) = Room (Just a) (Just b) specs count
+
+
+roomFull :: Room -> Bool
+roomFull (Room (Just _) (Just _) _ _) = True
+roomFull _ = False
 
 
 removeClient :: RoomName -> Client -> ServerState -> ServerState
@@ -130,58 +140,31 @@ broadcast msg name state = do
   clients = getRoomClients room :: [Client]
 
 
--- The main function first creates a new state for the server, then spawns the
--- actual server. For this purpose, we use the simple server provided by
--- `WS.runServer`.
-
 main :: IO ()
 main = do
    state <- newMVar newServerState
    WS.runServer "0.0.0.0" 9160 $ application state
 
--- Our main application has the type:
 
 application :: MVar ServerState -> WS.ServerApp
-
--- Note that `WS.ServerApp` is nothing but a type synonym for
--- `WS.PendingConnection -> IO ()`.
-
--- Our application starts by accepting the connection. In a more realistic
--- application, you probably want to check the path and headers provided by the
--- pending request.
-
--- We also fork a pinging thread in the background. This will ensure the connection
--- stays alive on some browsers.
-
 application state pending = do
    conn <- WS.acceptRequest pending
    WS.forkPingThread conn 30
-
--- When a client is succesfully connected, we read the first Command. This should
--- be in the format of "Hi! I am Jasper", where Jasper is the requested username.
 
    msg <- WS.receiveData conn
    rooms <- readMVar state
    case msg of
 
--- Check that the first Command has the right format:
-
        _   | not valid ->
                WS.sendTextData conn (process (ErrorCommand ("Connection protocol failure" <> msg :: Text)))
 
--- Check the validity of the username:
-
            | any ($ fst client)
-               [T.null] ->
+               [ T.null ] ->
                    WS.sendTextData conn (process (ErrorCommand ("Name must be nonempty" :: Text)))
 
--- Check that the given username is not already taken:
 
            | clientExists "default" client rooms ->
                WS.sendTextData conn (process (ErrorCommand ("User already exists" :: Text)))
-
--- All is right! We're going to allow the client, but for safety reasons we *first*
--- setup a `disconnect` function that will be run when the connection is closed.
 
            | prefix == "play:" -> flip finally disconnect $ do
               modifyMVar_ state $ \s -> do
@@ -276,8 +259,8 @@ process (SpectateCommand name)     = "chat:" <> name <> " started spectating"
 process (PlayCommand name)         = "chat:" <> name <> " started playing"
 process (LeaveCommand name)        = "chat:" <> name <> " disconnected"
 process (ChatCommand name message) = "chat:" <> name <> ": " <> message
-process DrawCommand                = "chat:" <> "Drew a card"
 process (ErrorCommand err)         = "chat:" <> err
+process _                          = "chat:" <> "Command cannot be processed to text :/"
 
 
 parseMsg :: Username -> Text -> Command
