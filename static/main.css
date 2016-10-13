@@ -70,6 +70,18 @@
   padding-bottom: 2px;
   overflow-wrap: break-word; }
 
+.connecting-box {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100%; }
+
+.error {
+  display: block;
+  color: red;
+  font-weight: 600; }
+
 .hand {
   position: absolute;
   width: 100%;
