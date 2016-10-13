@@ -1,0 +1,23 @@
+@import "card";
+@import "chat";
+@import "hand";
+
+
+html {
+  height: 100%;
+}
+
+body {
+  background-color: #3e608c;
+  overflow: hidden;
+
+  height: 100%;
+
+  font-family: Arial, sans-serif;
+}
+
+.no-select {
+  -webkit-user-select: none; /* Chrome/Safari */
+  -moz-user-select: none; /* Firefox */
+  -ms-user-select: none; /* IE10+ */
+}
