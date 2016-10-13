@@ -1,6 +1,12 @@
+'use strict';
+
 var gulp = require('gulp');
 var elm  = require('gulp-elm');
 var plumber = require('gulp-plumber');
+var sass = require('gulp-sass');
+
+
+// ELM
 
 gulp.task('init', elm.init);
 
@@ -11,8 +17,22 @@ gulp.task('multi', ['init'], function(){
     .pipe(gulp.dest('static/'));
 });
 
-gulp.task('watch', function(){
-  return gulp.watch('elm/*.elm', ['multi']);
+
+// SASS
+
+gulp.task('sass', function () {
+  return gulp.src('./sass/**/*.scss')
+    .pipe(plumber())
+    .pipe(sass().on('error', sass.logError))
+    .pipe(gulp.dest('./static'));
 });
 
-gulp.task('default', ['multi']);
+
+// DEFAULT
+
+gulp.task('default', ['multi', 'sass']);
+
+gulp.task('watch', function(){
+  gulp.watch('elm/*.elm', ['multi']);
+  gulp.watch('./sass/**/*.scss', ['sass']);
+});

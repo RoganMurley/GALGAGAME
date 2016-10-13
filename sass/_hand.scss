@@ -1,0 +1,17 @@
+.hand {
+  position: absolute;
+  width: 100%;
+
+  display: flex;
+  justify-content: center;
+}
+
+.my-hand {
+  bottom: 0;
+}
+
+.other-hand {
+  top: 0;
+
+  margin-top: -276px;
+}
