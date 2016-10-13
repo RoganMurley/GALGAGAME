@@ -34,6 +34,7 @@ data Room = Room Player Player Spectators Model
 
 data Command =
     ChatCommand Username Text
+  | PlayCommand Username
   | SpectateCommand Username
   | LeaveCommand Username
   | DrawCommand
@@ -159,7 +160,7 @@ application state pending = do
 
 -- Check that the first Command has the right format:
 
-       _   | not (prefix `T.isPrefixOf` msg) ->
+       _   | not valid ->
                WS.sendTextData conn (process (ErrorCommand ("Connection protocol failure" <> msg :: Text)))
 
 -- Check the validity of the username:
@@ -178,29 +179,45 @@ application state pending = do
 -- All is right! We're going to allow the client, but for safety reasons we *first*
 -- setup a `disconnect` function that will be run when the connection is closed.
 
-           | otherwise -> flip finally disconnect $ do
-
--- We send a "Welcome!", according to our own little protocol. We add the client to
--- the list and broadcast the fact that he has joined. Then, we give control to the
--- 'gameloop' function.
-
+           | prefix == "play:" -> flip finally disconnect $ do
               modifyMVar_ state $ \s -> do
                   let s' = addClient "default" client s
                   WS.sendTextData conn ("accept:" :: Text)
                   WS.sendTextData conn $
                       "chat:Welcome! " <> userList s
+                  broadcast (process (PlayCommand (fst client))) "default" s'
+                  syncClients s'
+                  return s'
+              playLoop conn state client
+
+           | prefix == "spectate:" -> flip finally disconnect $ do
+              modifyMVar_ state $ \s -> do
+                  let s' = addClient "default" client s
+                  WS.sendTextData conn ("accept:" :: Text)
+                  WS.sendTextData conn $
+                       "chat:Welcome! " <> userList s
                   broadcast (process (SpectateCommand (fst client))) "default" s'
                   syncClients s'
                   return s'
-              gameLoop conn state client
+              specLoop conn state client
+
+           | otherwise -> WS.sendTextData conn (process (ErrorCommand ("Something went terribly wrong in connection negotiation :(" :: Text)))
+
          where
-          prefix     = "spectate:"
-          client     = (T.drop (T.length prefix) msg, conn)
+          (valid, prefix) = validConnectMsg msg
+          client = (T.drop (T.length prefix) msg, conn)
           disconnect = do
               -- Remove client and return new state
               s <- modifyMVar state $ \s ->
                   let s' = removeClient "default" client s in return (s', s')
               broadcast (process (LeaveCommand (fst client))) "default" s
+
+validConnectMsg :: Text -> (Bool, Text)
+validConnectMsg msg
+  | T.isPrefixOf "spectate:" msg = (True, "spectate:")
+  | T.isPrefixOf "play:" msg = (True, "play:")
+  | otherwise = (False, "")
+
 
 userList :: ServerState -> Text
 userList s
@@ -210,21 +227,32 @@ userList s
   users :: Text
   users = T.intercalate ", " (map fst  (getRoomClients (getRoom "default" s)))
 
-gameLoop :: WS.Connection -> MVar ServerState -> Client -> IO ()
-gameLoop conn state (user, _) = forever $ do
+playLoop :: WS.Connection -> MVar ServerState -> Client -> IO ()
+playLoop conn state (user, _) = forever $ do
   msg <- WS.receiveData conn
-  act (parsedInput msg) state
+  actPlay (parsedInput msg) state
   where
   parsedInput :: Text -> Command
   parsedInput msg = parseMsg user msg
 
-act :: Command -> MVar ServerState -> IO ()
-act cmd@DrawCommand state = do
+specLoop :: WS.Connection -> MVar ServerState -> Client -> IO ()
+specLoop conn state (user, _) = forever $ do
+  msg <- WS.receiveData conn
+  actSpec (parsedInput msg) state
+  where
+  parsedInput :: Text -> Command
+  parsedInput msg = parseMsg user msg
+
+actPlay :: Command -> MVar ServerState -> IO ()
+actPlay cmd@DrawCommand state = do
     s <- modifyMVar state $ \x -> do
       let s' = stateUpdate Draw "default" x
       return (s', s')
     syncClients s
-act cmd state = do
+actPlay cmd state = actSpec cmd state
+
+actSpec :: Command -> MVar ServerState -> IO ()
+actSpec cmd state = do
     s <- readMVar state
     broadcast (process cmd) "default" s
 
@@ -238,8 +266,10 @@ syncClients state = broadcast syncMsg "default" state
 
 process :: Command -> Text
 process (SpectateCommand name)     = "chat:" <> name <> " started spectating"
+process (PlayCommand name)         = "chat:" <> name <> " started playing"
 process (LeaveCommand name)        = "chat:" <> name <> " disconnected"
 process (ChatCommand name message) = "chat:" <> name <> ": " <> message
+process DrawCommand                = "chat:" <> "Drew a card"
 process (ErrorCommand err)         = "chat:" <> err
 
 
