@@ -166,10 +166,8 @@ application state pending = do
 -- Check the validity of the username:
 
            | any ($ fst client)
-               [T.null, T.any isPunctuation, T.any isSpace] ->
-                   WS.sendTextData conn (process (ErrorCommand ("Name cannot " <>
-                       "contain punctuation or whitespace, and " <>
-                       "cannot be empty" :: Text)))
+               [T.null] ->
+                   WS.sendTextData conn (process (ErrorCommand ("Name must be nonempty" :: Text)))
 
 -- Check that the given username is not already taken:
 
