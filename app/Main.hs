@@ -84,8 +84,14 @@ stateUpdate cmd name state = insert name newRoom state
 -- Add a client (this does not check if the client already exists, you should do
 -- this yourself using `clientExists`):
 
-addClient :: RoomName -> Client -> ServerState -> ServerState
-addClient name client state = insert name newRoom state
+addSpecClient :: RoomName -> Client -> ServerState -> ServerState
+addSpecClient name client state = insert name newRoom state
+  where
+  room = getRoom name state :: Room
+  newRoom = addSpec client room :: Room
+
+addPlayerClient :: RoomName -> Client -> ServerState -> (ServerState, Bool)
+addPlayerClient name client state = (insert name newRoom state, True)
   where
   room = getRoom name state :: Room
   newRoom = addSpec client room :: Room
@@ -179,18 +185,21 @@ application state pending = do
 
            | prefix == "play:" -> flip finally disconnect $ do
               modifyMVar_ state $ \s -> do
-                  let s' = addClient "default" client s
-                  WS.sendTextData conn ("accept:" :: Text)
-                  WS.sendTextData conn $
-                      "chat:Welcome! " <> userList s
-                  broadcast (process (PlayCommand (fst client))) "default" s'
-                  syncClients s'
+                  let (s', accepted) = addPlayerClient "default" client s
+                  if accepted then
+                    do
+                      WS.sendTextData conn ("accept:" :: Text)
+                      WS.sendTextData conn ("chat:Welcome! " <> userList s)
+                      broadcast (process (PlayCommand (fst client))) "default" s'
+                      syncClients s'
+                    else
+                      WS.sendTextData conn (process (ErrorCommand ("Room is full :(" :: Text)))
                   return s'
               playLoop conn state client
 
            | prefix == "spectate:" -> flip finally disconnect $ do
               modifyMVar_ state $ \s -> do
-                  let s' = addClient "default" client s
+                  let s' = addSpecClient "default" client s
                   WS.sendTextData conn ("accept:" :: Text)
                   WS.sendTextData conn $
                        "chat:Welcome! " <> userList s
