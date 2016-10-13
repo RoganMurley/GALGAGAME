@@ -117,7 +117,7 @@ update msg model =
             ({ model | room = Connected { chat = dragEnd chat, game = game } }, Cmd.none)
 
           DrawCard ->
-            (model, send model "draw:")
+            (model, playerOnly model (send model "draw:"))
 
           NewChatMsg str ->
             ({ model | room = Connected { chat = addChatMessage str chat, game = game } }, Cmd.none)
@@ -141,6 +141,19 @@ receive model msg =
 send : Model -> String -> Cmd Msg
 send model = WebSocket.send ("ws://" ++ model.hostname ++ ":9160")
 
+
+-- CHANGE THIS!!! DOESN'T WORK YET
+playerOnly : Model -> Cmd Msg -> Cmd Msg
+playerOnly model cmdMsg =
+  let
+    room : RoomModel
+    room = model.room
+  in
+    case room of
+      Connecting _ ->
+        cmdMsg
+      Connected _ ->
+        cmdMsg
 
 -- VALIDATION
 validateName : String -> (Bool, String)
