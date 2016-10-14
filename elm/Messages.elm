@@ -13,6 +13,8 @@ type Msg
   | DrawCard
   | NewChatMsg String
   | GameStateMsg GameMsg
+  | Spectate
+  | Play
 
 type GameMsg
   = Sync String
