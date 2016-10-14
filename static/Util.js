@@ -2729,6 +2729,15 @@ var _elm_lang$core$Platform_Sub$Sub = {ctor: 'Sub'};
 var _elm_lang$core$Debug$crash = _elm_lang$core$Native_Debug.crash;
 var _elm_lang$core$Debug$log = _elm_lang$core$Native_Debug.log;
 
+var _user$project$Util$applyFst = F2(
+	function (f, _p0) {
+		var _p1 = _p0;
+		return {
+			ctor: '_Tuple2',
+			_0: f(_p1._0),
+			_1: _p1._1
+		};
+	});
 var _user$project$Util$px = function (number) {
 	return A2(
 		_elm_lang$core$Basics_ops['++'],
