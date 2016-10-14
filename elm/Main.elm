@@ -75,26 +75,22 @@ init { hostname } =
 
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg ({ hostname, room } as model) =
-  let
-    setRoom : Model -> RoomModel -> Model
-    setRoom m r = { m | room = r }
-  in
-    case room of
+  case room of
 
-      Connecting connectingModel ->
-        case msg of
+    Connecting connectingModel ->
+      case msg of
 
-          Play ->
-            ({ model | room = Connected { chat = Chat.init, game = GameState.init, mode = Spectating } }, Cmd.none)
+        Play ->
+          ({ model | room = Connected { chat = Chat.init, game = GameState.init, mode = Playing } }, Cmd.none)
 
-          Spectate ->
-            ({ model | room = Connected { chat = Chat.init, game = GameState.init, mode = Playing } }, Cmd.none)
+        Spectate ->
+          ({ model | room = Connected { chat = Chat.init, game = GameState.init, mode = Spectating } }, Cmd.none)
 
-          otherwise ->
-            applyFst (setRoom << Connecting) (connectingUpdate hostname msg connectingModel)
+        otherwise ->
+          applyFst (\c -> { model | room = Connecting c }) (connectingUpdate hostname msg connectingModel)
 
-      Connected connectedModel ->
-        applyFst (setRoom << Connected) (connectedUpdate hostname msg connectedModel)
+    Connected connectedModel ->
+      applyFst (\c -> { model | room = Connected c }) (connectedUpdate hostname msg connectedModel)
 
 
 connectingUpdate : String -> Msg -> ConnectingModel -> (ConnectingModel, Cmd Msg)
@@ -116,7 +112,7 @@ connectingUpdate hostname msg ({ name, error, valid } as model) =
     DragEnd pos ->
       (model, Cmd.none)
 
-    NewChatMsg str ->
+    ConnectError str ->
       ({ model | name = "", error = str, valid = True }, Cmd.none)
 
     otherwise ->
@@ -164,7 +160,7 @@ connectedReceive model msg =
   else if (startsWith "sync:" msg) then
     (model, message (GameStateMsg (Sync (dropLeft (length "sync:") msg))))
   else
-    Debug.crash "Error decoding message from server"
+    Debug.crash ("Error decoding message from server: " ++ msg)
 
 connectingReceive : ConnectingModel -> String -> (ConnectingModel, Cmd Msg)
 connectingReceive model msg =
@@ -172,8 +168,11 @@ connectingReceive model msg =
     (model, message Play)
   else if (startsWith "acceptSpec:" msg) then
     (model, message Spectate)
+  else if (startsWith "error:" msg) then
+    (model, message (ConnectError (dropLeft (length "error:") msg)))
   else
-    Debug.crash "Error decoding message from server"
+    -- Defer other messages.
+    (model, message (Receive msg))
 
 
 send : String -> String -> Cmd Msg
