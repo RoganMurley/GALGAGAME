@@ -171,7 +171,7 @@ application state pending = do
                   let (s', accepted) = addPlayerClient "default" client s
                   if accepted then
                     do
-                      WS.sendTextData conn ("accept:" :: Text)
+                      WS.sendTextData conn ("acceptPlay:" :: Text)
                       WS.sendTextData conn ("chat:Welcome! " <> userList s)
                       broadcast (process (PlayCommand (fst client))) "default" s'
                       syncClients s'
@@ -183,7 +183,7 @@ application state pending = do
            | prefix == "spectate:" -> flip finally disconnect $ do
               modifyMVar_ state $ \s -> do
                   let s' = addSpecClient "default" client s
-                  WS.sendTextData conn ("accept:" :: Text)
+                  WS.sendTextData conn ("acceptSpec:" :: Text)
                   WS.sendTextData conn $
                        "chat:Welcome! " <> userList s
                   broadcast (process (SpectateCommand (fst client))) "default" s'

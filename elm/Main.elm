@@ -30,23 +30,32 @@ type alias Model =
   , hostname : String
   }
 
-type RoomModel =
-    Connecting
+type RoomModel
+  = Connecting ConnectingModel
+  | Connected ConnectedModel
+
+type alias ConnectingModel =
   {
     name : String
   , error : String
   , valid : Bool
   }
-  | Connected
+
+type alias ConnectedModel =
   {
     chat : Chat.Model
   , game : GameState.Model
+  , mode : Mode
   }
 
 type alias Flags =
   {
     hostname : String
   }
+
+type Mode
+  = Spectating
+  | Playing
 
 init : Flags -> (Model, Cmd Msg)
 init { hostname } =
@@ -95,35 +104,35 @@ update msg model =
           otherwise ->
             Debug.crash "Unexpected action while not connected ;_;"
 
-      Connected { chat, game } ->
+      Connected { chat, game, mode } ->
         case msg of
 
           Input input ->
-            ({ model | room = Connected { chat = { chat | input = input }, game = game }}, Cmd.none)
+            ({ model | room = Connected { chat = { chat | input = input }, game = game, mode = mode }}, Cmd.none)
 
           Send str ->
-            ({ model | room = Connected { chat = { chat | input = "" }, game = game } }, send model str)
+            ({ model | room = Connected { chat = { chat | input = "" }, game = game, mode = mode } }, send model str)
 
           Receive str ->
             receive model str
 
           DragStart pos ->
-            ({ model | room = Connected { chat = dragStart chat pos, game = game } }, Cmd.none)
+            ({ model | room = Connected { chat = dragStart chat pos, game = game, mode = mode } }, Cmd.none)
 
           DragAt pos ->
-            ({ model | room = Connected { chat = dragAt chat pos, game = game } }, Cmd.none)
+            ({ model | room = Connected { chat = dragAt chat pos, game = game, mode = mode } }, Cmd.none)
 
           DragEnd pos ->
-            ({ model | room = Connected { chat = dragEnd chat, game = game } }, Cmd.none)
+            ({ model | room = Connected { chat = dragEnd chat, game = game, mode = mode } }, Cmd.none)
 
           DrawCard ->
-            (model, playerOnly model (send model "draw:"))
+            (model, playerOnly mode (send model "draw:"))
 
           NewChatMsg str ->
-            ({ model | room = Connected { chat = addChatMessage str chat, game = game } }, Cmd.none)
+            ({ model | room = Connected { chat = addChatMessage str chat, game = game, mode = mode } }, Cmd.none)
 
           GameStateMsg gameMsg ->
-            ({ model | room = Connected { chat = chat, game = GameState.update gameMsg game } }, Cmd.none)
+            ({ model | room = Connected { chat = chat, game = GameState.update gameMsg game, mode = mode } }, Cmd.none)
 
 
 receive : Model -> String -> (Model, Cmd Msg)
@@ -132,8 +141,10 @@ receive model msg =
     (model, message (NewChatMsg (dropLeft (length "chat:") msg)))
   else if (startsWith "sync:" msg) then
     (model, message (GameStateMsg (Sync (dropLeft (length "sync:") msg))))
-  else if (startsWith "accept:" msg) then
-    ({ model | room = Connected { chat = Chat.init, game = GameState.init } }, Cmd.none)
+  else if (startsWith "acceptPlay:" msg) then
+    ({ model | room = Connected { chat = Chat.init, game = GameState.init, mode = Playing } }, Cmd.none)
+  else if (startsWith "acceptSpec:" msg) then
+    ({ model | room = Connected { chat = Chat.init, game = GameState.init, mode = Spectating } }, Cmd.none)
   else
     (model, message (NewChatMsg ("An error occured in decoding message from server... " ++ msg)))
 
@@ -142,18 +153,13 @@ send : Model -> String -> Cmd Msg
 send model = WebSocket.send ("ws://" ++ model.hostname ++ ":9160")
 
 
--- CHANGE THIS!!! DOESN'T WORK YET
-playerOnly : Model -> Cmd Msg -> Cmd Msg
-playerOnly model cmdMsg =
-  let
-    room : RoomModel
-    room = model.room
-  in
-    case room of
-      Connecting _ ->
-        cmdMsg
-      Connected _ ->
-        cmdMsg
+playerOnly : Mode -> Cmd Msg -> Cmd Msg
+playerOnly mode cmdMsg =
+  case mode of
+    Spectating ->
+      Cmd.none
+    Playing ->
+      cmdMsg
 
 -- VALIDATION
 validateName : String -> (Bool, String)
