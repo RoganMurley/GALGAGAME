@@ -259,7 +259,7 @@ process (SpectateCommand name)     = "chat:" <> name <> " started spectating"
 process (PlayCommand name)         = "chat:" <> name <> " started playing"
 process (LeaveCommand name)        = "chat:" <> name <> " disconnected"
 process (ChatCommand name message) = "chat:" <> name <> ": " <> message
-process (ErrorCommand err)         = "chat:" <> err
+process (ErrorCommand err)         = "error:" <> err
 process _                          = "chat:" <> "Command cannot be processed to text :/"
 
 

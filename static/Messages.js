@@ -6632,6 +6632,9 @@ _elm_lang$core$Native_Platform.effectManagers['Mouse'] = {pkg: 'elm-lang/mouse',
 
 var _user$project$Messages$Play = {ctor: 'Play'};
 var _user$project$Messages$Spectate = {ctor: 'Spectate'};
+var _user$project$Messages$ConnectError = function (a) {
+	return {ctor: 'ConnectError', _0: a};
+};
 var _user$project$Messages$GameStateMsg = function (a) {
 	return {ctor: 'GameStateMsg', _0: a};
 };

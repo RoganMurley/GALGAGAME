@@ -13,6 +13,7 @@ type Msg
   | DrawCard
   | NewChatMsg String
   | GameStateMsg GameMsg
+  | ConnectError String
   | Spectate
   | Play
 
