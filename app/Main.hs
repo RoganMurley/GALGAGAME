@@ -12,7 +12,7 @@ import Data.String.Conversions (cs)
 import Data.Text (Text)
 import Control.Exception (finally)
 import Control.Monad (forM_, forever)
-import Control.Concurrent (MVar, newMVar, modifyMVar_, modifyMVar, readMVar)
+import Control.Concurrent (MVar, newMVar, modifyMVar_, modifyMVar, putMVar, readMVar, takeMVar)
 
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as T
@@ -90,8 +90,8 @@ addSpecClient name client state = insert name newRoom state
   room = getRoom name state :: Room
   newRoom = addSpec client room :: Room
 
-addPlayerClient :: RoomName -> Client -> ServerState -> (ServerState, Bool)
-addPlayerClient name client state = (insert name newRoom state, not (roomFull room))
+addPlayerClient :: RoomName -> Client -> ServerState -> ServerState
+addPlayerClient name client state = insert name newRoom state
   where
   room = getRoom name state :: Room
   newRoom = addPlayer client room :: Room
@@ -166,19 +166,22 @@ application state pending = do
            | clientExists "default" client rooms ->
                WS.sendTextData conn (process (ErrorCommand ("User already exists" :: Text)))
 
-           | prefix == "play:" -> flip finally disconnect $ do
-              modifyMVar_ state $ \s -> do
-                  let (s', accepted) = addPlayerClient "default" client s
-                  if accepted then
+           | prefix == "play:" -> do
+              s <- takeMVar state
+              if not (roomFull (getRoom "default" s)) then
+                do
+                  flip finally disconnect $ do
+                    let s' = addPlayerClient "default" client s
+                    putMVar state s'
+                    WS.sendTextData conn ("acceptPlay:" :: Text)
+                    WS.sendTextData conn ("chat:Welcome! " <> userList s)
+                    broadcast (process (PlayCommand (fst client))) "default" s'
+                    syncClients s'
+                    playLoop conn state client
+                  else
                     do
-                      WS.sendTextData conn ("acceptPlay:" :: Text)
-                      WS.sendTextData conn ("chat:Welcome! " <> userList s)
-                      broadcast (process (PlayCommand (fst client))) "default" s'
-                      syncClients s'
-                    else
                       WS.sendTextData conn (process (ErrorCommand ("Room is full :(" :: Text)))
-                  return s'
-              playLoop conn state client
+                      putMVar state s
 
            | prefix == "spectate:" -> flip finally disconnect $ do
               modifyMVar_ state $ \s -> do
@@ -215,7 +218,7 @@ userList s
   | otherwise     = "Users: " <> users
   where
   users :: Text
-  users = T.intercalate ", " (map fst  (getRoomClients (getRoom "default" s)))
+  users = T.intercalate ", " (map fst (getRoomClients (getRoom "default" s)))
 
 playLoop :: WS.Connection -> MVar ServerState -> Client -> IO ()
 playLoop conn state (user, _) = forever $ do

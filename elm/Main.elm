@@ -113,7 +113,7 @@ connectingUpdate hostname msg ({ name, error, valid } as model) =
       (model, Cmd.none)
 
     ConnectError str ->
-      ({ model | name = "", error = str, valid = True }, Cmd.none)
+      ({ model | error = str }, Cmd.none)
 
     otherwise ->
       Debug.crash "Unexpected action while not connected ;_;"
