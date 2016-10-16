@@ -4,11 +4,8 @@
   justify-content: center;
   flex-flow: column;
 
-  width: 245px;
-  height: 339px;
-
-  min-width: 245px;
-  min-height: 339px;
+  width: 17vw;
+  height: 22vw;
 
   margin: 0 4px;
 
@@ -22,13 +19,13 @@
   justify-content: center;
 
   margin: 14px;
-  font-size: 32px;
+  font-size: 1.3rem;
   font-weight: bolder;
 }
 
 .card-picture {
-  width: 200px;
-  height: 200px;
+  width: 10vw;
+  height: 10vw;
 
   margin: auto;
 }
@@ -40,12 +37,12 @@
   text-align: center;
 
   margin: 18px;
-  font-size: 21px;
+  font-size: 1rem;
 }
 
 .my-card {
-  -webkit-transform: translate(146px);
-  transform: translateY(146px);
+  -webkit-transform: translate(20vh);
+  transform: translateY(20vh);
 
   -webkit-transition: transform 0.15s ease-out;
   transition: transform 0.15s ease-out;
