@@ -14,6 +14,8 @@ type CardDesc = Text
 type CardImgURL = Text
 type CardColor = Text
 
+data WhichPlayer = PlayerA | PlayerB
+
 instance ToJSON Model where
   toJSON (Model turn handPA handPB deckPA deckPB) =
     object ["handPA" .= handPA, "handPB" .= handPB]
@@ -30,41 +32,41 @@ handMaxLength :: Int
 handMaxLength = 6
 
 initModel :: Model
-initModel = Model TurnPA [ cardDagger ] [ cardDagger ] (cycle [cardHubris, cardFireball, cardDagger]) (cycle [cardHubris, cardDagger])
+initModel = Model TurnPA [ cardDagger ] [ cardHubris ] (cycle [cardHubris, cardFireball, cardDagger]) (cycle [cardHubris, cardDagger])
 
 
 -- UPDATE
 
-update :: GameCommand -> Model -> Model
-update Draw model@(Model _ handPA handPB _ _) = drawCard model
+update :: GameCommand -> WhichPlayer -> Model -> Model
+update Draw which model@(Model _ handPA handPB _ _) = drawCard model which
 
-drawCard :: Model -> Model
-drawCard model@(Model turn handPA handPB deckPA deckPB)
-  | (length hand < handMaxLength) = setDeck (tail deck) $ setHand (card : hand) model
+drawCard :: Model -> WhichPlayer -> Model
+drawCard model@(Model turn handPA handPB deckPA deckPB) which
+  | (length hand < handMaxLength) = setDeck which (tail deck) $ setHand which (card : hand) model
   | otherwise = model
   where
     card :: Card
     card = head deck
     deck :: Deck
-    deck = getDeck model
+    deck = getDeck which model
     hand :: Hand
-    hand = getHand model
+    hand = getHand which model
 
-getHand :: Model -> Hand
-getHand (Model TurnPA handPA handPB _ _) = handPA
-getHand (Model TurnPB handPA handPB _ _) = handPB
+getHand :: WhichPlayer -> Model -> Hand
+getHand PlayerA (Model _ handPA handPB _ _) = handPA
+getHand PlayerB (Model _ handPA handPB _ _) = handPB
 
-setHand :: Hand -> Model -> Model
-setHand newHand (Model TurnPA handPA handPB deckPA deckPB) = Model TurnPA newHand handPB deckPA deckPB
-setHand newHand (Model TurnPB handPA handPB deckPA deckPB) = Model TurnPB handPA newHand deckPA deckPB
+setHand :: WhichPlayer -> Hand -> Model -> Model
+setHand PlayerA newHand (Model turn handPA handPB deckPA deckPB) = Model turn newHand handPB deckPA deckPB
+setHand PlayerB newHand (Model turn handPA handPB deckPA deckPB) = Model turn handPA newHand deckPA deckPB
 
-getDeck :: Model -> Deck
-getDeck (Model TurnPA _ _ deckPA deckPB) = deckPA
-getDeck (Model TurnPB _ _ deckPA deckPB) = deckPB
+getDeck :: WhichPlayer -> Model -> Deck
+getDeck PlayerA (Model _ _ _ deckPA deckPB) = deckPA
+getDeck PlayerB (Model _ _ _ deckPA deckPB) = deckPB
 
-setDeck :: Deck -> Model -> Model
-setDeck newDeck (Model TurnPA handPA handPB deckPA deckPB) = Model TurnPA handPA handPB newDeck deckPB
-setDeck newDeck (Model TurnPB handPA handPB deckPA deckPB) = Model TurnPB handPA handPB deckPA newDeck
+setDeck :: WhichPlayer -> Deck -> Model -> Model
+setDeck PlayerA newDeck (Model turn handPA handPB deckPA deckPB) = Model turn handPA handPB newDeck deckPB
+setDeck PlayerB newDeck (Model turn handPA handPB deckPA deckPB) = Model turn handPA handPB deckPA newDeck
 
 
 -- CARDS
