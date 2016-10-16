@@ -198,18 +198,12 @@ userList s
 playLoop :: WS.Connection -> MVar ServerState -> Client -> WhichPlayer -> IO ()
 playLoop conn state (user, _) which = forever $ do
   msg <- WS.receiveData conn
-  actPlay (parsedInput msg) which state
-  where
-  parsedInput :: Text -> Command
-  parsedInput msg = parseMsg user msg
+  actPlay (parseMsg user msg) which state
 
 specLoop :: WS.Connection -> MVar ServerState -> Client -> IO ()
 specLoop conn state (user, _) = forever $ do
   msg <- WS.receiveData conn
-  actSpec (parsedInput msg) state
-  where
-  parsedInput :: Text -> Command
-  parsedInput msg = parseMsg user msg
+  actSpec (parseMsg user msg) state
 
 actPlay :: Command -> WhichPlayer -> MVar ServerState -> IO ()
 actPlay cmd@DrawCommand which state = do
