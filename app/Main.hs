@@ -19,18 +19,11 @@ import qualified Data.Text.Encoding as T
 import qualified Data.Text.IO as T
 import qualified Network.WebSockets as WS
 
-import GameState (GameCommand(..), Model(..), WhichPlayer(..), initModel, reverso, update)
+import GameState (GameCommand(..), Model(..), WhichPlayer(..), reverso, update)
+import Room
 
-
-type Username = Text
-type Client = (Username, WS.Connection)
 
 type ServerState = Map RoomName Room
-type RoomName = Text
-type Player = Maybe Client
-type Spectators = [Client]
-
-data Room = Room Player Player Spectators Model
 
 data Command =
     ChatCommand Username Text
@@ -44,38 +37,18 @@ data Command =
 newServerState :: ServerState
 newServerState = empty
 
-
 clientExists :: RoomName -> Client -> ServerState -> Bool
 clientExists name client state = any ((== fst client) . fst) (getRoomClients room)
   where
   room = getRoom name state :: Room
 
-
-newRoom :: Room
-newRoom = Room Nothing Nothing [] initModel
-
-
 getRoom :: RoomName -> ServerState -> Room
-getRoom name state = makeRoomIfNotExisting existingRoom
+getRoom name state = getOrCreate existingRoom
   where
   existingRoom = lookup name state :: Maybe Room
-  makeRoomIfNotExisting :: Maybe Room -> Room
-  makeRoomIfNotExisting (Just room) = room
-  makeRoomIfNotExisting Nothing = newRoom
-
-
-getRoomClients :: Room -> [Client]
-getRoomClients (Room pa pb specs _) = (maybeToList pa) ++ (maybeToList pb) ++ specs
-
-getRoomModel :: Room -> Model
-getRoomModel (Room _ _ _ model) = model
-
-getPlayerClient :: WhichPlayer -> Room -> Maybe Client
-getPlayerClient PlayerA (Room pa _ _ _) = pa
-getPlayerClient PlayerB (Room _ pb _ _) = pb
-
-getRoomSpecs :: Room -> [Client]
-getRoomSpecs (Room _ _ specs _) = specs
+  getOrCreate :: Maybe Room -> Room
+  getOrCreate (Just room) = room
+  getOrCreate Nothing = newRoom
 
 stateUpdate :: GameCommand -> WhichPlayer -> RoomName -> ServerState -> ServerState
 stateUpdate cmd which name state = insert name newRoom state
@@ -101,21 +74,6 @@ addPlayerClient name client state = (insert name newRoom state, which)
   room = getRoom name state :: Room
   (newRoom, which) = addPlayer client room :: (Room, WhichPlayer)
 
-
-addSpec :: Client -> Room -> Room
-addSpec client (Room pa pb specs count) = Room pa pb (client:specs) count
-
-addPlayer :: Client -> Room -> (Room, WhichPlayer)
-addPlayer client (Room Nothing pb specs count) = (Room (Just client) pb specs count, PlayerA)
-addPlayer client (Room pa Nothing specs count) = (Room pa (Just client) specs count, PlayerB)
-addPlayer client (Room (Just a) (Just b) specs count) = (Room (Just a) (Just b) specs count, PlayerA) -- FIX THIS: PLAYERA -> NOTHING OR SOMETHING
-
-
-roomFull :: Room -> Bool
-roomFull (Room (Just _) (Just _) _ _) = True
-roomFull _ = False
-
-
 removeClient :: RoomName -> Client -> ServerState -> ServerState
 removeClient name client state
   | null newClients = delete name state
@@ -124,16 +82,6 @@ removeClient name client state
   room = getRoom name state :: Room
   newRoom = removeClientRoom client room :: Room
   newClients = getRoomClients newRoom :: [Client]
-
-removeClientRoom :: Client -> Room -> Room
-removeClientRoom client (Room pa pb specs count) =
-  Room (newPlayer pa) (newPlayer pb) newSpecs count
-  where
-  newSpecs :: Spectators
-  newSpecs = filter ((/= fst client) . fst) specs
-  newPlayer :: Player -> Player
-  newPlayer Nothing = Nothing
-  newPlayer (Just c) = if fst c == fst client then Nothing else Just c
 
 
 broadcast :: Text -> RoomName -> ServerState -> IO ()
@@ -183,15 +131,15 @@ application state pending = do
    case msg of
 
        _   | not valid ->
-               WS.sendTextData conn (process (ErrorCommand ("Connection protocol failure" <> msg :: Text)))
+               WS.sendTextData conn (toChat (ErrorCommand ("Connection protocol failure" <> msg :: Text)))
 
            | any ($ fst client)
                [ T.null ] ->
-                   WS.sendTextData conn (process (ErrorCommand ("Name must be nonempty" :: Text)))
+                   WS.sendTextData conn (toChat (ErrorCommand ("Name must be nonempty" :: Text)))
 
 
            | clientExists "default" client rooms ->
-               WS.sendTextData conn (process (ErrorCommand ("User already exists" :: Text)))
+               WS.sendTextData conn (toChat (ErrorCommand ("User already exists" :: Text)))
 
            | prefix == "play:" -> do
               s <- takeMVar state
@@ -202,12 +150,12 @@ application state pending = do
                     putMVar state s'
                     WS.sendTextData conn ("acceptPlay:" :: Text)
                     WS.sendTextData conn ("chat:Welcome! " <> userList s)
-                    broadcast (process (PlayCommand (fst client))) "default" s'
+                    broadcast (toChat (PlayCommand (fst client))) "default" s'
                     syncClients s'
                     playLoop conn state client which
                   else
                     do
-                      WS.sendTextData conn (process (ErrorCommand ("Room is full :(" :: Text)))
+                      WS.sendTextData conn (toChat (ErrorCommand ("Room is full :(" :: Text)))
                       putMVar state s
 
            | prefix == "spectate:" -> flip finally disconnect $ do
@@ -216,12 +164,12 @@ application state pending = do
                   WS.sendTextData conn ("acceptSpec:" :: Text)
                   WS.sendTextData conn $
                        "chat:Welcome! " <> userList s
-                  broadcast (process (SpectateCommand (fst client))) "default" s'
+                  broadcast (toChat (SpectateCommand (fst client))) "default" s'
                   syncClients s'
                   return s'
               specLoop conn state client
 
-           | otherwise -> WS.sendTextData conn (process (ErrorCommand ("Something went terribly wrong in connection negotiation :(" :: Text)))
+           | otherwise -> WS.sendTextData conn (toChat (ErrorCommand ("Something went terribly wrong in connection negotiation :(" :: Text)))
 
          where
           (valid, prefix) = validConnectMsg msg
@@ -230,7 +178,7 @@ application state pending = do
               -- Remove client and return new state
               s <- modifyMVar state $ \s ->
                   let s' = removeClient "default" client s in return (s', s')
-              broadcast (process (LeaveCommand (fst client))) "default" s
+              broadcast (toChat (LeaveCommand (fst client))) "default" s
 
 validConnectMsg :: Text -> (Bool, Text)
 validConnectMsg msg
@@ -274,7 +222,7 @@ actPlay cmd _ state = actSpec cmd state
 actSpec :: Command -> MVar ServerState -> IO ()
 actSpec cmd state = do
     s <- readMVar state
-    broadcast (process cmd) "default" s
+    broadcast (toChat cmd) "default" s
 
 syncClients :: ServerState -> IO ()
 syncClients state = do
@@ -288,13 +236,13 @@ syncClients state = do
   syncMsgPb = "sync:" <> (cs $ encode $ reverso $ game) :: Text
 
 
-process :: Command -> Text
-process (SpectateCommand name)     = "chat:" <> name <> " started spectating"
-process (PlayCommand name)         = "chat:" <> name <> " started playing"
-process (LeaveCommand name)        = "chat:" <> name <> " disconnected"
-process (ChatCommand name message) = "chat:" <> name <> ": " <> message
-process (ErrorCommand err)         = "error:" <> err
-process _                          = "chat:" <> "Command cannot be processed to text :/"
+toChat :: Command -> Text
+toChat (SpectateCommand name)     = "chat:" <> name <> " started spectating"
+toChat (PlayCommand name)         = "chat:" <> name <> " started playing"
+toChat (LeaveCommand name)        = "chat:" <> name <> " disconnected"
+toChat (ChatCommand name message) = "chat:" <> name <> ": " <> message
+toChat (ErrorCommand err)         = "error:" <> err
+toChat _                          = "chat:" <> "Command cannot be processed to text :/"
 
 
 parseMsg :: Username -> Text -> Command
