@@ -8795,96 +8795,9 @@ var _user$project$Drag$dragAt = F2(
 			});
 	});
 
-var _user$project$Chat$viewMessages = function (_p0) {
-	var _p1 = _p0;
-	var viewMessage = function (msg) {
-		return A2(
-			_elm_lang$html$Html$div,
-			_elm_lang$core$Native_List.fromArray(
-				[
-					_elm_lang$html$Html_Attributes$class('message')
-				]),
-			_elm_lang$core$Native_List.fromArray(
-				[
-					_elm_lang$html$Html$text(msg)
-				]));
-	};
-	return A2(
-		_elm_lang$html$Html$div,
-		_elm_lang$core$Native_List.fromArray(
-			[
-				_elm_lang$html$Html_Attributes$class('messages')
-			]),
-		A2(_elm_lang$core$List$map, viewMessage, _p1.messages));
-};
-var _user$project$Chat$view = function (model) {
-	return A2(
-		_elm_lang$html$Html$div,
-		A2(
-			_elm_lang$core$Basics_ops['++'],
-			_elm_lang$core$Native_List.fromArray(
-				[
-					_elm_lang$html$Html_Attributes$class('chat')
-				]),
-			_user$project$Drag$draggable(model)),
-		_elm_lang$core$Native_List.fromArray(
-			[
-				A2(
-				_elm_lang$html$Html$div,
-				_elm_lang$core$Native_List.fromArray(
-					[
-						_elm_lang$html$Html_Attributes$class('chat-input')
-					]),
-				_elm_lang$core$Native_List.fromArray(
-					[
-						A2(
-						_elm_lang$html$Html$input,
-						_elm_lang$core$Native_List.fromArray(
-							[
-								_elm_lang$html$Html_Events$onInput(_user$project$Messages$Input),
-								_elm_lang$html$Html_Attributes$value(model.input)
-							]),
-						_elm_lang$core$Native_List.fromArray(
-							[])),
-						A2(
-						_elm_lang$html$Html$button,
-						_elm_lang$core$Native_List.fromArray(
-							[
-								_elm_lang$html$Html_Events$onClick(
-								_user$project$Messages$Send(
-									A2(_elm_lang$core$Basics_ops['++'], 'chat:', model.input)))
-							]),
-						_elm_lang$core$Native_List.fromArray(
-							[
-								_elm_lang$html$Html$text('Send')
-							]))
-					])),
-				_user$project$Chat$viewMessages(model)
-			]));
-};
-var _user$project$Chat$addChatMessage = F2(
-	function (message, model) {
-		return _elm_lang$core$Native_Utils.update(
-			model,
-			{
-				messages: A2(_elm_lang$core$List_ops['::'], message, model.messages)
-			});
-	});
-var _user$project$Chat$init = {
-	input: '',
-	messages: _elm_lang$core$Native_List.fromArray(
-		[]),
-	pos: A2(_elm_lang$mouse$Mouse$Position, 0, 0),
-	drag: _elm_lang$core$Maybe$Nothing
-};
-var _user$project$Chat$Model = F4(
-	function (a, b, c, d) {
-		return {input: a, messages: b, pos: c, drag: d};
-	});
-
 var Elm = {};
-Elm['Chat'] = Elm['Chat'] || {};
-_elm_lang$core$Native_Platform.addPublicModule(Elm['Chat'], 'Chat', typeof _user$project$Chat$main === 'undefined' ? null : _user$project$Chat$main);
+Elm['Drag'] = Elm['Drag'] || {};
+_elm_lang$core$Native_Platform.addPublicModule(Elm['Drag'], 'Drag', typeof _user$project$Drag$main === 'undefined' ? null : _user$project$Drag$main);
 
 if (typeof define === "function" && define['amd'])
 {
