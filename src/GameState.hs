@@ -35,6 +35,11 @@ initModel :: Model
 initModel = Model TurnPA [ cardDagger ] [ cardHubris ] (cycle [cardHubris, cardFireball, cardDagger]) (cycle [cardHubris, cardDagger])
 
 
+-- TEMP STUFF.
+reverso :: Model -> Model
+reverso (Model turn handPA handPB deckPA deckPB) = Model turn handPB handPA deckPB deckPA
+
+
 -- UPDATE
 
 update :: GameCommand -> WhichPlayer -> Model -> Model

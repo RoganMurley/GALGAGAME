@@ -19,7 +19,7 @@ import qualified Data.Text.Encoding as T
 import qualified Data.Text.IO as T
 import qualified Network.WebSockets as WS
 
-import GameState (GameCommand(..), Model(..), WhichPlayer(..), initModel, update)
+import GameState (GameCommand(..), Model(..), WhichPlayer(..), initModel, reverso, update)
 
 
 type Username = Text
@@ -277,11 +277,15 @@ actSpec cmd state = do
     broadcast (process cmd) "default" s
 
 syncClients :: ServerState -> IO ()
-syncClients state = broadcast syncMsg "default" state
+syncClients state = do
+  sendToPlayer PlayerA syncMsgPa "default" state
+  sendToPlayer PlayerB syncMsgPb "default" state
+  sendToSpecs syncMsgPa "default" state
   where
   room = getRoom "default" state :: Room
   game = getRoomModel room :: Model
-  syncMsg = "sync:" <> (cs $ encode $ game) :: Text
+  syncMsgPa = "sync:" <> (cs $ encode $ game) :: Text
+  syncMsgPb = "sync:" <> (cs $ encode $ reverso $ game) :: Text
 
 
 process :: Command -> Text
