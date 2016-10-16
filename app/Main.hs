@@ -19,7 +19,7 @@ import qualified Data.Text.Encoding as T
 import qualified Data.Text.IO as T
 import qualified Network.WebSockets as WS
 
-import GameState (GameCommand(..), Model(..), initModel, update)
+import GameState (GameCommand(..), Model(..), WhichPlayer(..), initModel, update)
 
 
 type Username = Text
@@ -67,18 +67,23 @@ getRoom name state = makeRoomIfNotExisting existingRoom
 getRoomClients :: Room -> [Client]
 getRoomClients (Room pa pb specs _) = (maybeToList pa) ++ (maybeToList pb) ++ specs
 
-
 getRoomModel :: Room -> Model
 getRoomModel (Room _ _ _ model) = model
 
+getPlayerClient :: WhichPlayer -> Room -> Maybe Client
+getPlayerClient PlayerA (Room pa _ _ _) = pa
+getPlayerClient PlayerB (Room _ pb _ _) = pb
 
-stateUpdate :: GameCommand -> RoomName -> ServerState -> ServerState
-stateUpdate cmd name state = insert name newRoom state
+getRoomSpecs :: Room -> [Client]
+getRoomSpecs (Room _ _ specs _) = specs
+
+stateUpdate :: GameCommand -> WhichPlayer -> RoomName -> ServerState -> ServerState
+stateUpdate cmd which name state = insert name newRoom state
   where
   room = getRoom name state :: Room
   newRoom = gameUpdate cmd room :: Room
   gameUpdate :: GameCommand -> Room -> Room
-  gameUpdate cmd (Room pa pb specs model) = Room pa pb specs (update cmd model)
+  gameUpdate cmd (Room pa pb specs model) = Room pa pb specs (update cmd which model)
 
 
 -- Add a client (this does not check if the client already exists, you should do
@@ -90,20 +95,20 @@ addSpecClient name client state = insert name newRoom state
   room = getRoom name state :: Room
   newRoom = addSpec client room :: Room
 
-addPlayerClient :: RoomName -> Client -> ServerState -> ServerState
-addPlayerClient name client state = insert name newRoom state
+addPlayerClient :: RoomName -> Client -> ServerState -> (ServerState, WhichPlayer)
+addPlayerClient name client state = (insert name newRoom state, which)
   where
   room = getRoom name state :: Room
-  newRoom = addPlayer client room :: Room
+  (newRoom, which) = addPlayer client room :: (Room, WhichPlayer)
 
 
 addSpec :: Client -> Room -> Room
 addSpec client (Room pa pb specs count) = Room pa pb (client:specs) count
 
-addPlayer :: Client -> Room -> Room
-addPlayer client (Room Nothing pb specs count) = Room (Just client) pb specs count
-addPlayer client (Room pa Nothing specs count) = Room pa (Just client) specs count
-addPlayer client (Room (Just a) (Just b) specs count) = Room (Just a) (Just b) specs count
+addPlayer :: Client -> Room -> (Room, WhichPlayer)
+addPlayer client (Room Nothing pb specs count) = (Room (Just client) pb specs count, PlayerA)
+addPlayer client (Room pa Nothing specs count) = (Room pa (Just client) specs count, PlayerB)
+addPlayer client (Room (Just a) (Just b) specs count) = (Room (Just a) (Just b) specs count, PlayerA) -- FIX THIS: PLAYERA -> NOTHING OR SOMETHING
 
 
 roomFull :: Room -> Bool
@@ -139,6 +144,28 @@ broadcast msg name state = do
   room = getRoom name state :: Room
   clients = getRoomClients room :: [Client]
 
+sendToPlayer :: WhichPlayer -> Text -> RoomName -> ServerState -> IO ()
+sendToPlayer PlayerA msg name state = do
+  T.putStrLn ("To PlayerA: " <> msg)
+  forM_ clients $ \(_, conn) -> WS.sendTextData conn msg
+  where
+  room = getRoom name state :: Room
+  clients = maybeToList (getPlayerClient PlayerA room) :: [Client]
+sendToPlayer PlayerB msg name state = do
+  T.putStrLn ("To PlayerB: " <> msg)
+  forM_ clients $ \(_, conn) -> WS.sendTextData conn msg
+  where
+  room = getRoom name state :: Room
+  clients = maybeToList (getPlayerClient PlayerB room) :: [Client]
+
+sendToSpecs :: Text -> RoomName -> ServerState -> IO ()
+sendToSpecs msg name state = do
+  T.putStrLn ("To Specs: " <> msg)
+  forM_ clients $ \(_, conn) -> WS.sendTextData conn msg
+  where
+  room = getRoom name state :: Room
+  clients = getRoomSpecs room :: [Client]
+
 
 main :: IO ()
 main = do
@@ -171,13 +198,13 @@ application state pending = do
               if not (roomFull (getRoom "default" s)) then
                 do
                   flip finally disconnect $ do
-                    let s' = addPlayerClient "default" client s
+                    let (s', which) = addPlayerClient "default" client s
                     putMVar state s'
                     WS.sendTextData conn ("acceptPlay:" :: Text)
                     WS.sendTextData conn ("chat:Welcome! " <> userList s)
                     broadcast (process (PlayCommand (fst client))) "default" s'
                     syncClients s'
-                    playLoop conn state client
+                    playLoop conn state client which
                   else
                     do
                       WS.sendTextData conn (process (ErrorCommand ("Room is full :(" :: Text)))
@@ -220,10 +247,10 @@ userList s
   users :: Text
   users = T.intercalate ", " (map fst (getRoomClients (getRoom "default" s)))
 
-playLoop :: WS.Connection -> MVar ServerState -> Client -> IO ()
-playLoop conn state (user, _) = forever $ do
+playLoop :: WS.Connection -> MVar ServerState -> Client -> WhichPlayer -> IO ()
+playLoop conn state (user, _) which = forever $ do
   msg <- WS.receiveData conn
-  actPlay (parsedInput msg) state
+  actPlay (parsedInput msg) which state
   where
   parsedInput :: Text -> Command
   parsedInput msg = parseMsg user msg
@@ -236,13 +263,13 @@ specLoop conn state (user, _) = forever $ do
   parsedInput :: Text -> Command
   parsedInput msg = parseMsg user msg
 
-actPlay :: Command -> MVar ServerState -> IO ()
-actPlay cmd@DrawCommand state = do
+actPlay :: Command -> WhichPlayer -> MVar ServerState -> IO ()
+actPlay cmd@DrawCommand which state = do
     s <- modifyMVar state $ \x -> do
-      let s' = stateUpdate Draw "default" x
+      let s' = stateUpdate Draw which "default" x
       return (s', s')
     syncClients s
-actPlay cmd state = actSpec cmd state
+actPlay cmd _ state = actSpec cmd state
 
 actSpec :: Command -> MVar ServerState -> IO ()
 actSpec cmd state = do
