@@ -26,7 +26,7 @@ instance ToJSON Card where
   toJSON (Card name desc imageURL color) =
     object ["name" .= name, "desc" .= desc, "imageURL" .= imageURL, "cardColor" .= color]
 
-data GameCommand = Draw
+data GameCommand = Draw | EndTurn
 
 handMaxLength :: Int
 handMaxLength = 6
@@ -43,7 +43,8 @@ reverso (Model turn handPA handPB deckPA deckPB) = Model turn handPB handPA deck
 -- UPDATE
 
 update :: GameCommand -> WhichPlayer -> Model -> Maybe Model
-update Draw which model@(Model _ handPA handPB _ _) = drawCard model which
+update Draw which model = drawCard model which
+update EndTurn which model = endTurn model which
 
 drawCard :: Model -> WhichPlayer -> Maybe Model
 drawCard model@(Model turn handPA handPB deckPA deckPB) which
@@ -57,6 +58,15 @@ drawCard model@(Model turn handPA handPB deckPA deckPB) which
     deck = getDeck which model
     hand :: Hand
     hand = getHand which model
+
+endTurn :: Model -> WhichPlayer -> Maybe Model
+endTurn model@(Model turn handPA handPB deckPA deckPB) which
+  | (turn == which) = Just (Model (otherTurn turn) handPA handPB deckPA deckPB)
+  | otherwise = Nothing
+  where
+    otherTurn :: Turn -> Turn
+    otherTurn PlayerA = PlayerB
+    otherTurn PlayerB = PlayerA
 
 getHand :: WhichPlayer -> Model -> Hand
 getHand PlayerA (Model _ handPA handPB _ _) = handPA
