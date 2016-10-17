@@ -20,11 +20,26 @@ type Turn = WhichPlayer
 
 instance ToJSON Model where
   toJSON (Model turn handPA handPB deckPA deckPB) =
-    object ["handPA" .= handPA, "handPB" .= handPB]
+    object
+      [
+        "turn" .= turn
+      , "handPA" .= handPA
+      , "handPB" .= handPB
+      ]
 
 instance ToJSON Card where
   toJSON (Card name desc imageURL color) =
-    object ["name" .= name, "desc" .= desc, "imageURL" .= imageURL, "cardColor" .= color]
+    object
+      [
+        "name" .= name
+      , "desc" .= desc
+      , "imageURL" .= imageURL
+      , "cardColor" .= color
+      ]
+
+instance ToJSON WhichPlayer where
+  toJSON PlayerA = "pa"
+  toJSON PlayerB = "pb"
 
 data GameCommand = Draw | EndTurn
 
