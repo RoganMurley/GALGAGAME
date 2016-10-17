@@ -31,6 +31,7 @@ data Command =
   | SpectateCommand Username
   | LeaveCommand Username
   | DrawCommand
+  | EndTurnCommand
   | ErrorCommand Text
 
 
@@ -206,12 +207,19 @@ specLoop conn state (user, _) = forever $ do
   actSpec (parseMsg user msg) state
 
 actPlay :: Command -> WhichPlayer -> MVar ServerState -> IO ()
-actPlay cmd@DrawCommand which state = do
-    s <- modifyMVar state $ \x -> do
-      let s' = stateUpdate Draw which "default" x
-      return (s', s')
-    syncClients s
-actPlay cmd _ state = actSpec cmd state
+actPlay cmd which state
+  | isPlayCommand cmd =
+    do
+      s <- modifyMVar state $ \x -> do
+        let s' = stateUpdate Draw which "default" x
+        return (s', s')
+      syncClients s
+  | otherwise = actSpec cmd state
+  where
+    isPlayCommand :: Command -> Bool
+    isPlayCommand DrawCommand = True
+    isPlayCommand EndTurnCommand = True
+    isPlayCommand _ = False
 
 actSpec :: Command -> MVar ServerState -> IO ()
 actSpec cmd state = do
@@ -243,6 +251,7 @@ parseMsg :: Username -> Text -> Command
 parseMsg _ ""           = ErrorCommand "Command not found"
 parseMsg name msg
   | (command == "draw") = DrawCommand
+  | (command == "end")  = EndTurnCommand
   | (command == "chat") = ChatCommand name content
   | otherwise           = ErrorCommand "Unknown command"
   where
