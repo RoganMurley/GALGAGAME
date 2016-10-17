@@ -8819,7 +8819,9 @@ var _user$project$GameState$Card = F4(
 	function (a, b, c, d) {
 		return {name: a, desc: b, imgURL: c, cardColor: d};
 	});
-var _user$project$GameState$decodeHands = function (msg) {
+var _user$project$GameState$PlayerB = {ctor: 'PlayerB'};
+var _user$project$GameState$PlayerA = {ctor: 'PlayerA'};
+var _user$project$GameState$decodeState = function (msg) {
 	var cardDecoder = A5(
 		_elm_lang$core$Json_Decode$object4,
 		_user$project$GameState$Card,
@@ -8827,12 +8829,13 @@ var _user$project$GameState$decodeHands = function (msg) {
 		A2(_elm_lang$core$Json_Decode_ops[':='], 'desc', _elm_lang$core$Json_Decode$string),
 		A2(_elm_lang$core$Json_Decode_ops[':='], 'imageURL', _elm_lang$core$Json_Decode$string),
 		A2(_elm_lang$core$Json_Decode_ops[':='], 'cardColor', _elm_lang$core$Json_Decode$string));
-	var handDecoder = A3(
-		_elm_lang$core$Json_Decode$object2,
-		F2(
-			function (v0, v1) {
-				return {ctor: '_Tuple2', _0: v0, _1: v1};
+	var handDecoder = A4(
+		_elm_lang$core$Json_Decode$object3,
+		F3(
+			function (a, b, c) {
+				return {ctor: '_Tuple3', _0: a, _1: b, _2: c};
 			}),
+		A2(_elm_lang$core$Json_Decode_ops[':='], 'turn', _elm_lang$core$Json_Decode$string),
 		A2(
 			_elm_lang$core$Json_Decode_ops[':='],
 			'handPA',
@@ -8842,31 +8845,46 @@ var _user$project$GameState$decodeHands = function (msg) {
 			'handPB',
 			_elm_lang$core$Json_Decode$list(cardDecoder)));
 	var result = A2(_elm_lang$core$Json_Decode$decodeString, handDecoder, msg);
-	return result;
+	var _p2 = result;
+	if (_p2.ctor === 'Ok') {
+		switch (_p2._0._0) {
+			case 'pa':
+				return _elm_lang$core$Result$Ok(
+					{ctor: '_Tuple3', _0: _user$project$GameState$PlayerA, _1: _p2._0._1, _2: _p2._0._2});
+			case 'pb':
+				return _elm_lang$core$Result$Ok(
+					{ctor: '_Tuple3', _0: _user$project$GameState$PlayerB, _1: _p2._0._1, _2: _p2._0._2});
+			default:
+				return _elm_lang$core$Result$Err(
+					A2(_elm_lang$core$Basics_ops['++'], 'Invalid turn, should be pa or pb but is instead ', _p2._0._0));
+		}
+	} else {
+		return _elm_lang$core$Result$Err(_p2._0);
+	}
 };
 var _user$project$GameState$syncHands = F2(
 	function (model, msg) {
-		var result = _user$project$GameState$decodeHands(msg);
-		var _p2 = result;
-		if (_p2.ctor === 'Ok') {
+		var result = _user$project$GameState$decodeState(msg);
+		var _p3 = result;
+		if (_p3.ctor === 'Ok') {
 			return _elm_lang$core$Native_Utils.update(
 				model,
-				{hand: _p2._0._0, otherHand: _p2._0._1});
+				{hand: _p3._0._1, otherHand: _p3._0._2});
 		} else {
 			return _elm_lang$core$Native_Utils.crashCase(
 				'GameState',
 				{
-					start: {line: 100, column: 5},
-					end: {line: 104, column: 49}
+					start: {line: 104, column: 5},
+					end: {line: 108, column: 49}
 				},
-				_p2)(
-				A2(_elm_lang$core$Basics_ops['++'], 'Sync hand error: ', _p2._0));
+				_p3)(
+				A2(_elm_lang$core$Basics_ops['++'], 'Sync hand error: ', _p3._0));
 		}
 	});
 var _user$project$GameState$update = F2(
 	function (msg, model) {
-		var _p4 = msg;
-		return A2(_user$project$GameState$syncHands, model, _p4._0);
+		var _p5 = msg;
+		return A2(_user$project$GameState$syncHands, model, _p5._0);
 	});
 
 var Elm = {};
