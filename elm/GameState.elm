@@ -31,6 +31,10 @@ type alias Card =
   , cardColor : String
   }
 
+type Turn
+  = PlayerA
+  | PlayerB
+
 -- INITIAL MODEL.
 
 init : Model
@@ -94,23 +98,24 @@ update msg model =
 syncHands : Model -> String -> Model
 syncHands model msg =
   let
-    result : Result String (Hand, Hand)
-    result = decodeHands msg
+    result : Result String (Turn, Hand, Hand)
+    result = decodeState msg
   in
     case result of
-      Ok (paHand, pbHand) ->
+      Ok (turn, paHand, pbHand) ->
         { model | hand = paHand, otherHand = pbHand }
       Err err ->
         Debug.crash ("Sync hand error: " ++ err)
 
-decodeHands : String -> Result String (Hand, Hand)
-decodeHands msg =
+decodeState : String -> Result String (Turn, Hand, Hand)
+decodeState msg =
   let
-    result : Result String (Hand, Hand)
+    result : Result String (String, Hand, Hand)
     result = Json.decodeString handDecoder msg
-    handDecoder : Json.Decoder (Hand, Hand)
+    handDecoder : Json.Decoder (String, Hand, Hand)
     handDecoder =
-      Json.object2 (,)
+      Json.object3 (\a b c -> (a, b, c))
+        ("turn" := Json.string)
         ("handPA" := Json.list cardDecoder)
         ("handPB" := Json.list cardDecoder)
     cardDecoder : Json.Decoder Card
@@ -121,4 +126,15 @@ decodeHands msg =
         ("imageURL" := Json.string)
         ("cardColor" := Json.string)
   in
-    result
+    case result of
+      Ok ("pa", handPA, handPB) ->
+        Ok (PlayerA, handPA, handPB)
+
+      Ok ("pb", handPA, handPB) ->
+        Ok (PlayerB, handPA, handPB)
+
+      Ok (t, _, _) ->
+        Err ("Invalid turn, should be pa or pb but is instead " ++ t)
+
+      Err err ->
+        Err err
