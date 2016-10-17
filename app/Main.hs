@@ -6,7 +6,7 @@ import Prelude hiding (lookup)
 import Data.Aeson (encode)
 import Data.Char (isPunctuation, isSpace)
 import Data.Map.Strict (Map, delete, empty, insert, lookup)
-import Data.Maybe (fromMaybe, maybeToList)
+import Data.Maybe (fromJust, fromMaybe, isJust, isNothing, maybeToList)
 import Data.Monoid ((<>))
 import Data.String.Conversions (cs)
 import Data.Text (Text)
@@ -208,18 +208,18 @@ specLoop conn state (user, _) = forever $ do
 
 actPlay :: Command -> WhichPlayer -> MVar ServerState -> IO ()
 actPlay cmd which state
-  | isPlayCommand cmd =
+  | isJust (trans cmd) =
     do
       s <- modifyMVar state $ \x -> do
-        let s' = stateUpdate Draw which "default" x
+        let s' = stateUpdate (fromJust (trans cmd)) which "default" x
         return (s', s')
       syncClients s
   | otherwise = actSpec cmd state
   where
-    isPlayCommand :: Command -> Bool
-    isPlayCommand DrawCommand = True
-    isPlayCommand EndTurnCommand = True
-    isPlayCommand _ = False
+    trans :: Command -> Maybe GameCommand
+    trans DrawCommand = Just (Draw)
+    trans EndTurnCommand = Just(EndTurn)
+    trans _ = Nothing
 
 actSpec :: Command -> MVar ServerState -> IO ()
 actSpec cmd state = do
