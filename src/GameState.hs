@@ -15,6 +15,8 @@ type CardImgURL = Text
 type CardColor = Text
 
 data WhichPlayer = PlayerA | PlayerB
+  deriving (Eq)
+type Turn = WhichPlayer
 
 instance ToJSON Model where
   toJSON (Model turn handPA handPB deckPA deckPB) =
@@ -24,15 +26,13 @@ instance ToJSON Card where
   toJSON (Card name desc imageURL color) =
     object ["name" .= name, "desc" .= desc, "imageURL" .= imageURL, "cardColor" .= color]
 
-data Turn = TurnPA | TurnPB
-
 data GameCommand = Draw
 
 handMaxLength :: Int
 handMaxLength = 6
 
 initModel :: Model
-initModel = Model TurnPA [ cardDagger ] [ cardHubris ] (cycle [cardHubris, cardFireball, cardDagger]) (cycle [cardHubris, cardDagger])
+initModel = Model PlayerA [ cardDagger ] [ cardHubris ] (cycle [cardHubris, cardFireball, cardDagger]) (cycle [cardHubris, cardDagger])
 
 
 -- TEMP STUFF.
@@ -42,13 +42,14 @@ reverso (Model turn handPA handPB deckPA deckPB) = Model turn handPB handPA deck
 
 -- UPDATE
 
-update :: GameCommand -> WhichPlayer -> Model -> Model
+update :: GameCommand -> WhichPlayer -> Model -> Maybe Model
 update Draw which model@(Model _ handPA handPB _ _) = drawCard model which
 
-drawCard :: Model -> WhichPlayer -> Model
+drawCard :: Model -> WhichPlayer -> Maybe Model
 drawCard model@(Model turn handPA handPB deckPA deckPB) which
-  | (length hand < handMaxLength) = setDeck which (tail deck) $ setHand which (card : hand) model
-  | otherwise = model
+  -- | (turn /= which) = Nothing
+  | (length hand >= handMaxLength) = Nothing
+  | otherwise = Just (setDeck which (tail deck) $ setHand which (card : hand) model)
   where
     card :: Card
     card = head deck
@@ -77,10 +78,10 @@ setDeck PlayerB newDeck (Model turn handPA handPB deckPA deckPB) = Model turn ha
 -- CARDS
 
 cardDagger :: Card
-cardDagger = Card "Blade's Edge" "Hurt for 100" "plain-dagger.svg" "#bf1131"
+cardDagger = Card "Steeledge" "Hurt for 100" "plain-dagger.svg" "#bf1131"
 
 cardHubris :: Card
 cardHubris = Card "Hubris" "If combo is > 4 then negate everything" "tower-fall.svg" "#1c1f26"
 
 cardFireball :: Card
-cardFireball = Card "Fireball" "Hurt for 40 per combo" "fire-ray.svg" "#bf1131"
+cardFireball = Card "Meteor" "Hurt for 40 per combo" "fire-ray.svg" "#bf1131"

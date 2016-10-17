@@ -6,7 +6,7 @@ import Prelude hiding (lookup)
 import Data.Aeson (encode)
 import Data.Char (isPunctuation, isSpace)
 import Data.Map.Strict (Map, delete, empty, insert, lookup)
-import Data.Maybe (maybeToList)
+import Data.Maybe (fromMaybe, maybeToList)
 import Data.Monoid ((<>))
 import Data.String.Conversions (cs)
 import Data.Text (Text)
@@ -56,7 +56,7 @@ stateUpdate cmd which name state = insert name newRoom state
   room = getRoom name state :: Room
   newRoom = gameUpdate cmd room :: Room
   gameUpdate :: GameCommand -> Room -> Room
-  gameUpdate cmd (Room pa pb specs model) = Room pa pb specs (update cmd which model)
+  gameUpdate cmd (Room pa pb specs model) = Room pa pb specs (fromMaybe model (update cmd which model))
 
 
 -- Add a client (this does not check if the client already exists, you should do
