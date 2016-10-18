@@ -1,11 +1,11 @@
-module GameState exposing (Card, Hand, Model, init, update, view)
+module GameState exposing (Card, Hand, Model, Turn(..), init, update, view)
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Json.Decode as Json exposing ((:=))
 
-import Messages exposing (GameMsg(Sync), Msg(DrawCard))
+import Messages exposing (GameMsg(Sync), Msg(DrawCard, EndTurn))
 
 
 -- TYPES.
@@ -15,6 +15,7 @@ type alias Model =
     hand : Hand
   , otherHand : Hand
   , stack : PlayStack
+  , turn : Turn
   }
 
 type alias Hand =
@@ -43,17 +44,18 @@ init =
     hand = []
   , otherHand = []
   , stack = []
+  , turn = PlayerA
   }
 
 
 -- VIEWS.
-
 view : Model -> Html Msg
 view model =
   div []
     [
       viewOtherHand model.otherHand
     , viewHand model.hand
+    , viewTurn model.turn
     ]
 
 viewHand : Hand -> Html Msg
@@ -78,7 +80,6 @@ viewHand hand =
   in
     div [ class "hand my-hand" ] (List.map viewCard hand)
 
-
 viewOtherHand : Hand -> Html Msg
 viewOtherHand hand =
   let
@@ -87,23 +88,31 @@ viewOtherHand hand =
   in
     div [ class "hand other-hand" ] (List.map viewCard hand)
 
+viewTurn : Turn -> Html Msg
+viewTurn turn =
+  case turn of
+    PlayerA ->
+      button [ class "turn-indi pass-button", onClick EndTurn ] [ text "Pass" ]
+    PlayerB ->
+      div [ class "turn-indi enemy-turn" ] [ text "Enemy Turn" ]
+
 
 -- UPDATE
 update : GameMsg -> Model -> Model
 update msg model =
   case msg of
     Sync str ->
-      syncHands model str
+      syncModel model str
 
-syncHands : Model -> String -> Model
-syncHands model msg =
+syncModel : Model -> String -> Model
+syncModel model msg =
   let
     result : Result String (Turn, Hand, Hand)
     result = decodeState msg
   in
     case result of
       Ok (turn, paHand, pbHand) ->
-        { model | hand = paHand, otherHand = pbHand }
+        { model | turn = turn, hand = paHand, otherHand = pbHand }
       Err err ->
         Debug.crash ("Sync hand error: " ++ err)
 

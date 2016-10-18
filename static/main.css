@@ -95,6 +95,10 @@
   top: 0;
   margin-top: -17vw; }
 
+.turn-indi {
+  position: absolute;
+  right: 0; }
+
 html {
   height: 100%; }
 

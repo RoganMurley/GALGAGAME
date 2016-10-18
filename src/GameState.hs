@@ -52,7 +52,7 @@ initModel = Model PlayerA [ cardDagger ] [ cardHubris ] (cycle [cardHubris, card
 
 -- TEMP STUFF.
 reverso :: Model -> Model
-reverso (Model turn handPA handPB deckPA deckPB) = Model turn handPB handPA deckPB deckPA
+reverso (Model turn handPA handPB deckPA deckPB) = Model (otherTurn turn) handPB handPA deckPB deckPA
 
 
 -- UPDATE
@@ -63,7 +63,7 @@ update EndTurn which model = endTurn model which
 
 drawCard :: Model -> WhichPlayer -> Maybe Model
 drawCard model@(Model turn handPA handPB deckPA deckPB) which
-  -- | (turn /= which) = Nothing
+  | (turn /= which) = Nothing
   | (length hand >= handMaxLength) = Nothing
   | otherwise = Just (setDeck which (tail deck) $ setHand which (card : hand) model)
   where
@@ -78,10 +78,10 @@ endTurn :: Model -> WhichPlayer -> Maybe Model
 endTurn model@(Model turn handPA handPB deckPA deckPB) which
   | (turn == which) = Just (Model (otherTurn turn) handPA handPB deckPA deckPB)
   | otherwise = Nothing
-  where
-    otherTurn :: Turn -> Turn
-    otherTurn PlayerA = PlayerB
-    otherTurn PlayerB = PlayerA
+
+otherTurn :: Turn -> Turn
+otherTurn PlayerA = PlayerB
+otherTurn PlayerB = PlayerA
 
 getHand :: WhichPlayer -> Model -> Hand
 getHand PlayerA (Model _ handPA handPB _ _) = handPA
