@@ -10,7 +10,7 @@ import WebSocket
 
 import Chat exposing (addChatMessage)
 import Drag exposing (dragAt, dragEnd, dragStart, getPosition)
-import GameState exposing (Card, Hand, Model, view)
+import GameState exposing (Card, Hand, Model, Turn(..), view)
 import Messages exposing (GameMsg(..), Msg(..))
 import Util exposing (applyFst)
 
@@ -142,7 +142,10 @@ connectedUpdate hostname msg ({ chat, game, mode } as model) =
       ({ model | chat = dragEnd chat }, Cmd.none)
 
     DrawCard ->
-      (model, playerOnly mode (send hostname "draw:"))
+      (model, turnOnly model (send hostname "draw:"))
+
+    EndTurn ->
+      (model, turnOnly model (send hostname "end:"))
 
     NewChatMsg str ->
       ({ model | chat = addChatMessage str chat }, Cmd.none)
@@ -180,13 +183,18 @@ send : String -> String -> Cmd Msg
 send hostname = WebSocket.send ("ws://" ++ hostname ++ ":9160")
 
 
-playerOnly : Mode -> Cmd Msg -> Cmd Msg
-playerOnly mode cmdMsg =
+turnOnly : ConnectedModel -> Cmd Msg -> Cmd Msg
+turnOnly { mode, game } cmdMsg =
   case mode of
     Spectating ->
       Cmd.none
+
     Playing ->
-      cmdMsg
+      case game.turn of
+        PlayerA ->
+          cmdMsg
+        PlayerB ->
+          Cmd.none
 
 -- VALIDATION
 validateName : String -> (Bool, String)

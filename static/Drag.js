@@ -8683,6 +8683,7 @@ var _user$project$Messages$GameStateMsg = function (a) {
 var _user$project$Messages$NewChatMsg = function (a) {
 	return {ctor: 'NewChatMsg', _0: a};
 };
+var _user$project$Messages$EndTurn = {ctor: 'EndTurn'};
 var _user$project$Messages$DrawCard = {ctor: 'DrawCard'};
 var _user$project$Messages$DragEnd = function (a) {
 	return {ctor: 'DragEnd', _0: a};
