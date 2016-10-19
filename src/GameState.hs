@@ -52,7 +52,7 @@ handMaxLength :: Int
 handMaxLength = 6
 
 initModel :: Model
-initModel = Model PlayerA [] [ cardDagger ] [ cardHubris ] (cycle [cardHubris, cardFireball, cardDagger]) (cycle [cardHubris, cardDagger]) 1000 1000
+initModel = Model PlayerA [ cardFireball, cardHubris ] [ cardDagger ] [ cardHubris ] (cycle [cardHubris, cardFireball, cardDagger]) (cycle [cardHubris, cardDagger]) 1000 1000
 
 
 -- TEMP STUFF.
