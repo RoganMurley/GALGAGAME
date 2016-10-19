@@ -8707,6 +8707,22 @@ var _user$project$Messages$Sync = function (a) {
 	return {ctor: 'Sync', _0: a};
 };
 
+var _user$project$GameState$viewLife = function (life) {
+	return A2(
+		_elm_lang$html$Html$div,
+		_elm_lang$core$Native_List.fromArray(
+			[
+				_elm_lang$html$Html_Attributes$class('life-counter')
+			]),
+		_elm_lang$core$Native_List.fromArray(
+			[
+				_elm_lang$html$Html$text(
+				A2(
+					_elm_lang$core$Basics_ops['++'],
+					_elm_lang$core$Basics$toString(life),
+					' LP'))
+			]));
+};
 var _user$project$GameState$viewTurn = function (turn) {
 	var _p0 = turn;
 	if (_p0.ctor === 'PlayerA') {
@@ -8829,12 +8845,14 @@ var _user$project$GameState$view = function (model) {
 			[
 				_user$project$GameState$viewOtherHand(model.otherHand),
 				_user$project$GameState$viewHand(model.hand),
+				_user$project$GameState$viewLife(model.life),
+				_user$project$GameState$viewLife(model.otherLife),
 				_user$project$GameState$viewTurn(model.turn)
 			]));
 };
-var _user$project$GameState$Model = F4(
-	function (a, b, c, d) {
-		return {hand: a, otherHand: b, stack: c, turn: d};
+var _user$project$GameState$Model = F6(
+	function (a, b, c, d, e, f) {
+		return {hand: a, otherHand: b, stack: c, turn: d, life: e, otherLife: f};
 	});
 var _user$project$GameState$Card = F4(
 	function (a, b, c, d) {
@@ -8849,7 +8867,9 @@ var _user$project$GameState$init = {
 		[]),
 	stack: _elm_lang$core$Native_List.fromArray(
 		[]),
-	turn: _user$project$GameState$PlayerA
+	turn: _user$project$GameState$PlayerA,
+	life: 1000,
+	otherLife: 1000
 };
 var _user$project$GameState$decodeState = function (msg) {
 	var cardDecoder = A5(
@@ -8859,11 +8879,11 @@ var _user$project$GameState$decodeState = function (msg) {
 		A2(_elm_lang$core$Json_Decode_ops[':='], 'desc', _elm_lang$core$Json_Decode$string),
 		A2(_elm_lang$core$Json_Decode_ops[':='], 'imageURL', _elm_lang$core$Json_Decode$string),
 		A2(_elm_lang$core$Json_Decode_ops[':='], 'cardColor', _elm_lang$core$Json_Decode$string));
-	var handDecoder = A4(
-		_elm_lang$core$Json_Decode$object3,
-		F3(
-			function (a, b, c) {
-				return {ctor: '_Tuple3', _0: a, _1: b, _2: c};
+	var handDecoder = A6(
+		_elm_lang$core$Json_Decode$object5,
+		F5(
+			function (a, b, c, d, e) {
+				return {ctor: '_Tuple5', _0: a, _1: b, _2: c, _3: d, _4: e};
 			}),
 		A2(_elm_lang$core$Json_Decode_ops[':='], 'turn', _elm_lang$core$Json_Decode$string),
 		A2(
@@ -8873,17 +8893,19 @@ var _user$project$GameState$decodeState = function (msg) {
 		A2(
 			_elm_lang$core$Json_Decode_ops[':='],
 			'handPB',
-			_elm_lang$core$Json_Decode$list(cardDecoder)));
+			_elm_lang$core$Json_Decode$list(cardDecoder)),
+		A2(_elm_lang$core$Json_Decode_ops[':='], 'lifePA', _elm_lang$core$Json_Decode$int),
+		A2(_elm_lang$core$Json_Decode_ops[':='], 'lifePB', _elm_lang$core$Json_Decode$int));
 	var result = A2(_elm_lang$core$Json_Decode$decodeString, handDecoder, msg);
 	var _p3 = result;
 	if (_p3.ctor === 'Ok') {
 		switch (_p3._0._0) {
 			case 'pa':
 				return _elm_lang$core$Result$Ok(
-					{ctor: '_Tuple3', _0: _user$project$GameState$PlayerA, _1: _p3._0._1, _2: _p3._0._2});
+					{ctor: '_Tuple5', _0: _user$project$GameState$PlayerA, _1: _p3._0._1, _2: _p3._0._2, _3: _p3._0._3, _4: _p3._0._4});
 			case 'pb':
 				return _elm_lang$core$Result$Ok(
-					{ctor: '_Tuple3', _0: _user$project$GameState$PlayerB, _1: _p3._0._1, _2: _p3._0._2});
+					{ctor: '_Tuple5', _0: _user$project$GameState$PlayerB, _1: _p3._0._1, _2: _p3._0._2, _3: _p3._0._3, _4: _p3._0._4});
 			default:
 				return _elm_lang$core$Result$Err(
 					A2(_elm_lang$core$Basics_ops['++'], 'Invalid turn, should be pa or pb but is instead ', _p3._0._0));
@@ -8899,13 +8921,13 @@ var _user$project$GameState$syncModel = F2(
 		if (_p4.ctor === 'Ok') {
 			return _elm_lang$core$Native_Utils.update(
 				model,
-				{turn: _p4._0._0, hand: _p4._0._1, otherHand: _p4._0._2});
+				{turn: _p4._0._0, hand: _p4._0._1, otherHand: _p4._0._2, life: _p4._0._3, otherLife: _p4._0._4});
 		} else {
 			return _elm_lang$core$Native_Utils.crashCase(
 				'GameState',
 				{
-					start: {line: 113, column: 5},
-					end: {line: 117, column: 49}
+					start: {line: 127, column: 5},
+					end: {line: 131, column: 49}
 				},
 				_p4)(
 				A2(_elm_lang$core$Basics_ops['++'], 'Sync hand error: ', _p4._0));
