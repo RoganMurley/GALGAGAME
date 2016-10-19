@@ -16,6 +16,8 @@ type alias Model =
   , otherHand : Hand
   , stack : PlayStack
   , turn : Turn
+  , life : Life
+  , otherLife : Life
   }
 
 type alias Hand =
@@ -36,6 +38,10 @@ type Turn
   = PlayerA
   | PlayerB
 
+type alias Life =
+  Int
+
+
 -- INITIAL MODEL.
 
 init : Model
@@ -45,6 +51,8 @@ init =
   , otherHand = []
   , stack = []
   , turn = PlayerA
+  , life = 1000
+  , otherLife = 1000
   }
 
 
@@ -55,6 +63,8 @@ view model =
     [
       viewOtherHand model.otherHand
     , viewHand model.hand
+    , viewLife model.life
+    , viewLife model.otherLife
     , viewTurn model.turn
     ]
 
@@ -96,6 +106,10 @@ viewTurn turn =
     PlayerB ->
       div [ class "turn-indi enemy-turn" ] [ text "Enemy Turn" ]
 
+viewLife : Life -> Html Msg
+viewLife life =
+  div [ class "life-counter" ] [ text ((toString life) ++ " LP") ]
+
 
 -- UPDATE
 update : GameMsg -> Model -> Model
@@ -107,26 +121,28 @@ update msg model =
 syncModel : Model -> String -> Model
 syncModel model msg =
   let
-    result : Result String (Turn, Hand, Hand)
+    result : Result String (Turn, Hand, Hand, Life, Life)
     result = decodeState msg
   in
     case result of
-      Ok (turn, paHand, pbHand) ->
-        { model | turn = turn, hand = paHand, otherHand = pbHand }
+      Ok (turn, paHand, pbHand, paLife, pbLife) ->
+        { model | turn = turn, hand = paHand, otherHand = pbHand, life = paLife, otherLife = pbLife }
       Err err ->
         Debug.crash ("Sync hand error: " ++ err)
 
-decodeState : String -> Result String (Turn, Hand, Hand)
+decodeState : String -> Result String (Turn, Hand, Hand, Life, Life)
 decodeState msg =
   let
-    result : Result String (String, Hand, Hand)
+    result : Result String (String, Hand, Hand, Life, Life)
     result = Json.decodeString handDecoder msg
-    handDecoder : Json.Decoder (String, Hand, Hand)
+    handDecoder : Json.Decoder (String, Hand, Hand, Life, Life)
     handDecoder =
-      Json.object3 (\a b c -> (a, b, c))
+      Json.object5 (\a b c d e -> (a, b, c, d, e))
         ("turn" := Json.string)
         ("handPA" := Json.list cardDecoder)
         ("handPB" := Json.list cardDecoder)
+        ("lifePA" := Json.int)
+        ("lifePB" := Json.int)
     cardDecoder : Json.Decoder Card
     cardDecoder =
       Json.object4 Card
@@ -136,13 +152,13 @@ decodeState msg =
         ("cardColor" := Json.string)
   in
     case result of
-      Ok ("pa", handPA, handPB) ->
-        Ok (PlayerA, handPA, handPB)
+      Ok ("pa", handPA, handPB, lifePA, lifePB) ->
+        Ok (PlayerA, handPA, handPB, lifePA, lifePB)
 
-      Ok ("pb", handPA, handPB) ->
-        Ok (PlayerB, handPA, handPB)
+      Ok ("pb", handPA, handPB, lifePA, lifePB) ->
+        Ok (PlayerB, handPA, handPB, lifePA, lifePB)
 
-      Ok (t, _, _) ->
+      Ok (t, _, _, _, _) ->
         Err ("Invalid turn, should be pa or pb but is instead " ++ t)
 
       Err err ->
