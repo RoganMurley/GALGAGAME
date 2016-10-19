@@ -99,6 +99,20 @@
   position: absolute;
   right: 0; }
 
+.stack-container {
+  height: 100%;
+  z-index: -10; }
+
+.stack {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: -10; }
+
+.stack-card {
+  margin-left: -50%; }
+
 html {
   height: 100%; }
 

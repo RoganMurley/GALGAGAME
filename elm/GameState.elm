@@ -14,7 +14,7 @@ type alias Model =
   {
     hand : Hand
   , otherHand : Hand
-  , stack : PlayStack
+  , stack : Stack
   , turn : Turn
   , life : Life
   , otherLife : Life
@@ -23,7 +23,7 @@ type alias Model =
 type alias Hand =
   List Card
 
-type alias PlayStack =
+type alias Stack =
   List Card
 
 type alias Card =
@@ -63,6 +63,7 @@ view model =
     [
       viewOtherHand model.otherHand
     , viewHand model.hand
+    , viewStack model.stack
     , viewLife model.life
     , viewLife model.otherLife
     , viewTurn model.turn
@@ -88,7 +89,7 @@ viewHand hand =
         , div [ class "card-desc" ] [ text desc ]
       ]
   in
-    div [ class "hand my-hand" ] (List.map viewCard hand)
+  div [ class "hand my-hand" ] (List.map viewCard hand)
 
 viewOtherHand : Hand -> Html Msg
 viewOtherHand hand =
@@ -110,6 +111,30 @@ viewLife : Life -> Html Msg
 viewLife life =
   div [ class "life-counter" ] [ text ((toString life) ++ " LP") ]
 
+viewStack: Stack -> Html Msg
+viewStack stack =
+  let
+    viewCard : Card -> Html Msg
+    viewCard { name, desc, imgURL, cardColor } = div
+      [
+        class "card"
+      , style [ ("background-color", cardColor) ]
+      ]
+      [
+          div [ class "card-title" ] [ text name ]
+        , div
+          [
+            class "card-picture"
+          , style [ ("background-image", "url(\"img/" ++ imgURL ++ "\")") ]
+          ] []
+        , div [ class "card-desc" ] [ text desc ]
+      ]
+  in
+    div
+      [ class "stack-container" ]
+      [
+        div [ class "stack" ] (List.map viewCard stack)
+      ]
 
 -- UPDATE
 update : GameMsg -> Model -> Model
@@ -121,28 +146,29 @@ update msg model =
 syncModel : Model -> String -> Model
 syncModel model msg =
   let
-    result : Result String (Turn, Hand, Hand, Life, Life)
+    result : Result String (Turn, Hand, Hand, Life, Life, Stack)
     result = decodeState msg
   in
     case result of
-      Ok (turn, paHand, pbHand, paLife, pbLife) ->
-        { model | turn = turn, hand = paHand, otherHand = pbHand, life = paLife, otherLife = pbLife }
+      Ok (turn, paHand, pbHand, paLife, pbLife, stack) ->
+        { model | turn = turn, hand = paHand, otherHand = pbHand, life = paLife, otherLife = pbLife, stack = stack }
       Err err ->
         Debug.crash ("Sync hand error: " ++ err)
 
-decodeState : String -> Result String (Turn, Hand, Hand, Life, Life)
+decodeState : String -> Result String (Turn, Hand, Hand, Life, Life, Stack)
 decodeState msg =
   let
-    result : Result String (String, Hand, Hand, Life, Life)
+    result : Result String (String, Hand, Hand, Life, Life, Stack)
     result = Json.decodeString handDecoder msg
-    handDecoder : Json.Decoder (String, Hand, Hand, Life, Life)
+    handDecoder : Json.Decoder (String, Hand, Hand, Life, Life, Stack)
     handDecoder =
-      Json.object5 (\a b c d e -> (a, b, c, d, e))
+      Json.object6 (\a b c d e f -> (a, b, c, d, e, f))
         ("turn" := Json.string)
         ("handPA" := Json.list cardDecoder)
         ("handPB" := Json.list cardDecoder)
         ("lifePA" := Json.int)
         ("lifePB" := Json.int)
+        ("stack" := Json.list cardDecoder)
     cardDecoder : Json.Decoder Card
     cardDecoder =
       Json.object4 Card
@@ -152,13 +178,13 @@ decodeState msg =
         ("cardColor" := Json.string)
   in
     case result of
-      Ok ("pa", handPA, handPB, lifePA, lifePB) ->
-        Ok (PlayerA, handPA, handPB, lifePA, lifePB)
+      Ok ("pa", handPA, handPB, lifePA, lifePB, stack) ->
+        Ok (PlayerA, handPA, handPB, lifePA, lifePB, stack)
 
-      Ok ("pb", handPA, handPB, lifePA, lifePB) ->
-        Ok (PlayerB, handPA, handPB, lifePA, lifePB)
+      Ok ("pb", handPA, handPB, lifePA, lifePB, stack) ->
+        Ok (PlayerB, handPA, handPB, lifePA, lifePB, stack)
 
-      Ok (t, _, _, _, _) ->
+      Ok (t, _, _, _, _, _) ->
         Err ("Invalid turn, should be pa or pb but is instead " ++ t)
 
       Err err ->
