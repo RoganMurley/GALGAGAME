@@ -5,7 +5,7 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Json.Decode as Json exposing ((:=))
 
-import Messages exposing (GameMsg(Sync), Msg(DrawCard, EndTurn))
+import Messages exposing (GameMsg(Sync), Msg(DrawCard, EndTurn, PlayCard))
 
 
 -- TYPES.
@@ -76,7 +76,7 @@ viewHand hand =
     viewCard { name, desc, imgURL, cardColor } = div
       [
         class "card my-card"
-      -- , onClick DrawCard
+      , onClick (PlayCard name)
       , style [ ("background-color", cardColor) ]
       ]
       [
