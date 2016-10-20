@@ -4,8 +4,8 @@
   flex-flow: column;
   width: 17vw;
   height: 22vw;
-  max-width: 250px;
-  max-height: 380px;
+  max-width: 228px;
+  max-height: 295px;
   margin: 0 4px;
   border-radius: 12px;
   color: #fff; }
@@ -93,7 +93,7 @@
 
 .other-hand {
   top: 0;
-  margin-top: -17vw; }
+  margin-top: -12vw; }
 
 .turn-indi {
   position: absolute;
@@ -112,9 +112,6 @@
   display: flex;
   justify-content: center;
   width: 100%; }
-
-.stack-card {
-  margin-left: -50%; }
 
 html {
   height: 100%; }
