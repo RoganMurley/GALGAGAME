@@ -95,9 +95,12 @@ endTurn which model@(Model turn stack handPA handPB deckPA deckPB lifePA lifePB 
   | (turn == which) = drawCards (swapTurn passedModel)
   | otherwise = Nothing
   where
-    bothPassed = (passes == OnePass) :: Bool
+    bothPassed :: Bool
+    bothPassed = (passes == OnePass) || (null $ getHand (otherTurn which) model)
     passedModel :: Model
-    passedModel = (Model turn stack handPA handPB deckPA deckPB lifePA lifePB (incPasses passes))
+    passedModel
+      | bothPassed = (Model turn stack handPA handPB deckPA deckPB lifePA lifePB NoPass)
+      | otherwise = (Model turn stack handPA handPB deckPA deckPB lifePA lifePB (incPasses passes))
     drawCards :: Model -> Maybe Model
     drawCards m
       | bothPassed = (Just m) >>? (drawCard PlayerA) >>? (drawCard PlayerB) >>? (drawCard PlayerA) >>? (drawCard PlayerB)
