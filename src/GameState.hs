@@ -1,7 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 module GameState where
 
-import Control.Applicative ((*>))
+import Control.Monad (MonadPlus, mplus)
 import Data.Aeson (ToJSON(..), (.=), object)
 import Data.List (partition)
 import Data.Maybe (isJust, maybeToList)
@@ -100,8 +100,11 @@ endTurn which model@(Model turn stack handPA handPB deckPA deckPB lifePA lifePB 
     passedModel = (Model turn stack handPA handPB deckPA deckPB lifePA lifePB (incPasses passes))
     drawCards :: Model -> Maybe Model
     drawCards m
-      | bothPassed = (Just m) >>= (drawCard PlayerA) >>= (drawCard PlayerB) >>= (drawCard PlayerA) >>= (drawCard PlayerB)
+      | bothPassed = (Just m) >>? (drawCard PlayerA) >>? (drawCard PlayerB) >>? (drawCard PlayerA) >>? (drawCard PlayerB)
       | otherwise = Just m
+
+(>>?) :: (MonadPlus m) => m a -> (a -> m a) -> m a
+(>>?) x f = mplus (x >>= f) x
 
 -- In future, tag cards in hand with a uid and use that.
 playCard :: CardName -> WhichPlayer -> Model -> Maybe Model
