@@ -76,7 +76,7 @@ viewHand hand =
     viewCard { name, desc, imgURL, cardColor } = div
       [
         class "card my-card"
-      , onClick DrawCard
+      -- , onClick DrawCard
       , style [ ("background-color", cardColor) ]
       ]
       [

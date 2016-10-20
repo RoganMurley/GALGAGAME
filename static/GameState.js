@@ -8852,7 +8852,6 @@ var _user$project$GameState$viewHand = function (hand) {
 			_elm_lang$core$Native_List.fromArray(
 				[
 					_elm_lang$html$Html_Attributes$class('card my-card'),
-					_elm_lang$html$Html_Events$onClick(_user$project$Messages$DrawCard),
 					_elm_lang$html$Html_Attributes$style(
 					_elm_lang$core$Native_List.fromArray(
 						[
