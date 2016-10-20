@@ -1,8 +1,12 @@
 {-# LANGUAGE OverloadedStrings #-}
 module GameState where
 
+import Control.Applicative ((*>))
 import Data.Aeson (ToJSON(..), (.=), object)
+import Data.List (partition)
+import Data.Maybe (isJust, maybeToList)
 import Data.Text (Text)
+import Safe (headMay, tailSafe)
 
 
 data Model = Model Turn Stack Hand Hand Deck Deck Life Life Passes
@@ -49,7 +53,10 @@ instance ToJSON WhichPlayer where
   toJSON PlayerA = "pa"
   toJSON PlayerB = "pb"
 
-data GameCommand = Draw | EndTurn
+data GameCommand =
+    Draw
+  | EndTurn
+  | PlayCard CardName
 
 handMaxLength :: Int
 handMaxLength = 6
@@ -69,6 +76,7 @@ reverso (Model turn stack handPA handPB deckPA deckPB lifePA lifePB passes) =
 update :: GameCommand -> WhichPlayer -> Model -> Maybe Model
 update Draw which model = drawCard which model
 update EndTurn which model = endTurn which model
+update (PlayCard name) which model = playCard name which model
 
 drawCard :: WhichPlayer -> Model -> Maybe Model
 drawCard which model@(Model turn stack handPA handPB deckPA deckPB lifePA lifePB passes)
@@ -92,16 +100,33 @@ endTurn which model@(Model turn stack handPA handPB deckPA deckPB lifePA lifePB 
     passedModel = (Model turn stack handPA handPB deckPA deckPB lifePA lifePB (incPasses passes))
     drawCards :: Model -> Maybe Model
     drawCards m
-      | bothPassed = (Just m) >>= (drawCard PlayerA) >>= (drawCard PlayerB)
+      | bothPassed = (Just m) >>= (drawCard PlayerA) >>= (drawCard PlayerB) >>= (drawCard PlayerA) >>= (drawCard PlayerB)
       | otherwise = Just m
 
+-- In future, tag cards in hand with a uid and use that.
+playCard :: CardName -> WhichPlayer -> Model -> Maybe Model
+playCard name which model@(Model turn stack handPA handPB deckPA deckPB lifePA lifePB passes)
+  = card *> (Just (swapTurn $ resetPasses $ setStack ((maybeToList card) ++ stack) $ setHand which newHand model))
+  where
+    hand :: Hand
+    hand = getHand which model
+    (matches, misses) = partition (\(Card n _ _ _) -> n == name) hand :: ([Card], [Card])
+    newHand :: Hand
+    newHand = (tailSafe matches) ++ misses
+    card :: Maybe Card
+    card = headMay matches
+
 swapTurn :: Model -> Model
-swapTurn model@(Model turn stack handPA handPB deckPA deckPB lifePA lifePB passes) =
+swapTurn (Model turn stack handPA handPB deckPA deckPB lifePA lifePB passes) =
   Model (otherTurn turn) stack handPA handPB deckPA deckPB lifePA lifePB passes
 
 incPasses :: Passes -> Passes
 incPasses NoPass = OnePass
 incPasses OnePass = NoPass
+
+resetPasses :: Model -> Model
+resetPasses (Model turn stack handPA handPB deckPA deckPB lifePA lifePB passes) =
+  Model turn stack handPA handPB deckPA deckPB lifePA lifePB NoPass
 
 otherTurn :: Turn -> Turn
 otherTurn PlayerA = PlayerB
@@ -122,6 +147,10 @@ getDeck PlayerB (Model _ _ _ _ deckPA deckPB _ _ _) = deckPB
 setDeck :: WhichPlayer -> Deck -> Model -> Model
 setDeck PlayerA newDeck (Model turn stack handPA handPB deckPA deckPB lifePA lifePB passes) = Model turn stack handPA handPB newDeck deckPB lifePA lifePB passes
 setDeck PlayerB newDeck (Model turn stack handPA handPB deckPA deckPB lifePA lifePB passes) = Model turn stack handPA handPB deckPA newDeck lifePA lifePB passes
+
+setStack :: Stack -> Model -> Model
+setStack newStack (Model turn stack handPA handPB deckPA deckPB lifePA lifePB passes) =
+  Model turn newStack handPA handPB deckPA deckPB lifePA lifePB passes
 
 
 -- CARDS

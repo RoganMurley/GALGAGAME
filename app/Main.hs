@@ -19,7 +19,7 @@ import qualified Data.Text.Encoding as T
 import qualified Data.Text.IO as T
 import qualified Network.WebSockets as WS
 
-import GameState (GameCommand(..), Model(..), WhichPlayer(..), reverso, update)
+import GameState (CardName, GameCommand(..), Model(..), WhichPlayer(..), reverso, update)
 import Room
 
 
@@ -32,6 +32,7 @@ data Command =
   | LeaveCommand Username
   | DrawCommand
   | EndTurnCommand
+  | PlayCardCommand CardName
   | ErrorCommand Text
 
 
@@ -217,8 +218,9 @@ actPlay cmd which state
   | otherwise = actSpec cmd state
   where
     trans :: Command -> Maybe GameCommand
-    trans DrawCommand = Just (Draw)
-    trans EndTurnCommand = Just(EndTurn)
+    trans DrawCommand = Just Draw
+    trans EndTurnCommand = Just EndTurn
+    trans (PlayCardCommand name) = Just (PlayCard name)
     trans _ = Nothing
 
 actSpec :: Command -> MVar ServerState -> IO ()
@@ -252,6 +254,7 @@ parseMsg _ ""           = ErrorCommand "Command not found"
 parseMsg name msg
   | (command == "draw") = DrawCommand
   | (command == "end")  = EndTurnCommand
+  | (command == "play") = PlayCardCommand content
   | (command == "chat") = ChatCommand name content
   | otherwise           = ErrorCommand "Unknown command"
   where

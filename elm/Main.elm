@@ -147,6 +147,9 @@ connectedUpdate hostname msg ({ chat, game, mode } as model) =
     EndTurn ->
       (model, turnOnly model (send hostname "end:"))
 
+    PlayCard name ->
+      (model, turnOnly model (send hostname ("play:" ++ name)))
+
     NewChatMsg str ->
       ({ model | chat = addChatMessage str chat }, Cmd.none)
 
