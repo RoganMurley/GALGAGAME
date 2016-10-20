@@ -92,7 +92,7 @@ endTurn which model@(Model turn stack handPA handPB deckPA deckPB lifePA lifePB 
     passedModel = (Model turn stack handPA handPB deckPA deckPB lifePA lifePB (incPasses passes))
     drawCards :: Model -> Maybe Model
     drawCards m
-      | bothPassed = (Just m) >>= (drawCard PlayerA) >>= (drawCard PlayerA)
+      | bothPassed = (Just m) >>= (drawCard PlayerA) >>= (drawCard PlayerB)
       | otherwise = Just m
 
 swapTurn :: Model -> Model
