@@ -5,7 +5,7 @@ import Data.Aeson (ToJSON(..), (.=), object)
 import Data.Text (Text)
 
 
-data Model = Model Turn Stack Hand Hand Deck Deck Life Life
+data Model = Model Turn Stack Hand Hand Deck Deck Life Life Passes
 type Hand = [Card]
 type Deck = [Card]
 type Stack = [Card]
@@ -20,8 +20,11 @@ data WhichPlayer = PlayerA | PlayerB
   deriving (Eq)
 type Turn = WhichPlayer
 
+data Passes = NoPass | OnePass
+  deriving (Eq)
+
 instance ToJSON Model where
-  toJSON (Model turn stack handPA handPB deckPA deckPB lifePA lifePB) =
+  toJSON (Model turn stack handPA handPB deckPA deckPB lifePA lifePB _) =
     object
       [
         "turn" .= turn
@@ -52,24 +55,23 @@ handMaxLength :: Int
 handMaxLength = 6
 
 initModel :: Model
-initModel = Model PlayerA [ cardFireball, cardHubris ] [ cardDagger ] [ cardHubris ] (cycle [cardHubris, cardFireball, cardDagger]) (cycle [cardHubris, cardDagger]) 1000 1000
+initModel = Model PlayerA [ cardFireball, cardHubris ] [ cardDagger ] [ cardHubris ] (cycle [cardHubris, cardFireball, cardDagger]) (cycle [cardHubris, cardDagger]) 1000 1000 NoPass
 
 
 -- TEMP STUFF.
 reverso :: Model -> Model
-reverso (Model turn stack handPA handPB deckPA deckPB lifePA lifePB) =
-  Model (otherTurn turn) stack handPB handPA deckPB deckPA lifePA lifePB
+reverso (Model turn stack handPA handPB deckPA deckPB lifePA lifePB passes) =
+  Model (otherTurn turn) stack handPB handPA deckPB deckPA lifePA lifePB passes
 
 
 -- UPDATE
 
 update :: GameCommand -> WhichPlayer -> Model -> Maybe Model
-update Draw which model = drawCard model which
-update EndTurn which model = endTurn model which
+update Draw which model = drawCard which model
+update EndTurn which model = endTurn which model
 
-drawCard :: Model -> WhichPlayer -> Maybe Model
-drawCard model@(Model turn stack handPA handPB deckPA deckPB lifePA lifePB) which
-  | (turn /= which) = Nothing
+drawCard :: WhichPlayer -> Model -> Maybe Model
+drawCard which model@(Model turn stack handPA handPB deckPA deckPB lifePA lifePB passes)
   | (length hand >= handMaxLength) = Nothing
   | otherwise = Just (setDeck which (tail deck) $ setHand which (card : hand) model)
   where
@@ -80,30 +82,46 @@ drawCard model@(Model turn stack handPA handPB deckPA deckPB lifePA lifePB) whic
     hand :: Hand
     hand = getHand which model
 
-endTurn :: Model -> WhichPlayer -> Maybe Model
-endTurn model@(Model turn stack handPA handPB deckPA deckPB lifePA lifePB) which
-  | (turn == which) = Just (Model (otherTurn turn) stack handPA handPB deckPA deckPB lifePA lifePB)
+endTurn :: WhichPlayer -> Model -> Maybe Model
+endTurn which model@(Model turn stack handPA handPB deckPA deckPB lifePA lifePB passes)
+  | (turn == which) = drawCards (swapTurn passedModel)
   | otherwise = Nothing
+  where
+    bothPassed = (passes == OnePass) :: Bool
+    passedModel :: Model
+    passedModel = (Model turn stack handPA handPB deckPA deckPB lifePA lifePB (incPasses passes))
+    drawCards :: Model -> Maybe Model
+    drawCards m
+      | bothPassed = (Just m) >>= (drawCard PlayerA) >>= (drawCard PlayerA)
+      | otherwise = Just m
+
+swapTurn :: Model -> Model
+swapTurn model@(Model turn stack handPA handPB deckPA deckPB lifePA lifePB passes) =
+  Model (otherTurn turn) stack handPA handPB deckPA deckPB lifePA lifePB passes
+
+incPasses :: Passes -> Passes
+incPasses NoPass = OnePass
+incPasses OnePass = NoPass
 
 otherTurn :: Turn -> Turn
 otherTurn PlayerA = PlayerB
 otherTurn PlayerB = PlayerA
 
 getHand :: WhichPlayer -> Model -> Hand
-getHand PlayerA (Model _ _ handPA handPB _ _ _ _) = handPA
-getHand PlayerB (Model _ _ handPA handPB _ _ _ _) = handPB
+getHand PlayerA (Model _ _ handPA handPB _ _ _ _ _) = handPA
+getHand PlayerB (Model _ _ handPA handPB _ _ _ _ _) = handPB
 
 setHand :: WhichPlayer -> Hand -> Model -> Model
-setHand PlayerA newHand (Model turn stack handPA handPB deckPA deckPB lifePA lifePB) = Model turn stack newHand handPB deckPA deckPB lifePA lifePB
-setHand PlayerB newHand (Model turn stack handPA handPB deckPA deckPB lifePA lifePB) = Model turn stack handPA newHand deckPA deckPB lifePA lifePB
+setHand PlayerA newHand (Model turn stack handPA handPB deckPA deckPB lifePA lifePB passes) = Model turn stack newHand handPB deckPA deckPB lifePA lifePB passes
+setHand PlayerB newHand (Model turn stack handPA handPB deckPA deckPB lifePA lifePB passes) = Model turn stack handPA newHand deckPA deckPB lifePA lifePB passes
 
 getDeck :: WhichPlayer -> Model -> Deck
-getDeck PlayerA (Model _ _ _ _ deckPA deckPB _ _) = deckPA
-getDeck PlayerB (Model _ _ _ _ deckPA deckPB _ _) = deckPB
+getDeck PlayerA (Model _ _ _ _ deckPA deckPB _ _ _) = deckPA
+getDeck PlayerB (Model _ _ _ _ deckPA deckPB _ _ _) = deckPB
 
 setDeck :: WhichPlayer -> Deck -> Model -> Model
-setDeck PlayerA newDeck (Model turn stack handPA handPB deckPA deckPB lifePA lifePB) = Model turn stack handPA handPB newDeck deckPB lifePA lifePB
-setDeck PlayerB newDeck (Model turn stack handPA handPB deckPA deckPB lifePA lifePB) = Model turn stack handPA handPB deckPA newDeck lifePA lifePB
+setDeck PlayerA newDeck (Model turn stack handPA handPB deckPA deckPB lifePA lifePB passes) = Model turn stack handPA handPB newDeck deckPB lifePA lifePB passes
+setDeck PlayerB newDeck (Model turn stack handPA handPB deckPA deckPB lifePA lifePB passes) = Model turn stack handPA handPB deckPA newDeck lifePA lifePB passes
 
 
 -- CARDS
