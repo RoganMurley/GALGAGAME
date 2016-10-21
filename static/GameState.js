@@ -8824,7 +8824,7 @@ var _user$project$GameState$viewTurn = function (turn) {
 				]),
 			_elm_lang$core$Native_List.fromArray(
 				[
-					_elm_lang$html$Html$text('Enemy Turn')
+					_elm_lang$html$Html$text('Opponent\'s Turn')
 				]));
 	}
 };
@@ -8926,9 +8926,9 @@ var _user$project$GameState$view = function (model) {
 				_user$project$GameState$viewOtherHand(model.otherHand),
 				_user$project$GameState$viewHand(model.hand),
 				_user$project$GameState$viewStack(model.stack),
+				_user$project$GameState$viewTurn(model.turn),
 				_user$project$GameState$viewLife(model.life),
-				_user$project$GameState$viewLife(model.otherLife),
-				_user$project$GameState$viewTurn(model.turn)
+				_user$project$GameState$viewLife(model.otherLife)
 			]));
 };
 var _user$project$GameState$Model = F6(

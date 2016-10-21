@@ -64,9 +64,9 @@ view model =
       viewOtherHand model.otherHand
     , viewHand model.hand
     , viewStack model.stack
+    , viewTurn model.turn
     , viewLife model.life
     , viewLife model.otherLife
-    , viewTurn model.turn
     ]
 
 viewHand : Hand -> Html Msg
@@ -105,7 +105,7 @@ viewTurn turn =
     PlayerA ->
       button [ class "turn-indi pass-button", onClick EndTurn ] [ text "Pass" ]
     PlayerB ->
-      div [ class "turn-indi enemy-turn" ] [ text "Enemy Turn" ]
+      div [ class "turn-indi enemy-turn" ] [ text "Opponent's Turn" ]
 
 viewLife : Life -> Html Msg
 viewLife life =
