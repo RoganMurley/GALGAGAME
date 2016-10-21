@@ -13,12 +13,13 @@ data Model = Model Turn Stack Hand Hand Deck Deck Life Life Passes
 type Hand = [Card]
 type Deck = [Card]
 type Stack = [Card]
-data Card = Card CardName CardDesc CardImgURL CardColor
+data Card = Card CardName CardDesc CardImgURL CardColor CardEff
 type CardName = Text
 type CardDesc = Text
 type CardImgURL = Text
 type CardColor = Text
 type Life = Int
+type CardEff = (WhiuModel -> Model)
 
 data WhichPlayer = PlayerA | PlayerB
   deriving (Eq)
@@ -40,7 +41,7 @@ instance ToJSON Model where
       ]
 
 instance ToJSON Card where
-  toJSON (Card name desc imageURL color) =
+  toJSON (Card name desc imageURL color eff) =
     object
       [
         "name" .= name
@@ -95,7 +96,7 @@ drawCard which model@(Model turn stack handPA handPB deckPA deckPB lifePA lifePB
 
 endTurn :: WhichPlayer -> Model -> Maybe Model
 endTurn which model@(Model turn stack handPA handPB deckPA deckPB lifePA lifePB passes)
-  | (turn == which) = drawCards (swapTurn passedModel)
+  | (turn == which) = drawCards $ swapTurn $ resolve $ passedModel
   | otherwise = Nothing
   where
     bothPassed :: Bool
@@ -106,8 +107,12 @@ endTurn which model@(Model turn stack handPA handPB deckPA deckPB lifePA lifePB 
       | otherwise = (Model turn stack handPA handPB deckPA deckPB lifePA lifePB (incPasses passes))
     drawCards :: Model -> Maybe Model
     drawCards m
-      | bothPassed = (Just m) >>? (drawCard PlayerA) >>? (drawCard PlayerB) >>? (drawCard PlayerA) >>? (drawCard PlayerB)
+      | bothPassed = (Just m) >>? (drawCard PlayerA) >>? (drawCard PlayerB)
       | otherwise = Just m
+    resolve :: Model -> Model
+    resolve m
+      | bothPassed = resolveAll m
+      | otherwise = m
 
 (>>?) :: (MonadPlus m) => m a -> (a -> m a) -> m a
 (>>?) x f = mplus (x >>= f) x
@@ -119,7 +124,7 @@ playCard name which model@(Model turn stack handPA handPB deckPA deckPB lifePA l
   where
     hand :: Hand
     hand = getHand which model
-    (matches, misses) = partition (\(Card n _ _ _) -> n == name) hand :: ([Card], [Card])
+    (matches, misses) = partition (\(Card n _ _ _ _) -> n == name) hand :: ([Card], [Card])
     newHand :: Hand
     newHand = (tailSafe matches) ++ misses
     card :: Maybe Card
@@ -157,18 +162,53 @@ setDeck :: WhichPlayer -> Deck -> Model -> Model
 setDeck PlayerA newDeck (Model turn stack handPA handPB deckPA deckPB lifePA lifePB passes) = Model turn stack handPA handPB newDeck deckPB lifePA lifePB passes
 setDeck PlayerB newDeck (Model turn stack handPA handPB deckPA deckPB lifePA lifePB passes) = Model turn stack handPA handPB deckPA newDeck lifePA lifePB passes
 
+getStack :: Model -> Deck
+getStack (Model _ stack _ _ _ _ _ _ _) = stack
+
 setStack :: Stack -> Model -> Model
 setStack newStack (Model turn stack handPA handPB deckPA deckPB lifePA lifePB passes) =
   Model turn newStack handPA handPB deckPA deckPB lifePA lifePB passes
 
+resolveOne :: Model -> Model
+resolveOne model@(Model turn stack handPA handPB deckPA deckPB lifePA lifePB passes) =
+  eff (setStack (tailSafe stack) model)
+  where
+    eff :: CardEff
+    eff = case headMay stack of
+      Nothing -> id
+      Just (Card _ _ _ _ eff) -> eff
+
+resolveAll :: Model -> Model
+resolveAll model =
+  case stackEmpty of
+    True -> model
+    False -> resolveAll (resolveOne model)
+  where
+    stackEmpty :: Bool
+    stackEmpty = null (getStack model)
+
+hurt :: Life -> WhichPlayer -> Model -> Model
+hurt damage PlayerA (Model turn stack handPA handPB deckPA deckPB lifePA lifePB passes) =
+  Model turn stack handPA handPB deckPA deckPB (lifePA - damage) lifePB passes
+hurt damage PlayerB (Model turn stack handPA handPB deckPA deckPB lifePA lifePB passes) =
+  Model turn stack handPA handPB deckPA deckPB lifePA (lifePB - damage) passes
 
 -- CARDS
 
 cardDagger :: Card
-cardDagger = Card "Steeledge" "Hurt for 100" "plain-dagger.svg" "#bf1131"
+cardDagger = Card "Steeledge" "Hurt for 100" "plain-dagger.svg" "#bf1131" eff
+  where
+    eff :: CardEff
+    eff m = hurt 100 PlayerA m
 
 cardHubris :: Card
-cardHubris = Card "Hubris" "If combo is > 4 then negate everything" "tower-fall.svg" "#1c1f26"
+cardHubris = Card "Hubris" "Negate whole combo" "tower-fall.svg" "#1c1f26" eff
+  where
+    eff :: CardEff
+    eff m = setStack [] m
 
 cardFireball :: Card
-cardFireball = Card "Meteor" "Hurt for 40 per combo" "fire-ray.svg" "#bf1131"
+cardFireball = Card "Meteor" "Hurt for 40 per combo" "fire-ray.svg" "#bf1131" eff
+  where
+    eff :: CardEff
+    eff m = hurt (40 * (length (getStack m))) PlayerA m
