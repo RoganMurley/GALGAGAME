@@ -50,6 +50,8 @@
   -webkit-transition: transform 0.15s ease-out;
   transition: transform 0.15s ease-out;
   cursor: pointer; cursor: hand;
+
+  z-index: 10;
 }
 
 .my-card:hover {

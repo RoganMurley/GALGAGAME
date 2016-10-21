@@ -35,7 +35,8 @@
   -webkit-transition: transform 0.15s ease-out;
   transition: transform 0.15s ease-out;
   cursor: pointer;
-  cursor: hand; }
+  cursor: hand;
+  z-index: 10; }
 
 .my-card:hover {
   -webkit-transform: translateY(0);
@@ -97,7 +98,23 @@
 
 .turn-indi {
   position: absolute;
-  right: 0; }
+  left: 50%;
+  top: 75%;
+  transform: translateX(-50%);
+  color: #fff;
+  font-size: 2.2rem;
+  font-weight: 800; }
+
+.pass-button {
+  background-color: #153c6f;
+  text-decoration: none;
+  cursor: pointer;
+  cursor: hand;
+  border: none;
+  border-radius: 5px;
+  width: 9rem; }
+  .pass-button:hover {
+    background-color: #2a4f7d; }
 
 .stack-container {
   height: 100%;
