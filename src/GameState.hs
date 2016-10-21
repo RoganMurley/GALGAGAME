@@ -19,7 +19,7 @@ type CardDesc = Text
 type CardImgURL = Text
 type CardColor = Text
 type Life = Int
-type CardEff = (WhiuModel -> Model)
+type CardEff = (Model -> Model)
 
 data WhichPlayer = PlayerA | PlayerB
   deriving (Eq)
