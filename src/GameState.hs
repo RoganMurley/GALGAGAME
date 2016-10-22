@@ -101,19 +101,16 @@ drawCard which model@(Model turn stack handPA handPB deckPA deckPB lifePA lifePB
 
 endTurn :: WhichPlayer -> Model -> Maybe Model
 endTurn which model@(Model turn stack handPA handPB deckPA deckPB lifePA lifePB passes)
-  | (turn == which) = drawCards $ swapTurn $ resolve $ model
-  | otherwise = Nothing
+  | turn /= which = Nothing
+  | otherwise =
+    case bothPassed of
+      True -> drawCards $ resetPasses $ swapTurn $ resolveAll $ model
+      False -> Just $ swapTurn $ model
   where
     bothPassed :: Bool
-    bothPassed = (passes == OnePass) || (null $ getHand (otherTurn which) model)
+    bothPassed = passes == OnePass
     drawCards :: Model -> Maybe Model
-    drawCards m
-      | bothPassed = (Just m) >>? (drawCard PlayerA) >>? (drawCard PlayerB)
-      | otherwise = Just m
-    resolve :: Model -> Model
-    resolve m
-      | bothPassed = resolveAll m
-      | otherwise = m
+    drawCards m = (Just m) >>? (drawCard PlayerA) >>? (drawCard PlayerB)
 
 (>>?) :: (MonadPlus m) => m a -> (a -> m a) -> m a
 (>>?) x f = mplus (x >>= f) x
@@ -121,7 +118,7 @@ endTurn which model@(Model turn stack handPA handPB deckPA deckPB lifePA lifePB 
 -- In future, tag cards in hand with a uid and use that.
 playCard :: CardName -> WhichPlayer -> Model -> Maybe Model
 playCard name which model@(Model turn stack handPA handPB deckPA deckPB lifePA lifePB passes)
-  = card *> (Just (playSwapTurn $ resetPasses $ setStack ((maybeToList card) ++ stack) $ setHand which newHand model))
+  = card *> (Just (resetPasses $ swapTurn $ setStack ((maybeToList card) ++ stack) $ setHand which newHand model))
   where
     hand :: Hand
     hand = getHand which model
@@ -133,18 +130,7 @@ playCard name which model@(Model turn stack handPA handPB deckPA deckPB lifePA l
 
 swapTurn :: Model -> Model
 swapTurn model@(Model turn stack handPA handPB deckPA deckPB lifePA lifePB passes) =
-  Model (otherTurn turn) stack handPA handPB deckPA deckPB lifePA lifePB NoPass
-
-
-playSwapTurn :: Model -> Model
-playSwapTurn model@(Model turn stack handPA handPB deckPA deckPB lifePA lifePB passes)
-  | emptyHand = Model turn stack handPA handPB deckPA deckPB lifePA lifePB NoPass
-  | otherwise = Model newTurn stack handPA handPB deckPA deckPB lifePA lifePB (incPasses passes)
-  where
-    newTurn :: Turn
-    newTurn = otherTurn turn
-    emptyHand :: Bool
-    emptyHand = null (getHand newTurn model)
+  Model (otherTurn turn) stack handPA handPB deckPA deckPB lifePA lifePB (incPasses passes)
 
 incPasses :: Passes -> Passes
 incPasses NoPass = OnePass
