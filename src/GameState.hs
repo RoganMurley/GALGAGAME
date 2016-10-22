@@ -68,10 +68,15 @@ handMaxLength :: Int
 handMaxLength = 6
 
 initModel :: Model
-initModel = Model PlayerA [] (take 5 deckPA) (take 5 deckPB) deckPA deckPB 1000 1000 NoPass
+initModel = Model PlayerA [] hand hand deck deck 1000 1000 NoPass
   where
-    deckPA = cycle [cardHubris, cardFireball, cardDagger] :: Deck
-    deckPB = cycle [cardHubris, cardDagger] :: Deck
+    (hand, deck) = splitAt 5 initDeck :: (Hand, Deck)
+
+initDeck :: Deck
+initDeck =
+     (replicate 3 cardHubris)
+  ++ (replicate 3 cardFireball)
+  ++ (replicate 3 cardDagger)
 
 
 -- TEMP STUFF.
@@ -90,10 +95,17 @@ update (PlayCard name) which model = playCard name which model
 drawCard :: WhichPlayer -> Model -> Maybe Model
 drawCard which model@(Model turn stack handPA handPB deckPA deckPB lifePA lifePB passes)
   | (length hand >= handMaxLength) = Nothing
-  | otherwise = Just (setDeck which (tail deck) $ setHand which (card : hand) model)
+  | otherwise =
+    case drawnCard of
+      Just card ->
+        Just (setDeck which drawnDeck $ setHand which (card : hand) model)
+      Nothing ->
+        Nothing
   where
-    card :: Card
-    card = head deck
+    drawnCard :: Maybe Card
+    drawnCard = headMay deck
+    drawnDeck :: Deck
+    drawnDeck = tailSafe deck
     deck :: Deck
     deck = getDeck which model
     hand :: Hand
