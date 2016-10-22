@@ -12,14 +12,15 @@ import Safe (headMay, tailSafe)
 data Model = Model Turn Stack Hand Hand Deck Deck Life Life Passes
 type Hand = [Card]
 type Deck = [Card]
-type Stack = [Card]
+type Stack = [StackCard]
 data Card = Card CardName CardDesc CardImgURL CardColor CardEff
+data StackCard = StackCard WhichPlayer Card
 type CardName = Text
 type CardDesc = Text
 type CardImgURL = Text
 type CardColor = Text
 type Life = Int
-type CardEff = (Model -> Model)
+type CardEff = (WhichPlayer -> Model -> Model)
 
 data WhichPlayer = PlayerA | PlayerB
   deriving (Eq)
@@ -50,6 +51,10 @@ instance ToJSON Card where
       , "cardColor" .= color
       ]
 
+instance ToJSON StackCard where
+  toJSON (StackCard owner card) =
+    toJSON card
+
 instance ToJSON WhichPlayer where
   toJSON PlayerA = "pa"
   toJSON PlayerB = "pb"
@@ -72,7 +77,7 @@ initModel = Model PlayerA [] (take 5 deckPA) (take 5 deckPB) deckPA deckPB 1000 
 -- TEMP STUFF.
 reverso :: Model -> Model
 reverso (Model turn stack handPA handPB deckPA deckPB lifePA lifePB passes) =
-  Model (otherTurn turn) stack handPB handPA deckPB deckPA lifePA lifePB passes
+  Model (otherTurn turn) stack handPB handPA deckPB deckPA lifePB lifePA passes
 
 
 -- UPDATE
@@ -96,15 +101,11 @@ drawCard which model@(Model turn stack handPA handPB deckPA deckPB lifePA lifePB
 
 endTurn :: WhichPlayer -> Model -> Maybe Model
 endTurn which model@(Model turn stack handPA handPB deckPA deckPB lifePA lifePB passes)
-  | (turn == which) = drawCards $ swapTurn $ resolve $ passedModel
+  | (turn == which) = drawCards $ swapTurn $ resolve $ model
   | otherwise = Nothing
   where
     bothPassed :: Bool
     bothPassed = (passes == OnePass) || (null $ getHand (otherTurn which) model)
-    passedModel :: Model
-    passedModel
-      | bothPassed = (Model turn stack handPA handPB deckPA deckPB lifePA lifePB NoPass)
-      | otherwise = (Model turn stack handPA handPB deckPA deckPB lifePA lifePB (incPasses passes))
     drawCards :: Model -> Maybe Model
     drawCards m
       | bothPassed = (Just m) >>? (drawCard PlayerA) >>? (drawCard PlayerB)
@@ -120,19 +121,30 @@ endTurn which model@(Model turn stack handPA handPB deckPA deckPB lifePA lifePB 
 -- In future, tag cards in hand with a uid and use that.
 playCard :: CardName -> WhichPlayer -> Model -> Maybe Model
 playCard name which model@(Model turn stack handPA handPB deckPA deckPB lifePA lifePB passes)
-  = card *> (Just (swapTurn $ resetPasses $ setStack ((maybeToList card) ++ stack) $ setHand which newHand model))
+  = card *> (Just (playSwapTurn $ resetPasses $ setStack ((maybeToList card) ++ stack) $ setHand which newHand model))
   where
     hand :: Hand
     hand = getHand which model
     (matches, misses) = partition (\(Card n _ _ _ _) -> n == name) hand :: ([Card], [Card])
     newHand :: Hand
     newHand = (tailSafe matches) ++ misses
-    card :: Maybe Card
-    card = headMay matches
+    card :: Maybe StackCard
+    card = (StackCard which) <$> (headMay matches)
 
 swapTurn :: Model -> Model
-swapTurn (Model turn stack handPA handPB deckPA deckPB lifePA lifePB passes) =
-  Model (otherTurn turn) stack handPA handPB deckPA deckPB lifePA lifePB passes
+swapTurn model@(Model turn stack handPA handPB deckPA deckPB lifePA lifePB passes) =
+  Model (otherTurn turn) stack handPA handPB deckPA deckPB lifePA lifePB NoPass
+
+
+playSwapTurn :: Model -> Model
+playSwapTurn model@(Model turn stack handPA handPB deckPA deckPB lifePA lifePB passes)
+  | emptyHand = Model turn stack handPA handPB deckPA deckPB lifePA lifePB NoPass
+  | otherwise = Model newTurn stack handPA handPB deckPA deckPB lifePA lifePB (incPasses passes)
+  where
+    newTurn :: Turn
+    newTurn = otherTurn turn
+    emptyHand :: Bool
+    emptyHand = null (getHand newTurn model)
 
 incPasses :: Passes -> Passes
 incPasses NoPass = OnePass
@@ -145,6 +157,9 @@ resetPasses (Model turn stack handPA handPB deckPA deckPB lifePA lifePB passes) 
 otherTurn :: Turn -> Turn
 otherTurn PlayerA = PlayerB
 otherTurn PlayerB = PlayerA
+
+otherPlayer :: WhichPlayer -> WhichPlayer
+otherPlayer = otherTurn
 
 getHand :: WhichPlayer -> Model -> Hand
 getHand PlayerA (Model _ _ handPA handPB _ _ _ _ _) = handPA
@@ -162,7 +177,7 @@ setDeck :: WhichPlayer -> Deck -> Model -> Model
 setDeck PlayerA newDeck (Model turn stack handPA handPB deckPA deckPB lifePA lifePB passes) = Model turn stack handPA handPB newDeck deckPB lifePA lifePB passes
 setDeck PlayerB newDeck (Model turn stack handPA handPB deckPA deckPB lifePA lifePB passes) = Model turn stack handPA handPB deckPA newDeck lifePA lifePB passes
 
-getStack :: Model -> Deck
+getStack :: Model -> Stack
 getStack (Model _ stack _ _ _ _ _ _ _) = stack
 
 setStack :: Stack -> Model -> Model
@@ -173,10 +188,10 @@ resolveOne :: Model -> Model
 resolveOne model@(Model turn stack handPA handPB deckPA deckPB lifePA lifePB passes) =
   eff (setStack (tailSafe stack) model)
   where
-    eff :: CardEff
+    eff :: Model -> Model
     eff = case headMay stack of
       Nothing -> id
-      Just (Card _ _ _ _ eff) -> eff
+      Just (StackCard p (Card _ _ _ _ effect)) -> effect p
 
 resolveAll :: Model -> Model
 resolveAll model =
@@ -199,16 +214,16 @@ cardDagger :: Card
 cardDagger = Card "Steeledge" "Hurt for 100" "plain-dagger.svg" "#bf1131" eff
   where
     eff :: CardEff
-    eff m = hurt 100 PlayerA m
+    eff p m = hurt 100 (otherPlayer p) m
 
 cardHubris :: Card
 cardHubris = Card "Hubris" "Negate whole combo" "tower-fall.svg" "#1c1f26" eff
   where
     eff :: CardEff
-    eff m = setStack [] m
+    eff p m = setStack [] m
 
 cardFireball :: Card
 cardFireball = Card "Meteor" "Hurt for 40 per combo" "fire-ray.svg" "#bf1131" eff
   where
     eff :: CardEff
-    eff m = hurt (40 * (length (getStack m))) PlayerA m
+    eff p m = hurt (40 * (length (getStack m))) (otherPlayer p) m
