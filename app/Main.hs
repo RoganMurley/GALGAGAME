@@ -39,11 +39,6 @@ data Command =
 newServerState :: ServerState
 newServerState = empty
 
-clientExists :: RoomName -> Client -> ServerState -> Bool
-clientExists name client state = any ((== fst client) . fst) (getRoomClients room)
-  where
-  room = getRoom name state :: Room
-
 getRoom :: RoomName -> ServerState -> Room
 getRoom name state = getOrCreate existingRoom
   where
@@ -86,36 +81,26 @@ removeClient name client state
   newClients = getRoomClients newRoom :: [Client]
 
 
-broadcast :: Text -> RoomName -> ServerState -> IO ()
-broadcast msg name state = do
+broadcast :: Text -> Room -> IO ()
+broadcast msg room = do
   T.putStrLn msg
-  forM_ clients $ \(_, conn) -> WS.sendTextData conn msg
-  where
-  room = getRoom name state :: Room
-  clients = getRoomClients room :: [Client]
+  forM_ (getRoomClients room) $ \(_, conn) -> WS.sendTextData conn msg
 
-sendToPlayer :: WhichPlayer -> Text -> RoomName -> ServerState -> IO ()
-sendToPlayer PlayerA msg name state = do
-  T.putStrLn ("To PlayerA: " <> msg)
-  forM_ clients $ \(_, conn) -> WS.sendTextData conn msg
+sendToPlayer :: WhichPlayer -> Text -> Room -> IO ()
+sendToPlayer which msg room =
+  case getPlayerClient which room of
+    Just client -> do
+      T.putStrLn $ "Send to " <> whichText <> ": " <> msg
+      WS.sendTextData (snd client) msg
+    Nothing ->
+      T.putStrLn $ "No " <> whichText <> "to send to."
   where
-  room = getRoom name state :: Room
-  clients = maybeToList (getPlayerClient PlayerA room) :: [Client]
-sendToPlayer PlayerB msg name state = do
-  T.putStrLn ("To PlayerB: " <> msg)
-  forM_ clients $ \(_, conn) -> WS.sendTextData conn msg
-  where
-  room = getRoom name state :: Room
-  clients = maybeToList (getPlayerClient PlayerB room) :: [Client]
+    whichText = cs (show which) :: Text
 
-sendToSpecs :: Text -> RoomName -> ServerState -> IO ()
-sendToSpecs msg name state = do
+sendToSpecs :: Text -> Room -> IO ()
+sendToSpecs msg room = do
   T.putStrLn ("To Specs: " <> msg)
-  forM_ clients $ \(_, conn) -> WS.sendTextData conn msg
-  where
-  room = getRoom name state :: Room
-  clients = getRoomSpecs room :: [Client]
-
+  forM_ (getRoomSpecs room) $ \(_, conn) -> WS.sendTextData conn msg
 
 main :: IO ()
 main = do
@@ -140,7 +125,7 @@ application state pending = do
                    WS.sendTextData conn (toChat (ErrorCommand ("Name must be nonempty" :: Text)))
 
 
-           | clientExists "default" client rooms ->
+           | clientExists client (getRoom "default" rooms) ->
                WS.sendTextData conn (toChat (ErrorCommand ("User already exists" :: Text)))
 
            | prefix == "play:" -> do
@@ -149,11 +134,12 @@ application state pending = do
                 do
                   flip finally disconnect $ do
                     let (s', which) = addPlayerClient "default" client s
+                    let room = getRoom "default" s
                     putMVar state s'
                     WS.sendTextData conn ("acceptPlay:" :: Text)
-                    WS.sendTextData conn ("chat:Welcome! " <> userList s)
-                    broadcast (toChat (PlayCommand (fst client))) "default" s'
-                    syncClients s'
+                    WS.sendTextData conn ("chat:Welcome! " <> userList room)
+                    broadcast (toChat (PlayCommand (fst client))) room
+                    syncClients room
                     playLoop conn state client which
                   else
                     do
@@ -163,11 +149,11 @@ application state pending = do
            | prefix == "spectate:" -> flip finally disconnect $ do
               modifyMVar_ state $ \s -> do
                   let s' = addSpecClient "default" client s
+                  let room = getRoom "default" s
                   WS.sendTextData conn ("acceptSpec:" :: Text)
-                  WS.sendTextData conn $
-                       "chat:Welcome! " <> userList s
-                  broadcast (toChat (SpectateCommand (fst client))) "default" s'
-                  syncClients s'
+                  WS.sendTextData conn ("chat:Welcome! " <> userList room)
+                  broadcast (toChat (SpectateCommand (fst client))) room
+                  syncClients room
                   return s'
               specLoop conn state client
 
@@ -180,7 +166,7 @@ application state pending = do
               -- Remove client and return new state
               s <- modifyMVar state $ \s ->
                   let s' = removeClient "default" client s in return (s', s')
-              broadcast (toChat (LeaveCommand (fst client))) "default" s
+              broadcast (toChat (LeaveCommand (fst client))) (getRoom "default" s)
 
 validConnectMsg :: Text -> (Bool, Text)
 validConnectMsg msg
@@ -189,13 +175,13 @@ validConnectMsg msg
   | otherwise = (False, "")
 
 
-userList :: ServerState -> Text
-userList s
-  | (users == "") = "You're the only one here..."
-  | otherwise     = "Users: " <> users
+userList :: Room -> Text
+userList room
+  | users == "" = "You're the only one here..."
+  | otherwise = "Users: " <> users
   where
-  users :: Text
-  users = T.intercalate ", " (map fst (getRoomClients (getRoom "default" s)))
+    users :: Text
+    users = T.intercalate ", " (map fst (getRoomClients room))
 
 playLoop :: WS.Connection -> MVar ServerState -> Client -> WhichPlayer -> IO ()
 playLoop conn state (user, _) which = forever $ do
@@ -214,7 +200,7 @@ actPlay cmd which state
       s <- modifyMVar state $ \x -> do
         let s' = stateUpdate (fromJust (trans cmd)) which "default" x
         return (s', s')
-      syncClients s
+      syncClients (getRoom "default" s)
   | otherwise = actSpec cmd state
   where
     trans :: Command -> Maybe GameCommand
@@ -226,18 +212,17 @@ actPlay cmd which state
 actSpec :: Command -> MVar ServerState -> IO ()
 actSpec cmd state = do
     s <- readMVar state
-    broadcast (toChat cmd) "default" s
+    broadcast (toChat cmd) (getRoom "default" s)
 
-syncClients :: ServerState -> IO ()
-syncClients state = do
-  sendToPlayer PlayerA syncMsgPa "default" state
-  sendToPlayer PlayerB syncMsgPb "default" state
-  sendToSpecs syncMsgPa "default" state
+syncClients :: Room -> IO ()
+syncClients room = do
+  sendToPlayer PlayerA syncMsgPa room
+  sendToPlayer PlayerB syncMsgPb room
+  sendToSpecs syncMsgPa room
   where
-  room = getRoom "default" state :: Room
-  game = getRoomModel room :: Model
-  syncMsgPa = "sync:" <> (cs $ encode $ game) :: Text
-  syncMsgPb = "sync:" <> (cs $ encode $ reverso $ game) :: Text
+    game = getRoomModel room :: Model
+    syncMsgPa = "sync:" <> (cs $ encode $ game) :: Text
+    syncMsgPb = "sync:" <> (cs $ encode $ reverso $ game) :: Text
 
 
 toChat :: Command -> Text
