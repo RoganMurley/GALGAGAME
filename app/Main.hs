@@ -83,15 +83,15 @@ removeClient name client state
 
 broadcast :: Text -> Room -> IO ()
 broadcast msg room = do
-  T.putStrLn msg
+  T.putStrLn $ "Broadcasting: " <> msg
   forM_ (getRoomClients room) $ \(_, conn) -> WS.sendTextData conn msg
 
 sendToPlayer :: WhichPlayer -> Text -> Room -> IO ()
 sendToPlayer which msg room =
   case getPlayerClient which room of
-    Just client -> do
+    Just (_, conn) -> do
       T.putStrLn $ "Send to " <> whichText <> ": " <> msg
-      WS.sendTextData (snd client) msg
+      WS.sendTextData conn msg
     Nothing ->
       T.putStrLn $ "No " <> whichText <> "to send to."
   where
@@ -163,7 +163,6 @@ application state pending = do
           (valid, prefix) = validConnectMsg msg
           client = (T.drop (T.length prefix) msg, conn)
           disconnect = do
-              -- Remove client and return new state
               s <- modifyMVar state $ \s ->
                   let s' = removeClient "default" client s in return (s', s')
               broadcast (toChat (LeaveCommand (fst client))) (getRoom "default" s)
@@ -194,14 +193,16 @@ specLoop conn state (user, _) = forever $ do
   actSpec (parseMsg user msg) state
 
 actPlay :: Command -> WhichPlayer -> MVar ServerState -> IO ()
-actPlay cmd which state
-  | isJust (trans cmd) =
-    do
-      s <- modifyMVar state $ \x -> do
-        let s' = stateUpdate (fromJust (trans cmd)) which "default" x
-        return (s', s')
-      syncClients (getRoom "default" s)
-  | otherwise = actSpec cmd state
+actPlay cmd which state =
+  case trans cmd of
+    Just command ->
+      do
+        s <- modifyMVar state $ \x -> do
+          let s' = stateUpdate command which "default" x
+          return (s', s')
+        syncClients (getRoom "default" s)
+    Nothing ->
+      actSpec cmd state
   where
     trans :: Command -> Maybe GameCommand
     trans DrawCommand = Just Draw
