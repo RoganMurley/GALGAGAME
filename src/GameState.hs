@@ -23,7 +23,7 @@ type Life = Int
 type CardEff = (WhichPlayer -> Model -> Model)
 
 data WhichPlayer = PlayerA | PlayerB
-  deriving (Eq)
+  deriving (Eq, Show)
 type Turn = WhichPlayer
 
 data Passes = NoPass | OnePass

@@ -40,6 +40,9 @@ getPlayerClient PlayerB (Room _ pb _ _) = pb
 getRoomSpecs :: Room -> [Client]
 getRoomSpecs (Room _ _ specs _) = specs
 
+clientExists :: Client -> Room -> Bool
+clientExists client room = any ((== fst client) . fst) (getRoomClients room)
+
 
 -- ADD CLIENTS.
 addSpec :: Client -> Room -> Room
