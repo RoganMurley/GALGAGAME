@@ -46,22 +46,26 @@ clientExists client room = any ((== fst client) . fst) (getRoomClients room)
 
 -- ADD CLIENTS.
 addSpec :: Client -> Room -> Room
-addSpec client (Room pa pb specs count) = Room pa pb (client:specs) count
+addSpec client (Room pa pb specs model) = Room pa pb (client:specs) model
 
 addPlayer :: Client -> Room -> (Room, WhichPlayer)
-addPlayer client (Room Nothing pb specs count) = (Room (Just client) pb specs count, PlayerA)
-addPlayer client (Room pa Nothing specs count) = (Room pa (Just client) specs count, PlayerB)
-addPlayer client (Room (Just a) (Just b) specs count) = (Room (Just a) (Just b) specs count, PlayerA) -- FIX THIS: PLAYERA -> NOTHING OR SOMETHING
+addPlayer client (Room Nothing pb specs model) = (Room (Just client) pb specs model, PlayerA)
+addPlayer client (Room pa Nothing specs model) = (Room pa (Just client) specs model, PlayerB)
+addPlayer client (Room (Just a) (Just b) specs model) = (Room (Just a) (Just b) specs model, PlayerA) -- FIX THIS: PLAYERA -> NOTHING OR SOMETHING
 
 roomFull :: Room -> Bool
 roomFull (Room (Just _) (Just _) _ _) = True
 roomFull _ = False
 
+roomEmpty :: Room -> Bool
+roomEmpty (Room Nothing Nothing [] _) = True
+roomEmpty _ = False
+
 
 -- REMOVE CLIENTS.
 removeClientRoom :: Client -> Room -> Room
-removeClientRoom client (Room pa pb specs count) =
-  Room (newPlayer pa) (newPlayer pb) newSpecs count
+removeClientRoom client (Room pa pb specs model) =
+  Room (newPlayer pa) (newPlayer pb) newSpecs model
   where
   newSpecs :: Spectators
   newSpecs = filter ((/= fst client) . fst) specs
