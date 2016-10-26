@@ -51,6 +51,11 @@ getRoom name state =
             r <- newMVar newRoom
             return (insert name r s, r)
 
+deleteRoom :: RoomName -> MVar ServerState -> IO (ServerState)
+deleteRoom name state =
+  modifyMVar state $ \s ->
+    let s' = delete name s in return (s', s')
+
 stateUpdate :: GameCommand -> WhichPlayer -> MVar Room -> IO (Room)
 stateUpdate cmd which room =
   modifyMVar room $ \r -> return (gameUpdate cmd r, gameUpdate cmd r)
@@ -106,7 +111,8 @@ application state pending = do
   WS.forkPingThread conn 30
 
   msg <- WS.receiveData conn
-  roomVar <- getRoom "default" state
+  roomName <- return "default"
+  roomVar <- getRoom roomName state
   initialRoom <- readMVar roomVar
 
   case msg of
@@ -124,7 +130,7 @@ application state pending = do
         r <- takeMVar roomVar
         if not (roomFull initialRoom) then
           do
-            flip finally (disconnect client roomVar) $ do
+            flip finally (disconnect client roomVar roomName state) $ do
               (r', which) <- addPlayerClient client roomVar
               putMVar roomVar r'
               WS.sendTextData conn ("acceptPlay:" :: Text)
@@ -138,7 +144,7 @@ application state pending = do
                 putMVar roomVar r
 
       | prefix == "spectate:" ->
-        flip finally (disconnect client roomVar) $ do
+        flip finally (disconnect client roomVar roomName state) $ do
           r' <- addSpecClient client roomVar
           WS.sendTextData conn ("acceptSpec:" :: Text)
           WS.sendTextData conn ("chat:Welcome! " <> userList r')
@@ -153,10 +159,18 @@ application state pending = do
         (valid, prefix) = validConnectMsg msg :: (Bool, Text)
         client = (T.drop (T.length prefix) msg, conn) :: Client
 
-disconnect :: Client -> MVar Room -> IO ()
-disconnect client room = do
+disconnect :: Client -> MVar Room -> RoomName -> MVar ServerState -> IO (ServerState)
+disconnect client room name state = do
   r <- removeClient client room
   broadcast (toChat (LeaveCommand (fst client))) r
+  if roomEmpty r then
+    do
+      s' <- deleteRoom name state
+      return s'
+      else
+        do
+          s' <- readMVar state
+          return s'
 
 validConnectMsg :: Text -> (Bool, Text)
 validConnectMsg msg
