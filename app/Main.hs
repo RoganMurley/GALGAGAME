@@ -40,17 +40,20 @@ newServerState :: ServerState
 newServerState = empty
 
 getRoom :: RoomName -> MVar ServerState -> IO (MVar Room)
-getRoom name state = modifyMVar_ state $ \s ->
-  do
-    case lookup name s of
-      Just room ->
-        return s
-      Nothing ->
-        return (insert name (newMVar newRoom) s)
+getRoom name state =
+  modifyMVar state $ \s ->
+    do
+      case lookup name s of
+        Just room ->
+          return (s, room)
+        Nothing ->
+          do
+            r <- newMVar newRoom
+            return (insert name r s, r)
 
-stateUpdate :: GameCommand -> WhichPlayer -> MVar Room -> IO (MVar Room)
+stateUpdate :: GameCommand -> WhichPlayer -> MVar Room -> IO (Room)
 stateUpdate cmd which room =
-  return $ modifyMVar room $ \r -> return (gameUpdate cmd r, gameUpdate cmd r)
+  modifyMVar room $ \r -> return (gameUpdate cmd r, gameUpdate cmd r)
   where
     gameUpdate :: GameCommand -> Room -> Room
     gameUpdate cmd (Room pa pb specs model) = Room pa pb specs (fromMaybe model (update cmd which model)) -- LOOKS DANGEROUS?
@@ -184,7 +187,6 @@ actPlay cmd which room =
         do
           r' <- stateUpdate command which r
           syncClients r'
-          return r'
     Nothing ->
       actSpec cmd room
   where
