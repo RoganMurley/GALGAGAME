@@ -4,6 +4,7 @@ module Room where
 import Data.Maybe (maybeToList)
 import Data.Text (Text)
 import Network.WebSockets (Connection)
+import System.Random (StdGen)
 
 import GameState (initModel, Model, WhichPlayer(..))
 
@@ -21,8 +22,8 @@ data Room = Room Player Player Spectators Model
 
 
 -- INITIAL
-newRoom :: Room
-newRoom = Room Nothing Nothing [] initModel
+newRoom :: StdGen -> Room
+newRoom gen = Room Nothing Nothing [] (initModel gen)
 
 
 -- GETTERS
