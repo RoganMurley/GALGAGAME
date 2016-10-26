@@ -115,6 +115,7 @@ application state pending = do
   roomVar <- getRoom roomName state
   initialRoom <- readMVar roomVar
 
+
   case msg of
     _ | not valid ->
         WS.sendTextData conn (toChat (ErrorCommand ("Connection protocol failure" <> msg :: Text)))
@@ -126,13 +127,11 @@ application state pending = do
         WS.sendTextData conn (toChat (ErrorCommand ("User already exists" :: Text)))
 
       | prefix == "play:" -> do
-        -- Switch to a modify again in the future.
-        r <- takeMVar roomVar
         if not (roomFull initialRoom) then
           do
             flip finally (disconnect client roomVar roomName state) $ do
               (r', which) <- addPlayerClient client roomVar
-              putMVar roomVar r'
+              T.putStrLn $ "Far out manz"
               WS.sendTextData conn ("acceptPlay:" :: Text)
               WS.sendTextData conn ("chat:Welcome! " <> userList r')
               broadcast (toChat (PlayCommand (fst client))) r'
@@ -141,7 +140,6 @@ application state pending = do
             else
               do
                 WS.sendTextData conn (toChat (ErrorCommand ("Room is full :(" :: Text)))
-                putMVar roomVar r
 
       | prefix == "spectate:" ->
         flip finally (disconnect client roomVar roomName state) $ do
