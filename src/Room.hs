@@ -48,11 +48,10 @@ clientExists client room = any ((== fst client) . fst) (getRoomClients room)
 addSpec :: Client -> Room -> Room
 addSpec client (Room pa pb specs count) = Room pa pb (client:specs) count
 
--- FIX THIS: USE MAYBE OR SOMETHING
-addPlayer :: Client -> Room -> Room
-addPlayer client (Room Nothing pb specs count) = Room (Just client) pb specs count
-addPlayer client (Room pa Nothing specs count) = Room pa (Just client) specs count
-addPlayer client (Room (Just a) (Just b) specs count) = Room (Just a) (Just b) specs count
+addPlayer :: Client -> Room -> (Room, WhichPlayer)
+addPlayer client (Room Nothing pb specs count) = (Room (Just client) pb specs count, PlayerA)
+addPlayer client (Room pa Nothing specs count) = (Room pa (Just client) specs count, PlayerB)
+addPlayer client (Room (Just a) (Just b) specs count) = (Room (Just a) (Just b) specs count, PlayerA) -- FIX THIS: PLAYERA -> NOTHING OR SOMETHING
 
 roomFull :: Room -> Bool
 roomFull (Room (Just _) (Just _) _ _) = True

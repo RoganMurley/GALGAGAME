@@ -58,14 +58,20 @@ stateUpdate cmd which room =
     gameUpdate :: GameCommand -> Room -> Room
     gameUpdate cmd (Room pa pb specs model) = Room pa pb specs (fromMaybe model (update cmd which model)) -- LOOKS DANGEROUS?
 
-addSpecClient :: Client -> MVar Room -> IO ()
-addSpecClient client room = modifyMVar_ room (\r -> return (addSpec client r))
+addSpecClient :: Client -> MVar Room -> IO (Room)
+addSpecClient client room =
+  modifyMVar room $ \r ->
+    let r' = addSpec client r in return (r', r')
 
-addPlayerClient :: Client -> MVar Room -> IO ()
-addPlayerClient client room = modifyMVar_ room (\r -> return (addPlayer client r))
+addPlayerClient :: Client -> MVar Room -> IO (Room, WhichPlayer)
+addPlayerClient client room =
+  modifyMVar room $ \r ->
+    let r' = addPlayer client r in return (fst r', r')
 
-removeClient :: Client -> MVar Room -> IO ()
-removeClient client room = modifyMVar_ room (\r -> return (removeClientRoom client r))
+removeClient :: Client -> MVar Room -> IO (Room)
+removeClient client room =
+  modifyMVar room $ \r ->
+    let r' = removeClientRoom client r in return (r', r')
 
 broadcast :: Text -> Room -> IO ()
 broadcast msg room = do
@@ -118,29 +124,27 @@ application state pending = do
         r <- takeMVar roomVar
         if not (roomFull initialRoom) then
           do
-            flip finally (disconnect client state) $ do
-              let (r', which) = addPlayerClient client r
+            flip finally (disconnect client roomVar) $ do
+              (r', which) <- addPlayerClient client roomVar
               putMVar roomVar r'
               WS.sendTextData conn ("acceptPlay:" :: Text)
               WS.sendTextData conn ("chat:Welcome! " <> userList r')
               broadcast (toChat (PlayCommand (fst client))) r'
               syncClients r'
-              playLoop conn r' client which
+              playLoop conn roomVar client which
             else
               do
                 WS.sendTextData conn (toChat (ErrorCommand ("Room is full :(" :: Text)))
                 putMVar roomVar r
 
-      | prefix == "spectate:" -> flip finally (disconnect client state) $ do
-        modifyMVar_ room $ \r ->
-          do
-            let r' = addSpecClient client r
-            WS.sendTextData conn ("acceptSpec:" :: Text)
-            WS.sendTextData conn ("chat:Welcome! " <> userList r')
-            broadcast (toChat (SpectateCommand (fst client))) r'
-            syncClients r'
-            return r'
-        specLoop conn room client
+      | prefix == "spectate:" ->
+        flip finally (disconnect client roomVar) $ do
+          r' <- addSpecClient client roomVar
+          WS.sendTextData conn ("acceptSpec:" :: Text)
+          WS.sendTextData conn ("chat:Welcome! " <> userList r')
+          broadcast (toChat (SpectateCommand (fst client))) r'
+          syncClients r'
+          specLoop conn roomVar client
 
       | otherwise ->
         WS.sendTextData conn (toChat (ErrorCommand ("Something went terribly wrong in connection negotiation :(" :: Text)))
@@ -149,11 +153,10 @@ application state pending = do
         (valid, prefix) = validConnectMsg msg :: (Bool, Text)
         client = (T.drop (T.length prefix) msg, conn) :: Client
 
-disconnect :: Client -> MVar ServerState -> IO ()
-disconnect client state = do
-  s <- modifyMVar state $ \s ->
-      let s' = removeClient "default" client s in return (s', s')
-  broadcast (toChat (LeaveCommand (fst client))) (getRoom "default" s)
+disconnect :: Client -> MVar Room -> IO ()
+disconnect client room = do
+  r <- removeClient client room
+  broadcast (toChat (LeaveCommand (fst client))) r
 
 validConnectMsg :: Text -> (Bool, Text)
 validConnectMsg msg
@@ -183,10 +186,9 @@ actPlay :: Command -> WhichPlayer -> MVar Room -> IO ()
 actPlay cmd which room =
   case trans cmd of
     Just command ->
-      modifyMVar_ room $ \r ->
-        do
-          r' <- stateUpdate command which r
-          syncClients r'
+      do
+        r <- stateUpdate command which room
+        syncClients r
     Nothing ->
       actSpec cmd room
   where
@@ -230,7 +232,7 @@ parseMsg name msg
   | (command == "chat") = ChatCommand name content
   | otherwise           = ErrorCommand "Unknown command"
   where
-  parsed :: (Text, Text)
-  parsed = T.breakOn ":" msg
-  command = fst parsed :: Text
-  content = T.drop 1 (snd parsed) :: Text
+    parsed :: (Text, Text)
+    parsed = T.breakOn ":" msg
+    command = fst parsed :: Text
+    content = T.drop 1 (snd parsed) :: Text
