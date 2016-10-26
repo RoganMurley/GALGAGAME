@@ -19,6 +19,8 @@ library
                      , Room
   build-depends:       base >= 4.7 && < 5
                      , aeson
+                     , random
+                     , random-shuffle
                      , safe
                      , text
                      , websockets
@@ -32,6 +34,7 @@ executable elmchat-exe
                      , aeson
                      , containers
                      , elmchat
+                     , random
                      , string-conversions
                      , text
                      , websockets

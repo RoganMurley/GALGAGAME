@@ -13,6 +13,7 @@ import Data.Text (Text)
 import Control.Exception (finally)
 import Control.Monad (forM_, forever)
 import Control.Concurrent (MVar, newMVar, modifyMVar_, modifyMVar, putMVar, readMVar, takeMVar)
+import System.Random (StdGen, getStdGen)
 
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as T
@@ -48,7 +49,8 @@ getRoom name state =
           return (s, room)
         Nothing ->
           do
-            r <- newMVar newRoom
+            gen <- getStdGen
+            r <- newMVar (newRoom gen)
             return (insert name r s, r)
 
 deleteRoom :: RoomName -> MVar ServerState -> IO (ServerState)
