@@ -219,19 +219,19 @@ hurt damage PlayerB (Model turn stack handPA handPB deckPA deckPB lifePA lifePB 
 -- CARDS
 
 cardDagger :: Card
-cardDagger = Card "Steeledge" "Hurt for 100" "plain-dagger.svg" "#bf1131" eff
+cardDagger = Card "Sword V - Steeledge" "Hurt for 100" "plain-dagger.svg" "#bf1131" eff
   where
     eff :: CardEff
     eff p m = hurt 100 (otherPlayer p) m
 
 cardHubris :: Card
-cardHubris = Card "Hubris" "Negate whole combo" "tower-fall.svg" "#1c1f26" eff
+cardHubris = Card "The Tower" "Negate whole combo" "tower-fall.svg" "#1c1f26" eff
   where
     eff :: CardEff
     eff p m = setStack [] m
 
 cardFireball :: Card
-cardFireball = Card "Meteor" "Hurt for 40 per combo" "fire-ray.svg" "#bf1131" eff
+cardFireball = Card "Wand IV - Willow" "Hurt for 40 per combo" "fire-ray.svg" "#bf1131" eff
   where
     eff :: CardEff
-    eff p m = hurt (40 * (length (getStack m))) (otherPlayer p) m
+    eff p m = hurt (40 * ((length (getStack m)) + 1)) (otherPlayer p) m
