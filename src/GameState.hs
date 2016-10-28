@@ -83,6 +83,7 @@ initDeck =
      (replicate 3 cardHubris)
   ++ (replicate 3 cardFireball)
   ++ (replicate 3 cardDagger)
+  ++ (replicate 3 cardBoomerang)
 
 
 -- TEMP STUFF.
@@ -219,7 +220,7 @@ hurt damage PlayerB (Model turn stack handPA handPB deckPA deckPB lifePA lifePB 
 -- CARDS
 
 cardDagger :: Card
-cardDagger = Card "Sword V - Steeledge" "Hurt for 100" "plain-dagger.svg" "#bf1131" eff
+cardDagger = Card "Steeledge" "Hurt for 100" "plain-dagger.svg" "#bf1131" eff
   where
     eff :: CardEff
     eff p m = hurt 100 (otherPlayer p) m
@@ -231,7 +232,17 @@ cardHubris = Card "The Tower" "Negate whole combo" "tower-fall.svg" "#1c1f26" ef
     eff p m = setStack [] m
 
 cardFireball :: Card
-cardFireball = Card "Wand IV - Willow" "Hurt for 40 per combo" "fire-ray.svg" "#bf1131" eff
+cardFireball = Card "Fireball" "Hurt for 40 per combo" "fire-ray.svg" "#bf1131" eff
   where
     eff :: CardEff
     eff p m = hurt (40 * ((length (getStack m)) + 1)) (otherPlayer p) m
+
+cardBoomerang :: Card
+cardBoomerang = Card "Boomerang" "Hurt for 30, return at end of combo" "boomerang.svg" "#bf1131" eff
+  where
+    eff :: CardEff
+    eff p m = setStack ((getStack m) ++ [StackCard p cardCatch]) (hurt 30 (otherPlayer p) m)
+    cardCatch :: Card
+    cardCatch = Card "Catch Boomerang" "Get your boomerang back" "hand.svg" "#bf1131" catchEff
+    catchEff :: CardEff
+    catchEff p m = setHand p (cardBoomerang : (getHand p m)) m
