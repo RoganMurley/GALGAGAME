@@ -84,6 +84,12 @@ initDeck =
   ++ (replicate 3 cardFireball)
   ++ (replicate 3 cardDagger)
   ++ (replicate 3 cardBoomerang)
+  ++ (replicate 3 cardHeal)
+  ++ (replicate 3 cardVamp)
+  ++ (replicate 3 cardSucc)
+  ++ (replicate 3 cardBounce)
+  ++ (replicate 3 cardReflect)
+  ++ (replicate 3 cardMirror)
 
 
 -- TEMP STUFF.
@@ -220,25 +226,25 @@ hurt damage PlayerB (Model turn stack handPA handPB deckPA deckPB lifePA lifePB 
 -- CARDS
 
 cardDagger :: Card
-cardDagger = Card "Steeledge" "Hurt for 100" "plain-dagger.svg" "#bf1131" eff
+cardDagger = Card "Dagger" "Hurt them for 100" "plain-dagger.svg" "#bf1131" eff
   where
     eff :: CardEff
     eff p m = hurt 100 (otherPlayer p) m
 
 cardHubris :: Card
-cardHubris = Card "The Tower" "Negate whole combo" "tower-fall.svg" "#1c1f26" eff
+cardHubris = Card "Hubris" "Negate whole combo" "tower-fall.svg" "#1c1f26" eff
   where
     eff :: CardEff
     eff p m = setStack [] m
 
 cardFireball :: Card
-cardFireball = Card "Fireball" "Hurt for 40 per combo" "fire-ray.svg" "#bf1131" eff
+cardFireball = Card "Fireball" "Hurt them for 40 per combo" "fire-ray.svg" "#bf1131" eff
   where
     eff :: CardEff
     eff p m = hurt (40 * ((length (getStack m)) + 1)) (otherPlayer p) m
 
 cardBoomerang :: Card
-cardBoomerang = Card "Boomerang" "Hurt for 30, return at end of combo" "boomerang.svg" "#bf1131" eff
+cardBoomerang = Card "Boomerang" "Hurt them for 30, get back at end of combo" "boomerang.svg" "#bf1131" eff
   where
     eff :: CardEff
     eff p m = setStack ((getStack m) ++ [StackCard p cardCatch]) (hurt 30 (otherPlayer p) m)
@@ -246,3 +252,52 @@ cardBoomerang = Card "Boomerang" "Hurt for 30, return at end of combo" "boomeran
     cardCatch = Card "Catch Boomerang" "Get your boomerang back" "hand.svg" "#bf1131" catchEff
     catchEff :: CardEff
     catchEff p m = setHand p (cardBoomerang : (getHand p m)) m
+
+cardHeal :: Card
+cardHeal = Card "Elixir" "Heal self for 120" "heart-bottle.svg" "#bf1131" eff
+  where
+    eff :: CardEff
+    eff p m = hurt (-120) p m
+
+cardVamp :: Card
+cardVamp = Card "Vampire" "Lifesteal them for 50" "fangs.svg" "#bf1131" eff
+  where
+    eff :: CardEff
+    eff p m = hurt 50 (otherPlayer p) $ hurt (-50) p m
+
+cardSucc :: Card
+cardSucc = Card "Succubus" "Lifesteal them for 25 per combo" "pretty-fangs.svg" "#bf1131" eff
+  where
+    eff :: CardEff
+    eff p m =
+      hurt (25 * ((length (getStack m)) + 1)) (otherPlayer p) $
+        hurt (25 * ((length (getStack m)) + 1)) p m
+
+cardBounce :: Card
+cardBounce = Card "Whence" "Return top of combo to its owner" "thor-fist.svg" "#bf1131" eff
+  where
+    eff :: CardEff
+    eff p m =
+      case headMay (getStack m) of
+        Nothing ->
+          m
+        Just (StackCard owner card) ->
+          setHand owner (card : (getHand owner m)) $ (setStack (tailSafe (getStack m))) m
+
+cardReflect :: Card
+cardReflect = Card "Reflect" "Change the top of the combo's owner" "shield-reflect.svg" "#bf1131" eff
+  where
+    eff :: CardEff
+    eff p m =
+      case headMay (getStack m) of
+        Nothing ->
+          m
+        Just (StackCard owner card) ->
+          (setStack ( (StackCard (otherPlayer owner) card) : (tailSafe (getStack m)))) m
+
+
+cardMirror :: Card
+cardMirror = Card "Mirror" "Reverse the combo order" "mirror-mirror.svg" "#bf1131" eff
+  where
+    eff :: CardEff
+    eff p m = setStack (reverse $ getStack m) m
