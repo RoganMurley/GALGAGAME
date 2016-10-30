@@ -10,7 +10,7 @@ import WebSocket
 
 import Chat exposing (addChatMessage)
 import Drag exposing (dragAt, dragEnd, dragStart, getPosition)
-import GameState exposing (Card, Hand, Model, Turn(..), view)
+import GameState exposing (Card, Hand, Model, Turn, WhichPlayer(..), view)
 import Messages exposing (GameMsg(..), Msg(..))
 import Util exposing (applyFst)
 

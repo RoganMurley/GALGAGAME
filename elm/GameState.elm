@@ -1,4 +1,4 @@
-module GameState exposing (Card, Hand, Model, Turn(..), init, update, view)
+module GameState exposing (Card, Hand, Model, Turn, WhichPlayer(..), init, update, view)
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -24,7 +24,7 @@ type alias Hand =
   List Card
 
 type alias Stack =
-  List Card
+  List StackCard
 
 type alias Card =
   {
@@ -33,9 +33,18 @@ type alias Card =
   , imgURL: String
   }
 
-type Turn
+type WhichPlayer
   = PlayerA
   | PlayerB
+
+type alias Turn =
+  WhichPlayer
+
+type alias StackCard =
+  {
+    owner : WhichPlayer
+  , card : Card
+  }
 
 type alias Life =
   Int
@@ -126,11 +135,18 @@ viewStack stack =
           ] []
         , div [ class "card-desc" ] [ text desc ]
       ]
+    viewStackCard : StackCard -> Html Msg
+    viewStackCard { owner, card } =
+      case owner of
+        PlayerA ->
+          div [ class "playera" ] [ viewCard card ]
+        PlayerB ->
+          div [ class "playerb" ] [ viewCard card ]
   in
     div
       [ class "stack-container" ]
       [
-        div [ class "stack" ] (List.map viewCard stack)
+        div [ class "stack" ] (List.map viewStackCard stack)
       ]
 
 -- UPDATE
@@ -165,13 +181,27 @@ decodeState msg =
         ("handPB" := Json.list cardDecoder)
         ("lifePA" := Json.int)
         ("lifePB" := Json.int)
-        ("stack" := Json.list cardDecoder)
+        ("stack" := Json.list stackCardDecoder)
     cardDecoder : Json.Decoder Card
     cardDecoder =
       Json.object3 Card
         ("name" := Json.string)
         ("desc" := Json.string)
         ("imageURL" := Json.string)
+    stackCardDecoder : Json.Decoder StackCard
+    stackCardDecoder =
+      Json.object2 makeStackCard
+        ("owner" := Json.string)
+        ("card" := cardDecoder)
+    makeStackCard : String -> Card -> StackCard
+    makeStackCard s c =
+      case s of
+        "pa" ->
+          StackCard PlayerA c
+        "pb" ->
+          StackCard PlayerB c
+        otherwise ->
+          Debug.crash "Invalid stack card owner"
   in
     case result of
       Ok ("pa", handPA, handPB, lifePA, lifePB, stack) ->
