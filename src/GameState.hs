@@ -53,7 +53,10 @@ instance ToJSON Card where
 
 instance ToJSON StackCard where
   toJSON (StackCard owner card) =
-    toJSON card
+    object [
+      "owner" .= owner
+    , "card" .= card
+    ]
 
 instance ToJSON WhichPlayer where
   toJSON PlayerA = "pa"

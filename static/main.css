@@ -131,6 +131,10 @@
   justify-content: center;
   width: 100%; }
 
+.playerb .card {
+  background-color: #432746;
+  margin-top: -10px; }
+
 html {
   height: 100%; }
 
