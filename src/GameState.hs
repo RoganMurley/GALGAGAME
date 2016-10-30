@@ -80,16 +80,18 @@ initModel gen = Model PlayerA [] handPA handPB deckPA deckPB 1000 1000 NoPass ge
 
 initDeck :: Deck
 initDeck =
-     (replicate 3 cardHubris)
-  ++ (replicate 3 cardFireball)
+  -- DAMAGE
+     (replicate 3 cardFireball)
   ++ (replicate 3 cardDagger)
   ++ (replicate 3 cardBoomerang)
   ++ (replicate 3 cardHeal)
   ++ (replicate 3 cardVamp)
   ++ (replicate 3 cardSucc)
-  ++ (replicate 3 cardBounce)
-  ++ (replicate 3 cardReflect)
-  ++ (replicate 3 cardMirror)
+  -- CONTROL
+  ++ (replicate 2 cardHubris)
+  -- ++ (replicate 2 cardBounce)
+  ++ (replicate 2 cardReflect)
+  ++ (replicate 2 cardMirror)
 
 
 -- TEMP STUFF.
@@ -226,7 +228,7 @@ hurt damage PlayerB (Model turn stack handPA handPB deckPA deckPB lifePA lifePB 
 -- CARDS
 
 cardDagger :: Card
-cardDagger = Card "Dagger" "Hurt them for 200" "plain-dagger.svg" "#bf1131" eff
+cardDagger = Card "Dagger" "Hurt for 200" "plain-dagger.svg" "#bf1131" eff
   where
     eff :: CardEff
     eff p m = hurt 200 (otherPlayer p) m
@@ -238,40 +240,40 @@ cardHubris = Card "Hubris" "Negate whole combo" "tower-fall.svg" "#1c1f26" eff
     eff p m = setStack [] m
 
 cardFireball :: Card
-cardFireball = Card "Fireball" "Hurt them for 80 per combo" "fire-ray.svg" "#bf1131" eff
+cardFireball = Card "Fireball" "Hurt for 80 per combo" "fire-ray.svg" "#bf1131" eff
   where
     eff :: CardEff
     eff p m = hurt (80 * ((length (getStack m)) + 1)) (otherPlayer p) m
 
 cardBoomerang :: Card
-cardBoomerang = Card "Boomerang" "Hurt them for 50, get back at end of combo" "boomerang.svg" "#bf1131" eff
+cardBoomerang = Card "Boomerang" "Hurt for 50, get back at end of combo" "boomerang.svg" "#bf1131" eff
   where
     eff :: CardEff
     eff p m = setStack ((getStack m) ++ [StackCard p cardCatch]) (hurt 50 (otherPlayer p) m)
     cardCatch :: Card
-    cardCatch = Card "Catch Boomerang" "Get your boomerang back" "hand.svg" "#bf1131" catchEff
+    cardCatch = Card "Catch Boomerang" "Get boomerang back" "hand.svg" "#bf1131" catchEff
     catchEff :: CardEff
     catchEff p m = setHand p (cardBoomerang : (getHand p m)) m
 
 cardHeal :: Card
-cardHeal = Card "Elixir" "Heal self for 200" "heart-bottle.svg" "#bf1131" eff
+cardHeal = Card "Elixir" "Heal for 200" "heart-bottle.svg" "#bf1131" eff
   where
     eff :: CardEff
-    eff p m = hurt (200) p m
+    eff p m = hurt (-200) p m
 
 cardVamp :: Card
-cardVamp = Card "Vampire" "Lifesteal them for 100" "fangs.svg" "#bf1131" eff
+cardVamp = Card "Vampire" "Lifesteal for 100" "fangs.svg" "#bf1131" eff
   where
     eff :: CardEff
     eff p m = hurt 100 (otherPlayer p) $ hurt (-100) p m
 
 cardSucc :: Card
-cardSucc = Card "Succubus" "Lifesteal them for 50 per combo" "pretty-fangs.svg" "#bf1131" eff
+cardSucc = Card "Succubus" "Lifesteal for 50 per combo" "pretty-fangs.svg" "#bf1131" eff
   where
     eff :: CardEff
     eff p m =
       hurt (50 * ((length (getStack m)) + 1)) (otherPlayer p) $
-        hurt (50 * ((length (getStack m)) + 1)) p m
+        hurt (-50 * ((length (getStack m)) + 1)) p m
 
 cardBounce :: Card
 cardBounce = Card "Whence" "Return top of combo to its owner" "thor-fist.svg" "#bf1131" eff
