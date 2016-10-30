@@ -8717,12 +8717,7 @@ var _user$project$GameState$viewStack = function (stack) {
 			_elm_lang$html$Html$div,
 			_elm_lang$core$Native_List.fromArray(
 				[
-					_elm_lang$html$Html_Attributes$class('card'),
-					_elm_lang$html$Html_Attributes$style(
-					_elm_lang$core$Native_List.fromArray(
-						[
-							{ctor: '_Tuple2', _0: 'background-color', _1: _p1.cardColor}
-						]))
+					_elm_lang$html$Html_Attributes$class('card')
 				]),
 			_elm_lang$core$Native_List.fromArray(
 				[
@@ -8857,12 +8852,7 @@ var _user$project$GameState$viewHand = function (hand) {
 				[
 					_elm_lang$html$Html_Attributes$class('card my-card'),
 					_elm_lang$html$Html_Events$onClick(
-					_user$project$Messages$PlayCard(_p5)),
-					_elm_lang$html$Html_Attributes$style(
-					_elm_lang$core$Native_List.fromArray(
-						[
-							{ctor: '_Tuple2', _0: 'background-color', _1: _p4.cardColor}
-						]))
+					_user$project$Messages$PlayCard(_p5))
 				]),
 			_elm_lang$core$Native_List.fromArray(
 				[
@@ -8935,9 +8925,9 @@ var _user$project$GameState$Model = F6(
 	function (a, b, c, d, e, f) {
 		return {hand: a, otherHand: b, stack: c, turn: d, life: e, otherLife: f};
 	});
-var _user$project$GameState$Card = F4(
-	function (a, b, c, d) {
-		return {name: a, desc: b, imgURL: c, cardColor: d};
+var _user$project$GameState$Card = F3(
+	function (a, b, c) {
+		return {name: a, desc: b, imgURL: c};
 	});
 var _user$project$GameState$PlayerB = {ctor: 'PlayerB'};
 var _user$project$GameState$PlayerA = {ctor: 'PlayerA'};
@@ -8953,13 +8943,12 @@ var _user$project$GameState$init = {
 	otherLife: 1000
 };
 var _user$project$GameState$decodeState = function (msg) {
-	var cardDecoder = A5(
-		_elm_lang$core$Json_Decode$object4,
+	var cardDecoder = A4(
+		_elm_lang$core$Json_Decode$object3,
 		_user$project$GameState$Card,
 		A2(_elm_lang$core$Json_Decode_ops[':='], 'name', _elm_lang$core$Json_Decode$string),
 		A2(_elm_lang$core$Json_Decode_ops[':='], 'desc', _elm_lang$core$Json_Decode$string),
-		A2(_elm_lang$core$Json_Decode_ops[':='], 'imageURL', _elm_lang$core$Json_Decode$string),
-		A2(_elm_lang$core$Json_Decode_ops[':='], 'cardColor', _elm_lang$core$Json_Decode$string));
+		A2(_elm_lang$core$Json_Decode_ops[':='], 'imageURL', _elm_lang$core$Json_Decode$string));
 	var handDecoder = A7(
 		_elm_lang$core$Json_Decode$object6,
 		F6(
@@ -9011,8 +9000,8 @@ var _user$project$GameState$syncModel = F2(
 			return _elm_lang$core$Native_Utils.crashCase(
 				'GameState',
 				{
-					start: {line: 152, column: 5},
-					end: {line: 156, column: 49}
+					start: {line: 149, column: 5},
+					end: {line: 153, column: 49}
 				},
 				_p7)(
 				A2(_elm_lang$core$Basics_ops['++'], 'Sync hand error: ', _p7._0));

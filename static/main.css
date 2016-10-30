@@ -8,7 +8,8 @@
   max-height: 295px;
   margin: 0 4px;
   border-radius: 12px;
-  color: #fff; }
+  color: #fff;
+  background-color: #bf1131; }
 
 .card-title {
   display: flex;
