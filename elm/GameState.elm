@@ -31,7 +31,6 @@ type alias Card =
     name : String
   , desc : String
   , imgURL: String
-  , cardColor : String
   }
 
 type Turn
@@ -73,11 +72,10 @@ viewHand : Hand -> Html Msg
 viewHand hand =
   let
     viewCard : Card -> Html Msg
-    viewCard { name, desc, imgURL, cardColor } = div
+    viewCard { name, desc, imgURL } = div
       [
         class "card my-card"
       , onClick (PlayCard name)
-      , style [ ("background-color", cardColor) ]
       ]
       [
           div [ class "card-title" ] [ text name ]
@@ -115,10 +113,9 @@ viewStack: Stack -> Html Msg
 viewStack stack =
   let
     viewCard : Card -> Html Msg
-    viewCard { name, desc, imgURL, cardColor } = div
+    viewCard { name, desc, imgURL } = div
       [
         class "card"
-      , style [ ("background-color", cardColor) ]
       ]
       [
           div [ class "card-title" ] [ text name ]
@@ -171,11 +168,10 @@ decodeState msg =
         ("stack" := Json.list cardDecoder)
     cardDecoder : Json.Decoder Card
     cardDecoder =
-      Json.object4 Card
+      Json.object3 Card
         ("name" := Json.string)
         ("desc" := Json.string)
         ("imageURL" := Json.string)
-        ("cardColor" := Json.string)
   in
     case result of
       Ok ("pa", handPA, handPB, lifePA, lifePB, stack) ->

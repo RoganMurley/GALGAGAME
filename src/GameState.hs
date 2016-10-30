@@ -15,12 +15,11 @@ data Model = Model Turn Stack Hand Hand Deck Deck Life Life Passes StdGen
 type Hand = [Card]
 type Deck = [Card]
 type Stack = [StackCard]
-data Card = Card CardName CardDesc CardImgURL CardColor CardEff
+data Card = Card CardName CardDesc CardImgURL CardEff
 data StackCard = StackCard WhichPlayer Card
 type CardName = Text
 type CardDesc = Text
 type CardImgURL = Text
-type CardColor = Text
 type Life = Int
 type CardEff = (WhichPlayer -> Model -> Model)
 
@@ -44,13 +43,12 @@ instance ToJSON Model where
       ]
 
 instance ToJSON Card where
-  toJSON (Card name desc imageURL color eff) =
+  toJSON (Card name desc imageURL eff) =
     object
       [
         "name" .= name
       , "desc" .= desc
       , "imageURL" .= imageURL
-      , "cardColor" .= color
       ]
 
 instance ToJSON StackCard where
@@ -149,7 +147,7 @@ playCard name which model@(Model turn stack handPA handPB deckPA deckPB lifePA l
   where
     hand :: Hand
     hand = getHand which model
-    (matches, misses) = partition (\(Card n _ _ _ _) -> n == name) hand :: ([Card], [Card])
+    (matches, misses) = partition (\(Card n _ _ _) -> n == name) hand :: ([Card], [Card])
     newHand :: Hand
     newHand = (tailSafe matches) ++ misses
     card :: Maybe StackCard
@@ -208,7 +206,7 @@ resolveOne model@(Model turn stack handPA handPB deckPA deckPB lifePA lifePB pas
     eff :: Model -> Model
     eff = case headMay stack of
       Nothing -> id
-      Just (StackCard p (Card _ _ _ _ effect)) -> effect p
+      Just (StackCard p (Card _ _ _ effect)) -> effect p
 
 resolveAll :: Model -> Model
 resolveAll model =
@@ -228,47 +226,47 @@ hurt damage PlayerB (Model turn stack handPA handPB deckPA deckPB lifePA lifePB 
 -- CARDS
 
 cardDagger :: Card
-cardDagger = Card "Dagger" "Hurt for 200" "plain-dagger.svg" "#bf1131" eff
+cardDagger = Card "Dagger" "Hurt for 200" "plain-dagger.svg" eff
   where
     eff :: CardEff
     eff p m = hurt 200 (otherPlayer p) m
 
 cardHubris :: Card
-cardHubris = Card "Hubris" "Negate whole combo" "tower-fall.svg" "#1c1f26" eff
+cardHubris = Card "Hubris" "Negate whole combo" "tower-fall.svg" eff
   where
     eff :: CardEff
     eff p m = setStack [] m
 
 cardFireball :: Card
-cardFireball = Card "Fireball" "Hurt for 80 per combo" "fire-ray.svg" "#bf1131" eff
+cardFireball = Card "Fireball" "Hurt for 80 per combo" "fire-ray.svg" eff
   where
     eff :: CardEff
     eff p m = hurt (80 * ((length (getStack m)) + 1)) (otherPlayer p) m
 
 cardBoomerang :: Card
-cardBoomerang = Card "Boomerang" "Hurt for 50, get back at end of combo" "boomerang.svg" "#bf1131" eff
+cardBoomerang = Card "Boomerang" "Hurt for 50, get back at end of combo" "boomerang.svg" eff
   where
     eff :: CardEff
     eff p m = setStack ((getStack m) ++ [StackCard p cardCatch]) (hurt 50 (otherPlayer p) m)
     cardCatch :: Card
-    cardCatch = Card "Catch Boomerang" "Get boomerang back" "hand.svg" "#bf1131" catchEff
+    cardCatch = Card "Catch Boomerang" "Get boomerang back" "hand.svg" catchEff
     catchEff :: CardEff
     catchEff p m = setHand p (cardBoomerang : (getHand p m)) m
 
 cardHeal :: Card
-cardHeal = Card "Elixir" "Heal for 200" "heart-bottle.svg" "#bf1131" eff
+cardHeal = Card "Elixir" "Heal for 200" "heart-bottle.svg" eff
   where
     eff :: CardEff
     eff p m = hurt (-200) p m
 
 cardVamp :: Card
-cardVamp = Card "Vampire" "Lifesteal for 100" "fangs.svg" "#bf1131" eff
+cardVamp = Card "Vampire" "Lifesteal for 100" "fangs.svg" eff
   where
     eff :: CardEff
     eff p m = hurt 100 (otherPlayer p) $ hurt (-100) p m
 
 cardSucc :: Card
-cardSucc = Card "Succubus" "Lifesteal for 50 per combo" "pretty-fangs.svg" "#bf1131" eff
+cardSucc = Card "Succubus" "Lifesteal for 50 per combo" "pretty-fangs.svg" eff
   where
     eff :: CardEff
     eff p m =
@@ -276,7 +274,7 @@ cardSucc = Card "Succubus" "Lifesteal for 50 per combo" "pretty-fangs.svg" "#bf1
         hurt (-50 * ((length (getStack m)) + 1)) p m
 
 cardBounce :: Card
-cardBounce = Card "Whence" "Return top of combo to its owner" "thor-fist.svg" "#bf1131" eff
+cardBounce = Card "Whence" "Return top of combo to its owner" "thor-fist.svg" eff
   where
     eff :: CardEff
     eff p m =
@@ -287,7 +285,7 @@ cardBounce = Card "Whence" "Return top of combo to its owner" "thor-fist.svg" "#
           setHand owner (card : (getHand owner m)) $ (setStack (tailSafe (getStack m))) m
 
 cardReflect :: Card
-cardReflect = Card "Reflect" "Change the top of the combo's owner" "shield-reflect.svg" "#bf1131" eff
+cardReflect = Card "Reflect" "Change the top of the combo's owner" "shield-reflect.svg" eff
   where
     eff :: CardEff
     eff p m =
@@ -299,7 +297,7 @@ cardReflect = Card "Reflect" "Change the top of the combo's owner" "shield-refle
 
 
 cardMirror :: Card
-cardMirror = Card "Mirror" "Reverse the combo order" "mirror-mirror.svg" "#bf1131" eff
+cardMirror = Card "Mirror" "Reverse the combo order" "mirror-mirror.svg" eff
   where
     eff :: CardEff
     eff p m = setStack (reverse $ getStack m) m
