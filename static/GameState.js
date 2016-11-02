@@ -8808,25 +8808,49 @@ var _user$project$GameState$viewStack = function (stack) {
 				A2(_elm_lang$core$List$map, viewStackCard, stack))
 			]));
 };
-var _user$project$GameState$viewLife = function (life) {
+var _user$project$GameState$viewLife = function (_p6) {
+	var _p7 = _p6;
 	return A2(
 		_elm_lang$html$Html$div,
 		_elm_lang$core$Native_List.fromArray(
 			[
-				_elm_lang$html$Html_Attributes$class('life-counter')
+				_elm_lang$html$Html_Attributes$class('life')
 			]),
 		_elm_lang$core$Native_List.fromArray(
 			[
-				_elm_lang$html$Html$text(
 				A2(
-					_elm_lang$core$Basics_ops['++'],
-					_elm_lang$core$Basics$toString(life),
-					' LP'))
+				_elm_lang$html$Html$div,
+				_elm_lang$core$Native_List.fromArray(
+					[
+						_elm_lang$html$Html_Attributes$class('life-counter')
+					]),
+				_elm_lang$core$Native_List.fromArray(
+					[
+						_elm_lang$html$Html$text(
+						A2(
+							_elm_lang$core$Basics_ops['++'],
+							_elm_lang$core$Basics$toString(_p7._0),
+							' LP'))
+					])),
+				A2(
+				_elm_lang$html$Html$div,
+				_elm_lang$core$Native_List.fromArray(
+					[
+						_elm_lang$html$Html_Attributes$class('life-counter')
+					]),
+				_elm_lang$core$Native_List.fromArray(
+					[
+						_elm_lang$html$Html$text(
+						A2(
+							_elm_lang$core$Basics_ops['++'],
+							_elm_lang$core$Basics$toString(_p7._1),
+							' LP'))
+					]))
 			]));
 };
 var _user$project$GameState$viewTurn = function (turn) {
-	var _p6 = turn;
-	if (_p6.ctor === 'PlayerA') {
+	var _p8 = turn;
+	if (_p8.ctor === 'PlayerA') {
 		return A2(
 			_elm_lang$html$Html$button,
 			_elm_lang$core$Native_List.fromArray(
@@ -8871,16 +8895,16 @@ var _user$project$GameState$viewOtherHand = function (hand) {
 		A2(_elm_lang$core$List$map, viewCard, hand));
 };
 var _user$project$GameState$viewHand = function (hand) {
-	var viewCard = function (_p7) {
-		var _p8 = _p7;
-		var _p9 = _p8.name;
+	var viewCard = function (_p9) {
+		var _p10 = _p9;
+		var _p11 = _p10.name;
 		return A2(
 			_elm_lang$html$Html$div,
 			_elm_lang$core$Native_List.fromArray(
 				[
 					_elm_lang$html$Html_Attributes$class('card my-card'),
 					_elm_lang$html$Html_Events$onClick(
-					_user$project$Messages$PlayCard(_p9))
+					_user$project$Messages$PlayCard(_p11))
 				]),
 			_elm_lang$core$Native_List.fromArray(
 				[
@@ -8892,7 +8916,7 @@ var _user$project$GameState$viewHand = function (hand) {
 						]),
 					_elm_lang$core$Native_List.fromArray(
 						[
-							_elm_lang$html$Html$text(_p9)
+							_elm_lang$html$Html$text(_p11)
 						])),
 					A2(
 					_elm_lang$html$Html$div,
@@ -8908,7 +8932,7 @@ var _user$project$GameState$viewHand = function (hand) {
 									_1: A2(
 										_elm_lang$core$Basics_ops['++'],
 										'url(\"img/',
-										A2(_elm_lang$core$Basics_ops['++'], _p8.imgURL, '\")'))
+										A2(_elm_lang$core$Basics_ops['++'], _p10.imgURL, '\")'))
 								}
 								]))
 						]),
@@ -8922,7 +8946,7 @@ var _user$project$GameState$viewHand = function (hand) {
 						]),
 					_elm_lang$core$Native_List.fromArray(
 						[
-							_elm_lang$html$Html$text(_p8.desc)
+							_elm_lang$html$Html$text(_p10.desc)
 						]))
 				]));
 	};
@@ -8945,8 +8969,8 @@ var _user$project$GameState$view = function (model) {
 				_user$project$GameState$viewHand(model.hand),
 				_user$project$GameState$viewStack(model.stack),
 				_user$project$GameState$viewTurn(model.turn),
-				_user$project$GameState$viewLife(model.life),
-				_user$project$GameState$viewLife(model.otherLife)
+				_user$project$GameState$viewLife(
+				{ctor: '_Tuple2', _0: model.life, _1: model.otherLife})
 			]));
 };
 var _user$project$GameState$Model = F6(
@@ -8977,8 +9001,8 @@ var _user$project$GameState$init = {
 var _user$project$GameState$decodeState = function (msg) {
 	var makeStackCard = F2(
 		function (s, c) {
-			var _p10 = s;
-			switch (_p10) {
+			var _p12 = s;
+			switch (_p12) {
 				case 'pa':
 					return A2(_user$project$GameState$StackCard, _user$project$GameState$PlayerA, c);
 				case 'pb':
@@ -8987,10 +9011,10 @@ var _user$project$GameState$decodeState = function (msg) {
 					return _elm_lang$core$Native_Utils.crashCase(
 						'GameState',
 						{
-							start: {line: 198, column: 7},
-							end: {line: 204, column: 49}
+							start: {line: 202, column: 7},
+							end: {line: 208, column: 49}
 						},
-						_p10)('Invalid stack card owner');
+						_p12)('Invalid stack card owner');
 			}
 		});
 	var cardDecoder = A4(
@@ -9026,46 +9050,46 @@ var _user$project$GameState$decodeState = function (msg) {
 			'stack',
 			_elm_lang$core$Json_Decode$list(stackCardDecoder)));
 	var result = A2(_elm_lang$core$Json_Decode$decodeString, handDecoder, msg);
-	var _p12 = result;
-	if (_p12.ctor === 'Ok') {
-		switch (_p12._0._0) {
+	var _p14 = result;
+	if (_p14.ctor === 'Ok') {
+		switch (_p14._0._0) {
 			case 'pa':
 				return _elm_lang$core$Result$Ok(
-					{ctor: '_Tuple6', _0: _user$project$GameState$PlayerA, _1: _p12._0._1, _2: _p12._0._2, _3: _p12._0._3, _4: _p12._0._4, _5: _p12._0._5});
+					{ctor: '_Tuple6', _0: _user$project$GameState$PlayerA, _1: _p14._0._1, _2: _p14._0._2, _3: _p14._0._3, _4: _p14._0._4, _5: _p14._0._5});
 			case 'pb':
 				return _elm_lang$core$Result$Ok(
-					{ctor: '_Tuple6', _0: _user$project$GameState$PlayerB, _1: _p12._0._1, _2: _p12._0._2, _3: _p12._0._3, _4: _p12._0._4, _5: _p12._0._5});
+					{ctor: '_Tuple6', _0: _user$project$GameState$PlayerB, _1: _p14._0._1, _2: _p14._0._2, _3: _p14._0._3, _4: _p14._0._4, _5: _p14._0._5});
 			default:
 				return _elm_lang$core$Result$Err(
-					A2(_elm_lang$core$Basics_ops['++'], 'Invalid turn, should be pa or pb but is instead ', _p12._0._0));
+					A2(_elm_lang$core$Basics_ops['++'], 'Invalid turn, should be pa or pb but is instead ', _p14._0._0));
 		}
 	} else {
-		return _elm_lang$core$Result$Err(_p12._0);
+		return _elm_lang$core$Result$Err(_p14._0);
 	}
 };
 var _user$project$GameState$syncModel = F2(
 	function (model, msg) {
 		var result = _user$project$GameState$decodeState(msg);
-		var _p13 = result;
-		if (_p13.ctor === 'Ok') {
+		var _p15 = result;
+		if (_p15.ctor === 'Ok') {
 			return _elm_lang$core$Native_Utils.update(
 				model,
-				{turn: _p13._0._0, hand: _p13._0._1, otherHand: _p13._0._2, life: _p13._0._3, otherLife: _p13._0._4, stack: _p13._0._5});
+				{turn: _p15._0._0, hand: _p15._0._1, otherHand: _p15._0._2, life: _p15._0._3, otherLife: _p15._0._4, stack: _p15._0._5});
 		} else {
 			return _elm_lang$core$Native_Utils.crashCase(
 				'GameState',
 				{
-					start: {line: 165, column: 5},
-					end: {line: 169, column: 49}
+					start: {line: 169, column: 5},
+					end: {line: 173, column: 49}
 				},
-				_p13)(
-				A2(_elm_lang$core$Basics_ops['++'], 'Sync hand error: ', _p13._0));
+				_p15)(
+				A2(_elm_lang$core$Basics_ops['++'], 'Sync hand error: ', _p15._0));
 		}
 	});
 var _user$project$GameState$update = F2(
 	function (msg, model) {
-		var _p15 = msg;
-		return A2(_user$project$GameState$syncModel, model, _p15._0);
+		var _p17 = msg;
+		return A2(_user$project$GameState$syncModel, model, _p17._0);
 	});
 
 var Elm = {};

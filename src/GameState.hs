@@ -98,7 +98,10 @@ initDeck =
 -- TEMP STUFF.
 reverso :: Model -> Model
 reverso (Model turn stack handPA handPB deckPA deckPB lifePA lifePB passes gen) =
-  Model (otherTurn turn) stack handPB handPA deckPB deckPA lifePB lifePA passes gen
+  Model (otherTurn turn) (stackRev stack) handPB handPA deckPB deckPA lifePB lifePA passes gen
+  where
+    stackRev :: Stack -> Stack
+    stackRev stack = fmap (\(StackCard p c) -> StackCard (otherPlayer p) c) stack
 
 
 -- UPDATE

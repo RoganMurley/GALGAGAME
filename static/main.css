@@ -97,6 +97,32 @@
   top: 0;
   margin-top: -12vw; }
 
+.life {
+  position: absolute;
+  left: 50%;
+  top: 20%; }
+
+.life-counter {
+  color: #fff; }
+
+.stack-container {
+  height: 100%;
+  z-index: -10; }
+
+.stack {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: -10;
+  display: flex;
+  justify-content: center;
+  width: 100%; }
+
+.playerb .card {
+  background-color: #432746;
+  margin-top: -10px; }
+
 .turn-indi {
   position: absolute;
   left: 50%;
@@ -116,24 +142,6 @@
   width: 9rem; }
   .pass-button:hover {
     background-color: #2a4f7d; }
-
-.stack-container {
-  height: 100%;
-  z-index: -10; }
-
-.stack {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  z-index: -10;
-  display: flex;
-  justify-content: center;
-  width: 100%; }
-
-.playerb .card {
-  background-color: #432746;
-  margin-top: -10px; }
 
 html {
   height: 100%; }
