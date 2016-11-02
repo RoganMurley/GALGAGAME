@@ -6,7 +6,7 @@ import Data.Aeson (ToJSON(..), (.=), object)
 import Data.List (partition)
 import Data.Maybe (isJust, maybeToList)
 import Data.Text (Text)
-import Safe (headMay, tailSafe)
+import Safe (headMay, lastDef, tailSafe)
 import System.Random (StdGen, split)
 import System.Random.Shuffle (shuffle')
 
@@ -215,19 +215,23 @@ resolveOne model@(Model turn stack handPA handPB deckPA deckPB lifePA lifePB pas
       Just (StackCard p (Card _ _ _ effect)) -> effect p
 
 resolveAll :: Model -> Model
-resolveAll model =
-  case stackEmpty of
-    True -> model
-    False -> resolveAll (resolveOne model)
-  where
-    stackEmpty :: Bool
-    stackEmpty = null (getStack model)
+resolveAll model = lastDef model $ resolveToList model
+
+resolveToList :: Model -> [Model]
+resolveToList model =
+  takeWhileInclusive (not . null . getStack) (iterate resolveOne model)
 
 hurt :: Life -> WhichPlayer -> Model -> Model
 hurt damage PlayerA (Model turn stack handPA handPB deckPA deckPB lifePA lifePB passes gen) =
   Model turn stack handPA handPB deckPA deckPB (lifePA - damage) lifePB passes gen
 hurt damage PlayerB (Model turn stack handPA handPB deckPA deckPB lifePA lifePB passes gen) =
   Model turn stack handPA handPB deckPA deckPB lifePA (lifePB - damage) passes gen
+
+-- UTILS
+
+takeWhileInclusive :: (a -> Bool) -> [a] -> [a]
+takeWhileInclusive _ [] = []
+takeWhileInclusive p (x:xs) = x : if p x then takeWhileInclusive p xs else []
 
 -- CARDS
 
