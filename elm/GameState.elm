@@ -73,8 +73,7 @@ view model =
     , viewHand model.hand
     , viewStack model.stack
     , viewTurn model.turn
-    , viewLife model.life
-    , viewLife model.otherLife
+    , viewLife (model.life, model.otherLife)
     ]
 
 viewHand : Hand -> Html Msg
@@ -114,9 +113,14 @@ viewTurn turn =
     PlayerB ->
       div [ class "turn-indi enemy-turn" ] [ text "Opponent's Turn" ]
 
-viewLife : Life -> Html Msg
-viewLife life =
-  div [ class "life-counter" ] [ text ((toString life) ++ " LP") ]
+viewLife : (Life, Life) -> Html Msg
+viewLife (myLife, otherLife) =
+  div
+    [ class "life" ]
+    [
+      div [ class "life-counter" ] [ text ((toString myLife) ++ " LP") ]
+    , div [ class "life-counter" ] [ text ((toString otherLife) ++ " LP") ]
+    ]
 
 viewStack: Stack -> Html Msg
 viewStack stack =
