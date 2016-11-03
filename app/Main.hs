@@ -31,7 +31,6 @@ data Command =
   | PlayCommand Username
   | SpectateCommand Username
   | LeaveCommand Username
-  | DrawCommand
   | EndTurnCommand
   | PlayCardCommand CardName
   | ErrorCommand Text
@@ -120,76 +119,71 @@ application state pending = do
 
   case parsePrefix msg of
     Nothing ->
-        WS.sendTextData conn $ toChat $
-            ErrorCommand $ "Connection protocol failure" <> msg
+      WS.sendTextData conn $ toChat $
+        ErrorCommand $ "Connection protocol failure" <> msg
 
     Just prefix ->
-        case prefix of
-            _ | any ($ fst client) [ T.null ] ->
-                WS.sendTextData conn $ toChat $
-                    ErrorCommand "Name must be nonempty"
+      case prefix of
+        _ | any ($ fst client) [ T.null ] ->
+            WS.sendTextData conn $ toChat $
+              ErrorCommand "Name must be nonempty"
 
-              | clientExists client initialRoom ->
-                WS.sendTextData conn $ toChat $
-                    ErrorCommand "User already exists"
+          | clientExists client initialRoom ->
+            WS.sendTextData conn $ toChat $
+              ErrorCommand "User already exists"
 
-              | prefix == "play:" -> do
-                if not (roomFull initialRoom) then
-                  do
-                    flip finally
-                        (disconnect client roomVar roomName state)
-                        (play client roomVar)
-                    else
-                      WS.sendTextData conn $ toChat $
-                        ErrorCommand "Room is full :("
-
-              | prefix == "spectate:" ->
+          | prefix == "play:" -> do
+            if not (roomFull initialRoom) then
+              do
                 flip finally
-                    (disconnect client roomVar roomName state)
-                    (spectate client roomVar)
+                  (disconnect client roomVar roomName state)
+                  (play client roomVar)
+                else
+                  WS.sendTextData conn $ toChat $
+                    ErrorCommand "Room is full :("
 
-              | otherwise ->
-                WS.sendTextData conn $ toChat $
-                    ErrorCommand "Something went terribly wrong in connection negotiation :("
+          | prefix == "spectate:" ->
+            flip finally
+              (disconnect client roomVar roomName state)
+              (spectate client roomVar)
 
-              where
-                client = (T.drop (T.length prefix) msg, conn) :: Client
+          | otherwise ->
+            WS.sendTextData conn $ toChat $
+              ErrorCommand "Something went terribly wrong in connection negotiation :("
+
+          where
+            client = (T.drop (T.length prefix) msg, conn) :: Client
 
 spectate :: Client -> MVar Room -> IO ()
 spectate client@(user, conn) room = do
-    room' <- addSpecClient client room
-    WS.sendTextData conn ("acceptSpec:" :: Text)
-    WS.sendTextData conn $ "chat:Welcome! " <> userList room'
-    broadcast (toChat (SpectateCommand (fst client))) room'
-    syncClients room'
-    forever $ do
-      msg <- WS.receiveData conn
-      actSpec (parseMsg user msg) room
+  room' <- addSpecClient client room
+  WS.sendTextData conn ("acceptSpec:" :: Text)
+  WS.sendTextData conn $ "chat:Welcome! " <> userList room'
+  broadcast (toChat (SpectateCommand (fst client))) room'
+  syncClients room'
+  forever $ do
+    msg <- WS.receiveData conn
+    actSpec (parseMsg user msg) room
 
 play :: Client -> MVar Room -> IO ()
 play client@(user, conn) room = do
-    (room', which) <- addPlayerClient client room
-    WS.sendTextData conn ("acceptPlay:" :: Text)
-    WS.sendTextData conn ("chat:Welcome! " <> userList room')
-    broadcast (toChat (PlayCommand (fst client))) room'
-    syncClients room'
-    forever $ do
-      msg <- WS.receiveData conn
-      actPlay (parseMsg user msg) which room
-
+  (room', which) <- addPlayerClient client room
+  WS.sendTextData conn ("acceptPlay:" :: Text)
+  WS.sendTextData conn ("chat:Welcome! " <> userList room')
+  broadcast (toChat (PlayCommand (fst client))) room'
+  syncClients room'
+  forever $ do
+    msg <- WS.receiveData conn
+    actPlay (parseMsg user msg) which room
 
 disconnect :: Client -> MVar Room -> RoomName -> MVar ServerState -> IO (ServerState)
 disconnect client room name state = do
   r <- removeClient client room
   broadcast (toChat (LeaveCommand (fst client))) r
   if roomEmpty r then
-    do
-      s' <- deleteRoom name state
-      return s'
+    deleteRoom name state
       else
-        do
-          s' <- readMVar state
-          return s'
+        readMVar state
 
 parsePrefix :: Text -> Maybe Text
 parsePrefix msg
@@ -209,22 +203,17 @@ actPlay :: Command -> WhichPlayer -> MVar Room -> IO ()
 actPlay cmd which room =
   case trans cmd of
     Just command ->
-      do
-        r <- stateUpdate command which room
-        syncClients r
+      stateUpdate command which room >>= syncClients
     Nothing ->
       actSpec cmd room
   where
     trans :: Command -> Maybe GameCommand
-    trans DrawCommand = Just Draw
     trans EndTurnCommand = Just EndTurn
     trans (PlayCardCommand name) = Just (PlayCard name)
     trans _ = Nothing
 
 actSpec :: Command -> MVar Room -> IO ()
-actSpec cmd room = do
-  r <- readMVar room
-  broadcast (toChat cmd) r
+actSpec cmd room = readMVar room >>= broadcast (toChat cmd)
 
 syncClients :: Room -> IO ()
 syncClients room = do
@@ -247,13 +236,17 @@ toChat _                          = "chat:" <> "Command cannot be processed to t
 
 
 parseMsg :: Username -> Text -> Command
-parseMsg _ ""           = ErrorCommand "Command not found"
-parseMsg name msg
-  | (command == "draw") = DrawCommand
-  | (command == "end")  = EndTurnCommand
-  | (command == "play") = PlayCardCommand content
-  | (command == "chat") = ChatCommand name content
-  | otherwise           = ErrorCommand "Unknown command"
+parseMsg _ ""     = ErrorCommand "Command not found"
+parseMsg name msg =
+  case command of
+    "end" ->
+      EndTurnCommand
+    "play" ->
+      PlayCardCommand content
+    "chat" ->
+      ChatCommand name content
+    otherwise ->
+      ErrorCommand "Unknown Command"
   where
     parsed :: (Text, Text)
     parsed = T.breakOn ":" msg
