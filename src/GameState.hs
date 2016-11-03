@@ -177,6 +177,7 @@ otherTurn PlayerB = PlayerA
 otherPlayer :: WhichPlayer -> WhichPlayer
 otherPlayer = otherTurn
 
+-- HAND.
 getHand :: WhichPlayer -> Model -> Hand
 getHand PlayerA (Model _ _ handPA handPB _ _ _ _ _ _) = handPA
 getHand PlayerB (Model _ _ handPA handPB _ _ _ _ _ _) = handPB
@@ -187,6 +188,13 @@ setHand PlayerA newHand (Model turn stack handPA handPB deckPA deckPB lifePA lif
 setHand PlayerB newHand (Model turn stack handPA handPB deckPA deckPB lifePA lifePB passes gen) =
   Model turn stack handPA newHand deckPA deckPB lifePA lifePB passes gen
 
+mapHand :: (Hand -> a) -> WhichPlayer -> Model -> a
+mapHand f p m = f (getHand p m)
+
+modHand :: (Hand -> Hand) -> WhichPlayer -> Model -> Model
+modHand f p m = setHand p (f (getHand p m)) m
+
+-- DECK.
 getDeck :: WhichPlayer -> Model -> Deck
 getDeck PlayerA (Model _ _ _ _ deckPA deckPB _ _ _ _) = deckPA
 getDeck PlayerB (Model _ _ _ _ deckPA deckPB _ _ _ _) = deckPB
@@ -197,6 +205,14 @@ setDeck PlayerA newDeck (Model turn stack handPA handPB deckPA deckPB lifePA lif
 setDeck PlayerB newDeck (Model turn stack handPA handPB deckPA deckPB lifePA lifePB passes gen) =
   Model turn stack handPA handPB deckPA newDeck lifePA lifePB passes gen
 
+mapDeck :: (Deck -> a) -> WhichPlayer -> Model -> a
+mapDeck f p m = f (getDeck p m)
+
+modDeck :: (Deck -> Deck) -> WhichPlayer -> Model -> Model
+modDeck f p m = setDeck p (mapDeck f p m) m
+
+
+-- STACK.
 getStack :: Model -> Stack
 getStack (Model _ stack _ _ _ _ _ _ _ _) = stack
 
@@ -204,9 +220,17 @@ setStack :: Stack -> Model -> Model
 setStack newStack (Model turn stack handPA handPB deckPA deckPB lifePA lifePB passes gen) =
   Model turn newStack handPA handPB deckPA deckPB lifePA lifePB passes gen
 
+mapStack :: (Stack -> a) -> Model -> a
+mapStack f m = f (getStack m)
+
+modStack :: (Stack -> Stack) -> Model -> Model
+modStack f m = setStack (mapStack f m) m
+
+
+-- RESOLVING.
 resolveOne :: Model -> Model
 resolveOne model@(Model turn stack handPA handPB deckPA deckPB lifePA lifePB passes gen) =
-  eff (setStack (tailSafe stack) model)
+  eff (modStack tailSafe model)
   where
     eff :: Model -> Model
     eff = case headMay stack of
@@ -305,4 +329,4 @@ cardMirror :: Card
 cardMirror = Card "Mirror" "Reverse the combo order" "mirror-mirror.svg" eff
   where
     eff :: CardEff
-    eff p m = setStack (reverse $ getStack m) m
+    eff p m = modStack reverse m
