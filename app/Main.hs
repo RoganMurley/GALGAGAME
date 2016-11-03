@@ -120,44 +120,53 @@ application state pending = do
 
   case msg of
     _ | not valid ->
-        WS.sendTextData conn (toChat (ErrorCommand ("Connection protocol failure" <> msg :: Text)))
+        WS.sendTextData conn $ toChat $ ErrorCommand $ "Connection protocol failure" <> msg
 
       | any ($ fst client) [ T.null ] ->
-        WS.sendTextData conn (toChat (ErrorCommand ("Name must be nonempty" :: Text)))
+        WS.sendTextData conn $ toChat $ ErrorCommand "Name must be nonempty"
 
       | clientExists client initialRoom ->
-        WS.sendTextData conn (toChat (ErrorCommand ("User already exists" :: Text)))
+        WS.sendTextData conn $ toChat $ ErrorCommand "User already exists"
 
       | prefix == "play:" -> do
         if not (roomFull initialRoom) then
           do
-            flip finally (disconnect client roomVar roomName state) $ do
-              (r', which) <- addPlayerClient client roomVar
-              T.putStrLn $ "Far out manz"
-              WS.sendTextData conn ("acceptPlay:" :: Text)
-              WS.sendTextData conn ("chat:Welcome! " <> userList r')
-              broadcast (toChat (PlayCommand (fst client))) r'
-              syncClients r'
-              playLoop conn roomVar client which
+            flip finally (disconnect client roomVar roomName state) (play client roomVar)
             else
-              do
-                WS.sendTextData conn (toChat (ErrorCommand ("Room is full :(" :: Text)))
+              WS.sendTextData conn $ toChat $ ErrorCommand $ "Room is full :("
 
       | prefix == "spectate:" ->
-        flip finally (disconnect client roomVar roomName state) $ do
-          r' <- addSpecClient client roomVar
-          WS.sendTextData conn ("acceptSpec:" :: Text)
-          WS.sendTextData conn ("chat:Welcome! " <> userList r')
-          broadcast (toChat (SpectateCommand (fst client))) r'
-          syncClients r'
-          specLoop conn roomVar client
+        flip finally (disconnect client roomVar roomName state) (spectate client roomVar)
 
       | otherwise ->
-        WS.sendTextData conn (toChat (ErrorCommand ("Something went terribly wrong in connection negotiation :(" :: Text)))
+        WS.sendTextData conn $ toChat $ ErrorCommand "Something went terribly wrong in connection negotiation :("
 
       where
         (valid, prefix) = validConnectMsg msg :: (Bool, Text)
         client = (T.drop (T.length prefix) msg, conn) :: Client
+
+spectate :: Client -> MVar Room -> IO ()
+spectate client@(user, conn) room = do
+    room' <- addSpecClient client room
+    WS.sendTextData conn ("acceptSpec:" :: Text)
+    WS.sendTextData conn $ "chat:Welcome! " <> userList room'
+    broadcast (toChat (SpectateCommand (fst client))) room'
+    syncClients room'
+    forever $ do
+      msg <- WS.receiveData conn
+      actSpec (parseMsg user msg) room
+
+play :: Client -> MVar Room -> IO ()
+play client@(user, conn) room = do
+    (room', which) <- addPlayerClient client room
+    WS.sendTextData conn ("acceptPlay:" :: Text)
+    WS.sendTextData conn ("chat:Welcome! " <> userList room')
+    broadcast (toChat (PlayCommand (fst client))) room'
+    syncClients room'
+    forever $ do
+      msg <- WS.receiveData conn
+      actPlay (parseMsg user msg) which room
+
 
 disconnect :: Client -> MVar Room -> RoomName -> MVar ServerState -> IO (ServerState)
 disconnect client room name state = do
@@ -185,16 +194,6 @@ userList room
   where
     users :: Text
     users = T.intercalate ", " (map fst (getRoomClients room))
-
-playLoop :: WS.Connection -> MVar Room -> Client -> WhichPlayer -> IO ()
-playLoop conn room (user, _) which = forever $ do
-  msg <- WS.receiveData conn
-  actPlay (parseMsg user msg) which room
-
-specLoop :: WS.Connection -> MVar Room -> Client -> IO ()
-specLoop conn room (user, _) = forever $ do
-  msg <- WS.receiveData conn
-  actSpec (parseMsg user msg) room
 
 actPlay :: Command -> WhichPlayer -> MVar Room -> IO ()
 actPlay cmd which room =
