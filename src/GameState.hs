@@ -63,8 +63,7 @@ instance ToJSON WhichPlayer where
   toJSON PlayerB = "pb"
 
 data GameCommand =
-    Draw
-  | EndTurn
+    EndTurn
   | PlayCard CardName
 
 handMaxLength :: Int
@@ -107,7 +106,6 @@ reverso (Model turn stack handPA handPB deckPA deckPB lifePA lifePB passes gen) 
 -- UPDATE
 
 update :: GameCommand -> WhichPlayer -> Model -> Maybe Model
-update Draw which model = drawCard which model
 update EndTurn which model = endTurn which model
 update (PlayCard name) which model = playCard name which model
 
@@ -141,8 +139,9 @@ endTurn which model@(Model turn stack handPA handPB deckPA deckPB lifePA lifePB 
     bothPassed :: Bool
     bothPassed = passes == OnePass
     drawCards :: Model -> Maybe Model
-    drawCards m = (Just m) >>? (drawCard PlayerA) >>? (drawCard PlayerB)
+    drawCards m = Just m >>? drawCard PlayerA >>? drawCard PlayerB
 
+-- If a computation fails, ignore it.
 (>>?) :: (MonadPlus m) => m a -> (a -> m a) -> m a
 (>>?) x f = mplus (x >>= f) x
 
