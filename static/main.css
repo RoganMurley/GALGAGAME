@@ -143,6 +143,14 @@
   .pass-button:hover {
     background-color: #2a4f7d; }
 
+.waiting {
+  color: #fff;
+  font-size: 72px;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center; }
+
 html {
   height: 100%; }
 

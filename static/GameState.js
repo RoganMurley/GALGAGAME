@@ -8979,7 +8979,9 @@ var _user$project$GameState$stateView = function (state) {
 		return A2(
 			_elm_lang$html$Html$div,
 			_elm_lang$core$Native_List.fromArray(
-				[]),
+				[
+					_elm_lang$html$Html_Attributes$class('waiting')
+				]),
 			_elm_lang$core$Native_List.fromArray(
 				[
 					_elm_lang$html$Html$text('Waiting for opponent...')
@@ -9026,7 +9028,7 @@ var _user$project$GameState$init = {
 	life: 1000,
 	otherLife: 1000
 };
-var _user$project$GameState$decodeModel = function (msg) {
+var _user$project$GameState$modelDecoder = function () {
 	var makeWhich = function (s) {
 		var _p14 = s;
 		switch (_p14) {
@@ -9038,8 +9040,8 @@ var _user$project$GameState$decodeModel = function (msg) {
 				return _elm_lang$core$Native_Utils.crashCase(
 					'GameState',
 					{
-						start: {line: 226, column: 7},
-						end: {line: 232, column: 47}
+						start: {line: 225, column: 7},
+						end: {line: 231, column: 47}
 					},
 					_p14)(
 					A2(_elm_lang$core$Basics_ops['++'], 'Invalid player ', s));
@@ -9057,7 +9059,7 @@ var _user$project$GameState$decodeModel = function (msg) {
 		_user$project$GameState$StackCard,
 		A2(_elm_lang$core$Json_Decode_ops[':='], 'owner', whichDecoder),
 		A2(_elm_lang$core$Json_Decode_ops[':='], 'card', cardDecoder));
-	var modelDecoder = A7(
+	return A7(
 		_elm_lang$core$Json_Decode$object6,
 		_user$project$GameState$Model,
 		A2(
@@ -9075,12 +9077,18 @@ var _user$project$GameState$decodeModel = function (msg) {
 		A2(_elm_lang$core$Json_Decode_ops[':='], 'turn', whichDecoder),
 		A2(_elm_lang$core$Json_Decode_ops[':='], 'lifePA', _elm_lang$core$Json_Decode$int),
 		A2(_elm_lang$core$Json_Decode_ops[':='], 'lifePB', _elm_lang$core$Json_Decode$int));
-	return A2(_elm_lang$core$Json_Decode$decodeString, modelDecoder, msg);
+}();
+var _user$project$GameState$decodePlaying = function (msg) {
+	var decoder = A2(
+		_elm_lang$core$Json_Decode$object1,
+		_user$project$GameState$PlayingGame,
+		A2(_elm_lang$core$Json_Decode_ops[':='], 'playing', _user$project$GameState$modelDecoder));
+	return A2(_elm_lang$core$Json_Decode$decodeString, decoder, msg);
 };
 var _user$project$GameState$decodeState = function (msg) {
-	var _p16 = _user$project$GameState$decodeModel(msg);
+	var _p16 = _user$project$GameState$decodePlaying(msg);
 	if (_p16.ctor === 'Ok') {
-		return _user$project$GameState$PlayingGame(_p16._0);
+		return _p16._0;
 	} else {
 		var _p17 = _user$project$GameState$decodeWaiting(msg);
 		if (_p17.ctor === 'Ok') {
@@ -9090,9 +9098,16 @@ var _user$project$GameState$decodeState = function (msg) {
 				'GameState',
 				{
 					start: {line: 185, column: 7},
-					end: {line: 189, column: 41}
+					end: {line: 189, column: 70}
 				},
-				_p17)('Decoding failed');
+				_p17)(
+				A2(
+					_elm_lang$core$Basics_ops['++'],
+					'Error 1:\n',
+					A2(
+						_elm_lang$core$Basics_ops['++'],
+						_p16._0,
+						A2(_elm_lang$core$Basics_ops['++'], '\nError 2:\n', _p17._0))));
 		}
 	}
 };

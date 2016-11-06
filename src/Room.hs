@@ -50,9 +50,19 @@ addSpec :: Client -> Room -> Room
 addSpec client (Room pa pb specs state) = Room pa pb (client:specs) state
 
 addPlayer :: Client -> Room -> (Room, WhichPlayer)
-addPlayer client (Room Nothing pb specs state) = (Room (Just client) pb specs state, PlayerA)
-addPlayer client (Room pa Nothing specs state) = (Room pa (Just client) specs state, PlayerB)
+addPlayer client (Room Nothing pb specs state) = (ifFullInit $ Room (Just client) pb specs state, PlayerA)
+addPlayer client (Room pa Nothing specs state) = (ifFullInit $ Room pa (Just client) specs state, PlayerB)
 addPlayer client (Room (Just a) (Just b) specs state) = (Room (Just a) (Just b) specs state, PlayerA) -- FIX THIS: PLAYERA -> NOTHING OR SOMETHING
+
+ifFullInit :: Room -> Room
+ifFullInit room@(Room pa pb specs state)
+  | roomFull room =
+    case room of
+      Room pa pb specs (Waiting std) ->
+        Room pa pb specs $ Playing $ initModel std
+      otherwise ->
+        room
+  | otherwise = room
 
 roomFull :: Room -> Bool
 roomFull (Room (Just _) (Just _) _ _) = True
