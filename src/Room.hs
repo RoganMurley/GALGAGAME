@@ -6,7 +6,7 @@ import Data.Text (Text)
 import Network.WebSockets (Connection)
 import System.Random (StdGen)
 
-import GameState (initModel, Model, WhichPlayer(..))
+import GameState (initModel, GameState(..), WhichPlayer(..))
 
 
 --TYPES
@@ -18,17 +18,17 @@ type Client = (Username, Connection)
 type Player = Maybe Client
 type Spectators = [Client]
 
-data Room = Room Player Player Spectators Model
+data Room = Room Player Player Spectators GameState
 
 
 -- INITIAL
 newRoom :: StdGen -> Room
-newRoom gen = Room Nothing Nothing [] (initModel gen)
+newRoom gen = Room Nothing Nothing [] (Waiting gen)
 
 
 -- GETTERS
-getRoomModel :: Room -> Model
-getRoomModel (Room _ _ _ model) = model
+getRoomGameState :: Room -> GameState
+getRoomGameState (Room _ _ _ state) = state
 
 getRoomClients :: Room -> [Client]
 getRoomClients (Room pa pb specs _) =
@@ -47,12 +47,12 @@ clientExists client room = any ((== fst client) . fst) (getRoomClients room)
 
 -- ADD CLIENTS.
 addSpec :: Client -> Room -> Room
-addSpec client (Room pa pb specs model) = Room pa pb (client:specs) model
+addSpec client (Room pa pb specs state) = Room pa pb (client:specs) state
 
 addPlayer :: Client -> Room -> (Room, WhichPlayer)
-addPlayer client (Room Nothing pb specs model) = (Room (Just client) pb specs model, PlayerA)
-addPlayer client (Room pa Nothing specs model) = (Room pa (Just client) specs model, PlayerB)
-addPlayer client (Room (Just a) (Just b) specs model) = (Room (Just a) (Just b) specs model, PlayerA) -- FIX THIS: PLAYERA -> NOTHING OR SOMETHING
+addPlayer client (Room Nothing pb specs state) = (Room (Just client) pb specs state, PlayerA)
+addPlayer client (Room pa Nothing specs state) = (Room pa (Just client) specs state, PlayerB)
+addPlayer client (Room (Just a) (Just b) specs state) = (Room (Just a) (Just b) specs state, PlayerA) -- FIX THIS: PLAYERA -> NOTHING OR SOMETHING
 
 roomFull :: Room -> Bool
 roomFull (Room (Just _) (Just _) _ _) = True
@@ -65,8 +65,8 @@ roomEmpty _ = False
 
 -- REMOVE CLIENTS.
 removeClientRoom :: Client -> Room -> Room
-removeClientRoom client (Room pa pb specs model) =
-  Room (newPlayer pa) (newPlayer pb) newSpecs model
+removeClientRoom client (Room pa pb specs state) =
+  Room (newPlayer pa) (newPlayer pb) newSpecs state
   where
   newSpecs :: Spectators
   newSpecs = filter ((/= fst client) . fst) specs
