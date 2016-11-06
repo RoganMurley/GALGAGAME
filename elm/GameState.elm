@@ -73,7 +73,7 @@ stateView : GameState -> Html Msg
 stateView state =
   case state of
     Waiting ->
-      div [] [ text "Waiting for opponent..." ]
+      div [ class "waiting" ] [ text "Waiting for opponent..." ]
     PlayingGame model ->
       view model
 
@@ -178,15 +178,15 @@ syncState model msg =
 
 decodeState : String -> GameState
 decodeState msg =
-  case decodeModel msg of
-    Ok newModel ->
-      PlayingGame newModel
-    Err err ->
+  case decodePlaying msg of
+    Ok playingState ->
+      playingState
+    Err err1 ->
       case decodeWaiting msg of
-        Ok state ->
-          state
-        Err err ->
-          Debug.crash("Decoding failed")
+        Ok waitingState ->
+          waitingState
+        Err err2 ->
+          Debug.crash("Error 1:\n" ++ err1 ++ "\nError 2:\n" ++ err2)
 
 decodeWaiting : String -> Result String GameState
 decodeWaiting msg =
@@ -196,18 +196,17 @@ decodeWaiting msg =
   in
     Json.decodeString decoder msg
 
-decodeModel : String -> Result String Model
-decodeModel msg =
+decodePlaying : String -> Result String GameState
+decodePlaying msg =
   let
-    modelDecoder : Json.Decoder Model
-    modelDecoder =
-      Json.object6 Model
-        ("handPA" := Json.list cardDecoder)
-        ("handPB" := Json.list cardDecoder)
-        ("stack" := Json.list stackCardDecoder)
-        ("turn" := whichDecoder)
-        ("lifePA" := Json.int)
-        ("lifePB" := Json.int)
+    decoder : Json.Decoder GameState
+    decoder = Json.object1 PlayingGame ("playing" := modelDecoder)
+  in
+    Json.decodeString decoder msg
+
+modelDecoder : Json.Decoder Model
+modelDecoder =
+  let
     cardDecoder : Json.Decoder Card
     cardDecoder =
       Json.object3 Card
@@ -231,4 +230,10 @@ decodeModel msg =
         otherwise ->
           Debug.crash ("Invalid player " ++ s)
   in
-    Json.decodeString modelDecoder msg
+    Json.object6 Model
+      ("handPA" := Json.list cardDecoder)
+      ("handPB" := Json.list cardDecoder)
+      ("stack" := Json.list stackCardDecoder)
+      ("turn" := whichDecoder)
+      ("lifePA" := Json.int)
+      ("lifePB" := Json.int)
