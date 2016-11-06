@@ -1,4 +1,4 @@
-module GameState exposing (Card, Hand, Model, Turn, WhichPlayer(..), init, update, view)
+module GameState exposing (Card, GameState(..), Hand, Model, Turn, WhichPlayer(..), init, stateUpdate, stateView, view)
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -9,6 +9,10 @@ import Messages exposing (GameMsg(Sync), Msg(DrawCard, EndTurn, PlayCard))
 
 
 -- TYPES.
+
+type GameState =
+    Waiting
+  | PlayingGame Model
 
 type alias Model =
   {
@@ -65,6 +69,14 @@ init =
 
 
 -- VIEWS.
+stateView : GameState -> Html Msg
+stateView state =
+  case state of
+    Waiting ->
+      div [] [ text "Waiting for opponent..." ]
+    PlayingGame model ->
+      view model
+
 view : Model -> Html Msg
 view model =
   div []
@@ -154,38 +166,48 @@ viewStack stack =
       ]
 
 -- UPDATE
-update : GameMsg -> Model -> Model
-update msg model =
+stateUpdate : GameMsg -> GameState -> GameState
+stateUpdate msg state =
   case msg of
     Sync str ->
-      syncModel model str
+      syncState state str
 
-syncModel : Model -> String -> Model
-syncModel model msg =
-  let
-    result : Result String (Turn, Hand, Hand, Life, Life, Stack)
-    result = decodeState msg
-  in
-    case result of
-      Ok (turn, paHand, pbHand, paLife, pbLife, stack) ->
-        { model | turn = turn, hand = paHand, otherHand = pbHand, life = paLife, otherLife = pbLife, stack = stack }
-      Err err ->
-        Debug.crash ("Sync hand error: " ++ err)
+syncState : GameState -> String -> GameState
+syncState model msg =
+  decodeState msg
 
-decodeState : String -> Result String (Turn, Hand, Hand, Life, Life, Stack)
+decodeState : String -> GameState
 decodeState msg =
+  case decodeModel msg of
+    Ok newModel ->
+      PlayingGame newModel
+    Err err ->
+      case decodeWaiting msg of
+        Ok state ->
+          state
+        Err err ->
+          Debug.crash("Decoding failed")
+
+decodeWaiting : String -> Result String GameState
+decodeWaiting msg =
   let
-    result : Result String (String, Hand, Hand, Life, Life, Stack)
-    result = Json.decodeString handDecoder msg
-    handDecoder : Json.Decoder (String, Hand, Hand, Life, Life, Stack)
-    handDecoder =
-      Json.object6 (\a b c d e f -> (a, b, c, d, e, f))
-        ("turn" := Json.string)
+    decoder : Json.Decoder GameState
+    decoder = Json.object1 (\_ -> Waiting) ("waiting" := Json.bool)
+  in
+    Json.decodeString decoder msg
+
+decodeModel : String -> Result String Model
+decodeModel msg =
+  let
+    modelDecoder : Json.Decoder Model
+    modelDecoder =
+      Json.object6 Model
         ("handPA" := Json.list cardDecoder)
         ("handPB" := Json.list cardDecoder)
+        ("stack" := Json.list stackCardDecoder)
+        ("turn" := whichDecoder)
         ("lifePA" := Json.int)
         ("lifePB" := Json.int)
-        ("stack" := Json.list stackCardDecoder)
     cardDecoder : Json.Decoder Card
     cardDecoder =
       Json.object3 Card
@@ -194,28 +216,19 @@ decodeState msg =
         ("imageURL" := Json.string)
     stackCardDecoder : Json.Decoder StackCard
     stackCardDecoder =
-      Json.object2 makeStackCard
-        ("owner" := Json.string)
+      Json.object2 StackCard
+        ("owner" := whichDecoder)
         ("card" := cardDecoder)
-    makeStackCard : String -> Card -> StackCard
-    makeStackCard s c =
+    whichDecoder : Json.Decoder WhichPlayer
+    whichDecoder = Json.object1 makeWhich Json.string
+    makeWhich : String -> WhichPlayer
+    makeWhich s =
       case s of
         "pa" ->
-          StackCard PlayerA c
+          PlayerA
         "pb" ->
-          StackCard PlayerB c
+          PlayerB
         otherwise ->
-          Debug.crash "Invalid stack card owner"
+          Debug.crash ("Invalid player " ++ s)
   in
-    case result of
-      Ok ("pa", handPA, handPB, lifePA, lifePB, stack) ->
-        Ok (PlayerA, handPA, handPB, lifePA, lifePB, stack)
-
-      Ok ("pb", handPA, handPB, lifePA, lifePB, stack) ->
-        Ok (PlayerB, handPA, handPB, lifePA, lifePB, stack)
-
-      Ok (t, _, _, _, _, _) ->
-        Err ("Invalid turn, should be pa or pb but is instead " ++ t)
-
-      Err err ->
-        Err err
+    Json.decodeString modelDecoder msg

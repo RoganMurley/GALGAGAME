@@ -1,6 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 module GameState where
 
+import Control.Applicative ((<$>))
 import Control.Monad (MonadPlus, mplus)
 import Data.Aeson (ToJSON(..), (.=), object)
 import Data.List (partition)
@@ -10,6 +11,8 @@ import Safe (headMay, tailSafe)
 import System.Random (StdGen, split)
 import System.Random.Shuffle (shuffle')
 
+
+data GameState = Waiting StdGen | Playing Model
 
 data Model = Model Turn Stack Hand Hand Deck Deck Life Life Passes StdGen
 type Hand = [Card]
@@ -30,16 +33,28 @@ type Turn = WhichPlayer
 data Passes = NoPass | OnePass
   deriving (Eq)
 
+instance ToJSON GameState where
+  toJSON (Waiting _) =
+    object [
+      "waiting" .= True
+    ]
+  toJSON (Playing model) =
+    toJSON model
+
 instance ToJSON Model where
   toJSON (Model turn stack handPA handPB deckPA deckPB lifePA lifePB _ _) =
     object
       [
-        "turn" .= turn
-      , "stack" .= stack
-      , "handPA" .= handPA
-      , "handPB" .= handPB
-      , "lifePA" .= lifePA
-      , "lifePB" .= lifePB
+        "playing" .=
+          object
+            [
+              "turn" .= turn
+            , "stack" .= stack
+            , "handPA" .= handPA
+            , "handPB" .= handPB
+            , "lifePA" .= lifePA
+            , "lifePB" .= lifePB
+            ]
       ]
 
 instance ToJSON Card where
@@ -95,19 +110,28 @@ initDeck =
 
 
 -- TEMP STUFF.
-reverso :: Model -> Model
-reverso (Model turn stack handPA handPB deckPA deckPB lifePA lifePB passes gen) =
-  Model (otherTurn turn) (stackRev stack) handPB handPA deckPB deckPA lifePB lifePA passes gen
+reverso :: GameState -> GameState
+reverso (Playing (Model turn stack handPA handPB deckPA deckPB lifePA lifePB passes gen)) =
+  (Playing (Model (otherTurn turn) (stackRev stack) handPB handPA deckPB deckPA lifePB lifePA passes gen))
   where
     stackRev :: Stack -> Stack
     stackRev stack = fmap (\(StackCard p c) -> StackCard (otherPlayer p) c) stack
+reverso x = x
 
 
 -- UPDATE
 
-update :: GameCommand -> WhichPlayer -> Model -> Maybe Model
-update EndTurn which model = endTurn which model
-update (PlayCard name) which model = playCard name which model
+update :: GameCommand -> WhichPlayer -> GameState -> Maybe GameState
+update cmd which state =
+  case state of
+    (Waiting std) ->
+      Just (Waiting std)
+    (Playing model) ->
+      case cmd of
+        EndTurn ->
+          Playing <$> (endTurn which model)
+        PlayCard name ->
+          Playing <$> (playCard name which model)
 
 drawCard :: WhichPlayer -> Model -> Maybe Model
 drawCard which model@(Model turn stack handPA handPB deckPA deckPB lifePA lifePB passes gen)
@@ -148,7 +172,9 @@ endTurn which model@(Model turn stack handPA handPB deckPA deckPB lifePA lifePB 
 -- In future, tag cards in hand with a uid and use that.
 playCard :: CardName -> WhichPlayer -> Model -> Maybe Model
 playCard name which model@(Model turn stack handPA handPB deckPA deckPB lifePA lifePB passes gen)
-  = card *> (Just (resetPasses $ swapTurn $ setStack ((maybeToList card) ++ stack) $ setHand which newHand model))
+  | turn /= which = Nothing
+  | otherwise =
+    card *> (Just (resetPasses $ swapTurn $ setStack ((maybeToList card) ++ stack) $ setHand which newHand model))
   where
     hand :: Hand
     hand = getHand which model

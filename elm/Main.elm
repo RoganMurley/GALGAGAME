@@ -10,7 +10,7 @@ import WebSocket
 
 import Chat exposing (addChatMessage)
 import Drag exposing (dragAt, dragEnd, dragStart, getPosition)
-import GameState exposing (Card, Hand, Model, Turn, WhichPlayer(..), view)
+import GameState exposing (Card, GameState(..), Hand, Model, Turn, WhichPlayer(..), stateUpdate, stateView, view)
 import Messages exposing (GameMsg(..), Msg(..))
 import Util exposing (applyFst)
 
@@ -46,7 +46,7 @@ type alias ConnectingModel =
 type alias ConnectedModel =
   {
     chat : Chat.Model
-  , game : GameState.Model
+  , game : GameState.GameState
   , mode : Mode
   }
 
@@ -82,10 +82,10 @@ update msg ({ hostname, room } as model) =
       case msg of
 
         Play ->
-          ({ model | room = Connected { chat = Chat.init, game = GameState.init, mode = Playing } }, Cmd.none)
+          ({ model | room = Connected { chat = Chat.init, game = Waiting, mode = Playing } }, Cmd.none)
 
         Spectate ->
-          ({ model | room = Connected { chat = Chat.init, game = GameState.init, mode = Spectating } }, Cmd.none)
+          ({ model | room = Connected { chat = Chat.init, game = Waiting, mode = Spectating } }, Cmd.none)
 
         otherwise ->
           applyFst (\c -> { model | room = Connecting c }) (connectingUpdate hostname msg connectingModel)
@@ -154,7 +154,7 @@ connectedUpdate hostname msg ({ chat, game, mode } as model) =
       ({ model | chat = addChatMessage str chat }, Cmd.none)
 
     GameStateMsg gameMsg ->
-      ({ model | game = GameState.update gameMsg game }, Cmd.none)
+      ({ model | game = stateUpdate gameMsg game }, Cmd.none)
 
     otherwise ->
       Debug.crash "Unexpected action while connected ;_;"
@@ -193,11 +193,15 @@ turnOnly { mode, game } cmdMsg =
       Cmd.none
 
     Playing ->
-      case game.turn of
-        PlayerA ->
-          cmdMsg
-        PlayerB ->
+      case game of
+        Waiting ->
           Cmd.none
+        PlayingGame model ->
+          case model.turn of
+            PlayerA ->
+              cmdMsg
+            PlayerB ->
+              Cmd.none
 
 -- VALIDATION
 validateName : String -> (Bool, String)
@@ -230,7 +234,7 @@ view model =
       div []
         [
           Chat.view chat
-        , GameState.view game
+        , GameState.stateView game
         ]
     Connecting { name, error, valid } ->
       div [ class "connecting-box" ]

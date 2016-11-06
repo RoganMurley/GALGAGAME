@@ -20,7 +20,7 @@ import qualified Data.Text.Encoding as T
 import qualified Data.Text.IO as T
 import qualified Network.WebSockets as WS
 
-import GameState (CardName, GameCommand(..), Model(..), WhichPlayer(..), reverso, update)
+import GameState (CardName, GameCommand(..), GameState(..), WhichPlayer(..), reverso, update)
 import Room
 
 
@@ -59,10 +59,22 @@ deleteRoom name state =
 
 stateUpdate :: GameCommand -> WhichPlayer -> MVar Room -> IO (Room)
 stateUpdate cmd which room =
-  modifyMVar room $ \r -> return (gameUpdate cmd r, gameUpdate cmd r)
+  modifyMVar room $ \r ->
+    case gameUpdate cmd r of
+      Nothing ->
+        do
+          T.putStrLn "Something went horribly wrong in state update. Did you try to move when it wasn't your turn?"
+          return (r, r)
+      Just newRoom ->
+        return (newRoom, newRoom)
   where
-    gameUpdate :: GameCommand -> Room -> Room
-    gameUpdate cmd (Room pa pb specs model) = Room pa pb specs (fromMaybe model (update cmd which model)) -- LOOKS DANGEROUS?
+    gameUpdate :: GameCommand -> Room -> Maybe Room
+    gameUpdate cmd (Room pa pb specs state) =
+      case update cmd which state of
+        Nothing ->
+          Nothing
+        Just newState ->
+          Just (Room pa pb specs newState)
 
 addSpecClient :: Client -> MVar Room -> IO (Room)
 addSpecClient client room =
@@ -221,7 +233,7 @@ syncClients room = do
   sendToPlayer PlayerB syncMsgPb room
   sendToSpecs syncMsgPa room
   where
-    game = getRoomModel room :: Model
+    game = getRoomGameState room :: GameState
     syncMsgPa = "sync:" <> (cs $ encode $ game) :: Text
     syncMsgPb = "sync:" <> (cs $ encode $ reverso $ game) :: Text
 
