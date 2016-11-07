@@ -108,6 +108,7 @@ sendToPlayer which msg room =
       WS.sendTextData conn msg
     Nothing ->
       -- T.putStrLn $ "No " <> whichText <> "to send to."
+      return ()
   where
     whichText = cs (show which) :: Text
 
