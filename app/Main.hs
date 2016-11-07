@@ -63,7 +63,7 @@ stateUpdate cmd which room =
     case gameUpdate cmd r of
       Nothing ->
         do
-          T.putStrLn "Something went horribly wrong in state update. Did you try to move when it wasn't your turn?"
+          -- T.putStrLn "Something went horribly wrong in state update. Did you try to move when it wasn't your turn?"
           return (r, r)
       Just newRoom ->
         return (newRoom, newRoom)
@@ -97,23 +97,23 @@ removeClient client room =
 
 broadcast :: Text -> Room -> IO ()
 broadcast msg room = do
-  T.putStrLn $ "Broadcasting: " <> msg
+  -- T.putStrLn $ "Broadcasting: " <> msg
   forM_ (getRoomClients room) $ \(_, conn) -> WS.sendTextData conn msg
 
 sendToPlayer :: WhichPlayer -> Text -> Room -> IO ()
 sendToPlayer which msg room =
   case getPlayerClient which room of
     Just (_, conn) -> do
-      T.putStrLn $ "Send to " <> whichText <> ": " <> msg
+      -- T.putStrLn $ "Send to " <> whichText <> ": " <> msg
       WS.sendTextData conn msg
     Nothing ->
-      T.putStrLn $ "No " <> whichText <> "to send to."
+      -- T.putStrLn $ "No " <> whichText <> "to send to."
   where
     whichText = cs (show which) :: Text
 
 sendToSpecs :: Text -> Room -> IO ()
 sendToSpecs msg room = do
-  T.putStrLn ("To Specs: " <> msg)
+  -- T.putStrLn ("To Specs: " <> msg)
   forM_ (getRoomSpecs room) $ \(_, conn) -> WS.sendTextData conn msg
 
 -- MAIN STUFF.
