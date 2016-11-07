@@ -8975,19 +8975,55 @@ var _user$project$GameState$view = function (model) {
 };
 var _user$project$GameState$stateView = function (state) {
 	var _p12 = state;
-	if (_p12.ctor === 'Waiting') {
-		return A2(
-			_elm_lang$html$Html$div,
-			_elm_lang$core$Native_List.fromArray(
-				[
-					_elm_lang$html$Html_Attributes$class('waiting')
-				]),
-			_elm_lang$core$Native_List.fromArray(
-				[
-					_elm_lang$html$Html$text('Waiting for opponent...')
-				]));
-	} else {
-		return _user$project$GameState$view(_p12._0);
+	switch (_p12.ctor) {
+		case 'Waiting':
+			return A2(
+				_elm_lang$html$Html$div,
+				_elm_lang$core$Native_List.fromArray(
+					[
+						_elm_lang$html$Html_Attributes$class('waiting')
+					]),
+				_elm_lang$core$Native_List.fromArray(
+					[
+						_elm_lang$html$Html$text('Waiting for opponent...')
+					]));
+		case 'PlayingGame':
+			return _user$project$GameState$view(_p12._0);
+		case 'Victory':
+			if (_p12._0.ctor === 'PlayerA') {
+				return A2(
+					_elm_lang$html$Html$div,
+					_elm_lang$core$Native_List.fromArray(
+						[
+							_elm_lang$html$Html_Attributes$class('victory')
+						]),
+					_elm_lang$core$Native_List.fromArray(
+						[
+							_elm_lang$html$Html$text('VICTORY')
+						]));
+			} else {
+				return A2(
+					_elm_lang$html$Html$div,
+					_elm_lang$core$Native_List.fromArray(
+						[
+							_elm_lang$html$Html_Attributes$class('defeat')
+						]),
+					_elm_lang$core$Native_List.fromArray(
+						[
+							_elm_lang$html$Html$text('DEFEAT')
+						]));
+			}
+		default:
+			return A2(
+				_elm_lang$html$Html$div,
+				_elm_lang$core$Native_List.fromArray(
+					[
+						_elm_lang$html$Html_Attributes$class('draw')
+					]),
+				_elm_lang$core$Native_List.fromArray(
+					[
+						_elm_lang$html$Html$text('DRAW')
+					]));
 	}
 };
 var _user$project$GameState$Model = F6(
@@ -9002,6 +9038,19 @@ var _user$project$GameState$StackCard = F2(
 	function (a, b) {
 		return {owner: a, card: b};
 	});
+var _user$project$GameState$Draw = {ctor: 'Draw'};
+var _user$project$GameState$decodeDraw = function (msg) {
+	var decoder = A2(
+		_elm_lang$core$Json_Decode$object1,
+		function (_p13) {
+			return _user$project$GameState$Draw;
+		},
+		A2(_elm_lang$core$Json_Decode_ops[':='], 'draw', _elm_lang$core$Json_Decode$bool));
+	return A2(_elm_lang$core$Json_Decode$decodeString, decoder, msg);
+};
+var _user$project$GameState$Victory = function (a) {
+	return {ctor: 'Victory', _0: a};
+};
 var _user$project$GameState$PlayingGame = function (a) {
 	return {ctor: 'PlayingGame', _0: a};
 };
@@ -9009,7 +9058,7 @@ var _user$project$GameState$Waiting = {ctor: 'Waiting'};
 var _user$project$GameState$decodeWaiting = function (msg) {
 	var decoder = A2(
 		_elm_lang$core$Json_Decode$object1,
-		function (_p13) {
+		function (_p14) {
 			return _user$project$GameState$Waiting;
 		},
 		A2(_elm_lang$core$Json_Decode_ops[':='], 'waiting', _elm_lang$core$Json_Decode$bool));
@@ -9028,10 +9077,10 @@ var _user$project$GameState$init = {
 	life: 1000,
 	otherLife: 1000
 };
-var _user$project$GameState$modelDecoder = function () {
+var _user$project$GameState$whichDecoder = function () {
 	var makeWhich = function (s) {
-		var _p14 = s;
-		switch (_p14) {
+		var _p15 = s;
+		switch (_p15) {
 			case 'pa':
 				return _user$project$GameState$PlayerA;
 			case 'pb':
@@ -9040,14 +9089,23 @@ var _user$project$GameState$modelDecoder = function () {
 				return _elm_lang$core$Native_Utils.crashCase(
 					'GameState',
 					{
-						start: {line: 225, column: 7},
-						end: {line: 231, column: 47}
+						start: {line: 250, column: 7},
+						end: {line: 256, column: 45}
 					},
-					_p14)(
+					_p15)(
 					A2(_elm_lang$core$Basics_ops['++'], 'Invalid player ', s));
 		}
 	};
-	var whichDecoder = A2(_elm_lang$core$Json_Decode$object1, makeWhich, _elm_lang$core$Json_Decode$string);
+	return A2(_elm_lang$core$Json_Decode$object1, makeWhich, _elm_lang$core$Json_Decode$string);
+}();
+var _user$project$GameState$decodeVictory = function (msg) {
+	var decoder = A2(
+		_elm_lang$core$Json_Decode$object1,
+		_user$project$GameState$Victory,
+		A2(_elm_lang$core$Json_Decode_ops[':='], 'victory', _user$project$GameState$whichDecoder));
+	return A2(_elm_lang$core$Json_Decode$decodeString, decoder, msg);
+};
+var _user$project$GameState$modelDecoder = function () {
 	var cardDecoder = A4(
 		_elm_lang$core$Json_Decode$object3,
 		_user$project$GameState$Card,
@@ -9057,7 +9115,7 @@ var _user$project$GameState$modelDecoder = function () {
 	var stackCardDecoder = A3(
 		_elm_lang$core$Json_Decode$object2,
 		_user$project$GameState$StackCard,
-		A2(_elm_lang$core$Json_Decode_ops[':='], 'owner', whichDecoder),
+		A2(_elm_lang$core$Json_Decode_ops[':='], 'owner', _user$project$GameState$whichDecoder),
 		A2(_elm_lang$core$Json_Decode_ops[':='], 'card', cardDecoder));
 	return A7(
 		_elm_lang$core$Json_Decode$object6,
@@ -9074,7 +9132,7 @@ var _user$project$GameState$modelDecoder = function () {
 			_elm_lang$core$Json_Decode_ops[':='],
 			'stack',
 			_elm_lang$core$Json_Decode$list(stackCardDecoder)),
-		A2(_elm_lang$core$Json_Decode_ops[':='], 'turn', whichDecoder),
+		A2(_elm_lang$core$Json_Decode_ops[':='], 'turn', _user$project$GameState$whichDecoder),
 		A2(_elm_lang$core$Json_Decode_ops[':='], 'lifePA', _elm_lang$core$Json_Decode$int),
 		A2(_elm_lang$core$Json_Decode_ops[':='], 'lifePB', _elm_lang$core$Json_Decode$int));
 }();
@@ -9086,28 +9144,50 @@ var _user$project$GameState$decodePlaying = function (msg) {
 	return A2(_elm_lang$core$Json_Decode$decodeString, decoder, msg);
 };
 var _user$project$GameState$decodeState = function (msg) {
-	var _p16 = _user$project$GameState$decodePlaying(msg);
-	if (_p16.ctor === 'Ok') {
-		return _p16._0;
+	var _p17 = _user$project$GameState$decodePlaying(msg);
+	if (_p17.ctor === 'Ok') {
+		return _p17._0;
 	} else {
-		var _p17 = _user$project$GameState$decodeWaiting(msg);
-		if (_p17.ctor === 'Ok') {
-			return _p17._0;
+		var _p18 = _user$project$GameState$decodeWaiting(msg);
+		if (_p18.ctor === 'Ok') {
+			return _p18._0;
 		} else {
-			return _elm_lang$core$Native_Utils.crashCase(
-				'GameState',
-				{
-					start: {line: 185, column: 7},
-					end: {line: 189, column: 70}
-				},
-				_p17)(
-				A2(
-					_elm_lang$core$Basics_ops['++'],
-					'Error 1:\n',
-					A2(
-						_elm_lang$core$Basics_ops['++'],
-						_p16._0,
-						A2(_elm_lang$core$Basics_ops['++'], '\nError 2:\n', _p17._0))));
+			var _p19 = _user$project$GameState$decodeVictory(msg);
+			if (_p19.ctor === 'Ok') {
+				return _p19._0;
+			} else {
+				var _p20 = _user$project$GameState$decodeDraw(msg);
+				if (_p20.ctor === 'Ok') {
+					return _p20._0;
+				} else {
+					return _elm_lang$core$Native_Utils.crashCase(
+						'GameState',
+						{
+							start: {line: 201, column: 15},
+							end: {line: 211, column: 22}
+						},
+						_p20)(
+						A2(
+							_elm_lang$core$Basics_ops['++'],
+							'Error 1:\n',
+							A2(
+								_elm_lang$core$Basics_ops['++'],
+								_p17._0,
+								A2(
+									_elm_lang$core$Basics_ops['++'],
+									'\nError 2:\n',
+									A2(
+										_elm_lang$core$Basics_ops['++'],
+										_p18._0,
+										A2(
+											_elm_lang$core$Basics_ops['++'],
+											'\nError 3:\n',
+											A2(
+												_elm_lang$core$Basics_ops['++'],
+												_p19._0,
+												A2(_elm_lang$core$Basics_ops['++'], '\nError 4:\n', _p20._0))))))));
+				}
+			}
 		}
 	}
 };
@@ -9117,8 +9197,8 @@ var _user$project$GameState$syncState = F2(
 	});
 var _user$project$GameState$stateUpdate = F2(
 	function (msg, state) {
-		var _p19 = msg;
-		return A2(_user$project$GameState$syncState, state, _p19._0);
+		var _p22 = msg;
+		return A2(_user$project$GameState$syncState, state, _p22._0);
 	});
 
 var Elm = {};

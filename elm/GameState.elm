@@ -13,6 +13,8 @@ import Messages exposing (GameMsg(Sync), Msg(DrawCard, EndTurn, PlayCard))
 type GameState =
     Waiting
   | PlayingGame Model
+  | Victory WhichPlayer
+  | Draw
 
 type alias Model =
   {
@@ -76,6 +78,12 @@ stateView state =
       div [ class "waiting" ] [ text "Waiting for opponent..." ]
     PlayingGame model ->
       view model
+    Victory PlayerA ->
+      div [ class "victory" ] [ text "VICTORY" ]
+    Victory PlayerB ->
+      div [ class "defeat" ] [ text "DEFEAT" ]
+    Draw ->
+      div [ class "draw" ] [ text "DRAW" ]
 
 view : Model -> Html Msg
 view model =
@@ -186,13 +194,43 @@ decodeState msg =
         Ok waitingState ->
           waitingState
         Err err2 ->
-          Debug.crash("Error 1:\n" ++ err1 ++ "\nError 2:\n" ++ err2)
+          case decodeVictory msg of
+            Ok victoryState ->
+              victoryState
+            Err err3 ->
+              case decodeDraw msg of
+                Ok drawState ->
+                  drawState
+                Err err4 ->
+                  Debug.crash
+                    (
+                         "Error 1:\n" ++ err1
+                    ++ "\nError 2:\n" ++ err2
+                    ++ "\nError 3:\n" ++ err3
+                    ++ "\nError 4:\n" ++ err4
+                    )
 
 decodeWaiting : String -> Result String GameState
 decodeWaiting msg =
   let
     decoder : Json.Decoder GameState
     decoder = Json.object1 (\_ -> Waiting) ("waiting" := Json.bool)
+  in
+    Json.decodeString decoder msg
+
+decodeVictory : String -> Result String GameState
+decodeVictory msg =
+  let
+    decoder : Json.Decoder GameState
+    decoder = Json.object1 Victory ("victory" := whichDecoder)
+  in
+    Json.decodeString decoder msg
+
+decodeDraw : String -> Result String GameState
+decodeDraw msg =
+  let
+    decoder : Json.Decoder GameState
+    decoder = Json.object1 (\_ -> Draw) ("draw" := Json.bool)
   in
     Json.decodeString decoder msg
 
@@ -203,6 +241,21 @@ decodePlaying msg =
     decoder = Json.object1 PlayingGame ("playing" := modelDecoder)
   in
     Json.decodeString decoder msg
+
+whichDecoder : Json.Decoder WhichPlayer
+whichDecoder =
+  let
+    makeWhich : String -> WhichPlayer
+    makeWhich s =
+      case s of
+      "pa" ->
+        PlayerA
+      "pb" ->
+        PlayerB
+      otherwise ->
+        Debug.crash ("Invalid player " ++ s)
+  in
+    Json.object1 makeWhich Json.string
 
 modelDecoder : Json.Decoder Model
 modelDecoder =
@@ -218,17 +271,6 @@ modelDecoder =
       Json.object2 StackCard
         ("owner" := whichDecoder)
         ("card" := cardDecoder)
-    whichDecoder : Json.Decoder WhichPlayer
-    whichDecoder = Json.object1 makeWhich Json.string
-    makeWhich : String -> WhichPlayer
-    makeWhich s =
-      case s of
-        "pa" ->
-          PlayerA
-        "pb" ->
-          PlayerB
-        otherwise ->
-          Debug.crash ("Invalid player " ++ s)
   in
     Json.object6 Model
       ("handPA" := Json.list cardDecoder)

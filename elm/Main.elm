@@ -194,14 +194,14 @@ turnOnly { mode, game } cmdMsg =
 
     Playing ->
       case game of
-        Waiting ->
-          Cmd.none
         PlayingGame model ->
           case model.turn of
             PlayerA ->
               cmdMsg
             PlayerB ->
               Cmd.none
+        otherwise ->
+          Cmd.none
 
 -- VALIDATION
 validateName : String -> (Bool, String)

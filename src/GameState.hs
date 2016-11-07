@@ -12,7 +12,7 @@ import System.Random (StdGen, split)
 import System.Random.Shuffle (shuffle')
 
 
-data GameState = Waiting StdGen | Playing Model
+data GameState = Waiting StdGen | Playing Model | Victory WhichPlayer | Draw
 
 data Model = Model Turn Stack Hand Hand Deck Deck Life Life Passes StdGen
 type Hand = [Card]
@@ -40,6 +40,14 @@ instance ToJSON GameState where
     ]
   toJSON (Playing model) =
     toJSON model
+  toJSON (Victory which) =
+    object [
+      "victory" .= which
+    ]
+  toJSON (Draw) =
+    object [
+      "draw" .= True
+    ]
 
 instance ToJSON Model where
   toJSON (Model turn stack handPA handPB deckPA deckPB lifePA lifePB _ _) =
@@ -85,8 +93,9 @@ handMaxLength :: Int
 handMaxLength = 6
 
 initModel :: StdGen -> Model
-initModel gen = Model PlayerA [] handPA handPB deckPA deckPB 1000 1000 NoPass gen
+initModel gen = Model PlayerA [] handPA handPB deckPA deckPB initLife initLife NoPass gen
   where
+    initLife = 100 :: Life
     (genPA, genPB) = split gen :: (StdGen, StdGen)
     initDeckPA = shuffle' initDeck (length initDeck) genPA :: Deck
     (handPA, deckPA) = splitAt 5 initDeckPA :: (Hand, Deck)
@@ -116,6 +125,7 @@ reverso (Playing (Model turn stack handPA handPB deckPA deckPB lifePA lifePB pas
   where
     stackRev :: Stack -> Stack
     stackRev stack = fmap (\(StackCard p c) -> StackCard (otherPlayer p) c) stack
+reverso (Victory which) = Victory (otherPlayer which)
 reverso x = x
 
 
@@ -124,14 +134,14 @@ reverso x = x
 update :: GameCommand -> WhichPlayer -> GameState -> Maybe GameState
 update cmd which state =
   case state of
-    (Waiting std) ->
-      Just (Waiting std)
     (Playing model) ->
       case cmd of
         EndTurn ->
-          Playing <$> (endTurn which model)
+          endTurn which model
         PlayCard name ->
           Playing <$> (playCard name which model)
+    x ->
+      Just x
 
 drawCard :: WhichPlayer -> Model -> Maybe Model
 drawCard which model@(Model turn stack handPA handPB deckPA deckPB lifePA lifePB passes gen)
@@ -152,13 +162,19 @@ drawCard which model@(Model turn stack handPA handPB deckPA deckPB lifePA lifePB
     hand :: Hand
     hand = getHand which model
 
-endTurn :: WhichPlayer -> Model -> Maybe Model
+-- Make safer.
+endTurn :: WhichPlayer -> Model -> Maybe GameState
 endTurn which model@(Model turn stack handPA handPB deckPA deckPB lifePA lifePB passes gen)
   | turn /= which = Nothing
   | otherwise =
     case bothPassed of
-      True -> drawCards $ resetPasses $ swapTurn $ resolveAll $ model
-      False -> Just $ swapTurn $ model
+      True ->
+        case resolveAll (Playing model) of
+          Playing m ->
+            Playing <$> (drawCards $ resetPasses $ swapTurn m)
+          s ->
+            Just s
+      False -> Just $ Playing $ swapTurn $ model
   where
     bothPassed :: Bool
     bothPassed = passes == OnePass
@@ -230,23 +246,32 @@ setStack :: Stack -> Model -> Model
 setStack newStack (Model turn stack handPA handPB deckPA deckPB lifePA lifePB passes gen) =
   Model turn newStack handPA handPB deckPA deckPB lifePA lifePB passes gen
 
-resolveOne :: Model -> Model
-resolveOne model@(Model turn stack handPA handPB deckPA deckPB lifePA lifePB passes gen) =
-  eff (setStack (tailSafe stack) model)
+resolveOne :: GameState -> GameState
+resolveOne (Playing model@(Model turn stack handPA handPB deckPA deckPB lifePA lifePB passes gen)) =
+  lifeGate $ Playing (eff (setStack (tailSafe stack) model))
   where
     eff :: Model -> Model
     eff = case headMay stack of
       Nothing -> id
       Just (StackCard p (Card _ _ _ effect)) -> effect p
+    lifeGate :: GameState -> GameState
+    lifeGate s@(Playing (Model _ _ _ _ _ _ lifePA lifePB _ _))
+      | (lifePA <= 0) && (lifePB <= 0) = Draw
+      | lifePB <= 0 = Victory PlayerA
+      | lifePA <= 0 = Victory PlayerB
+      | otherwise = s
+    lifeGate x = x
+resolveOne x = x
 
-resolveAll :: Model -> Model
-resolveAll model =
+resolveAll :: GameState -> GameState
+resolveAll state@(Playing model) =
   case stackEmpty of
-    True -> model
-    False -> resolveAll (resolveOne model)
+    True -> state
+    False -> resolveAll $ resolveOne state
   where
     stackEmpty :: Bool
     stackEmpty = null (getStack model)
+resolveAll x = x
 
 hurt :: Life -> WhichPlayer -> Model -> Model
 hurt damage PlayerA (Model turn stack handPA handPB deckPA deckPB lifePA lifePB passes gen) =
