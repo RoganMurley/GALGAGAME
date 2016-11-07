@@ -95,7 +95,7 @@ handMaxLength = 6
 initModel :: StdGen -> Model
 initModel gen = Model PlayerA [] handPA handPB deckPA deckPB initLife initLife NoPass gen
   where
-    initLife = 100 :: Life
+    initLife = 1000 :: Life
     (genPA, genPB) = split gen :: (StdGen, StdGen)
     initDeckPA = shuffle' initDeck (length initDeck) genPA :: Deck
     (handPA, deckPA) = splitAt 5 initDeckPA :: (Hand, Deck)
