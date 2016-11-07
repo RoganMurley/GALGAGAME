@@ -81,10 +81,14 @@ addSpecClient client room =
   modifyMVar room $ \r ->
     let r' = addSpec client r in return (r', r')
 
-addPlayerClient :: Client -> MVar Room -> IO (Room, WhichPlayer)
+addPlayerClient :: Client -> MVar Room -> IO (Maybe (Room, WhichPlayer))
 addPlayerClient client room =
   modifyMVar room $ \r ->
-    let r' = addPlayer client r in return (fst r', r')
+    case addPlayer client r of
+      Just (r', p) ->
+        return (r', Just (r', p))
+      Nothing ->
+        return (r, Nothing)
 
 removeClient :: Client -> MVar Room -> IO (Room)
 removeClient client room =
@@ -144,15 +148,16 @@ application state pending = do
             WS.sendTextData conn $ toChat $
               ErrorCommand "User already exists"
 
-          | prefix == "play:" -> do
-            if not (roomFull initialRoom) then
-              do
-                flip finally
-                  (disconnect client roomVar roomName state)
-                  (play client roomVar)
-                else
-                  WS.sendTextData conn $ toChat $
-                    ErrorCommand "Room is full :("
+          | prefix == "play:" ->
+            do
+              added <- addPlayerClient client roomVar
+              case added of
+                Nothing ->
+                  WS.sendTextData conn $ toChat $ ErrorCommand "Room is full :("
+                Just (room', which) ->
+                  flip finally
+                    (disconnect client roomVar roomName state)
+                    (play which room' client roomVar)
 
           | prefix == "spectate:" ->
             flip finally
@@ -177,9 +182,8 @@ spectate client@(user, conn) room = do
     msg <- WS.receiveData conn
     actSpec (parseMsg user msg) room
 
-play :: Client -> MVar Room -> IO ()
-play client@(user, conn) room = do
-  (room', which) <- addPlayerClient client room
+play :: WhichPlayer -> Room -> Client -> MVar Room -> IO ()
+play which room' client@(user, conn) room = do
   WS.sendTextData conn ("acceptPlay:" :: Text)
   WS.sendTextData conn ("chat:Welcome! " <> userList room')
   broadcast (toChat (PlayCommand (fst client))) room'
