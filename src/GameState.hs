@@ -285,16 +285,16 @@ cardBoomerang = Card "Boomerang" "Hurt for 50, get back at end of combo" "boomer
     catchEff p m = setHand p (cardBoomerang : (getHand p m)) m
 
 cardHeal :: Card
-cardHeal = Card "Elixir" "Heal for 200" "heart-bottle.svg" eff
+cardHeal = Card "Elixir" "Heal for 100" "heart-bottle.svg" eff
   where
     eff :: CardEff
-    eff p m = hurt (-200) p m
+    eff p m = hurt (-100) p m
 
 cardVamp :: Card
 cardVamp = Card "Vampire" "Lifesteal for 100" "fangs.svg" eff
   where
     eff :: CardEff
-    eff p m = hurt 100 (otherPlayer p) $ hurt (-100) p m
+    eff p m = hurt 100 (otherPlayer p) $ hurt (-50) p m
 
 cardSucc :: Card
 cardSucc = Card "Succubus" "Lifesteal for 50 per combo" "pretty-fangs.svg" eff
@@ -302,7 +302,7 @@ cardSucc = Card "Succubus" "Lifesteal for 50 per combo" "pretty-fangs.svg" eff
     eff :: CardEff
     eff p m =
       hurt (50 * ((length (getStack m)) + 1)) (otherPlayer p) $
-        hurt (-50 * ((length (getStack m)) + 1)) p m
+        hurt (-25 * ((length (getStack m)) + 1)) p m
 
 cardBounce :: Card
 cardBounce = Card "Whence" "Return top of combo to its owner" "thor-fist.svg" eff

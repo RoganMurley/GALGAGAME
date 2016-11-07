@@ -49,10 +49,10 @@ clientExists client room = any ((== fst client) . fst) (getRoomClients room)
 addSpec :: Client -> Room -> Room
 addSpec client (Room pa pb specs state) = Room pa pb (client:specs) state
 
-addPlayer :: Client -> Room -> (Room, WhichPlayer)
-addPlayer client (Room Nothing pb specs state) = (ifFullInit $ Room (Just client) pb specs state, PlayerA)
-addPlayer client (Room pa Nothing specs state) = (ifFullInit $ Room pa (Just client) specs state, PlayerB)
-addPlayer client (Room (Just a) (Just b) specs state) = (Room (Just a) (Just b) specs state, PlayerA) -- FIX THIS: PLAYERA -> NOTHING OR SOMETHING
+addPlayer :: Client -> Room -> Maybe (Room, WhichPlayer)
+addPlayer client (Room Nothing pb specs state) = Just (ifFullInit $ Room (Just client) pb specs state, PlayerA)
+addPlayer client (Room pa Nothing specs state) = Just (ifFullInit $ Room pa (Just client) specs state, PlayerB)
+addPlayer client (Room (Just a) (Just b) specs state) = Nothing
 
 ifFullInit :: Room -> Room
 ifFullInit room@(Room pa pb specs state)
