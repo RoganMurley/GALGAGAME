@@ -92,10 +92,12 @@ data GameCommand =
 handMaxLength :: Int
 handMaxLength = 6
 
+lifeMax :: Life
+lifeMax = 30
+
 initModel :: StdGen -> Model
-initModel gen = Model PlayerA [] handPA handPB deckPA deckPB initLife initLife NoPass gen
+initModel gen = Model PlayerA [] handPA handPB deckPA deckPB lifeMax lifeMax NoPass gen
   where
-    initLife = 1000 :: Life
     (genPA, genPB) = split gen :: (StdGen, StdGen)
     initDeckPA = shuffle' initDeck (length initDeck) genPA :: Deck
     (handPA, deckPA) = splitAt 5 initDeckPA :: (Hand, Deck)
@@ -275,17 +277,25 @@ resolveAll x = x
 
 hurt :: Life -> WhichPlayer -> Model -> Model
 hurt damage PlayerA (Model turn stack handPA handPB deckPA deckPB lifePA lifePB passes gen) =
-  Model turn stack handPA handPB deckPA deckPB (lifePA - damage) lifePB passes gen
+  Model turn stack handPA handPB deckPA deckPB newLife lifePB passes gen
+  where
+    newLife
+      | (lifePA - damage) < lifeMax = lifePA - damage
+      | otherwise = lifeMax
 hurt damage PlayerB (Model turn stack handPA handPB deckPA deckPB lifePA lifePB passes gen) =
-  Model turn stack handPA handPB deckPA deckPB lifePA (lifePB - damage) passes gen
+  Model turn stack handPA handPB deckPA deckPB lifePA newLife passes gen
+  where
+    newLife
+      | (lifePA - damage) < lifeMax = lifePA - damage
+      | otherwise = lifeMax
 
 -- CARDS
 
 cardDagger :: Card
-cardDagger = Card "Dagger" "Hurt for 200" "plain-dagger.svg" eff
+cardDagger = Card "Dagger" "Hurt for 5" "plain-dagger.svg" eff
   where
     eff :: CardEff
-    eff p m = hurt 200 (otherPlayer p) m
+    eff p m = hurt 5 (otherPlayer p) m
 
 cardHubris :: Card
 cardHubris = Card "Hubris" "Negate whole combo" "tower-fall.svg" eff
@@ -294,40 +304,40 @@ cardHubris = Card "Hubris" "Negate whole combo" "tower-fall.svg" eff
     eff p m = setStack [] m
 
 cardFireball :: Card
-cardFireball = Card "Fireball" "Hurt for 80 per combo" "fire-ray.svg" eff
+cardFireball = Card "Fireball" "Hurt for 2 per combo" "fire-ray.svg" eff
   where
     eff :: CardEff
-    eff p m = hurt (80 * ((length (getStack m)) + 1)) (otherPlayer p) m
+    eff p m = hurt (2 * ((length (getStack m)) + 1)) (otherPlayer p) m
 
 cardBoomerang :: Card
-cardBoomerang = Card "Boomerang" "Hurt for 50, get back at end of combo" "boomerang.svg" eff
+cardBoomerang = Card "Boomerang" "Hurt for 1, get back at end of combo" "boomerang.svg" eff
   where
     eff :: CardEff
-    eff p m = setStack ((getStack m) ++ [StackCard p cardCatch]) (hurt 50 (otherPlayer p) m)
+    eff p m = setStack ((getStack m) ++ [StackCard p cardCatch]) (hurt 1 (otherPlayer p) m)
     cardCatch :: Card
     cardCatch = Card "Catch Boomerang" "Get boomerang back" "hand.svg" catchEff
     catchEff :: CardEff
     catchEff p m = setHand p (cardBoomerang : (getHand p m)) m
 
 cardHeal :: Card
-cardHeal = Card "Elixir" "Heal for 100" "heart-bottle.svg" eff
+cardHeal = Card "Elixir" "Heal for 2" "heart-bottle.svg" eff
   where
     eff :: CardEff
-    eff p m = hurt (-100) p m
+    eff p m = hurt (-2) p m
 
 cardVamp :: Card
-cardVamp = Card "Vampire" "Lifesteal for 100" "fangs.svg" eff
+cardVamp = Card "Vampire" "Lifesteal for 3" "fangs.svg" eff
   where
     eff :: CardEff
-    eff p m = hurt 100 (otherPlayer p) $ hurt (-50) p m
+    eff p m = hurt 3 (otherPlayer p) $ hurt (-3) p m
 
 cardSucc :: Card
-cardSucc = Card "Succubus" "Lifesteal for 50 per combo" "pretty-fangs.svg" eff
+cardSucc = Card "Succubus" "Lifesteal for 2 per combo" "pretty-fangs.svg" eff
   where
     eff :: CardEff
     eff p m =
-      hurt (50 * ((length (getStack m)) + 1)) (otherPlayer p) $
-        hurt (-25 * ((length (getStack m)) + 1)) p m
+      hurt (2 * ((length (getStack m)) + 1)) (otherPlayer p) $
+        hurt (-2 * ((length (getStack m)) + 1)) p m
 
 cardBounce :: Card
 cardBounce = Card "Whence" "Return top of combo to its owner" "thor-fist.svg" eff
