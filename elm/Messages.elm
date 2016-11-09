@@ -18,6 +18,7 @@ type Msg
   | ConnectError String
   | Spectate
   | Play
+  | KeyPress Int
 
 type GameMsg
   = Sync String

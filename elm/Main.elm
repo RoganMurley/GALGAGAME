@@ -4,6 +4,7 @@ import Html exposing (..)
 import Html.App as App
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
+import Keyboard
 import Mouse
 import String exposing (dropLeft, length, startsWith)
 import WebSocket
@@ -116,6 +117,16 @@ connectingUpdate hostname msg ({ name, error, valid } as model) =
     ConnectError str ->
       ({ model | error = str }, Cmd.none)
 
+    KeyPress 13 ->
+      case fst (validateName name) of
+        False ->
+          (model, Cmd.none)
+        True ->
+          (model, message (Send ("play:" ++ name)))
+
+    KeyPress _ ->
+      (model, Cmd.none)
+
     otherwise ->
       Debug.crash "Unexpected action while not connected ;_;"
 
@@ -155,6 +166,12 @@ connectedUpdate hostname msg ({ chat, game, mode } as model) =
 
     GameStateMsg gameMsg ->
       ({ model | game = stateUpdate gameMsg game }, Cmd.none)
+
+    KeyPress 13 ->
+      (model, message (Send ("chat:" ++ chat.input)))
+
+    KeyPress _ ->
+      (model, Cmd.none)
 
     otherwise ->
       Debug.crash "Unexpected action while connected ;_;"
@@ -222,6 +239,7 @@ subscriptions model =
     WebSocket.listen ("ws://" ++ model.hostname ++ ":9160") Receive
   , Mouse.moves DragAt
   , Mouse.ups DragEnd
+  , Keyboard.presses KeyPress
   ]
 
 
