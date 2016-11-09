@@ -19,6 +19,7 @@ type Msg
   | Spectate
   | Play
   | KeyPress Int
+  | Rematch
 
 type GameMsg
   = Sync String

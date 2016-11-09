@@ -5,7 +5,7 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Json.Decode as Json exposing ((:=))
 
-import Messages exposing (GameMsg(Sync), Msg(DrawCard, EndTurn, PlayCard))
+import Messages exposing (GameMsg(Sync), Msg(DrawCard, EndTurn, PlayCard, Rematch))
 
 
 -- TYPES.
@@ -79,11 +79,23 @@ stateView state =
     PlayingGame model ->
       view model
     Victory PlayerA ->
-      div [ class "victory" ] [ text "VICTORY" ]
+      div []
+        [
+          div [ class "victory" ] [ text "VICTORY" ]
+        , button [ class "rematch", onClick Rematch ] [ text "Rematch" ]
+        ]
     Victory PlayerB ->
-      div [ class "defeat" ] [ text "DEFEAT" ]
+      div []
+        [
+          div [ class "defeat" ] [ text "DEFEAT" ]
+        , button [ class "rematch", onClick Rematch ] [ text "Rematch" ]
+        ]
     Draw ->
-      div [ class "draw" ] [ text "DRAW" ]
+      div []
+        [
+          div [ class "draw" ] [ text "DRAW" ]
+        , button [ class "rematch", onClick Rematch ] [ text "Rematch" ]
+        ]
 
 view : Model -> Html Msg
 view model =
