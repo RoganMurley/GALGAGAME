@@ -8829,8 +8829,8 @@ var _user$project$GameState$viewLife = function (_p6) {
 						_elm_lang$html$Html$text(
 						A2(
 							_elm_lang$core$Basics_ops['++'],
-							_elm_lang$core$Basics$toString(_p7._0),
-							' LP'))
+							'Opponent HP: ',
+							_elm_lang$core$Basics$toString(_p7._1)))
 					])),
 				A2(
 				_elm_lang$html$Html$div,
@@ -8843,8 +8843,8 @@ var _user$project$GameState$viewLife = function (_p6) {
 						_elm_lang$html$Html$text(
 						A2(
 							_elm_lang$core$Basics_ops['++'],
-							_elm_lang$core$Basics$toString(_p7._1),
-							' LP'))
+							'Your HP: ',
+							_elm_lang$core$Basics$toString(_p7._0)))
 					]))
 			]));
 };

@@ -138,8 +138,8 @@ viewLife (myLife, otherLife) =
   div
     [ class "life" ]
     [
-      div [ class "life-counter" ] [ text ((toString myLife) ++ " LP") ]
-    , div [ class "life-counter" ] [ text ((toString otherLife) ++ " LP") ]
+      div [ class "life-counter" ] [ text ("Opponent HP: " ++ (toString otherLife)) ]
+    , div [ class "life-counter" ] [ text ("Your HP: " ++ (toString myLife)) ]
     ]
 
 viewStack: Stack -> Html Msg

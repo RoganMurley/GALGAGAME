@@ -103,7 +103,11 @@
   top: 20%; }
 
 .life-counter {
-  color: #fff; }
+  color: #fff;
+  transform: translateX(-50%);
+  display: flex;
+  justify-content: center;
+  align-items: center; }
 
 .stack-container {
   height: 100%;
