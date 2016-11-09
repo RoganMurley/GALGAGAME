@@ -6,4 +6,10 @@
 
 .life-counter {
   color: #fff;
+
+  transform: translateX(-50%);
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }

@@ -110,14 +110,13 @@ initDeck =
      (replicate 3 cardFireball)
   ++ (replicate 3 cardDagger)
   ++ (replicate 3 cardBoomerang)
-  ++ (replicate 3 cardHeal)
-  ++ (replicate 3 cardVamp)
-  ++ (replicate 3 cardSucc)
+  ++ (replicate 3 cardPotion)
+  ++ (replicate 3 cardVampire)
+  ++ (replicate 3 cardSuccubus)
   -- CONTROL
   ++ (replicate 2 cardHubris)
-  -- ++ (replicate 2 cardBounce)
-  ++ (replicate 2 cardReflect)
   ++ (replicate 2 cardMirror)
+  ++ (replicate 2 cardIncausality)
 
 
 -- TEMP STUFF.
@@ -319,39 +318,28 @@ cardBoomerang = Card "Boomerang" "Hurt for 1, get back at end of combo" "boomera
     catchEff :: CardEff
     catchEff p m = setHand p (cardBoomerang : (getHand p m)) m
 
-cardHeal :: Card
-cardHeal = Card "Elixir" "Heal for 2" "heart-bottle.svg" eff
+cardPotion :: Card
+cardPotion = Card "Potion" "Heal for 4" "heart-bottle.svg" eff
   where
     eff :: CardEff
     eff p m = hurt (-2) p m
 
-cardVamp :: Card
-cardVamp = Card "Vampire" "Lifesteal for 3" "fangs.svg" eff
+cardVampire :: Card
+cardVampire = Card "Vampire" "Lifesteal for 3" "fangs.svg" eff
   where
     eff :: CardEff
     eff p m = hurt 3 (otherPlayer p) $ hurt (-3) p m
 
-cardSucc :: Card
-cardSucc = Card "Succubus" "Lifesteal for 2 per combo" "pretty-fangs.svg" eff
+cardSuccubus :: Card
+cardSuccubus = Card "Succubus" "Lifesteal for 2 per combo" "pretty-fangs.svg" eff
   where
     eff :: CardEff
     eff p m =
       hurt (2 * ((length (getStack m)) + 1)) (otherPlayer p) $
         hurt (-2 * ((length (getStack m)) + 1)) p m
 
-cardBounce :: Card
-cardBounce = Card "Whence" "Return top of combo to its owner" "thor-fist.svg" eff
-  where
-    eff :: CardEff
-    eff p m =
-      case headMay (getStack m) of
-        Nothing ->
-          m
-        Just (StackCard owner card) ->
-          setHand owner (card : (getHand owner m)) $ (setStack (tailSafe (getStack m))) m
-
-cardReflect :: Card
-cardReflect = Card "Reflect" "Change the top of the combo's owner" "shield-reflect.svg" eff
+cardIncausality :: Card
+cardIncausality = Card "Incausality" "Reverse the order of the combo" "pocket-watch.svg" eff
   where
     eff :: CardEff
     eff p m =
