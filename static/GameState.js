@@ -8672,6 +8672,7 @@ var _elm_lang$mouse$Mouse$subMap = F2(
 	});
 _elm_lang$core$Native_Platform.effectManagers['Mouse'] = {pkg: 'elm-lang/mouse', init: _elm_lang$mouse$Mouse$init, onEffects: _elm_lang$mouse$Mouse$onEffects, onSelfMsg: _elm_lang$mouse$Mouse$onSelfMsg, tag: 'sub', subMap: _elm_lang$mouse$Mouse$subMap};
 
+var _user$project$Messages$Rematch = {ctor: 'Rematch'};
 var _user$project$Messages$KeyPress = function (a) {
 	return {ctor: 'KeyPress', _0: a};
 };
@@ -8997,35 +8998,89 @@ var _user$project$GameState$stateView = function (state) {
 				return A2(
 					_elm_lang$html$Html$div,
 					_elm_lang$core$Native_List.fromArray(
-						[
-							_elm_lang$html$Html_Attributes$class('victory')
-						]),
+						[]),
 					_elm_lang$core$Native_List.fromArray(
 						[
-							_elm_lang$html$Html$text('VICTORY')
+							A2(
+							_elm_lang$html$Html$div,
+							_elm_lang$core$Native_List.fromArray(
+								[
+									_elm_lang$html$Html_Attributes$class('victory')
+								]),
+							_elm_lang$core$Native_List.fromArray(
+								[
+									_elm_lang$html$Html$text('VICTORY')
+								])),
+							A2(
+							_elm_lang$html$Html$button,
+							_elm_lang$core$Native_List.fromArray(
+								[
+									_elm_lang$html$Html_Attributes$class('rematch'),
+									_elm_lang$html$Html_Events$onClick(_user$project$Messages$Rematch)
+								]),
+							_elm_lang$core$Native_List.fromArray(
+								[
+									_elm_lang$html$Html$text('Rematch')
+								]))
 						]));
 			} else {
 				return A2(
 					_elm_lang$html$Html$div,
 					_elm_lang$core$Native_List.fromArray(
-						[
-							_elm_lang$html$Html_Attributes$class('defeat')
-						]),
+						[]),
 					_elm_lang$core$Native_List.fromArray(
 						[
-							_elm_lang$html$Html$text('DEFEAT')
+							A2(
+							_elm_lang$html$Html$div,
+							_elm_lang$core$Native_List.fromArray(
+								[
+									_elm_lang$html$Html_Attributes$class('defeat')
+								]),
+							_elm_lang$core$Native_List.fromArray(
+								[
+									_elm_lang$html$Html$text('DEFEAT')
+								])),
+							A2(
+							_elm_lang$html$Html$button,
+							_elm_lang$core$Native_List.fromArray(
+								[
+									_elm_lang$html$Html_Attributes$class('rematch'),
+									_elm_lang$html$Html_Events$onClick(_user$project$Messages$Rematch)
+								]),
+							_elm_lang$core$Native_List.fromArray(
+								[
+									_elm_lang$html$Html$text('Rematch')
+								]))
 						]));
 			}
 		default:
 			return A2(
 				_elm_lang$html$Html$div,
 				_elm_lang$core$Native_List.fromArray(
-					[
-						_elm_lang$html$Html_Attributes$class('draw')
-					]),
+					[]),
 				_elm_lang$core$Native_List.fromArray(
 					[
-						_elm_lang$html$Html$text('DRAW')
+						A2(
+						_elm_lang$html$Html$div,
+						_elm_lang$core$Native_List.fromArray(
+							[
+								_elm_lang$html$Html_Attributes$class('draw')
+							]),
+						_elm_lang$core$Native_List.fromArray(
+							[
+								_elm_lang$html$Html$text('DRAW')
+							])),
+						A2(
+						_elm_lang$html$Html$button,
+						_elm_lang$core$Native_List.fromArray(
+							[
+								_elm_lang$html$Html_Attributes$class('rematch'),
+								_elm_lang$html$Html_Events$onClick(_user$project$Messages$Rematch)
+							]),
+						_elm_lang$core$Native_List.fromArray(
+							[
+								_elm_lang$html$Html$text('Rematch')
+							]))
 					]));
 	}
 };
@@ -9092,8 +9147,8 @@ var _user$project$GameState$whichDecoder = function () {
 				return _elm_lang$core$Native_Utils.crashCase(
 					'GameState',
 					{
-						start: {line: 250, column: 7},
-						end: {line: 256, column: 45}
+						start: {line: 262, column: 7},
+						end: {line: 268, column: 45}
 					},
 					_p15)(
 					A2(_elm_lang$core$Basics_ops['++'], 'Invalid player ', s));
@@ -9166,8 +9221,8 @@ var _user$project$GameState$decodeState = function (msg) {
 					return _elm_lang$core$Native_Utils.crashCase(
 						'GameState',
 						{
-							start: {line: 201, column: 15},
-							end: {line: 211, column: 22}
+							start: {line: 213, column: 15},
+							end: {line: 223, column: 22}
 						},
 						_p20)(
 						A2(

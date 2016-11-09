@@ -21,7 +21,9 @@
 .card-picture {
   width: 10vw;
   height: 10vw;
-  margin: auto; }
+  margin: auto;
+  max-width: 168px;
+  max-height: 168px; }
 
 .card-desc {
   display: flex;

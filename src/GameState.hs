@@ -12,7 +12,7 @@ import System.Random (StdGen, split)
 import System.Random.Shuffle (shuffle')
 
 
-data GameState = Waiting StdGen | Playing Model | Victory WhichPlayer | Draw
+data GameState = Waiting StdGen | Playing Model | Victory WhichPlayer StdGen | Draw StdGen
 
 data Model = Model Turn Stack Hand Hand Deck Deck Life Life Passes StdGen
 type Hand = [Card]
@@ -40,11 +40,11 @@ instance ToJSON GameState where
     ]
   toJSON (Playing model) =
     toJSON model
-  toJSON (Victory which) =
+  toJSON (Victory which gen) =
     object [
       "victory" .= which
     ]
-  toJSON (Draw) =
+  toJSON (Draw gen) =
     object [
       "draw" .= True
     ]
@@ -88,12 +88,13 @@ instance ToJSON WhichPlayer where
 data GameCommand =
     EndTurn
   | PlayCard CardName
+  | Rematch
 
 handMaxLength :: Int
 handMaxLength = 6
 
 lifeMax :: Life
-lifeMax = 30
+lifeMax = 1
 
 initModel :: StdGen -> Model
 initModel gen = Model PlayerA [] handPA handPB deckPA deckPB lifeMax lifeMax NoPass gen
@@ -116,7 +117,7 @@ initDeck =
   -- CONTROL
   ++ (replicate 2 cardHubris)
   ++ (replicate 2 cardReflect)
-  ++ (replicate 2 cardIncausality)
+  ++ (replicate 2 cardReversal)
 
 
 -- TEMP STUFF.
@@ -126,7 +127,7 @@ reverso (Playing (Model turn stack handPA handPB deckPA deckPB lifePA lifePB pas
   where
     stackRev :: Stack -> Stack
     stackRev stack = fmap (\(StackCard p c) -> StackCard (otherPlayer p) c) stack
-reverso (Victory which) = Victory (otherPlayer which)
+reverso (Victory which gen) = Victory (otherPlayer which) gen
 reverso x = x
 
 
@@ -141,6 +142,18 @@ update cmd which state =
           endTurn which model
         PlayCard name ->
           Playing <$> (playCard name which model)
+    (Victory winner gen) ->
+      case cmd of
+        Rematch ->
+          Just $ Playing $ initModel gen
+        x ->
+          Just $ Victory winner gen
+    (Draw gen) ->
+      case cmd of
+        Rematch ->
+          Just $ Playing $ initModel gen
+        x ->
+          Just $ Draw gen
     x ->
       Just x
 
@@ -257,9 +270,9 @@ resolveOne (Playing model@(Model turn stack handPA handPB deckPA deckPB lifePA l
       Just (StackCard p (Card _ _ _ effect)) -> effect p
     lifeGate :: GameState -> GameState
     lifeGate s@(Playing (Model _ _ _ _ _ _ lifePA lifePB _ _))
-      | (lifePA <= 0) && (lifePB <= 0) = Draw
-      | lifePB <= 0 = Victory PlayerA
-      | lifePA <= 0 = Victory PlayerB
+      | (lifePA <= 0) && (lifePB <= 0) = Draw gen
+      | lifePB <= 0 = Victory PlayerA gen
+      | lifePA <= 0 = Victory PlayerB gen
       | otherwise = s
     lifeGate x = x
 resolveOne x = x
@@ -338,8 +351,8 @@ cardSuccubus = Card "Succubus" "Lifesteal for 2 per stack card" "pretty-fangs.sv
       hurt (2 * ((length (getStack m)) + 1)) (otherPlayer p) $
         hurt (-2 * ((length (getStack m)) + 1)) p m
 
-cardIncausality :: Card
-cardIncausality = Card "Incausality" "Reverse the order of the stack" "pocket-watch.svg" eff
+cardReversal :: Card
+cardReversal = Card "Reversal" "Reverse the order of the stack" "pocket-watch.svg" eff
   where
     eff :: CardEff
     eff p m =

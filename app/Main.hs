@@ -33,6 +33,7 @@ data Command =
   | LeaveCommand Username
   | EndTurnCommand
   | PlayCardCommand CardName
+  | RematchCommand
   | ErrorCommand Text
 
 
@@ -227,6 +228,7 @@ actPlay cmd which room =
     trans :: Command -> Maybe GameCommand
     trans EndTurnCommand = Just EndTurn
     trans (PlayCardCommand name) = Just (PlayCard name)
+    trans RematchCommand = Just (Rematch)
     trans _ = Nothing
 
 actSpec :: Command -> MVar Room -> IO ()
@@ -262,6 +264,8 @@ parseMsg name msg =
       PlayCardCommand content
     "chat" ->
       ChatCommand name content
+    "rematch" ->
+      RematchCommand
     otherwise ->
       ErrorCommand "Unknown Command"
   where

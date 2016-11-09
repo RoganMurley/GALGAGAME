@@ -173,6 +173,15 @@ connectedUpdate hostname msg ({ chat, game, mode } as model) =
     KeyPress _ ->
       (model, Cmd.none)
 
+    Rematch ->
+      case model.game of
+        Victory which ->
+          (model, send hostname "rematch:")
+        Draw ->
+          (model, send hostname "rematch:")
+        otherwise ->
+          (model, Cmd.none)
+
     otherwise ->
       Debug.crash "Unexpected action while connected ;_;"
 
