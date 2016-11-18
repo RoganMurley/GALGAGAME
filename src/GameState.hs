@@ -118,6 +118,7 @@ initDeck =
   ++ (replicate 2 cardHubris)
   ++ (replicate 2 cardReflect)
   ++ (replicate 2 cardReversal)
+  ++ (replicate 2 cardEcho)
 
 
 -- TEMP STUFF.
@@ -388,3 +389,14 @@ cardReflect = Card "Reflect" "Reflect the next card in the stack" "shield-reflec
           m
         Just (StackCard owner card) ->
           (setStack ( (StackCard (otherPlayer owner) card) : (tailSafe (getStack m)))) m
+
+cardEcho :: Card
+cardEcho = Card "Echo" "The next card happens twice." "echo-ripples.svg" eff
+  where
+    eff :: CardEff
+    eff p m =
+      case headMay (getStack m) of
+        Nothing ->
+          m
+        Just (StackCard owner card@(Card name desc img cardEff)) ->
+          cardEff owner m
