@@ -361,14 +361,10 @@ cardFireball = Card "Fireball" "Hurt for 3 for each card to the right" "fire-ray
     eff p m = hurt (3 * ((length (getStack m)) + 1)) (otherPlayer p) m
 
 cardBoomerang :: Card
-cardBoomerang = Card "Boomerang" "Hurt for 1, return at end of round" "boomerang.svg" eff
+cardBoomerang = Card "Boomerang" "Hurt for 1, return this card to your hand" "boomerang.svg" eff
   where
     eff :: CardEff
-    eff p m = setStack ((getStack m) ++ [StackCard p cardCatch]) (hurt 1 (otherPlayer p) m)
-    cardCatch :: Card
-    cardCatch = Card "Catch Boomerang" "Get boomerang back" "hand.svg" catchEff
-    catchEff :: CardEff
-    catchEff p m = setHand p (cardBoomerang : (getHand p m)) m
+    eff p m = setHand p (cardBoomerang : (getHand p m)) (hurt 1 (otherPlayer p) m)
 
 cardPotion :: Card
 cardPotion = Card "Potion" "Heal for 4" "heart-bottle.svg" eff
