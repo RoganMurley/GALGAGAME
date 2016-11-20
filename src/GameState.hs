@@ -114,13 +114,14 @@ initDeck =
   ++ (replicate 3 cardPotion)
   ++ (replicate 3 cardVampire)
   ++ (replicate 3 cardSuccubus)
+  ++ (replicate 3 cardGreed)
+  ++ (replicate 3 cardSiren)
   -- CONTROL
   ++ (replicate 2 cardHubris)
   ++ (replicate 2 cardReflect)
   ++ (replicate 2 cardReversal)
   ++ (replicate 2 cardEcho)
   ++ (replicate 2 cardProphecy)
-  ++ (replicate 2 cardGreed)
 
 
 -- TEMP STUFF.
@@ -252,6 +253,12 @@ mapHand f p m = f (getHand p m)
 
 modHand :: (Hand -> Hand) -> WhichPlayer -> Model -> Model
 modHand f p m = setHand p (f (getHand p m)) m
+
+addToHand :: Card -> Hand -> Hand
+addToHand card hand
+  | length hand < handMaxLength =
+    card : hand
+  | otherwise = hand
 
 -- DECK.
 getDeck :: WhichPlayer -> Model -> Deck
@@ -431,3 +438,11 @@ cardGreed = Card "Greed" "Hurt for 2 for each card in your opponent's hand" "mou
   where
     eff :: CardEff
     eff p m = hurt (2 * (length (getHand (otherPlayer p) m))) (otherPlayer p) m
+
+cardSiren :: Card
+cardSiren = Card "Siren" "Give your opponent two cards that hurt them for 3 damage" "harpy.svg" eff
+  where
+    eff :: CardEff
+    eff p m = modHand ((addToHand cardSong) . (addToHand cardSong)) (otherPlayer p) m
+    cardSong :: Card
+    cardSong = Card "Siren's Song" "Hurt yourself for 3" "love-song.svg" (hurt 3)
