@@ -398,5 +398,7 @@ cardEcho = Card "Echo" "The next card happens twice." "echo-ripples.svg" eff
       case headMay (getStack m) of
         Nothing ->
           m
-        Just (StackCard owner card@(Card name desc img cardEff)) ->
-          cardEff owner m
+        Just (StackCard owner (Card name desc img cardEff)) ->
+          (setStack ( (StackCard owner (Card name desc img (echo cardEff)) : (tailSafe (getStack m))))) m
+    echo :: CardEff -> CardEff
+    echo e = \which -> (e which) . (e which)
