@@ -119,6 +119,7 @@ initDeck =
   ++ (replicate 2 cardReflect)
   ++ (replicate 2 cardReversal)
   ++ (replicate 2 cardEcho)
+  ++ (replicate 2 cardProphecy)
 
 
 -- TEMP STUFF.
@@ -406,3 +407,20 @@ cardEcho = Card "Echo" "The next card to the right happens twice" "echo-ripples.
       StackCard owner (Card name desc img (echo cardEff))
     echo :: CardEff -> CardEff
     echo e = \which -> (e which) . (e which)
+
+cardProphecy :: Card
+cardProphecy = Card "Prophecy" "Return all cards to the right to their owner's hand" "crystal-ball.svg" eff
+  where
+    eff :: CardEff
+    eff p m =
+      modHand (bounceAll PlayerA (getStack m)) PlayerA $
+      modHand (bounceAll PlayerB (getStack m)) PlayerB $
+      setStack [] m
+    bounceAll :: WhichPlayer -> Stack -> Hand -> Hand
+    bounceAll w s h = (fmap getCard (filter (owner w) s)) ++ h
+    owner :: WhichPlayer -> StackCard -> Bool
+    owner PlayerA (StackCard PlayerA _) = True
+    owner PlayerB (StackCard PlayerB _) = True
+    owner _ _ = False
+    getCard :: StackCard -> Card
+    getCard (StackCard _ card) = card
