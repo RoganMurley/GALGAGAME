@@ -332,7 +332,7 @@ cardDagger = Card "Dagger" "Hurt for 5" "plain-dagger.svg" eff
     eff p m = hurt 5 (otherPlayer p) m
 
 cardHubris :: Card
-cardHubris = Card "Hubris" "Negate the whole stack" "tower-fall.svg" eff
+cardHubris = Card "Hubris" "Negate all cards to the right" "tower-fall.svg" eff
   where
     eff :: CardEff
     eff p m = setStack [] m
@@ -344,7 +344,7 @@ cardFireball = Card "Fireball" "Hurt for 3 per stack" "fire-ray.svg" eff
     eff p m = hurt (3 * ((length (getStack m)) + 1)) (otherPlayer p) m
 
 cardBoomerang :: Card
-cardBoomerang = Card "Boomerang" "Hurt for 1, get back at bottom of stack" "boomerang.svg" eff
+cardBoomerang = Card "Boomerang" "Hurt for 1, return at end of round" "boomerang.svg" eff
   where
     eff :: CardEff
     eff p m = setStack ((getStack m) ++ [StackCard p cardCatch]) (hurt 1 (otherPlayer p) m)
@@ -366,7 +366,7 @@ cardVampire = Card "Vampire" "Lifesteal for 3" "fangs.svg" eff
     eff p m = hurt 3 (otherPlayer p) $ hurt (-3) p m
 
 cardSuccubus :: Card
-cardSuccubus = Card "Succubus" "Lifesteal for 2 per stack card" "pretty-fangs.svg" eff
+cardSuccubus = Card "Succubus" "Lifesteal for 2 per card to the right" "pretty-fangs.svg" eff
   where
     eff :: CardEff
     eff p m =
@@ -374,13 +374,13 @@ cardSuccubus = Card "Succubus" "Lifesteal for 2 per stack card" "pretty-fangs.sv
         hurt (-2 * ((length (getStack m)) + 1)) p m
 
 cardReversal :: Card
-cardReversal = Card "Reversal" "Reverse the order of the stack" "pocket-watch.svg" eff
+cardReversal = Card "Reversal" "Reverse the order of cards to the right" "pocket-watch.svg" eff
   where
     eff :: CardEff
     eff p m = modStack reverse m
 
 cardReflect :: Card
-cardReflect = Card "Reflect" "Reflect the next card in the stack" "shield-reflect.svg" eff
+cardReflect = Card "Reflect" "Reflect the next card to the right" "shield-reflect.svg" eff
   where
     eff :: CardEff
     eff p m =
@@ -391,7 +391,7 @@ cardReflect = Card "Reflect" "Reflect the next card in the stack" "shield-reflec
           (setStack ( (StackCard (otherPlayer owner) card) : (tailSafe (getStack m)))) m
 
 cardEcho :: Card
-cardEcho = Card "Echo" "The next card happens twice." "echo-ripples.svg" eff
+cardEcho = Card "Echo" "The next card to the right happens twice" "echo-ripples.svg" eff
   where
     eff :: CardEff
     eff p m =
