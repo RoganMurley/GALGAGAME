@@ -384,7 +384,7 @@ cardSuccubus = Card "Succubus" "Lifesteal for 2 for each card to the right" "pre
     eff :: CardEff
     eff p m =
       hurt (2 * (length (getStack m))) (otherPlayer p) $
-        hurt (-2 * ((length (getStack m)) + 1)) p m
+        hurt (-2 * ((length (getStack m)))) p m
 
 cardReversal :: Card
 cardReversal = Card "Reversal" "Reverse the order of cards to the right" "pocket-watch.svg" eff
@@ -430,10 +430,10 @@ cardProphecy = Card "Prophecy" "Return all cards to the right to their owner's h
     getCard (StackCard _ card) = card
 
 cardGreed :: Card
-cardGreed = Card "Greed" "Hurt for 2 for each card in your opponent's hand" "mouth-watering.svg" eff
+cardGreed = Card "Greed" "Hurt for 1 for each card in your opponent's hand" "mouth-watering.svg" eff
   where
     eff :: CardEff
-    eff p m = hurt (2 * (length (getHand (otherPlayer p) m))) (otherPlayer p) m
+    eff p m = hurt (length (getHand (otherPlayer p) m)) (otherPlayer p) m
 
 cardSiren :: Card
 cardSiren = Card "Siren" "Give your opponent two cards that hurt them for 3 damage" "harpy.svg" eff
