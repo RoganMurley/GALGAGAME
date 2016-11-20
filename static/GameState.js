@@ -8998,7 +8998,9 @@ var _user$project$GameState$stateView = function (state) {
 				return A2(
 					_elm_lang$html$Html$div,
 					_elm_lang$core$Native_List.fromArray(
-						[]),
+						[
+							_elm_lang$html$Html_Attributes$class('endgame')
+						]),
 					_elm_lang$core$Native_List.fromArray(
 						[
 							A2(
@@ -9027,7 +9029,9 @@ var _user$project$GameState$stateView = function (state) {
 				return A2(
 					_elm_lang$html$Html$div,
 					_elm_lang$core$Native_List.fromArray(
-						[]),
+						[
+							_elm_lang$html$Html_Attributes$class('endgame')
+						]),
 					_elm_lang$core$Native_List.fromArray(
 						[
 							A2(
@@ -9057,7 +9061,9 @@ var _user$project$GameState$stateView = function (state) {
 			return A2(
 				_elm_lang$html$Html$div,
 				_elm_lang$core$Native_List.fromArray(
-					[]),
+					[
+						_elm_lang$html$Html_Attributes$class('endgame')
+					]),
 				_elm_lang$core$Native_List.fromArray(
 					[
 						A2(

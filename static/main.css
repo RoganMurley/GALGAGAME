@@ -157,29 +157,14 @@
   justify-content: center;
   align-items: center; }
 
-.victory {
+.endgame {
   color: #fff;
   font-size: 72px;
   height: 100vh;
   display: flex;
   justify-content: center;
-  align-items: center; }
-
-.defeat {
-  color: #fff;
-  font-size: 72px;
-  height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center; }
-
-.draw {
-  color: #fff;
-  font-size: 72px;
-  height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center; }
+  align-items: center;
+  flex-direction: column; }
 
 html {
   height: 100%; }

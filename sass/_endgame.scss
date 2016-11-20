@@ -1,4 +1,4 @@
-.victory {
+.endgame {
   color: #fff;
   font-size: 72px;
 
@@ -6,24 +6,5 @@
   display: flex;
   justify-content: center;
   align-items: center;
-}
-
-.defeat {
-  color: #fff;
-  font-size: 72px;
-
-  height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.draw {
-  color: #fff;
-  font-size: 72px;
-
-  height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  flex-direction: column;
 }

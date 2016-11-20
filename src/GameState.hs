@@ -94,7 +94,7 @@ handMaxLength :: Int
 handMaxLength = 6
 
 lifeMax :: Life
-lifeMax = 30
+lifeMax = 2
 
 initModel :: StdGen -> Model
 initModel gen = Model PlayerA [] handPA handPB deckPA deckPB lifeMax lifeMax NoPass gen
@@ -388,7 +388,7 @@ cardReflect = Card "Reflect" "Reflect the next card to the right" "shield-reflec
         Nothing ->
           m
         Just (StackCard owner card) ->
-          (setStack ( (StackCard (otherPlayer owner) card) : (tailSafe (getStack m)))) m
+          (setStack ( (StackCard p card) : (tailSafe (getStack m)))) m
 
 cardEcho :: Card
 cardEcho = Card "Echo" "The next card to the right happens twice" "echo-ripples.svg" eff
