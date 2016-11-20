@@ -282,6 +282,14 @@ mapStack f m = f (getStack m)
 modStack :: (Stack -> Stack) -> Model -> Model
 modStack f m = setStack (mapStack f m) m
 
+modStackHead :: (StackCard -> StackCard) -> Model -> Model
+modStackHead f m =
+  case headMay (getStack m) of
+    Nothing ->
+      m
+    Just c ->
+      (setStack (f c : (tailSafe (getStack m)))) m
+
 resolveOne :: GameState -> GameState
 resolveOne (Playing model@(Model turn stack handPA handPB deckPA deckPB lifePA lifePB passes gen)) =
   lifeGate $ Playing (eff (modStack tailSafe model))
@@ -383,22 +391,18 @@ cardReflect :: Card
 cardReflect = Card "Reflect" "Reflect the next card to the right" "shield-reflect.svg" eff
   where
     eff :: CardEff
-    eff p m =
-      case headMay (getStack m) of
-        Nothing ->
-          m
-        Just (StackCard owner card) ->
-          (setStack ( (StackCard p card) : (tailSafe (getStack m)))) m
+    eff p m = modStackHead (reflectEff p) m
+    reflectEff :: WhichPlayer -> StackCard -> StackCard
+    reflectEff which (StackCard owner (Card name desc img cardEff)) =
+      StackCard which (Card name desc img cardEff)
 
 cardEcho :: Card
 cardEcho = Card "Echo" "The next card to the right happens twice" "echo-ripples.svg" eff
   where
     eff :: CardEff
-    eff p m =
-      case headMay (getStack m) of
-        Nothing ->
-          m
-        Just (StackCard owner (Card name desc img cardEff)) ->
-          (setStack ( (StackCard owner (Card name desc img (echo cardEff)) : (tailSafe (getStack m))))) m
+    eff p m = modStackHead echoEff m
+    echoEff :: StackCard -> StackCard
+    echoEff (StackCard owner (Card name desc img cardEff)) =
+      StackCard owner (Card name desc img (echo cardEff))
     echo :: CardEff -> CardEff
     echo e = \which -> (e which) . (e which)
