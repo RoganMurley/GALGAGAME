@@ -96,8 +96,8 @@ handMaxLength = 6
 lifeMax :: Life
 lifeMax = 30
 
-initModel :: StdGen -> Model
-initModel gen = Model PlayerA [] handPA handPB deckPA deckPB lifeMax lifeMax NoPass gen
+initModel :: Turn -> StdGen -> Model
+initModel turn gen = Model turn [] handPA handPB deckPA deckPB lifeMax lifeMax NoPass gen
   where
     (genPA, genPB) = split gen :: (StdGen, StdGen)
     initDeckPA = shuffle' initDeck (length initDeck) genPA :: Deck
@@ -149,13 +149,13 @@ update cmd which state =
     (Victory winner gen) ->
       case cmd of
         Rematch ->
-          Just $ Playing $ initModel gen
+          Just $ Playing $ initModel winner (fst (split gen))
         x ->
           Just $ Victory winner gen
     (Draw gen) ->
       case cmd of
         Rematch ->
-          Just $ Playing $ initModel gen
+          Just $ Playing $ initModel PlayerA (fst (split gen))
         x ->
           Just $ Draw gen
     x ->
@@ -430,10 +430,13 @@ cardProphecy = Card "Prophecy" "Return all cards to the right to their owner's h
     getCard (StackCard _ card) = card
 
 cardGreed :: Card
-cardGreed = Card "Greed" "Hurt for 1 for each card in your opponent's hand" "mouth-watering.svg" eff
+cardGreed = Card "Greed" "Lifesteal for 1 for each card in your opponent's hand" "mouth-watering.svg" eff
   where
     eff :: CardEff
-    eff p m = hurt (length (getHand (otherPlayer p) m)) (otherPlayer p) m
+    eff p m =
+      hurt (1 * length (getHand (otherPlayer p) m)) (otherPlayer p) $
+        hurt (-1 * length (getHand (otherPlayer p) m)) p $
+          m
 
 cardSiren :: Card
 cardSiren = Card "Siren" "Give your opponent two cards that hurt them for 3 damage" "harpy.svg" eff

@@ -59,7 +59,7 @@ ifFullInit room@(Room pa pb specs state)
   | roomFull room =
     case room of
       Room pa pb specs (Waiting std) ->
-        Room pa pb specs $ Playing $ initModel std
+        Room pa pb specs $ Playing $ initModel PlayerA std
       otherwise ->
         room
   | otherwise = room
