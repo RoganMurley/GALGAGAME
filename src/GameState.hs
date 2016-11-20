@@ -120,6 +120,7 @@ initDeck =
   ++ (replicate 2 cardReversal)
   ++ (replicate 2 cardEcho)
   ++ (replicate 2 cardProphecy)
+  ++ (replicate 2 cardGreed)
 
 
 -- TEMP STUFF.
@@ -347,7 +348,7 @@ cardHubris = Card "Hubris" "Negate all cards to the right" "tower-fall.svg" eff
     eff p m = setStack [] m
 
 cardFireball :: Card
-cardFireball = Card "Fireball" "Hurt for 3 per stack" "fire-ray.svg" eff
+cardFireball = Card "Fireball" "Hurt for 3 for each card to the right" "fire-ray.svg" eff
   where
     eff :: CardEff
     eff p m = hurt (3 * ((length (getStack m)) + 1)) (otherPlayer p) m
@@ -375,7 +376,7 @@ cardVampire = Card "Vampire" "Lifesteal for 3" "fangs.svg" eff
     eff p m = hurt 3 (otherPlayer p) $ hurt (-3) p m
 
 cardSuccubus :: Card
-cardSuccubus = Card "Succubus" "Lifesteal for 2 per card to the right" "pretty-fangs.svg" eff
+cardSuccubus = Card "Succubus" "Lifesteal for 2 for each card to the right" "pretty-fangs.svg" eff
   where
     eff :: CardEff
     eff p m =
@@ -424,3 +425,9 @@ cardProphecy = Card "Prophecy" "Return all cards to the right to their owner's h
     owner _ _ = False
     getCard :: StackCard -> Card
     getCard (StackCard _ card) = card
+
+cardGreed :: Card
+cardGreed = Card "Greed" "Hurt for 2 for each card in your opponent's hand" "mouth-watering.svg" eff
+  where
+    eff :: CardEff
+    eff p m = hurt (2 * (length (getHand (otherPlayer p) m))) (otherPlayer p) m
