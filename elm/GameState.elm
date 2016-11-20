@@ -79,19 +79,19 @@ stateView state =
     PlayingGame model ->
       view model
     Victory PlayerA ->
-      div []
+      div [ class "endgame" ]
         [
           div [ class "victory" ] [ text "VICTORY" ]
         , button [ class "rematch", onClick Rematch ] [ text "Rematch" ]
         ]
     Victory PlayerB ->
-      div []
+      div [ class "endgame" ]
         [
           div [ class "defeat" ] [ text "DEFEAT" ]
         , button [ class "rematch", onClick Rematch ] [ text "Rematch" ]
         ]
     Draw ->
-      div []
+      div [ class "endgame" ]
         [
           div [ class "draw" ] [ text "DRAW" ]
         , button [ class "rematch", onClick Rematch ] [ text "Rematch" ]
