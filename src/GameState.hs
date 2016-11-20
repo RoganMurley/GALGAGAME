@@ -358,7 +358,7 @@ cardFireball :: Card
 cardFireball = Card "Fireball" "Hurt for 3 for each card to the right" "fire-ray.svg" eff
   where
     eff :: CardEff
-    eff p m = hurt (3 * ((length (getStack m)) + 1)) (otherPlayer p) m
+    eff p m = hurt (3 * (length (getStack m))) (otherPlayer p) m
 
 cardBoomerang :: Card
 cardBoomerang = Card "Boomerang" "Hurt for 1, return this card to your hand" "boomerang.svg" eff
@@ -383,7 +383,7 @@ cardSuccubus = Card "Succubus" "Lifesteal for 2 for each card to the right" "pre
   where
     eff :: CardEff
     eff p m =
-      hurt (2 * ((length (getStack m)) + 1)) (otherPlayer p) $
+      hurt (2 * (length (getStack m))) (otherPlayer p) $
         hurt (-2 * ((length (getStack m)) + 1)) p m
 
 cardReversal :: Card
