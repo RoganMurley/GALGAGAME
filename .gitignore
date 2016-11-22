@@ -1,4 +1,4 @@
 elm-stuff/
 node_modules/
 .stack-work/
-static/Main.js
+static/*.js
