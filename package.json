@@ -1,5 +1,5 @@
 {
-  "name": "elmchat",
+  "name": "vanagloria",
   "version": "1.0.0",
   "description": "",
   "main": "gulpfile.js",
@@ -15,9 +15,9 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://RoganMurley@bitbucket.org/RoganMurley/elmchat.git"
+    "url": "git+https://RoganMurley@bitbucket.org/RoganMurley/vanagloria.git"
   },
   "author": "",
   "license": "ISC",
-  "homepage": "https://bitbucket.org/RoganMurley/elmchat#readme"
+  "homepage": "https://bitbucket.org/RoganMurley/vanagloria#readme"
 }

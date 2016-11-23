@@ -3159,7 +3159,7 @@ var _elm_lang$core$Tuple$first = function (_p6) {
 	return _p7._0;
 };
 
-var _user$project$Util$applyFst = F2(
+var _user$vanagloria$Util$applyFst = F2(
 	function (f, _p0) {
 		var _p1 = _p0;
 		return {
@@ -3168,7 +3168,7 @@ var _user$project$Util$applyFst = F2(
 			_1: _p1._1
 		};
 	});
-var _user$project$Util$px = function (number) {
+var _user$vanagloria$Util$px = function (number) {
 	return A2(
 		_elm_lang$core$Basics_ops['++'],
 		_elm_lang$core$Basics$toString(number),
@@ -3177,8 +3177,8 @@ var _user$project$Util$px = function (number) {
 
 var Elm = {};
 Elm['Util'] = Elm['Util'] || {};
-if (typeof _user$project$Util$main !== 'undefined') {
-    _user$project$Util$main(Elm['Util'], 'Util', undefined);
+if (typeof _user$vanagloria$Util$main !== 'undefined') {
+    _user$vanagloria$Util$main(Elm['Util'], 'Util', undefined);
 }
 
 if (typeof define === "function" && define['amd'])
