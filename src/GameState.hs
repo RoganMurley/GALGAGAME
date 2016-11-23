@@ -187,7 +187,7 @@ endTurn which model@(Model turn stack handPA handPB deckPA deckPB lifePA lifePB 
   | otherwise =
     case bothPassed of
       True ->
-        case resolveAll (Playing model) of
+        case fst (resolveAll (Playing model)) of
           Playing m ->
             Playing <$> (drawCards $ resetPasses $ swapTurn m)
           s ->
@@ -316,15 +316,18 @@ resolveOne (Playing model@(Model turn stack handPA handPB deckPA deckPB lifePA l
     lifeGate x = x
 resolveOne x = x
 
-resolveAll :: GameState -> GameState
-resolveAll state@(Playing model) =
-  case stackEmpty of
-    True -> state
-    False -> resolveAll $ resolveOne state
+resolveAll :: GameState -> (GameState, [Model])
+resolveAll state = resolveAll' (state, [])
   where
-    stackEmpty :: Bool
-    stackEmpty = null (getStack model)
-resolveAll x = x
+    resolveAll' :: (GameState, [Model]) -> (GameState, [Model])
+    resolveAll' (s@(Playing m), ms) =
+      case getStack m of
+        [] -> (s, ms)
+        otherwise -> resolveAll' (resolveOne s, addToResList ms (resolveOne s))
+    resolveAll' x = x
+    addToResList :: [Model] -> GameState -> [Model]
+    addToResList ms (Playing m) = ms ++ [m]
+    addToResList ms x = ms
 
 hurt :: Life -> WhichPlayer -> Model -> Model
 hurt damage PlayerA (Model turn stack handPA handPB deckPA deckPB lifePA lifePB passes gen) =
@@ -442,4 +445,4 @@ cardSiren = Card "Siren" "Give your opponent two cards that hurt them for 3 dama
     eff :: CardEff
     eff p m = modHand ((addToHand cardSong) . (addToHand cardSong)) (otherPlayer p) m
     cardSong :: Card
-    cardSong = Card "Siren's Song" "Hurt yourself for 3" "love-song.svg" (hurt 3)
+    cardSong = Card "Siren's Song" "Hurt yourself for 8" "love-song.svg" (hurt 8)
