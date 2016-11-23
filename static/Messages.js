@@ -6538,52 +6538,52 @@ var _elm_lang$mouse$Mouse$subMap = F2(
 	});
 _elm_lang$core$Native_Platform.effectManagers['Mouse'] = {pkg: 'elm-lang/mouse', init: _elm_lang$mouse$Mouse$init, onEffects: _elm_lang$mouse$Mouse$onEffects, onSelfMsg: _elm_lang$mouse$Mouse$onSelfMsg, tag: 'sub', subMap: _elm_lang$mouse$Mouse$subMap};
 
-var _user$project$Messages$Rematch = {ctor: 'Rematch'};
-var _user$project$Messages$KeyPress = function (a) {
+var _user$vanagloria$Messages$Rematch = {ctor: 'Rematch'};
+var _user$vanagloria$Messages$KeyPress = function (a) {
 	return {ctor: 'KeyPress', _0: a};
 };
-var _user$project$Messages$Play = {ctor: 'Play'};
-var _user$project$Messages$Spectate = {ctor: 'Spectate'};
-var _user$project$Messages$ConnectError = function (a) {
+var _user$vanagloria$Messages$Play = {ctor: 'Play'};
+var _user$vanagloria$Messages$Spectate = {ctor: 'Spectate'};
+var _user$vanagloria$Messages$ConnectError = function (a) {
 	return {ctor: 'ConnectError', _0: a};
 };
-var _user$project$Messages$GameStateMsg = function (a) {
+var _user$vanagloria$Messages$GameStateMsg = function (a) {
 	return {ctor: 'GameStateMsg', _0: a};
 };
-var _user$project$Messages$NewChatMsg = function (a) {
+var _user$vanagloria$Messages$NewChatMsg = function (a) {
 	return {ctor: 'NewChatMsg', _0: a};
 };
-var _user$project$Messages$PlayCard = function (a) {
+var _user$vanagloria$Messages$PlayCard = function (a) {
 	return {ctor: 'PlayCard', _0: a};
 };
-var _user$project$Messages$EndTurn = {ctor: 'EndTurn'};
-var _user$project$Messages$DrawCard = {ctor: 'DrawCard'};
-var _user$project$Messages$DragEnd = function (a) {
+var _user$vanagloria$Messages$EndTurn = {ctor: 'EndTurn'};
+var _user$vanagloria$Messages$DrawCard = {ctor: 'DrawCard'};
+var _user$vanagloria$Messages$DragEnd = function (a) {
 	return {ctor: 'DragEnd', _0: a};
 };
-var _user$project$Messages$DragAt = function (a) {
+var _user$vanagloria$Messages$DragAt = function (a) {
 	return {ctor: 'DragAt', _0: a};
 };
-var _user$project$Messages$DragStart = function (a) {
+var _user$vanagloria$Messages$DragStart = function (a) {
 	return {ctor: 'DragStart', _0: a};
 };
-var _user$project$Messages$Receive = function (a) {
+var _user$vanagloria$Messages$Receive = function (a) {
 	return {ctor: 'Receive', _0: a};
 };
-var _user$project$Messages$Send = function (a) {
+var _user$vanagloria$Messages$Send = function (a) {
 	return {ctor: 'Send', _0: a};
 };
-var _user$project$Messages$Input = function (a) {
+var _user$vanagloria$Messages$Input = function (a) {
 	return {ctor: 'Input', _0: a};
 };
-var _user$project$Messages$Sync = function (a) {
+var _user$vanagloria$Messages$Sync = function (a) {
 	return {ctor: 'Sync', _0: a};
 };
 
 var Elm = {};
 Elm['Messages'] = Elm['Messages'] || {};
-if (typeof _user$project$Messages$main !== 'undefined') {
-    _user$project$Messages$main(Elm['Messages'], 'Messages', undefined);
+if (typeof _user$vanagloria$Messages$main !== 'undefined') {
+    _user$vanagloria$Messages$main(Elm['Messages'], 'Messages', undefined);
 }
 
 if (typeof define === "function" && define['amd'])

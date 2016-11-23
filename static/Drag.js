@@ -9041,49 +9041,49 @@ var _elm_lang$mouse$Mouse$subMap = F2(
 	});
 _elm_lang$core$Native_Platform.effectManagers['Mouse'] = {pkg: 'elm-lang/mouse', init: _elm_lang$mouse$Mouse$init, onEffects: _elm_lang$mouse$Mouse$onEffects, onSelfMsg: _elm_lang$mouse$Mouse$onSelfMsg, tag: 'sub', subMap: _elm_lang$mouse$Mouse$subMap};
 
-var _user$project$Messages$Rematch = {ctor: 'Rematch'};
-var _user$project$Messages$KeyPress = function (a) {
+var _user$vanagloria$Messages$Rematch = {ctor: 'Rematch'};
+var _user$vanagloria$Messages$KeyPress = function (a) {
 	return {ctor: 'KeyPress', _0: a};
 };
-var _user$project$Messages$Play = {ctor: 'Play'};
-var _user$project$Messages$Spectate = {ctor: 'Spectate'};
-var _user$project$Messages$ConnectError = function (a) {
+var _user$vanagloria$Messages$Play = {ctor: 'Play'};
+var _user$vanagloria$Messages$Spectate = {ctor: 'Spectate'};
+var _user$vanagloria$Messages$ConnectError = function (a) {
 	return {ctor: 'ConnectError', _0: a};
 };
-var _user$project$Messages$GameStateMsg = function (a) {
+var _user$vanagloria$Messages$GameStateMsg = function (a) {
 	return {ctor: 'GameStateMsg', _0: a};
 };
-var _user$project$Messages$NewChatMsg = function (a) {
+var _user$vanagloria$Messages$NewChatMsg = function (a) {
 	return {ctor: 'NewChatMsg', _0: a};
 };
-var _user$project$Messages$PlayCard = function (a) {
+var _user$vanagloria$Messages$PlayCard = function (a) {
 	return {ctor: 'PlayCard', _0: a};
 };
-var _user$project$Messages$EndTurn = {ctor: 'EndTurn'};
-var _user$project$Messages$DrawCard = {ctor: 'DrawCard'};
-var _user$project$Messages$DragEnd = function (a) {
+var _user$vanagloria$Messages$EndTurn = {ctor: 'EndTurn'};
+var _user$vanagloria$Messages$DrawCard = {ctor: 'DrawCard'};
+var _user$vanagloria$Messages$DragEnd = function (a) {
 	return {ctor: 'DragEnd', _0: a};
 };
-var _user$project$Messages$DragAt = function (a) {
+var _user$vanagloria$Messages$DragAt = function (a) {
 	return {ctor: 'DragAt', _0: a};
 };
-var _user$project$Messages$DragStart = function (a) {
+var _user$vanagloria$Messages$DragStart = function (a) {
 	return {ctor: 'DragStart', _0: a};
 };
-var _user$project$Messages$Receive = function (a) {
+var _user$vanagloria$Messages$Receive = function (a) {
 	return {ctor: 'Receive', _0: a};
 };
-var _user$project$Messages$Send = function (a) {
+var _user$vanagloria$Messages$Send = function (a) {
 	return {ctor: 'Send', _0: a};
 };
-var _user$project$Messages$Input = function (a) {
+var _user$vanagloria$Messages$Input = function (a) {
 	return {ctor: 'Input', _0: a};
 };
-var _user$project$Messages$Sync = function (a) {
+var _user$vanagloria$Messages$Sync = function (a) {
 	return {ctor: 'Sync', _0: a};
 };
 
-var _user$project$Util$applyFst = F2(
+var _user$vanagloria$Util$applyFst = F2(
 	function (f, _p0) {
 		var _p1 = _p0;
 		return {
@@ -9092,14 +9092,14 @@ var _user$project$Util$applyFst = F2(
 			_1: _p1._1
 		};
 	});
-var _user$project$Util$px = function (number) {
+var _user$vanagloria$Util$px = function (number) {
 	return A2(
 		_elm_lang$core$Basics_ops['++'],
 		_elm_lang$core$Basics$toString(number),
 		'px');
 };
 
-var _user$project$Drag$getPosition = function (_p0) {
+var _user$vanagloria$Drag$getPosition = function (_p0) {
 	var _p1 = _p0;
 	var _p5 = _p1.pos;
 	var _p2 = _p1.drag;
@@ -9111,22 +9111,22 @@ var _user$project$Drag$getPosition = function (_p0) {
 		return A2(_elm_lang$mouse$Mouse$Position, (_p5.x + _p3.x) - _p4.x, (_p5.y + _p3.y) - _p4.y);
 	}
 };
-var _user$project$Drag$dragEnd = function (model) {
+var _user$vanagloria$Drag$dragEnd = function (model) {
 	return _elm_lang$core$Native_Utils.update(
 		model,
 		{
-			pos: _user$project$Drag$getPosition(model),
+			pos: _user$vanagloria$Drag$getPosition(model),
 			drag: _elm_lang$core$Maybe$Nothing
 		});
 };
-var _user$project$Drag$draggable = function (model) {
-	var realPos = _user$project$Drag$getPosition(model);
+var _user$vanagloria$Drag$draggable = function (model) {
+	var realPos = _user$vanagloria$Drag$getPosition(model);
 	return {
 		ctor: '::',
 		_0: A2(
 			_elm_lang$html$Html_Events$on,
 			'mousedown',
-			A2(_elm_lang$core$Json_Decode$map, _user$project$Messages$DragStart, _elm_lang$mouse$Mouse$position)),
+			A2(_elm_lang$core$Json_Decode$map, _user$vanagloria$Messages$DragStart, _elm_lang$mouse$Mouse$position)),
 		_1: {
 			ctor: '::',
 			_0: _elm_lang$html$Html_Attributes$style(
@@ -9138,14 +9138,14 @@ var _user$project$Drag$draggable = function (model) {
 						_0: {
 							ctor: '_Tuple2',
 							_0: 'top',
-							_1: _user$project$Util$px(realPos.y)
+							_1: _user$vanagloria$Util$px(realPos.y)
 						},
 						_1: {
 							ctor: '::',
 							_0: {
 								ctor: '_Tuple2',
 								_0: 'left',
-								_1: _user$project$Util$px(realPos.x)
+								_1: _user$vanagloria$Util$px(realPos.x)
 							},
 							_1: {ctor: '[]'}
 						}
@@ -9155,20 +9155,20 @@ var _user$project$Drag$draggable = function (model) {
 		}
 	};
 };
-var _user$project$Drag$Drag = F2(
+var _user$vanagloria$Drag$Drag = F2(
 	function (a, b) {
 		return {start: a, current: b};
 	});
-var _user$project$Drag$dragStart = F2(
+var _user$vanagloria$Drag$dragStart = F2(
 	function (model, pos) {
 		return _elm_lang$core$Native_Utils.update(
 			model,
 			{
 				drag: _elm_lang$core$Maybe$Just(
-					A2(_user$project$Drag$Drag, pos, pos))
+					A2(_user$vanagloria$Drag$Drag, pos, pos))
 			});
 	});
-var _user$project$Drag$dragAt = F2(
+var _user$vanagloria$Drag$dragAt = F2(
 	function (model, pos) {
 		return _elm_lang$core$Native_Utils.update(
 			model,
@@ -9177,7 +9177,7 @@ var _user$project$Drag$dragAt = F2(
 					_elm_lang$core$Maybe$map,
 					function (_p6) {
 						var _p7 = _p6;
-						return A2(_user$project$Drag$Drag, _p7.start, pos);
+						return A2(_user$vanagloria$Drag$Drag, _p7.start, pos);
 					},
 					model.drag)
 			});
@@ -9185,8 +9185,8 @@ var _user$project$Drag$dragAt = F2(
 
 var Elm = {};
 Elm['Drag'] = Elm['Drag'] || {};
-if (typeof _user$project$Drag$main !== 'undefined') {
-    _user$project$Drag$main(Elm['Drag'], 'Drag', undefined);
+if (typeof _user$vanagloria$Drag$main !== 'undefined') {
+    _user$vanagloria$Drag$main(Elm['Drag'], 'Drag', undefined);
 }
 
 if (typeof define === "function" && define['amd'])
