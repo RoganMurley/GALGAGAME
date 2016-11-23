@@ -340,6 +340,9 @@ hurt damage PlayerB (Model turn stack handPA handPB deckPA deckPB lifePA lifePB 
       | (lifePB - damage) < lifeMax = lifePB - damage
       | otherwise = lifeMax
 
+lifesteal :: Life -> WhichPlayer -> Model -> Model
+lifesteal d p m = hurt (-d) (otherPlayer p) $ hurt d p m
+
 -- CARDS
 
 cardDagger :: Card
@@ -376,15 +379,13 @@ cardVampire :: Card
 cardVampire = Card "Vampire" "Lifesteal for 3" "fangs.svg" eff
   where
     eff :: CardEff
-    eff p m = hurt 3 (otherPlayer p) $ hurt (-3) p m
+    eff p m = lifesteal 3 (otherPlayer p) m
 
 cardSuccubus :: Card
 cardSuccubus = Card "Succubus" "Lifesteal for 1 for each card to the right" "pretty-fangs.svg" eff
   where
     eff :: CardEff
-    eff p m =
-      hurt (1 * (length (getStack m))) (otherPlayer p) $
-        hurt (-1 * ((length (getStack m)))) p m
+    eff p m = lifesteal (length (getStack m)) (otherPlayer p) m
 
 cardReversal :: Card
 cardReversal = Card "Reversal" "Reverse the order of cards to the right" "pocket-watch.svg" eff
@@ -433,10 +434,7 @@ cardGreed :: Card
 cardGreed = Card "Greed" "Lifesteal for 1 for each card in your opponent's hand" "mouth-watering.svg" eff
   where
     eff :: CardEff
-    eff p m =
-      hurt (1 * length (getHand (otherPlayer p) m)) (otherPlayer p) $
-        hurt (-1 * length (getHand (otherPlayer p) m)) p $
-          m
+    eff p m = lifesteal (length (getHand (otherPlayer p) m)) (otherPlayer p) m
 
 cardSiren :: Card
 cardSiren = Card "Siren" "Give your opponent two cards that hurt them for 3 damage" "harpy.svg" eff
