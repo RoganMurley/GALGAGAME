@@ -458,7 +458,7 @@ cardProphecy = Card "Prophecy" "Return all cards to the right to their owner's h
 --     eff p m = lifesteal (length (getHand (otherPlayer p) m)) (otherPlayer p) m
 
 cardSiren :: Card
-cardSiren = Card "Siren" "Give your opponent two cards that hurt them for 3 damage" "harpy.svg" eff
+cardSiren = Card "Siren" "Give your opponent two cards that hurt them for 8 damage" "harpy.svg" eff
   where
     eff :: CardEff
     eff p m = modHand ((addToHand cardSong) . (addToHand cardSong)) (otherPlayer p) m
