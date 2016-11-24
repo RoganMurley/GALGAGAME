@@ -9597,9 +9597,10 @@ var _user$vanagloria$GameState$decodeDraw = function (msg) {
 var _user$vanagloria$GameState$Victory = function (a) {
 	return {ctor: 'Victory', _0: a};
 };
-var _user$vanagloria$GameState$PlayingGame = function (a) {
-	return {ctor: 'PlayingGame', _0: a};
-};
+var _user$vanagloria$GameState$PlayingGame = F2(
+	function (a, b) {
+		return {ctor: 'PlayingGame', _0: a, _1: b};
+	});
 var _user$vanagloria$GameState$Waiting = {ctor: 'Waiting'};
 var _user$vanagloria$GameState$decodeWaiting = function (msg) {
 	var decoder = A2(
@@ -9632,8 +9633,8 @@ var _user$vanagloria$GameState$whichDecoder = function () {
 				return _elm_lang$core$Native_Utils.crashCase(
 					'GameState',
 					{
-						start: {line: 299, column: 13},
-						end: {line: 307, column: 57}
+						start: {line: 305, column: 13},
+						end: {line: 313, column: 57}
 					},
 					_p15)(
 					A2(_elm_lang$core$Basics_ops['++'], 'Invalid player ', s));
@@ -9679,11 +9680,16 @@ var _user$vanagloria$GameState$modelDecoder = function () {
 		A2(_elm_lang$core$Json_Decode$field, 'lifePA', _elm_lang$core$Json_Decode$int),
 		A2(_elm_lang$core$Json_Decode$field, 'lifePB', _elm_lang$core$Json_Decode$int));
 }();
+var _user$vanagloria$GameState$resDecoder = A2(
+	_elm_lang$core$Json_Decode$field,
+	'res',
+	_elm_lang$core$Json_Decode$list(_user$vanagloria$GameState$modelDecoder));
 var _user$vanagloria$GameState$decodePlaying = function (msg) {
-	var decoder = A2(
-		_elm_lang$core$Json_Decode$map,
+	var decoder = A3(
+		_elm_lang$core$Json_Decode$map2,
 		_user$vanagloria$GameState$PlayingGame,
-		A2(_elm_lang$core$Json_Decode$field, 'playing', _user$vanagloria$GameState$modelDecoder));
+		A2(_elm_lang$core$Json_Decode$field, 'playing', _user$vanagloria$GameState$modelDecoder),
+		A2(_elm_lang$core$Json_Decode$field, 'playing', _user$vanagloria$GameState$resDecoder));
 	return A2(_elm_lang$core$Json_Decode$decodeString, decoder, msg);
 };
 var _user$vanagloria$GameState$decodeState = function (msg) {
@@ -9706,8 +9712,8 @@ var _user$vanagloria$GameState$decodeState = function (msg) {
 					return _elm_lang$core$Native_Utils.crashCase(
 						'GameState',
 						{
-							start: {line: 237, column: 29},
-							end: {line: 251, column: 42}
+							start: {line: 241, column: 29},
+							end: {line: 255, column: 42}
 						},
 						_p20)(
 						A2(

@@ -239,7 +239,7 @@ turnOnly { mode, game } cmdMsg =
 
         Playing ->
             case game of
-                PlayingGame model ->
+                PlayingGame model res ->
                     case model.turn of
                         PlayerA ->
                             cmdMsg
