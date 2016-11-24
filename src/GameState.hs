@@ -367,10 +367,10 @@ lifesteal d p m = heal d (otherPlayer p) $ hurt d p m
 -- CARDS
 
 cardDagger :: Card
-cardDagger = Card "Dagger" "Hurt for 5" "plain-dagger.svg" eff
+cardDagger = Card "Dagger" "Hurt for 8" "plain-dagger.svg" eff
   where
     eff :: CardEff
-    eff p m = hurt 5 (otherPlayer p) m
+    eff p m = hurt 8 (otherPlayer p) m
 
 cardHubris :: Card
 cardHubris = Card "Hubris" "Negate all cards to the right" "tower-fall.svg" eff
@@ -385,22 +385,22 @@ cardFireball = Card "Fireball" "Hurt for 3 for each card to the right" "fire-ray
     eff p m = hurt (3 * (length (getStack m))) (otherPlayer p) m
 
 cardBoomerang :: Card
-cardBoomerang = Card "Boomerang" "Hurt for 1, return this card to your hand" "boomerang.svg" eff
+cardBoomerang = Card "Boomerang" "Hurt for 2, return this card to your hand" "boomerang.svg" eff
   where
     eff :: CardEff
-    eff p m = modHand (addToHand cardBoomerang) p (hurt 1 (otherPlayer p) m)
+    eff p m = modHand (addToHand cardBoomerang) p (hurt 2 (otherPlayer p) m)
 
 cardPotion :: Card
 cardPotion = Card "Potion" "Heal for 4" "heart-bottle.svg" eff
   where
     eff :: CardEff
-    eff p m = heal 4 p m
+    eff p m = heal 7 p m
 
 cardVampire :: Card
 cardVampire = Card "Vampire" "Lifesteal for 3" "fangs.svg" eff
   where
     eff :: CardEff
-    eff p m = lifesteal 3 (otherPlayer p) m
+    eff p m = lifesteal 5 (otherPlayer p) m
 
 cardSuccubus :: Card
 cardSuccubus = Card "Succubus" "Lifesteal for 2 for each card to the right" "pretty-fangs.svg" eff
@@ -458,9 +458,9 @@ cardProphecy = Card "Prophecy" "Return all cards to the right to their owner's h
 --     eff p m = lifesteal (length (getHand (otherPlayer p) m)) (otherPlayer p) m
 
 cardSiren :: Card
-cardSiren = Card "Siren" "Give your opponent two cards that hurt them for 8 damage" "harpy.svg" eff
+cardSiren = Card "Siren" "Give your opponent two cards that hurt them for 10 damage" "harpy.svg" eff
   where
     eff :: CardEff
     eff p m = modHand ((addToHand cardSong) . (addToHand cardSong)) (otherPlayer p) m
     cardSong :: Card
-    cardSong = Card "Siren's Song" "Hurt yourself for 8" "love-song.svg" (hurt 8)
+    cardSong = Card "Siren's Song" "Hurt yourself for 10" "love-song.svg" (hurt 8)
