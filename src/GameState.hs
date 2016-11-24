@@ -40,7 +40,9 @@ instance ToJSON GameState where
       "waiting" .= True
     ]
   toJSON (Playing model) =
-    toJSON model
+    object [
+      "playing" .= toJSON model
+    ]
   toJSON (Victory which gen) =
     object [
       "victory" .= which
@@ -54,17 +56,13 @@ instance ToJSON Model where
   toJSON (Model turn stack handPA handPB deckPA deckPB lifePA lifePB _ res _) =
     object
       [
-        "playing" .=
-          object
-            [
-              "turn" .= turn
-            , "stack" .= stack
-            , "handPA" .= handPA
-            , "handPB" .= handPB
-            , "lifePA" .= lifePA
-            , "lifePB" .= lifePB
-            , "res" .= res
-            ]
+        "turn" .= turn
+      , "stack" .= stack
+      , "handPA" .= handPA
+      , "handPB" .= handPB
+      , "lifePA" .= lifePA
+      , "lifePB" .= lifePB
+      , "res" .= res
       ]
 
 instance ToJSON Card where

@@ -12,7 +12,7 @@ import Messages exposing (GameMsg(Sync), Msg(DrawCard, EndTurn, PlayCard, Rematc
 
 type GameState
     = Waiting
-    | PlayingGame Model
+    | PlayingGame Model Res
     | Victory WhichPlayer
     | Draw
 
@@ -29,6 +29,10 @@ type alias Model =
 
 type alias Hand =
     List Card
+
+
+type alias Res =
+    List Model
 
 
 type alias Stack =
@@ -86,7 +90,7 @@ stateView state =
         Waiting ->
             div [ class "waiting" ] [ text "Waiting for opponent..." ]
 
-        PlayingGame model ->
+        PlayingGame model res ->
             view model
 
         Victory PlayerA ->
@@ -286,7 +290,9 @@ decodePlaying msg =
     let
         decoder : Json.Decoder GameState
         decoder =
-            Json.map PlayingGame (field "playing" modelDecoder)
+            Json.map2 PlayingGame
+                (field "playing" modelDecoder)
+                (field "playing" resDecoder)
     in
         Json.decodeString decoder msg
 
@@ -332,3 +338,7 @@ modelDecoder =
             (field "turn" whichDecoder)
             (field "lifePA" Json.int)
             (field "lifePB" Json.int)
+
+
+resDecoder : Json.Decoder (List Model)
+resDecoder = field "res" (Json.list modelDecoder)
