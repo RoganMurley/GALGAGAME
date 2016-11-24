@@ -1,6 +1,7 @@
 module Messages exposing (GameMsg(..), Msg(..))
 
 import Mouse exposing (Position)
+import Time exposing (Time)
 
 
 type Msg
@@ -20,6 +21,7 @@ type Msg
     | Play
     | KeyPress Int
     | Rematch
+    | Tick Time
 
 
 type GameMsg

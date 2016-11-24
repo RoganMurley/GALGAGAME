@@ -14,6 +14,7 @@ import Drag exposing (dragAt, dragEnd, dragStart, getPosition)
 import GameState exposing (Card, GameState(..), Hand, Model, Turn, WhichPlayer(..), stateUpdate, stateView, view)
 import Messages exposing (GameMsg(..), Msg(..))
 import Task
+import Time exposing (Time, inSeconds, second)
 import Util exposing (applyFst)
 
 
@@ -135,6 +136,9 @@ connectingUpdate hostname msg ({ name, error, valid } as model) =
         KeyPress _ ->
             ( model, Cmd.none )
 
+        Tick t ->
+            ( model, Cmd.none )
+
         otherwise ->
             Debug.crash "Unexpected action while not connected ;_;"
 
@@ -179,6 +183,9 @@ connectedUpdate hostname msg ({ chat, game, mode } as model) =
             ( model, message (Send ("chat:" ++ chat.input)) )
 
         KeyPress _ ->
+            ( model, Cmd.none )
+
+        Tick _ ->
             ( model, Cmd.none )
 
         Rematch ->
@@ -269,6 +276,7 @@ subscriptions model =
         , Mouse.moves DragAt
         , Mouse.ups DragEnd
         , Keyboard.presses KeyPress
+        , Time.every second Tick
         ]
 
 
