@@ -1,7 +1,10 @@
 module Main exposing (..)
 
 import Char exposing (isLower)
+
+
 -- import Cmd.Extra exposing (message)
+
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
@@ -11,7 +14,7 @@ import String exposing (dropLeft, length, startsWith)
 import WebSocket
 import Chat exposing (addChatMessage)
 import Drag exposing (dragAt, dragEnd, dragStart, getPosition)
-import GameState exposing (Card, GameState(..), Hand, Model, Turn, WhichPlayer(..), stateUpdate, stateView, view)
+import GameState exposing (Card, GameState(..), Hand, Model, Turn, WhichPlayer(..), resTick, stateUpdate, stateView, view)
 import Messages exposing (GameMsg(..), Msg(..))
 import Task
 import Time exposing (Time, inSeconds, second)
@@ -21,6 +24,7 @@ import Util exposing (applyFst)
 message : msg -> Cmd msg
 message x =
     Task.perform identity (Task.succeed x)
+
 
 main =
     programWithFlags
@@ -186,7 +190,7 @@ connectedUpdate hostname msg ({ chat, game, mode } as model) =
             ( model, Cmd.none )
 
         Tick _ ->
-            ( model, Cmd.none )
+            ( { model | game = resTick game }, Cmd.none )
 
         Rematch ->
             case model.game of
