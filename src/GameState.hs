@@ -51,7 +51,7 @@ instance ToJSON GameState where
     ]
 
 instance ToJSON Model where
-  toJSON (Model turn stack handPA handPB deckPA deckPB lifePA lifePB _ _ _) =
+  toJSON (Model turn stack handPA handPB deckPA deckPB lifePA lifePB _ res _) =
     object
       [
         "playing" .=
@@ -63,6 +63,7 @@ instance ToJSON Model where
             , "handPB" .= handPB
             , "lifePA" .= lifePA
             , "lifePB" .= lifePB
+            , "res" .= res
             ]
       ]
 
@@ -331,13 +332,16 @@ resolveAll x = x
 
 rememberRes :: Model -> GameState -> GameState
 rememberRes r (Playing m@(Model turn stack handPA handPB deckPA deckPB lifePA lifePB passes res gen)) =
-  (Playing (Model turn stack handPA handPB deckPA deckPB lifePA lifePB passes (res ++ [r]) gen))
+  (Playing (Model turn stack handPA handPB deckPA deckPB lifePA lifePB passes (res ++ [resetResModel r]) gen))
 rememberRes r x = x
 
 resetRes :: GameState -> GameState
-resetRes (Playing (Model turn stack handPA handPB deckPA deckPB lifePA lifePB passes res gen)) =
-  (Playing (Model turn stack handPA handPB deckPA deckPB lifePA lifePB passes [] gen))
+resetRes (Playing m) = Playing (resetResModel m)
 resetRes x = x
+
+resetResModel :: Model -> Model
+resetResModel (Model turn stack handPA handPB deckPA deckPB lifePA lifePB passes res gen) =
+  (Model turn stack handPA handPB deckPA deckPB lifePA lifePB passes [] gen)
 
 -- ACTIONS
 hurt :: Life -> WhichPlayer -> Model -> Model
