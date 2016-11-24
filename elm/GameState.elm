@@ -1,4 +1,4 @@
-module GameState exposing (Card, GameState(..), Hand, Model, Turn, WhichPlayer(..), init, resTick, stateUpdate, stateView, view)
+module GameState exposing (Card, GameState(..), Hand, Model, Turn, WhichPlayer(..), init, resTick, stateUpdate, stateView, tickForward, tickZero, view)
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -12,7 +12,7 @@ import Messages exposing (GameMsg(Sync), Msg(DrawCard, EndTurn, PlayCard, Rematc
 
 type GameState
     = Waiting
-    | PlayingGame Model Res
+    | PlayingGame Model ( Res, Int )
     | Victory WhichPlayer
     | Draw
 
@@ -90,7 +90,7 @@ stateView state =
         Waiting ->
             div [ class "waiting" ] [ text "Waiting for opponent..." ]
 
-        PlayingGame model res ->
+        PlayingGame model ( res, _ ) ->
             case res of
                 [] ->
                     view model
@@ -295,7 +295,7 @@ decodePlaying msg =
     let
         decoder : Json.Decoder GameState
         decoder =
-            Json.map2 PlayingGame
+            Json.map2 (\a b -> PlayingGame a ( b, 0 ))
                 (field "playing" modelDecoder)
                 (field "playing" resDecoder)
     in
@@ -350,23 +350,13 @@ resDecoder =
     field "res" (Json.list modelDecoder)
 
 
-resProcess : GameState -> GameState -> GameState
-resProcess old new =
-    case new of
-        PlayingGame _ [] ->
-            new
-
-        otherwise ->
-            case ( old, new ) of
-                ( PlayingGame oldModel _, PlayingGame model res ) ->
-                    PlayingGame oldModel (res ++ [ model ])
-
-                otherwise ->
-                    new
-
-
 
 -- RESOLVING.
+
+
+resDelay : Int
+resDelay =
+    30
 
 
 resTick : GameState -> GameState
@@ -382,16 +372,51 @@ resTick state =
                     []
     in
         case state of
-            PlayingGame model res ->
+            PlayingGame model ( res, _ ) ->
                 case List.head res of
                     Just newModel ->
-                        PlayingGame newModel (safeTail res)
+                        PlayingGame newModel ( safeTail res, resDelay )
 
                     Nothing ->
-                        PlayingGame model res
+                        PlayingGame model ( res, 0 )
 
             otherwise ->
                 state
+
+
+resProcess : GameState -> GameState -> GameState
+resProcess old new =
+    case new of
+        PlayingGame _ ( [], _ ) ->
+            new
+
+        otherwise ->
+            case ( old, new ) of
+                ( PlayingGame oldModel _, PlayingGame model ( res, _ ) ) ->
+                    PlayingGame oldModel ( res ++ [ model ], 0 )
+
+                otherwise ->
+                    new
+
+
+tickForward : GameState -> GameState
+tickForward state =
+    case state of
+        PlayingGame model ( res, tick ) ->
+            PlayingGame model ( res, tick - 1 )
+
+        otherwise ->
+            state
+
+
+tickZero : GameState -> Bool
+tickZero state =
+    case state of
+        PlayingGame _ ( _, 0 ) ->
+            True
+
+        otherwise ->
+            False
 
 
 resView : Res -> Model -> Html Msg

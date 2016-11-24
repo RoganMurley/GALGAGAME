@@ -14,10 +14,10 @@ import String exposing (dropLeft, length, startsWith)
 import WebSocket
 import Chat exposing (addChatMessage)
 import Drag exposing (dragAt, dragEnd, dragStart, getPosition)
-import GameState exposing (Card, GameState(..), Hand, Model, Turn, WhichPlayer(..), resTick, stateUpdate, stateView, view)
+import GameState exposing (Card, GameState(..), Hand, Model, Turn, WhichPlayer(..), resTick, stateUpdate, stateView, tickForward, tickZero, view)
 import Messages exposing (GameMsg(..), Msg(..))
 import Task
-import Time exposing (Time, millisecond)
+import Time exposing (Time, second)
 import Util exposing (applyFst)
 
 
@@ -190,6 +190,14 @@ connectedUpdate hostname msg ({ chat, game, mode } as model) =
             ( model, Cmd.none )
 
         Tick _ ->
+            ( { model | game = tickForward game }
+            , if tickZero model.game then
+                message ResolveStep
+              else
+                Cmd.none
+            )
+
+        ResolveStep ->
             ( { model | game = resTick game }, Cmd.none )
 
         Rematch ->
@@ -280,7 +288,7 @@ subscriptions model =
         , Mouse.moves DragAt
         , Mouse.ups DragEnd
         , Keyboard.presses KeyPress
-        , Time.every (600 * millisecond) Tick
+        , Time.every (second / 60) Tick
         ]
 
 
