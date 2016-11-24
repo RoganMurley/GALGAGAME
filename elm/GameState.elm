@@ -218,7 +218,7 @@ stateUpdate : GameMsg -> GameState -> GameState
 stateUpdate msg state =
     case msg of
         Sync str ->
-            syncState state str
+            resProcess state (syncState state str)
 
 
 syncState : GameState -> String -> GameState
@@ -348,6 +348,21 @@ modelDecoder =
 resDecoder : Json.Decoder (List Model)
 resDecoder =
     field "res" (Json.list modelDecoder)
+
+
+resProcess : GameState -> GameState -> GameState
+resProcess old new =
+    case new of
+        PlayingGame _ [] ->
+            new
+
+        otherwise ->
+            case ( old, new ) of
+                ( PlayingGame oldModel _, PlayingGame model res ) ->
+                    PlayingGame oldModel (res ++ [ model ])
+
+                otherwise ->
+                    new
 
 
 

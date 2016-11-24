@@ -17,7 +17,7 @@ import Drag exposing (dragAt, dragEnd, dragStart, getPosition)
 import GameState exposing (Card, GameState(..), Hand, Model, Turn, WhichPlayer(..), resTick, stateUpdate, stateView, view)
 import Messages exposing (GameMsg(..), Msg(..))
 import Task
-import Time exposing (Time, inSeconds, second)
+import Time exposing (Time, millisecond)
 import Util exposing (applyFst)
 
 
@@ -280,7 +280,7 @@ subscriptions model =
         , Mouse.moves DragAt
         , Mouse.ups DragEnd
         , Keyboard.presses KeyPress
-        , Time.every second Tick
+        , Time.every (600 * millisecond) Tick
         ]
 
 

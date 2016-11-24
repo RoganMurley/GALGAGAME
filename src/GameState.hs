@@ -126,9 +126,11 @@ initDeck =
 
 -- TEMP STUFF.
 reverso :: GameState -> GameState
-reverso (Playing (Model turn stack handPA handPB deckPA deckPB lifePA lifePB passes res gen)) =
-  (Playing (Model (otherTurn turn) (stackRev stack) handPB handPA deckPB deckPA lifePB lifePA passes res gen))
+reverso (Playing model) = Playing (modelReverso model)
   where
+    modelReverso :: Model -> Model
+    modelReverso (Model turn stack handPA handPB deckPA deckPB lifePA lifePB passes res gen) =
+      (Model (otherTurn turn) (stackRev stack) handPB handPA deckPB deckPA lifePB lifePA passes (fmap modelReverso res) gen)
     stackRev :: Stack -> Stack
     stackRev stack = fmap (\(StackCard p c) -> StackCard (otherPlayer p) c) stack
 reverso (Victory which gen) = Victory (otherPlayer which) gen
