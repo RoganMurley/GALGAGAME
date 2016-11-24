@@ -94,7 +94,7 @@ handMaxLength :: Int
 handMaxLength = 6
 
 lifeMax :: Life
-lifeMax = 30
+lifeMax = 40
 
 initModel :: Turn -> StdGen -> Model
 initModel turn gen = Model turn [] handPA handPB deckPA deckPB lifeMax lifeMax NoPass [] gen
@@ -379,10 +379,10 @@ cardHubris = Card "Hubris" "Negate all cards to the right" "tower-fall.svg" eff
     eff p m = setStack [] m
 
 cardFireball :: Card
-cardFireball = Card "Fireball" "Hurt for 2 for each card to the right" "fire-ray.svg" eff
+cardFireball = Card "Fireball" "Hurt for 3 for each card to the right" "fire-ray.svg" eff
   where
     eff :: CardEff
-    eff p m = hurt (2 * (length (getStack m))) (otherPlayer p) m
+    eff p m = hurt (3 * (length (getStack m))) (otherPlayer p) m
 
 cardBoomerang :: Card
 cardBoomerang = Card "Boomerang" "Hurt for 1, return this card to your hand" "boomerang.svg" eff
@@ -403,10 +403,10 @@ cardVampire = Card "Vampire" "Lifesteal for 3" "fangs.svg" eff
     eff p m = lifesteal 3 (otherPlayer p) m
 
 cardSuccubus :: Card
-cardSuccubus = Card "Succubus" "Lifesteal for 1 for each card to the right" "pretty-fangs.svg" eff
+cardSuccubus = Card "Succubus" "Lifesteal for 2 for each card to the right" "pretty-fangs.svg" eff
   where
     eff :: CardEff
-    eff p m = lifesteal (length (getStack m)) (otherPlayer p) m
+    eff p m = lifesteal (2 * (length (getStack m))) (otherPlayer p) m
 
 cardReversal :: Card
 cardReversal = Card "Reversal" "Reverse the order of cards to the right" "pocket-watch.svg" eff
