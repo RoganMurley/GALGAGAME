@@ -1,4 +1,4 @@
-module GameState exposing (Card, GameState(..), Hand, Model, Turn, WhichPlayer(..), init, stateUpdate, stateView, view)
+module GameState exposing (Card, GameState(..), Hand, Model, Turn, WhichPlayer(..), init, resTick, stateUpdate, stateView, view)
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -91,7 +91,12 @@ stateView state =
             div [ class "waiting" ] [ text "Waiting for opponent..." ]
 
         PlayingGame model res ->
-            view model
+            case res of
+                [] ->
+                    view model
+
+                otherwise ->
+                    resView res model
 
         Victory PlayerA ->
             div [ class "endgame" ]
@@ -341,4 +346,70 @@ modelDecoder =
 
 
 resDecoder : Json.Decoder (List Model)
-resDecoder = field "res" (Json.list modelDecoder)
+resDecoder =
+    field "res" (Json.list modelDecoder)
+
+
+
+-- RESOLVING.
+
+
+resTick : GameState -> GameState
+resTick state =
+    let
+        safeTail : List a -> List a
+        safeTail l =
+            case List.tail l of
+                Just t ->
+                    t
+
+                Nothing ->
+                    []
+    in
+        case state of
+            PlayingGame model res ->
+                case List.head res of
+                    Just newModel ->
+                        PlayingGame newModel (safeTail res)
+
+                    Nothing ->
+                        PlayingGame model res
+
+            otherwise ->
+                state
+
+
+resView : Res -> Model -> Html Msg
+resView res model =
+    div []
+        [ viewOtherHand model.otherHand
+        , viewResHand model.hand
+        , viewStack model.stack
+        , viewResTurn
+        , viewLife ( model.life, model.otherLife )
+        ]
+
+
+viewResHand : Hand -> Html Msg
+viewResHand hand =
+    let
+        viewCard : Card -> Html Msg
+        viewCard { name, desc, imgURL } =
+            div
+                [ class "card my-card"
+                ]
+                [ div [ class "card-title" ] [ text name ]
+                , div
+                    [ class "card-picture"
+                    , style [ ( "background-image", "url(\"img/" ++ imgURL ++ "\")" ) ]
+                    ]
+                    []
+                , div [ class "card-desc" ] [ text desc ]
+                ]
+    in
+        div [ class "hand my-hand" ] (List.map viewCard hand)
+
+
+viewResTurn : Html Msg
+viewResTurn =
+    div [ class "turn-indi" ] [ text "Resolving..." ]
