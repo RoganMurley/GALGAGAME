@@ -9041,6 +9041,7 @@ var _elm_lang$mouse$Mouse$subMap = F2(
 	});
 _elm_lang$core$Native_Platform.effectManagers['Mouse'] = {pkg: 'elm-lang/mouse', init: _elm_lang$mouse$Mouse$init, onEffects: _elm_lang$mouse$Mouse$onEffects, onSelfMsg: _elm_lang$mouse$Mouse$onSelfMsg, tag: 'sub', subMap: _elm_lang$mouse$Mouse$subMap};
 
+var _user$vanagloria$Messages$ResolveStep = {ctor: 'ResolveStep'};
 var _user$vanagloria$Messages$Tick = function (a) {
 	return {ctor: 'Tick', _0: a};
 };
@@ -9176,9 +9177,18 @@ var _user$vanagloria$GameState$viewResHand = function (hand) {
 		},
 		A2(_elm_lang$core$List$map, viewCard, hand));
 };
+var _user$vanagloria$GameState$tickZero = function (state) {
+	var _p2 = state;
+	if (((_p2.ctor === 'PlayingGame') && (_p2._1.ctor === '_Tuple2')) && (_p2._1._1 === 0)) {
+		return true;
+	} else {
+		return false;
+	}
+};
+var _user$vanagloria$GameState$resDelay = 30;
 var _user$vanagloria$GameState$viewStack = function (stack) {
-	var viewCard = function (_p2) {
-		var _p3 = _p2;
+	var viewCard = function (_p3) {
+		var _p4 = _p3;
 		return A2(
 			_elm_lang$html$Html$div,
 			{
@@ -9197,7 +9207,7 @@ var _user$vanagloria$GameState$viewStack = function (stack) {
 					},
 					{
 						ctor: '::',
-						_0: _elm_lang$html$Html$text(_p3.name),
+						_0: _elm_lang$html$Html$text(_p4.name),
 						_1: {ctor: '[]'}
 					}),
 				_1: {
@@ -9218,7 +9228,7 @@ var _user$vanagloria$GameState$viewStack = function (stack) {
 											_1: A2(
 												_elm_lang$core$Basics_ops['++'],
 												'url(\"img/',
-												A2(_elm_lang$core$Basics_ops['++'], _p3.imgURL, '\")'))
+												A2(_elm_lang$core$Basics_ops['++'], _p4.imgURL, '\")'))
 										},
 										_1: {ctor: '[]'}
 									}),
@@ -9237,7 +9247,7 @@ var _user$vanagloria$GameState$viewStack = function (stack) {
 							},
 							{
 								ctor: '::',
-								_0: _elm_lang$html$Html$text(_p3.desc),
+								_0: _elm_lang$html$Html$text(_p4.desc),
 								_1: {ctor: '[]'}
 							}),
 						_1: {ctor: '[]'}
@@ -9245,11 +9255,11 @@ var _user$vanagloria$GameState$viewStack = function (stack) {
 				}
 			});
 	};
-	var viewStackCard = function (_p4) {
-		var _p5 = _p4;
-		var _p7 = _p5.card;
-		var _p6 = _p5.owner;
-		if (_p6.ctor === 'PlayerA') {
+	var viewStackCard = function (_p5) {
+		var _p6 = _p5;
+		var _p8 = _p6.card;
+		var _p7 = _p6.owner;
+		if (_p7.ctor === 'PlayerA') {
 			return A2(
 				_elm_lang$html$Html$div,
 				{
@@ -9259,7 +9269,7 @@ var _user$vanagloria$GameState$viewStack = function (stack) {
 				},
 				{
 					ctor: '::',
-					_0: viewCard(_p7),
+					_0: viewCard(_p8),
 					_1: {ctor: '[]'}
 				});
 		} else {
@@ -9272,7 +9282,7 @@ var _user$vanagloria$GameState$viewStack = function (stack) {
 				},
 				{
 					ctor: '::',
-					_0: viewCard(_p7),
+					_0: viewCard(_p8),
 					_1: {ctor: '[]'}
 				});
 		}
@@ -9297,8 +9307,8 @@ var _user$vanagloria$GameState$viewStack = function (stack) {
 			_1: {ctor: '[]'}
 		});
 };
-var _user$vanagloria$GameState$viewLife = function (_p8) {
-	var _p9 = _p8;
+var _user$vanagloria$GameState$viewLife = function (_p9) {
+	var _p10 = _p9;
 	return A2(
 		_elm_lang$html$Html$div,
 		{
@@ -9321,7 +9331,7 @@ var _user$vanagloria$GameState$viewLife = function (_p8) {
 						A2(
 							_elm_lang$core$Basics_ops['++'],
 							'Opponent HP: ',
-							_elm_lang$core$Basics$toString(_p9._1))),
+							_elm_lang$core$Basics$toString(_p10._1))),
 					_1: {ctor: '[]'}
 				}),
 			_1: {
@@ -9339,7 +9349,7 @@ var _user$vanagloria$GameState$viewLife = function (_p8) {
 							A2(
 								_elm_lang$core$Basics_ops['++'],
 								'Your HP: ',
-								_elm_lang$core$Basics$toString(_p9._0))),
+								_elm_lang$core$Basics$toString(_p10._0))),
 						_1: {ctor: '[]'}
 					}),
 				_1: {ctor: '[]'}
@@ -9347,8 +9357,8 @@ var _user$vanagloria$GameState$viewLife = function (_p8) {
 		});
 };
 var _user$vanagloria$GameState$viewTurn = function (turn) {
-	var _p10 = turn;
-	if (_p10.ctor === 'PlayerA') {
+	var _p11 = turn;
+	if (_p11.ctor === 'PlayerA') {
 		return A2(
 			_elm_lang$html$Html$button,
 			{
@@ -9429,9 +9439,9 @@ var _user$vanagloria$GameState$resView = F2(
 			});
 	});
 var _user$vanagloria$GameState$viewHand = function (hand) {
-	var viewCard = function (_p11) {
-		var _p12 = _p11;
-		var _p13 = _p12.name;
+	var viewCard = function (_p12) {
+		var _p13 = _p12;
+		var _p14 = _p13.name;
 		return A2(
 			_elm_lang$html$Html$div,
 			{
@@ -9440,7 +9450,7 @@ var _user$vanagloria$GameState$viewHand = function (hand) {
 				_1: {
 					ctor: '::',
 					_0: _elm_lang$html$Html_Events$onClick(
-						_user$vanagloria$Messages$PlayCard(_p13)),
+						_user$vanagloria$Messages$PlayCard(_p14)),
 					_1: {ctor: '[]'}
 				}
 			},
@@ -9455,7 +9465,7 @@ var _user$vanagloria$GameState$viewHand = function (hand) {
 					},
 					{
 						ctor: '::',
-						_0: _elm_lang$html$Html$text(_p13),
+						_0: _elm_lang$html$Html$text(_p14),
 						_1: {ctor: '[]'}
 					}),
 				_1: {
@@ -9476,7 +9486,7 @@ var _user$vanagloria$GameState$viewHand = function (hand) {
 											_1: A2(
 												_elm_lang$core$Basics_ops['++'],
 												'url(\"img/',
-												A2(_elm_lang$core$Basics_ops['++'], _p12.imgURL, '\")'))
+												A2(_elm_lang$core$Basics_ops['++'], _p13.imgURL, '\")'))
 										},
 										_1: {ctor: '[]'}
 									}),
@@ -9495,7 +9505,7 @@ var _user$vanagloria$GameState$viewHand = function (hand) {
 							},
 							{
 								ctor: '::',
-								_0: _elm_lang$html$Html$text(_p12.desc),
+								_0: _elm_lang$html$Html$text(_p13.desc),
 								_1: {ctor: '[]'}
 							}),
 						_1: {ctor: '[]'}
@@ -9540,8 +9550,8 @@ var _user$vanagloria$GameState$view = function (model) {
 		});
 };
 var _user$vanagloria$GameState$stateView = function (state) {
-	var _p14 = state;
-	switch (_p14.ctor) {
+	var _p15 = state;
+	switch (_p15.ctor) {
 		case 'Waiting':
 			return A2(
 				_elm_lang$html$Html$div,
@@ -9556,16 +9566,16 @@ var _user$vanagloria$GameState$stateView = function (state) {
 					_1: {ctor: '[]'}
 				});
 		case 'PlayingGame':
-			var _p17 = _p14._1;
-			var _p16 = _p14._0;
-			var _p15 = _p17;
-			if (_p15.ctor === '[]') {
-				return _user$vanagloria$GameState$view(_p16);
+			var _p18 = _p15._1._0;
+			var _p17 = _p15._0;
+			var _p16 = _p18;
+			if (_p16.ctor === '[]') {
+				return _user$vanagloria$GameState$view(_p17);
 			} else {
-				return A2(_user$vanagloria$GameState$resView, _p17, _p16);
+				return A2(_user$vanagloria$GameState$resView, _p18, _p17);
 			}
 		case 'Victory':
-			if (_p14._0.ctor === 'PlayerA') {
+			if (_p15._0.ctor === 'PlayerA') {
 				return A2(
 					_elm_lang$html$Html$div,
 					{
@@ -9713,7 +9723,7 @@ var _user$vanagloria$GameState$Draw = {ctor: 'Draw'};
 var _user$vanagloria$GameState$decodeDraw = function (msg) {
 	var decoder = A2(
 		_elm_lang$core$Json_Decode$map,
-		function (_p18) {
+		function (_p19) {
 			return _user$vanagloria$GameState$Draw;
 		},
 		A2(_elm_lang$core$Json_Decode$field, 'draw', _elm_lang$core$Json_Decode$bool));
@@ -9726,51 +9736,73 @@ var _user$vanagloria$GameState$PlayingGame = F2(
 	function (a, b) {
 		return {ctor: 'PlayingGame', _0: a, _1: b};
 	});
+var _user$vanagloria$GameState$resTick = function (state) {
+	var safeTail = function (l) {
+		var _p20 = _elm_lang$core$List$tail(l);
+		if (_p20.ctor === 'Just') {
+			return _p20._0;
+		} else {
+			return {ctor: '[]'};
+		}
+	};
+	var _p21 = state;
+	if ((_p21.ctor === 'PlayingGame') && (_p21._1.ctor === '_Tuple2')) {
+		var _p23 = _p21._1._0;
+		var _p22 = _elm_lang$core$List$head(_p23);
+		if (_p22.ctor === 'Just') {
+			return A2(
+				_user$vanagloria$GameState$PlayingGame,
+				_p22._0,
+				{
+					ctor: '_Tuple2',
+					_0: safeTail(_p23),
+					_1: _user$vanagloria$GameState$resDelay
+				});
+		} else {
+			return A2(
+				_user$vanagloria$GameState$PlayingGame,
+				_p21._0,
+				{ctor: '_Tuple2', _0: _p23, _1: 0});
+		}
+	} else {
+		return state;
+	}
+};
 var _user$vanagloria$GameState$resProcess = F2(
 	function (old, $new) {
-		var _p19 = $new;
-		if ((_p19.ctor === 'PlayingGame') && (_p19._1.ctor === '[]')) {
+		var _p24 = $new;
+		if (((_p24.ctor === 'PlayingGame') && (_p24._1.ctor === '_Tuple2')) && (_p24._1._0.ctor === '[]')) {
 			return $new;
 		} else {
-			var _p20 = {ctor: '_Tuple2', _0: old, _1: $new};
-			if (((_p20.ctor === '_Tuple2') && (_p20._0.ctor === 'PlayingGame')) && (_p20._1.ctor === 'PlayingGame')) {
+			var _p25 = {ctor: '_Tuple2', _0: old, _1: $new};
+			if ((((_p25.ctor === '_Tuple2') && (_p25._0.ctor === 'PlayingGame')) && (_p25._1.ctor === 'PlayingGame')) && (_p25._1._1.ctor === '_Tuple2')) {
 				return A2(
 					_user$vanagloria$GameState$PlayingGame,
-					_p20._0._0,
-					A2(
-						_elm_lang$core$Basics_ops['++'],
-						_p20._1._1,
-						{
-							ctor: '::',
-							_0: _p20._1._0,
-							_1: {ctor: '[]'}
-						}));
+					_p25._0._0,
+					{
+						ctor: '_Tuple2',
+						_0: A2(
+							_elm_lang$core$Basics_ops['++'],
+							_p25._1._1._0,
+							{
+								ctor: '::',
+								_0: _p25._1._0,
+								_1: {ctor: '[]'}
+							}),
+						_1: 0
+					});
 			} else {
 				return $new;
 			}
 		}
 	});
-var _user$vanagloria$GameState$resTick = function (state) {
-	var safeTail = function (l) {
-		var _p21 = _elm_lang$core$List$tail(l);
-		if (_p21.ctor === 'Just') {
-			return _p21._0;
-		} else {
-			return {ctor: '[]'};
-		}
-	};
-	var _p22 = state;
-	if (_p22.ctor === 'PlayingGame') {
-		var _p24 = _p22._1;
-		var _p23 = _elm_lang$core$List$head(_p24);
-		if (_p23.ctor === 'Just') {
-			return A2(
-				_user$vanagloria$GameState$PlayingGame,
-				_p23._0,
-				safeTail(_p24));
-		} else {
-			return A2(_user$vanagloria$GameState$PlayingGame, _p22._0, _p24);
-		}
+var _user$vanagloria$GameState$tickForward = function (state) {
+	var _p26 = state;
+	if ((_p26.ctor === 'PlayingGame') && (_p26._1.ctor === '_Tuple2')) {
+		return A2(
+			_user$vanagloria$GameState$PlayingGame,
+			_p26._0,
+			{ctor: '_Tuple2', _0: _p26._1._0, _1: _p26._1._1 - 1});
 	} else {
 		return state;
 	}
@@ -9779,7 +9811,7 @@ var _user$vanagloria$GameState$Waiting = {ctor: 'Waiting'};
 var _user$vanagloria$GameState$decodeWaiting = function (msg) {
 	var decoder = A2(
 		_elm_lang$core$Json_Decode$map,
-		function (_p25) {
+		function (_p27) {
 			return _user$vanagloria$GameState$Waiting;
 		},
 		A2(_elm_lang$core$Json_Decode$field, 'waiting', _elm_lang$core$Json_Decode$bool));
@@ -9797,8 +9829,8 @@ var _user$vanagloria$GameState$init = {
 };
 var _user$vanagloria$GameState$whichDecoder = function () {
 	var makeWhich = function (s) {
-		var _p26 = s;
-		switch (_p26) {
+		var _p28 = s;
+		switch (_p28) {
 			case 'pa':
 				return _user$vanagloria$GameState$PlayerA;
 			case 'pb':
@@ -9810,7 +9842,7 @@ var _user$vanagloria$GameState$whichDecoder = function () {
 						start: {line: 310, column: 13},
 						end: {line: 318, column: 57}
 					},
-					_p26)(
+					_p28)(
 					A2(_elm_lang$core$Basics_ops['++'], 'Invalid player ', s));
 		}
 	};
@@ -9861,27 +9893,33 @@ var _user$vanagloria$GameState$resDecoder = A2(
 var _user$vanagloria$GameState$decodePlaying = function (msg) {
 	var decoder = A3(
 		_elm_lang$core$Json_Decode$map2,
-		_user$vanagloria$GameState$PlayingGame,
+		F2(
+			function (a, b) {
+				return A2(
+					_user$vanagloria$GameState$PlayingGame,
+					a,
+					{ctor: '_Tuple2', _0: b, _1: 0});
+			}),
 		A2(_elm_lang$core$Json_Decode$field, 'playing', _user$vanagloria$GameState$modelDecoder),
 		A2(_elm_lang$core$Json_Decode$field, 'playing', _user$vanagloria$GameState$resDecoder));
 	return A2(_elm_lang$core$Json_Decode$decodeString, decoder, msg);
 };
 var _user$vanagloria$GameState$decodeState = function (msg) {
-	var _p28 = _user$vanagloria$GameState$decodePlaying(msg);
-	if (_p28.ctor === 'Ok') {
-		return _p28._0;
+	var _p30 = _user$vanagloria$GameState$decodePlaying(msg);
+	if (_p30.ctor === 'Ok') {
+		return _p30._0;
 	} else {
-		var _p29 = _user$vanagloria$GameState$decodeWaiting(msg);
-		if (_p29.ctor === 'Ok') {
-			return _p29._0;
+		var _p31 = _user$vanagloria$GameState$decodeWaiting(msg);
+		if (_p31.ctor === 'Ok') {
+			return _p31._0;
 		} else {
-			var _p30 = _user$vanagloria$GameState$decodeVictory(msg);
-			if (_p30.ctor === 'Ok') {
-				return _p30._0;
+			var _p32 = _user$vanagloria$GameState$decodeVictory(msg);
+			if (_p32.ctor === 'Ok') {
+				return _p32._0;
 			} else {
-				var _p31 = _user$vanagloria$GameState$decodeDraw(msg);
-				if (_p31.ctor === 'Ok') {
-					return _p31._0;
+				var _p33 = _user$vanagloria$GameState$decodeDraw(msg);
+				if (_p33.ctor === 'Ok') {
+					return _p33._0;
 				} else {
 					return _elm_lang$core$Native_Utils.crashCase(
 						'GameState',
@@ -9889,26 +9927,26 @@ var _user$vanagloria$GameState$decodeState = function (msg) {
 							start: {line: 246, column: 29},
 							end: {line: 260, column: 42}
 						},
-						_p31)(
+						_p33)(
 						A2(
 							_elm_lang$core$Basics_ops['++'],
 							'Error 1:\n',
 							A2(
 								_elm_lang$core$Basics_ops['++'],
-								_p28._0,
+								_p30._0,
 								A2(
 									_elm_lang$core$Basics_ops['++'],
 									'\nError 2:\n',
 									A2(
 										_elm_lang$core$Basics_ops['++'],
-										_p29._0,
+										_p31._0,
 										A2(
 											_elm_lang$core$Basics_ops['++'],
 											'\nError 3:\n',
 											A2(
 												_elm_lang$core$Basics_ops['++'],
-												_p30._0,
-												A2(_elm_lang$core$Basics_ops['++'], '\nError 4:\n', _p31._0))))))));
+												_p32._0,
+												A2(_elm_lang$core$Basics_ops['++'], '\nError 4:\n', _p33._0))))))));
 				}
 			}
 		}
@@ -9920,11 +9958,11 @@ var _user$vanagloria$GameState$syncState = F2(
 	});
 var _user$vanagloria$GameState$stateUpdate = F2(
 	function (msg, state) {
-		var _p33 = msg;
+		var _p35 = msg;
 		return A2(
 			_user$vanagloria$GameState$resProcess,
 			state,
-			A2(_user$vanagloria$GameState$syncState, state, _p33._0));
+			A2(_user$vanagloria$GameState$syncState, state, _p35._0));
 	});
 
 var Elm = {};

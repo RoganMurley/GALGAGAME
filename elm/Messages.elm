@@ -22,6 +22,7 @@ type Msg
     | KeyPress Int
     | Rematch
     | Tick Time
+    | ResolveStep
 
 
 type GameMsg
