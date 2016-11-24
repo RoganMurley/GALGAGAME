@@ -114,7 +114,7 @@ initDeck =
   ++ (replicate 3 cardPotion)
   ++ (replicate 3 cardVampire)
   ++ (replicate 3 cardSuccubus)
-  ++ (replicate 3 cardGreed)
+  -- ++ (replicate 3 cardGreed)
   ++ (replicate 3 cardSiren)
   -- CONTROL
   ++ (replicate 2 cardHubris)
@@ -451,11 +451,11 @@ cardProphecy = Card "Prophecy" "Return all cards to the right to their owner's h
     getCard :: StackCard -> Card
     getCard (StackCard _ card) = card
 
-cardGreed :: Card
-cardGreed = Card "Greed" "Lifesteal for 1 for each card in your opponent's hand" "mouth-watering.svg" eff
-  where
-    eff :: CardEff
-    eff p m = lifesteal (length (getHand (otherPlayer p) m)) (otherPlayer p) m
+-- cardGreed :: Card
+-- cardGreed = Card "Greed" "Lifesteal for 1 for each card in your opponent's hand" "mouth-watering.svg" eff
+--   where
+--     eff :: CardEff
+--     eff p m = lifesteal (length (getHand (otherPlayer p) m)) (otherPlayer p) m
 
 cardSiren :: Card
 cardSiren = Card "Siren" "Give your opponent two cards that hurt them for 3 damage" "harpy.svg" eff
