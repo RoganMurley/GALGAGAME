@@ -94,7 +94,7 @@ handMaxLength :: Int
 handMaxLength = 6
 
 lifeMax :: Life
-lifeMax = 40
+lifeMax = 30
 
 initModel :: Turn -> StdGen -> Model
 initModel turn gen = Model turn [] handPA handPB deckPA deckPB lifeMax lifeMax NoPass [] gen
