@@ -388,7 +388,7 @@ cardBoomerang :: Card
 cardBoomerang = Card "Boomerang" "Hurt for 1, return this card to your hand" "boomerang.svg" eff
   where
     eff :: CardEff
-    eff p m = setHand p (cardBoomerang : (getHand p m)) (hurt 1 (otherPlayer p) m)
+    eff p m = modHand (addToHand cardBoomerang) p (hurt 1 (otherPlayer p) m)
 
 cardPotion :: Card
 cardPotion = Card "Potion" "Heal for 4" "heart-bottle.svg" eff
