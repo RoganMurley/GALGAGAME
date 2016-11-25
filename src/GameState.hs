@@ -59,7 +59,7 @@ instance ToJSON Model where
         "turn" .= turn
       , "stack" .= stack
       , "handPA" .= handPA
-      , "handPB" .= handPB
+      , "handPB" .= (length handPB)
       , "lifePA" .= lifePA
       , "lifePB" .= lifePB
       , "res" .= res

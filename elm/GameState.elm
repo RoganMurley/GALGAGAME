@@ -19,7 +19,7 @@ type GameState
 
 type alias Model =
     { hand : Hand
-    , otherHand : Hand
+    , otherHand : Int
     , stack : Stack
     , turn : Turn
     , life : Life
@@ -72,7 +72,7 @@ type alias Life =
 init : Model
 init =
     { hand = []
-    , otherHand = []
+    , otherHand = 0
     , stack = []
     , turn = PlayerA
     , life = 1000
@@ -149,14 +149,14 @@ viewHand hand =
         div [ class "hand my-hand" ] (List.map viewCard hand)
 
 
-viewOtherHand : Hand -> Html Msg
-viewOtherHand hand =
+viewOtherHand : Int -> Html Msg
+viewOtherHand cardCount =
     let
-        viewCard : Card -> Html Msg
-        viewCard card =
+        viewCard : Html Msg
+        viewCard =
             div [ class "card other-card" ] []
     in
-        div [ class "hand other-hand" ] (List.map viewCard hand)
+        div [ class "hand other-hand" ] (List.repeat cardCount viewCard)
 
 
 viewTurn : Turn -> Html Msg
@@ -338,7 +338,7 @@ modelDecoder =
     in
         Json.map6 Model
             (field "handPA" (Json.list cardDecoder))
-            (field "handPB" (Json.list cardDecoder))
+            (field "handPB" Json.int)
             (field "stack" (Json.list stackCardDecoder))
             (field "turn" whichDecoder)
             (field "lifePA" Json.int)
