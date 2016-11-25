@@ -9390,17 +9390,15 @@ var _user$vanagloria$GameState$viewTurn = function (turn) {
 			});
 	}
 };
-var _user$vanagloria$GameState$viewOtherHand = function (hand) {
-	var viewCard = function (card) {
-		return A2(
-			_elm_lang$html$Html$div,
-			{
-				ctor: '::',
-				_0: _elm_lang$html$Html_Attributes$class('card other-card'),
-				_1: {ctor: '[]'}
-			},
-			{ctor: '[]'});
-	};
+var _user$vanagloria$GameState$viewOtherHand = function (cardCount) {
+	var viewCard = A2(
+		_elm_lang$html$Html$div,
+		{
+			ctor: '::',
+			_0: _elm_lang$html$Html_Attributes$class('card other-card'),
+			_1: {ctor: '[]'}
+		},
+		{ctor: '[]'});
 	return A2(
 		_elm_lang$html$Html$div,
 		{
@@ -9408,7 +9406,7 @@ var _user$vanagloria$GameState$viewOtherHand = function (hand) {
 			_0: _elm_lang$html$Html_Attributes$class('hand other-hand'),
 			_1: {ctor: '[]'}
 		},
-		A2(_elm_lang$core$List$map, viewCard, hand));
+		A2(_elm_lang$core$List$repeat, cardCount, viewCard));
 };
 var _user$vanagloria$GameState$resView = F2(
 	function (res, model) {
@@ -9821,7 +9819,7 @@ var _user$vanagloria$GameState$PlayerB = {ctor: 'PlayerB'};
 var _user$vanagloria$GameState$PlayerA = {ctor: 'PlayerA'};
 var _user$vanagloria$GameState$init = {
 	hand: {ctor: '[]'},
-	otherHand: {ctor: '[]'},
+	otherHand: 0,
 	stack: {ctor: '[]'},
 	turn: _user$vanagloria$GameState$PlayerA,
 	life: 1000,
@@ -9874,10 +9872,7 @@ var _user$vanagloria$GameState$modelDecoder = function () {
 			_elm_lang$core$Json_Decode$field,
 			'handPA',
 			_elm_lang$core$Json_Decode$list(cardDecoder)),
-		A2(
-			_elm_lang$core$Json_Decode$field,
-			'handPB',
-			_elm_lang$core$Json_Decode$list(cardDecoder)),
+		A2(_elm_lang$core$Json_Decode$field, 'handPB', _elm_lang$core$Json_Decode$int),
 		A2(
 			_elm_lang$core$Json_Decode$field,
 			'stack',
