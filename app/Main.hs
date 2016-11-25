@@ -129,10 +129,10 @@ application state pending = do
   conn <- WS.acceptRequest pending
   WS.forkPingThread conn 30
 
-  msg <- WS.receiveData conn
-  roomName <- return "default"
+  roomName <- WS.receiveData conn
   roomVar <- getRoom roomName state
   initialRoom <- readMVar roomVar
+  msg <- WS.receiveData conn
 
 
   case parsePrefix msg of
