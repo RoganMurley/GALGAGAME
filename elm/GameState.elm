@@ -129,7 +129,8 @@ view model =
         , viewHand model.hand
         , viewStack model.stack
         , viewTurn (List.length model.hand == maxHandLength) model.turn
-        , viewLife ( model.life, model.otherLife )
+        , viewLife PlayerA model.life
+        , viewLife PlayerB model.otherLife
         ]
 
 
@@ -179,13 +180,30 @@ viewTurn handFull turn =
             div [ class "turn-indi enemy-turn" ] [ text "Opponent's Turn" ]
 
 
-viewLife : ( Life, Life ) -> Html Msg
-viewLife ( myLife, otherLife ) =
-    div
-        [ class "life" ]
-        [ div [ class "life-counter" ] [ text ("Opponent HP: " ++ (toString otherLife)) ]
-        , div [ class "life-counter" ] [ text ("Your HP: " ++ (toString myLife)) ]
-        ]
+viewLife : WhichPlayer -> Life -> Html Msg
+viewLife which life =
+    let
+        barWidth : Life -> String
+        barWidth barLife =
+            (toString (((toFloat barLife) / 50) * 100)) ++ "%"
+
+        whoseLife : String
+        whoseLife =
+            case which of
+                PlayerA ->
+                    "life-mine"
+
+                PlayerB ->
+                    ""
+    in
+        div
+            [ class "life", class whoseLife ]
+            [ div
+                [ class "life-bar" ]
+                [ div [ class "life-text" ] [ text ("♥ " ++ (toString life) ++ " ♥") ]
+                , div [ class "life-health", style [ ( "width", barWidth life ) ] ] []
+                ]
+            ]
 
 
 viewStack : Stack -> Html Msg
@@ -436,7 +454,8 @@ resView res model =
         , viewResHand model.hand
         , viewStack model.stack
         , viewResTurn
-        , viewLife ( model.life, model.otherLife )
+        , viewLife PlayerA model.life
+        , viewLife PlayerB model.otherLife
         ]
 
 

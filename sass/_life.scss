@@ -1,15 +1,56 @@
+$height: 38px;
+
 .life {
   position: absolute;
   left: 50%;
-  top: 20%;
+  top: 15%;
+  width: 405px;
+  transform: translateX(-50%);
 }
 
-.life-counter {
-  color: #fff;
+.life-mine {
+  top: 60%;
 
-  transform: translateX(-50%);
+  .life-bar {
+    .life-health {
+      background-color: #bf1131;
+    }
+  }
+}
 
-  display: flex;
-  justify-content: center;
-  align-items: center;
+
+.life-bar {
+    background-color: #fff;
+
+    display: flex;
+
+    width: 100%;
+    height: $height;
+
+    outline: 2px solid;
+    outline-color: white;
+
+    margin-bottom: 20px;
+}
+
+.life-text {
+    color: white;
+    text-align: center;
+
+    margin-top: 9px;
+
+    width: 100%;
+    height: $height;
+
+    position: absolute;
+    z-index: 1;
+}
+
+.life-health {
+    background-color: #432746;
+
+    // Width is dynamically calculated.
+    height: $height;
+
+    transition: width 0.4s ease-in;
 }
