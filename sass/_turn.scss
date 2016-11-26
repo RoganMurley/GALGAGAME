@@ -24,3 +24,12 @@
 
 .enemy-turn {
 }
+
+.pass-disabled {
+  background-color: #04304C;
+  cursor: not-allowed;
+
+  &:hover {
+    background-color: #04304C;
+  }
+}
