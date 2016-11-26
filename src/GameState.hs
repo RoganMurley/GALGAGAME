@@ -101,9 +101,9 @@ initModel turn gen = Model turn [] handPA handPB deckPA deckPB lifeMax lifeMax N
   where
     (genPA, genPB) = split gen :: (StdGen, StdGen)
     initDeckPA = shuffle' initDeck (length initDeck) genPA :: Deck
-    (handPA, deckPA) = splitAt 5 initDeckPA :: (Hand, Deck)
+    (handPA, deckPA) = splitAt 4 initDeckPA :: (Hand, Deck)
     initDeckPB = shuffle' initDeck (length initDeck) genPB :: Deck
-    (handPB, deckPB) = splitAt 5 initDeckPB :: (Hand, Deck)
+    (handPB, deckPB) = splitAt 4 initDeckPB :: (Hand, Deck)
 
 initDeck :: Deck
 initDeck =
@@ -114,9 +114,9 @@ initDeck =
   ++ (replicate 3 cardPotion)
   ++ (replicate 3 cardVampire)
   ++ (replicate 3 cardSuccubus)
-  -- ++ (replicate 3 cardGreed)
   ++ (replicate 3 cardSiren)
   -- CONTROL
+  ++ (replicate 2 cardSickness)
   ++ (replicate 2 cardHubris)
   ++ (replicate 2 cardReflect)
   ++ (replicate 2 cardReversal)
@@ -245,6 +245,11 @@ otherTurn PlayerB = PlayerA
 
 otherPlayer :: WhichPlayer -> WhichPlayer
 otherPlayer = otherTurn
+
+-- LIFE.
+getLife :: WhichPlayer -> Model -> Life
+getLife PlayerA (Model _ _ _ _ _ _ lifePA _ _ _ _) = lifePA
+getLife PlayerB (Model _ _ _ _ _ _ _ lifePB _ _ _) = lifePB
 
 -- HAND.
 getHand :: WhichPlayer -> Model -> Hand
@@ -394,13 +399,13 @@ cardBoomerang = Card "Boomerang" "Hurt for 2, return this card to your hand" "bo
     eff p m = modHand (addToHand cardBoomerang) p (hurt 2 (otherPlayer p) m)
 
 cardPotion :: Card
-cardPotion = Card "Potion" "Heal for 4" "heart-bottle.svg" eff
+cardPotion = Card "Potion" "Heal for 7" "heart-bottle.svg" eff
   where
     eff :: CardEff
     eff p m = heal 7 p m
 
 cardVampire :: Card
-cardVampire = Card "Vampire" "Lifesteal for 3" "fangs.svg" eff
+cardVampire = Card "Vampire" "Lifesteal for 5" "fangs.svg" eff
   where
     eff :: CardEff
     eff p m = lifesteal 5 (otherPlayer p) m
@@ -454,11 +459,6 @@ cardProphecy = Card "Prophecy" "Return all cards to the right to their owner's h
     getCard :: StackCard -> Card
     getCard (StackCard _ card) = card
 
--- cardGreed :: Card
--- cardGreed = Card "Greed" "Lifesteal for 1 for each card in your opponent's hand" "mouth-watering.svg" eff
---   where
---     eff :: CardEff
---     eff p m = lifesteal (length (getHand (otherPlayer p) m)) (otherPlayer p) m
 
 cardSiren :: Card
 cardSiren = Card "Siren" "Give your opponent two cards that hurt them for 10 damage" "harpy.svg" eff
@@ -467,3 +467,19 @@ cardSiren = Card "Siren" "Give your opponent two cards that hurt them for 10 dam
     eff p m = modHand ((addToHand cardSong) . (addToHand cardSong)) (otherPlayer p) m
     cardSong :: Card
     cardSong = Card "Siren's Song" "Hurt yourself for 10" "love-song.svg" (hurt 8)
+
+
+cardSickness :: Card
+cardSickness = Card "Sickness" "Make the next card to the right's healing hurt instead" "bleeding-heart.svg" eff
+  where
+    eff :: CardEff
+    eff p m = modStackHead (patchedCard m) m
+    patchedCard :: Model -> StackCard -> StackCard
+    patchedCard model (StackCard owner (Card name desc img cardEff)) =
+      StackCard owner (Card name desc img (patchedEff model cardEff))
+    patchedEff :: Model -> CardEff -> CardEff
+    patchedEff model eff =
+      \w -> (reverseHeal PlayerA model) . (reverseHeal PlayerB model) . (eff w)
+    reverseHeal :: WhichPlayer -> Model -> Model -> Model
+    reverseHeal which m1 m2 =
+      hurt (max 0 (((getLife which m2) - (getLife which m1)) * 2)) which m2
