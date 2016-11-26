@@ -189,6 +189,7 @@ drawCard which model@(Model turn stack handPA handPB deckPA deckPB lifePA lifePB
 endTurn :: WhichPlayer -> Model -> Maybe GameState
 endTurn which model@(Model turn stack handPA handPB deckPA deckPB lifePA lifePB passes res gen)
   | turn /= which = Nothing
+  | handFull = Nothing
   | otherwise =
     case bothPassed of
       True ->
@@ -201,6 +202,8 @@ endTurn which model@(Model turn stack handPA handPB deckPA deckPB lifePA lifePB 
   where
     bothPassed :: Bool
     bothPassed = passes == OnePass
+    handFull ::  Bool
+    handFull = (length (getHand which model)) == handMaxLength
     drawCards :: Model -> Maybe Model
     drawCards m = Just m >>? drawCard PlayerA >>? drawCard PlayerB
 
