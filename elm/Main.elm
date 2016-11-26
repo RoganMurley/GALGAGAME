@@ -203,10 +203,10 @@ connectedUpdate hostname msg ({ chat, game, mode } as model) =
         Rematch ->
             case model.game of
                 Victory which ->
-                    ( model, send hostname "rematch:" )
+                    ( model, playingOnly model (send hostname "rematch:") )
 
                 Draw ->
-                    ( model, send hostname "rematch:" )
+                    ( model, playingOnly model (send hostname "rematch:") )
 
                 otherwise ->
                     ( model, Cmd.none )
@@ -241,6 +241,16 @@ connectingReceive model msg =
 send : String -> String -> Cmd Msg
 send hostname =
     WebSocket.send ("ws://" ++ hostname ++ ":9160")
+
+
+playingOnly : ConnectedModel -> Cmd Msg -> Cmd Msg
+playingOnly { mode } cmdMsg =
+    case mode of
+        Spectating ->
+            Cmd.none
+
+        Playing ->
+            cmdMsg
 
 
 turnOnly : ConnectedModel -> Cmd Msg -> Cmd Msg
