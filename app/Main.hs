@@ -179,7 +179,7 @@ spectate client@(user, conn) room = do
   WS.sendTextData conn ("acceptSpec:" :: Text)
   WS.sendTextData conn $ "chat:Welcome! " <> userList room'
   broadcast (toChat (SpectateCommand (fst client))) room'
-  syncClients room'
+  syncClient client (getRoomGameState room')
   forever $ do
     msg <- WS.receiveData conn
     actSpec (parseMsg user msg) room
@@ -189,7 +189,7 @@ play which room' client@(user, conn) room = do
   WS.sendTextData conn ("acceptPlay:" :: Text)
   WS.sendTextData conn ("chat:Welcome! " <> userList room')
   broadcast (toChat (PlayCommand (fst client))) room'
-  syncClients room'
+  syncRoomClients room'
   forever $ do
     msg <- WS.receiveData conn
     actPlay (parseMsg user msg) which room
@@ -221,7 +221,7 @@ actPlay :: Command -> WhichPlayer -> MVar Room -> IO ()
 actPlay cmd which room =
   case trans cmd of
     Just command ->
-      stateUpdate command which room >>= syncClients
+      stateUpdate command which room >>= syncRoomClients
     Nothing ->
       actSpec cmd room
   where
@@ -234,8 +234,12 @@ actPlay cmd which room =
 actSpec :: Command -> MVar Room -> IO ()
 actSpec cmd room = readMVar room >>= broadcast (toChat cmd)
 
-syncClients :: Room -> IO ()
-syncClients room = do
+syncClient :: Client -> GameState -> IO ()
+syncClient (_, conn) game =
+  WS.sendTextData conn ("sync:" <> (cs $ encode $ game) :: Text)
+
+syncRoomClients :: Room -> IO ()
+syncRoomClients room = do
   sendToPlayer PlayerA syncMsgPa room
   sendToPlayer PlayerB syncMsgPb room
   sendToSpecs syncMsgPa room
