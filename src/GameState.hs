@@ -382,10 +382,10 @@ cardHubris = Card "Hubris" "Negate all cards to the right" "tower-fall.svg" eff
     eff p m = setStack [] m
 
 cardFireball :: Card
-cardFireball = Card "Fireball" "Hurt for 3 for each card to the right" "fire-ray.svg" eff
+cardFireball = Card "Fireball" "Hurt for 4 for each card to the right" "fire-ray.svg" eff
   where
     eff :: CardEff
-    eff p m = hurt (3 * (length (getStack m))) (otherPlayer p) m
+    eff p m = hurt (4 * (length (getStack m))) (otherPlayer p) m
 
 cardBoomerang :: Card
 cardBoomerang = Card "Boomerang" "Hurt for 2, return this card to your hand" "boomerang.svg" eff
