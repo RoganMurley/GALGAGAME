@@ -149,6 +149,12 @@
   .pass-button:hover {
     background-color: #2a4f7d; }
 
+.pass-disabled {
+  background-color: #04304C;
+  cursor: not-allowed; }
+  .pass-disabled:hover {
+    background-color: #04304C; }
+
 .waiting {
   color: #fff;
   font-size: 72px;

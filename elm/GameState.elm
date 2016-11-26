@@ -69,6 +69,11 @@ type alias Life =
 -- INITIAL MODEL.
 
 
+maxHandLength : Int
+maxHandLength =
+    6
+
+
 init : Model
 init =
     { hand = []
@@ -123,7 +128,7 @@ view model =
         [ viewOtherHand model.otherHand
         , viewHand model.hand
         , viewStack model.stack
-        , viewTurn model.turn
+        , viewTurn (List.length model.hand == maxHandLength) model.turn
         , viewLife ( model.life, model.otherLife )
         ]
 
@@ -159,11 +164,16 @@ viewOtherHand cardCount =
         div [ class "hand other-hand" ] (List.repeat cardCount viewCard)
 
 
-viewTurn : Turn -> Html Msg
-viewTurn turn =
+viewTurn : Bool -> Turn -> Html Msg
+viewTurn handFull turn =
     case turn of
         PlayerA ->
-            button [ class "turn-indi pass-button", onClick EndTurn ] [ text "Pass" ]
+            case handFull of
+                False ->
+                    button [ class "turn-indi pass-button", onClick EndTurn ] [ text "Pass" ]
+
+                True ->
+                    button [ class "turn-indi pass-button pass-disabled" ] [ text "Hand full" ]
 
         PlayerB ->
             div [ class "turn-indi enemy-turn" ] [ text "Opponent's Turn" ]
