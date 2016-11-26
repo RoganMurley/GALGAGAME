@@ -9264,7 +9264,7 @@ var _user$vanagloria$GameState$viewStack = function (stack) {
 				_elm_lang$html$Html$div,
 				{
 					ctor: '::',
-					_0: _elm_lang$html$Html_Attributes$class('playera'),
+					_0: _elm_lang$html$Html_Attributes$class('playera stack-card'),
 					_1: {ctor: '[]'}
 				},
 				{
@@ -9277,7 +9277,7 @@ var _user$vanagloria$GameState$viewStack = function (stack) {
 				_elm_lang$html$Html$div,
 				{
 					ctor: '::',
-					_0: _elm_lang$html$Html_Attributes$class('playerb'),
+					_0: _elm_lang$html$Html_Attributes$class('playerb stack-card'),
 					_1: {ctor: '[]'}
 				},
 				{

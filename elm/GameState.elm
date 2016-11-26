@@ -209,10 +209,10 @@ viewStack stack =
         viewStackCard { owner, card } =
             case owner of
                 PlayerA ->
-                    div [ class "playera" ] [ viewCard card ]
+                    div [ class "playera stack-card" ] [ viewCard card ]
 
                 PlayerB ->
-                    div [ class "playerb" ] [ viewCard card ]
+                    div [ class "playerb stack-card" ] [ viewCard card ]
     in
         div
             [ class "stack-container" ]
