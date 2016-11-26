@@ -1,7 +1,7 @@
 .turn-indi {
   position: absolute;
   left: 50%;
-  top: 75%;
+  top: 70%;
   transform: translateX(-50%);
 
   color: #fff;
@@ -28,6 +28,7 @@
 .pass-disabled {
   background-color: #04304C;
   cursor: not-allowed;
+  width: 13rem;
 
   &:hover {
     background-color: #04304C;
