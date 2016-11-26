@@ -112,7 +112,6 @@
   align-items: center; }
 
 .stack-container {
-  height: 100%;
   z-index: -10; }
 
 .stack {
@@ -124,6 +123,14 @@
   display: flex;
   justify-content: center;
   width: 100%; }
+  .stack .stack-card:nth-child(9) {
+    display: none; }
+  .stack .stack-card:nth-child(10) {
+    display: none; }
+  .stack .stack-card:nth-child(11) {
+    display: none; }
+  .stack .stack-card:nth-child(12) {
+    display: none; }
 
 .playerb .card {
   background-color: #432746;
