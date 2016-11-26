@@ -44,6 +44,10 @@ getRoomSpecs (Room _ _ specs _) = specs
 clientExists :: Client -> Room -> Bool
 clientExists client room = any ((== fst client) . fst) (getRoomClients room)
 
+getSpeccingName :: Room -> Text
+getSpeccingName (Room (Just (name, _))_ _ _) = name
+getSpeccingName (Room Nothing _ _ _) = "nobody yet..."
+
 
 -- ADD CLIENTS.
 addSpec :: Client -> Room -> Room

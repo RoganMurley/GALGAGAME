@@ -178,6 +178,7 @@ spectate client@(user, conn) room = do
   room' <- addSpecClient client room
   WS.sendTextData conn ("acceptSpec:" :: Text)
   WS.sendTextData conn $ "chat:Welcome! " <> userList room'
+  WS.sendTextData conn $ "chat:You're spectating " <> (getSpeccingName room')
   broadcast (toChat (SpectateCommand (fst client))) room'
   syncClient client (getRoomGameState room')
   forever $ do
