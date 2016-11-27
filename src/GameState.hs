@@ -108,20 +108,20 @@ initModel turn gen = Model turn [] handPA handPB deckPA deckPB lifeMax lifeMax N
 initDeck :: Deck
 initDeck =
   -- DAMAGE
-    --  (replicate 3 cardFireball)
-  (replicate 3 cardDagger)
-  -- ++ (replicate 3 cardBoomerang)
+     (replicate 3 cardFireball)
+  ++ (replicate 3 cardDagger)
+  ++ (replicate 3 cardBoomerang)
   ++ (replicate 3 cardPotion)
   ++ (replicate 3 cardVampire)
   ++ (replicate 3 cardSuccubus)
-  -- ++ (replicate 3 cardSiren)
+  ++ (replicate 3 cardSiren)
   -- CONTROL
   ++ (replicate 2 cardSickness)
-  -- ++ (replicate 2 cardHubris)
-  -- ++ (replicate 2 cardReflect)
-  -- ++ (replicate 2 cardReversal)
+  ++ (replicate 2 cardHubris)
+  ++ (replicate 2 cardReflect)
+  ++ (replicate 2 cardReversal)
   -- ++ (replicate 2 cardEcho)
-  -- ++ (replicate 2 cardProphecy)
+  ++ (replicate 2 cardProphecy)
 
 
 -- TEMP STUFF.
