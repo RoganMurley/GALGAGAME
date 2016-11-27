@@ -5,7 +5,7 @@ import Control.Applicative ((<$>))
 import Control.Monad (MonadPlus, mplus)
 import Data.Aeson (ToJSON(..), (.=), object)
 import Data.List (partition)
-import Data.Maybe (isJust, maybeToList)
+import Data.Maybe (fromJust, isJust, maybeToList)
 import Data.Text (Text)
 import Safe (headMay, tailSafe)
 import System.Random (StdGen, split)
@@ -120,8 +120,9 @@ initDeck =
   ++ (replicate 2 cardHubris)
   ++ (replicate 2 cardReflect)
   ++ (replicate 2 cardReversal)
-  -- ++ (replicate 2 cardEcho)
+  ++ (replicate 2 cardEcho)
   ++ (replicate 2 cardProphecy)
+  ++ (replicate 2 cardOffering)
 
 
 -- TEMP STUFF.
@@ -494,3 +495,9 @@ cardSickness = Card "Sickness" "Make all cards to the right's healing hurt inste
     reverseHeal :: WhichPlayer -> Model -> Model -> Model
     reverseHeal which m1 m2 =
       hurt (max 0 (((getLife which m2) - (getLife which m1)) * 2)) which m2
+
+cardOffering :: Card
+cardOffering = Card "Offering" "Half your life, then draw three cards." "chalice-drops.svg" eff
+  where
+    eff :: CardEff
+    eff p m = fromJust $ Just (hurt ((getLife p m) `quot` 2) p m) >>? drawCard p >>? drawCard p >>? drawCard p -- Dangerous
