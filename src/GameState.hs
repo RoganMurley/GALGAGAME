@@ -120,7 +120,7 @@ initDeck =
   ++ (replicate 2 cardHubris)
   ++ (replicate 2 cardReflect)
   ++ (replicate 2 cardReversal)
-  ++ (replicate 2 cardEcho)
+  -- ++ (replicate 2 cardEcho)
   ++ (replicate 2 cardProphecy)
   ++ (replicate 2 cardOffering)
 
