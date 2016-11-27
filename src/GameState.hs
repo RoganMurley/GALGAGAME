@@ -108,20 +108,20 @@ initModel turn gen = Model turn [] handPA handPB deckPA deckPB lifeMax lifeMax N
 initDeck :: Deck
 initDeck =
   -- DAMAGE
-     (replicate 3 cardFireball)
-  ++ (replicate 3 cardDagger)
-  ++ (replicate 3 cardBoomerang)
+    --  (replicate 3 cardFireball)
+  (replicate 3 cardDagger)
+  -- ++ (replicate 3 cardBoomerang)
   ++ (replicate 3 cardPotion)
   ++ (replicate 3 cardVampire)
   ++ (replicate 3 cardSuccubus)
-  ++ (replicate 3 cardSiren)
+  -- ++ (replicate 3 cardSiren)
   -- CONTROL
   ++ (replicate 2 cardSickness)
-  ++ (replicate 2 cardHubris)
-  ++ (replicate 2 cardReflect)
-  ++ (replicate 2 cardReversal)
-  ++ (replicate 2 cardEcho)
-  ++ (replicate 2 cardProphecy)
+  -- ++ (replicate 2 cardHubris)
+  -- ++ (replicate 2 cardReflect)
+  -- ++ (replicate 2 cardReversal)
+  -- ++ (replicate 2 cardEcho)
+  -- ++ (replicate 2 cardProphecy)
 
 
 -- TEMP STUFF.
@@ -251,6 +251,15 @@ getLife :: WhichPlayer -> Model -> Life
 getLife PlayerA (Model _ _ _ _ _ _ lifePA _ _ _ _) = lifePA
 getLife PlayerB (Model _ _ _ _ _ _ _ lifePB _ _ _) = lifePB
 
+setLife :: WhichPlayer -> Life -> Model -> Model
+setLife PlayerA newLife (Model turn stack handPA handPB deckPA deckPB lifePA lifePB passes res gen) =
+  Model turn stack handPA handPB deckPA deckPB newLife lifePB passes res gen
+setLife PlayerB newLife (Model turn stack handPA handPB deckPA deckPB lifePA lifePB passes res gen) =
+  Model turn stack handPA handPB deckPA deckPB lifePA newLife passes res gen
+
+modLife :: (Life -> Life) -> WhichPlayer -> Model -> Model
+modLife f p m = setLife p (f (getLife p m)) m
+
 -- HAND.
 getHand :: WhichPlayer -> Model -> Hand
 getHand PlayerA (Model _ _ handPA handPB _ _ _ _ _ _ _) = handPA
@@ -313,6 +322,9 @@ modStackHead f m =
     Just c ->
       (setStack (f c : (tailSafe (getStack m)))) m
 
+modStackAll :: (StackCard -> StackCard) -> Model -> Model
+modStackAll f m = modStack (fmap f) m
+
 -- RESOLVING.
 resolveOne :: GameState -> GameState
 resolveOne (Playing model@(Model turn stack handPA handPB deckPA deckPB lifePA lifePB passes res gen)) =
@@ -323,12 +335,16 @@ resolveOne (Playing model@(Model turn stack handPA handPB deckPA deckPB lifePA l
       Nothing -> id
       Just (StackCard p (Card _ _ _ effect)) -> effect p
     lifeGate :: GameState -> GameState
-    lifeGate s@(Playing (Model _ _ _ _ _ _ lifePA lifePB _ _ _))
+    lifeGate s@(Playing m@(Model _ _ _ _ _ _ lifePA lifePB _ _ _))
       | (lifePA <= 0) && (lifePB <= 0) = Draw gen
       | lifePB <= 0 = Victory PlayerA gen
       | lifePA <= 0 = Victory PlayerB gen
-      | otherwise = s
+      | otherwise = Playing (maxLifeGate m)
     lifeGate x = x
+    maxLifeGate :: Model -> Model
+    maxLifeGate m@(Model _ _ _ _ _ _ lifePA lifePB _ _ _) =
+      setLife PlayerA (min lifeMax lifePA) $
+        setLife PlayerB (min lifeMax lifePB) m
 resolveOne x = x
 
 resolveAll :: GameState -> GameState
@@ -353,21 +369,16 @@ resetResModel (Model turn stack handPA handPB deckPA deckPB lifePA lifePB passes
 
 -- ACTIONS
 hurt :: Life -> WhichPlayer -> Model -> Model
-hurt damage PlayerA (Model turn stack handPA handPB deckPA deckPB lifePA lifePB passes res gen) =
-  Model turn stack handPA handPB deckPA deckPB newLife lifePB passes res gen
-  where
-    newLife
-      | (lifePA - damage) < lifeMax = lifePA - damage
-      | otherwise = lifeMax
-hurt damage PlayerB (Model turn stack handPA handPB deckPA deckPB lifePA lifePB passes res gen) =
-  Model turn stack handPA handPB deckPA deckPB lifePA newLife passes res gen
-  where
-    newLife
-      | (lifePB - damage) < lifeMax = lifePB - damage
-      | otherwise = lifeMax
+hurt damage PlayerA model =
+  modLife (\l -> l - damage) PlayerA model
+hurt damage PlayerB model =
+  modLife (\l -> l - damage) PlayerB model
 
 heal :: Life -> WhichPlayer -> Model -> Model
-heal life which model = hurt (-life) which model
+heal life PlayerA model =
+  modLife (\l -> l + life) PlayerA model
+heal life PlayerB model =
+  modLife (\l -> l + life) PlayerB model
 
 lifesteal :: Life -> WhichPlayer -> Model -> Model
 lifesteal d p m = heal d (otherPlayer p) $ hurt d p m
@@ -423,24 +434,24 @@ cardReversal = Card "Reversal" "Reverse the order of cards to the right" "pocket
     eff p m = modStack reverse m
 
 cardReflect :: Card
-cardReflect = Card "Reflect" "Reflect the next card to the right" "shield-reflect.svg" eff
+cardReflect = Card "Reflect" "All cards to the right change owner" "shield-reflect.svg" eff
   where
     eff :: CardEff
-    eff p m = modStackHead (reflectEff p) m
-    reflectEff :: WhichPlayer -> StackCard -> StackCard
-    reflectEff which (StackCard owner (Card name desc img cardEff)) =
-      StackCard which (Card name desc img cardEff)
+    eff p m = modStackAll reflectEff m
+    reflectEff :: StackCard -> StackCard
+    reflectEff (StackCard owner (Card name desc img cardEff)) =
+      StackCard (otherPlayer owner) (Card name desc img cardEff)
 
-cardEcho :: Card
-cardEcho = Card "Echo" "The next card to the right happens twice" "echo-ripples.svg" eff
-  where
-    eff :: CardEff
-    eff p m = modStackHead echoEff m
-    echoEff :: StackCard -> StackCard
-    echoEff (StackCard owner (Card name desc img cardEff)) =
-      StackCard owner (Card name desc img (echo cardEff))
-    echo :: CardEff -> CardEff
-    echo e = \which -> (e which) . (e which)
+-- cardEcho :: Card
+-- cardEcho = Card "Echo" "All cards to the right happen twice" "echo-ripples.svg" eff
+--   where
+--     eff :: CardEff
+--     eff p m = modStackAll echoEff m
+--     echoEff :: StackCard -> StackCard
+--     echoEff (StackCard owner (Card name desc img cardEff)) =
+--       StackCard owner (Card name desc img (echo cardEff))
+--     echo :: CardEff -> CardEff
+--     echo e = \which -> (e which) . (e which)
 
 cardProphecy :: Card
 cardProphecy = Card "Prophecy" "Return all cards to the right to their owner's hand" "crystal-ball.svg" eff
@@ -470,16 +481,16 @@ cardSiren = Card "Siren" "Give your opponent two cards that hurt them for 10 dam
 
 
 cardSickness :: Card
-cardSickness = Card "Sickness" "Make the next card to the right's healing hurt instead" "bleeding-heart.svg" eff
+cardSickness = Card "Sickness" "Make all cards to the right's healing hurt instead" "bleeding-heart.svg" eff
   where
     eff :: CardEff
-    eff p m = modStackHead (patchedCard m) m
+    eff p m = modStackAll (patchedCard m) m
     patchedCard :: Model -> StackCard -> StackCard
     patchedCard model (StackCard owner (Card name desc img cardEff)) =
-      StackCard owner (Card name desc img (patchedEff model cardEff))
-    patchedEff :: Model -> CardEff -> CardEff
-    patchedEff model eff =
-      \w -> (reverseHeal PlayerA model) . (reverseHeal PlayerB model) . (eff w)
+      StackCard owner (Card name desc img (patchedEff cardEff))
+    patchedEff :: CardEff -> CardEff
+    patchedEff eff =
+      \w m -> reverseHeal PlayerA m $ reverseHeal PlayerB m $ eff w m
     reverseHeal :: WhichPlayer -> Model -> Model -> Model
     reverseHeal which m1 m2 =
       hurt (max 0 (((getLife which m2) - (getLife which m1)) * 2)) which m2
