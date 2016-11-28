@@ -498,7 +498,7 @@ cardSickness = Card "Sickness" "Make all cards to the right's healing hurt inste
       hurt (max 0 (((getLife which m2) - (getLife which m1)) * 2)) which m2
 
 cardOffering :: Card
-cardOffering = Card "Offering" "Half your life, then draw three cards." "chalice-drops.svg" eff
+cardOffering = Card "Offering" "Half your life, then draw two cards." "chalice-drops.svg" eff
   where
     eff :: CardEff
-    eff p m = fromJust $ Just (hurt ((getLife p m) `quot` 2) p m) >>? drawCard p >>? drawCard p >>? drawCard p -- Dangerous
+    eff p m = fromJust $ Just (hurt ((getLife p m) `quot` 2) p m) >>? drawCard p >>? drawCard p -- Dangerous
