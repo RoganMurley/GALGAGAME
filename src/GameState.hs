@@ -115,8 +115,8 @@ initDeck =
   ++ (replicate 3 cardPotion)
   ++ (replicate 3 cardVampire)
   ++ (replicate 3 cardSuccubus)
-  ++ (replicate 3 cardSiren)
   -- CONTROL
+  ++ (replicate 2 cardSiren)
   ++ (replicate 2 cardSickness)
   ++ (replicate 2 cardHubris)
   ++ (replicate 2 cardReflect)
