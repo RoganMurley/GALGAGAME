@@ -3,6 +3,7 @@ module GameState where
 
 import Control.Applicative ((<$>))
 import Control.Monad (MonadPlus, mplus)
+import Data.Monoid ((<>))
 import Data.Aeson (ToJSON(..), (.=), object)
 import Data.List (partition)
 import Data.Maybe (fromJust, isJust, maybeToList)
@@ -488,7 +489,7 @@ cardSickness = Card "Sickness" "Make all cards to the right's healing hurt inste
     eff p m = modStackAll (patchedCard m) m
     patchedCard :: Model -> StackCard -> StackCard
     patchedCard model (StackCard owner (Card name desc img cardEff)) =
-      StackCard owner (Card name desc img (patchedEff cardEff))
+      StackCard owner (Card ("Sick " <> name) (desc <> "; healing hurts instead") img (patchedEff cardEff))
     patchedEff :: CardEff -> CardEff
     patchedEff eff =
       \w m -> reverseHeal PlayerA m $ reverseHeal PlayerB m $ eff w m
