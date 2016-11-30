@@ -514,12 +514,12 @@ cardOffering = Card "Offering" "Half your life, then draw two cards." "chalice-d
     eff p m = fromJust $ Just (hurt ((getLife p m) `quot` 2) p m) >>? drawCard p >>? drawCard p -- Dangerous
 
 cardGoatFlute :: Card
-cardGoatFlute = Card "Goat Flute" "Fill both player's hands with useless goats." "pan-flute.svg" eff
+cardGoatFlute = Card "Goat Flute" "Both players get three useless goats." "pan-flute.svg" eff
   where
     eff :: CardEff
     eff p m =
-      modHand (times 6 (addToHand cardGoat)) p $
-        modHand (times 6 (addToHand cardGoat)) (otherPlayer p) m
+      modHand (times 3 (addToHand cardGoat)) p $
+        modHand (times 3 (addToHand cardGoat)) (otherPlayer p) m
     cardGoat :: Card
     cardGoat = Card "Goat" "A useless card." "goat.svg" (\_ m -> m)
 
