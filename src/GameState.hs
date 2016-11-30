@@ -125,6 +125,7 @@ initDeck =
   ++ (replicate 2 cardProphecy)
   ++ (replicate 2 cardOffering)
   ++ (replicate 2 cardGoatFlute)
+  ++ (replicate 2 cardConfound)
 
 
 -- TEMP STUFF.
@@ -252,6 +253,10 @@ otherTurn PlayerB = PlayerA
 
 otherPlayer :: WhichPlayer -> WhichPlayer
 otherPlayer = otherTurn
+
+-- RNG GEN.
+getGen :: Model -> StdGen
+getGen (Model _ _ _ _ _ _ _ _ _ _ gen) = gen
 
 -- LIFE.
 getLife :: WhichPlayer -> Model -> Life
@@ -517,3 +522,9 @@ cardGoatFlute = Card "Goat Flute" "Fill both player's hands with useless goats."
         modHand (times 6 (addToHand cardGoat)) (otherPlayer p) m
     cardGoat :: Card
     cardGoat = Card "Goat" "A useless card." "goat.svg" (\_ m -> m)
+
+cardConfound :: Card
+cardConfound = Card "Confound" "Shuffle the order of cards to the right" "moebius-star.svg" eff
+  where
+    eff :: CardEff
+    eff p m = modStack (\s -> shuffle' s (length s) (getGen m)) m
