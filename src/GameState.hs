@@ -124,6 +124,7 @@ initDeck =
   -- ++ (replicate 2 cardEcho)
   ++ (replicate 2 cardProphecy)
   ++ (replicate 2 cardOffering)
+  ++ (replicate 2 cardGoatFlute)
 
 
 -- TEMP STUFF.
@@ -213,6 +214,10 @@ endTurn which model@(Model turn stack handPA handPB deckPA deckPB lifePA lifePB 
 -- If a computation fails, ignore it.
 (>>?) :: (MonadPlus m) => m a -> (a -> m a) -> m a
 (>>?) x f = mplus (x >>= f) x
+
+-- Apply a function n times.
+times :: Int -> (a -> a) -> a -> a
+times n f x = (iterate f x) !! n
 
 -- In future, tag cards in hand with a uid and use that.
 playCard :: CardName -> WhichPlayer -> Model -> Maybe Model
@@ -477,7 +482,7 @@ cardSiren :: Card
 cardSiren = Card "Siren" "Give your opponent two cards that hurt them for 10 damage" "harpy.svg" eff
   where
     eff :: CardEff
-    eff p m = modHand ((addToHand cardSong) . (addToHand cardSong)) (otherPlayer p) m
+    eff p m = modHand (times 2 (addToHand cardSong)) (otherPlayer p) m
     cardSong :: Card
     cardSong = Card "Siren's Song" "Hurt yourself for 10" "love-song.svg" (hurt 8)
 
@@ -502,3 +507,13 @@ cardOffering = Card "Offering" "Half your life, then draw two cards." "chalice-d
   where
     eff :: CardEff
     eff p m = fromJust $ Just (hurt ((getLife p m) `quot` 2) p m) >>? drawCard p >>? drawCard p -- Dangerous
+
+cardGoatFlute :: Card
+cardGoatFlute = Card "Goat Flute" "Fill both player's hands with useless goats." "pan-flute.svg" eff
+  where
+    eff :: CardEff
+    eff p m =
+      modHand (times 6 (addToHand cardGoat)) p $
+        modHand (times 6 (addToHand cardGoat)) (otherPlayer p) m
+    cardGoat :: Card
+    cardGoat = Card "Goat" "A useless card." "goat.svg" (\_ m -> m)
