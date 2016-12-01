@@ -13,7 +13,7 @@ import System.Random (StdGen, split)
 import System.Random.Shuffle (shuffle')
 
 
-data GameState = Waiting StdGen | Playing Model | Victory WhichPlayer StdGen | Draw StdGen
+data GameState = Waiting StdGen | Playing Model | Victory WhichPlayer StdGen ResolveList | Draw StdGen ResolveList
 
 data Model = Model Turn Stack Hand Hand Deck Deck Life Life Passes ResolveList StdGen
 type Hand = [Card]
@@ -44,13 +44,15 @@ instance ToJSON GameState where
     object [
       "playing" .= toJSON model
     ]
-  toJSON (Victory which gen) =
+  toJSON (Victory which gen res) =
     object [
       "victory" .= which
+    , "res" .= res
     ]
-  toJSON (Draw gen) =
+  toJSON (Draw gen res) =
     object [
       "draw" .= True
+    , "res" .= res
     ]
 
 instance ToJSON Model where
@@ -95,7 +97,7 @@ handMaxLength :: Int
 handMaxLength = 6
 
 lifeMax :: Life
-lifeMax = 50
+lifeMax = 1
 
 initModel :: Turn -> StdGen -> Model
 initModel turn gen = Model turn [] handPA handPB deckPA deckPB lifeMax lifeMax NoPass [] gen
@@ -133,14 +135,17 @@ initDeck =
 -- TEMP STUFF.
 reverso :: GameState -> GameState
 reverso (Playing model) = Playing (modelReverso model)
+reverso (Victory which gen res) = Victory (otherPlayer which) gen (fmap modelReverso res)
+reverso (Draw gen res) = Draw gen (fmap modelReverso res)
+reverso (Waiting gen) = Waiting gen
+
+
+modelReverso :: Model -> Model
+modelReverso (Model turn stack handPA handPB deckPA deckPB lifePA lifePB passes res gen) =
+  (Model (otherTurn turn) (stackRev stack) handPB handPA deckPB deckPA lifePB lifePA passes (fmap modelReverso res) gen)
   where
-    modelReverso :: Model -> Model
-    modelReverso (Model turn stack handPA handPB deckPA deckPB lifePA lifePB passes res gen) =
-      (Model (otherTurn turn) (stackRev stack) handPB handPA deckPB deckPA lifePB lifePA passes (fmap modelReverso res) gen)
     stackRev :: Stack -> Stack
     stackRev stack = fmap (\(StackCard p c) -> StackCard (otherPlayer p) c) stack
-reverso (Victory which gen) = Victory (otherPlayer which) gen
-reverso x = x
 
 
 -- UPDATE
@@ -154,18 +159,18 @@ update cmd which state =
           endTurn which model
         PlayCard name ->
           Playing <$> (playCard name which model)
-    (Victory winner gen) ->
+    (Victory winner gen res) ->
       case cmd of
         Rematch ->
           Just $ Playing $ initModel winner (fst (split gen))
         x ->
-          Just $ Victory winner gen
-    (Draw gen) ->
+          Just $ Victory winner gen res
+    (Draw gen res) ->
       case cmd of
         Rematch ->
           Just $ Playing $ initModel PlayerA (fst (split gen))
         x ->
-          Just $ Draw gen
+          Just $ Draw gen res
     x ->
       Just x
   where
@@ -357,10 +362,10 @@ resolveOne (Playing model@(Model turn stack handPA handPB deckPA deckPB lifePA l
       Nothing -> id
       Just (StackCard p (Card _ _ _ effect)) -> effect p
     lifeGate :: GameState -> GameState
-    lifeGate s@(Playing m@(Model _ _ _ _ _ _ lifePA lifePB _ _ _))
-      | (lifePA <= 0) && (lifePB <= 0) = Draw gen
-      | lifePB <= 0 = Victory PlayerA gen
-      | lifePA <= 0 = Victory PlayerB gen
+    lifeGate s@(Playing m@(Model _ _ _ _ _ _ lifePA lifePB _ res _))
+      | (lifePA <= 0) && (lifePB <= 0) = Draw gen res
+      | lifePB <= 0 = Victory PlayerA gen res
+      | lifePA <= 0 = Victory PlayerB gen res
       | otherwise = Playing (maxLifeGate m)
     lifeGate x = x
     maxLifeGate :: Model -> Model
@@ -379,6 +384,10 @@ resolveAll x = x
 rememberRes :: Model -> GameState -> GameState
 rememberRes r (Playing m@(Model turn stack handPA handPB deckPA deckPB lifePA lifePB passes res gen)) =
   (Playing (Model turn stack handPA handPB deckPA deckPB lifePA lifePB passes (res ++ [resetResModel r]) gen))
+rememberRes r (Victory p gen res) =
+  Victory p gen (res ++ [resetResModel r])
+rememberRes r (Draw gen res) =
+  Draw gen (res ++ [resetResModel r])
 rememberRes r x = x
 
 resetRes :: GameState -> GameState

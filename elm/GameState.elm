@@ -13,8 +13,8 @@ import Messages exposing (GameMsg(Sync), Msg(DrawCard, EndTurn, PlayCard, Rematc
 type GameState
     = Waiting
     | PlayingGame Model ( Res, Int )
-    | Victory WhichPlayer
-    | Draw
+    | Victory WhichPlayer ( Res, Int )
+    | Draw ( Res, Int )
 
 
 type alias Model =
@@ -103,23 +103,30 @@ stateView state =
                 otherwise ->
                     resView res model
 
-        Victory PlayerA ->
-            div [ class "endgame" ]
-                [ div [ class "victory" ] [ text "VICTORY" ]
-                , button [ class "rematch", onClick Rematch ] [ text "Rematch" ]
-                ]
+        Victory player ( res, _ ) ->
+            case (List.head res) of
+                Just r ->
+                    resView res r
 
-        Victory PlayerB ->
-            div [ class "endgame" ]
-                [ div [ class "defeat" ] [ text "DEFEAT" ]
-                , button [ class "rematch", onClick Rematch ] [ text "Rematch" ]
-                ]
+                Nothing ->
+                    div [ class "endgame" ]
+                        [ if player == PlayerA then
+                            div [ class "victory" ] [ text "VICTORY" ]
+                          else
+                            div [ class "defeat" ] [ text "DEFEAT" ]
+                        , button [ class "rematch", onClick Rematch ] [ text "Rematch" ]
+                        ]
 
-        Draw ->
-            div [ class "endgame" ]
-                [ div [ class "draw" ] [ text "DRAW" ]
-                , button [ class "rematch", onClick Rematch ] [ text "Rematch" ]
-                ]
+        Draw ( res, _ ) ->
+            case (List.head res) of
+                Just r ->
+                    resView res r
+
+                Nothing ->
+                    div [ class "endgame" ]
+                        [ div [ class "draw" ] [ text "DRAW" ]
+                        , button [ class "rematch", onClick Rematch ] [ text "Rematch" ]
+                        ]
 
 
 view : Model -> Html Msg
@@ -303,7 +310,9 @@ decodeVictory msg =
     let
         decoder : Json.Decoder GameState
         decoder =
-            Json.map Victory (field "victory" whichDecoder)
+            Json.map2 (\w res -> Victory w ( res, 0 ))
+                (field "victory" whichDecoder)
+                resDecoder
     in
         Json.decodeString decoder msg
 
@@ -313,7 +322,9 @@ decodeDraw msg =
     let
         decoder : Json.Decoder GameState
         decoder =
-            Json.map (\_ -> Draw) (field "draw" Json.bool)
+            Json.map2 (\_ res -> Draw ( res, 0 ))
+                (field "draw" Json.bool)
+                resDecoder
     in
         Json.decodeString decoder msg
 
@@ -408,6 +419,12 @@ resTick state =
                     Nothing ->
                         PlayingGame model ( res, 0 )
 
+            Victory p ( res, _ ) ->
+                Victory p ( List.drop 1 res, resDelay )
+
+            Draw ( res, _ ) ->
+                Draw ( List.drop 1 res, resDelay )
+
             otherwise ->
                 state
 
@@ -433,6 +450,12 @@ tickForward state =
         PlayingGame model ( res, tick ) ->
             PlayingGame model ( res, tick - 1 )
 
+        Victory p ( res, tick ) ->
+            Victory p ( res, tick - 1 )
+
+        Draw ( res, tick ) ->
+            Draw ( res, tick - 1 )
+
         otherwise ->
             state
 
@@ -441,6 +464,12 @@ tickZero : GameState -> Bool
 tickZero state =
     case state of
         PlayingGame _ ( _, 0 ) ->
+            True
+
+        Victory _ ( _, 0 ) ->
+            True
+
+        Draw ( _, 0 ) ->
             True
 
         otherwise ->
