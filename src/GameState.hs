@@ -115,6 +115,7 @@ initDeck =
   ++ (replicate 3 cardPotion)
   ++ (replicate 3 cardVampire)
   ++ (replicate 3 cardSuccubus)
+  ++ (replicate 30 cardObscurer)
   -- CONTROL
   ++ (replicate 2 cardSiren)
   ++ (replicate 2 cardSickness)
@@ -312,6 +313,14 @@ mapDeck f p m = f (getDeck p m)
 modDeck :: (Deck -> Deck) -> WhichPlayer -> Model -> Model
 modDeck f p m = setDeck p (mapDeck f p m) m
 
+modDeckHead :: (Card -> Card) -> WhichPlayer -> Model -> Model
+modDeckHead f p m =
+  case headMay (getDeck p m) of
+    Just card ->
+      setDeck p ((f card) : (tail (getDeck p m))) m
+    Nothing ->
+      m
+
 -- STACK.
 getStack :: Model -> Stack
 getStack (Model _ stack _ _ _ _ _ _ _ _ _) = stack
@@ -508,23 +517,31 @@ cardSickness = Card "Sickness" "Make all cards to the right's healing hurt inste
       hurt (max 0 (((getLife which m2) - (getLife which m1)) * 2)) which m2
 
 cardOffering :: Card
-cardOffering = Card "Offering" "Half your life, then draw two cards." "chalice-drops.svg" eff
+cardOffering = Card "Offering" "Half your life, then draw two cards" "chalice-drops.svg" eff
   where
     eff :: CardEff
     eff p m = fromJust $ Just (hurt ((getLife p m) `quot` 2) p m) >>? drawCard p >>? drawCard p -- Dangerous
 
 cardGoatFlute :: Card
-cardGoatFlute = Card "Goat Flute" "Both players get two useless goats." "pan-flute.svg" eff
+cardGoatFlute = Card "Goat Flute" "Both players get two useless goats" "pan-flute.svg" eff
   where
     eff :: CardEff
     eff p m =
       modHand (times 2 (addToHand cardGoat)) p $
         modHand (times 2 (addToHand cardGoat)) (otherPlayer p) m
     cardGoat :: Card
-    cardGoat = Card "Goat" "A useless card." "goat.svg" (\_ m -> m)
+    cardGoat = Card "Goat" "A useless card" "goat.svg" (\_ m -> m)
 
 cardConfound :: Card
 cardConfound = Card "Confound" "Shuffle the order of cards to the right" "moebius-star.svg" eff
   where
     eff :: CardEff
     eff p m = modStack (\s -> shuffle' s (length s) (getGen m)) m
+
+cardObscurer :: Card
+cardObscurer = Card "Obscurer" "Hurt for 4 and obscure the next card your opponent draws" "orb-wand.svg" eff
+  where
+    eff :: CardEff
+    eff p m = hurt 4 (otherPlayer p) $ modDeckHead obs (otherPlayer p) m
+    obs :: Card -> Card
+    obs card = Card "???" "An obscured card" "present.svg" (\p -> modStack ((:) (StackCard p card)))
