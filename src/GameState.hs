@@ -109,24 +109,25 @@ initModel turn gen = Model turn [] handPA handPB deckPA deckPB lifeMax lifeMax N
 initDeck :: Deck
 initDeck =
   -- DAMAGE
-     (replicate 3 cardFireball)
-  ++ (replicate 3 cardDagger)
-  ++ (replicate 3 cardBoomerang)
-  ++ (replicate 3 cardPotion)
-  ++ (replicate 3 cardVampire)
-  ++ (replicate 3 cardSuccubus)
-  ++ (replicate 3 cardObscurer)
-  -- CONTROL
+     (replicate 4 cardFireball)
+  ++ (replicate 4 cardDagger)
+  ++ (replicate 4 cardBoomerang)
+  ++ (replicate 4 cardPotion)
+  ++ (replicate 4 cardVampire)
+  ++ (replicate 4 cardSuccubus)
+  ++ (replicate 4 cardObscurer)
+  -- HARD CONTROL
+  ++ (replicate 3 cardHubris)
+  ++ (replicate 3 cardReflect)
+  ++ (replicate 3 cardReversal)
+  ++ (replicate 3 cardConfound)
+  -- SOFT CONTROL
   ++ (replicate 2 cardSiren)
   ++ (replicate 2 cardSickness)
-  ++ (replicate 2 cardHubris)
-  ++ (replicate 2 cardReflect)
-  ++ (replicate 2 cardReversal)
   -- ++ (replicate 2 cardEcho)
   ++ (replicate 2 cardProphecy)
   ++ (replicate 2 cardOffering)
   ++ (replicate 2 cardGoatFlute)
-  ++ (replicate 2 cardConfound)
 
 
 -- TEMP STUFF.
@@ -493,7 +494,7 @@ cardProphecy = Card "Prophecy" "Return all cards to the right to their owner's h
 
 
 cardSiren :: Card
-cardSiren = Card "Siren" "Give your opponent two cards that hurt them for 8 damage" "harpy.svg" eff
+cardSiren = Card "Siren" "Your opponent gets two cards that hurt them for 8 damage when played" "harpy.svg" eff
   where
     eff :: CardEff
     eff p m = modHand (times 2 (addToHand cardSong)) (otherPlayer p) m
@@ -517,10 +518,10 @@ cardSickness = Card "Sickness" "Make all cards to the right's healing hurt inste
       hurt (max 0 (((getLife which m2) - (getLife which m1)) * 2)) which m2
 
 cardOffering :: Card
-cardOffering = Card "Offering" "Half your life, then draw two cards" "chalice-drops.svg" eff
+cardOffering = Card "Offering" "Discard your hand, then draw two cards" "chalice-drops.svg" eff
   where
     eff :: CardEff
-    eff p m = fromJust $ Just (hurt ((getLife p m) `quot` 2) p m) >>? drawCard p >>? drawCard p -- Dangerous
+    eff p m = fromJust $ Just (setHand p [] m) >>? drawCard p >>? drawCard p -- Dangerous
 
 cardGoatFlute :: Card
 cardGoatFlute = Card "Goat Flute" "Both players get two useless goats" "pan-flute.svg" eff
@@ -544,4 +545,4 @@ cardObscurer = Card "Obscurer" "Hurt for 4 and obscure the next card your oppone
     eff :: CardEff
     eff p m = hurt 4 (otherPlayer p) $ modDeckHead obs (otherPlayer p) m
     obs :: Card -> Card
-    obs card = Card "???" "An obscured card" "present.svg" (\p -> modStack ((:) (StackCard p card)))
+    obs card = Card "???" "An obscured card" "sight-disabled.svg" (\p -> modStack ((:) (StackCard p card)))
