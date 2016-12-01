@@ -135,7 +135,7 @@ connectingUpdate hostname msg ({ name, error, valid } as model) =
                     ( model, Cmd.none )
 
                 True ->
-                    ( model, message (Send ("play:" ++ name)) )
+                    ( { model | name = "" }, message (Send ("play:" ++ name)) )
 
         KeyPress _ ->
             ( model, Cmd.none )
