@@ -154,7 +154,12 @@ connectedUpdate hostname msg ({ chat, game, mode } as model) =
             ( { model | chat = { chat | input = input } }, Cmd.none )
 
         Send str ->
-            ( { model | chat = { chat | input = "" } }, send hostname str )
+            ( { model | chat = { chat | input = "" } }
+            , if str /= "chat:" then
+                send hostname str
+              else
+                Cmd.none
+            )
 
         Receive str ->
             connectedReceive model str
