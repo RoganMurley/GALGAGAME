@@ -80,8 +80,8 @@ init =
     , otherHand = 0
     , stack = []
     , turn = PlayerA
-    , life = 1000
-    , otherLife = 1000
+    , life = 100
+    , otherLife = 100
     }
 
 
