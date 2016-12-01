@@ -9738,8 +9738,8 @@ var _user$vanagloria$GameState$init = {
 	otherHand: 0,
 	stack: {ctor: '[]'},
 	turn: _user$vanagloria$GameState$PlayerA,
-	life: 1000,
-	otherLife: 1000
+	life: 100,
+	otherLife: 100
 };
 var _user$vanagloria$GameState$view = function (model) {
 	return A2(
