@@ -129,49 +129,54 @@ application state pending = do
   conn <- WS.acceptRequest pending
   WS.forkPingThread conn 30
 
-  roomName <- WS.receiveData conn
-  roomVar <- getRoom roomName state
-  initialRoom <- readMVar roomVar
-  msg <- WS.receiveData conn
+  roomReq <- WS.receiveData conn
+  case parseRoomReq roomReq of
+    Just roomName -> do
+      roomVar <- getRoom roomName state
+      initialRoom <- readMVar roomVar
+      msg <- WS.receiveData conn
 
 
-  case parsePrefix msg of
+      case parsePrefix msg of
+        Nothing ->
+          WS.sendTextData conn $ toChat $
+            ErrorCommand $ "Connection protocol failure" <> msg
+
+        Just prefix ->
+          case prefix of
+            _ | any ($ fst client) [ T.null ] ->
+                WS.sendTextData conn $ toChat $
+                  ErrorCommand "Name must be nonempty"
+
+              | clientExists client initialRoom ->
+                WS.sendTextData conn $ toChat $
+                  ErrorCommand "User already exists"
+
+              | prefix == "play:" ->
+                do
+                  added <- addPlayerClient client roomVar
+                  case added of
+                    Nothing ->
+                      WS.sendTextData conn $ toChat $ ErrorCommand "Room is full :("
+                    Just (room', which) ->
+                      flip finally
+                        (disconnect client roomVar roomName state)
+                        (play which room' client roomVar)
+
+              | prefix == "spectate:" ->
+                flip finally
+                  (disconnect client roomVar roomName state)
+                  (spectate client roomVar)
+
+              | otherwise ->
+                WS.sendTextData conn $ toChat $
+                  ErrorCommand "Something went terribly wrong in connection negotiation :("
+
+              where
+                client = (T.drop (T.length prefix) msg, conn) :: Client
     Nothing ->
       WS.sendTextData conn $ toChat $
-        ErrorCommand $ "Connection protocol failure" <> msg
-
-    Just prefix ->
-      case prefix of
-        _ | any ($ fst client) [ T.null ] ->
-            WS.sendTextData conn $ toChat $
-              ErrorCommand "Name must be nonempty"
-
-          | clientExists client initialRoom ->
-            WS.sendTextData conn $ toChat $
-              ErrorCommand "User already exists"
-
-          | prefix == "play:" ->
-            do
-              added <- addPlayerClient client roomVar
-              case added of
-                Nothing ->
-                  WS.sendTextData conn $ toChat $ ErrorCommand "Room is full :("
-                Just (room', which) ->
-                  flip finally
-                    (disconnect client roomVar roomName state)
-                    (play which room' client roomVar)
-
-          | prefix == "spectate:" ->
-            flip finally
-              (disconnect client roomVar roomName state)
-              (spectate client roomVar)
-
-          | otherwise ->
-            WS.sendTextData conn $ toChat $
-              ErrorCommand "Something went terribly wrong in connection negotiation :("
-
-          where
-            client = (T.drop (T.length prefix) msg, conn) :: Client
+        ErrorCommand "Bad room name protocol"
 
 spectate :: Client -> MVar Room -> IO ()
 spectate client@(user, conn) room = do
@@ -278,3 +283,14 @@ parseMsg name msg =
     parsed = T.breakOn ":" msg
     command = fst parsed :: Text
     content = T.drop 1 (snd parsed) :: Text
+
+parseRoomReq :: Text -> Maybe Text
+parseRoomReq msg =
+  case parsed of
+    ("room", name) ->
+      Just name
+    otherwise ->
+      Nothing
+  where
+    parsed :: (Text, Text)
+    parsed = T.breakOn ":" msg
