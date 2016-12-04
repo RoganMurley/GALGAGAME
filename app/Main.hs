@@ -33,6 +33,7 @@ data Command =
   | LeaveCommand Username
   | EndTurnCommand
   | PlayCardCommand CardName
+  | HoverCardCommand CardName
   | RematchCommand
   | ErrorCommand Text
 
@@ -234,6 +235,7 @@ actPlay cmd which room =
     trans :: Command -> Maybe GameCommand
     trans EndTurnCommand = Just EndTurn
     trans (PlayCardCommand name) = Just (PlayCard name)
+    trans (HoverCardCommand name) = Just (HoverCard name)
     trans RematchCommand = Just (Rematch)
     trans _ = Nothing
 
@@ -272,6 +274,8 @@ parseMsg name msg =
       EndTurnCommand
     "play" ->
       PlayCardCommand content
+    "hover" ->
+      HoverCardCommand content
     "chat" ->
       ChatCommand name content
     "rematch" ->

@@ -3,8 +3,8 @@ module GameState exposing (Card, GameState(..), Hand, Model, Turn, WhichPlayer(.
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import Json.Decode as Json exposing (field)
-import Messages exposing (GameMsg(Sync), Msg(DrawCard, EndTurn, PlayCard, Rematch))
+import Json.Decode as Json exposing (field, maybe)
+import Messages exposing (GameMsg(Sync), Msg(DrawCard, EndTurn, HoverCard, PlayCard, Rematch))
 
 
 -- TYPES.
@@ -24,6 +24,7 @@ type alias Model =
     , turn : Turn
     , life : Life
     , otherLife : Life
+    , otherHover : Maybe Int
     }
 
 
@@ -65,6 +66,10 @@ type alias Life =
     Int
 
 
+type alias HoverCard =
+    Maybe Int
+
+
 
 -- INITIAL MODEL.
 
@@ -82,6 +87,7 @@ init =
     , turn = PlayerA
     , life = 100
     , otherLife = 100
+    , otherHover = Nothing
     }
 
 
@@ -132,7 +138,7 @@ stateView state =
 view : Model -> Html Msg
 view model =
     div []
-        [ viewOtherHand model.otherHand
+        [ viewOtherHand model.otherHand model.otherHover
         , viewHand model.hand
         , viewStack model.stack
         , viewTurn (List.length model.hand == maxHandLength) model.turn
@@ -149,6 +155,8 @@ viewHand hand =
             div
                 [ class "card my-card"
                 , onClick (PlayCard name)
+                , onMouseEnter (HoverCard name)
+                , onMouseLeave (HoverCard "")
                 ]
                 [ div [ class "card-title" ] [ text name ]
                 , div
@@ -162,14 +170,23 @@ viewHand hand =
         div [ class "hand my-hand" ] (List.map viewCard hand)
 
 
-viewOtherHand : Int -> Html Msg
-viewOtherHand cardCount =
+viewOtherHand : Int -> HoverCard -> Html Msg
+viewOtherHand cardCount hoverIndex =
     let
-        viewCard : Html Msg
-        viewCard =
-            div [ class "card other-card" ] []
+        viewCard : Int -> Html Msg
+        viewCard index =
+            case (Just index) == hoverIndex of
+                True ->
+                    div [ class "card other-card other-card-hover" ] []
+
+                False ->
+                    div [ class "card other-card" ] []
+
+        cards : List (Html Msg)
+        cards =
+            List.map viewCard (List.range 0 (cardCount - 1))
     in
-        div [ class "hand other-hand" ] (List.repeat cardCount viewCard)
+        div [ class "hand other-hand" ] cards
 
 
 viewTurn : Bool -> Turn -> Html Msg
@@ -375,13 +392,14 @@ modelDecoder =
                 (field "owner" whichDecoder)
                 (field "card" cardDecoder)
     in
-        Json.map6 Model
+        Json.map7 Model
             (field "handPA" (Json.list cardDecoder))
             (field "handPB" Json.int)
             (field "stack" (Json.list stackCardDecoder))
             (field "turn" whichDecoder)
             (field "lifePA" Json.int)
             (field "lifePB" Json.int)
+            (maybe (field "hoverPB" Json.int))
 
 
 resDecoder : Json.Decoder (List Model)
@@ -479,7 +497,7 @@ tickZero state =
 resView : Res -> Model -> Html Msg
 resView res model =
     div []
-        [ viewOtherHand model.otherHand
+        [ viewOtherHand model.otherHand model.otherHover
         , viewResHand model.hand
         , viewStack model.stack
         , viewResTurn
