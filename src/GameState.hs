@@ -111,25 +111,25 @@ initModel turn gen = Model turn [] handPA handPB deckPA deckPB lifeMax lifeMax N
 initDeck :: Deck
 initDeck =
   -- DAMAGE
-     (replicate 4 cardFireball)
-  ++ (replicate 4 cardDagger)
-  ++ (replicate 4 cardBoomerang)
-  ++ (replicate 4 cardPotion)
-  ++ (replicate 4 cardVampire)
-  ++ (replicate 4 cardSuccubus)
-  ++ (replicate 4 cardObscurer)
+     (replicate 3 cardFireball)
+  ++ (replicate 3 cardDagger)
+  ++ (replicate 3 cardBoomerang)
+  ++ (replicate 3 cardPotion)
+  ++ (replicate 3 cardVampire)
+  ++ (replicate 3 cardSuccubus)
+  -- ++ (replicate 3 cardObscurer)
   -- HARD CONTROL
-  ++ (replicate 3 cardHubris)
-  ++ (replicate 3 cardReflect)
-  ++ (replicate 3 cardReversal)
-  ++ (replicate 3 cardConfound)
+  ++ (replicate 2 cardHubris)
+  ++ (replicate 2 cardReflect)
+  ++ (replicate 2 cardReversal)
+  ++ (replicate 2 cardConfound)
   -- SOFT CONTROL
   ++ (replicate 2 cardSiren)
   ++ (replicate 2 cardSickness)
   -- ++ (replicate 2 cardEcho)
   ++ (replicate 2 cardProphecy)
-  ++ (replicate 2 cardOffering)
-  ++ (replicate 2 cardGoatFlute)
+  -- ++ (replicate 2 cardOffering)
+  -- ++ (replicate 2 cardGoatFlute)
 
 
 -- TEMP STUFF.
