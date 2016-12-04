@@ -216,6 +216,9 @@ connectedUpdate hostname msg ({ chat, game, mode } as model) =
                 otherwise ->
                     ( model, Cmd.none )
 
+        HoverCard name ->
+            ( model, message (Send ("hover:" ++ name)) )
+
         otherwise ->
             Debug.crash "Unexpected action while connected ;_;"
 

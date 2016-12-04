@@ -23,6 +23,7 @@ type Msg
     | Rematch
     | Tick Time
     | ResolveStep
+    | HoverCard String
 
 
 type GameMsg
