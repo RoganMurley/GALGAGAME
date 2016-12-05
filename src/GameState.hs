@@ -104,7 +104,7 @@ lifeMax :: Life
 lifeMax = 50
 
 initModel :: Turn -> StdGen -> Model
-initModel turn gen = Model turn [] handPA handPB deckPA deckPB lifeMax lifeMax (Just 1) Nothing NoPass [] gen
+initModel turn gen = Model turn [] handPA handPB deckPA deckPB lifeMax lifeMax Nothing Nothing NoPass [] gen
   where
     (genPA, genPB) = split gen :: (StdGen, StdGen)
     initDeckPA = shuffle' initDeck (length initDeck) genPA :: Deck
