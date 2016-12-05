@@ -62,21 +62,11 @@ deleteRoom name state =
 stateUpdate :: GameCommand -> WhichPlayer -> MVar Room -> IO (Room)
 stateUpdate cmd which room =
   modifyMVar room $ \r ->
-    case gameUpdate cmd r of
-      Nothing ->
-        do
-          -- T.putStrLn "Something went horribly wrong in state update. Did you try to move when it wasn't your turn?"
-          return (r, r)
-      Just newRoom ->
-        return (newRoom, newRoom)
+    let newRoom = gameUpdate cmd r in return (newRoom, newRoom)
   where
-    gameUpdate :: GameCommand -> Room -> Maybe Room
+    gameUpdate :: GameCommand -> Room -> Room
     gameUpdate cmd (Room pa pb specs state) =
-      case update cmd which state of
-        Nothing ->
-          Nothing
-        Just newState ->
-          Just (Room pa pb specs newState)
+      Room pa pb specs (update cmd which state)
 
 addSpecClient :: Client -> MVar Room -> IO (Room)
 addSpecClient client room =
