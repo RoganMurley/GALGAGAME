@@ -154,7 +154,7 @@ modelReverso (Model turn stack handPA handPB deckPA deckPB lifePA lifePB hoverPA
 
 -- UPDATE
 
-update :: GameCommand -> WhichPlayer -> GameState -> Maybe GameState
+update :: GameCommand -> WhichPlayer -> GameState -> GameState
 update cmd which state =
   case resetState of
     (Playing model) ->
@@ -162,36 +162,36 @@ update cmd which state =
         EndTurn ->
           endTurn which model
         PlayCard name ->
-          Playing <$> (playCard name which model)
+          Playing (playCard name which model)
         HoverCard name ->
-          Just $ Playing (hoverCard name which model)
+          Playing (hoverCard name which model)
     (Victory winner gen res) ->
       case cmd of
         Rematch ->
-          Just $ Playing $ initModel winner (fst (split gen))
+          Playing $ initModel winner (fst (split gen))
         x ->
-          Just $ Victory winner gen res
+          Victory winner gen res
     (Draw gen res) ->
       case cmd of
         Rematch ->
-          Just $ Playing $ initModel PlayerA (fst (split gen))
+          Playing $ initModel PlayerA (fst (split gen))
         x ->
-          Just $ Draw gen res
+          Draw gen res
     x ->
-      Just x
+      x
   where
     resetState :: GameState
     resetState = resetRes state
 
-drawCard :: WhichPlayer -> Model -> Maybe Model
+drawCard :: WhichPlayer -> Model -> Model
 drawCard which model@(Model turn stack handPA handPB deckPA deckPB lifePA lifePB hoverPA hoverPB passes res gen)
-  | (length hand >= handMaxLength) = Nothing
+  | (length hand >= handMaxLength) = model
   | otherwise =
     case drawnCard of
       Just card ->
-        Just (setDeck which drawnDeck $ setHand which (card : hand) model)
+        setDeck which drawnDeck $ setHand which (card : hand) model
       Nothing ->
-        Nothing
+        model
   where
     drawnCard :: Maybe Card
     drawnCard = headMay deck
@@ -203,42 +203,42 @@ drawCard which model@(Model turn stack handPA handPB deckPA deckPB lifePA lifePB
     hand = getHand which model
 
 -- Make safer.
-endTurn :: WhichPlayer -> Model -> Maybe GameState
+endTurn :: WhichPlayer -> Model -> GameState
 endTurn which model@(Model turn stack handPA handPB deckPA deckPB lifePA lifePB hoverPA hoverPB passes res gen)
-  | turn /= which = Nothing
-  | handFull = Nothing
+  | turn /= which = Playing model
+  | handFull = Playing model
   | otherwise =
     case bothPassed of
       True ->
         case resolveAll (Playing model) of
           Playing m ->
-            Playing <$> (drawCards $ resetPasses $ swapTurn m)
+            Playing $ drawCards $ resetPasses $ swapTurn m
           s ->
-            Just s
-      False -> Just $ Playing $ swapTurn $ model
+            s
+      False -> Playing $ swapTurn model
   where
     bothPassed :: Bool
     bothPassed = passes == OnePass
     handFull ::  Bool
     handFull = (length (getHand which model)) == handMaxLength
-    drawCards :: Model -> Maybe Model
-    drawCards m = Just m >>? drawCard PlayerA >>? drawCard PlayerB
+    drawCards :: Model -> Model
+    drawCards m = (drawCard PlayerA) . (drawCard PlayerB) $ m
 
-
--- If a computation fails, ignore it.
-(>>?) :: (MonadPlus m) => m a -> (a -> m a) -> m a
-(>>?) x f = mplus (x >>= f) x
 
 -- Apply a function n times.
 times :: Int -> (a -> a) -> a -> a
 times n f x = (iterate f x) !! n
 
 -- In future, tag cards in hand with a uid and use that.
-playCard :: CardName -> WhichPlayer -> Model -> Maybe Model
+playCard :: CardName -> WhichPlayer -> Model -> Model
 playCard name which model@(Model turn stack handPA handPB deckPA deckPB lifePA lifePB hoverPA hoverPB passes res gen)
-  | turn /= which = Nothing
+  | turn /= which = model
   | otherwise =
-    card *> (Just (resetPasses $ swapTurn $ setStack ((maybeToList card) ++ stack) $ setHand which newHand model))
+    case card of
+      Just c ->
+        resetPasses $ swapTurn $ modStack ((:) c) $ setHand which newHand model
+      Nothing ->
+        model
   where
     hand :: Hand
     hand = getHand which model
@@ -392,9 +392,9 @@ resolveOne (Playing model@(Model turn stack handPA handPB deckPA deckPB lifePA l
       | otherwise = Playing (maxLifeGate m)
     lifeGate x = x
     maxLifeGate :: Model -> Model
-    maxLifeGate m@(Model _ _ _ _ _ _ lifePA lifePB _ _ _ _ _) =
-      setLife PlayerA (min lifeMax lifePA) $
-        setLife PlayerB (min lifeMax lifePB) m
+    maxLifeGate m =
+      setLife PlayerA (min lifeMax (getLife PlayerA m)) $
+        setLife PlayerB (min lifeMax (getLife PlayerB m)) m
 resolveOne x = x
 
 resolveAll :: GameState -> GameState
@@ -553,7 +553,7 @@ cardOffering :: Card
 cardOffering = Card "Offering" "Discard your hand, then draw two cards" "chalice-drops.svg" eff
   where
     eff :: CardEff
-    eff p m = fromJust $ Just (setHand p [] m) >>? drawCard p >>? drawCard p -- Dangerous
+    eff p m = (drawCard p) . (drawCard p) $ setHand p [] m
 
 cardGoatFlute :: Card
 cardGoatFlute = Card "Goat Flute" "Both players get two useless goats" "pan-flute.svg" eff
