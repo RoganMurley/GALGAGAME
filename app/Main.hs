@@ -33,6 +33,7 @@ data Command =
   | LeaveCommand Username
   | EndTurnCommand
   | PlayCardCommand CardName
+  | HoverCardCommand CardName
   | RematchCommand
   | ErrorCommand Text
 
@@ -61,21 +62,11 @@ deleteRoom name state =
 stateUpdate :: GameCommand -> WhichPlayer -> MVar Room -> IO (Room)
 stateUpdate cmd which room =
   modifyMVar room $ \r ->
-    case gameUpdate cmd r of
-      Nothing ->
-        do
-          -- T.putStrLn "Something went horribly wrong in state update. Did you try to move when it wasn't your turn?"
-          return (r, r)
-      Just newRoom ->
-        return (newRoom, newRoom)
+    let newRoom = gameUpdate cmd r in return (newRoom, newRoom)
   where
-    gameUpdate :: GameCommand -> Room -> Maybe Room
+    gameUpdate :: GameCommand -> Room -> Room
     gameUpdate cmd (Room pa pb specs state) =
-      case update cmd which state of
-        Nothing ->
-          Nothing
-        Just newState ->
-          Just (Room pa pb specs newState)
+      Room pa pb specs (update cmd which state)
 
 addSpecClient :: Client -> MVar Room -> IO (Room)
 addSpecClient client room =
@@ -129,49 +120,54 @@ application state pending = do
   conn <- WS.acceptRequest pending
   WS.forkPingThread conn 30
 
-  roomName <- WS.receiveData conn
-  roomVar <- getRoom roomName state
-  initialRoom <- readMVar roomVar
-  msg <- WS.receiveData conn
+  roomReq <- WS.receiveData conn
+  case parseRoomReq roomReq of
+    Just roomName -> do
+      roomVar <- getRoom roomName state
+      initialRoom <- readMVar roomVar
+      msg <- WS.receiveData conn
 
 
-  case parsePrefix msg of
+      case parsePrefix msg of
+        Nothing ->
+          WS.sendTextData conn $ toChat $
+            ErrorCommand $ "Connection protocol failure" <> msg
+
+        Just prefix ->
+          case prefix of
+            _ | any ($ fst client) [ T.null ] ->
+                WS.sendTextData conn $ toChat $
+                  ErrorCommand "Name must be nonempty"
+
+              | clientExists client initialRoom ->
+                WS.sendTextData conn $ toChat $
+                  ErrorCommand "User already exists"
+
+              | prefix == "play:" ->
+                do
+                  added <- addPlayerClient client roomVar
+                  case added of
+                    Nothing ->
+                      WS.sendTextData conn $ toChat $ ErrorCommand "Room is full :("
+                    Just (room', which) ->
+                      flip finally
+                        (disconnect client roomVar roomName state)
+                        (play which room' client roomVar)
+
+              | prefix == "spectate:" ->
+                flip finally
+                  (disconnect client roomVar roomName state)
+                  (spectate client roomVar)
+
+              | otherwise ->
+                WS.sendTextData conn $ toChat $
+                  ErrorCommand "Something went terribly wrong in connection negotiation :("
+
+              where
+                client = (T.drop (T.length prefix) msg, conn) :: Client
     Nothing ->
       WS.sendTextData conn $ toChat $
-        ErrorCommand $ "Connection protocol failure" <> msg
-
-    Just prefix ->
-      case prefix of
-        _ | any ($ fst client) [ T.null ] ->
-            WS.sendTextData conn $ toChat $
-              ErrorCommand "Name must be nonempty"
-
-          | clientExists client initialRoom ->
-            WS.sendTextData conn $ toChat $
-              ErrorCommand "User already exists"
-
-          | prefix == "play:" ->
-            do
-              added <- addPlayerClient client roomVar
-              case added of
-                Nothing ->
-                  WS.sendTextData conn $ toChat $ ErrorCommand "Room is full :("
-                Just (room', which) ->
-                  flip finally
-                    (disconnect client roomVar roomName state)
-                    (play which room' client roomVar)
-
-          | prefix == "spectate:" ->
-            flip finally
-              (disconnect client roomVar roomName state)
-              (spectate client roomVar)
-
-          | otherwise ->
-            WS.sendTextData conn $ toChat $
-              ErrorCommand "Something went terribly wrong in connection negotiation :("
-
-          where
-            client = (T.drop (T.length prefix) msg, conn) :: Client
+        ErrorCommand "Bad room name protocol"
 
 spectate :: Client -> MVar Room -> IO ()
 spectate client@(user, conn) room = do
@@ -229,6 +225,7 @@ actPlay cmd which room =
     trans :: Command -> Maybe GameCommand
     trans EndTurnCommand = Just EndTurn
     trans (PlayCardCommand name) = Just (PlayCard name)
+    trans (HoverCardCommand name) = Just (HoverCard name)
     trans RematchCommand = Just (Rematch)
     trans _ = Nothing
 
@@ -267,6 +264,8 @@ parseMsg name msg =
       EndTurnCommand
     "play" ->
       PlayCardCommand content
+    "hover" ->
+      HoverCardCommand content
     "chat" ->
       ChatCommand name content
     "rematch" ->
@@ -278,3 +277,14 @@ parseMsg name msg =
     parsed = T.breakOn ":" msg
     command = fst parsed :: Text
     content = T.drop 1 (snd parsed) :: Text
+
+parseRoomReq :: Text -> Maybe Text
+parseRoomReq msg =
+  case parsed of
+    ("room", name) ->
+      Just name
+    otherwise ->
+      Nothing
+  where
+    parsed :: (Text, Text)
+    parsed = T.breakOn ":" msg
