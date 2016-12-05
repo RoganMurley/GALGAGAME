@@ -48,7 +48,12 @@
 .other-card {
   background-color: #682128;
   cursor: pointer;
-  cursor: hand; }
+  cursor: hand;
+  transition: transform 0.3s ease-out; }
+
+.other-card-hover {
+  -webkit-transform: translateY(5vh);
+  transform: translateY(5vh); }
 
 .chat {
   position: absolute;

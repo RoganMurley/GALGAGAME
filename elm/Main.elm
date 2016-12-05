@@ -115,7 +115,7 @@ connectingUpdate hostname msg ({ name, error, valid } as model) =
             ( { model | name = input, error = Tuple.second (validateName name), valid = Tuple.first (validateName name) }, Cmd.none )
 
         Send str ->
-            ( model, Cmd.batch [ send hostname str, send hostname (Debug.log "sending" "default") ] )
+            ( model, Cmd.batch [ send hostname str, send hostname (Debug.log "sending" "room:default") ] )
 
         Receive str ->
             connectingReceive model str
@@ -135,7 +135,7 @@ connectingUpdate hostname msg ({ name, error, valid } as model) =
                     ( model, Cmd.none )
 
                 True ->
-                    ( model, message (Send ("play:" ++ name)) )
+                    ( { model | name = "" }, message (Send ("play:" ++ name)) )
 
         KeyPress _ ->
             ( model, Cmd.none )
@@ -207,14 +207,17 @@ connectedUpdate hostname msg ({ chat, game, mode } as model) =
 
         Rematch ->
             case model.game of
-                Victory which ->
+                Victory which _ ->
                     ( model, playingOnly model (send hostname "rematch:") )
 
-                Draw ->
+                Draw _ ->
                     ( model, playingOnly model (send hostname "rematch:") )
 
                 otherwise ->
                     ( model, Cmd.none )
+
+        HoverCard name ->
+            ( model, message (Send ("hover:" ++ name)) )
 
         otherwise ->
             Debug.crash "Unexpected action while connected ;_;"

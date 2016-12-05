@@ -3,8 +3,8 @@ module GameState exposing (Card, GameState(..), Hand, Model, Turn, WhichPlayer(.
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import Json.Decode as Json exposing (field)
-import Messages exposing (GameMsg(Sync), Msg(DrawCard, EndTurn, PlayCard, Rematch))
+import Json.Decode as Json exposing (field, maybe)
+import Messages exposing (GameMsg(Sync), Msg(DrawCard, EndTurn, HoverCard, PlayCard, Rematch))
 
 
 -- TYPES.
@@ -13,8 +13,8 @@ import Messages exposing (GameMsg(Sync), Msg(DrawCard, EndTurn, PlayCard, Rematc
 type GameState
     = Waiting
     | PlayingGame Model ( Res, Int )
-    | Victory WhichPlayer
-    | Draw
+    | Victory WhichPlayer ( Res, Int )
+    | Draw ( Res, Int )
 
 
 type alias Model =
@@ -24,6 +24,7 @@ type alias Model =
     , turn : Turn
     , life : Life
     , otherLife : Life
+    , otherHover : Maybe Int
     }
 
 
@@ -65,6 +66,10 @@ type alias Life =
     Int
 
 
+type alias HoverCard =
+    Maybe Int
+
+
 
 -- INITIAL MODEL.
 
@@ -80,8 +85,9 @@ init =
     , otherHand = 0
     , stack = []
     , turn = PlayerA
-    , life = 1000
-    , otherLife = 1000
+    , life = 100
+    , otherLife = 100
+    , otherHover = Nothing
     }
 
 
@@ -103,29 +109,36 @@ stateView state =
                 otherwise ->
                     resView res model
 
-        Victory PlayerA ->
-            div [ class "endgame" ]
-                [ div [ class "victory" ] [ text "VICTORY" ]
-                , button [ class "rematch", onClick Rematch ] [ text "Rematch" ]
-                ]
+        Victory player ( res, _ ) ->
+            case (List.head res) of
+                Just r ->
+                    resView res r
 
-        Victory PlayerB ->
-            div [ class "endgame" ]
-                [ div [ class "defeat" ] [ text "DEFEAT" ]
-                , button [ class "rematch", onClick Rematch ] [ text "Rematch" ]
-                ]
+                Nothing ->
+                    div [ class "endgame" ]
+                        [ if player == PlayerA then
+                            div [ class "victory" ] [ text "VICTORY" ]
+                          else
+                            div [ class "defeat" ] [ text "DEFEAT" ]
+                        , button [ class "rematch", onClick Rematch ] [ text "Rematch" ]
+                        ]
 
-        Draw ->
-            div [ class "endgame" ]
-                [ div [ class "draw" ] [ text "DRAW" ]
-                , button [ class "rematch", onClick Rematch ] [ text "Rematch" ]
-                ]
+        Draw ( res, _ ) ->
+            case (List.head res) of
+                Just r ->
+                    resView res r
+
+                Nothing ->
+                    div [ class "endgame" ]
+                        [ div [ class "draw" ] [ text "DRAW" ]
+                        , button [ class "rematch", onClick Rematch ] [ text "Rematch" ]
+                        ]
 
 
 view : Model -> Html Msg
 view model =
     div []
-        [ viewOtherHand model.otherHand
+        [ viewOtherHand model.otherHand model.otherHover
         , viewHand model.hand
         , viewStack model.stack
         , viewTurn (List.length model.hand == maxHandLength) model.turn
@@ -142,6 +155,8 @@ viewHand hand =
             div
                 [ class "card my-card"
                 , onClick (PlayCard name)
+                , onMouseEnter (HoverCard name)
+                , onMouseLeave (HoverCard "")
                 ]
                 [ div [ class "card-title" ] [ text name ]
                 , div
@@ -155,14 +170,23 @@ viewHand hand =
         div [ class "hand my-hand" ] (List.map viewCard hand)
 
 
-viewOtherHand : Int -> Html Msg
-viewOtherHand cardCount =
+viewOtherHand : Int -> HoverCard -> Html Msg
+viewOtherHand cardCount hoverIndex =
     let
-        viewCard : Html Msg
-        viewCard =
-            div [ class "card other-card" ] []
+        viewCard : Int -> Html Msg
+        viewCard index =
+            case (Just index) == hoverIndex of
+                True ->
+                    div [ class "card other-card other-card-hover" ] []
+
+                False ->
+                    div [ class "card other-card" ] []
+
+        cards : List (Html Msg)
+        cards =
+            List.map viewCard (List.range 0 (cardCount - 1))
     in
-        div [ class "hand other-hand" ] (List.repeat cardCount viewCard)
+        div [ class "hand other-hand" ] cards
 
 
 viewTurn : Bool -> Turn -> Html Msg
@@ -303,7 +327,9 @@ decodeVictory msg =
     let
         decoder : Json.Decoder GameState
         decoder =
-            Json.map Victory (field "victory" whichDecoder)
+            Json.map2 (\w res -> Victory w ( res, 0 ))
+                (field "victory" whichDecoder)
+                resDecoder
     in
         Json.decodeString decoder msg
 
@@ -313,7 +339,9 @@ decodeDraw msg =
     let
         decoder : Json.Decoder GameState
         decoder =
-            Json.map (\_ -> Draw) (field "draw" Json.bool)
+            Json.map2 (\_ res -> Draw ( res, 0 ))
+                (field "draw" Json.bool)
+                resDecoder
     in
         Json.decodeString decoder msg
 
@@ -364,13 +392,14 @@ modelDecoder =
                 (field "owner" whichDecoder)
                 (field "card" cardDecoder)
     in
-        Json.map6 Model
+        Json.map7 Model
             (field "handPA" (Json.list cardDecoder))
             (field "handPB" Json.int)
             (field "stack" (Json.list stackCardDecoder))
             (field "turn" whichDecoder)
             (field "lifePA" Json.int)
             (field "lifePB" Json.int)
+            (maybe (field "hoverPB" Json.int))
 
 
 resDecoder : Json.Decoder (List Model)
@@ -408,6 +437,12 @@ resTick state =
                     Nothing ->
                         PlayingGame model ( res, 0 )
 
+            Victory p ( res, _ ) ->
+                Victory p ( List.drop 1 res, resDelay )
+
+            Draw ( res, _ ) ->
+                Draw ( List.drop 1 res, resDelay )
+
             otherwise ->
                 state
 
@@ -433,6 +468,12 @@ tickForward state =
         PlayingGame model ( res, tick ) ->
             PlayingGame model ( res, tick - 1 )
 
+        Victory p ( res, tick ) ->
+            Victory p ( res, tick - 1 )
+
+        Draw ( res, tick ) ->
+            Draw ( res, tick - 1 )
+
         otherwise ->
             state
 
@@ -443,6 +484,12 @@ tickZero state =
         PlayingGame _ ( _, 0 ) ->
             True
 
+        Victory _ ( _, 0 ) ->
+            True
+
+        Draw ( _, 0 ) ->
+            True
+
         otherwise ->
             False
 
@@ -450,7 +497,7 @@ tickZero state =
 resView : Res -> Model -> Html Msg
 resView res model =
     div []
-        [ viewOtherHand model.otherHand
+        [ viewOtherHand model.otherHand model.otherHover
         , viewResHand model.hand
         , viewStack model.stack
         , viewResTurn

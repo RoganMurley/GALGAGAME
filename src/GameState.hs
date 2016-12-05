@@ -5,7 +5,7 @@ import Control.Applicative ((<$>))
 import Control.Monad (MonadPlus, mplus)
 import Data.Monoid ((<>))
 import Data.Aeson (ToJSON(..), (.=), object)
-import Data.List (partition)
+import Data.List (findIndex, partition)
 import Data.Maybe (fromJust, isJust, maybeToList)
 import Data.Text (Text)
 import Safe (headMay, tailSafe)
@@ -13,9 +13,9 @@ import System.Random (StdGen, split)
 import System.Random.Shuffle (shuffle')
 
 
-data GameState = Waiting StdGen | Playing Model | Victory WhichPlayer StdGen | Draw StdGen
+data GameState = Waiting StdGen | Playing Model | Victory WhichPlayer StdGen ResolveList | Draw StdGen ResolveList
 
-data Model = Model Turn Stack Hand Hand Deck Deck Life Life Passes ResolveList StdGen
+data Model = Model Turn Stack Hand Hand Deck Deck Life Life HoverCardIndex HoverCardIndex Passes ResolveList StdGen
 type Hand = [Card]
 type Deck = [Card]
 type Stack = [StackCard]
@@ -27,6 +27,7 @@ type CardImgURL = Text
 type Life = Int
 type CardEff = (WhichPlayer -> Model -> Model)
 type ResolveList = [Model]
+type HoverCardIndex = Maybe Int
 
 data WhichPlayer = PlayerA | PlayerB
   deriving (Eq, Show)
@@ -44,17 +45,19 @@ instance ToJSON GameState where
     object [
       "playing" .= toJSON model
     ]
-  toJSON (Victory which gen) =
+  toJSON (Victory which gen res) =
     object [
       "victory" .= which
+    , "res" .= res
     ]
-  toJSON (Draw gen) =
+  toJSON (Draw gen res) =
     object [
       "draw" .= True
+    , "res" .= res
     ]
 
 instance ToJSON Model where
-  toJSON (Model turn stack handPA handPB deckPA deckPB lifePA lifePB _ res _) =
+  toJSON (Model turn stack handPA handPB deckPA deckPB lifePA lifePB hoverPA hoverPB _ res _) =
     object
       [
         "turn" .= turn
@@ -63,6 +66,8 @@ instance ToJSON Model where
       , "handPB" .= (length handPB)
       , "lifePA" .= lifePA
       , "lifePB" .= lifePB
+      , "hoverPA" .= hoverPA
+      , "hoverPB" .= hoverPB
       , "res" .= res
       ]
 
@@ -89,6 +94,7 @@ instance ToJSON WhichPlayer where
 data GameCommand =
     EndTurn
   | PlayCard CardName
+  | HoverCard CardName
   | Rematch
 
 handMaxLength :: Int
@@ -98,7 +104,7 @@ lifeMax :: Life
 lifeMax = 50
 
 initModel :: Turn -> StdGen -> Model
-initModel turn gen = Model turn [] handPA handPB deckPA deckPB lifeMax lifeMax NoPass [] gen
+initModel turn gen = Model turn [] handPA handPB deckPA deckPB lifeMax lifeMax (Just 1) Nothing NoPass [] gen
   where
     (genPA, genPB) = split gen :: (StdGen, StdGen)
     initDeckPA = shuffle' initDeck (length initDeck) genPA :: Deck
@@ -115,36 +121,43 @@ initDeck =
   ++ (replicate 3 cardPotion)
   ++ (replicate 3 cardVampire)
   ++ (replicate 3 cardSuccubus)
-  ++ (replicate 3 cardObscurer)
   -- CONTROL
   ++ (replicate 2 cardSiren)
   ++ (replicate 2 cardSickness)
+  -- ++ (replicate 3 cardObscurer)
+  -- HARD CONTROL
   ++ (replicate 2 cardHubris)
   ++ (replicate 2 cardReflect)
   ++ (replicate 2 cardReversal)
+  ++ (replicate 2 cardConfound)
+  -- SOFT CONTROL
+  ++ (replicate 2 cardSiren)
+  ++ (replicate 2 cardSickness)
   -- ++ (replicate 2 cardEcho)
   ++ (replicate 2 cardProphecy)
-  ++ (replicate 2 cardOffering)
-  ++ (replicate 2 cardGoatFlute)
-  ++ (replicate 2 cardConfound)
+  -- ++ (replicate 2 cardOffering)
+  -- ++ (replicate 2 cardGoatFlute)
 
 
 -- TEMP STUFF.
 reverso :: GameState -> GameState
 reverso (Playing model) = Playing (modelReverso model)
+reverso (Victory which gen res) = Victory (otherPlayer which) gen (fmap modelReverso res)
+reverso (Draw gen res) = Draw gen (fmap modelReverso res)
+reverso (Waiting gen) = Waiting gen
+
+
+modelReverso :: Model -> Model
+modelReverso (Model turn stack handPA handPB deckPA deckPB lifePA lifePB hoverPA hoverPB passes res gen) =
+  (Model (otherTurn turn) (stackRev stack) handPB handPA deckPB deckPA lifePB lifePA hoverPB hoverPA passes (fmap modelReverso res) gen)
   where
-    modelReverso :: Model -> Model
-    modelReverso (Model turn stack handPA handPB deckPA deckPB lifePA lifePB passes res gen) =
-      (Model (otherTurn turn) (stackRev stack) handPB handPA deckPB deckPA lifePB lifePA passes (fmap modelReverso res) gen)
     stackRev :: Stack -> Stack
     stackRev stack = fmap (\(StackCard p c) -> StackCard (otherPlayer p) c) stack
-reverso (Victory which gen) = Victory (otherPlayer which) gen
-reverso x = x
 
 
 -- UPDATE
 
-update :: GameCommand -> WhichPlayer -> GameState -> Maybe GameState
+update :: GameCommand -> WhichPlayer -> GameState -> GameState
 update cmd which state =
   case resetState of
     (Playing model) ->
@@ -152,34 +165,36 @@ update cmd which state =
         EndTurn ->
           endTurn which model
         PlayCard name ->
-          Playing <$> (playCard name which model)
-    (Victory winner gen) ->
+          Playing (playCard name which model)
+        HoverCard name ->
+          Playing (hoverCard name which model)
+    (Victory winner gen res) ->
       case cmd of
         Rematch ->
-          Just $ Playing $ initModel winner (fst (split gen))
+          Playing $ initModel winner (fst (split gen))
         x ->
-          Just $ Victory winner gen
-    (Draw gen) ->
+          Victory winner gen res
+    (Draw gen res) ->
       case cmd of
         Rematch ->
-          Just $ Playing $ initModel PlayerA (fst (split gen))
+          Playing $ initModel PlayerA (fst (split gen))
         x ->
-          Just $ Draw gen
+          Draw gen res
     x ->
-      Just x
+      x
   where
     resetState :: GameState
     resetState = resetRes state
 
-drawCard :: WhichPlayer -> Model -> Maybe Model
-drawCard which model@(Model turn stack handPA handPB deckPA deckPB lifePA lifePB passes res gen)
-  | (length hand >= handMaxLength) = Nothing
+drawCard :: WhichPlayer -> Model -> Model
+drawCard which model@(Model turn stack handPA handPB deckPA deckPB lifePA lifePB hoverPA hoverPB passes res gen)
+  | (length hand >= handMaxLength) = model
   | otherwise =
     case drawnCard of
       Just card ->
-        Just (setDeck which drawnDeck $ setHand which (card : hand) model)
+        setDeck which drawnDeck $ setHand which (card : hand) model
       Nothing ->
-        Nothing
+        model
   where
     drawnCard :: Maybe Card
     drawnCard = headMay deck
@@ -191,42 +206,42 @@ drawCard which model@(Model turn stack handPA handPB deckPA deckPB lifePA lifePB
     hand = getHand which model
 
 -- Make safer.
-endTurn :: WhichPlayer -> Model -> Maybe GameState
-endTurn which model@(Model turn stack handPA handPB deckPA deckPB lifePA lifePB passes res gen)
-  | turn /= which = Nothing
-  | handFull = Nothing
+endTurn :: WhichPlayer -> Model -> GameState
+endTurn which model@(Model turn stack handPA handPB deckPA deckPB lifePA lifePB hoverPA hoverPB passes res gen)
+  | turn /= which = Playing model
+  | handFull = Playing model
   | otherwise =
     case bothPassed of
       True ->
         case resolveAll (Playing model) of
           Playing m ->
-            Playing <$> (drawCards $ resetPasses $ swapTurn m)
+            Playing $ drawCards $ resetPasses $ swapTurn m
           s ->
-            Just s
-      False -> Just $ Playing $ swapTurn $ model
+            s
+      False -> Playing $ swapTurn model
   where
     bothPassed :: Bool
     bothPassed = passes == OnePass
     handFull ::  Bool
     handFull = (length (getHand which model)) == handMaxLength
-    drawCards :: Model -> Maybe Model
-    drawCards m = Just m >>? drawCard PlayerA >>? drawCard PlayerB
+    drawCards :: Model -> Model
+    drawCards m = (drawCard PlayerA) . (drawCard PlayerB) $ m
 
-
--- If a computation fails, ignore it.
-(>>?) :: (MonadPlus m) => m a -> (a -> m a) -> m a
-(>>?) x f = mplus (x >>= f) x
 
 -- Apply a function n times.
 times :: Int -> (a -> a) -> a -> a
 times n f x = (iterate f x) !! n
 
 -- In future, tag cards in hand with a uid and use that.
-playCard :: CardName -> WhichPlayer -> Model -> Maybe Model
-playCard name which model@(Model turn stack handPA handPB deckPA deckPB lifePA lifePB passes res gen)
-  | turn /= which = Nothing
+playCard :: CardName -> WhichPlayer -> Model -> Model
+playCard name which model@(Model turn stack handPA handPB deckPA deckPB lifePA lifePB hoverPA hoverPB passes res gen)
+  | turn /= which = model
   | otherwise =
-    card *> (Just (resetPasses $ swapTurn $ setStack ((maybeToList card) ++ stack) $ setHand which newHand model))
+    case card of
+      Just c ->
+        resetPasses $ swapTurn $ modStack ((:) c) $ setHand which newHand model
+      Nothing ->
+        model
   where
     hand :: Hand
     hand = getHand which model
@@ -236,17 +251,23 @@ playCard name which model@(Model turn stack handPA handPB deckPA deckPB lifePA l
     card :: Maybe StackCard
     card = (StackCard which) <$> (headMay matches)
 
+hoverCard :: CardName -> WhichPlayer -> Model -> Model
+hoverCard name which model = setHover which cardIndex model
+  where
+    cardIndex :: Maybe Int
+    cardIndex = findIndex (\(Card n _ _ _) -> n == name) (getHand which model)
+
 swapTurn :: Model -> Model
-swapTurn model@(Model turn stack handPA handPB deckPA deckPB lifePA lifePB passes res gen) =
-  Model (otherTurn turn) stack handPA handPB deckPA deckPB lifePA lifePB (incPasses passes) res gen
+swapTurn model@(Model turn stack handPA handPB deckPA deckPB lifePA lifePB hoverPA hoverPB passes res gen) =
+  Model (otherTurn turn) stack handPA handPB deckPA deckPB lifePA lifePB hoverPA hoverPB (incPasses passes) res gen
 
 incPasses :: Passes -> Passes
 incPasses NoPass = OnePass
 incPasses OnePass = NoPass
 
 resetPasses :: Model -> Model
-resetPasses (Model turn stack handPA handPB deckPA deckPB lifePA lifePB passes res gen) =
-  Model turn stack handPA handPB deckPA deckPB lifePA lifePB NoPass res gen
+resetPasses (Model turn stack handPA handPB deckPA deckPB lifePA lifePB hoverPA hoverPB passes res gen) =
+  Model turn stack handPA handPB deckPA deckPB lifePA lifePB hoverPA hoverPB NoPass res gen
 
 otherTurn :: Turn -> Turn
 otherTurn PlayerA = PlayerB
@@ -257,32 +278,32 @@ otherPlayer = otherTurn
 
 -- RNG GEN.
 getGen :: Model -> StdGen
-getGen (Model _ _ _ _ _ _ _ _ _ _ gen) = gen
+getGen (Model _ _ _ _ _ _ _ _ _ _ _ _ gen) = gen
 
 -- LIFE.
 getLife :: WhichPlayer -> Model -> Life
-getLife PlayerA (Model _ _ _ _ _ _ lifePA _ _ _ _) = lifePA
-getLife PlayerB (Model _ _ _ _ _ _ _ lifePB _ _ _) = lifePB
+getLife PlayerA (Model _ _ _ _ _ _ lifePA _ _ _ _ _ _) = lifePA
+getLife PlayerB (Model _ _ _ _ _ _ _ lifePB _ _ _ _ _) = lifePB
 
 setLife :: WhichPlayer -> Life -> Model -> Model
-setLife PlayerA newLife (Model turn stack handPA handPB deckPA deckPB lifePA lifePB passes res gen) =
-  Model turn stack handPA handPB deckPA deckPB newLife lifePB passes res gen
-setLife PlayerB newLife (Model turn stack handPA handPB deckPA deckPB lifePA lifePB passes res gen) =
-  Model turn stack handPA handPB deckPA deckPB lifePA newLife passes res gen
+setLife PlayerA newLife (Model turn stack handPA handPB deckPA deckPB lifePA lifePB hoverPA hoverPB passes res gen) =
+  Model turn stack handPA handPB deckPA deckPB newLife lifePB hoverPA hoverPB passes res gen
+setLife PlayerB newLife (Model turn stack handPA handPB deckPA deckPB lifePA lifePB hoverPA hoverPB passes res gen) =
+  Model turn stack handPA handPB deckPA deckPB lifePA newLife hoverPA hoverPB passes res gen
 
 modLife :: (Life -> Life) -> WhichPlayer -> Model -> Model
 modLife f p m = setLife p (f (getLife p m)) m
 
 -- HAND.
 getHand :: WhichPlayer -> Model -> Hand
-getHand PlayerA (Model _ _ handPA handPB _ _ _ _ _ _ _) = handPA
-getHand PlayerB (Model _ _ handPA handPB _ _ _ _ _ _ _) = handPB
+getHand PlayerA (Model _ _ handPA handPB _ _ _ _ _ _ _ _ _) = handPA
+getHand PlayerB (Model _ _ handPA handPB _ _ _ _ _ _ _ _ _) = handPB
 
 setHand :: WhichPlayer -> Hand -> Model -> Model
-setHand PlayerA newHand (Model turn stack handPA handPB deckPA deckPB lifePA lifePB passes res gen) =
-  Model turn stack newHand handPB deckPA deckPB lifePA lifePB passes res gen
-setHand PlayerB newHand (Model turn stack handPA handPB deckPA deckPB lifePA lifePB passes res gen) =
-  Model turn stack handPA newHand deckPA deckPB lifePA lifePB passes res gen
+setHand PlayerA newHand (Model turn stack handPA handPB deckPA deckPB lifePA lifePB hoverPA hoverPB passes res gen) =
+  Model turn stack newHand handPB deckPA deckPB lifePA lifePB hoverPA hoverPB passes res gen
+setHand PlayerB newHand (Model turn stack handPA handPB deckPA deckPB lifePA lifePB hoverPA hoverPB passes res gen) =
+  Model turn stack handPA newHand deckPA deckPB lifePA lifePB hoverPA hoverPB passes res gen
 
 mapHand :: (Hand -> a) -> WhichPlayer -> Model -> a
 mapHand f p m = f (getHand p m)
@@ -298,14 +319,14 @@ addToHand card hand
 
 -- DECK.
 getDeck :: WhichPlayer -> Model -> Deck
-getDeck PlayerA (Model _ _ _ _ deckPA deckPB _ _ _ _ _) = deckPA
-getDeck PlayerB (Model _ _ _ _ deckPA deckPB _ _ _ _ _) = deckPB
+getDeck PlayerA (Model _ _ _ _ deckPA deckPB _ _ _ _ _ _ _) = deckPA
+getDeck PlayerB (Model _ _ _ _ deckPA deckPB _ _ _ _ _ _ _) = deckPB
 
 setDeck :: WhichPlayer -> Deck -> Model -> Model
-setDeck PlayerA newDeck (Model turn stack handPA handPB deckPA deckPB lifePA lifePB passes res gen) =
-  Model turn stack handPA handPB newDeck deckPB lifePA lifePB passes res gen
-setDeck PlayerB newDeck (Model turn stack handPA handPB deckPA deckPB lifePA lifePB passes res gen) =
-  Model turn stack handPA handPB deckPA newDeck lifePA lifePB passes res gen
+setDeck PlayerA newDeck (Model turn stack handPA handPB deckPA deckPB lifePA lifePB hoverPA hoverPB passes res gen) =
+  Model turn stack handPA handPB newDeck deckPB lifePA lifePB hoverPA hoverPB passes res gen
+setDeck PlayerB newDeck (Model turn stack handPA handPB deckPA deckPB lifePA lifePB hoverPA hoverPB passes res gen) =
+  Model turn stack handPA handPB deckPA newDeck lifePA lifePB hoverPA hoverPB passes res gen
 
 mapDeck :: (Deck -> a) -> WhichPlayer -> Model -> a
 mapDeck f p m = f (getDeck p m)
@@ -323,11 +344,11 @@ modDeckHead f p m =
 
 -- STACK.
 getStack :: Model -> Stack
-getStack (Model _ stack _ _ _ _ _ _ _ _ _) = stack
+getStack (Model _ stack _ _ _ _ _ _ _ _ _ _ _) = stack
 
 setStack :: Stack -> Model -> Model
-setStack newStack (Model turn stack handPA handPB deckPA deckPB lifePA lifePB passes res gen) =
-  Model turn newStack handPA handPB deckPA deckPB lifePA lifePB passes res gen
+setStack newStack (Model turn stack handPA handPB deckPA deckPB lifePA lifePB hoverPA hoverPB passes res gen) =
+  Model turn newStack handPA handPB deckPA deckPB lifePA lifePB hoverPA hoverPB passes res gen
 
 mapStack :: (Stack -> a) -> Model -> a
 mapStack f m = f (getStack m)
@@ -346,9 +367,20 @@ modStackHead f m =
 modStackAll :: (StackCard -> StackCard) -> Model -> Model
 modStackAll f m = modStack (fmap f) m
 
+-- HOVER CARD.
+getHover :: WhichPlayer -> Model -> HoverCardIndex
+getHover PlayerA (Model _ _ _ _ _ _ _ _ hoverPA hoverPB _ _ _) = hoverPA
+getHover PlayerB (Model _ _ _ _ _ _ _ _ hoverPA hoverPB _ _ _) = hoverPB
+
+setHover :: WhichPlayer -> HoverCardIndex -> Model -> Model
+setHover PlayerA hoverPA (Model turn stack handPA handPB deckPA deckPB lifePA lifePB _ hoverPB passes res gen) =
+  (Model turn stack handPA handPB deckPA deckPB lifePA lifePB hoverPA hoverPB passes res gen)
+setHover PlayerB hoverPB (Model turn stack handPA handPB deckPA deckPB lifePA lifePB hoverPA _ passes res gen) =
+  (Model turn stack handPA handPB deckPA deckPB lifePA lifePB hoverPA hoverPB passes res gen)
+
 -- RESOLVING.
 resolveOne :: GameState -> GameState
-resolveOne (Playing model@(Model turn stack handPA handPB deckPA deckPB lifePA lifePB passes res gen)) =
+resolveOne (Playing model@(Model turn stack handPA handPB deckPA deckPB lifePA lifePB hoverPA hoverPB passes res gen)) =
   rememberRes model $ lifeGate $ Playing (eff (modStack tailSafe model))
   where
     eff :: Model -> Model
@@ -356,16 +388,16 @@ resolveOne (Playing model@(Model turn stack handPA handPB deckPA deckPB lifePA l
       Nothing -> id
       Just (StackCard p (Card _ _ _ effect)) -> effect p
     lifeGate :: GameState -> GameState
-    lifeGate s@(Playing m@(Model _ _ _ _ _ _ lifePA lifePB _ _ _))
-      | (lifePA <= 0) && (lifePB <= 0) = Draw gen
-      | lifePB <= 0 = Victory PlayerA gen
-      | lifePA <= 0 = Victory PlayerB gen
+    lifeGate s@(Playing m@(Model _ _ _ _ _ _ lifePA lifePB _ _ _ res _))
+      | (lifePA <= 0) && (lifePB <= 0) = Draw gen res
+      | lifePB <= 0 = Victory PlayerA gen res
+      | lifePA <= 0 = Victory PlayerB gen res
       | otherwise = Playing (maxLifeGate m)
     lifeGate x = x
     maxLifeGate :: Model -> Model
-    maxLifeGate m@(Model _ _ _ _ _ _ lifePA lifePB _ _ _) =
-      setLife PlayerA (min lifeMax lifePA) $
-        setLife PlayerB (min lifeMax lifePB) m
+    maxLifeGate m =
+      setLife PlayerA (min lifeMax (getLife PlayerA m)) $
+        setLife PlayerB (min lifeMax (getLife PlayerB m)) m
 resolveOne x = x
 
 resolveAll :: GameState -> GameState
@@ -376,8 +408,12 @@ resolveAll state@(Playing model) =
 resolveAll x = x
 
 rememberRes :: Model -> GameState -> GameState
-rememberRes r (Playing m@(Model turn stack handPA handPB deckPA deckPB lifePA lifePB passes res gen)) =
-  (Playing (Model turn stack handPA handPB deckPA deckPB lifePA lifePB passes (res ++ [resetResModel r]) gen))
+rememberRes r (Playing m@(Model turn stack handPA handPB deckPA deckPB lifePA lifePB hoverPA hoverPB passes res gen)) =
+  (Playing (Model turn stack handPA handPB deckPA deckPB lifePA lifePB hoverPA hoverPB passes (res ++ [resetResModel r]) gen))
+rememberRes r (Victory p gen res) =
+  Victory p gen (res ++ [resetResModel r])
+rememberRes r (Draw gen res) =
+  Draw gen (res ++ [resetResModel r])
 rememberRes r x = x
 
 resetRes :: GameState -> GameState
@@ -385,8 +421,8 @@ resetRes (Playing m) = Playing (resetResModel m)
 resetRes x = x
 
 resetResModel :: Model -> Model
-resetResModel (Model turn stack handPA handPB deckPA deckPB lifePA lifePB passes res gen) =
-  (Model turn stack handPA handPB deckPA deckPB lifePA lifePB passes [] gen)
+resetResModel (Model turn stack handPA handPB deckPA deckPB lifePA lifePB hoverPA hoverPB passes res gen) =
+  (Model turn stack handPA handPB deckPA deckPB lifePA lifePB hoverPA hoverPB passes [] gen)
 
 -- ACTIONS
 hurt :: Life -> WhichPlayer -> Model -> Model
@@ -493,7 +529,7 @@ cardProphecy = Card "Prophecy" "Return all cards to the right to their owner's h
 
 
 cardSiren :: Card
-cardSiren = Card "Siren" "Give your opponent two cards that hurt them for 8 damage" "harpy.svg" eff
+cardSiren = Card "Siren" "Your opponent gets two cards that hurt them for 8 damage when played" "harpy.svg" eff
   where
     eff :: CardEff
     eff p m = modHand (times 2 (addToHand cardSong)) (otherPlayer p) m
@@ -517,10 +553,10 @@ cardSickness = Card "Sickness" "Make all cards to the right's healing hurt inste
       hurt (max 0 (((getLife which m2) - (getLife which m1)) * 2)) which m2
 
 cardOffering :: Card
-cardOffering = Card "Offering" "Half your life, then draw two cards" "chalice-drops.svg" eff
+cardOffering = Card "Offering" "Discard your hand, then draw two cards" "chalice-drops.svg" eff
   where
     eff :: CardEff
-    eff p m = fromJust $ Just (hurt ((getLife p m) `quot` 2) p m) >>? drawCard p >>? drawCard p -- Dangerous
+    eff p m = (drawCard p) . (drawCard p) $ setHand p [] m
 
 cardGoatFlute :: Card
 cardGoatFlute = Card "Goat Flute" "Both players get two useless goats" "pan-flute.svg" eff
@@ -544,4 +580,4 @@ cardObscurer = Card "Obscurer" "Hurt for 4 and obscure the next card your oppone
     eff :: CardEff
     eff p m = hurt 4 (otherPlayer p) $ modDeckHead obs (otherPlayer p) m
     obs :: Card -> Card
-    obs card = Card "???" "An obscured card" "present.svg" (\p -> modStack ((:) (StackCard p card)))
+    obs card = Card "???" "An obscured card" "sight-disabled.svg" (\p -> modStack ((:) (StackCard p card)))
