@@ -212,7 +212,7 @@ endTurn which model@(Model turn stack handPA handPB deckPA deckPB lifePA lifePB 
   | otherwise =
     case bothPassed of
       True ->
-        case resolveAll (Playing model) of
+        case resolveAll model of
           Playing m ->
             Playing $ drawCards $ resetPasses $ swapTurn m
           s ->
@@ -381,11 +381,16 @@ setHover PlayerB hoverPB (Model turn stack handPA handPB deckPA deckPB lifePA li
   (Model turn stack handPA handPB deckPA deckPB lifePA lifePB hoverPA hoverPB passes res gen)
 
 -- RESOLVING.
-resolveAll :: GameState -> GameState
-resolveAll state@(Playing model) =
+resolveAll :: Model -> GameState
+resolveAll model =
   case null (getStack model) of
-    True -> state
-    False -> resolveAll $ resolveOne model
+    True -> Playing model
+    False ->
+      case resolveOne model of
+        Playing newModel ->
+          resolveAll newModel
+        state ->
+          state
   where
     resolveOne :: Model -> GameState
     resolveOne model =
