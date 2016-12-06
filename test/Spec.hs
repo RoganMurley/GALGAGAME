@@ -8,6 +8,10 @@ import GameState
 
 isEq = assertEqual ""
 
+resolveState :: GameState -> GameState
+resolveState (Playing model) = resolveAll model
+resolveState s = s
+
 
 main :: IO ()
 main = defaultMain $
@@ -47,7 +51,7 @@ cardDaggerTests =
   testGroup "Dagger Card"
     [
       testCase "Should hurt for 8" $
-        case resolveAll state of
+        case resolveState state of
           Playing model -> do
             isEq (getLife PlayerA model) maxLife
             isEq (getLife PlayerB model) (maxLife - 8)
@@ -64,7 +68,7 @@ cardHubrisTests =
   testGroup "Hubris Card"
     [
       testCase "Should negate everything to the right" $
-        case resolveAll state of
+        case resolveState state of
           Playing model -> do
             isEq (getLife PlayerA model) maxLife
             isEq (getLife PlayerB model) maxLife
@@ -89,7 +93,7 @@ cardFireballTests =
   testGroup "Fireball Card"
     [
       testCase "Should hurt for four for everything to the right" $
-        case resolveAll state of
+        case resolveState state of
           Playing model -> do
             isEq (getLife PlayerA model) maxLife
             isEq (getLife PlayerB model) (maxLife - 16)
