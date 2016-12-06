@@ -12,6 +12,8 @@ import Safe (headMay, tailSafe)
 import System.Random (StdGen, split)
 import System.Random.Shuffle (shuffle')
 
+import Util (times)
+
 
 data GameState = Waiting StdGen | Playing Model | Victory WhichPlayer StdGen ResolveList | Draw StdGen ResolveList
 
@@ -100,11 +102,11 @@ data GameCommand =
 handMaxLength :: Int
 handMaxLength = 6
 
-lifeMax :: Life
-lifeMax = 50
+maxLife :: Life
+maxLife = 50
 
 initModel :: Turn -> StdGen -> Model
-initModel turn gen = Model turn [] handPA handPB deckPA deckPB lifeMax lifeMax Nothing Nothing NoPass [] gen
+initModel turn gen = Model turn [] handPA handPB deckPA deckPB maxLife maxLife Nothing Nothing NoPass [] gen
   where
     (genPA, genPB) = split gen :: (StdGen, StdGen)
     initDeckPA = shuffle' initDeck (length initDeck) genPA :: Deck
@@ -226,11 +228,6 @@ endTurn which model@(Model turn stack handPA handPB deckPA deckPB lifePA lifePB 
     handFull = (length (getHand which model)) == handMaxLength
     drawCards :: Model -> Model
     drawCards m = (drawCard PlayerA) . (drawCard PlayerB) $ m
-
-
--- Apply a function n times.
-times :: Int -> (a -> a) -> a -> a
-times n f x = (iterate f x) !! n
 
 -- In future, tag cards in hand with a uid and use that.
 playCard :: CardName -> WhichPlayer -> Model -> Model
@@ -396,8 +393,8 @@ resolveOne model@(Model turn stack handPA handPB deckPA deckPB lifePA lifePB hov
     lifeGate x = x
     maxLifeGate :: Model -> Model
     maxLifeGate m =
-      setLife PlayerA (min lifeMax (getLife PlayerA m)) $
-        setLife PlayerB (min lifeMax (getLife PlayerB m)) m
+      setLife PlayerA (min maxLife (getLife PlayerA m)) $
+        setLife PlayerB (min maxLife (getLife PlayerB m)) m
 
 resolveAll :: GameState -> GameState
 resolveAll state@(Playing model) =
