@@ -388,20 +388,21 @@ resolveAll state@(Playing model) =
     False -> resolveAll $ resolveOne model
   where
     resolveOne :: Model -> GameState
-    resolveOne model@(Model turn stack handPA handPB deckPA deckPB lifePA lifePB hoverPA hoverPB passes res gen) =
-      rememberRes model $ lifeGate $ Playing (eff (modStack tailSafe model))
+    resolveOne model =
+      rememberRes model $ lifeGate $ eff $ modStack tailSafe model
       where
+        stack = getStack model :: Stack
+        gen = getGen model :: StdGen
         eff :: Model -> Model
         eff = case headMay stack of
           Nothing -> id
           Just (StackCard p (Card _ _ _ effect)) -> effect p
-        lifeGate :: GameState -> GameState
-        lifeGate s@(Playing m@(Model _ _ _ _ _ _ lifePA lifePB _ _ _ res _))
+        lifeGate :: Model -> GameState
+        lifeGate m@(Model _ _ _ _ _ _ lifePA lifePB _ _ _ res _)
           | (lifePA <= 0) && (lifePB <= 0) = Draw gen res
           | lifePB <= 0 = Victory PlayerA gen res
           | lifePA <= 0 = Victory PlayerB gen res
           | otherwise = Playing (maxLifeGate m)
-        lifeGate x = x
         maxLifeGate :: Model -> Model
         maxLifeGate m =
           setLife PlayerA (min maxLife (getLife PlayerA m)) $
