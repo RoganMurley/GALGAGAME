@@ -49,8 +49,8 @@ cardDaggerTests =
       testCase "Should hurt for 8" $
         case resolveAll state of
           Playing model -> do
-            isEq (getLife PlayerA model) lifeMax
-            isEq (getLife PlayerB model) (lifeMax - 8)
+            isEq (getLife PlayerA model) maxLife
+            isEq (getLife PlayerB model) (maxLife - 8)
           otherwise ->
             assertFailure "Incorrect state"
     ]
@@ -66,8 +66,8 @@ cardHubrisTests =
       testCase "Should negate everything to the right" $
         case resolveAll state of
           Playing model -> do
-            isEq (getLife PlayerA model) lifeMax
-            isEq (getLife PlayerB model) lifeMax
+            isEq (getLife PlayerA model) maxLife
+            isEq (getLife PlayerB model) maxLife
           otherwise ->
             assertFailure "Incorrect state"
     ]
@@ -91,8 +91,8 @@ cardFireballTests =
       testCase "Should hurt for four for everything to the right" $
         case resolveAll state of
           Playing model -> do
-            isEq (getLife PlayerA model) lifeMax
-            isEq (getLife PlayerB model) (lifeMax - 16)
+            isEq (getLife PlayerA model) maxLife
+            isEq (getLife PlayerB model) (maxLife - 16)
           otherwise ->
             assertFailure "Incorrect state"
     ]
