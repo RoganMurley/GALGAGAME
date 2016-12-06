@@ -66,7 +66,7 @@ type alias Life =
     Int
 
 
-type alias HoverCard =
+type alias HoverCardIndex =
     Maybe Int
 
 
@@ -170,7 +170,7 @@ viewHand hand =
         div [ class "hand my-hand" ] (List.map viewCard hand)
 
 
-viewOtherHand : Int -> HoverCard -> Html Msg
+viewOtherHand : Int -> HoverCardIndex -> Html Msg
 viewOtherHand cardCount hoverIndex =
     let
         viewCard : Int -> Html Msg
