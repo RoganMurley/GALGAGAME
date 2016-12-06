@@ -36,6 +36,7 @@ cardTests =
     [
       cardDaggerTests
     , cardHubrisTests
+    , cardFireballTests
     ]
 
 
