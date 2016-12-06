@@ -161,15 +161,15 @@ modelReverso (Model turn stack handPA handPB deckPA deckPB lifePA lifePB hoverPA
 
 update :: GameCommand -> WhichPlayer -> GameState -> GameState
 update cmd which state =
-  case resetRes state of
+  case state of
     (Playing model) ->
       case cmd of
         EndTurn ->
-          endTurn which model
+          endTurn which (resetRes model)
         PlayCard name ->
-          Playing (playCard name which model)
+          Playing (playCard name which (resetRes model))
         HoverCard name ->
-          Playing (hoverCard name which model)
+          Playing (hoverCard name which (resetRes model))
     (Victory winner gen res) ->
       case cmd of
         Rematch ->
@@ -409,20 +409,15 @@ resolveAll state@(Playing model) =
 
     rememberRes :: Model -> GameState -> GameState
     rememberRes r (Playing m@(Model turn stack handPA handPB deckPA deckPB lifePA lifePB hoverPA hoverPB passes res gen)) =
-      (Playing (Model turn stack handPA handPB deckPA deckPB lifePA lifePB hoverPA hoverPB passes (res ++ [resetResModel r]) gen))
+      (Playing (Model turn stack handPA handPB deckPA deckPB lifePA lifePB hoverPA hoverPB passes (res ++ [resetRes r]) gen))
     rememberRes r (Victory p gen res) =
-      Victory p gen (res ++ [resetResModel r])
+      Victory p gen (res ++ [resetRes r])
     rememberRes r (Draw gen res) =
-      Draw gen (res ++ [resetResModel r])
+      Draw gen (res ++ [resetRes r])
     rememberRes r x = x
 
-resetRes :: GameState -> GameState
-resetRes (Playing m) = Playing (resetResModel m)
-  where
-resetRes x = x
-
-resetResModel :: Model -> Model
-resetResModel (Model turn stack handPA handPB deckPA deckPB lifePA lifePB hoverPA hoverPB passes res gen) =
+resetRes :: Model -> Model
+resetRes (Model turn stack handPA handPB deckPA deckPB lifePA lifePB hoverPA hoverPB passes res gen) =
   (Model turn stack handPA handPB deckPA deckPB lifePA lifePB hoverPA hoverPB passes [] gen)
 
 -- ACTIONS
