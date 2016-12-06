@@ -45,6 +45,7 @@ test-suite vanagloria-test
   hs-source-dirs:      test
   main-is:             Spec.hs
   build-depends:       base
+                     , random
                      , tasty
                      , tasty-hunit
                      , vanagloria

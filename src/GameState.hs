@@ -379,8 +379,8 @@ setHover PlayerB hoverPB (Model turn stack handPA handPB deckPA deckPB lifePA li
   (Model turn stack handPA handPB deckPA deckPB lifePA lifePB hoverPA hoverPB passes res gen)
 
 -- RESOLVING.
-resolveOne :: GameState -> GameState
-resolveOne (Playing model@(Model turn stack handPA handPB deckPA deckPB lifePA lifePB hoverPA hoverPB passes res gen)) =
+resolveOne :: Model -> GameState
+resolveOne model@(Model turn stack handPA handPB deckPA deckPB lifePA lifePB hoverPA hoverPB passes res gen) =
   rememberRes model $ lifeGate $ Playing (eff (modStack tailSafe model))
   where
     eff :: Model -> Model
@@ -398,14 +398,12 @@ resolveOne (Playing model@(Model turn stack handPA handPB deckPA deckPB lifePA l
     maxLifeGate m =
       setLife PlayerA (min lifeMax (getLife PlayerA m)) $
         setLife PlayerB (min lifeMax (getLife PlayerB m)) m
-resolveOne x = x
 
 resolveAll :: GameState -> GameState
 resolveAll state@(Playing model) =
   case null (getStack model) of
     True -> state
-    False -> resolveAll $ resolveOne state
-resolveAll x = x
+    False -> resolveAll $ resolveOne model
 
 rememberRes :: Model -> GameState -> GameState
 rememberRes r (Playing m@(Model turn stack handPA handPB deckPA deckPB lifePA lifePB hoverPA hoverPB passes res gen)) =
