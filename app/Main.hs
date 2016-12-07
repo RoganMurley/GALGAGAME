@@ -4,15 +4,13 @@ module Main where
 import Prelude hiding (lookup)
 
 import Data.Aeson (encode)
-import Data.Char (isPunctuation, isSpace)
 import Data.Map.Strict (Map, delete, empty, insert, lookup)
-import Data.Maybe (fromJust, fromMaybe, isJust, isNothing, maybeToList)
 import Data.Monoid ((<>))
 import Data.String.Conversions (cs)
 import Data.Text (Text)
 import Control.Exception (finally)
 import Control.Monad (forM_, forever)
-import Control.Concurrent (MVar, newMVar, modifyMVar_, modifyMVar, putMVar, readMVar, takeMVar)
+import Control.Concurrent (MVar, newMVar, modifyMVar, readMVar)
 import System.Random (StdGen, getStdGen)
 
 import qualified Data.Text as T
