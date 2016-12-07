@@ -179,7 +179,7 @@ resolveAll model =
         eff :: Model -> Model
         eff = case headMay stack of
           Nothing -> id
-          Just (StackCard p (Card _ _ _ effect)) -> effect p
+          Just (StackCard p c@(Card _ _ _ effect)) -> effect p c
         lifeGate :: Model -> GameState
         lifeGate m@(Model _ _ _ _ _ _ lifePA lifePB _ _ _ res _)
           | (lifePA <= 0) && (lifePB <= 0) = Draw gen res

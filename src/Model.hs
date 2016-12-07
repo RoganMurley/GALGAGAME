@@ -15,7 +15,7 @@ data Card = Card CardName CardDesc CardImgURL CardEff
 type CardName = Text
 type CardDesc = Text
 type CardImgURL = Text
-type CardEff = (WhichPlayer -> Model -> Model)
+type CardEff = (WhichPlayer -> Card -> Model -> Model)
 
 type Hand = [Card]
 type Deck = [Card]
