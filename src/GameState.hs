@@ -3,10 +3,10 @@ module GameState where
 import Data.Aeson (ToJSON(..), (.=), object)
 import Safe (headMay, tailSafe)
 import System.Random (StdGen, split)
-import System.Random.Shuffle (shuffle')
 
 import Cards
 import Model
+import Util (shuffle)
 
 
 data GameState =
@@ -48,9 +48,9 @@ initModel :: Turn -> StdGen -> Model
 initModel turn gen = Model turn [] handPA handPB deckPA deckPB maxLife maxLife Nothing Nothing NoPass [] gen
   where
     (genPA, genPB) = split gen :: (StdGen, StdGen)
-    initDeckPA = shuffle' initDeck (length initDeck) genPA :: Deck
+    initDeckPA = shuffle initDeck genPA :: Deck
     (handPA, deckPA) = splitAt 4 initDeckPA :: (Hand, Deck)
-    initDeckPB = shuffle' initDeck (length initDeck) genPB :: Deck
+    initDeckPB = shuffle initDeck genPB :: Deck
     (handPB, deckPB) = splitAt 4 initDeckPB :: (Hand, Deck)
 
 

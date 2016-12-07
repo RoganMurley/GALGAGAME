@@ -1,10 +1,9 @@
 module Cards where
 
 import Data.Monoid ((<>))
-import System.Random.Shuffle (shuffle')
 
 import Model
-import Util (times)
+import Util (shuffle, times)
 
 
 cardDagger :: Card
@@ -137,7 +136,7 @@ cardConfound :: Card
 cardConfound = Card "Confound" "Shuffle the order of cards to the right" "moebius-star.svg" eff
   where
     eff :: CardEff
-    eff _ _ m = modStack (\s -> shuffle' s (length s) (getGen m)) m
+    eff _ _ m = modStack (\s -> shuffle s (getGen m)) m
 
 
 cardObscurer :: Card
