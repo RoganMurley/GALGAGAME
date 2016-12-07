@@ -20,7 +20,8 @@ import qualified Data.Text.Encoding as T
 import qualified Data.Text.IO as T
 import qualified Network.WebSockets as WS
 
-import GameState (CardName, GameCommand(..), GameState(..), WhichPlayer(..), reverso, update)
+import Model (CardName, WhichPlayer(..))
+import GameState (GameCommand(..), GameState(..), reverso, update)
 import Room
 
 

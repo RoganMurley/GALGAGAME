@@ -4,6 +4,8 @@ import Test.Tasty.HUnit
 
 import System.Random (mkStdGen, StdGen)
 
+import Cards
+import Model
 import GameState
 
 isEq = assertEqual ""

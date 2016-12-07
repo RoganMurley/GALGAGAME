@@ -6,7 +6,8 @@ import Data.Text (Text)
 import Network.WebSockets (Connection)
 import System.Random (StdGen)
 
-import GameState (initModel, GameState(..), WhichPlayer(..))
+import GameState (initModel, GameState(..))
+import Model (WhichPlayer(..))
 
 
 --TYPES
