@@ -1,6 +1,5 @@
 module GameState where
 
-import Control.Applicative ((<$>))
 import Data.Aeson (ToJSON(..), (.=), object)
 import Safe (headMay, tailSafe)
 import System.Random (StdGen, split)
@@ -26,12 +25,12 @@ instance ToJSON GameState where
     object [
       "playing" .= toJSON model
     ]
-  toJSON (Victory which gen res) =
+  toJSON (Victory which _ res) =
     object [
       "victory" .= which
     , "res"     .= res
     ]
-  toJSON (Draw gen res) =
+  toJSON (Draw _ res) =
     object [
       "draw" .= True
     , "res"  .= res
@@ -91,7 +90,7 @@ reverso (Waiting gen) = Waiting gen
 update :: GameCommand -> WhichPlayer -> GameState -> GameState
 update cmd which state =
   case state of
-    (Playing model) ->
+    Playing model ->
       case cmd of
         EndTurn ->
           endTurn which (resetRes model)
@@ -99,20 +98,22 @@ update cmd which state =
           Playing (playCard name which (resetRes model))
         HoverCard name ->
           Playing (hoverCard name which (resetRes model))
-    (Victory winner gen res) ->
+        _ ->
+          Playing model
+    Victory winner gen res ->
       case cmd of
         Rematch ->
           Playing $ initModel winner (fst (split gen))
-        x ->
+        _ ->
           Victory winner gen res
-    (Draw gen res) ->
+    Draw gen res ->
       case cmd of
         Rematch ->
           Playing $ initModel PlayerA (fst (split gen))
-        x ->
+        _ ->
           Draw gen res
-    x ->
-      x
+    s ->
+      s
 
 -- Make safer.
 endTurn :: WhichPlayer -> Model -> GameState
@@ -149,31 +150,39 @@ resolveAll model =
           state
   where
     resolveOne :: Model -> GameState
-    resolveOne model =
-      rememberRes model $ lifeGate $ eff $ modStack tailSafe model
+    resolveOne m =
+      rememberRes m $ lifeGate $ eff $ modStack tailSafe model
       where
         stack = getStack model :: Stack
-        gen = getGen model :: StdGen
         eff :: Model -> Model
         eff = case headMay stack of
           Nothing -> id
           Just (StackCard p c@(Card _ _ _ effect)) -> effect p c
-        lifeGate :: Model -> GameState
-        lifeGate m@(Model _ _ _ _ _ _ lifePA lifePB _ _ _ res _)
-          | (lifePA <= 0) && (lifePB <= 0) = Draw gen res
-          | lifePB <= 0 = Victory PlayerA gen res
-          | lifePA <= 0 = Victory PlayerB gen res
-          | otherwise = Playing (maxLifeGate m)
-        maxLifeGate :: Model -> Model
-        maxLifeGate m =
-          setLife PlayerA (min maxLife (getLife PlayerA m)) $
-            setLife PlayerB (min maxLife (getLife PlayerB m)) m
 
     rememberRes :: Model -> GameState -> GameState
-    rememberRes r (Playing m@(Model turn stack handPA handPB deckPA deckPB lifePA lifePB hoverPA hoverPB passes res gen)) =
+    rememberRes r (Playing (Model turn stack handPA handPB deckPA deckPB lifePA lifePB hoverPA hoverPB passes res gen)) =
       (Playing (Model turn stack handPA handPB deckPA deckPB lifePA lifePB hoverPA hoverPB passes (res ++ [resetRes r]) gen))
     rememberRes r (Victory p gen res) =
       Victory p gen (res ++ [resetRes r])
     rememberRes r (Draw gen res) =
       Draw gen (res ++ [resetRes r])
-    rememberRes r x = x
+    rememberRes _ x = x
+
+
+lifeGate :: Model -> GameState
+lifeGate model
+  | lifePA <= 0 && lifePB <= 0 =
+    Draw gen res
+  | lifePB <= 0 =
+    Victory PlayerA gen res
+  | lifePA <= 0 =
+    Victory PlayerB gen res
+  | otherwise =
+    Playing $
+      setLife PlayerA (min maxLife lifePA) $
+        setLife PlayerB (min maxLife lifePB) model
+  where
+    gen = getGen model :: StdGen
+    lifePA = getLife PlayerA model :: Life
+    lifePB = getLife PlayerB model :: Life
+    res = getRes model :: ResolveList

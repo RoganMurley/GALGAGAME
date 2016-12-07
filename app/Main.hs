@@ -11,11 +11,9 @@ import Data.Text (Text)
 import Control.Exception (finally)
 import Control.Monad (forM_, forever)
 import Control.Concurrent (MVar, newMVar, modifyMVar, readMVar)
-import System.Random (StdGen, getStdGen)
+import System.Random (getStdGen)
 
 import qualified Data.Text as T
-import qualified Data.Text.Encoding as T
-import qualified Data.Text.IO as T
 import qualified Network.WebSockets as WS
 
 import Model (CardName, WhichPlayer(..))
@@ -61,11 +59,9 @@ deleteRoom name state =
 stateUpdate :: GameCommand -> WhichPlayer -> MVar Room -> IO (Room)
 stateUpdate cmd which room =
   modifyMVar room $ \r ->
-    let newRoom = gameUpdate cmd r in return (newRoom, newRoom)
+    let r' = updateRoom r in return (r', r')
   where
-    gameUpdate :: GameCommand -> Room -> Room
-    gameUpdate cmd (Room pa pb specs state) =
-      Room pa pb specs (update cmd which state)
+    updateRoom (Room pa pb specs state) = Room pa pb specs (update cmd which state)
 
 addSpecClient :: Client -> MVar Room -> IO (Room)
 addSpecClient client room =
@@ -94,14 +90,10 @@ broadcast msg room = do
 sendToPlayer :: WhichPlayer -> Text -> Room -> IO ()
 sendToPlayer which msg room =
   case getPlayerClient which room of
-    Just (_, conn) -> do
-      -- T.putStrLn $ "Send to " <> whichText <> ": " <> msg
+    Just (_, conn) ->
       WS.sendTextData conn msg
     Nothing ->
-      -- T.putStrLn $ "No " <> whichText <> "to send to."
       return ()
-  where
-    whichText = cs (show which) :: Text
 
 sendToSpecs :: Text -> Room -> IO ()
 sendToSpecs msg room = do
@@ -269,7 +261,7 @@ parseMsg name msg =
       ChatCommand name content
     "rematch" ->
       RematchCommand
-    otherwise ->
+    _ ->
       ErrorCommand "Unknown Command"
   where
     parsed :: (Text, Text)
@@ -282,7 +274,7 @@ parseRoomReq msg =
   case parsed of
     ("room", name) ->
       Just name
-    otherwise ->
+    _ ->
       Nothing
   where
     parsed :: (Text, Text)

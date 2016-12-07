@@ -4,7 +4,7 @@ module Model where
 import Data.Aeson (ToJSON(..), (.=), object)
 import Data.List (findIndex, partition)
 import Data.Text (Text)
-import System.Random (StdGen, split)
+import System.Random (StdGen)
 import Safe (headMay, tailSafe)
 
 
@@ -52,7 +52,7 @@ instance ToJSON Model where
 
 
 instance ToJSON Card where
-  toJSON (Card name desc imageURL eff) =
+  toJSON (Card name desc imageURL _) =
     object
       [
         "name"     .= name
@@ -87,7 +87,7 @@ modelReverso (Model turn stack handPA handPB deckPA deckPB lifePA lifePB hoverPA
   (Model (otherTurn turn) (stackRev stack) handPB handPA deckPB deckPA lifePB lifePA hoverPB hoverPA passes (fmap modelReverso res) gen)
   where
     stackRev :: Stack -> Stack
-    stackRev stack = fmap (\(StackCard p c) -> StackCard (otherPlayer p) c) stack
+    stackRev s = fmap (\(StackCard p c) -> StackCard (otherPlayer p) c) s
 
 
 swapTurn :: Model -> Model
@@ -141,8 +141,8 @@ modLife f p m = setLife p (f (getLife p m)) m
 
 -- HAND.
 getHand :: WhichPlayer -> Model -> Hand
-getHand PlayerA (Model _ _ handPA handPB _ _ _ _ _ _ _ _ _) = handPA
-getHand PlayerB (Model _ _ handPA handPB _ _ _ _ _ _ _ _ _) = handPB
+getHand PlayerA (Model _ _ handPA _      _ _ _ _ _ _ _ _ _) = handPA
+getHand PlayerB (Model _ _ _      handPB _ _ _ _ _ _ _ _ _) = handPB
 
 
 setHand :: WhichPlayer -> Hand -> Model -> Model
@@ -168,8 +168,8 @@ addToHand card hand
 
 -- DECK.
 getDeck :: WhichPlayer -> Model -> Deck
-getDeck PlayerA (Model _ _ _ _ deckPA deckPB _ _ _ _ _ _ _) = deckPA
-getDeck PlayerB (Model _ _ _ _ deckPA deckPB _ _ _ _ _ _ _) = deckPB
+getDeck PlayerA (Model _ _ _ _ deckPA _      _ _ _ _ _ _ _) = deckPA
+getDeck PlayerB (Model _ _ _ _ _      deckPB _ _ _ _ _ _ _) = deckPB
 
 
 setDeck :: WhichPlayer -> Deck -> Model -> Model
@@ -235,14 +235,14 @@ incPasses NoPass = OnePass
 incPasses OnePass = NoPass
 
 resetPasses :: Model -> Model
-resetPasses (Model turn stack handPA handPB deckPA deckPB lifePA lifePB hoverPA hoverPB passes res gen) =
+resetPasses (Model turn stack handPA handPB deckPA deckPB lifePA lifePB hoverPA hoverPB _ res gen) =
   Model turn stack handPA handPB deckPA deckPB lifePA lifePB hoverPA hoverPB NoPass res gen
 
 
 -- HOVER CARD.
 getHover :: WhichPlayer -> Model -> HoverCardIndex
-getHover PlayerA (Model _ _ _ _ _ _ _ _ hoverPA hoverPB _ _ _) = hoverPA
-getHover PlayerB (Model _ _ _ _ _ _ _ _ hoverPA hoverPB _ _ _) = hoverPB
+getHover PlayerA (Model _ _ _ _ _ _ _ _ hoverPA _       _ _ _) = hoverPA
+getHover PlayerB (Model _ _ _ _ _ _ _ _ _       hoverPB _ _ _) = hoverPB
 
 
 setHover :: WhichPlayer -> HoverCardIndex -> Model -> Model
@@ -258,16 +258,13 @@ getRes (Model _ _ _ _ _ _ _ _ _ _ _ res _) = res
 
 
 resetRes :: Model -> Model
-resetRes (Model turn stack handPA handPB deckPA deckPB lifePA lifePB hoverPA hoverPB passes res gen) =
+resetRes (Model turn stack handPA handPB deckPA deckPB lifePA lifePB hoverPA hoverPB passes _ gen) =
   (Model turn stack handPA handPB deckPA deckPB lifePA lifePB hoverPA hoverPB passes [] gen)
 
 
 -- ACTIONS
 hurt :: Life -> WhichPlayer -> Model -> Model
-hurt damage PlayerA model =
-  modLife (\l -> l - damage) PlayerA model
-hurt damage PlayerB model =
-  modLife (\l -> l - damage) PlayerB model
+hurt damage which model = modLife (\l -> l - damage) which model
 
 
 heal :: Life -> WhichPlayer -> Model -> Model
@@ -282,7 +279,7 @@ lifesteal d p m = heal d (otherPlayer p) $ hurt d p m
 
 
 drawCard :: WhichPlayer -> Model -> Model
-drawCard which model@(Model turn stack handPA handPB deckPA deckPB lifePA lifePB hoverPA hoverPB passes res gen)
+drawCard which model
   | (length hand >= maxHandLength) = model
   | otherwise =
     case drawnCard of
@@ -324,3 +321,7 @@ hoverCard name which model = setHover which cardIndex model
   where
     cardIndex :: Maybe Int
     cardIndex = findIndex (\(Card n _ _ _) -> n == name) (getHand which model)
+
+
+patchEff :: CardEff -> (Model -> Model -> Model) -> CardEff
+patchEff eff wrapper = \w c m -> wrapper m (eff w c m)
