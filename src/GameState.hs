@@ -77,7 +77,6 @@ initDeck =
   -- SOFT CONTROL
   ++ (replicate 2 cardSiren)
   ++ (replicate 2 cardSickness)
-  -- ++ (replicate 2 cardEcho)
   ++ (replicate 2 cardProphecy)
   -- ++ (replicate 2 cardOffering)
   -- ++ (replicate 2 cardGoatFlute)
