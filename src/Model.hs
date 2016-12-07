@@ -1,4 +1,3 @@
-{-# LANGUAGE RecordWildCards #-}
 module Model where
 
 
@@ -10,19 +9,19 @@ import Safe (headMay, tailSafe)
 
 
 data Model = Model
-  { _turn    :: Turn
-  , _stack   :: Stack
-  , _handPA  :: Hand
-  , _handPB  :: Hand
-  , _deckPA  :: Deck
-  , _deckPB  :: Deck
-  , _lifePA  :: Life
-  , _lifePB  :: Life
-  , _hoverPA :: HoverCardIndex
-  , _hoverPB :: HoverCardIndex
-  , _passes  :: Passes
-  , _res     :: ResolveList
-  , _gen     :: StdGen
+  { turn    :: Turn
+  , stack   :: Stack
+  , model_handPA  :: Hand
+  , model_handPB  :: Hand
+  , model_deckPA  :: Deck
+  , model_deckPB  :: Deck
+  , model_lifePA  :: Life
+  , model_lifePB  :: Life
+  , model_hoverPA :: HoverCardIndex
+  , model_hoverPB :: HoverCardIndex
+  , passes  :: Passes
+  , res     :: ResolveList
+  , gen     :: StdGen
   }
 
 data Card = Card CardName CardDesc CardImgURL CardEff
@@ -51,18 +50,18 @@ data Passes = NoPass | OnePass
 
 
 instance ToJSON Model where
-  toJSON model =
+  toJSON model@Model{..} =
     object
       [
-        "turn"    .= getTurn model
-      , "stack"   .= getStack model
+        "turn"    .= turn
+      , "stack"   .= stack
       , "handPA"  .= getHand PlayerA model
       , "handPB"  .= length (getHand PlayerB model)
       , "lifePA"  .= getLife PlayerA model
       , "lifePB"  .= getLife PlayerB model
       , "hoverPA" .= getHover PlayerA model
       , "hoverPB" .= getHover PlayerB model
-      , "res"     .= getRes model
+      , "res"     .= res
       ]
 
 
@@ -106,7 +105,7 @@ modelReverso (Model turn stack handPA handPB deckPA deckPB lifePA lifePB hoverPA
 
 
 swapTurn :: Model -> Model
-swapTurn model = modTurn otherTurn model
+swapTurn m@Model{ turn = turn } = m { turn = otherTurn turn }
 
 
 otherTurn :: Turn -> Turn
@@ -118,33 +117,15 @@ otherPlayer :: WhichPlayer -> WhichPlayer
 otherPlayer = otherTurn
 
 
--- TURN.
-getTurn :: Model -> Turn
-getTurn = _turn
-
-
-setTurn :: Turn -> Model -> Model
-setTurn turn model = model { _turn = turn }
-
-
-modTurn :: (Turn -> Turn) -> Model -> Model
-modTurn f m = setTurn (f (getTurn m)) m
-
-
--- RNG GEN.
-getGen :: Model -> StdGen
-getGen = _gen
-
-
 -- LIFE.
 getLife :: WhichPlayer -> Model -> Life
-getLife PlayerA = _lifePA
-getLife PlayerB = _lifePB
+getLife PlayerA = model_lifePA
+getLife PlayerB = model_lifePB
 
 
 setLife :: WhichPlayer -> Life -> Model -> Model
-setLife PlayerA life model = model { _lifePA = life }
-setLife PlayerB life model = model { _lifePB = life }
+setLife PlayerA life model = model { model_lifePA = life }
+setLife PlayerB life model = model { model_lifePB = life }
 
 
 modLife :: (Life -> Life) -> WhichPlayer -> Model -> Model
@@ -153,13 +134,13 @@ modLife f p m = setLife p (f (getLife p m)) m
 
 -- HAND.
 getHand :: WhichPlayer -> Model -> Hand
-getHand PlayerA = _handPA
-getHand PlayerB = _handPB
+getHand PlayerA = model_handPA
+getHand PlayerB = model_handPB
 
 
 setHand :: WhichPlayer -> Hand -> Model -> Model
-setHand PlayerA hand model = model { _handPA = hand }
-setHand PlayerB hand model = model { _handPB = hand }
+setHand PlayerA hand model = model { model_handPA = hand }
+setHand PlayerB hand model = model { model_handPB = hand }
 
 
 modHand :: (Hand -> Hand) -> WhichPlayer -> Model -> Model
@@ -178,13 +159,13 @@ addToHand card hand
 
 -- DECK.
 getDeck :: WhichPlayer -> Model -> Deck
-getDeck PlayerA = _deckPA
-getDeck PlayerB = _deckPB
+getDeck PlayerA = model_deckPA
+getDeck PlayerB = model_deckPB
 
 
 setDeck :: WhichPlayer -> Deck -> Model -> Model
-setDeck PlayerA deck model = model { _deckPA = deck }
-setDeck PlayerB deck model = model { _deckPB = deck }
+setDeck PlayerA deck model = model { model_deckPA = deck }
+setDeck PlayerB deck model = model { model_deckPB = deck }
 
 
 mapDeck :: (Deck -> a) -> WhichPlayer -> Model -> a
@@ -205,64 +186,44 @@ modDeckHead f p m =
 
 
 -- STACK.
-getStack :: Model -> Stack
-getStack = _stack
-
-
-setStack :: Stack -> Model -> Model
-setStack stack model = model { _stack = stack }
-
-
 mapStack :: (Stack -> a) -> Model -> a
-mapStack f m = f (getStack m)
+mapStack f Model{ stack = stack } = f stack
 
 
 modStack :: (Stack -> Stack) -> Model -> Model
-modStack f m = setStack (mapStack f m) m
+modStack f m@Model{ stack = stack } = m { stack = f stack }
 
 
 modStackHead :: (StackCard -> StackCard) -> Model -> Model
-modStackHead f m =
-  case headMay (getStack m) of
+modStackHead f m@Model{ stack = stack } =
+  case headMay stack of
     Nothing ->
       m
     Just c ->
-      (setStack (f c : (tailSafe (getStack m)))) m
+      m { stack = f c : (tailSafe stack) }
 
 modStackAll :: (StackCard -> StackCard) -> Model -> Model
 modStackAll f m = modStack (fmap f) m
 
 
 -- Passes.
-getPasses :: Model -> Passes
-getPasses = _passes
-
 incPasses :: Passes -> Passes
 incPasses NoPass = OnePass
 incPasses OnePass = NoPass
 
 resetPasses :: Model -> Model
-resetPasses model = model { _passes = NoPass }
+resetPasses model = model { passes = NoPass }
 
 
 -- HOVER CARD.
 getHover :: WhichPlayer -> Model -> HoverCardIndex
-getHover PlayerA = _hoverPA
-getHover PlayerB = _hoverPB
+getHover PlayerA = model_hoverPA
+getHover PlayerB = model_hoverPB
 
 
 setHover :: WhichPlayer -> HoverCardIndex -> Model -> Model
-setHover PlayerA hover model = model { _hoverPA = hover }
-setHover PlayerB hover model = model { _hoverPB = hover }
-
-
--- RESOLVING.
-getRes :: Model -> ResolveList
-getRes = _res
-
-
-resetRes :: Model -> Model
-resetRes model = model { _res = [] }
+setHover PlayerA hover model = model { model_hoverPA = hover }
+setHover PlayerB hover model = model { model_hoverPB = hover }
 
 
 -- ACTIONS
@@ -303,18 +264,16 @@ drawCard which model
 
 -- In future, tag cards in hand with a uid and use that.
 playCard :: CardName -> WhichPlayer -> Model -> Model
-playCard name which model
-  | turn /= which = model
+playCard name which m@Model{..}
+  | turn /= which = m
   | otherwise =
     case card of
       Just c ->
-        resetPasses $ swapTurn $ modStack ((:) c) $ setHand which newHand model
+        resetPasses $ swapTurn $ modStack ((:) c) $ setHand which newHand m
       Nothing ->
-        model
+        m
   where
-    turn = getTurn model :: Turn
-    hand = getHand which model :: Hand
-    (matches, misses) = partition (\(Card n _ _ _) -> n == name) hand :: ([Card], [Card])
+    (matches, misses) = partition (\(Card n _ _ _) -> n == name) (getHand which m) :: ([Card], [Card])
     newHand = (tailSafe matches) ++ misses :: Hand
     card = (StackCard which) <$> (headMay matches) :: Maybe StackCard
 

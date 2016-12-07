@@ -93,11 +93,11 @@ update cmd which state =
     Playing model ->
       case cmd of
         EndTurn ->
-          endTurn which (resetRes model)
+          endTurn which (model { res = [] })
         PlayCard name ->
-          Playing (playCard name which (resetRes model))
+          Playing (playCard name which (model { res = [] }))
         HoverCard name ->
-          Playing (hoverCard name which (resetRes model))
+          Playing (hoverCard name which (model { res = [] }))
         _ ->
           Playing model
     Victory winner gen res ->
@@ -117,7 +117,7 @@ update cmd which state =
 
 -- Make safer.
 endTurn :: WhichPlayer -> Model -> GameState
-endTurn which model
+endTurn which model@Model{..}
   | turn /= which = Playing model
   | handFull = Playing model
   | otherwise =
@@ -125,22 +125,20 @@ endTurn which model
       True ->
         case resolveAll model of
           Playing m ->
-            Playing $ drawCards $ resetPasses $ swapTurn m
+            (Playing . drawCards . resetPasses . swapTurn) m
           s ->
             s
-      False -> Playing $ swapTurn model
+      False -> Playing (swapTurn model)
   where
-    turn = getTurn model :: Turn
-    passes = getPasses model :: Passes
     bothPassed = passes == OnePass :: Bool
-    handFull = (length (getHand which model)) == maxHandLength :: Bool
+    handFull = length (getHand which model) >= maxHandLength :: Bool
     drawCards :: Model -> Model
     drawCards m = (drawCard PlayerA) . (drawCard PlayerB) $ m
 
 
 resolveAll :: Model -> GameState
-resolveAll model =
-  case null (getStack model) of
+resolveAll model@Model{ stack = stack } =
+  case null stack of
     True -> Playing model
     False ->
       case resolveOne model of
@@ -153,24 +151,23 @@ resolveAll model =
     resolveOne m =
       rememberRes m $ lifeGate $ eff $ modStack tailSafe model
       where
-        stack = getStack model :: Stack
         eff :: Model -> Model
         eff = case headMay stack of
           Nothing -> id
           Just (StackCard p c@(Card _ _ _ effect)) -> effect p c
 
     rememberRes :: Model -> GameState -> GameState
-    rememberRes r (Playing (Model turn stack handPA handPB deckPA deckPB lifePA lifePB hoverPA hoverPB passes res gen)) =
-      (Playing (Model turn stack handPA handPB deckPA deckPB lifePA lifePB hoverPA hoverPB passes (res ++ [resetRes r]) gen))
+    rememberRes r (Playing m@Model{ res = res }) =
+      (Playing (m { res = res ++ [r { res = [] }] }))
     rememberRes r (Victory p gen res) =
-      Victory p gen (res ++ [resetRes r])
+      Victory p gen (res ++ [r { res = [] }])
     rememberRes r (Draw gen res) =
-      Draw gen (res ++ [resetRes r])
+      Draw gen (res ++ [r { res = [] }])
     rememberRes _ x = x
 
 
 lifeGate :: Model -> GameState
-lifeGate model
+lifeGate m@Model{..}
   | lifePA <= 0 && lifePB <= 0 =
     Draw gen res
   | lifePB <= 0 =
@@ -180,9 +177,7 @@ lifeGate model
   | otherwise =
     Playing $
       setLife PlayerA (min maxLife lifePA) $
-        setLife PlayerB (min maxLife lifePB) model
+        setLife PlayerB (min maxLife lifePB) m
   where
-    gen = getGen model :: StdGen
-    lifePA = getLife PlayerA model :: Life
-    lifePB = getLife PlayerB model :: Life
-    res = getRes model :: ResolveList
+    lifePA = getLife PlayerA m :: Life
+    lifePB = getLife PlayerB m :: Life
