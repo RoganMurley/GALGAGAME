@@ -73,8 +73,8 @@ cardDaggerTests =
   where
     state =
       Playing $
-        setStack [StackCard PlayerA cardDagger] $
-          initModel PlayerA (mkStdGen 0)
+        (initModel PlayerA (mkStdGen 0))
+          { stack = [StackCard PlayerA cardDagger] }
 
 
 cardHubrisTests :: TestTree
@@ -92,15 +92,14 @@ cardHubrisTests =
   where
     state =
       Playing $
-        setStack
-          [
+        (initModel PlayerA (mkStdGen 0))
+          { stack = [
             StackCard PlayerB cardHubris
           , StackCard PlayerA cardFireball
           , StackCard PlayerB cardFireball
           , StackCard PlayerB cardDummy
           , StackCard PlayerB cardDummy
-          ] $
-            initModel PlayerA (mkStdGen 0)
+          ] }
 
 
 cardFireballTests :: TestTree
@@ -118,12 +117,11 @@ cardFireballTests =
   where
     state =
       Playing $
-        setStack
-          [
+        (initModel PlayerA (mkStdGen 0))
+          { stack = [
             StackCard PlayerA cardFireball
-          , StackCard PlayerB cardDummy
           , StackCard PlayerA cardDummy
           , StackCard PlayerB cardDummy
           , StackCard PlayerB cardDummy
-          ] $
-            initModel PlayerA (mkStdGen 0)
+          , StackCard PlayerB cardDummy
+          ] }

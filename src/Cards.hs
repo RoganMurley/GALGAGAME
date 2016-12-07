@@ -17,14 +17,14 @@ cardHubris :: Card
 cardHubris = Card "Hubris" "Negate all cards to the right" "tower-fall.svg" eff
   where
     eff :: CardEff
-    eff _ _ m = setStack [] m
+    eff _ _ m = m { stack = [] }
 
 
 cardFireball :: Card
 cardFireball = Card "Fireball" "Hurt for 4 for each card to the right" "fire-ray.svg" eff
   where
     eff :: CardEff
-    eff p _ m = hurt (4 * (length (getStack m))) (otherPlayer p) m
+    eff p _ m@Model{ stack = s} = hurt (4 * (length s)) (otherPlayer p) m
 
 
 cardBoomerang :: Card
@@ -52,7 +52,7 @@ cardSuccubus :: Card
 cardSuccubus = Card "Succubus" "Lifesteal for 2 for each card to the right" "pretty-fangs.svg" eff
   where
     eff :: CardEff
-    eff p _ m = lifesteal (2 * (length (getStack m))) (otherPlayer p) m
+    eff p _ m@Model{ stack = s } = lifesteal (2 * (length s)) (otherPlayer p) m
 
 
 cardReversal :: Card
@@ -76,10 +76,10 @@ cardProphecy :: Card
 cardProphecy = Card "Prophecy" "Return all cards to the right to their owner's hand" "crystal-ball.svg" eff
   where
     eff :: CardEff
-    eff _ _ m =
-      modHand (bounceAll PlayerA (getStack m)) PlayerA $
-      modHand (bounceAll PlayerB (getStack m)) PlayerB $
-      setStack [] m
+    eff _ _ m@Model{ stack = s} =
+      modHand (bounceAll PlayerA s) PlayerA $
+        modHand (bounceAll PlayerB s) PlayerB $
+          m { stack = [] }
     bounceAll :: WhichPlayer -> Stack -> Hand -> Hand
     bounceAll w s h = (fmap getCard (filter (owner w) s)) ++ h
     owner :: WhichPlayer -> StackCard -> Bool
@@ -136,7 +136,7 @@ cardConfound :: Card
 cardConfound = Card "Confound" "Shuffle the order of cards to the right" "moebius-star.svg" eff
   where
     eff :: CardEff
-    eff _ _ m = modStack (\s -> shuffle s (getGen m)) m
+    eff _ _ m@Model{ gen = g } = modStack (\s -> shuffle s g) m
 
 
 cardObscurer :: Card
