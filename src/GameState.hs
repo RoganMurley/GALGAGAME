@@ -2,11 +2,8 @@
 module GameState where
 
 import Control.Applicative ((<$>))
-import Control.Monad (MonadPlus, mplus)
 import Data.Aeson (ToJSON(..), (.=), object)
 import Data.List (partition)
-import Data.Maybe (fromJust, isJust, maybeToList)
-import Data.Text (Text)
 import Safe (headMay, tailSafe)
 import System.Random (StdGen, split)
 import System.Random.Shuffle (shuffle')
