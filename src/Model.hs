@@ -1,3 +1,4 @@
+{-# LANGUAGE RecordWildCards #-}
 module Model where
 
 
@@ -8,7 +9,21 @@ import System.Random (StdGen)
 import Safe (headMay, tailSafe)
 
 
-data Model = Model Turn Stack Hand Hand Deck Deck Life Life HoverCardIndex HoverCardIndex Passes ResolveList StdGen
+data Model = Model
+  { _turn    :: Turn
+  , _stack   :: Stack
+  , _handPA  :: Hand
+  , _handPB  :: Hand
+  , _deckPA  :: Deck
+  , _deckPB  :: Deck
+  , _lifePA  :: Life
+  , _lifePB  :: Life
+  , _hoverPA :: HoverCardIndex
+  , _hoverPB :: HoverCardIndex
+  , _passes  :: Passes
+  , _res     :: ResolveList
+  , _gen     :: StdGen
+  }
 
 data Card = Card CardName CardDesc CardImgURL CardEff
 type CardName = Text
@@ -105,12 +120,11 @@ otherPlayer = otherTurn
 
 -- TURN.
 getTurn :: Model -> Turn
-getTurn (Model turn _ _ _ _ _ _ _ _ _ _ _ _) = turn
+getTurn = _turn
 
 
 setTurn :: Turn -> Model -> Model
-setTurn turn (Model _ stack handPA handPB deckPA deckPB lifePA lifePB hoverPA hoverPB passes res gen) =
-  Model turn stack handPA handPB deckPA deckPB lifePA lifePB hoverPA hoverPB passes res gen
+setTurn turn model = model { _turn = turn }
 
 
 modTurn :: (Turn -> Turn) -> Model -> Model
@@ -119,20 +133,18 @@ modTurn f m = setTurn (f (getTurn m)) m
 
 -- RNG GEN.
 getGen :: Model -> StdGen
-getGen (Model _ _ _ _ _ _ _ _ _ _ _ _ gen) = gen
+getGen = _gen
 
 
 -- LIFE.
 getLife :: WhichPlayer -> Model -> Life
-getLife PlayerA (Model _ _ _ _ _ _ lifePA _ _ _ _ _ _) = lifePA
-getLife PlayerB (Model _ _ _ _ _ _ _ lifePB _ _ _ _ _) = lifePB
+getLife PlayerA = _lifePA
+getLife PlayerB = _lifePB
 
 
 setLife :: WhichPlayer -> Life -> Model -> Model
-setLife PlayerA lifePA (Model turn stack handPA handPB deckPA deckPB _ lifePB hoverPA hoverPB passes res gen) =
-  Model turn stack handPA handPB deckPA deckPB lifePA lifePB hoverPA hoverPB passes res gen
-setLife PlayerB lifePB (Model turn stack handPA handPB deckPA deckPB lifePA _ hoverPA hoverPB passes res gen) =
-  Model turn stack handPA handPB deckPA deckPB lifePA lifePB hoverPA hoverPB passes res gen
+setLife PlayerA life model = model { _lifePA = life }
+setLife PlayerB life model = model { _lifePB = life }
 
 
 modLife :: (Life -> Life) -> WhichPlayer -> Model -> Model
@@ -141,23 +153,21 @@ modLife f p m = setLife p (f (getLife p m)) m
 
 -- HAND.
 getHand :: WhichPlayer -> Model -> Hand
-getHand PlayerA (Model _ _ handPA _      _ _ _ _ _ _ _ _ _) = handPA
-getHand PlayerB (Model _ _ _      handPB _ _ _ _ _ _ _ _ _) = handPB
+getHand PlayerA = _handPA
+getHand PlayerB = _handPB
 
 
 setHand :: WhichPlayer -> Hand -> Model -> Model
-setHand PlayerA handPA (Model turn stack _ handPB deckPA deckPB lifePA lifePB hoverPA hoverPB passes res gen) =
-  Model turn stack handPA handPB deckPA deckPB lifePA lifePB hoverPA hoverPB passes res gen
-setHand PlayerB handPB (Model turn stack handPA _ deckPA deckPB lifePA lifePB hoverPA hoverPB passes res gen) =
-  Model turn stack handPA handPB deckPA deckPB lifePA lifePB hoverPA hoverPB passes res gen
-
-
-mapHand :: (Hand -> a) -> WhichPlayer -> Model -> a
-mapHand f p m = f (getHand p m)
+setHand PlayerA hand model = model { _handPA = hand }
+setHand PlayerB hand model = model { _handPB = hand }
 
 
 modHand :: (Hand -> Hand) -> WhichPlayer -> Model -> Model
 modHand f p m = setHand p (f (getHand p m)) m
+
+
+mapHand :: (Hand -> a) -> WhichPlayer -> Model -> a
+mapHand f p m = f (getHand p m)
 
 
 addToHand :: Card -> Hand -> Hand
@@ -168,15 +178,13 @@ addToHand card hand
 
 -- DECK.
 getDeck :: WhichPlayer -> Model -> Deck
-getDeck PlayerA (Model _ _ _ _ deckPA _      _ _ _ _ _ _ _) = deckPA
-getDeck PlayerB (Model _ _ _ _ _      deckPB _ _ _ _ _ _ _) = deckPB
+getDeck PlayerA = _deckPA
+getDeck PlayerB = _deckPB
 
 
 setDeck :: WhichPlayer -> Deck -> Model -> Model
-setDeck PlayerA deckPA (Model turn stack handPA handPB _ deckPB lifePA lifePB hoverPA hoverPB passes res gen) =
-  Model turn stack handPA handPB deckPA deckPB lifePA lifePB hoverPA hoverPB passes res gen
-setDeck PlayerB deckPB (Model turn stack handPA handPB deckPA _ lifePA lifePB hoverPA hoverPB passes res gen) =
-  Model turn stack handPA handPB deckPA deckPB lifePA lifePB hoverPA hoverPB passes res gen
+setDeck PlayerA deck model = model { _deckPA = deck }
+setDeck PlayerB deck model = model { _deckPB = deck }
 
 
 mapDeck :: (Deck -> a) -> WhichPlayer -> Model -> a
@@ -198,12 +206,11 @@ modDeckHead f p m =
 
 -- STACK.
 getStack :: Model -> Stack
-getStack (Model _ stack _ _ _ _ _ _ _ _ _ _ _) = stack
+getStack = _stack
 
 
 setStack :: Stack -> Model -> Model
-setStack stack (Model turn _ handPA handPB deckPA deckPB lifePA lifePB hoverPA hoverPB passes res gen) =
-  Model turn stack handPA handPB deckPA deckPB lifePA lifePB hoverPA hoverPB passes res gen
+setStack stack model = model { _stack = stack }
 
 
 mapStack :: (Stack -> a) -> Model -> a
@@ -228,38 +235,34 @@ modStackAll f m = modStack (fmap f) m
 
 -- Passes.
 getPasses :: Model -> Passes
-getPasses (Model _ _ _ _ _ _ _ _ _ _ passes _ _) = passes
+getPasses = _passes
 
 incPasses :: Passes -> Passes
 incPasses NoPass = OnePass
 incPasses OnePass = NoPass
 
 resetPasses :: Model -> Model
-resetPasses (Model turn stack handPA handPB deckPA deckPB lifePA lifePB hoverPA hoverPB _ res gen) =
-  Model turn stack handPA handPB deckPA deckPB lifePA lifePB hoverPA hoverPB NoPass res gen
+resetPasses model = model { _passes = NoPass }
 
 
 -- HOVER CARD.
 getHover :: WhichPlayer -> Model -> HoverCardIndex
-getHover PlayerA (Model _ _ _ _ _ _ _ _ hoverPA _       _ _ _) = hoverPA
-getHover PlayerB (Model _ _ _ _ _ _ _ _ _       hoverPB _ _ _) = hoverPB
+getHover PlayerA = _hoverPA
+getHover PlayerB = _hoverPB
 
 
 setHover :: WhichPlayer -> HoverCardIndex -> Model -> Model
-setHover PlayerA hoverPA (Model turn stack handPA handPB deckPA deckPB lifePA lifePB _ hoverPB passes res gen) =
-  (Model turn stack handPA handPB deckPA deckPB lifePA lifePB hoverPA hoverPB passes res gen)
-setHover PlayerB hoverPB (Model turn stack handPA handPB deckPA deckPB lifePA lifePB hoverPA _ passes res gen) =
-  (Model turn stack handPA handPB deckPA deckPB lifePA lifePB hoverPA hoverPB passes res gen)
+setHover PlayerA hover model = model { _hoverPA = hover }
+setHover PlayerB hover model = model { _hoverPB = hover }
 
 
 -- RESOLVING.
 getRes :: Model -> ResolveList
-getRes (Model _ _ _ _ _ _ _ _ _ _ _ res _) = res
+getRes = _res
 
 
 resetRes :: Model -> Model
-resetRes (Model turn stack handPA handPB deckPA deckPB lifePA lifePB hoverPA hoverPB passes _ gen) =
-  (Model turn stack handPA handPB deckPA deckPB lifePA lifePB hoverPA hoverPB passes [] gen)
+resetRes model = model { _res = [] }
 
 
 -- ACTIONS
