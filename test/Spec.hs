@@ -2,19 +2,25 @@
 import Test.Tasty
 import Test.Tasty.HUnit
 
-import System.Random (mkStdGen, StdGen)
+import System.Random (mkStdGen)
+
 
 import Cards
 import Model
 import GameState
 
+
+-- Helpers.
+isEq :: (Eq a, Show a) => a -> a -> Assertion
 isEq = assertEqual ""
+
 
 resolveState :: GameState -> GameState
 resolveState (Playing model) = resolveAll model
 resolveState s = s
 
 
+-- Tests.
 main :: IO ()
 main = defaultMain $
   testGroup "Unit Tests"
@@ -24,6 +30,7 @@ main = defaultMain $
     ]
 
 
+initModelTests :: TestTree
 initModelTests =
   testGroup "Initial Model"
     [
@@ -37,11 +44,13 @@ initModelTests =
     model = initModel PlayerA (mkStdGen 0)
 
 
+cardTests :: TestTree
 cardTests =
   testGroup "Cards"
     [
       cardDaggerTests
     , cardHubrisTests
+    , cardFireballTests
     ]
 
 
@@ -49,6 +58,8 @@ cardDummy :: Card
 cardDummy =
   Card "Dummy" "Does nothing, just for testing" "" (\_ x -> x)
 
+
+cardDaggerTests :: TestTree
 cardDaggerTests =
   testGroup "Dagger Card"
     [
@@ -57,7 +68,7 @@ cardDaggerTests =
           Playing model -> do
             isEq (getLife PlayerA model) maxLife
             isEq (getLife PlayerB model) (maxLife - 8)
-          otherwise ->
+          _ ->
             assertFailure "Incorrect state"
     ]
   where
@@ -66,6 +77,8 @@ cardDaggerTests =
         setStack [StackCard PlayerA cardDagger] $
           initModel PlayerA (mkStdGen 0)
 
+
+cardHubrisTests :: TestTree
 cardHubrisTests =
   testGroup "Hubris Card"
     [
@@ -74,7 +87,7 @@ cardHubrisTests =
           Playing model -> do
             isEq (getLife PlayerA model) maxLife
             isEq (getLife PlayerB model) maxLife
-          otherwise ->
+          _ ->
             assertFailure "Incorrect state"
     ]
   where
@@ -91,6 +104,7 @@ cardHubrisTests =
             initModel PlayerA (mkStdGen 0)
 
 
+cardFireballTests :: TestTree
 cardFireballTests =
   testGroup "Fireball Card"
     [
@@ -99,7 +113,7 @@ cardFireballTests =
           Playing model -> do
             isEq (getLife PlayerA model) maxLife
             isEq (getLife PlayerB model) (maxLife - 16)
-          otherwise ->
+          _ ->
             assertFailure "Incorrect state"
     ]
   where

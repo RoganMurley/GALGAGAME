@@ -31,12 +31,12 @@ instance ToJSON GameState where
   toJSON (Victory which gen res) =
     object [
       "victory" .= which
-    , "res" .= res
+    , "res"     .= res
     ]
   toJSON (Draw gen res) =
     object [
       "draw" .= True
-    , "res" .= res
+    , "res"  .= res
     ]
 
 
