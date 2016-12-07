@@ -10,16 +10,20 @@ import Safe (headMay, tailSafe)
 
 
 data Model = Model Turn Stack Hand Hand Deck Deck Life Life HoverCardIndex HoverCardIndex Passes ResolveList StdGen
-type Hand = [Card]
-type Deck = [Card]
-type Stack = [StackCard]
+
 data Card = Card CardName CardDesc CardImgURL CardEff
-data StackCard = StackCard WhichPlayer Card
 type CardName = Text
 type CardDesc = Text
 type CardImgURL = Text
-type Life = Int
 type CardEff = (WhichPlayer -> Model -> Model)
+
+type Hand = [Card]
+type Deck = [Card]
+type Stack = [StackCard]
+
+data StackCard = StackCard WhichPlayer Card
+
+type Life = Int
 type ResolveList = [Model]
 type HoverCardIndex = Maybe Int
 
@@ -27,7 +31,6 @@ type HoverCardIndex = Maybe Int
 data WhichPlayer = PlayerA | PlayerB
   deriving (Eq, Show)
 type Turn = WhichPlayer
-
 
 data Passes = NoPass | OnePass
   deriving (Eq)
@@ -37,15 +40,15 @@ instance ToJSON Model where
   toJSON (Model turn stack handPA handPB deckPA deckPB lifePA lifePB hoverPA hoverPB _ res _) =
     object
       [
-        "turn" .= turn
-      , "stack" .= stack
-      , "handPA" .= handPA
-      , "handPB" .= (length handPB)
-      , "lifePA" .= lifePA
-      , "lifePB" .= lifePB
+        "turn"    .= turn
+      , "stack"   .= stack
+      , "handPA"  .= handPA
+      , "handPB"  .= length handPB
+      , "lifePA"  .= lifePA
+      , "lifePB"  .= lifePB
       , "hoverPA" .= hoverPA
       , "hoverPB" .= hoverPB
-      , "res" .= res
+      , "res"     .= res
       ]
 
 
@@ -53,8 +56,8 @@ instance ToJSON Card where
   toJSON (Card name desc imageURL eff) =
     object
       [
-        "name" .= name
-      , "desc" .= desc
+        "name"     .= name
+      , "desc"     .= desc
       , "imageURL" .= imageURL
       ]
 
@@ -63,7 +66,7 @@ instance ToJSON StackCard where
   toJSON (StackCard owner card) =
     object [
       "owner" .= owner
-    , "card" .= card
+    , "card"  .= card
     ]
 
 instance ToJSON WhichPlayer where
@@ -75,7 +78,6 @@ maxHandLength = 6
 
 maxLife :: Life
 maxLife = 50
-
 
 modelReverso :: Model -> Model
 modelReverso (Model turn stack handPA handPB deckPA deckPB lifePA lifePB hoverPA hoverPB passes res gen) =
