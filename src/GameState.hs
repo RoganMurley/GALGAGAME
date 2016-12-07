@@ -2,7 +2,6 @@ module GameState where
 
 import Control.Applicative ((<$>))
 import Data.Aeson (ToJSON(..), (.=), object)
-import Data.List (partition)
 import Safe (headMay, tailSafe)
 import System.Random (StdGen, split)
 import System.Random.Shuffle (shuffle')
@@ -136,25 +135,6 @@ endTurn which model
     handFull = (length (getHand which model)) == maxHandLength :: Bool
     drawCards :: Model -> Model
     drawCards m = (drawCard PlayerA) . (drawCard PlayerB) $ m
-
--- In future, tag cards in hand with a uid and use that.
-playCard :: CardName -> WhichPlayer -> Model -> Model
-playCard name which model@(Model turn stack handPA handPB deckPA deckPB lifePA lifePB hoverPA hoverPB passes res gen)
-  | turn /= which = model
-  | otherwise =
-    case card of
-      Just c ->
-        resetPasses $ swapTurn $ modStack ((:) c) $ setHand which newHand model
-      Nothing ->
-        model
-  where
-    hand :: Hand
-    hand = getHand which model
-    (matches, misses) = partition (\(Card n _ _ _) -> n == name) hand :: ([Card], [Card])
-    newHand :: Hand
-    newHand = (tailSafe matches) ++ misses
-    card :: Maybe StackCard
-    card = (StackCard which) <$> (headMay matches)
 
 
 resolveAll :: Model -> GameState

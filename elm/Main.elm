@@ -1,10 +1,6 @@
 module Main exposing (..)
 
 import Char exposing (isLower)
-
-
--- import Cmd.Extra exposing (message)
-
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
