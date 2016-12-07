@@ -1,4 +1,3 @@
-{-# LANGUAGE OverloadedStrings #-}
 module Cards where
 
 import Data.Monoid ((<>))

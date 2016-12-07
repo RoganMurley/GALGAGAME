@@ -1,4 +1,3 @@
-{-# LANGUAGE OverloadedStrings #-}
 module GameState where
 
 import Control.Applicative ((<$>))
@@ -119,7 +118,7 @@ update cmd which state =
 
 -- Make safer.
 endTurn :: WhichPlayer -> Model -> GameState
-endTurn which model@(Model turn stack handPA handPB deckPA deckPB lifePA lifePB hoverPA hoverPB passes res gen)
+endTurn which model
   | turn /= which = Playing model
   | handFull = Playing model
   | otherwise =
@@ -132,10 +131,10 @@ endTurn which model@(Model turn stack handPA handPB deckPA deckPB lifePA lifePB 
             s
       False -> Playing $ swapTurn model
   where
-    bothPassed :: Bool
-    bothPassed = passes == OnePass
-    handFull ::  Bool
-    handFull = (length (getHand which model)) == maxHandLength
+    turn = getTurn model :: Turn
+    passes = getPasses model :: Passes
+    bothPassed = passes == OnePass :: Bool
+    handFull = (length (getHand which model)) == maxHandLength :: Bool
     drawCards :: Model -> Model
     drawCards m = (drawCard PlayerA) . (drawCard PlayerB) $ m
 
