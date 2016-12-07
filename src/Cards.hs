@@ -73,18 +73,6 @@ cardReflect = Card "Reflect" "All cards to the right change owner" "shield-refle
       StackCard (otherPlayer owner) (Card name desc img cardEff)
 
 
--- cardEcho :: Card
--- cardEcho = Card "Echo" "All cards to the right happen twice" "echo-ripples.svg" eff
---   where
---     eff :: CardEff
---     eff p c m = modStackAll echoEff m
---     echoEff :: StackCard -> StackCard
---     echoEff (StackCard owner (Card name desc img cardEff)) =
---       StackCard owner (Card name desc img (echo cardEff))
---     echo :: CardEff -> CardEff
---     echo e = \which -> (e which) . (e which)
-
-
 cardProphecy :: Card
 cardProphecy = Card "Prophecy" "Return all cards to the right to their owner's hand" "crystal-ball.svg" eff
   where
