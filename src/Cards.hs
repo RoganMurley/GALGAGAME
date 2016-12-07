@@ -104,9 +104,9 @@ cardSickness :: Card
 cardSickness = Card "Sickness" "Make all cards to the right's healing hurt instead" "bleeding-heart.svg" eff
   where
     eff :: CardEff
-    eff _ _ m = modStackAll patchedCard m
-    patchedCard :: StackCard -> StackCard
-    patchedCard (StackCard owner (Card name desc img cardEff)) =
+    eff _ _ m = modStackAll patchCard m
+    patchCard :: StackCard -> StackCard
+    patchCard (StackCard owner (Card name desc img cardEff)) =
       StackCard owner $
         Card ("Sick " <> name) (desc <> "; afflicted by sickness.") img $
           patchEff cardEff (\m -> (reverseHeal PlayerA m) . (reverseHeal PlayerB m))
