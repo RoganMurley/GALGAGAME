@@ -56,7 +56,7 @@ cardTests =
 
 cardDummy :: Card
 cardDummy =
-  Card "Dummy" "Does nothing, just for testing" "" (\_ x -> x)
+  Card "Dummy" "Does nothing, just for testing" "" (\_ _ m -> m)
 
 
 cardDaggerTests :: TestTree
