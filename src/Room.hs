@@ -1,4 +1,4 @@
-{-# LANGUAGE OverloadedStrings #-}
+
 module Room where
 
 import Data.Maybe (maybeToList)

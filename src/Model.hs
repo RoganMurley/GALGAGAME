@@ -1,4 +1,3 @@
-{-# LANGUAGE OverloadedStrings #-}
 module Model where
 
 
@@ -89,14 +88,6 @@ modelReverso (Model turn stack handPA handPB deckPA deckPB lifePA lifePB hoverPA
 swapTurn :: Model -> Model
 swapTurn model@(Model turn stack handPA handPB deckPA deckPB lifePA lifePB hoverPA hoverPB passes res gen) =
   Model (otherTurn turn) stack handPA handPB deckPA deckPB lifePA lifePB hoverPA hoverPB (incPasses passes) res gen
-
-incPasses :: Passes -> Passes
-incPasses NoPass = OnePass
-incPasses OnePass = NoPass
-
-resetPasses :: Model -> Model
-resetPasses (Model turn stack handPA handPB deckPA deckPB lifePA lifePB hoverPA hoverPB passes res gen) =
-  Model turn stack handPA handPB deckPA deckPB lifePA lifePB hoverPA hoverPB NoPass res gen
 
 otherTurn :: Turn -> Turn
 otherTurn PlayerA = PlayerB
@@ -203,6 +194,19 @@ modStackHead f m =
 
 modStackAll :: (StackCard -> StackCard) -> Model -> Model
 modStackAll f m = modStack (fmap f) m
+
+-- Passes.
+getPasses :: Model -> Passes
+getPasses (Model _ _ _ _ _ _ _ _ _ _ passes _ _) = passes
+
+incPasses :: Passes -> Passes
+incPasses NoPass = OnePass
+incPasses OnePass = NoPass
+
+resetPasses :: Model -> Model
+resetPasses (Model turn stack handPA handPB deckPA deckPB lifePA lifePB hoverPA hoverPB passes res gen) =
+  Model turn stack handPA handPB deckPA deckPB lifePA lifePB hoverPA hoverPB NoPass res gen
+
 
 -- HOVER CARD.
 getHover :: WhichPlayer -> Model -> HoverCardIndex
