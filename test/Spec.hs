@@ -107,7 +107,7 @@ cardFireballTests :: TestTree
 cardFireballTests =
   testGroup "Fireball Card"
     [
-      testCase "Should hurt for four for everything to the right" $
+      testCase "Should hurt for 4 for everything to the right" $
         case resolveState state of
           Playing model -> do
             isEq (getLife PlayerA model) maxLife
