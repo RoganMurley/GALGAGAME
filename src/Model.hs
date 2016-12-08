@@ -4,8 +4,10 @@ module Model where
 import Data.Aeson (ToJSON(..), (.=), object)
 import Data.List (findIndex, partition)
 import Data.Text (Text)
-import System.Random (StdGen)
 import Safe (headMay, tailSafe)
+import Data.String.Conversions (cs)
+
+import Util (Gen)
 
 
 data Model = Model
@@ -21,10 +23,20 @@ data Model = Model
   , model_hoverPB :: HoverCardIndex
   , passes  :: Passes
   , res     :: ResolveList
-  , gen     :: StdGen
+  , gen     :: Gen
   }
+  deriving (Eq, Show)
+
 
 data Card = Card CardName CardDesc CardImgURL CardEff
+
+instance Eq Card where
+  (Card n1 d1 i1 _) == (Card n2 d2 i2 _) =
+    n1 == n2 && d1 == d2 && i1 == i2
+
+instance Show Card where
+  show (Card n _ _ _) = cs n
+
 type CardName = Text
 type CardDesc = Text
 type CardImgURL = Text
@@ -35,6 +47,7 @@ type Deck = [Card]
 type Stack = [StackCard]
 
 data StackCard = StackCard WhichPlayer Card
+  deriving (Eq, Show)
 
 type Life = Int
 type ResolveList = [Model]
@@ -46,7 +59,7 @@ data WhichPlayer = PlayerA | PlayerB
 type Turn = WhichPlayer
 
 data Passes = NoPass | OnePass
-  deriving (Eq)
+  deriving (Eq, Show)
 
 
 instance ToJSON Model where

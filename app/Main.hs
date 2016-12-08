@@ -11,7 +11,6 @@ import Data.Text (Text)
 import Control.Exception (finally)
 import Control.Monad (forM_, forever)
 import Control.Concurrent (MVar, newMVar, modifyMVar, readMVar)
-import System.Random (getStdGen)
 
 import qualified Data.Text as T
 import qualified Network.WebSockets as WS
@@ -19,6 +18,7 @@ import qualified Network.WebSockets as WS
 import Model (CardName, WhichPlayer(..))
 import GameState (GameCommand(..), GameState(..), reverso, update)
 import Room
+import Util (getGen)
 
 
 type ServerState = Map RoomName (MVar Room)
@@ -47,7 +47,7 @@ getRoom name state =
           return (s, room)
         Nothing ->
           do
-            gen <- getStdGen
+            gen <- getGen
             r <- newMVar (newRoom gen)
             return (insert name r s, r)
 
