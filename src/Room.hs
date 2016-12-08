@@ -4,13 +4,12 @@ module Room where
 import Data.Maybe (maybeToList)
 import Data.Text (Text)
 import Network.WebSockets (Connection)
-import System.Random (StdGen)
 
 import GameState (initModel, GameState(..))
 import Model (WhichPlayer(..))
+import Util (Gen)
 
 
---TYPES
 type Username = Text
 type RoomName = Text
 
@@ -22,12 +21,10 @@ type Spectators = [Client]
 data Room = Room Player Player Spectators GameState
 
 
--- INITIAL
-newRoom :: StdGen -> Room
+newRoom :: Gen -> Room
 newRoom gen = Room Nothing Nothing [] (Waiting gen)
 
 
--- GETTERS
 getRoomGameState :: Room -> GameState
 getRoomGameState (Room _ _ _ state) = state
 
@@ -50,7 +47,6 @@ getSpeccingName (Room (Just (name, _))_ _ _) = name
 getSpeccingName (Room Nothing _ _ _) = "nobody yet..."
 
 
--- ADD CLIENTS.
 addSpec :: Client -> Room -> Room
 addSpec client (Room pa pb specs state) = Room pa pb (client:specs) state
 
@@ -78,7 +74,6 @@ roomEmpty (Room Nothing Nothing [] _) = True
 roomEmpty _ = False
 
 
--- REMOVE CLIENTS.
 removeClientRoom :: Client -> Room -> Room
 removeClientRoom client (Room pa pb specs state) =
   Room (newPlayer pa) (newPlayer pb) newSpecs state

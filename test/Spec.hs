@@ -1,12 +1,11 @@
 import Test.Tasty
 import Test.Tasty.HUnit
 
-import System.Random (mkStdGen)
-
 
 import Cards
 import Model
 import GameState
+import Util
 
 
 -- Helpers.
@@ -26,6 +25,7 @@ main = defaultMain $
     [
       initModelTests
     , cardTests
+    , turnEndTests
     ]
 
 
@@ -40,7 +40,7 @@ initModelTests =
         isEq (getLife PlayerB model) 50
     ]
   where
-    model = initModel PlayerA (mkStdGen 0)
+    model = initModel PlayerA (mkGen 0)
 
 
 cardTests :: TestTree
@@ -73,7 +73,7 @@ cardDaggerTests =
   where
     state =
       Playing $
-        (initModel PlayerA (mkStdGen 0))
+        (initModel PlayerA (mkGen 0))
           { stack = [StackCard PlayerA cardDagger] }
 
 
@@ -92,7 +92,7 @@ cardHubrisTests =
   where
     state =
       Playing $
-        (initModel PlayerA (mkStdGen 0))
+        (initModel PlayerA (mkGen 0))
           { stack = [
             StackCard PlayerB cardHubris
           , StackCard PlayerA cardFireball
@@ -117,7 +117,7 @@ cardFireballTests =
   where
     state =
       Playing $
-        (initModel PlayerA (mkStdGen 0))
+        (initModel PlayerA (mkGen 0))
           { stack = [
             StackCard PlayerA cardFireball
           , StackCard PlayerA cardDummy
@@ -125,3 +125,14 @@ cardFireballTests =
           , StackCard PlayerB cardDummy
           , StackCard PlayerB cardDummy
           ] }
+
+
+turnEndTests :: TestTree
+turnEndTests =
+  testGroup "Turn end tests"
+    [
+      testCase "Ending the turn when it's not your turn does nothing" $
+        isEq (update EndTurn PlayerB state) state
+    ]
+  where
+    state = Playing (initModel PlayerA (mkGen 0))

@@ -2,18 +2,18 @@ module GameState where
 
 import Data.Aeson (ToJSON(..), (.=), object)
 import Safe (headMay, tailSafe)
-import System.Random (StdGen, split)
 
 import Cards
 import Model
-import Util (shuffle)
+import Util (Gen, shuffle, split)
 
 
 data GameState =
-    Waiting StdGen
+    Waiting Gen
   | Playing Model
-  | Victory WhichPlayer StdGen ResolveList
-  | Draw StdGen ResolveList
+  | Victory WhichPlayer Gen ResolveList
+  | Draw Gen ResolveList
+  deriving (Eq, Show)
 
 
 instance ToJSON GameState where
@@ -44,10 +44,10 @@ data GameCommand =
   | Rematch
 
 
-initModel :: Turn -> StdGen -> Model
+initModel :: Turn -> Gen -> Model
 initModel turn gen = Model turn [] handPA handPB deckPA deckPB maxLife maxLife Nothing Nothing NoPass [] gen
   where
-    (genPA, genPB) = split gen :: (StdGen, StdGen)
+    (genPA, genPB) = split gen :: (Gen, Gen)
     initDeckPA = shuffle initDeck genPA :: Deck
     (handPA, deckPA) = splitAt 4 initDeckPA :: (Hand, Deck)
     initDeckPB = shuffle initDeck genPB :: Deck

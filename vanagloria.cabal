@@ -25,6 +25,7 @@ library
                      , random
                      , random-shuffle
                      , safe
+                     , string-conversions
                      , text
                      , websockets
   ghc-options:         -Wall
