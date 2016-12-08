@@ -17,6 +17,11 @@ resolveState :: GameState -> GameState
 resolveState (Playing model) = resolveAll model
 resolveState s = s
 
+-- fromPlaying
+fP :: GameState -> Model
+fP (Playing model) = model
+fP _               = error "Looks like that state's not a Playing, kid!"
+
 
 -- Tests.
 main :: IO ()
@@ -132,7 +137,22 @@ turnEndTests =
   testGroup "Turn end tests"
     [
       testCase "Ending the turn when it's not your turn does nothing" $
-        isEq (update EndTurn PlayerB state) state
+        isEq
+          (update EndTurn PlayerB state)
+          state
+    , testCase "Ending the turn swaps turns" $
+        isEq
+          (fP (update EndTurn PlayerA state))
+          ((fP state) { turn = PlayerB })
+    , testCase "Ending the turn twice draws a card for PlayerA" $
+        isEq
+          (length . (getHand PlayerA) . fP $ endTwice)
+          ((length . (getHand PlayerA) $ fP state) + 1)
+    , testCase "Ending the turn twice draws a card for PlayerB" $
+        isEq
+          (length . (getHand PlayerB) . fP $ endTwice)
+          ((length . (getHand PlayerB) $ fP state) + 1)
     ]
   where
     state = Playing (initModel PlayerA (mkGen 0))
+    endTwice = (update EndTurn PlayerA) . (update EndTurn PlayerB) $ state
