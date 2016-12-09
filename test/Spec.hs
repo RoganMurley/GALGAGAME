@@ -70,8 +70,8 @@ cardDaggerTests =
       testCase "Should hurt for 8" $
         case resolveState state of
           Playing model -> do
-            isEq (getLife PlayerA model) maxLife
-            isEq (getLife PlayerB model) (maxLife - 8)
+            isEq maxLife       (getLife PlayerA model)
+            isEq (maxLife - 8) (getLife PlayerB model)
           _ ->
             assertFailure "Incorrect state"
     ]
@@ -89,8 +89,8 @@ cardHubrisTests =
       testCase "Should negate everything to the right" $
         case resolveState state of
           Playing model -> do
-            isEq (getLife PlayerA model) maxLife
-            isEq (getLife PlayerB model) maxLife
+            isEq maxLife (getLife PlayerA model)
+            isEq maxLife (getLife PlayerB model)
           _ ->
             assertFailure "Incorrect state"
     ]
@@ -114,8 +114,8 @@ cardFireballTests =
       testCase "Should hurt for 4 for everything to the right" $
         case resolveState state of
           Playing model -> do
-            isEq (getLife PlayerA model) maxLife
-            isEq (getLife PlayerB model) (maxLife - 16)
+            isEq maxLife        (getLife PlayerA model)
+            isEq (maxLife - 16) (getLife PlayerB model)
           _ ->
             assertFailure "Incorrect state"
     ]
@@ -138,21 +138,34 @@ turnEndTests =
     [
       testCase "Ending the turn when it's not your turn does nothing" $
         isEq
-          (update EndTurn PlayerB state)
           state
-    , testCase "Ending the turn swaps turns" $
+          (update EndTurn PlayerB state)
+    , testCase "Ending the turn when your hand is full does nothing" $
         isEq
-          (fP (update EndTurn PlayerA state))
-          ((fP state) { turn = PlayerB })
+          fullHandState
+          (update EndTurn PlayerA fullHandState)
+    , testCase "Ending the turn swaps the turn player" $
+        isEq
+          PlayerB
+          (turn . fP $ update EndTurn PlayerA state)
+    , testCase "Ending the turn increments the passes count" $
+        isEq
+          OnePass
+          (passes . fP $ update EndTurn PlayerA state)
+    , testCase "Ending the turn twice resets the passes count" $
+        isEq
+          NoPass
+          (passes . fP $ endTwice)
     , testCase "Ending the turn twice draws a card for PlayerA" $
         isEq
-          (length . (getHand PlayerA) . fP $ endTwice)
           ((length . (getHand PlayerA) $ fP state) + 1)
+          (length . (getHand PlayerA) . fP $ endTwice)
     , testCase "Ending the turn twice draws a card for PlayerB" $
         isEq
-          (length . (getHand PlayerB) . fP $ endTwice)
           ((length . (getHand PlayerB) $ fP state) + 1)
+          (length . (getHand PlayerB) . fP $ endTwice)
     ]
   where
     state = Playing (initModel PlayerA (mkGen 0))
-    endTwice = (update EndTurn PlayerA) . (update EndTurn PlayerB) $ state
+    fullHandState = Playing . (drawCard PlayerA) . (drawCard PlayerA) $ initModel PlayerA (mkGen 0)
+    endTwice = (update EndTurn PlayerB) . (update EndTurn PlayerA) $ state

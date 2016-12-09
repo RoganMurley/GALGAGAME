@@ -118,7 +118,8 @@ modelReverso (Model turn stack handPA handPB deckPA deckPB lifePA lifePB hoverPA
 
 
 swapTurn :: Model -> Model
-swapTurn m@Model{ turn = turn } = m { turn = otherTurn turn }
+swapTurn m@Model{ turn = turn, passes = passes} =
+  m { turn = otherTurn turn, passes = incPasses passes }
 
 
 otherTurn :: Turn -> Turn
@@ -282,7 +283,7 @@ playCard name which m@Model{..}
   | otherwise =
     case card of
       Just c ->
-        resetPasses $ swapTurn $ modStack ((:) c) $ setHand which newHand m
+        resetPasses . swapTurn . (modStack ((:) c)) $ setHand which newHand m
       Nothing ->
         m
   where
