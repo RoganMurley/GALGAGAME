@@ -63,6 +63,7 @@ cardTests =
     , cardFireballTests
     , cardBoomerangTests
     , cardPotionTests
+    , cardVampireTests
     ]
 
 
@@ -200,6 +201,36 @@ cardPotionTests =
       (initModel PlayerA (mkGen 0))
         { stack = [
           StackCard PlayerA cardPotion
+        ] }
+    halfLife = maxLife `div` 2 :: Life
+    stateHalfLife =
+      Playing . (setLife PlayerA halfLife) $ fP state
+
+
+cardVampireTests :: TestTree
+cardVampireTests =
+  testGroup "Vampire Card"
+    [
+      testCase "Should lifesteal for 5" $
+        case resolveState stateHalfLife of
+          Playing model -> do
+            isEq (halfLife + 5) (getLife PlayerA model)
+            isEq (maxLife  - 5) (getLife PlayerB model)
+          _ ->
+            assertFailure "Incorrect state"
+    , testCase "No overheal" $
+        case resolveState state of
+          Playing model -> do
+            isEq maxLife       (getLife PlayerA model)
+            isEq (maxLife - 5) (getLife PlayerB model)
+          _ ->
+            assertFailure "Incorrect state"
+    ]
+  where
+    state = Playing $
+      (initModel PlayerA (mkGen 0))
+        { stack = [
+          StackCard PlayerA cardVampire
         ] }
     halfLife = maxLife `div` 2 :: Life
     stateHalfLife =
