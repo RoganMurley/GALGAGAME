@@ -12,6 +12,12 @@ import Util
 isEq :: (Eq a, Show a) => a -> a -> Assertion
 isEq = assertEqual ""
 
+isTrue :: Bool -> Assertion
+isTrue = assertBool ""
+
+isFalse :: Bool -> Assertion
+isFalse = (assertBool "") . not
+
 
 resolveState :: GameState -> GameState
 resolveState (Playing model) = resolveAll model
@@ -55,6 +61,7 @@ cardTests =
       cardDaggerTests
     , cardHubrisTests
     , cardFireballTests
+    , cardBoomerangTests
     ]
 
 
@@ -130,6 +137,42 @@ cardFireballTests =
           , StackCard PlayerB cardDummy
           , StackCard PlayerB cardDummy
           ] }
+
+cardBoomerangTests :: TestTree
+cardBoomerangTests =
+  testGroup "Boomerang Card"
+    [
+      testCase "Should hurt for 2" $
+        case resolveState state of
+          Playing model -> do
+            isEq maxLife        (getLife PlayerA model)
+            isEq (maxLife - 2)  (getLife PlayerB model)
+          _ ->
+            assertFailure "Incorrect state"
+    , testCase "Comes back to hand" $
+        case resolveState state of
+          Playing model ->
+            let hand = getHand PlayerA model in
+              isTrue (elem cardBoomerang hand)
+          _ ->
+            assertFailure "Incorrect state"
+    , testCase "Doesn't come back to hand if hand is full" $
+        case resolveState (fullHandState) of
+          Playing model ->
+            let hand = getHand PlayerA model in
+              isFalse (elem cardBoomerang hand)
+          _ ->
+            assertFailure "Incorrect state"
+    ]
+  where
+    state =
+      Playing $
+        (initModel PlayerA (mkGen 0))
+          { stack = [
+            StackCard PlayerA cardBoomerang
+          ] }
+    fullHandState =
+      Playing . (setHand PlayerA (replicate 6 cardDummy)) $ fP state
 
 
 turnEndTests :: TestTree
