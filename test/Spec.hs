@@ -62,6 +62,7 @@ cardTests =
     , cardHubrisTests
     , cardFireballTests
     , cardBoomerangTests
+    , cardPotionTests
     ]
 
 
@@ -173,6 +174,36 @@ cardBoomerangTests =
           ] }
     fullHandState =
       Playing . (setHand PlayerA (replicate 6 cardDummy)) $ fP state
+
+
+cardPotionTests :: TestTree
+cardPotionTests =
+  testGroup "Potion Card"
+    [
+      testCase "Should heal for 7" $
+        case resolveState stateHalfLife of
+          Playing model -> do
+            isEq (halfLife + 7) (getLife PlayerA model)
+            isEq maxLife        (getLife PlayerB model)
+          _ ->
+            assertFailure "Incorrect state"
+    , testCase "No overheal" $
+        case resolveState state of
+          Playing model -> do
+            isEq maxLife (getLife PlayerA model)
+            isEq maxLife (getLife PlayerB model)
+          _ ->
+            assertFailure "Incorrect state"
+    ]
+  where
+    state = Playing $
+      (initModel PlayerA (mkGen 0))
+        { stack = [
+          StackCard PlayerA cardPotion
+        ] }
+    halfLife = maxLife `div` 2 :: Life
+    stateHalfLife =
+      Playing . (setLife PlayerA halfLife) $ fP state
 
 
 turnEndTests :: TestTree
