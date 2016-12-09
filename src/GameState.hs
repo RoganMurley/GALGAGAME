@@ -99,17 +99,17 @@ update cmd which state =
         HoverCard name ->
           Playing (hoverCard name which (model { res = [] }))
         _ ->
-          Playing model
+          Playing (model { res = [] })
     Victory winner gen res ->
       case cmd of
         Rematch ->
-          Playing $ initModel winner (fst (split gen))
+          Playing . (initModel winner) . fst $ split gen
         _ ->
           Victory winner gen res
     Draw gen res ->
       case cmd of
         Rematch ->
-          Playing $ initModel PlayerA (fst (split gen))
+          Playing . (initModel PlayerA) . fst $ split gen
         _ ->
           Draw gen res
     s ->
@@ -121,16 +121,15 @@ endTurn which model@Model{..}
   | turn /= which = Playing model
   | handFull = Playing model
   | otherwise =
-    case bothPassed of
-      True ->
+    case passes of
+      OnePass ->
         case resolveAll model of
           Playing m ->
-            (Playing . drawCards . resetPasses . swapTurn) m
+            Playing . drawCards . resetPasses . swapTurn $ m
           s ->
             s
-      False -> Playing (swapTurn model)
+      _ -> Playing . swapTurn $ model
   where
-    bothPassed = passes == OnePass :: Bool
     handFull = length (getHand which model) >= maxHandLength :: Bool
     drawCards :: Model -> Model
     drawCards m = (drawCard PlayerA) . (drawCard PlayerB) $ m
@@ -138,32 +137,32 @@ endTurn which model@Model{..}
 
 resolveAll :: Model -> GameState
 resolveAll model@Model{ stack = stack } =
-  case null stack of
-    True -> Playing model
-    False ->
+  if null stack then
+    Playing model
+    else
       case resolveOne model of
         Playing newModel ->
           resolveAll newModel
-        state ->
-          state
+        s ->
+          s
   where
     resolveOne :: Model -> GameState
     resolveOne m =
-      rememberRes m $ lifeGate $ eff $ modStack tailSafe model
+      (rememberRes m) . lifeGate . eff $ modStack tailSafe model
       where
         eff :: Model -> Model
         eff = case headMay stack of
           Nothing -> id
-          Just (StackCard p c@(Card _ _ _ effect)) -> effect p c
+          Just (StackCard p c@(Card _ _ _ e)) -> e p c
 
     rememberRes :: Model -> GameState -> GameState
     rememberRes r (Playing m@Model{ res = res }) =
-      (Playing (m { res = res ++ [r { res = [] }] }))
+      Playing (m { res = res ++ [r { res = [] }] })
     rememberRes r (Victory p gen res) =
       Victory p gen (res ++ [r { res = [] }])
     rememberRes r (Draw gen res) =
       Draw gen (res ++ [r { res = [] }])
-    rememberRes _ x = x
+    rememberRes _ s = s
 
 
 lifeGate :: Model -> GameState
