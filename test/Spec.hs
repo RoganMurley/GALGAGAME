@@ -26,14 +26,20 @@ fromRight (Right r) = r
 fromRight _ = error "Illegal from right!"
 
 
-resolveState :: GameState -> GameState
+resolveState :: PlayState -> PlayState
 resolveState (Playing model) = resolveAll model
 resolveState s = s
 
 -- fromPlaying
-fP :: Either Err GameState -> Model
+fP :: Either Err PlayState -> Model
 fP (Right (Playing model)) = model
-fP _               = error "Looks like that state's not a Playing, kid!"
+fP _                       = error "Bad state to fP (fromPlaying)"
+
+
+-- fromPlayingGameState
+fPg :: Either Err GameState -> Model
+fPg (Right (Started s)) = fP (Right s)
+fPg _                   = error "Bad state to fPg (fromPlayingGameState)"
 
 
 -- Tests.
@@ -293,25 +299,25 @@ turnEndTests =
     , testCase "Ending the turn swaps the turn player" $
         isEq
           PlayerB
-          (turn . fP $ update EndTurn PlayerA state)
+          (turn . fPg $ update EndTurn PlayerA state)
     , testCase "Ending the turn increments the passes count" $
         isEq
           OnePass
-          (passes . fP $ update EndTurn PlayerA state)
+          (passes . fPg $ update EndTurn PlayerA state)
     , testCase "Ending the turn twice resets the passes count" $
         isEq
           NoPass
-          (passes . fP $ endTwice)
+          (passes . fPg $ endTwice)
     , testCase "Ending the turn twice draws a card for PlayerA" $
         isEq
-          ((length . (getHand PlayerA) . fP $ Right state) + 1)
-          (length . (getHand PlayerA) . fP $ endTwice)
+          ((length . (getHand PlayerA) . fPg $ Right state) + 1)
+          (length . (getHand PlayerA) . fPg $ endTwice)
     , testCase "Ending the turn twice draws a card for PlayerB" $
         isEq
-          ((length . (getHand PlayerB) . fP $ Right state) + 1)
-          (length . (getHand PlayerB) . fP $ endTwice)
+          ((length . (getHand PlayerB) . fPg $ Right state) + 1)
+          (length . (getHand PlayerB) . fPg $ endTwice)
     ]
   where
-    state = Playing (initModel PlayerA (mkGen 0))
-    fullHandState = Playing . (drawCard PlayerA) . (drawCard PlayerA) $ initModel PlayerA (mkGen 0)
+    state = Started . Playing $ initModel PlayerA (mkGen 0)
+    fullHandState = Started . Playing . (drawCard PlayerA) . (drawCard PlayerA) $ initModel PlayerA (mkGen 0)
     endTwice = (update EndTurn PlayerB) . fromRight . (update EndTurn PlayerA) $ state

@@ -5,7 +5,7 @@ import Data.Maybe (maybeToList)
 import Data.Text (Text)
 import Network.WebSockets (Connection)
 
-import GameState (initModel, GameState(..))
+import GameState (initModel, GameState(..), PlayState(..))
 import Model (WhichPlayer(..))
 import Util (Gen)
 
@@ -60,7 +60,7 @@ ifFullInit room
   | roomFull room =
     case room of
       Room pa pb specs (Waiting std) ->
-        Room pa pb specs $ Playing $ initModel PlayerA std
+        (Room pa pb specs) . Started . Playing $ initModel PlayerA std
       _ ->
         room
   | otherwise = room
