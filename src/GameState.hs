@@ -24,15 +24,10 @@ instance ToJSON GameState where
     object [
       "playing" .= toJSON model
     ]
-  toJSON (Ended (Just which) _ res) =
+  toJSON (Ended winner _ res) =
     object [
-      "victory" .= which
-    , "res"     .= res
-    ]
-  toJSON (Ended Nothing _ res) =
-    object [
-      "draw" .= True
-    , "res"  .= res
+      "winner" .= winner
+    , "res"    .= res
     ]
 
 
