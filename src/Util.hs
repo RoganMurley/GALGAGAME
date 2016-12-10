@@ -1,16 +1,22 @@
 module Util where
 
+import Data.Text (Text)
 import qualified System.Random as R
 import System.Random.Shuffle (shuffle')
+
+
+type Err = Text
 
 
 -- Apply a function n times.
 times :: Int -> (a -> a) -> a -> a
 times n f x = (iterate f x) !! n
 
+
 -- Convenient shuffle.
 shuffle :: [a] -> Gen -> [a]
 shuffle xs (Gen g) = shuffle' xs (length xs) g
+
 
 -- Special newtype-wrapped StdGen to ease equality checks.
 newtype Gen = Gen R.StdGen
