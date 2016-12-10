@@ -78,9 +78,9 @@ initDeck =
 
 
 reverso :: GameState -> GameState
-reverso (Playing model) = Playing (modelReverso model)
+reverso (Waiting gen)         = Waiting gen
+reverso (Playing model)       = Playing (modelReverso model)
 reverso (Ended which gen res) = Ended (otherPlayer <$> which) gen (modelReverso <$> res)
-reverso (Waiting gen) = Waiting gen
 
 
 update :: GameCommand -> WhichPlayer -> GameState -> Either Err GameState
@@ -93,7 +93,7 @@ update cmd which state =
         EndTurn ->
           endTurn which (model { res = [] })
         PlayCard name ->
-          Right . Playing $ playCard name which (model { res = [] })
+          Playing <$> playCard name which (model { res = [] })
         HoverCard name ->
           Right . Playing $ hoverCard name which (model { res = [] })
         _ ->
@@ -120,8 +120,8 @@ endTurn which model@Model{..}
         case resolveAll model of
           Playing m ->
             Right . Playing . drawCards . resetPasses . swapTurn $ m
-          _ ->
-            Left "You can't end your turn if you're not playing the game."
+          s ->
+            Right s
       NoPass -> Right . Playing . swapTurn $ model
   where
     handFull = length (getHand which model) >= maxHandLength :: Bool
