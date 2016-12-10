@@ -18,7 +18,7 @@ import qualified Network.WebSockets as WS
 import Model (CardName, WhichPlayer(..))
 import GameState (GameCommand(..), GameState(..), reverso, update)
 import Room
-import Util (getGen)
+import Util (Err, getGen)
 
 
 type ServerState = Map RoomName (MVar Room)
@@ -33,6 +33,7 @@ data Command =
   | HoverCardCommand CardName
   | RematchCommand
   | ErrorCommand Text
+  deriving (Show)
 
 
 newServerState :: ServerState
@@ -56,12 +57,22 @@ deleteRoom name state =
   modifyMVar state $ \s ->
     let s' = delete name s in return (s', s')
 
-stateUpdate :: GameCommand -> WhichPlayer -> MVar Room -> IO (Room)
+stateUpdate :: GameCommand -> WhichPlayer -> MVar Room -> IO (Either Err Room)
 stateUpdate cmd which room =
   modifyMVar room $ \r ->
-    let r' = updateRoom r in return (r', r')
+    case updateRoom r of
+      Left err ->
+        return (r, Left err)
+      Right r' ->
+        return (r', Right r')
   where
-    updateRoom (Room pa pb specs state) = Room pa pb specs (update cmd which state)
+    updateRoom :: Room -> Either Err Room
+    updateRoom (Room pa pb specs state) =
+      case update cmd which state of
+        Left err ->
+          Left err
+        Right newState ->
+          Right (Room pa pb specs newState)
 
 addSpecClient :: Client -> MVar Room -> IO (Room)
 addSpecClient client room =
@@ -206,12 +217,18 @@ userList room
     users = T.intercalate ", " $ map fst $ getRoomClients room
 
 actPlay :: Command -> WhichPlayer -> MVar Room -> IO ()
-actPlay cmd which room =
+actPlay cmd which roomVar =
   case trans cmd of
-    Just command ->
-      stateUpdate command which room >>= syncRoomClients
+    Just command -> do
+      updated <- stateUpdate command which roomVar
+      case updated of
+        Left err -> do
+          room <- readMVar roomVar
+          sendToPlayer which (toChat (ErrorCommand err)) room
+        Right state ->
+          syncRoomClients state
     Nothing ->
-      actSpec cmd room
+      actSpec cmd roomVar
   where
     trans :: Command -> Maybe GameCommand
     trans EndTurnCommand = Just EndTurn
@@ -262,7 +279,7 @@ parseMsg name msg =
     "rematch" ->
       RematchCommand
     _ ->
-      ErrorCommand "Unknown Command"
+      ErrorCommand ("Unknown Command " <> (cs (show command)))
   where
     parsed :: (Text, Text)
     parsed = T.breakOn ":" msg

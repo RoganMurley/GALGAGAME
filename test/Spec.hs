@@ -1,7 +1,6 @@
 import Test.Tasty
 import Test.Tasty.HUnit
 
-
 import Cards
 import Model
 import GameState
@@ -18,14 +17,18 @@ isTrue = assertBool ""
 isFalse :: Bool -> Assertion
 isFalse = (assertBool "") . not
 
+fromRight :: Either a b -> b
+fromRight (Right r) = r
+fromRight _ = error "Illegal from right!"
+
 
 resolveState :: GameState -> GameState
 resolveState (Playing model) = resolveAll model
 resolveState s = s
 
 -- fromPlaying
-fP :: GameState -> Model
-fP (Playing model) = model
+fP :: Either Err GameState -> Model
+fP (Right (Playing model)) = model
 fP _               = error "Looks like that state's not a Playing, kid!"
 
 
@@ -175,7 +178,7 @@ cardBoomerangTests =
             StackCard PlayerA cardBoomerang
           ] }
     fullHandState =
-      Playing . (setHand PlayerA (replicate 6 cardDummy)) $ fP state
+      Playing . (setHand PlayerA (replicate 6 cardDummy)) . fP $ Right state
 
 
 cardPotionTests :: TestTree
@@ -205,7 +208,7 @@ cardPotionTests =
         ] }
     halfLife = maxLife `div` 2 :: Life
     stateHalfLife =
-      Playing . (setLife PlayerA halfLife) $ fP state
+      Playing . (setLife PlayerA halfLife) . fP $ Right state
 
 
 cardVampireTests :: TestTree
@@ -235,7 +238,7 @@ cardVampireTests =
         ] }
     halfLife = maxLife `div` 2 :: Life
     stateHalfLife =
-      Playing . (setLife PlayerA halfLife) $ fP state
+      Playing . (setLife PlayerA halfLife) . fP $ Right state
 
 
 cardSuccubusTests :: TestTree
@@ -270,7 +273,7 @@ cardSuccubusTests =
           ] }
     halfLife = maxLife `div` 2 :: Life
     stateHalfLife =
-      Playing . (setLife PlayerA halfLife) $ fP state
+      Playing . (setLife PlayerA halfLife) . fP $ Right state
 
 
 turnEndTests :: TestTree
@@ -279,11 +282,11 @@ turnEndTests =
     [
       testCase "Ending the turn when it's not your turn does nothing" $
         isEq
-          state
+          (Right state)
           (update EndTurn PlayerB state)
     , testCase "Ending the turn when your hand is full does nothing" $
         isEq
-          fullHandState
+          (Right fullHandState)
           (update EndTurn PlayerA fullHandState)
     , testCase "Ending the turn swaps the turn player" $
         isEq
@@ -299,14 +302,14 @@ turnEndTests =
           (passes . fP $ endTwice)
     , testCase "Ending the turn twice draws a card for PlayerA" $
         isEq
-          ((length . (getHand PlayerA) $ fP state) + 1)
+          ((length . (getHand PlayerA) . fP $ Right state) + 1)
           (length . (getHand PlayerA) . fP $ endTwice)
     , testCase "Ending the turn twice draws a card for PlayerB" $
         isEq
-          ((length . (getHand PlayerB) $ fP state) + 1)
+          ((length . (getHand PlayerB) . fP $ Right state) + 1)
           (length . (getHand PlayerB) . fP $ endTwice)
     ]
   where
     state = Playing (initModel PlayerA (mkGen 0))
     fullHandState = Playing . (drawCard PlayerA) . (drawCard PlayerA) $ initModel PlayerA (mkGen 0)
-    endTwice = (update EndTurn PlayerB) . (update EndTurn PlayerA) $ state
+    endTwice = (update EndTurn PlayerB) . fromRight . (update EndTurn PlayerA) $ state

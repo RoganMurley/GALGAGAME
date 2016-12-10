@@ -1,11 +1,13 @@
 module GameState where
 
 import Data.Aeson (ToJSON(..), (.=), object)
+import Data.Monoid ((<>))
+import Data.String.Conversions (cs)
 import Safe (headMay, tailSafe)
 
 import Cards
 import Model
-import Util (Gen, shuffle, split)
+import Util (Err, Gen, shuffle, split)
 
 
 data GameState =
@@ -36,6 +38,7 @@ data GameCommand =
   | PlayCard CardName
   | HoverCard CardName
   | Rematch
+  deriving (Show)
 
 
 initModel :: Turn -> Gen -> Model
@@ -80,31 +83,31 @@ reverso (Ended which gen res) = Ended (otherPlayer <$> which) gen (modelReverso 
 reverso (Waiting gen) = Waiting gen
 
 
-update :: GameCommand -> WhichPlayer -> GameState -> GameState
+update :: GameCommand -> WhichPlayer -> GameState -> Either Err GameState
 update cmd which state =
   case state of
+    Waiting _ ->
+      Left ("Unknown command " <> (cs $ show cmd) <> " on a waiting GameState")
     Playing model ->
       case cmd of
         EndTurn ->
-          endTurn which (model { res = [] })
+          Right $ endTurn which (model { res = [] })
         PlayCard name ->
-          Playing (playCard name which (model { res = [] }))
+          Right . Playing $ playCard name which (model { res = [] })
         HoverCard name ->
-          Playing (hoverCard name which (model { res = [] }))
+          Right . Playing $ hoverCard name which (model { res = [] })
         _ ->
-          Playing (model { res = [] })
-    Ended winner gen res ->
+          Left ("Unknown command " <> (cs $ show cmd) <> " on a Playing GameState")
+    Ended winner gen _ ->
       case cmd of
         Rematch ->
             case winner of
               Nothing ->
-                Playing . (initModel PlayerA) . fst $ split gen
+                Right. Playing . (initModel PlayerA) . fst $ split gen
               Just w ->
-                Playing . (initModel w) . fst $ split gen
+                Right . Playing . (initModel w) . fst $ split gen
         _ ->
-          Ended winner gen res
-    s ->
-      s
+          Left ("Unknown command " <> (cs $ show cmd) <> " on an Ended GameState")
 
 -- Make safer.
 endTurn :: WhichPlayer -> Model -> GameState
