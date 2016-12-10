@@ -91,7 +91,7 @@ update cmd which state =
     Playing model ->
       case cmd of
         EndTurn ->
-          Right $ endTurn which (model { res = [] })
+          endTurn which (model { res = [] })
         PlayCard name ->
           Right . Playing $ playCard name which (model { res = [] })
         HoverCard name ->
@@ -110,19 +110,19 @@ update cmd which state =
           Left ("Unknown command " <> (cs $ show cmd) <> " on an Ended GameState")
 
 -- Make safer.
-endTurn :: WhichPlayer -> Model -> GameState
+endTurn :: WhichPlayer -> Model -> Either Err GameState
 endTurn which model@Model{..}
-  | turn /= which = Playing model
-  | handFull = Playing model
+  | turn /= which = Left "You can't end the turn when it's not your turn!"
+  | handFull = Right . Playing $ model
   | otherwise =
     case passes of
       OnePass ->
         case resolveAll model of
           Playing m ->
-            Playing . drawCards . resetPasses . swapTurn $ m
-          s ->
-            s
-      _ -> Playing . swapTurn $ model
+            Right . Playing . drawCards . resetPasses . swapTurn $ m
+          _ ->
+            Left "You can't end your turn if you're not playing the game."
+      NoPass -> Right . Playing . swapTurn $ model
   where
     handFull = length (getHand which model) >= maxHandLength :: Bool
     drawCards :: Model -> Model
