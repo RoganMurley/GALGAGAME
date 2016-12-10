@@ -64,6 +64,7 @@ cardTests =
     , cardBoomerangTests
     , cardPotionTests
     , cardVampireTests
+    , cardSuccubusTests
     ]
 
 
@@ -232,6 +233,41 @@ cardVampireTests =
         { stack = [
           StackCard PlayerA cardVampire
         ] }
+    halfLife = maxLife `div` 2 :: Life
+    stateHalfLife =
+      Playing . (setLife PlayerA halfLife) $ fP state
+
+
+cardSuccubusTests :: TestTree
+cardSuccubusTests =
+  testGroup "Succubus Card"
+    [
+      testCase "Should lifesteal for 2 for everything to the right" $
+        case resolveState stateHalfLife of
+          Playing model -> do
+            isEq (halfLife + 8) (getLife PlayerA model)
+            isEq (maxLife  - 8) (getLife PlayerB model)
+          _ ->
+            assertFailure "Incorrect state"
+    , testCase "No overheal" $
+        case resolveState state of
+          Playing model -> do
+            isEq maxLife       (getLife PlayerA model)
+            isEq (maxLife - 8) (getLife PlayerB model)
+          _ ->
+            assertFailure "Incorrect state"
+    ]
+  where
+    state =
+      Playing $
+        (initModel PlayerA (mkGen 0))
+          { stack = [
+            StackCard PlayerA cardSuccubus
+          , StackCard PlayerA cardDummy
+          , StackCard PlayerB cardDummy
+          , StackCard PlayerB cardDummy
+          , StackCard PlayerB cardDummy
+          ] }
     halfLife = maxLife `div` 2 :: Life
     stateHalfLife =
       Playing . (setLife PlayerA halfLife) $ fP state
