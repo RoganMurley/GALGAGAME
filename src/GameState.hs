@@ -11,8 +11,7 @@ import Util (Gen, shuffle, split)
 data GameState =
     Waiting Gen
   | Playing Model
-  | Victory WhichPlayer Gen ResolveList
-  | Draw Gen ResolveList
+  | Ended (Maybe WhichPlayer) Gen ResolveList
   deriving (Eq, Show)
 
 
@@ -25,12 +24,12 @@ instance ToJSON GameState where
     object [
       "playing" .= toJSON model
     ]
-  toJSON (Victory which _ res) =
+  toJSON (Ended (Just which) _ res) =
     object [
       "victory" .= which
     , "res"     .= res
     ]
-  toJSON (Draw _ res) =
+  toJSON (Ended Nothing _ res) =
     object [
       "draw" .= True
     , "res"  .= res
@@ -82,8 +81,7 @@ initDeck =
 
 reverso :: GameState -> GameState
 reverso (Playing model) = Playing (modelReverso model)
-reverso (Victory which gen res) = Victory (otherPlayer which) gen (fmap modelReverso res)
-reverso (Draw gen res) = Draw gen (fmap modelReverso res)
+reverso (Ended which gen res) = Ended (otherPlayer <$> which) gen (modelReverso <$> res)
 reverso (Waiting gen) = Waiting gen
 
 
@@ -100,18 +98,16 @@ update cmd which state =
           Playing (hoverCard name which (model { res = [] }))
         _ ->
           Playing (model { res = [] })
-    Victory winner gen res ->
+    Ended winner gen res ->
       case cmd of
         Rematch ->
-          Playing . (initModel winner) . fst $ split gen
+            case winner of
+              Nothing ->
+                Playing . (initModel PlayerA) . fst $ split gen
+              Just w ->
+                Playing . (initModel w) . fst $ split gen
         _ ->
-          Victory winner gen res
-    Draw gen res ->
-      case cmd of
-        Rematch ->
-          Playing . (initModel PlayerA) . fst $ split gen
-        _ ->
-          Draw gen res
+          Ended winner gen res
     s ->
       s
 
@@ -158,21 +154,19 @@ resolveAll model@Model{ stack = stack } =
     rememberRes :: Model -> GameState -> GameState
     rememberRes r (Playing m@Model{ res = res }) =
       Playing (m { res = res ++ [r { res = [] }] })
-    rememberRes r (Victory p gen res) =
-      Victory p gen (res ++ [r { res = [] }])
-    rememberRes r (Draw gen res) =
-      Draw gen (res ++ [r { res = [] }])
+    rememberRes r (Ended p gen res) =
+      Ended p gen (res ++ [r { res = [] }])
     rememberRes _ s = s
 
 
 lifeGate :: Model -> GameState
 lifeGate m@Model{..}
   | lifePA <= 0 && lifePB <= 0 =
-    Draw gen res
+    Ended Nothing gen res
   | lifePB <= 0 =
-    Victory PlayerA gen res
+    Ended (Just PlayerA) gen res
   | lifePA <= 0 =
-    Victory PlayerB gen res
+    Ended (Just PlayerB) gen res
   | otherwise =
     Playing $
       setLife PlayerA (min maxLife lifePA) $
