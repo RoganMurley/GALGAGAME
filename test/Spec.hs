@@ -17,6 +17,10 @@ isTrue = assertBool ""
 isFalse :: Bool -> Assertion
 isFalse = (assertBool "") . not
 
+errors :: Either a b -> Assertion
+errors (Left _)  = assert True
+errors (Right _) = assertFailure "Didn't error"
+
 fromRight :: Either a b -> b
 fromRight (Right r) = r
 fromRight _ = error "Illegal from right!"
@@ -280,10 +284,8 @@ turnEndTests :: TestTree
 turnEndTests =
   testGroup "Turn end tests"
     [
-      testCase "Ending the turn when it's not your turn does nothing" $
-        isEq
-          (Right state)
-          (update EndTurn PlayerB state)
+      testCase "Ending the turn when it's not your turn causes an error" $
+        errors (update EndTurn PlayerB state)
     , testCase "Ending the turn when your hand is full does nothing" $
         isEq
           (Right fullHandState)
