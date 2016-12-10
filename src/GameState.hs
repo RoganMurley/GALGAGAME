@@ -12,8 +12,7 @@ import Util (Err, Gen, shuffle, split)
 
 data GameState =
     Waiting Gen
-  | Playing Model
-  | Ended (Maybe WhichPlayer) Gen ResolveList
+  | Started PlayState
   deriving (Eq, Show)
 
 
@@ -22,6 +21,17 @@ instance ToJSON GameState where
     object [
       "waiting" .= True
     ]
+  toJSON (Started s) =
+    toJSON s
+
+
+data PlayState =
+    Playing Model
+  | Ended (Maybe WhichPlayer) Gen ResolveList
+  deriving (Eq, Show)
+
+
+instance ToJSON PlayState where
   toJSON (Playing model) =
     object [
       "playing" .= toJSON model
@@ -78,9 +88,9 @@ initDeck =
 
 
 reverso :: GameState -> GameState
-reverso (Waiting gen)         = Waiting gen
-reverso (Playing model)       = Playing (modelReverso model)
-reverso (Ended which gen res) = Ended (otherPlayer <$> which) gen (modelReverso <$> res)
+reverso (Waiting gen)                   = Waiting gen
+reverso (Started (Playing model))       = Started . Playing $ modelReverso model
+reverso (Started (Ended which gen res)) = Started $ Ended (otherPlayer <$> which) gen (modelReverso <$> res)
 
 
 update :: GameCommand -> WhichPlayer -> GameState -> Either Err GameState
@@ -88,29 +98,32 @@ update cmd which state =
   case state of
     Waiting _ ->
       Left ("Unknown command " <> (cs $ show cmd) <> " on a waiting GameState")
-    Playing model ->
-      case cmd of
-        EndTurn ->
-          endTurn which (model { res = [] })
-        PlayCard name ->
-          Playing <$> playCard name which (model { res = [] })
-        HoverCard name ->
-          Right . Playing $ hoverCard name which (model { res = [] })
-        _ ->
-          Left ("Unknown command " <> (cs $ show cmd) <> " on a Playing GameState")
-    Ended winner gen _ ->
-      case cmd of
-        Rematch ->
-            case winner of
-              Nothing ->
-                Right. Playing . (initModel PlayerA) . fst $ split gen
-              Just w ->
-                Right . Playing . (initModel w) . fst $ split gen
-        _ ->
-          Left ("Unknown command " <> (cs $ show cmd) <> " on an Ended GameState")
+    Started started ->
+      fmap Started $
+        case started of
+          Playing model ->
+            case cmd of
+              EndTurn ->
+                endTurn which (model { res = [] })
+              PlayCard name ->
+                Playing <$> playCard name which (model { res = [] })
+              HoverCard name ->
+                Right . Playing $ hoverCard name which (model { res = [] })
+              _ ->
+                Left ("Unknown command " <> (cs $ show cmd) <> " on a Playing GameState")
+          Ended winner gen _ ->
+            case cmd of
+              Rematch ->
+                  case winner of
+                    Nothing ->
+                      Right. Playing . (initModel PlayerA) . fst $ split gen
+                    Just w ->
+                      Right . Playing . (initModel w) . fst $ split gen
+              _ ->
+                Left ("Unknown command " <> (cs $ show cmd) <> " on an Ended GameState")
 
 -- Make safer.
-endTurn :: WhichPlayer -> Model -> Either Err GameState
+endTurn :: WhichPlayer -> Model -> Either Err PlayState
 endTurn which model@Model{..}
   | turn /= which = Left "You can't end the turn when it's not your turn!"
   | handFull = Right . Playing $ model
@@ -120,8 +133,8 @@ endTurn which model@Model{..}
         case resolveAll model of
           Playing m ->
             Right . Playing . drawCards . resetPasses . swapTurn $ m
-          s ->
-            Right s
+          Ended w g r ->
+            Right $ Ended w g r
       NoPass -> Right . Playing . swapTurn $ model
   where
     handFull = length (getHand which model) >= maxHandLength :: Bool
@@ -129,7 +142,7 @@ endTurn which model@Model{..}
     drawCards m = (drawCard PlayerA) . (drawCard PlayerB) $ m
 
 
-resolveAll :: Model -> GameState
+resolveAll :: Model -> PlayState
 resolveAll model@Model{ stack = stack } =
   if null stack then
     Playing model
@@ -140,7 +153,7 @@ resolveAll model@Model{ stack = stack } =
         s ->
           s
   where
-    resolveOne :: Model -> GameState
+    resolveOne :: Model -> PlayState
     resolveOne m =
       (rememberRes m) . lifeGate . eff $ modStack tailSafe model
       where
@@ -149,15 +162,14 @@ resolveAll model@Model{ stack = stack } =
           Nothing -> id
           Just (StackCard p c@(Card _ _ _ e)) -> e p c
 
-    rememberRes :: Model -> GameState -> GameState
+    rememberRes :: Model -> PlayState -> PlayState
     rememberRes r (Playing m@Model{ res = res }) =
       Playing (m { res = res ++ [r { res = [] }] })
     rememberRes r (Ended p gen res) =
       Ended p gen (res ++ [r { res = [] }])
-    rememberRes _ s = s
 
 
-lifeGate :: Model -> GameState
+lifeGate :: Model -> PlayState
 lifeGate m@Model{..}
   | lifePA <= 0 && lifePB <= 0 =
     Ended Nothing gen res
