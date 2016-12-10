@@ -7,7 +7,7 @@ import Data.Text (Text)
 import Safe (headMay, tailSafe)
 import Data.String.Conversions (cs)
 
-import Util (Gen)
+import Util (Err, Gen)
 
 
 data Model = Model
@@ -277,15 +277,15 @@ drawCard which model
 
 
 -- In future, tag cards in hand with a uid and use that.
-playCard :: CardName -> WhichPlayer -> Model -> Model
+playCard :: CardName -> WhichPlayer -> Model -> Either Err Model
 playCard name which m@Model{..}
-  | turn /= which = m
+  | turn /= which = Left "You can't play a card when it's not your turn"
   | otherwise =
     case card of
       Just c ->
-        resetPasses . swapTurn . (modStack ((:) c)) $ setHand which newHand m
+        Right . resetPasses . swapTurn . (modStack ((:) c)) $ setHand which newHand m
       Nothing ->
-        m
+        Left "You can't play a card you don't have in your hand"
   where
     (matches, misses) = partition (\(Card n _ _ _) -> n == name) (getHand which m) :: ([Card], [Card])
     newHand = (tailSafe matches) ++ misses :: Hand
