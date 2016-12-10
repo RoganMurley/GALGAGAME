@@ -37,9 +37,9 @@ fP _                       = error "Bad state to fP (fromPlaying)"
 
 
 -- fromPlayingGameState
-fPg :: Either Err GameState -> Model
-fPg (Right (Started s)) = fP (Right s)
-fPg _                   = error "Bad state to fPg (fromPlayingGameState)"
+fPg :: Either Err (GameState, [Outcome]) -> Model
+fPg (Right (Started s, [])) = fP (Right s)
+fPg _                        = error "Bad state to fPg (fromPlayingGameState)"
 
 
 -- Tests.
@@ -294,7 +294,7 @@ turnEndTests =
         errors (update EndTurn PlayerB state)
     , testCase "Ending the turn when your hand is full does nothing" $
         isEq
-          (Right fullHandState)
+          (Right (fullHandState, []))
           (update EndTurn PlayerA fullHandState)
     , testCase "Ending the turn swaps the turn player" $
         isEq
@@ -310,14 +310,14 @@ turnEndTests =
           (passes . fPg $ endTwice)
     , testCase "Ending the turn twice draws a card for PlayerA" $
         isEq
-          ((length . (getHand PlayerA) . fPg $ Right state) + 1)
+          ((length . (getHand PlayerA) . fPg $ Right (state, [])) + 1)
           (length . (getHand PlayerA) . fPg $ endTwice)
     , testCase "Ending the turn twice draws a card for PlayerB" $
         isEq
-          ((length . (getHand PlayerB) . fPg $ Right state) + 1)
+          ((length . (getHand PlayerB) . fPg $ Right (state, [])) + 1)
           (length . (getHand PlayerB) . fPg $ endTwice)
     ]
   where
     state = Started . Playing $ initModel PlayerA (mkGen 0)
     fullHandState = Started . Playing . (drawCard PlayerA) . (drawCard PlayerA) $ initModel PlayerA (mkGen 0)
-    endTwice = (update EndTurn PlayerB) . fromRight . (update EndTurn PlayerA) $ state
+    endTwice = (update EndTurn PlayerB) . fst . fromRight . (update EndTurn PlayerA) $ state

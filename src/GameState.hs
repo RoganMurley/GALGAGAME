@@ -16,6 +16,10 @@ data GameState =
   deriving (Eq, Show)
 
 
+data Outcome =
+  HoverOutcome HoverCardIndex
+  deriving (Eq, Show)
+
 instance ToJSON GameState where
   toJSON (Waiting _) =
     object [
@@ -93,13 +97,13 @@ reverso (Started (Playing model))       = Started . Playing $ modelReverso model
 reverso (Started (Ended which gen res)) = Started $ Ended (otherPlayer <$> which) gen (modelReverso <$> res)
 
 
-update :: GameCommand -> WhichPlayer -> GameState -> Either Err GameState
+update :: GameCommand -> WhichPlayer -> GameState -> Either Err (GameState, [Outcome])
 update cmd which state =
   case state of
     Waiting _ ->
       Left ("Unknown command " <> (cs $ show cmd) <> " on a waiting GameState")
     Started started ->
-      fmap Started $
+      fmap (\x -> (Started x, [])) $
         case started of
           Playing model ->
             case cmd of
@@ -122,7 +126,7 @@ update cmd which state =
               _ ->
                 Left ("Unknown command " <> (cs $ show cmd) <> " on an Ended GameState")
 
--- Make safer.
+
 endTurn :: WhichPlayer -> Model -> Either Err PlayState
 endTurn which model@Model{..}
   | turn /= which = Left "You can't end the turn when it's not your turn!"

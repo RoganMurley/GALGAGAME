@@ -71,7 +71,7 @@ stateUpdate cmd which room =
       case update cmd which state of
         Left err ->
           Left err
-        Right newState ->
+        Right (newState, _) ->
           Right (Room pa pb specs newState)
 
 addSpecClient :: Client -> MVar Room -> IO (Room)
