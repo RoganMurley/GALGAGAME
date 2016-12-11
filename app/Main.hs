@@ -15,7 +15,7 @@ import Control.Concurrent (MVar, newMVar, modifyMVar, readMVar)
 import qualified Data.Text as T
 import qualified Network.WebSockets as WS
 
-import Model (CardName, WhichPlayer(..))
+import Model (CardName, Outcome(..), WhichPlayer(..), otherPlayer)
 import GameState (GameCommand(..), GameState(..), reverso, update)
 import Room
 import Util (Err, getGen)
@@ -30,7 +30,7 @@ data Command =
   | LeaveCommand Username
   | EndTurnCommand
   | PlayCardCommand CardName
-  | HoverCardCommand CardName
+  | HoverCardCommand (Maybe CardName)
   | RematchCommand
   | ErrorCommand Text
   deriving (Show)
@@ -57,22 +57,26 @@ deleteRoom name state =
   modifyMVar state $ \s ->
     let s' = delete name s in return (s', s')
 
-stateUpdate :: GameCommand -> WhichPlayer -> MVar Room -> IO (Either Err Room)
+stateUpdate :: GameCommand -> WhichPlayer -> MVar Room -> IO (Either Err (Bool, Room, [Outcome]))
 stateUpdate cmd which room =
   modifyMVar room $ \r ->
     case updateRoom r of
       Left err ->
         return (r, Left err)
-      Right r' ->
-        return (r', Right r')
+      Right (Nothing, o) ->
+        return (r, Right (False, r, o))
+      Right (Just r', o) ->
+        return (r', Right (True, r', o))
   where
-    updateRoom :: Room -> Either Err Room
+    updateRoom :: Room -> Either Err (Maybe Room, [Outcome])
     updateRoom (Room pa pb specs state) =
       case update cmd which state of
         Left err ->
           Left err
-        Right (newState, _) ->
-          Right (Room pa pb specs newState)
+        Right (Nothing, outcomes) ->
+          Right (Nothing, outcomes)
+        Right (Just newState, outcomes) ->
+          Right (Just $ Room pa pb specs newState, outcomes)
 
 addSpecClient :: Client -> MVar Room -> IO (Room)
 addSpecClient client room =
@@ -94,8 +98,7 @@ removeClient client room =
     let r' = removeClientRoom client r in return (r', r')
 
 broadcast :: Text -> Room -> IO ()
-broadcast msg room = do
-  -- T.putStrLn $ "Broadcasting: " <> msg
+broadcast msg room =
   forM_ (getRoomClients room) $ \(_, conn) -> WS.sendTextData conn msg
 
 sendToPlayer :: WhichPlayer -> Text -> Room -> IO ()
@@ -107,9 +110,13 @@ sendToPlayer which msg room =
       return ()
 
 sendToSpecs :: Text -> Room -> IO ()
-sendToSpecs msg room = do
-  -- T.putStrLn ("To Specs: " <> msg)
+sendToSpecs msg room =
   forM_ (getRoomSpecs room) $ \(_, conn) -> WS.sendTextData conn msg
+
+sendExcluding :: WhichPlayer -> Text -> Room -> IO ()
+sendExcluding which msg room = do
+  sendToSpecs msg room
+  sendToPlayer (otherPlayer which) msg room
 
 -- MAIN STUFF.
 main :: IO ()
@@ -225,8 +232,12 @@ actPlay cmd which roomVar =
         Left err -> do
           room <- readMVar roomVar
           sendToPlayer which (toChat (ErrorCommand err)) room
-        Right state ->
-          syncRoomClients state
+        Right (changed, room, outcomes) -> do
+          if changed then
+            syncRoomClients room
+              else
+                return ()
+          forM_ outcomes (actOutcome room)
     Nothing ->
       actSpec cmd roomVar
   where
@@ -240,9 +251,13 @@ actPlay cmd which roomVar =
 actSpec :: Command -> MVar Room -> IO ()
 actSpec cmd room = readMVar room >>= broadcast (toChat cmd)
 
+actOutcome :: Room -> Outcome -> IO ()
+actOutcome room outcome@(HoverOutcome which _) =
+  sendExcluding which (("hover:" <>) . cs $ encode outcome) room
+
 syncClient :: Client -> GameState -> IO ()
 syncClient (_, conn) game =
-  WS.sendTextData conn ("sync:" <> (cs $ encode $ game) :: Text)
+  WS.sendTextData conn (("sync:" <>) . cs . encode $ game :: Text)
 
 syncRoomClients :: Room -> IO ()
 syncRoomClients room = do
@@ -273,7 +288,11 @@ parseMsg name msg =
     "play" ->
       PlayCardCommand content
     "hover" ->
-      HoverCardCommand content
+      case content of
+        "null" ->
+          HoverCardCommand Nothing
+        _ ->
+          HoverCardCommand (Just content)
     "chat" ->
       ChatCommand name content
     "rematch" ->

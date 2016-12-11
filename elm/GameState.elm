@@ -4,7 +4,7 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Json.Decode as Json exposing (field, maybe)
-import Messages exposing (GameMsg(Sync), Msg(DrawCard, EndTurn, HoverCard, PlayCard, Rematch))
+import Messages exposing (GameMsg(..), Msg(DrawCard, EndTurn, HoverCard, PlayCard, Rematch))
 
 
 -- TYPES.
@@ -151,8 +151,8 @@ viewHand hand =
             div
                 [ class "card my-card"
                 , onClick (PlayCard name)
-                , onMouseEnter (HoverCard name)
-                , onMouseLeave (HoverCard "")
+                , onMouseEnter (HoverCard (Just name))
+                , onMouseLeave (HoverCard Nothing)
                 ]
                 [ div [ class "card-title" ] [ text name ]
                 , div
@@ -268,6 +268,14 @@ stateUpdate msg state =
         Sync str ->
             resProcess state (syncState state str)
 
+        HoverOutcome i ->
+            case state of
+                PlayingGame m r ->
+                    PlayingGame { m | otherHover = i } r
+
+                s ->
+                    s
+
 
 syncState : GameState -> String -> GameState
 syncState model msg =
@@ -369,14 +377,13 @@ modelDecoder =
                 (field "owner" whichDecoder)
                 (field "card" cardDecoder)
     in
-        Json.map7 Model
+        Json.map6 (\a b c d e f -> Model a b c d e f Nothing)
             (field "handPA" (Json.list cardDecoder))
             (field "handPB" Json.int)
             (field "stack" (Json.list stackCardDecoder))
             (field "turn" whichDecoder)
             (field "lifePA" Json.int)
             (field "lifePB" Json.int)
-            (maybe (field "hoverPB" Json.int))
 
 
 resDecoder : Json.Decoder (List Model)
