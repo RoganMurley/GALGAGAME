@@ -91,7 +91,7 @@ cardProphecy = Card "Prophecy" "Return all cards to the right to their owner's h
 
 
 cardSiren :: Card
-cardSiren = Card "Siren" "Your opponent gets two cards that hurt them for 8 damage when played" "harpy.svg" eff
+cardSiren = Card "Siren" "Your opponent gets two cards that hurt them for 8 damage each" "harpy.svg" eff
   where
     eff :: CardEff
     eff p _ m = modHand (times 2 (addToHand cardSong)) (otherPlayer p) m
