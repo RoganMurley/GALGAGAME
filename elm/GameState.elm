@@ -336,9 +336,8 @@ decodePlaying msg =
     let
         decoder : Json.Decoder GameState
         decoder =
-            Json.map2 (\a b -> PlayingGame a ( b, 0 ))
+            Json.map (\a -> PlayingGame a ( [], 0 ))
                 (field "playing" modelDecoder)
-                (field "playing" resDecoder)
     in
         Json.decodeString decoder msg
 
@@ -388,7 +387,7 @@ modelDecoder =
 
 resDecoder : Json.Decoder (List Model)
 resDecoder =
-    field "res" (Json.list modelDecoder)
+    field "resolve" (Json.list modelDecoder)
 
 
 
