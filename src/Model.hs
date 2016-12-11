@@ -16,6 +16,7 @@ type Username = Text
 data Outcome =
     ChatOutcome Username Text
   | HoverOutcome ExcludePlayer (Maybe Int)
+  | ResolveOutcome ResolveList
   deriving (Eq, Show)
 
 
@@ -26,6 +27,10 @@ instance ToJSON Outcome where
     object [
       "name" .= name
     , "msg"  .= msg
+    ]
+  toJSON (ResolveOutcome res) =
+    object [
+      "resolve" .= res
     ]
 
 
@@ -39,7 +44,6 @@ data Model = Model
   , model_lifePA  :: Life
   , model_lifePB  :: Life
   , passes  :: Passes
-  , res     :: ResolveList
   , gen     :: Gen
   }
   deriving (Eq, Show)
@@ -88,7 +92,6 @@ instance ToJSON Model where
       , "handPB"  .= length (getHand PlayerB model)
       , "lifePA"  .= getLife PlayerA model
       , "lifePB"  .= getLife PlayerB model
-      , "res"     .= res
       ]
 
 
@@ -124,8 +127,8 @@ maxLife = 50
 
 
 modelReverso :: Model -> Model
-modelReverso (Model turn stack handPA handPB deckPA deckPB lifePA lifePB passes res gen) =
-  (Model (otherTurn turn) (stackRev stack) handPB handPA deckPB deckPA lifePB lifePA passes (fmap modelReverso res) gen)
+modelReverso (Model turn stack handPA handPB deckPA deckPB lifePA lifePB passes gen) =
+  (Model (otherTurn turn) (stackRev stack) handPB handPA deckPB deckPA lifePB lifePA passes gen)
   where
     stackRev :: Stack -> Stack
     stackRev s = fmap (\(StackCard p c) -> StackCard (otherPlayer p) c) s

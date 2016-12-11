@@ -257,6 +257,8 @@ actOutcome room outcome@(HoverOutcome which _) =
   sendExcluding which (("hover:" <>) . cs $ encode outcome) room
 actOutcome room (ChatOutcome username msg) =
   broadcast ("chat:" <> username <> ": " <> msg) room
+actOutcome room outcome@(ResolveOutcome _) =
+  broadcast (cs $ encode outcome) room
 
 syncClient :: Client -> GameState -> IO ()
 syncClient (_, conn) game =

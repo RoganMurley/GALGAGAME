@@ -28,19 +28,18 @@ instance ToJSON GameState where
 
 data PlayState =
     Playing Model
-  | Ended (Maybe WhichPlayer) Gen ResolveList
+  | Ended (Maybe WhichPlayer) Gen
   deriving (Eq, Show)
 
 
 instance ToJSON PlayState where
   toJSON (Playing model) =
     object [
-      "playing" .= toJSON model
+      "playing" .= model
     ]
-  toJSON (Ended winner _ res) =
+  toJSON (Ended winner _) =
     object [
       "winner" .= winner
-    , "res"    .= res
     ]
 
 
@@ -54,7 +53,7 @@ data GameCommand =
 
 
 initModel :: Turn -> Gen -> Model
-initModel turn gen = Model turn [] handPA handPB deckPA deckPB maxLife maxLife NoPass [] gen
+initModel turn gen = Model turn [] handPA handPB deckPA deckPB maxLife maxLife NoPass gen
   where
     (genPA, genPB) = split gen :: (Gen, Gen)
     initDeckPA = shuffle initDeck genPA :: Deck
@@ -90,9 +89,9 @@ initDeck =
 
 
 reverso :: GameState -> GameState
-reverso (Waiting gen)                   = Waiting gen
-reverso (Started (Playing model))       = Started . Playing $ modelReverso model
-reverso (Started (Ended which gen res)) = Started $ Ended (otherPlayer <$> which) gen (modelReverso <$> res)
+reverso (Waiting gen)               = Waiting gen
+reverso (Started (Playing model))   = Started . Playing $ modelReverso model
+reverso (Started (Ended which gen)) = Started $ Ended (otherPlayer <$> which) gen
 
 
 update :: GameCommand -> WhichPlayer -> GameState -> Either Err (Maybe GameState, [Outcome])
@@ -106,14 +105,14 @@ update cmd which state =
         Playing model ->
           case cmd of
             EndTurn ->
-              endTurn which (model { res = [] })
+              endTurn which model
             PlayCard name ->
-              ((\x -> (x, [])) . Just . Started . Playing) <$> (playCard name which (model { res = [] }))
+              ((\x -> (x, [])) . Just . Started . Playing) <$> (playCard name which model)
             HoverCard name ->
-              (\(_, y) -> (Nothing, y)) <$> (hoverCard name which (model { res = [] }))
+              (\(_, y) -> (Nothing, y)) <$> (hoverCard name which model)
             _ ->
               Left ("Unknown command " <> (cs $ show cmd) <> " on a Playing GameState")
-        Ended winner gen _ ->
+        Ended winner gen ->
           case cmd of
             Rematch ->
                 case winner of
@@ -132,11 +131,11 @@ endTurn which model@Model{..}
   | otherwise =
     case passes of
       OnePass ->
-        case resolveAll model of
-          Playing m ->
-            Right (Just . Started . Playing . drawCards . resetPasses . swapTurn $ m, [])
-          Ended w g r ->
-            Right (Just . Started $ Ended w g r, [])
+        case resolveAll (model, []) of
+          (Playing m, res) ->
+            Right (Just . Started . Playing . drawCards . resetPasses . swapTurn $ m, [ResolveOutcome res])
+          (Ended w g, res) ->
+            Right (Just . Started $ Ended w g, [ResolveOutcome res])
       NoPass ->
         Right (Just . Started . Playing . swapTurn $ model, [])
   where
@@ -145,45 +144,44 @@ endTurn which model@Model{..}
     drawCards m = (drawCard PlayerA) . (drawCard PlayerB) $ m
 
 
-resolveAll :: Model -> PlayState
-resolveAll model@Model{ stack = stack } =
+resolveAll :: (Model, ResolveList) -> (PlayState, ResolveList)
+resolveAll (model@Model{ stack = stack }, res) =
   if null stack then
-    Playing model
+    (Playing model, res)
     else
       case resolveOne model of
         Playing newModel ->
-          resolveAll newModel
-        s ->
-          s
+          let newRes = model : res in
+            (fst . resolveAll $ (newModel, newRes), newRes)
+        Ended which gen ->
+          (Ended which gen, model : res)
   where
     resolveOne :: Model -> PlayState
     resolveOne m =
-      (rememberRes m) . lifeGate . eff $ modStack tailSafe model
+      lifeGate . eff $ modStack tailSafe m
       where
         eff :: Model -> Model
-        eff = case headMay stack of
-          Nothing -> id
-          Just (StackCard p c@(Card _ _ _ e)) -> e p c
-
-    rememberRes :: Model -> PlayState -> PlayState
-    rememberRes r (Playing m@Model{ res = res }) =
-      Playing (m { res = res ++ [r { res = [] }] })
-    rememberRes r (Ended p gen res) =
-      Ended p gen (res ++ [r { res = [] }])
+        eff =
+          case headMay stack of
+            Nothing ->
+              id
+            Just (StackCard p c@(Card _ _ _ e)) ->
+              e p c
 
 
 lifeGate :: Model -> PlayState
-lifeGate m@Model{..}
+lifeGate m@Model{ gen = gen }
   | lifePA <= 0 && lifePB <= 0 =
-    Ended Nothing gen res
+    Ended Nothing gen
   | lifePB <= 0 =
-    Ended (Just PlayerA) gen res
+    Ended (Just PlayerA) gen
   | lifePA <= 0 =
-    Ended (Just PlayerB) gen res
+    Ended (Just PlayerB) gen
   | otherwise =
-    Playing $
-      setLife PlayerA (min maxLife lifePA) $
-        setLife PlayerB (min maxLife lifePB) m
+    Playing
+      . (setLife PlayerA (min maxLife lifePA))
+      . (setLife PlayerB (min maxLife lifePB))
+      $ m
   where
     lifePA = getLife PlayerA m :: Life
     lifePB = getLife PlayerB m :: Life

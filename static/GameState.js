@@ -9800,8 +9800,8 @@ var _user$vanagloria$GameState$whichDecoder = function () {
 				return _elm_lang$core$Native_Utils.crashCase(
 					'GameState',
 					{
-						start: {line: 351, column: 13},
-						end: {line: 359, column: 57}
+						start: {line: 350, column: 13},
+						end: {line: 358, column: 57}
 					},
 					_p24)(
 					A2(_elm_lang$core$Basics_ops['++'], 'Invalid player ', s));
@@ -9840,9 +9840,25 @@ var _user$vanagloria$GameState$modelDecoder = function () {
 		A2(_elm_lang$core$Json_Decode$field, 'lifePA', _elm_lang$core$Json_Decode$int),
 		A2(_elm_lang$core$Json_Decode$field, 'lifePB', _elm_lang$core$Json_Decode$int));
 }();
+var _user$vanagloria$GameState$decodePlaying = function (msg) {
+	var decoder = A2(
+		_elm_lang$core$Json_Decode$map,
+		function (a) {
+			return A2(
+				_user$vanagloria$GameState$PlayingGame,
+				a,
+				{
+					ctor: '_Tuple2',
+					_0: {ctor: '[]'},
+					_1: 0
+				});
+		},
+		A2(_elm_lang$core$Json_Decode$field, 'playing', _user$vanagloria$GameState$modelDecoder));
+	return A2(_elm_lang$core$Json_Decode$decodeString, decoder, msg);
+};
 var _user$vanagloria$GameState$resDecoder = A2(
 	_elm_lang$core$Json_Decode$field,
-	'res',
+	'resolve',
 	_elm_lang$core$Json_Decode$list(_user$vanagloria$GameState$modelDecoder));
 var _user$vanagloria$GameState$decodeEnded = function (msg) {
 	var decoder = A3(
@@ -9859,20 +9875,6 @@ var _user$vanagloria$GameState$decodeEnded = function (msg) {
 			'winner',
 			_elm_lang$core$Json_Decode$maybe(_user$vanagloria$GameState$whichDecoder)),
 		_user$vanagloria$GameState$resDecoder);
-	return A2(_elm_lang$core$Json_Decode$decodeString, decoder, msg);
-};
-var _user$vanagloria$GameState$decodePlaying = function (msg) {
-	var decoder = A3(
-		_elm_lang$core$Json_Decode$map2,
-		F2(
-			function (a, b) {
-				return A2(
-					_user$vanagloria$GameState$PlayingGame,
-					a,
-					{ctor: '_Tuple2', _0: b, _1: 0});
-			}),
-		A2(_elm_lang$core$Json_Decode$field, 'playing', _user$vanagloria$GameState$modelDecoder),
-		A2(_elm_lang$core$Json_Decode$field, 'playing', _user$vanagloria$GameState$resDecoder));
 	return A2(_elm_lang$core$Json_Decode$decodeString, decoder, msg);
 };
 var _user$vanagloria$GameState$decodeState = function (msg) {
