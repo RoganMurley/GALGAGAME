@@ -11,15 +11,22 @@ import Util (Err, Gen)
 
 
 type ExcludePlayer = WhichPlayer
+type Username = Text
 
 data Outcome =
-  HoverOutcome ExcludePlayer (Maybe Int)
+    ChatOutcome Username Text
+  | HoverOutcome ExcludePlayer (Maybe Int)
   deriving (Eq, Show)
 
 
 instance ToJSON Outcome where
   toJSON (HoverOutcome _ index) =
     toJSON index
+  toJSON (ChatOutcome name msg) =
+    object [
+      "name" .= name
+    , "msg"  .= msg
+    ]
 
 
 data Model = Model

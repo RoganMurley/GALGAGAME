@@ -15,7 +15,7 @@ import Control.Concurrent (MVar, newMVar, modifyMVar, readMVar)
 import qualified Data.Text as T
 import qualified Network.WebSockets as WS
 
-import Model (CardName, Outcome(..), WhichPlayer(..), otherPlayer)
+import Model (CardName, Outcome(..), Username, WhichPlayer(..), otherPlayer)
 import GameState (GameCommand(..), GameState(..), reverso, update)
 import Room
 import Util (Err, getGen)
@@ -139,17 +139,17 @@ application state pending = do
 
       case parsePrefix msg of
         Nothing ->
-          WS.sendTextData conn $ toChat $
+          (WS.sendTextData conn) . toChat $
             ErrorCommand $ "Connection protocol failure" <> msg
 
         Just prefix ->
           case prefix of
             _ | any ($ fst client) [ T.null ] ->
-                WS.sendTextData conn $ toChat $
+                (WS.sendTextData conn) . toChat $
                   ErrorCommand "Name must be nonempty"
 
               | clientExists client initialRoom ->
-                WS.sendTextData conn $ toChat $
+                (WS.sendTextData conn) . toChat $
                   ErrorCommand "User already exists"
 
               | prefix == "play:" ->
@@ -175,7 +175,7 @@ application state pending = do
               where
                 client = (T.drop (T.length prefix) msg, conn) :: Client
     Nothing ->
-      WS.sendTextData conn $ toChat $
+      (WS.sendTextData conn) . toChat $
         ErrorCommand "Bad room name protocol"
 
 spectate :: Client -> MVar Room -> IO ()
@@ -245,7 +245,8 @@ actPlay cmd which roomVar =
     trans EndTurnCommand = Just EndTurn
     trans (PlayCardCommand name) = Just (PlayCard name)
     trans (HoverCardCommand name) = Just (HoverCard name)
-    trans RematchCommand = Just (Rematch)
+    trans RematchCommand = Just Rematch
+    trans (ChatCommand name content) = Just (Chat name content)
     trans _ = Nothing
 
 actSpec :: Command -> MVar Room -> IO ()
@@ -254,6 +255,8 @@ actSpec cmd room = readMVar room >>= broadcast (toChat cmd)
 actOutcome :: Room -> Outcome -> IO ()
 actOutcome room outcome@(HoverOutcome which _) =
   sendExcluding which (("hover:" <>) . cs $ encode outcome) room
+actOutcome room (ChatOutcome username msg) =
+  broadcast ("chat:" <> username <> ": " <> msg) room
 
 syncClient :: Client -> GameState -> IO ()
 syncClient (_, conn) game =

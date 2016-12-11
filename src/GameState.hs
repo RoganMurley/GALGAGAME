@@ -4,6 +4,7 @@ import Data.Aeson (ToJSON(..), (.=), object)
 import Data.Monoid ((<>))
 import Data.String.Conversions (cs)
 import Safe (headMay, tailSafe)
+import Data.Text (Text)
 
 import Cards
 import Model
@@ -48,6 +49,7 @@ data GameCommand =
   | PlayCard CardName
   | HoverCard (Maybe CardName)
   | Rematch
+  | Chat Username Text
   deriving (Show)
 
 
@@ -94,6 +96,7 @@ reverso (Started (Ended which gen res)) = Started $ Ended (otherPlayer <$> which
 
 
 update :: GameCommand -> WhichPlayer -> GameState -> Either Err (Maybe GameState, [Outcome])
+update (Chat username msg) _ _ = Right (Nothing, [ChatOutcome username msg])
 update cmd which state =
   case state of
     Waiting _ ->
