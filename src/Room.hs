@@ -6,11 +6,10 @@ import Data.Text (Text)
 import Network.WebSockets (Connection)
 
 import GameState (initModel, GameState(..), PlayState(..))
-import Model (WhichPlayer(..))
+import Model (Username, WhichPlayer(..))
 import Util (Gen)
 
 
-type Username = Text
 type RoomName = Text
 
 type Client = (Username, Connection)
