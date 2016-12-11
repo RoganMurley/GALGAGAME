@@ -5,9 +5,21 @@ import Data.Aeson (ToJSON(..), (.=), object)
 import Data.List (findIndex, partition)
 import Data.Text (Text)
 import Safe (headMay, tailSafe)
-import Data.String.Conversions (cs)
+import Data.String.Conversions ((<>), cs)
 
 import Util (Err, Gen)
+
+
+type ExcludePlayer = WhichPlayer
+
+data Outcome =
+  HoverOutcome ExcludePlayer (Maybe Int)
+  deriving (Eq, Show)
+
+
+instance ToJSON Outcome where
+  toJSON (HoverOutcome _ index) =
+    toJSON index
 
 
 data Model = Model
@@ -19,8 +31,6 @@ data Model = Model
   , model_deckPB  :: Deck
   , model_lifePA  :: Life
   , model_lifePB  :: Life
-  , model_hoverPA :: HoverCardIndex
-  , model_hoverPB :: HoverCardIndex
   , passes  :: Passes
   , res     :: ResolveList
   , gen     :: Gen
@@ -51,7 +61,6 @@ data StackCard = StackCard WhichPlayer Card
 
 type Life = Int
 type ResolveList = [Model]
-type HoverCardIndex = Maybe Int
 
 
 data WhichPlayer = PlayerA | PlayerB
@@ -72,8 +81,6 @@ instance ToJSON Model where
       , "handPB"  .= length (getHand PlayerB model)
       , "lifePA"  .= getLife PlayerA model
       , "lifePB"  .= getLife PlayerB model
-      , "hoverPA" .= getHover PlayerA model
-      , "hoverPB" .= getHover PlayerB model
       , "res"     .= res
       ]
 
@@ -110,8 +117,8 @@ maxLife = 50
 
 
 modelReverso :: Model -> Model
-modelReverso (Model turn stack handPA handPB deckPA deckPB lifePA lifePB hoverPA hoverPB passes res gen) =
-  (Model (otherTurn turn) (stackRev stack) handPB handPA deckPB deckPA lifePB lifePA hoverPB hoverPA passes (fmap modelReverso res) gen)
+modelReverso (Model turn stack handPA handPB deckPA deckPB lifePA lifePB passes res gen) =
+  (Model (otherTurn turn) (stackRev stack) handPB handPA deckPB deckPA lifePB lifePA passes (fmap modelReverso res) gen)
   where
     stackRev :: Stack -> Stack
     stackRev s = fmap (\(StackCard p c) -> StackCard (otherPlayer p) c) s
@@ -229,17 +236,6 @@ resetPasses :: Model -> Model
 resetPasses model = model { passes = NoPass }
 
 
--- HOVER CARD.
-getHover :: WhichPlayer -> Model -> HoverCardIndex
-getHover PlayerA = model_hoverPA
-getHover PlayerB = model_hoverPB
-
-
-setHover :: WhichPlayer -> HoverCardIndex -> Model -> Model
-setHover PlayerA hover model = model { model_hoverPA = hover }
-setHover PlayerB hover model = model { model_hoverPB = hover }
-
-
 -- ACTIONS
 hurt :: Life -> WhichPlayer -> Model -> Model
 hurt damage which model = modLife (\l -> l - damage) which model
@@ -292,11 +288,24 @@ playCard name which m@Model{..}
     card = (StackCard which) <$> (headMay matches) :: Maybe StackCard
 
 
-hoverCard :: CardName -> WhichPlayer -> Model -> Model
-hoverCard name which model = setHover which cardIndex model
+hoverCard :: Maybe CardName -> WhichPlayer -> Model -> Either Err (Model, [Outcome])
+hoverCard name which model =
+    case name of
+      Just n ->
+        case index of
+          Just i ->
+            Right (model, [HoverOutcome which (Just i)])
+          Nothing ->
+            Left ("Can't hover over a card you don't have (" <> n <> ")")
+      Nothing ->
+        Right (model, [HoverOutcome which Nothing])
   where
-    cardIndex :: Maybe Int
-    cardIndex = findIndex (\(Card n _ _ _) -> n == name) (getHand which model)
+    index :: Maybe Int
+    index = case name of
+      Just cardName ->
+        findIndex (\(Card n _ _ _) -> n == cardName) (getHand which model)
+      Nothing ->
+        Nothing
 
 
 patchEff :: CardEff -> (Model -> Model -> Model) -> CardEff

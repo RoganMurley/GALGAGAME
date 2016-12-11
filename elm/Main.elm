@@ -210,7 +210,16 @@ connectedUpdate hostname msg ({ chat, game, mode } as model) =
                     ( model, Cmd.none )
 
         HoverCard name ->
-            ( model, message (Send ("hover:" ++ name)) )
+            let
+                cardName =
+                    case name of
+                        Just x ->
+                            x
+
+                        Nothing ->
+                            "null"
+            in
+                ( model, message (Send ("hover:" ++ cardName)) )
 
         otherwise ->
             Debug.crash "Unexpected action while connected ;_;"
@@ -222,8 +231,25 @@ connectedReceive model msg =
         ( model, message (NewChatMsg (dropLeft (length "chat:") msg)) )
     else if (startsWith "sync:" msg) then
         ( model, message (GameStateMsg (Sync (dropLeft (length "sync:") msg))) )
+    else if (startsWith "hover:" msg) then
+        ( model, message (GameStateMsg (HoverOutcome (parseHoverOutcome (dropLeft (length "hover:") msg)))) )
     else
         Debug.crash ("Error decoding message from server: " ++ msg)
+
+
+parseHoverOutcome : String -> Maybe Int
+parseHoverOutcome msg =
+    case msg of
+        "null" ->
+            Nothing
+
+        otherwise ->
+            case String.toInt msg of
+                Ok index ->
+                    Just index
+
+                Err err ->
+                    Debug.crash err
 
 
 connectingReceive : ConnectingModel -> String -> ( ConnectingModel, Cmd Msg )

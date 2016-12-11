@@ -16,10 +16,6 @@ data GameState =
   deriving (Eq, Show)
 
 
-data Outcome =
-  HoverOutcome HoverCardIndex
-  deriving (Eq, Show)
-
 instance ToJSON GameState where
   toJSON (Waiting _) =
     object [
@@ -50,13 +46,13 @@ instance ToJSON PlayState where
 data GameCommand =
     EndTurn
   | PlayCard CardName
-  | HoverCard CardName
+  | HoverCard (Maybe CardName)
   | Rematch
   deriving (Show)
 
 
 initModel :: Turn -> Gen -> Model
-initModel turn gen = Model turn [] handPA handPB deckPA deckPB maxLife maxLife Nothing Nothing NoPass [] gen
+initModel turn gen = Model turn [] handPA handPB deckPA deckPB maxLife maxLife NoPass [] gen
   where
     (genPA, genPB) = split gen :: (Gen, Gen)
     initDeckPA = shuffle initDeck genPA :: Deck
@@ -97,49 +93,49 @@ reverso (Started (Playing model))       = Started . Playing $ modelReverso model
 reverso (Started (Ended which gen res)) = Started $ Ended (otherPlayer <$> which) gen (modelReverso <$> res)
 
 
-update :: GameCommand -> WhichPlayer -> GameState -> Either Err (GameState, [Outcome])
+update :: GameCommand -> WhichPlayer -> GameState -> Either Err (Maybe GameState, [Outcome])
 update cmd which state =
   case state of
     Waiting _ ->
       Left ("Unknown command " <> (cs $ show cmd) <> " on a waiting GameState")
     Started started ->
-      fmap (\x -> (Started x, [])) $
-        case started of
-          Playing model ->
-            case cmd of
-              EndTurn ->
-                endTurn which (model { res = [] })
-              PlayCard name ->
-                Playing <$> playCard name which (model { res = [] })
-              HoverCard name ->
-                Right . Playing $ hoverCard name which (model { res = [] })
-              _ ->
-                Left ("Unknown command " <> (cs $ show cmd) <> " on a Playing GameState")
-          Ended winner gen _ ->
-            case cmd of
-              Rematch ->
-                  case winner of
-                    Nothing ->
-                      Right. Playing . (initModel PlayerA) . fst $ split gen
-                    Just w ->
-                      Right . Playing . (initModel w) . fst $ split gen
-              _ ->
-                Left ("Unknown command " <> (cs $ show cmd) <> " on an Ended GameState")
+      case started of
+        Playing model ->
+          case cmd of
+            EndTurn ->
+              endTurn which (model { res = [] })
+            PlayCard name ->
+              ((\x -> (x, [])) . Just . Started . Playing) <$> (playCard name which (model { res = [] }))
+            HoverCard name ->
+              (\(_, y) -> (Nothing, y)) <$> (hoverCard name which (model { res = [] }))
+            _ ->
+              Left ("Unknown command " <> (cs $ show cmd) <> " on a Playing GameState")
+        Ended winner gen _ ->
+          case cmd of
+            Rematch ->
+                case winner of
+                  Nothing ->
+                    Right . (\x -> (x, [])) . Just . Started . Playing . (initModel PlayerA) . fst $ split gen
+                  Just w ->
+                    Right . (\x -> (x, [])) . Just . Started . Playing . (initModel w) . fst $ split gen
+            _ ->
+              Left ("Unknown command " <> (cs $ show cmd) <> " on an Ended GameState")
 
 
-endTurn :: WhichPlayer -> Model -> Either Err PlayState
+endTurn :: WhichPlayer -> Model -> Either Err (Maybe GameState, [Outcome])
 endTurn which model@Model{..}
   | turn /= which = Left "You can't end the turn when it's not your turn!"
-  | handFull = Right . Playing $ model
+  | handFull = Right (Just . Started . Playing $ model, [])
   | otherwise =
     case passes of
       OnePass ->
         case resolveAll model of
           Playing m ->
-            Right . Playing . drawCards . resetPasses . swapTurn $ m
+            Right (Just . Started . Playing . drawCards . resetPasses . swapTurn $ m, [])
           Ended w g r ->
-            Right $ Ended w g r
-      NoPass -> Right . Playing . swapTurn $ model
+            Right (Just . Started $ Ended w g r, [])
+      NoPass ->
+        Right (Just . Started . Playing . swapTurn $ model, [])
   where
     handFull = length (getHand which model) >= maxHandLength :: Bool
     drawCards :: Model -> Model

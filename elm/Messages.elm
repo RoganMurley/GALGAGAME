@@ -23,8 +23,9 @@ type Msg
     | Rematch
     | Tick Time
     | ResolveStep
-    | HoverCard String
+    | HoverCard (Maybe String)
 
 
 type GameMsg
     = Sync String
+    | HoverOutcome (Maybe Int)
