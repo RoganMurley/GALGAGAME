@@ -2,36 +2,12 @@ module Model where
 
 
 import Data.Aeson (ToJSON(..), (.=), object)
-import Data.List (findIndex, partition)
+import Data.List (partition)
 import Data.Text (Text)
 import Safe (headMay, tailSafe)
 import Data.String.Conversions ((<>), cs)
 
 import Util (Err, Gen)
-
-
-type ExcludePlayer = WhichPlayer
-type Username = Text
-
-data Outcome =
-    ChatOutcome Username Text
-  | HoverOutcome ExcludePlayer (Maybe Int)
-  | ResolveOutcome ResolveList
-  deriving (Eq, Show)
-
-
-instance ToJSON Outcome where
-  toJSON (HoverOutcome _ index) =
-    toJSON index
-  toJSON (ChatOutcome name msg) =
-    object [
-      "name" .= name
-    , "msg"  .= msg
-    ]
-  toJSON (ResolveOutcome res) =
-    object [
-      "resolve" .= res
-    ]
 
 
 data Model = Model
@@ -296,26 +272,6 @@ playCard name which m@Model{..}
     (matches, misses) = partition (\(Card n _ _ _) -> n == name) (getHand which m) :: ([Card], [Card])
     newHand = (tailSafe matches) ++ misses :: Hand
     card = (StackCard which) <$> (headMay matches) :: Maybe StackCard
-
-
-hoverCard :: Maybe CardName -> WhichPlayer -> Model -> Either Err (Model, [Outcome])
-hoverCard name which model =
-    case name of
-      Just n ->
-        case index of
-          Just i ->
-            Right (model, [HoverOutcome which (Just i)])
-          Nothing ->
-            Left ("Can't hover over a card you don't have (" <> n <> ")")
-      Nothing ->
-        Right (model, [HoverOutcome which Nothing])
-  where
-    index :: Maybe Int
-    index = case name of
-      Just cardName ->
-        findIndex (\(Card n _ _ _) -> n == cardName) (getHand which model)
-      Nothing ->
-        Nothing
 
 
 patchEff :: CardEff -> (Model -> Model -> Model) -> CardEff

@@ -1,6 +1,7 @@
 module GameState where
 
 import Data.Aeson (ToJSON(..), (.=), object)
+import Data.List (findIndex)
 import Data.Monoid ((<>))
 import Data.String.Conversions (cs)
 import Safe (headMay, tailSafe)
@@ -109,7 +110,7 @@ update cmd which state =
             PlayCard name ->
               ((\x -> (x, [])) . Just . Started . Playing) <$> (playCard name which model)
             HoverCard name ->
-              (\(_, y) -> (Nothing, y)) <$> (hoverCard name which model)
+              (\x -> (Nothing, x)) <$> (hoverCard name which model)
             _ ->
               Left ("Unknown command " <> (cs $ show cmd) <> " on a Playing GameState")
         Ended winner gen ->
@@ -133,11 +134,13 @@ endTurn which model@Model{..}
       OnePass ->
         case resolveAll (model, []) of
           (Playing m, res) ->
-            Right (Just . Started . Playing . drawCards . resetPasses . swapTurn $ m, [ResolveOutcome res])
+            let newState = Started . Playing . drawCards . resetPasses . swapTurn $ m in
+              Right (Just newState, [ResolveOutcome res newState])
           (Ended w g, res) ->
-            Right (Just . Started $ Ended w g, [ResolveOutcome res])
+            let newState = Started (Ended w g) in
+              Right (Just newState, [ResolveOutcome res newState])
       NoPass ->
-        Right (Just . Started . Playing . swapTurn $ model, [])
+        Right (Just . Started . Playing . swapTurn $ model, [SyncOutcome])
   where
     handFull = length (getHand which model) >= maxHandLength :: Bool
     drawCards :: Model -> Model
@@ -185,3 +188,54 @@ lifeGate m@Model{ gen = gen }
   where
     lifePA = getLife PlayerA m :: Life
     lifePB = getLife PlayerB m :: Life
+
+
+type ExcludePlayer = WhichPlayer
+type Username = Text
+
+
+data Outcome =
+    ChatOutcome Username Text
+  | HoverOutcome ExcludePlayer (Maybe Int)
+  | ResolveOutcome ResolveList GameState
+  | SyncOutcome
+  deriving (Eq, Show)
+
+
+-- OUTCOMES
+
+instance ToJSON Outcome where
+  toJSON (HoverOutcome _ index) =
+    toJSON index
+  toJSON (ChatOutcome name msg) =
+    object [
+      "name" .= name
+    , "msg"  .= msg
+    ]
+  toJSON (ResolveOutcome res state) =
+    object [
+      "list" .= res
+    , "final" .= state
+    ]
+  toJSON SyncOutcome =
+    error "SyncOutcome shouldn't be marshalled to JSON" -- DANGEROUS!!!
+
+
+hoverCard :: Maybe CardName -> WhichPlayer -> Model -> Either Err ([Outcome])
+hoverCard name which model =
+    case name of
+      Just n ->
+        case index of
+          Just i ->
+            Right ([HoverOutcome which (Just i)])
+          Nothing ->
+            Left ("Can't hover over a card you don't have (" <> n <> ")")
+      Nothing ->
+        Right ([HoverOutcome which Nothing])
+  where
+    index :: Maybe Int
+    index = case name of
+      Just cardName ->
+        findIndex (\(Card n _ _ _) -> n == cardName) (getHand which model)
+      Nothing ->
+        Nothing
