@@ -72,7 +72,7 @@ initDeck =
   ++ (replicate 3 cardPotion)
   ++ (replicate 3 cardVampire)
   ++ (replicate 3 cardSuccubus)
-  -- ++ (replicate 3 cardObscurer)
+  ++ (replicate 3 cardObscurer)
   -- CONTROL
   ++ (replicate 2 cardSiren)
   ++ (replicate 2 cardSickness)
@@ -85,8 +85,8 @@ initDeck =
   ++ (replicate 2 cardSiren)
   ++ (replicate 2 cardSickness)
   ++ (replicate 2 cardProphecy)
-  -- ++ (replicate 2 cardOffering)
-  -- ++ (replicate 2 cardGoatFlute)
+  ++ (replicate 2 cardOffering)
+  ++ (replicate 2 cardGoatFlute)
 
 
 reverso :: GameState -> GameState
