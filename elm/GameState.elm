@@ -445,22 +445,19 @@ resTick state =
 
 
 
--- REMOVE ME LATER (resProcess)
-
-
-resProcess : GameState -> GameState -> GameState
-resProcess old new =
-    case new of
-        PlayingGame _ ( [], _ ) ->
-            new
-
-        otherwise ->
-            case ( old, new ) of
-                ( PlayingGame oldModel _, PlayingGame model ( res, _ ) ) ->
-                    PlayingGame oldModel ( res ++ [ model ], 0 )
-
-                otherwise ->
-                    new
+-- resProcess : GameState -> GameState -> GameState
+-- resProcess old new =
+--     case new of
+--         PlayingGame _ ( [], _ ) ->
+--             new
+--
+--         otherwise ->
+--             case ( old, new ) of
+--                 ( PlayingGame oldModel _, PlayingGame model ( res, _ ) ) ->
+--                     PlayingGame oldModel ( res ++ [ model ], 0 )
+--
+--                 otherwise ->
+--                     new
 
 
 tickForward : GameState -> GameState
