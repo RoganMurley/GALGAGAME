@@ -233,8 +233,8 @@ connectedReceive model msg =
         ( model, message (GameStateMsg (Sync (dropLeft (length "sync:") msg))) )
     else if (startsWith "hover:" msg) then
         ( model, message (GameStateMsg (HoverOutcome (parseHoverOutcome (dropLeft (length "hover:") msg)))) )
-    else if (startsWith "resolve:" msg) then
-        ( model, message (GameStateMsg (ResolveOutcome (dropLeft (length "resolve:") msg))) )
+    else if (startsWith "res:" msg) then
+        ( model, message (GameStateMsg (ResolveOutcome (dropLeft (length "res:") msg))) )
     else
         Debug.crash ("Error decoding message from server: " ++ msg)
 
