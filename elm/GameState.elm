@@ -16,6 +16,19 @@ type GameState
     | Ended (Maybe WhichPlayer) ( Res, Int )
 
 
+setRes : GameState -> List Model -> GameState
+setRes state res =
+    case state of
+        PlayingGame m ( _, i ) ->
+            PlayingGame m ( res, i )
+
+        Ended w ( _, i ) ->
+            Ended w ( res, i )
+
+        Waiting ->
+            Debug.crash "Set res on a waiting state"
+
+
 type alias Model =
     { hand : Hand
     , otherHand : Int
@@ -266,7 +279,7 @@ stateUpdate : GameMsg -> GameState -> GameState
 stateUpdate msg state =
     case msg of
         Sync str ->
-            resProcess state (syncState state str)
+            syncState state str
 
         HoverOutcome i ->
             case state of
@@ -275,6 +288,28 @@ stateUpdate msg state =
 
                 s ->
                     s
+
+        ResolveOutcome str ->
+            let
+                ( final, resList ) =
+                    case Json.decodeString resDecoder str of
+                        Ok result ->
+                            result
+
+                        Err err ->
+                            Debug.crash err
+            in
+                case resList of
+                    [] ->
+                        setRes final []
+
+                    otherwise ->
+                        case ( state, final ) of
+                            ( PlayingGame oldModel _, PlayingGame newModel _ ) ->
+                                PlayingGame oldModel ( resList ++ [ newModel ], 0 )
+
+                            otherwise ->
+                                setRes final resList
 
 
 syncState : GameState -> String -> GameState
@@ -407,6 +442,10 @@ resTick state =
 
             otherwise ->
                 state
+
+
+
+-- REMOVE ME LATER (resProcess)
 
 
 resProcess : GameState -> GameState -> GameState
