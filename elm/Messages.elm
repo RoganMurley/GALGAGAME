@@ -29,3 +29,4 @@ type Msg
 type GameMsg
     = Sync String
     | HoverOutcome (Maybe Int)
+    | ResolveOutcome String

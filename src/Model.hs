@@ -2,31 +2,12 @@ module Model where
 
 
 import Data.Aeson (ToJSON(..), (.=), object)
-import Data.List (findIndex, partition)
+import Data.List (partition)
 import Data.Text (Text)
 import Safe (headMay, tailSafe)
-import Data.String.Conversions ((<>), cs)
+import Data.String.Conversions (cs)
 
 import Util (Err, Gen)
-
-
-type ExcludePlayer = WhichPlayer
-type Username = Text
-
-data Outcome =
-    ChatOutcome Username Text
-  | HoverOutcome ExcludePlayer (Maybe Int)
-  deriving (Eq, Show)
-
-
-instance ToJSON Outcome where
-  toJSON (HoverOutcome _ index) =
-    toJSON index
-  toJSON (ChatOutcome name msg) =
-    object [
-      "name" .= name
-    , "msg"  .= msg
-    ]
 
 
 data Model = Model
@@ -39,7 +20,6 @@ data Model = Model
   , model_lifePA  :: Life
   , model_lifePB  :: Life
   , passes  :: Passes
-  , res     :: ResolveList
   , gen     :: Gen
   }
   deriving (Eq, Show)
@@ -88,7 +68,6 @@ instance ToJSON Model where
       , "handPB"  .= length (getHand PlayerB model)
       , "lifePA"  .= getLife PlayerA model
       , "lifePB"  .= getLife PlayerB model
-      , "res"     .= res
       ]
 
 
@@ -124,8 +103,8 @@ maxLife = 50
 
 
 modelReverso :: Model -> Model
-modelReverso (Model turn stack handPA handPB deckPA deckPB lifePA lifePB passes res gen) =
-  (Model (otherTurn turn) (stackRev stack) handPB handPA deckPB deckPA lifePB lifePA passes (fmap modelReverso res) gen)
+modelReverso (Model turn stack handPA handPB deckPA deckPB lifePA lifePB passes gen) =
+  (Model (otherTurn turn) (stackRev stack) handPB handPA deckPB deckPA lifePB lifePA passes gen)
   where
     stackRev :: Stack -> Stack
     stackRev s = fmap (\(StackCard p c) -> StackCard (otherPlayer p) c) s
@@ -293,26 +272,6 @@ playCard name which m@Model{..}
     (matches, misses) = partition (\(Card n _ _ _) -> n == name) (getHand which m) :: ([Card], [Card])
     newHand = (tailSafe matches) ++ misses :: Hand
     card = (StackCard which) <$> (headMay matches) :: Maybe StackCard
-
-
-hoverCard :: Maybe CardName -> WhichPlayer -> Model -> Either Err (Model, [Outcome])
-hoverCard name which model =
-    case name of
-      Just n ->
-        case index of
-          Just i ->
-            Right (model, [HoverOutcome which (Just i)])
-          Nothing ->
-            Left ("Can't hover over a card you don't have (" <> n <> ")")
-      Nothing ->
-        Right (model, [HoverOutcome which Nothing])
-  where
-    index :: Maybe Int
-    index = case name of
-      Just cardName ->
-        findIndex (\(Card n _ _ _) -> n == cardName) (getHand which model)
-      Nothing ->
-        Nothing
 
 
 patchEff :: CardEff -> (Model -> Model -> Model) -> CardEff

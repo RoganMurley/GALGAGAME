@@ -6583,6 +6583,9 @@ var _user$vanagloria$Messages$Send = function (a) {
 var _user$vanagloria$Messages$Input = function (a) {
 	return {ctor: 'Input', _0: a};
 };
+var _user$vanagloria$Messages$ResolveOutcome = function (a) {
+	return {ctor: 'ResolveOutcome', _0: a};
+};
 var _user$vanagloria$Messages$HoverOutcome = function (a) {
 	return {ctor: 'HoverOutcome', _0: a};
 };

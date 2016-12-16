@@ -16,6 +16,19 @@ type GameState
     | Ended (Maybe WhichPlayer) ( Res, Int )
 
 
+setRes : GameState -> List Model -> GameState
+setRes state res =
+    case state of
+        PlayingGame m ( _, i ) ->
+            PlayingGame m ( res, i )
+
+        Ended w ( _, i ) ->
+            Ended w ( res, i )
+
+        Waiting ->
+            Debug.crash "Set res on a waiting state"
+
+
 type alias Model =
     { hand : Hand
     , otherHand : Int
@@ -266,7 +279,7 @@ stateUpdate : GameMsg -> GameState -> GameState
 stateUpdate msg state =
     case msg of
         Sync str ->
-            resProcess state (syncState state str)
+            syncState state str
 
         HoverOutcome i ->
             case state of
@@ -276,6 +289,28 @@ stateUpdate msg state =
                 s ->
                     s
 
+        ResolveOutcome str ->
+            let
+                ( final, resList ) =
+                    case Json.decodeString resDecoder str of
+                        Ok result ->
+                            result
+
+                        Err err ->
+                            Debug.crash err
+            in
+                case resList of
+                    [] ->
+                        setRes final []
+
+                    otherwise ->
+                        case ( state, final ) of
+                            ( PlayingGame oldModel _, PlayingGame newModel _ ) ->
+                                PlayingGame oldModel ( resList ++ [ newModel ], 0 )
+
+                            otherwise ->
+                                setRes final resList
+
 
 syncState : GameState -> String -> GameState
 syncState model msg =
@@ -284,63 +319,42 @@ syncState model msg =
 
 decodeState : String -> GameState
 decodeState msg =
-    case decodePlaying msg of
-        Ok playingState ->
-            playingState
+    case Json.decodeString stateDecoder msg of
+        Ok result ->
+            result
 
-        Err err1 ->
-            case decodeWaiting msg of
-                Ok waitingState ->
-                    waitingState
-
-                Err err2 ->
-                    case decodeEnded msg of
-                        Ok drawState ->
-                            drawState
-
-                        Err err3 ->
-                            Debug.crash
-                                ("Error 1:\n"
-                                    ++ err1
-                                    ++ "\nError 2:\n"
-                                    ++ err2
-                                    ++ "\nError 3:\n"
-                                    ++ err3
-                                )
+        Err err ->
+            Debug.crash err
 
 
-decodeWaiting : String -> Result String GameState
-decodeWaiting msg =
-    let
-        decoder : Json.Decoder GameState
-        decoder =
-            Json.map (\_ -> Waiting) (field "waiting" Json.bool)
-    in
-        Json.decodeString decoder msg
+
+-- Make safer
 
 
-decodeEnded : String -> Result String GameState
-decodeEnded msg =
-    let
-        decoder : Json.Decoder GameState
-        decoder =
-            Json.map2 (\w res -> Ended w ( res, 0 ))
-                (field "winner" (maybe whichDecoder))
-                resDecoder
-    in
-        Json.decodeString decoder msg
+stateDecoder : Json.Decoder GameState
+stateDecoder =
+    Json.oneOf
+        [ waitingDecoder
+        , playingDecoder
+        , endedDecoder
+        ]
 
 
-decodePlaying : String -> Result String GameState
-decodePlaying msg =
-    let
-        decoder : Json.Decoder GameState
-        decoder =
-            Json.map2 (\a b -> PlayingGame a ( b, 0 ))
-                (field "playing" modelDecoder)
-                (field "playing" resDecoder)
-    in
-        Json.decodeString decoder msg
+waitingDecoder : Json.Decoder GameState
+waitingDecoder =
+    Json.map (\_ -> Waiting) (field "waiting" Json.bool)
+
+
+endedDecoder : Json.Decoder GameState
+endedDecoder =
+    Json.map (\w -> Ended w ( [], 0 ))
+        (field "winner" (maybe whichDecoder))
+
+
+playingDecoder : Json.Decoder GameState
+playingDecoder =
+    Json.map (\a -> PlayingGame a ( [], 0 ))
+        (field "playing" modelDecoder)
 
 
 whichDecoder : Json.Decoder WhichPlayer
@@ -386,9 +400,11 @@ modelDecoder =
             (field "lifePB" Json.int)
 
 
-resDecoder : Json.Decoder (List Model)
+resDecoder : Json.Decoder ( GameState, List Model )
 resDecoder =
-    field "res" (Json.list modelDecoder)
+    Json.map2 (\x y -> ( x, y ))
+        (field "final" stateDecoder)
+        (field "list" (Json.list modelDecoder))
 
 
 
@@ -428,19 +444,20 @@ resTick state =
                 state
 
 
-resProcess : GameState -> GameState -> GameState
-resProcess old new =
-    case new of
-        PlayingGame _ ( [], _ ) ->
-            new
 
-        otherwise ->
-            case ( old, new ) of
-                ( PlayingGame oldModel _, PlayingGame model ( res, _ ) ) ->
-                    PlayingGame oldModel ( res ++ [ model ], 0 )
-
-                otherwise ->
-                    new
+-- resProcess : GameState -> GameState -> GameState
+-- resProcess old new =
+--     case new of
+--         PlayingGame _ ( [], _ ) ->
+--             new
+--
+--         otherwise ->
+--             case ( old, new ) of
+--                 ( PlayingGame oldModel _, PlayingGame model ( res, _ ) ) ->
+--                     PlayingGame oldModel ( res ++ [ model ], 0 )
+--
+--                 otherwise ->
+--                     new
 
 
 tickForward : GameState -> GameState

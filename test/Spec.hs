@@ -1,11 +1,12 @@
 import Test.Tasty
-import Test.Tasty.HUnit
+-- import Test.Tasty.HUnit
+--
+-- import Cards
+-- import Model
+-- import GameState
+-- import Util
 
-import Cards
-import Model
-import GameState
-import Util
-
+main :: IO ()
 main = defaultMain $ testGroup "remove me" []
 
 --
