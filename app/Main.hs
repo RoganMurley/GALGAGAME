@@ -15,8 +15,8 @@ import Control.Concurrent (MVar, newMVar, modifyMVar, readMVar)
 import qualified Data.Text as T
 import qualified Network.WebSockets as WS
 
-import Model (CardName, Outcome(..), Username, WhichPlayer(..), otherPlayer)
-import GameState (GameCommand(..), GameState(..), reverso, update)
+import Model (CardName, Model, WhichPlayer(..), modelReverso, otherPlayer)
+import GameState (GameCommand(..), GameState(..), Outcome(..), Username, reverso, update)
 import Room
 import Util (Err, getGen)
 
@@ -57,26 +57,24 @@ deleteRoom name state =
   modifyMVar state $ \s ->
     let s' = delete name s in return (s', s')
 
-stateUpdate :: GameCommand -> WhichPlayer -> MVar Room -> IO (Either Err (Bool, Room, [Outcome]))
+stateUpdate :: GameCommand -> WhichPlayer -> MVar Room -> IO (Either Err (Room, [Outcome]))
 stateUpdate cmd which room =
   modifyMVar room $ \r ->
     case updateRoom r of
       Left err ->
         return (r, Left err)
       Right (Nothing, o) ->
-        return (r, Right (False, r, o))
+        return (r, Right (r, o))
       Right (Just r', o) ->
-        return (r', Right (True, r', o))
+        return (r', Right (r', o))
   where
     updateRoom :: Room -> Either Err (Maybe Room, [Outcome])
     updateRoom (Room pa pb specs state) =
       case update cmd which state of
         Left err ->
           Left err
-        Right (Nothing, outcomes) ->
-          Right (Nothing, outcomes)
-        Right (Just newState, outcomes) ->
-          Right (Just $ Room pa pb specs newState, outcomes)
+        Right (newState, outcomes) ->
+          Right ((Room pa pb specs) <$> newState, outcomes)
 
 addSpecClient :: Client -> MVar Room -> IO (Room)
 addSpecClient client room =
@@ -232,11 +230,7 @@ actPlay cmd which roomVar =
         Left err -> do
           room <- readMVar roomVar
           sendToPlayer which (toChat (ErrorCommand err)) room
-        Right (changed, room, outcomes) -> do
-          if changed then
-            syncRoomClients room
-              else
-                return ()
+        Right (room, outcomes) ->
           forM_ outcomes (actOutcome room)
     Nothing ->
       actSpec cmd roomVar
@@ -257,6 +251,10 @@ actOutcome room outcome@(HoverOutcome which _) =
   sendExcluding which (("hover:" <>) . cs $ encode outcome) room
 actOutcome room (ChatOutcome username msg) =
   broadcast ("chat:" <> username <> ": " <> msg) room
+actOutcome room (ResolveOutcome models final) =
+  resolveRoomClients (models, final) room
+actOutcome room SyncOutcome =
+  syncRoomClients room
 
 syncClient :: Client -> GameState -> IO ()
 syncClient (_, conn) game =
@@ -269,8 +267,19 @@ syncRoomClients room = do
   sendToSpecs syncMsgPa room
   where
     game = getRoomGameState room :: GameState
-    syncMsgPa = "sync:" <> (cs $ encode $ game) :: Text
-    syncMsgPb = "sync:" <> (cs $ encode $ reverso $ game) :: Text
+    syncMsgPa = ("sync:" <>) . cs . encode $ game :: Text
+    syncMsgPb = ("sync:" <>) . cs . encode . reverso $ game :: Text
+
+resolveRoomClients :: ([Model], GameState) -> Room -> IO ()
+resolveRoomClients (models, final) room = do
+  sendToPlayer PlayerA resMsgPa room
+  sendToPlayer PlayerB resMsgPb room
+  sendToSpecs resMsgPa room
+  where
+    resMsgPa = ("res:" <>) . cs . encode $ outcome :: Text
+    resMsgPb = ("res:" <>) . cs . encode $ reversoOutcome :: Text
+    outcome = ResolveOutcome models final :: Outcome
+    reversoOutcome = ResolveOutcome (modelReverso <$> models) (reverso final) :: Outcome
 
 
 toChat :: Command -> Text

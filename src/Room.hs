@@ -5,8 +5,8 @@ import Data.Maybe (maybeToList)
 import Data.Text (Text)
 import Network.WebSockets (Connection)
 
-import GameState (initModel, GameState(..), PlayState(..))
-import Model (Username, WhichPlayer(..))
+import GameState (initModel, GameState(..), PlayState(..), Username)
+import Model (WhichPlayer(..))
 import Util (Gen)
 
 
