@@ -118,9 +118,9 @@ update cmd which state =
             Rematch ->
                 case winner of
                   Nothing ->
-                    Right . (\x -> (x, [])) . Just . Started . Playing . (initModel PlayerA) . fst $ split gen
+                    Right . (\x -> (x, [SyncOutcome])) . Just . Started . Playing . (initModel PlayerA) . fst $ split gen
                   Just w ->
-                    Right . (\x -> (x, [])) . Just . Started . Playing . (initModel w) . fst $ split gen
+                    Right . (\x -> (x, [SyncOutcome])) . Just . Started . Playing . (initModel w) . fst $ split gen
             _ ->
               Left ("Unknown command " <> (cs $ show cmd) <> " on an Ended GameState")
 
