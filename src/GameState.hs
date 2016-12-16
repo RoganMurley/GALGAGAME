@@ -108,7 +108,7 @@ update cmd which state =
             EndTurn ->
               endTurn which model
             PlayCard name ->
-              ((\x -> (x, [])) . Just . Started . Playing) <$> (playCard name which model)
+              ((\x -> (x, [SyncOutcome])) . Just . Started . Playing) <$> (playCard name which model)
             HoverCard name ->
               (\x -> (Nothing, x)) <$> (hoverCard name which model)
             _ ->
@@ -135,10 +135,10 @@ endTurn which model@Model{..}
         case resolveAll (model, []) of
           (Playing m, res) ->
             let newState = Started . Playing . drawCards . resetPasses . swapTurn $ m in
-              Right (Just newState, [ResolveOutcome res newState])
+              Right (Just newState, [ResolveOutcome (reverse res) newState])
           (Ended w g, res) ->
             let newState = Started (Ended w g) in
-              Right (Just newState, [ResolveOutcome res newState])
+              Right (Just newState, [ResolveOutcome (reverse res) newState])
       NoPass ->
         Right (Just . Started . Playing . swapTurn $ model, [SyncOutcome])
   where
@@ -154,8 +154,7 @@ resolveAll (model@Model{ stack = stack }, res) =
     else
       case resolveOne model of
         Playing newModel ->
-          let newRes = model : res in
-            (fst . resolveAll $ (newModel, newRes), newRes)
+          resolveAll (newModel, model : res)
         Ended which gen ->
           (Ended which gen, model : res)
   where

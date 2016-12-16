@@ -15,7 +15,7 @@ import Control.Concurrent (MVar, newMVar, modifyMVar, readMVar)
 import qualified Data.Text as T
 import qualified Network.WebSockets as WS
 
-import Model (CardName, WhichPlayer(..), otherPlayer)
+import Model (CardName, Model, WhichPlayer(..), modelReverso, otherPlayer)
 import GameState (GameCommand(..), GameState(..), Outcome(..), Username, reverso, update)
 import Room
 import Util (Err, getGen)
@@ -251,8 +251,8 @@ actOutcome room outcome@(HoverOutcome which _) =
   sendExcluding which (("hover:" <>) . cs $ encode outcome) room
 actOutcome room (ChatOutcome username msg) =
   broadcast ("chat:" <> username <> ": " <> msg) room
-actOutcome room outcome@(ResolveOutcome _ _) =
-  broadcast (("res:" <>) . cs $ encode outcome) room
+actOutcome room (ResolveOutcome models final) =
+  resolveRoomClients (models, final) room
 actOutcome room SyncOutcome =
   syncRoomClients room
 
@@ -267,8 +267,19 @@ syncRoomClients room = do
   sendToSpecs syncMsgPa room
   where
     game = getRoomGameState room :: GameState
-    syncMsgPa = "sync:" <> (cs $ encode $ game) :: Text
-    syncMsgPb = "sync:" <> (cs $ encode $ reverso $ game) :: Text
+    syncMsgPa = ("sync:" <>) . cs . encode $ game :: Text
+    syncMsgPb = ("sync:" <>) . cs . encode . reverso $ game :: Text
+
+resolveRoomClients :: ([Model], GameState) -> Room -> IO ()
+resolveRoomClients (models, final) room = do
+  sendToPlayer PlayerA resMsgPa room
+  sendToPlayer PlayerB resMsgPb room
+  sendToSpecs resMsgPa room
+  where
+    resMsgPa = ("res:" <>) . cs . encode $ outcome :: Text
+    resMsgPb = ("res:" <>) . cs . encode $ reversoOutcome :: Text
+    outcome = ResolveOutcome models final :: Outcome
+    reversoOutcome = ResolveOutcome (modelReverso <$> models) (reverso final) :: Outcome
 
 
 toChat :: Command -> Text

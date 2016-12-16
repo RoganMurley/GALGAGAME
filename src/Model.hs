@@ -5,7 +5,7 @@ import Data.Aeson (ToJSON(..), (.=), object)
 import Data.List (partition)
 import Data.Text (Text)
 import Safe (headMay, tailSafe)
-import Data.String.Conversions ((<>), cs)
+import Data.String.Conversions (cs)
 
 import Util (Err, Gen)
 
