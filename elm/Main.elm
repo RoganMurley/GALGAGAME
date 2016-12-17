@@ -219,7 +219,7 @@ connectedUpdate hostname msg ({ chat, game, mode } as model) =
                         Nothing ->
                             "null"
             in
-                ( model, message (Send ("hover:" ++ cardName)) )
+                ( model, playingOnly model (message (Send ("hover:" ++ cardName))) )
 
         otherwise ->
             Debug.crash "Unexpected action while connected ;_;"
