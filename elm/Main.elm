@@ -111,7 +111,7 @@ connectingUpdate hostname msg ({ name, error, valid } as model) =
             ( { model | name = input, error = Tuple.second (validateName name), valid = Tuple.first (validateName name) }, Cmd.none )
 
         Send str ->
-            ( model, Cmd.batch [ send hostname str, send hostname (Debug.log "sending" "room:default") ] )
+            ( model, Cmd.batch [ send hostname (Debug.log "sending" str), send hostname (Debug.log "sending" "room:default") ] )
 
         Receive str ->
             connectingReceive model str
