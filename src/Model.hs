@@ -11,16 +11,16 @@ import Util (Err, Gen)
 
 
 data Model = Model
-  { turn    :: Turn
-  , stack   :: Stack
+  { model_turn    :: Turn
+  , model_stack   :: Stack
   , model_handPA  :: Hand
   , model_handPB  :: Hand
   , model_deckPA  :: Deck
   , model_deckPB  :: Deck
   , model_lifePA  :: Life
   , model_lifePB  :: Life
-  , passes  :: Passes
-  , gen     :: Gen
+  , model_passes  :: Passes
+  , model_gen     :: Gen
   }
   deriving (Eq, Show)
 
@@ -59,11 +59,11 @@ data Passes = NoPass | OnePass
 
 
 instance ToJSON Model where
-  toJSON model@Model{..} =
+  toJSON model =
     object
       [
-        "turn"    .= turn
-      , "stack"   .= stack
+        "turn"    .= getTurn model
+      , "stack"   .= getStack model
       , "handPA"  .= getHand PlayerA model
       , "handPB"  .= length (getHand PlayerB model)
       , "lifePA"  .= getLife PlayerA model
@@ -111,8 +111,7 @@ modelReverso (Model turn stack handPA handPB deckPA deckPB lifePA lifePB passes 
 
 
 swapTurn :: Model -> Model
-swapTurn m@Model{ turn = turn, passes = passes} =
-  m { turn = otherTurn turn, passes = incPasses passes }
+swapTurn model = (modPasses incPasses) . (modTurn otherTurn) $ model
 
 
 otherTurn :: Turn -> Turn
@@ -122,6 +121,17 @@ otherTurn PlayerB = PlayerA
 
 otherPlayer :: WhichPlayer -> WhichPlayer
 otherPlayer = otherTurn
+
+
+-- TURN
+getTurn :: Model -> Turn
+getTurn Model{ model_turn = turn } = turn
+
+setTurn :: Turn -> Model -> Model
+setTurn turn model = model { model_turn = turn }
+
+modTurn :: (Turn -> Turn) -> Model -> Model
+modTurn f m = setTurn (f . getTurn $ m) m
 
 
 -- LIFE.
@@ -193,33 +203,57 @@ modDeckHead f p m =
 
 
 -- STACK.
-mapStack :: (Stack -> a) -> Model -> a
-mapStack f Model{ stack = stack } = f stack
+getStack :: Model -> Stack
+getStack Model{ model_stack = stack } = stack
+
+setStack :: Stack -> Model -> Model
+setStack stack model = model { model_stack = stack }
 
 
 modStack :: (Stack -> Stack) -> Model -> Model
-modStack f m@Model{ stack = stack } = m { stack = f stack }
+modStack f m = setStack (f . getStack $ m) m
 
 
 modStackHead :: (StackCard -> StackCard) -> Model -> Model
-modStackHead f m@Model{ stack = stack } =
+modStackHead f m =
   case headMay stack of
     Nothing ->
       m
     Just c ->
-      m { stack = f c : (tailSafe stack) }
+      setStack (f c : (tailSafe stack)) m
+  where
+    stack = getStack m :: Stack
+
 
 modStackAll :: (StackCard -> StackCard) -> Model -> Model
 modStackAll f m = modStack (fmap f) m
 
 
 -- Passes.
+getPasses :: Model -> Passes
+getPasses Model{ model_passes = passes } = passes
+
+
+setPasses :: Passes -> Model -> Model
+setPasses passes model = model { model_passes = passes }
+
+
+modPasses :: (Passes -> Passes) -> Model -> Model
+modPasses f m = setPasses (f . getPasses $ m) m
+
+
 incPasses :: Passes -> Passes
 incPasses NoPass = OnePass
 incPasses OnePass = NoPass
 
+
 resetPasses :: Model -> Model
-resetPasses model = model { passes = NoPass }
+resetPasses model = setPasses NoPass model
+
+
+-- Gen
+getGen :: Model -> Gen
+getGen Model{ model_gen = gen } = gen
 
 
 -- ACTIONS
@@ -260,7 +294,7 @@ drawCard which model
 
 -- In future, tag cards in hand with a uid and use that.
 playCard :: CardName -> WhichPlayer -> Model -> Either Err Model
-playCard name which m@Model{..}
+playCard name which m
   | turn /= which = Left "You can't play a card when it's not your turn"
   | otherwise =
     case card of
@@ -269,6 +303,7 @@ playCard name which m@Model{..}
       Nothing ->
         Left "You can't play a card you don't have in your hand"
   where
+    turn = getTurn m :: Turn
     (matches, misses) = partition (\(Card n _ _ _) -> n == name) (getHand which m) :: ([Card], [Card])
     newHand = (tailSafe matches) ++ misses :: Hand
     card = (StackCard which) <$> (headMay matches) :: Maybe StackCard
