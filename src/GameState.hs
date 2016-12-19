@@ -126,7 +126,7 @@ update cmd which state =
 
 
 endTurn :: WhichPlayer -> Model -> Either Err (Maybe GameState, [Outcome])
-endTurn which model@Model{..}
+endTurn which model
   | turn /= which = Left "You can't end the turn when it's not your turn!"
   | handFull = Right (Just . Started . Playing $ model, [])
   | otherwise =
@@ -142,13 +142,15 @@ endTurn which model@Model{..}
       NoPass ->
         Right (Just . Started . Playing . swapTurn $ model, [SyncOutcome])
   where
+    turn = getTurn model :: Turn
+    passes = getPasses model :: Passes
     handFull = length (getHand which model) >= maxHandLength :: Bool
     drawCards :: Model -> Model
     drawCards m = (drawCard PlayerA) . (drawCard PlayerB) $ m
 
 
 resolveAll :: (Model, ResolveList) -> (PlayState, ResolveList)
-resolveAll (model@Model{ stack = stack }, res) =
+resolveAll (model, res) =
   if null stack then
     (Playing model, res)
     else
@@ -158,6 +160,7 @@ resolveAll (model@Model{ stack = stack }, res) =
         Ended which gen ->
           (Ended which gen, model : res)
   where
+    stack = getStack model :: Stack
     resolveOne :: Model -> PlayState
     resolveOne m =
       lifeGate . eff $ modStack tailSafe m
@@ -172,7 +175,7 @@ resolveAll (model@Model{ stack = stack }, res) =
 
 
 lifeGate :: Model -> PlayState
-lifeGate m@Model{ gen = gen }
+lifeGate m
   | lifePA <= 0 && lifePB <= 0 =
     Ended Nothing gen
   | lifePB <= 0 =
@@ -185,6 +188,7 @@ lifeGate m@Model{ gen = gen }
       . (setLife PlayerB (min maxLife lifePB))
       $ m
   where
+    gen = getGen m :: Gen
     lifePA = getLife PlayerA m :: Life
     lifePB = getLife PlayerB m :: Life
 
