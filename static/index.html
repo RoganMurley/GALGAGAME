@@ -11,7 +11,11 @@
   <body class="no-select">
     <script src="Main.js"></script>
     <script>
-      var app = Elm.Main.fullscreen({ hostname: window.location.hostname });
+      var params = new URLSearchParams(window.location.search);
+      var app = Elm.Main.fullscreen({
+        hostname: window.location.hostname,
+        play: params.get('play')
+      });
     </script>
   </body>
 </html>

@@ -47,7 +47,8 @@ type RoomModel
 
 
 type alias ConnectingModel =
-    { name : String
+    { roomID : String
+    , name : String
     , error : String
     , valid : Bool
     }
@@ -62,6 +63,7 @@ type alias ConnectedModel =
 
 type alias Flags =
     { hostname : String
+    , play : Maybe String
     }
 
 
@@ -71,11 +73,17 @@ type Mode
 
 
 init : Flags -> ( Model, Cmd Msg )
-init { hostname } =
+init { hostname, play } =
     let
         model : Model
         model =
-            { room = Connecting { name = "", error = "", valid = False }
+            { room = Connecting
+                {
+                  roomID = Maybe.withDefault "" play
+                , name = ""
+                , error = ""
+                , valid = False
+                }
             , hostname = hostname
             }
     in
@@ -105,13 +113,13 @@ update msg ({ hostname, room } as model) =
 
 
 connectingUpdate : String -> Msg -> ConnectingModel -> ( ConnectingModel, Cmd Msg )
-connectingUpdate hostname msg ({ name, error, valid } as model) =
+connectingUpdate hostname msg ({ roomID, name, error, valid } as model) =
     case msg of
         Input input ->
             ( { model | name = input, error = Tuple.second (validateName name), valid = Tuple.first (validateName name) }, Cmd.none )
 
         Send str ->
-            ( model, Cmd.batch [ send hostname (Debug.log "sending" str), send hostname (Debug.log "sending" "room:default") ] )
+            ( model, Cmd.batch [ send hostname (Debug.log "sending" str), send hostname (Debug.log "sending" ("room:" ++ roomID)) ] )
 
         Receive str ->
             connectingReceive model str
