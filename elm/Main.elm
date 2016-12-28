@@ -12,8 +12,12 @@ import Chat exposing (addChatMessage)
 import Drag exposing (dragAt, dragEnd, dragStart, getPosition)
 import GameState exposing (Card, GameState(..), Hand, Model, Turn, WhichPlayer(..), resTick, stateUpdate, stateView, tickForward, tickZero, view)
 import Messages exposing (GameMsg(..), Msg(..))
+import Random
+import Random.Char
+import Random.String exposing (string)
 import Task
 import Time exposing (Time, second)
+import Tuple exposing (first)
 import Util exposing (applyFst)
 
 
@@ -38,6 +42,7 @@ main =
 type alias Model =
     { room : RoomModel
     , hostname : String
+    , httpPort : String
     }
 
 
@@ -58,12 +63,15 @@ type alias ConnectedModel =
     { chat : Chat.Model
     , game : GameState.GameState
     , mode : Mode
+    , roomID : String
     }
 
 
 type alias Flags =
     { hostname : String
+    , httpPort : String
     , play : Maybe String
+    , seed: Int
     }
 
 
@@ -73,18 +81,21 @@ type Mode
 
 
 init : Flags -> ( Model, Cmd Msg )
-init { hostname, play } =
+init { hostname, httpPort, play, seed } =
     let
         model : Model
         model =
             { room = Connecting
-                {
-                  roomID = Maybe.withDefault "" play
+                { roomID =
+                    Maybe.withDefault
+                        (first (Random.step roomIDGenerator (Random.initialSeed seed)))
+                        play
                 , name = ""
                 , error = ""
                 , valid = False
                 }
             , hostname = hostname
+            , httpPort = httpPort
             }
     in
         ( model, Cmd.none )
@@ -97,13 +108,13 @@ init { hostname, play } =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg ({ hostname, room } as model) =
     case room of
-        Connecting connectingModel ->
+        Connecting ({ roomID } as connectingModel) ->
             case msg of
                 Play ->
-                    ( { model | room = Connected { chat = Chat.init, game = Waiting, mode = Playing } }, Cmd.none )
+                    ( { model | room = Connected { chat = Chat.init, game = Waiting, mode = Playing, roomID = roomID} }, Cmd.none )
 
                 Spectate ->
-                    ( { model | room = Connected { chat = Chat.init, game = Waiting, mode = Spectating } }, Cmd.none )
+                    ( { model | room = Connected { chat = Chat.init, game = Waiting, mode = Spectating, roomID = roomID} }, Cmd.none )
 
                 otherwise ->
                     applyFst (\c -> { model | room = Connecting c }) (connectingUpdate hostname msg connectingModel)
@@ -311,7 +322,10 @@ turnOnly { mode, game } cmdMsg =
 
 
 
--- VALIDATION
+-- OTHER
+roomIDGenerator : Random.Generator String
+roomIDGenerator = string 8 Random.Char.english
+
 
 
 validateName : String -> ( Bool, String )
@@ -344,12 +358,12 @@ subscriptions model =
 
 
 view : Model -> Html Msg
-view model =
+view ({ hostname, httpPort } as model) =
     case model.room of
-        Connected { chat, game } ->
+        Connected { chat, game, roomID } ->
             div []
                 [ Chat.view chat
-                , GameState.stateView game
+                , GameState.stateView game roomID hostname httpPort
                 ]
 
         Connecting { name, error, valid } ->

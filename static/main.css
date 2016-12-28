@@ -193,11 +193,15 @@
 
 .waiting {
   color: #fff;
-  font-size: 72px;
+  font-size: 36px;
   height: 100vh;
   display: flex;
   justify-content: center;
-  align-items: center; }
+  align-items: center;
+  flex-direction: column;
+  user-select: text; }
+  .waiting input {
+    width: 200px; }
 
 .endgame {
   color: #fff;
