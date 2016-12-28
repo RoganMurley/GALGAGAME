@@ -2669,344 +2669,6 @@ var _elm_lang$core$Array$repeat = F2(
 	});
 var _elm_lang$core$Array$Array = {ctor: 'Array'};
 
-//import Native.Utils //
-
-var _elm_lang$core$Native_Char = function() {
-
-return {
-	fromCode: function(c) { return _elm_lang$core$Native_Utils.chr(String.fromCharCode(c)); },
-	toCode: function(c) { return c.charCodeAt(0); },
-	toUpper: function(c) { return _elm_lang$core$Native_Utils.chr(c.toUpperCase()); },
-	toLower: function(c) { return _elm_lang$core$Native_Utils.chr(c.toLowerCase()); },
-	toLocaleUpper: function(c) { return _elm_lang$core$Native_Utils.chr(c.toLocaleUpperCase()); },
-	toLocaleLower: function(c) { return _elm_lang$core$Native_Utils.chr(c.toLocaleLowerCase()); }
-};
-
-}();
-var _elm_lang$core$Char$fromCode = _elm_lang$core$Native_Char.fromCode;
-var _elm_lang$core$Char$toCode = _elm_lang$core$Native_Char.toCode;
-var _elm_lang$core$Char$toLocaleLower = _elm_lang$core$Native_Char.toLocaleLower;
-var _elm_lang$core$Char$toLocaleUpper = _elm_lang$core$Native_Char.toLocaleUpper;
-var _elm_lang$core$Char$toLower = _elm_lang$core$Native_Char.toLower;
-var _elm_lang$core$Char$toUpper = _elm_lang$core$Native_Char.toUpper;
-var _elm_lang$core$Char$isBetween = F3(
-	function (low, high, $char) {
-		var code = _elm_lang$core$Char$toCode($char);
-		return (_elm_lang$core$Native_Utils.cmp(
-			code,
-			_elm_lang$core$Char$toCode(low)) > -1) && (_elm_lang$core$Native_Utils.cmp(
-			code,
-			_elm_lang$core$Char$toCode(high)) < 1);
-	});
-var _elm_lang$core$Char$isUpper = A2(
-	_elm_lang$core$Char$isBetween,
-	_elm_lang$core$Native_Utils.chr('A'),
-	_elm_lang$core$Native_Utils.chr('Z'));
-var _elm_lang$core$Char$isLower = A2(
-	_elm_lang$core$Char$isBetween,
-	_elm_lang$core$Native_Utils.chr('a'),
-	_elm_lang$core$Native_Utils.chr('z'));
-var _elm_lang$core$Char$isDigit = A2(
-	_elm_lang$core$Char$isBetween,
-	_elm_lang$core$Native_Utils.chr('0'),
-	_elm_lang$core$Native_Utils.chr('9'));
-var _elm_lang$core$Char$isOctDigit = A2(
-	_elm_lang$core$Char$isBetween,
-	_elm_lang$core$Native_Utils.chr('0'),
-	_elm_lang$core$Native_Utils.chr('7'));
-var _elm_lang$core$Char$isHexDigit = function ($char) {
-	return _elm_lang$core$Char$isDigit($char) || (A3(
-		_elm_lang$core$Char$isBetween,
-		_elm_lang$core$Native_Utils.chr('a'),
-		_elm_lang$core$Native_Utils.chr('f'),
-		$char) || A3(
-		_elm_lang$core$Char$isBetween,
-		_elm_lang$core$Native_Utils.chr('A'),
-		_elm_lang$core$Native_Utils.chr('F'),
-		$char));
-};
-
-//import Native.Utils //
-
-var _elm_lang$core$Native_Scheduler = function() {
-
-var MAX_STEPS = 10000;
-
-
-// TASKS
-
-function succeed(value)
-{
-	return {
-		ctor: '_Task_succeed',
-		value: value
-	};
-}
-
-function fail(error)
-{
-	return {
-		ctor: '_Task_fail',
-		value: error
-	};
-}
-
-function nativeBinding(callback)
-{
-	return {
-		ctor: '_Task_nativeBinding',
-		callback: callback,
-		cancel: null
-	};
-}
-
-function andThen(callback, task)
-{
-	return {
-		ctor: '_Task_andThen',
-		callback: callback,
-		task: task
-	};
-}
-
-function onError(callback, task)
-{
-	return {
-		ctor: '_Task_onError',
-		callback: callback,
-		task: task
-	};
-}
-
-function receive(callback)
-{
-	return {
-		ctor: '_Task_receive',
-		callback: callback
-	};
-}
-
-
-// PROCESSES
-
-function rawSpawn(task)
-{
-	var process = {
-		ctor: '_Process',
-		id: _elm_lang$core$Native_Utils.guid(),
-		root: task,
-		stack: null,
-		mailbox: []
-	};
-
-	enqueue(process);
-
-	return process;
-}
-
-function spawn(task)
-{
-	return nativeBinding(function(callback) {
-		var process = rawSpawn(task);
-		callback(succeed(process));
-	});
-}
-
-function rawSend(process, msg)
-{
-	process.mailbox.push(msg);
-	enqueue(process);
-}
-
-function send(process, msg)
-{
-	return nativeBinding(function(callback) {
-		rawSend(process, msg);
-		callback(succeed(_elm_lang$core$Native_Utils.Tuple0));
-	});
-}
-
-function kill(process)
-{
-	return nativeBinding(function(callback) {
-		var root = process.root;
-		if (root.ctor === '_Task_nativeBinding' && root.cancel)
-		{
-			root.cancel();
-		}
-
-		process.root = null;
-
-		callback(succeed(_elm_lang$core$Native_Utils.Tuple0));
-	});
-}
-
-function sleep(time)
-{
-	return nativeBinding(function(callback) {
-		var id = setTimeout(function() {
-			callback(succeed(_elm_lang$core$Native_Utils.Tuple0));
-		}, time);
-
-		return function() { clearTimeout(id); };
-	});
-}
-
-
-// STEP PROCESSES
-
-function step(numSteps, process)
-{
-	while (numSteps < MAX_STEPS)
-	{
-		var ctor = process.root.ctor;
-
-		if (ctor === '_Task_succeed')
-		{
-			while (process.stack && process.stack.ctor === '_Task_onError')
-			{
-				process.stack = process.stack.rest;
-			}
-			if (process.stack === null)
-			{
-				break;
-			}
-			process.root = process.stack.callback(process.root.value);
-			process.stack = process.stack.rest;
-			++numSteps;
-			continue;
-		}
-
-		if (ctor === '_Task_fail')
-		{
-			while (process.stack && process.stack.ctor === '_Task_andThen')
-			{
-				process.stack = process.stack.rest;
-			}
-			if (process.stack === null)
-			{
-				break;
-			}
-			process.root = process.stack.callback(process.root.value);
-			process.stack = process.stack.rest;
-			++numSteps;
-			continue;
-		}
-
-		if (ctor === '_Task_andThen')
-		{
-			process.stack = {
-				ctor: '_Task_andThen',
-				callback: process.root.callback,
-				rest: process.stack
-			};
-			process.root = process.root.task;
-			++numSteps;
-			continue;
-		}
-
-		if (ctor === '_Task_onError')
-		{
-			process.stack = {
-				ctor: '_Task_onError',
-				callback: process.root.callback,
-				rest: process.stack
-			};
-			process.root = process.root.task;
-			++numSteps;
-			continue;
-		}
-
-		if (ctor === '_Task_nativeBinding')
-		{
-			process.root.cancel = process.root.callback(function(newRoot) {
-				process.root = newRoot;
-				enqueue(process);
-			});
-
-			break;
-		}
-
-		if (ctor === '_Task_receive')
-		{
-			var mailbox = process.mailbox;
-			if (mailbox.length === 0)
-			{
-				break;
-			}
-
-			process.root = process.root.callback(mailbox.shift());
-			++numSteps;
-			continue;
-		}
-
-		throw new Error(ctor);
-	}
-
-	if (numSteps < MAX_STEPS)
-	{
-		return numSteps + 1;
-	}
-	enqueue(process);
-
-	return numSteps;
-}
-
-
-// WORK QUEUE
-
-var working = false;
-var workQueue = [];
-
-function enqueue(process)
-{
-	workQueue.push(process);
-
-	if (!working)
-	{
-		setTimeout(work, 0);
-		working = true;
-	}
-}
-
-function work()
-{
-	var numSteps = 0;
-	var process;
-	while (numSteps < MAX_STEPS && (process = workQueue.shift()))
-	{
-		if (process.root)
-		{
-			numSteps = step(numSteps, process);
-		}
-	}
-	if (!process)
-	{
-		working = false;
-		return;
-	}
-	setTimeout(work, 0);
-}
-
-
-return {
-	succeed: succeed,
-	fail: fail,
-	nativeBinding: nativeBinding,
-	andThen: F2(andThen),
-	onError: F2(onError),
-	receive: receive,
-
-	spawn: spawn,
-	kill: kill,
-	sleep: sleep,
-	send: F2(send),
-
-	rawSpawn: rawSpawn,
-	rawSend: rawSend
-};
-
-}();
 //import //
 
 var _elm_lang$core$Native_Platform = function() {
@@ -3568,6 +3230,287 @@ return {
 
 }();
 
+//import Native.Utils //
+
+var _elm_lang$core$Native_Scheduler = function() {
+
+var MAX_STEPS = 10000;
+
+
+// TASKS
+
+function succeed(value)
+{
+	return {
+		ctor: '_Task_succeed',
+		value: value
+	};
+}
+
+function fail(error)
+{
+	return {
+		ctor: '_Task_fail',
+		value: error
+	};
+}
+
+function nativeBinding(callback)
+{
+	return {
+		ctor: '_Task_nativeBinding',
+		callback: callback,
+		cancel: null
+	};
+}
+
+function andThen(callback, task)
+{
+	return {
+		ctor: '_Task_andThen',
+		callback: callback,
+		task: task
+	};
+}
+
+function onError(callback, task)
+{
+	return {
+		ctor: '_Task_onError',
+		callback: callback,
+		task: task
+	};
+}
+
+function receive(callback)
+{
+	return {
+		ctor: '_Task_receive',
+		callback: callback
+	};
+}
+
+
+// PROCESSES
+
+function rawSpawn(task)
+{
+	var process = {
+		ctor: '_Process',
+		id: _elm_lang$core$Native_Utils.guid(),
+		root: task,
+		stack: null,
+		mailbox: []
+	};
+
+	enqueue(process);
+
+	return process;
+}
+
+function spawn(task)
+{
+	return nativeBinding(function(callback) {
+		var process = rawSpawn(task);
+		callback(succeed(process));
+	});
+}
+
+function rawSend(process, msg)
+{
+	process.mailbox.push(msg);
+	enqueue(process);
+}
+
+function send(process, msg)
+{
+	return nativeBinding(function(callback) {
+		rawSend(process, msg);
+		callback(succeed(_elm_lang$core$Native_Utils.Tuple0));
+	});
+}
+
+function kill(process)
+{
+	return nativeBinding(function(callback) {
+		var root = process.root;
+		if (root.ctor === '_Task_nativeBinding' && root.cancel)
+		{
+			root.cancel();
+		}
+
+		process.root = null;
+
+		callback(succeed(_elm_lang$core$Native_Utils.Tuple0));
+	});
+}
+
+function sleep(time)
+{
+	return nativeBinding(function(callback) {
+		var id = setTimeout(function() {
+			callback(succeed(_elm_lang$core$Native_Utils.Tuple0));
+		}, time);
+
+		return function() { clearTimeout(id); };
+	});
+}
+
+
+// STEP PROCESSES
+
+function step(numSteps, process)
+{
+	while (numSteps < MAX_STEPS)
+	{
+		var ctor = process.root.ctor;
+
+		if (ctor === '_Task_succeed')
+		{
+			while (process.stack && process.stack.ctor === '_Task_onError')
+			{
+				process.stack = process.stack.rest;
+			}
+			if (process.stack === null)
+			{
+				break;
+			}
+			process.root = process.stack.callback(process.root.value);
+			process.stack = process.stack.rest;
+			++numSteps;
+			continue;
+		}
+
+		if (ctor === '_Task_fail')
+		{
+			while (process.stack && process.stack.ctor === '_Task_andThen')
+			{
+				process.stack = process.stack.rest;
+			}
+			if (process.stack === null)
+			{
+				break;
+			}
+			process.root = process.stack.callback(process.root.value);
+			process.stack = process.stack.rest;
+			++numSteps;
+			continue;
+		}
+
+		if (ctor === '_Task_andThen')
+		{
+			process.stack = {
+				ctor: '_Task_andThen',
+				callback: process.root.callback,
+				rest: process.stack
+			};
+			process.root = process.root.task;
+			++numSteps;
+			continue;
+		}
+
+		if (ctor === '_Task_onError')
+		{
+			process.stack = {
+				ctor: '_Task_onError',
+				callback: process.root.callback,
+				rest: process.stack
+			};
+			process.root = process.root.task;
+			++numSteps;
+			continue;
+		}
+
+		if (ctor === '_Task_nativeBinding')
+		{
+			process.root.cancel = process.root.callback(function(newRoot) {
+				process.root = newRoot;
+				enqueue(process);
+			});
+
+			break;
+		}
+
+		if (ctor === '_Task_receive')
+		{
+			var mailbox = process.mailbox;
+			if (mailbox.length === 0)
+			{
+				break;
+			}
+
+			process.root = process.root.callback(mailbox.shift());
+			++numSteps;
+			continue;
+		}
+
+		throw new Error(ctor);
+	}
+
+	if (numSteps < MAX_STEPS)
+	{
+		return numSteps + 1;
+	}
+	enqueue(process);
+
+	return numSteps;
+}
+
+
+// WORK QUEUE
+
+var working = false;
+var workQueue = [];
+
+function enqueue(process)
+{
+	workQueue.push(process);
+
+	if (!working)
+	{
+		setTimeout(work, 0);
+		working = true;
+	}
+}
+
+function work()
+{
+	var numSteps = 0;
+	var process;
+	while (numSteps < MAX_STEPS && (process = workQueue.shift()))
+	{
+		if (process.root)
+		{
+			numSteps = step(numSteps, process);
+		}
+	}
+	if (!process)
+	{
+		working = false;
+		return;
+	}
+	setTimeout(work, 0);
+}
+
+
+return {
+	succeed: succeed,
+	fail: fail,
+	nativeBinding: nativeBinding,
+	andThen: F2(andThen),
+	onError: F2(onError),
+	receive: receive,
+
+	spawn: spawn,
+	kill: kill,
+	sleep: sleep,
+	send: F2(send),
+
+	rawSpawn: rawSpawn,
+	rawSend: rawSend
+};
+
+}();
 var _elm_lang$core$Platform_Cmd$batch = _elm_lang$core$Native_Platform.batch;
 var _elm_lang$core$Platform_Cmd$none = _elm_lang$core$Platform_Cmd$batch(
 	{ctor: '[]'});
@@ -4303,6 +4246,63 @@ return {
 };
 
 }();
+
+//import Native.Utils //
+
+var _elm_lang$core$Native_Char = function() {
+
+return {
+	fromCode: function(c) { return _elm_lang$core$Native_Utils.chr(String.fromCharCode(c)); },
+	toCode: function(c) { return c.charCodeAt(0); },
+	toUpper: function(c) { return _elm_lang$core$Native_Utils.chr(c.toUpperCase()); },
+	toLower: function(c) { return _elm_lang$core$Native_Utils.chr(c.toLowerCase()); },
+	toLocaleUpper: function(c) { return _elm_lang$core$Native_Utils.chr(c.toLocaleUpperCase()); },
+	toLocaleLower: function(c) { return _elm_lang$core$Native_Utils.chr(c.toLocaleLowerCase()); }
+};
+
+}();
+var _elm_lang$core$Char$fromCode = _elm_lang$core$Native_Char.fromCode;
+var _elm_lang$core$Char$toCode = _elm_lang$core$Native_Char.toCode;
+var _elm_lang$core$Char$toLocaleLower = _elm_lang$core$Native_Char.toLocaleLower;
+var _elm_lang$core$Char$toLocaleUpper = _elm_lang$core$Native_Char.toLocaleUpper;
+var _elm_lang$core$Char$toLower = _elm_lang$core$Native_Char.toLower;
+var _elm_lang$core$Char$toUpper = _elm_lang$core$Native_Char.toUpper;
+var _elm_lang$core$Char$isBetween = F3(
+	function (low, high, $char) {
+		var code = _elm_lang$core$Char$toCode($char);
+		return (_elm_lang$core$Native_Utils.cmp(
+			code,
+			_elm_lang$core$Char$toCode(low)) > -1) && (_elm_lang$core$Native_Utils.cmp(
+			code,
+			_elm_lang$core$Char$toCode(high)) < 1);
+	});
+var _elm_lang$core$Char$isUpper = A2(
+	_elm_lang$core$Char$isBetween,
+	_elm_lang$core$Native_Utils.chr('A'),
+	_elm_lang$core$Native_Utils.chr('Z'));
+var _elm_lang$core$Char$isLower = A2(
+	_elm_lang$core$Char$isBetween,
+	_elm_lang$core$Native_Utils.chr('a'),
+	_elm_lang$core$Native_Utils.chr('z'));
+var _elm_lang$core$Char$isDigit = A2(
+	_elm_lang$core$Char$isBetween,
+	_elm_lang$core$Native_Utils.chr('0'),
+	_elm_lang$core$Native_Utils.chr('9'));
+var _elm_lang$core$Char$isOctDigit = A2(
+	_elm_lang$core$Char$isBetween,
+	_elm_lang$core$Native_Utils.chr('0'),
+	_elm_lang$core$Native_Utils.chr('7'));
+var _elm_lang$core$Char$isHexDigit = function ($char) {
+	return _elm_lang$core$Char$isDigit($char) || (A3(
+		_elm_lang$core$Char$isBetween,
+		_elm_lang$core$Native_Utils.chr('a'),
+		_elm_lang$core$Native_Utils.chr('f'),
+		$char) || A3(
+		_elm_lang$core$Char$isBetween,
+		_elm_lang$core$Native_Utils.chr('A'),
+		_elm_lang$core$Native_Utils.chr('F'),
+		$char));
+};
 
 var _elm_lang$core$String$fromList = _elm_lang$core$Native_String.fromList;
 var _elm_lang$core$String$toList = _elm_lang$core$Native_String.toList;
@@ -5480,6 +5480,33 @@ var _elm_lang$core$Time$subMap = F2(
 	});
 _elm_lang$core$Native_Platform.effectManagers['Time'] = {pkg: 'elm-lang/core', init: _elm_lang$core$Time$init, onEffects: _elm_lang$core$Time$onEffects, onSelfMsg: _elm_lang$core$Time$onSelfMsg, tag: 'sub', subMap: _elm_lang$core$Time$subMap};
 
+var _elm_lang$core$Tuple$mapSecond = F2(
+	function (func, _p0) {
+		var _p1 = _p0;
+		return {
+			ctor: '_Tuple2',
+			_0: _p1._0,
+			_1: func(_p1._1)
+		};
+	});
+var _elm_lang$core$Tuple$mapFirst = F2(
+	function (func, _p2) {
+		var _p3 = _p2;
+		return {
+			ctor: '_Tuple2',
+			_0: func(_p3._0),
+			_1: _p3._1
+		};
+	});
+var _elm_lang$core$Tuple$second = function (_p4) {
+	var _p5 = _p4;
+	return _p5._1;
+};
+var _elm_lang$core$Tuple$first = function (_p6) {
+	var _p7 = _p6;
+	return _p7._0;
+};
+
 var _elm_lang$core$Debug$crash = _elm_lang$core$Native_Debug.crash;
 var _elm_lang$core$Debug$log = _elm_lang$core$Native_Debug.log;
 
@@ -6141,33 +6168,6 @@ var _elm_lang$core$Json_Decode$Decoder = {ctor: 'Decoder'};
 var _elm_lang$core$Process$kill = _elm_lang$core$Native_Scheduler.kill;
 var _elm_lang$core$Process$sleep = _elm_lang$core$Native_Scheduler.sleep;
 var _elm_lang$core$Process$spawn = _elm_lang$core$Native_Scheduler.spawn;
-
-var _elm_lang$core$Tuple$mapSecond = F2(
-	function (func, _p0) {
-		var _p1 = _p0;
-		return {
-			ctor: '_Tuple2',
-			_0: _p1._0,
-			_1: func(_p1._1)
-		};
-	});
-var _elm_lang$core$Tuple$mapFirst = F2(
-	function (func, _p2) {
-		var _p3 = _p2;
-		return {
-			ctor: '_Tuple2',
-			_0: func(_p3._0),
-			_1: _p3._1
-		};
-	});
-var _elm_lang$core$Tuple$second = function (_p4) {
-	var _p5 = _p4;
-	return _p5._1;
-};
-var _elm_lang$core$Tuple$first = function (_p6) {
-	var _p7 = _p6;
-	return _p7._0;
-};
 
 var _elm_lang$dom$Native_Dom = function() {
 
@@ -9642,8 +9642,8 @@ var _user$vanagloria$GameState$setRes = F2(
 				return _elm_lang$core$Native_Utils.crashCase(
 					'GameState',
 					{
-						start: {line: 21, column: 5},
-						end: {line: 29, column: 53}
+						start: {line: 19, column: 5},
+						end: {line: 27, column: 53}
 					},
 					_p16)('Set res on a waiting state');
 		}
@@ -9796,8 +9796,8 @@ var _user$vanagloria$GameState$whichDecoder = function () {
 				return _elm_lang$core$Native_Utils.crashCase(
 					'GameState',
 					{
-						start: {line: 365, column: 13},
-						end: {line: 373, column: 57}
+						start: {line: 373, column: 13},
+						end: {line: 381, column: 57}
 					},
 					_p24)(
 					A2(_elm_lang$core$Basics_ops['++'], 'Invalid player ', s));
@@ -9887,8 +9887,8 @@ var _user$vanagloria$GameState$decodeState = function (msg) {
 		return _elm_lang$core$Native_Utils.crashCase(
 			'GameState',
 			{
-				start: {line: 322, column: 5},
-				end: {line: 327, column: 28}
+				start: {line: 330, column: 5},
+				end: {line: 335, column: 28}
 			},
 			_p26)(_p26._0);
 	}
@@ -9935,8 +9935,8 @@ var _user$vanagloria$GameState$stateUpdate = F2(
 						return _elm_lang$core$Native_Utils.crashCase(
 							'GameState',
 							{
-								start: {line: 295, column: 21},
-								end: {line: 300, column: 44}
+								start: {line: 303, column: 21},
+								end: {line: 308, column: 44}
 							},
 							_p31)(_p31._0);
 					}
@@ -10004,134 +10004,172 @@ var _user$vanagloria$GameState$resView = F2(
 				}
 			});
 	});
-var _user$vanagloria$GameState$stateView = function (state) {
-	var _p35 = state;
-	switch (_p35.ctor) {
-		case 'Waiting':
-			return A2(
-				_elm_lang$html$Html$div,
-				{
-					ctor: '::',
-					_0: _elm_lang$html$Html_Attributes$class('waiting'),
-					_1: {ctor: '[]'}
-				},
-				{
-					ctor: '::',
-					_0: _elm_lang$html$Html$text('Waiting for opponent...'),
-					_1: {ctor: '[]'}
-				});
-		case 'PlayingGame':
-			var _p38 = _p35._1._0;
-			var _p37 = _p35._0;
-			var _p36 = _p38;
-			if (_p36.ctor === '[]') {
-				return _user$vanagloria$GameState$view(_p37);
-			} else {
-				return A2(_user$vanagloria$GameState$resView, _p38, _p37);
-			}
-		default:
-			var _p41 = _p35._1._0;
-			var _p39 = _elm_lang$core$List$head(_p41);
-			if (_p39.ctor === 'Just') {
-				return A2(_user$vanagloria$GameState$resView, _p41, _p39._0);
-			} else {
+var _user$vanagloria$GameState$stateView = F4(
+	function (state, roomID, hostname, httpPort) {
+		var _p35 = state;
+		switch (_p35.ctor) {
+			case 'Waiting':
+				var portProtocol = (!_elm_lang$core$Native_Utils.eq(httpPort, '')) ? A2(_elm_lang$core$Basics_ops['++'], ':', httpPort) : '';
+				var challengeLink = A2(
+					_elm_lang$core$Basics_ops['++'],
+					'http://',
+					A2(
+						_elm_lang$core$Basics_ops['++'],
+						hostname,
+						A2(
+							_elm_lang$core$Basics_ops['++'],
+							portProtocol,
+							A2(_elm_lang$core$Basics_ops['++'], '?play=', roomID))));
 				return A2(
 					_elm_lang$html$Html$div,
 					{
 						ctor: '::',
-						_0: _elm_lang$html$Html_Attributes$class('endgame'),
+						_0: _elm_lang$html$Html_Attributes$class('waiting'),
 						_1: {ctor: '[]'}
 					},
-					function () {
-						var _p40 = _p35._0;
-						if (_p40.ctor === 'Nothing') {
-							return {
-								ctor: '::',
-								_0: A2(
-									_elm_lang$html$Html$div,
-									{
-										ctor: '::',
-										_0: _elm_lang$html$Html_Attributes$class('draw'),
-										_1: {ctor: '[]'}
-									},
-									{
-										ctor: '::',
-										_0: _elm_lang$html$Html$text('DRAW'),
-										_1: {ctor: '[]'}
-									}),
-								_1: {
+					{
+						ctor: '::',
+						_0: _elm_lang$html$Html$text('Give this link to your opponent:'),
+						_1: {
+							ctor: '::',
+							_0: A2(
+								_elm_lang$html$Html$div,
+								{ctor: '[]'},
+								{
 									ctor: '::',
 									_0: A2(
-										_elm_lang$html$Html$button,
+										_elm_lang$html$Html$input,
 										{
 											ctor: '::',
-											_0: _elm_lang$html$Html_Attributes$class('rematch'),
+											_0: _elm_lang$html$Html_Attributes$value(challengeLink),
 											_1: {
 												ctor: '::',
-												_0: _elm_lang$html$Html_Events$onClick(_user$vanagloria$Messages$Rematch),
-												_1: {ctor: '[]'}
+												_0: _elm_lang$html$Html_Attributes$type_('text'),
+												_1: {
+													ctor: '::',
+													_0: _elm_lang$html$Html_Attributes$readonly(true),
+													_1: {ctor: '[]'}
+												}
 											}
 										},
-										{
-											ctor: '::',
-											_0: _elm_lang$html$Html$text('Rematch'),
-											_1: {ctor: '[]'}
-										}),
+										{ctor: '[]'}),
 									_1: {ctor: '[]'}
-								}
-							};
-						} else {
-							return {
-								ctor: '::',
-								_0: _elm_lang$core$Native_Utils.eq(_p40._0, _user$vanagloria$GameState$PlayerA) ? A2(
-									_elm_lang$html$Html$div,
-									{
-										ctor: '::',
-										_0: _elm_lang$html$Html_Attributes$class('victory'),
-										_1: {ctor: '[]'}
-									},
-									{
-										ctor: '::',
-										_0: _elm_lang$html$Html$text('VICTORY'),
-										_1: {ctor: '[]'}
-									}) : A2(
-									_elm_lang$html$Html$div,
-									{
-										ctor: '::',
-										_0: _elm_lang$html$Html_Attributes$class('defeat'),
-										_1: {ctor: '[]'}
-									},
-									{
-										ctor: '::',
-										_0: _elm_lang$html$Html$text('DEFEAT'),
-										_1: {ctor: '[]'}
-									}),
-								_1: {
-									ctor: '::',
-									_0: A2(
-										_elm_lang$html$Html$button,
-										{
-											ctor: '::',
-											_0: _elm_lang$html$Html_Attributes$class('rematch'),
-											_1: {
-												ctor: '::',
-												_0: _elm_lang$html$Html_Events$onClick(_user$vanagloria$Messages$Rematch),
-												_1: {ctor: '[]'}
-											}
-										},
-										{
-											ctor: '::',
-											_0: _elm_lang$html$Html$text('Rematch'),
-											_1: {ctor: '[]'}
-										}),
-									_1: {ctor: '[]'}
-								}
-							};
+								}),
+							_1: {ctor: '[]'}
 						}
-					}());
-			}
-	}
-};
+					});
+			case 'PlayingGame':
+				var _p38 = _p35._1._0;
+				var _p37 = _p35._0;
+				var _p36 = _p38;
+				if (_p36.ctor === '[]') {
+					return _user$vanagloria$GameState$view(_p37);
+				} else {
+					return A2(_user$vanagloria$GameState$resView, _p38, _p37);
+				}
+			default:
+				var _p41 = _p35._1._0;
+				var _p39 = _elm_lang$core$List$head(_p41);
+				if (_p39.ctor === 'Just') {
+					return A2(_user$vanagloria$GameState$resView, _p41, _p39._0);
+				} else {
+					return A2(
+						_elm_lang$html$Html$div,
+						{
+							ctor: '::',
+							_0: _elm_lang$html$Html_Attributes$class('endgame'),
+							_1: {ctor: '[]'}
+						},
+						function () {
+							var _p40 = _p35._0;
+							if (_p40.ctor === 'Nothing') {
+								return {
+									ctor: '::',
+									_0: A2(
+										_elm_lang$html$Html$div,
+										{
+											ctor: '::',
+											_0: _elm_lang$html$Html_Attributes$class('draw'),
+											_1: {ctor: '[]'}
+										},
+										{
+											ctor: '::',
+											_0: _elm_lang$html$Html$text('DRAW'),
+											_1: {ctor: '[]'}
+										}),
+									_1: {
+										ctor: '::',
+										_0: A2(
+											_elm_lang$html$Html$button,
+											{
+												ctor: '::',
+												_0: _elm_lang$html$Html_Attributes$class('rematch'),
+												_1: {
+													ctor: '::',
+													_0: _elm_lang$html$Html_Events$onClick(_user$vanagloria$Messages$Rematch),
+													_1: {ctor: '[]'}
+												}
+											},
+											{
+												ctor: '::',
+												_0: _elm_lang$html$Html$text('Rematch'),
+												_1: {ctor: '[]'}
+											}),
+										_1: {ctor: '[]'}
+									}
+								};
+							} else {
+								return {
+									ctor: '::',
+									_0: _elm_lang$core$Native_Utils.eq(_p40._0, _user$vanagloria$GameState$PlayerA) ? A2(
+										_elm_lang$html$Html$div,
+										{
+											ctor: '::',
+											_0: _elm_lang$html$Html_Attributes$class('victory'),
+											_1: {ctor: '[]'}
+										},
+										{
+											ctor: '::',
+											_0: _elm_lang$html$Html$text('VICTORY'),
+											_1: {ctor: '[]'}
+										}) : A2(
+										_elm_lang$html$Html$div,
+										{
+											ctor: '::',
+											_0: _elm_lang$html$Html_Attributes$class('defeat'),
+											_1: {ctor: '[]'}
+										},
+										{
+											ctor: '::',
+											_0: _elm_lang$html$Html$text('DEFEAT'),
+											_1: {ctor: '[]'}
+										}),
+									_1: {
+										ctor: '::',
+										_0: A2(
+											_elm_lang$html$Html$button,
+											{
+												ctor: '::',
+												_0: _elm_lang$html$Html_Attributes$class('rematch'),
+												_1: {
+													ctor: '::',
+													_0: _elm_lang$html$Html_Events$onClick(_user$vanagloria$Messages$Rematch),
+													_1: {ctor: '[]'}
+												}
+											},
+											{
+												ctor: '::',
+												_0: _elm_lang$html$Html$text('Rematch'),
+												_1: {ctor: '[]'}
+											}),
+										_1: {ctor: '[]'}
+									}
+								};
+							}
+						}());
+				}
+		}
+	});
 
 var Elm = {};
 Elm['GameState'] = Elm['GameState'] || {};

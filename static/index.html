@@ -14,7 +14,9 @@
       var params = new URLSearchParams(window.location.search);
       var app = Elm.Main.fullscreen({
         hostname: window.location.hostname,
-        play: params.get('play')
+        httpPort: window.location.port,
+        play: params.get('play'),
+        seed: new Date().getTime()
       });
     </script>
   </body>

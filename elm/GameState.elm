@@ -7,8 +7,6 @@ import Json.Decode as Json exposing (field, maybe)
 import Messages exposing (GameMsg(..), Msg(DrawCard, EndTurn, HoverCard, PlayCard, Rematch))
 
 
--- TYPES.
-
 
 type GameState
     = Waiting
@@ -107,11 +105,21 @@ init =
 -- VIEWS.
 
 
-stateView : GameState -> Html Msg
-stateView state =
+stateView : GameState -> String -> String -> String -> Html Msg
+stateView state roomID hostname httpPort =
     case state of
         Waiting ->
-            div [ class "waiting" ] [ text "Waiting for opponent..." ]
+            let
+                portProtocol = if httpPort /= "" then ":" ++ httpPort else ""
+                challengeLink = "http://" ++ hostname ++ portProtocol ++ "?play=" ++ roomID
+            in
+                div [ class "waiting" ]
+                [
+                    text "Give this link to your opponent:"
+                ,   div [] [
+                        input [ value challengeLink, type_ "text", readonly True ] []
+                    ]
+                ]
 
         PlayingGame model ( res, _ ) ->
             case res of
