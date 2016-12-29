@@ -19,6 +19,7 @@ import Task
 import Time exposing (Time, second)
 import Tuple exposing (first)
 import Util exposing (applyFst)
+import Ports exposing (queryParams)
 
 
 message : msg -> Cmd msg
@@ -71,7 +72,7 @@ type alias Flags =
     { hostname : String
     , httpPort : String
     , play : Maybe String
-    , seed: Int
+    , seed : Int
     }
 
 
@@ -85,15 +86,16 @@ init { hostname, httpPort, play, seed } =
     let
         model : Model
         model =
-            { room = Connecting
-                { roomID =
-                    Maybe.withDefault
-                        (first (Random.step roomIDGenerator (Random.initialSeed seed)))
-                        play
-                , name = ""
-                , error = ""
-                , valid = False
-                }
+            { room =
+                Connecting
+                    { roomID =
+                        Maybe.withDefault
+                            (first (Random.step roomIDGenerator (Random.initialSeed seed)))
+                            play
+                    , name = ""
+                    , error = ""
+                    , valid = False
+                    }
             , hostname = hostname
             , httpPort = httpPort
             }
@@ -111,10 +113,10 @@ update msg ({ hostname, room } as model) =
         Connecting ({ roomID } as connectingModel) ->
             case msg of
                 Play ->
-                    ( { model | room = Connected { chat = Chat.init, game = Waiting, mode = Playing, roomID = roomID} }, Cmd.none )
+                    ( { model | room = Connected { chat = Chat.init, game = Waiting, mode = Playing, roomID = roomID } }, queryParams ("?play=" ++ roomID) )
 
                 Spectate ->
-                    ( { model | room = Connected { chat = Chat.init, game = Waiting, mode = Spectating, roomID = roomID} }, Cmd.none )
+                    ( { model | room = Connected { chat = Chat.init, game = Waiting, mode = Spectating, roomID = roomID } }, queryParams ("?play=" ++ roomID) )
 
                 otherwise ->
                     applyFst (\c -> { model | room = Connecting c }) (connectingUpdate hostname msg connectingModel)
@@ -323,9 +325,11 @@ turnOnly { mode, game } cmdMsg =
 
 
 -- OTHER
-roomIDGenerator : Random.Generator String
-roomIDGenerator = string 8 Random.Char.english
 
+
+roomIDGenerator : Random.Generator String
+roomIDGenerator =
+    string 8 Random.Char.english
 
 
 validateName : String -> ( Bool, String )

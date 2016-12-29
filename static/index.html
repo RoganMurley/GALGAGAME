@@ -18,6 +18,13 @@
         play: params.get('play'),
         seed: new Date().getTime()
       });
+
+      app.ports.queryParams.subscribe(function (newValue) {
+        if (history.pushState) {
+          var newurl = window.location.protocol + "//" + window.location.host + window.location.pathname + newValue;
+          window.history.pushState({ path: newurl }, '', newurl);
+        }
+      })
     </script>
   </body>
 </html>
