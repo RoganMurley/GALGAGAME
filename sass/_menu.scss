@@ -17,8 +17,20 @@
     font-size: 30px;
     font-family: 'Poiret One', sans-serif;
 
+    background-color: #f0f8ff;
+
     border-radius: 5px;
     width: 160px;
     margin: 5px;
+  
+    &:hover {
+      background-color: #e0e3e6;
+      cursor: pointer; cursor: hand;
+    }
+
+    &:disabled {
+      background-color: #f0f8ff;
+      cursor: not-allowed;
+    }
   }
 }

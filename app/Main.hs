@@ -155,7 +155,7 @@ application state pending = do
                   added <- addPlayerClient client roomVar
                   case added of
                     Nothing ->
-                      WS.sendTextData conn $ toChat $ ErrorCommand "Room is full :("
+                      WS.sendTextData conn $ toChat $ ErrorCommand "room is full"
                     Just (room', which) ->
                       flip finally
                         (disconnect client roomVar roomName state)
@@ -168,13 +168,13 @@ application state pending = do
 
               | otherwise ->
                 WS.sendTextData conn $ toChat $
-                  ErrorCommand "Something went terribly wrong in connection negotiation :("
+                  ErrorCommand "something went wrong with connection negotiation"
 
               where
                 client = (T.drop (T.length prefix) msg, conn) :: Client
     Nothing ->
       (WS.sendTextData conn) . toChat $
-        ErrorCommand "Bad room name protocol"
+        ErrorCommand "bad room name protocol"
 
 spectate :: Client -> MVar Room -> IO ()
 spectate client@(user, conn) room = do

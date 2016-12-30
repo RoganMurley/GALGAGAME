@@ -364,7 +364,7 @@ roomIDGenerator =
 validateName : String -> ( Bool, String )
 validateName name =
     if length name > 20 then
-        ( False, "Userame too long!" )
+        ( False, "username too long" )
     else if String.isEmpty name then
         ( False, "" )
     else
@@ -412,10 +412,11 @@ view ({ hostname, httpPort } as model) =
 
         Connecting { name, error, valid } ->
             div [ class "connecting-box" ]
-                [ div []
+                [ h1 [] [ text "Custom Game" ]
+                , div []
                     [ input [ onInput Input, placeholder "Username" ] []
                     , button [ onClick (Send ("play:" ++ name)), disabled (not valid) ] [ text "Play" ]
                     , button [ onClick (Send ("spectate:" ++ name)), disabled (not valid) ] [ text "Spec" ]
+                    , div [ class "error" ] [ text error ]
                     ]
-                , div [ class "error" ] [ text error ]
                 ]
