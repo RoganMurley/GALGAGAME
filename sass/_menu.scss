@@ -1,0 +1,24 @@
+.main-menu {
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+
+  h1 {
+    color: #fff;
+    font-size: 100px;
+    font-family: 'Poiret One', sans-serif;
+
+    margin: 0;
+  }
+
+  button {
+    font-size: 30px;
+    font-family: 'Poiret One', sans-serif;
+
+    border-radius: 5px;
+    width: 160px;
+    margin: 5px;
+  }
+}

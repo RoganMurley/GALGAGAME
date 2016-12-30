@@ -11,7 +11,7 @@ import WebSocket
 import Chat exposing (addChatMessage)
 import Drag exposing (dragAt, dragEnd, dragStart, getPosition)
 import GameState exposing (Card, GameState(..), Hand, Model, Turn, WhichPlayer(..), resTick, stateUpdate, stateView, tickForward, tickZero, view)
-import Messages exposing (GameMsg(..), Msg(..))
+import Messages exposing (GameMsg(..), MenuMsg(..), Msg(..))
 import Random
 import Random.Char
 import Random.String exposing (string)
@@ -47,8 +47,13 @@ type alias Model =
     }
 
 
+type alias Seed =
+    Int
+
+
 type RoomModel
-    = Connecting ConnectingModel
+    = MainMenu Seed
+    | Connecting ConnectingModel
     | Connected ConnectedModel
 
 
@@ -72,7 +77,7 @@ type alias Flags =
     { hostname : String
     , httpPort : String
     , play : Maybe String
-    , seed : Int
+    , seed : Seed
     }
 
 
@@ -82,25 +87,32 @@ type Mode
 
 
 init : Flags -> ( Model, Cmd Msg )
-init { hostname, httpPort, play, seed } =
+init ({ hostname, httpPort, play, seed } as flags) =
     let
         model : Model
         model =
             { room =
-                Connecting
-                    { roomID =
-                        Maybe.withDefault
-                            (first (Random.step roomIDGenerator (Random.initialSeed seed)))
-                            play
-                    , name = ""
-                    , error = ""
-                    , valid = False
-                    }
+                case play of
+                    Just roomID ->
+                        connectingInit roomID
+
+                    Nothing ->
+                        MainMenu seed
             , hostname = hostname
             , httpPort = httpPort
             }
     in
         ( model, Cmd.none )
+
+
+connectingInit : String -> RoomModel
+connectingInit roomID =
+    Connecting
+        { roomID = roomID
+        , name = ""
+        , error = ""
+        , valid = False
+        }
 
 
 
@@ -110,6 +122,23 @@ init { hostname, httpPort, play, seed } =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg ({ hostname, room } as model) =
     case room of
+        MainMenu seed ->
+            case msg of
+                MainMenuMsg m ->
+                    case m of
+                        MenuCustom ->
+                            ( { model
+                                | room =
+                                    (connectingInit
+                                        (first (Random.step roomIDGenerator (Random.initialSeed seed)))
+                                    )
+                              }
+                            , Cmd.none
+                            )
+
+                otherwise ->
+                    ( model, Cmd.none )
+
         Connecting ({ roomID } as connectingModel) ->
             case msg of
                 Play ->
@@ -364,6 +393,17 @@ subscriptions model =
 view : Model -> Html Msg
 view ({ hostname, httpPort } as model) =
     case model.room of
+        MainMenu _ ->
+            div [ class "main-menu" ]
+                [ h1 [] [ text "VANA" ]
+                , button
+                    [ class "menu-button", disabled True ]
+                    [ text "Quickplay" ]
+                , button
+                    [ class "menu-button", onClick (MainMenuMsg MenuCustom) ]
+                    [ text "Custom" ]
+                ]
+
         Connected { chat, game, roomID } ->
             div []
                 [ Chat.view chat

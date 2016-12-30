@@ -2,3 +2,5 @@ elm-stuff/
 node_modules/
 .stack-work/
 static/*.js
+static/*.css
+.DS_Store
