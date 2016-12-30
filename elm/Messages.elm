@@ -1,4 +1,4 @@
-module Messages exposing (GameMsg(..), Msg(..))
+module Messages exposing (GameMsg(..), MenuMsg(..), Msg(..))
 
 import Mouse exposing (Position)
 import Time exposing (Time)
@@ -24,9 +24,14 @@ type Msg
     | Tick Time
     | ResolveStep
     | HoverCard (Maybe String)
+    | MainMenuMsg MenuMsg
 
 
 type GameMsg
     = Sync String
     | HoverOutcome (Maybe Int)
     | ResolveOutcome String
+
+
+type MenuMsg
+    = MenuCustom
