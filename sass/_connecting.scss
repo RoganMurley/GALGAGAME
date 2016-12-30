@@ -1,14 +1,52 @@
 .connecting-box {
+  height: 100vh;
   display: flex;
   justify-content: center;
   align-items: center;
+  flex-direction: column;
 
-  width: 100%;
-  height: 100%;
+  h1 {
+    color: #fff;
+    font-size: 60px;
+    font-family: 'Poiret One', sans-serif;
+
+    margin: 0;
+    margin-bottom: 20px;
+  }
+
+  button {
+    font-size: 24px;
+    font-family: 'Poiret One', sans-serif;
+
+    background-color: #f0f8ff;
+
+    border-radius: 5px;
+    width: 80px;
+    margin: 5px;
+
+    &:hover {
+      background-color: #e0e3e6;
+      cursor: pointer; cursor: hand;
+    }
+
+    &:disabled {
+      background-color: #f0f8ff;
+      cursor: not-allowed;
+    }
+  }
+
+  input {
+    border-radius: 5px;
+    height: 28px;
+  }
 }
 
 .error {
+  font-family: 'Poiret One', sans-serif;
   display: block;
-  color: red;
+  color: #ff3232;
+  font-size: 30px;
   font-weight: 600;
+  text-align: center;
+  margin-top: 20px;
 }
