@@ -414,7 +414,7 @@ view ({ hostname, httpPort } as model) =
             div [ class "connecting-box" ]
                 [ h1 [] [ text "Custom Game" ]
                 , div []
-                    [ input [ onInput Input, placeholder "Username" ] []
+                    [ input [ onInput Input, placeholder "username" ] []
                     , button [ onClick (Send ("play:" ++ name)), disabled (not valid) ] [ text "Play" ]
                     , button [ onClick (Send ("spectate:" ++ name)), disabled (not valid) ] [ text "Spec" ]
                     , div [ class "error" ] [ text error ]
