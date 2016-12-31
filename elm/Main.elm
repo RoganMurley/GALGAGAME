@@ -15,16 +15,10 @@ import Messages exposing (GameMsg(..), MenuMsg(..), Msg(..))
 import Random
 import Random.Char exposing (char)
 import Random.String exposing (string)
-import Task
 import Time exposing (Time, second)
 import Tuple exposing (first)
-import Util exposing (applyFst)
-import Ports exposing (queryParams)
-
-
-message : msg -> Cmd msg
-message x =
-    Task.perform identity (Task.succeed x)
+import Util exposing (applyFst, message)
+import Ports exposing (selectAllInput, queryParams)
 
 
 main =
@@ -273,6 +267,9 @@ connectedUpdate hostname msg ({ chat, game, mode } as model) =
                             "null"
             in
                 ( model, playingOnly model (message (Send ("hover:" ++ cardName))) )
+
+        SelectAllInput elementId ->
+            ( model, selectAllInput elementId )
 
         otherwise ->
             Debug.crash "Unexpected action while connected ;_;"
