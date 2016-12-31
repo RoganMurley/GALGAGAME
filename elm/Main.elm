@@ -13,7 +13,7 @@ import Drag exposing (dragAt, dragEnd, dragStart, getPosition)
 import GameState exposing (Card, GameState(..), Hand, Model, Turn, WhichPlayer(..), resTick, stateUpdate, stateView, tickForward, tickZero, view)
 import Messages exposing (GameMsg(..), MenuMsg(..), Msg(..))
 import Random
-import Random.Char
+import Random.Char exposing (char)
 import Random.String exposing (string)
 import Task
 import Time exposing (Time, second)
@@ -94,7 +94,9 @@ init ({ hostname, httpPort, play, seed } as flags) =
             { room =
                 case play of
                     Just roomID ->
-                        connectingInit roomID
+                        connectingInit
+                            ("player" ++ (first (Random.step usernameNumberGenerator (Random.initialSeed seed))))
+                            roomID
 
                     Nothing ->
                         MainMenu seed
@@ -105,13 +107,13 @@ init ({ hostname, httpPort, play, seed } as flags) =
         ( model, Cmd.none )
 
 
-connectingInit : String -> RoomModel
-connectingInit roomID =
+connectingInit : String -> String -> RoomModel
+connectingInit username roomID =
     Connecting
         { roomID = roomID
-        , name = ""
+        , name = username
         , error = ""
-        , valid = False
+        , valid = True
         }
 
 
@@ -130,6 +132,7 @@ update msg ({ hostname, room } as model) =
                             ( { model
                                 | room =
                                     (connectingInit
+                                        ("player" ++ (first (Random.step usernameNumberGenerator (Random.initialSeed seed))))
                                         (first (Random.step roomIDGenerator (Random.initialSeed seed)))
                                     )
                               }
@@ -158,7 +161,7 @@ connectingUpdate : String -> Msg -> ConnectingModel -> ( ConnectingModel, Cmd Ms
 connectingUpdate hostname msg ({ roomID, name, error, valid } as model) =
     case msg of
         Input input ->
-            ( { model | name = input, error = Tuple.second (validateName name), valid = Tuple.first (validateName name) }, Cmd.none )
+            ( { model | name = input, error = Tuple.second (validateName input), valid = Tuple.first (validateName input) }, Cmd.none )
 
         Send str ->
             ( model, Cmd.batch [ send hostname (Debug.log "sending" str), send hostname (Debug.log "sending" ("room:" ++ roomID)) ] )
@@ -361,6 +364,11 @@ roomIDGenerator =
     string 8 Random.Char.english
 
 
+usernameNumberGenerator : Random.Generator String
+usernameNumberGenerator =
+    string 3 (char 48 57)
+
+
 validateName : String -> ( Bool, String )
 validateName name =
     if length name > 20 then
@@ -414,7 +422,7 @@ view ({ hostname, httpPort } as model) =
             div [ class "connecting-box" ]
                 [ h1 [] [ text "Custom Game" ]
                 , div []
-                    [ input [ onInput Input, placeholder "username" ] []
+                    [ input [ onInput Input, placeholder "username", value name ] []
                     , button [ onClick (Send ("play:" ++ name)), disabled (not valid) ] [ text "Play" ]
                     , button [ onClick (Send ("spectate:" ++ name)), disabled (not valid) ] [ text "Spec" ]
                     , div [ class "error" ] [ text error ]
