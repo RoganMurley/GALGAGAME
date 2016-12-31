@@ -22,4 +22,20 @@
     background-color: wheat;
     height: 26px;
   }
+
+  button {
+    font-family: 'Poiret One', sans-serif;
+    font-size: 24px;
+
+    background-color: #f0f8ff;
+
+    border-radius: 5px;
+    width: 80px;
+    margin: 5px;
+
+    &:hover {
+      background-color: #e0e3e6;
+      cursor: pointer; cursor: hand;
+    }
+  }
 }
