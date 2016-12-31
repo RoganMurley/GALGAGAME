@@ -148,7 +148,7 @@ application state pending = do
 
               | clientExists client initialRoom ->
                 (WS.sendTextData conn) . toChat $
-                  ErrorCommand "User already exists"
+                  ErrorCommand "user already exists"
 
               | prefix == "play:" ->
                 do
