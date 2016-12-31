@@ -138,17 +138,17 @@ application state pending = do
       case parsePrefix msg of
         Nothing ->
           (WS.sendTextData conn) . toChat $
-            ErrorCommand $ "Connection protocol failure" <> msg
+            ErrorCommand $ "connection protocol failure" <> msg
 
         Just prefix ->
           case prefix of
             _ | any ($ fst client) [ T.null ] ->
                 (WS.sendTextData conn) . toChat $
-                  ErrorCommand "Name must be nonempty"
+                  ErrorCommand "name must be nonempty"
 
               | clientExists client initialRoom ->
                 (WS.sendTextData conn) . toChat $
-                  ErrorCommand "user already exists"
+                  ErrorCommand "username taken"
 
               | prefix == "play:" ->
                 do

@@ -186,6 +186,9 @@ connectingUpdate hostname msg ({ roomID, name, error, valid } as model) =
         Tick t ->
             ( model, Cmd.none )
 
+        SelectAllInput elementId ->
+            ( model, selectAllInput elementId )
+
         otherwise ->
             Debug.crash "Unexpected action while not connected ;_;"
 
@@ -419,7 +422,7 @@ view ({ hostname, httpPort } as model) =
             div [ class "connecting-box" ]
                 [ h1 [] [ text "Custom Game" ]
                 , div []
-                    [ input [ onInput Input, placeholder "username", value name ] []
+                    [ input [ onInput Input, placeholder "username", value name, id "username-input", onClick (SelectAllInput "username-input") ] []
                     , button [ onClick (Send ("play:" ++ name)), disabled (not valid) ] [ text "Play" ]
                     , button [ onClick (Send ("spectate:" ++ name)), disabled (not valid) ] [ text "Spec" ]
                     , div [ class "error" ] [ text error ]
