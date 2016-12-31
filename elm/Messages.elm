@@ -26,6 +26,7 @@ type Msg
     | HoverCard (Maybe String)
     | MainMenuMsg MenuMsg
     | SelectAllInput String
+    | CopyInput String
 
 
 type GameMsg

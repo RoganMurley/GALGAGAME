@@ -18,7 +18,7 @@ import Random.String exposing (string)
 import Time exposing (Time, second)
 import Tuple exposing (first)
 import Util exposing (applyFst, message)
-import Ports exposing (selectAllInput, queryParams)
+import Ports exposing (copyInput, selectAllInput, queryParams)
 
 
 main =
@@ -189,6 +189,9 @@ connectingUpdate hostname msg ({ roomID, name, error, valid } as model) =
         SelectAllInput elementId ->
             ( model, selectAllInput elementId )
 
+        CopyInput elementId ->
+            ( model, copyInput elementId )
+
         otherwise ->
             Debug.crash "Unexpected action while not connected ;_;"
 
@@ -273,6 +276,9 @@ connectedUpdate hostname msg ({ chat, game, mode } as model) =
 
         SelectAllInput elementId ->
             ( model, selectAllInput elementId )
+
+        CopyInput elementId ->
+            ( model, copyInput elementId )
 
         otherwise ->
             Debug.crash "Unexpected action while connected ;_;"

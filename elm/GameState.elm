@@ -4,7 +4,7 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Json.Decode as Json exposing (field, maybe)
-import Messages exposing (GameMsg(..), Msg(DrawCard, EndTurn, HoverCard, PlayCard, Rematch, SelectAllInput))
+import Messages exposing (GameMsg(..), Msg(CopyInput, DrawCard, EndTurn, HoverCard, PlayCard, Rematch, SelectAllInput))
 
 
 type GameState
@@ -125,6 +125,7 @@ stateView state roomID hostname httpPort =
                     [ text "Give this link to your opponent:"
                     , div []
                         [ input [ value challengeLink, type_ "text", readonly True, id myID, onClick (SelectAllInput myID) ] []
+                        , button [ onClick (CopyInput myID) ] [ text "copy" ]
                         ]
                     ]
 

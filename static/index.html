@@ -10,6 +10,8 @@
     <link href="main.css" rel="stylesheet">
   </head>
   <body class="no-select">
+    <div class="version-warning">closed alpha build v0.3</div>
+
     <script src="Main.js"></script>
     <script>
       var params = new URLSearchParams(window.location.search);
@@ -25,10 +27,15 @@
           var newurl = window.location.protocol + "//" + window.location.host + window.location.pathname + newValue;
           window.history.pushState({ path: newurl }, '', newurl);
         }
-      })
+      });
 
       app.ports.selectAllInput.subscribe(function (elementId) {
         document.getElementById(elementId).select();
+      });
+
+      app.ports.copyInput.subscribe(function (elementId) {
+        document.getElementById(elementId).select();
+        document.execCommand('copy');
       })
     </script>
   </body>
