@@ -26,6 +26,10 @@
           window.history.pushState({ path: newurl }, '', newurl);
         }
       })
+
+      app.ports.selectAllInput.subscribe(function (elementId) {
+        document.getElementById(elementId).select();
+      })
     </script>
   </body>
 </html>

@@ -25,6 +25,7 @@ type Msg
     | ResolveStep
     | HoverCard (Maybe String)
     | MainMenuMsg MenuMsg
+    | SelectAllInput String
 
 
 type GameMsg

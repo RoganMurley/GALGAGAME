@@ -4,8 +4,7 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Json.Decode as Json exposing (field, maybe)
-import Messages exposing (GameMsg(..), Msg(DrawCard, EndTurn, HoverCard, PlayCard, Rematch))
-
+import Messages exposing (GameMsg(..), Msg(DrawCard, EndTurn, HoverCard, PlayCard, Rematch, SelectAllInput))
 
 
 type GameState
@@ -110,16 +109,24 @@ stateView state roomID hostname httpPort =
     case state of
         Waiting ->
             let
-                portProtocol = if httpPort /= "" then ":" ++ httpPort else ""
-                challengeLink = "http://" ++ hostname ++ portProtocol ++ "?play=" ++ roomID
+                portProtocol =
+                    if httpPort /= "" then
+                        ":" ++ httpPort
+                    else
+                        ""
+
+                challengeLink =
+                    "http://" ++ hostname ++ portProtocol ++ "?play=" ++ roomID
+
+                myID =
+                    "challenge-link"
             in
                 div [ class "waiting" ]
-                [
-                    text "Give this link to your opponent:"
-                ,   div [] [
-                        input [ value challengeLink, type_ "text", readonly True ] []
+                    [ text "Give this link to your opponent:"
+                    , div []
+                        [ input [ value challengeLink, type_ "text", readonly True, id myID, onClick (SelectAllInput myID) ] []
+                        ]
                     ]
-                ]
 
         PlayingGame model ( res, _ ) ->
             case res of
