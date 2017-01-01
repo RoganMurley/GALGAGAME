@@ -248,7 +248,7 @@ actSpec :: Command -> MVar Room -> IO ()
 actSpec cmd room = readMVar room >>= broadcast (toChat cmd)
 
 actOutcome :: Room -> Outcome -> IO ()
-actOutcome room@ outcome@(HoverOutcome which _) = do
+actOutcome room outcome@(HoverOutcome which _) = do
   sendExcluding which (("hover:" <>) . cs $ encode outcome) room
   T.putStrLn "hovering"
 actOutcome room (ChatOutcome username msg) = do
