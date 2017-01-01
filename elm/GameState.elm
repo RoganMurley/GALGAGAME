@@ -536,4 +536,4 @@ viewResHand hand =
 
 viewResTurn : Html Msg
 viewResTurn =
-    div [ class "turn-indi" ] [ text "resolving..." ]
+    div [ class "turn-indi" ] [ text "Resolving..." ]

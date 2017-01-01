@@ -19,11 +19,12 @@
 }
 
 .card-title {
+  font-family: 'Poiret One', sans-serif;
   display: flex;
   justify-content: center;
 
   margin: 14px;
-  font-size: 1.3rem;
+  font-size: 1.8rem;
   font-weight: bolder;
 }
 
@@ -38,13 +39,15 @@
 }
 
 .card-desc {
+  font-family: monospace;
+
   display: flex;
   justify-content: center;
 
   text-align: center;
 
   margin: 18px;
-  font-size: 1rem;
+  font-size: 1.1rem;
 }
 
 .my-card {
