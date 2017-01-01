@@ -81,7 +81,7 @@ cardProphecy = Card "Prophecy" "Return all cards to the right to their owner's h
         (modHand (bounceAll PlayerB (getStack m)) PlayerB) $
           setStack [] m
     bounceAll :: WhichPlayer -> Stack -> Hand -> Hand
-    bounceAll w s h = (fmap getCard (filter (owner w) s)) ++ h
+    bounceAll w s h = take maxHandLength (h ++ (fmap getCard (filter (owner w) s)))
     owner :: WhichPlayer -> StackCard -> Bool
     owner PlayerA (StackCard PlayerA _) = True
     owner PlayerB (StackCard PlayerB _) = True
