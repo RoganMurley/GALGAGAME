@@ -1,4 +1,6 @@
 .turn-indi {
+  font-family: 'Poiret One', sans-serif;
+
   position: absolute;
   left: 50%;
   top: 70%;
@@ -10,15 +12,19 @@
 }
 
 .pass-button {
-  background-color: #153c6f;
-  text-decoration: none;
+  font-size: 42px;
+
   cursor: pointer; cursor: hand;
-  border: none;
+  color: #000;
+  font-weight: 800;
+  background-color: #f0f8ff;
+
   border-radius: 5px;
-  width: 9rem;
+  width: 160px;
+  margin: 5px;
 
   &:hover {
-    background-color: #2a4f7d;
+    background-color: #e0e3e6;
   }
 }
 
@@ -26,11 +32,11 @@
 }
 
 .pass-disabled {
-  background-color: #04304C;
+  background-color: #696969;
   cursor: not-allowed;
-  width: 13rem;
+  width: 200px;
 
   &:hover {
-    background-color: #04304C;
+    background-color: #696969;
   }
 }
