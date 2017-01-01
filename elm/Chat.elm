@@ -39,7 +39,7 @@ view model =
     div ([ class "chat" ] ++ (Drag.draggable model))
         [ div [ class "chat-input" ]
             [ input [ onInput Input, value model.input ] []
-            , button [ onClick (Send ("chat:" ++ model.input)) ] [ text "Send" ]
+            , button [ onClick (Send ("chat:" ++ model.input)) ] [ text "send" ]
             ]
         , viewMessages model
         ]
