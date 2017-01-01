@@ -123,7 +123,7 @@ stateView state roomID hostname httpPort =
             in
                 div [ class "waiting" ]
                     [ text "Give this link to your opponent:"
-                    , div []
+                    , div [ class "input-group" ]
                         [ input [ value challengeLink, type_ "text", readonly True, id myID, onClick (SelectAllInput myID) ] []
                         , button [ onClick (CopyInput myID) ] [ text "copy" ]
                         ]
