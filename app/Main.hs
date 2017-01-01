@@ -13,6 +13,7 @@ import Control.Monad (forM_, forever)
 import Control.Concurrent (MVar, newMVar, modifyMVar, readMVar)
 
 import qualified Data.Text as T
+import qualified Data.Text.IO as T
 import qualified Network.WebSockets as WS
 
 import Model (CardName, Model, WhichPlayer(..), modelReverso, otherPlayer)
@@ -247,14 +248,18 @@ actSpec :: Command -> MVar Room -> IO ()
 actSpec cmd room = readMVar room >>= broadcast (toChat cmd)
 
 actOutcome :: Room -> Outcome -> IO ()
-actOutcome room outcome@(HoverOutcome which _) =
+actOutcome room@ outcome@(HoverOutcome which _) = do
   sendExcluding which (("hover:" <>) . cs $ encode outcome) room
-actOutcome room (ChatOutcome username msg) =
+  T.putStrLn "hovering"
+actOutcome room (ChatOutcome username msg) = do
   broadcast ("chat:" <> username <> ": " <> msg) room
-actOutcome room (ResolveOutcome models final) =
+  T.putStrLn "chatting"
+actOutcome room (ResolveOutcome models final) = do
   resolveRoomClients (models, final) room
-actOutcome room SyncOutcome =
+  T.putStrLn "resolving"
+actOutcome room SyncOutcome = do
   syncRoomClients room
+  T.putStrLn "syncing"
 
 syncClient :: Client -> GameState -> IO ()
 syncClient (_, conn) game =
