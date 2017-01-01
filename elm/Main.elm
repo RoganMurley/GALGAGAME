@@ -426,7 +426,7 @@ view ({ hostname, httpPort } as model) =
 
         Connecting { name, error, valid } ->
             div [ class "connecting-box" ]
-                [ h1 [] [ text "Custom Game" ]
+                [ h1 [] [ text "VANA : Custom Game" ]
                 , div []
                     [ div [ class "input-group" ]
                         [ input [ onInput Input, placeholder "username", value name, id "playername-input", onClick (SelectAllInput "playername-input") ] []

@@ -12,6 +12,10 @@
 
   user-select: text;
 
+  .waiting-prompt {
+    margin-bottom: 20px;
+  }
+
   input {
     font-family: monospace;
     text-align: center;
