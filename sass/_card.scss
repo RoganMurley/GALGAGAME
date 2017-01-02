@@ -59,16 +59,22 @@
   cursor: pointer; cursor: hand;
 
   z-index: 10;
+
+  border: 5px double rgba(0, 0, 0, 0);
 }
 
 .my-card:hover {
-  -webkit-transform: translateY(0);
-  transform: translateY(0);
+  -webkit-transform: translateY(1vh);
+  transform: translateY(1vh);
+
+  border: 5px double #f5deb3;
 }
 
 .other-card {
   background-color: #0c5e7f;
   cursor: auto;
+
+  border: 5px double rgba(0, 0, 0, 0);
 }
 
 // Annoying transition overwrite.
@@ -78,5 +84,9 @@
   &.card-hover {
     -webkit-transform: translateY(5vh);
     transform: translateY(5vh);
+
+    .other-card {
+      border: 5px double #35a0cc;
+    }
   }
 }
