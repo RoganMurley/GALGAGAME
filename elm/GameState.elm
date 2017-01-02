@@ -200,16 +200,38 @@ viewOtherHand cardCount hoverIndex =
     let
         viewCard : Int -> Html Msg
         viewCard index =
-            case (Just index) == hoverIndex of
-                True ->
-                    div [ class "card other-card other-card-hover" ] []
+            div [ containerClass index hoverIndex ]
+                [ div
+                    [ class "card other-card"
+                    , style [ ( "transform", "rotateZ(" ++ toString (calcRot index) ++ "deg) translateY(" ++ toString (calcTrans index) ++ "px)" ) ]
+                    ]
+                    []
+                ]
 
-                False ->
-                    div [ class "card other-card" ] []
+        -- Stupid container nesting because css transform overwrite.
+        containerClass : Int -> HoverCardIndex -> Attribute msg
+        containerClass index hoverIndex =
+            case hoverIndex of
+                Just i ->
+                    if i == index then
+                        class "other-card-container card-hover"
+                    else
+                        class "other-card-container"
+
+                Nothing ->
+                    class "other-card-container"
 
         cards : List (Html Msg)
         cards =
             List.map viewCard (List.range 0 (cardCount - 1))
+
+        calcRot : Int -> Int
+        calcRot index =
+            -2 * (index - (cardCount // 2))
+
+        calcTrans : Int -> Int
+        calcTrans index =
+            -12 * (abs (index - (cardCount // 2)))
     in
         div [ class "hand other-hand" ] cards
 
