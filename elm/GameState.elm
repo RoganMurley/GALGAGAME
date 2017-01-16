@@ -4,11 +4,13 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Json.Decode as Json exposing (field, maybe)
+import CharacterSelect
 import Messages exposing (GameMsg(..), Msg(CopyInput, DrawCard, EndTurn, HoverCard, PlayCard, Rematch, SelectAllInput))
 
 
 type GameState
     = Waiting
+    | Selecting CharacterSelect.Model
     | PlayingGame Model ( Res, Int )
     | Ended (Maybe WhichPlayer) ( Res, Int )
 
@@ -24,6 +26,9 @@ setRes state res =
 
         Waiting ->
             Debug.crash "Set res on a waiting state"
+
+        Selecting _ ->
+            Debug.crash "Set res on a Selecting state"
 
 
 type alias Model =
@@ -128,6 +133,9 @@ stateView state roomID hostname httpPort =
                         , button [ onClick (CopyInput myID) ] [ text "copy" ]
                         ]
                     ]
+
+        Selecting model ->
+            CharacterSelect.view model
 
         PlayingGame model ( res, _ ) ->
             case res of
@@ -373,6 +381,7 @@ stateDecoder : Json.Decoder GameState
 stateDecoder =
     Json.oneOf
         [ waitingDecoder
+        , selectingDecoder
         , playingDecoder
         , endedDecoder
         ]
@@ -381,6 +390,22 @@ stateDecoder =
 waitingDecoder : Json.Decoder GameState
 waitingDecoder =
     Json.map (\_ -> Waiting) (field "waiting" Json.bool)
+
+
+selectingDecoder : Json.Decoder GameState
+selectingDecoder =
+    let
+        characterSelectModelDecoder : Json.Decoder CharacterSelect.Model
+        characterSelectModelDecoder =
+            Json.map
+                (\c -> CharacterSelect.Model c CharacterSelect.NoneSelected)
+                (Json.list characterDecoder)
+
+        characterDecoder : Json.Decoder CharacterSelect.Character
+        characterDecoder =
+            Json.map CharacterSelect.Character (field "name" Json.string)
+    in
+        Json.map Selecting (field "selecting" characterSelectModelDecoder)
 
 
 endedDecoder : Json.Decoder GameState

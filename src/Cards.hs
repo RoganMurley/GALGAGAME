@@ -49,10 +49,10 @@ cardVampire = Card "Vampire" "Lifesteal for 5" "fangs.svg" eff
 
 
 cardSuccubus :: Card
-cardSuccubus = Card "Succubus" "Lifesteal for 2 for each card to the right" "pretty-fangs.svg" eff
+cardSuccubus = Card "Succubus" "Lifesteal for 3 for each card to the right" "pretty-fangs.svg" eff
   where
     eff :: CardEff
-    eff p _ m = lifesteal (2 * (length . getStack $ m)) (otherPlayer p) m
+    eff p _ m = lifesteal (3 * (length . getStack $ m)) (otherPlayer p) m
 
 
 cardReversal :: Card
@@ -115,10 +115,10 @@ cardSickness = Card "Sickness" "Make all cards to the right's healing hurt inste
 
 
 cardOffering :: Card
-cardOffering = Card "Offering" "Discard your hand, then draw two cards" "chalice-drops.svg" eff
+cardOffering = Card "Offering" "Hurt yourself for 10, then draw two cards" "chalice-drops.svg" eff
   where
     eff :: CardEff
-    eff p _ m = (drawCard p) . (drawCard p) $ setHand p [] m
+    eff p _ m = (drawCard p) . (drawCard p) . (hurt 10 p) $ m
 
 
 cardGoatFlute :: Card
@@ -146,3 +146,26 @@ cardObscurer = Card "Obscurer" "Hurt for 4 and obscure the next card your oppone
     eff p _ m = hurt 4 (otherPlayer p) $ modDeckHead obs (otherPlayer p) m
     obs :: Card -> Card
     obs card = Card "???" "An obscured card" "sight-disabled.svg" (\p _ -> modStack ((:) (StackCard p card)))
+
+
+cardZen :: Card
+cardZen = Card "Zen" "Obscure your hand" "meditation.svg" eff
+  where
+    eff :: CardEff
+    eff p _ m = modHand (fmap obs) p m
+    obs :: Card -> Card
+    obs card = Card "???" "An obscured card" "sight-disabled.svg" (\p _ -> modStack ((:) (StackCard p card)))
+
+
+cardHammer :: Card
+cardHammer = Card "Hammer" "Hurt for 6" "thor-hammer.svg" eff
+  where
+    eff :: CardEff
+    eff p _ m = hurt 6 (otherPlayer p) m
+
+
+cardAgility :: Card
+cardAgility = Card "Agility" "Draw a card" "sprint.svg" eff
+  where
+    eff :: CardEff
+    eff p _ m = drawCard p m

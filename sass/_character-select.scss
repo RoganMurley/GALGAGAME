@@ -1,0 +1,57 @@
+.character-select {
+  color: #fff;
+  font-size: 50px;
+  font-family: 'Poiret One', sans-serif;
+  font-weight: bold;
+
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+
+.characters {
+  margin-top: 35px;
+}
+
+.character-button {
+  display: inline;
+  margin: 15px;
+  background-color: #421e48;
+  border-radius: 10px;
+  padding: 10px;
+
+  cursor: pointer; cursor: hand;
+
+  &:hover {
+    background-color: #914b9c;
+  }
+}
+
+.character-button-chosen {
+  background-color: #0db37b;
+}
+
+.character-count {
+  font-family: monospace;
+  font-size: 30px;
+  margin-top: 20px;
+}
+
+.character-lock {
+  font-size: 42px;
+
+  cursor: pointer; cursor: hand;
+  color: #000;
+  font-weight: 800;
+  background-color: #f0f8ff;
+
+  border-radius: 5px;
+  width: 160px;
+  margin: 5px;
+
+  &:hover {
+    background-color: #e0e3e6;
+  }
+}
