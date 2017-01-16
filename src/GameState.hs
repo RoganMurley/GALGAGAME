@@ -8,21 +8,25 @@ import Safe (headMay, tailSafe)
 import Data.Text (Text)
 
 import Cards
+import Characters
 import Model
 import Util (Err, Gen, shuffle, split)
 
 
 data GameState =
-    Waiting Gen
+    Waiting (Maybe Character) (Maybe Character) Gen
+  | Selecting CharModel Gen
   | Started PlayState
   deriving (Eq, Show)
 
 
 instance ToJSON GameState where
-  toJSON (Waiting _) =
+  toJSON (Waiting _ _ _) =
     object [
       "waiting" .= True
     ]
+  toJSON (Selecting m _) =
+    toJSON m
   toJSON (Started s) =
     toJSON s
 
@@ -90,7 +94,8 @@ initDeck =
 
 
 reverso :: GameState -> GameState
-reverso (Waiting gen)               = Waiting gen
+reverso (Waiting a b gen)           = Waiting b a gen
+reverso (Selecting m gen)           = Selecting (characterModelReverso m) gen
 reverso (Started (Playing model))   = Started . Playing $ modelReverso model
 reverso (Started (Ended which gen)) = Started $ Ended (otherPlayer <$> which) gen
 
@@ -99,8 +104,10 @@ update :: GameCommand -> WhichPlayer -> GameState -> Either Err (Maybe GameState
 update (Chat username msg) _ _ = Right (Nothing, [ChatOutcome username msg])
 update cmd which state =
   case state of
-    Waiting _ ->
+    Waiting _ _ _ ->
       Left ("Unknown command " <> (cs $ show cmd) <> " on a waiting GameState")
+    Selecting _ _ ->
+      Left ("Unknown command " <> (cs $ show cmd) <> " on a selecting GameState")
     Started started ->
       case started of
         Playing model ->
