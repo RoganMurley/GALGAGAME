@@ -10,7 +10,8 @@ import String exposing (dropLeft, length, startsWith)
 import WebSocket
 import Chat exposing (addChatMessage)
 import Drag exposing (dragAt, dragEnd, dragStart, getPosition)
-import GameState exposing (Card, GameState(..), Hand, Model, Turn, WhichPlayer(..), resTick, stateUpdate, stateView, tickForward, tickZero, view)
+import Card exposing (Card)
+import GameState exposing (GameState(..), Hand, Model, Turn, WhichPlayer(..), resTick, stateUpdate, stateView, tickForward, tickZero, view)
 import Messages exposing (GameMsg(..), MenuMsg(..), Msg(..))
 import Random
 import Random.Char exposing (char)
