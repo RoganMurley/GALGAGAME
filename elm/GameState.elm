@@ -1,11 +1,13 @@
-module GameState exposing (Card, GameState(..), Hand, Model, Turn, WhichPlayer(..), init, resTick, stateUpdate, stateView, tickForward, tickZero, view)
+module GameState exposing (GameState(..), Hand, Model, Turn, WhichPlayer(..), init, resTick, stateUpdate, stateView, tickForward, tickZero, view)
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Json.Decode as Json exposing (field, maybe)
+import Card exposing (Card, viewCard)
 import CharacterSelect
 import Messages exposing (GameMsg(..), Msg(CopyInput, DrawCard, EndTurn, HoverCard, PlayCard, Rematch, SelectAllInput))
+import Util exposing (fromJust)
 
 
 type GameState
@@ -52,13 +54,6 @@ type alias Res =
 
 type alias Stack =
     List StackCard
-
-
-type alias Card =
-    { name : String
-    , desc : String
-    , imgURL : String
-    }
 
 
 type WhichPlayer
@@ -288,20 +283,6 @@ viewLife which life =
 viewStack : Stack -> Html Msg
 viewStack stack =
     let
-        viewCard : Card -> Html Msg
-        viewCard { name, desc, imgURL } =
-            div
-                [ class "card"
-                ]
-                [ div [ class "card-title" ] [ text name ]
-                , div
-                    [ class "card-picture"
-                    , style [ ( "background-image", "url(\"img/" ++ imgURL ++ "\")" ) ]
-                    ]
-                    []
-                , div [ class "card-desc" ] [ text desc ]
-                ]
-
         viewStackCard : StackCard -> Html Msg
         viewStackCard { owner, card } =
             case owner of
@@ -357,6 +338,19 @@ stateUpdate msg state =
                             otherwise ->
                                 setRes final resList
 
+        SelectingMsg selectMsg ->
+            let
+                model : CharacterSelect.Model
+                model =
+                    case state of
+                        Selecting m ->
+                            m
+
+                        otherwise ->
+                            Debug.crash "Expected a selecting state"
+            in
+                Selecting (CharacterSelect.update selectMsg model)
+
 
 syncState : GameState -> String -> GameState
 syncState model msg =
@@ -398,12 +392,22 @@ selectingDecoder =
         characterSelectModelDecoder : Json.Decoder CharacterSelect.Model
         characterSelectModelDecoder =
             Json.map
-                (\c -> CharacterSelect.Model c CharacterSelect.NoneSelected)
+                (\cs -> CharacterSelect.Model cs CharacterSelect.NoneSelected (fromJust (List.head cs)))
                 (Json.list characterDecoder)
 
         characterDecoder : Json.Decoder CharacterSelect.Character
         characterDecoder =
-            Json.map CharacterSelect.Character (field "name" Json.string)
+            Json.map2 CharacterSelect.Character
+                (field "name" Json.string)
+                (field "cards" characterCardsDecoder)
+
+        characterCardsDecoder : Json.Decoder ( Card, Card, Card, Card )
+        characterCardsDecoder =
+            Json.map4 (,,,)
+                (Json.index 0 cardDecoder)
+                (Json.index 1 cardDecoder)
+                (Json.index 2 cardDecoder)
+                (Json.index 3 cardDecoder)
     in
         Json.map Selecting (field "selecting" characterSelectModelDecoder)
 
@@ -438,16 +442,17 @@ whichDecoder =
         Json.map makeWhich Json.string
 
 
+cardDecoder : Json.Decoder Card
+cardDecoder =
+    Json.map3 Card
+        (field "name" Json.string)
+        (field "desc" Json.string)
+        (field "imageURL" Json.string)
+
+
 modelDecoder : Json.Decoder Model
 modelDecoder =
     let
-        cardDecoder : Json.Decoder Card
-        cardDecoder =
-            Json.map3 Card
-                (field "name" Json.string)
-                (field "desc" Json.string)
-                (field "imageURL" Json.string)
-
         stackCardDecoder : Json.Decoder StackCard
         stackCardDecoder =
             Json.map2 StackCard
@@ -505,22 +510,6 @@ resTick state =
 
             otherwise ->
                 state
-
-
-
--- resProcess : GameState -> GameState -> GameState
--- resProcess old new =
---     case new of
---         PlayingGame _ ( [], _ ) ->
---             new
---
---         otherwise ->
---             case ( old, new ) of
---                 ( PlayingGame oldModel _, PlayingGame model ( res, _ ) ) ->
---                     PlayingGame oldModel ( res ++ [ model ], 0 )
---
---                 otherwise ->
---                     new
 
 
 tickForward : GameState -> GameState

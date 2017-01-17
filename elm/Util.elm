@@ -1,4 +1,4 @@
-module Util exposing (applyFst, message, px)
+module Util exposing (applyFst, fromJust, message, px)
 
 import Task
 
@@ -27,3 +27,17 @@ applyFst f ( x, y ) =
 message : msg -> Cmd msg
 message x =
     Task.perform identity (Task.succeed x)
+
+
+
+-- Unsage fromJust
+
+
+fromJust : Maybe a -> a
+fromJust x =
+    case x of
+        Just y ->
+            y
+
+        Nothing ->
+            Debug.crash "error: fromJust Nothing"
