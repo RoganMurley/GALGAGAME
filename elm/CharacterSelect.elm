@@ -11,17 +11,21 @@ import Util exposing (fromJust)
 -- MODEL
 
 
+type alias Name =
+    String
+
+
 type alias Character =
-    { name : String
+    { name : Name
     , cards : ( Card, Card, Card, Card )
     }
 
 
 type SelectedCharacters
     = NoneSelected
-    | OneSelected Character
-    | TwoSelected Character Character
-    | ThreeSelected Character Character Character
+    | OneSelected Name
+    | TwoSelected Name Name
+    | ThreeSelected Name Name Name
 
 
 type alias Model =
@@ -41,23 +45,39 @@ view { characters, selected, hover } =
         characterView : Character -> Html Msg
         characterView { name } =
             div
-                [ class "character-button", onMouseEnter (GameStateMsg (SelectingMsg (SelectingHover name))) ]
+                [ class "character-button"
+                , onMouseEnter (GameStateMsg (SelectingMsg (SelectingHover name)))
+                , onClick (GameStateMsg (SelectingMsg (SelectingSelect name)))
+                , if (contains selected name) then
+                    class "invisible"
+                  else
+                    class ""
+                ]
                 [ text name ]
 
         selectedView : SelectedCharacters -> Html Msg
         selectedView s =
-            case s of
-                NoneSelected ->
-                    div [ class "character-count" ] [ text "0/3" ]
+            let
+                chosenView : Name -> Html Msg
+                chosenView n =
+                    div
+                        [ class "character-chosen"
+                        , onMouseEnter (GameStateMsg (SelectingMsg (SelectingHover n)))
+                        , onClick (GameStateMsg (SelectingMsg (SelectingDeselect n)))
+                        ]
+                        [ text n ]
+            in
+                div []
+                    [ div
+                        [ class "characters-all-chosen" ]
+                        (List.map chosenView (nameList s))
+                    , case s of
+                        ThreeSelected _ _ _ ->
+                            button [ class "character-ready" ] [ text "Ready" ]
 
-                OneSelected _ ->
-                    div [ class "character-count" ] [ text "1/3" ]
-
-                TwoSelected _ _ ->
-                    div [ class "character-count" ] [ text "2/3" ]
-
-                ThreeSelected _ _ _ ->
-                    button [ class "character-lock" ] [ text "lock" ]
+                        otherwise ->
+                            text ""
+                    ]
 
         cardPreviewView : ( Card, Card, Card, Card ) -> Html Msg
         cardPreviewView ( c1, c2, c3, c4 ) =
@@ -84,7 +104,81 @@ view { characters, selected, hover } =
 
 
 update : CharSelectMsg -> Model -> Model
-update msg ({ characters } as model) =
+update msg model =
     case msg of
-        SelectingHover characterName ->
-            { model | hover = fromJust (List.head (List.filter (\{ name } -> name == characterName) characters)) }
+        SelectingHover n ->
+            { model | hover = fromJust (List.head (List.filter (\{ name } -> name == n) model.characters)) }
+
+        SelectingSelect n ->
+            { model | selected = selectCharacter (model.selected) n }
+
+        SelectingDeselect n ->
+            { model | selected = deselectCharacter (model.selected) n }
+
+
+selectCharacter : SelectedCharacters -> Name -> SelectedCharacters
+selectCharacter s n =
+    case s of
+        NoneSelected ->
+            OneSelected n
+
+        OneSelected a ->
+            TwoSelected n a
+
+        TwoSelected a b ->
+            ThreeSelected n b a
+
+        ThreeSelected a b _ ->
+            ThreeSelected n a b
+
+
+nameList : SelectedCharacters -> List Name
+nameList s =
+    case s of
+        NoneSelected ->
+            []
+
+        OneSelected a ->
+            [ a ]
+
+        TwoSelected a b ->
+            [ a, b ]
+
+        ThreeSelected a b c ->
+            [ a, b, c ]
+
+
+contains : SelectedCharacters -> Name -> Bool
+contains s n =
+    List.member n (nameList s)
+
+
+deselectCharacter : SelectedCharacters -> Name -> SelectedCharacters
+deselectCharacter s n =
+    case s of
+        NoneSelected ->
+            NoneSelected
+
+        OneSelected a ->
+            if a == n then
+                NoneSelected
+            else
+                OneSelected a
+
+        TwoSelected a b ->
+            if a == n then
+                OneSelected b
+            else if b == n then
+                OneSelected a
+            else
+                TwoSelected a b
+
+        ThreeSelected a b c ->
+            if a == n then
+                TwoSelected b c
+            else if b == n then
+                TwoSelected a c
+            else if c == n then
+                TwoSelected a b
+            else
+                ThreeSelected a b c
