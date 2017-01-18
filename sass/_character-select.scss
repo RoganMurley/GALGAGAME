@@ -18,14 +18,14 @@
 .character-button {
   display: inline;
   margin: 15px;
-  background-color: #421e48;
+  background-color: #6d6bf1;
   border-radius: 10px;
   padding: 10px;
 
   cursor: pointer; cursor: hand;
 
   &:hover {
-    background-color: #914b9c;
+    background-color: #8584f3;
   }
 }
 
@@ -33,14 +33,39 @@
   background-color: #0db37b;
 }
 
-.character-count {
-  font-family: monospace;
-  font-size: 30px;
-  margin-top: 20px;
+.card-preview {
+  display: flex;
+  flex-direction: row;
+
+  margin-top: 30px;
 }
 
-.character-lock {
+// Chosen
+.characters-all-chosen {
+  display: flex;
+  align-items: center;
+  flex-direction: row;
+}
+
+.character-chosen {
+  display: inline;
+  margin: 15px;
+  background-color: #327d73;
+  border-radius: 10px;
+  padding: 10px;
+
+  cursor: pointer; cursor: hand;
+
+  &:hover {
+    background-color: #3ca295;
+  }
+}
+
+
+.character-ready {
+  font-family: 'Poiret One', sans-serif;
   font-size: 42px;
+  text-align: center;
 
   cursor: pointer; cursor: hand;
   color: #000;
@@ -50,15 +75,14 @@
   border-radius: 5px;
   width: 160px;
   margin: 5px;
+  margin-top: 20px;
 
   &:hover {
     background-color: #e0e3e6;
   }
 }
 
-.card-preview {
-  display: flex;
-  flex-direction: row;
 
-  margin-top: 30px;
+.invisible {
+  display: none;
 }

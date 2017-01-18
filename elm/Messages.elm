@@ -42,3 +42,5 @@ type MenuMsg
 
 type CharSelectMsg
     = SelectingHover String
+    | SelectingSelect String
+    | SelectingDeselect String
