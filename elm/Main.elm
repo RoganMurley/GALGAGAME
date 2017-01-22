@@ -276,9 +276,6 @@ connectedUpdate hostname msg ({ chat, game, mode } as model) =
             in
                 ( model, playingOnly model (message (Send ("hover:" ++ cardName))) )
 
-        ReadyUp ->
-            ( model, playingOnly model (send hostname "rup:") )
-
         SelectCharacter name ->
             ( model, playingOnly model (message (Send ("selectCharacter:" ++ name))) )
 

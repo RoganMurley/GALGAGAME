@@ -27,7 +27,6 @@ type Msg
     | MainMenuMsg MenuMsg
     | SelectAllInput String
     | CopyInput String
-    | ReadyUp
     | SelectCharacter String
 
 

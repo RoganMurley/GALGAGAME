@@ -33,7 +33,6 @@ data Command =
   | PlayCardCommand CardName
   | HoverCardCommand (Maybe CardName)
   | RematchCommand
-  | RupCommand
   | SelectCharacterCommand Text
   | ErrorCommand Text
   deriving (Show)
@@ -244,7 +243,6 @@ actPlay cmd which roomVar =
     trans (HoverCardCommand name) = Just (HoverCard name)
     trans RematchCommand = Just Rematch
     trans (ChatCommand name content) = Just (Chat name content)
-    trans RupCommand = Just ReadyUp
     trans (SelectCharacterCommand n) = Just (SelectCharacter n)
     trans _ = Nothing
 
@@ -318,8 +316,6 @@ parseMsg name msg =
       ChatCommand name content
     "rematch" ->
       RematchCommand
-    "rup" ->
-      RupCommand
     "selectCharacter" ->
       SelectCharacterCommand content
     _ ->
