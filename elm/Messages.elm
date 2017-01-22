@@ -28,6 +28,7 @@ type Msg
     | SelectAllInput String
     | CopyInput String
     | ReadyUp
+    | SelectCharacter String
 
 
 type GameMsg
@@ -43,5 +44,8 @@ type MenuMsg
 
 type CharSelectMsg
     = SelectingHover String
-    | SelectingSelect String
-    | SelectingDeselect String
+
+
+
+-- | SelectingSelect String
+-- | SelectingDeselect String

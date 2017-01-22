@@ -52,7 +52,8 @@ data GameCommand =
   | PlayCard CardName
   | HoverCard (Maybe CardName)
   | Rematch
-  | ReadyUp Text Text Text
+  | ReadyUp
+  | SelectCharacter Text
   | Chat Username Text
   deriving (Show)
 
@@ -68,10 +69,11 @@ initModel turn ca cb gen = Model turn [] handPA handPB deckPA deckPB maxLife max
 
 
 buildDeck :: SelectedCharacters -> Deck
-buildDeck (Character _ cards1, Character _ cards2, Character _ cards3) =
-  (toList cards1) ++ (toList cards2) ++ (toList cards3)
+buildDeck (ThreeSelected (Character _ cards1) (Character _ cards2) (Character _ cards3)) =
+  (f cards1) ++ (f cards2) ++ (f cards3)
   where
-    toList (a, b, c, d) = [a, b, c, d]
+    f (a, b, c, d) = [a, b, c, d]
+buildDeck _ = [] -- UNSAFE
 
 
 -- initDeck :: Deck
@@ -115,13 +117,16 @@ update cmd which state =
       Left ("Unknown command " <> (cs $ show cmd) <> " on a waiting GameState")
     Selecting selectModel turn gen ->
       case cmd of
-        ReadyUp a b c ->
+        ReadyUp ->
           let
             startIfBothReady :: GameState -> GameState
-            startIfBothReady (Selecting (CharModel (Just ca) (Just cb) _) _ _) = Started . Playing $ initModel turn ca cb gen
+            startIfBothReady (Selecting (CharModel ca@(ThreeSelected _ _ _) cb@(ThreeSelected _ _ _) _) _ _) =
+              Started . Playing $ initModel turn ca cb gen
             startIfBothReady s = s
           in
-            Right (Just . startIfBothReady $ Selecting (selectChar selectModel which (a, b, c)) turn gen, [SyncOutcome])
+            Right (Just . startIfBothReady $ Selecting selectModel turn gen, [SyncOutcome])
+        SelectCharacter n ->
+          Right (Just $ Selecting (selectChar selectModel which n) turn gen, [SyncOutcome])
         _ ->
           Left ("Unknown command " <> (cs $ show cmd) <> " on a selecting GameState")
     Started started ->
