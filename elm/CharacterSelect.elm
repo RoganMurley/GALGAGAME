@@ -73,11 +73,7 @@ view { characters, selected, hover } =
                         (List.map chosenView (nameList s))
                     , case s of
                         ThreeSelected _ _ _ ->
-                            button
-                                [ class "character-ready"
-                                , onClick ReadyUp
-                                ]
-                                [ text "Ready" ]
+                            text "Waiting for opponent..."
 
                         otherwise ->
                             text ""

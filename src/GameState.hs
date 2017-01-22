@@ -52,7 +52,6 @@ data GameCommand =
   | PlayCard CardName
   | HoverCard (Maybe CardName)
   | Rematch
-  | ReadyUp
   | SelectCharacter Text
   | Chat Username Text
   deriving (Show)
@@ -117,16 +116,14 @@ update cmd which state =
       Left ("Unknown command " <> (cs $ show cmd) <> " on a waiting GameState")
     Selecting selectModel turn gen ->
       case cmd of
-        ReadyUp ->
+        SelectCharacter n ->
           let
             startIfBothReady :: GameState -> GameState
             startIfBothReady (Selecting (CharModel ca@(ThreeSelected _ _ _) cb@(ThreeSelected _ _ _) _) _ _) =
               Started . Playing $ initModel turn ca cb gen
             startIfBothReady s = s
           in
-            Right (Just . startIfBothReady $ Selecting selectModel turn gen, [SyncOutcome])
-        SelectCharacter n ->
-          Right (Just $ Selecting (selectChar selectModel which n) turn gen, [SyncOutcome])
+            Right (Just . startIfBothReady $ Selecting (selectChar selectModel which n) turn gen, [SyncOutcome])
         _ ->
           Left ("Unknown command " <> (cs $ show cmd) <> " on a selecting GameState")
     Started started ->
