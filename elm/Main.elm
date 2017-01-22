@@ -11,6 +11,7 @@ import WebSocket
 import Chat exposing (addChatMessage)
 import Drag exposing (dragAt, dragEnd, dragStart, getPosition)
 import Card exposing (Card)
+import CharacterSelect exposing (SelectedCharacters(ThreeSelected))
 import GameState exposing (GameState(..), Hand, Model, Turn, WhichPlayer(..), resTick, stateUpdate, stateView, tickForward, tickZero, view)
 import Messages exposing (GameMsg(..), MenuMsg(..), Msg(..))
 import Random
@@ -274,6 +275,19 @@ connectedUpdate hostname msg ({ chat, game, mode } as model) =
                             "null"
             in
                 ( model, playingOnly model (message (Send ("hover:" ++ cardName))) )
+
+        ReadyUp ->
+            case model.game of
+                Selecting { selected } ->
+                    case selected of
+                        ThreeSelected a b c ->
+                            ( model, playingOnly model (send hostname ("rup:" ++ a ++ "," ++ b ++ "," ++ c)) )
+
+                        otherwise ->
+                            ( model, Cmd.none )
+
+                otherwise ->
+                    ( model, Cmd.none )
 
         SelectAllInput elementId ->
             ( model, selectAllInput elementId )

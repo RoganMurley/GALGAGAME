@@ -67,13 +67,17 @@ view { characters, selected, hover } =
                         ]
                         [ text n ]
             in
-                div []
+                div [ class "ready-up" ]
                     [ div
                         [ class "characters-all-chosen" ]
                         (List.map chosenView (nameList s))
                     , case s of
                         ThreeSelected _ _ _ ->
-                            button [ class "character-ready" ] [ text "Ready" ]
+                            button
+                                [ class "character-ready"
+                                , onClick ReadyUp
+                                ]
+                                [ text "Ready" ]
 
                         otherwise ->
                             text ""

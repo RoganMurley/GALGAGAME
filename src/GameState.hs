@@ -7,25 +7,24 @@ import Data.String.Conversions (cs)
 import Safe (headMay, tailSafe)
 import Data.Text (Text)
 
-import Cards
 import Characters
 import Model
 import Util (Err, Gen, shuffle, split)
 
 
 data GameState =
-    Waiting (Maybe Character) (Maybe Character) Gen
-  | Selecting CharModel Gen
+    Waiting Gen
+  | Selecting CharModel Turn Gen
   | Started PlayState
   deriving (Eq, Show)
 
 
 instance ToJSON GameState where
-  toJSON (Waiting _ _ _) =
+  toJSON (Waiting _) =
     object [
       "waiting" .= True
     ]
-  toJSON (Selecting m _) =
+  toJSON (Selecting m _ _) =
     toJSON m
   toJSON (Started s) =
     toJSON s
@@ -53,49 +52,57 @@ data GameCommand =
   | PlayCard CardName
   | HoverCard (Maybe CardName)
   | Rematch
+  | ReadyUp Text Text Text
   | Chat Username Text
   deriving (Show)
 
 
-initModel :: Turn -> Gen -> Model
-initModel turn gen = Model turn [] handPA handPB deckPA deckPB maxLife maxLife NoPass gen
+initModel :: Turn -> SelectedCharacters -> SelectedCharacters -> Gen -> Model
+initModel turn ca cb gen = Model turn [] handPA handPB deckPA deckPB maxLife maxLife NoPass gen
   where
     (genPA, genPB) = split gen :: (Gen, Gen)
-    initDeckPA = shuffle initDeck genPA :: Deck
+    initDeckPA = shuffle (buildDeck ca) genPA :: Deck
     (handPA, deckPA) = splitAt 4 initDeckPA :: (Hand, Deck)
-    initDeckPB = shuffle initDeck genPB :: Deck
+    initDeckPB = shuffle (buildDeck cb) genPB :: Deck
     (handPB, deckPB) = splitAt 4 initDeckPB :: (Hand, Deck)
 
 
-initDeck :: Deck
-initDeck =
-  -- DAMAGE
-     (replicate 3 cardFireball)
-  ++ (replicate 3 cardDagger)
-  ++ (replicate 3 cardBoomerang)
-  ++ (replicate 3 cardPotion)
-  ++ (replicate 3 cardVampire)
-  ++ (replicate 3 cardSuccubus)
-  -- ++ (replicate 3 cardObscurer)
-  -- CONTROL
-  ++ (replicate 2 cardSiren)
-  ++ (replicate 2 cardSickness)
-  -- HARD CONTROL
-  ++ (replicate 2 cardHubris)
-  ++ (replicate 2 cardReflect)
-  ++ (replicate 2 cardReversal)
-  ++ (replicate 2 cardConfound)
-  -- SOFT CONTROL
-  ++ (replicate 2 cardSiren)
-  ++ (replicate 2 cardSickness)
-  ++ (replicate 2 cardProphecy)
-  -- ++ (replicate 2 cardOffering)
-  -- ++ (replicate 2 cardGoatFlute)
+buildDeck :: SelectedCharacters -> Deck
+buildDeck (Character _ cards1, Character _ cards2, Character _ cards3) =
+  (toList cards1) ++ (toList cards2) ++ (toList cards3)
+  where
+    toList (a, b, c, d) = [a, b, c, d]
+
+
+-- initDeck :: Deck
+-- initDeck =
+--   -- DAMAGE
+--      (replicate 3 cardFireball)
+--   ++ (replicate 3 cardDagger)
+--   ++ (replicate 3 cardBoomerang)
+--   ++ (replicate 3 cardPotion)
+--   ++ (replicate 3 cardVampire)
+--   ++ (replicate 3 cardSuccubus)
+--   -- ++ (replicate 3 cardObscurer)
+--   -- CONTROL
+--   ++ (replicate 2 cardSiren)
+--   ++ (replicate 2 cardSickness)
+--   -- HARD CONTROL
+--   ++ (replicate 2 cardHubris)
+--   ++ (replicate 2 cardReflect)
+--   ++ (replicate 2 cardReversal)
+--   ++ (replicate 2 cardConfound)
+--   -- SOFT CONTROL
+--   ++ (replicate 2 cardSiren)
+--   ++ (replicate 2 cardSickness)
+--   ++ (replicate 2 cardProphecy)
+--   -- ++ (replicate 2 cardOffering)
+--   -- ++ (replicate 2 cardGoatFlute)
 
 
 reverso :: GameState -> GameState
-reverso (Waiting a b gen)           = Waiting b a gen
-reverso (Selecting m gen)           = Selecting (characterModelReverso m) gen
+reverso (Waiting gen)               = Waiting gen
+reverso (Selecting m t gen)         = Selecting (characterModelReverso m) t gen
 reverso (Started (Playing model))   = Started . Playing $ modelReverso model
 reverso (Started (Ended which gen)) = Started $ Ended (otherPlayer <$> which) gen
 
@@ -104,10 +111,19 @@ update :: GameCommand -> WhichPlayer -> GameState -> Either Err (Maybe GameState
 update (Chat username msg) _ _ = Right (Nothing, [ChatOutcome username msg])
 update cmd which state =
   case state of
-    Waiting _ _ _ ->
+    Waiting _ ->
       Left ("Unknown command " <> (cs $ show cmd) <> " on a waiting GameState")
-    Selecting _ _ ->
-      Left ("Unknown command " <> (cs $ show cmd) <> " on a selecting GameState")
+    Selecting selectModel turn gen ->
+      case cmd of
+        ReadyUp a b c ->
+          let
+            startIfBothReady :: GameState -> GameState
+            startIfBothReady (Selecting (CharModel (Just ca) (Just cb) _) _ _) = Started . Playing $ initModel turn ca cb gen
+            startIfBothReady s = s
+          in
+            Right (Just . startIfBothReady $ Selecting (selectChar selectModel which (a, b, c)) turn gen, [SyncOutcome])
+        _ ->
+          Left ("Unknown command " <> (cs $ show cmd) <> " on a selecting GameState")
     Started started ->
       case started of
         Playing model ->
@@ -125,9 +141,9 @@ update cmd which state =
             Rematch ->
                 case winner of
                   Nothing ->
-                    Right . (\x -> (x, [SyncOutcome])) . Just . Started . Playing . (initModel PlayerA) . fst $ split gen
+                    Right . (\x -> (x, [SyncOutcome])) . Just $ Selecting initCharModel PlayerA gen
                   Just w ->
-                    Right . (\x -> (x, [SyncOutcome])) . Just . Started . Playing . (initModel w) . fst $ split gen
+                    Right . (\x -> (x, [SyncOutcome])) . Just $ Selecting initCharModel w gen
             _ ->
               Left ("Unknown command " <> (cs $ show cmd) <> " on an Ended GameState")
 
