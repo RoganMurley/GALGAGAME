@@ -277,17 +277,10 @@ connectedUpdate hostname msg ({ chat, game, mode } as model) =
                 ( model, playingOnly model (message (Send ("hover:" ++ cardName))) )
 
         ReadyUp ->
-            case model.game of
-                Selecting { selected } ->
-                    case selected of
-                        ThreeSelected a b c ->
-                            ( model, playingOnly model (send hostname ("rup:" ++ a ++ "," ++ b ++ "," ++ c)) )
+            ( model, playingOnly model (send hostname "rup:") )
 
-                        otherwise ->
-                            ( model, Cmd.none )
-
-                otherwise ->
-                    ( model, Cmd.none )
+        SelectCharacter name ->
+            ( model, playingOnly model (message (Send ("selectCharacter:" ++ name))) )
 
         SelectAllInput elementId ->
             ( model, selectAllInput elementId )

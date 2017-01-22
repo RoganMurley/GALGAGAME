@@ -389,12 +389,11 @@ waitingDecoder =
 selectingDecoder : Json.Decoder GameState
 selectingDecoder =
     let
-        characterSelectModelDecoder : Json.Decoder CharacterSelect.Model
-        characterSelectModelDecoder =
-            Json.map
-                (\cs -> CharacterSelect.Model cs CharacterSelect.NoneSelected (fromJust (List.head cs)))
-                (Json.list characterDecoder)
-
+        -- characterSelectModelDecoder : Json.Decoder CharacterSelect.Model
+        -- characterSelectModelDecoder =
+        --     Json.map
+        --         (\cs -> CharacterSelect.Model cs CharacterSelect.NoneSelected (fromJust (List.head cs)))
+        --         (Json.list characterDecoder)
         characterDecoder : Json.Decoder CharacterSelect.Character
         characterDecoder =
             Json.map2 CharacterSelect.Character
@@ -408,8 +407,32 @@ selectingDecoder =
                 (Json.index 1 cardDecoder)
                 (Json.index 2 cardDecoder)
                 (Json.index 3 cardDecoder)
+
+        makeSelectState : List CharacterSelect.Character -> List CharacterSelect.Character -> GameState
+        makeSelectState selecting selected =
+            Selecting (CharacterSelect.Model selecting (toSelection selected) (fromJust (List.head selecting)))
+
+        toSelection : List CharacterSelect.Character -> CharacterSelect.SelectedCharacters
+        toSelection cs =
+            case cs of
+                [] ->
+                    CharacterSelect.NoneSelected
+
+                [ a ] ->
+                    CharacterSelect.OneSelected a.name
+
+                [ a, b ] ->
+                    CharacterSelect.TwoSelected a.name b.name
+
+                [ a, b, c ] ->
+                    CharacterSelect.ThreeSelected a.name b.name c.name
+
+                otherwise ->
+                    CharacterSelect.NoneSelected
     in
-        Json.map Selecting (field "selecting" characterSelectModelDecoder)
+        Json.map2 makeSelectState
+            (field "selecting" (Json.list characterDecoder))
+            (field "selected" (Json.list characterDecoder))
 
 
 endedDecoder : Json.Decoder GameState

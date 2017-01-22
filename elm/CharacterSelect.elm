@@ -47,7 +47,7 @@ view { characters, selected, hover } =
             div
                 [ class "character-button"
                 , onMouseEnter (GameStateMsg (SelectingMsg (SelectingHover name)))
-                , onClick (GameStateMsg (SelectingMsg (SelectingSelect name)))
+                , onClick (SelectCharacter name)
                 , if (contains selected name) then
                     class "invisible"
                   else
@@ -63,7 +63,7 @@ view { characters, selected, hover } =
                     div
                         [ class "character-chosen"
                         , onMouseEnter (GameStateMsg (SelectingMsg (SelectingHover n)))
-                        , onClick (GameStateMsg (SelectingMsg (SelectingDeselect n)))
+                          -- , onClick (GameStateMsg (SelectingMsg (SelectingDeselect n)))
                         ]
                         [ text n ]
             in
@@ -113,28 +113,6 @@ update msg model =
         SelectingHover n ->
             { model | hover = fromJust (List.head (List.filter (\{ name } -> name == n) model.characters)) }
 
-        SelectingSelect n ->
-            { model | selected = selectCharacter (model.selected) n }
-
-        SelectingDeselect n ->
-            { model | selected = deselectCharacter (model.selected) n }
-
-
-selectCharacter : SelectedCharacters -> Name -> SelectedCharacters
-selectCharacter s n =
-    case s of
-        NoneSelected ->
-            OneSelected n
-
-        OneSelected a ->
-            TwoSelected n a
-
-        TwoSelected a b ->
-            ThreeSelected n b a
-
-        ThreeSelected a b _ ->
-            ThreeSelected n a b
-
 
 nameList : SelectedCharacters -> List Name
 nameList s =
@@ -155,34 +133,3 @@ nameList s =
 contains : SelectedCharacters -> Name -> Bool
 contains s n =
     List.member n (nameList s)
-
-
-deselectCharacter : SelectedCharacters -> Name -> SelectedCharacters
-deselectCharacter s n =
-    case s of
-        NoneSelected ->
-            NoneSelected
-
-        OneSelected a ->
-            if a == n then
-                NoneSelected
-            else
-                OneSelected a
-
-        TwoSelected a b ->
-            if a == n then
-                OneSelected b
-            else if b == n then
-                OneSelected a
-            else
-                TwoSelected a b
-
-        ThreeSelected a b c ->
-            if a == n then
-                TwoSelected b c
-            else if b == n then
-                TwoSelected a c
-            else if c == n then
-                TwoSelected a b
-            else
-                ThreeSelected a b c

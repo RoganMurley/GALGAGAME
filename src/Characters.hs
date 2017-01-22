@@ -9,7 +9,16 @@ import Model
 -- TYPES
 
 type CharacterCards = (Card, Card, Card, Card)
-type SelectedCharacters = (Character, Character, Character)
+
+data SelectedCharacters
+    = NoneSelected
+    | OneSelected   Character
+    | TwoSelected   Character Character
+    | ThreeSelected Character Character Character
+    deriving (Eq, Show)
+
+instance ToJSON SelectedCharacters where
+  toJSON s = toJSON . toList $ s
 
 
 data Character = Character
@@ -27,15 +36,16 @@ instance ToJSON Character where
 
 data CharModel =
   CharModel {
-    charmodel_pa         :: Maybe SelectedCharacters
-  , charmodel_pb         :: Maybe SelectedCharacters
+    charmodel_pa         :: SelectedCharacters
+  , charmodel_pb         :: SelectedCharacters
   , charmodel_characters :: [Character]
   } deriving (Eq, Show)
 
 instance ToJSON CharModel where
-  toJSON (CharModel _ _ characters) =
+  toJSON (CharModel selected _ characters) =
     object [
       "selecting" .= characters
+    , "selected"  .= selected
     ]
 
 
@@ -45,7 +55,7 @@ characterModelReverso (CharModel pa pb cs) =
 
 
 initCharModel :: CharModel
-initCharModel = CharModel Nothing Nothing allCharacters
+initCharModel = CharModel NoneSelected NoneSelected allCharacters
 
 
 allCharacters :: [Character]
@@ -58,18 +68,53 @@ allCharacters = [
   ]
 
 
-selectChar :: CharModel -> WhichPlayer -> (Text, Text, Text) -> CharModel
-selectChar model PlayerA characters =
-  model { charmodel_pa = Just . textToCharacters $ characters }
-selectChar model PlayerB characters =
-  model { charmodel_pb = Just . textToCharacters $ characters }
+selectChar :: CharModel -> WhichPlayer -> Text -> CharModel
+selectChar model@(CharModel { charmodel_pa = m }) PlayerA name =
+  model { charmodel_pa = selectIndChar name m }
+selectChar model@(CharModel { charmodel_pb = m }) PlayerB name =
+  model { charmodel_pb = selectIndChar name m }
 
 
-textToCharacters :: (Text, Text, Text) -> SelectedCharacters
-textToCharacters (a, b, c) = (f a, f b, f c)
+selectIndChar :: Text -> SelectedCharacters -> SelectedCharacters
+selectIndChar name selected =
+  case selected of
+    NoneSelected ->
+      OneSelected char
+    OneSelected a ->
+      TwoSelected a char
+    TwoSelected a b ->
+      ThreeSelected a b char
+    ThreeSelected a b c  ->
+      ThreeSelected a b c
   where
-    f :: Text -> Character
-    f t = head . (filter (\(Character n _) -> n == t )) $ allCharacters
+    char :: Character
+    char = head . (filter (\(Character n _) -> n == name )) $ allCharacters
+
+
+
+-- textToCharacters :: (Maybe Text, Maybe Text, Maybe Text) -> SelectedCharacters
+-- textToCharacters x =
+--   case x of
+--     (Nothing, Nothing, Nothing) ->
+--       NoneSelected
+--     (Just a,  Nothing, Nothing) ->
+--       OneSelected (f a)
+--     (Just a,  Just b,  Nothing) ->
+--       TwoSelected (f a) (f b)
+--     (Just a,  Just b,  Just c)  ->
+--       ThreeSelected (f a) (f b) (f c)
+--     _ ->
+--       NoneSelected
+--   where
+--     f :: Text -> Character
+--     f t = head . (filter (\(Character n _) -> n == t )) $ allCharacters
+
+
+toList :: SelectedCharacters -> [Character]
+toList NoneSelected          = []
+toList (OneSelected a)       = [ a ]
+toList (TwoSelected a b)     = [ a, b ]
+toList (ThreeSelected a b c) = [ a, b, c ]
 
 
 -- CHARACTERS
