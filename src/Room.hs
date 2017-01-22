@@ -22,7 +22,7 @@ data Room = Room Player Player Spectators GameState
 
 
 newRoom :: Gen -> Room
-newRoom gen = Room Nothing Nothing [] (Waiting Nothing Nothing gen)
+newRoom gen = Room Nothing Nothing [] (Waiting gen)
 
 
 getRoomGameState :: Room -> GameState
@@ -59,8 +59,8 @@ ifFullInit :: Room -> Room
 ifFullInit room
   | roomFull room =
     case room of
-      Room pa pb specs (Waiting _ _ std) ->
-        (Room pa pb specs) $ Selecting initCharModel std
+      Room pa pb specs (Waiting std) ->
+        (Room pa pb specs) $ Selecting initCharModel PlayerA std
       _ ->
         room
   | otherwise = room

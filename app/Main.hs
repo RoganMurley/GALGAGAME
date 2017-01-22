@@ -33,6 +33,7 @@ data Command =
   | PlayCardCommand CardName
   | HoverCardCommand (Maybe CardName)
   | RematchCommand
+  | RupCommand Text Text Text
   | ErrorCommand Text
   deriving (Show)
 
@@ -242,6 +243,7 @@ actPlay cmd which roomVar =
     trans (HoverCardCommand name) = Just (HoverCard name)
     trans RematchCommand = Just Rematch
     trans (ChatCommand name content) = Just (Chat name content)
+    trans (RupCommand a b c) = Just (ReadyUp a b c)
     trans _ = Nothing
 
 actSpec :: Command -> MVar Room -> IO ()
@@ -314,6 +316,12 @@ parseMsg name msg =
       ChatCommand name content
     "rematch" ->
       RematchCommand
+    "rup" ->
+      case T.splitOn "," content of
+        [ a, b, c ] ->
+          RupCommand a b c
+        _ ->
+          ErrorCommand ("Unknown ready up characters " <> content)
     _ ->
       ErrorCommand ("Unknown Command " <> (cs (show command)))
   where

@@ -27,6 +27,7 @@ type Msg
     | MainMenuMsg MenuMsg
     | SelectAllInput String
     | CopyInput String
+    | ReadyUp
 
 
 type GameMsg

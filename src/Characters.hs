@@ -9,6 +9,7 @@ import Model
 -- TYPES
 
 type CharacterCards = (Card, Card, Card, Card)
+type SelectedCharacters = (Character, Character, Character)
 
 
 data Character = Character
@@ -26,8 +27,8 @@ instance ToJSON Character where
 
 data CharModel =
   CharModel {
-    charmodel_pa         :: Maybe (Character, Character, Character)
-  , charmodel_pb         :: Maybe (Character, Character, Character)
+    charmodel_pa         :: Maybe SelectedCharacters
+  , charmodel_pb         :: Maybe SelectedCharacters
   , charmodel_characters :: [Character]
   } deriving (Eq, Show)
 
@@ -55,6 +56,20 @@ allCharacters = [
   , drinker
   , oracle
   ]
+
+
+selectChar :: CharModel -> WhichPlayer -> (Text, Text, Text) -> CharModel
+selectChar model PlayerA characters =
+  model { charmodel_pa = Just . textToCharacters $ characters }
+selectChar model PlayerB characters =
+  model { charmodel_pb = Just . textToCharacters $ characters }
+
+
+textToCharacters :: (Text, Text, Text) -> SelectedCharacters
+textToCharacters (a, b, c) = (f a, f b, f c)
+  where
+    f :: Text -> Character
+    f t = head . (filter (\(Character n _) -> n == t )) $ allCharacters
 
 
 -- CHARACTERS
