@@ -63,16 +63,16 @@ initModel turn ca cb gen = Model turn [] handPA handPB deckPA deckPB maxLife max
   where
     (genPA, genPB) = split gen :: (Gen, Gen)
     initDeckPA = shuffle (buildDeck ca) genPA :: Deck
-    (handPA, deckPA) = splitAt 4 initDeckPA :: (Hand, Deck)
+    (handPA, deckPA) = splitAt 5 initDeckPA :: (Hand, Deck)
     initDeckPB = shuffle (buildDeck cb) genPB :: Deck
-    (handPB, deckPB) = splitAt 4 initDeckPB :: (Hand, Deck)
+    (handPB, deckPB) = splitAt 5 initDeckPB :: (Hand, Deck)
 
 
 buildDeck :: SelectedCharacters -> Deck
 buildDeck (ThreeSelected (Character _ cards1) (Character _ cards2) (Character _ cards3)) =
   (f cards1) ++ (f cards2) ++ (f cards3)
   where
-    f (a, b, c, d) = [a, b, c, d]
+    f (a, b, c, d) = concat $ replicate 3 [a, b, c, d]
 buildDeck _ = [] -- UNSAFE
 
 

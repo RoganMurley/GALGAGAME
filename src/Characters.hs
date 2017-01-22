@@ -60,11 +60,11 @@ initCharModel = CharModel NoneSelected NoneSelected allCharacters
 
 allCharacters :: [Character]
 allCharacters = [
-    protector
-  , apollo
-  , nemesis
+    ranger
+  , striker
+  , breaker
   , drinker
-  , oracle
+  , looker
   ]
 
 
@@ -119,20 +119,22 @@ toList (ThreeSelected a b c) = [ a, b, c ]
 
 -- CHARACTERS
 
+--AGILITY
+
 cardPlaceholder :: Card
 cardPlaceholder = Card "Placeholder" "For testing!" "goat.svg" (\_ _ m -> m)
 
-protector :: Character
-protector = Character "Protector" (cardBoomerang, cardAgility, cardPotion, cardReflect)
+ranger :: Character
+ranger = Character "Ranger" (cardBoomerang, cardCrossbow, cardPotion, cardReflect)
 
-apollo :: Character
-apollo = Character "Apollo" (cardDagger, cardFireball, cardOffering, cardConfound)
+striker :: Character
+striker = Character "Striker" (cardDagger, cardFirestrike, cardOffering, cardConfound)
 
-nemesis :: Character
-nemesis = Character "Nemesis" (cardHammer, cardPlaceholder, cardSickness, cardHubris)
+breaker :: Character
+breaker = Character "Breaker" (cardHammer, cardLightning, cardSickness, cardHubris)
 
 drinker :: Character
 drinker = Character "Drinker" (cardVampire, cardSuccubus, cardSiren, cardReversal)
 
-oracle :: Character
-oracle = Character "Oracle" (cardObscurer, cardPlaceholder, cardZen, cardProphecy)
+looker :: Character
+looker = Character "Looker" (cardStaff, cardAgility, cardZen, cardProphecy)
