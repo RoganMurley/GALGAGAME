@@ -20,8 +20,8 @@ cardHubris = Card "Hubris" "Negate all cards to the right" "tower-fall.svg" eff
     eff _ _ m = setStack [] m
 
 
-cardFireball :: Card
-cardFireball = Card "Fireball" "Hurt for 4 for each card to the right" "fire-ray.svg" eff
+cardFirestrike :: Card
+cardFirestrike = Card "Firestrike" "Hurt for 4 for each card to the right" "fire-ray.svg" eff
   where
     eff :: CardEff
     eff p _ m = hurt (4 * (length . getStack $ m)) (otherPlayer p) m
@@ -169,3 +169,24 @@ cardAgility = Card "Agility" "Draw a card" "sprint.svg" eff
   where
     eff :: CardEff
     eff p _ m = drawCard p m
+
+
+cardCrossbow :: Card
+cardCrossbow = Card "Crossbow" "Hurt for 9" "crossbow.svg" eff
+  where
+    eff :: CardEff
+    eff p _ m = hurt 9 (otherPlayer p) m
+
+
+cardLightning :: Card
+cardLightning = Card "Lightning" "Hurt for 3 for each card to the right" "lightning-branches.svg" eff
+  where
+    eff :: CardEff
+    eff p _ m = hurt (3 * (length . getStack $ m)) (otherPlayer p) m
+
+
+cardStaff :: Card
+cardStaff = Card "Staff" "Hurt for 4" "bo.svg" eff
+  where
+    eff :: CardEff
+    eff p _ m = hurt 4 (otherPlayer p) m
