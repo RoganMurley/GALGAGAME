@@ -193,7 +193,7 @@ cardStaff = Card "Staff" "Hurt for 4" "bo.svg" eff
 
 
 cardEcho :: Card
-cardEcho = Card "Echo" "The next card to the right happens twice" "echo-ripples.svg" eff
+cardEcho = Card "Echo" "The next card to the right's effect happens twice" "echo-ripples.svg" eff
   where
     eff :: CardEff
     eff _ _ m = modStackHead
