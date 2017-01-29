@@ -64,7 +64,7 @@ allCharacters = [
   , striker
   , breaker
   , drinker
-  , looker
+  , watcher
   ]
 
 
@@ -131,10 +131,10 @@ striker :: Character
 striker = Character "Striker" (cardDagger, cardFirestrike, cardOffering, cardConfound)
 
 breaker :: Character
-breaker = Character "Breaker" (cardHammer, cardLightning, cardSickness, cardHubris)
+breaker = Character "Breaker" (cardHammer, cardLightning, cardEcho, cardHubris)
 
 drinker :: Character
 drinker = Character "Drinker" (cardVampire, cardSuccubus, cardSiren, cardReversal)
 
-looker :: Character
-looker = Character "Looker" (cardStaff, cardAgility, cardZen, cardProphecy)
+watcher :: Character
+watcher = Character "Watcher" (cardStaff, cardEnvy, cardZen, cardProphecy)

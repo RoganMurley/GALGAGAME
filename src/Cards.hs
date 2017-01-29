@@ -190,3 +190,20 @@ cardStaff = Card "Staff" "Hurt for 4" "bo.svg" eff
   where
     eff :: CardEff
     eff p _ m = hurt 4 (otherPlayer p) m
+
+
+cardEcho :: Card
+cardEcho = Card "Echo" "The next card to the right happens twice" "echo-ripples.svg" eff
+  where
+    eff :: CardEff
+    eff _ _ m = modStackHead
+      (\(StackCard which (Card name desc pic e)) ->
+        StackCard which (Card name desc pic (\w c -> (e w c) . (e w c))))
+      m
+
+
+cardEnvy :: Card
+cardEnvy = Card "Envy" "Hurt for 2 for each card in your opponent's hand" "mouth-watering.svg" eff
+  where
+    eff :: CardEff
+    eff p _ m = hurt (2 * (length . (getHand (otherPlayer p)) $ m)) (otherPlayer p) m
