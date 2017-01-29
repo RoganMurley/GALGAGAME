@@ -171,7 +171,7 @@ endTurn which model
     passes = getPasses model :: Passes
     handFull = length (getHand which model) >= maxHandLength :: Bool
     drawCards :: Model -> Model
-    drawCards m = (drawCard PlayerA) . (drawCard PlayerB) $ m
+    drawCards m = (drawCard PlayerA PlayerA) . (drawCard PlayerB PlayerB) $ m
 
 
 resolveAll :: (Model, ResolveList) -> (PlayState, ResolveList)

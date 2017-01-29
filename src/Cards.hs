@@ -118,7 +118,7 @@ cardOffering :: Card
 cardOffering = Card "Offering" "Hurt yourself for 10, then draw two cards" "chalice-drops.svg" eff
   where
     eff :: CardEff
-    eff p _ m = (drawCard p) . (drawCard p) . (hurt 10 p) $ m
+    eff p _ m = (drawCard p p) . (drawCard p p) . (hurt 10 p) $ m
 
 
 cardGoatFlute :: Card
@@ -168,7 +168,7 @@ cardAgility :: Card
 cardAgility = Card "Agility" "Draw a card" "sprint.svg" eff
   where
     eff :: CardEff
-    eff p _ m = drawCard p m
+    eff p _ m = drawCard p p m
 
 
 cardCrossbow :: Card
@@ -179,7 +179,7 @@ cardCrossbow = Card "Crossbow" "Hurt for 9" "crossbow.svg" eff
 
 
 cardLightning :: Card
-cardLightning = Card "Lightning" "Hurt for 3 for each card to the right" "lightning-branches.svg" eff
+cardLightning = Card "Lightning" "Hurt for 3 for each card to the right" "lightning-trio.svg" eff
   where
     eff :: CardEff
     eff p _ m = hurt (3 * (length . getStack $ m)) (otherPlayer p) m
@@ -207,3 +207,31 @@ cardEnvy = Card "Envy" "Hurt for 2 for each card in your opponent's hand" "mouth
   where
     eff :: CardEff
     eff p _ m = hurt (2 * (length . (getHand (otherPlayer p)) $ m)) (otherPlayer p) m
+
+
+cardEmpathy :: Card
+cardEmpathy = Card "Empathy" "Draw a card from your opponent's deck" "telepathy.svg" eff
+  where
+    eff :: CardEff
+    eff p _ m = drawCard (otherPlayer p) p m
+
+
+cardMindgate :: Card
+cardMindgate = Card "Mindgate" "Your hand becomes the same as your opponent's" "magic-portal.svg" eff
+  where
+    eff :: CardEff
+    eff p _ m = setHand p (getHand (otherPlayer p) m) m
+
+
+cardSuperego :: Card
+cardSuperego = Card "Superego" "Hurt for 2 for each card in your hand" "deadly-strike.svg" eff
+  where
+    eff :: CardEff
+    eff p _ m = hurt (2 * (length . (getHand p) $ m)) (otherPlayer p) m
+
+
+cardShuriken :: Card
+cardShuriken = Card "Shuriken" "Hurt for 5" "ninja-star.svg" eff
+  where
+    eff :: CardEff
+    eff p _ m = hurt 5 (otherPlayer p) m

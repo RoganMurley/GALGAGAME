@@ -65,6 +65,7 @@ allCharacters = [
   , breaker
   , drinker
   , watcher
+  , imposter
   ]
 
 
@@ -91,25 +92,6 @@ selectIndChar name selected =
     char = head . (filter (\(Character n _) -> n == name )) $ allCharacters
 
 
-
--- textToCharacters :: (Maybe Text, Maybe Text, Maybe Text) -> SelectedCharacters
--- textToCharacters x =
---   case x of
---     (Nothing, Nothing, Nothing) ->
---       NoneSelected
---     (Just a,  Nothing, Nothing) ->
---       OneSelected (f a)
---     (Just a,  Just b,  Nothing) ->
---       TwoSelected (f a) (f b)
---     (Just a,  Just b,  Just c)  ->
---       ThreeSelected (f a) (f b) (f c)
---     _ ->
---       NoneSelected
---   where
---     f :: Text -> Character
---     f t = head . (filter (\(Character n _) -> n == t )) $ allCharacters
-
-
 toList :: SelectedCharacters -> [Character]
 toList NoneSelected          = []
 toList (OneSelected a)       = [ a ]
@@ -118,8 +100,6 @@ toList (ThreeSelected a b c) = [ a, b, c ]
 
 
 -- CHARACTERS
-
---AGILITY
 
 cardPlaceholder :: Card
 cardPlaceholder = Card "Placeholder" "For testing!" "goat.svg" (\_ _ m -> m)
@@ -138,3 +118,6 @@ drinker = Character "Drinker" (cardVampire, cardSuccubus, cardSiren, cardReversa
 
 watcher :: Character
 watcher = Character "Watcher" (cardStaff, cardEnvy, cardZen, cardProphecy)
+
+imposter :: Character
+imposter = Character "Imposter" (cardShuriken, cardSuperego, cardEmpathy, cardMindgate)

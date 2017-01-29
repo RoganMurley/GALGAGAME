@@ -272,13 +272,13 @@ lifesteal :: Life -> WhichPlayer -> Model -> Model
 lifesteal d p m = heal d (otherPlayer p) $ hurt d p m
 
 
-drawCard :: WhichPlayer -> Model -> Model
-drawCard which model
+drawCard :: WhichPlayer -> WhichPlayer -> Model -> Model
+drawCard whichDeck whichHand model
   | (length hand >= maxHandLength) = model
   | otherwise =
     case drawnCard of
       Just card ->
-        setDeck which drawnDeck $ setHand which (card : hand) model
+        setDeck whichDeck drawnDeck $ setHand whichHand (card : hand) model
       Nothing ->
         model
   where
@@ -287,9 +287,9 @@ drawCard which model
     drawnDeck :: Deck
     drawnDeck = tailSafe deck
     deck :: Deck
-    deck = getDeck which model
+    deck = getDeck whichDeck model
     hand :: Hand
-    hand = getHand which model
+    hand = getHand whichHand model
 
 
 -- In future, tag cards in hand with a uid and use that.
