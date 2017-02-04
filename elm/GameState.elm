@@ -319,7 +319,7 @@ stateUpdate msg state =
         ResolveOutcome str ->
             let
                 ( final, resList ) =
-                    case Json.decodeString resDecoder str of
+                    case Json.decodeString (resDecoder state) str of
                         Ok result ->
                             result
 
@@ -353,13 +353,13 @@ stateUpdate msg state =
 
 
 syncState : GameState -> String -> GameState
-syncState model msg =
-    decodeState msg
+syncState oldState msg =
+    decodeState msg oldState
 
 
-decodeState : String -> GameState
-decodeState msg =
-    case Json.decodeString stateDecoder msg of
+decodeState : String -> GameState -> GameState
+decodeState msg oldState =
+    case Json.decodeString (stateDecoder oldState) msg of
         Ok result ->
             result
 
@@ -371,11 +371,11 @@ decodeState msg =
 -- Make safer
 
 
-stateDecoder : Json.Decoder GameState
-stateDecoder =
+stateDecoder : GameState -> Json.Decoder GameState
+stateDecoder oldState =
     Json.oneOf
         [ waitingDecoder
-        , selectingDecoder
+        , selectingDecoder oldState
         , playingDecoder
         , endedDecoder
         ]
@@ -386,14 +386,9 @@ waitingDecoder =
     Json.map (\_ -> Waiting) (field "waiting" Json.bool)
 
 
-selectingDecoder : Json.Decoder GameState
-selectingDecoder =
+selectingDecoder : GameState -> Json.Decoder GameState
+selectingDecoder oldState =
     let
-        -- characterSelectModelDecoder : Json.Decoder CharacterSelect.Model
-        -- characterSelectModelDecoder =
-        --     Json.map
-        --         (\cs -> CharacterSelect.Model cs CharacterSelect.NoneSelected (fromJust (List.head cs)))
-        --         (Json.list characterDecoder)
         characterDecoder : Json.Decoder CharacterSelect.Character
         characterDecoder =
             Json.map2 CharacterSelect.Character
@@ -410,7 +405,7 @@ selectingDecoder =
 
         makeSelectState : List CharacterSelect.Character -> List CharacterSelect.Character -> GameState
         makeSelectState selecting selected =
-            Selecting (CharacterSelect.Model selecting (toSelection selected) (fromJust (List.head selecting)))
+            Selecting (CharacterSelect.Model selecting (toSelection selected) (hoverCharacter (fromJust (List.head selecting))))
 
         toSelection : List CharacterSelect.Character -> CharacterSelect.SelectedCharacters
         toSelection cs =
@@ -429,6 +424,14 @@ selectingDecoder =
 
                 otherwise ->
                     CharacterSelect.NoneSelected
+
+        hoverCharacter : CharacterSelect.Character -> CharacterSelect.Character
+        hoverCharacter default =
+            case oldState of
+                Selecting { hover } ->
+                    hover
+                otherwise ->
+                    default
     in
         Json.map2 makeSelectState
             (field "selecting" (Json.list characterDecoder))
@@ -491,10 +494,10 @@ modelDecoder =
             (field "lifePB" Json.int)
 
 
-resDecoder : Json.Decoder ( GameState, List Model )
-resDecoder =
+resDecoder : GameState -> Json.Decoder ( GameState, List Model )
+resDecoder oldState =
     Json.map2 (\x y -> ( x, y ))
-        (field "final" stateDecoder)
+        (field "final" (stateDecoder oldState))
         (field "list" (Json.list modelDecoder))
 
 
