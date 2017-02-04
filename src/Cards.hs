@@ -72,8 +72,8 @@ cardReflect = Card "Reflect" "All cards to the right change owner" "shield-refle
       StackCard (otherPlayer owner) (Card name desc img cardEff)
 
 
-cardProphecy :: Card
-cardProphecy = Card "Prophecy" "Return all cards to the right to their owner's hand" "crystal-ball.svg" eff
+cardPrecognition :: Card
+cardPrecognition = Card "Precognition" "Return all cards to the right to their owner's hand" "star-pupil.svg" eff
   where
     eff :: CardEff
     eff _ _ m =
