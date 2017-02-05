@@ -115,10 +115,10 @@ cardSickness = Card "Sickness" "Make all cards to the right's healing hurt inste
 
 
 cardOffering :: Card
-cardOffering = Card "Offering" "Hurt yourself for 5, then draw two cards" "chalice-drops.svg" eff
+cardOffering = Card "Offering" "Hurt yourself for 8, then draw three cards" "chalice-drops.svg" eff
   where
     eff :: CardEff
-    eff p _ m = (drawCard p p) . (drawCard p p) . (hurt 5 p) $ m
+    eff p _ m = (drawCard p p) . (drawCard p p) . (drawCard p p) . (hurt 8 p) $ m
 
 
 cardGoatFlute :: Card
@@ -210,10 +210,10 @@ cardEnvy = Card "Envy" "Hurt for 2 for each card in your opponent's hand" "mouth
 
 
 cardEmpathy :: Card
-cardEmpathy = Card "Empathy" "Draw a card from your opponent's deck" "telepathy.svg" eff
+cardEmpathy = Card "Empathy" "Draw two cards from your opponent's deck" "telepathy.svg" eff
   where
     eff :: CardEff
-    eff p _ m = drawCard (otherPlayer p) p m
+    eff p _ m = (drawCard (otherPlayer p) p) . (drawCard (otherPlayer p) p) $ m
 
 
 cardMindgate :: Card
@@ -235,3 +235,12 @@ cardShuriken = Card "Shuriken" "Hurt for 5" "ninja-star.svg" eff
   where
     eff :: CardEff
     eff p _ m = hurt 5 (otherPlayer p) m
+
+
+cardMindhack :: Card
+cardMindhack = Card "Mindhack" "Obscure your opponent's hand" "vortex.svg" eff
+  where
+    eff :: CardEff
+    eff p _ m = modHand (fmap obs) (otherPlayer p) m
+    obs :: Card -> Card
+    obs card = Card "???" "An obscured card" "sight-disabled.svg" (\p _ -> modStack ((:) (StackCard p card)))
