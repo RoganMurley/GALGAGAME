@@ -195,6 +195,9 @@ connectingUpdate hostname msg ({ roomID, name, error, valid } as model) =
         Tick t ->
             ( model, Cmd.none )
 
+        Frame _ ->
+            ( model, Cmd.none )
+
         SelectAllInput elementId ->
             ( model, selectAllInput elementId )
 
@@ -259,6 +262,9 @@ connectedUpdate hostname msg ({ chat, game, mode } as model) =
               else
                 Cmd.none
             )
+
+        Frame _ ->
+            ( model, Cmd.none )
 
         ResolveStep ->
             ( { model | game = resTick game }, Cmd.none )
