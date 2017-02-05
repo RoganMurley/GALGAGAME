@@ -7,7 +7,7 @@ import Util (shuffle, times)
 
 
 cardDagger :: Card
-cardDagger = Card "Dagger" "Hurt for 8" "plain-dagger.svg" eff
+cardDagger = Card "Dagger" "Hurt for 10" "plain-dagger.svg" eff
   where
     eff :: CardEff
     eff p _ m = hurt 8 (otherPlayer p) m
@@ -21,38 +21,38 @@ cardHubris = Card "Hubris" "Negate all cards to the right" "tower-fall.svg" eff
 
 
 cardFirestrike :: Card
-cardFirestrike = Card "Firestrike" "Hurt for 4 for each card to the right" "fire-ray.svg" eff
+cardFirestrike = Card "Firestrike" "Hurt for 5 for each card to the right" "fire-ray.svg" eff
   where
     eff :: CardEff
-    eff p _ m = hurt (4 * (length . getStack $ m)) (otherPlayer p) m
+    eff p _ m = hurt (5 * (length . getStack $ m)) (otherPlayer p) m
 
 
 cardBoomerang :: Card
-cardBoomerang = Card "Boomerang" "Hurt for 2, return this card to your hand" "boomerang.svg" eff
+cardBoomerang = Card "Boomerang" "Hurt for 3, return this card to your hand" "boomerang.svg" eff
   where
     eff :: CardEff
-    eff p c m = modHand (addToHand c) p (hurt 2 (otherPlayer p) m)
+    eff p c m = modHand (addToHand c) p (hurt 3 (otherPlayer p) m)
 
 
 cardPotion :: Card
-cardPotion = Card "Potion" "Heal for 7" "heart-bottle.svg" eff
+cardPotion = Card "Potion" "Heal for 9" "heart-bottle.svg" eff
   where
     eff :: CardEff
-    eff p _ m = heal 7 p m
+    eff p _ m = heal 9 p m
 
 
 cardVampire :: Card
-cardVampire = Card "Vampire" "Lifesteal for 5" "fangs.svg" eff
+cardVampire = Card "Vampire" "Lifesteal for 7" "fangs.svg" eff
   where
     eff :: CardEff
-    eff p _ m = lifesteal 5 (otherPlayer p) m
+    eff p _ m = lifesteal 7 (otherPlayer p) m
 
 
 cardSuccubus :: Card
-cardSuccubus = Card "Succubus" "Lifesteal for 3 for each card to the right" "pretty-fangs.svg" eff
+cardSuccubus = Card "Succubus" "Lifesteal for 4 for each card to the right" "pretty-fangs.svg" eff
   where
     eff :: CardEff
-    eff p _ m = lifesteal (3 * (length . getStack $ m)) (otherPlayer p) m
+    eff p _ m = lifesteal (4 * (length . getStack $ m)) (otherPlayer p) m
 
 
 cardReversal :: Card
@@ -115,10 +115,10 @@ cardSickness = Card "Sickness" "Make all cards to the right's healing hurt inste
 
 
 cardOffering :: Card
-cardOffering = Card "Offering" "Hurt yourself for 8, then draw three cards" "chalice-drops.svg" eff
+cardOffering = Card "Offering" "Hurt yourself for 10, then draw three cards" "chalice-drops.svg" eff
   where
     eff :: CardEff
-    eff p _ m = (drawCard p p) . (drawCard p p) . (drawCard p p) . (hurt 8 p) $ m
+    eff p _ m = (drawCard p p) . (drawCard p p) . (drawCard p p) . (hurt 10 p) $ m
 
 
 cardGoatFlute :: Card
@@ -158,38 +158,38 @@ cardZen = Card "Zen" "Obscure your hand" "meditation.svg" eff
 
 
 cardHammer :: Card
-cardHammer = Card "Hammer" "Hurt for 6" "thor-hammer.svg" eff
+cardHammer = Card "Hammer" "Hurt for 8" "thor-hammer.svg" eff
   where
     eff :: CardEff
-    eff p _ m = hurt 6 (otherPlayer p) m
+    eff p _ m = hurt 8 (otherPlayer p) m
 
 
 cardAgility :: Card
-cardAgility = Card "Agility" "Draw a card" "sprint.svg" eff
+cardAgility = Card "Agility" "Draw two cards" "sprint.svg" eff
   where
     eff :: CardEff
-    eff p _ m = drawCard p p m
+    eff p _ m = (drawCard p p) . (drawCard p p) $ m
 
 
 cardCrossbow :: Card
-cardCrossbow = Card "Crossbow" "Hurt for 9" "crossbow.svg" eff
+cardCrossbow = Card "Crossbow" "Hurt for 12" "crossbow.svg" eff
   where
     eff :: CardEff
-    eff p _ m = hurt 9 (otherPlayer p) m
+    eff p _ m = hurt 12 (otherPlayer p) m
 
 
 cardLightning :: Card
-cardLightning = Card "Lightning" "Hurt for 3 for each card to the right" "lightning-trio.svg" eff
+cardLightning = Card "Lightning" "Hurt for 4 for each card to the right" "lightning-trio.svg" eff
   where
     eff :: CardEff
-    eff p _ m = hurt (3 * (length . getStack $ m)) (otherPlayer p) m
+    eff p _ m = hurt (4 * (length . getStack $ m)) (otherPlayer p) m
 
 
 cardStaff :: Card
-cardStaff = Card "Staff" "Hurt for 4" "bo.svg" eff
+cardStaff = Card "Staff" "Hurt for 6" "bo.svg" eff
   where
     eff :: CardEff
-    eff p _ m = hurt 4 (otherPlayer p) m
+    eff p _ m = hurt 6 (otherPlayer p) m
 
 
 cardEcho :: Card
@@ -203,10 +203,10 @@ cardEcho = Card "Echo" "The next card to the right's effect happens twice" "echo
 
 
 cardEnvy :: Card
-cardEnvy = Card "Envy" "Hurt for 2 for each card in your opponent's hand" "mouth-watering.svg" eff
+cardEnvy = Card "Envy" "Hurt for 3 for each card in your opponent's hand" "mouth-watering.svg" eff
   where
     eff :: CardEff
-    eff p _ m = hurt (2 * (length . (getHand (otherPlayer p)) $ m)) (otherPlayer p) m
+    eff p _ m = hurt (3 * (length . (getHand (otherPlayer p)) $ m)) (otherPlayer p) m
 
 
 cardEmpathy :: Card
@@ -224,17 +224,17 @@ cardMindgate = Card "Mindgate" "Your hand becomes the same as your opponent's" "
 
 
 cardSuperego :: Card
-cardSuperego = Card "Superego" "Hurt for 2 for each card in your hand" "deadly-strike.svg" eff
+cardSuperego = Card "Superego" "Hurt for 3 for each card in your hand" "deadly-strike.svg" eff
   where
     eff :: CardEff
-    eff p _ m = hurt (2 * (length . (getHand p) $ m)) (otherPlayer p) m
+    eff p _ m = hurt (3 * (length . (getHand p) $ m)) (otherPlayer p) m
 
 
 cardShuriken :: Card
-cardShuriken = Card "Shuriken" "Hurt for 5" "ninja-star.svg" eff
+cardShuriken = Card "Shuriken" "Hurt for 7" "ninja-star.svg" eff
   where
     eff :: CardEff
-    eff p _ m = hurt 5 (otherPlayer p) m
+    eff p _ m = hurt 7 (otherPlayer p) m
 
 
 cardMindhack :: Card
