@@ -65,7 +65,7 @@ allCharacters = [
   , breaker
   , drinker
   , watcher
-  -- , imposter
+  , imposter
   ]
 
 
