@@ -22,6 +22,7 @@ type Msg
     | KeyPress Int
     | Rematch
     | Tick Time
+    | Frame Float
     | ResolveStep
     | HoverCard (Maybe String)
     | MainMenuMsg MenuMsg

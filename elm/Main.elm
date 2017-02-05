@@ -21,6 +21,8 @@ import Time exposing (Time, second)
 import Tuple exposing (first)
 import Util exposing (applyFst, message)
 import Ports exposing (copyInput, selectAllInput, queryParams)
+import AnimationFrame
+import Cube
 
 
 main =
@@ -40,6 +42,7 @@ type alias Model =
     { room : RoomModel
     , hostname : String
     , httpPort : String
+    , frameTime : Float
     }
 
 
@@ -98,6 +101,7 @@ init ({ hostname, httpPort, play, seed } as flags) =
                         MainMenu seed
             , hostname = hostname
             , httpPort = httpPort
+            , frameTime = 0
             }
     in
         ( model, Cmd.none )
@@ -118,7 +122,7 @@ connectingInit username roomID =
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
-update msg ({ hostname, room } as model) =
+update msg ({ hostname, room, frameTime } as model) =
     case room of
         MainMenu seed ->
             case msg of
@@ -134,6 +138,9 @@ update msg ({ hostname, room } as model) =
                               }
                             , Cmd.none
                             )
+
+                Frame dt ->
+                    ( { model | frameTime = frameTime + dt }, Cmd.none )
 
                 otherwise ->
                     ( model, Cmd.none )
@@ -402,6 +409,7 @@ subscriptions model =
         , Mouse.ups DragEnd
         , Keyboard.presses KeyPress
         , Time.every (second / 60) Tick
+        , AnimationFrame.diffs Frame
         ]
 
 
@@ -410,7 +418,7 @@ subscriptions model =
 
 
 view : Model -> Html Msg
-view ({ hostname, httpPort } as model) =
+view ({ hostname, httpPort, frameTime } as model) =
     case model.room of
         MainMenu _ ->
             div [ class "main-menu" ]
@@ -421,6 +429,7 @@ view ({ hostname, httpPort } as model) =
                 , button
                     [ class "menu-button", onClick (MainMenuMsg MenuCustom) ]
                     [ text "Custom" ]
+                , Cube.view (frameTime / 5000)
                 ]
 
         Connected { chat, game, roomID } ->
