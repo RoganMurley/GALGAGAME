@@ -10,7 +10,7 @@ cardDagger :: Card
 cardDagger = Card "Dagger" "Hurt for 10" "plain-dagger.svg" eff
   where
     eff :: CardEff
-    eff p _ m = hurt 8 (otherPlayer p) m
+    eff p _ m = hurt 10 (otherPlayer p) m
 
 
 cardHubris :: Card
@@ -28,10 +28,10 @@ cardFirestrike = Card "Firestrike" "Hurt for 5 for each card to the right" "fire
 
 
 cardBoomerang :: Card
-cardBoomerang = Card "Boomerang" "Hurt for 3, return this card to your hand" "boomerang.svg" eff
+cardBoomerang = Card "Boomerang" "Hurt for 2, return this card to your hand" "boomerang.svg" eff
   where
     eff :: CardEff
-    eff p c m = modHand (addToHand c) p (hurt 3 (otherPlayer p) m)
+    eff p c m = modHand (addToHand c) p (hurt 2 (otherPlayer p) m)
 
 
 cardPotion :: Card
@@ -115,10 +115,10 @@ cardSickness = Card "Sickness" "Make all cards to the right's healing hurt inste
 
 
 cardOffering :: Card
-cardOffering = Card "Offering" "Hurt yourself for 10, then draw three cards" "chalice-drops.svg" eff
+cardOffering = Card "Offering" "Hurt yourself for 8, then draw three cards" "chalice-drops.svg" eff
   where
     eff :: CardEff
-    eff p _ m = (drawCard p p) . (drawCard p p) . (drawCard p p) . (hurt 10 p) $ m
+    eff p _ m = (drawCard p p) . (drawCard p p) . (drawCard p p) . (hurt 8 p) $ m
 
 
 cardGoatFlute :: Card
@@ -140,10 +140,10 @@ cardConfound = Card "Confound" "Shuffle the order of cards to the right" "moebiu
 
 
 cardObscurer :: Card
-cardObscurer = Card "Obscurer" "Hurt for 4 and obscure the next card your opponent draws" "orb-wand.svg" eff
+cardObscurer = Card "Obscurer" "Hurt for 6 and obscure the next card your opponent draws" "orb-wand.svg" eff
   where
     eff :: CardEff
-    eff p _ m = hurt 4 (otherPlayer p) $ modDeckHead obs (otherPlayer p) m
+    eff p _ m = hurt 6 (otherPlayer p) $ modDeckHead obs (otherPlayer p) m
     obs :: Card -> Card
     obs card = Card "???" "An obscured card" "sight-disabled.svg" (\p _ -> modStack ((:) (StackCard p card)))
 
