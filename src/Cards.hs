@@ -20,8 +20,8 @@ cardHubris = Card "Hubris" "Negate all cards to the right" "tower-fall.svg" eff
     eff _ _ m = setStack [] m
 
 
-cardFirestrike :: Card
-cardFirestrike = Card "Firestrike" "Hurt for 5 for each card to the right" "fire-ray.svg" eff
+cardFirestorm :: Card
+cardFirestorm = Card "Firestorm" "Hurt for 5 for each card to the right" "fire-ray.svg" eff
   where
     eff :: CardEff
     eff p _ m = hurt (5 * (length . getStack $ m)) (otherPlayer p) m
