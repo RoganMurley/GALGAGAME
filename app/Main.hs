@@ -32,7 +32,7 @@ data Command =
   | LeaveCommand Username
   | EndTurnCommand
   | PlayCardCommand Int
-  | HoverCardCommand (Maybe CardName)
+  | HoverCardCommand (Maybe Int)
   | RematchCommand
   | SelectCharacterCommand Text
   | ErrorCommand Text
@@ -241,7 +241,7 @@ actPlay cmd which roomVar =
     trans :: Command -> Maybe GameCommand
     trans EndTurnCommand = Just EndTurn
     trans (PlayCardCommand index) = Just (PlayCard index)
-    trans (HoverCardCommand name) = Just (HoverCard name)
+    trans (HoverCardCommand index) = Just (HoverCard index)
     trans RematchCommand = Just Rematch
     trans (ChatCommand name content) = Just (Chat name content)
     trans (SelectCharacterCommand n) = Just (SelectCharacter n)
@@ -316,7 +316,11 @@ parseMsg name msg =
         "null" ->
           HoverCardCommand Nothing
         _ ->
-          HoverCardCommand (Just content)
+          case readMay . cs $ content of
+            Just index ->
+              HoverCardCommand (Just index)
+            Nothing ->
+              ErrorCommand (content <> " not a hand card index")
     "chat" ->
       ChatCommand name content
     "rematch" ->

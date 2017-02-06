@@ -1,7 +1,6 @@
 module GameState where
 
 import Data.Aeson (ToJSON(..), (.=), object)
-import Data.List (findIndex)
 import Data.Monoid ((<>))
 import Data.String.Conversions (cs)
 import Safe (headMay, tailSafe)
@@ -50,7 +49,7 @@ instance ToJSON PlayState where
 data GameCommand =
     EndTurn
   | PlayCard Int
-  | HoverCard (Maybe CardName)
+  | HoverCard (Maybe Int)
   | Rematch
   | SelectCharacter Text
   | Chat Username Text
@@ -108,8 +107,8 @@ update cmd which state =
               endTurn which model
             PlayCard index ->
               ((\x -> (x, [SyncOutcome])) . Just . Started . Playing) <$> (playCard index which model)
-            HoverCard name ->
-              (\x -> (Nothing, x)) <$> (hoverCard name which model)
+            HoverCard index ->
+              (\x -> (Nothing, x)) <$> (hoverCard index which model)
             _ ->
               Left ("Unknown command " <> (cs $ show cmd) <> " on a Playing GameState")
         Ended winner gen ->
@@ -223,21 +222,14 @@ instance ToJSON Outcome where
     error "SyncOutcome shouldn't be marshalled to JSON" -- DANGEROUS!!!
 
 
-hoverCard :: Maybe CardName -> WhichPlayer -> Model -> Either Err ([Outcome])
-hoverCard name which model =
-    case name of
-      Just n ->
-        case index of
-          Just i ->
-            Right ([HoverOutcome which (Just i)])
-          Nothing ->
-            Left ("Can't hover over a card you don't have (" <> n <> ")")
-      Nothing ->
-        Right ([HoverOutcome which Nothing])
-  where
-    index :: Maybe Int
-    index = case name of
-      Just cardName ->
-        findIndex (\(Card n _ _ _) -> n == cardName) (getHand which model)
-      Nothing ->
-        Nothing
+hoverCard :: Maybe Int -> WhichPlayer -> Model -> Either Err ([Outcome])
+hoverCard index which model =
+  case index of
+    Just i ->
+      if i < (length . (getHand which) $ model)
+        then
+          Right [HoverOutcome which (Just i)]
+            else
+              Left ("Hover index out of bounds (" <> (cs . show $ i ) <> ")" :: Err)
+    Nothing ->
+      Right [HoverOutcome which Nothing]

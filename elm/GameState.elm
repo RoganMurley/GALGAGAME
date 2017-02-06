@@ -183,7 +183,7 @@ viewHand hand =
             div
                 [ class "card my-card"
                 , onClick (PlayCard index)
-                , onMouseEnter (HoverCard (Just name))
+                , onMouseEnter (HoverCard (Just index))
                 , onMouseLeave (HoverCard Nothing)
                 ]
                 [ div [ class "card-title" ] [ text name ]
