@@ -108,7 +108,7 @@ ranger :: Character
 ranger = Character "Ranger" (cardBoomerang, cardCrossbow, cardPotion, cardReflect)
 
 striker :: Character
-striker = Character "Striker" (cardDagger, cardFirestrike, cardOffering, cardConfound)
+striker = Character "Striker" (cardDagger, cardFirestorm, cardOffering, cardConfound)
 
 breaker :: Character
 breaker = Character "Breaker" (cardHammer, cardLightning, cardEcho, cardHubris)
