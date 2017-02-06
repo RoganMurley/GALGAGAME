@@ -117,7 +117,7 @@ drinker :: Character
 drinker = Character "Drinker" (cardVampire, cardSuccubus, cardSiren, cardReversal)
 
 watcher :: Character
-watcher = Character "Watcher" (cardStaff, cardEnvy, cardMindhack, cardPrecognition)
+watcher = Character "Watcher" (cardStaff, cardEnvy, cardZen, cardPrecognition)
 
 imposter :: Character
-imposter = Character "Imposter" (cardShuriken, cardSuperego, cardEmpathy, cardMindgate)
+imposter = Character "Imposter" (cardShuriken, cardSuperego, cardEmpathy, cardFeint)

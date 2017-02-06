@@ -311,3 +311,15 @@ playCard name which m
 
 patchEff :: CardEff -> (Model -> Model -> Model) -> CardEff
 patchEff eff wrapper = \w c m -> wrapper m (eff w c m)
+
+
+bounceAll :: WhichPlayer -> Stack -> Hand -> Hand
+bounceAll w s h =
+  take maxHandLength (h ++ (fmap getCard (filter (owner w) s)))
+  where
+    owner :: WhichPlayer -> StackCard -> Bool
+    owner PlayerA (StackCard PlayerA _) = True
+    owner PlayerB (StackCard PlayerB _) = True
+    owner _ _ = False
+    getCard :: StackCard -> Card
+    getCard (StackCard _ card) = card

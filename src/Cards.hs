@@ -80,14 +80,6 @@ cardPrecognition = Card "Precognition" "Return all cards to the right to their o
       (modHand (bounceAll PlayerA (getStack m)) PlayerA) .
         (modHand (bounceAll PlayerB (getStack m)) PlayerB) $
           setStack [] m
-    bounceAll :: WhichPlayer -> Stack -> Hand -> Hand
-    bounceAll w s h = take maxHandLength (h ++ (fmap getCard (filter (owner w) s)))
-    owner :: WhichPlayer -> StackCard -> Bool
-    owner PlayerA (StackCard PlayerA _) = True
-    owner PlayerB (StackCard PlayerB _) = True
-    owner _ _ = False
-    getCard :: StackCard -> Card
-    getCard (StackCard _ card) = card
 
 
 cardSiren :: Card
@@ -244,3 +236,12 @@ cardMindhack = Card "Mindhack" "Obscure your opponent's hand" "vortex.svg" eff
     eff p _ m = modHand (fmap obs) (otherPlayer p) m
     obs :: Card -> Card
     obs card = Card "???" "An obscured card" "sight-disabled.svg" (\p _ -> modStack ((:) (StackCard p card)))
+
+
+cardFeint :: Card
+cardFeint = Card "Feint" "Return all of your cards to the right to your hand" "quick-slash.svg" eff
+  where
+    eff :: CardEff
+    eff p _ m =
+      (modHand (bounceAll p (getStack m)) p) $
+        modStack (filter (\(StackCard owner _) -> owner /= p)) m
