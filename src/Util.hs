@@ -19,6 +19,14 @@ shuffle [] _       = []
 shuffle xs (Gen g) = shuffle' xs (length xs) g
 
 
+-- Delete index.
+deleteIndex :: Int -> [a] -> [a]
+deleteIndex n xs =
+  ys ++ (tail zs)
+    where
+      (ys, zs) = splitAt n xs
+
+
 -- Special newtype-wrapped StdGen to ease equality checks.
 newtype Gen = Gen R.StdGen
 

@@ -13,7 +13,7 @@ type Msg
     | DragEnd Position
     | DrawCard
     | EndTurn
-    | PlayCard String
+    | PlayCard Int
     | NewChatMsg String
     | GameStateMsg GameMsg
     | ConnectError String
