@@ -49,7 +49,7 @@ instance ToJSON PlayState where
 
 data GameCommand =
     EndTurn
-  | PlayCard CardName
+  | PlayCard Int
   | HoverCard (Maybe CardName)
   | Rematch
   | SelectCharacter Text
@@ -73,32 +73,6 @@ buildDeck (ThreeSelected (Character _ cards1) (Character _ cards2) (Character _ 
   where
     f (a, b, c, d) = concat $ replicate 3 [a, b, c, d]
 buildDeck _ = [] -- UNSAFE
-
-
--- initDeck :: Deck
--- initDeck =
---   -- DAMAGE
---      (replicate 3 cardFireball)
---   ++ (replicate 3 cardDagger)
---   ++ (replicate 3 cardBoomerang)
---   ++ (replicate 3 cardPotion)
---   ++ (replicate 3 cardVampire)
---   ++ (replicate 3 cardSuccubus)
---   -- ++ (replicate 3 cardObscurer)
---   -- CONTROL
---   ++ (replicate 2 cardSiren)
---   ++ (replicate 2 cardSickness)
---   -- HARD CONTROL
---   ++ (replicate 2 cardHubris)
---   ++ (replicate 2 cardReflect)
---   ++ (replicate 2 cardReversal)
---   ++ (replicate 2 cardConfound)
---   -- SOFT CONTROL
---   ++ (replicate 2 cardSiren)
---   ++ (replicate 2 cardSickness)
---   ++ (replicate 2 cardProphecy)
---   -- ++ (replicate 2 cardOffering)
---   -- ++ (replicate 2 cardGoatFlute)
 
 
 reverso :: GameState -> GameState
@@ -132,8 +106,8 @@ update cmd which state =
           case cmd of
             EndTurn ->
               endTurn which model
-            PlayCard name ->
-              ((\x -> (x, [SyncOutcome])) . Just . Started . Playing) <$> (playCard name which model)
+            PlayCard index ->
+              ((\x -> (x, [SyncOutcome])) . Just . Started . Playing) <$> (playCard index which model)
             HoverCard name ->
               (\x -> (Nothing, x)) <$> (hoverCard name which model)
             _ ->

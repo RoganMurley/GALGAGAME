@@ -3,14 +3,15 @@ module Main where
 
 import Prelude hiding (lookup)
 
+import Control.Concurrent (MVar, newMVar, modifyMVar, readMVar)
+import Control.Exception (finally)
+import Control.Monad (forM_, forever)
 import Data.Aeson (encode)
 import Data.Map.Strict (Map, delete, empty, insert, lookup)
 import Data.Monoid ((<>))
 import Data.String.Conversions (cs)
 import Data.Text (Text)
-import Control.Exception (finally)
-import Control.Monad (forM_, forever)
-import Control.Concurrent (MVar, newMVar, modifyMVar, readMVar)
+import Safe (readMay)
 
 import qualified Data.Text as T
 import qualified Data.Text.IO as T
@@ -30,7 +31,7 @@ data Command =
   | SpectateCommand Username
   | LeaveCommand Username
   | EndTurnCommand
-  | PlayCardCommand CardName
+  | PlayCardCommand Int
   | HoverCardCommand (Maybe CardName)
   | RematchCommand
   | SelectCharacterCommand Text
@@ -239,7 +240,7 @@ actPlay cmd which roomVar =
   where
     trans :: Command -> Maybe GameCommand
     trans EndTurnCommand = Just EndTurn
-    trans (PlayCardCommand name) = Just (PlayCard name)
+    trans (PlayCardCommand index) = Just (PlayCard index)
     trans (HoverCardCommand name) = Just (HoverCard name)
     trans RematchCommand = Just Rematch
     trans (ChatCommand name content) = Just (Chat name content)
@@ -305,7 +306,11 @@ parseMsg name msg =
     "end" ->
       EndTurnCommand
     "play" ->
-      PlayCardCommand content
+      case readMay . cs $ content of
+        Just index ->
+          PlayCardCommand index
+        Nothing ->
+          ErrorCommand (content <> " not a hand card index")
     "hover" ->
       case content of
         "null" ->

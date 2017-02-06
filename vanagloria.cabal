@@ -42,6 +42,7 @@ executable vanagloria
                      , aeson
                      , containers
                      , random
+                     , safe
                      , string-conversions
                      , text
                      , vanagloria

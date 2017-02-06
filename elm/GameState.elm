@@ -178,11 +178,11 @@ view model =
 viewHand : Hand -> Html Msg
 viewHand hand =
     let
-        viewCard : Card -> Html Msg
-        viewCard { name, desc, imgURL } =
+        viewCard : ( Int, Card ) -> Html Msg
+        viewCard ( index, { name, desc, imgURL } ) =
             div
                 [ class "card my-card"
-                , onClick (PlayCard name)
+                , onClick (PlayCard index)
                 , onMouseEnter (HoverCard (Just name))
                 , onMouseLeave (HoverCard Nothing)
                 ]
@@ -195,7 +195,7 @@ viewHand hand =
                 , div [ class "card-desc" ] [ text desc ]
                 ]
     in
-        div [ class "hand my-hand" ] (List.map viewCard hand)
+        div [ class "hand my-hand" ] (List.map viewCard (List.indexedMap (,) hand))
 
 
 viewOtherHand : Int -> HoverCardIndex -> Html Msg
@@ -430,6 +430,7 @@ selectingDecoder oldState =
             case oldState of
                 Selecting { hover } ->
                     hover
+
                 otherwise ->
                     default
     in

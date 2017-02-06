@@ -12,7 +12,7 @@ px number =
 
 
 
--- Apply a function to the first element of a typle.
+-- Apply a function to the first element of a tuple.
 
 
 applyFst : (a -> c) -> ( a, b ) -> ( c, b )
@@ -30,7 +30,7 @@ message x =
 
 
 
--- Unsage fromJust
+-- Unsafe fromJust
 
 
 fromJust : Maybe a -> a

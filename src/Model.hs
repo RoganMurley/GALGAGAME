@@ -4,10 +4,10 @@ module Model where
 import Data.Aeson (ToJSON(..), (.=), object)
 import Data.List (partition)
 import Data.Text (Text)
-import Safe (headMay, tailSafe)
+import Safe (atMay, headMay, tailSafe)
 import Data.String.Conversions (cs)
 
-import Util (Err, Gen)
+import Util (Err, Gen, deleteIndex)
 
 
 data Model = Model
@@ -292,9 +292,8 @@ drawCard whichDeck whichHand model
     hand = getHand whichHand model
 
 
--- In future, tag cards in hand with a uid and use that.
-playCard :: CardName -> WhichPlayer -> Model -> Either Err Model
-playCard name which m
+playCard :: Int -> WhichPlayer -> Model -> Either Err Model
+playCard index which m
   | turn /= which = Left "You can't play a card when it's not your turn"
   | otherwise =
     case card of
@@ -304,9 +303,12 @@ playCard name which m
         Left "You can't play a card you don't have in your hand"
   where
     turn = getTurn m :: Turn
-    (matches, misses) = partition (\(Card n _ _ _) -> n == name) (getHand which m) :: ([Card], [Card])
-    newHand = (tailSafe matches) ++ misses :: Hand
-    card = (StackCard which) <$> (headMay matches) :: Maybe StackCard
+    -- (matches, misses) = partition (\(Card n _ _ _) -> n == name) (getHand which m) :: ([Card], [Card])
+    -- newHand = (tailSafe matches) ++ misses :: Hand
+    -- card = (StackCard which) <$> (headMay matches) :: Maybe StackCard
+    hand = getHand which m :: Hand
+    newHand = deleteIndex index hand :: Hand
+    card = (StackCard which) <$> (atMay hand index) :: Maybe StackCard
 
 
 patchEff :: CardEff -> (Model -> Model -> Model) -> CardEff
