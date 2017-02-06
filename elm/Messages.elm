@@ -24,7 +24,7 @@ type Msg
     | Tick Time
     | Frame Float
     | ResolveStep
-    | HoverCard (Maybe String)
+    | HoverCard (Maybe Int)
     | MainMenuMsg MenuMsg
     | SelectAllInput String
     | CopyInput String

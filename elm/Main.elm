@@ -282,7 +282,7 @@ connectedUpdate hostname msg ({ chat, game, mode } as model) =
                 cardName =
                     case name of
                         Just x ->
-                            x
+                            toString x
 
                         Nothing ->
                             "null"
