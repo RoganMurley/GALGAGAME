@@ -19,7 +19,8 @@
         hostname: window.location.hostname,
         httpPort: window.location.port,
         play: params.get('play'),
-        seed: new Date().getTime()
+        seed: new Date().getTime(),
+        windowDimensions: [ window.innerWidth, window.innerHeight ]
       });
 
       app.ports.queryParams.subscribe(function (newValue) {

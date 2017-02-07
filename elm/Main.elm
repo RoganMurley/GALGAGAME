@@ -23,6 +23,7 @@ import Util exposing (applyFst, message)
 import Ports exposing (copyInput, selectAllInput, queryParams)
 import AnimationFrame
 import Cube
+import Window
 
 
 main =
@@ -43,6 +44,7 @@ type alias Model =
     , hostname : String
     , httpPort : String
     , frameTime : Float
+    , windowDimensions : ( Int, Int )
     }
 
 
@@ -77,6 +79,7 @@ type alias Flags =
     , httpPort : String
     , play : Maybe String
     , seed : Seed
+    , windowDimensions : ( Int, Int )
     }
 
 
@@ -86,7 +89,7 @@ type Mode
 
 
 init : Flags -> ( Model, Cmd Msg )
-init ({ hostname, httpPort, play, seed } as flags) =
+init ({ hostname, httpPort, play, seed, windowDimensions } as flags) =
     let
         model : Model
         model =
@@ -102,6 +105,7 @@ init ({ hostname, httpPort, play, seed } as flags) =
             , hostname = hostname
             , httpPort = httpPort
             , frameTime = 0
+            , windowDimensions = windowDimensions
             }
     in
         ( model, Cmd.none )
@@ -123,41 +127,46 @@ connectingInit username roomID =
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg ({ hostname, room, frameTime } as model) =
-    case room of
-        MainMenu seed ->
-            case msg of
-                MainMenuMsg m ->
-                    case m of
-                        MenuCustom ->
-                            ( { model
-                                | room =
-                                    (connectingInit
-                                        ("player" ++ (first (Random.step usernameNumberGenerator (Random.initialSeed seed))))
-                                        (first (Random.step roomIDGenerator (Random.initialSeed seed)))
+    case msg of
+        Frame dt ->
+            ( { model | frameTime = frameTime + dt }, Cmd.none )
+
+        Resize w h ->
+            ( { model | windowDimensions = ( w, h ) }, Cmd.none )
+
+        otherwise ->
+            case room of
+                MainMenu seed ->
+                    case msg of
+                        MainMenuMsg m ->
+                            case m of
+                                MenuCustom ->
+                                    ( { model
+                                        | room =
+                                            (connectingInit
+                                                ("player" ++ (first (Random.step usernameNumberGenerator (Random.initialSeed seed))))
+                                                (first (Random.step roomIDGenerator (Random.initialSeed seed)))
+                                            )
+                                      }
+                                    , Cmd.none
                                     )
-                              }
-                            , Cmd.none
-                            )
 
-                Frame dt ->
-                    ( { model | frameTime = frameTime + dt }, Cmd.none )
+                        otherwise ->
+                            ( model, Cmd.none )
 
-                otherwise ->
-                    ( model, Cmd.none )
+                Connecting ({ roomID } as connectingModel) ->
+                    case msg of
+                        Play ->
+                            ( { model | room = Connected { chat = Chat.init, game = Waiting, mode = Playing, roomID = roomID } }, queryParams ("?play=" ++ roomID) )
 
-        Connecting ({ roomID } as connectingModel) ->
-            case msg of
-                Play ->
-                    ( { model | room = Connected { chat = Chat.init, game = Waiting, mode = Playing, roomID = roomID } }, queryParams ("?play=" ++ roomID) )
+                        Spectate ->
+                            ( { model | room = Connected { chat = Chat.init, game = Waiting, mode = Spectating, roomID = roomID } }, queryParams ("?play=" ++ roomID) )
 
-                Spectate ->
-                    ( { model | room = Connected { chat = Chat.init, game = Waiting, mode = Spectating, roomID = roomID } }, queryParams ("?play=" ++ roomID) )
+                        otherwise ->
+                            applyFst (\c -> { model | room = Connecting c }) (connectingUpdate hostname msg connectingModel)
 
-                otherwise ->
-                    applyFst (\c -> { model | room = Connecting c }) (connectingUpdate hostname msg connectingModel)
-
-        Connected connectedModel ->
-            applyFst (\c -> { model | room = Connected c }) (connectedUpdate hostname msg connectedModel)
+                Connected connectedModel ->
+                    applyFst (\c -> { model | room = Connected c }) (connectedUpdate hostname msg connectedModel)
 
 
 connectingUpdate : String -> Msg -> ConnectingModel -> ( ConnectingModel, Cmd Msg )
@@ -193,9 +202,6 @@ connectingUpdate hostname msg ({ roomID, name, error, valid } as model) =
             ( model, Cmd.none )
 
         Tick t ->
-            ( model, Cmd.none )
-
-        Frame _ ->
             ( model, Cmd.none )
 
         SelectAllInput elementId ->
@@ -262,9 +268,6 @@ connectedUpdate hostname msg ({ chat, game, mode } as model) =
               else
                 Cmd.none
             )
-
-        Frame _ ->
-            ( model, Cmd.none )
 
         ResolveStep ->
             ( { model | game = resTick game }, Cmd.none )
@@ -416,6 +419,7 @@ subscriptions model =
         , Keyboard.presses KeyPress
         , Time.every (second / 60) Tick
         , AnimationFrame.diffs Frame
+        , Window.resizes (\{ width, height } -> Resize width height)
         ]
 
 
@@ -424,18 +428,20 @@ subscriptions model =
 
 
 view : Model -> Html Msg
-view ({ hostname, httpPort, frameTime } as model) =
+view ({ hostname, httpPort, frameTime, windowDimensions } as model) =
     case model.room of
         MainMenu _ ->
-            div [ class "main-menu" ]
-                [ h1 [] [ text "VANA" ]
-                , button
-                    [ class "menu-button", disabled True ]
-                    [ text "Quickplay" ]
-                , button
-                    [ class "menu-button", onClick (MainMenuMsg MenuCustom) ]
-                    [ text "Custom" ]
-                , Cube.view (frameTime / 5000)
+            div []
+                [ div [ class "main-menu" ]
+                    [ h1 [] [ text "VANA" ]
+                    , button
+                        [ class "menu-button", disabled True ]
+                        [ text "Quickplay" ]
+                    , button
+                        [ class "menu-button", onClick (MainMenuMsg MenuCustom) ]
+                        [ text "Custom" ]
+                    ]
+                , Cube.view (frameTime / 5000) windowDimensions
                 ]
 
         Connected { chat, game, roomID } ->

@@ -13,12 +13,12 @@ import WebGL exposing (Mesh, Shader)
 import Messages exposing (Msg)
 
 
-view : Float -> Html Msg
-view theta =
+view : Float -> ( Int, Int ) -> Html Msg
+view theta ( w, h ) =
     WebGL.toHtml
-        [ width 400
-        , height 400
-        , style [ ( "position", "absolute" ), ( "z-index", "-1" ) ]
+        [ width w
+        , height h
+        , style [ ( "position", "absolute" ), ( "top", "0" ), ( "z-index", "-1" ) ]
         ]
         [ WebGL.entity
             vertexShader

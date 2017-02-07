@@ -23,6 +23,7 @@ type Msg
     | Rematch
     | Tick Time
     | Frame Float
+    | Resize Int Int
     | ResolveStep
     | HoverCard (Maybe Int)
     | MainMenuMsg MenuMsg
