@@ -22,7 +22,6 @@ import Tuple exposing (first)
 import Util exposing (applyFst, message)
 import Ports exposing (copyInput, selectAllInput, queryParams)
 import AnimationFrame
-import Cube
 import Window
 
 
@@ -441,13 +440,12 @@ view ({ hostname, httpPort, frameTime, windowDimensions } as model) =
                         [ class "menu-button", onClick (MainMenuMsg MenuCustom) ]
                         [ text "Custom" ]
                     ]
-                , Cube.view (frameTime / 5000) windowDimensions
                 ]
 
         Connected { chat, game, roomID } ->
             div []
                 [ Chat.view chat
-                , GameState.stateView game roomID hostname httpPort
+                , GameState.stateView game roomID hostname httpPort frameTime windowDimensions
                 ]
 
         Connecting { name, error, valid } ->
