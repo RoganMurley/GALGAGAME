@@ -8,6 +8,7 @@ import Card exposing (Card, viewCard)
 import CharacterSelect
 import Messages exposing (GameMsg(..), Msg(CopyInput, DrawCard, EndTurn, HoverCard, PlayCard, Rematch, SelectAllInput))
 import Util exposing (fromJust)
+import Vfx
 
 
 type GameState
@@ -104,67 +105,71 @@ init =
 -- VIEWS.
 
 
-stateView : GameState -> String -> String -> String -> Html Msg
-stateView state roomID hostname httpPort =
-    case state of
-        Waiting ->
-            let
-                portProtocol =
-                    if httpPort /= "" then
-                        ":" ++ httpPort
-                    else
-                        ""
+stateView : GameState -> String -> String -> String -> Float -> ( Int, Int ) -> Html Msg
+stateView state roomID hostname httpPort time ( width, height ) =
+    let
+        params =
+            Vfx.Params time ( width, height )
+    in
+        case state of
+            Waiting ->
+                let
+                    portProtocol =
+                        if httpPort /= "" then
+                            ":" ++ httpPort
+                        else
+                            ""
 
-                challengeLink =
-                    "http://" ++ hostname ++ portProtocol ++ "?play=" ++ roomID
+                    challengeLink =
+                        "http://" ++ hostname ++ portProtocol ++ "?play=" ++ roomID
 
-                myID =
-                    "challenge-link"
-            in
-                div [ class "waiting" ]
-                    [ div [ class "waiting-prompt" ] [ text "Give this link to your opponent:" ]
-                    , div [ class "input-group" ]
-                        [ input [ value challengeLink, type_ "text", readonly True, id myID, onClick (SelectAllInput myID) ] []
-                        , button [ onClick (CopyInput myID) ] [ text "copy" ]
+                    myID =
+                        "challenge-link"
+                in
+                    div [ class "waiting" ]
+                        [ div [ class "waiting-prompt" ] [ text "Give this link to your opponent:" ]
+                        , div [ class "input-group" ]
+                            [ input [ value challengeLink, type_ "text", readonly True, id myID, onClick (SelectAllInput myID) ] []
+                            , button [ onClick (CopyInput myID) ] [ text "copy" ]
+                            ]
                         ]
-                    ]
 
-        Selecting model ->
-            CharacterSelect.view model
+            Selecting model ->
+                CharacterSelect.view model
 
-        PlayingGame model ( res, _ ) ->
-            case res of
-                [] ->
-                    view model
+            PlayingGame model ( res, _ ) ->
+                case res of
+                    [] ->
+                        view params 0.0 model
 
-                otherwise ->
-                    resView res model
+                    otherwise ->
+                        resView params 1.0 res model
 
-        Ended winner ( res, _ ) ->
-            case (List.head res) of
-                Just r ->
-                    resView res r
+            Ended winner ( res, _ ) ->
+                case (List.head res) of
+                    Just r ->
+                        resView params 1.0 res r
 
-                Nothing ->
-                    div [ class "endgame" ]
-                        (case winner of
-                            Nothing ->
-                                [ div [ class "draw" ] [ text "DRAW" ]
-                                , button [ class "rematch", onClick Rematch ] [ text "Rematch" ]
-                                ]
+                    Nothing ->
+                        div [ class "endgame" ]
+                            (case winner of
+                                Nothing ->
+                                    [ div [ class "draw" ] [ text "DRAW" ]
+                                    , button [ class "rematch", onClick Rematch ] [ text "Rematch" ]
+                                    ]
 
-                            Just player ->
-                                [ if player == PlayerA then
-                                    div [ class "victory" ] [ text "VICTORY" ]
-                                  else
-                                    div [ class "defeat" ] [ text "DEFEAT" ]
-                                , button [ class "rematch", onClick Rematch ] [ text "Rematch" ]
-                                ]
-                        )
+                                Just player ->
+                                    [ if player == PlayerA then
+                                        div [ class "victory" ] [ text "VICTORY" ]
+                                      else
+                                        div [ class "defeat" ] [ text "DEFEAT" ]
+                                    , button [ class "rematch", onClick Rematch ] [ text "Rematch" ]
+                                    ]
+                            )
 
 
-view : Model -> Html Msg
-view model =
+view : Vfx.Params -> Float -> Model -> Html Msg
+view params intensity model =
     div []
         [ viewOtherHand model.otherHand model.otherHover
         , viewHand model.hand
@@ -172,6 +177,7 @@ view model =
         , viewTurn (List.length model.hand == maxHandLength) model.turn
         , viewLife PlayerA model.life
         , viewLife PlayerB model.otherLife
+        , Vfx.view params intensity
         ]
 
 
@@ -565,8 +571,8 @@ tickZero state =
             False
 
 
-resView : Res -> Model -> Html Msg
-resView res model =
+resView : Vfx.Params -> Float -> Res -> Model -> Html Msg
+resView params intensity res model =
     div []
         [ viewOtherHand model.otherHand model.otherHover
         , viewResHand model.hand
@@ -574,6 +580,7 @@ resView res model =
         , viewResTurn
         , viewLife PlayerA model.life
         , viewLife PlayerB model.otherLife
+        , Vfx.view params intensity
         ]
 
 
