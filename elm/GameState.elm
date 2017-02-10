@@ -42,6 +42,7 @@ type alias Model =
     , life : Life
     , otherLife : Life
     , otherHover : Maybe Int
+    , diffOtherLife : Life
     }
 
 
@@ -98,6 +99,7 @@ init =
     , life = 100
     , otherLife = 100
     , otherHover = Nothing
+    , diffOtherLife = 0
     }
 
 
@@ -138,12 +140,16 @@ stateView state roomID hostname httpPort time ( width, height ) =
                 CharacterSelect.view model
 
             PlayingGame model ( res, _ ) ->
-                case res of
-                    [] ->
-                        view params 0.0 model
+                let
+                    intensity =
+                        (toFloat model.diffOtherLife) * 2.0 / 50.0
+                in
+                    case res of
+                        [] ->
+                            view params intensity model
 
-                    otherwise ->
-                        resView params 1.0 res model
+                        otherwise ->
+                            resView params intensity res model
 
             Ended winner ( res, _ ) ->
                 case (List.head res) of
@@ -382,7 +388,7 @@ stateDecoder oldState =
     Json.oneOf
         [ waitingDecoder
         , selectingDecoder oldState
-        , playingDecoder
+        , playingDecoder oldState
         , endedDecoder
         ]
 
@@ -451,10 +457,10 @@ endedDecoder =
         (field "winner" (maybe whichDecoder))
 
 
-playingDecoder : Json.Decoder GameState
-playingDecoder =
+playingDecoder : GameState -> Json.Decoder GameState
+playingDecoder oldState =
     Json.map (\a -> PlayingGame a ( [], 0 ))
-        (field "playing" modelDecoder)
+        (field "playing" (modelDecoder oldState))
 
 
 whichDecoder : Json.Decoder WhichPlayer
@@ -483,16 +489,27 @@ cardDecoder =
         (field "imageURL" Json.string)
 
 
-modelDecoder : Json.Decoder Model
-modelDecoder =
+modelDecoder : GameState -> Json.Decoder Model
+modelDecoder oldState =
     let
         stackCardDecoder : Json.Decoder StackCard
         stackCardDecoder =
             Json.map2 StackCard
                 (field "owner" whichDecoder)
                 (field "card" cardDecoder)
+
+        otherLife : Int
+        otherLife =
+            case oldState of
+                PlayingGame { otherLife } _ ->
+                    otherLife
+
+                otherwise ->
+                    50
+
+        -- CHANGE THIS DANGEROUS
     in
-        Json.map6 (\a b c d e f -> Model a b c d e f Nothing)
+        Json.map6 (\a b c d e f -> Model a b c d e f Nothing (otherLife - f))
             (field "handPA" (Json.list cardDecoder))
             (field "handPB" Json.int)
             (field "stack" (Json.list stackCardDecoder))
@@ -505,7 +522,7 @@ resDecoder : GameState -> Json.Decoder ( GameState, List Model )
 resDecoder oldState =
     Json.map2 (\x y -> ( x, y ))
         (field "final" (stateDecoder oldState))
-        (field "list" (Json.list modelDecoder))
+        (field "list" (Json.list (modelDecoder oldState)))
 
 
 
