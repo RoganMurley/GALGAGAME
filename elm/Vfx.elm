@@ -34,13 +34,18 @@ view (Params theta ( w, h )) intensity =
     WebGL.toHtml
         [ width w
         , height h
-        , style [ ( "position", "absolute" ), ( "top", "0" ), ( "z-index", "-1" ) ]
+        , style [ ( "position", "absolute" ), ( "top", "0" ), ( "z-index", "-999" ) ]
         ]
-        [ WebGL.entity
+        [ WebGL.entityWith []
             vertexShader
             fragmentShader
-            quadMesh
-            (uniforms theta intensity)
+            (quadMesh Color.red)
+            (uniforms theta intensity (Mat4.makeRotate 0 (Vec3.vec3 0 0 1.0)) (Vec3.vec3 1.0 1.0 0))
+        , WebGL.entityWith []
+            vertexShader
+            fragmentShader
+            (quadMesh Color.green)
+            (uniforms theta intensity (Mat4.makeRotate pi (Vec3.vec3 0 0 1.0)) (Vec3.vec3 1.0 1.0 0))
         ]
 
 
@@ -48,14 +53,18 @@ type alias Uniforms =
     { perspective : Mat4
     , time : Float
     , intensity : Float
+    , rotation : Mat4
+    , translation : Vec3
     }
 
 
-uniforms : Float -> Float -> Uniforms
-uniforms theta intensity =
+uniforms : Float -> Float -> Mat4.Mat4 -> Vec3 -> Uniforms
+uniforms theta intensity rotation translation =
     { perspective = Mat4.makeOrtho2D 0 1 0 1
     , time = theta
     , intensity = intensity
+    , rotation = rotation
+    , translation = translation
     }
 
 
@@ -69,22 +78,22 @@ type alias Vertex =
     }
 
 
-quadMesh : Mesh Vertex
-quadMesh =
+quadMesh : Color -> Mesh Vertex
+quadMesh color =
     let
         v0 =
-            vec3 1 0 0
+            vec3 0.5 -0.5 0
 
         v1 =
-            vec3 1 1 0
+            vec3 0.5 0.5 0
 
         v2 =
-            vec3 0 1 0
+            vec3 -0.5 0.5 0
 
         v3 =
-            vec3 0 0 0
+            vec3 -0.5 -0.5 0
     in
-        WebGL.triangles (face Color.red v0 v1 v2 v3)
+        WebGL.triangles (face color v0 v1 v2 v3)
 
 
 face : Color -> Vec3 -> Vec3 -> Vec3 -> Vec3 -> List ( Vertex, Vertex, Vertex )
@@ -112,34 +121,40 @@ face rawColor a b c d =
 -- Shaders
 
 
-vertexShader : Shader Vertex Uniforms { vcolor : Vec3 }
+vertexShader : Shader Vertex Uniforms { vcolor : Vec3, posy : Float }
 vertexShader =
     [glsl|
 
         attribute vec3 position;
         attribute vec3 color;
         uniform mat4 perspective;
+        uniform mat4 rotation;
+        uniform vec3 translation;
         varying vec3 vcolor;
+        varying float posy;
 
         void main () {
-            gl_Position = perspective * vec4(position, 1.0);
+            gl_Position = perspective * rotation * vec4(position, 1.0) + vec4(translation, 0);
             vcolor = color;
+            posy = position.y;
         }
 
     |]
 
 
-fragmentShader : Shader {} Uniforms { vcolor : Vec3 }
+fragmentShader : Shader {} Uniforms { vcolor : Vec3, posy : Float }
 fragmentShader =
     [glsl|
         precision mediump float;
-        varying vec3 vcolor;
-        uniform float time;
         uniform float intensity;
+        varying vec3 vcolor;
+        varying float posy;
 
         void main () {
-            float redness = clamp(0.0, 1.0, intensity * (sin(gl_FragCoord.y*0.001 - 0.4) - abs(cos(gl_FragCoord.x*0.003)*0.1)));
-            gl_FragColor = vec4(redness, 0.0, 0.0, 0.0);
+            gl_FragColor = vec4(vcolor, 0.5) * posy * intensity;
+            if (gl_FragColor.w < 0.0001) {
+              discard;
+            }
         }
 
     |]
