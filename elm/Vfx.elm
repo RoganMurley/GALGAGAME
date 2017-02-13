@@ -45,7 +45,7 @@ view (Params theta ( w, h )) intensity =
             vertexShader
             fragmentShader
             (quadMesh Color.green)
-            (uniforms theta intensity (Mat4.makeRotate pi (Vec3.vec3 0 0 1.0)) (Vec3.vec3 1.0 1.0 0))
+            (uniforms theta 0 (Mat4.makeRotate pi (Vec3.vec3 0 0 1.0)) (Vec3.vec3 1.0 1.0 0))
         ]
 
 
