@@ -14,7 +14,7 @@ import Vfx
 type GameState
     = Waiting
     | Selecting CharacterSelect.Model
-    | PlayingGame Model ( Res, Int )
+    | PlayingGame FullModel ( Res, Int )
     | Ended (Maybe WhichPlayer) ( Res, Int )
 
 
@@ -42,7 +42,45 @@ type alias Model =
     , life : Life
     , otherLife : Life
     , otherHover : Maybe Int
-    , diffOtherLife : Life
+    }
+
+
+type alias ModelDiff a =
+    { a
+        | diffOtherLife : Life
+    }
+
+
+type alias FullModel =
+    ModelDiff Model
+
+
+
+-- There's gotta be an automated way to do this fullify thing!?
+
+
+fullify : Model -> ModelDiff {} -> FullModel
+fullify { hand, otherHand, stack, turn, life, otherLife, otherHover } { diffOtherLife } =
+    { hand = hand
+    , otherHand = otherHand
+    , stack = stack
+    , turn = turn
+    , life = life
+    , otherLife = otherLife
+    , otherHover = otherHover
+    , diffOtherLife = diffOtherLife
+    }
+
+
+unfullify : FullModel -> Model
+unfullify { hand, otherHand, stack, turn, life, otherLife, otherHover } =
+    { hand = hand
+    , otherHand = otherHand
+    , stack = stack
+    , turn = turn
+    , life = life
+    , otherLife = otherLife
+    , otherHover = otherHover
     }
 
 
@@ -90,7 +128,7 @@ maxHandLength =
     6
 
 
-init : Model
+init : FullModel
 init =
     { hand = []
     , otherHand = 0
@@ -142,7 +180,7 @@ stateView state roomID hostname httpPort time ( width, height ) =
             PlayingGame model ( res, _ ) ->
                 let
                     intensity =
-                        (toFloat model.diffOtherLife) * 2.0 / 50.0
+                        (toFloat model.diffOtherLife) / 10.0
                 in
                     case res of
                         [] ->
@@ -154,7 +192,7 @@ stateView state roomID hostname httpPort time ( width, height ) =
             Ended winner ( res, _ ) ->
                 case (List.head res) of
                     Just r ->
-                        resView params 1.0 res r
+                        resView params 1.0 res (fullify r { diffOtherLife = 0 })
 
                     Nothing ->
                         div [ class "endgame" ]
@@ -174,7 +212,7 @@ stateView state roomID hostname httpPort time ( width, height ) =
                             )
 
 
-view : Vfx.Params -> Float -> Model -> Html Msg
+view : Vfx.Params -> Float -> FullModel -> Html Msg
 view params intensity model =
     div []
         [ viewOtherHand model.otherHand model.otherHover
@@ -345,7 +383,7 @@ stateUpdate msg state =
                     otherwise ->
                         case ( state, final ) of
                             ( PlayingGame oldModel _, PlayingGame newModel _ ) ->
-                                PlayingGame oldModel ( resList ++ [ newModel ], 0 )
+                                PlayingGame oldModel ( resList ++ [ unfullify newModel ], 0 )
 
                             otherwise ->
                                 setRes final resList
@@ -459,7 +497,7 @@ endedDecoder =
 
 playingDecoder : GameState -> Json.Decoder GameState
 playingDecoder oldState =
-    Json.map (\a -> PlayingGame a ( [], 0 ))
+    Json.map (\a -> PlayingGame (fullify a { diffOtherLife = 0 }) ( [], 0 ))
         (field "playing" (modelDecoder oldState))
 
 
@@ -509,7 +547,7 @@ modelDecoder oldState =
 
         -- CHANGE THIS DANGEROUS
     in
-        Json.map6 (\a b c d e f -> Model a b c d e f Nothing (otherLife - f))
+        Json.map6 (\a b c d e f -> Model a b c d e f Nothing)
             (field "handPA" (Json.list cardDecoder))
             (field "handPB" Json.int)
             (field "stack" (Json.list stackCardDecoder))
@@ -545,12 +583,16 @@ resTick state =
 
                 Nothing ->
                     []
+
+        calcDiff : Model -> FullModel -> FullModel
+        calcDiff m f =
+            fullify m { diffOtherLife = f.otherLife - m.otherLife }
     in
         case state of
             PlayingGame model ( res, _ ) ->
                 case List.head res of
                     Just newModel ->
-                        PlayingGame newModel ( safeTail res, resDelay )
+                        PlayingGame (calcDiff newModel model) ( safeTail res, resDelay )
 
                     Nothing ->
                         PlayingGame model ( res, 0 )
@@ -588,7 +630,7 @@ tickZero state =
             False
 
 
-resView : Vfx.Params -> Float -> Res -> Model -> Html Msg
+resView : Vfx.Params -> Float -> Res -> FullModel -> Html Msg
 resView params intensity res model =
     div []
         [ viewOtherHand model.otherHand model.otherHover
