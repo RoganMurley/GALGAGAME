@@ -182,10 +182,10 @@ stateView state roomID hostname httpPort time ( width, height ) =
 
             PlayingGame model ( res, _ ) ->
                 let
-                    lowerIntensity =
+                    upperIntensity =
                         (toFloat model.diffOtherLife) / 10.0
 
-                    upperIntensity =
+                    lowerIntensity =
                         (toFloat model.diffLife) / 10.0
                 in
                     case res of

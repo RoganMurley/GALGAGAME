@@ -39,13 +39,25 @@ view (Params theta ( w, h )) lowerIntensity upperIntensity =
         [ WebGL.entityWith []
             vertexShader
             fragmentShader
-            (quadMesh Color.red)
-            (uniforms theta upperIntensity (Mat4.makeRotate 0 (Vec3.vec3 0 0 1.0)) (Vec3.vec3 1.0 1.0 0))
+            (quadMesh
+                (if upperIntensity > 0 then
+                    Color.red
+                 else
+                    Color.green
+                )
+            )
+            (uniforms theta (abs upperIntensity) (Mat4.makeRotate 0 (Vec3.vec3 0 0 1.0)) (Vec3.vec3 1.0 1.0 0))
         , WebGL.entityWith []
             vertexShader
             fragmentShader
-            (quadMesh Color.red)
-            (uniforms theta lowerIntensity (Mat4.makeRotate pi (Vec3.vec3 0 0 1.0)) (Vec3.vec3 1.0 1.0 0))
+            (quadMesh
+                (if lowerIntensity > 0 then
+                    Color.red
+                 else
+                    Color.green
+                )
+            )
+            (uniforms theta (abs lowerIntensity) (Mat4.makeRotate pi (Vec3.vec3 0 0 1.0)) (Vec3.vec3 1.0 1.0 0))
         ]
 
 
