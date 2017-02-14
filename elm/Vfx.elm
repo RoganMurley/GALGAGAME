@@ -29,8 +29,8 @@ type Params
     = Params Time ( Width, Height )
 
 
-view : Params -> Float -> Float -> Html Msg
-view (Params theta ( w, h )) lowerIntensity upperIntensity =
+view : Params -> Float -> Float -> Int -> Html Msg
+view (Params theta ( w, h )) lowerIntensity upperIntensity resTime =
     WebGL.toHtml
         [ width w
         , height h
@@ -46,7 +46,7 @@ view (Params theta ( w, h )) lowerIntensity upperIntensity =
                     Color.green
                 )
             )
-            (uniforms theta (abs upperIntensity) (Mat4.makeRotate 0 (Vec3.vec3 0 0 1.0)) (Vec3.vec3 1.0 1.0 0))
+            (uniforms theta (toFloat resTime) (abs upperIntensity) (Mat4.makeRotate 0 (Vec3.vec3 0 0 1.0)) (Vec3.vec3 1.0 1.0 0))
         , WebGL.entityWith []
             vertexShader
             fragmentShader
@@ -57,7 +57,7 @@ view (Params theta ( w, h )) lowerIntensity upperIntensity =
                     Color.green
                 )
             )
-            (uniforms theta (abs lowerIntensity) (Mat4.makeRotate pi (Vec3.vec3 0 0 1.0)) (Vec3.vec3 1.0 1.0 0))
+            (uniforms theta (toFloat resTime) (abs lowerIntensity) (Mat4.makeRotate pi (Vec3.vec3 0 0 1.0)) (Vec3.vec3 1.0 1.0 0))
         ]
 
 
@@ -67,16 +67,18 @@ type alias Uniforms =
     , intensity : Float
     , rotation : Mat4
     , translation : Vec3
+    , resTime : Float
     }
 
 
-uniforms : Float -> Float -> Mat4.Mat4 -> Vec3 -> Uniforms
-uniforms theta intensity rotation translation =
+uniforms : Float -> Float -> Float -> Mat4.Mat4 -> Vec3 -> Uniforms
+uniforms theta resTime intensity rotation translation =
     { perspective = Mat4.makeOrtho2D 0 1 0 1
     , time = theta
     , intensity = intensity
     , rotation = rotation
     , translation = translation
+    , resTime = resTime
     }
 
 
@@ -159,12 +161,12 @@ fragmentShader =
     [glsl|
         precision mediump float;
         uniform float intensity;
-        uniform float time;
+        uniform float resTime;
         varying vec3 vcolor;
         varying float posy;
 
         void main () {
-            gl_FragColor = vec4(vcolor, 0.5) * posy * intensity;
+            gl_FragColor = vec4(vcolor, 0.5) * posy * intensity * sin(resTime/30.0);
             if (gl_FragColor.w < 0.0001) {
               discard;
             }

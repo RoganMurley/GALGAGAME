@@ -180,7 +180,7 @@ stateView state roomID hostname httpPort time ( width, height ) =
             Selecting model ->
                 CharacterSelect.view model
 
-            PlayingGame model ( res, _ ) ->
+            PlayingGame model ( res, resTime ) ->
                 let
                     upperIntensity =
                         (toFloat model.diffOtherLife) / 10.0
@@ -190,15 +190,15 @@ stateView state roomID hostname httpPort time ( width, height ) =
                 in
                     case res of
                         [] ->
-                            view params lowerIntensity upperIntensity model
+                            view params lowerIntensity upperIntensity resTime model
 
                         otherwise ->
-                            resView params lowerIntensity upperIntensity res model
+                            resView params lowerIntensity upperIntensity res resTime model
 
-            Ended winner ( res, _ ) ->
+            Ended winner ( res, resTime ) ->
                 case (List.head res) of
                     Just r ->
-                        resView params 0 0 res (fullify r { diffOtherLife = 0, diffLife = 0 })
+                        resView params 0 0 res resTime (fullify r { diffOtherLife = 0, diffLife = 0 })
 
                     Nothing ->
                         div [ class "endgame" ]
@@ -218,8 +218,8 @@ stateView state roomID hostname httpPort time ( width, height ) =
                             )
 
 
-view : Vfx.Params -> Float -> Float -> FullModel -> Html Msg
-view params lowerIntensity upperIntensity model =
+view : Vfx.Params -> Float -> Float -> Int -> FullModel -> Html Msg
+view params lowerIntensity upperIntensity resTime model =
     div []
         [ viewOtherHand model.otherHand model.otherHover
         , viewHand model.hand
@@ -227,7 +227,7 @@ view params lowerIntensity upperIntensity model =
         , viewTurn (List.length model.hand == maxHandLength) model.turn
         , viewLife PlayerA model.life
         , viewLife PlayerB model.otherLife
-        , Vfx.view params lowerIntensity upperIntensity
+        , Vfx.view params lowerIntensity upperIntensity resTime
         ]
 
 
@@ -639,8 +639,8 @@ tickZero state =
             False
 
 
-resView : Vfx.Params -> Float -> Float -> Res -> FullModel -> Html Msg
-resView params lowerIntensity upperIntensity res model =
+resView : Vfx.Params -> Float -> Float -> Res -> Int -> FullModel -> Html Msg
+resView params lowerIntensity upperIntensity res resTime model =
     div []
         [ viewOtherHand model.otherHand model.otherHover
         , viewResHand model.hand
@@ -648,7 +648,7 @@ resView params lowerIntensity upperIntensity res model =
         , viewResTurn
         , viewLife PlayerA model.life
         , viewLife PlayerB model.otherLife
-        , Vfx.view params lowerIntensity upperIntensity
+        , Vfx.view params lowerIntensity upperIntensity resTime
         ]
 
 
