@@ -29,8 +29,8 @@ type Params
     = Params Time ( Width, Height )
 
 
-view : Params -> Float -> Html Msg
-view (Params theta ( w, h )) intensity =
+view : Params -> Float -> Float -> Html Msg
+view (Params theta ( w, h )) lowerIntensity upperIntensity =
     WebGL.toHtml
         [ width w
         , height h
@@ -40,12 +40,12 @@ view (Params theta ( w, h )) intensity =
             vertexShader
             fragmentShader
             (quadMesh Color.red)
-            (uniforms theta intensity (Mat4.makeRotate 0 (Vec3.vec3 0 0 1.0)) (Vec3.vec3 1.0 1.0 0))
+            (uniforms theta upperIntensity (Mat4.makeRotate 0 (Vec3.vec3 0 0 1.0)) (Vec3.vec3 1.0 1.0 0))
         , WebGL.entityWith []
             vertexShader
             fragmentShader
-            (quadMesh Color.green)
-            (uniforms theta 0 (Mat4.makeRotate pi (Vec3.vec3 0 0 1.0)) (Vec3.vec3 1.0 1.0 0))
+            (quadMesh Color.red)
+            (uniforms theta lowerIntensity (Mat4.makeRotate pi (Vec3.vec3 0 0 1.0)) (Vec3.vec3 1.0 1.0 0))
         ]
 
 
@@ -147,6 +147,7 @@ fragmentShader =
     [glsl|
         precision mediump float;
         uniform float intensity;
+        uniform float time;
         varying vec3 vcolor;
         varying float posy;
 
