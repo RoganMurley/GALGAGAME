@@ -48,6 +48,7 @@ type alias Model =
 type alias ModelDiff a =
     { a
         | diffOtherLife : Life
+        , diffLife : Life
     }
 
 
@@ -60,7 +61,7 @@ type alias FullModel =
 
 
 fullify : Model -> ModelDiff {} -> FullModel
-fullify { hand, otherHand, stack, turn, life, otherLife, otherHover } { diffOtherLife } =
+fullify { hand, otherHand, stack, turn, life, otherLife, otherHover } { diffOtherLife, diffLife } =
     { hand = hand
     , otherHand = otherHand
     , stack = stack
@@ -69,6 +70,7 @@ fullify { hand, otherHand, stack, turn, life, otherLife, otherHover } { diffOthe
     , otherLife = otherLife
     , otherHover = otherHover
     , diffOtherLife = diffOtherLife
+    , diffLife = diffLife
     }
 
 
@@ -137,6 +139,7 @@ init =
     , life = 100
     , otherLife = 100
     , otherHover = Nothing
+    , diffLife = 0
     , diffOtherLife = 0
     }
 
@@ -179,20 +182,23 @@ stateView state roomID hostname httpPort time ( width, height ) =
 
             PlayingGame model ( res, _ ) ->
                 let
-                    intensity =
+                    lowerIntensity =
                         (toFloat model.diffOtherLife) / 10.0
+
+                    upperIntensity =
+                        (toFloat model.diffLife) / 10.0
                 in
                     case res of
                         [] ->
-                            view params intensity model
+                            view params lowerIntensity upperIntensity model
 
                         otherwise ->
-                            resView params intensity res model
+                            resView params lowerIntensity upperIntensity res model
 
             Ended winner ( res, _ ) ->
                 case (List.head res) of
                     Just r ->
-                        resView params 1.0 res (fullify r { diffOtherLife = 0 })
+                        resView params 0 0 res (fullify r { diffOtherLife = 0, diffLife = 0 })
 
                     Nothing ->
                         div [ class "endgame" ]
@@ -212,8 +218,8 @@ stateView state roomID hostname httpPort time ( width, height ) =
                             )
 
 
-view : Vfx.Params -> Float -> FullModel -> Html Msg
-view params intensity model =
+view : Vfx.Params -> Float -> Float -> FullModel -> Html Msg
+view params lowerIntensity upperIntensity model =
     div []
         [ viewOtherHand model.otherHand model.otherHover
         , viewHand model.hand
@@ -221,7 +227,7 @@ view params intensity model =
         , viewTurn (List.length model.hand == maxHandLength) model.turn
         , viewLife PlayerA model.life
         , viewLife PlayerB model.otherLife
-        , Vfx.view params intensity
+        , Vfx.view params lowerIntensity upperIntensity
         ]
 
 
@@ -497,7 +503,7 @@ endedDecoder =
 
 playingDecoder : GameState -> Json.Decoder GameState
 playingDecoder oldState =
-    Json.map (\a -> PlayingGame (fullify a { diffOtherLife = 0 }) ( [], 0 ))
+    Json.map (\a -> PlayingGame (fullify a { diffOtherLife = 0, diffLife = 0 }) ( [], 0 ))
         (field "playing" (modelDecoder oldState))
 
 
@@ -586,7 +592,10 @@ resTick state =
 
         calcDiff : Model -> FullModel -> FullModel
         calcDiff m f =
-            fullify m { diffOtherLife = f.otherLife - m.otherLife }
+            fullify m
+                { diffOtherLife = f.otherLife - m.otherLife
+                , diffLife = f.life - m.life
+                }
     in
         case state of
             PlayingGame model ( res, _ ) ->
@@ -630,8 +639,8 @@ tickZero state =
             False
 
 
-resView : Vfx.Params -> Float -> Res -> FullModel -> Html Msg
-resView params intensity res model =
+resView : Vfx.Params -> Float -> Float -> Res -> FullModel -> Html Msg
+resView params lowerIntensity upperIntensity res model =
     div []
         [ viewOtherHand model.otherHand model.otherHover
         , viewResHand model.hand
@@ -639,7 +648,7 @@ resView params intensity res model =
         , viewResTurn
         , viewLife PlayerA model.life
         , viewLife PlayerB model.otherLife
-        , Vfx.view params intensity
+        , Vfx.view params lowerIntensity upperIntensity
         ]
 
 
