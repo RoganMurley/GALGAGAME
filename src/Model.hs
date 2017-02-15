@@ -2,7 +2,6 @@ module Model where
 
 
 import Data.Aeson (ToJSON(..), (.=), object)
-import Data.List (partition)
 import Data.Text (Text)
 import Safe (atMay, headMay, tailSafe)
 import Data.String.Conversions (cs)
@@ -99,7 +98,7 @@ maxHandLength = 6
 
 
 maxLife :: Life
-maxLife = 50
+maxLife = 10
 
 
 modelReverso :: Model -> Model

@@ -15,7 +15,7 @@ type GameState
     = Waiting
     | Selecting CharacterSelect.Model
     | PlayingGame FullModel ( Res, Int )
-    | Ended (Maybe WhichPlayer) ( Res, Int )
+    | Ended (Maybe WhichPlayer) (Maybe FullModel) ( Res, Int )
 
 
 setRes : GameState -> List Model -> GameState
@@ -24,8 +24,8 @@ setRes state res =
         PlayingGame m ( _, i ) ->
             PlayingGame m ( res, i )
 
-        Ended w ( _, i ) ->
-            Ended w ( res, i )
+        Ended w m ( _, i ) ->
+            Ended w m ( res, i )
 
         Waiting ->
             Debug.crash "Set res on a waiting state"
@@ -180,25 +180,18 @@ stateView state roomID hostname httpPort time ( width, height ) =
             Selecting model ->
                 CharacterSelect.view model
 
-            PlayingGame model ( res, resTime ) ->
-                let
-                    upperIntensity =
-                        (toFloat model.diffOtherLife) / 10.0
+            PlayingGame m ( res, resTime ) ->
+                case res of
+                    [] ->
+                        view params (lowerIntensity m) (upperIntensity m) resTime m
 
-                    lowerIntensity =
-                        (toFloat model.diffLife) / 10.0
-                in
-                    case res of
-                        [] ->
-                            view params lowerIntensity upperIntensity resTime model
+                    otherwise ->
+                        resView params (lowerIntensity m) (upperIntensity m) res resTime m
 
-                        otherwise ->
-                            resView params lowerIntensity upperIntensity res resTime model
-
-            Ended winner ( res, resTime ) ->
-                case (List.head res) of
-                    Just r ->
-                        resView params 0 0 res resTime (fullify r { diffOtherLife = 0, diffLife = 0 })
+            Ended winner model ( res, resTime ) ->
+                case model of
+                    Just m ->
+                        resView params (lowerIntensity m) (upperIntensity m) res resTime m
 
                     Nothing ->
                         div [ class "endgame" ]
@@ -216,6 +209,20 @@ stateView state roomID hostname httpPort time ( width, height ) =
                                     , button [ class "rematch", onClick Rematch ] [ text "Rematch" ]
                                     ]
                             )
+
+
+
+-- TIDY
+
+
+upperIntensity : FullModel -> Float
+upperIntensity m =
+    (toFloat m.diffOtherLife) / 10
+
+
+lowerIntensity : FullModel -> Float
+lowerIntensity m =
+    (toFloat m.diffLife) / 10
 
 
 view : Vfx.Params -> Float -> Float -> Int -> FullModel -> Html Msg
@@ -391,6 +398,9 @@ stateUpdate msg state =
                             ( PlayingGame oldModel _, PlayingGame newModel _ ) ->
                                 PlayingGame oldModel ( resList ++ [ unfullify newModel ], 0 )
 
+                            ( PlayingGame oldModel _, Ended w _ _ ) ->
+                                Ended w (Just oldModel) ( resList, 0 )
+
                             otherwise ->
                                 setRes final resList
 
@@ -497,7 +507,7 @@ selectingDecoder oldState =
 
 endedDecoder : Json.Decoder GameState
 endedDecoder =
-    Json.map (\w -> Ended w ( [], 0 ))
+    Json.map (\w -> Ended w Nothing ( [], 0 ))
         (field "winner" (maybe whichDecoder))
 
 
@@ -606,8 +616,11 @@ resTick state =
                     Nothing ->
                         PlayingGame model ( res, 0 )
 
-            Ended p ( res, _ ) ->
-                Ended p ( List.drop 1 res, resDelay )
+            Ended which (Just model) ( res, _ ) ->
+                Ended
+                    which
+                    (Maybe.map (flip calcDiff model) (List.head res))
+                    ( List.drop 1 res, resDelay )
 
             otherwise ->
                 state
@@ -619,8 +632,8 @@ tickForward state =
         PlayingGame model ( res, tick ) ->
             PlayingGame model ( res, tick - 1 )
 
-        Ended p ( res, tick ) ->
-            Ended p ( res, tick - 1 )
+        Ended which model ( res, tick ) ->
+            Ended which model ( res, tick - 1 )
 
         otherwise ->
             state
@@ -632,7 +645,7 @@ tickZero state =
         PlayingGame _ ( _, 0 ) ->
             True
 
-        Ended _ ( _, 0 ) ->
+        Ended _ _ ( _, 0 ) ->
             True
 
         otherwise ->
