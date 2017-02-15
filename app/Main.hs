@@ -17,7 +17,7 @@ import qualified Data.Text as T
 import qualified Data.Text.IO as T
 import qualified Network.WebSockets as WS
 
-import Model (CardName, Model, WhichPlayer(..), modelReverso, otherPlayer)
+import Model (Model, WhichPlayer(..), modelReverso, otherPlayer)
 import GameState (GameCommand(..), GameState(..), Outcome(..), Username, reverso, update)
 import Room
 import Util (Err, getGen)
