@@ -98,7 +98,7 @@ maxHandLength = 6
 
 
 maxLife :: Life
-maxLife = 10
+maxLife = 50
 
 
 modelReverso :: Model -> Model
