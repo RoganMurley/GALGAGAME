@@ -12,6 +12,7 @@
   <body class="no-select">
     <div class="version-warning">closed alpha build v0.3</div>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.0.2/howler.js"></script>
     <script src="Main.js"></script>
     <script>
       var params = new URLSearchParams(window.location.search);
@@ -38,6 +39,25 @@
         document.getElementById(elementId).select();
         document.execCommand('copy');
       })
+
+      var playedSounds = {};
+      app.ports.playAudio.subscribe(function (input) {
+        var src = input[0];
+        var loop = input[1];
+        var once = input[2];
+
+        if (once) {
+          if (playedSounds[input]) {
+            return;
+          }
+          playedSounds[input] = true;
+        }
+        var sound = new Howl({
+          src: [src],
+          loop: loop
+        });
+        sound.play();
+      });
     </script>
   </body>
 </html>

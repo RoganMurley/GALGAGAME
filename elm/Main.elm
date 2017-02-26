@@ -20,9 +20,10 @@ import Random.String exposing (string)
 import Time exposing (Time, second)
 import Tuple exposing (first)
 import Util exposing (applyFst, message)
-import Ports exposing (copyInput, selectAllInput, queryParams)
+import Ports exposing (copyInput, selectAllInput, queryParams, playAudio)
 import AnimationFrame
 import Window
+import Listener exposing (listen)
 
 
 main =
@@ -243,10 +244,22 @@ connectedUpdate hostname msg ({ chat, game, mode } as model) =
             ( model, turnOnly model (send hostname "draw:") )
 
         EndTurn ->
-            ( model, turnOnly model (send hostname "end:") )
+            ( model
+            , Cmd.batch
+                [ turnOnly model (send hostname "end:")
+                , turnOnly model (playAudio ( "sfx/endTurn.wav", False, False ))
+                ]
+            )
 
         PlayCard index ->
-            ( model, turnOnly model (send hostname ("play:" ++ (toString index))) )
+            ( model
+            , turnOnly model
+                (Cmd.batch
+                    [ send hostname ("play:" ++ (toString index))
+                    , playAudio ( "sfx/playCard.wav", False, False )
+                    ]
+                )
+            )
 
         NewChatMsg str ->
             ( { model | chat = addChatMessage str chat }, Cmd.none )
@@ -260,13 +273,26 @@ connectedUpdate hostname msg ({ chat, game, mode } as model) =
         KeyPress _ ->
             ( model, Cmd.none )
 
-        Tick _ ->
-            ( { model | game = tickForward game }
-            , if tickZero model.game then
-                message ResolveStep
-              else
-                Cmd.none
-            )
+        Tick t ->
+            let
+                tickedGame =
+                    tickForward game
+
+                resolveCommand =
+                    if tickZero model.game then
+                        [ message ResolveStep ]
+                    else
+                        []
+
+                listenCommand =
+                    [ listen t tickedGame ]
+
+                commands =
+                    resolveCommand ++ listenCommand
+            in
+                ( { model | game = tickedGame }
+                , Cmd.batch commands
+                )
 
         ResolveStep ->
             ( { model | game = resTick game }, Cmd.none )
@@ -289,7 +315,15 @@ connectedUpdate hostname msg ({ chat, game, mode } as model) =
                         Nothing ->
                             "null"
             in
-                ( model, playingOnly model (message (Send ("hover:" ++ cardName))) )
+                ( model
+                , Cmd.batch
+                    [ playingOnly model (message (Send ("hover:" ++ cardName)))
+                    , if name /= Nothing then
+                        playAudio ( "sfx/hover.wav", False, False )
+                      else
+                        Cmd.none
+                    ]
+                )
 
         SelectCharacter name ->
             ( model, playingOnly model (message (Send ("selectCharacter:" ++ name))) )
