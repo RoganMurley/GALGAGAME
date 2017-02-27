@@ -585,7 +585,7 @@ resDecoder oldState =
 
 resDelay : Int
 resDelay =
-    30
+    35
 
 
 resTick : GameState -> GameState

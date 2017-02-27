@@ -247,7 +247,7 @@ connectedUpdate hostname msg ({ chat, game, mode } as model) =
             ( model
             , Cmd.batch
                 [ turnOnly model (send hostname "end:")
-                , turnOnly model (playAudio ( "sfx/endTurn.wav", False, False ))
+                , turnOnly model (playAudio ( "sfx/endTurn.wav", False, False, 1.0 ))
                 ]
             )
 
@@ -256,7 +256,7 @@ connectedUpdate hostname msg ({ chat, game, mode } as model) =
             , turnOnly model
                 (Cmd.batch
                     [ send hostname ("play:" ++ (toString index))
-                    , playAudio ( "sfx/playCard.wav", False, False )
+                    , playAudio ( "sfx/playCard.wav", False, False, 1.0 )
                     ]
                 )
             )
@@ -319,7 +319,7 @@ connectedUpdate hostname msg ({ chat, game, mode } as model) =
                 , Cmd.batch
                     [ playingOnly model (message (Send ("hover:" ++ cardName)))
                     , if name /= Nothing then
-                        playAudio ( "sfx/hover.wav", False, False )
+                        playAudio ( "sfx/hover.wav", False, False, 1.0 )
                       else
                         Cmd.none
                     ]
@@ -345,7 +345,12 @@ connectedReceive model msg =
     else if (startsWith "sync:" msg) then
         ( model, message (GameStateMsg (Sync (dropLeft (length "sync:") msg))) )
     else if (startsWith "hover:" msg) then
-        ( model, message (GameStateMsg (HoverOutcome (parseHoverOutcome (dropLeft (length "hover:") msg)))) )
+        ( model
+        , Cmd.batch
+            [ message (GameStateMsg (HoverOutcome (parseHoverOutcome (dropLeft (length "hover:") msg))))
+            , playAudio ( "sfx/hover.wav", False, False, 1.0 )
+            ]
+        )
     else if (startsWith "res:" msg) then
         ( model, message (GameStateMsg (ResolveOutcome (dropLeft (length "res:") msg))) )
     else
