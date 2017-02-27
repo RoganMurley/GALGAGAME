@@ -45,6 +45,7 @@
         var src = input[0];
         var loop = input[1];
         var once = input[2];
+        var volume = input[3];
 
         if (once) {
           if (playedSounds[input]) {
@@ -54,7 +55,8 @@
         }
         var sound = new Howl({
           src: [src],
-          loop: loop
+          loop: loop,
+          volume: volume
         });
         sound.play();
       });
