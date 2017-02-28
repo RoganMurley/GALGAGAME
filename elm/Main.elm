@@ -1,5 +1,6 @@
 module Main exposing (..)
 
+import Audio exposing (SoundOption(..), playSound, playSoundWith)
 import Char exposing (isLower)
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -20,7 +21,7 @@ import Random.String exposing (string)
 import Time exposing (Time, second)
 import Tuple exposing (first)
 import Util exposing (applyFst, message)
-import Ports exposing (copyInput, selectAllInput, queryParams, playAudio)
+import Ports exposing (copyInput, selectAllInput, queryParams)
 import AnimationFrame
 import Window
 import Listener exposing (listen)
@@ -245,10 +246,12 @@ connectedUpdate hostname msg ({ chat, game, mode } as model) =
 
         EndTurn ->
             ( model
-            , Cmd.batch
-                [ turnOnly model (send hostname "end:")
-                , turnOnly model (playAudio ( "sfx/endTurn.wav", False, False, 1.0 ))
-                ]
+            , turnOnly model
+                (Cmd.batch
+                    [ send hostname "end:"
+                    , playSound "sfx/endTurn.wav"
+                    ]
+                )
             )
 
         PlayCard index ->
@@ -256,7 +259,7 @@ connectedUpdate hostname msg ({ chat, game, mode } as model) =
             , turnOnly model
                 (Cmd.batch
                     [ send hostname ("play:" ++ (toString index))
-                    , playAudio ( "sfx/playCard.wav", False, False, 1.0 )
+                    , playSound "sfx/playCard.wav"
                     ]
                 )
             )
@@ -319,7 +322,7 @@ connectedUpdate hostname msg ({ chat, game, mode } as model) =
                 , Cmd.batch
                     [ playingOnly model (message (Send ("hover:" ++ cardName)))
                     , if name /= Nothing then
-                        playAudio ( "sfx/hover.wav", False, False, 1.0 )
+                        playSound "sfx/hover.wav"
                       else
                         Cmd.none
                     ]
@@ -348,7 +351,7 @@ connectedReceive model msg =
         ( model
         , Cmd.batch
             [ message (GameStateMsg (HoverOutcome (parseHoverOutcome (dropLeft (length "hover:") msg))))
-            , playAudio ( "sfx/hover.wav", False, False, 1.0 )
+            , playSound "sfx/hover.wav"
             ]
         )
     else if (startsWith "res:" msg) then

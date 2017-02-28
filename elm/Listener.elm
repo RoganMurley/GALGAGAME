@@ -1,15 +1,15 @@
 module Listener exposing (..)
 
+import Audio exposing (SoundOption(..), playSound, playSoundWith)
 import GameState exposing (GameState(..))
 import Messages exposing (Msg)
-import Ports exposing (playAudio)
 
 
 listen : Float -> GameState -> Cmd Msg
 listen time state =
     case state of
         PlayingGame _ ( [], _ ) ->
-            playAudio ( "music/background.mp3", True, True, 1.0 )
+            playSoundWith "music/background.mp3" [ Loop, Once ]
 
         PlayingGame m _ ->
             if GameState.tickZero state then
@@ -18,7 +18,7 @@ listen time state =
                     volume =
                         0.5 + 0.1 * (toFloat (List.length m.stack))
                 in
-                    playAudio ( "sfx/resolve.wav", False, False, volume )
+                    playSoundWith "sfx/resolve.wav" [ Volume volume ]
             else
                 Cmd.none
 
