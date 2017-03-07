@@ -537,10 +537,11 @@ whichDecoder =
 
 cardDecoder : Json.Decoder Card
 cardDecoder =
-    Json.map3 Card
+    Json.map4 Card
         (field "name" Json.string)
         (field "desc" Json.string)
         (field "imageURL" Json.string)
+        (field "sfxURL" Json.string)
 
 
 modelDecoder : GameState -> Json.Decoder Model

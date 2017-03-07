@@ -168,7 +168,7 @@ resolveAll (model, res) =
           case headMay stack of
             Nothing ->
               id
-            Just (StackCard p c@(Card _ _ _ e)) ->
+            Just (StackCard p c@(Card _ _ _ _ e)) ->
               e p c
 
 
