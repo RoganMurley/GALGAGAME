@@ -329,7 +329,14 @@ connectedUpdate hostname msg ({ chat, game, mode } as model) =
                 )
 
         SelectCharacter name ->
-            ( model, playingOnly model (message (Send ("selectCharacter:" ++ name))) )
+            ( model
+            , playingOnly model
+                (Cmd.batch
+                    [ message (Send ("selectCharacter:" ++ name))
+                    , playSound "sfx/endTurn.wav"
+                    ]
+                )
+            )
 
         SelectAllInput elementId ->
             ( model, selectAllInput elementId )
@@ -474,7 +481,7 @@ view ({ hostname, httpPort, frameTime, windowDimensions } as model) =
         MainMenu _ ->
             div []
                 [ div [ class "main-menu" ]
-                    [ h1 [] [ text "VANA" ]
+                    [ h1 [] [ text "TURRIS" ]
                     , button
                         [ class "menu-button", disabled True ]
                         [ text "Quickplay" ]
@@ -492,7 +499,7 @@ view ({ hostname, httpPort, frameTime, windowDimensions } as model) =
 
         Connecting { name, error, valid } ->
             div [ class "connecting-box" ]
-                [ h1 [] [ text "VANA : Custom Game" ]
+                [ h1 [] [ text "TURRIS : Custom Game" ]
                 , div []
                     [ div [ class "input-group" ]
                         [ input [ onInput Input, placeholder "username", value name, id "playername-input", onClick (SelectAllInput "playername-input") ] []
