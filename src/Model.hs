@@ -24,18 +24,19 @@ data Model = Model
   deriving (Eq, Show)
 
 
-data Card = Card CardName CardDesc CardImgURL CardEff
+data Card = Card CardName CardDesc CardImgURL CardSndURL CardEff
 
 instance Eq Card where
-  (Card n1 d1 i1 _) == (Card n2 d2 i2 _) =
+  (Card n1 d1 i1 _ _) == (Card n2 d2 i2 _ _) =
     n1 == n2 && d1 == d2 && i1 == i2
 
 instance Show Card where
-  show (Card n _ _ _) = cs n
+  show (Card n _ _ _ _) = cs n
 
 type CardName = Text
 type CardDesc = Text
 type CardImgURL = Text
+type CardSndURL = Text
 type CardEff = (WhichPlayer -> Card -> Model -> Model)
 
 type Hand = [Card]
@@ -71,12 +72,13 @@ instance ToJSON Model where
 
 
 instance ToJSON Card where
-  toJSON (Card name desc imageURL _) =
+  toJSON (Card name desc imageURL sfxURL _) =
     object
       [
         "name"     .= name
       , "desc"     .= desc
       , "imageURL" .= imageURL
+      , "sfxURL"   .= sfxURL
       ]
 
 
