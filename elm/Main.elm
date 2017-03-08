@@ -363,6 +363,10 @@ connectedReceive model msg =
         )
     else if (startsWith "res:" msg) then
         ( model, message (GameStateMsg (ResolveOutcome (dropLeft (length "res:") msg))) )
+    else if (startsWith "playCard:" msg) then
+        ( model, playSound "sfx/playCard.wav" )
+    else if (startsWith "end:" msg) then
+        ( model, playSound "sfx/endTurn.wav" )
     else
         Debug.crash ("Error decoding message from server: " ++ msg)
 
