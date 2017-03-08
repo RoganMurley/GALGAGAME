@@ -88,7 +88,7 @@ cardSiren = Card "Siren" "Your opponent gets two cards that hurt them for 8 each
     eff :: CardEff
     eff p _ m = modHand (times 2 (addToHand cardSong)) (otherPlayer p) m
     cardSong :: Card
-    cardSong = Card "Siren's Song" "Hurt yourself for 8" "love-song.svg" "resolve.wav" (\p _ -> hurt 8 p)
+    cardSong = Card "Siren's Song" "Hurt yourself for 8" "love-song.svg" "song.wav" (\p _ -> hurt 8 p)
 
 
 cardSickness :: Card
