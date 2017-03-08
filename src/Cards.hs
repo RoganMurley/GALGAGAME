@@ -248,43 +248,46 @@ cardFeint = Card "Feint" "Return all of your cards to the right to your hand" "q
 
 
 cardInjustice :: Card
-cardInjustice = Card "Injustice" "Hurt the weakest player for 15" "" "" eff
+cardInjustice = Card "Injustice" "Hurt the weakest player for 15" "evil-wings.svg" "injustice.wav" eff
   where
     eff :: CardEff
-    eff _ _ m = (hurtIfWeaker m PlayerB) . (hurtIfWeaker m PlayerA) $ m
-    hurtIfWeaker :: Model -> WhichPlayer -> (Model -> Model)
-    hurtIfWeaker model which =
-      if (getLife which model <= getLife (otherPlayer which) model)
-        then hurt 15 which
-          else hurt 15 (otherPlayer which)
+    eff _ _ m
+      | getLife PlayerA m < getLife PlayerB m =
+        hurt 15 PlayerA $ m
+      | getLife PlayerA m > getLife PlayerB m =
+        hurt 15 PlayerB $ m
+      | otherwise =
+        (hurt 15 PlayerA) . (hurt 15 PlayerB) $ m
 
 
 cardJustice :: Card
-cardJustice = Card "Justice" "Hurt the strongest player for 15" "" "" eff
+cardJustice = Card "Justice" "Hurt the strongest player for 15" "winged-sword.svg" "justice.wav" eff
   where
     eff :: CardEff
-    eff _ _ m = (hurtIfStronger m PlayerB) . (hurtIfStronger m PlayerA) $ m
-    hurtIfStronger :: Model -> WhichPlayer -> (Model -> Model)
-    hurtIfStronger model which =
-      if (getLife which model >= getLife (otherPlayer which) model)
-        then hurt 15 which
-          else hurt 15 (otherPlayer which)
+    eff _ _ m
+      | getLife PlayerA m > getLife PlayerB m =
+        hurt 15 PlayerA $ m
+      | getLife PlayerA m < getLife PlayerB m =
+        hurt 15 PlayerB $ m
+      | otherwise =
+        (hurt 15 PlayerA) . (hurt 15 PlayerB) $ m
 
 
-cardReload :: Card
-cardReload = Card "Reload" "Discard your hand, then draw for each card you discarded" "" "" eff
+cardRecharge :: Card
+cardRecharge = Card "Recharge" "Discard your hand, then draw for each card you discarded" "sunbeams.svg" "recharge.wav" eff
   where
     eff :: CardEff
     eff p _ m = (times (length (getHand p m)) (drawCard p p)) . (setHand p []) $ m
 
 
-cardCharity :: Card
-cardCharity = Card "Charity" "Heal the weakest player for 13" "" "" eff
+cardOath :: Card
+cardOath = Card "Oath" "Heal the weakest player for 13" "caduceus.svg" "oath.wav" eff
   where
     eff :: CardEff
-    eff _ _ m = (healIfWeaker m PlayerB) . (healIfWeaker m PlayerA) $ m
-    healIfWeaker :: Model -> WhichPlayer -> (Model -> Model)
-    healIfWeaker model which =
-      if (getLife which model <= getLife (otherPlayer which) model)
-        then heal 13 which
-          else heal 13 (otherPlayer which)
+    eff _ _ m
+      | getLife PlayerA m < getLife PlayerB m =
+        heal 13 PlayerA $ m
+      | getLife PlayerA m > getLife PlayerB m =
+        heal 13 PlayerB $ m
+      | otherwise =
+        (heal 13 PlayerA) . (heal 13 PlayerB) $ m
