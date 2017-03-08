@@ -178,7 +178,10 @@ stateView state roomID hostname httpPort time ( width, height ) =
                         ]
 
             Selecting model ->
-                CharacterSelect.view model
+                div []
+                    [ CharacterSelect.view model
+                    , Vfx.idleView params
+                    ]
 
             PlayingGame m ( res, resTime ) ->
                 case res of
@@ -199,6 +202,7 @@ stateView state roomID hostname httpPort time ( width, height ) =
                                 Nothing ->
                                     [ div [ class "draw" ] [ text "DRAW" ]
                                     , button [ class "rematch", onClick Rematch ] [ text "Rematch" ]
+                                    , Vfx.idleView params
                                     ]
 
                                 Just player ->
@@ -207,6 +211,7 @@ stateView state roomID hostname httpPort time ( width, height ) =
                                       else
                                         div [ class "defeat" ] [ text "DEFEAT" ]
                                     , button [ class "rematch", onClick Rematch ] [ text "Rematch" ]
+                                    , Vfx.idleView params
                                     ]
                             )
 
