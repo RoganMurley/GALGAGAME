@@ -29,6 +29,20 @@ type Params
     = Params Time ( Width, Height )
 
 
+
+-- Required to stop the browsers going crazy and crashing/bluescreening... they don't like it when you add / remove canvases
+
+
+idleView : Params -> Html Msg
+idleView (Params _ ( w, h )) =
+    WebGL.toHtml
+        [ width w
+        , height h
+        , style [ ( "position", "absolute" ), ( "top", "0" ), ( "z-index", "-999" ) ]
+        ]
+        []
+
+
 view : Params -> Float -> Float -> Int -> Html Msg
 view (Params theta ( w, h )) lowerIntensity upperIntensity resTime =
     WebGL.toHtml
