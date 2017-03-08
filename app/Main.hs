@@ -263,6 +263,12 @@ actOutcome room (ResolveOutcome models final) = do
 actOutcome room SyncOutcome = do
   syncRoomClients room
   T.putStrLn "syncing"
+actOutcome room (PlayCardOutcome which) = do
+  sendExcluding which "playCard:" room
+  T.putStrLn "playing card"
+actOutcome room (EndTurnOutcome which) = do
+  sendExcluding which "end:" room
+  T.putStrLn "ending turn"
 
 syncClient :: Client -> GameState -> IO ()
 syncClient (_, conn) game =

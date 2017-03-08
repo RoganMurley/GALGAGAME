@@ -106,7 +106,7 @@ update cmd which state =
             EndTurn ->
               endTurn which model
             PlayCard index ->
-              ((\x -> (x, [SyncOutcome])) . Just . Started . Playing) <$> (playCard index which model)
+              ((\x -> (x, [SyncOutcome, PlayCardOutcome which])) . Just . Started . Playing) <$> (playCard index which model)
             HoverCard index ->
               (\x -> (Nothing, x)) <$> (hoverCard index which model)
             _ ->
@@ -133,10 +133,10 @@ endTurn which model
         case resolveAll (model, []) of
           (Playing m, res) ->
             let newState = Started . Playing . drawCards . resetPasses . swapTurn $ m in
-              Right (Just newState, [ResolveOutcome (reverse res) newState])
+              Right (Just newState, [ResolveOutcome (reverse res) newState, EndTurnOutcome which])
           (Ended w g, res) ->
             let newState = Started (Ended w g) in
-              Right (Just newState, [ResolveOutcome (reverse res) newState])
+              Right (Just newState, [ResolveOutcome (reverse res) newState, EndTurnOutcome which])
       NoPass ->
         Right (Just . Started . Playing . swapTurn $ model, [SyncOutcome])
   where
@@ -200,6 +200,8 @@ data Outcome =
   | HoverOutcome ExcludePlayer (Maybe Int)
   | ResolveOutcome ResolveList GameState
   | SyncOutcome
+  | PlayCardOutcome ExcludePlayer
+  | EndTurnOutcome ExcludePlayer
   deriving (Eq, Show)
 
 
@@ -220,6 +222,10 @@ instance ToJSON Outcome where
     ]
   toJSON SyncOutcome =
     error "SyncOutcome shouldn't be marshalled to JSON" -- DANGEROUS!!!
+  toJSON (PlayCardOutcome _) =
+      error "PlayCardOutcome shouldn't be marshalled to JSON" -- DANGEROUS!!!
+  toJSON (EndTurnOutcome _) =
+      error "PlayCardOutcome shouldn't be marshalled to JSON" -- DANGEROUS!!!
 
 
 hoverCard :: Maybe Int -> WhichPlayer -> Model -> Either Err ([Outcome])
