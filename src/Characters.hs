@@ -66,6 +66,7 @@ allCharacters = [
   , drinker
   , watcher
   , imposter
+  , balancer
   ]
 
 
@@ -123,4 +124,4 @@ imposter :: Character
 imposter = Character "Trickster" (cardShuriken, cardSuperego, cardMindgate, cardFeint)
 
 balancer :: Character
-balancer = Character "Judger" (cardJustice, cardInjustice, cardReload, cardPlaceholder)
+balancer = Character "Judger" (cardJustice, cardInjustice, cardOath, cardRecharge)
