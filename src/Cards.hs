@@ -164,10 +164,10 @@ cardAgility = Card "Agility" "Draw two cards" "sprint.svg" "resolve.wav" eff
 
 
 cardCrossbow :: Card
-cardCrossbow = Card "Crossbow" "Hurt for 12" "crossbow.svg" "crossbow.wav" eff
+cardCrossbow = Card "Crossbow" "Hurt for 11" "crossbow.svg" "crossbow.wav" eff
   where
     eff :: CardEff
-    eff p _ m = hurt 12 (otherPlayer p) m
+    eff p _ m = hurt 11 (otherPlayer p) m
 
 
 cardLightning :: Card
@@ -245,3 +245,46 @@ cardFeint = Card "Feint" "Return all of your cards to the right to your hand" "q
     eff p _ m =
       (modHand (bounceAll p (getStack m)) p) $
         modStack (filter (\(StackCard owner _) -> owner /= p)) m
+
+
+cardInjustice :: Card
+cardInjustice = Card "Injustice" "Hurt the weakest player for 15" "" "" eff
+  where
+    eff :: CardEff
+    eff _ _ m = (hurtIfWeaker m PlayerB) . (hurtIfWeaker m PlayerA) $ m
+    hurtIfWeaker :: Model -> WhichPlayer -> (Model -> Model)
+    hurtIfWeaker model which =
+      if (getLife which model <= getLife (otherPlayer which) model)
+        then hurt 15 which
+          else hurt 15 (otherPlayer which)
+
+
+cardJustice :: Card
+cardJustice = Card "Justice" "Hurt the strongest player for 15" "" "" eff
+  where
+    eff :: CardEff
+    eff _ _ m = (hurtIfStronger m PlayerB) . (hurtIfStronger m PlayerA) $ m
+    hurtIfStronger :: Model -> WhichPlayer -> (Model -> Model)
+    hurtIfStronger model which =
+      if (getLife which model >= getLife (otherPlayer which) model)
+        then hurt 15 which
+          else hurt 15 (otherPlayer which)
+
+
+cardReload :: Card
+cardReload = Card "Reload" "Discard your hand, then draw for each card you discarded" "" "" eff
+  where
+    eff :: CardEff
+    eff p _ m = (times (length (getHand p m)) (drawCard p p)) . (setHand p []) $ m
+
+
+cardCharity :: Card
+cardCharity = Card "Charity" "Heal the weakest player for 13" "" "" eff
+  where
+    eff :: CardEff
+    eff _ _ m = (healIfWeaker m PlayerB) . (healIfWeaker m PlayerA) $ m
+    healIfWeaker :: Model -> WhichPlayer -> (Model -> Model)
+    healIfWeaker model which =
+      if (getLife which model <= getLife (otherPlayer which) model)
+        then heal 13 which
+          else heal 13 (otherPlayer which)

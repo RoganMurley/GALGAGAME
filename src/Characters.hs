@@ -120,4 +120,7 @@ watcher :: Character
 watcher = Character "Watcher" (cardStaff, cardEnvy, cardMindhack, cardPrecognition)
 
 imposter :: Character
-imposter = Character "Imposter" (cardShuriken, cardSuperego, cardMindgate, cardFeint)
+imposter = Character "Trickster" (cardShuriken, cardSuperego, cardMindgate, cardFeint)
+
+balancer :: Character
+balancer = Character "Judger" (cardJustice, cardInjustice, cardReload, cardPlaceholder)
