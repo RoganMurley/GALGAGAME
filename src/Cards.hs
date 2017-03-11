@@ -248,46 +248,51 @@ cardFeint = Card "Feint" "Return all of your cards to the right to your hand" "q
 
 
 cardInjustice :: Card
-cardInjustice = Card "Injustice" "Hurt the weakest player for 15" "evil-wings.svg" "injustice.wav" eff
+cardInjustice = Card "Injustice" "Hurt the weakest player for 13" "evil-wings.svg" "injustice.wav" eff
   where
     eff :: CardEff
     eff _ _ m
       | getLife PlayerA m < getLife PlayerB m =
-        hurt 15 PlayerA $ m
+        hurt dmg PlayerA $ m
       | getLife PlayerA m > getLife PlayerB m =
-        hurt 15 PlayerB $ m
+        hurt dmg PlayerB $ m
       | otherwise =
-        (hurt 15 PlayerA) . (hurt 15 PlayerB) $ m
+        (hurt dmg PlayerA) . (hurt dmg PlayerB) $ m
+    dmg = 13
 
 
 cardJustice :: Card
-cardJustice = Card "Justice" "Hurt the strongest player for 15" "winged-sword.svg" "justice.wav" eff
+cardJustice = Card "Justice" "Hurt the strongest player for 13" "winged-sword.svg" "justice.wav" eff
   where
     eff :: CardEff
     eff _ _ m
       | getLife PlayerA m > getLife PlayerB m =
-        hurt 15 PlayerA $ m
+        hurt dmg PlayerA $ m
       | getLife PlayerA m < getLife PlayerB m =
-        hurt 15 PlayerB $ m
+        hurt dmg PlayerB $ m
       | otherwise =
-        (hurt 15 PlayerA) . (hurt 15 PlayerB) $ m
+        (hurt dmg PlayerA) . (hurt dmg PlayerB) $ m
+    dmg = 13
 
 
 cardRecharge :: Card
-cardRecharge = Card "Recharge" "Discard your hand, then draw for each card you discarded" "sunbeams.svg" "recharge.wav" eff
+cardRecharge = Card "Recharge" "Both players discard their hand, then draw for each card discarded" "sunbeams.svg" "recharge.wav" eff
   where
     eff :: CardEff
-    eff p _ m = (times (length (getHand p m)) (drawCard p p)) . (setHand p []) $ m
+    eff _ _ m = (redraw PlayerA) . (redraw PlayerB) $ m
+    redraw :: WhichPlayer -> Model -> Model
+    redraw w m = (times (length (getHand w m)) (drawCard w w)) . (setHand w []) $ m
 
 
 cardOath :: Card
-cardOath = Card "Oath" "Heal the weakest player for 13" "caduceus.svg" "oath.wav" eff
+cardOath = Card "Oath" "Heal the weakest player for 12" "caduceus.svg" "oath.wav" eff
   where
     eff :: CardEff
     eff _ _ m
       | getLife PlayerA m < getLife PlayerB m =
-        heal 13 PlayerA $ m
+        heal mag PlayerA $ m
       | getLife PlayerA m > getLife PlayerB m =
-        heal 13 PlayerB $ m
+        heal mag PlayerB $ m
       | otherwise =
-        (heal 13 PlayerA) . (heal 13 PlayerB) $ m
+        (heal mag PlayerA) . (heal mag PlayerB) $ m
+    mag = 12
