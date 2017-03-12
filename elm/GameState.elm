@@ -7,7 +7,7 @@ import Json.Decode as Json exposing (field, maybe)
 import Card exposing (Card, viewCard)
 import CharacterSelect
 import Messages exposing (GameMsg(..), Msg(CopyInput, DrawCard, EndTurn, HoverCard, PlayCard, Rematch, SelectAllInput))
-import Util exposing (fromJust)
+import Util exposing (fromJust, safeTail)
 import Vfx
 
 
@@ -597,15 +597,6 @@ resDelay =
 resTick : GameState -> GameState
 resTick state =
     let
-        safeTail : List a -> List a
-        safeTail l =
-            case List.tail l of
-                Just t ->
-                    t
-
-                Nothing ->
-                    []
-
         calcDiff : Model -> FullModel -> FullModel
         calcDiff m f =
             fullify m

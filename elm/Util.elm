@@ -1,4 +1,4 @@
-module Util exposing (applyFst, fromJust, message, px)
+module Util exposing (..)
 
 import Task
 
@@ -41,3 +41,13 @@ fromJust x =
 
         Nothing ->
             Debug.crash "error: fromJust Nothing"
+
+
+safeTail : List a -> List a
+safeTail l =
+    case List.tail l of
+        Just t ->
+            t
+
+        Nothing ->
+            []
