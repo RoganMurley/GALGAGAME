@@ -13,7 +13,8 @@ import Chat exposing (addChatMessage)
 import Drag exposing (dragAt, dragEnd, dragStart, getPosition)
 import Card exposing (Card)
 import CharacterSelect exposing (SelectedCharacters(ThreeSelected))
-import GameState exposing (GameState(..), Hand, Model, Turn, WhichPlayer(..), resTick, stateUpdate, stateView, tickForward, tickZero, view)
+import GameState exposing (GameState(..), resTick, stateUpdate, view, tickForward, tickZero)
+import Model exposing (Hand, Model, Turn, WhichPlayer(..), view)
 import Messages exposing (GameMsg(..), MenuMsg(..), Msg(..))
 import Random
 import Random.Char exposing (char)
@@ -498,7 +499,7 @@ view ({ hostname, httpPort, frameTime, windowDimensions } as model) =
         Connected { chat, game, roomID } ->
             div []
                 [ Chat.view chat
-                , GameState.stateView game roomID hostname httpPort frameTime windowDimensions
+                , GameState.view game roomID hostname httpPort frameTime windowDimensions
                 ]
 
         Connecting { name, error, valid } ->

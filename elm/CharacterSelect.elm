@@ -3,7 +3,7 @@ module CharacterSelect exposing (..)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import Card exposing (Card, viewCard)
+import Card exposing (Card)
 import Messages exposing (Msg(..), CharSelectMsg(..), GameMsg(..))
 import Util exposing (fromJust)
 
@@ -83,10 +83,10 @@ view { characters, selected, hover } =
         cardPreviewView ( c1, c2, c3, c4 ) =
             div
                 [ class "card-preview" ]
-                [ viewCard c1
-                , viewCard c2
-                , viewCard c3
-                , viewCard c4
+                [ Card.view c1
+                , Card.view c2
+                , Card.view c3
+                , Card.view c4
                 ]
     in
         div

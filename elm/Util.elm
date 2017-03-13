@@ -30,7 +30,7 @@ message x =
 
 
 
--- Unsafe fromJust
+-- Unsafe fromJust.
 
 
 fromJust : Maybe a -> a
@@ -43,6 +43,10 @@ fromJust x =
             Debug.crash "error: fromJust Nothing"
 
 
+
+-- A safe tail.
+
+
 safeTail : List a -> List a
 safeTail l =
     case List.tail l of
@@ -51,3 +55,7 @@ safeTail l =
 
         Nothing ->
             []
+
+
+
+--
