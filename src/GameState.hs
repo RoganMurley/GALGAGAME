@@ -56,7 +56,7 @@ data GameCommand =
   deriving (Show)
 
 
-initModel :: Turn -> SelectedCharacters -> SelectedCharacters -> Gen -> Model
+initModel :: Turn -> FinalSelection -> FinalSelection -> Gen -> Model
 initModel turn ca cb gen = Model turn [] handPA handPB deckPA deckPB maxLife maxLife NoPass gen
   where
     (genPA, genPB) = split gen :: (Gen, Gen)
@@ -66,12 +66,11 @@ initModel turn ca cb gen = Model turn [] handPA handPB deckPA deckPB maxLife max
     (handPB, deckPB) = splitAt 5 initDeckPB :: (Hand, Deck)
 
 
-buildDeck :: SelectedCharacters -> Deck
-buildDeck (ThreeSelected (Character _ cards1) (Character _ cards2) (Character _ cards3)) =
+buildDeck :: FinalSelection -> Deck
+buildDeck (Character _ cards1, Character _ cards2, Character _ cards3) =
   (f cards1) ++ (f cards2) ++ (f cards3)
   where
     f (a, b, c, d) = concat $ replicate 3 [a, b, c, d]
-buildDeck _ = [] -- UNSAFE
 
 
 reverso :: GameState -> GameState
@@ -92,8 +91,8 @@ update cmd which state =
         SelectCharacter n ->
           let
             startIfBothReady :: GameState -> GameState
-            startIfBothReady (Selecting (CharModel ca@(ThreeSelected _ _ _) cb@(ThreeSelected _ _ _) _) _ _) =
-              Started . Playing $ initModel turn ca cb gen
+            startIfBothReady (Selecting (CharModel (ThreeSelected c1 c2 c3) (ThreeSelected ca cb cc) _) _ _) =
+              Started . Playing $ initModel turn (c1, c2, c3) (ca, cb, cc) gen
             startIfBothReady s = s
           in
             Right (Just . startIfBothReady $ Selecting (selectChar selectModel which n) turn gen, [SyncOutcome])
