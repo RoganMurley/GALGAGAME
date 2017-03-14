@@ -81,12 +81,6 @@ addPlayer client room =
     freeSlot Room{ room_pa = Nothing } = Just PlayerA
     freeSlot Room{ room_pb = Nothing } = Just PlayerB
     freeSlot _                         = Nothing
--- addPlayer client (Room Nothing pb specs state) =
---   Just (ifFullInit $ Room (Just client) pb specs state, PlayerA)
--- addPlayer client (Room pa Nothing specs state) =
---   Just (ifFullInit $ Room pa (Just client) specs state, PlayerB)
--- addPlayer _ _ =
---   Nothing
 
 
 setClient :: WhichPlayer -> Client -> Room -> Room
