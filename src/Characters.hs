@@ -4,6 +4,7 @@ import Data.Aeson (ToJSON(..), (.=), object)
 import Data.Text (Text)
 import Cards
 import Model
+import Safe (headMay)
 
 
 -- TYPES
@@ -79,18 +80,22 @@ selectChar model@(CharModel { charmodel_pb = m }) PlayerB name =
 
 selectIndChar :: Text -> SelectedCharacters -> SelectedCharacters
 selectIndChar name selected =
-  case selected of
-    NoneSelected ->
-      OneSelected char
-    OneSelected a ->
-      TwoSelected a char
-    TwoSelected a b ->
-      ThreeSelected a b char
-    ThreeSelected a b c  ->
-      ThreeSelected a b c
+  case character of
+    Just char ->
+      case selected of
+        NoneSelected ->
+          OneSelected char
+        OneSelected a ->
+          TwoSelected a char
+        TwoSelected a b ->
+          ThreeSelected a b char
+        ThreeSelected a b c  ->
+          ThreeSelected a b c
+    Nothing ->
+      selected
   where
-    char :: Character
-    char = head . (filter (\(Character n _) -> n == name )) $ allCharacters
+    character :: Maybe Character
+    character = headMay . (filter (\(Character n _) -> n == name )) $ allCharacters
 
 
 toList :: SelectedCharacters -> [Character]
