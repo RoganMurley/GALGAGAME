@@ -24,8 +24,8 @@ data Room = Room
   }
 
 
-newRoom :: Gen -> Room
-newRoom gen = Room
+new :: Gen -> Room
+new gen = Room
   { room_pa    = Nothing
   , room_pb    = Nothing
   , room_specs = []
@@ -33,15 +33,19 @@ newRoom gen = Room
   }
 
 
-getRoomGameState :: Room -> GameState
-getRoomGameState Room{ room_state = state } = state
+getState :: Room -> GameState
+getState Room{ room_state = state } = state
 
 
-getRoomClients :: Room -> [Client]
-getRoomClients room =
+setState :: Room -> GameState -> Room
+setState room state = room { room_state = state }
+
+
+getClients :: Room -> [Client]
+getClients room =
      (maybeToList (getPlayerClient PlayerA room))
   ++ (maybeToList (getPlayerClient PlayerB room))
-  ++ getRoomSpecs room
+  ++ getSpecs room
 
 
 getPlayerClient :: WhichPlayer -> Room -> Maybe Client
@@ -49,13 +53,13 @@ getPlayerClient PlayerA = room_pa
 getPlayerClient PlayerB = room_pb
 
 
-getRoomSpecs :: Room -> [Client]
-getRoomSpecs = room_specs
+getSpecs :: Room -> [Client]
+getSpecs = room_specs
 
 
 clientExists :: Client -> Room -> Bool
 clientExists client room =
-  any ((== fst client) . fst) (getRoomClients room)
+  any ((== fst client) . fst) (getClients room)
 
 
 getSpeccingName :: Room -> Text
@@ -70,7 +74,7 @@ getSpeccingName room =
 addSpec :: Client -> Room -> Room
 addSpec client room = room { room_specs = specs }
   where
-    specs = client : getRoomSpecs room :: Spectators
+    specs = client : getSpecs room :: Spectators
 
 
 addPlayer :: Client -> Room -> Maybe (Room, WhichPlayer)
@@ -90,8 +94,8 @@ setClient PlayerB client room = room { room_pb = Just client }
 
 ifFullInit :: Room -> Room
 ifFullInit room =
-  if roomFull room then
-    case getRoomGameState room of
+  if full room then
+    case getState room of
       Waiting gen ->
         room { room_state = Selecting initCharModel PlayerA gen }
       _ ->
@@ -100,18 +104,18 @@ ifFullInit room =
     room
 
 
-roomFull :: Room -> Bool
-roomFull Room{ room_pa = (Just _), room_pb = (Just _) } = True
-roomFull _                                              = False
+full :: Room -> Bool
+full Room{ room_pa = (Just _), room_pb = (Just _) } = True
+full _                                              = False
 
 
-roomEmpty :: Room -> Bool
-roomEmpty Room{ room_pa = Nothing, room_pb = Nothing, room_specs = [] } = True
-roomEmpty _                                                             = False
+empty :: Room -> Bool
+empty Room{ room_pa = Nothing, room_pb = Nothing, room_specs = [] } = True
+empty _                                                             = False
 
 
-removeClientRoom :: Client -> Room -> Room
-removeClientRoom client room@Room{ room_pa = pa, room_pb = pb, room_specs = specs } =
+removeClient :: Client -> Room -> Room
+removeClient client room@Room{ room_pa = pa, room_pb = pb, room_specs = specs } =
   room {
     room_pa    = newPlayer pa
   , room_pb    = newPlayer pb
