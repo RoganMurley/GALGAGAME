@@ -56,6 +56,10 @@ data GameCommand =
   deriving (Show)
 
 
+initState :: Gen -> GameState
+initState = Waiting
+
+
 initModel :: Turn -> FinalSelection -> FinalSelection -> Gen -> Model
 initModel turn ca cb gen = Model turn [] handPA handPB deckPA deckPB maxLife maxLife NoPass gen
   where

@@ -207,6 +207,7 @@ modDeckHead f p m =
 getStack :: Model -> Stack
 getStack Model{ model_stack = stack } = stack
 
+
 setStack :: Stack -> Model -> Model
 setStack stack model = model { model_stack = stack }
 
@@ -304,9 +305,6 @@ playCard index which m
         Left "You can't play a card you don't have in your hand"
   where
     turn = getTurn m :: Turn
-    -- (matches, misses) = partition (\(Card n _ _ _) -> n == name) (getHand which m) :: ([Card], [Card])
-    -- newHand = (tailSafe matches) ++ misses :: Hand
-    -- card = (StackCard which) <$> (headMay matches) :: Maybe StackCard
     hand = getHand which m :: Hand
     newHand = deleteIndex index hand :: Hand
     card = (StackCard which) <$> (atMay hand index) :: Maybe StackCard
