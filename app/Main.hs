@@ -19,7 +19,8 @@ import qualified Network.WebSockets as WS
 
 import Model (Model, WhichPlayer(..), modelReverso, otherPlayer)
 import GameState (GameCommand(..), GameState(..), Outcome(..), Username, reverso, update)
-import Room
+import qualified Room
+import Room (Client, Room, RoomName)
 import Util (Err, getGen)
 
 
@@ -52,7 +53,7 @@ getRoom name state =
         Nothing ->
           do
             gen <- getGen
-            r <- newMVar (newRoom gen)
+            r <- newMVar (Room.new gen)
             return (insert name r s, r)
 
 deleteRoom :: RoomName -> MVar ServerState -> IO (ServerState)
@@ -72,22 +73,22 @@ stateUpdate cmd which room =
         return (r', Right (r', o))
   where
     updateRoom :: Room -> Either Err (Maybe Room, [Outcome])
-    updateRoom (Room pa pb specs state) =
-      case update cmd which state of
+    updateRoom r =
+      case update cmd which (Room.getState r) of
         Left err ->
           Left err
         Right (newState, outcomes) ->
-          Right ((Room pa pb specs) <$> newState, outcomes)
+          Right ((Room.setState r) <$> newState, outcomes)
 
 addSpecClient :: Client -> MVar Room -> IO (Room)
 addSpecClient client room =
   modifyMVar room $ \r ->
-    let r' = addSpec client r in return (r', r')
+    let r' = Room.addSpec client r in return (r', r')
 
 addPlayerClient :: Client -> MVar Room -> IO (Maybe (Room, WhichPlayer))
 addPlayerClient client room =
   modifyMVar room $ \r ->
-    case addPlayer client r of
+    case Room.addPlayer client r of
       Just (r', p) ->
         return (r', Just (r', p))
       Nothing ->
@@ -96,15 +97,15 @@ addPlayerClient client room =
 removeClient :: Client -> MVar Room -> IO (Room)
 removeClient client room =
   modifyMVar room $ \r ->
-    let r' = removeClientRoom client r in return (r', r')
+    let r' = Room.removeClient client r in return (r', r')
 
 broadcast :: Text -> Room -> IO ()
 broadcast msg room =
-  forM_ (getRoomClients room) $ \(_, conn) -> WS.sendTextData conn msg
+  forM_ (Room.getClients room) $ \(_, conn) -> WS.sendTextData conn msg
 
 sendToPlayer :: WhichPlayer -> Text -> Room -> IO ()
 sendToPlayer which msg room =
-  case getPlayerClient which room of
+  case Room.getPlayerClient which room of
     Just (_, conn) ->
       WS.sendTextData conn msg
     Nothing ->
@@ -112,7 +113,7 @@ sendToPlayer which msg room =
 
 sendToSpecs :: Text -> Room -> IO ()
 sendToSpecs msg room =
-  forM_ (getRoomSpecs room) $ \(_, conn) -> WS.sendTextData conn msg
+  forM_ (Room.getSpecs room) $ \(_, conn) -> WS.sendTextData conn msg
 
 sendExcluding :: WhichPlayer -> Text -> Room -> IO ()
 sendExcluding which msg room = do
@@ -149,7 +150,7 @@ application state pending = do
                 (WS.sendTextData conn) . toChat $
                   ErrorCommand "name must be nonempty"
 
-              | clientExists client initialRoom ->
+              | Room.clientExists client initialRoom ->
                 (WS.sendTextData conn) . toChat $
                   ErrorCommand "username taken"
 
@@ -184,9 +185,9 @@ spectate client@(user, conn) room = do
   room' <- addSpecClient client room
   WS.sendTextData conn ("acceptSpec:" :: Text)
   WS.sendTextData conn $ "chat:Welcome! " <> userList room'
-  WS.sendTextData conn $ "chat:You're spectating " <> (getSpeccingName room')
+  WS.sendTextData conn $ "chat:You're spectating " <> (Room.getSpeccingName room')
   broadcast (toChat (SpectateCommand (fst client))) room'
-  syncClient client (getRoomGameState room')
+  syncClient client (Room.getState room')
   forever $ do
     msg <- WS.receiveData conn
     actSpec (parseMsg user msg) room
@@ -205,7 +206,7 @@ disconnect :: Client -> MVar Room -> RoomName -> MVar ServerState -> IO (ServerS
 disconnect client room name state = do
   r <- removeClient client room
   broadcast (toChat (LeaveCommand (fst client))) r
-  if roomEmpty r then
+  if Room.empty r then
     deleteRoom name state
       else
         readMVar state
@@ -222,7 +223,7 @@ userList room
   | otherwise = "Users: " <> users
   where
     users :: Text
-    users = T.intercalate ", " $ map fst $ getRoomClients room
+    users = T.intercalate ", " $ map fst $ Room.getClients room
 
 actPlay :: Command -> WhichPlayer -> MVar Room -> IO ()
 actPlay cmd which roomVar =
@@ -280,7 +281,7 @@ syncRoomClients room = do
   sendToPlayer PlayerB syncMsgPb room
   sendToSpecs syncMsgPa room
   where
-    game = getRoomGameState room :: GameState
+    game = Room.getState room :: GameState
     syncMsgPa = ("sync:" <>) . cs . encode $ game :: Text
     syncMsgPb = ("sync:" <>) . cs . encode . reverso $ game :: Text
 
