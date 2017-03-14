@@ -276,10 +276,10 @@ cardJustice = Card "Justice" "Hurt the strongest player for 13" "winged-sword.sv
 
 
 cardRecharge :: Card
-cardRecharge = Card "Recharge" "Both players discard their hand, then draw for each card discarded" "sunbeams.svg" "recharge.wav" eff
+cardRecharge = Card "Recharge" "Discard your hand, then draw for each card discarded" "sunbeams.svg" "recharge.wav" eff
   where
     eff :: CardEff
-    eff _ _ m = (redraw PlayerA) . (redraw PlayerB) $ m
+    eff p _ m = redraw p m
     redraw :: WhichPlayer -> Model -> Model
     redraw w m = (times (length (getHand w m)) (drawCard w w)) . (setHand w []) $ m
 
