@@ -13,8 +13,8 @@ type alias Card =
     }
 
 
-viewCard : Card -> Html Msg
-viewCard { name, desc, imgURL } =
+view : Card -> Html Msg
+view { name, desc, imgURL } =
     div
         [ class "card"
         ]
