@@ -50,6 +50,10 @@ instance ToJSON CharModel where
     ]
 
 
+type FinalSelection =
+  (Character, Character, Character)
+
+
 characterModelReverso :: CharModel -> CharModel
 characterModelReverso (CharModel pa pb cs) =
   CharModel pb pa cs
@@ -67,7 +71,7 @@ allCharacters = [
   , drinker
   , watcher
   , imposter
-  , balancer
+  , judger
   ]
 
 
@@ -128,5 +132,5 @@ watcher = Character "Watcher" (cardStaff, cardEnvy, cardMindhack, cardPrecogniti
 imposter :: Character
 imposter = Character "Trickster" (cardShuriken, cardSuperego, cardMindgate, cardFeint)
 
-balancer :: Character
-balancer = Character "Judger" (cardJustice, cardInjustice, cardOath, cardRecharge)
+judger :: Character
+judger = Character "Judger" (cardJustice, cardInjustice, cardOath, cardRecharge)
