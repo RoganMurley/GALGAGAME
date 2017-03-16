@@ -65,13 +65,13 @@ initCharModel = CharModel NoneSelected NoneSelected allCharacters
 
 allCharacters :: [Character]
 allCharacters = [
-    ranger
-  , striker
+    striker
   , breaker
-  , drinker
+  , shielder
+  , drainer
   , watcher
-  , imposter
-  , judger
+  , trickster
+  , arbiter
   ]
 
 
@@ -114,8 +114,8 @@ toList (ThreeSelected a b c) = [ a, b, c ]
 cardPlaceholder :: Card
 cardPlaceholder = Card "Placeholder" "For testing!" "goat.svg" "resolve.sfx" (\_ _ m -> m)
 
-ranger :: Character
-ranger = Character "Ranger" (cardBoomerang, cardCrossbow, cardPotion, cardReflect)
+shielder :: Character
+shielder = Character "Shielder" (cardBoomerang, cardCrossbow, cardPotion, cardReflect)
 
 striker :: Character
 striker = Character "Striker" (cardDagger, cardFirestorm, cardOffering, cardConfound)
@@ -123,14 +123,14 @@ striker = Character "Striker" (cardDagger, cardFirestorm, cardOffering, cardConf
 breaker :: Character
 breaker = Character "Breaker" (cardHammer, cardLightning, cardEcho, cardHubris)
 
-drinker :: Character
-drinker = Character "Drinker" (cardVampire, cardSuccubus, cardSiren, cardReversal)
+drainer :: Character
+drainer = Character "Drainer" (cardVampire, cardSuccubus, cardSiren, cardReversal)
 
 watcher :: Character
 watcher = Character "Watcher" (cardStaff, cardEnvy, cardMindhack, cardPrecognition)
 
-imposter :: Character
-imposter = Character "Trickster" (cardShuriken, cardSuperego, cardMindgate, cardFeint)
+trickster :: Character
+trickster = Character "Trickster" (cardShuriken, cardSuperego, cardMindgate, cardFeint)
 
-judger :: Character
-judger = Character "Judger" (cardJustice, cardInjustice, cardOath, cardRecharge)
+arbiter :: Character
+arbiter = Character "Arbiter" (cardJustice, cardInjustice, cardOath, cardRecharge)
