@@ -193,7 +193,7 @@ update msg ({ hostname, room, frameTime } as model) =
 
 
 connectingUpdate : String -> Msg -> ConnectingModel -> ( ConnectingModel, Cmd Msg )
-connectingUpdate hostname msg ({ roomID, name, error, valid } as model) =
+connectingUpdate hostname msg ({ roomID, name, error, valid, gameType } as model) =
     case msg of
         Input input ->
             ( { model | name = input, error = Tuple.second (validateName input), valid = Tuple.first (validateName input) }, Cmd.none )
@@ -214,12 +214,22 @@ connectingUpdate hostname msg ({ roomID, name, error, valid } as model) =
             ( { model | error = str }, Cmd.none )
 
         KeyPress 13 ->
-            case Tuple.first (validateName name) of
-                False ->
-                    ( model, Cmd.none )
+            let
+                playPrefix : String
+                playPrefix =
+                    case gameType of
+                        CustomGame ->
+                            "play:"
 
-                True ->
-                    ( { model | name = "" }, message (Send ("play:" ++ name)) )
+                        ComputerGame ->
+                            "playComputer:"
+            in
+                case Tuple.first (validateName name) of
+                    False ->
+                        ( model, Cmd.none )
+
+                    True ->
+                        ( { model | name = "" }, message (Send (playPrefix ++ name)) )
 
         KeyPress _ ->
             ( model, Cmd.none )
@@ -535,13 +545,21 @@ view ({ hostname, httpPort, frameTime, windowDimensions } as model) =
                             "Custom"
                         ComputerGame ->
                             "Computer"
+                playPrefix : String
+                playPrefix =
+                    case gameType of
+                        CustomGame ->
+                            "play:"
+
+                        ComputerGame ->
+                            "playComputer:"
             in
                 div [ class "connecting-box" ]
                     [ h1 [] [ text ("TURRIS : " ++ gameTypeString ++ " Game") ]
                     , div []
                         [ div [ class "input-group" ]
                             [ input [ onInput Input, placeholder "username", value name, id "playername-input", onClick (SelectAllInput "playername-input") ] []
-                            , button [ onClick (Send ("play:" ++ name)), disabled (not valid) ] [ text "Play" ]
+                            , button [ onClick (Send (playPrefix ++ name)), disabled (not valid) ] [ text "Play" ]
                             , button [ onClick (Send ("spectate:" ++ name)), disabled (not valid) ] [ text "Spec" ]
                             ]
                         , div [ class "error" ] [ text error ]

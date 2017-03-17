@@ -11,7 +11,8 @@ import Util (Gen)
 
 
 type RoomName = Text
-type Client = (Username, Connection)
+data ClientConnection = PlayerConnection Connection | ComputerConnection
+type Client = (Username, ClientConnection)
 type Player = Maybe Client
 type Spectators = [Client]
 
@@ -130,5 +131,7 @@ removeClient client room@Room{ room_pa = pa, room_pb = pb, room_specs = specs } 
 
 
 sendToClient :: Text -> Client -> IO ()
-sendToClient message (_, conn) =
+sendToClient message (_, PlayerConnection conn) =
   sendTextData conn message
+sendToClient _ _ =
+  return ()
