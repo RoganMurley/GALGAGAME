@@ -27,6 +27,12 @@ deleteIndex n xs =
       (ys, zs) = splitAt n xs
 
 
+-- Unsafe fromRight.
+fromRight :: Either a b -> b
+fromRight (Right x) = x
+fromRight _ = error "Unsafe fromRight unwrapping failure"
+
+
 -- Special newtype-wrapped StdGen to ease equality checks.
 newtype Gen = Gen R.StdGen
 
