@@ -60,11 +60,17 @@ type RoomModel
     | Connected ConnectedModel
 
 
+type GameType
+    = CustomGame
+    | ComputerGame
+
+
 type alias ConnectingModel =
     { roomID : String
     , name : String
     , error : String
     , valid : Bool
+    , gameType : GameType
     }
 
 
@@ -101,6 +107,7 @@ init ({ hostname, httpPort, play, seed, windowDimensions } as flags) =
                         connectingInit
                             ("player" ++ (first (Random.step usernameNumberGenerator (Random.initialSeed seed))))
                             roomID
+                            CustomGame
 
                     Nothing ->
                         MainMenu seed
@@ -113,13 +120,14 @@ init ({ hostname, httpPort, play, seed, windowDimensions } as flags) =
         ( model, Cmd.none )
 
 
-connectingInit : String -> String -> RoomModel
-connectingInit username roomID =
+connectingInit : String -> String -> GameType -> RoomModel
+connectingInit username roomID gameType =
     Connecting
         { roomID = roomID
         , name = username
         , error = ""
         , valid = True
+        , gameType = gameType
         }
 
 
@@ -148,6 +156,19 @@ update msg ({ hostname, room, frameTime } as model) =
                                             (connectingInit
                                                 ("player" ++ (first (Random.step usernameNumberGenerator (Random.initialSeed seed))))
                                                 (first (Random.step roomIDGenerator (Random.initialSeed seed)))
+                                                CustomGame
+                                            )
+                                      }
+                                    , Cmd.none
+                                    )
+
+                                MenuComputer ->
+                                    ( { model
+                                        | room =
+                                            (connectingInit
+                                                ("player" ++ (first (Random.step usernameNumberGenerator (Random.initialSeed seed))))
+                                                (first (Random.step roomIDGenerator (Random.initialSeed seed)))
+                                                ComputerGame
                                             )
                                       }
                                     , Cmd.none
@@ -493,6 +514,9 @@ view ({ hostname, httpPort, frameTime, windowDimensions } as model) =
                     , button
                         [ class "menu-button", onClick (MainMenuMsg MenuCustom) ]
                         [ text "Custom" ]
+                    , button
+                        [ class "menu-button", onClick (MainMenuMsg MenuComputer) ]
+                        [ text "Computer" ]
                     ]
                 ]
 
@@ -502,15 +526,24 @@ view ({ hostname, httpPort, frameTime, windowDimensions } as model) =
                 , GameState.view game roomID hostname httpPort frameTime windowDimensions
                 ]
 
-        Connecting { name, error, valid } ->
-            div [ class "connecting-box" ]
-                [ h1 [] [ text "TURRIS : Custom Game" ]
-                , div []
-                    [ div [ class "input-group" ]
-                        [ input [ onInput Input, placeholder "username", value name, id "playername-input", onClick (SelectAllInput "playername-input") ] []
-                        , button [ onClick (Send ("play:" ++ name)), disabled (not valid) ] [ text "Play" ]
-                        , button [ onClick (Send ("spectate:" ++ name)), disabled (not valid) ] [ text "Spec" ]
+        Connecting { name, error, valid, gameType } ->
+            let
+                gameTypeString : String
+                gameTypeString =
+                    case gameType of
+                        CustomGame ->
+                            "Custom"
+                        ComputerGame ->
+                            "Computer"
+            in
+                div [ class "connecting-box" ]
+                    [ h1 [] [ text ("TURRIS : " ++ gameTypeString ++ " Game") ]
+                    , div []
+                        [ div [ class "input-group" ]
+                            [ input [ onInput Input, placeholder "username", value name, id "playername-input", onClick (SelectAllInput "playername-input") ] []
+                            , button [ onClick (Send ("play:" ++ name)), disabled (not valid) ] [ text "Play" ]
+                            , button [ onClick (Send ("spectate:" ++ name)), disabled (not valid) ] [ text "Spec" ]
+                            ]
+                        , div [ class "error" ] [ text error ]
                         ]
-                    , div [ class "error" ] [ text error ]
                     ]
-                ]
