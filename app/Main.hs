@@ -20,7 +20,7 @@ import qualified Network.WebSockets as WS
 import Model (Model, WhichPlayer(..), modelReverso, otherPlayer)
 import GameState (GameCommand(..), GameState(..), Outcome(..), Username, reverso, update)
 import qualified Room
-import Room (Client, Room, RoomName)
+import Room (Client, Room, RoomName, sendToClient)
 import Util (Err, getGen)
 
 
@@ -101,19 +101,19 @@ removeClient client room =
 
 broadcast :: Text -> Room -> IO ()
 broadcast msg room =
-  forM_ (Room.getClients room) $ \(_, conn) -> WS.sendTextData conn msg
+  forM_ (Room.getClients room) (sendToClient msg)
 
 sendToPlayer :: WhichPlayer -> Text -> Room -> IO ()
 sendToPlayer which msg room =
   case Room.getPlayerClient which room of
-    Just (_, conn) ->
-      WS.sendTextData conn msg
+    Just client ->
+      sendToClient msg client
     Nothing ->
       return ()
 
 sendToSpecs :: Text -> Room -> IO ()
 sendToSpecs msg room =
-  forM_ (Room.getSpecs room) $ \(_, conn) -> WS.sendTextData conn msg
+  forM_ (Room.getSpecs room) (sendToClient msg)
 
 sendExcluding :: WhichPlayer -> Text -> Room -> IO ()
 sendExcluding which msg room = do
@@ -183,9 +183,9 @@ application state pending = do
 spectate :: Client -> MVar Room -> IO ()
 spectate client@(user, conn) room = do
   room' <- addSpecClient client room
-  WS.sendTextData conn ("acceptSpec:" :: Text)
-  WS.sendTextData conn $ "chat:Welcome! " <> userList room'
-  WS.sendTextData conn $ "chat:You're spectating " <> (Room.getSpeccingName room')
+  sendToClient ("acceptSpec:" :: Text) client
+  sendToClient ("chat:Welcome! " <> userList room') client
+  sendToClient ("chat:You're spectating " <> (Room.getSpeccingName room')) client
   broadcast (toChat (SpectateCommand (fst client))) room'
   syncClient client (Room.getState room')
   forever $ do
@@ -194,8 +194,8 @@ spectate client@(user, conn) room = do
 
 play :: WhichPlayer -> Room -> Client -> MVar Room -> IO ()
 play which room' client@(user, conn) room = do
-  WS.sendTextData conn ("acceptPlay:" :: Text)
-  WS.sendTextData conn ("chat:Welcome! " <> userList room')
+  sendToClient ("acceptPlay:" :: Text) client
+  sendToClient ("chat:Welcome! " <> userList room') client
   broadcast (toChat (PlayCommand (fst client))) room'
   syncRoomClients room'
   forever $ do
@@ -272,8 +272,8 @@ actOutcome room (EndTurnOutcome which) = do
   T.putStrLn "ending turn"
 
 syncClient :: Client -> GameState -> IO ()
-syncClient (_, conn) game =
-  WS.sendTextData conn (("sync:" <>) . cs . encode $ game :: Text)
+syncClient client game =
+  sendToClient (("sync:" <>) . cs . encode $ game :: Text) client
 
 syncRoomClients :: Room -> IO ()
 syncRoomClients room = do

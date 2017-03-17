@@ -2,7 +2,7 @@ module Room where
 
 import Data.Maybe (maybeToList)
 import Data.Text (Text)
-import Network.WebSockets (Connection)
+import Network.WebSockets (Connection, sendTextData)
 
 import Characters (initCharModel)
 import GameState (GameState(..), Username, initState)
@@ -127,3 +127,8 @@ removeClient client room@Room{ room_pa = pa, room_pb = pb, room_specs = specs } 
     newPlayer :: Player -> Player
     newPlayer Nothing = Nothing
     newPlayer (Just c) = if fst c == fst client then Nothing else Just c
+
+
+sendToClient :: Text -> Client -> IO ()
+sendToClient message (_, conn) =
+  sendTextData conn message

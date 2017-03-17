@@ -41,6 +41,7 @@ type GameMsg
 
 type MenuMsg
     = MenuCustom
+    | MenuComputer
 
 
 type CharSelectMsg
