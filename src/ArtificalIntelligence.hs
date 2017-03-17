@@ -43,15 +43,22 @@ toCommand EndAction      = EndTurn
 
 possibleActions :: Model -> [Action]
 possibleActions m =
-  EndAction : (PlayAction <$> xs)
+  endAction ++ (PlayAction <$> xs)
   where
+    handLength :: Int
+    handLength = length . (getHand PlayerA) $ m
     xs :: [Int]
-    xs = [ x | x <- [0..maxHandLength], x <= (length . (getHand PlayerA) $ m)]
+    xs = [ x | x <- [0..maxHandLength], x < handLength]
+    endAction :: [Action]
+    endAction =
+      if handLength == maxHandLength
+        then []
+        else [EndAction]
 
 
 postulateAction :: Model -> Action -> PlayState
 postulateAction model action =
-  -- DANGEROUS, WE NEED TO SPLIT UP THE COMMAND STUFF IN GAMESTATE
+  -- DANGEROUS, WE NEED TO SPLIT UP THE COMMAND STUFF IN GAMESTATEstack b
   (\(Started p) -> p) . fromJust . fst . fromRight $ update command PlayerA state
   where
     command = toCommand action :: GameCommand

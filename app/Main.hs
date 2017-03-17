@@ -3,7 +3,7 @@ module Main where
 
 import Prelude hiding (lookup)
 
-import Control.Concurrent (MVar, newMVar, modifyMVar, readMVar)
+import Control.Concurrent (MVar, forkIO, newMVar, modifyMVar, readMVar, threadDelay)
 import Control.Exception (finally)
 import Control.Monad (forM_, forever)
 import Data.Aeson (encode)
@@ -17,10 +17,11 @@ import qualified Data.Text as T
 import qualified Data.Text.IO as T
 import qualified Network.WebSockets as WS
 
-import Model (Model, WhichPlayer(..), modelReverso, otherPlayer)
-import GameState (GameCommand(..), GameState(..), Outcome(..), Username, reverso, update)
+import ArtificalIntelligence (Action(..), chooseAction)
+import Model (Model, WhichPlayer(..), getTurn, modelReverso, otherPlayer)
+import GameState (GameCommand(..), GameState(..), PlayState(..), Outcome(..), Username, reverso, update)
 import qualified Room
-import Room (Client, Room, RoomName, sendToClient)
+import Room (Client, ClientConnection(..), Room, RoomName, sendToClient)
 import Util (Err, getGen)
 
 
@@ -94,6 +95,17 @@ addPlayerClient client room =
       Nothing ->
         return (r, Nothing)
 
+addComputerClient :: MVar Room -> IO (Maybe (Room, WhichPlayer))
+addComputerClient room =
+  modifyMVar room $ \r ->
+    case Room.addPlayer client r of
+      Just (r', p) ->
+        return (r', Just (r', p))
+      Nothing ->
+        return (r, Nothing)
+  where
+    client = ("CPU", ComputerConnection) :: Client
+
 removeClient :: Client -> MVar Room -> IO (Room)
 removeClient client room =
   modifyMVar room $ \r ->
@@ -156,6 +168,7 @@ application state pending = do
 
               | prefix == "play:" ->
                 do
+                  T.putStrLn "Custom game started"
                   added <- addPlayerClient client roomVar
                   case added of
                     Nothing ->
@@ -170,18 +183,35 @@ application state pending = do
                   (disconnect client roomVar roomName state)
                   (spectate client roomVar)
 
+              | prefix == "playComputer:" ->
+                do
+                  -- TODO: Properly remove computer.
+                  T.putStrLn "Computer game started"
+                  computer <- addComputerClient roomVar
+                  added <- addPlayerClient client roomVar
+                  case computer *> added of
+                    Nothing ->
+                      WS.sendTextData conn $ toChat $ ErrorCommand "room is full"
+                    Just (room', which) ->
+                      flip finally
+                        (disconnect client roomVar roomName state) -- MAKE CPU DISCONNECT
+                        (do
+                          _ <- forkIO (computerPlay (otherPlayer which) room' roomVar)
+                          play which room' client roomVar
+                        )
+
               | otherwise ->
                 WS.sendTextData conn $ toChat $
                   ErrorCommand "something went wrong with connection negotiation"
 
               where
-                client = (T.drop (T.length prefix) msg, conn) :: Client
+                client = (T.drop (T.length prefix) msg, PlayerConnection conn) :: Client
     Nothing ->
       (WS.sendTextData conn) . toChat $
         ErrorCommand "bad room name protocol"
 
 spectate :: Client -> MVar Room -> IO ()
-spectate client@(user, conn) room = do
+spectate client@(user, PlayerConnection conn) room = do -- UNSAFE
   room' <- addSpecClient client room
   sendToClient ("acceptSpec:" :: Text) client
   sendToClient ("chat:Welcome! " <> userList room') client
@@ -193,7 +223,7 @@ spectate client@(user, conn) room = do
     actSpec (parseMsg user msg) room
 
 play :: WhichPlayer -> Room -> Client -> MVar Room -> IO ()
-play which room' client@(user, conn) room = do
+play which room' client@(user, PlayerConnection conn) room = do -- UNSAFE
   sendToClient ("acceptPlay:" :: Text) client
   sendToClient ("chat:Welcome! " <> userList room') client
   broadcast (toChat (PlayCommand (fst client))) room'
@@ -201,6 +231,39 @@ play which room' client@(user, conn) room = do
   forever $ do
     msg <- WS.receiveData conn
     actPlay (parseMsg user msg) which room
+
+computerPlay :: WhichPlayer -> Room -> MVar Room -> IO ()
+computerPlay which room' room = do
+  syncRoomClients room'
+  -- Switch this to choose random characters and handle rematches at some point.
+  actPlay (SelectCharacterCommand "Striker") which room
+  actPlay (SelectCharacterCommand "Breaker") which room
+  actPlay (SelectCharacterCommand "Arbiter") which room
+  forever $ do
+    threadDelay 3000000
+    command <- chooseComputerCommand which room
+    case command of
+      Just c ->
+        actPlay c which room
+      Nothing ->
+        return ()
+
+chooseComputerCommand :: WhichPlayer -> MVar Room -> IO (Maybe Command)
+chooseComputerCommand which room = do
+  r <- readMVar room
+  case Room.getState r of
+    (Started (Playing m)) ->
+      if getTurn m == which
+        then return (Just . trans . chooseAction $ m)
+          else return Nothing
+    _ ->
+      return Nothing
+  where
+    -- So ugly kill me
+    trans :: Action -> Command
+    trans EndAction = EndTurnCommand
+    trans (PlayAction index) = PlayCardCommand index
+
 
 disconnect :: Client -> MVar Room -> RoomName -> MVar ServerState -> IO (ServerState)
 disconnect client room name state = do
@@ -215,6 +278,7 @@ parsePrefix :: Text -> Maybe Text
 parsePrefix msg
   | T.isPrefixOf "spectate:" msg = Just "spectate:"
   | T.isPrefixOf "play:" msg = Just "play:"
+  | T.isPrefixOf "playComputer:" msg = Just "playComputer:"
   | otherwise = Nothing
 
 userList :: Room -> Text
@@ -223,7 +287,7 @@ userList room
   | otherwise = "Users: " <> users
   where
     users :: Text
-    users = T.intercalate ", " $ map fst $ Room.getClients room
+    users = (T.intercalate ", ") . (map fst) $ Room.getClients room
 
 actPlay :: Command -> WhichPlayer -> MVar Room -> IO ()
 actPlay cmd which roomVar =
