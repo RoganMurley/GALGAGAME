@@ -18,11 +18,12 @@ import qualified Data.Text.IO as T
 import qualified Network.WebSockets as WS
 
 import ArtificalIntelligence (Action(..), chooseAction)
+import Characters (CharModel(..), character_name, toList)
 import Model (Model, WhichPlayer(..), getTurn, modelReverso, otherPlayer)
 import GameState (GameCommand(..), GameState(..), PlayState(..), Outcome(..), Username, reverso, update)
 import qualified Room
 import Room (Client, ClientConnection(..), Room, RoomName, sendToClient)
-import Util (Err, getGen)
+import Util (Err, Gen, getGen, shuffle)
 
 
 type ServerState = Map RoomName (MVar Room)
@@ -95,12 +96,12 @@ addPlayerClient client room =
       Nothing ->
         return (r, Nothing)
 
-addComputerClient :: MVar Room -> IO (Maybe (Room, WhichPlayer))
+addComputerClient :: MVar Room -> IO (Maybe Client)
 addComputerClient room =
   modifyMVar room $ \r ->
     case Room.addPlayer client r of
-      Just (r', p) ->
-        return (r', Just (r', p))
+      Just (r', _) ->
+        return (r', Just client)
       Nothing ->
         return (r, Nothing)
   where
@@ -176,28 +177,30 @@ application state pending = do
                     Just (room', which) ->
                       flip finally
                         (disconnect client roomVar roomName state)
-                        (play which room' client roomVar)
+                        (play which room' (fst client, conn) roomVar)
 
               | prefix == "spectate:" ->
                 flip finally
                   (disconnect client roomVar roomName state)
-                  (spectate client roomVar)
+                  (spectate (fst client, conn) roomVar)
 
               | prefix == "playComputer:" ->
                 do
-                  -- TODO: Properly remove computer.
                   T.putStrLn "Computer game started"
                   computer <- addComputerClient roomVar
                   added <- addPlayerClient client roomVar
-                  case computer *> added of
+                  case (,) <$> computer <*> added of
                     Nothing ->
                       WS.sendTextData conn $ toChat $ ErrorCommand "room is full"
-                    Just (room', which) ->
+                    Just (computerClient, (room', which)) ->
                       flip finally
-                        (disconnect client roomVar roomName state) -- MAKE CPU DISCONNECT
+                        (do
+                          _ <- disconnect client roomVar roomName state
+                          disconnect computerClient roomVar roomName state
+                        )
                         (do
                           _ <- forkIO (computerPlay (otherPlayer which) room' roomVar)
-                          play which room' client roomVar
+                          play which room' (fst client, conn) roomVar
                         )
 
               | otherwise ->
@@ -210,37 +213,41 @@ application state pending = do
       (WS.sendTextData conn) . toChat $
         ErrorCommand "bad room name protocol"
 
-spectate :: Client -> MVar Room -> IO ()
-spectate client@(user, PlayerConnection conn) room = do -- UNSAFE
-  room' <- addSpecClient client room
-  sendToClient ("acceptSpec:" :: Text) client
-  sendToClient ("chat:Welcome! " <> userList room') client
-  sendToClient ("chat:You're spectating " <> (Room.getSpeccingName room')) client
-  broadcast (toChat (SpectateCommand (fst client))) room'
-  syncClient client (Room.getState room')
-  forever $ do
-    msg <- WS.receiveData conn
-    actSpec (parseMsg user msg) room
+spectate :: (Username, WS.Connection) -> MVar Room -> IO ()
+spectate (user, conn) room =
+  let
+    client = (user, PlayerConnection conn) :: Client
+  in
+    do
+      room' <- addSpecClient client room
+      sendToClient ("acceptSpec:" :: Text) client
+      sendToClient ("chat:Welcome! " <> userList room') client
+      sendToClient ("chat:You're spectating " <> (Room.getSpeccingName room')) client
+      broadcast (toChat (SpectateCommand (fst client))) room'
+      syncClient client (Room.getState room')
+      forever $ do
+        msg <- WS.receiveData conn
+        actSpec (parseMsg user msg) room
 
-play :: WhichPlayer -> Room -> Client -> MVar Room -> IO ()
-play which room' client@(user, PlayerConnection conn) room = do -- UNSAFE
-  sendToClient ("acceptPlay:" :: Text) client
-  sendToClient ("chat:Welcome! " <> userList room') client
-  broadcast (toChat (PlayCommand (fst client))) room'
-  syncRoomClients room'
-  forever $ do
-    msg <- WS.receiveData conn
-    actPlay (parseMsg user msg) which room
+play :: WhichPlayer -> Room -> (Username, WS.Connection) -> MVar Room -> IO ()
+play which room' (user, conn) room =
+  let
+    client = (user, PlayerConnection conn) :: Client
+  in
+    do
+      sendToClient ("acceptPlay:" :: Text) client
+      sendToClient ("chat:Welcome! " <> userList room') client
+      broadcast (toChat (PlayCommand (fst client))) room'
+      syncRoomClients room'
+      forever $ do
+        msg <- WS.receiveData conn
+        actPlay (parseMsg user msg) which room
 
 computerPlay :: WhichPlayer -> Room -> MVar Room -> IO ()
 computerPlay which room' room = do
   syncRoomClients room'
-  -- Switch this to choose random characters and handle rematches at some point.
-  actPlay (SelectCharacterCommand "Striker") which room
-  actPlay (SelectCharacterCommand "Breaker") which room
-  actPlay (SelectCharacterCommand "Arbiter") which room
   forever $ do
-    threadDelay 3000000
+    threadDelay 1000000
     command <- chooseComputerCommand which room
     case command of
       Just c ->
@@ -252,6 +259,8 @@ chooseComputerCommand :: WhichPlayer -> MVar Room -> IO (Maybe Command)
 chooseComputerCommand which room = do
   r <- readMVar room
   case Room.getState r of
+    (Selecting charModel _ gen) ->
+      return . Just . SelectCharacterCommand $ randomChar charModel gen
     (Started (Playing m)) ->
       if getTurn m == which
         then return (Just . trans . chooseAction $ m)
@@ -263,6 +272,10 @@ chooseComputerCommand which room = do
     trans :: Action -> Command
     trans EndAction = EndTurnCommand
     trans (PlayAction index) = PlayCardCommand index
+    -- Unsafe and ugly fix me please
+    randomChar :: CharModel -> Gen -> Text
+    randomChar (CharModel selected _ allChars) gen =
+      character_name . head . (drop (length . Characters.toList $ selected)) $ shuffle allChars gen
 
 
 disconnect :: Client -> MVar Room -> RoomName -> MVar ServerState -> IO (ServerState)
