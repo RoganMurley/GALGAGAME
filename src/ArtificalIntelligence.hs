@@ -18,7 +18,7 @@ evaluateState :: PlayState -> Weight
 evaluateState (Playing m)              = evaluateModel m
 evaluateState (Ended (Just PlayerA) _) = 100
 evaluateState (Ended (Just PlayerB) _) = -200
-evaluateState (Ended Nothing  _)       = 0
+evaluateState (Ended Nothing  _)       = 50
 
 
 evaluateModel :: Model -> Weight
@@ -58,7 +58,7 @@ possibleActions m =
 
 postulateAction :: Model -> Action -> PlayState
 postulateAction model action =
-  -- DANGEROUS, WE NEED TO SPLIT UP THE COMMAND STUFF IN GAMESTATEstack b
+  -- DANGEROUS, WE NEED TO SPLIT UP THE COMMAND STUFF IN GAMESTATE
   (\(Started p) -> p) . fromJust . fst . fromRight $ update command PlayerA state
   where
     command = toCommand action :: GameCommand
