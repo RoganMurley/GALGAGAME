@@ -84,22 +84,30 @@ selectChar model@(CharModel { charmodel_pb = m }) PlayerB name =
 
 selectIndChar :: Text -> SelectedCharacters -> SelectedCharacters
 selectIndChar name selected =
-  case character of
-    Just char ->
-      case selected of
-        NoneSelected ->
-          OneSelected char
-        OneSelected a ->
-          TwoSelected a char
-        TwoSelected a b ->
-          ThreeSelected a b char
-        ThreeSelected a b c  ->
-          ThreeSelected a b c
-    Nothing ->
-      selected
+  if existingSelected
+    then (
+      case character of
+        Just char ->
+          case selected of
+            NoneSelected ->
+              OneSelected char
+            OneSelected a ->
+              TwoSelected a char
+            TwoSelected a b ->
+              ThreeSelected a b char
+            ThreeSelected a b c  ->
+              ThreeSelected a b c
+        Nothing ->
+          selected
+      )
+    else selected
   where
+    nameMatch :: Character -> Bool
+    nameMatch (Character n _) = n == name
     character :: Maybe Character
-    character = headMay . (filter (\(Character n _) -> n == name )) $ allCharacters
+    character = headMay . (filter nameMatch) $ allCharacters
+    existingSelected :: Bool
+    existingSelected = not . (any nameMatch) . toList $ selected
 
 
 toList :: SelectedCharacters -> [Character]
