@@ -46,6 +46,7 @@ executable vanagloria
                      , safe
                      , string-conversions
                      , text
+                     , transformers
                      , vanagloria
                      , websockets
   default-language:    Haskell2010

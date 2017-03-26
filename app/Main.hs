@@ -5,7 +5,9 @@ import Prelude hiding (lookup)
 
 import Control.Concurrent (MVar, forkIO, newMVar, modifyMVar, readMVar, threadDelay)
 import Control.Exception (finally)
-import Control.Monad (forM_, forever)
+import Control.Monad (forM_, forever, mzero, when)
+import Control.Monad.Trans.Class (lift)
+import Control.Monad.Trans.Maybe (runMaybeT)
 import Data.Aeson (encode)
 import Data.Map.Strict (Map, delete, empty, insert, lookup)
 import Data.Monoid ((<>))
@@ -243,17 +245,25 @@ play which room' (user, conn) room =
         msg <- WS.receiveData conn
         actPlay (parseMsg user msg) which room
 
+
+-- Switch from transformers to mtl?
 computerPlay :: WhichPlayer -> Room -> MVar Room -> IO ()
-computerPlay which room' room = do
-  syncRoomClients room'
-  forever $ do
-    threadDelay 1000000
-    command <- chooseComputerCommand which room
+computerPlay which _ room =
+  do
+  _ <- runMaybeT $ forever $ do
+    lift $ putStrLn "AI tick"
+    lift $ threadDelay 1000000
+    command <- lift $ chooseComputerCommand which room
     case command of
       Just c ->
-        actPlay c which room
+        lift $ actPlay c which room
       Nothing ->
         return ()
+
+    -- Break out if the room's empty.
+    r <- lift $ readMVar room
+    when (Room.empty r) mzero
+  return ()
 
 chooseComputerCommand :: WhichPlayer -> MVar Room -> IO (Maybe Command)
 chooseComputerCommand which room = do
