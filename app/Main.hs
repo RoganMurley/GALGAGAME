@@ -322,7 +322,11 @@ actPlay cmd which roomVar =
           room <- readMVar roomVar
           sendToPlayer which (toChat (ErrorCommand err)) room
         Right (room, outcomes) ->
-          forM_ outcomes (actOutcome room)
+          forM_ outcomes $
+            \outcome ->
+              do
+                logOutcome outcome
+                actOutcome room outcome
     Nothing ->
       actSpec cmd roomVar
   where
@@ -339,23 +343,31 @@ actSpec :: Command -> MVar Room -> IO ()
 actSpec cmd room = readMVar room >>= broadcast (toChat cmd)
 
 actOutcome :: Room -> Outcome -> IO ()
-actOutcome room outcome@(HoverOutcome which _) = do
+actOutcome room outcome@(HoverOutcome which _) =
   sendExcluding which (("hover:" <>) . cs $ encode outcome) room
-  T.putStrLn "hovering"
-actOutcome room (ChatOutcome username msg) = do
+actOutcome room (ChatOutcome username msg) =
   broadcast ("chat:" <> username <> ": " <> msg) room
-  T.putStrLn "chatting"
-actOutcome room (ResolveOutcome models final) = do
+actOutcome room (ResolveOutcome models final) =
   resolveRoomClients (models, final) room
-  T.putStrLn "resolving"
-actOutcome room SyncOutcome = do
+actOutcome room SyncOutcome =
   syncRoomClients room
-  T.putStrLn "syncing"
-actOutcome room (PlayCardOutcome which) = do
+actOutcome room (PlayCardOutcome which) =
   sendExcluding which "playCard:" room
-  T.putStrLn "playing card"
-actOutcome room (EndTurnOutcome which) = do
+actOutcome room (EndTurnOutcome which) =
   sendExcluding which "end:" room
+
+logOutcome :: Outcome -> IO ()
+logOutcome (HoverOutcome _ _) =
+  T.putStrLn "hovering"
+logOutcome (ChatOutcome _ _) =
+  T.putStrLn "chatting"
+logOutcome (ResolveOutcome _ _) =
+  T.putStrLn "resolving"
+logOutcome SyncOutcome =
+  T.putStrLn "syncing"
+logOutcome (PlayCardOutcome _) =
+  T.putStrLn "playing card"
+logOutcome (EndTurnOutcome _) =
   T.putStrLn "ending turn"
 
 syncClient :: Client -> GameState -> IO ()
