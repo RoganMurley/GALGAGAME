@@ -161,7 +161,7 @@ application state pending = do
 
         Just prefix ->
           case prefix of
-            _ | any ($ fst client) [ T.null ] ->
+            _ | T.null . fst $ client ->
                 (WS.sendTextData conn) . toChat $
                   ErrorCommand "name must be nonempty"
 
