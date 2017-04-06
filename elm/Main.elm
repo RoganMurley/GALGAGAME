@@ -26,6 +26,7 @@ import Ports exposing (copyInput, selectAllInput, queryParams)
 import AnimationFrame
 import Window
 import Listener exposing (listen)
+import Raymarch
 
 
 main =
@@ -528,6 +529,7 @@ view ({ hostname, httpPort, frameTime, windowDimensions } as model) =
                         [ class "menu-button", onClick (MainMenuMsg MenuComputer) ]
                         [ text "Computer" ]
                     ]
+                , div [] [ Raymarch.view (Raymarch.Params frameTime ( 800, 600 )) ]
                 ]
 
         Connected { chat, game, roomID } ->
@@ -543,8 +545,10 @@ view ({ hostname, httpPort, frameTime, windowDimensions } as model) =
                     case gameType of
                         CustomGame ->
                             "Custom"
+
                         ComputerGame ->
                             "Computer"
+
                 playPrefix : String
                 playPrefix =
                     case gameType of
