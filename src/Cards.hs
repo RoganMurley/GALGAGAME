@@ -107,10 +107,10 @@ cardSickness = Card "Sickness" "Make all cards to the right's healing hurt inste
 
 
 cardOffering :: Card
-cardOffering = Card "Offering" "Hurt yourself for 8, then draw three cards" "chalice-drops.svg" "offering.wav" eff
+cardOffering = Card "Offering" "Hurt yourself for 10, then draw three cards" "chalice-drops.svg" "offering.wav" eff
   where
     eff :: CardEff
-    eff p _ m = (drawCard p p) . (drawCard p p) . (drawCard p p) . (hurt 8 p) $ m
+    eff p _ m = (drawCard p p) . (drawCard p p) . (drawCard p p) . (hurt 10 p) $ m
 
 
 cardGoatFlute :: Card
