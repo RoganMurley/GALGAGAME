@@ -124,12 +124,12 @@ fragmentShader =
         uniform vec2 resolution;
 
         const float ITERATIONS = 16.0;
-        const float VIEW_DISTANCE = 10.0;
-        const float CLOUD_DENSITY = 0.5;
-        const float OCTAVES = 5.0;
+        const float VIEW_DISTANCE = 8.0;
+        const float CLOUD_DENSITY = 0.65;
+        const float OCTAVES = 4.0;
 
-        const vec4 SKY_COLOR = vec4(0.02, 0.0178, 0.018, 1.0);
-        const vec4 CLOUD_COLOR = vec4(0.9, 0.9, 0.9, 1.0);
+        const vec4 SKY_COLOR = vec4(0.012, 0.0178, 0.045, 1.0);
+        const vec4 CLOUD_COLOR = vec4(0.8, 0.8, 0.8, 0.7);
 
         float hash(vec3 p)
         {
@@ -173,15 +173,15 @@ fragmentShader =
           uv.x *= resolution.x / resolution.y;
 
           vec3 ray = normalize(vec3(uv, 1.0));
-          vec3 pos = vec3(0.0, 0.0, -time*0.2);
+          vec3 pos = vec3(0.0, 0.0, -1000.0-time*0.2);
 
-          float density = 0.0;
+          float density = 0.1;
 
           // Raymarching
           for (float i = 0.0; i < ITERATIONS; i++)
           {
               float f = i / ITERATIONS;
-              float alpha = smoothstep(0.0, ITERATIONS * 0.2, i) * (1.0 - f) * (1.0 - f);
+              float alpha = smoothstep(0.0, ITERATIONS * 0.1, i) * (1.0 - f) * (1.0 - f);
 
               float denseClouds = smoothstep(CLOUD_DENSITY, 0.75, fbm(pos));
               density += denseClouds * alpha;
