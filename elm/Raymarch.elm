@@ -150,7 +150,20 @@ fragmentShader =
 
         vec3 surface(vec3 pos)
         {
-            return vec3(1.0, 1.0, 1.0);
+            const vec2 eps = vec2(0.0, EPSILON);
+
+            float ambientIntensity = 0.1;
+            vec3 lightDir = vec3(0.0, -0.5, 0.5);
+
+            vec3 normal = normalize(vec3(
+                map(pos + eps.yxx) - map(pos - eps.yxx),
+                map(pos + eps.xyx) - map(pos - eps.xyx),
+                map(pos + eps.xxy) - map(pos - eps.xxy))
+            );
+
+            float diffuse = ambientIntensity + max(dot(-lightDir, normal), 0.0);
+
+            return vec3(diffuse, diffuse, diffuse);
         }
 
         void main ()
