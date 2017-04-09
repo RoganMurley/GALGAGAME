@@ -8,6 +8,7 @@ import Color exposing (Color)
 import Html exposing (Html)
 import Html.Attributes exposing (width, height, style)
 import Math.Matrix4 as Mat4 exposing (Mat4)
+import Math.Vector2 as Vec2 exposing (vec2, Vec2)
 import Math.Vector3 as Vec3 exposing (vec3, Vec3)
 import WebGL exposing (Mesh, Shader)
 import Messages exposing (Msg)
@@ -31,22 +32,26 @@ type Params
 
 view : Params -> Html Msg
 view (Params theta ( w, h )) =
-    WebGL.toHtml
-        [ width w
-        , height h
-        , style [ ( "position", "absolute" ), ( "top", "0" ), ( "z-index", "-999" ) ]
-        ]
-        [ WebGL.entityWith []
-            vertexShader
-            fragmentShader
-            quadMesh
-            (uniforms theta (Mat4.makeRotate 0 (Vec3.vec3 0 0 1.0)) (Vec3.vec3 1.0 1.0 0))
-        , WebGL.entityWith []
-            vertexShader
-            fragmentShader
-            quadMesh
-            (uniforms theta (Mat4.makeRotate pi (Vec3.vec3 0 0 1.0)) (Vec3.vec3 1.0 1.0 0))
-        ]
+    let
+        time =
+            theta / 1000
+    in
+        WebGL.toHtml
+            [ width w
+            , height h
+            , style [ ( "position", "absolute" ), ( "top", "0" ), ( "z-index", "-999" ), ( "width", "100%" ), ( "height", "100%" ) ]
+            ]
+            [ WebGL.entityWith []
+                vertexShader
+                fragmentShader
+                quadMesh
+                (uniforms time (Mat4.makeRotate 0 (Vec3.vec3 0 0 1.0)) (Vec3.vec3 1.0 1.0 0))
+            , WebGL.entityWith []
+                vertexShader
+                fragmentShader
+                quadMesh
+                (uniforms time (Mat4.makeRotate pi (Vec3.vec3 0 0 1.0)) (Vec3.vec3 1.0 1.0 0))
+            ]
 
 
 type alias Uniforms =
@@ -71,84 +76,69 @@ uniforms theta rotation translation =
 
 
 type alias Vertex =
-    { color : Vec3
-    , position : Vec3
+    { position : Vec3
+    , uv : Vec2
     }
 
 
 quadMesh : Mesh Vertex
 quadMesh =
     let
-        v0 =
-            vec3 0.5 -0.5 0
+        topRight =
+            { position = vec3 0.5 -0.5 0, uv = vec2 1 0 }
 
-        v1 =
-            vec3 0.5 0.5 0
+        bottomRight =
+            { position = vec3 0.5 0.5 0, uv = vec2 1 1 }
 
-        v2 =
-            vec3 -0.5 0.5 0
+        bottomLeft =
+            { position = vec3 -0.5 0.5 0, uv = vec2 0 1 }
 
-        v3 =
-            vec3 -0.5 -0.5 0
+        topLeft =
+            { position = vec3 -0.5 -0.5 0, uv = vec2 0 0 }
     in
-        WebGL.triangles (face Color.red v0 v1 v2 v3)
-
-
-face : Color -> Vec3 -> Vec3 -> Vec3 -> Vec3 -> List ( Vertex, Vertex, Vertex )
-face rawColor a b c d =
-    let
-        color =
-            let
-                c =
-                    Color.toRgb rawColor
-            in
-                vec3
-                    (toFloat c.red / 255)
-                    (toFloat c.green / 255)
-                    (toFloat c.blue / 255)
-
-        vertex position =
-            Vertex color position
-    in
-        [ ( vertex a, vertex b, vertex c )
-        , ( vertex c, vertex d, vertex a )
-        ]
+        WebGL.triangles
+            [ ( topLeft, topRight, bottomLeft )
+            , ( bottomLeft, topRight, bottomRight )
+            ]
 
 
 
 -- Shaders
 
 
-vertexShader : Shader Vertex Uniforms { vcolor : Vec3 }
+vertexShader : Shader Vertex Uniforms { vUv : Vec2 }
 vertexShader =
     [glsl|
         precision mediump float;
 
         attribute vec3 position;
-        attribute vec3 color;
+        attribute vec2 uv;
+
         uniform mat4 perspective;
         uniform mat4 rotation;
         uniform vec3 translation;
         uniform float time;
-        varying vec3 vcolor;
+
+        varying vec2 vUv;
 
         void main () {
+            vUv = uv;
             gl_Position = perspective * rotation * vec4(position, 1.0) + vec4(translation, 0);
-            vcolor = color;
         }
 
     |]
 
 
-fragmentShader : Shader {} Uniforms { vcolor : Vec3 }
+fragmentShader : Shader {} Uniforms { vUv : Vec2 }
 fragmentShader =
     [glsl|
         precision mediump float;
         uniform float time;
-        varying vec3 vcolor;
+        varying vec2 vUv;
 
-        void main () {
-            gl_FragColor = vec4(vcolor, 0.1);
+        void main ()
+        {
+            gl_FragColor = vec4(vUv, 0.5 + 0.5 * sin(time), 1.0);
         }
 
     |]
