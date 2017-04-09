@@ -518,7 +518,7 @@ view ({ hostname, httpPort, frameTime, windowDimensions } as model) =
         MainMenu _ ->
             div []
                 [ div [ class "main-menu" ]
-                    [ h1 [] [ text "TURRIS" ]
+                    [ h1 [] [ text "CLØUDBUSTER" ]
                     , button
                         [ class "menu-button", disabled True ]
                         [ text "Quickplay" ]
@@ -559,7 +559,7 @@ view ({ hostname, httpPort, frameTime, windowDimensions } as model) =
                             "playComputer:"
             in
                 div [ class "connecting-box" ]
-                    [ h1 [] [ text ("TURRIS : " ++ gameTypeString ++ " Game") ]
+                    [ h1 [] [ text ("CLØUDBUSTER : " ++ gameTypeString ++ " Game") ]
                     , div []
                         [ div [ class "input-group" ]
                             [ input [ onInput Input, placeholder "username", value name, id "playername-input", onClick (SelectAllInput "playername-input") ] []
