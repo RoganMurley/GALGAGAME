@@ -529,7 +529,7 @@ view ({ hostname, httpPort, frameTime, windowDimensions } as model) =
                         [ class "menu-button", onClick (MainMenuMsg MenuComputer) ]
                         [ text "Computer" ]
                     ]
-                , div [] [ Raymarch.view (Raymarch.Params frameTime ( 800, 600 )) ]
+                , div [] [ Raymarch.view (Raymarch.Params frameTime windowDimensions) ]
                 ]
 
         Connected { chat, game, roomID } ->

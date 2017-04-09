@@ -35,10 +35,13 @@ view (Params theta ( w, h )) =
     let
         time =
             theta / 1000
+
+        downscale =
+            3
     in
         WebGL.toHtml
-            [ width w
-            , height h
+            [ width (w // downscale)
+            , height (h // downscale)
             , style [ ( "position", "absolute" ), ( "top", "0" ), ( "z-index", "-999" ), ( "width", "100%" ), ( "height", "100%" ) ]
             ]
             [ WebGL.entityWith []
