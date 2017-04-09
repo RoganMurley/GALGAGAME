@@ -33,4 +33,9 @@
       cursor: not-allowed;
     }
   }
+
+  .main-menu-buttons {
+    display: flex;
+    flex-direction: row;
+  }
 }

@@ -519,15 +519,17 @@ view ({ hostname, httpPort, frameTime, windowDimensions } as model) =
             div []
                 [ div [ class "main-menu" ]
                     [ h1 [] [ text "CLØUDBUSTER" ]
-                    , button
-                        [ class "menu-button", disabled True ]
-                        [ text "Quickplay" ]
-                    , button
-                        [ class "menu-button", onClick (MainMenuMsg MenuCustom) ]
-                        [ text "Custom" ]
-                    , button
-                        [ class "menu-button", onClick (MainMenuMsg MenuComputer) ]
-                        [ text "Computer" ]
+                    , div [ class "main-menu-buttons" ]
+                        [ button
+                            [ class "menu-button", disabled True ]
+                            [ text "Quickplay" ]
+                        , button
+                            [ class "menu-button", onClick (MainMenuMsg MenuCustom) ]
+                            [ text "Custom" ]
+                        , button
+                            [ class "menu-button", onClick (MainMenuMsg MenuComputer) ]
+                            [ text "Computer" ]
+                        ]
                     ]
                 , div [] [ Raymarch.view (Raymarch.Params frameTime windowDimensions) ]
                 ]
