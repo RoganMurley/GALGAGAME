@@ -37,7 +37,7 @@ view (Params theta ( w, h )) =
             theta / 1000
 
         downscale =
-            1
+            5
     in
         WebGL.toHtml
             [ width (w // downscale)
@@ -123,33 +123,47 @@ fragmentShader =
         uniform float time;
         uniform vec2 resolution;
 
-        const int ITERATIONS = 64;
-        const float Z_MAX = 40.0;
-        const float EPSILON = 0.01;
+        const float ITERATIONS = 16.0;
+        const float VIEW_DISTANCE = 10.0;
+        const float CLOUD_DENSITY = 0.5;
+        const float OCTAVES = 5.0;
 
-        const float RADIUS = 1.0;
+        const vec4 SKY_COLOR = vec4(0.02, 0.0178, 0.018, 1.0);
+        const vec4 CLOUD_COLOR = vec4(0.9, 0.9, 0.9, 1.0);
 
-        float map(vec3 pos)
+        float hash(vec3 p)
         {
-          return length(pos) - RADIUS;
+            p  = fract( p*0.3183099+.1 );
+        	p *= 17.0;
+            return fract( p.x*p.y*p.z*(p.x+p.y+p.z) );
         }
 
-        vec3 surface(vec3 pos)
+        float noise( in vec3 x )
         {
-          const vec2 eps = vec2(0.0, EPSILON);
+            vec3 p = floor(x);
+            vec3 f = fract(x);
+            f = f*f*(3.0-2.0*f);
 
-          float ambientIntensity = 0.1;
-          vec3 lightDir = vec3(0.0, -0.5, 0.5);
+            return mix(mix(mix( hash(p+vec3(0,0,0)),
+                                hash(p+vec3(1,0,0)),f.x),
+                           mix( hash(p+vec3(0,1,0)),
+                                hash(p+vec3(1,1,0)),f.x),f.y),
+                       mix(mix( hash(p+vec3(0,0,1)),
+                                hash(p+vec3(1,0,1)),f.x),
+                           mix( hash(p+vec3(0,1,1)),
+                                hash(p+vec3(1,1,1)),f.x),f.y),f.z);
+        }
 
-          vec3 normal = normalize(vec3(
-              map(pos + eps.yxx) - map(pos - eps.yxx),
-              map(pos + eps.xyx) - map(pos - eps.xyx),
-              map(pos + eps.xxy) - map(pos - eps.xxy))
-          );
-
-          float diffuse = ambientIntensity + max(dot(-lightDir, normal), 0.0);
-
-          return vec3(diffuse, diffuse, diffuse);
+        float fbm(vec3 pos)
+        {
+            float f = 0.0;
+            for (float i = 0.0; i < OCTAVES; i++)
+            {
+                f += noise(pos) / pow(2.0, i + 1.0);
+                pos *= 2.01;
+            }
+            f /= 1.0 - 1.0 / pow(2.0, OCTAVES + 1.0);
+            return f;
         }
 
         void main ()
@@ -158,28 +172,24 @@ fragmentShader =
           uv = uv * 2.0 - 1.0;
           uv.x *= resolution.x / resolution.y;
 
-          vec3 ray = normalize(vec3(uv, 1.0));;
-          vec3 color = vec3(0.0, 0.0, 0.0);
-          vec3 pos = vec3(0.0, 0.0, -3.0);
+          vec3 ray = normalize(vec3(uv, 1.0));
+          vec3 pos = vec3(0.0, 0.0, -time*0.2);
+
+          float density = 0.0;
 
           // Raymarching
-          for (int i = 0; i < ITERATIONS; ++i)
+          for (float i = 0.0; i < ITERATIONS; i++)
           {
-              float distance = map(pos);
+              float f = i / ITERATIONS;
+              float alpha = smoothstep(0.0, ITERATIONS * 0.2, i) * (1.0 - f) * (1.0 - f);
 
-              if (distance < EPSILON)
-              {
-                  color = surface(pos);
-                  break;
-              }
+              float denseClouds = smoothstep(CLOUD_DENSITY, 0.75, fbm(pos));
+              density += denseClouds * alpha;
 
-              pos += ray * distance;
-
-              if (distance > Z_MAX)
-              {
-                  break;
-              }
+              pos += ray * f * VIEW_DISTANCE;
           }
+
+          vec3 color = SKY_COLOR.rgb + (CLOUD_COLOR.rgb - 0.5) * (density / ITERATIONS) * 20.0 * CLOUD_COLOR.a;
 
           gl_FragColor = vec4(color, 1.0);
         }
