@@ -107,15 +107,15 @@ view state roomID hostname httpPort time ( width, height ) =
             PlayingGame m ( res, resTime ) ->
                 case res of
                     [] ->
-                        Model.view params (lowerIntensity m) (upperIntensity m) resTime m
+                        Model.view params resTime m
 
                     otherwise ->
-                        resView params (lowerIntensity m) (upperIntensity m) res resTime m
+                        resView params res resTime m
 
             Ended winner model ( res, resTime ) ->
                 case model of
                     Just m ->
-                        resView params (lowerIntensity m) (upperIntensity m) res resTime m
+                        resView params res resTime m
 
                     Nothing ->
                         div [ class "endgame" ]

@@ -5,7 +5,9 @@ import Prelude hiding (lookup)
 
 import Control.Concurrent (MVar, forkIO, newMVar, modifyMVar, readMVar, threadDelay)
 import Control.Exception (finally)
-import Control.Monad (forM_, forever)
+import Control.Monad (forM_, forever, mzero, when)
+import Control.Monad.Trans.Class (lift)
+import Control.Monad.Trans.Maybe (runMaybeT)
 import Data.Aeson (encode)
 import Data.Map.Strict (Map, delete, empty, insert, lookup)
 import Data.Monoid ((<>))
@@ -159,7 +161,7 @@ application state pending = do
 
         Just prefix ->
           case prefix of
-            _ | any ($ fst client) [ T.null ] ->
+            _ | T.null . fst $ client ->
                 (WS.sendTextData conn) . toChat $
                   ErrorCommand "name must be nonempty"
 
@@ -243,17 +245,25 @@ play which room' (user, conn) room =
         msg <- WS.receiveData conn
         actPlay (parseMsg user msg) which room
 
+
+-- Switch from transformers to mtl?
 computerPlay :: WhichPlayer -> Room -> MVar Room -> IO ()
-computerPlay which room' room = do
-  syncRoomClients room'
-  forever $ do
-    threadDelay 1000000
-    command <- chooseComputerCommand which room
+computerPlay which _ room =
+  do
+  _ <- runMaybeT $ forever $ do
+    lift $ putStrLn "AI tick"
+    lift $ threadDelay 1000000
+    command <- lift $ chooseComputerCommand which room
     case command of
       Just c ->
-        actPlay c which room
+        lift $ actPlay c which room
       Nothing ->
         return ()
+
+    -- Break out if the room's empty.
+    r <- lift $ readMVar room
+    when (Room.empty r) mzero
+  return ()
 
 chooseComputerCommand :: WhichPlayer -> MVar Room -> IO (Maybe Command)
 chooseComputerCommand which room = do
@@ -312,7 +322,11 @@ actPlay cmd which roomVar =
           room <- readMVar roomVar
           sendToPlayer which (toChat (ErrorCommand err)) room
         Right (room, outcomes) ->
-          forM_ outcomes (actOutcome room)
+          forM_ outcomes $
+            \outcome ->
+              do
+                logOutcome outcome
+                actOutcome room outcome
     Nothing ->
       actSpec cmd roomVar
   where
@@ -329,23 +343,31 @@ actSpec :: Command -> MVar Room -> IO ()
 actSpec cmd room = readMVar room >>= broadcast (toChat cmd)
 
 actOutcome :: Room -> Outcome -> IO ()
-actOutcome room outcome@(HoverOutcome which _) = do
+actOutcome room outcome@(HoverOutcome which _) =
   sendExcluding which (("hover:" <>) . cs $ encode outcome) room
-  T.putStrLn "hovering"
-actOutcome room (ChatOutcome username msg) = do
+actOutcome room (ChatOutcome username msg) =
   broadcast ("chat:" <> username <> ": " <> msg) room
-  T.putStrLn "chatting"
-actOutcome room (ResolveOutcome models final) = do
+actOutcome room (ResolveOutcome models final) =
   resolveRoomClients (models, final) room
-  T.putStrLn "resolving"
-actOutcome room SyncOutcome = do
+actOutcome room SyncOutcome =
   syncRoomClients room
-  T.putStrLn "syncing"
-actOutcome room (PlayCardOutcome which) = do
+actOutcome room (PlayCardOutcome which) =
   sendExcluding which "playCard:" room
-  T.putStrLn "playing card"
-actOutcome room (EndTurnOutcome which) = do
+actOutcome room (EndTurnOutcome which) =
   sendExcluding which "end:" room
+
+logOutcome :: Outcome -> IO ()
+logOutcome (HoverOutcome _ _) =
+  T.putStrLn "hovering"
+logOutcome (ChatOutcome _ _) =
+  T.putStrLn "chatting"
+logOutcome (ResolveOutcome _ _) =
+  T.putStrLn "resolving"
+logOutcome SyncOutcome =
+  T.putStrLn "syncing"
+logOutcome (PlayCardOutcome _) =
+  T.putStrLn "playing card"
+logOutcome (EndTurnOutcome _) =
   T.putStrLn "ending turn"
 
 syncClient :: Client -> GameState -> IO ()
