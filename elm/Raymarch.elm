@@ -136,9 +136,54 @@ fragmentShader =
         uniform float time;
         varying vec2 vUv;
 
+        const int ITERATIONS = 64;
+        const float Z_MAX = 40.0;
+        const float EPSILON = 0.01;
+        const vec3 CAMERA_POS = vec3(0.0, 0.0, -5.0);
+
+        const float RADIUS = 1.0;
+
+        float map(vec3 pos)
+        {
+            return length(pos) - RADIUS;
+        }
+
+        vec3 surface(vec3 pos)
+        {
+            return vec3(1.0, 1.0, 1.0);
+        }
+
         void main ()
         {
-            gl_FragColor = vec4(vUv, 0.5 + 0.5 * sin(time), 1.0);
+            vec2 uv = vUv - 0.5;
+            vec3 camUp = vec3(0.0, 1.0, 0.0);
+            vec3 camForward = vec3(0.0, 0.0, 1.0);
+            vec3 camRight = vec3(1.0, 0.0, 0.0);
+
+            vec3 ray = camUp * uv.y + camRight * uv.x + camForward;
+            vec3 color = vec3(0.0, 0.0, 0.0);
+            vec3 pos = CAMERA_POS;
+
+            // Raymarching
+            for (int i = 0; i < ITERATIONS; ++i)
+            {
+                float distance = map(pos);
+
+                if (distance < EPSILON)
+                {
+                    color = surface(pos);
+                    break;
+                }
+
+                pos += ray * distance;
+
+                if (distance > Z_MAX)
+                {
+                    break;
+                }
+            }
+
+            gl_FragColor = vec4(color, 1.0);
         }
 
     |]
