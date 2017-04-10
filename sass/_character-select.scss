@@ -18,7 +18,7 @@
 .character-button {
   display: inline;
   margin: 15px;
-  background-color: #6d6bf1;
+  background-color: #484869;
   border-radius: 10px;
   padding: 10px;
   font-size: 36px;
@@ -26,12 +26,12 @@
   cursor: pointer; cursor: hand;
 
   &:hover {
-    background-color: #8584f3;
+    background-color: #5c5c86;
   }
 }
 
 .character-button-chosen {
-  background-color: #0db37b;
+  background-color: #484869;
 }
 
 .card-preview {
@@ -66,7 +66,7 @@
 
 
 .character-ready {
-  font-family: 'Poiret One', sans-serif;
+  font-family: 'Cinzel Decorative', sans-serif;
   font-size: 42px;
   text-align: center;
 
