@@ -10,6 +10,7 @@ import Messages exposing (GameMsg(..), Msg(..))
 import Model exposing (..)
 import Util exposing (fromJust, safeTail)
 import Vfx
+import Raymarch
 
 
 type GameState
@@ -74,6 +75,9 @@ view state roomID hostname httpPort time ( width, height ) =
     let
         params =
             Vfx.Params time ( width, height )
+
+        rParams =
+            Raymarch.Params time ( width, height )
     in
         case state of
             Waiting ->
@@ -90,51 +94,61 @@ view state roomID hostname httpPort time ( width, height ) =
                     myID =
                         "challenge-link"
                 in
-                    div [ class "waiting" ]
-                        [ div [ class "waiting-prompt" ] [ text "Give this link to your opponent:" ]
-                        , div [ class "input-group" ]
-                            [ input [ value challengeLink, type_ "text", readonly True, id myID, onClick (SelectAllInput myID) ] []
-                            , button [ onClick (CopyInput myID) ] [ text "copy" ]
+                    div []
+                        [ div [ class "waiting" ]
+                            [ div [ class "waiting-prompt" ] [ text "Give this link to your opponent:" ]
+                            , div [ class "input-group" ]
+                                [ input [ value challengeLink, type_ "text", readonly True, id myID, onClick (SelectAllInput myID) ] []
+                                , button [ onClick (CopyInput myID) ] [ text "copy" ]
+                                ]
                             ]
+                        , div [] [ Raymarch.view rParams ]
                         ]
 
             Selecting model ->
                 div []
-                    [ CharacterSelect.view model
-                    , Vfx.idleView params
+                    [ CharacterSelect.view rParams model
                     ]
 
             PlayingGame m ( res, resTime ) ->
-                case res of
-                    [] ->
-                        Model.view params resTime m
+                div []
+                    [ (case res of
+                        [] ->
+                            Model.view params resTime m
 
-                    otherwise ->
-                        resView params res resTime m
+                        otherwise ->
+                            resView params res resTime m
+                      )
+                    , div [] [ Raymarch.view rParams ]
+                    ]
 
             Ended winner model ( res, resTime ) ->
                 case model of
                     Just m ->
-                        resView params res resTime m
+                        div []
+                            [ resView params res resTime m
+                            , Raymarch.view rParams
+                            ]
 
                     Nothing ->
-                        div [ class "endgame" ]
-                            (case winner of
-                                Nothing ->
-                                    [ div [ class "draw" ] [ text "DRAW" ]
-                                    , button [ class "rematch", onClick Rematch ] [ text "Rematch" ]
-                                    , Vfx.idleView params
-                                    ]
+                        div []
+                            [ div [ class "endgame" ]
+                                (case winner of
+                                    Nothing ->
+                                        [ div [ class "draw" ] [ text "DRAW" ]
+                                        , button [ class "rematch", onClick Rematch ] [ text "Rematch" ]
+                                        ]
 
-                                Just player ->
-                                    [ if player == PlayerA then
-                                        div [ class "victory" ] [ text "VICTORY" ]
-                                      else
-                                        div [ class "defeat" ] [ text "DEFEAT" ]
-                                    , button [ class "rematch", onClick Rematch ] [ text "Rematch" ]
-                                    , Vfx.idleView params
-                                    ]
-                            )
+                                    Just player ->
+                                        [ if player == PlayerA then
+                                            div [ class "victory" ] [ text "VICTORY" ]
+                                          else
+                                            div [ class "defeat" ] [ text "DEFEAT" ]
+                                        , button [ class "rematch", onClick Rematch ] [ text "Rematch" ]
+                                        ]
+                                )
+                            , div [] [ Raymarch.view rParams ]
+                            ]
 
 
 

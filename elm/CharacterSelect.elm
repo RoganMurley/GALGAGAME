@@ -6,6 +6,7 @@ import Html.Events exposing (..)
 import Card exposing (Card)
 import Messages exposing (Msg(..), CharSelectMsg(..), GameMsg(..))
 import Util exposing (fromJust)
+import Raymarch
 
 
 -- MODEL
@@ -39,8 +40,8 @@ type alias Model =
 -- VIEW
 
 
-view : Model -> Html Msg
-view { characters, selected, hover } =
+view : Raymarch.Params -> Model -> Html Msg
+view (Raymarch.Params frameTime windowDimensions) { characters, selected, hover } =
     let
         characterView : Character -> Html Msg
         characterView { name } =
@@ -73,7 +74,7 @@ view { characters, selected, hover } =
                         (List.map chosenView (nameList s))
                     , case s of
                         ThreeSelected _ _ _ ->
-                            text "Waiting for opponent..."
+                            text "Waiting for opponent"
 
                         otherwise ->
                             text ""
@@ -89,13 +90,16 @@ view { characters, selected, hover } =
                 , Card.view c4
                 ]
     in
-        div
-            [ class "character-select" ]
-            [ text "Choose your Characters"
-            , div [ class "characters" ]
-                (List.map characterView characters)
-            , cardPreviewView ((\{ cards } -> cards) hover)
-            , selectedView selected
+        div []
+            [ div
+                [ class "character-select" ]
+                [ text "Choose your Characters"
+                , div [ class "characters" ]
+                    (List.map characterView characters)
+                , cardPreviewView ((\{ cards } -> cards) hover)
+                , selectedView selected
+                ]
+            , div [] [ Raymarch.view (Raymarch.Params frameTime windowDimensions) ]
             ]
 
 
