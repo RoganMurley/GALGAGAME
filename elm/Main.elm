@@ -518,7 +518,7 @@ view ({ hostname, httpPort, frameTime, windowDimensions } as model) =
         MainMenu _ ->
             div []
                 [ div [ class "main-menu" ]
-                    [ h1 [] [ text "CLØUDBUSTER" ]
+                    [ h1 [] [ text "STØRMCARDS" ]
                     , div [ class "main-menu-buttons" ]
                         [ button
                             [ class "menu-button", disabled True ]
