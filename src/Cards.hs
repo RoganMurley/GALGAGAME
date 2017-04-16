@@ -83,7 +83,7 @@ cardProphecy = Card "Prophecy" "Return all cards to the right to their owner's h
 
 
 cardSiren :: Card
-cardSiren = Card "Siren" "Your opponent gets two cards that hurt them for 8 each" "harpy.svg" "siren.wav" eff
+cardSiren = Card "Siren" "Your opponent gets two cards that hurt them for 8 each" "mermaid.svg" "siren.wav" eff
   where
     eff :: CardEff
     eff p _ m = modHand (times 2 (addToHand cardSong)) (otherPlayer p) m
@@ -285,7 +285,7 @@ cardRecharge = Card "Recharge" "Discard your hand, then draw for each card disca
 
 
 cardOath :: Card
-cardOath = Card "Oath" "Heal the weakest player for 12" "caduceus.svg" "oath.wav" eff
+cardOath = Card "Oath" "Heal the weakest player for 15" "caduceus.svg" "oath.wav" eff
   where
     eff :: CardEff
     eff _ _ m
@@ -295,4 +295,48 @@ cardOath = Card "Oath" "Heal the weakest player for 12" "caduceus.svg" "oath.wav
         heal mag PlayerB $ m
       | otherwise =
         (heal mag PlayerA) . (heal mag PlayerB) $ m
-    mag = 12
+    mag = 15
+
+
+cardAxe :: Card
+cardAxe = Card "Axe" "Hurt for 9" "axe.svg" "axe.mp3" eff
+  where
+    eff :: CardEff
+    eff p _ m = hurt 9 (otherPlayer p) m
+
+
+cardFrostbite :: Card
+cardFrostbite = Card "Frostbite" "Hurt the weakest player for 15" "frozen-orb.svg" "frostbite.mp3" eff
+  where
+    eff :: CardEff
+    eff _ _ m
+      | getLife PlayerA m < getLife PlayerB m =
+        hurt dmg PlayerA $ m
+      | getLife PlayerA m > getLife PlayerB m =
+        hurt dmg PlayerB $ m
+      | otherwise =
+        (hurt dmg PlayerA) . (hurt dmg PlayerB) $ m
+    dmg = 15
+
+
+cardCrystal :: Card
+cardCrystal = Card "Crystal" "Heal the weakest player for 15" "crystal-growth.svg" "oath.wav" eff
+  where
+    eff :: CardEff
+    eff _ _ m
+      | getLife PlayerA m < getLife PlayerB m =
+        heal mag PlayerA $ m
+      | getLife PlayerA m > getLife PlayerB m =
+        heal mag PlayerB $ m
+      | otherwise =
+        (heal mag PlayerA) . (heal mag PlayerB) $ m
+    mag = 15
+
+
+cardFairy :: Card
+cardFairy = Card "Fairy" "Discard your hand, then draw for each card discarded" "fairy.svg" "recharge.wav" eff
+  where
+    eff :: CardEff
+    eff p _ m = redraw p m
+    redraw :: WhichPlayer -> Model -> Model
+    redraw w m = (times (length (getHand w m)) (drawCard w w)) . (setHand w []) $ m

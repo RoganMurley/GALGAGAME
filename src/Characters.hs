@@ -65,13 +65,13 @@ initCharModel = CharModel NoneSelected NoneSelected allCharacters
 
 allCharacters :: [Character]
 allCharacters = [
-    striker
-  , breaker
-  , shielder
-  , drainer
-  , watcher
-  , trickster
-  , arbiter
+    fire
+  , thunder
+  , calm
+  , tempest
+  , vortex
+  , dust
+  , frost
   ]
 
 
@@ -122,23 +122,23 @@ toList (ThreeSelected a b c) = [ a, b, c ]
 cardPlaceholder :: Card
 cardPlaceholder = Card "Placeholder" "For testing!" "goat.svg" "resolve.sfx" (\_ _ m -> m)
 
-shielder :: Character
-shielder = Character "Shielder" (cardBoomerang, cardCrossbow, cardPotion, cardReflect)
+calm :: Character
+calm = Character "The Calm" (cardBoomerang, cardCrossbow, cardPotion, cardReflect)
 
-striker :: Character
-striker = Character "Striker" (cardDagger, cardFirestorm, cardOffering, cardConfound)
+fire :: Character
+fire = Character "The Fire" (cardDagger, cardFirestorm, cardOffering, cardConfound)
 
-breaker :: Character
-breaker = Character "Breaker" (cardHammer, cardLightning, cardEcho, cardHubris)
+thunder :: Character
+thunder = Character "The Thunder" (cardHammer, cardLightning, cardEcho, cardHubris)
 
-drainer :: Character
-drainer = Character "Drainer" (cardVampire, cardSuccubus, cardSiren, cardReversal)
+tempest :: Character
+tempest = Character "The Tempest" (cardVampire, cardSuccubus, cardSiren, cardReversal)
 
-watcher :: Character
-watcher = Character "Watcher" (cardStaff, cardEnvy, cardMindhack, cardProphecy)
+vortex :: Character
+vortex = Character "The Vortex" (cardStaff, cardEnvy, cardMindhack, cardProphecy)
 
-trickster :: Character
-trickster = Character "Trickster" (cardShuriken, cardSuperego, cardMindgate, cardFeint)
+dust :: Character
+dust = Character "The Dust" (cardShuriken, cardSuperego, cardMindgate, cardFeint)
 
-arbiter :: Character
-arbiter = Character "Arbiter" (cardJustice, cardInjustice, cardOath, cardRecharge)
+frost :: Character
+frost = Character "The Frost" (cardAxe, cardFrostbite, cardCrystal, cardFairy)
