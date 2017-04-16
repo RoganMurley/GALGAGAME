@@ -135,7 +135,7 @@ drainer :: Character
 drainer = Character "Drainer" (cardVampire, cardSuccubus, cardSiren, cardReversal)
 
 watcher :: Character
-watcher = Character "Watcher" (cardStaff, cardEnvy, cardMindhack, cardPrecognition)
+watcher = Character "Watcher" (cardStaff, cardEnvy, cardMindhack, cardProphecy)
 
 trickster :: Character
 trickster = Character "Trickster" (cardShuriken, cardSuperego, cardMindgate, cardFeint)
