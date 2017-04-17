@@ -157,8 +157,8 @@ getHand PlayerB = model_handPB
 
 
 setHand :: WhichPlayer -> Hand -> Model -> Model
-setHand PlayerA hand model = model { model_handPA = hand }
-setHand PlayerB hand model = model { model_handPB = hand }
+setHand PlayerA hand model = model { model_handPA = take maxHandLength hand }
+setHand PlayerB hand model = model { model_handPB = take maxHandLength hand }
 
 
 modHand :: (Hand -> Hand) -> WhichPlayer -> Model -> Model
@@ -316,7 +316,7 @@ patchEff eff wrapper = \w c m -> wrapper m (eff w c m)
 
 bounceAll :: WhichPlayer -> Stack -> Hand -> Hand
 bounceAll w s h =
-  take maxHandLength (h ++ (fmap getCard (filter (owner w) s)))
+  h ++ (fmap getCard (filter (owner w) s))
   where
     owner :: WhichPlayer -> StackCard -> Bool
     owner PlayerA (StackCard PlayerA _) = True

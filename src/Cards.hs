@@ -247,57 +247,6 @@ cardFeint = Card "Feint" "Return all of your cards to the right to your hand" "q
         modStack (filter (\(StackCard owner _) -> owner /= p)) m
 
 
-cardInjustice :: Card
-cardInjustice = Card "Injustice" "Hurt the weakest player for 13" "evil-wings.svg" "injustice.wav" eff
-  where
-    eff :: CardEff
-    eff _ _ m
-      | getLife PlayerA m < getLife PlayerB m =
-        hurt dmg PlayerA $ m
-      | getLife PlayerA m > getLife PlayerB m =
-        hurt dmg PlayerB $ m
-      | otherwise =
-        (hurt dmg PlayerA) . (hurt dmg PlayerB) $ m
-    dmg = 13
-
-
-cardJustice :: Card
-cardJustice = Card "Justice" "Hurt the strongest player for 13" "winged-sword.svg" "justice.wav" eff
-  where
-    eff :: CardEff
-    eff _ _ m
-      | getLife PlayerA m > getLife PlayerB m =
-        hurt dmg PlayerA $ m
-      | getLife PlayerA m < getLife PlayerB m =
-        hurt dmg PlayerB $ m
-      | otherwise =
-        (hurt dmg PlayerA) . (hurt dmg PlayerB) $ m
-    dmg = 13
-
-
-cardRecharge :: Card
-cardRecharge = Card "Recharge" "Discard your hand, then draw for each card discarded" "sunbeams.svg" "recharge.wav" eff
-  where
-    eff :: CardEff
-    eff p _ m = redraw p m
-    redraw :: WhichPlayer -> Model -> Model
-    redraw w m = (times (length (getHand w m)) (drawCard w w)) . (setHand w []) $ m
-
-
-cardOath :: Card
-cardOath = Card "Oath" "Heal the weakest player for 15" "caduceus.svg" "oath.wav" eff
-  where
-    eff :: CardEff
-    eff _ _ m
-      | getLife PlayerA m < getLife PlayerB m =
-        heal mag PlayerA $ m
-      | getLife PlayerA m > getLife PlayerB m =
-        heal mag PlayerB $ m
-      | otherwise =
-        (heal mag PlayerA) . (heal mag PlayerB) $ m
-    mag = 15
-
-
 cardAxe :: Card
 cardAxe = Card "Axe" "Hurt for 9" "axe.svg" "axe.mp3" eff
   where
@@ -340,3 +289,10 @@ cardFairy = Card "Fairy" "Discard your hand, then draw for each card discarded" 
     eff p _ m = redraw p m
     redraw :: WhichPlayer -> Model -> Model
     redraw w m = (times (length (getHand w m)) (drawCard w w)) . (setHand w []) $ m
+
+
+cardDeny :: Card
+cardDeny = Card "Deny" "Negate the next card to the right" "hand.svg" "feint.wav" eff
+  where
+    eff :: CardEff
+    eff _ _ m = modStack (drop 1) m
