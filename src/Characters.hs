@@ -123,22 +123,22 @@ cardPlaceholder :: Card
 cardPlaceholder = Card "Placeholder" "For testing!" "goat.svg" "resolve.sfx" (\_ _ m -> m)
 
 calm :: Character
-calm = Character "The Calm" (cardBoomerang, cardCrossbow, cardPotion, cardReflect)
+calm = Character "Calm" (cardBoomerang, cardCrossbow, cardPotion, cardReflect)
 
 fire :: Character
-fire = Character "The Fire" (cardDagger, cardFirestorm, cardOffering, cardConfound)
+fire = Character "Fire" (cardDagger, cardFirestorm, cardOffering, cardConfound)
 
 thunder :: Character
-thunder = Character "The Thunder" (cardHammer, cardLightning, cardEcho, cardHubris)
+thunder = Character "Thunder" (cardHammer, cardLightning, cardEcho, cardHubris)
 
 tempest :: Character
-tempest = Character "The Tempest" (cardVampire, cardSuccubus, cardSiren, cardReversal)
+tempest = Character "Tempest" (cardVampire, cardSuccubus, cardSiren, cardReversal)
 
 vortex :: Character
-vortex = Character "The Vortex" (cardStaff, cardEnvy, cardMindhack, cardProphecy)
+vortex = Character "Vortex" (cardStaff, cardEnvy, cardMindhack, cardProphecy)
 
 dust :: Character
-dust = Character "The Dust" (cardShuriken, cardSuperego, cardMindgate, cardFeint)
+dust = Character "Dust" (cardShuriken, cardSuperego, cardMindgate, cardFeint)
 
 frost :: Character
-frost = Character "The Frost" (cardAxe, cardFrostbite, cardCrystal, cardFairy)
+frost = Character "Frost" (cardAxe, cardFrostbite, cardCrystal, cardDeny)
