@@ -215,8 +215,8 @@ cardMindgate = Card "Mindgate" "Your hand becomes the same as your opponent's" "
     eff p _ m = setHand p (getHand (otherPlayer p) m) m
 
 
-cardSuperego :: Card
-cardSuperego = Card "Superego" "Hurt for 3 for each card in your hand" "deadly-strike.svg" "superego.wav" eff
+cardOverwhelm :: Card
+cardOverwhelm = Card "Overwhelm" "Hurt for 3 for each card in your hand" "deadly-strike.svg" "superego.wav" eff
   where
     eff :: CardEff
     eff p _ m = hurt (3 * (length . (getHand p) $ m)) (otherPlayer p) m
