@@ -127,7 +127,7 @@ view state roomID hostname httpPort time ( width, height ) =
                     Just m ->
                         div []
                             [ resView params res resTime m
-                            , Raymarch.view rParams
+                            , div [] [ Raymarch.view rParams ]
                             ]
 
                     Nothing ->
