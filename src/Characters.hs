@@ -138,7 +138,7 @@ vortex :: Character
 vortex = Character "Vortex" (cardStaff, cardEnvy, cardMindhack, cardProphecy)
 
 dust :: Character
-dust = Character "Dust" (cardShuriken, cardSuperego, cardMindgate, cardFeint)
+dust = Character "Dust" (cardShuriken, cardOverwhelm, cardMindgate, cardFeint)
 
 frost :: Character
 frost = Character "Frost" (cardAxe, cardFrostbite, cardCrystal, cardDeny)
