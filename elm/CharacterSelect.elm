@@ -18,6 +18,7 @@ type alias Name =
 
 type alias Character =
     { name : Name
+    , imgURL : String
     , cards : ( Card, Card, Card, Card )
     }
 
@@ -44,7 +45,7 @@ view : Raymarch.Params -> Model -> Html Msg
 view (Raymarch.Params frameTime windowDimensions) { characters, selected, hover } =
     let
         characterView : Character -> Html Msg
-        characterView { name } =
+        characterView { name, imgURL } =
             div
                 [ class "character-button"
                 , onMouseEnter (GameStateMsg (SelectingMsg (SelectingHover name)))
@@ -54,7 +55,7 @@ view (Raymarch.Params frameTime windowDimensions) { characters, selected, hover 
                   else
                     class ""
                 ]
-                [ text name ]
+                [ img [ src ("img/" ++ imgURL), class "character-icon" ] [], text name ]
 
         selectedView : SelectedCharacters -> Html Msg
         selectedView s =
@@ -93,7 +94,7 @@ view (Raymarch.Params frameTime windowDimensions) { characters, selected, hover 
         div []
             [ div
                 [ class "character-select" ]
-                [ text "Choose your Characters"
+                [ text "Choose your Gods"
                 , div [ class "characters" ]
                     (List.map characterView characters)
                 , cardPreviewView ((\{ cards } -> cards) hover)

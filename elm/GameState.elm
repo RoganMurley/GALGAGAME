@@ -247,8 +247,9 @@ selectingDecoder oldState =
     let
         characterDecoder : Json.Decoder CharacterSelect.Character
         characterDecoder =
-            Json.map2 CharacterSelect.Character
+            Json.map3 CharacterSelect.Character
                 (field "name" Json.string)
+                (field "img_url" Json.string)
                 (field "cards" characterCardsDecoder)
 
         characterCardsDecoder : Json.Decoder ( Card, Card, Card, Card )
