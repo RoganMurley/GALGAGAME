@@ -106,9 +106,7 @@ view state roomID hostname httpPort time ( width, height ) =
                         ]
 
             Selecting model ->
-                div []
-                    [ CharacterSelect.view rParams model
-                    ]
+                CharacterSelect.view rParams model
 
             PlayingGame m ( res, resTime ) ->
                 div []
