@@ -24,14 +24,16 @@ instance ToJSON SelectedCharacters where
 
 data Character = Character
   { character_name  :: Text
+  , character_img :: Text
   , character_cards :: CharacterCards
   } deriving (Eq, Show)
 
 instance ToJSON Character where
-  toJSON (Character name cards) =
+  toJSON (Character name img cards) =
       object [
-        "name"  .= name
-      , "cards" .= cards
+        "name"     .= name
+      , "img_url"  .= img
+      , "cards"    .= cards
       ]
 
 
@@ -65,13 +67,13 @@ initCharModel = CharModel NoneSelected NoneSelected allCharacters
 
 allCharacters :: [Character]
 allCharacters = [
-    fire
+    flame
+  , frost
   , thunder
-  , calm
   , tempest
   , vortex
-  , dust
-  , frost
+  , mist
+  , calm
   ]
 
 
@@ -103,7 +105,7 @@ selectIndChar name selected =
     else selected
   where
     nameMatch :: Character -> Bool
-    nameMatch (Character n _) = n == name
+    nameMatch (Character n _ _) = n == name
     character :: Maybe Character
     character = headMay . (filter nameMatch) $ allCharacters
     existingSelected :: Bool
@@ -118,27 +120,23 @@ toList (ThreeSelected a b c) = [ a, b, c ]
 
 
 -- CHARACTERS
-
-cardPlaceholder :: Card
-cardPlaceholder = Card "Placeholder" "For testing!" "goat.svg" "resolve.sfx" (\_ _ m -> m)
-
-calm :: Character
-calm = Character "Calm" (cardBoomerang, cardCrossbow, cardPotion, cardReflect)
-
-fire :: Character
-fire = Character "Fire" (cardDagger, cardFirestorm, cardOffering, cardConfound)
-
-thunder :: Character
-thunder = Character "Thunder" (cardHammer, cardLightning, cardEcho, cardHubris)
-
-tempest :: Character
-tempest = Character "Tempest" (cardVampire, cardSuccubus, cardSiren, cardReversal)
-
-vortex :: Character
-vortex = Character "Vortex" (cardStaff, cardEnvy, cardMindhack, cardProphecy)
-
-dust :: Character
-dust = Character "Dust" (cardShuriken, cardOverwhelm, cardMindgate, cardFeint)
+flame :: Character
+flame = Character "Flame" "dragon/dragon.svg" (cardDragon, cardFirestorm, cardOffering, cardHaze)
 
 frost :: Character
-frost = Character "Frost" (cardAxe, cardFrostbite, cardCrystal, cardDeny)
+frost = Character "Frost" "bear/bear.svg" (cardBear, cardBlizzard, cardCrystal, cardFreeze)
+
+thunder :: Character
+thunder = Character "Thunder" "stag/stag.svg" (cardStag, cardLightning, cardEcho, cardHubris)
+
+tempest :: Character
+tempest = Character "Tempest" "octopus/octopus.svg" (cardOctopus, cardTentacles, cardSiren, cardReversal)
+
+vortex :: Character
+vortex = Character "Vortex" "owl/owl.svg" (cardOwl, cardTwister, cardHypnosis, cardProphecy)
+
+mist :: Character
+mist = Character "Mist" "monkey/monkey.svg" (cardMonkey, cardMonsoon, cardMindgate, cardFeint)
+
+calm :: Character
+calm = Character "Calm" "turtle/turtle.svg" (cardTurtle, cardGale, cardSoup, cardReflect)
