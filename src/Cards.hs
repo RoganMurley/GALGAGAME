@@ -57,7 +57,7 @@ cardBlizzard = Card "Blizzard" "Hurt the weakest player for 15" "bear/ice-spear.
 
 
 cardCrystal :: Card
-cardCrystal = Card "Crystal" "Heal the weakest player for 15" "crystal-growth.svg" "oath.wav" eff
+cardCrystal = Card "Crystal" "Heal the weakest player for 15" "bear/crystal-growth.svg" "oath.wav" eff
   where
     eff :: CardEff
     eff _ _ m
