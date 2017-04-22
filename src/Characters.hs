@@ -71,8 +71,8 @@ allCharacters = [
   , frost
   , thunder
   , tempest
-  , vortex
   , mist
+  , vortex
   , calm
   ]
 
