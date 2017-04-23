@@ -65,18 +65,6 @@ initCharModel :: CharModel
 initCharModel = CharModel NoneSelected NoneSelected allCharacters
 
 
-allCharacters :: [Character]
-allCharacters = [
-    flame
-  , thunder
-  , frost
-  , tempest
-  , mist
-  , vortex
-  , calm
-  ]
-
-
 selectChar :: CharModel -> WhichPlayer -> Text -> CharModel
 selectChar model@(CharModel { charmodel_pa = m }) PlayerA name =
   model { charmodel_pa = selectIndChar name m }
@@ -120,11 +108,22 @@ toList (ThreeSelected a b c) = [ a, b, c ]
 
 
 -- CHARACTERS
+allCharacters :: [Character]
+allCharacters = [
+    flame
+  , thunder
+  , frost
+  , tempest
+  , mist
+  , vortex
+  , calm
+  ]
+
 flame :: Character
 flame = Character "Flame" "dragon/dragon.svg" (cardDragon, cardFirestorm, cardOffering, cardHaze)
 
 frost :: Character
-frost = Character "Frost" "bear/bear.svg" (cardBear, cardBlizzard, cardCrystal, cardFreeze)
+frost = Character "Frost" "bear/bear.svg" (cardBear, cardBlizzard, cardCrystal, cardAlchemy)
 
 thunder :: Character
 thunder = Character "Thunder" "stag/stag.svg" (cardStag, cardLightning, cardEcho, cardHubris)

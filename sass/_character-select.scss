@@ -88,8 +88,13 @@
 }
 
 .character-icon {
+  position: absolute;
   max-width: 32px;
-  margin-right: 16px;
+  margin-top: 6px;
+}
+
+.character-name {
+  margin-left: 40px;
 }
 
 .ready-up {
