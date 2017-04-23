@@ -55,8 +55,8 @@ view (Raymarch.Params frameTime windowDimensions) { characters, selected, hover 
                   else
                     class ""
                 ]
-                [
-                    text name
+                [ img [ src ("img/" ++ imgURL), class "character-icon" ] []
+                , div [ class "character-name" ] [ text name ]
                 ]
 
         selectedView : SelectedCharacters -> Html Msg

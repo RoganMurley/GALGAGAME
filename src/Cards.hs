@@ -101,11 +101,14 @@ cardCrystal = Card "Crystal" "Heal the weakest player for 15" "bear/crystal-grow
     mag = 15
 
 
-cardFreeze :: Card
-cardFreeze = Card "Freeze" "Negate the next card to the right" "bear/frozen-arrow.svg" "feint.wav" eff
+cardAlchemy :: Card
+cardAlchemy = Card "Alchemy" "The next card to the right's effect becomes: draw 2 cards" "bear/alchemy.svg" "feint.wav" eff
   where
     eff :: CardEff
-    eff _ _ m = modStack (drop 1) m
+    eff _ _ m = modStackHead (\(StackCard w _) -> StackCard w c) m
+    c :: Card
+    c = Card "Gold" "Draw 2 cards" "bear/gold.svg" "feint.wav" (\p _ -> (drawCard p p) . (drawCard p p))
+
 
 -- Tempest
 cardOctopus :: Card
