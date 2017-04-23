@@ -519,6 +519,7 @@ view ({ hostname, httpPort, frameTime, windowDimensions } as model) =
             div []
                 [ div [ class "main-menu" ]
                     [ h1 [] [ text "STØRMCARDS" ]
+                    , h2 [] [ text "A digital card game of risk & reward" ]
                     , div [ class "main-menu-buttons" ]
                         [ button
                             [ class "menu-button", disabled True ]

@@ -68,8 +68,8 @@ initCharModel = CharModel NoneSelected NoneSelected allCharacters
 allCharacters :: [Character]
 allCharacters = [
     flame
-  , frost
   , thunder
+  , frost
   , tempest
   , mist
   , vortex

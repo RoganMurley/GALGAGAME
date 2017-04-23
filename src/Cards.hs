@@ -33,13 +33,44 @@ cardHaze = Card "Haze" "Shuffle the order of cards to the right" "dragon/heat-ha
     eff _ _ m = modStack (\s -> shuffle s (getGen m)) m
 
 
-
--- Frost
-cardBear :: Card
-cardBear = Card "Bear" "Hurt for 10" "bear/bear.svg" "axe.mp3" eff
+-- Thunder
+cardStag :: Card
+cardStag = Card "Stag" "Hurt for 10" "stag/stag.svg" "hammer.wav" eff
   where
     eff :: CardEff
     eff p _ m = hurt 10 (otherPlayer p) m
+
+
+cardLightning :: Card
+cardLightning = Card "Lightning" "Hurt for 4 for each card to the right" "stag/lightning-trio.svg" "lightning.wav" eff
+  where
+    eff :: CardEff
+    eff p _ m = hurt (4 * (length . getStack $ m)) (otherPlayer p) m
+
+
+cardHubris :: Card
+cardHubris = Card "Hubris" "Negate all cards to the right" "stag/tower-fall.svg" "hubris.wav" eff
+  where
+    eff :: CardEff
+    eff _ _ m = setStack [] m
+
+
+cardEcho :: Card
+cardEcho = Card "Echo" "The next card to the right's effect happens twice" "stag/echo-ripples.svg" "echo.wav" eff
+  where
+    eff :: CardEff
+    eff _ _ m = modStackHead
+      (\(StackCard which (Card name desc pic sfx e)) ->
+        StackCard which (Card name desc pic sfx (\w c -> (e w c) . (e w c))))
+      m
+
+
+-- Frost
+cardBear :: Card
+cardBear = Card "Bear" "Hurt for 9" "bear/bear.svg" "axe.mp3" eff
+  where
+    eff :: CardEff
+    eff p _ m = hurt 9 (otherPlayer p) m
 
 
 cardBlizzard :: Card
@@ -75,39 +106,6 @@ cardFreeze = Card "Freeze" "Negate the next card to the right" "bear/frozen-arro
   where
     eff :: CardEff
     eff _ _ m = modStack (drop 1) m
-
-
--- Thunder
-cardStag :: Card
-cardStag = Card "Stag" "Hurt for 9" "stag/stag.svg" "hammer.wav" eff
-  where
-    eff :: CardEff
-    eff p _ m = hurt 9 (otherPlayer p) m
-
-
-cardLightning :: Card
-cardLightning = Card "Lightning" "Hurt for 4 for each card to the right" "stag/lightning-trio.svg" "lightning.wav" eff
-  where
-    eff :: CardEff
-    eff p _ m = hurt (4 * (length . getStack $ m)) (otherPlayer p) m
-
-
-cardHubris :: Card
-cardHubris = Card "Hubris" "Negate all cards to the right" "stag/tower-fall.svg" "hubris.wav" eff
-  where
-    eff :: CardEff
-    eff _ _ m = setStack [] m
-
-
-cardEcho :: Card
-cardEcho = Card "Echo" "The next card to the right's effect happens twice" "stag/echo-ripples.svg" "echo.wav" eff
-  where
-    eff :: CardEff
-    eff _ _ m = modStackHead
-      (\(StackCard which (Card name desc pic sfx e)) ->
-        StackCard which (Card name desc pic sfx (\w c -> (e w c) . (e w c))))
-      m
-
 
 -- Tempest
 cardOctopus :: Card
