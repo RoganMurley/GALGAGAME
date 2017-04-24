@@ -212,8 +212,8 @@ cardTurtle = Card "Turtle" "Hurt for 5" "turtle/turtle.svg" "crossbow.wav" eff
     eff :: CardEff
     eff p _ m = hurt 5 (otherPlayer p) m
 
-cardGale :: Card
-cardGale = Card "Gale" "Hurt for 3, return this card to your hand" "turtle/fluffy-cloud.svg" "boomerang.wav" eff
+cardGust :: Card
+cardGust = Card "Gust" "Hurt for 3, return this card to your hand" "turtle/fluffy-cloud.svg" "boomerang.wav" eff
   where
     eff :: CardEff
     eff p c m = modHand (addToHand c) p (hurt 3 (otherPlayer p) m)
