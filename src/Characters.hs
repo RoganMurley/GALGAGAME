@@ -138,4 +138,4 @@ mist :: Character
 mist = Character "Mist" "monkey/monkey.svg" (cardMonkey, cardMonsoon, cardMindgate, cardFeint)
 
 calm :: Character
-calm = Character "Calm" "turtle/turtle.svg" (cardTurtle, cardGale, cardSoup, cardReflect)
+calm = Character "Calm" "turtle/turtle.svg" (cardTurtle, cardGust, cardSoup, cardReflect)
