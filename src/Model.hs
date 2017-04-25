@@ -37,7 +37,7 @@ type CardName = Text
 type CardDesc = Text
 type CardImgURL = Text
 type CardSndURL = Text
-type CardEff = (WhichPlayer -> Card -> Model -> Model)
+type CardEff = (WhichPlayer -> Model -> Model)
 
 type Hand = [Card]
 type Deck = [Card]
@@ -274,13 +274,13 @@ lifesteal :: Life -> WhichPlayer -> Model -> Model
 lifesteal d p m = heal d (otherPlayer p) $ hurt d p m
 
 
-drawCard :: WhichPlayer -> WhichPlayer -> Model -> Model
-drawCard whichDeck whichHand model
+drawCard :: WhichPlayer -> Model -> Model
+drawCard which model
   | (length hand >= maxHandLength) = model
   | otherwise =
     case drawnCard of
       Just card ->
-        setDeck whichDeck drawnDeck $ setHand whichHand (card : hand) model
+        setDeck which drawnDeck $ setHand which (card : hand) model
       Nothing ->
         model
   where
@@ -289,9 +289,9 @@ drawCard whichDeck whichHand model
     drawnDeck :: Deck
     drawnDeck = tailSafe deck
     deck :: Deck
-    deck = getDeck whichDeck model
+    deck = getDeck which model
     hand :: Hand
-    hand = getHand whichHand model
+    hand = getHand which model
 
 
 playCard :: Int -> WhichPlayer -> Model -> Either Err Model
@@ -311,7 +311,7 @@ playCard index which m
 
 
 patchEff :: CardEff -> (Model -> Model -> Model) -> CardEff
-patchEff eff wrapper = \w c m -> wrapper m (eff w c m)
+patchEff eff wrapper = \w m -> wrapper m (eff w m)
 
 
 bounceAll :: WhichPlayer -> Stack -> Hand -> Hand
