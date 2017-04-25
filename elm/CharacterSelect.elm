@@ -23,16 +23,9 @@ type alias Character =
     }
 
 
-type SelectedCharacters
-    = NoneSelected
-    | OneSelected Name
-    | TwoSelected Name Name
-    | ThreeSelected Name Name Name
-
-
 type alias Model =
     { characters : List Character
-    , selected : SelectedCharacters
+    , selected : List Character
     , hover : Character
     }
 
@@ -45,12 +38,12 @@ view : Raymarch.Params -> Model -> Html Msg
 view (Raymarch.Params frameTime windowDimensions) { characters, selected, hover } =
     let
         characterView : Character -> Html Msg
-        characterView { name, imgURL } =
+        characterView ({ name, imgURL } as character) =
             div
                 [ class "character-button"
                 , onMouseEnter (GameStateMsg (SelectingMsg (SelectingHover name)))
                 , onClick (SelectCharacter name)
-                , if (contains selected name) then
+                , if (List.member character selected) then
                     class "invisible"
                   else
                     class ""
@@ -59,28 +52,25 @@ view (Raymarch.Params frameTime windowDimensions) { characters, selected, hover 
                 , div [ class "character-name" ] [ text name ]
                 ]
 
-        selectedView : SelectedCharacters -> Html Msg
-        selectedView s =
+        selectedView : List Character -> Html Msg
+        selectedView selected =
             let
-                chosenView : Name -> Html Msg
-                chosenView n =
+                chosenView : Character -> Html Msg
+                chosenView { name } =
                     div
                         [ class "character-chosen"
-                        , onMouseEnter (GameStateMsg (SelectingMsg (SelectingHover n)))
-                          -- , onClick (GameStateMsg (SelectingMsg (SelectingDeselect n)))
+                        , onMouseEnter (GameStateMsg (SelectingMsg (SelectingHover name)))
                         ]
-                        [ text n ]
+                        [ text name ]
             in
                 div [ class "ready-up" ]
                     [ div
                         [ class "characters-all-chosen" ]
-                        (List.map chosenView (nameList s))
-                    , case s of
-                        ThreeSelected _ _ _ ->
-                            text "Waiting for opponent"
-
-                        otherwise ->
-                            text ""
+                        (List.map chosenView selected)
+                    , if List.length selected >= 3 then
+                        text "Waiting for opponent"
+                      else
+                        text ""
                     ]
 
         cardPreviewView : ( Card, Card, Card, Card ) -> Html Msg
@@ -115,24 +105,3 @@ update msg model =
     case msg of
         SelectingHover n ->
             { model | hover = fromJust (List.head (List.filter (\{ name } -> name == n) model.characters)) }
-
-
-nameList : SelectedCharacters -> List Name
-nameList s =
-    case s of
-        NoneSelected ->
-            []
-
-        OneSelected a ->
-            [ a ]
-
-        TwoSelected a b ->
-            [ a, b ]
-
-        ThreeSelected a b c ->
-            [ a, b, c ]
-
-
-contains : SelectedCharacters -> Name -> Bool
-contains s n =
-    List.member n (nameList s)

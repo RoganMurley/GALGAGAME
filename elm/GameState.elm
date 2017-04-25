@@ -260,25 +260,7 @@ selectingDecoder oldState =
 
         makeSelectState : List CharacterSelect.Character -> List CharacterSelect.Character -> GameState
         makeSelectState selecting selected =
-            Selecting (CharacterSelect.Model selecting (toSelection selected) (hoverCharacter (fromJust (List.head selecting))))
-
-        toSelection : List CharacterSelect.Character -> CharacterSelect.SelectedCharacters
-        toSelection cs =
-            case cs of
-                [] ->
-                    CharacterSelect.NoneSelected
-
-                [ a ] ->
-                    CharacterSelect.OneSelected a.name
-
-                [ a, b ] ->
-                    CharacterSelect.TwoSelected a.name b.name
-
-                [ a, b, c ] ->
-                    CharacterSelect.ThreeSelected a.name b.name c.name
-
-                otherwise ->
-                    CharacterSelect.NoneSelected
+            Selecting (CharacterSelect.Model selecting selected (hoverCharacter (fromJust (List.head selecting))))
 
         hoverCharacter : CharacterSelect.Character -> CharacterSelect.Character
         hoverCharacter default =
