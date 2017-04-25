@@ -12,7 +12,6 @@ import WebSocket
 import Chat exposing (addChatMessage)
 import Drag exposing (dragAt, dragEnd, dragStart, getPosition)
 import Card exposing (Card)
-import CharacterSelect exposing (SelectedCharacters(ThreeSelected))
 import GameState exposing (GameState(..), resTick, stateUpdate, view, tickForward, tickZero)
 import Model exposing (Hand, Model, Turn, WhichPlayer(..), view)
 import Messages exposing (GameMsg(..), MenuMsg(..), Msg(..))
