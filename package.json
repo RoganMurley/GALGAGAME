@@ -1,5 +1,5 @@
 {
-  "name": "vanagloria",
+  "name": "stormcards",
   "version": "1.0.0",
   "description": "",
   "main": "gulpfile.js",
@@ -15,9 +15,9 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://RoganMurley@bitbucket.org/RoganMurley/vanagloria.git"
+    "url": "git+https://RoganMurley@bitbucket.org/RoganMurley/stormcards.git"
   },
   "author": "",
   "license": "ISC",
-  "homepage": "https://bitbucket.org/RoganMurley/vanagloria#readme"
+  "homepage": "https://bitbucket.org/RoganMurley/stormcards#readme"
 }

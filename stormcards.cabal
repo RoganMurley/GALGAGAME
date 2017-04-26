@@ -1,8 +1,8 @@
-name:                vanagloria
+name:                stormcards
 version:             0.1.0.0
 synopsis:            Initial project template from stack
 description:         Please see README.md
-homepage:            https://github.com/githubuser/vanagloria#readme
+homepage:            https://github.com/githubuser/stormcards#readme
 license:             BSD3
 license-file:        LICENSE
 author:              Rogan Murley
@@ -35,7 +35,7 @@ library
   default-extensions:  OverloadedStrings
                      , RecordWildCards
 
-executable vanagloria
+executable stormcards
   hs-source-dirs:      app
   main-is:             Main.hs
   ghc-options:         -threaded -rtsopts -with-rtsopts=-N -Wall
@@ -47,13 +47,13 @@ executable vanagloria
                      , string-conversions
                      , text
                      , transformers
-                     , vanagloria
+                     , stormcards
                      , websockets
   default-language:    Haskell2010
   default-extensions:  OverloadedStrings
                      , RecordWildCards
 
-test-suite vanagloria-test
+test-suite stormcards-test
   type:                exitcode-stdio-1.0
   hs-source-dirs:      test
   main-is:             Spec.hs
@@ -61,7 +61,7 @@ test-suite vanagloria-test
                      , random
                      , tasty
                      , tasty-hunit
-                     , vanagloria
+                     , stormcards
   ghc-options:         -threaded -rtsopts -with-rtsopts=-N -Wall
   default-language:    Haskell2010
   default-extensions:  OverloadedStrings
@@ -69,4 +69,4 @@ test-suite vanagloria-test
 
 source-repository head
   type:     git
-  location: https://github.com/githubuser/vanagloria
+  location: https://github.com/githubuser/stormcards
