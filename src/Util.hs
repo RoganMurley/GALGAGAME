@@ -43,7 +43,9 @@ instance Show Gen where
   show _ = "gen"
 
 split :: Gen -> (Gen, Gen)
-split (Gen g) = (Gen . fst $ R.split g, Gen . snd $ R.split g)
+split (Gen g) = (Gen g1, Gen g2)
+  where
+    (g1, g2) = R.split g :: (R.StdGen, R.StdGen)
 
 getGen :: IO Gen
 getGen = fmap Gen R.getStdGen

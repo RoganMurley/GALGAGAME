@@ -260,18 +260,20 @@ getGen Model{ model_gen = gen } = gen
 
 -- ACTIONS
 hurt :: Life -> WhichPlayer -> Model -> Model
-hurt damage which model = modLife (\l -> l - damage) which model
+hurt damage which model =
+  modLife ((-) damage) which model
 
 
 heal :: Life -> WhichPlayer -> Model -> Model
 heal life PlayerA model =
-  modLife (\l -> l + life) PlayerA model
+  modLife ((+) life) PlayerA model
 heal life PlayerB model =
-  modLife (\l -> l + life) PlayerB model
+  modLife ((+) life) PlayerB model
 
 
 lifesteal :: Life -> WhichPlayer -> Model -> Model
-lifesteal d p m = heal d (otherPlayer p) $ hurt d p m
+lifesteal d p m =
+  heal d (otherPlayer p) $ hurt d p m
 
 
 drawCard :: WhichPlayer -> Model -> Model
@@ -308,17 +310,11 @@ playCard index which m
     card = (StackCard which) <$> (atMay hand index) :: Maybe StackCard
 
 
-patchEff :: CardEff -> (Model -> Model -> Model) -> CardEff
-patchEff eff wrapper = \w m -> wrapper m (eff w m)
-
-
 bounceAll :: WhichPlayer -> Stack -> Hand -> Hand
 bounceAll w s h =
-  h ++ (fmap getCard (filter (owner w) s))
+  h ++ (fmap getCard (filter owner s))
   where
-    owner :: WhichPlayer -> StackCard -> Bool
-    owner PlayerA (StackCard PlayerA _) = True
-    owner PlayerB (StackCard PlayerB _) = True
-    owner _ _ = False
+    owner :: StackCard -> Bool
+    owner (StackCard o _) = w == o
     getCard :: StackCard -> Card
     getCard (StackCard _ card) = card
