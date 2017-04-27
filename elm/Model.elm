@@ -124,7 +124,7 @@ view params resTime model =
             , viewTurn (List.length model.hand == maxHandLength) model.turn
             , viewLife PlayerA model.life
             , viewLife PlayerB model.otherLife
-            , Vfx.view params intens.lower intens.upper resTime
+            --, Vfx.view params intens.lower intens.upper resTime
             ]
 
 
@@ -268,7 +268,7 @@ resView params res resTime model =
             , viewResTurn
             , viewLife PlayerA model.life
             , viewLife PlayerB model.otherLife
-            , Vfx.view params intens.lower intens.upper resTime
+            --, Vfx.view params intens.lower intens.upper resTime
             ]
 
 
