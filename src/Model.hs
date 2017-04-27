@@ -275,14 +275,12 @@ lifesteal d p m = heal d (otherPlayer p) $ hurt d p m
 
 
 drawCard :: WhichPlayer -> Model -> Model
-drawCard which model
-  | (length hand >= maxHandLength) = model
-  | otherwise =
-    case drawnCard of
-      Just card ->
-        setDeck which drawnDeck $ setHand which (card : hand) model
-      Nothing ->
-        model
+drawCard which model =
+  case drawnCard of
+    Just card ->
+      setDeck which drawnDeck $ setHand which (card : hand) model
+    Nothing ->
+      model
   where
     drawnCard :: Maybe Card
     drawnCard = headMay deck
