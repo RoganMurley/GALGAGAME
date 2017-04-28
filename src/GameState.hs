@@ -1,6 +1,7 @@
 module GameState where
 
 import Data.Aeson (ToJSON(..), (.=), object)
+import Data.Maybe (fromMaybe)
 import Data.Monoid ((<>))
 import Data.String.Conversions (cs)
 import Safe (headMay, tailSafe)
@@ -117,11 +118,7 @@ update cmd which state =
         Ended winner gen ->
           case cmd of
             Rematch ->
-                case winner of
-                  Nothing ->
-                    Right . (\x -> (x, [SyncOutcome])) . Just $ Selecting initCharModel PlayerA (fst $ split gen)
-                  Just w ->
-                    Right . (\x -> (x, [SyncOutcome])) . Just $ Selecting initCharModel w (fst $ split gen)
+              Right . (\x -> (x, [SyncOutcome])) . Just $ Selecting initCharModel (fromMaybe PlayerA winner) (fst $ split gen)
             _ ->
               Left ("Unknown command " <> (cs $ show cmd) <> " on an Ended GameState")
 
