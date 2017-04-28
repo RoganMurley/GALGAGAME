@@ -212,7 +212,7 @@ application state pending = do
                 client = (T.drop (T.length prefix) msg, PlayerConnection conn) :: Client
     Nothing ->
       (WS.sendTextData conn) . toChat $
-        ErrorCommand "bad room name protocol"
+        ErrorCommand ("bad room name protocol: " <> roomReq)
 
 spectate :: (Username, WS.Connection) -> MVar Room -> IO ()
 spectate (user, conn) room =
