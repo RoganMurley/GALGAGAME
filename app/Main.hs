@@ -50,15 +50,14 @@ newServerState = empty
 getRoom :: RoomName -> MVar ServerState -> IO (MVar Room)
 getRoom name state =
   modifyMVar state $ \s ->
-    do
-      case lookup name s of
-        Just room ->
-          return (s, room)
-        Nothing ->
-          do
-            gen <- getGen
-            r <- newMVar (Room.new gen)
-            return (insert name r s, r)
+    case lookup name s of
+      Just room ->
+        return (s, room)
+      Nothing ->
+        do
+          gen <- getGen
+          r <- newMVar (Room.new gen)
+          return (insert name r s, r)
 
 deleteRoom :: RoomName -> MVar ServerState -> IO (ServerState)
 deleteRoom name state =
