@@ -261,14 +261,14 @@ getGen Model{ model_gen = gen } = gen
 -- ACTIONS
 hurt :: Life -> WhichPlayer -> Model -> Model
 hurt damage which model =
-  modLife (\x -> x - damage) which model
+  modLife (-damage+) which model
 
 
 heal :: Life -> WhichPlayer -> Model -> Model
 heal life PlayerA model =
-  modLife (\x -> x + life) PlayerA model
+  modLife (life+) PlayerA model
 heal life PlayerB model =
-  modLife (\x -> x + life) PlayerB model
+  modLife (life+) PlayerB model
 
 
 lifesteal :: Life -> WhichPlayer -> Model -> Model
