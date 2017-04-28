@@ -126,7 +126,7 @@ update cmd which state =
 endTurn :: WhichPlayer -> Model -> Either Err (Maybe GameState, [Outcome])
 endTurn which model
   | turn /= which = Left "You can't end the turn when it's not your turn!"
-  | handFull = Right (Just . Started . Playing $ model, [])
+  | handFull =  Left "You can't end the turn when your hand is full!"
   | otherwise =
     case passes of
       OnePass ->
