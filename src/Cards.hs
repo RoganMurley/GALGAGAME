@@ -66,15 +66,15 @@ cardEcho = Card "Echo" "The next card to the right's effect happens twice" "stag
 
 
 -- Frost
-cardBear :: Card
-cardBear = Card "Bear" "Hurt for 9" "bear/bear.svg" "axe.mp3" eff
+cardGem :: Card
+cardGem = Card "Powergem" "Hurt for 9" "gem/gem.svg" "axe.mp3" eff
   where
     eff :: CardEff
     eff p m = hurt 9 (otherPlayer p) m
 
 
 cardBlizzard :: Card
-cardBlizzard = Card "Blizzard" "Hurt the weakest player for 15" "bear/ice-spear.svg" "frostbite.mp3" eff
+cardBlizzard = Card "Blizzard" "Hurt the weakest player for 15" "gem/ice-spear.svg" "frostbite.mp3" eff
   where
     eff :: CardEff
     eff _ m
@@ -88,7 +88,7 @@ cardBlizzard = Card "Blizzard" "Hurt the weakest player for 15" "bear/ice-spear.
 
 
 cardCrystal :: Card
-cardCrystal = Card "Crystal" "Heal the weakest player for 15" "bear/crystal-growth.svg" "oath.wav" eff
+cardCrystal = Card "Crystal" "Heal the weakest player for 15" "gem/crystal-growth.svg" "oath.wav" eff
   where
     eff :: CardEff
     eff _ m
@@ -102,12 +102,12 @@ cardCrystal = Card "Crystal" "Heal the weakest player for 15" "bear/crystal-grow
 
 
 cardAlchemy :: Card
-cardAlchemy = Card "Alchemy" "The next card to the right's effect becomes: draw 2 cards" "bear/alchemy.svg" "feint.wav" eff
+cardAlchemy = Card "Alchemy" "The next card to the right's effect becomes: draw 2 cards" "gem/alchemy.svg" "feint.wav" eff
   where
     eff :: CardEff
     eff _ m = modStackHead (\(StackCard w _) -> StackCard w c) m
     c :: Card
-    c = Card "Gold" "Draw 2 cards" "bear/gold.svg" "feint.wav" (\p -> (drawCard p) . (drawCard p))
+    c = Card "Gold" "Draw 2 cards" "gem/gold.svg" "feint.wav" (\p -> (drawCard p) . (drawCard p))
 
 
 -- Tempest
