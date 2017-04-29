@@ -123,7 +123,7 @@ flame :: Character
 flame = Character "Flame" "dragon/dragon.svg" (cardDragon, cardFirestorm, cardOffering, cardHaze)
 
 frost :: Character
-frost = Character "Frost" "bear/bear.svg" (cardBear, cardBlizzard, cardCrystal, cardAlchemy)
+frost = Character "Frost" "gem/gem.svg" (cardGem, cardBlizzard, cardCrystal, cardAlchemy)
 
 thunder :: Character
 thunder = Character "Thunder" "stag/stag.svg" (cardStag, cardLightning, cardEcho, cardHubris)
