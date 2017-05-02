@@ -300,7 +300,11 @@ playCard index which m
   | otherwise =
     case card of
       Just c ->
-        Right . resetPasses . swapTurn . (modStack ((:) c)) $ setHand which newHand m
+        Right
+          . resetPasses
+          . swapTurn
+          . (modStack ((:) c))
+          $ setHand which newHand m
       Nothing ->
         Left "You can't play a card you don't have in your hand"
   where
@@ -312,7 +316,7 @@ playCard index which m
 
 bounceAll :: WhichPlayer -> Stack -> Hand -> Hand
 bounceAll w s h =
-  h ++ (fmap getCard (filter owner s))
+  h ++ (getCard <$> (filter owner s))
   where
     owner :: StackCard -> Bool
     owner (StackCard o _) = w == o
