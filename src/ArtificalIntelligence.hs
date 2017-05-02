@@ -1,5 +1,6 @@
 module ArtificalIntelligence where
 
+import Control.Monad.Writer (runWriter)
 import Data.List (maximumBy)
 import Data.Maybe (fromJust)
 import Data.Ord (comparing)
@@ -24,7 +25,7 @@ evaluateState (Ended Nothing  _)       = 50
 evaluateModel :: Model -> Weight
 evaluateModel m =
   if (length . getStack $ m) > 0 then
-    evaluateState . fst . resolveAll $ (m, [])
+    evaluateState . fst . runWriter . resolveAll $ m
       else
         weighting
   where

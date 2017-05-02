@@ -24,6 +24,7 @@ library
                      , Util
   build-depends:       base >= 4.7 && < 5
                      , aeson
+                     , mtl
                      , random
                      , random-shuffle
                      , safe
