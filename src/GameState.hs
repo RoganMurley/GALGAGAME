@@ -113,7 +113,7 @@ update cmd which state =
             PlayCard index ->
               ((\x -> (x, [SyncOutcome, PlayCardOutcome which])) . Just . Started . Playing) <$> (playCard index which model)
             HoverCard index ->
-              (\x -> (Nothing, x)) <$> (hoverCard index which model)
+              (\x -> (Nothing, [x])) <$> (hoverCard index which model)
             _ ->
               Left ("Unknown command " <> (cs $ show cmd) <> " on a Playing GameState")
         Ended winner gen ->
@@ -196,6 +196,7 @@ type ExcludePlayer = WhichPlayer
 type Username = Text
 
 
+-- OUTCOMES
 data Outcome =
     ChatOutcome Username Text
   | HoverOutcome ExcludePlayer (Maybe Int)
@@ -205,8 +206,6 @@ data Outcome =
   | EndTurnOutcome ExcludePlayer
   deriving (Eq, Show)
 
-
--- OUTCOMES
 
 instance ToJSON Outcome where
   toJSON (HoverOutcome _ index) =
@@ -229,14 +228,14 @@ instance ToJSON Outcome where
       error "PlayCardOutcome shouldn't be marshalled to JSON" -- DANGEROUS!!!
 
 
-hoverCard :: Maybe Int -> WhichPlayer -> Model -> Either Err ([Outcome])
+hoverCard :: Maybe Int -> WhichPlayer -> Model -> Either Err Outcome
 hoverCard index which model =
   case index of
     Just i ->
       if i < (length . (getHand which) $ model)
         then
-          Right [HoverOutcome which (Just i)]
-            else
-              Left ("Hover index out of bounds (" <> (cs . show $ i ) <> ")" :: Err)
+          Right (HoverOutcome which (Just i))
+        else
+          Left ("Hover index out of bounds (" <> (cs . show $ i ) <> ")" :: Err)
     Nothing ->
-      Right [HoverOutcome which Nothing]
+      Right (HoverOutcome which Nothing)
