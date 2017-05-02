@@ -1,5 +1,6 @@
 module GameState where
 
+import Control.Monad.Writer (Writer, runWriter, tell)
 import Data.Aeson (ToJSON(..), (.=), object)
 import Data.Maybe (fromMaybe)
 import Data.Monoid ((<>))
@@ -130,13 +131,13 @@ endTurn which model
   | otherwise =
     case passes of
       OnePass ->
-        case resolveAll (model, []) of
+        case runWriter . resolveAll $ model of
           (Playing m, res) ->
             let newState = Started . Playing . drawCards . resetPasses . swapTurn $ m in
-              Right (Just newState, [ResolveOutcome (reverse res) newState, EndTurnOutcome which])
+              Right (Just newState, [ResolveOutcome res newState, EndTurnOutcome which])
           (Ended w g, res) ->
             let newState = Started (Ended w g) in
-              Right (Just newState, [ResolveOutcome (reverse res) newState, EndTurnOutcome which])
+              Right (Just newState, [ResolveOutcome res newState, EndTurnOutcome which])
       NoPass ->
         Right (Just . Started . Playing . swapTurn $ model, [SyncOutcome])
   where
@@ -147,16 +148,17 @@ endTurn which model
     drawCards m = (drawCard PlayerA) . (drawCard PlayerB) $ m
 
 
-resolveAll :: (Model, ResolveList) -> (PlayState, ResolveList)
-resolveAll (model, res) =
-  if null stack then
-    (Playing model, res)
-    else
+resolveAll :: Model -> Writer ResolveList PlayState
+resolveAll model
+  | null stack = return (Playing model)
+  | otherwise =
+    do
+      tell [model]
       case resolveOne model of
         Playing newModel ->
-          resolveAll (newModel, model : res)
+          resolveAll newModel
         Ended which gen ->
-          (Ended which gen, model : res)
+          return (Ended which gen)
   where
     stack = getStack model :: Stack
     resolveOne :: Model -> PlayState
@@ -170,7 +172,6 @@ resolveAll (model, res) =
               id
             Just (StackCard p (Card _ _ _ _ e)) ->
               e p
-
 
 lifeGate :: Model -> PlayState
 lifeGate m
