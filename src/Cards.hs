@@ -9,7 +9,7 @@ dragon :: Card
 dragon = Card "Dragon" "Hurt for 11" "dragon/dragon.svg" "dagger.wav" eff
   where
     eff :: CardEff
-    eff p m = hurt 12 (otherPlayer p) m
+    eff p m = hurt 11 (otherPlayer p) m
 
 
 firestorm :: Card
