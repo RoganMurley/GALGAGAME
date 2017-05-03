@@ -2,9 +2,10 @@ module Characters where
 
 import Data.Aeson (ToJSON(..), (.=), object)
 import Data.Text (Text)
-import Cards
-import Model
 import Safe (headMay)
+
+import qualified Cards
+import Model
 
 
 -- TYPES
@@ -120,22 +121,22 @@ allCharacters = [
   ]
 
 flame :: Character
-flame = Character "Flame" "dragon/dragon.svg" (cardDragon, cardFirestorm, cardOffering, cardHaze)
+flame = Character "Flame" "dragon/dragon.svg" (Cards.dragon, Cards.firestorm, Cards.offering, Cards.haze)
 
 frost :: Character
-frost = Character "Frost" "gem/gem.svg" (cardGem, cardBlizzard, cardCrystal, cardAlchemy)
+frost = Character "Frost" "gem/gem.svg" (Cards.gem, Cards.blizzard, Cards.crystal, Cards.alchemy)
 
 thunder :: Character
-thunder = Character "Thunder" "stag/stag.svg" (cardStag, cardLightning, cardEcho, cardHubris)
+thunder = Character "Thunder" "stag/stag.svg" (Cards.stag, Cards.lightning, Cards.echo, Cards.hubris)
 
 tempest :: Character
-tempest = Character "Tempest" "octopus/octopus.svg" (cardOctopus, cardTentacles, cardSiren, cardReversal)
+tempest = Character "Tempest" "octopus/octopus.svg" (Cards.octopus, Cards.tentacles, Cards.siren, Cards.reversal)
 
 vortex :: Character
-vortex = Character "Vortex" "owl/owl.svg" (cardOwl, cardTwister, cardHypnosis, cardProphecy)
+vortex = Character "Vortex" "owl/owl.svg" (Cards.owl, Cards.twister, Cards.hypnosis, Cards.prophecy)
 
 mist :: Character
-mist = Character "Mist" "monkey/monkey.svg" (cardMonkey, cardMonsoon, cardMindgate, cardFeint)
+mist = Character "Mist" "monkey/monkey.svg" (Cards.monkey, Cards.monsoon, Cards.mindgate, Cards.feint)
 
 calm :: Character
-calm = Character "Calm" "turtle/turtle.svg" (cardTurtle, cardGust, cardSoup, cardReflect)
+calm = Character "Calm" "turtle/turtle.svg" (Cards.turtle, Cards.gust, Cards.soup, Cards.reflect)
