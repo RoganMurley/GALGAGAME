@@ -148,7 +148,7 @@ endTurn which model
     drawCards m = (drawCard PlayerA) . (drawCard PlayerB) $ m
 
 
-resolveAll :: Model -> Writer ResolveList PlayState
+resolveAll :: Model -> Writer [Model] PlayState
 resolveAll model
   | null stack = return (Playing model)
   | otherwise =
@@ -200,7 +200,7 @@ type Username = Text
 data Outcome =
     ChatOutcome Username Text
   | HoverOutcome ExcludePlayer (Maybe Int)
-  | ResolveOutcome ResolveList GameState
+  | ResolveOutcome [Model] GameState
   | SyncOutcome
   | PlayCardOutcome ExcludePlayer
   | EndTurnOutcome ExcludePlayer
