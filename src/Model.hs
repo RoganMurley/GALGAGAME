@@ -47,7 +47,6 @@ data StackCard = StackCard WhichPlayer Card
   deriving (Eq, Show)
 
 type Life = Int
-type ResolveList = [Model]
 
 
 data WhichPlayer = PlayerA | PlayerB
