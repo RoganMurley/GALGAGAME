@@ -298,15 +298,15 @@ disconnect client room name state = do
 
 parsePrefix :: Text -> Maybe Text
 parsePrefix msg
-  | T.isPrefixOf "spectate:" msg = Just "spectate:"
-  | T.isPrefixOf "play:" msg = Just "play:"
+  | T.isPrefixOf "spectate:"     msg = Just "spectate:"
+  | T.isPrefixOf "play:"         msg = Just "play:"
   | T.isPrefixOf "playComputer:" msg = Just "playComputer:"
-  | otherwise = Nothing
+  | otherwise                        = Nothing
 
 userList :: Room -> Text
 userList room
   | users == "" = "You're the only one here..."
-  | otherwise = "Users: " <> users
+  | otherwise   = "Users: " <> users
   where
     users :: Text
     users = (T.intercalate ", ") . (map fst) $ Room.getClients room
@@ -330,16 +330,17 @@ actPlay cmd which roomVar =
       actSpec cmd roomVar
   where
     trans :: Command -> Maybe GameCommand
-    trans EndTurnCommand = Just EndTurn
-    trans (PlayCardCommand index) = Just (PlayCard index)
-    trans (HoverCardCommand index) = Just (HoverCard index)
-    trans RematchCommand = Just Rematch
+    trans EndTurnCommand             = Just EndTurn
+    trans (PlayCardCommand index)    = Just (PlayCard index)
+    trans (HoverCardCommand index)   = Just (HoverCard index)
+    trans RematchCommand             = Just Rematch
     trans (ChatCommand name content) = Just (Chat name content)
     trans (SelectCharacterCommand n) = Just (SelectCharacter n)
-    trans _ = Nothing
+    trans _                          = Nothing
 
 actSpec :: Command -> MVar Room -> IO ()
-actSpec cmd room = readMVar room >>= broadcast (toChat cmd)
+actSpec cmd room =
+  readMVar room >>= broadcast (toChat cmd)
 
 actOutcome :: Room -> Outcome -> IO ()
 actOutcome room outcome@(HoverOutcome which _) =
