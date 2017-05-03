@@ -443,11 +443,8 @@ parseMsg name msg =
 
 parseRoomReq :: Text -> Maybe Text
 parseRoomReq msg =
-  case parsed of
+  case T.breakOn ":" msg of
     ("room", name) ->
       Just name
     _ ->
       Nothing
-  where
-    parsed :: (Text, Text)
-    parsed = T.breakOn ":" msg
