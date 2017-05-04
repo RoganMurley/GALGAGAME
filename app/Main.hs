@@ -21,7 +21,7 @@ import qualified Network.WebSockets as WS
 
 import ArtificalIntelligence (Action(..), chooseAction)
 import Characters (CharModel(..), character_name, toList)
-import Model (Model, WhichPlayer(..), getTurn, modelReverso, otherPlayer)
+import Model (Model, WhichPlayer(..), getTurn, modelReverso, other)
 import GameState (GameCommand(..), GameState(..), PlayState(..), Outcome(..), Username, reverso, update)
 import qualified Room
 import Room (Client, ClientConnection(..), Room, RoomName, sendToClient)
@@ -132,7 +132,7 @@ sendToSpecs msg room =
 sendExcluding :: WhichPlayer -> Text -> Room -> IO ()
 sendExcluding which msg room = do
   sendToSpecs msg room
-  sendToPlayer (otherPlayer which) msg room
+  sendToPlayer (other which) msg room
 
 -- MAIN STUFF.
 main :: IO ()
@@ -200,7 +200,7 @@ application state pending = do
                           disconnect computerClient roomVar roomName state
                         )
                         (do
-                          _ <- forkIO (computerPlay (otherPlayer which) room' roomVar)
+                          _ <- forkIO (computerPlay (other which) room' roomVar)
                           play which room' (fst client, conn) roomVar
                         )
 

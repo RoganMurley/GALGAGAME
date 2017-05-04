@@ -63,7 +63,20 @@ initState = Waiting
 
 
 initModel :: Turn -> FinalSelection -> FinalSelection -> Gen -> Model
-initModel turn ca cb gen = Model turn [] handPA handPB deckPA deckPB maxLife maxLife NoPass gen
+initModel turn ca cb gen =
+  Model
+    turn
+    []
+    (PlayerModel
+      handPA
+      deckPA
+      maxLife)
+    (PlayerModel
+      handPB
+      deckPB
+      maxLife)
+    NoPass
+    gen
   where
     (genPA, genPB) = split gen :: (Gen, Gen)
     initDeckPA = shuffle (buildDeck ca) genPA :: Deck
@@ -83,7 +96,7 @@ reverso :: GameState -> GameState
 reverso (Waiting gen)               = Waiting gen
 reverso (Selecting m t gen)         = Selecting (characterModelReverso m) t gen
 reverso (Started (Playing model))   = Started . Playing $ modelReverso model
-reverso (Started (Ended which gen)) = Started $ Ended (otherPlayer <$> which) gen
+reverso (Started (Ended which gen)) = Started $ Ended (other <$> which) gen
 
 
 update :: GameCommand -> WhichPlayer -> GameState -> Either Err (Maybe GameState, [Outcome])
@@ -183,8 +196,8 @@ lifeGate m
     Ended (Just PlayerB) gen
   | otherwise =
     Playing
-      . (setLife PlayerA (min maxLife lifePA))
-      . (setLife PlayerB (min maxLife lifePB))
+      . (setLife (min maxLife lifePA) PlayerA)
+      . (setLife (min maxLife lifePB) PlayerB)
       $ m
   where
     gen = getGen m :: Gen
