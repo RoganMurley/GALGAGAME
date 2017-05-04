@@ -2,24 +2,27 @@ module Model where
 
 
 import Data.Aeson (ToJSON(..), (.=), object)
+import Data.String.Conversions (cs)
 import Data.Text (Text)
 import Safe (atMay, headMay, tailSafe)
-import Data.String.Conversions (cs)
 
 import Util (Err, Gen, deleteIndex)
 
 
 data Model = Model
-  { model_turn    :: Turn
-  , model_stack   :: Stack
-  , model_handPA  :: Hand
-  , model_handPB  :: Hand
-  , model_deckPA  :: Deck
-  , model_deckPB  :: Deck
-  , model_lifePA  :: Life
-  , model_lifePB  :: Life
-  , model_passes  :: Passes
-  , model_gen     :: Gen
+  { model_turn   :: Turn
+  , model_stack  :: Stack
+  , model_pa     :: PlayerModel
+  , model_pb     :: PlayerModel
+  , model_passes :: Passes
+  , model_gen    :: Gen
+  }
+  deriving (Eq, Show)
+
+data PlayerModel = PlayerModel
+  { pmodel_hand :: Hand
+  , pmodel_deck :: Deck
+  , pmodel_life :: Life
   }
   deriving (Eq, Show)
 
@@ -103,29 +106,38 @@ maxLife = 50
 
 
 modelReverso :: Model -> Model
-modelReverso (Model turn stack handPA handPB deckPA deckPB lifePA lifePB passes gen) =
-  (Model (otherTurn turn) (stackRev stack) handPB handPA deckPB deckPA lifePB lifePA passes gen)
+modelReverso (Model turn stack pa pb passes gen) =
+  (Model (other turn) (stackRev stack) pb pa passes gen)
   where
     stackRev :: Stack -> Stack
-    stackRev s = fmap (\(StackCard p c) -> StackCard (otherPlayer p) c) s
+    stackRev = fmap (\(StackCard p c) -> StackCard (other p) c)
 
 
 swapTurn :: Model -> Model
-swapTurn model = (modPasses incPasses) . (modTurn otherTurn) $ model
+swapTurn model = (modPasses incPasses) . (modTurn other) $ model
 
 
-otherTurn :: Turn -> Turn
-otherTurn PlayerA = PlayerB
-otherTurn PlayerB = PlayerA
+other :: WhichPlayer -> WhichPlayer
+other PlayerA = PlayerB
+other PlayerB = PlayerA
 
 
-otherPlayer :: WhichPlayer -> WhichPlayer
-otherPlayer = otherTurn
+-- PLAYER MODEL
+getPmodel :: WhichPlayer -> Model -> PlayerModel
+getPmodel PlayerA = model_pa
+getPmodel PlayerB = model_pb
+
+setPmodel :: PlayerModel -> WhichPlayer -> Model -> Model
+setPmodel pmodel PlayerA model = model { model_pa = pmodel }
+setPmodel pmodel PlayerB model = model { model_pb = pmodel }
+
+modPmodel :: (PlayerModel -> PlayerModel) -> WhichPlayer -> Model -> Model
+modPmodel f p m = setPmodel (f (getPmodel p m)) p m
 
 
 -- TURN
 getTurn :: Model -> Turn
-getTurn Model{ model_turn = turn } = turn
+getTurn = model_turn
 
 setTurn :: Turn -> Model -> Model
 setTurn turn model = model { model_turn = turn }
@@ -136,75 +148,46 @@ modTurn f m = setTurn (f . getTurn $ m) m
 
 -- LIFE.
 getLife :: WhichPlayer -> Model -> Life
-getLife PlayerA = model_lifePA
-getLife PlayerB = model_lifePB
+getLife w m = pmodel_life (getPmodel w m)
 
 
-setLife :: WhichPlayer -> Life -> Model -> Model
-setLife PlayerA life model = model { model_lifePA = life }
-setLife PlayerB life model = model { model_lifePB = life }
+setLife :: Life -> WhichPlayer -> Model -> Model
+setLife life = modPmodel (\pm -> pm { pmodel_life = life })
 
 
 modLife :: (Life -> Life) -> WhichPlayer -> Model -> Model
-modLife f p m = setLife p (f (getLife p m)) m
+modLife f p m = setLife (f (getLife p m)) p m
 
 
 -- HAND.
 getHand :: WhichPlayer -> Model -> Hand
-getHand PlayerA = model_handPA
-getHand PlayerB = model_handPB
+getHand w m = pmodel_hand (getPmodel w m)
 
 
-setHand :: WhichPlayer -> Hand -> Model -> Model
-setHand PlayerA hand model = model { model_handPA = take maxHandLength hand }
-setHand PlayerB hand model = model { model_handPB = take maxHandLength hand }
+setHand :: Hand -> WhichPlayer -> Model -> Model
+setHand hand = modPmodel (\pm -> pm { pmodel_hand = take maxHandLength hand })
 
 
 modHand :: (Hand -> Hand) -> WhichPlayer -> Model -> Model
-modHand f p m = setHand p (f (getHand p m)) m
-
-
-mapHand :: (Hand -> a) -> WhichPlayer -> Model -> a
-mapHand f p m = f (getHand p m)
-
-
-addToHand :: Card -> Hand -> Hand
-addToHand card hand
-  | length hand < maxHandLength = card : hand
-  | otherwise = hand
+modHand f p m = setHand (f (getHand p m)) p m
 
 
 -- DECK.
 getDeck :: WhichPlayer -> Model -> Deck
-getDeck PlayerA = model_deckPA
-getDeck PlayerB = model_deckPB
+getDeck w m = pmodel_deck (getPmodel w m)
 
 
-setDeck :: WhichPlayer -> Deck -> Model -> Model
-setDeck PlayerA deck model = model { model_deckPA = deck }
-setDeck PlayerB deck model = model { model_deckPB = deck }
-
-
-mapDeck :: (Deck -> a) -> WhichPlayer -> Model -> a
-mapDeck f p m = f (getDeck p m)
+setDeck :: Deck -> WhichPlayer -> Model -> Model
+setDeck deck = modPmodel (\pm -> pm { pmodel_deck = deck })
 
 
 modDeck :: (Deck -> Deck) -> WhichPlayer -> Model -> Model
-modDeck f p m = setDeck p (mapDeck f p m) m
-
-
-modDeckHead :: (Card -> Card) -> WhichPlayer -> Model -> Model
-modDeckHead f p m =
-  case headMay (getDeck p m) of
-    Just card ->
-      setDeck p ((f card) : (tail (getDeck p m))) m
-    Nothing ->
-      m
+modDeck f p m = setDeck (f (getDeck p m)) p m
 
 
 -- STACK.
 getStack :: Model -> Stack
-getStack Model{ model_stack = stack } = stack
+getStack = model_stack
 
 
 setStack :: Stack -> Model -> Model
@@ -227,12 +210,12 @@ modStackHead f m =
 
 
 modStackAll :: (StackCard -> StackCard) -> Model -> Model
-modStackAll f m = modStack (fmap f) m
+modStackAll f = modStack (fmap f)
 
 
 -- Passes.
 getPasses :: Model -> Passes
-getPasses Model{ model_passes = passes } = passes
+getPasses = model_passes
 
 
 setPasses :: Passes -> Model -> Model
@@ -249,7 +232,7 @@ incPasses OnePass = NoPass
 
 
 resetPasses :: Model -> Model
-resetPasses model = setPasses NoPass model
+resetPasses = setPasses NoPass
 
 
 -- Gen
@@ -272,25 +255,16 @@ heal life PlayerB model =
 
 lifesteal :: Life -> WhichPlayer -> Model -> Model
 lifesteal d p m =
-  heal d (otherPlayer p) $ hurt d p m
+  heal d (other p) $ hurt d p m
 
 
 drawCard :: WhichPlayer -> Model -> Model
 drawCard which model =
-  case drawnCard of
+  case headMay (getDeck which model) of
     Just card ->
-      setDeck which drawnDeck $ setHand which (card : hand) model
+      modDeck tailSafe which $ modHand ((:) card) which model
     Nothing ->
       model
-  where
-    drawnCard :: Maybe Card
-    drawnCard = headMay deck
-    drawnDeck :: Deck
-    drawnDeck = tailSafe deck
-    deck :: Deck
-    deck = getDeck which model
-    hand :: Hand
-    hand = getHand which model
 
 
 playCard :: Int -> WhichPlayer -> Model -> Either Err Model
@@ -303,13 +277,12 @@ playCard index which m
           . resetPasses
           . swapTurn
           . (modStack ((:) c))
-          $ setHand which newHand m
+          $ modHand (deleteIndex index) which m
       Nothing ->
         Left "You can't play a card you don't have in your hand"
   where
-    turn = getTurn m :: Turn
     hand = getHand which m :: Hand
-    newHand = deleteIndex index hand :: Hand
+    turn = getTurn m :: Turn
     card = (StackCard which) <$> (atMay hand index) :: Maybe StackCard
 
 
