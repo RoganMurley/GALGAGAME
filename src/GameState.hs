@@ -196,8 +196,8 @@ lifeGate m
     Ended (Just PlayerB) gen
   | otherwise =
     Playing
-      . (setLife (min maxLife lifePA) PlayerA)
-      . (setLife (min maxLife lifePB) PlayerB)
+      . (setLife PlayerA (min maxLife lifePA))
+      . (setLife PlayerB (min maxLife lifePB))
       $ m
   where
     gen = getGen m :: Gen
