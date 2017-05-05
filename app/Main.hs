@@ -9,7 +9,7 @@ import Control.Monad (forM_, forever, mzero, when)
 import Control.Monad.Trans.Class (lift)
 import Control.Monad.Trans.Maybe (runMaybeT)
 import Data.Aeson (encode)
-import Data.Map.Strict (Map, delete, empty, insert, lookup)
+import Data.Map.Strict (Map, delete, empty, insert, keys, lookup)
 import Data.Monoid ((<>))
 import Data.String.Conversions (cs)
 import Data.Text (Text)
@@ -31,7 +31,10 @@ import Client (Client(..), ClientConnection(..))
 import qualified Room
 import Room (Room, RoomName)
 
-type ServerState = Map RoomName (MVar Room)
+newtype ServerState = ServerState (Map RoomName (MVar Room))
+
+instance Show ServerState where
+  show (ServerState roomMap) = show . keys $ roomMap
 
 data Command =
     ChatCommand Username Text
@@ -48,24 +51,26 @@ data Command =
 
 
 newServerState :: ServerState
-newServerState = empty
+newServerState = ServerState empty
 
 getRoom :: RoomName -> MVar ServerState -> IO (MVar Room)
 getRoom name state =
-  modifyMVar state $ \s ->
-    case lookup name s of
-      Just room ->
-        return (s, room)
-      Nothing ->
-        do
-          gen <- getGen
-          r <- newMVar (Room.new gen)
-          return (insert name r s, r)
+  modifyMVar state $ \(ServerState s) ->
+    do
+      T.putStrLn . ("Rooms: " <>) . cs . show . ServerState $ s
+      case lookup name s of
+        Just room ->
+          return (ServerState s, room)
+        Nothing ->
+          do
+            gen <- getGen
+            r <- newMVar (Room.new gen)
+            return (ServerState $ insert name r s, r)
 
 deleteRoom :: RoomName -> MVar ServerState -> IO (ServerState)
 deleteRoom name state =
-  modifyMVar state $ \s ->
-    let s' = delete name s in return (s', s')
+  modifyMVar state $ \(ServerState s) ->
+    let s' = ServerState (delete name s) in return (s', s')
 
 stateUpdate :: GameCommand -> WhichPlayer -> MVar Room -> IO (Either Err (Room, [Outcome]))
 stateUpdate cmd which room =
@@ -257,7 +262,6 @@ computerPlay :: WhichPlayer -> Room -> MVar Room -> IO ()
 computerPlay which _ room =
   do
   _ <- runMaybeT $ forever $ do
-    lift $ putStrLn "AI tick"
     lift $ threadDelay 1000000
     command <- lift $ chooseComputerCommand which room
     case command of
@@ -303,8 +307,9 @@ disconnect client room name state = do
   broadcast (toChat (LeaveCommand (Client.name client))) r
   if Room.empty r then
     deleteRoom name state
-      else
-        readMVar state
+  else
+    readMVar state
+
 
 parsePrefix :: Text -> Maybe Text
 parsePrefix msg
