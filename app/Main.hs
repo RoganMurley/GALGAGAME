@@ -23,10 +23,13 @@ import ArtificalIntelligence (Action(..), chooseAction)
 import Characters (CharModel(..), character_name, toList)
 import Model (Model, WhichPlayer(..), getTurn, modelReverso, other)
 import GameState (EncodableOutcome(..), GameCommand(..), GameState(..), PlayState(..), Outcome(..), Username, reverso, update)
-import qualified Room
-import Room (Client, ClientConnection(..), Room, RoomName, sendToClient)
 import Util (Err, Gen, getGen, shuffle)
 
+import qualified Client
+import Client (Client(..), ClientConnection(..))
+
+import qualified Room
+import Room (Room, RoomName)
 
 type ServerState = Map RoomName (MVar Room)
 
@@ -106,7 +109,7 @@ addComputerClient room =
       Nothing ->
         return (r, Nothing)
   where
-    client = ("CPU", ComputerConnection) :: Client
+    client = Client "CPU" ComputerConnection :: Client
 
 removeClient :: Client -> MVar Room -> IO (Room)
 removeClient client room =
@@ -115,19 +118,19 @@ removeClient client room =
 
 broadcast :: Text -> Room -> IO ()
 broadcast msg room =
-  forM_ (Room.getClients room) (sendToClient msg)
+  forM_ (Room.getClients room) (Client.send msg)
 
 sendToPlayer :: WhichPlayer -> Text -> Room -> IO ()
 sendToPlayer which msg room =
   case Room.getPlayerClient which room of
     Just client ->
-      sendToClient msg client
+      Client.send msg client
     Nothing ->
       return ()
 
 sendToSpecs :: Text -> Room -> IO ()
 sendToSpecs msg room =
-  forM_ (Room.getSpecs room) (sendToClient msg)
+  forM_ (Room.getSpecs room) (Client.send msg)
 
 sendExcluding :: WhichPlayer -> Text -> Room -> IO ()
 sendExcluding which msg room = do
@@ -160,7 +163,7 @@ application state pending = do
 
         Just prefix ->
           case prefix of
-            _ | T.null . fst $ client ->
+            _ | T.null username ->
                 (WS.sendTextData conn) . toChat $
                   ErrorCommand "name must be nonempty"
 
@@ -174,16 +177,17 @@ application state pending = do
                   added <- addPlayerClient client roomVar
                   case added of
                     Nothing ->
-                      WS.sendTextData conn $ toChat $ ErrorCommand "room is full"
+                      WS.sendTextData conn $ toChat $
+                        ErrorCommand "room is full"
                     Just (room', which) ->
                       flip finally
                         (disconnect client roomVar roomName state)
-                        (play which room' (fst client, conn) roomVar)
+                        (play which room' (username, conn) roomVar)
 
               | prefix == "spectate:" ->
                 flip finally
                   (disconnect client roomVar roomName state)
-                  (spectate (fst client, conn) roomVar)
+                  (spectate (username, conn) roomVar)
 
               | prefix == "playComputer:" ->
                 do
@@ -201,7 +205,7 @@ application state pending = do
                         )
                         (do
                           _ <- forkIO (computerPlay (other which) room' roomVar)
-                          play which room' (fst client, conn) roomVar
+                          play which room' (username, conn) roomVar
                         )
 
               | otherwise ->
@@ -209,7 +213,10 @@ application state pending = do
                   ErrorCommand "something went wrong with connection negotiation"
 
               where
-                client = (T.drop (T.length prefix) msg, PlayerConnection conn) :: Client
+                username :: Username
+                username = T.drop (T.length prefix) msg
+                client :: Client
+                client = Client username (PlayerConnection conn)
     Nothing ->
       (WS.sendTextData conn) . toChat $
         ErrorCommand ("bad room name protocol: " <> roomReq)
@@ -217,14 +224,14 @@ application state pending = do
 spectate :: (Username, WS.Connection) -> MVar Room -> IO ()
 spectate (user, conn) room =
   let
-    client = (user, PlayerConnection conn) :: Client
+    client = Client user (PlayerConnection conn) :: Client
   in
     do
       room' <- addSpecClient client room
-      sendToClient ("acceptSpec:" :: Text) client
-      sendToClient ("chat:Welcome! " <> userList room') client
-      sendToClient ("chat:You're spectating " <> (Room.getSpeccingName room')) client
-      broadcast (toChat (SpectateCommand (fst client))) room'
+      Client.send ("acceptSpec:" :: Text) client
+      Client.send ("chat:Welcome! " <> userList room') client
+      Client.send ("chat:You're spectating " <> (Room.getSpeccingName room')) client
+      broadcast (toChat (SpectateCommand (Client.name client))) room'
       syncClient client (Room.getState room')
       forever $ do
         msg <- WS.receiveData conn
@@ -233,12 +240,12 @@ spectate (user, conn) room =
 play :: WhichPlayer -> Room -> (Username, WS.Connection) -> MVar Room -> IO ()
 play which room' (user, conn) room =
   let
-    client = (user, PlayerConnection conn) :: Client
+    client = Client user (PlayerConnection conn) :: Client
   in
     do
-      sendToClient ("acceptPlay:" :: Text) client
-      sendToClient ("chat:Welcome! " <> userList room') client
-      broadcast (toChat (PlayCommand (fst client))) room'
+      Client.send ("acceptPlay:" :: Text) client
+      Client.send ("chat:Welcome! " <> userList room') client
+      broadcast (toChat (PlayCommand (Client.name client))) room'
       syncRoomClients room'
       forever $ do
         msg <- WS.receiveData conn
@@ -292,7 +299,7 @@ chooseComputerCommand which room = do
 disconnect :: Client -> MVar Room -> RoomName -> MVar ServerState -> IO (ServerState)
 disconnect client room name state = do
   r <- removeClient client room
-  broadcast (toChat (LeaveCommand (fst client))) r
+  broadcast (toChat (LeaveCommand (Client.name client))) r
   if Room.empty r then
     deleteRoom name state
       else
@@ -311,7 +318,7 @@ userList room
   | otherwise   = "Users: " <> users
   where
     users :: Text
-    users = (T.intercalate ", ") . (map fst) $ Room.getClients room
+    users = (T.intercalate ", ") . (fmap Client.name) $ Room.getClients room
 
 actPlay :: Command -> WhichPlayer -> MVar Room -> IO ()
 actPlay cmd which roomVar =
@@ -383,7 +390,7 @@ logOutcome (EncodableOutcome outcome) =
 
 syncClient :: Client -> GameState -> IO ()
 syncClient client game =
-  sendToClient (("sync:" <>) . cs . encode $ game :: Text) client
+  Client.send (("sync:" <>) . cs . encode $ game :: Text) client
 
 syncRoomClients :: Room -> IO ()
 syncRoomClients room = do

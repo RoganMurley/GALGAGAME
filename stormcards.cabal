@@ -18,6 +18,7 @@ library
   exposed-modules:     ArtificalIntelligence
                      , Cards
                      , Characters
+                     , Client
                      , GameState
                      , Model
                      , Room
