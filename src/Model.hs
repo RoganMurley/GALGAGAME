@@ -40,7 +40,7 @@ instance Eq Card where
     n1 == n2 && d1 == d2 && i1 == i2
 
 instance Show Card where
-  show (Card n _ _ _ _) = cs n
+  show = cs . card_name
 
 type CardName = Text
 type CardDesc = Text
