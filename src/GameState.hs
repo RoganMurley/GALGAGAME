@@ -89,7 +89,7 @@ buildDeck :: FinalSelection -> Deck
 buildDeck (Character _ _ cards1, Character _ _ cards2, Character _ _ cards3) =
   (f cards1) ++ (f cards2) ++ (f cards3)
   where
-    f (a, b, c, d) = concat $ replicate 3 [a, b, c, d]
+    f (a, b, c, d) = concat . (replicate 3) $ [a, b, c, d]
 
 
 reverso :: GameState -> GameState
