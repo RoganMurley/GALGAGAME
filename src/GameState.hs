@@ -100,7 +100,7 @@ reverso (Started (Ended which gen)) = Started $ Ended (other <$> which) gen
 
 
 update :: GameCommand -> WhichPlayer -> GameState -> Either Err (Maybe GameState, [Outcome])
-update (Chat username msg) _ _ = Right (Nothing, [ChatOutcome username msg])
+update (Chat username msg) _ _ = Right (Nothing, [EncodableOutcome $ ChatOutcome username msg])
 update cmd which state =
   case state of
     Waiting _ ->
@@ -147,10 +147,10 @@ endTurn which model
         case runWriter . resolveAll $ model of
           (Playing m, res) ->
             let newState = Started . Playing . drawCards . resetPasses . swapTurn $ m in
-              Right (Just newState, [ResolveOutcome res newState, EndTurnOutcome which])
+              Right (Just newState, [EncodableOutcome $ ResolveOutcome res newState, EndTurnOutcome which])
           (Ended w g, res) ->
             let newState = Started (Ended w g) in
-              Right (Just newState, [ResolveOutcome res newState, EndTurnOutcome which])
+              Right (Just newState, [EncodableOutcome $ ResolveOutcome res newState, EndTurnOutcome which])
       NoPass ->
         Right (Just . Started . Playing . swapTurn $ model, [SyncOutcome])
   where
@@ -211,34 +211,33 @@ type Username = Text
 
 -- OUTCOMES
 data Outcome =
-    ChatOutcome Username Text
-  | HoverOutcome ExcludePlayer (Maybe Int)
-  | ResolveOutcome [Model] GameState
-  | SyncOutcome
+    SyncOutcome
   | PlayCardOutcome ExcludePlayer
   | EndTurnOutcome ExcludePlayer
+  | EncodableOutcome EncodableOutcome
   deriving (Eq, Show)
 
 
-instance ToJSON Outcome where
-  toJSON (HoverOutcome _ index) =
-    toJSON index
+data EncodableOutcome =
+    ChatOutcome Username Text
+  | HoverOutcome ExcludePlayer (Maybe Int)
+  | ResolveOutcome [Model] GameState
+  deriving (Eq, Show)
+
+
+instance ToJSON EncodableOutcome where
   toJSON (ChatOutcome name msg) =
     object [
       "name" .= name
     , "msg"  .= msg
     ]
+  toJSON (HoverOutcome _ index) =
+    toJSON index
   toJSON (ResolveOutcome res state) =
     object [
       "list" .= res
     , "final" .= state
     ]
-  toJSON SyncOutcome =
-    error "SyncOutcome shouldn't be marshalled to JSON" -- DANGEROUS!!!
-  toJSON (PlayCardOutcome _) =
-      error "PlayCardOutcome shouldn't be marshalled to JSON" -- DANGEROUS!!!
-  toJSON (EndTurnOutcome _) =
-      error "PlayCardOutcome shouldn't be marshalled to JSON" -- DANGEROUS!!!
 
 
 hoverCard :: Maybe Int -> WhichPlayer -> Model -> Either Err Outcome
@@ -247,8 +246,8 @@ hoverCard index which model =
     Just i ->
       if i < (length . (getHand which) $ model)
         then
-          Right (HoverOutcome which (Just i))
+          Right . EncodableOutcome $ HoverOutcome which (Just i)
         else
           Left ("Hover index out of bounds (" <> (cs . show $ i ) <> ")" :: Err)
     Nothing ->
-      Right (HoverOutcome which Nothing)
+      Right . EncodableOutcome $ HoverOutcome which Nothing
