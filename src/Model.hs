@@ -27,7 +27,13 @@ data PlayerModel = PlayerModel
   deriving (Eq, Show)
 
 
-data Card = Card CardName CardDesc CardImgURL CardSndURL CardEff
+data Card = Card
+  { card_name :: CardName
+  , card_desc :: CardDesc
+  , card_img  :: CardImgURL
+  , card_snd  :: CardSndURL
+  , card_eff  :: CardEff
+  }
 
 instance Eq Card where
   (Card n1 d1 i1 _ _) == (Card n2 d2 i2 _ _) =
