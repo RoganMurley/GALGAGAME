@@ -22,7 +22,7 @@ import qualified Network.WebSockets as WS
 import ArtificalIntelligence (Action(..), chooseAction)
 import Characters (CharModel(..), character_name, toList)
 import Model (Model, WhichPlayer(..), getTurn, modelReverso, other)
-import GameState (GameCommand(..), GameState(..), PlayState(..), Outcome(..), Username, reverso, update)
+import GameState (EncodableOutcome(..), GameCommand(..), GameState(..), PlayState(..), Outcome(..), Username, reverso, update)
 import qualified Room
 import Room (Client, ClientConnection(..), Room, RoomName, sendToClient)
 import Util (Err, Gen, getGen, shuffle)
@@ -272,8 +272,10 @@ chooseComputerCommand which room = do
       return . Just . SelectCharacterCommand $ randomChar charModel gen
     (Started (Playing m)) ->
       if getTurn m == which
-        then return (Just . trans . chooseAction $ m)
-          else return Nothing
+        then
+          return (Just . trans . chooseAction $ m)
+        else
+          return Nothing
     _ ->
       return Nothing
   where
@@ -343,11 +345,11 @@ actSpec cmd room =
   readMVar room >>= broadcast (toChat cmd)
 
 actOutcome :: Room -> Outcome -> IO ()
-actOutcome room outcome@(HoverOutcome which _) =
-  sendExcluding which (("hover:" <>) . cs $ encode outcome) room
-actOutcome room (ChatOutcome username msg) =
+actOutcome room (EncodableOutcome outcome@(HoverOutcome which _)) =
+  sendExcluding which (("hover:" <>) . cs . encode $ outcome) room
+actOutcome room (EncodableOutcome (ChatOutcome username msg)) =
   broadcast ("chat:" <> username <> ": " <> msg) room
-actOutcome room (ResolveOutcome models final) =
+actOutcome room (EncodableOutcome (ResolveOutcome models final)) =
   resolveRoomClients (models, final) room
 actOutcome room SyncOutcome =
   syncRoomClients room
@@ -357,11 +359,11 @@ actOutcome room (EndTurnOutcome which) =
   sendExcluding which "end:" room
 
 logOutcome :: Outcome -> IO ()
-logOutcome (HoverOutcome _ _) =
+logOutcome (EncodableOutcome (HoverOutcome _ _)) =
   T.putStrLn "hovering"
-logOutcome (ChatOutcome _ _) =
+logOutcome (EncodableOutcome (ChatOutcome _ _)) =
   T.putStrLn "chatting"
-logOutcome (ResolveOutcome _ _) =
+logOutcome (EncodableOutcome (ResolveOutcome _ _)) =
   T.putStrLn "resolving"
 logOutcome SyncOutcome =
   T.putStrLn "syncing"
@@ -392,8 +394,8 @@ resolveRoomClients (models, final) room = do
   where
     resMsgPa = ("res:" <>) . cs . encode $ outcome :: Text
     resMsgPb = ("res:" <>) . cs . encode $ reversoOutcome :: Text
-    outcome = ResolveOutcome models final :: Outcome
-    reversoOutcome = ResolveOutcome (modelReverso <$> models) (reverso final) :: Outcome
+    outcome = ResolveOutcome models final :: EncodableOutcome
+    reversoOutcome = ResolveOutcome (modelReverso <$> models) (reverso final) :: EncodableOutcome
 
 
 toChat :: Command -> Text
