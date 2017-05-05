@@ -11,10 +11,16 @@ data ClientConnection =
   | ComputerConnection
 
 
+instance Show ClientConnection where
+  show (PlayerConnection _) = "<Player Connection>"
+  show ComputerConnection   = "<CPU Connection>"
+
+
 data Client = Client
   { client_name       :: Username
   , client_connection :: ClientConnection
   }
+  deriving (Show)
 
 
 name :: Client -> Username
