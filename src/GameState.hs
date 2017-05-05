@@ -183,8 +183,8 @@ resolveAll model
           case headMay stack of
             Nothing ->
               id
-            Just (StackCard p (Card _ _ _ _ e)) ->
-              e p
+            Just (StackCard o c) ->
+              (card_eff c) o
 
 lifeGate :: Model -> PlayState
 lifeGate m

@@ -271,6 +271,7 @@ computerPlay which _ room =
     when (Room.empty r) mzero
   return ()
 
+
 chooseComputerCommand :: WhichPlayer -> MVar Room -> IO (Maybe Command)
 chooseComputerCommand which room = do
   r <- readMVar room
@@ -312,6 +313,7 @@ parsePrefix msg
   | T.isPrefixOf "playComputer:" msg = Just "playComputer:"
   | otherwise                        = Nothing
 
+
 userList :: Room -> Text
 userList room
   | users == "" = "You're the only one here..."
@@ -319,6 +321,7 @@ userList room
   where
     users :: Text
     users = (T.intercalate ", ") . (fmap Client.name) $ Room.getClients room
+
 
 actPlay :: Command -> WhichPlayer -> MVar Room -> IO ()
 actPlay cmd which roomVar =
@@ -347,9 +350,11 @@ actPlay cmd which roomVar =
     trans (SelectCharacterCommand n) = Just (SelectCharacter n)
     trans _                          = Nothing
 
+
 actSpec :: Command -> MVar Room -> IO ()
 actSpec cmd room =
   readMVar room >>= broadcast (toChat cmd)
+
 
 actOutcome :: Room -> Outcome -> IO ()
 actOutcome room SyncOutcome =
@@ -388,9 +393,11 @@ logOutcome (EncodableOutcome outcome) =
       logEncodable (ResolveOutcome _ _) =
         T.putStrLn "resolving"
 
+
 syncClient :: Client -> GameState -> IO ()
 syncClient client game =
   Client.send (("sync:" <>) . cs . encode $ game :: Text) client
+
 
 syncRoomClients :: Room -> IO ()
 syncRoomClients room = do
@@ -401,6 +408,7 @@ syncRoomClients room = do
     game = Room.getState room :: GameState
     syncMsgPa = ("sync:" <>) . cs . encode $ game :: Text
     syncMsgPb = ("sync:" <>) . cs . encode . reverso $ game :: Text
+
 
 resolveRoomClients :: ([Model], GameState) -> Room -> IO ()
 resolveRoomClients (models, final) room = do
