@@ -1,7 +1,8 @@
 module Room where
 
 import Data.Maybe (maybeToList)
-import Data.Text (Text)
+import Data.Monoid ((<>))
+import Data.Text (Text, intercalate)
 
 import Characters (initCharModel)
 import GameState (GameState(..), Username, initState)
@@ -12,7 +13,7 @@ import qualified Client
 import Client (Client)
 
 
-type RoomName   = Text
+type Name   = Text
 type Player     = Maybe Client
 type Spectators = [Client]
 
@@ -135,3 +136,12 @@ removeClient client room@Room{ room_pa = pa, room_pb = pb, room_specs = specs } 
       if ((Client.name) c == (Client.name client))
         then Nothing
         else p
+
+
+userList :: Room -> Text
+userList room
+  | users == "" = "You're the only one here..."
+  | otherwise   = "Users: " <> users
+  where
+    users :: Text
+    users = (intercalate ", ") . (fmap Client.name) $ Room.getClients room
