@@ -13,7 +13,7 @@ import qualified Client
 import Client (Client)
 
 
-type Name   = Text
+type Name       = Text
 type Player     = Maybe Client
 type Spectators = [Client]
 
