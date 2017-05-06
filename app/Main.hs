@@ -1,7 +1,4 @@
-
 module Main where
-
-import Prelude hiding (lookup)
 
 import Control.Concurrent (MVar, forkIO, newMVar, modifyMVar, readMVar, threadDelay)
 import Control.Exception (finally)
@@ -9,7 +6,6 @@ import Control.Monad (forM_, forever, mzero, when)
 import Control.Monad.Trans.Class (lift)
 import Control.Monad.Trans.Maybe (runMaybeT)
 import Data.Aeson (encode)
-import Data.Map.Strict (Map, delete, empty, insert, keys, lookup)
 import Data.Monoid ((<>))
 import Data.String.Conversions (cs)
 import Data.Text (Text)
@@ -23,18 +19,16 @@ import ArtificalIntelligence (Action(..), chooseAction)
 import Characters (CharModel(..), character_name, toList)
 import Model (Model, WhichPlayer(..), getTurn, modelReverso, other)
 import GameState (EncodableOutcome(..), GameCommand(..), GameState(..), PlayState(..), Outcome(..), Username, reverso, update)
-import Util (Err, Gen, getGen, shuffle)
+import Util (Err, Gen, shuffle)
+
+import qualified Server
 
 import qualified Client
 import Client (Client(..), ClientConnection(..))
 
 import qualified Room
-import Room (Room, RoomName)
+import Room (Room)
 
-newtype ServerState = ServerState (Map RoomName (MVar Room))
-
-instance Show ServerState where
-  show (ServerState roomMap) = show . keys $ roomMap
 
 data Command =
     ChatCommand Username Text
@@ -50,30 +44,8 @@ data Command =
   deriving (Show)
 
 
-newServerState :: ServerState
-newServerState = ServerState empty
-
-getRoom :: RoomName -> MVar ServerState -> IO (MVar Room)
-getRoom name state =
-  modifyMVar state $ \(ServerState s) ->
-    do
-      T.putStrLn . ("Rooms: " <>) . cs . show . ServerState $ s
-      case lookup name s of
-        Just room ->
-          return (ServerState s, room)
-        Nothing ->
-          do
-            gen <- getGen
-            r <- newMVar (Room.new gen)
-            return (ServerState $ insert name r s, r)
-
-deleteRoom :: RoomName -> MVar ServerState -> IO (ServerState)
-deleteRoom name state =
-  modifyMVar state $ \(ServerState s) ->
-    let s' = ServerState (delete name s) in return (s', s')
-
-stateUpdate :: GameCommand -> WhichPlayer -> MVar Room -> IO (Either Err (Room, [Outcome]))
-stateUpdate cmd which room =
+roomUpdate :: GameCommand -> WhichPlayer -> MVar Room -> IO (Either Err (Room, [Outcome]))
+roomUpdate cmd which room =
   modifyMVar room $ \r ->
     case updateRoom r of
       Left err ->
@@ -142,13 +114,14 @@ sendExcluding which msg room = do
   sendToSpecs msg room
   sendToPlayer (other which) msg room
 
+
 -- MAIN STUFF.
 main :: IO ()
 main = do
-   state <- newMVar newServerState
+   state <- newMVar Server.initState
    WS.runServer "0.0.0.0" 9160 $ application state
 
-application :: MVar ServerState -> WS.ServerApp
+application :: MVar Server.State -> WS.ServerApp
 application state pending = do
   conn <- WS.acceptRequest pending
   WS.forkPingThread conn 30
@@ -156,7 +129,7 @@ application state pending = do
   roomReq <- WS.receiveData conn
   case parseRoomReq roomReq of
     Just roomName -> do
-      roomVar <- getRoom roomName state
+      roomVar <- Server.getRoom roomName state
       initialRoom <- readMVar roomVar
       msg <- WS.receiveData conn
 
@@ -234,7 +207,7 @@ spectate (user, conn) room =
     do
       room' <- addSpecClient client room
       Client.send ("acceptSpec:" :: Text) client
-      Client.send ("chat:Welcome! " <> userList room') client
+      Client.send ("chat:Welcome! " <> Room.userList room') client
       Client.send ("chat:You're spectating " <> (Room.getSpeccingName room')) client
       broadcast (toChat (SpectateCommand (Client.name client))) room'
       syncClient client (Room.getState room')
@@ -249,7 +222,7 @@ play which room' (user, conn) room =
   in
     do
       Client.send ("acceptPlay:" :: Text) client
-      Client.send ("chat:Welcome! " <> userList room') client
+      Client.send ("chat:Welcome! " <> Room.userList room') client
       broadcast (toChat (PlayCommand (Client.name client))) room'
       syncRoomClients room'
       forever $ do
@@ -301,12 +274,12 @@ chooseComputerCommand which room = do
       character_name . head . (drop (length . Characters.toList $ selected)) $ shuffle allChars gen
 
 
-disconnect :: Client -> MVar Room -> RoomName -> MVar ServerState -> IO (ServerState)
+disconnect :: Client -> MVar Room -> Room.Name -> MVar Server.State -> IO (Server.State)
 disconnect client room name state = do
   r <- removeClient client room
   broadcast (toChat (LeaveCommand (Client.name client))) r
   if Room.empty r then
-    deleteRoom name state
+    Server.deleteRoom name state
   else
     readMVar state
 
@@ -319,20 +292,11 @@ parsePrefix msg
   | otherwise                        = Nothing
 
 
-userList :: Room -> Text
-userList room
-  | users == "" = "You're the only one here..."
-  | otherwise   = "Users: " <> users
-  where
-    users :: Text
-    users = (T.intercalate ", ") . (fmap Client.name) $ Room.getClients room
-
-
 actPlay :: Command -> WhichPlayer -> MVar Room -> IO ()
 actPlay cmd which roomVar =
   case trans cmd of
     Just command -> do
-      updated <- stateUpdate command which roomVar
+      updated <- roomUpdate command which roomVar
       case updated of
         Left err -> do
           room <- readMVar roomVar
