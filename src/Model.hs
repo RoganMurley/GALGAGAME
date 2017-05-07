@@ -20,13 +20,13 @@ data Model = Model
   }
   deriving (Eq, Show)
 
+
 data PlayerModel = PlayerModel
   { pmodel_hand :: Hand
   , pmodel_deck :: Deck
   , pmodel_life :: Life
   }
   deriving (Eq, Show)
-
 
 data Card = Card
   { card_name :: CardName
@@ -53,7 +53,10 @@ type Hand = [Card]
 type Deck = [Card]
 type Stack = [StackCard]
 
-data StackCard = StackCard WhichPlayer Card
+data StackCard = StackCard
+  { stackcard_owner :: WhichPlayer
+  , stackcard_card  :: Card
+  }
   deriving (Eq, Show)
 
 type Life = Int
@@ -89,7 +92,7 @@ instance ToJSON Card where
 
 
 instance ToJSON StackCard where
-  toJSON (StackCard owner card) =
+  toJSON StackCard{ stackcard_owner=owner, stackcard_card=card } =
     object [
       "owner" .= owner
     , "card"  .= card
