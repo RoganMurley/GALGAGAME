@@ -6,8 +6,8 @@ import Safe (headMay)
 
 import qualified Cards
 
-import Model
-import Player (WhichPlayer(..), other)
+import Model (Card(..))
+import Player (WhichPlayer(..))
 
 
 -- TYPES
