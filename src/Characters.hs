@@ -10,9 +10,8 @@ import Model (Card(..))
 import Player (WhichPlayer(..))
 
 
--- TYPES
-
 type CharacterCards = (Card, Card, Card, Card)
+
 
 data SelectedCharacters
     = NoneSelected
@@ -32,11 +31,11 @@ data Character = Character
   } deriving (Eq, Show)
 
 instance ToJSON Character where
-  toJSON (Character name img cards) =
+  toJSON Character{ character_name, character_img, character_cards } =
       object [
-        "name"     .= name
-      , "img_url"  .= img
-      , "cards"    .= cards
+        "name"    .= character_name
+      , "img_url" .= character_img
+      , "cards"   .= character_cards
       ]
 
 
@@ -48,15 +47,14 @@ data CharModel =
   } deriving (Eq, Show)
 
 instance ToJSON CharModel where
-  toJSON (CharModel selected _ characters) =
+  toJSON CharModel{ charmodel_pa, charmodel_characters } =
     object [
-      "selecting" .= characters
-    , "selected"  .= selected
+      "selecting" .= charmodel_pa
+    , "selected"  .= charmodel_characters
     ]
 
 
-type FinalSelection =
-  (Character, Character, Character)
+type FinalSelection = (Character, Character, Character)
 
 
 characterModelReverso :: CharModel -> CharModel
@@ -76,24 +74,23 @@ selectChar model@(CharModel { charmodel_pb = m }) PlayerB name =
 
 
 selectIndChar :: Text -> SelectedCharacters -> SelectedCharacters
-selectIndChar name selected =
-  if existingSelected
-    then (
-      case character of
-        Just char ->
-          case selected of
-            NoneSelected ->
-              OneSelected char
-            OneSelected a ->
-              TwoSelected a char
-            TwoSelected a b ->
-              ThreeSelected a b char
-            ThreeSelected a b c  ->
-              ThreeSelected a b c
-        Nothing ->
-          selected
-      )
-    else selected
+selectIndChar name selected
+  | existingSelected =
+    case character of
+      Just char ->
+        case selected of
+          NoneSelected ->
+            OneSelected char
+          OneSelected a ->
+            TwoSelected a char
+          TwoSelected a b ->
+            ThreeSelected a b char
+          ThreeSelected a b c  ->
+            ThreeSelected a b c
+      Nothing ->
+        selected
+  | otherwise =
+    selected
   where
     nameMatch :: Character -> Bool
     nameMatch (Character n _ _) = n == name
@@ -123,22 +120,50 @@ allCharacters = [
   ]
 
 flame :: Character
-flame = Character "Flame" "dragon/dragon.svg" (Cards.dragon, Cards.firestorm, Cards.offering, Cards.haze)
+flame =
+  Character
+    "Flame"
+    "dragon/dragon.svg"
+    (Cards.dragon, Cards.firestorm, Cards.offering, Cards.haze)
 
 frost :: Character
-frost = Character "Frost" "gem/gem.svg" (Cards.gem, Cards.blizzard, Cards.crystal, Cards.alchemy)
+frost =
+  Character
+    "Frost"
+    "gem/gem.svg"
+    (Cards.gem, Cards.blizzard, Cards.crystal, Cards.alchemy)
 
 thunder :: Character
-thunder = Character "Thunder" "stag/stag.svg" (Cards.stag, Cards.lightning, Cards.echo, Cards.hubris)
+thunder =
+  Character
+    "Thunder"
+    "stag/stag.svg"
+    (Cards.stag, Cards.lightning, Cards.echo, Cards.hubris)
 
 tempest :: Character
-tempest = Character "Tempest" "octopus/octopus.svg" (Cards.octopus, Cards.tentacles, Cards.siren, Cards.reversal)
+tempest =
+  Character
+    "Tempest"
+    "octopus/octopus.svg"
+    (Cards.octopus, Cards.tentacles, Cards.siren, Cards.reversal)
 
 vortex :: Character
-vortex = Character "Vortex" "owl/owl.svg" (Cards.owl, Cards.twister, Cards.hypnosis, Cards.prophecy)
+vortex =
+  Character
+    "Vortex"
+    "owl/owl.svg"
+    (Cards.owl, Cards.twister, Cards.hypnosis, Cards.prophecy)
 
 mist :: Character
-mist = Character "Mist" "monkey/monkey.svg" (Cards.monkey, Cards.monsoon, Cards.mindgate, Cards.feint)
+mist =
+  Character
+    "Mist"
+    "monkey/monkey.svg"
+    (Cards.monkey, Cards.monsoon, Cards.mindgate, Cards.feint)
 
 calm :: Character
-calm = Character "Calm" "turtle/turtle.svg" (Cards.turtle, Cards.gust, Cards.soup, Cards.reflect)
+calm =
+  Character
+    "Calm"
+    "turtle/turtle.svg"
+    (Cards.turtle, Cards.gust, Cards.soup, Cards.reflect)
