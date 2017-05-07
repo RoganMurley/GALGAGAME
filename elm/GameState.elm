@@ -323,17 +323,6 @@ modelDecoder oldState =
             Json.map2 StackCard
                 (field "owner" whichDecoder)
                 (field "card" cardDecoder)
-
-        otherLife : Int
-        otherLife =
-            case oldState of
-                PlayingGame { otherLife } _ ->
-                    otherLife
-
-                otherwise ->
-                    50
-
-        -- CHANGE THIS DANGEROUS
     in
         Json.map6 (\a b c d e f -> Model a b c d e f Nothing)
             (field "handPA" (Json.list cardDecoder))
@@ -346,7 +335,7 @@ modelDecoder oldState =
 
 resDecoder : GameState -> Json.Decoder ( GameState, List Model )
 resDecoder oldState =
-    Json.map2 (\x y -> ( x, y ))
+    Json.map2 (,)
         (field "final" (stateDecoder oldState))
         (field "list" (Json.list (modelDecoder oldState)))
 
