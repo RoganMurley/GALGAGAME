@@ -61,9 +61,12 @@ postulateAction model action =
     state = Started (Playing model) :: GameState
 
 
-chooseAction :: Model -> Action
-chooseAction model =
-  maximumBy comparison (possibleActions model)
+chooseAction :: Turn -> Model -> Maybe Action
+chooseAction turn model
+  | getTurn model /= turn =
+    Nothing
+  | otherwise =
+    Just $ maximumBy comparison $ possibleActions model
   where
     comparison :: Action -> Action -> Ordering
     comparison = comparing (evalState . (postulateAction model))

@@ -17,12 +17,12 @@ import qualified Network.WebSockets as WS
 
 import ArtificalIntelligence (Action(..), chooseAction)
 import Characters (CharModel(..), character_name, toList)
-import Model (Model, WhichPlayer(..), getTurn, modelReverso, other)
+import Model (Model, WhichPlayer(..), modelReverso, other)
 import GameState (EncodableOutcome(..), GameCommand(..), GameState(..), PlayState(..), Outcome(..), Username, reverso, update)
 import Util (Err, Gen, shuffle)
 
 import qualified Server
-import Server (broadcast, addComputerClient, addPlayerClient, addSpecClient)
+import Server (addComputerClient, addPlayerClient, addSpecClient)
 
 import qualified Client
 import Client (Client(..), ClientConnection(..))
@@ -31,11 +31,11 @@ import qualified Room
 import Room (Room)
 
 
--- MAIN STUFF.
 main :: IO ()
 main = do
-   state <- newMVar Server.initState
-   WS.runServer "0.0.0.0" 9160 $ application state
+  state <- newMVar Server.initState
+  WS.runServer "0.0.0.0" 9160 $ application state
+
 
 application :: MVar Server.State -> WS.ServerApp
 application state pending = do
@@ -48,7 +48,6 @@ application state pending = do
       roomVar <- Server.getRoom roomName state
       initialRoom <- readMVar roomVar
       msg <- WS.receiveData conn
-
 
       case parsePrefix msg of
         Nothing ->
@@ -98,7 +97,7 @@ application state pending = do
                           disconnect computerClient roomVar roomName state
                         )
                         (do
-                          _ <- forkIO (computerPlay (other which) room' roomVar)
+                          _ <- forkIO (computerPlay (other which) roomVar)
                           play which room' (username, conn) roomVar
                         )
 
@@ -198,8 +197,8 @@ play which room' (user, conn) room =
 
 
 -- Switch from transformers to mtl?
-computerPlay :: WhichPlayer -> Room -> MVar Room -> IO ()
-computerPlay which _ room =
+computerPlay :: WhichPlayer -> MVar Room -> IO ()
+computerPlay which room =
   do
   _ <- runMaybeT $ forever $ do
     lift $ threadDelay 1000000
@@ -220,14 +219,10 @@ chooseComputerCommand :: WhichPlayer -> MVar Room -> IO (Maybe Command)
 chooseComputerCommand which room = do
   r <- readMVar room
   case Room.getState r of
-    (Selecting charModel _ gen) ->
+    Selecting charModel _ gen ->
       return . Just . SelectCharacterCommand $ randomChar charModel gen
-    (Started (Playing m)) ->
-      if getTurn m == which
-        then
-          return (Just . trans . chooseAction $ m)
-        else
-          return Nothing
+    Started (Playing m) ->
+      return . (fmap trans) $ chooseAction which m
     _ ->
       return Nothing
   where
@@ -242,19 +237,16 @@ chooseComputerCommand which room = do
         $ shuffle allChars gen
 
 
+broadcast :: Text -> Room -> IO ()
+broadcast msg room =
+  forM_ (Room.getClients room) (Client.send msg)
+
+
 disconnect :: Client -> MVar Room -> Room.Name -> MVar Server.State -> IO (Server.State)
 disconnect client room name state = do
   r <- Server.removeClient client room
   broadcast (toChat (LeaveCommand (Client.name client))) r
   Server.deleteRoom name state
-
-
-parsePrefix :: Text -> Maybe Text
-parsePrefix msg
-  | T.isPrefixOf "spectate:"     msg = Just "spectate:"
-  | T.isPrefixOf "play:"         msg = Just "play:"
-  | T.isPrefixOf "playComputer:" msg = Just "playComputer:"
-  | otherwise                        = Nothing
 
 
 actPlay :: Command -> WhichPlayer -> MVar Room -> IO ()
@@ -371,6 +363,7 @@ toChat _ =
   "chat:" <> "Command cannot be processed to text :/"
 
 
+-- PARSING.
 parseMsg :: Username -> Text -> Command
 parseMsg _ ""     = ErrorCommand "Command not found"
 parseMsg name msg =
@@ -407,6 +400,7 @@ parseMsg name msg =
     command = fst parsed :: Text
     content = T.drop 1 (snd parsed) :: Text
 
+
 parseRoomReq :: Text -> Maybe Text
 parseRoomReq msg =
   case T.breakOn ":" msg of
@@ -414,3 +408,11 @@ parseRoomReq msg =
       Just . (T.drop 1) $ name
     _ ->
       Nothing
+
+
+parsePrefix :: Text -> Maybe Text
+parsePrefix msg
+  | T.isPrefixOf "spectate:"     msg = Just "spectate:"
+  | T.isPrefixOf "play:"         msg = Just "play:"
+  | T.isPrefixOf "playComputer:" msg = Just "playComputer:"
+  | otherwise                        = Nothing
