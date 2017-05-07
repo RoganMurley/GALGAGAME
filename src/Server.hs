@@ -8,7 +8,7 @@ import Data.Monoid ((<>))
 import Data.Text.IO (putStrLn)
 import Data.String.Conversions (cs)
 
-import Model (WhichPlayer)
+import Player (WhichPlayer(..))
 import Util (getGen)
 
 import qualified Client

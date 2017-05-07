@@ -5,7 +5,9 @@ import Data.Text (Text)
 import Safe (headMay)
 
 import qualified Cards
+
 import Model
+import Player (WhichPlayer(..), other)
 
 
 -- TYPES

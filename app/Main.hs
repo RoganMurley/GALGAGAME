@@ -17,7 +17,8 @@ import qualified Network.WebSockets as WS
 
 import ArtificalIntelligence (Action(..), chooseAction)
 import Characters (CharModel(..), character_name, toList)
-import Model (Model, WhichPlayer(..), modelReverso, other)
+import Model (Model, modelReverso)
+import Player (WhichPlayer(..), other)
 import GameState (EncodableOutcome(..), GameCommand(..), GameState(..), PlayState(..), Outcome(..), Username, reverso, update)
 import Util (Err, Gen, shuffle)
 
@@ -395,8 +396,7 @@ parseMsg name msg =
     _ ->
       ErrorCommand ("Unknown Command " <> (cs (show command)))
   where
-    parsed :: (Text, Text)
-    parsed = T.breakOn ":" msg
+    parsed = T.breakOn ":" msg :: (Text, Text)
     command = fst parsed :: Text
     content = T.drop 1 (snd parsed) :: Text
 
