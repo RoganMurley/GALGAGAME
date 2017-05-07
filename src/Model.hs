@@ -6,6 +6,7 @@ import Data.String.Conversions (cs)
 import Data.Text (Text)
 import Safe (atMay, headMay, tailSafe)
 
+import Player(WhichPlayer(..), other)
 import Util (Err, Gen, deleteIndex)
 
 
@@ -57,9 +58,6 @@ data StackCard = StackCard WhichPlayer Card
 
 type Life = Int
 
-
-data WhichPlayer = PlayerA | PlayerB
-  deriving (Eq, Show)
 type Turn = WhichPlayer
 
 data Passes = NoPass | OnePass
@@ -98,11 +96,6 @@ instance ToJSON StackCard where
     ]
 
 
-instance ToJSON WhichPlayer where
-  toJSON PlayerA = "pa"
-  toJSON PlayerB = "pb"
-
-
 maxHandLength :: Int
 maxHandLength = 6
 
@@ -121,11 +114,6 @@ modelReverso (Model turn stack pa pb passes gen) =
 
 swapTurn :: Model -> Model
 swapTurn model = (modPasses incPasses) . (modTurn other) $ model
-
-
-other :: WhichPlayer -> WhichPlayer
-other PlayerA = PlayerB
-other PlayerB = PlayerA
 
 
 -- STACK CARD

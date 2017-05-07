@@ -10,6 +10,7 @@ import Data.Text (Text)
 
 import Characters
 import Model
+import Player (WhichPlayer(..), other)
 import Util (Err, Gen, shuffle, split)
 
 

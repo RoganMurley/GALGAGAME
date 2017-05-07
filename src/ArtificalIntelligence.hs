@@ -7,6 +7,7 @@ import Data.Ord (comparing)
 
 import GameState
 import Model
+import Player (WhichPlayer(..))
 import Util (fromRight)
 
 

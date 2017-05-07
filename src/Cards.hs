@@ -1,6 +1,7 @@
 module Cards where
 
 import Model
+import Player (WhichPlayer(..), other)
 import Util (shuffle, times)
 
 

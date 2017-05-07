@@ -6,7 +6,7 @@ import Data.Text (Text, intercalate)
 
 import Characters (initCharModel)
 import GameState (GameState(..), Username, initState)
-import Model (WhichPlayer(..))
+import Player (WhichPlayer(..))
 import Util (Gen)
 
 import qualified Client

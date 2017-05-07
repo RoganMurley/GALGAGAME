@@ -21,6 +21,7 @@ library
                      , Client
                      , GameState
                      , Model
+                     , Player
                      , Room
                      , Server
                      , Util
