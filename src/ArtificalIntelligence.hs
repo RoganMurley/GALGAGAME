@@ -47,10 +47,11 @@ possibleActions m =
     xs :: [Int]
     xs = [ x | x <- [0..maxHandLength], x < handLength]
     endAction :: [Action]
-    endAction =
-      if handLength == maxHandLength
-        then []
-        else [EndAction]
+    endAction
+      | handLength == maxHandLength =
+        []
+      | otherwise =
+        [EndAction]
 
 
 postulateAction :: Model -> Action -> PlayState
