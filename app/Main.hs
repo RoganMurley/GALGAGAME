@@ -440,6 +440,6 @@ parseRoomReq :: Text -> Maybe Text
 parseRoomReq msg =
   case T.breakOn ":" msg of
     ("room", name) ->
-      Just name
+      Just . (T.drop 1) $ name
     _ ->
       Nothing

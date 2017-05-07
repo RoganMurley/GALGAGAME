@@ -42,7 +42,7 @@ instance Eq Gen where
 
 
 instance Show Gen where
-  show _ = "gen"
+  show _ = "<Gen>"
 
 
 split :: Gen -> (Gen, Gen)

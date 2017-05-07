@@ -28,15 +28,16 @@ initState = State empty
 getRoom :: Room.Name -> MVar State -> IO (MVar Room)
 getRoom name state =
   modifyMVar state $ \(State s) ->
-    do
-      putStrLn . ("Rooms: " <>) . cs . show . State $ s
       case lookup name s of
         Just room ->
-          return (State s, room)
+          do
+            putStrLn . ("Rooms: " <>) . cs . show . State $ s
+            return (State s, room)
         Nothing ->
           do
             gen <- getGen
             r <- newMVar (Room.new gen)
+            putStrLn . ("Rooms: " <>) . cs . show . State $ insert name r s
             return (State (insert name r s), r)
 
 
