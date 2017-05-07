@@ -39,6 +39,7 @@ library
   default-language:    Haskell2010
   default-extensions:  OverloadedStrings
                      , RecordWildCards
+                     , NamedFieldPuns
 
 executable stormcards
   hs-source-dirs:      app
@@ -56,6 +57,7 @@ executable stormcards
   default-language:    Haskell2010
   default-extensions:  OverloadedStrings
                      , RecordWildCards
+                     , NamedFieldPuns
 
 test-suite stormcards-test
   type:                exitcode-stdio-1.0
