@@ -3,10 +3,8 @@ module Server where
 import Prelude hiding (lookup, putStrLn)
 
 import Control.Concurrent (MVar, newMVar, modifyMVar)
-import Control.Monad (forM_)
 import Data.Map.Strict (Map, delete, empty, insert, keys, lookup)
 import Data.Monoid ((<>))
-import Data.Text (Text)
 import Data.Text.IO (putStrLn)
 import Data.String.Conversions (cs)
 
@@ -87,9 +85,3 @@ removeClient :: Client -> MVar Room -> IO (Room)
 removeClient client room =
   modifyMVar room $ \r ->
     let r' = Room.removeClient client r in return (r', r')
-
-
--- MESSAGING
-broadcast :: Text -> Room -> IO ()
-broadcast msg room =
-  forM_ (Room.getClients room) (Client.send msg)
