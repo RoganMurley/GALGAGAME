@@ -22,97 +22,13 @@ import GameState (EncodableOutcome(..), GameCommand(..), GameState(..), PlayStat
 import Util (Err, Gen, shuffle)
 
 import qualified Server
+import Server (broadcast, addComputerClient, addPlayerClient, addSpecClient)
 
 import qualified Client
 import Client (Client(..), ClientConnection(..))
 
 import qualified Room
 import Room (Room)
-
-
-data Command =
-    ChatCommand Username Text
-  | PlayCommand Username
-  | SpectateCommand Username
-  | LeaveCommand Username
-  | EndTurnCommand
-  | PlayCardCommand Int
-  | HoverCardCommand (Maybe Int)
-  | RematchCommand
-  | SelectCharacterCommand Text
-  | ErrorCommand Text
-  deriving (Show)
-
-
-roomUpdate :: GameCommand -> WhichPlayer -> MVar Room -> IO (Either Err (Room, [Outcome]))
-roomUpdate cmd which room =
-  modifyMVar room $ \r ->
-    case updateRoom r of
-      Left err ->
-        return (r, Left err)
-      Right (Nothing, o) ->
-        return (r, Right (r, o))
-      Right (Just r', o) ->
-        return (r', Right (r', o))
-  where
-    updateRoom :: Room -> Either Err (Maybe Room, [Outcome])
-    updateRoom r =
-      case update cmd which (Room.getState r) of
-        Left err ->
-          Left err
-        Right (newState, outcomes) ->
-          Right ((Room.setState r) <$> newState, outcomes)
-
-addSpecClient :: Client -> MVar Room -> IO (Room)
-addSpecClient client room =
-  modifyMVar room $ \r ->
-    let r' = Room.addSpec client r in return (r', r')
-
-addPlayerClient :: Client -> MVar Room -> IO (Maybe (Room, WhichPlayer))
-addPlayerClient client room =
-  modifyMVar room $ \r ->
-    case Room.addPlayer client r of
-      Just (r', p) ->
-        return (r', Just (r', p))
-      Nothing ->
-        return (r, Nothing)
-
-addComputerClient :: MVar Room -> IO (Maybe Client)
-addComputerClient room =
-  modifyMVar room $ \r ->
-    case Room.addPlayer client r of
-      Just (r', _) ->
-        return (r', Just client)
-      Nothing ->
-        return (r, Nothing)
-  where
-    client = Client "CPU" ComputerConnection :: Client
-
-removeClient :: Client -> MVar Room -> IO (Room)
-removeClient client room =
-  modifyMVar room $ \r ->
-    let r' = Room.removeClient client r in return (r', r')
-
-broadcast :: Text -> Room -> IO ()
-broadcast msg room =
-  forM_ (Room.getClients room) (Client.send msg)
-
-sendToPlayer :: WhichPlayer -> Text -> Room -> IO ()
-sendToPlayer which msg room =
-  case Room.getPlayerClient which room of
-    Just client ->
-      Client.send msg client
-    Nothing ->
-      return ()
-
-sendToSpecs :: Text -> Room -> IO ()
-sendToSpecs msg room =
-  forM_ (Room.getSpecs room) (Client.send msg)
-
-sendExcluding :: WhichPlayer -> Text -> Room -> IO ()
-sendExcluding which msg room = do
-  sendToSpecs msg room
-  sendToPlayer (other which) msg room
 
 
 -- MAIN STUFF.
@@ -199,6 +115,57 @@ application state pending = do
       (WS.sendTextData conn) . toChat $
         ErrorCommand ("bad room name protocol: " <> roomReq)
 
+
+data Command =
+    ChatCommand Username Text
+  | PlayCommand Username
+  | SpectateCommand Username
+  | LeaveCommand Username
+  | EndTurnCommand
+  | PlayCardCommand Int
+  | HoverCardCommand (Maybe Int)
+  | RematchCommand
+  | SelectCharacterCommand Text
+  | ErrorCommand Text
+  deriving (Show)
+
+
+roomUpdate :: GameCommand -> WhichPlayer -> MVar Room -> IO (Either Err (Room, [Outcome]))
+roomUpdate cmd which room =
+  modifyMVar room $ \r ->
+    case updateRoom r of
+      Left err ->
+        return (r, Left err)
+      Right (Nothing, o) ->
+        return (r, Right (r, o))
+      Right (Just r', o) ->
+        return (r', Right (r', o))
+  where
+    updateRoom :: Room -> Either Err (Maybe Room, [Outcome])
+    updateRoom r =
+      case update cmd which (Room.getState r) of
+        Left err ->
+          Left err
+        Right (newState, outcomes) ->
+          Right ((Room.setState r) <$> newState, outcomes)
+
+sendToPlayer :: WhichPlayer -> Text -> Room -> IO ()
+sendToPlayer which msg room =
+  case Room.getPlayerClient which room of
+    Just client ->
+      Client.send msg client
+    Nothing ->
+      return ()
+
+sendToSpecs :: Text -> Room -> IO ()
+sendToSpecs msg room =
+  forM_ (Room.getSpecs room) (Client.send msg)
+
+sendExcluding :: WhichPlayer -> Text -> Room -> IO ()
+sendExcluding which msg room = do
+  sendToSpecs msg room
+  sendToPlayer (other which) msg room
+
 spectate :: (Username, WS.Connection) -> MVar Room -> IO ()
 spectate (user, conn) room =
   let
@@ -271,17 +238,15 @@ chooseComputerCommand which room = do
     -- Unsafe and ugly fix me please
     randomChar :: CharModel -> Gen -> Text
     randomChar (CharModel selected _ allChars) gen =
-      character_name . head . (drop (length . Characters.toList $ selected)) $ shuffle allChars gen
+      character_name . head . (drop (length . Characters.toList $ selected))
+        $ shuffle allChars gen
 
 
 disconnect :: Client -> MVar Room -> Room.Name -> MVar Server.State -> IO (Server.State)
 disconnect client room name state = do
-  r <- removeClient client room
+  r <- Server.removeClient client room
   broadcast (toChat (LeaveCommand (Client.name client))) r
-  if Room.empty r then
-    Server.deleteRoom name state
-  else
-    readMVar state
+  Server.deleteRoom name state
 
 
 parsePrefix :: Text -> Maybe Text
@@ -365,7 +330,7 @@ logOutcome (EncodableOutcome outcome) =
 
 syncClient :: Client -> GameState -> IO ()
 syncClient client game =
-  Client.send (("sync:" <>) . cs . encode $ game :: Text) client
+  Client.send (("sync:" <>) . cs . encode $ game) client
 
 
 syncRoomClients :: Room -> IO ()
@@ -392,12 +357,18 @@ resolveRoomClients (models, final) room = do
 
 
 toChat :: Command -> Text
-toChat (SpectateCommand name)     = "chat:" <> name <> " started spectating"
-toChat (PlayCommand name)         = "chat:" <> name <> " started playing"
-toChat (LeaveCommand name)        = "chat:" <> name <> " disconnected"
-toChat (ChatCommand name message) = "chat:" <> name <> ": " <> message
-toChat (ErrorCommand err)         = "error:" <> err
-toChat _                          = "chat:" <> "Command cannot be processed to text :/"
+toChat (SpectateCommand name) =
+  "chat:" <> name <> " started spectating"
+toChat (PlayCommand name) =
+  "chat:" <> name <> " started playing"
+toChat (LeaveCommand name) =
+  "chat:" <> name <> " disconnected"
+toChat (ChatCommand name message) =
+  "chat:" <> name <> ": " <> message
+toChat (ErrorCommand err) =
+  "error:" <> err
+toChat _ =
+  "chat:" <> "Command cannot be processed to text :/"
 
 
 parseMsg :: Username -> Text -> Command
