@@ -26,11 +26,16 @@ data Client = Client
 name :: Client -> Username
 name = client_name
 
+
 connection :: Client -> ClientConnection
 connection = client_connection
+
 
 send :: Text -> Client -> IO ()
 send message (Client _ (PlayerConnection conn)) =
   sendTextData conn message
 send _ _ =
   return ()
+
+cpuClient :: Client
+cpuClient = Client "CPU" ComputerConnection

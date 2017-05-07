@@ -3,12 +3,18 @@ module Server where
 import Prelude hiding (lookup, putStrLn)
 
 import Control.Concurrent (MVar, newMVar, modifyMVar)
+import Control.Monad (forM_)
 import Data.Map.Strict (Map, delete, empty, insert, keys, lookup)
 import Data.Monoid ((<>))
+import Data.Text (Text)
 import Data.Text.IO (putStrLn)
 import Data.String.Conversions (cs)
 
+import Model (WhichPlayer)
 import Util (getGen)
+
+import qualified Client
+import Client (Client)
 
 import qualified Room
 import Room (Room)
@@ -25,6 +31,7 @@ initState :: State
 initState = State empty
 
 
+-- GETTING / DELETING ROOMS
 getRoom :: Room.Name -> MVar State -> IO (MVar Room)
 getRoom name state =
   modifyMVar state $ \(State s) ->
@@ -45,3 +52,44 @@ deleteRoom :: Room.Name -> MVar State -> IO (State)
 deleteRoom name state =
   modifyMVar state $ \(State s) ->
     let s' = State (delete name s) in return (s', s')
+
+
+-- ADDING/REMOVING CLIENTS.
+addSpecClient :: Client -> MVar Room -> IO (Room)
+addSpecClient client room =
+  modifyMVar room $ \r ->
+    let r' = Room.addSpec client r in return (r', r')
+
+
+addPlayerClient :: Client -> MVar Room -> IO (Maybe (Room, WhichPlayer))
+addPlayerClient client room =
+  modifyMVar room $ \r ->
+    case Room.addPlayer client r of
+      Just (r', p) ->
+        return (r', Just (r', p))
+      Nothing ->
+        return (r, Nothing)
+
+
+addComputerClient :: MVar Room -> IO (Maybe Client)
+addComputerClient room =
+  modifyMVar room $ \r ->
+    case Room.addPlayer client r of
+      Just (r', _) ->
+        return (r', Just client)
+      Nothing ->
+        return (r, Nothing)
+  where
+    client = Client.cpuClient :: Client
+
+
+removeClient :: Client -> MVar Room -> IO (Room)
+removeClient client room =
+  modifyMVar room $ \r ->
+    let r' = Room.removeClient client r in return (r', r')
+
+
+-- MESSAGING
+broadcast :: Text -> Room -> IO ()
+broadcast msg room =
+  forM_ (Room.getClients room) (Client.send msg)
