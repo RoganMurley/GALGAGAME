@@ -6,7 +6,8 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Messages exposing (Msg(..), CharSelectMsg(..), GameMsg(..))
-import Raymarch
+import Raymarch.Types as Raymarch
+import Raymarch.View as Raymarch
 
 
 view : Raymarch.Params -> Model -> Html Msg

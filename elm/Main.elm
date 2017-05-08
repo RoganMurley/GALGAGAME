@@ -30,7 +30,8 @@ import Ports exposing (copyInput, selectAllInput, queryParams)
 import AnimationFrame
 import Window
 import Listener exposing (listen)
-import Raymarch
+import Raymarch.Types as Raymarch
+import Raymarch.View as Raymarch
 
 
 main =
