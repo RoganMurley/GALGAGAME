@@ -13,7 +13,8 @@ import Model.State exposing (..)
 import Model.Types exposing (..)
 import Model.View as Model exposing (view, resView)
 import Vfx
-import Raymarch
+import Raymarch.Types as Raymarch
+import Raymarch.View as Raymarch
 
 
 view : GameState -> String -> String -> String -> Float -> ( Int, Int ) -> Html Msg
