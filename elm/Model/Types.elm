@@ -7,7 +7,7 @@ type alias Model =
     { hand : Hand
     , otherHand : Int
     , stack : Stack
-    , turn : Turn
+    , turn : WhichPlayer
     , life : Life
     , otherLife : Life
     , otherHover : Maybe Int
@@ -36,10 +36,6 @@ type alias Stack =
 type WhichPlayer
     = PlayerA
     | PlayerB
-
-
-type alias Turn =
-    WhichPlayer
 
 
 type alias Hand =

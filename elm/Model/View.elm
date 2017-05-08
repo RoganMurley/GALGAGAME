@@ -93,7 +93,7 @@ viewOtherHand cardCount hoverIndex =
         div [ class "hand other-hand" ] cards
 
 
-viewTurn : Bool -> Turn -> Html Msg
+viewTurn : Bool -> WhichPlayer -> Html Msg
 viewTurn handFull turn =
     case turn of
         PlayerA ->

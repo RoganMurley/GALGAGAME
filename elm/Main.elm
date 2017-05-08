@@ -13,7 +13,7 @@ import Chat exposing (addChatMessage)
 import Drag exposing (dragAt, dragEnd, dragStart, getPosition)
 import Card exposing (Card)
 import GameState exposing (GameState(..), resTick, stateUpdate, view, tickForward, tickZero)
-import Model.Types exposing (Hand, Model, Turn, WhichPlayer(..))
+import Model.Types exposing (Hand, Model, WhichPlayer(..))
 import Model.View as Model exposing (view)
 import Messages exposing (GameMsg(..), MenuMsg(..), Msg(..))
 import Random
