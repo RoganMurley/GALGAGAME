@@ -5,7 +5,9 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Json.Decode as Json exposing (field, maybe)
 import Card exposing (Card)
-import CharacterSelect
+import CharacterSelect.State as CharacterSelect
+import CharacterSelect.Types as CharacterSelect
+import CharacterSelect.View as CharacterSelect
 import Messages exposing (GameMsg(..), Msg(..))
 import Model.State exposing (..)
 import Model.Types exposing (..)
