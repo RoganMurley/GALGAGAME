@@ -1,6 +1,6 @@
 module Model.State exposing (..)
 
-import Model.Types exposing (FullModel, WhichPlayer(..))
+import Model.Types exposing (FullModel, Intensity, WhichPlayer(..))
 
 
 init : FullModel
@@ -20,3 +20,10 @@ init =
 maxHandLength : Int
 maxHandLength =
     6
+
+
+intensity : FullModel -> Intensity
+intensity m =
+    { lower = (toFloat m.diffOtherLife) / 10
+    , upper = (toFloat m.diffLife) / 10
+    }
