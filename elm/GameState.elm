@@ -7,7 +7,9 @@ import Json.Decode as Json exposing (field, maybe)
 import Card exposing (Card)
 import CharacterSelect
 import Messages exposing (GameMsg(..), Msg(..))
-import Model exposing (..)
+import Model.State exposing (..)
+import Model.Types exposing (..)
+import Model.View as Model exposing (view, resView)
 import Util exposing (fromJust, safeTail)
 import Vfx
 import Raymarch
