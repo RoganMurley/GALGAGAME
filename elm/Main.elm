@@ -572,11 +572,23 @@ view ({ hostname, httpPort, frameTime, windowDimensions } as model) =
                         , div []
                             [ div [ class "input-group" ]
                                 [ input [ onInput Input, placeholder "username", value name, id "playername-input", onClick (SelectAllInput "playername-input") ] []
-                                , button [ onClick (Send (playPrefix ++ name)), disabled (not valid) ] [ text "Play" ]
-                                , button [ onClick (Send ("spectate:" ++ name)), disabled (not valid) ] [ text "Spec" ]
+                                , button
+                                    [ onClick (Send (playPrefix ++ name))
+                                    , disabled (not valid)
+                                    ]
+                                    [ text "Play" ]
+                                , button
+                                    [ onClick (Send ("spectate:" ++ name))
+                                    , disabled (not valid)
+                                    ]
+                                    [ text "Spec" ]
                                 ]
-                            , div [ class "error" ] [ text error ]
+                            , div
+                                [ class "error" ]
+                                [ text error ]
                             ]
                         ]
-                    , div [] [ Raymarch.view (Raymarch.Params frameTime windowDimensions) ]
+                    , div
+                        []
+                        [ Raymarch.view (Raymarch.Params frameTime windowDimensions) ]
                     ]
