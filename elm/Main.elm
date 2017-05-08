@@ -14,7 +14,9 @@ import Chat.Types as Chat
 import Chat.View as Chat
 import Drag exposing (dragAt, dragEnd, dragStart, getPosition)
 import Card exposing (Card)
-import GameState exposing (GameState(..), resTick, stateUpdate, view, tickForward, tickZero)
+import GameState.Types as GameState exposing (GameState(..))
+import GameState.State as GameState exposing (resTick, tickForward, tickZero)
+import GameState.View as GameState
 import Model.Types exposing (Hand, Model, WhichPlayer(..))
 import Model.View as Model exposing (view)
 import Messages exposing (GameMsg(..), MenuMsg(..), Msg(..))
@@ -303,7 +305,7 @@ connectedUpdate hostname msg ({ chat, game, mode } as model) =
             ( { model | chat = Chat.addMessage str chat }, Cmd.none )
 
         GameStateMsg gameMsg ->
-            ( { model | game = stateUpdate gameMsg game }, Cmd.none )
+            ( { model | game = GameState.update gameMsg game }, Cmd.none )
 
         KeyPress 13 ->
             ( model, message (Send ("chat:" ++ chat.input)) )

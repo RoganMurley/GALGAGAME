@@ -1,7 +1,8 @@
 module Listener exposing (..)
 
 import Audio exposing (SoundOption(..), playSound, playSoundWith)
-import GameState exposing (GameState(..))
+import GameState.State as GameState
+import GameState.Types exposing (GameState(..))
 import Messages exposing (Msg)
 
 
