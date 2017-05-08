@@ -6,7 +6,7 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Messages exposing (GameMsg(..), Msg(..))
 import Model.Types exposing (..)
-import Model.State exposing (maxHandLength)
+import Model.State exposing (intensity, maxHandLength)
 import Vfx
 
 
