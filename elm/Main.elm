@@ -9,7 +9,9 @@ import Keyboard
 import Mouse
 import String exposing (dropLeft, length, startsWith)
 import WebSocket
-import Chat exposing (addChatMessage)
+import Chat.State as Chat
+import Chat.Types as Chat
+import Chat.View as Chat
 import Drag exposing (dragAt, dragEnd, dragStart, getPosition)
 import Card exposing (Card)
 import GameState exposing (GameState(..), resTick, stateUpdate, view, tickForward, tickZero)
@@ -298,7 +300,7 @@ connectedUpdate hostname msg ({ chat, game, mode } as model) =
             )
 
         NewChatMsg str ->
-            ( { model | chat = addChatMessage str chat }, Cmd.none )
+            ( { model | chat = Chat.addMessage str chat }, Cmd.none )
 
         GameStateMsg gameMsg ->
             ( { model | game = stateUpdate gameMsg game }, Cmd.none )
