@@ -1,121 +1,21 @@
-module Model exposing (..)
+module Model.View exposing (..)
 
 import Card exposing (Card)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Messages exposing (GameMsg(..), Msg(..))
+import Model.Types exposing (..)
+import Model.State exposing (maxHandLength)
 import Vfx
-
-
--- TYPES
-
-
-type alias Model =
-    { hand : Hand
-    , otherHand : Int
-    , stack : Stack
-    , turn : Turn
-    , life : Life
-    , otherLife : Life
-    , otherHover : Maybe Int
-    }
-
-
-type alias ModelDiff a =
-    { a
-        | diffOtherLife : Life
-        , diffLife : Life
-    }
-
-
-type alias FullModel =
-    ModelDiff Model
-
-
-type alias Life =
-    Int
-
-
-type alias Stack =
-    List StackCard
-
-
-type WhichPlayer
-    = PlayerA
-    | PlayerB
-
-
-type alias Turn =
-    WhichPlayer
-
-
-type alias Hand =
-    List Card
-
-
-type alias HoverCardIndex =
-    Maybe Int
-
-
-type alias StackCard =
-    { owner : WhichPlayer
-    , card : Card
-    }
-
-
-type alias Res =
-    List Model
-
-
-type alias Intensity =
-    { lower : Float
-    , upper : Float
-    }
-
-intensity : FullModel -> Intensity
-intensity m =
-    { lower = (toFloat m.diffOtherLife) / 10
-    , upper = (toFloat m.diffLife) / 10
-    }
-
-
-
--- CONSTANTS.
-
-
-maxHandLength : Int
-maxHandLength =
-    6
-
-
-
--- INITIAL MODEL.
-
-
-init : FullModel
-init =
-    { hand = []
-    , otherHand = 0
-    , stack = []
-    , turn = PlayerA
-    , life = 100
-    , otherLife = 100
-    , otherHover = Nothing
-    , diffLife = 0
-    , diffOtherLife = 0
-    }
-
-
-
--- View
 
 
 view : Vfx.Params -> Int -> FullModel -> Html Msg
 view params resTime model =
     let
         intens : Intensity
-        intens = intensity model
+        intens =
+            intensity model
     in
         div []
             [ viewOtherHand model.otherHand model.otherHover
@@ -124,6 +24,7 @@ view params resTime model =
             , viewTurn (List.length model.hand == maxHandLength) model.turn
             , viewLife PlayerA model.life
             , viewLife PlayerB model.otherLife
+
             --, Vfx.view params intens.lower intens.upper resTime
             ]
 
@@ -259,7 +160,8 @@ resView : Vfx.Params -> Res -> Int -> FullModel -> Html Msg
 resView params res resTime model =
     let
         intens : Intensity
-        intens = intensity model
+        intens =
+            intensity model
     in
         div []
             [ viewOtherHand model.otherHand model.otherHover
@@ -268,6 +170,7 @@ resView params res resTime model =
             , viewResTurn
             , viewLife PlayerA model.life
             , viewLife PlayerB model.otherLife
+
             --, Vfx.view params intens.lower intens.upper resTime
             ]
 
