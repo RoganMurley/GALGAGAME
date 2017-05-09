@@ -19,8 +19,7 @@ instance Show ClientConnection where
 data Client = Client
   { client_name       :: Username
   , client_connection :: ClientConnection
-  }
-  deriving (Show)
+  } deriving (Show)
 
 
 name :: Client -> Username
@@ -32,10 +31,8 @@ connection = client_connection
 
 
 send :: Text -> Client -> IO ()
-send message (Client _ (PlayerConnection conn)) =
-  sendTextData conn message
-send _ _ =
-  return ()
+send message (Client _ (PlayerConnection conn)) = sendTextData conn message
+send _       _                                  = return ()
 
 cpuClient :: Client
 cpuClient = Client "CPU" ComputerConnection
