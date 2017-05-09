@@ -1,7 +1,6 @@
 module Main exposing (..)
 
 import Audio exposing (SoundOption(..), playSound, playSoundWith)
-import Char exposing (isLower)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
@@ -13,13 +12,11 @@ import Chat.State as Chat
 import Chat.Types as Chat
 import Chat.View as Chat
 import Drag exposing (dragAt, dragEnd, dragStart, getPosition)
-import Card exposing (Card)
 import GameState.Messages as GameState
 import GameState.Types as GameState exposing (GameState(..))
 import GameState.State as GameState exposing (resTick, tickForward, tickZero)
 import GameState.View as GameState
 import Model.Types exposing (Hand, Model, WhichPlayer(..))
-import Model.View as Model exposing (view)
 import Messages exposing (MenuMsg(..), Msg(..))
 import Random
 import Random.Char exposing (char)
@@ -35,6 +32,7 @@ import Raymarch.Types as Raymarch
 import Raymarch.View as Raymarch
 
 
+main : Program Flags Model Msg
 main =
     programWithFlags
         { init = init
