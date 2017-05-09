@@ -4,8 +4,6 @@ import Json.Decode as Json exposing (field, maybe)
 import Card exposing (Card)
 import CharacterSelect.Types as CharacterSelect
 import GameState.Types exposing (GameState(..), fullify, unfullify)
-import GameState.Messages as GameState
-import Model.State exposing (..)
 import Model.Types exposing (..)
 import Util exposing (fromJust)
 

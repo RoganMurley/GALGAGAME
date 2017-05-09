@@ -1,20 +1,12 @@
 module GameState.State exposing (resTick, update, tickForward, tickZero)
 
-import Html exposing (..)
-import Html.Attributes exposing (..)
-import Html.Events exposing (..)
-import Json.Decode as Json exposing (field, maybe)
-import Card exposing (Card)
 import CharacterSelect.State as CharacterSelect
 import CharacterSelect.Types as CharacterSelect
-import CharacterSelect.View as CharacterSelect
 import GameState.Decoders exposing (decodeState, resDecoder)
 import GameState.Messages as GameState
 import GameState.Types exposing (GameState(..), fullify, unfullify)
-import Messages exposing (Msg(..))
-import Model.State exposing (..)
+import Json.Decode as Json exposing (field, maybe)
 import Model.Types exposing (..)
-import Model.View as Model exposing (view, resView)
 import Util exposing (fromJust, safeTail)
 
 
