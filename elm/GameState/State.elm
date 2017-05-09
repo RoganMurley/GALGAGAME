@@ -9,21 +9,22 @@ import CharacterSelect.State as CharacterSelect
 import CharacterSelect.Types as CharacterSelect
 import CharacterSelect.View as CharacterSelect
 import GameState.Decoders exposing (decodeState, resDecoder)
+import GameState.Messages as GameState
 import GameState.Types exposing (GameState(..), fullify, unfullify)
-import Messages exposing (GameMsg(..), Msg(..))
+import Messages exposing (Msg(..))
 import Model.State exposing (..)
 import Model.Types exposing (..)
 import Model.View as Model exposing (view, resView)
 import Util exposing (fromJust, safeTail)
 
 
-update : GameMsg -> GameState -> GameState
+update : GameState.Msg -> GameState -> GameState
 update msg state =
     case msg of
-        Sync str ->
+        GameState.Sync str ->
             syncState state str
 
-        HoverOutcome i ->
+        GameState.HoverOutcome i ->
             case state of
                 PlayingGame m r ->
                     PlayingGame { m | otherHover = i } r
@@ -31,7 +32,7 @@ update msg state =
                 s ->
                     s
 
-        ResolveOutcome str ->
+        GameState.ResolveOutcome str ->
             let
                 ( final, resList ) =
                     case Json.decodeString (resDecoder state) str of
@@ -56,7 +57,7 @@ update msg state =
                             otherwise ->
                                 setRes final resList
 
-        SelectingMsg selectMsg ->
+        GameState.SelectingMsg selectMsg ->
             let
                 model : CharacterSelect.Model
                 model =

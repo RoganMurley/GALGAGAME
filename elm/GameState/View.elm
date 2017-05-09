@@ -7,8 +7,9 @@ import Card exposing (Card)
 import CharacterSelect.State as CharacterSelect
 import CharacterSelect.Types as CharacterSelect
 import CharacterSelect.View as CharacterSelect
-import GameState.Types exposing (GameState(..))
-import Messages exposing (GameMsg(..), Msg(..))
+import GameState.Types exposing (GameState(..), fullify, unfullify)
+import GameState.Messages as GameState
+import Messages exposing (Msg(..))
 import Model.State exposing (..)
 import Model.Types exposing (..)
 import Model.View as Model exposing (view, resView)

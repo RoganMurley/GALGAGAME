@@ -4,7 +4,7 @@ import Card exposing (Card)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import Messages exposing (GameMsg(..), Msg(..))
+import Messages exposing (Msg(..))
 import Model.Types exposing (..)
 import Model.State exposing (intensity, maxHandLength)
 import Vfx

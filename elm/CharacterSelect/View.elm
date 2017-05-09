@@ -2,10 +2,12 @@ module CharacterSelect.View exposing (..)
 
 import Card exposing (Card)
 import CharacterSelect.Types exposing (Character, Model)
+import CharacterSelect.Messages as CharacterSelect
+import GameState.Messages as GameState
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import Messages exposing (Msg(..), CharSelectMsg(..), GameMsg(..))
+import Messages exposing (Msg(..))
 import Raymarch.Types as Raymarch
 import Raymarch.View as Raymarch
 
@@ -17,7 +19,12 @@ view (Raymarch.Params frameTime windowDimensions) { characters, selected, hover 
         characterView ({ name, imgURL } as character) =
             div
                 [ class "character-button"
-                , onMouseEnter (GameStateMsg (SelectingMsg (SelectingHover name)))
+                , onMouseEnter
+                    (GameStateMsg
+                        (GameState.SelectingMsg
+                            (CharacterSelect.Hover name)
+                        )
+                    )
                 , onClick (SelectCharacter name)
                 , if (List.member character selected) then
                     class "invisible"
@@ -35,7 +42,12 @@ view (Raymarch.Params frameTime windowDimensions) { characters, selected, hover 
                 chosenView { name } =
                     div
                         [ class "character-chosen"
-                        , onMouseEnter (GameStateMsg (SelectingMsg (SelectingHover name)))
+                        , onMouseEnter
+                            (GameStateMsg
+                                (GameState.SelectingMsg
+                                    (CharacterSelect.Hover name)
+                                )
+                            )
                         ]
                         [ text name ]
             in

@@ -1,12 +1,12 @@
 module CharacterSelect.State exposing (..)
 
 import CharacterSelect.Types exposing (Model)
-import Messages exposing (CharSelectMsg(..))
+import CharacterSelect.Messages as CharacterSelect
 import Util exposing (fromJust)
 
 
-update : CharSelectMsg -> Model -> Model
+update : CharacterSelect.Msg -> Model -> Model
 update msg model =
     case msg of
-        SelectingHover n ->
+        CharacterSelect.Hover n ->
             { model | hover = fromJust (List.head (List.filter (\{ name } -> name == n) model.characters)) }

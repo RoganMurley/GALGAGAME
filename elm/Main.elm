@@ -14,12 +14,13 @@ import Chat.Types as Chat
 import Chat.View as Chat
 import Drag exposing (dragAt, dragEnd, dragStart, getPosition)
 import Card exposing (Card)
+import GameState.Messages as GameState
 import GameState.Types as GameState exposing (GameState(..))
 import GameState.State as GameState exposing (resTick, tickForward, tickZero)
 import GameState.View as GameState
 import Model.Types exposing (Hand, Model, WhichPlayer(..))
 import Model.View as Model exposing (view)
-import Messages exposing (GameMsg(..), MenuMsg(..), Msg(..))
+import Messages exposing (MenuMsg(..), Msg(..))
 import Random
 import Random.Char exposing (char)
 import Random.String exposing (string)
@@ -391,16 +392,35 @@ connectedReceive model msg =
     if (startsWith "chat:" msg) then
         ( model, message (NewChatMsg (dropLeft (length "chat:") msg)) )
     else if (startsWith "sync:" msg) then
-        ( model, message (GameStateMsg (Sync (dropLeft (length "sync:") msg))) )
+        ( model
+        , message
+            (GameStateMsg
+                (GameState.Sync
+                    (dropLeft (length "sync:") msg)
+                )
+            )
+        )
     else if (startsWith "hover:" msg) then
         ( model
         , Cmd.batch
-            [ message (GameStateMsg (HoverOutcome (parseHoverOutcome (dropLeft (length "hover:") msg))))
+            [ message
+                (GameStateMsg
+                    (GameState.HoverOutcome
+                        (parseHoverOutcome (dropLeft (length "hover:") msg))
+                    )
+                )
             , playSound "sfx/hover.wav"
             ]
         )
     else if (startsWith "res:" msg) then
-        ( model, message (GameStateMsg (ResolveOutcome (dropLeft (length "res:") msg))) )
+        ( model
+        , message
+            (GameStateMsg
+                (GameState.ResolveOutcome
+                    (dropLeft (length "res:") msg)
+                )
+            )
+        )
     else if (startsWith "playCard:" msg) then
         ( model, playSound "sfx/playCard.wav" )
     else if (startsWith "end:" msg) then
