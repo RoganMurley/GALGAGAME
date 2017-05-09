@@ -26,7 +26,7 @@ instance ToJSON SelectedCharacters where
 
 data Character = Character
   { character_name  :: Text
-  , character_img :: Text
+  , character_img   :: Text
   , character_cards :: CharacterCards
   } deriving (Eq, Show)
 

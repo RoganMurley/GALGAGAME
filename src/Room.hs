@@ -23,8 +23,7 @@ data Room = Room
   , room_pb    :: Player
   , room_specs :: Spectators
   , room_state :: GameState
-  }
-  deriving (Show)
+  } deriving (Show)
 
 
 new :: Gen -> Room
