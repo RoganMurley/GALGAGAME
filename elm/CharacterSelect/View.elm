@@ -65,13 +65,7 @@ view (Raymarch.Params frameTime windowDimensions) { characters, selected, hover 
 
         cardPreviewView : ( Card, Card, Card, Card ) -> Html Msg
         cardPreviewView ( c1, c2, c3, c4 ) =
-            div
-                [ class "card-preview" ]
-                [ Card.view c1
-                , Card.view c2
-                , Card.view c3
-                , Card.view c4
-                ]
+            div [ class "card-preview" ] (List.map Card.view [ c1, c2, c3, c4 ])
     in
         div []
             [ div
