@@ -56,21 +56,23 @@ view (Raymarch.Params frameTime windowDimensions) { characters, selected, hover 
         selectedView selected =
             let
                 chosenView : Character -> Html Msg
-                chosenView { name } =
+                chosenView { name, imgURL } =
                     div
                         [ class "character-chosen"
                         , onMouseEnter (GameStateMsg (SelectingMsg (SelectingHover name)))
                         ]
-                        [ text name ]
+                        [ img [ src ("img/" ++ imgURL), class "character-icon" ] []
+                        , div [ class "character-name" ] [ text name ]
+                        ]
             in
-                div [ class "ready-up" ]
+                div []
                     [ div
                         [ class "characters-all-chosen" ]
                         (List.map chosenView selected)
                     , if List.length selected >= 3 then
-                        text "Waiting for opponent"
+                        div [ class "ready-up" ] [ text "Waiting for opponent" ]
                       else
-                        text ""
+                        div [] []
                     ]
 
         cardPreviewView : ( Card, Card, Card, Card ) -> Html Msg
