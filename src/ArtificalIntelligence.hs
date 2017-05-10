@@ -1,11 +1,13 @@
 module ArtificalIntelligence where
 
+import Control.Monad.Writer (runWriter)
 import Data.List (maximumBy)
 import Data.Maybe (fromJust)
 import Data.Ord (comparing)
 
 import GameState
 import Model
+import Player (WhichPlayer(..))
 import Util (fromRight)
 
 
@@ -14,26 +16,21 @@ data Action = PlayAction Int | EndAction
   deriving (Show)
 
 
-evaluateState :: PlayState -> Weight
-evaluateState (Playing m)              = evaluateModel m
-evaluateState (Ended (Just PlayerA) _) = 100
-evaluateState (Ended (Just PlayerB) _) = -200
-evaluateState (Ended Nothing  _)       = 50
-
-
-evaluateModel :: Model -> Weight
-evaluateModel m =
-  if (length . getStack $ m) > 0 then
-    evaluateState . fst . resolveAll $ (m, [])
-      else
-        weighting
+evalState :: PlayState -> Weight
+evalState (Ended (Just PlayerA) _) = 100
+evalState (Ended (Just PlayerB) _) = -200
+evalState (Ended Nothing  _)       = 50
+evalState (Playing model)          = evalModel model
   where
-    weighting :: Weight
-    weighting =
-        (getLife PlayerA m)
-      - (getLife PlayerB m)
-      + (length . (getHand PlayerA) $ m) * 7
-      - (length . (getHand PlayerB) $ m) * 7
+    evalModel :: Model -> Weight
+    evalModel m
+      | (length . getStack $ m) > 0 =
+        evalState . fst . runWriter . resolveAll $ m
+      | otherwise =
+          (getLife PlayerA m)
+        - (getLife PlayerB m)
+        + (length . (getHand PlayerA) $ m) * 7
+        - (length . (getHand PlayerB) $ m) * 7
 
 
 toCommand :: Action -> GameCommand
@@ -50,10 +47,11 @@ possibleActions m =
     xs :: [Int]
     xs = [ x | x <- [0..maxHandLength], x < handLength]
     endAction :: [Action]
-    endAction =
-      if handLength == maxHandLength
-        then []
-        else [EndAction]
+    endAction
+      | handLength == maxHandLength =
+        []
+      | otherwise =
+        [EndAction]
 
 
 postulateAction :: Model -> Action -> PlayState
@@ -65,9 +63,12 @@ postulateAction model action =
     state = Started (Playing model) :: GameState
 
 
-chooseAction :: Model -> Action
-chooseAction model =
-  maximumBy comparison (possibleActions model)
+chooseAction :: Turn -> Model -> Maybe Action
+chooseAction turn model
+  | getTurn model /= turn =
+    Nothing
+  | otherwise =
+    Just $ maximumBy comparison $ possibleActions model
   where
     comparison :: Action -> Action -> Ordering
-    comparison = comparing (evaluateState . (postulateAction model))
+    comparison = comparing (evalState . (postulateAction model))

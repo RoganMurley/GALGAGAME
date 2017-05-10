@@ -1,19 +1,20 @@
 module Room where
 
 import Data.Maybe (maybeToList)
-import Data.Text (Text)
-import Network.WebSockets (Connection, sendTextData)
+import Data.Monoid ((<>))
+import Data.Text (Text, intercalate)
 
 import Characters (initCharModel)
 import GameState (GameState(..), Username, initState)
-import Model (WhichPlayer(..))
+import Player (WhichPlayer(..))
 import Util (Gen)
 
+import qualified Client
+import Client (Client)
 
-type RoomName = Text
-data ClientConnection = PlayerConnection Connection | ComputerConnection
-type Client = (Username, ClientConnection)
-type Player = Maybe Client
+
+type Name       = Text
+type Player     = Maybe Client
 type Spectators = [Client]
 
 
@@ -22,7 +23,7 @@ data Room = Room
   , room_pb    :: Player
   , room_specs :: Spectators
   , room_state :: GameState
-  }
+  } deriving (Show)
 
 
 new :: Gen -> Room
@@ -60,14 +61,17 @@ getSpecs = room_specs
 
 clientExists :: Client -> Room -> Bool
 clientExists client room =
-  any ((== fst client) . fst) (getClients room)
+  let
+    name = Client.name client :: Username
+  in
+    any (== name) (Client.name <$> (getClients room))
 
 
 getSpeccingName :: Room -> Text
 getSpeccingName room =
   case getPlayerClient PlayerA room of
-    Just (name, _) ->
-      name
+    Just client ->
+      Client.name client
     Nothing ->
       "nobody yet..."
 
@@ -124,14 +128,19 @@ removeClient client room@Room{ room_pa = pa, room_pb = pb, room_specs = specs } 
   }
   where
     newSpecs :: Spectators
-    newSpecs = filter ((/= fst client) . fst) specs
+    newSpecs = filter ((/= Client.name client) . Client.name) specs
     newPlayer :: Player -> Player
     newPlayer Nothing = Nothing
-    newPlayer (Just c) = if fst c == fst client then Nothing else Just c
+    newPlayer p@(Just c) =
+      if ((Client.name) c == (Client.name client))
+        then Nothing
+        else p
 
 
-sendToClient :: Text -> Client -> IO ()
-sendToClient message (_, PlayerConnection conn) =
-  sendTextData conn message
-sendToClient _ _ =
-  return ()
+userList :: Room -> Text
+userList room
+  | users == "" = "You're the only one here..."
+  | otherwise   = "Users: " <> users
+  where
+    users :: Text
+    users = (intercalate ", ") . (fmap Client.name) $ Room.getClients room
