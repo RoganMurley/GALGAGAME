@@ -1,7 +1,6 @@
 module Main exposing (..)
 
 import Audio exposing (SoundOption(..), playSound, playSoundWith)
-import Char exposing (isLower)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
@@ -9,12 +8,16 @@ import Keyboard
 import Mouse
 import String exposing (dropLeft, length, startsWith)
 import WebSocket
-import Chat exposing (addChatMessage)
+import Chat.State as Chat
+import Chat.Types as Chat
+import Chat.View as Chat
 import Drag exposing (dragAt, dragEnd, dragStart, getPosition)
-import Card exposing (Card)
-import GameState exposing (GameState(..), resTick, stateUpdate, view, tickForward, tickZero)
-import Model exposing (Hand, Model, Turn, WhichPlayer(..), view)
-import Messages exposing (GameMsg(..), MenuMsg(..), Msg(..))
+import GameState.Messages as GameState
+import GameState.Types as GameState exposing (GameState(..))
+import GameState.State as GameState exposing (resTick, tickForward, tickZero)
+import GameState.View as GameState
+import Model.Types exposing (Hand, Model, WhichPlayer(..))
+import Messages exposing (MenuMsg(..), Msg(..))
 import Random
 import Random.Char exposing (char)
 import Random.String exposing (string)
@@ -25,9 +28,11 @@ import Ports exposing (copyInput, selectAllInput, queryParams)
 import AnimationFrame
 import Window
 import Listener exposing (listen)
-import Raymarch
+import Raymarch.Types as Raymarch
+import Raymarch.View as Raymarch
 
 
+main : Program Flags Model Msg
 main =
     programWithFlags
         { init = init
@@ -297,10 +302,10 @@ connectedUpdate hostname msg ({ chat, game, mode } as model) =
             )
 
         NewChatMsg str ->
-            ( { model | chat = addChatMessage str chat }, Cmd.none )
+            ( { model | chat = Chat.addMessage str chat }, Cmd.none )
 
         GameStateMsg gameMsg ->
-            ( { model | game = stateUpdate gameMsg game }, Cmd.none )
+            ( { model | game = GameState.update gameMsg game }, Cmd.none )
 
         KeyPress 13 ->
             ( model, message (Send ("chat:" ++ chat.input)) )
@@ -385,16 +390,35 @@ connectedReceive model msg =
     if (startsWith "chat:" msg) then
         ( model, message (NewChatMsg (dropLeft (length "chat:") msg)) )
     else if (startsWith "sync:" msg) then
-        ( model, message (GameStateMsg (Sync (dropLeft (length "sync:") msg))) )
+        ( model
+        , message
+            (GameStateMsg
+                (GameState.Sync
+                    (dropLeft (length "sync:") msg)
+                )
+            )
+        )
     else if (startsWith "hover:" msg) then
         ( model
         , Cmd.batch
-            [ message (GameStateMsg (HoverOutcome (parseHoverOutcome (dropLeft (length "hover:") msg))))
+            [ message
+                (GameStateMsg
+                    (GameState.HoverOutcome
+                        (parseHoverOutcome (dropLeft (length "hover:") msg))
+                    )
+                )
             , playSound "sfx/hover.wav"
             ]
         )
     else if (startsWith "res:" msg) then
-        ( model, message (GameStateMsg (ResolveOutcome (dropLeft (length "res:") msg))) )
+        ( model
+        , message
+            (GameStateMsg
+                (GameState.ResolveOutcome
+                    (dropLeft (length "res:") msg)
+                )
+            )
+        )
     else if (startsWith "playCard:" msg) then
         ( model, playSound "sfx/playCard.wav" )
     else if (startsWith "end:" msg) then
@@ -566,11 +590,23 @@ view ({ hostname, httpPort, frameTime, windowDimensions } as model) =
                         , div []
                             [ div [ class "input-group" ]
                                 [ input [ onInput Input, placeholder "username", value name, id "playername-input", onClick (SelectAllInput "playername-input") ] []
-                                , button [ onClick (Send (playPrefix ++ name)), disabled (not valid) ] [ text "Play" ]
-                                , button [ onClick (Send ("spectate:" ++ name)), disabled (not valid) ] [ text "Spec" ]
+                                , button
+                                    [ onClick (Send (playPrefix ++ name))
+                                    , disabled (not valid)
+                                    ]
+                                    [ text "Play" ]
+                                , button
+                                    [ onClick (Send ("spectate:" ++ name))
+                                    , disabled (not valid)
+                                    ]
+                                    [ text "Spec" ]
                                 ]
-                            , div [ class "error" ] [ text error ]
+                            , div
+                                [ class "error" ]
+                                [ text error ]
                             ]
                         ]
-                    , div [] [ Raymarch.view (Raymarch.Params frameTime windowDimensions) ]
+                    , div
+                        []
+                        [ Raymarch.view (Raymarch.Params frameTime windowDimensions) ]
                     ]

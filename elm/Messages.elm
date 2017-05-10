@@ -1,5 +1,6 @@
-module Messages exposing (GameMsg(..), MenuMsg(..), Msg(..), CharSelectMsg(..))
+module Messages exposing (MenuMsg(..), Msg(..))
 
+import GameState.Messages as GameState
 import Mouse exposing (Position)
 import Time exposing (Time)
 
@@ -15,7 +16,7 @@ type Msg
     | EndTurn
     | PlayCard Int
     | NewChatMsg String
-    | GameStateMsg GameMsg
+    | GameStateMsg GameState.Msg
     | ConnectError String
     | Spectate
     | Play
@@ -32,22 +33,6 @@ type Msg
     | SelectCharacter String
 
 
-type GameMsg
-    = Sync String
-    | HoverOutcome (Maybe Int)
-    | ResolveOutcome String
-    | SelectingMsg CharSelectMsg
-
-
 type MenuMsg
     = MenuCustom
     | MenuComputer
-
-
-type CharSelectMsg
-    = SelectingHover String
-
-
-
--- | SelectingSelect String
--- | SelectingDeselect String

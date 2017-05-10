@@ -13,7 +13,7 @@ gulp.task('init', elm.init);
 gulp.task('multi', ['init'], function(){
   return gulp.src('elm/*.elm')
     .pipe(plumber())
-    .pipe(elm.make({filetype: 'js'}))
+    .pipe(elm.make({filetype: 'js', warn: true}))
     .pipe(gulp.dest('static/'));
 });
 

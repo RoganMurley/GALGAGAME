@@ -1,6 +1,8 @@
 module GameState where
 
+import Control.Monad.Writer (Writer, runWriter, tell)
 import Data.Aeson (ToJSON(..), (.=), object)
+import Data.Maybe (fromMaybe)
 import Data.Monoid ((<>))
 import Data.String.Conversions (cs)
 import Safe (headMay, tailSafe)
@@ -8,6 +10,7 @@ import Data.Text (Text)
 
 import Characters
 import Model
+import Player (WhichPlayer(..), other)
 import Util (Err, Gen, shuffle, split)
 
 
@@ -61,7 +64,20 @@ initState = Waiting
 
 
 initModel :: Turn -> FinalSelection -> FinalSelection -> Gen -> Model
-initModel turn ca cb gen = Model turn [] handPA handPB deckPA deckPB maxLife maxLife NoPass gen
+initModel turn ca cb gen =
+  Model
+    turn
+    []
+    (PlayerModel
+      handPA
+      deckPA
+      maxLife)
+    (PlayerModel
+      handPB
+      deckPB
+      maxLife)
+    NoPass
+    gen
   where
     (genPA, genPB) = split gen :: (Gen, Gen)
     initDeckPA = shuffle (buildDeck ca) genPA :: Deck
@@ -71,21 +87,21 @@ initModel turn ca cb gen = Model turn [] handPA handPB deckPA deckPB maxLife max
 
 
 buildDeck :: FinalSelection -> Deck
-buildDeck (Character _ _ cards1, Character _ _ cards2, Character _ _ cards3) =
-  (f cards1) ++ (f cards2) ++ (f cards3)
+buildDeck (Character _ _ ca, Character _ _ cb, Character _ _ cc) =
+  concat $ f <$> [ca, cb, cc]
   where
-    f (a, b, c, d) = concat $ replicate 3 [a, b, c, d]
+    f (a, b, c, d) = concat . (replicate 3) $ [a, b, c, d]
 
 
 reverso :: GameState -> GameState
 reverso (Waiting gen)               = Waiting gen
 reverso (Selecting m t gen)         = Selecting (characterModelReverso m) t gen
 reverso (Started (Playing model))   = Started . Playing $ modelReverso model
-reverso (Started (Ended which gen)) = Started $ Ended (otherPlayer <$> which) gen
+reverso (Started (Ended which gen)) = Started $ Ended (other <$> which) gen
 
 
 update :: GameCommand -> WhichPlayer -> GameState -> Either Err (Maybe GameState, [Outcome])
-update (Chat username msg) _ _ = Right (Nothing, [ChatOutcome username msg])
+update (Chat username msg) _ _ = Right (Nothing, [EncodableOutcome $ ChatOutcome username msg])
 update cmd which state =
   case state of
     Waiting _ ->
@@ -111,17 +127,13 @@ update cmd which state =
             PlayCard index ->
               ((\x -> (x, [SyncOutcome, PlayCardOutcome which])) . Just . Started . Playing) <$> (playCard index which model)
             HoverCard index ->
-              (\x -> (Nothing, x)) <$> (hoverCard index which model)
+              (\x -> (Nothing, [x])) <$> (hoverCard index which model)
             _ ->
               Left ("Unknown command " <> (cs $ show cmd) <> " on a Playing GameState")
         Ended winner gen ->
           case cmd of
             Rematch ->
-                case winner of
-                  Nothing ->
-                    Right . (\x -> (x, [SyncOutcome])) . Just $ Selecting initCharModel PlayerA (fst $ split gen)
-                  Just w ->
-                    Right . (\x -> (x, [SyncOutcome])) . Just $ Selecting initCharModel w (fst $ split gen)
+              Right . (\x -> (x, [SyncOutcome])) . Just $ Selecting initCharModel (fromMaybe PlayerA winner) (fst $ split gen)
             _ ->
               Left ("Unknown command " <> (cs $ show cmd) <> " on an Ended GameState")
 
@@ -129,17 +141,17 @@ update cmd which state =
 endTurn :: WhichPlayer -> Model -> Either Err (Maybe GameState, [Outcome])
 endTurn which model
   | turn /= which = Left "You can't end the turn when it's not your turn!"
-  | handFull = Right (Just . Started . Playing $ model, [])
+  | handFull =  Left "You can't end the turn when your hand is full!"
   | otherwise =
     case passes of
       OnePass ->
-        case resolveAll (model, []) of
+        case runWriter . resolveAll $ model of
           (Playing m, res) ->
             let newState = Started . Playing . drawCards . resetPasses . swapTurn $ m in
-              Right (Just newState, [ResolveOutcome (reverse res) newState, EndTurnOutcome which])
+              Right (Just newState, [EncodableOutcome $ ResolveOutcome res newState, EndTurnOutcome which])
           (Ended w g, res) ->
             let newState = Started (Ended w g) in
-              Right (Just newState, [ResolveOutcome (reverse res) newState, EndTurnOutcome which])
+              Right (Just newState, [EncodableOutcome $ ResolveOutcome res newState, EndTurnOutcome which])
       NoPass ->
         Right (Just . Started . Playing . swapTurn $ model, [SyncOutcome])
   where
@@ -150,16 +162,17 @@ endTurn which model
     drawCards m = (drawCard PlayerA) . (drawCard PlayerB) $ m
 
 
-resolveAll :: (Model, ResolveList) -> (PlayState, ResolveList)
-resolveAll (model, res) =
-  if null stack then
-    (Playing model, res)
-    else
+resolveAll :: Model -> Writer [Model] PlayState
+resolveAll model
+  | null stack = return (Playing model)
+  | otherwise =
+    do
+      tell [model]
       case resolveOne model of
         Playing newModel ->
-          resolveAll (newModel, model : res)
+          resolveAll newModel
         Ended which gen ->
-          (Ended which gen, model : res)
+          return (Ended which gen)
   where
     stack = getStack model :: Stack
     resolveOne :: Model -> PlayState
@@ -171,9 +184,8 @@ resolveAll (model, res) =
           case headMay stack of
             Nothing ->
               id
-            Just (StackCard p (Card _ _ _ _ e)) ->
-              e p
-
+            Just (StackCard o c) ->
+              (card_eff c) o
 
 lifeGate :: Model -> PlayState
 lifeGate m
@@ -198,47 +210,45 @@ type ExcludePlayer = WhichPlayer
 type Username = Text
 
 
+-- OUTCOMES
 data Outcome =
-    ChatOutcome Username Text
-  | HoverOutcome ExcludePlayer (Maybe Int)
-  | ResolveOutcome ResolveList GameState
-  | SyncOutcome
+    SyncOutcome
   | PlayCardOutcome ExcludePlayer
   | EndTurnOutcome ExcludePlayer
+  | EncodableOutcome EncodableOutcome
   deriving (Eq, Show)
 
 
--- OUTCOMES
+data EncodableOutcome =
+    ChatOutcome Username Text
+  | HoverOutcome ExcludePlayer (Maybe Int)
+  | ResolveOutcome [Model] GameState
+  deriving (Eq, Show)
 
-instance ToJSON Outcome where
-  toJSON (HoverOutcome _ index) =
-    toJSON index
+
+instance ToJSON EncodableOutcome where
   toJSON (ChatOutcome name msg) =
     object [
       "name" .= name
     , "msg"  .= msg
     ]
+  toJSON (HoverOutcome _ index) =
+    toJSON index
   toJSON (ResolveOutcome res state) =
     object [
       "list" .= res
     , "final" .= state
     ]
-  toJSON SyncOutcome =
-    error "SyncOutcome shouldn't be marshalled to JSON" -- DANGEROUS!!!
-  toJSON (PlayCardOutcome _) =
-      error "PlayCardOutcome shouldn't be marshalled to JSON" -- DANGEROUS!!!
-  toJSON (EndTurnOutcome _) =
-      error "PlayCardOutcome shouldn't be marshalled to JSON" -- DANGEROUS!!!
 
 
-hoverCard :: Maybe Int -> WhichPlayer -> Model -> Either Err ([Outcome])
+hoverCard :: Maybe Int -> WhichPlayer -> Model -> Either Err Outcome
 hoverCard index which model =
   case index of
     Just i ->
       if i < (length . (getHand which) $ model)
         then
-          Right [HoverOutcome which (Just i)]
-            else
-              Left ("Hover index out of bounds (" <> (cs . show $ i ) <> ")" :: Err)
+          Right . EncodableOutcome $ HoverOutcome which (Just i)
+        else
+          Left ("Hover index out of bounds (" <> (cs . show $ i ) <> ")" :: Err)
     Nothing ->
-      Right [HoverOutcome which Nothing]
+      Right . EncodableOutcome $ HoverOutcome which Nothing

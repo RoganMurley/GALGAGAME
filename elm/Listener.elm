@@ -1,18 +1,17 @@
 module Listener exposing (..)
 
 import Audio exposing (SoundOption(..), playSound, playSoundWith)
-import GameState exposing (GameState(..))
+import GameState.State as GameState
+import GameState.Types exposing (GameState(..))
+import Model.Types exposing (FullModel)
 import Messages exposing (Msg)
 
 
 listen : Float -> GameState -> Cmd Msg
 listen time state =
-    -- MAKE THIS NOT STUPID DUPLICATION
-    case state of
-        PlayingGame _ ( [], _ ) ->
-            playSoundWith "music/background.mp3" [ Loop, Once ]
-
-        PlayingGame m _ ->
+    let
+        modelListen : GameState -> FullModel -> Cmd Msg
+        modelListen state m =
             if GameState.tickZero state then
                 let
                     sfxURL : String
@@ -31,26 +30,16 @@ listen time state =
                     playSoundWith ("sfx/" ++ sfxURL) [ Volume volume ]
             else
                 Cmd.none
+    in
+        case state of
+            PlayingGame _ ( [], _ ) ->
+                playSoundWith "music/background.mp3" [ Loop, Once ]
 
-        Ended _ (Just m) _ ->
-            if GameState.tickZero state then
-                let
-                    sfxURL : String
-                    sfxURL =
-                        case List.head m.stack of
-                            Nothing ->
-                                ""
+            PlayingGame m _ ->
+                modelListen state m
 
-                            Just { card } ->
-                                card.sfxURL
+            Ended _ (Just m) _ ->
+                modelListen state m
 
-                    volume : Float
-                    volume =
-                        0.5 + 0.1 * (toFloat (List.length m.stack))
-                in
-                    playSoundWith ("sfx/" ++ sfxURL) [ Volume volume ]
-            else
+            otherwise ->
                 Cmd.none
-
-        otherwise ->
-            Cmd.none
