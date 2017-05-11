@@ -52,12 +52,12 @@ getPosition { pos, drag } =
 
 dragStart : Draggable a -> Position -> Draggable a
 dragStart model pos =
-    { model | drag = (Just (Drag pos pos)) }
+    { model | drag = Just (Drag pos pos) }
 
 
 dragAt : Draggable a -> Position -> Draggable a
 dragAt model pos =
-    { model | drag = (Maybe.map (\{ start } -> Drag start pos) model.drag) }
+    { model | drag = Maybe.map (\{ start } -> Drag start pos) model.drag }
 
 
 dragEnd : Draggable a -> Draggable a
