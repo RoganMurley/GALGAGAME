@@ -84,19 +84,19 @@ playingDecoder oldState =
 whichDecoder : Json.Decoder WhichPlayer
 whichDecoder =
     let
-        makeWhich : String -> WhichPlayer
-        makeWhich s =
+        decode : String -> Json.Decoder WhichPlayer
+        decode s =
             case s of
                 "pa" ->
-                    PlayerA
+                    Json.succeed PlayerA
 
                 "pb" ->
-                    PlayerB
+                    Json.succeed PlayerB
 
                 otherwise ->
-                    Debug.crash ("Invalid player " ++ s)
+                    Json.fail ("Invalid player " ++ s)
     in
-        Json.map makeWhich Json.string
+        Json.string |> Json.andThen decode
 
 
 cardDecoder : Json.Decoder Card
