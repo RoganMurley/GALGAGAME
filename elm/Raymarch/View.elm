@@ -2,7 +2,7 @@ module Raymarch.View exposing (..)
 
 import Html exposing (Html)
 import Html.Attributes exposing (width, height, style)
-import Messages exposing (Msg)
+import Main.Messages exposing (Msg)
 import Raymarch.Meshes exposing (quadMesh)
 import Raymarch.Types exposing (Params(..))
 import Raymarch.Shaders exposing (fragmentShader, vertexShader)

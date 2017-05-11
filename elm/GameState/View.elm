@@ -5,7 +5,7 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import CharacterSelect.View as CharacterSelect
 import GameState.Types exposing (GameState(..), fullify, unfullify)
-import Messages exposing (Msg(..))
+import Main.Messages exposing (Msg(..))
 import Model.Types exposing (..)
 import Model.View as Model exposing (view, resView)
 import Vfx

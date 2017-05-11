@@ -1,7 +1,7 @@
 module Audio exposing (..)
 
 import Ports exposing (playAudio)
-import Messages exposing (Msg)
+import Main.Messages exposing (Msg)
 
 
 type SoundOption

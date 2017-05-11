@@ -1,4 +1,4 @@
-module Messages exposing (MenuMsg(..), Msg(..))
+module Main.Messages exposing (MenuMsg(..), Msg(..))
 
 import GameState.Messages as GameState
 import Mouse exposing (Position)

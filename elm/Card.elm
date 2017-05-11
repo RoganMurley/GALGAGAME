@@ -2,7 +2,7 @@ module Card exposing (..)
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
-import Messages exposing (Msg)
+import Main.Messages exposing (Msg)
 
 
 type alias Card =
