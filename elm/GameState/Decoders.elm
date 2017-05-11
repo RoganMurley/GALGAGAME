@@ -30,7 +30,7 @@ stateDecoder oldState =
 
 waitingDecoder : Json.Decoder GameState
 waitingDecoder =
-    Json.map (\_ -> Waiting) (field "waiting" Json.bool)
+    Json.map (\_ -> Waiting) <| field "waiting" Json.bool
 
 
 selectingDecoder : GameState -> Json.Decoder GameState
@@ -65,20 +65,20 @@ selectingDecoder oldState =
                     default
     in
         Json.map2 makeSelectState
-            (field "selecting" (Json.list characterDecoder))
-            (field "selected" (Json.list characterDecoder))
+            (field "selecting" <| Json.list characterDecoder)
+            (field "selected" <| Json.list characterDecoder)
 
 
 endedDecoder : Json.Decoder GameState
 endedDecoder =
     Json.map (\w -> Ended w Nothing ( [], 0 ))
-        (field "winner" (maybe whichDecoder))
+        (field "winner" <| maybe whichDecoder)
 
 
 playingDecoder : GameState -> Json.Decoder GameState
 playingDecoder oldState =
     Json.map (\a -> PlayingGame (fullify a { diffOtherLife = 0, diffLife = 0 }) ( [], 0 ))
-        (field "playing" (modelDecoder oldState))
+        (field "playing" <| modelDecoder oldState)
 
 
 whichDecoder : Json.Decoder WhichPlayer
