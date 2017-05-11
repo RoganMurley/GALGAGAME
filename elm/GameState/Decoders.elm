@@ -118,9 +118,9 @@ modelDecoder oldState =
                 (field "card" cardDecoder)
     in
         Json.map6 (\a b c d e f -> Model a b c d e f Nothing)
-            (field "handPA" (Json.list cardDecoder))
+            (field "handPA" <| Json.list cardDecoder)
             (field "handPB" Json.int)
-            (field "stack" (Json.list stackCardDecoder))
+            (field "stack" <| Json.list stackCardDecoder)
             (field "turn" whichDecoder)
             (field "lifePA" Json.int)
             (field "lifePB" Json.int)
@@ -129,5 +129,5 @@ modelDecoder oldState =
 resDecoder : GameState -> Json.Decoder ( GameState, List Model )
 resDecoder oldState =
     Json.map2 (,)
-        (field "final" (stateDecoder oldState))
-        (field "list" (Json.list (modelDecoder oldState)))
+        (field "final" <| stateDecoder oldState)
+        (field "list" <| Json.list <| modelDecoder oldState)
