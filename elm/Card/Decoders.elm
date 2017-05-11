@@ -1,12 +1,12 @@
 module Card.Decoders exposing (decoder)
 
 import Card.Types exposing (Card)
-import Json.Decode exposing (Decoder, field, map4, string)
+import Json.Decode as Json exposing (Decoder, field, string)
 
 
 decoder : Decoder Card
 decoder =
-    map4 Card
+    Json.map4 Card
         (field "name" string)
         (field "desc" string)
         (field "imageURL" string)
