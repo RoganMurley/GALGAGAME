@@ -1,16 +1,9 @@
-module Card exposing (..)
+module Card.View exposing (view)
 
+import Card.Types exposing (Card)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Main.Messages exposing (Msg)
-
-
-type alias Card =
-    { name : String
-    , desc : String
-    , imgURL : String
-    , sfxURL : String
-    }
 
 
 view : Card -> Html Msg

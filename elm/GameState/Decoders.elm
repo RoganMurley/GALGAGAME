@@ -1,7 +1,7 @@
 module GameState.Decoders exposing (decodeState, resDecoder)
 
 import Json.Decode as Json exposing (field, maybe)
-import Card exposing (Card)
+import Card.Types exposing (Card)
 import CharacterSelect.Types as CharacterSelect
 import GameState.Types exposing (GameState(..), fullify, unfullify)
 import Model.Types exposing (..)

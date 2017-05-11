@@ -1,6 +1,6 @@
 module CharacterSelect.Types exposing (..)
 
-import Card exposing (Card)
+import Card.Types exposing (Card)
 
 
 type alias Name =

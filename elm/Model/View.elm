@@ -1,6 +1,7 @@
 module Model.View exposing (..)
 
-import Card exposing (Card)
+import Card.Types exposing (Card)
+import Card.View as Card
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
