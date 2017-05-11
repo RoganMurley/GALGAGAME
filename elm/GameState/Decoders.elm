@@ -1,9 +1,11 @@
 module GameState.Decoders exposing (decodeState, resDecoder)
 
 import Json.Decode as Json exposing (Decoder, fail, field, index, int, list, maybe, string, succeed)
+import Card.Decoders as Card
 import Card.Types exposing (Card)
 import CharacterSelect.Types as CharacterSelect
 import GameState.Types exposing (GameState(..), fullify, unfullify)
+import Model.Decoders exposing (modelDecoder, whichDecoder)
 import Model.Types exposing (..)
 import Util exposing (fromJust)
 
@@ -23,7 +25,7 @@ stateDecoder oldState =
     Json.oneOf
         [ waitingDecoder
         , selectingDecoder oldState
-        , playingDecoder oldState
+        , playingDecoder
         , endedDecoder
         ]
 
@@ -46,10 +48,10 @@ selectingDecoder oldState =
         characterCardsDecoder : Decoder ( Card, Card, Card, Card )
         characterCardsDecoder =
             Json.map4 (,,,)
-                (index 0 cardDecoder)
-                (index 1 cardDecoder)
-                (index 2 cardDecoder)
-                (index 3 cardDecoder)
+                (index 0 Card.decoder)
+                (index 1 Card.decoder)
+                (index 2 Card.decoder)
+                (index 3 Card.decoder)
 
         makeSelectState : List CharacterSelect.Character -> List CharacterSelect.Character -> GameState
         makeSelectState selecting selected =
@@ -75,59 +77,14 @@ endedDecoder =
         (field "winner" <| maybe whichDecoder)
 
 
-playingDecoder : GameState -> Decoder GameState
-playingDecoder oldState =
+playingDecoder : Decoder GameState
+playingDecoder =
     Json.map (\a -> PlayingGame (fullify a { diffOtherLife = 0, diffLife = 0 }) ( [], 0 ))
-        (field "playing" <| modelDecoder oldState)
-
-
-whichDecoder : Decoder WhichPlayer
-whichDecoder =
-    let
-        decode : String -> Decoder WhichPlayer
-        decode s =
-            case s of
-                "pa" ->
-                    succeed PlayerA
-
-                "pb" ->
-                    succeed PlayerB
-
-                otherwise ->
-                    fail ("Invalid player " ++ s)
-    in
-        string |> Json.andThen decode
-
-
-cardDecoder : Decoder Card
-cardDecoder =
-    Json.map4 Card
-        (field "name" string)
-        (field "desc" string)
-        (field "imageURL" string)
-        (field "sfxURL" string)
-
-
-modelDecoder : GameState -> Decoder Model
-modelDecoder oldState =
-    let
-        stackCardDecoder : Decoder StackCard
-        stackCardDecoder =
-            Json.map2 StackCard
-                (field "owner" whichDecoder)
-                (field "card" cardDecoder)
-    in
-        Json.map6 (\a b c d e f -> Model a b c d e f Nothing)
-            (field "handPA" <| list cardDecoder)
-            (field "handPB" int)
-            (field "stack" <| list stackCardDecoder)
-            (field "turn" whichDecoder)
-            (field "lifePA" int)
-            (field "lifePB" int)
+        (field "playing" <| modelDecoder)
 
 
 resDecoder : GameState -> Decoder ( GameState, List Model )
 resDecoder oldState =
     Json.map2 (,)
         (field "final" <| stateDecoder oldState)
-        (field "list" <| list <| modelDecoder oldState)
+        (field "list" <| list <| modelDecoder)
