@@ -49,8 +49,8 @@ data CharModel =
 instance ToJSON CharModel where
   toJSON CharModel{ charmodel_pa, charmodel_characters } =
     object [
-      "selecting" .= charmodel_pa
-    , "selected"  .= charmodel_characters
+      "selecting" .= charmodel_characters
+    , "selected"  .= charmodel_pa
     ]
 
 
