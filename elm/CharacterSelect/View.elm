@@ -1,8 +1,9 @@
 module CharacterSelect.View exposing (..)
 
-import Card exposing (Card)
-import CharacterSelect.Types exposing (Character, Model)
+import Card.Types exposing (Card)
+import Card.View as Card
 import CharacterSelect.Messages as CharacterSelect
+import CharacterSelect.Types exposing (Character, Model)
 import GameState.Messages as GameState
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -22,7 +23,7 @@ view (Raymarch.Params frameTime windowDimensions) { characters, selected, hover 
                 , onMouseEnter
                     (GameStateMsg
                         (GameState.SelectingMsg
-                            (CharacterSelect.Hover name)
+                            (CharacterSelect.Hover character)
                         )
                     )
                 , onClick (SelectCharacter name)
@@ -39,13 +40,13 @@ view (Raymarch.Params frameTime windowDimensions) { characters, selected, hover 
         selectedView selected =
             let
                 chosenView : Character -> Html Msg
-                chosenView { name, imgURL } =
+                chosenView ({ name, imgURL } as character) =
                     div
                         [ class "character-chosen"
                         , onMouseEnter
                             (GameStateMsg
                                 (GameState.SelectingMsg
-                                    (CharacterSelect.Hover name)
+                                    (CharacterSelect.Hover character)
                                 )
                             )
                         ]
