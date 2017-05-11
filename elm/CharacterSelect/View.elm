@@ -7,7 +7,7 @@ import GameState.Messages as GameState
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import Messages exposing (Msg(..))
+import Main.Messages exposing (Msg(..))
 import Raymarch.Types as Raymarch
 import Raymarch.View as Raymarch
 

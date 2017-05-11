@@ -10,7 +10,7 @@ import Html.Attributes exposing (width, height, style)
 import Math.Matrix4 as Mat4 exposing (Mat4)
 import Math.Vector3 as Vec3 exposing (vec3, Vec3)
 import WebGL exposing (Mesh, Shader)
-import Messages exposing (Msg)
+import Main.Messages exposing (Msg)
 
 
 type alias Time =

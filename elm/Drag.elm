@@ -5,7 +5,7 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Json.Decode as Json
 import Mouse exposing (Position)
-import Messages exposing (..)
+import Main.Messages exposing (..)
 import Util exposing (px)
 
 

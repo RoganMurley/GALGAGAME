@@ -4,7 +4,7 @@ import Audio exposing (SoundOption(..), playSound, playSoundWith)
 import GameState.State as GameState
 import GameState.Types exposing (GameState(..))
 import Model.Types exposing (FullModel)
-import Messages exposing (Msg)
+import Main.Messages exposing (Msg)
 
 
 listen : Float -> GameState -> Cmd Msg

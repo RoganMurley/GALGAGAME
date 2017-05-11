@@ -5,7 +5,7 @@ import Drag
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import Messages exposing (Msg(Input, Send))
+import Main.Messages exposing (Msg(Input, Send))
 
 
 view : Model -> Html Msg
