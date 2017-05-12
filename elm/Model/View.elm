@@ -7,27 +7,19 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Main.Messages exposing (Msg(..))
 import Model.Types exposing (..)
-import Model.State exposing (intensity, maxHandLength)
-import Vfx
+import Model.State exposing (maxHandLength)
 
 
-view : Vfx.Params -> Int -> FullModel -> Html Msg
-view params resTime model =
-    let
-        intens : Intensity
-        intens =
-            intensity model
-    in
-        div []
-            [ viewOtherHand model.otherHand model.otherHover
-            , viewHand model.hand
-            , viewStack model.stack
-            , viewTurn (List.length model.hand == maxHandLength) model.turn
-            , viewLife PlayerA model.life
-            , viewLife PlayerB model.otherLife
-
-            --, Vfx.view params intens.lower intens.upper resTime
-            ]
+view : Int -> Model -> Html Msg
+view resTime model =
+    div []
+        [ viewOtherHand model.otherHand model.otherHover
+        , viewHand model.hand
+        , viewStack model.stack
+        , viewTurn (List.length model.hand == maxHandLength) model.turn
+        , viewLife PlayerA model.life
+        , viewLife PlayerB model.otherLife
+        ]
 
 
 viewHand : Hand -> Html Msg
@@ -157,23 +149,16 @@ viewStack stack =
 -- RESOLVING VIEW.
 
 
-resView : Vfx.Params -> Res -> Int -> FullModel -> Html Msg
-resView params res resTime model =
-    let
-        intens : Intensity
-        intens =
-            intensity model
-    in
-        div []
-            [ viewOtherHand model.otherHand model.otherHover
-            , viewResHand model.hand
-            , viewStack model.stack
-            , viewResTurn
-            , viewLife PlayerA model.life
-            , viewLife PlayerB model.otherLife
-
-            --, Vfx.view params intens.lower intens.upper resTime
-            ]
+resView : Res -> Int -> Model -> Html Msg
+resView res resTime model =
+    div []
+        [ viewOtherHand model.otherHand model.otherHover
+        , viewResHand model.hand
+        , viewStack model.stack
+        , viewResTurn
+        , viewLife PlayerA model.life
+        , viewLife PlayerB model.otherLife
+        ]
 
 
 viewResHand : Hand -> Html Msg
