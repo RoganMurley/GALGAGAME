@@ -14,17 +14,6 @@ type alias Model =
     }
 
 
-type alias ModelDiff a =
-    { a
-        | diffOtherLife : Life
-        , diffLife : Life
-    }
-
-
-type alias FullModel =
-    ModelDiff Model
-
-
 type alias Life =
     Int
 
@@ -54,9 +43,3 @@ type alias StackCard =
 
 type alias Res =
     List Model
-
-
-type alias Intensity =
-    { lower : Float
-    , upper : Float
-    }

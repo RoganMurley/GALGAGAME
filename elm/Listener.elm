@@ -3,14 +3,14 @@ module Listener exposing (..)
 import Audio exposing (SoundOption(..), playSound, playSoundWith)
 import GameState.State as GameState
 import GameState.Types exposing (GameState(..))
-import Model.Types exposing (FullModel)
+import Model.Types exposing (Model)
 import Main.Messages exposing (Msg)
 
 
 listen : Float -> GameState -> Cmd Msg
 listen time state =
     let
-        modelListen : GameState -> FullModel -> Cmd Msg
+        modelListen : GameState -> Model -> Cmd Msg
         modelListen state m =
             if GameState.tickZero state then
                 let

@@ -4,11 +4,10 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import CharacterSelect.View as CharacterSelect
-import GameState.Types exposing (GameState(..), fullify, unfullify)
+import GameState.Types exposing (GameState(..))
 import Main.Messages exposing (Msg(..))
 import Model.Types exposing (..)
 import Model.View as Model exposing (view, resView)
-import Vfx
 import Raymarch.Types as Raymarch
 import Raymarch.View as Raymarch
 
@@ -17,9 +16,6 @@ view : GameState -> String -> String -> String -> Float -> ( Int, Int ) -> Html 
 view state roomID hostname httpPort time ( width, height ) =
     let
         params =
-            Vfx.Params time ( width, height )
-
-        rParams =
             Raymarch.Params time ( width, height )
     in
         case state of
@@ -45,30 +41,30 @@ view state roomID hostname httpPort time ( width, height ) =
                                 , button [ onClick (CopyInput myID) ] [ text "copy" ]
                                 ]
                             ]
-                        , div [] [ Raymarch.view rParams ]
+                        , div [] [ Raymarch.view params ]
                         ]
 
             Selecting model ->
-                CharacterSelect.view rParams model
+                CharacterSelect.view params model
 
             PlayingGame m ( res, resTime ) ->
                 div []
                     [ (case res of
                         [] ->
-                            Model.view params resTime m
+                            Model.view resTime m
 
                         otherwise ->
-                            resView params res resTime m
+                            resView res resTime m
                       )
-                    , div [] [ Raymarch.view rParams ]
+                    , div [] [ Raymarch.view params ]
                     ]
 
             Ended winner model ( res, resTime ) ->
                 case model of
                     Just m ->
                         div []
-                            [ resView params res resTime m
-                            , div [] [ Raymarch.view rParams ]
+                            [ resView res resTime m
+                            , div [] [ Raymarch.view params ]
                             ]
 
                     Nothing ->
@@ -88,5 +84,5 @@ view state roomID hostname httpPort time ( width, height ) =
                                         , button [ class "rematch", onClick Rematch ] [ text "Rematch" ]
                                         ]
                                 )
-                            , div [] [ Raymarch.view rParams ]
+                            , div [] [ Raymarch.view params ]
                             ]

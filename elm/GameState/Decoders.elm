@@ -4,7 +4,7 @@ import Json.Decode as Json exposing (Decoder, fail, field, index, int, list, may
 import Card.Decoders as Card
 import Card.Types exposing (Card)
 import CharacterSelect.Types as CharacterSelect
-import GameState.Types exposing (GameState(..), fullify, unfullify)
+import GameState.Types exposing (GameState(..))
 import Model.Decoders exposing (modelDecoder, whichDecoder)
 import Model.Types exposing (..)
 import Util exposing (fromJust)
@@ -79,7 +79,7 @@ endedDecoder =
 
 playingDecoder : Decoder GameState
 playingDecoder =
-    Json.map (\a -> PlayingGame (fullify a { diffOtherLife = 0, diffLife = 0 }) ( [], 0 ))
+    Json.map (\m -> PlayingGame m ( [], 0 ))
         (field "playing" <| modelDecoder)
 
 

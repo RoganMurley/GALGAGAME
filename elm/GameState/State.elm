@@ -4,7 +4,7 @@ import CharacterSelect.State as CharacterSelect
 import CharacterSelect.Types as CharacterSelect
 import GameState.Decoders exposing (decodeState, resDecoder)
 import GameState.Messages as GameState
-import GameState.Types exposing (GameState(..), fullify, unfullify)
+import GameState.Types exposing (GameState(..))
 import Json.Decode as Json exposing (field, maybe)
 import Model.Types exposing (..)
 import Util exposing (fromJust, safeTail)
@@ -41,7 +41,7 @@ update msg state =
                     otherwise ->
                         case ( state, final ) of
                             ( PlayingGame oldModel _, PlayingGame newModel _ ) ->
-                                PlayingGame oldModel ( resList ++ [ unfullify newModel ], 0 )
+                                PlayingGame oldModel ( resList ++ [ newModel ], 0 )
 
                             ( PlayingGame oldModel _, Ended w _ _ ) ->
                                 Ended w (Just oldModel) ( resList, 0 )
@@ -91,31 +91,23 @@ resDelay =
 
 resTick : GameState -> GameState
 resTick state =
-    let
-        calcDiff : Model -> FullModel -> FullModel
-        calcDiff m f =
-            fullify m
-                { diffOtherLife = f.otherLife - m.otherLife
-                , diffLife = f.life - m.life
-                }
-    in
-        case state of
-            PlayingGame model ( res, _ ) ->
-                case List.head res of
-                    Just newModel ->
-                        PlayingGame (calcDiff newModel model) ( safeTail res, resDelay )
+    case state of
+        PlayingGame model ( res, _ ) ->
+            case List.head res of
+                Just newModel ->
+                    PlayingGame newModel ( safeTail res, resDelay )
 
-                    Nothing ->
-                        PlayingGame model ( res, 0 )
+                Nothing ->
+                    PlayingGame model ( res, 0 )
 
-            Ended which (Just model) ( res, _ ) ->
-                Ended
-                    which
-                    (Maybe.map (flip calcDiff model) (List.head res))
-                    ( List.drop 1 res, resDelay )
+        Ended which (Just model) ( res, _ ) ->
+            Ended
+                which
+                (List.head res)
+                ( List.drop 1 res, resDelay )
 
-            otherwise ->
-                state
+        otherwise ->
+            state
 
 
 tickForward : GameState -> GameState
