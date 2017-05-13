@@ -24,10 +24,14 @@ view ({ hostname, httpPort, frameTime, windowDimensions } as model) =
                             [ class "menu-button", disabled True ]
                             [ text "Quickplay" ]
                         , button
-                            [ class "menu-button", onClick (MainMenuMsg MenuCustom) ]
+                            [ class "menu-button"
+                            , onClick <| MainMenuMsg <| MenuStart <| CustomGame
+                            ]
                             [ text "Custom" ]
                         , button
-                            [ class "menu-button", onClick (MainMenuMsg MenuComputer) ]
+                            [ class "menu-button"
+                            , onClick <| MainMenuMsg <| MenuStart <| ComputerGame
+                            ]
                             [ text "Computer" ]
                         ]
                     ]

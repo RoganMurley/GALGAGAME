@@ -1,7 +1,7 @@
 module Chat.View exposing (view)
 
 import Chat.Types exposing (Model)
-import Drag
+import Drag.View as Drag
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)

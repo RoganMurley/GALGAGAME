@@ -1,7 +1,7 @@
 module Chat.Types exposing (Model)
 
 import Mouse exposing (Position)
-import Drag exposing (Drag)
+import Drag.Types exposing (Drag)
 
 
 type alias Model =

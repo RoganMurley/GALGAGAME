@@ -6,7 +6,8 @@ import Mouse
 import String exposing (dropLeft, length, startsWith)
 import WebSocket
 import Chat.State as Chat
-import Drag exposing (dragAt, dragEnd, dragStart, getPosition)
+import Drag.Messages as Drag
+import Drag.State as Drag exposing (dragAt, dragEnd, dragStart, getPosition)
 import GameState.Messages as GameState
 import GameState.Types as GameState exposing (GameState(..))
 import GameState.State as GameState exposing (resTick, tickForward, tickZero)
@@ -72,35 +73,25 @@ update msg ({ hostname, room, frameTime } as model) =
         otherwise ->
             case room of
                 MainMenu seed ->
-                    case msg of
-                        MainMenuMsg m ->
-                            case m of
-                                MenuCustom ->
-                                    ( { model
-                                        | room =
-                                            (connectingInit
-                                                ("player" ++ (first (Random.step usernameNumberGenerator (Random.initialSeed seed))))
-                                                (first (Random.step roomIDGenerator (Random.initialSeed seed)))
-                                                CustomGame
-                                            )
-                                      }
-                                    , Cmd.none
-                                    )
+                    let
+                        generate : Random.Generator a -> a
+                        generate generator =
+                            first <| Random.step generator <| Random.initialSeed seed
 
-                                MenuComputer ->
-                                    ( { model
-                                        | room =
-                                            (connectingInit
-                                                ("player" ++ (first (Random.step usernameNumberGenerator (Random.initialSeed seed))))
-                                                (first (Random.step roomIDGenerator (Random.initialSeed seed)))
-                                                ComputerGame
-                                            )
-                                      }
-                                    , Cmd.none
-                                    )
+                        playerID : String
+                        playerID =
+                            generate usernameNumberGenerator
 
-                        otherwise ->
-                            ( model, Cmd.none )
+                        roomName : String
+                        roomName =
+                            generate roomIDGenerator
+                    in
+                        case msg of
+                            MainMenuMsg (MenuStart gameType) ->
+                                ( { model | room = connectingInit ("player" ++ playerID) roomName gameType }, Cmd.none )
+
+                            otherwise ->
+                                ( model, Cmd.none )
 
                 Connecting ({ roomID } as connectingModel) ->
                     case msg of
@@ -118,49 +109,44 @@ update msg ({ hostname, room, frameTime } as model) =
 
 
 connectingUpdate : String -> Msg -> Main.ConnectingModel -> ( Main.ConnectingModel, Cmd Msg )
-connectingUpdate hostname msg ({ roomID, name, error, valid, gameType } as model) =
+connectingUpdate hostname msg ({ gameType, roomID, error, name, valid } as model) =
     case msg of
         Input input ->
-            ( { model | name = input, error = Tuple.second (validateName input), valid = Tuple.first (validateName input) }, Cmd.none )
+            let
+                ( valid, error ) =
+                    validateName input
+            in
+                ( { model | name = input, error = error, valid = valid }, Cmd.none )
 
         Send str ->
-            ( model, Cmd.batch [ send hostname (Debug.log "sending" str), send hostname (Debug.log "sending" ("room:" ++ roomID)) ] )
+            ( model
+            , Cmd.batch
+                [ send hostname str
+                , send hostname ("room:" ++ roomID)
+                ]
+            )
 
         Receive str ->
             connectingReceive model str
 
-        DragAt pos ->
-            ( model, Cmd.none )
-
-        DragEnd pos ->
-            ( model, Cmd.none )
-
-        ConnectError str ->
-            ( { model | error = str }, Cmd.none )
+        ConnectError error ->
+            ( { model | error = error }, Cmd.none )
 
         KeyPress 13 ->
-            let
-                playPrefix : String
-                playPrefix =
-                    case gameType of
-                        CustomGame ->
-                            "play:"
+            if Tuple.first (validateName name) then
+                let
+                    playPrefix : String
+                    playPrefix =
+                        case gameType of
+                            CustomGame ->
+                                "play:"
 
-                        ComputerGame ->
-                            "playComputer:"
-            in
-                case Tuple.first (validateName name) of
-                    False ->
-                        ( model, Cmd.none )
-
-                    True ->
-                        ( { model | name = "" }, message (Send (playPrefix ++ name)) )
-
-        KeyPress _ ->
-            ( model, Cmd.none )
-
-        Tick t ->
-            ( model, Cmd.none )
+                            ComputerGame ->
+                                "playComputer:"
+                in
+                    ( { model | name = "" }, message (Send (playPrefix ++ name)) )
+            else
+                ( model, Cmd.none )
 
         SelectAllInput elementId ->
             ( model, selectAllInput elementId )
@@ -169,7 +155,7 @@ connectingUpdate hostname msg ({ roomID, name, error, valid, gameType } as model
             ( model, copyInput elementId )
 
         otherwise ->
-            Debug.crash "Unexpected action while not connected ;_;"
+            ( model, Cmd.none )
 
 
 connectedUpdate : String -> Msg -> ConnectedModel -> ( ConnectedModel, Cmd Msg )
@@ -179,7 +165,7 @@ connectedUpdate hostname msg ({ chat, game, mode } as model) =
             ( { model | chat = { chat | input = input } }, Cmd.none )
 
         Send str ->
-            ( { model | chat = { chat | input = "" } }
+            ( { model | chat = Chat.clearInput chat }
             , if str /= "chat:" then
                 send hostname str
               else
@@ -189,14 +175,8 @@ connectedUpdate hostname msg ({ chat, game, mode } as model) =
         Receive str ->
             connectedReceive model str
 
-        DragStart pos ->
-            ( { model | chat = dragStart chat pos }, Cmd.none )
-
-        DragAt pos ->
-            ( { model | chat = dragAt chat pos }, Cmd.none )
-
-        DragEnd pos ->
-            ( { model | chat = dragEnd chat }, Cmd.none )
+        DragMsg dragMsg ->
+            ( { model | chat = Drag.update dragMsg chat }, Cmd.none )
 
         DrawCard ->
             ( model, turnOnly model (send hostname "draw:") )
@@ -434,8 +414,8 @@ subscriptions : Main.Model -> Sub Msg
 subscriptions model =
     Sub.batch
         [ WebSocket.listen ("ws://" ++ model.hostname ++ ":9160") Receive
-        , Mouse.moves DragAt
-        , Mouse.ups DragEnd
+        , Mouse.moves <| DragMsg << Drag.At
+        , Mouse.ups <| DragMsg << Drag.End
         , Keyboard.presses KeyPress
         , Time.every (second / 60) Tick
         , AnimationFrame.diffs Frame

@@ -1,7 +1,8 @@
 module Main.Messages exposing (MenuMsg(..), Msg(..))
 
+import Drag.Messages as Drag
 import GameState.Messages as GameState
-import Mouse exposing (Position)
+import Main.Types exposing (GameType)
 import Time exposing (Time)
 
 
@@ -9,9 +10,7 @@ type Msg
     = Input String
     | Send String
     | Receive String
-    | DragStart Position
-    | DragAt Position
-    | DragEnd Position
+    | DragMsg Drag.Msg
     | DrawCard
     | EndTurn
     | PlayCard Int
@@ -34,5 +33,4 @@ type Msg
 
 
 type MenuMsg
-    = MenuCustom
-    | MenuComputer
+    = MenuStart GameType
