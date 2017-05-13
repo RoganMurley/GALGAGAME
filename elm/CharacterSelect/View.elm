@@ -14,19 +14,17 @@ import Raymarch.View as Raymarch
 
 
 view : Raymarch.Params -> Model -> Html Msg
-view (Raymarch.Params frameTime windowDimensions) { characters, selected, hover } =
+view params { characters, selected, hover } =
     let
         characterView : Character -> Html Msg
         characterView ({ name, imgURL } as character) =
             div
                 [ class "character-button"
-                , onMouseEnter
-                    (GameStateMsg
-                        (GameState.SelectingMsg
-                            (CharacterSelect.Hover character)
-                        )
-                    )
-                , onClick (SelectCharacter name)
+                , onMouseEnter <|
+                    GameStateMsg <|
+                        GameState.SelectingMsg <|
+                            CharacterSelect.Hover character
+                , onClick <| SelectCharacter name
                 , if (List.member character selected) then
                     class "invisible"
                   else
@@ -43,12 +41,10 @@ view (Raymarch.Params frameTime windowDimensions) { characters, selected, hover 
                 chosenView ({ name, imgURL } as character) =
                     div
                         [ class "character-chosen"
-                        , onMouseEnter
-                            (GameStateMsg
-                                (GameState.SelectingMsg
-                                    (CharacterSelect.Hover character)
-                                )
-                            )
+                        , onMouseEnter <|
+                            GameStateMsg <|
+                                GameState.SelectingMsg <|
+                                    CharacterSelect.Hover character
                         ]
                         [ img [ src ("img/" ++ imgURL), class "character-icon" ] []
                         , div [ class "character-name" ] [ text name ]
@@ -66,7 +62,9 @@ view (Raymarch.Params frameTime windowDimensions) { characters, selected, hover 
 
         cardPreviewView : ( Card, Card, Card, Card ) -> Html Msg
         cardPreviewView ( c1, c2, c3, c4 ) =
-            div [ class "card-preview" ] (List.map Card.view [ c1, c2, c3, c4 ])
+            div
+                [ class "card-preview" ]
+                (List.map Card.view [ c1, c2, c3, c4 ])
     in
         div []
             [ div
@@ -77,5 +75,5 @@ view (Raymarch.Params frameTime windowDimensions) { characters, selected, hover 
                 , cardPreviewView ((\{ cards } -> cards) hover)
                 , selectedView selected
                 ]
-            , div [] [ Raymarch.view (Raymarch.Params frameTime windowDimensions) ]
+            , div [] [ Raymarch.view params ]
             ]

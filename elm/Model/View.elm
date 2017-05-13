@@ -29,9 +29,9 @@ viewHand hand =
         cardView ( index, { name, desc, imgURL } ) =
             div
                 [ class "card my-card"
-                , onClick (PlayCard index)
-                , onMouseEnter (HoverCard (Just index))
-                , onMouseLeave (HoverCard Nothing)
+                , onClick <| PlayCard index
+                , onMouseEnter <| HoverCard <| Just index
+                , onMouseLeave <| HoverCard Nothing
                 ]
                 [ div [ class "card-title" ] [ text name ]
                 , div
@@ -42,7 +42,9 @@ viewHand hand =
                 , div [ class "card-desc" ] [ text desc ]
                 ]
     in
-        div [ class "hand my-hand" ] (List.map cardView (List.indexedMap (,) hand))
+        div
+            [ class "hand my-hand" ]
+            (List.map cardView (List.indexedMap (,) hand))
 
 
 viewOtherHand : Int -> HoverCardIndex -> Html Msg
@@ -92,13 +94,19 @@ viewTurn handFull turn =
         PlayerA ->
             case handFull of
                 False ->
-                    button [ class "turn-indi pass-button", onClick EndTurn ] [ text "Pass" ]
+                    button
+                        [ class "turn-indi pass-button", onClick EndTurn ]
+                        [ text "Pass" ]
 
                 True ->
-                    button [ class "turn-indi pass-button pass-disabled" ] [ text "Hand full" ]
+                    button
+                        [ class "turn-indi pass-button pass-disabled" ]
+                        [ text "Hand full" ]
 
         PlayerB ->
-            div [ class "turn-indi enemy-turn" ] [ text "Opponent's Turn" ]
+            div
+                [ class "turn-indi enemy-turn" ]
+                [ text "Opponent's Turn" ]
 
 
 viewLife : WhichPlayer -> Life -> Html Msg
@@ -141,8 +149,7 @@ viewStack stack =
     in
         div
             [ class "stack-container" ]
-            [ div [ class "stack" ] (List.map viewStackCard stack)
-            ]
+            [ div [ class "stack" ] (List.map viewStackCard stack) ]
 
 
 
@@ -163,9 +170,13 @@ resView res resTime model =
 
 viewResHand : Hand -> Html Msg
 viewResHand hand =
-    div [ class "hand my-hand" ] (List.map Card.view hand)
+    div
+        [ class "hand my-hand" ]
+        (List.map Card.view hand)
 
 
 viewResTurn : Html Msg
 viewResTurn =
-    div [ class "turn-indi" ] [ text "Resolving..." ]
+    div
+        [ class "turn-indi" ]
+        [ text "Resolving..." ]

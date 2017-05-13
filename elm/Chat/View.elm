@@ -26,4 +26,4 @@ viewMessages { messages } =
         viewMessage msg =
             div [ class "message" ] [ text msg ]
     in
-        div [ class "messages" ] (List.map viewMessage messages)
+        div [ class "messages" ] <| List.map viewMessage messages
