@@ -26,8 +26,8 @@ type Msg
     | HoverCard (Maybe Int)
     | SelectAllInput String
     | CopyInput String
-    | SelectCharacter String
     | ChatMsg Chat.Msg
     | DragMsg Drag.Msg
     | GameStateMsg GameState.Msg
     | MenuMsg Menu.Msg
+    | PlayingOnly Msg

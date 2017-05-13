@@ -211,7 +211,11 @@ connectedUpdate hostname msg ({ chat, game, mode } as model) =
                 ( { model | chat = newChat }, msg )
 
         GameStateMsg gameMsg ->
-            ( { model | game = GameState.update gameMsg game }, Cmd.none )
+            let
+                ( newGame, cmd ) =
+                    GameState.update gameMsg game
+            in
+                ( { model | game = newGame }, cmd )
 
         KeyPress 13 ->
             ( model, message <| ChatMsg <| Chat.Send )
@@ -246,7 +250,7 @@ connectedUpdate hostname msg ({ chat, game, mode } as model) =
         Rematch ->
             case model.game of
                 Ended which _ _ ->
-                    ( model, playingOnly model (send hostname "rematch:") )
+                    ( model, playingOnly model <| send hostname "rematch:" )
 
                 otherwise ->
                     ( model, Cmd.none )
@@ -263,23 +267,15 @@ connectedUpdate hostname msg ({ chat, game, mode } as model) =
             in
                 ( model
                 , Cmd.batch
-                    [ playingOnly model (message (Send ("hover:" ++ cardName)))
-                    , if name /= Nothing then
-                        playSound "sfx/hover.wav"
-                      else
-                        Cmd.none
-                    ]
-                )
+                    [ playingOnly model <| message <| Send <| "hover:" ++ cardName
+                    , case name of
+                        Nothing ->
+                            Cmd.none
 
-        SelectCharacter name ->
-            ( model
-            , playingOnly model
-                (Cmd.batch
-                    [ message (Send ("selectCharacter:" ++ name))
-                    , playSound "sfx/endTurn.wav"
+                        otherwise ->
+                            playSound "sfx/hover.wav"
                     ]
                 )
-            )
 
         SelectAllInput elementId ->
             ( model, selectAllInput elementId )
@@ -287,13 +283,16 @@ connectedUpdate hostname msg ({ chat, game, mode } as model) =
         CopyInput elementId ->
             ( model, copyInput elementId )
 
+        PlayingOnly newMsg ->
+            ( model, playingOnly model <| message newMsg )
+
         otherwise ->
             Debug.crash "Unexpected action while connected ;_;"
 
 
 connectedReceive : ConnectedModel -> String -> ( ConnectedModel, Cmd Msg )
 connectedReceive model msg =
-    if (startsWith "chat:" msg) then
+    if startsWith "chat:" msg then
         ( model
         , message <|
             ChatMsg <|

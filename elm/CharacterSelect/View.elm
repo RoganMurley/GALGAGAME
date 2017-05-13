@@ -2,13 +2,11 @@ module CharacterSelect.View exposing (..)
 
 import Card.Types exposing (Card)
 import Card.View as Card
-import CharacterSelect.Messages as CharacterSelect
+import CharacterSelect.Messages exposing (..)
 import CharacterSelect.Types exposing (Character, Model)
-import GameState.Messages as GameState
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import Main.Messages exposing (Msg(..))
 import Raymarch.Types as Raymarch
 import Raymarch.View as Raymarch
 
@@ -20,12 +18,9 @@ view params { characters, selected, hover } =
         characterView ({ name, imgURL } as character) =
             div
                 [ class "character-button"
-                , onMouseEnter <|
-                    GameStateMsg <|
-                        GameState.SelectingMsg <|
-                            CharacterSelect.Hover character
-                , onClick <| SelectCharacter name
-                , if (List.member character selected) then
+                , onMouseEnter <| Hover character
+                , onClick <| Select character
+                , if List.member character selected then
                     class "invisible"
                   else
                     class ""
@@ -41,10 +36,7 @@ view params { characters, selected, hover } =
                 chosenView ({ name, imgURL } as character) =
                     div
                         [ class "character-chosen"
-                        , onMouseEnter <|
-                            GameStateMsg <|
-                                GameState.SelectingMsg <|
-                                    CharacterSelect.Hover character
+                        , onMouseEnter <| Hover character
                         ]
                         [ img [ src ("img/" ++ imgURL), class "character-icon" ] []
                         , div [ class "character-name" ] [ text name ]
@@ -55,7 +47,9 @@ view params { characters, selected, hover } =
                         [ class "characters-all-chosen" ]
                         (List.map chosenView selected)
                     , if List.length selected >= 3 then
-                        div [ class "ready-up" ] [ text "Waiting for opponent" ]
+                        div
+                            [ class "ready-up" ]
+                            [ text "Waiting for opponent" ]
                       else
                         div [] []
                     ]
