@@ -4,6 +4,7 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import CharacterSelect.View as CharacterSelect
+import GameState.Messages as GameState
 import GameState.Types exposing (GameState(..))
 import Main.Messages exposing (Msg(..))
 import Model.Types exposing (..)
@@ -35,27 +36,36 @@ view state roomID hostname httpPort time ( width, height ) =
                 in
                     div []
                         [ div [ class "waiting" ]
-                            [ div [ class "waiting-prompt" ] [ text "Give this link to your opponent:" ]
+                            [ div [ class "waiting-prompt" ]
+                                [ text "Give this link to your opponent:" ]
                             , div [ class "input-group" ]
-                                [ input [ value challengeLink, type_ "text", readonly True, id myID, onClick (SelectAllInput myID) ] []
-                                , button [ onClick (CopyInput myID) ] [ text "copy" ]
+                                [ input
+                                    [ value challengeLink
+                                    , type_ "text"
+                                    , readonly True
+                                    , id myID
+                                    , onClick <| SelectAllInput myID
+                                    ]
+                                    []
+                                , button
+                                    [ onClick <| CopyInput myID ]
+                                    [ text "copy" ]
                                 ]
                             ]
                         , div [] [ Raymarch.view params ]
                         ]
 
             Selecting model ->
-                CharacterSelect.view params model
+                Html.map (GameStateMsg << GameState.SelectingMsg) <| CharacterSelect.view params model
 
             PlayingGame m ( res, resTime ) ->
                 div []
-                    [ (case res of
+                    [ case res of
                         [] ->
                             Model.view resTime m
 
                         otherwise ->
                             resView res resTime m
-                      )
                     , div [] [ Raymarch.view params ]
                     ]
 
@@ -73,15 +83,23 @@ view state roomID hostname httpPort time ( width, height ) =
                                 (case winner of
                                     Nothing ->
                                         [ div [ class "draw" ] [ text "DRAW" ]
-                                        , button [ class "rematch", onClick Rematch ] [ text "Rematch" ]
+                                        , button
+                                            [ class "rematch", onClick Rematch ]
+                                            [ text "Rematch" ]
                                         ]
 
                                     Just player ->
                                         [ if player == PlayerA then
-                                            div [ class "victory" ] [ text "VICTORY" ]
+                                            div
+                                                [ class "victory" ]
+                                                [ text "VICTORY" ]
                                           else
-                                            div [ class "defeat" ] [ text "DEFEAT" ]
-                                        , button [ class "rematch", onClick Rematch ] [ text "Rematch" ]
+                                            div
+                                                [ class "defeat" ]
+                                                [ text "DEFEAT" ]
+                                        , button
+                                            [ class "rematch", onClick Rematch ]
+                                            [ text "Rematch" ]
                                         ]
                                 )
                             , div [] [ Raymarch.view params ]

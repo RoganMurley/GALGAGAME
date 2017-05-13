@@ -5,3 +5,4 @@ import CharacterSelect.Types exposing (Character)
 
 type Msg
     = Hover Character
+    | Select Character

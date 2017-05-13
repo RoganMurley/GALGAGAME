@@ -3,28 +3,29 @@ module GameState.State exposing (resTick, update, tickForward, tickZero)
 import CharacterSelect.State as CharacterSelect
 import CharacterSelect.Types as CharacterSelect
 import GameState.Decoders exposing (decodeState, resDecoder)
-import GameState.Messages as GameState
+import GameState.Messages exposing (Msg(..))
 import GameState.Types exposing (GameState(..))
 import Json.Decode as Json exposing (field, maybe)
+import Main.Messages as Main
 import Model.Types exposing (..)
 import Util exposing (fromJust, safeTail)
 
 
-update : GameState.Msg -> GameState -> GameState
+update : Msg -> GameState -> ( GameState, Cmd Main.Msg )
 update msg state =
     case msg of
-        GameState.Sync str ->
-            syncState state str
+        Sync str ->
+            ( syncState state str, Cmd.none )
 
-        GameState.HoverOutcome i ->
+        HoverOutcome i ->
             case state of
                 PlayingGame m r ->
-                    PlayingGame { m | otherHover = i } r
+                    ( PlayingGame { m | otherHover = i } r, Cmd.none )
 
                 s ->
-                    s
+                    ( s, Cmd.none )
 
-        GameState.ResolveOutcome str ->
+        ResolveOutcome str ->
             let
                 ( final, resList ) =
                     case Json.decodeString (resDecoder state) str of
@@ -36,20 +37,28 @@ update msg state =
             in
                 case resList of
                     [] ->
-                        setRes final []
+                        ( setRes final []
+                        , Cmd.none
+                        )
 
                     otherwise ->
                         case ( state, final ) of
                             ( PlayingGame oldModel _, PlayingGame newModel _ ) ->
-                                PlayingGame oldModel ( resList ++ [ newModel ], 0 )
+                                ( PlayingGame oldModel ( resList ++ [ newModel ], 0 )
+                                , Cmd.none
+                                )
 
                             ( PlayingGame oldModel _, Ended w _ _ ) ->
-                                Ended w (Just oldModel) ( resList, 0 )
+                                ( Ended w (Just oldModel) ( resList, 0 )
+                                , Cmd.none
+                                )
 
                             otherwise ->
-                                setRes final resList
+                                ( setRes final resList
+                                , Cmd.none
+                                )
 
-        GameState.SelectingMsg selectMsg ->
+        SelectingMsg selectMsg ->
             let
                 model : CharacterSelect.Model
                 model =
@@ -59,8 +68,11 @@ update msg state =
 
                         otherwise ->
                             Debug.crash "Expected a selecting state"
+
+                ( newModel, cmd ) =
+                    CharacterSelect.update selectMsg model
             in
-                Selecting (CharacterSelect.update selectMsg model)
+                ( Selecting newModel, cmd )
 
 
 setRes : GameState -> List Model -> GameState
