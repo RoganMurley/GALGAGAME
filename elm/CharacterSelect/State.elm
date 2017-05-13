@@ -1,11 +1,11 @@
 module CharacterSelect.State exposing (..)
 
 import CharacterSelect.Types exposing (Model)
-import CharacterSelect.Messages as CharacterSelect
+import CharacterSelect.Messages exposing (Msg(..))
 
 
-update : CharacterSelect.Msg -> Model -> Model
+update : Msg -> Model -> Model
 update msg model =
     case msg of
-        CharacterSelect.Hover character ->
+        Hover character ->
             { model | hover = character }

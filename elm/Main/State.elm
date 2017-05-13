@@ -5,6 +5,7 @@ import Keyboard
 import Mouse
 import String exposing (dropLeft, length, startsWith)
 import WebSocket
+import Chat.Messages as Chat
 import Chat.State as Chat
 import Drag.Messages as Drag
 import Drag.State as Drag exposing (dragAt, dragEnd, dragStart, getPosition)
@@ -91,13 +92,30 @@ update msg ({ hostname, room, frameTime } as model) =
 
                 Connecting ({ roomID } as connectingModel) ->
                     case msg of
+                        -- MERGE PLAY AND SPECTATE
                         Play ->
-                            ( { model | room = Connected { chat = Chat.init, game = Waiting, mode = Playing, roomID = roomID } }
+                            ( { model
+                                | room =
+                                    Connected
+                                        { chat = Chat.init
+                                        , game = Waiting
+                                        , mode = Playing
+                                        , roomID = roomID
+                                        }
+                              }
                             , queryParams <| "?play=" ++ roomID
                             )
 
                         Spectate ->
-                            ( { model | room = Connected { chat = Chat.init, game = Waiting, mode = Spectating, roomID = roomID } }
+                            ( { model
+                                | room =
+                                    Connected
+                                        { chat = Chat.init
+                                        , game = Waiting
+                                        , mode = Spectating
+                                        , roomID = roomID
+                                        }
+                              }
                             , queryParams <| "?play=" ++ roomID
                             )
 
@@ -161,16 +179,8 @@ connectingUpdate hostname msg ({ gameType, roomID, error, name, valid } as model
 connectedUpdate : String -> Msg -> ConnectedModel -> ( ConnectedModel, Cmd Msg )
 connectedUpdate hostname msg ({ chat, game, mode } as model) =
     case msg of
-        Input input ->
-            ( { model | chat = { chat | input = input } }, Cmd.none )
-
         Send str ->
-            ( { model | chat = Chat.clearInput chat }
-            , if str /= "chat:" then
-                send hostname str
-              else
-                Cmd.none
-            )
+            ( model, send hostname str )
 
         Receive str ->
             connectedReceive model str
@@ -201,14 +211,18 @@ connectedUpdate hostname msg ({ chat, game, mode } as model) =
                 )
             )
 
-        NewChatMsg str ->
-            ( { model | chat = Chat.addMessage str chat }, Cmd.none )
+        ChatMsg chatMsg ->
+            let
+                ( newChat, msg ) =
+                    Chat.update chatMsg chat
+            in
+                ( { model | chat = newChat }, msg )
 
         GameStateMsg gameMsg ->
             ( { model | game = GameState.update gameMsg game }, Cmd.none )
 
         KeyPress 13 ->
-            ( model, message (Send ("chat:" ++ chat.input)) )
+            ( model, message <| ChatMsg <| Chat.Send )
 
         KeyPress _ ->
             ( model, Cmd.none )
@@ -288,36 +302,36 @@ connectedUpdate hostname msg ({ chat, game, mode } as model) =
 connectedReceive : ConnectedModel -> String -> ( ConnectedModel, Cmd Msg )
 connectedReceive model msg =
     if (startsWith "chat:" msg) then
-        ( model, message (NewChatMsg (dropLeft (length "chat:") msg)) )
+        ( model
+        , message <|
+            ChatMsg <|
+                Chat.New <|
+                    dropLeft (length "chat:") msg
+        )
     else if (startsWith "sync:" msg) then
         ( model
-        , message
-            (GameStateMsg
-                (GameState.Sync
-                    (dropLeft (length "sync:") msg)
-                )
-            )
+        , message <|
+            GameStateMsg <|
+                GameState.Sync <|
+                    dropLeft (length "sync:") msg
         )
     else if (startsWith "hover:" msg) then
         ( model
         , Cmd.batch
-            [ message
-                (GameStateMsg
-                    (GameState.HoverOutcome
-                        (parseHoverOutcome (dropLeft (length "hover:") msg))
-                    )
-                )
+            [ message <|
+                GameStateMsg <|
+                    GameState.HoverOutcome <|
+                        parseHoverOutcome <|
+                            dropLeft (length "hover:") msg
             , playSound "sfx/hover.wav"
             ]
         )
     else if (startsWith "res:" msg) then
         ( model
-        , message
-            (GameStateMsg
-                (GameState.ResolveOutcome
-                    (dropLeft (length "res:") msg)
-                )
-            )
+        , message <|
+            GameStateMsg <|
+                GameState.ResolveOutcome <|
+                    dropLeft (length "res:") msg
         )
     else if (startsWith "playCard:" msg) then
         ( model, playSound "sfx/playCard.wav" )
