@@ -1,4 +1,4 @@
-module Chat.State exposing (addMessage, init)
+module Chat.State exposing (addMessage, clearInput, init)
 
 import Mouse exposing (Position)
 import Chat.Types exposing (Model)
@@ -11,6 +11,11 @@ init =
     , pos = Position 0 0
     , drag = Nothing
     }
+
+
+clearInput : Model -> Model
+clearInput model =
+    { model | input = "" }
 
 
 addMessage : String -> Model -> Model
