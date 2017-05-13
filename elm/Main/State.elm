@@ -33,10 +33,16 @@ initModel ({ hostname, httpPort, play, seed, windowDimensions } as flags) =
     { room =
         case play of
             Just roomID ->
-                connectingInit
-                    ("player" ++ (first (Random.step usernameNumberGenerator (Random.initialSeed seed))))
-                    roomID
-                    CustomGame
+                let
+                    playerID : String
+                    playerID =
+                        "player"
+                            ++ (first <|
+                                    Random.step usernameNumberGenerator <|
+                                        Random.initialSeed seed
+                               )
+                in
+                    connectingInit playerID roomID CustomGame
 
             Nothing ->
                 MainMenu seed
@@ -77,7 +83,7 @@ update msg ({ hostname, room, frameTime } as model) =
 
                         playerID : String
                         playerID =
-                            generate usernameNumberGenerator
+                            "player" ++ (generate usernameNumberGenerator)
 
                         roomName : String
                         roomName =
@@ -85,34 +91,20 @@ update msg ({ hostname, room, frameTime } as model) =
                     in
                         case msg of
                             MenuMsg (Menu.Start gameType) ->
-                                ( { model | room = connectingInit ("player" ++ playerID) roomName gameType }, Cmd.none )
+                                ( { model | room = connectingInit playerID roomName gameType }, Cmd.none )
 
                             otherwise ->
                                 ( model, Cmd.none )
 
                 Connecting ({ roomID } as connectingModel) ->
                     case msg of
-                        -- MERGE PLAY AND SPECTATE
-                        Play ->
+                        StartGame mode ->
                             ( { model
                                 | room =
                                     Connected
                                         { chat = Chat.init
                                         , game = Waiting
-                                        , mode = Playing
-                                        , roomID = roomID
-                                        }
-                              }
-                            , queryParams <| "?play=" ++ roomID
-                            )
-
-                        Spectate ->
-                            ( { model
-                                | room =
-                                    Connected
-                                        { chat = Chat.init
-                                        , game = Waiting
-                                        , mode = Spectating
+                                        , mode = mode
                                         , roomID = roomID
                                         }
                               }
@@ -359,19 +351,19 @@ parseHoverOutcome msg =
 connectingReceive : ConnectingModel -> String -> ( ConnectingModel, Cmd Msg )
 connectingReceive model msg =
     if (startsWith "acceptPlay:" msg) then
-        ( model, message Play )
+        ( model, message <| StartGame Playing )
     else if (startsWith "acceptSpec:" msg) then
-        ( model, message Spectate )
+        ( model, message <| StartGame Spectating )
     else if (startsWith "error:" msg) then
-        ( model, message (ConnectError (dropLeft (length "error:") msg)) )
+        ( model, message <| ConnectError <| dropLeft (length "error:") msg )
     else
         -- Defer other messages.
-        ( model, message (Receive msg) )
+        ( model, message <| Receive msg )
 
 
 send : String -> String -> Cmd Msg
 send hostname =
-    WebSocket.send ("ws://" ++ hostname ++ ":9160")
+    WebSocket.send <| "ws://" ++ hostname ++ ":9160"
 
 
 playingOnly : ConnectedModel -> Cmd Msg -> Cmd Msg
@@ -411,7 +403,7 @@ roomIDGenerator =
 
 usernameNumberGenerator : Random.Generator String
 usernameNumberGenerator =
-    string 3 (char 48 57)
+    string 3 <| char 48 57
 
 
 validateName : String -> ( Bool, String )

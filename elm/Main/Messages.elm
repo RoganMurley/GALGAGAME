@@ -3,6 +3,7 @@ module Main.Messages exposing (Msg(..))
 import Chat.Messages as Chat
 import Drag.Messages as Drag
 import GameState.Messages as GameState
+import Main.Types exposing (Mode)
 import Menu.Messages as Menu
 import Time exposing (Time)
 
@@ -15,8 +16,7 @@ type Msg
     | EndTurn
     | PlayCard Int
     | ConnectError String
-    | Spectate
-    | Play
+    | StartGame Mode
     | KeyPress Int
     | Rematch
     | Tick Time
