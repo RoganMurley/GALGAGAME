@@ -1,8 +1,8 @@
-module Main.Messages exposing (MenuMsg(..), Msg(..))
+module Main.Messages exposing (Msg(..))
 
 import Drag.Messages as Drag
 import GameState.Messages as GameState
-import Main.Types exposing (GameType)
+import Menu.Messages as Menu
 import Time exposing (Time)
 
 
@@ -26,11 +26,7 @@ type Msg
     | Resize Int Int
     | ResolveStep
     | HoverCard (Maybe Int)
-    | MainMenuMsg MenuMsg
+    | MenuMsg Menu.Msg
     | SelectAllInput String
     | CopyInput String
     | SelectCharacter String
-
-
-type MenuMsg
-    = MenuStart GameType

@@ -11,8 +11,9 @@ import Drag.State as Drag exposing (dragAt, dragEnd, dragStart, getPosition)
 import GameState.Messages as GameState
 import GameState.Types as GameState exposing (GameState(..))
 import GameState.State as GameState exposing (resTick, tickForward, tickZero)
+import Menu.Messages as Menu
 import Model.Types exposing (Hand, Model, WhichPlayer(..))
-import Main.Messages exposing (MenuMsg(..), Msg(..))
+import Main.Messages exposing (Msg(..))
 import Random
 import Random.Char exposing (char)
 import Random.String exposing (string)
@@ -26,28 +27,23 @@ import Listener exposing (listen)
 import Main.Types as Main exposing (..)
 
 
-init : Flags -> ( Main.Model, Cmd Msg )
-init ({ hostname, httpPort, play, seed, windowDimensions } as flags) =
-    let
-        model : Main.Model
-        model =
-            { room =
-                case play of
-                    Just roomID ->
-                        connectingInit
-                            ("player" ++ (first (Random.step usernameNumberGenerator (Random.initialSeed seed))))
-                            roomID
-                            CustomGame
+initModel : Flags -> Main.Model
+initModel ({ hostname, httpPort, play, seed, windowDimensions } as flags) =
+    { room =
+        case play of
+            Just roomID ->
+                connectingInit
+                    ("player" ++ (first (Random.step usernameNumberGenerator (Random.initialSeed seed))))
+                    roomID
+                    CustomGame
 
-                    Nothing ->
-                        MainMenu seed
-            , hostname = hostname
-            , httpPort = httpPort
-            , frameTime = 0
-            , windowDimensions = windowDimensions
-            }
-    in
-        ( model, Cmd.none )
+            Nothing ->
+                MainMenu seed
+    , hostname = hostname
+    , httpPort = httpPort
+    , frameTime = 0
+    , windowDimensions = windowDimensions
+    }
 
 
 connectingInit : String -> String -> GameType -> RoomModel
@@ -87,7 +83,7 @@ update msg ({ hostname, room, frameTime } as model) =
                             generate roomIDGenerator
                     in
                         case msg of
-                            MainMenuMsg (MenuStart gameType) ->
+                            MenuMsg (Menu.Start gameType) ->
                                 ( { model | room = connectingInit ("player" ++ playerID) roomName gameType }, Cmd.none )
 
                             otherwise ->
@@ -96,10 +92,14 @@ update msg ({ hostname, room, frameTime } as model) =
                 Connecting ({ roomID } as connectingModel) ->
                     case msg of
                         Play ->
-                            ( { model | room = Connected { chat = Chat.init, game = Waiting, mode = Playing, roomID = roomID } }, queryParams ("?play=" ++ roomID) )
+                            ( { model | room = Connected { chat = Chat.init, game = Waiting, mode = Playing, roomID = roomID } }
+                            , queryParams <| "?play=" ++ roomID
+                            )
 
                         Spectate ->
-                            ( { model | room = Connected { chat = Chat.init, game = Waiting, mode = Spectating, roomID = roomID } }, queryParams ("?play=" ++ roomID) )
+                            ( { model | room = Connected { chat = Chat.init, game = Waiting, mode = Spectating, roomID = roomID } }
+                            , queryParams <| "?play=" ++ roomID
+                            )
 
                         otherwise ->
                             applyFst (\c -> { model | room = Connecting c }) (connectingUpdate hostname msg connectingModel)
