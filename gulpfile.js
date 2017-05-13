@@ -11,7 +11,7 @@ var sass = require('gulp-sass');
 gulp.task('init', elm.init);
 
 gulp.task('multi', ['init'], function(){
-  return gulp.src('elm/*.elm')
+  return gulp.src('elm/Main.elm')
     .pipe(plumber())
     .pipe(elm.make({filetype: 'js', warn: true}))
     .pipe(gulp.dest('static/'));
@@ -33,6 +33,6 @@ gulp.task('sass', function () {
 gulp.task('default', ['multi', 'sass']);
 
 gulp.task('watch', function(){
-  gulp.watch('elm/*.elm', ['multi']);
+  gulp.watch('elm/**/*.elm', ['multi']);
   gulp.watch('./sass/**/*.scss', ['sass']);
 });
