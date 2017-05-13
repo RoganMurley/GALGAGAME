@@ -5,8 +5,9 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Chat.View as Chat
 import GameState.View as GameState
+import Menu.View as Menu
 import Main.Types as Main exposing (..)
-import Main.Messages exposing (MenuMsg(..), Msg(..))
+import Main.Messages exposing (Msg(..))
 import Raymarch.Types as Raymarch
 import Raymarch.View as Raymarch
 
@@ -15,28 +16,9 @@ view : Main.Model -> Html Msg
 view ({ hostname, httpPort, frameTime, windowDimensions } as model) =
     case model.room of
         MainMenu _ ->
-            div []
-                [ div [ class "main-menu" ]
-                    [ h1 [] [ text "STØRMCARDS" ]
-                    , h2 [] [ text "A digital card game of risk & reward" ]
-                    , div [ class "main-menu-buttons" ]
-                        [ button
-                            [ class "menu-button", disabled True ]
-                            [ text "Quickplay" ]
-                        , button
-                            [ class "menu-button"
-                            , onClick <| MainMenuMsg <| MenuStart <| CustomGame
-                            ]
-                            [ text "Custom" ]
-                        , button
-                            [ class "menu-button"
-                            , onClick <| MainMenuMsg <| MenuStart <| ComputerGame
-                            ]
-                            [ text "Computer" ]
-                        ]
-                    ]
-                , div [] [ Raymarch.view (Raymarch.Params frameTime windowDimensions) ]
-                ]
+            Html.map MenuMsg <|
+                Menu.view <|
+                    Raymarch.Params frameTime windowDimensions
 
         Connected { chat, game, roomID } ->
             div []

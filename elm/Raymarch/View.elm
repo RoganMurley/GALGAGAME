@@ -2,7 +2,6 @@ module Raymarch.View exposing (..)
 
 import Html exposing (Html)
 import Html.Attributes exposing (width, height, style)
-import Main.Messages exposing (Msg)
 import Raymarch.Meshes exposing (quadMesh)
 import Raymarch.Types exposing (Params(..))
 import Raymarch.Shaders exposing (fragmentShader, vertexShader)
@@ -10,7 +9,7 @@ import Raymarch.State exposing (uniforms)
 import WebGL
 
 
-view : Params -> Html Msg
+view : Params -> Html msg
 view (Params theta ( w, h )) =
     let
         time =
