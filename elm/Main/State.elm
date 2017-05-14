@@ -44,7 +44,8 @@ initModel ({ hostname, httpPort, play, seed, windowDimensions } as flags) =
                                         Random.initialSeed seed
                                )
                 in
-                    connectingInit playerID roomID Lobby.CustomGame
+                    Connecting <|
+                        Lobby.modelInit playerID roomID Lobby.CustomGame
 
             Nothing ->
                 MainMenu seed
@@ -53,11 +54,6 @@ initModel ({ hostname, httpPort, play, seed, windowDimensions } as flags) =
     , frameTime = 0
     , windowDimensions = windowDimensions
     }
-
-
-connectingInit : String -> String -> Lobby.GameType -> RoomModel
-connectingInit username roomID gameType =
-    Connecting <| Lobby.modelInit username roomID gameType
 
 
 update : Msg -> Main.Model -> ( Main.Model, Cmd Msg )
@@ -87,13 +83,13 @@ update msg ({ hostname, room, frameTime } as model) =
                         playerID =
                             "player" ++ (generate usernameNumberGenerator)
 
-                        roomName : String
-                        roomName =
+                        roomID : String
+                        roomID =
                             generate roomIDGenerator
                     in
                         case msg of
                             MenuMsg (Menu.Start gameType) ->
-                                ( { model | room = connectingInit playerID roomName gameType }, Cmd.none )
+                                ( { model | room = Connecting <| Lobby.modelInit playerID roomID gameType }, Cmd.none )
 
                             otherwise ->
                                 ( model, Cmd.none )
