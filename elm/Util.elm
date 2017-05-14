@@ -12,15 +12,6 @@ px number =
 
 
 
--- Apply a function to the first element of a tuple.
-
-
-applyFst : (a -> c) -> ( a, b ) -> ( c, b )
-applyFst f ( x, y ) =
-    ( f x, y )
-
-
-
 -- Turn a message into a command.
 
 

@@ -2,6 +2,7 @@ module Main.Types exposing (..)
 
 import Chat.Types as Chat
 import GameState.Types as GameState exposing (GameState(..))
+import Lobby.Types as Lobby
 
 
 type alias Model =
@@ -19,22 +20,8 @@ type alias Seed =
 
 type RoomModel
     = MainMenu Seed
-    | Connecting ConnectingModel
+    | Connecting Lobby.Model
     | Connected ConnectedModel
-
-
-type GameType
-    = CustomGame
-    | ComputerGame
-
-
-type alias ConnectingModel =
-    { roomID : String
-    , name : String
-    , error : String
-    , valid : Bool
-    , gameType : GameType
-    }
 
 
 type alias ConnectedModel =

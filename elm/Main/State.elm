@@ -12,6 +12,8 @@ import Drag.State as Drag exposing (dragAt, dragEnd, dragStart, getPosition)
 import GameState.Messages as GameState
 import GameState.Types as GameState exposing (GameState(..))
 import GameState.State as GameState exposing (resTick, tickForward, tickZero)
+import Lobby.State as Lobby
+import Lobby.Types as Lobby
 import Menu.Messages as Menu
 import Model.Types exposing (Hand, Model, WhichPlayer(..))
 import Main.Messages exposing (Msg(..))
@@ -20,7 +22,7 @@ import Random.Char exposing (char)
 import Random.String exposing (string)
 import Time exposing (Time, second)
 import Tuple exposing (first)
-import Util exposing (applyFst, message)
+import Util exposing (message)
 import Ports exposing (copyInput, selectAllInput, queryParams)
 import AnimationFrame
 import Window
@@ -42,7 +44,7 @@ initModel ({ hostname, httpPort, play, seed, windowDimensions } as flags) =
                                         Random.initialSeed seed
                                )
                 in
-                    connectingInit playerID roomID CustomGame
+                    connectingInit playerID roomID Lobby.CustomGame
 
             Nothing ->
                 MainMenu seed
@@ -53,15 +55,9 @@ initModel ({ hostname, httpPort, play, seed, windowDimensions } as flags) =
     }
 
 
-connectingInit : String -> String -> GameType -> RoomModel
+connectingInit : String -> String -> Lobby.GameType -> RoomModel
 connectingInit username roomID gameType =
-    Connecting
-        { roomID = roomID
-        , name = username
-        , error = ""
-        , valid = True
-        , gameType = gameType
-        }
+    Connecting <| Lobby.modelInit username roomID gameType
 
 
 update : Msg -> Main.Model -> ( Main.Model, Cmd Msg )
@@ -72,6 +68,12 @@ update msg ({ hostname, room, frameTime } as model) =
 
         Resize w h ->
             ( { model | windowDimensions = ( w, h ) }, Cmd.none )
+
+        SelectAllInput elementId ->
+            ( model, selectAllInput elementId )
+
+        CopyInput elementId ->
+            ( model, copyInput elementId )
 
         otherwise ->
             case room of
@@ -96,7 +98,7 @@ update msg ({ hostname, room, frameTime } as model) =
                             otherwise ->
                                 ( model, Cmd.none )
 
-                Connecting ({ roomID } as connectingModel) ->
+                Connecting ({ roomID } as lobby) ->
                     case msg of
                         StartGame mode ->
                             ( { model
@@ -112,57 +114,36 @@ update msg ({ hostname, room, frameTime } as model) =
                             )
 
                         otherwise ->
-                            applyFst (\c -> { model | room = Connecting c }) (connectingUpdate hostname msg connectingModel)
+                            let
+                                ( newRoom, cmd ) =
+                                    connectingUpdate hostname msg lobby
+                            in
+                                ( { model | room = Connecting newRoom }, cmd )
 
                 Connected connectedModel ->
-                    applyFst (\c -> { model | room = Connected c }) (connectedUpdate hostname msg connectedModel)
+                    let
+                        ( newRoom, cmd ) =
+                            connectedUpdate hostname msg connectedModel
+                    in
+                        ( { model | room = Connected newRoom }, cmd )
 
 
-connectingUpdate : String -> Msg -> Main.ConnectingModel -> ( Main.ConnectingModel, Cmd Msg )
-connectingUpdate hostname msg ({ gameType, roomID, error, name, valid } as model) =
+connectingUpdate : String -> Msg -> Lobby.Model -> ( Lobby.Model, Cmd Msg )
+connectingUpdate hostname msg model =
     case msg of
-        Input input ->
-            let
-                ( valid, error ) =
-                    validateName input
-            in
-                ( { model | name = input, error = error, valid = valid }, Cmd.none )
+        LobbyMsg lobbyMsg ->
+            Lobby.update model lobbyMsg
 
         Send str ->
             ( model
             , Cmd.batch
                 [ send hostname str
-                , send hostname ("room:" ++ roomID)
+                , send hostname ("room:" ++ model.roomID)
                 ]
             )
 
         Receive str ->
-            connectingReceive model str
-
-        ConnectError error ->
-            ( { model | error = error }, Cmd.none )
-
-        KeyPress 13 ->
-            if Tuple.first (validateName name) then
-                let
-                    playPrefix : String
-                    playPrefix =
-                        case gameType of
-                            CustomGame ->
-                                "play:"
-
-                            ComputerGame ->
-                                "playComputer:"
-                in
-                    ( { model | name = "" }, message (Send (playPrefix ++ name)) )
-            else
-                ( model, Cmd.none )
-
-        SelectAllInput elementId ->
-            ( model, selectAllInput elementId )
-
-        CopyInput elementId ->
-            ( model, copyInput elementId )
+            ( model, Lobby.receive str )
 
         otherwise ->
             ( model, Cmd.none )
@@ -277,12 +258,6 @@ connectedUpdate hostname msg ({ chat, game, mode } as model) =
                     ]
                 )
 
-        SelectAllInput elementId ->
-            ( model, selectAllInput elementId )
-
-        CopyInput elementId ->
-            ( model, copyInput elementId )
-
         PlayingOnly newMsg ->
             ( model, playingOnly model <| message newMsg )
 
@@ -345,19 +320,6 @@ parseHoverOutcome msg =
 
                 Err err ->
                     Debug.crash err
-
-
-connectingReceive : ConnectingModel -> String -> ( ConnectingModel, Cmd Msg )
-connectingReceive model msg =
-    if (startsWith "acceptPlay:" msg) then
-        ( model, message <| StartGame Playing )
-    else if (startsWith "acceptSpec:" msg) then
-        ( model, message <| StartGame Spectating )
-    else if (startsWith "error:" msg) then
-        ( model, message <| ConnectError <| dropLeft (length "error:") msg )
-    else
-        -- Defer other messages.
-        ( model, message <| Receive msg )
 
 
 send : String -> String -> Cmd Msg
