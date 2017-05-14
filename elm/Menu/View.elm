@@ -3,7 +3,7 @@ module Menu.View exposing (..)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import Main.Types exposing (GameType(..))
+import Lobby.Types as Lobby
 import Menu.Messages exposing (Msg(..))
 import Raymarch.Types as Raymarch
 import Raymarch.View as Raymarch
@@ -21,12 +21,12 @@ view params =
                     [ text "Quickplay" ]
                 , button
                     [ class "menu-button"
-                    , onClick <| Start <| CustomGame
+                    , onClick <| Start Lobby.CustomGame
                     ]
                     [ text "Custom" ]
                 , button
                     [ class "menu-button"
-                    , onClick <| Start <| ComputerGame
+                    , onClick <| Start Lobby.ComputerGame
                     ]
                     [ text "Computer" ]
                 ]
