@@ -6,6 +6,7 @@ import Html.Events exposing (..)
 import Lobby.Messages as Lobby
 import Lobby.Types exposing (..)
 import Main.Messages exposing (Msg(..))
+import Main.Types exposing (Mode(..))
 import Raymarch.Types as Raymarch
 import Raymarch.View as Raymarch
 
@@ -21,15 +22,6 @@ view params { name, error, valid, gameType } =
 
                 ComputerGame ->
                     "Computer"
-
-        playPrefix : String
-        playPrefix =
-            case gameType of
-                CustomGame ->
-                    "play:"
-
-                ComputerGame ->
-                    "playComputer:"
 
         nameInputID : String
         nameInputID =
@@ -49,12 +41,12 @@ view params { name, error, valid, gameType } =
                             ]
                             []
                         , button
-                            [ onClick <| Send <| playPrefix ++ name
+                            [ onClick <| LobbyMsg <| Lobby.JoinRoom Playing
                             , disabled <| not valid
                             ]
                             [ text "Play" ]
                         , button
-                            [ onClick <| Send <| "spectate:" ++ name
+                            [ onClick <| LobbyMsg <| Lobby.JoinRoom Spectating
                             , disabled <| not valid
                             ]
                             [ text "Spec" ]

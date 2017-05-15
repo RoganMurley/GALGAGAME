@@ -71,6 +71,9 @@ update msg ({ hostname, room, frameTime } as model) =
         CopyInput elementId ->
             ( model, copyInput elementId )
 
+        Send str ->
+            ( model, send hostname str )
+
         otherwise ->
             case room of
                 MainMenu seed ->
@@ -130,14 +133,6 @@ connectingUpdate hostname msg model =
         LobbyMsg lobbyMsg ->
             Lobby.update model lobbyMsg
 
-        Send str ->
-            ( model
-            , Cmd.batch
-                [ send hostname str
-                , send hostname ("room:" ++ model.roomID)
-                ]
-            )
-
         Receive str ->
             ( model, Lobby.receive str )
 
@@ -148,9 +143,6 @@ connectingUpdate hostname msg model =
 connectedUpdate : String -> Msg -> ConnectedModel -> ( ConnectedModel, Cmd Msg )
 connectedUpdate hostname msg ({ chat, game, mode } as model) =
     case msg of
-        Send str ->
-            ( model, send hostname str )
-
         Receive str ->
             connectedReceive model str
 

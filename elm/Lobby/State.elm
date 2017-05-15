@@ -19,7 +19,7 @@ modelInit username roomID gameType =
 
 
 update : Model -> Msg -> ( Model, Cmd Main.Msg )
-update ({ error, name, valid } as model) msg =
+update ({ error, gameType, name, valid } as model) msg =
     case msg of
         NameInput input ->
             let
@@ -27,6 +27,29 @@ update ({ error, name, valid } as model) msg =
                     validateName input
             in
                 ( { model | name = input, error = error, valid = valid }, Cmd.none )
+
+        JoinRoom mode ->
+            let
+                prefix : String
+                prefix =
+                    case mode of
+                        Playing ->
+                            case gameType of
+                                CustomGame ->
+                                    "play:"
+
+                                ComputerGame ->
+                                    "playComputer:"
+
+                        Spectating ->
+                            "spectate:"
+            in
+                ( model
+                , Cmd.batch
+                    [ message <| Main.Send <| prefix ++ name
+                    , message <| Main.Send <| "room:" ++ model.roomID
+                    ]
+                )
 
         JoinRoomErr error ->
             ( { model | error = error }, Cmd.none )
