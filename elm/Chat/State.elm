@@ -16,8 +16,8 @@ init =
     }
 
 
-update : Msg -> Model -> ( Model, Cmd Main.Msg )
-update msg model =
+update : Model -> Msg -> ( Model, Cmd Main.Msg )
+update model msg =
     case msg of
         Input str ->
             ( { model | input = str }, Cmd.none )
