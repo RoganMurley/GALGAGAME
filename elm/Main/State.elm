@@ -174,10 +174,10 @@ connectedUpdate hostname msg ({ chat, game, mode } as model) =
 
         ChatMsg chatMsg ->
             let
-                ( newChat, msg ) =
-                    Chat.update chatMsg chat
+                ( newChat, cmd ) =
+                    Chat.update chat chatMsg
             in
-                ( { model | chat = newChat }, msg )
+                ( { model | chat = newChat }, cmd )
 
         GameStateMsg gameMsg ->
             let
@@ -187,7 +187,11 @@ connectedUpdate hostname msg ({ chat, game, mode } as model) =
                 ( { model | game = newGame }, cmd )
 
         KeyPress 13 ->
-            ( model, message <| ChatMsg <| Chat.Send )
+            let
+                ( chat, cmd ) =
+                    Chat.update model.chat Chat.Send
+            in
+                ( { model | chat = chat }, cmd )
 
         KeyPress _ ->
             ( model, Cmd.none )
