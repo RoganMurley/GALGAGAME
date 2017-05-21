@@ -1,0 +1,10 @@
+FROM ubuntu
+
+COPY .stack-work/install/x86_64-linux/lts-7.0/8.0.1/bin/stormcards /usr/bin/stormcards
+
+RUN apt-get update -y
+RUN apt-get install -y libgmp-dev
+
+EXPOSE 9160
+
+ENTRYPOINT ["/usr/bin/stormcards"]
