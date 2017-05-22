@@ -65,25 +65,15 @@ initState = Waiting
 
 initModel :: Turn -> FinalSelection -> FinalSelection -> Gen -> Model
 initModel turn ca cb gen =
-  Model
-    turn
-    []
-    (PlayerModel
-      handPA
-      deckPA
-      maxLife)
-    (PlayerModel
-      handPB
-      deckPB
-      maxLife)
-    NoPass
-    gen
+  Model turn [] pm_a pm_b NoPass gen
   where
     (genPA, genPB) = split gen :: (Gen, Gen)
     initDeckPA = shuffle (buildDeck ca) genPA :: Deck
     (handPA, deckPA) = splitAt 5 initDeckPA :: (Hand, Deck)
     initDeckPB = shuffle (buildDeck cb) genPB :: Deck
     (handPB, deckPB) = splitAt 5 initDeckPB :: (Hand, Deck)
+    pm_a = PlayerModel handPA deckPA maxLife :: PlayerModel
+    pm_b = PlayerModel handPB deckPB maxLife :: PlayerModel
 
 
 buildDeck :: FinalSelection -> Deck
