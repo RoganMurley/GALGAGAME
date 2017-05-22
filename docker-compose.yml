@@ -2,8 +2,7 @@ version: "2"
 services:
   static:
     build:
-      context: .
-      dockerfile: Dockerfile-static
+      context: client
     ports:
       - "8000:80"
   game:
