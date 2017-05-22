@@ -1,3 +1,3 @@
 FROM nginx:alpine
 
-COPY /static/ /usr/share/nginx/html
+COPY /static/build/ /usr/share/nginx/html/

@@ -17,7 +17,7 @@ gulp.task('multi', ['init'], function(){
     .pipe(plumber())
     .pipe(elm.make({filetype: 'js', warn: true}))
     .pipe(uglify())
-    .pipe(gulp.dest('./static/'));
+    .pipe(gulp.dest('./static/build/'));
 });
 
 
@@ -28,15 +28,24 @@ gulp.task('sass', function () {
     .pipe(plumber())
     .pipe(sass().on('error', sass.logError))
     .pipe(minify())
-    .pipe(gulp.dest('./static/'));
+    .pipe(gulp.dest('./static/build/'));
+});
+
+
+// COPY
+
+gulp.task('copy', function () {
+  return gulp.src('./static/dev/**')
+    .pipe(gulp.dest('./static/build/'));
 });
 
 
 // DEFAULT
 
-gulp.task('default', ['multi', 'sass']);
+gulp.task('default', ['multi', 'sass', 'copy']);
 
 gulp.task('watch', function(){
   gulp.watch('elm/**/*.elm', ['multi']);
   gulp.watch('./sass/**/*.scss', ['sass']);
+  gulp.watch('./static/dev/**', ['copy']);
 });

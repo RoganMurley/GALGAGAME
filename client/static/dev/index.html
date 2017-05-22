@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta charset="utf-8">
+    <title>
+      STØRMCARDS
+    </title>
+    <link href="https://fonts.googleapis.com/css?family=Cinzel+Decorative|Poiret+One" rel="stylesheet">
+    <link href="main.css" rel="stylesheet">
+  </head>
+  <body class="no-select">
+    <div class="version-warning">closed alpha build v0.4</div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.0.2/howler.js"></script>
+    <script src="Main.js"></script>
+    <script>
+      var params = new URLSearchParams(window.location.search);
+      var app = Elm.Main.fullscreen({
+        hostname: window.location.hostname,
+        httpPort: window.location.port,
+        play: params.get('play'),
+        seed: new Date().getTime(),
+        windowDimensions: [ window.innerWidth, window.innerHeight ]
+      });
+
+      app.ports.queryParams.subscribe(function (newValue) {
+        if (history.pushState) {
+          var newurl = window.location.protocol + "//" + window.location.host + window.location.pathname + newValue;
+          window.history.pushState({ path: newurl }, '', newurl);
+        }
+      });
+
+      app.ports.selectAllInput.subscribe(function (elementId) {
+        document.getElementById(elementId).select();
+      });
+
+      app.ports.copyInput.subscribe(function (elementId) {
+        document.getElementById(elementId).select();
+        document.execCommand('copy');
+      })
+
+      var playedSounds = {};
+      app.ports.playAudio.subscribe(function (input) {
+        var src = input[0];
+        var loop = input[1];
+        var once = input[2];
+        var volume = input[3];
+
+        if (once) {
+          if (playedSounds[input]) {
+            return;
+          }
+          playedSounds[input] = true;
+        }
+        var sound = new Howl({
+          src: [src],
+          loop: loop,
+          volume: volume
+        });
+        sound.play();
+      });
+    </script>
+  </body>
+</html>
