@@ -69,3 +69,10 @@ extra-package-dbs: []
 docker:
   enable: true
   run-args: ["--net=bridge", "--publish=9160:9160"]
+
+image:
+  container:
+    name: game
+    base: fpco/haskell-scratch:integer-gmp
+    entrypoints:
+      - stormcards
