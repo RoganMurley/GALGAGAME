@@ -17,7 +17,7 @@ gulp.task('multi', ['init'], function(){
     .pipe(plumber())
     .pipe(elm.make({filetype: 'js', warn: true}))
     .pipe(uglify())
-    .pipe(gulp.dest('static/'));
+    .pipe(gulp.dest('./static/'));
 });
 
 
@@ -28,7 +28,7 @@ gulp.task('sass', function () {
     .pipe(plumber())
     .pipe(sass().on('error', sass.logError))
     .pipe(minify())
-    .pipe(gulp.dest('./static'));
+    .pipe(gulp.dest('./static/'));
 });
 
 
