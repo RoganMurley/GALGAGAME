@@ -58,6 +58,6 @@ gulp.task('default', ['multi', 'sass', 'html', 'copy']);
 gulp.task('watch', () => {
   gulp.watch('elm/**/*.elm', ['multi']);
   gulp.watch('./sass/**/*.scss', ['sass']);
-  gulp.watch('./static/dev/**', ['copy']);
-  gulp.watch('./static/dev/html/**', ['html']);
+  gulp.watch(`${dir.dev}/**`, ['copy']);
+  gulp.watch(`${dir.dev}/html/**`, ['html']);
 });
