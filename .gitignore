@@ -1,6 +1,5 @@
 elm-stuff/
 node_modules/
 .stack-work/
-static/*.js
-static/*.css
+client/static/build/
 .DS_Store
