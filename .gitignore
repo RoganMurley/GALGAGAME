@@ -2,4 +2,5 @@ elm-stuff/
 node_modules/
 .stack-work/
 client/static/build/
-.DS_Store
+.DS_Store/
+.images/**
