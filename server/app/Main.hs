@@ -9,6 +9,10 @@ import Data.Aeson (encode)
 import Data.Monoid ((<>))
 import Data.String.Conversions (cs)
 import Data.Text (Text)
+import Network.HTTP.Types (status400)
+import Network.Wai (Application, responseLBS)
+import Network.Wai.Handler.WebSockets
+import Network.Wai.Handler.Warp (run)
 import Safe (readMay)
 
 import qualified Data.Text as T
@@ -35,11 +39,19 @@ import Room (Room)
 main :: IO ()
 main = do
   state <- newMVar Server.initState
-  WS.runServer "0.0.0.0" 9160 $ application state
+  run 9160 $ waiApp state
 
 
-application :: MVar Server.State -> WS.ServerApp
-application state pending = do
+waiApp :: MVar Server.State -> Application
+waiApp state = websocketsOr WS.defaultConnectionOptions (wsApp state) backupApp
+  where
+    backupApp :: Application
+    backupApp _ respond =
+      respond $ responseLBS status400 [] "Not a WebSocket request"
+
+
+wsApp :: MVar Server.State -> WS.ServerApp
+wsApp state pending = do
   conn <- WS.acceptRequest pending
   WS.forkPingThread conn 30
 
