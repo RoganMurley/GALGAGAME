@@ -1,11 +1,13 @@
 module Auth where
 
+import Control.Monad.Trans.Class (lift)
 import Data.Monoid (mconcat)
-import Data.String.Conversions (cs)
 import Data.Text.Internal.Lazy (Text)
 import Network.Wai (Application)
 import Web.Scotty
 import Web.Scotty.Cookie (deleteCookie, setSimpleCookie)
+
+import qualified Data.GUID as GUID
 
 
 app :: IO Application
@@ -18,7 +20,8 @@ app = scottyApp $ do
     password <- param "password"
     case login username password of
       True -> do
-        setSimpleCookie "login" (cs username)
+        token <- lift GUID.genText
+        setSimpleCookie "login" token
         html $ mconcat ["<h1>Welcome, ", username, "!</h1>"]
       False ->
         html "Incorrect password."

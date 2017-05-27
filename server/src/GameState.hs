@@ -1,6 +1,6 @@
 module GameState where
 
-import Control.Monad.Writer (Writer, runWriter, tell)
+import Control.Monad.Trans.Writer (Writer, runWriter, tell)
 import Data.Aeson (ToJSON(..), (.=), object)
 import Data.Maybe (fromMaybe)
 import Data.Monoid ((<>))

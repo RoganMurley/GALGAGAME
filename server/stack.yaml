@@ -4,6 +4,7 @@ packages:
 - '.'
 
 extra-deps:
+  - guid-0.1.0
   - scotty-cookie-0.1.0.3
 
 flags: {}

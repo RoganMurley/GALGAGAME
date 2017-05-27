@@ -1,6 +1,6 @@
 module ArtificalIntelligence where
 
-import Control.Monad.Writer (runWriter)
+import Control.Monad.Trans.Writer (runWriter)
 import Data.List (maximumBy)
 import Data.Maybe (fromJust)
 import Data.Ord (comparing)
