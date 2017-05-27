@@ -48,11 +48,6 @@ main = do
 waiApp :: MVar Server.State -> Application -> Application
 waiApp state backupApp =
   websocketsOr WS.defaultConnectionOptions (wsApp state) backupApp
-  -- where
-    -- backupApp :: Application
-    -- backupApp = Auth.app
-    -- backupApp _ respond =
-    --   respond $ responseLBS status400 [] "Not a WebSocket request"
 
 
 wsApp :: MVar Server.State -> WS.ServerApp
