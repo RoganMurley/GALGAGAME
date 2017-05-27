@@ -34,7 +34,7 @@ library
                      , random-shuffle
                      , safe
                      , scotty
-                    --  , scotty-cookie
+                     , scotty-cookie
                      , string-conversions
                      , text
                      , wai
