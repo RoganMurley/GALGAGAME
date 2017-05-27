@@ -29,7 +29,7 @@ library
   build-depends:       base >= 4.7 && < 5
                      , aeson
                      , containers
-                     , mtl
+                     , guid
                      , random
                      , random-shuffle
                      , safe
@@ -37,6 +37,7 @@ library
                      , scotty-cookie
                      , string-conversions
                      , text
+                     , transformers
                      , wai
                      , websockets
   ghc-options:         -Wall -O2
