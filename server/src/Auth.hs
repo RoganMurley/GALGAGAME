@@ -3,7 +3,6 @@ module Auth where
 import Control.Monad.Trans.Class (lift)
 import Data.Monoid (mconcat)
 import Data.String.Conversions (cs)
-import Data.Text.Internal.Lazy (Text)
 import Network.Wai (Application)
 import Web.Scotty
 import Web.Scotty.Cookie (deleteCookie, setSimpleCookie)
@@ -20,16 +19,16 @@ app = do
       html $
         "<form action=\"login\" method=POST><input type=\"text\" name=\"username\"><input type=\"password\" name=\"password\"><input type=\"submit\" value=\"Login\"></form><br><form action=\"logout\" method=POST><input type=\"submit\" value=\"Logout\"></form><br><form action=\"register\" method=POST><input type=\"text\" name=\"username\"><input type=\"password\" name=\"password\"><input type=\"submit\" value=\"Register\"></form>"
     post "/login" $ do
-      (username :: Text) <- param "username"
-      (password :: Text) <- param "password"
-      storedPassword <- lift . (R.runRedis conn) $ R.get (cs username)
+      username <- param "username"
+      password <- param "password"
+      storedPassword <- lift . (R.runRedis conn) $ R.get username
       case storedPassword of
         Right (Just toad) ->
-          case (cs toad) == password of
+          case toad == password of
             True -> do
               token <- lift GUID.genText
               setSimpleCookie "login" token
-              html $ mconcat ["<h1>Welcome, ", username, "!</h1>"]
+              html $ mconcat ["<h1>Welcome, ", cs username, "!</h1>"]
             False ->
               html "Incorrect password."
         _ ->
