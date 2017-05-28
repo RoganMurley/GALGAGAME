@@ -30,6 +30,7 @@ library
                      , aeson
                      , containers
                      , guid
+                     , hedis
                      , random
                      , random-shuffle
                      , safe
@@ -45,6 +46,7 @@ library
   default-extensions:  OverloadedStrings
                      , RecordWildCards
                      , NamedFieldPuns
+                     , ScopedTypeVariables
 
 executable stormcards
   hs-source-dirs:      app
