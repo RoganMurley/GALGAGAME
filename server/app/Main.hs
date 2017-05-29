@@ -6,6 +6,8 @@ import Control.Monad (forM_, forever, mzero, when)
 import Control.Monad.Trans.Class (lift)
 import Control.Monad.Trans.Maybe (runMaybeT)
 import Data.Aeson (encode)
+import Data.ByteString (ByteString)
+import Data.List (find)
 import Data.Monoid ((<>))
 import Data.String.Conversions (cs)
 import Data.Text (Text)
@@ -13,6 +15,7 @@ import Network.Wai (Application)
 import Network.Wai.Handler.WebSockets
 import Network.Wai.Handler.Warp (run)
 import Safe (readMay)
+import Web.Cookie (parseCookiesText)
 
 import qualified Data.Text as T
 import qualified Data.Text.IO as T
@@ -34,26 +37,39 @@ import Client (Client(..), ClientConnection(..))
 import qualified Room
 import Room (Room)
 
-import qualified Auth
-
+import qualified Auth as A
+import qualified Database.Redis as R
 
 
 main :: IO ()
 main = do
   state <- newMVar Server.initState
-  authApp <- Auth.app
-  run 9160 $ waiApp state authApp
+  userConn  <- R.connect $ A.connectInfo A.UserDatabase
+  tokenConn <- R.connect $ A.connectInfo A.TokenDatabase
+  authApp <- A.app userConn tokenConn
+  run 9160 $ waiApp state tokenConn authApp
 
 
-waiApp :: MVar Server.State -> Application -> Application
-waiApp state backupApp =
-  websocketsOr WS.defaultConnectionOptions (wsApp state) backupApp
+waiApp :: MVar Server.State -> R.Connection -> Application -> Application
+waiApp state tokenConn backupApp =
+  websocketsOr WS.defaultConnectionOptions (wsApp state tokenConn) backupApp
 
 
-wsApp :: MVar Server.State -> WS.ServerApp
-wsApp state pending = do
+wsApp :: MVar Server.State -> R.Connection -> WS.ServerApp
+wsApp state tokenConn pending = do
   conn <- WS.acceptRequest pending
   WS.forkPingThread conn 30
+
+  case getToken pending of
+    Nothing ->
+      T.putStrLn "No login token"
+    Just token -> do
+      storedToken <- A.checkAuth tokenConn token
+      case storedToken of
+        Just storedUser ->
+          T.putStrLn ("Logged in as:" <> storedUser)
+        Nothing ->
+          T.putStrLn "Login token invalid or expired"
 
   roomReq <- WS.receiveData conn
   case parseRoomReq roomReq of
@@ -126,6 +142,23 @@ wsApp state pending = do
     Nothing ->
       (WS.sendTextData conn) . toChat $
         ErrorCommand ("bad room name protocol: " <> roomReq)
+
+
+getToken :: WS.PendingConnection -> Maybe A.Token
+getToken pending = loginCookie
+  where
+    loginCookie :: Maybe A.Token
+    loginCookie = snd <$> find (\x -> fst x == "login") cookies
+    cookies :: [(Text, Text)]
+    cookies = case cookieString of
+      Just str ->
+        parseCookiesText str
+      Nothing ->
+        []
+    cookieString :: Maybe ByteString
+    cookieString = snd <$> find (\x -> fst x == "Cookie") headers
+    headers :: WS.Headers
+    headers = WS.requestHeaders . WS.pendingRequest $ pending
 
 
 data Command =
