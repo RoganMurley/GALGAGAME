@@ -22,7 +22,10 @@ echo "Copying image to server..."
 docker-machine scp .images/game-stormcards $name:game-stormcards
 docker load -i .images/game-stormcards
 
-echo "Booting images..."
+echo "Building compose..."
+docker-compose build
+
+echo "Booting compose..."
 docker-compose up -d
 
 echo "SUCCESS!"
