@@ -8,6 +8,7 @@ import Control.Monad.Trans.Maybe (runMaybeT)
 import Data.Aeson (encode)
 import Data.ByteString (ByteString)
 import Data.List (find)
+import Data.Maybe (fromMaybe)
 import Data.Monoid ((<>))
 import Data.String.Conversions (cs)
 import Data.Text (Text)
@@ -59,19 +60,25 @@ wsApp :: MVar Server.State -> R.Connection -> WS.ServerApp
 wsApp state tokenConn pending = do
   conn <- WS.acceptRequest pending
   WS.forkPingThread conn 30
+  roomReq <- WS.receiveData conn
 
   case getToken pending of
-    Nothing ->
+    Nothing -> do
       T.putStrLn "No login token"
+      begin conn roomReq Nothing state
     Just token -> do
       storedToken <- A.checkAuth tokenConn token
       case storedToken of
-        Just storedUser ->
+        Just storedUser -> do
           T.putStrLn ("Logged in as:" <> storedUser)
-        Nothing ->
+          begin conn roomReq storedToken state
+        Nothing -> do
           T.putStrLn "Login token invalid or expired"
+          begin conn roomReq storedToken state
 
-  roomReq <- WS.receiveData conn
+
+begin :: WS.Connection -> Text -> Maybe Username -> MVar Server.State -> IO ()
+begin conn roomReq loggedUsername state =
   case parseRoomReq roomReq of
     Just roomName -> do
       roomVar <- Server.getRoom roomName state
@@ -136,7 +143,7 @@ wsApp state tokenConn pending = do
 
               where
                 username :: Username
-                username = T.drop (T.length prefix) msg
+                username = fromMaybe (T.drop (T.length prefix) msg) loggedUsername
                 client :: Client
                 client = Client username (PlayerConnection conn)
     Nothing ->
