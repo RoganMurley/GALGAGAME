@@ -53,7 +53,10 @@ executable stormcards
   main-is:             Main.hs
   ghc-options:         -threaded -rtsopts -with-rtsopts=-N -Wall -O2
   build-depends:       base
+                     , bytestring
                      , aeson
+                     , cookie
+                     , hedis
                      , http-types
                      , random
                      , safe
