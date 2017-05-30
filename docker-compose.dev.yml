@@ -5,6 +5,8 @@ services:
       context: "client"
     ports:
       - "8000:80"
+    volumes:
+      - ./client/static/build:/usr/share/nginx/html
   redis:
     build:
       context: "redis"
