@@ -1,0 +1,16 @@
+version: "2"
+services:
+  static:
+    build:
+      context: "client"
+    ports:
+      - "80:80"
+  redis:
+    build:
+      context: "redis"
+  game:
+    image: "game-stormcards"
+    ports:
+      - "9160:9160"
+    links:
+      - redis
