@@ -30,6 +30,7 @@ library
                      , aeson
                      , bcrypt
                      , containers
+                     , cookie
                      , guid
                      , hedis
                      , http-types
@@ -40,6 +41,7 @@ library
                      , scotty-cookie
                      , string-conversions
                      , text
+                     , time
                      , transformers
                      , wai
                      , websockets
