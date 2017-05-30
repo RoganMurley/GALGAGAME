@@ -41,9 +41,9 @@ app userConn tokenConn =
                     R.expire (cs token) 60
                   html $ mconcat ["<h1>Welcome, ", cs username, "!</h1>"]
                 )
-                else (html "Incorrect password.")
+                else (html "Incorrect username or password.")
             Nothing ->
-              html $ mconcat ["User ", cs username, " does not exist."]
+              html "Incorrect username or password."
         Left _ -> do
           lift . T.putStrLn $ "Database connection error"
           html "Database connection error"
