@@ -1,6 +1,7 @@
 module Auth where
 
 import Control.Monad.Trans.Class (lift)
+import Crypto.BCrypt (validatePassword, hashPasswordUsingPolicy, slowerBcryptHashingPolicy)
 import Data.Monoid (mconcat)
 import Data.String.Conversions (cs)
 import Network.Wai (Application)
@@ -30,8 +31,8 @@ app userConn tokenConn =
       case gotten of
         Right pass ->
           case pass of
-            Just p ->
-              if p == password
+            Just hashedPassword ->
+              if validatePassword hashedPassword password
                 then ( do
                   token <- lift GUID.genText
                   setSimpleCookie "login" token
@@ -60,8 +61,13 @@ app userConn tokenConn =
     post "/register" $ do
       username <- param "username"
       password <- param "password"
-      _ <- lift . (R.runRedis userConn) $ R.set username password
-      html "Registered."
+      p <- lift $ hashPasswordUsingPolicy slowerBcryptHashingPolicy password
+      case p of
+        Just hashedPassword -> do
+          _ <- lift . (R.runRedis userConn) $ R.set username hashedPassword
+          html "Registered."
+        Nothing ->
+          html "Something went wrong with your registration."
 
 
 checkAuth :: R.Connection -> Token -> IO (Maybe Username)
