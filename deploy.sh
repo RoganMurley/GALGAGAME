@@ -4,8 +4,7 @@ name=$1
 set -e
 
 if [ $# -eq 0 ]; then
-    echo "Server name required"
-    exit 1
+    name=$(git rev-parse HEAD)
 fi
 
 echo "Creating game image..."
@@ -23,9 +22,9 @@ docker-machine scp .images/game-stormcards $name:game-stormcards
 docker load -i .images/game-stormcards
 
 echo "Building compose..."
-docker-compose build
+docker-compose -f docker-compose.prod.yml build
 
 echo "Booting compose..."
-docker-compose up -d
+docker-compose -f docker-compose.prod.yml up -d
 
 echo "SUCCESS!"
