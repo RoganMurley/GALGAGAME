@@ -3,10 +3,12 @@ module Auth where
 import Control.Monad.Trans.Class (lift)
 import Crypto.BCrypt (validatePassword, hashPasswordUsingPolicy, slowerBcryptHashingPolicy)
 import Data.String.Conversions (cs)
+import Data.Time.Clock (secondsToDiffTime)
 import Network.HTTP.Types.Status
 import Network.Wai (Application)
+import Web.Cookie (setCookieMaxAge)
 import Web.Scotty
-import Web.Scotty.Cookie (deleteCookie, getCookie, setSimpleCookie)
+import Web.Scotty.Cookie (deleteCookie, getCookie, makeSimpleCookie, setCookie)
 
 import qualified Data.GUID as GUID
 import qualified Database.Redis as R
@@ -36,10 +38,11 @@ login userConn tokenConn = do
           case validatePassword hashedPassword password of
             True -> do
               token <- lift GUID.genText
-              setSimpleCookie "login" token
+              let cookie = (makeSimpleCookie "login" token) { setCookieMaxAge = Just (secondsToDiffTime loginTimeout) }
+              setCookie cookie
               _ <- lift . (R.runRedis tokenConn) $ do
                 _ <- R.set (cs token) username
-                R.expire (cs token) 60
+                R.expire (cs token) loginTimeout
               status ok200
             False -> do
               status unauthorized401
@@ -88,6 +91,7 @@ checkAuth tokenConn token = do
 
 type Token = Text
 type Username = Text
+type Seconds = Integer
 
 
 data Database =
@@ -105,3 +109,7 @@ connectInfo database =
     asId :: Database -> Integer
     asId UserDatabase  = 0
     asId TokenDatabase = 1
+
+
+loginTimeout :: Seconds
+loginTimeout = 60
