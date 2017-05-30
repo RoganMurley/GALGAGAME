@@ -32,6 +32,7 @@ library
                      , containers
                      , guid
                      , hedis
+                     , http-types
                      , random
                      , random-shuffle
                      , safe
