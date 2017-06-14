@@ -12,7 +12,7 @@ import Raymarch.View as Raymarch
 
 
 view : Raymarch.Params -> Model -> Html Msg
-view params { name, error, valid, gameType } =
+view params { error, gameType } =
     let
         gameTypeString : String
         gameTypeString =
@@ -32,24 +32,15 @@ view params { name, error, valid, gameType } =
                 [ h1 [] [ text <| gameTypeString ++ " Game" ]
                 , div []
                     [ div [ class "input-group" ]
-                        [ input
-                            [ onInput <| LobbyMsg << Lobby.NameInput
-                            , placeholder "username"
-                            , value name
-                            , id nameInputID
-                            , onClick <| SelectAllInput nameInputID
+                        [ button
+                            [ onClick <| LobbyMsg <| Lobby.JoinRoom Playing
                             ]
-                            []
+                            [ text "Login & Play" ]
+                        , div [ class "vertical-rule" ] []
                         , button
                             [ onClick <| LobbyMsg <| Lobby.JoinRoom Playing
-                            , disabled <| not valid
                             ]
-                            [ text "Play" ]
-                        , button
-                            [ onClick <| LobbyMsg <| Lobby.JoinRoom Spectating
-                            , disabled <| not valid
-                            ]
-                            [ text "Spec" ]
+                            [ text "Play as Guest" ]
                         ]
                     , div
                         [ class "error" ]

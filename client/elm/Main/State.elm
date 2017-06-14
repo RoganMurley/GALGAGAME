@@ -35,17 +35,8 @@ initModel ({ hostname, httpPort, play, seed, windowDimensions } as flags) =
     { room =
         case play of
             Just roomID ->
-                let
-                    playerID : String
-                    playerID =
-                        "player"
-                            ++ (first <|
-                                    Random.step usernameNumberGenerator <|
-                                        Random.initialSeed seed
-                               )
-                in
-                    Connecting <|
-                        Lobby.modelInit playerID roomID Lobby.CustomGame
+                Connecting <|
+                    Lobby.modelInit roomID Lobby.CustomGame
 
             Nothing ->
                 MainMenu seed
@@ -82,17 +73,13 @@ update msg ({ hostname, room, frameTime } as model) =
                         generate generator =
                             first <| Random.step generator <| Random.initialSeed seed
 
-                        playerID : String
-                        playerID =
-                            "player" ++ (generate usernameNumberGenerator)
-
                         roomID : String
                         roomID =
                             generate roomIDGenerator
                     in
                         case msg of
                             MenuMsg (Menu.Start gameType) ->
-                                ( { model | room = Connecting <| Lobby.modelInit playerID roomID gameType }, Cmd.none )
+                                ( { model | room = Connecting <| Lobby.modelInit roomID gameType }, Cmd.none )
 
                             otherwise ->
                                 ( model, Cmd.none )

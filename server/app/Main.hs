@@ -63,18 +63,11 @@ wsApp state tokenConn pending = do
   roomReq <- WS.receiveData conn
 
   case getToken pending of
-    Nothing -> do
-      T.putStrLn "No login token"
+    Nothing ->
       begin conn roomReq Nothing state
     Just token -> do
       storedToken <- A.checkAuth tokenConn token
-      case storedToken of
-        Just storedUser -> do
-          T.putStrLn ("Logged in as:" <> storedUser)
-          begin conn roomReq storedToken state
-        Nothing -> do
-          T.putStrLn "Login token invalid or expired"
-          begin conn roomReq storedToken state
+      begin conn roomReq storedToken state
 
 
 begin :: WS.Connection -> Text -> Maybe Username -> MVar Server.State -> IO ()
@@ -82,7 +75,6 @@ begin conn roomReq loggedUsername state =
   case parseRoomReq roomReq of
     Just roomName -> do
       roomVar <- Server.getRoom roomName state
-      initialRoom <- readMVar roomVar
       msg <- WS.receiveData conn
 
       case parsePrefix msg of
@@ -92,15 +84,7 @@ begin conn roomReq loggedUsername state =
 
         Just prefix ->
           case prefix of
-            _ | T.null username ->
-                (WS.sendTextData conn) . toChat $
-                  ErrorCommand "name must be nonempty"
-
-              | Room.clientExists client initialRoom ->
-                (WS.sendTextData conn) . toChat $
-                  ErrorCommand "username taken"
-
-              | prefix == "play:" ->
+            _ | prefix == "play:" ->
                 do
                   T.putStrLn "Custom game started"
                   added <- addPlayerClient client roomVar
@@ -143,7 +127,7 @@ begin conn roomReq loggedUsername state =
 
               where
                 username :: Username
-                username = fromMaybe (T.drop (T.length prefix) msg) loggedUsername
+                username = fromMaybe "Guest" loggedUsername
                 client :: Client
                 client = Client username (PlayerConnection conn)
     Nothing ->
