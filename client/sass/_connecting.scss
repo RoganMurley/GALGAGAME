@@ -21,7 +21,7 @@
     background-color: #f0f8ff;
 
     border-radius: 5px;
-    width: 80px;
+    width: 200px;
     margin: 5px;
 
     &:hover {
@@ -52,4 +52,10 @@
   font-weight: 600;
   text-align: center;
   margin-top: 20px;
+}
+
+.vertical-rule {
+  border-left: 1px solid #fff;
+  height: 100px;
+  margin: 0 30px;
 }

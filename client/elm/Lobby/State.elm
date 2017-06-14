@@ -8,26 +8,17 @@ import String exposing (dropLeft, length, startsWith)
 import Util exposing (message)
 
 
-modelInit : String -> String -> GameType -> Model
-modelInit username roomID gameType =
+modelInit : String -> GameType -> Model
+modelInit roomID gameType =
     { roomID = roomID
-    , name = username
     , error = ""
-    , valid = True
     , gameType = gameType
     }
 
 
 update : Model -> Msg -> ( Model, Cmd Main.Msg )
-update ({ error, gameType, name, valid } as model) msg =
+update ({ error, gameType } as model) msg =
     case msg of
-        NameInput input ->
-            let
-                ( valid, error ) =
-                    validateName input
-            in
-                ( { model | name = input, error = error, valid = valid }, Cmd.none )
-
         JoinRoom mode ->
             let
                 prefix : String
@@ -46,7 +37,7 @@ update ({ error, gameType, name, valid } as model) msg =
             in
                 ( model
                 , Cmd.batch
-                    [ message <| Main.Send <| prefix ++ name
+                    [ message <| Main.Send <| prefix
                     , message <| Main.Send <| "room:" ++ model.roomID
                     ]
                 )
@@ -66,13 +57,3 @@ receive msg =
     else
         -- Defer other messages.
         message <| Main.Receive <| msg
-
-
-validateName : String -> ( Bool, String )
-validateName name =
-    if length name > 20 then
-        ( False, "username too long" )
-    else if String.isEmpty name then
-        ( False, "" )
-    else
-        ( True, "" )

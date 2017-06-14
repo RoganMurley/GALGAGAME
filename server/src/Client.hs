@@ -34,5 +34,6 @@ send :: Text -> Client -> IO ()
 send message (Client _ (PlayerConnection conn)) = sendTextData conn message
 send _       _                                  = return ()
 
+
 cpuClient :: Client
 cpuClient = Client "CPU" ComputerConnection

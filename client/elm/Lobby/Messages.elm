@@ -4,6 +4,5 @@ import Main.Types exposing (Mode)
 
 
 type Msg
-    = NameInput String
-    | JoinRoom Mode
+    = JoinRoom Mode
     | JoinRoomErr String
