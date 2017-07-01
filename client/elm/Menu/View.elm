@@ -13,8 +13,8 @@ view : Raymarch.Params -> Html Msg
 view params =
     div []
         [ div [ class "main-menu" ]
-            [ h1 [] [ text "STØRMCARDS" ]
-            , h2 [] [ text "A digital card game of risk & reward" ]
+            [ h1 [] [ text "HUBRIS" ]
+            , h2 [] [ text "A card game of risk & reward" ]
             , div [ class "main-menu-buttons" ]
                 [ button
                     [ class "menu-button", disabled True ]
