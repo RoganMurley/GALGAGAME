@@ -34,7 +34,7 @@ fragmentShader =
         const float OCTAVES = 4.0;
 
         const vec4 SKY_COLOR = vec4(0.012, 0.0178, 0.045, 1.0);
-        const vec4 CLOUD_COLOR = vec4(0.8, 0.8, 0.8, 0.7);
+        const vec4 CLOUD_COLOR = vec4(1.0, 1.0, 1.0, 0.8);
 
         float hash(vec3 p)
         {
