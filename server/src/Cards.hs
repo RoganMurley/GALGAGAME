@@ -1,5 +1,7 @@
 module Cards where
 
+import Safe (headMay)
+
 import Model
 import Player (WhichPlayer(..), other)
 import Util (shuffle, times)
@@ -10,10 +12,10 @@ dagger :: Card
 dagger =
   Card
     "Dagger"
-    "Hurt for 11"
+    "Hurt for 6"
     "flame/dagger.svg"
     "dagger.wav"
-    (\p -> hurt 11 (other p))
+    (\p -> hurt 6 (other p))
 
 
 fireball :: Card
@@ -51,10 +53,10 @@ hammer :: Card
 hammer =
   Card
     "Hammer"
-    "Hurt for 10"
+    "Hurt for 8"
     "thunder/hammer.svg"
     "hammer.wav"
-    (\p -> hurt 10 (other p))
+    (\p -> hurt 8 (other p))
 
 
 lightning :: Card
@@ -77,19 +79,27 @@ hubris =
     (\_ -> setStack [])
 
 
-echo :: Card
-echo =
+decree :: Card
+decree =
   Card
-    "Echo"
-    "The next card to the right's effect happens twice"
-    "thunder/echo.svg"
+    "Decree"
+    "Exile all other copies of card to the right anywhere"
+    "thunder/decree.svg"
     "echo.wav"
     eff
   where
     eff :: CardEff
-    eff _ = modStackHead
-      (\(StackCard which (Card name desc pic sfx e)) ->
-        StackCard which (Card name desc pic sfx (\w -> (e w) . (e w))))
+    eff _ m =
+      case headMay (getStack m) of
+        Nothing ->
+          m
+        Just (StackCard _ card) ->
+          (modDeck PlayerA (filter (/= card))) .
+            (modDeck PlayerB (filter (/= card))) .
+              (modHand PlayerA (filter (/= card))) .
+                (modHand PlayerB (filter (/= card))) .
+                  (modStack (filter (\(StackCard _ c) -> c /= card)))
+                    $ m
 
 
 -- Seek
@@ -147,7 +157,7 @@ alchemy :: Card
 alchemy =
   Card
     "Alchemy"
-    "The next card to the right's effect becomes: draw 2 cards"
+    "Card to the right's effect becomes: draw 2 cards"
     "seek/alchemy.svg"
     "feint.wav"
     (\_ -> modStackHead (\(StackCard w _) -> StackCard w gold))
@@ -167,10 +177,10 @@ scythe :: Card
 scythe =
   Card
     "Scythe"
-    "Lifesteal for 8"
+    "Lifesteal for 7"
     "feast/scythe.svg"
     "bite.wav"
-    (\p -> lifesteal 8 (other p))
+    (\p -> lifesteal 7 (other p))
 
 
 bloodsucker :: Card
@@ -183,21 +193,21 @@ bloodsucker =
   (\p m -> lifesteal (4 * (length . getStack $ m)) (other p) m)
 
 
-theBook :: Card
-theBook =
+serpent :: Card
+serpent =
   Card
-    "The Book"
-    "Your opponent gets two cards that hurt them for 8 each"
-    "feast/the-book.svg"
+    "Serpent"
+    "They get two Bad Apples that hurt them for 8 each"
+    "feast/serpent.svg"
     "siren.wav"
-    (\p -> modHand (other p) (times 2 ((:) thoughts)))
+    (\p -> modHand (other p) (times 2 ((:) badApple)))
   where
-    thoughts :: Card
-    thoughts =
+    badApple :: Card
+    badApple =
       Card
-        "Thoughts"
+        "Bad Apple"
         "Hurt yourself for 8"
-        "feast/thoughts.svg"
+        "feast/bad-apple.svg"
         "song.wav"
         (hurt 8)
 
@@ -213,14 +223,14 @@ reversal =
 
 
 -- Trick
-shuriken :: Card
-shuriken =
+sword :: Card
+sword =
   Card
-    "Staff"
-    "Hurt for 7"
-    "trick/shuriken.svg"
+    "Sword"
+    "Hurt for 10"
+    "trick/sword.svg"
     "shuriken.wav"
-    (\p -> hurt 7 (other p))
+    (\p -> hurt 10 (other p))
 
 
 superego :: Card
@@ -233,14 +243,19 @@ superego =
     (\p m -> hurt (3 * (length . (getHand p) $ m)) (other p) m)
 
 
-mindgate :: Card
-mindgate =
+echo :: Card
+echo =
   Card
-    "Mindgate"
-    "Your hand becomes the same as your opponent's"
-    "trick/mindgate.svg"
-    "mindgate.wav"
-    (\p m -> setHand p (getHand (other p) m) m)
+    "Echo"
+    "Card to the right's effect happens twice"
+    "trick/echo.svg"
+    "echo.wav"
+    eff
+  where
+    eff :: CardEff
+    eff _ = modStackHead
+      (\(StackCard which (Card name desc pic sfx e)) ->
+        StackCard which (Card name desc pic sfx (\w -> (e w) . (e w))))
 
 
 feint :: Card
@@ -258,17 +273,17 @@ staff :: Card
 staff =
   Card
     "Staff"
-    "Hurt for 6"
+    "Hurt for 5"
     "future/staff.svg"
     "staff.wav"
-    (\p -> hurt 6 (other p))
+    (\p -> hurt 5 (other p))
 
 
 greed :: Card
 greed =
   Card
     "Greed"
-    "Hurt for 3 for each card in your opponent's hand"
+    "Hurt for 3 for each card in their hand"
     "future/greed.svg"
     "envy.wav"
     (\p m -> hurt (3 * (length . (getHand (other p)) $ m)) (other p) m)
@@ -278,7 +293,7 @@ mindhack :: Card
 mindhack =
   Card
     "Mindhack"
-    "Obscure your opponent's hand"
+    "Obscure their hand"
     "future/mindhack.svg"
     "mindhack.wav"
     (\p -> modHand (other p) (fmap obs))
@@ -308,10 +323,10 @@ crossbow :: Card
 crossbow =
   Card
     "Crossbow"
-    "Hurt for 5"
+    "Hurt for 11"
     "shield/crossbow.svg"
     "crossbow.wav"
-    (\p -> hurt 5 (other p))
+    (\p -> hurt 11 (other p))
 
 boomerang :: Card
 boomerang =
