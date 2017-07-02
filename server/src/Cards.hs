@@ -5,23 +5,23 @@ import Player (WhichPlayer(..), other)
 import Util (shuffle, times)
 
 
--- Flame
-dragon :: Card
-dragon =
+-- Fire
+dagger :: Card
+dagger =
   Card
-    "Dragon"
+    "Dagger"
     "Hurt for 11"
-    "dragon/dragon.svg"
+    "flame/dagger.svg"
     "dagger.wav"
     (\p -> hurt 11 (other p))
 
 
-firestorm :: Card
-firestorm =
+fireball :: Card
+fireball =
   Card
-    "Firestorm"
+    "Fireball"
     "Hurt for 5 for each card to the right"
-    "dragon/fire-ray.svg"
+    "flame/fireball.svg"
     "fireball.wav"
     (\p m -> hurt (5 * (length . getStack $ m)) (other p) m)
 
@@ -31,28 +31,28 @@ offering =
   Card
     "Offering"
     "Hurt yourself for 8, then draw two cards"
-    "dragon/heartburn.svg"
+    "flame/offering.svg"
     "offering.wav"
     (\p -> (drawCard p) . (drawCard p) . (hurt 8 p))
 
 
-haze :: Card
-haze =
+confound :: Card
+confound =
   Card
-    "Haze"
+    "Confound"
     "Shuffle the order of cards to the right"
-    "dragon/heat-haze.svg"
+    "flame/confound.svg"
     "confound.wav"
     (\_ m -> modStack (\s -> shuffle s (getGen m)) m)
 
 
 -- Thunder
-stag :: Card
-stag =
+hammer :: Card
+hammer =
   Card
-    "Stag"
+    "Hammer"
     "Hurt for 10"
-    "stag/stag.svg"
+    "thunder/hammer.svg"
     "hammer.wav"
     (\p -> hurt 10 (other p))
 
@@ -62,7 +62,7 @@ lightning =
   Card
     "Lightning"
     "Hurt for 4 for each card to the right"
-    "stag/lightning-trio.svg"
+    "thunder/lightning.svg"
     "lightning.wav"
     (\p m -> hurt (4 * (length . getStack $ m)) (other p) m)
 
@@ -72,7 +72,7 @@ hubris =
   Card
     "Hubris"
     "Negate all cards to the right"
-    "stag/tower-fall.svg"
+    "thunder/hubris.svg"
     "hubris.wav"
     (\_ -> setStack [])
 
@@ -82,7 +82,7 @@ echo =
   Card
     "Echo"
     "The next card to the right's effect happens twice"
-    "stag/echo-ripples.svg"
+    "thunder/echo.svg"
     "echo.wav"
     eff
   where
@@ -92,23 +92,23 @@ echo =
         StackCard which (Card name desc pic sfx (\w -> (e w) . (e w))))
 
 
--- Frost
-gem :: Card
-gem =
+-- Seek
+axe :: Card
+axe =
   Card
-    "Powergem"
+    "Axe"
     "Hurt for 9"
-    "gem/gem.svg"
+    "seek/axe.svg"
     "axe.mp3"
     (\p -> hurt 9 (other p))
 
 
-blizzard :: Card
-blizzard =
+curse :: Card
+curse =
   Card
-    "Blizzard"
+    "Curse"
     "Hurt the weakest player for 15"
-    "gem/ice-spear.svg"
+    "seek/curse.svg"
     "frostbite.mp3"
     eff
   where
@@ -123,12 +123,12 @@ blizzard =
     dmg = 15
 
 
-crystal :: Card
-crystal =
+bless :: Card
+bless =
   Card
-    "Crystal"
+    "Bless"
     "Heal the weakest player for 15"
-    "gem/crystal-growth.svg"
+    "seek/bless.svg"
     "oath.wav"
     eff
   where
@@ -148,7 +148,7 @@ alchemy =
   Card
     "Alchemy"
     "The next card to the right's effect becomes: draw 2 cards"
-    "gem/alchemy.svg"
+    "seek/alchemy.svg"
     "feint.wav"
     (\_ -> modStackHead (\(StackCard w _) -> StackCard w gold))
   where
@@ -162,42 +162,42 @@ alchemy =
         (\p -> (drawCard p) . (drawCard p))
 
 
--- Tempest
-octopus :: Card
-octopus =
+-- Feast
+scythe :: Card
+scythe =
   Card
-    "Octopus"
+    "Scythe"
     "Lifesteal for 8"
-    "octopus/octopus.svg"
+    "feast/scythe.svg"
     "bite.wav"
     (\p -> lifesteal 8 (other p))
 
 
-tentacles :: Card
-tentacles =
+bloodsucker :: Card
+bloodsucker =
   Card
-  "Tentacles"
+  "Bloodsucker"
   "Lifesteal for 4 for each card to the right"
-  "octopus/tentacle-strike.svg"
+  "feast/bloodsucker.svg"
   "succubus.wav"
   (\p m -> lifesteal (4 * (length . getStack $ m)) (other p) m)
 
 
-siren :: Card
-siren =
+theBook :: Card
+theBook =
   Card
-    "Siren"
+    "The Book"
     "Your opponent gets two cards that hurt them for 8 each"
-    "octopus/mermaid.svg"
+    "feast/the-book.svg"
     "siren.wav"
-    (\p -> modHand (other p) (times 2 ((:) song)))
+    (\p -> modHand (other p) (times 2 ((:) thoughts)))
   where
-    song :: Card
-    song =
+    thoughts :: Card
+    thoughts =
       Card
-        "Siren's Song"
+        "Thoughts"
         "Hurt yourself for 8"
-        "octopus/love-song.svg"
+        "feast/thoughts.svg"
         "song.wav"
         (hurt 8)
 
@@ -207,28 +207,28 @@ reversal =
   Card
     "Reversal"
     "Reverse the order of cards to the right"
-    "octopus/pocket-watch.svg"
+    "feast/reversal.svg"
     "reversal.wav"
     (\_ -> modStack reverse)
 
 
--- Mist
-monkey :: Card
-monkey =
+-- Trick
+shuriken :: Card
+shuriken =
   Card
-    "Monkey"
+    "Staff"
     "Hurt for 7"
-    "monkey/monkey.svg"
+    "trick/shuriken.svg"
     "shuriken.wav"
     (\p -> hurt 7 (other p))
 
 
-monsoon :: Card
-monsoon =
+superego :: Card
+superego =
   Card
-    "Monsoon"
+    "Superego"
     "Hurt for 3 for each card in your hand"
-    "monkey/heavy-rain.svg"
+    "trick/superego.svg"
     "superego.wav"
     (\p m -> hurt (3 * (length . (getHand p) $ m)) (other p) m)
 
@@ -238,7 +238,7 @@ mindgate =
   Card
     "Mindgate"
     "Your hand becomes the same as your opponent's"
-    "monkey/magic-portal.svg"
+    "trick/mindgate.svg"
     "mindgate.wav"
     (\p m -> setHand p (getHand (other p) m) m)
 
@@ -247,39 +247,39 @@ feint :: Card
 feint =
   Card
     "Feint"
-    "Return all of your cards to the right to your hand"
-    "monkey/quick-slash.svg"
+    "Bounce all of your cards to the right to hand"
+    "trick/feint.svg"
     "feint.wav"
     bounceAll
 
 
--- Vortex
-owl :: Card
-owl =
+-- Future
+staff :: Card
+staff =
   Card
-    "Owl"
+    "Staff"
     "Hurt for 6"
-    "owl/owl.svg"
+    "future/staff.svg"
     "staff.wav"
     (\p -> hurt 6 (other p))
 
 
-twister :: Card
-twister =
+greed :: Card
+greed =
   Card
-    "Twister"
+    "Greed"
     "Hurt for 3 for each card in your opponent's hand"
-    "owl/tornado.svg"
+    "future/greed.svg"
     "envy.wav"
     (\p m -> hurt (3 * (length . (getHand (other p)) $ m)) (other p) m)
 
 
-hypnosis :: Card
-hypnosis =
+mindhack :: Card
+mindhack =
   Card
-    "Hypnosis"
+    "Mindhack"
     "Obscure your opponent's hand"
-    "owl/vortex.svg"
+    "future/mindhack.svg"
     "mindhack.wav"
     (\p -> modHand (other p) (fmap obs))
   where
@@ -288,7 +288,7 @@ hypnosis =
       Card
         "???"
         "An obscured card"
-        "owl/sight-disabled.svg"
+        "future/obscured.svg"
         "resolve.wav"
         (\p -> modStack ((:) (StackCard p card)))
 
@@ -297,38 +297,38 @@ prophecy :: Card
 prophecy =
   Card
     "Prophecy"
-    "Return all cards to the right to their owner's hand"
-    "owl/star-pupil.svg"
+    "Bounce all cards to the right to hand"
+    "future/prophecy.svg"
     "precognition.wav"
     (\_ -> (bounceAll PlayerA) . (bounceAll PlayerB))
 
 
--- Calm
-turtle :: Card
-turtle =
+-- Shield
+crossbow :: Card
+crossbow =
   Card
-    "Turtle"
+    "Crossbow"
     "Hurt for 5"
-    "turtle/turtle.svg"
+    "shield/crossbow.svg"
     "crossbow.wav"
     (\p -> hurt 5 (other p))
 
-gust :: Card
-gust =
+boomerang :: Card
+boomerang =
   Card
-    "Gust"
-    "Hurt for 3, return this card to your hand"
-    "turtle/fluffy-cloud.svg"
+    "Boomerang"
+    "Hurt for 3, bounce this card to hand"
+    "shield/boomerang.svg"
     "boomerang.wav"
-    (\p -> (modHand p ((:) gust)) . (hurt 3 (other p)))
+    (\p -> (modHand p ((:) boomerang)) . (hurt 3 (other p)))
 
 
-soup :: Card
-soup =
+potion :: Card
+potion =
   Card
-    "Soup"
+    "Potion"
     "Heal for 10"
-    "turtle/soup.svg"
+    "shield/potion.svg"
     "potion.wav"
     (heal 10)
 
@@ -338,6 +338,6 @@ reflect =
   Card
     "Reflect"
     "All cards to the right change owner"
-    "turtle/shield-reflect.svg"
+    "shield/reflect.svg"
     "reflect.wav"
     (\_ -> modStackAll changeOwner)
