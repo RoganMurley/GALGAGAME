@@ -269,9 +269,19 @@ drawCard :: WhichPlayer -> Model -> Model
 drawCard which model =
   case headMay (getDeck which model) of
     Just card ->
-      modDeck which tailSafe $ modHand which ((:) card) model
+      modDeck which tailSafe $
+        modHand which ((:) card) model
     Nothing ->
-      model
+      modHand which ((:) theEnd) model
+  where
+    theEnd :: Card
+    theEnd =
+      Card
+        "The End"
+        "You're out of cards, hurt yourself for 10."
+        "the_end.svg"
+        "feint.wave"
+        (hurt 10)
 
 
 playCard :: Int -> WhichPlayer -> Model -> Either Err Model

@@ -14,6 +14,7 @@ listen time state =
         modelListen state m =
             if GameState.tickZero state then
                 let
+                    -- FIX ME, UNSAFE
                     sfxURL : String
                     sfxURL =
                         case List.head m.stack of
@@ -32,8 +33,11 @@ listen time state =
                 Cmd.none
     in
         case state of
+            Selecting _ ->
+                playSoundWith "music/select.mp3" [ Loop, Once ]
+
             PlayingGame _ ( [], _ ) ->
-                playSoundWith "music/background.mp3" [ Loop, Once ]
+                Cmd.none
 
             PlayingGame m _ ->
                 modelListen state m

@@ -110,60 +110,60 @@ toList (ThreeSelected a b c) = [ a, b, c ]
 -- CHARACTERS
 allCharacters :: [Character]
 allCharacters = [
-    flame
+    fire
   , thunder
-  , frost
-  , tempest
-  , mist
-  , vortex
-  , calm
+  , seek
+  , feast
+  , trick
+  , future
+  , shield
   ]
 
-flame :: Character
-flame =
+fire :: Character
+fire =
   Character
-    "Flame"
-    "dragon/dragon.svg"
-    (Cards.dragon, Cards.firestorm, Cards.offering, Cards.haze)
+    "Fire"
+    "fire/fireball.svg"
+    (Cards.dagger, Cards.fireball, Cards.offering, Cards.confound)
 
-frost :: Character
-frost =
+seek :: Character
+seek =
   Character
-    "Frost"
-    "gem/gem.svg"
-    (Cards.gem, Cards.blizzard, Cards.crystal, Cards.alchemy)
+    "Seek"
+    "seek/curse.svg"
+    (Cards.axe, Cards.curse, Cards.bless, Cards.alchemy)
 
 thunder :: Character
 thunder =
   Character
     "Thunder"
-    "stag/stag.svg"
-    (Cards.stag, Cards.lightning, Cards.echo, Cards.hubris)
+    "thunder/lightning.svg"
+    (Cards.hammer, Cards.lightning, Cards.echo, Cards.hubris)
 
-tempest :: Character
-tempest =
+feast :: Character
+feast =
   Character
-    "Tempest"
-    "octopus/octopus.svg"
-    (Cards.octopus, Cards.tentacles, Cards.siren, Cards.reversal)
+    "Feast"
+    "feast/bloodsucker.svg"
+    (Cards.scythe, Cards.bloodsucker, Cards.theBook, Cards.reversal)
 
-vortex :: Character
-vortex =
+future :: Character
+future =
   Character
-    "Vortex"
-    "owl/owl.svg"
-    (Cards.owl, Cards.twister, Cards.hypnosis, Cards.prophecy)
+    "Future"
+    "future/prophecy.svg"
+    (Cards.staff, Cards.greed, Cards.mindhack, Cards.prophecy)
 
-mist :: Character
-mist =
+trick :: Character
+trick =
   Character
-    "Mist"
-    "monkey/monkey.svg"
-    (Cards.monkey, Cards.monsoon, Cards.mindgate, Cards.feint)
+    "Trick"
+    "trick/superego.svg"
+    (Cards.shuriken, Cards.superego, Cards.mindgate, Cards.feint)
 
-calm :: Character
-calm =
+shield :: Character
+shield =
   Character
-    "Calm"
-    "turtle/turtle.svg"
-    (Cards.turtle, Cards.gust, Cards.soup, Cards.reflect)
+    "Shield"
+    "shield/reflect.svg"
+    (Cards.crossbow, Cards.boomerang, Cards.potion, Cards.reflect)
