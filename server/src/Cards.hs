@@ -93,13 +93,14 @@ decree =
       case headMay (getStack m) of
         Nothing ->
           m
-        Just (StackCard _ card) ->
+        Just stackCard@(StackCard _ card) ->
           (modDeck PlayerA (filter (/= card))) .
             (modDeck PlayerB (filter (/= card))) .
               (modHand PlayerA (filter (/= card))) .
                 (modHand PlayerB (filter (/= card))) .
-                  (modStack (filter (\(StackCard _ c) -> c /= card)))
-                    $ m
+                  (modStack ((:) stackCard)) .
+                    (modStack (filter (\(StackCard _ c) -> c /= card)))
+                      $ m
 
 
 -- Seek

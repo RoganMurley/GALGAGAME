@@ -176,7 +176,7 @@ getHand w m = pmodel_hand $ getPmodel w m
 
 
 setHand :: WhichPlayer -> Setter Model Hand
-setHand w h = modPmodel (\pm -> pm { pmodel_hand = take maxHandLength h }) w
+setHand w h = modPmodel (\pm -> pm { pmodel_hand = take maxHandLength (reverse h) }) w
 
 
 modHand :: WhichPlayer -> Modifier Model Hand
