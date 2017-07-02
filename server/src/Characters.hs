@@ -110,60 +110,60 @@ toList (ThreeSelected a b c) = [ a, b, c ]
 -- CHARACTERS
 allCharacters :: [Character]
 allCharacters = [
-    fire
-  , thunder
-  , seek
-  , feast
+    shield
   , trick
+  , seek
+  , thunder
+  , feast
+  , fire
   , future
-  , shield
   ]
 
 fire :: Character
 fire =
   Character
-    "Fire"
+    "Ira"
     "fire/fireball.svg"
     (Cards.dagger, Cards.fireball, Cards.offering, Cards.confound)
 
 seek :: Character
 seek =
   Character
-    "Seek"
+    "Luxuria"
     "seek/curse.svg"
     (Cards.axe, Cards.curse, Cards.bless, Cards.alchemy)
 
 thunder :: Character
 thunder =
   Character
-    "Thunder"
+    "Superbia"
     "thunder/lightning.svg"
-    (Cards.hammer, Cards.lightning, Cards.echo, Cards.hubris)
+    (Cards.hammer, Cards.lightning, Cards.decree, Cards.hubris)
 
 feast :: Character
 feast =
   Character
-    "Feast"
+    "Gula"
     "feast/bloodsucker.svg"
-    (Cards.scythe, Cards.bloodsucker, Cards.theBook, Cards.reversal)
+    (Cards.scythe, Cards.bloodsucker, Cards.serpent, Cards.reversal)
 
 future :: Character
 future =
   Character
-    "Future"
+    "Avarita"
     "future/prophecy.svg"
     (Cards.staff, Cards.greed, Cards.mindhack, Cards.prophecy)
 
 trick :: Character
 trick =
   Character
-    "Trick"
+    "Tristitia"
     "trick/superego.svg"
-    (Cards.shuriken, Cards.superego, Cards.mindgate, Cards.feint)
+    (Cards.sword, Cards.superego, Cards.echo, Cards.feint)
 
 shield :: Character
 shield =
   Character
-    "Shield"
+    "Acedia"
     "shield/reflect.svg"
-    (Cards.crossbow, Cards.boomerang, Cards.potion, Cards.reflect)
+    (Cards.boomerang, Cards.crossbow, Cards.potion, Cards.reflect)
