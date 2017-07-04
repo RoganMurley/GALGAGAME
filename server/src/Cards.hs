@@ -12,10 +12,10 @@ dagger :: Card
 dagger =
   Card
     "Dagger"
-    "Hurt for 6"
+    "Hurt for 7"
     "flame/dagger.svg"
     "dagger.wav"
-    (\p -> hurt 6 (other p))
+    (\p -> hurt 7 (other p))
 
 
 fireball :: Card
@@ -178,20 +178,20 @@ scythe :: Card
 scythe =
   Card
     "Scythe"
-    "Lifesteal for 7"
+    "Lifesteal for 6"
     "feast/scythe.svg"
     "bite.wav"
-    (\p -> lifesteal 7 (other p))
+    (\p -> lifesteal 6 (other p))
 
 
 bloodsucker :: Card
 bloodsucker =
   Card
   "Bloodsucker"
-  "Lifesteal for 4 for each card to the right"
+  "Lifesteal for 3 for each card to the right"
   "feast/bloodsucker.svg"
   "succubus.wav"
-  (\p m -> lifesteal (4 * (length . getStack $ m)) (other p) m)
+  (\p m -> lifesteal (3 * (length . getStack $ m)) (other p) m)
 
 
 serpent :: Card

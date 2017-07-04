@@ -68,12 +68,22 @@ initModel turn ca cb gen =
   Model turn [] pm_a pm_b NoPass gen
   where
     (genPA, genPB) = split gen :: (Gen, Gen)
+    -- PlayerA
     initDeckPA = shuffle (buildDeck ca) genPA :: Deck
-    (handPA, deckPA) = splitAt 5 initDeckPA :: (Hand, Deck)
-    initDeckPB = shuffle (buildDeck cb) genPB :: Deck
-    (handPB, deckPB) = splitAt 5 initDeckPB :: (Hand, Deck)
+    (handPA, deckPA) = splitAt (initHandLength PlayerA turn) initDeckPA :: (Hand, Deck)
     pm_a = PlayerModel handPA deckPA maxLife :: PlayerModel
+    -- PlayerB
+    initDeckPB = shuffle (buildDeck cb) genPB :: Deck
+    (handPB, deckPB) = splitAt (initHandLength PlayerB turn) initDeckPB :: (Hand, Deck)
     pm_b = PlayerModel handPB deckPB maxLife :: PlayerModel
+
+
+initHandLength :: WhichPlayer -> Turn -> Int
+initHandLength which first =
+  if which == first then
+    maxHandLength
+  else
+    maxHandLength - 1
 
 
 buildDeck :: FinalSelection -> Deck
