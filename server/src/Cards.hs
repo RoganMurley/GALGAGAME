@@ -73,7 +73,7 @@ hubris :: Card
 hubris =
   Card
     "Hubris"
-    "Negate all cards to the right"
+    "Remove all cards to the right"
     "breaker/hubris.svg"
     "hubris.wav"
     (\_ -> setStack [])
@@ -83,7 +83,7 @@ decree :: Card
 decree =
   Card
     "Decree"
-    "Negate all other copies of card to the right, wherever they are"
+    "Remove all other copies of card to the right, wherever they are"
     "breaker/decree.svg"
     "echo.wav"
     eff
