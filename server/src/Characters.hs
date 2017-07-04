@@ -110,60 +110,60 @@ toList (ThreeSelected a b c) = [ a, b, c ]
 -- CHARACTERS
 allCharacters :: [Character]
 allCharacters = [
-    shield
-  , trick
-  , seek
-  , thunder
-  , feast
-  , fire
-  , future
+    ranger
+  , striker
+  , breaker
+  , drinker
+  , trickster
+  , watcher
+  , seeker
   ]
 
-fire :: Character
-fire =
+striker :: Character
+striker =
   Character
-    "Ira"
-    "fire/fireball.svg"
+    "Striker"
+    "striker/fireball.svg"
     (Cards.dagger, Cards.fireball, Cards.offering, Cards.confound)
 
-seek :: Character
-seek =
+breaker :: Character
+breaker =
   Character
-    "Luxuria"
-    "seek/curse.svg"
-    (Cards.axe, Cards.curse, Cards.bless, Cards.alchemy)
-
-thunder :: Character
-thunder =
-  Character
-    "Superbia"
-    "thunder/lightning.svg"
+    "Breaker"
+    "breaker/lightning.svg"
     (Cards.hammer, Cards.lightning, Cards.decree, Cards.hubris)
 
-feast :: Character
-feast =
+drinker :: Character
+drinker =
   Character
-    "Gula"
-    "feast/bloodsucker.svg"
+    "Drinker"
+    "drinker/bloodsucker.svg"
     (Cards.scythe, Cards.bloodsucker, Cards.serpent, Cards.reversal)
 
-future :: Character
-future =
+seeker :: Character
+seeker =
   Character
-    "Avarita"
-    "future/prophecy.svg"
+    "Seeker"
+    "seeker/curse.svg"
+    (Cards.axe, Cards.curse, Cards.bless, Cards.alchemy)
+
+watcher :: Character
+watcher =
+  Character
+    "Watcher"
+    "watcher/prophecy.svg"
     (Cards.staff, Cards.greed, Cards.mindhack, Cards.prophecy)
 
-trick :: Character
-trick =
+ranger :: Character
+ranger =
   Character
-    "Tristitia"
-    "trick/superego.svg"
-    (Cards.sword, Cards.superego, Cards.echo, Cards.feint)
-
-shield :: Character
-shield =
-  Character
-    "Acedia"
-    "shield/reflect.svg"
+    "Ranger"
+    "ranger/reflect.svg"
     (Cards.boomerang, Cards.crossbow, Cards.potion, Cards.reflect)
+
+trickster :: Character
+trickster =
+  Character
+    "Trickster"
+    "trickster/overwhelm.svg"
+    (Cards.sword, Cards.overwhelm, Cards.echo, Cards.feint)
