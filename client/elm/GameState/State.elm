@@ -8,14 +8,30 @@ import GameState.Types exposing (GameState(..))
 import Json.Decode as Json exposing (field, maybe)
 import Main.Messages as Main
 import Model.Types exposing (..)
-import Util exposing (fromJust, safeTail)
+import Util exposing (fromJust, message, safeTail)
 
 
 update : Msg -> GameState -> ( GameState, Cmd Main.Msg )
 update msg state =
     case msg of
         Sync str ->
-            ( syncState state str, Cmd.none )
+            let
+                syncedState : GameState
+                syncedState =
+                    syncState state str
+            in
+                case state of
+                    PlayingGame _ ( res, _ ) ->
+                        -- If we're resolving, defer update until later.
+                        case res of
+                            [] ->
+                                ( syncedState, Cmd.none )
+
+                            otherwise ->
+                                ( state, message <| Main.GameStateMsg <| msg )
+
+                    otherwise ->
+                        ( syncedState, Cmd.none )
 
         HoverOutcome i ->
             case state of
