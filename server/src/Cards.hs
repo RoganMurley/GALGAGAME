@@ -79,12 +79,12 @@ hubris =
     (\_ -> setStack [])
 
 
-decree :: Card
-decree =
+nevermore :: Card
+nevermore =
   Card
-    "Decree"
+    "Nevermore"
     "Remove all other copies of card to the right, wherever they are"
-    "breaker/decree.svg"
+    "breaker/nevermore.svg"
     "echo.wav"
     eff
   where
@@ -202,15 +202,6 @@ serpent =
     "drinker/serpent.svg"
     "siren.wav"
     (\p -> modHand (other p) (times 2 ((:) badApple)))
-  where
-    badApple :: Card
-    badApple =
-      Card
-        "Bad Apple"
-        "Hurt yourself for 8"
-        "drinker/bad-apple.svg"
-        "song.wav"
-        (hurt 8)
 
 
 reversal :: Card
@@ -300,13 +291,10 @@ mindhack =
     (\p -> modHand (other p) (fmap obs))
   where
     obs :: Card -> Card
-    obs card =
-      Card
-        "???"
-        "An obscured card"
-        "watcher/obscured.svg"
-        "resolve.wav"
-        (\p -> modStack ((:) (StackCard p card)))
+    obs card
+      | card == obscured = card
+      | otherwise =
+        obscured { card_eff = \p -> modStack ((:) (StackCard p card)) }
 
 
 prophecy :: Card
@@ -357,3 +345,24 @@ reflect =
     "ranger/reflect.svg"
     "reflect.wav"
     (\_ -> modStackAll changeOwner)
+
+
+-- Misc
+badApple :: Card
+badApple =
+  Card
+    "Bad Apple"
+    "Hurt yourself for 8"
+    "drinker/bad-apple.svg"
+    "song.wav"
+    (hurt 8)
+
+
+obscured :: Card
+obscured =
+  Card
+    "???"
+    "An obscured card"
+    "watcher/obscured.svg"
+    "resolve.wav"
+    (\_ -> id)
