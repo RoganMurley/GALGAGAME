@@ -10,6 +10,8 @@ import Model
 import Player (WhichPlayer(..))
 import Util (fromRight)
 
+import qualified Cards
+
 
 type Weight = Int
 data Action = PlayAction Int | EndAction
@@ -27,10 +29,12 @@ evalState (Playing model)          = evalModel model
       | (length . getStack $ m) > 0 =
         evalState . fst . runWriter . resolveAll $ m
       | otherwise =
-          (getLife PlayerA m)
-        - (getLife PlayerB m)
-        + (length . (getHand PlayerA) $ m) * 7
-        - (length . (getHand PlayerB) $ m) * 7
+          (evalPlayer PlayerA m) - (evalPlayer PlayerB m)
+    evalPlayer :: WhichPlayer -> Model -> Weight
+    evalPlayer which m =
+        (getLife which m)
+      + (length . (getHand which) $ m) * 7
+      + (sum . (fmap biasHand) . (getHand which) $ m)
 
 
 toCommand :: Action -> GameCommand
@@ -72,3 +76,12 @@ chooseAction turn model
   where
     comparison :: Action -> Action -> Ordering
     comparison = comparing (evalState . (postulateAction model))
+
+
+-- Some cards entail soft advantages/disadvantages that the AI can't handle.
+-- We manually set biases for these cards.
+biasHand :: Card -> Weight
+biasHand c
+  | c == Cards.badApple = -15
+  | c == Cards.obscured = -3
+  | otherwise           = 0

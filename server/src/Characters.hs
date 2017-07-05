@@ -131,7 +131,7 @@ breaker =
   Character
     "Breaker"
     "breaker/lightning.svg"
-    (Cards.hammer, Cards.lightning, Cards.decree, Cards.hubris)
+    (Cards.hammer, Cards.lightning, Cards.nevermore, Cards.hubris)
 
 drinker :: Character
 drinker =
