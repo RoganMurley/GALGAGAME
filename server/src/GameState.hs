@@ -69,11 +69,11 @@ initModel turn ca cb gen =
   where
     (genPA, genPB) = split gen :: (Gen, Gen)
     -- PlayerA
-    initDeckPA = shuffle (buildDeck ca) genPA :: Deck
+    initDeckPA = shuffle genPA (buildDeck ca) :: Deck
     (handPA, deckPA) = splitAt (initHandLength PlayerA turn) initDeckPA :: (Hand, Deck)
     pm_a = PlayerModel handPA deckPA maxLife :: PlayerModel
     -- PlayerB
-    initDeckPB = shuffle (buildDeck cb) genPB :: Deck
+    initDeckPB = shuffle genPB (buildDeck cb) :: Deck
     (handPB, deckPB) = splitAt (initHandLength PlayerB turn) initDeckPB :: (Hand, Deck)
     pm_b = PlayerModel handPB deckPB maxLife :: PlayerModel
 

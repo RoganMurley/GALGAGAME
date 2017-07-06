@@ -1,7 +1,5 @@
 module Cards where
 
-import Safe (headMay)
-
 import Model
 import Player (WhichPlayer(..), other)
 import Util (shuffle, times)
@@ -15,7 +13,7 @@ dagger =
     "Hurt for 7"
     "striker/dagger.svg"
     "dagger.wav"
-    (\p -> hurt 7 (other p))
+    $ \p -> hurt 7 (other p)
 
 
 fireball :: Card
@@ -25,17 +23,17 @@ fireball =
     "Hurt for 5 for each card to the right"
     "striker/fireball.svg"
     "fireball.wav"
-    (\p m -> hurt (5 * (length . getStack $ m)) (other p) m)
+    $ \p m -> hurt (5 * (length . getStack $ m)) (other p) m
 
 
 offering :: Card
 offering =
   Card
     "Offering"
-    "Hurt yourself for 8, then draw two cards"
+    "Hurt yourself for 8, then draw 2"
     "striker/offering.svg"
     "offering.wav"
-    (\p -> (drawCard p) . (drawCard p) . (hurt 8 p))
+    $ \p -> (times 2 (drawCard p)) . (hurt 8 p)
 
 
 confound :: Card
@@ -45,7 +43,7 @@ confound =
     "Shuffle the order of cards to the right"
     "striker/confound.svg"
     "confound.wav"
-    (\_ m -> modStack (\s -> shuffle s (getGen m)) m)
+    $ \_ m -> modStack (shuffle (getGen m)) m
 
 
 -- Breaker
@@ -56,7 +54,7 @@ hammer =
     "Hurt for 8"
     "breaker/hammer.svg"
     "hammer.wav"
-    (\p -> hurt 8 (other p))
+    $ \p -> hurt 8 (other p)
 
 
 lightning :: Card
@@ -66,7 +64,7 @@ lightning =
     "Hurt for 4 for each card to the right"
     "breaker/lightning.svg"
     "lightning.wav"
-    (\p m -> hurt (4 * (length . getStack $ m)) (other p) m)
+    $ \p m -> hurt (4 * (length . getStack $ m)) (other p) m
 
 
 hubris :: Card
@@ -76,7 +74,7 @@ hubris =
     "Remove all cards to the right"
     "breaker/hubris.svg"
     "hubris.wav"
-    (\_ -> setStack [])
+    $ \_ -> setStack []
 
 
 nevermore :: Card
@@ -86,21 +84,14 @@ nevermore =
     "Remove all other copies of card to the right, wherever they are"
     "breaker/nevermore.svg"
     "echo.wav"
-    eff
+    $ withStackHead eff
   where
-    eff :: CardEff
-    eff _ m =
-      case headMay (getStack m) of
-        Nothing ->
-          m
-        Just stackCard@(StackCard _ card) ->
-          (modDeck PlayerA (filter (/= card))) .
-            (modDeck PlayerB (filter (/= card))) .
-              (modHand PlayerA (filter (/= card))) .
-                (modHand PlayerB (filter (/= card))) .
-                  (modStack ((:) stackCard)) .
-                    (modStack (filter (\(StackCard _ c) -> c /= card)))
-                      $ m
+    eff :: StackCard -> CardEff
+    eff stackCard@(StackCard _ card) _ =
+        (both (\p -> modDeck p $ filter (/= card)))
+      . (both (\p -> modHand p $ filter (/= card)))
+      . (modStack ((:) stackCard))
+      . (modStack (filter (\(StackCard _ c) -> c /= card)))
 
 
 -- Seeker
@@ -111,14 +102,14 @@ axe =
     "Hurt for 9"
     "seeker/axe.svg"
     "axe.mp3"
-    (\p -> hurt 9 (other p))
+    $ \p -> hurt 9 (other p)
 
 
 curse :: Card
 curse =
   Card
     "Curse"
-    "Hurt the weakest player for 15"
+    "Hurt weakest player for 15"
     "seeker/curse.svg"
     "frostbite.mp3"
     eff
@@ -138,7 +129,7 @@ bless :: Card
 bless =
   Card
     "Bless"
-    "Heal the weakest player for 15"
+    "Heal weakest player for 15"
     "seeker/bless.svg"
     "oath.wav"
     eff
@@ -158,19 +149,10 @@ alchemy :: Card
 alchemy =
   Card
     "Alchemy"
-    "Card to the right's effect becomes: draw 2 cards"
+    "Transmute card to the right to (GOLD: draw 2)"
     "seeker/alchemy.svg"
     "feint.wav"
-    (\_ -> modStackHead (\(StackCard w _) -> StackCard w gold))
-  where
-    gold :: Card
-    gold =
-      Card
-        "Gold"
-        "Draw 2 cards"
-        "gem/gold.svg"
-        "feint.wav"
-        (\p -> (drawCard p) . (drawCard p))
+    $ \_ -> modStackHead (\(StackCard w _) -> StackCard w gold)
 
 
 -- Drinker
@@ -181,7 +163,7 @@ scythe =
     "Lifesteal for 6"
     "drinker/scythe.svg"
     "bite.wav"
-    (\p -> lifesteal 6 (other p))
+    $ \p -> lifesteal 6 (other p)
 
 
 bloodsucker :: Card
@@ -191,17 +173,17 @@ bloodsucker =
   "Lifesteal for 3 for each card to the right"
   "drinker/bloodsucker.svg"
   "succubus.wav"
-  (\p m -> lifesteal (3 * (length . getStack $ m)) (other p) m)
+  $ \p m -> lifesteal (3 * (length . getStack $ m)) (other p) m
 
 
 serpent :: Card
 serpent =
   Card
     "Serpent"
-    "They get two Bad Apples that hurt them for 8 each"
+    "Add 2 (BAD APPLE: Hurt yourself for 8) to their hand"
     "drinker/serpent.svg"
     "siren.wav"
-    (\p -> modHand (other p) (times 2 ((:) badApple)))
+    $ \p -> modHand (other p) (times 2 ((:) badApple))
 
 
 reversal :: Card
@@ -211,7 +193,7 @@ reversal =
     "Reverse the order of cards to the right"
     "drinker/reversal.svg"
     "reversal.wav"
-    (\_ -> modStack reverse)
+    $ \_ -> modStack reverse
 
 
 -- Trickster
@@ -222,7 +204,7 @@ sword =
     "Hurt for 10"
     "trickster/sword.svg"
     "shuriken.wav"
-    (\p -> hurt 10 (other p))
+    $ \p -> hurt 10 (other p)
 
 
 overwhelm :: Card
@@ -232,7 +214,7 @@ overwhelm =
     "Hurt for 3 for each card in your hand"
     "trickster/overwhelm.svg"
     "superego.wav"
-    (\p m -> hurt (3 * (length . (getHand p) $ m)) (other p) m)
+    $ \p m -> hurt (3 * (length . (getHand p) $ m)) (other p) m
 
 
 echo :: Card
@@ -268,7 +250,7 @@ staff =
     "Hurt for 5"
     "watcher/staff.svg"
     "staff.wav"
-    (\p -> hurt 5 (other p))
+    $ \p -> hurt 5 (other p)
 
 
 greed :: Card
@@ -278,7 +260,7 @@ greed =
     "Hurt for 3 for each card in their hand"
     "watcher/greed.svg"
     "envy.wav"
-    (\p m -> hurt (3 * (length . (getHand (other p)) $ m)) (other p) m)
+    $ \p m -> hurt (3 * (length . (getHand (other p)) $ m)) (other p) m
 
 
 mindhack :: Card
@@ -288,13 +270,12 @@ mindhack =
     "Obscure their hand"
     "watcher/mindhack.svg"
     "mindhack.wav"
-    (\p -> modHand (other p) (fmap obs))
+    $ \p -> modHand (other p) (fmap obs)
   where
     obs :: Card -> Card
     obs card
-      | card == obscured = card
-      | otherwise =
-        obscured { card_eff = \p -> modStack ((:) (StackCard p card)) }
+      | card == (obscured card) = card
+      | otherwise = obscured card
 
 
 prophecy :: Card
@@ -304,7 +285,7 @@ prophecy =
     "Bounce all cards to the right to hand"
     "watcher/prophecy.svg"
     "precognition.wav"
-    (\_ -> (bounceAll PlayerA) . (bounceAll PlayerB))
+    $ \_ -> (bounceAll PlayerA) . (bounceAll PlayerB)
 
 
 -- Ranger
@@ -315,7 +296,7 @@ crossbow =
     "Hurt for 11"
     "ranger/crossbow.svg"
     "crossbow.wav"
-    (\p -> hurt 11 (other p))
+    $ \p -> hurt 11 (other p)
 
 boomerang :: Card
 boomerang =
@@ -324,7 +305,7 @@ boomerang =
     "Hurt for 3, bounce this card to hand"
     "ranger/boomerang.svg"
     "boomerang.wav"
-    (\p -> (modHand p ((:) boomerang)) . (hurt 3 (other p)))
+    $ \p -> (modHand p ((:) boomerang)) . (hurt 3 (other p))
 
 
 potion :: Card
@@ -334,7 +315,7 @@ potion =
     "Heal for 10"
     "ranger/potion.svg"
     "potion.wav"
-    (heal 10)
+    $ heal 10
 
 
 reflect :: Card
@@ -344,10 +325,20 @@ reflect =
     "All cards to the right change owner"
     "ranger/reflect.svg"
     "reflect.wav"
-    (\_ -> modStackAll changeOwner)
+    $ \_ -> modStackAll changeOwner
 
 
 -- Misc
+gold :: Card
+gold =
+  Card
+    "Gold"
+    "Draw 2"
+    "gem/gold.svg"
+    "feint.wav"
+    $ \p -> (drawCard p) . (drawCard p)
+
+
 badApple :: Card
 badApple =
   Card
@@ -355,14 +346,62 @@ badApple =
     "Hurt yourself for 8"
     "drinker/bad-apple.svg"
     "song.wav"
-    (hurt 8)
+    $ hurt 8
 
 
-obscured :: Card
-obscured =
+obscured :: Card -> Card
+obscured c =
   Card
     "???"
     "An obscured card"
     "watcher/obscured.svg"
     "resolve.wav"
-    (\_ -> id)
+    $ \p -> modStack $ (:) (StackCard p c)
+
+
+-- Potential future cards?
+soulsting :: Card
+soulsting =
+  Card
+    "Soulsting"
+    "Hurt for 25%"
+    ""
+    "envy.wav"
+    $ \p m -> hurt (quot (getLife (other p) m) 4) (other p) m
+
+
+soulheal :: Card
+soulheal =
+  Card
+    "Soulheal"
+    "Heal for 50%"
+    ""
+    "resolve.wav"
+    $ \p m -> heal (quot (getLife p m) 2) p m
+
+
+more :: Card
+more =
+  Card
+    "More"
+    "Add 5 copies of card to the right to your deck"
+    ""
+    "resolve.wav"
+    $ withStackHead eff
+  where
+    eff :: StackCard -> CardEff
+    eff (StackCard _ card) =
+      \p m ->
+          (modDeck p (shuffle (getGen m)))
+        . (modDeck p ((++) (replicate 5 card)))
+        $ m
+
+
+treasure :: Card
+treasure =
+  Card
+    "Treasure"
+    "Both draw 2"
+    ""
+    "resolve.wav"
+    $ \_ -> times 2 (both drawCard)

@@ -14,9 +14,9 @@ times n f x = (iterate f x) !! n
 
 
 -- Convenient shuffle.
-shuffle :: [a] -> Gen -> [a]
-shuffle [] _       = []
-shuffle xs (Gen g) = shuffle' xs (length xs) g
+shuffle :: Gen -> [a] -> [a]
+shuffle _ []       = []
+shuffle (Gen g) xs = shuffle' xs (length xs) g
 
 
 -- Delete index.

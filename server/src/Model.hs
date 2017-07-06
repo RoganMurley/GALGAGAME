@@ -124,6 +124,17 @@ changeOwner :: StackCard -> StackCard
 changeOwner (StackCard o c) = StackCard (other o) c
 
 
+withStackHead :: (StackCard -> CardEff) -> CardEff
+withStackHead eff =
+  (\p m ->
+    case headMay (getStack m) of
+      Nothing ->
+        m
+      Just card ->
+        (eff card) p m
+  )
+
+
 -- GENERIC
 type Setter   a b = b -> a -> a
 type Getter   a b = a -> b
@@ -201,7 +212,7 @@ modDeck :: WhichPlayer -> Modifier Model Deck
 modDeck w = modifier (setDeck w) (getDeck w)
 
 
--- STACK.
+-- STACK
 getStack :: Getter Model Stack
 getStack = model_stack
 
@@ -251,7 +262,7 @@ resetPasses :: Model -> Model
 resetPasses = setPasses NoPass
 
 
--- Gen
+-- GEN
 getGen :: Getter Model Gen
 getGen = model_gen
 
@@ -320,3 +331,7 @@ bounceAll w m =
     owner (StackCard o _) = w == o
     getCard :: StackCard -> Card
     getCard (StackCard _ card) = card
+
+
+both :: (WhichPlayer -> a -> a) -> a -> a
+both f x = (f PlayerA) . (f PlayerB) $ x

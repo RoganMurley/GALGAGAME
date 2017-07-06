@@ -82,6 +82,6 @@ chooseAction turn model
 -- We manually set biases for these cards.
 biasHand :: Card -> Weight
 biasHand c
-  | c == Cards.badApple = -15
-  | c == Cards.obscured = -3
-  | otherwise           = 0
+  | c == Cards.badApple     = -15
+  | c == (Cards.obscured c) = -3
+  | otherwise               = 0
