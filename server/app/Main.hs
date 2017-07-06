@@ -271,7 +271,7 @@ chooseComputerCommand which room = do
     randomChar :: CharModel -> Gen -> Text
     randomChar (CharModel selected _ allChars) gen =
       character_name . head . (drop (length . Characters.toList $ selected))
-        $ shuffle allChars gen
+        $ shuffle gen allChars
 
 
 broadcast :: Text -> Room -> IO ()
