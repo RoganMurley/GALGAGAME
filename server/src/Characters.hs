@@ -131,7 +131,7 @@ breaker =
   Character
     "Breaker"
     "breaker/lightning.svg"
-    (Cards.hammer, Cards.lightning, Cards.nevermore, Cards.hubris)
+    (Cards.hammer, Cards.lightning, Cards.more, Cards.hubris)
 
 drinker :: Character
 drinker =
@@ -159,7 +159,7 @@ ranger =
   Character
     "Ranger"
     "ranger/reflect.svg"
-    (Cards.boomerang, Cards.crossbow, Cards.potion, Cards.reflect)
+    (Cards.boomerang, Cards.soulsting, Cards.potion, Cards.reflect)
 
 trickster :: Character
 trickster =

@@ -149,7 +149,7 @@ alchemy :: Card
 alchemy =
   Card
     "Alchemy"
-    "Transmute card to the right to (GOLD: draw 2)"
+    "Change next card to (GOLD: draw 2)"
     "seeker/alchemy.svg"
     "feint.wav"
     $ \_ -> modStackHead (\(StackCard w _) -> StackCard w gold)
@@ -221,16 +221,15 @@ echo :: Card
 echo =
   Card
     "Echo"
-    "Card to the right's effect happens twice"
+    "Next card's effect happens twice"
     "trickster/echo.svg"
     "echo.wav"
     eff
   where
     eff :: CardEff
-    eff _ = modStackHead
-      (\(StackCard which (Card name desc pic sfx e)) ->
-        StackCard which (Card name desc pic sfx (\w -> (e w) . (e w))))
-
+    eff _ = modstackhead
+      (\(stackcard which (card name desc pic sfx e)) ->
+        stackcard which (card name desc pic sfx (\w -> (e w) . (e w))))
 
 feint :: Card
 feint =
@@ -384,16 +383,16 @@ more :: Card
 more =
   Card
     "More"
-    "Add 5 copies of card to the right to your deck"
+    "Add 10 copies of next card to owner's deck"
     ""
-    "resolve.wav"
+    "feint.wav"
     $ withStackHead eff
   where
     eff :: StackCard -> CardEff
-    eff (StackCard _ card) =
-      \p m ->
-          (modDeck p (shuffle (getGen m)))
-        . (modDeck p ((++) (replicate 5 card)))
+    eff (StackCard o card) =
+      \_ m ->
+          (modDeck o (shuffle (getGen m)))
+        . (modDeck o ((++) (replicate 10 card)))
         $ m
 
 
@@ -403,5 +402,21 @@ treasure =
     "Treasure"
     "Both draw 2"
     ""
-    "resolve.wav"
+    "gold.wav"
     $ \_ -> times 2 (both drawCard)
+
+
+piety :: Card
+piety =
+  Card
+    "Piety"
+    "Next card changes owner to weakest player"
+    ""
+    ""
+    $ eff
+  where
+    eff :: CardEff
+    eff _ = modstackhead
+      (\(StackCard which card) ->
+        StackCard which card))
+
