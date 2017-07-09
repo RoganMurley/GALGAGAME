@@ -26,7 +26,7 @@ view params { characters, selected, hover } =
                     class ""
                 ]
                 [ img [ src ("img/" ++ imgURL), class "character-icon" ] []
-                , div [ class "character-name" ] [ text name ]
+                  -- , div [ class "character-name" ] [ text name ]
                 ]
 
         selectedView : List Character -> Html Msg
@@ -39,7 +39,7 @@ view params { characters, selected, hover } =
                         , onMouseEnter <| Hover character
                         ]
                         [ img [ src ("img/" ++ imgURL), class "character-icon" ] []
-                        , div [ class "character-name" ] [ text name ]
+                          -- , div [ class "character-name" ] [ text name ]
                         ]
             in
                 div []

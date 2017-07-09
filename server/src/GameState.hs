@@ -87,7 +87,7 @@ initHandLength which first =
 
 
 buildDeck :: FinalSelection -> Deck
-buildDeck (Character _ _ ca, Character _ _ cb, Character _ _ cc) =
+buildDeck (Character _ ca, Character _ cb, Character _ cc) =
   concat $ f <$> [ca, cb, cc]
   where
     f (a, b, c, d) = concat . (replicate 3) $ [a, b, c, d]

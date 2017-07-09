@@ -26,15 +26,14 @@ instance ToJSON SelectedCharacters where
 
 data Character = Character
   { character_name  :: Text
-  , character_img   :: Text
   , character_cards :: CharacterCards
   } deriving (Eq, Show)
 
 instance ToJSON Character where
-  toJSON Character{ character_name, character_img, character_cards } =
+  toJSON Character{ character_name, character_cards } =
       object [
         "name"    .= character_name
-      , "img_url" .= character_img
+      , "img_url" .= (card_img . (\(c, _, _, _) -> c) $ character_cards :: Text)
       , "cards"   .= character_cards
       ]
 
@@ -93,7 +92,7 @@ selectIndChar name selected
     selected
   where
     nameMatch :: Character -> Bool
-    nameMatch (Character n _ _) = n == name
+    nameMatch Character{character_name} = character_name == name
     character :: Maybe Character
     character = headMay . (filter nameMatch) $ allCharacters
     existingSelected :: Bool
@@ -110,60 +109,66 @@ toList (ThreeSelected a b c) = [ a, b, c ]
 -- CHARACTERS
 allCharacters :: [Character]
 allCharacters = [
-    ranger
-  , striker
+    striker
   , breaker
+  , bouncer
+  , shielder
   , drinker
-  , trickster
   , watcher
-  , seeker
+  , balancer
+  , collector
   ]
 
 striker :: Character
 striker =
   Character
     "Striker"
-    "striker/fireball.svg"
     (Cards.dagger, Cards.fireball, Cards.offering, Cards.confound)
 
 breaker :: Character
 breaker =
   Character
     "Breaker"
-    "breaker/lightning.svg"
-    (Cards.hammer, Cards.lightning, Cards.more, Cards.hubris)
+    (Cards.hammer, Cards.lightning, Cards.exile, Cards.hubris)
 
 drinker :: Character
 drinker =
   Character
     "Drinker"
-    "drinker/bloodsucker.svg"
     (Cards.scythe, Cards.bloodsucker, Cards.serpent, Cards.reversal)
-
-seeker :: Character
-seeker =
-  Character
-    "Seeker"
-    "seeker/curse.svg"
-    (Cards.axe, Cards.curse, Cards.bless, Cards.alchemy)
 
 watcher :: Character
 watcher =
   Character
     "Watcher"
-    "watcher/prophecy.svg"
-    (Cards.staff, Cards.greed, Cards.mindhack, Cards.prophecy)
+    (Cards.staff, Cards.overburden, Cards.mindhack, Cards.prophecy)
 
-ranger :: Character
-ranger =
+shielder :: Character
+shielder =
   Character
-    "Ranger"
-    "ranger/reflect.svg"
-    (Cards.boomerang, Cards.soulsting, Cards.potion, Cards.reflect)
+    "Shielder"
+    (Cards.sword, Cards.soulburn, Cards.potion, Cards.reflect)
 
-trickster :: Character
-trickster =
+bouncer :: Character
+bouncer =
   Character
-    "Trickster"
-    "trickster/overwhelm.svg"
-    (Cards.sword, Cards.overwhelm, Cards.echo, Cards.feint)
+    "Bouncer"
+    (Cards.boomerang, Cards.overwhelm, Cards.echo, Cards.feint)
+
+balancer :: Character
+balancer =
+  Character
+    "Balancer"
+    (Cards.katana, Cards.curse, Cards.bless, Cards.balance)
+
+collector :: Character
+collector =
+  Character
+    "Collecter"
+    (Cards.runeblade, Cards.surge, Cards.hoard, Cards.transmute)
+
+-- augmenter :: Character
+-- augmenter =
+--   Character
+--     "Augment"
+--     (Cards.fist, Cards.supercharge, Cards.charge, Cards.echo)
