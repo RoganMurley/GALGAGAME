@@ -84,6 +84,6 @@ biasHand :: Card -> Weight
 biasHand c
   | c == Cards.badApple     = -6
   | c == (Cards.obscured c) = -3
-  | c == Cards.more         = -6
-  | c == Cards.nevermore    = -3
+  | c == Cards.hoard        = -6
+  | c == Cards.exile        = -3
   | otherwise               = 0
