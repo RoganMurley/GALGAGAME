@@ -7,7 +7,12 @@ if [ $# -eq 0 ]; then
     name=$(git rev-parse HEAD)
 fi
 
-echo "Creating game image..."
+echo "Building client code..."
+pushd client
+gulp
+popd
+
+echo "Creating server image..."
 pushd server
 stack image container
 popd
