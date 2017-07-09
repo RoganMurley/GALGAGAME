@@ -227,9 +227,9 @@ echo =
     eff
   where
     eff :: CardEff
-    eff _ = modstackhead
-      (\(stackcard which (card name desc pic sfx e)) ->
-        stackcard which (card name desc pic sfx (\w -> (e w) . (e w))))
+    eff _ = modStackHead
+      (\(StackCard which (Card name desc pic sfx e)) ->
+        StackCard which (Card name desc pic sfx (\w -> (e w) . (e w))))
 
 feint :: Card
 feint =
@@ -413,10 +413,13 @@ piety =
     "Next card changes owner to weakest player"
     ""
     ""
-    $ eff
+    $ \_ m -> modStackHead (eff (getLife PlayerA m, getLife PlayerB m)) m
   where
-    eff :: CardEff
-    eff _ = modstackhead
-      (\(StackCard which card) ->
-        StackCard which card))
-
+    eff :: (Life, Life) -> StackCard -> StackCard
+    eff (lifePA, lifePB) (StackCard which card) = StackCard weakest card
+      where
+        weakest :: WhichPlayer
+        weakest
+          | lifePA < lifePB = PlayerA
+          | lifePB < lifePA = PlayerB
+          | otherwise       = which
