@@ -56,14 +56,24 @@ view params { characters, selected, hover } =
 
         cardPreviewView : ( Card, Card, Card, Card ) -> Html Msg
         cardPreviewView ( c1, c2, c3, c4 ) =
-            div
-                [ class "card-preview" ]
-                (List.map Card.view [ c1, c2, c3, c4 ])
+            let
+                eachView : Card -> Html Msg
+                eachView c =
+                    td [] [ Card.view c ]
+            in
+                table [ class "card-preview" ]
+                    [ tr [] (List.map eachView [ c1, c2, c3, c4 ])
+                    , tr []
+                        (List.map
+                            (\x -> th [ class "card-type" ] [ text x ])
+                            [ "Weapon", "Magic", "Utility", "Control" ]
+                        )
+                    ]
     in
         div []
             [ div
                 [ class "character-select" ]
-                [ text "Choose your Classes"
+                [ text "Choose your Weapons"
                 , div [ class "characters" ]
                     (List.map characterView characters)
                 , cardPreviewView ((\{ cards } -> cards) hover)
