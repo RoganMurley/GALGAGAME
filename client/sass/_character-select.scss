@@ -1,6 +1,6 @@
 .character-select {
   color: #fff;
-  font-size: 50px;
+  font-size: 52px;
   font-family: 'Cinzel Decorative', sans-serif;
   font-weight: bold;
 
@@ -12,7 +12,7 @@
 }
 
 .characters {
-  margin-top: 35px;
+  margin-top: 10px;
   display: flex;
   flex-direction: row;
 }
@@ -24,6 +24,9 @@
   border-radius: 10px;
   padding: 10px;
   font-size: 36px;
+
+  width: 32px;
+  height: 32px;
 
   cursor: pointer; cursor: hand;
 
@@ -37,10 +40,14 @@
 }
 
 .card-preview {
-  display: flex;
-  flex-direction: row;
+  margin: 30px;
+}
 
-  margin-top: 30px;
+.card-type {
+  text-align: left;
+  font-size: 18px;
+  font-family: monospace;
+  padding-left: 22px;
 }
 
 // Chosen
@@ -59,11 +66,8 @@
   padding: 10px;
   font-size: 36px;
 
-  cursor: pointer; cursor: hand;
-
-  &:hover {
-    background-color: #3ca295;
-  }
+  width: 32px;
+  height: 32px;
 }
 
 
@@ -90,7 +94,6 @@
 .character-icon {
   position: absolute;
   max-width: 32px;
-  margin-top: 6px;
 }
 
 .character-name {

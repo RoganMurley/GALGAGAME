@@ -138,18 +138,25 @@ viewLife which life =
 viewStack : Stack -> Html Msg
 viewStack stack =
     let
-        viewStackCard : StackCard -> Html Msg
-        viewStackCard { owner, card } =
-            case owner of
-                PlayerA ->
-                    div [ class "playera stack-card" ] [ Card.view card ]
+        viewStackCard : ( Int, StackCard ) -> Html Msg
+        viewStackCard ( index, { owner, card } ) =
+            let
+                playerClass : String
+                playerClass =
+                    case owner of
+                        PlayerA ->
+                            "playera"
 
-                PlayerB ->
-                    div [ class "playerb stack-card" ] [ Card.view card ]
+                        PlayerB ->
+                            "playerb"
+            in
+                div
+                    [ class (playerClass ++ " stack-card") ]
+                    [ Card.view card ]
     in
         div
             [ class "stack-container" ]
-            [ div [ class "stack" ] (List.map viewStackCard stack) ]
+            [ div [ class "stack" ] (List.map viewStackCard (List.indexedMap (,) stack)) ]
 
 
 
