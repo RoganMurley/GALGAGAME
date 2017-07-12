@@ -41,11 +41,17 @@ view params { characters, selected, hover } =
                         [ img [ src ("img/" ++ imgURL), class "character-icon" ] []
                           -- , div [ class "character-name" ] [ text name ]
                         ]
+
+                unchosen : List (Html Msg)
+                unchosen =
+                    List.repeat
+                        (3 - (List.length selected))
+                        (div [ class "character-unchosen" ] [])
             in
                 div []
                     [ div
                         [ class "characters-all-chosen" ]
-                        (List.map chosenView selected)
+                        ((List.map chosenView selected) ++ unchosen)
                     , if List.length selected >= 3 then
                         div
                             [ class "ready-up" ]
