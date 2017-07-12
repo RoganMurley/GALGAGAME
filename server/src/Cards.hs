@@ -276,20 +276,28 @@ sword :: Card
 sword =
   Card
     "Sword"
-    "Hurt for 11"
+    "Hurt for 10"
     "shielder/sword.svg"
     "dagger.wav"
-    $ \p -> hurt 11 (other p)
+    $ \p -> hurt 10 (other p)
 
 
 soulburn :: Card
 soulburn =
   Card
     "Soulburn"
-    "Hurt for 25%"
+    "Hurt for 30%"
     "shielder/soulburn.svg"
     "envy.wav"
-    $ \p m -> hurt (quot (getLife (other p) m) 4) (other p) m
+    eff
+  where
+    eff :: CardEff
+    eff p m =
+      let
+        dmg :: Life
+        dmg = round $ 0.3 * ((fromIntegral $ getLife (other p) m) :: Double)
+      in
+        hurt (max dmg 1) (other p) m
 
 
 potion :: Card
@@ -332,6 +340,19 @@ overwhelm =
     "superego.wav"
     $ \p m -> hurt (3 * (length . (getHand p) $ m)) (other p) m
 
+echo :: Card
+echo =
+  Card
+    "Echo"
+    "Next card activates twice"
+    "bouncer/echo.svg"
+    "echo.wav"
+    eff
+  where
+    eff :: CardEff
+    eff _ = modStackHead
+      (\(StackCard which (Card name desc pic sfx e)) ->
+        StackCard which (Card name desc pic sfx (\w -> (e w) . (e w))))
 
 return' :: Card
 return' =
@@ -373,7 +394,7 @@ surge :: Card
 surge =
   Card
     "Surge"
-    "Hurt for 5 for each of your cards to the right"
+    "Hurt for 6 for each of your cards to the right"
     "collector/surge.svg"
     "fireball.wav"
     eff
@@ -381,7 +402,7 @@ surge =
     eff :: CardEff
     eff p m =
       hurt
-        (5 * (length . (filter (\(StackCard o _) -> o == p)) . getStack $ m))
+        (6 * (length . (filter (\(StackCard o _) -> o == p)) . getStack $ m))
           (other p) m
 
 
@@ -389,7 +410,7 @@ hoard :: Card
 hoard =
   Card
     "Hoard"
-    "Add 10 copies of next card to owner's deck"
+    "Add 7 copies of next card to owner's deck"
     "collector/hoard.svg"
     "feint.wav"
     $ withStackHead eff
@@ -398,7 +419,7 @@ hoard =
     eff (StackCard o card) =
       \_ m ->
           (modDeck o (shuffle (getGen m)))
-        . (modDeck o ((++) (replicate 10 card)))
+        . (modDeck o ((++) (replicate 7 card)))
         $ m
 
 
@@ -420,47 +441,6 @@ gold =
     "collector/gold.svg"
     "feint.wav"
     $ \p -> (drawCard p) . (drawCard p)
-
-
--- Augmenter
-fist :: Card
-fist =
-  Card
-    "Fist"
-    "Hurt for 1"
-    "augmenter/fist.svg"
-    "feint.wav"
-    $ \p -> hurt 1 (other p)
-
-
-supercharge :: Card
-supercharge =
-  Card
-    "Echo"
-    "Next card activates twice"
-    "augmenter/echo.svg"
-    "echo.wav"
-    eff
-  where
-    eff :: CardEff
-    eff _ = modStackHead
-      (\(StackCard which (Card name desc pic sfx e)) ->
-        StackCard which (Card name desc pic sfx (\w -> (e w) . (e w))))
-
-
-echo :: Card
-echo =
-  Card
-    "Echo"
-    "Next card activates twice"
-    "augmenter/echo.svg"
-    "echo.wav"
-    eff
-  where
-    eff :: CardEff
-    eff _ = modStackHead
-      (\(StackCard which (Card name desc pic sfx e)) ->
-        StackCard which (Card name desc pic sfx (\w -> (e w) . (e w))))
 
 
 -- Potential future cards
