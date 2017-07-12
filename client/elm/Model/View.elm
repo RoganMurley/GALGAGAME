@@ -149,10 +149,26 @@ viewStack stack =
 
                         PlayerB ->
                             "playerb"
+
+                offset : Int
+                offset =
+                    240 * index - 120 * (List.length stack)
+
+                rot : Float
+                rot =
+                    0.1 * (toFloat ((index * 1247823748932 + 142131) % 20) - 10)
             in
                 div
-                    [ class (playerClass ++ " stack-card") ]
-                    [ Card.view card ]
+                    [ class (playerClass ++ " stack-card")
+                    , style
+                        [ ( "transform", "translateX(" ++ (toString offset) ++ "px)" )
+                        , ( "z-index", toString (20 - index) )
+                        ]
+                    ]
+                    [ div
+                        [ style [ ( "transform", "rotate(" ++ (toString rot) ++ "deg)" ) ] ]
+                        [ Card.view card ]
+                    ]
     in
         div
             [ class "stack-container" ]
