@@ -380,12 +380,12 @@ feint =
 
 
 -- Collector
-runeblade :: Card
-runeblade =
+relicblade :: Card
+relicblade =
   Card
-    "runeblade"
+    "Relicblade"
     "Hurt for 7"
-    "collector/runeblade.svg"
+    "collector/relicblade.svg"
     "dagger.wav"
     $ \p -> hurt 7 (other p)
 

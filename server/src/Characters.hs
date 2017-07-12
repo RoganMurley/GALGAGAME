@@ -165,7 +165,7 @@ collector :: Character
 collector =
   Character
     "Collecter"
-    (Cards.runeblade, Cards.surge, Cards.hoard, Cards.transmute)
+    (Cards.relicblade, Cards.surge, Cards.hoard, Cards.transmute)
 
 -- augmenter :: Character
 -- augmenter =

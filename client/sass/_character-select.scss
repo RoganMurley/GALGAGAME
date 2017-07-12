@@ -20,18 +20,26 @@
 .character-button {
   display: inline;
   margin: 15px;
-  background-color: #484869;
-  border-radius: 10px;
+  background: none;
   padding: 10px;
   font-size: 36px;
 
   width: 32px;
   height: 32px;
 
+  border-radius: 100%;
+  border-style: solid;
+  border-color: #fff;
+
+  transform: none;
+  -webkit-transition: transform 0.1s ease-in;
+  transition: transform 0.11s ease-in;
+
   cursor: pointer; cursor: hand;
 
   &:hover {
-    background-color: #5c5c86;
+    background-color: rgba(255, 255, 255, 0.2);
+    transform: rotate(6deg);
   }
 }
 
@@ -61,10 +69,28 @@
 .character-chosen {
   display: inline;
   margin: 15px;
-  background-color: #327d73;
-  border-radius: 10px;
+  background-color: none;
+  border-radius: 100%;
   padding: 10px;
   font-size: 36px;
+
+  border-style: solid;
+  border-color: #fff;
+
+  width: 32px;
+  height: 32px;
+}
+
+.character-unchosen {
+  display: inline;
+  margin: 15px;
+  background: none;
+  border-radius: 100%;
+  padding: 10px;
+  font-size: 36px;
+
+  border-style: solid;
+  border-color: #fff;
 
   width: 32px;
   height: 32px;
@@ -81,7 +107,10 @@
   font-weight: 800;
   background-color: #f0f8ff;
 
-  border-radius: 5px;
+  border-radius: 100%;
+  border-style: solid;
+  border-color: #fff;
+
   width: 160px;
   margin: 5px;
   margin-top: 20px;
