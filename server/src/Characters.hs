@@ -141,7 +141,7 @@ watcher :: Character
 watcher =
   Character
     "Watcher"
-    (Cards.staff, Cards.overburden, Cards.mindhack, Cards.prophecy)
+    (Cards.staff, Cards.surge, Cards.mindhack, Cards.prophecy)
 
 shielder :: Character
 shielder =
@@ -165,10 +165,4 @@ collector :: Character
 collector =
   Character
     "Collecter"
-    (Cards.relicblade, Cards.surge, Cards.hoard, Cards.transmute)
-
--- augmenter :: Character
--- augmenter =
---   Character
---     "Augment"
---     (Cards.fist, Cards.supercharge, Cards.charge, Cards.echo)
+    (Cards.relicblade, Cards.greed, Cards.hoard, Cards.transmute)
