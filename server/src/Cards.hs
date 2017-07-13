@@ -30,10 +30,10 @@ offering :: Card
 offering =
   Card
     "Offering"
-    "Hurt yourself for 8, then draw 2"
+    "Hurt yourself for 7, then draw 2"
     "striker/offering.svg"
     "offering.wav"
-    $ \p -> (times 2 (drawCard p)) . (hurt 8 p)
+    $ \p -> (times 2 (drawCard p)) . (hurt 7 p)
 
 
 confound :: Card
@@ -226,14 +226,20 @@ staff =
     $ \p -> hurt 5 (other p)
 
 
-overburden :: Card
-overburden =
+surge :: Card
+surge =
   Card
-    "Overburden"
-    "Hurt for 3 for each card in their hand"
-    "watcher/overburden.svg"
-    "envy.wav"
-    $ \p m -> hurt (3 * (length . (getHand (other p)) $ m)) (other p) m
+    "Surge"
+    "Hurt for 6 for each of your cards to the right"
+    "watcher/surge.svg"
+    "fireball.wav"
+    eff
+  where
+    eff :: CardEff
+    eff p m =
+      hurt
+        (6 * (length . (filter (\(StackCard o _) -> o == p)) . getStack $ m))
+          (other p) m
 
 
 mindhack :: Card
@@ -390,20 +396,14 @@ relicblade =
     $ \p -> hurt 7 (other p)
 
 
-surge :: Card
-surge =
+greed :: Card
+greed =
   Card
-    "Surge"
-    "Hurt for 6 for each of your cards to the right"
-    "collector/surge.svg"
-    "fireball.wav"
-    eff
-  where
-    eff :: CardEff
-    eff p m =
-      hurt
-        (6 * (length . (filter (\(StackCard o _) -> o == p)) . getStack $ m))
-          (other p) m
+    "Greed"
+    "Hurt for 3 for each card in their hand"
+    "collector/greed.svg"
+    "envy.wav"
+    $ \p m -> hurt (3 * (length . (getHand (other p)) $ m)) (other p) m
 
 
 hoard :: Card
