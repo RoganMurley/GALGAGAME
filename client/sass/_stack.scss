@@ -6,15 +6,14 @@
 
   .card {
     border: 2px solid #261616;
-    // &:hover {
-    //   z-index: 0;
-    //   cursor: pointer; cursor: hand;
-    // }
   }
 }
 
 .stack-card {
   position: absolute;
+  &:hover {
+    z-index: 100;
+  }
 }
 
 .playerb {
