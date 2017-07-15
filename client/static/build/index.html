@@ -3,16 +3,13 @@
   <head>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta charset="utf-8">
-    <title>
-      HUBRIS
-    </title>
+    <title>HUBRdsaIS</title>
     <link href="https://fonts.googleapis.com/css?family=Cinzel+Decorative|Poiret+One" rel="stylesheet">
     <link href="main.css" rel="stylesheet">
     <link rel="icon" href="favicon.ico" type="image/x-icon" />
   </head>
   <body class="no-select">
     <div class="version-warning">closed alpha build v0.45</div>
-
     <script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.0.2/howler.js"></script>
     <script src="Main.js"></script>
     <script>"use strict";var params=new URLSearchParams(window.location.search),app=Elm.Main.fullscreen({hostname:window.location.hostname,httpPort:window.location.port,play:params.get("play"),seed:(new Date).getTime(),windowDimensions:[window.innerWidth,window.innerHeight]});app.ports.queryParams.subscribe(function(o){if(history.pushState){var e=window.location.protocol+"//"+window.location.host+window.location.pathname+o;window.history.pushState({path:e},"",e)}}),app.ports.selectAllInput.subscribe(function(o){document.getElementById(o).select()}),app.ports.copyInput.subscribe(function(o){document.getElementById(o).select(),document.execCommand("copy")});var playedSounds={};app.ports.playAudio.subscribe(function(o){var e=o[0],n=o[1],t=o[2],a=o[3];if(t){if(playedSounds[o])return;playedSounds[o]=!0}new Howl({src:[e],loop:n,volume:a}).play()});</script>
