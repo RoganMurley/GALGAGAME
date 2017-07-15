@@ -52,12 +52,20 @@ gulp.task('copy', () => {
 });
 
 
+// COPYDEPS
+gulp.task('copyDeps', () => {
+  return gulp.src("./node_modules/howler/dist/howler.min.js")
+    .pipe(gulp.dest(dir.build));
+});
+
+
 // DEFAULT
-gulp.task('default', ['multi', 'sass', 'html', 'copy']);
+gulp.task('default', ['multi', 'sass', 'html', 'copy', 'copyDeps']);
 
 gulp.task('watch', () => {
   gulp.watch('elm/**/*.elm', ['multi']);
   gulp.watch('./sass/**/*.scss', ['sass']);
   gulp.watch(`${dir.dev}/**`, ['copy']);
+  gulp.watch("node_modules/**", ['copyDeps']);
   gulp.watch(`${dir.dev}/html/*`, ['html']);
 });
