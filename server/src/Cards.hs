@@ -390,10 +390,10 @@ relicblade :: Card
 relicblade =
   Card
     "Relicblade"
-    "Hurt for 7"
+    "Hurt for 6"
     "collector/relicblade.svg"
     "dagger.wav"
-    $ \p -> hurt 7 (other p)
+    $ \p -> hurt 6 (other p)
 
 
 greed :: Card
