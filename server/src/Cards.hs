@@ -169,10 +169,10 @@ scythe :: Card
 scythe =
   Card
     "Scythe"
-    "Lifesteal for 6"
+    "Lifesteal for 5"
     "drinker/scythe.svg"
     "bite.wav"
-    $ \p -> lifesteal 6 (other p)
+    $ \p -> lifesteal 5 (other p)
 
 
 bloodsucker :: Card
@@ -220,10 +220,10 @@ staff :: Card
 staff =
   Card
     "Staff"
-    "Hurt for 5"
+    "Hurt for 4"
     "watcher/staff.svg"
     "staff.wav"
-    $ \p -> hurt 5 (other p)
+    $ \p -> hurt 4 (other p)
 
 
 surge :: Card

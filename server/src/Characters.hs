@@ -109,14 +109,14 @@ toList (ThreeSelected a b c) = [ a, b, c ]
 -- CHARACTERS
 allCharacters :: [Character]
 allCharacters = [
-    striker
-  , breaker
-  , bouncer
-  , shielder
-  , drinker
-  , watcher
-  , balancer
-  , collector
+      shielder
+    , balancer
+    , breaker
+    , striker
+    , collector
+    , drinker
+    , watcher
+    , bouncer
   ]
 
 striker :: Character
