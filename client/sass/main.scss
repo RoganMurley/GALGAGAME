@@ -1,16 +1,17 @@
 @import "card";
+@import "character-select";
 @import "chat";
 @import "connecting";
+@import "endgame";
+@import "fonts";
 @import "hand";
+@import "input-group";
 @import "life";
+@import "menu";
 @import "stack";
 @import "turn";
-@import "waiting";
-@import "endgame";
-@import "menu";
-@import "input-group";
 @import "version-warning";
-@import "character-select";
+@import "waiting";
 
 
 html {
