@@ -14,10 +14,10 @@ url dest =
         Play gameType ->
             case gameType of
                 CustomGame ->
-                    "play/custom"
+                    "/play/custom"
 
                 ComputerGame ->
-                    "play/cpu"
+                    "/play/computer"
 
 
 goto : Destination -> Cmd msg

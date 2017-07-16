@@ -85,19 +85,13 @@ update msg ({ hostname, room, frameTime, seed } as model) =
             case room of
                 MainMenu ->
                     let
-                        generate : Random.Generator a -> a
-                        generate generator =
-                            first <| Random.step generator <| Random.initialSeed seed
-
                         roomID : String
                         roomID =
-                            generate roomIDGenerator
+                            generate roomIDGenerator seed
                     in
                         case msg of
                             MenuMsg (Menu.Start gameType) ->
-                                ( { model | room = Connecting <| Lobby.modelInit roomID gameType }
-                                , goto <| Compass.Play gameType
-                                )
+                                ( model, goto <| Compass.Play gameType )
 
                             otherwise ->
                                 ( model, Cmd.none )
@@ -268,13 +262,30 @@ locationUpdate model { pathname } =
         paths : List ( Compass.Destination, Main.Model -> Main.Model )
         paths =
             [ ( Compass.Root
-              , \m -> { m | room = initRoom }
-              )
-            , ( Compass.Play Lobby.ComputerGame
-              , \m -> m
+              , \m ->
+                    { m
+                        | room = initRoom
+                    }
               )
             , ( Compass.Play Lobby.CustomGame
-              , \m -> m
+              , \m ->
+                    { m
+                        | room =
+                            Connecting <|
+                                Lobby.modelInit
+                                    (generate roomIDGenerator model.seed)
+                                    Lobby.CustomGame
+                    }
+              )
+            , ( Compass.Play Lobby.ComputerGame
+              , \m ->
+                    { m
+                        | room =
+                            Connecting <|
+                                Lobby.modelInit
+                                    (generate roomIDGenerator model.seed)
+                                    Lobby.ComputerGame
+                    }
               )
             ]
 
@@ -388,14 +399,9 @@ usernameNumberGenerator =
     string 3 <| char 48 57
 
 
-validateName : String -> ( Bool, String )
-validateName name =
-    if length name > 20 then
-        ( False, "username too long" )
-    else if String.isEmpty name then
-        ( False, "" )
-    else
-        ( True, "" )
+generate : Random.Generator a -> Seed -> a
+generate generator seed =
+    first <| Random.step generator <| Random.initialSeed seed
 
 
 subscriptions : Main.Model -> Sub Msg
