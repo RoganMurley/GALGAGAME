@@ -6,11 +6,13 @@ import GameState.Messages as GameState
 import Lobby.Messages as Lobby
 import Main.Types exposing (Mode)
 import Menu.Messages as Menu
+import Navigation
 import Time exposing (Time)
 
 
 type Msg
-    = Send String
+    = UrlChange Navigation.Location
+    | Send String
     | Receive String
     | DrawCard
     | EndTurn

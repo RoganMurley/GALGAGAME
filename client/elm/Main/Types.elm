@@ -10,6 +10,7 @@ type alias Model =
     , hostname : String
     , httpPort : String
     , frameTime : Float
+    , seed : Seed
     , windowDimensions : ( Int, Int )
     }
 
@@ -19,7 +20,7 @@ type alias Seed =
 
 
 type RoomModel
-    = MainMenu Seed
+    = MainMenu
     | Connecting Lobby.Model
     | Connected ConnectedModel
 
@@ -35,7 +36,6 @@ type alias ConnectedModel =
 type alias Flags =
     { hostname : String
     , httpPort : String
-    , play : Maybe String
     , seed : Seed
     , windowDimensions : ( Int, Int )
     }

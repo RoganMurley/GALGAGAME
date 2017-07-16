@@ -4,16 +4,8 @@ var params = new URLSearchParams(window.location.search);
 var app = Elm.Main.fullscreen({
   hostname: window.location.hostname,
   httpPort: window.location.port,
-  play: params.get('play'),
   seed: new Date().getTime(),
   windowDimensions: [ window.innerWidth, window.innerHeight ]
-});
-
-app.ports.queryParams.subscribe(function (newValue) {
-  if (history.pushState) {
-    var newurl = window.location.protocol + "//" + window.location.host + window.location.pathname + newValue;
-    window.history.pushState({ path: newurl }, '', newurl);
-  }
 });
 
 app.ports.selectAllInput.subscribe(function (elementId) {
