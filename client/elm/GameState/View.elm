@@ -29,7 +29,7 @@ view state roomID hostname httpPort time ( width, height ) =
                             ""
 
                     challengeLink =
-                        "http://" ++ hostname ++ portProtocol ++ "?play=" ++ roomID
+                        "http://" ++ hostname ++ portProtocol ++ "/play/custom/" ++ roomID
 
                     myID =
                         "challenge-link"

@@ -36,7 +36,7 @@ viewHand hand =
                 [ div [ class "card-title" ] [ text name ]
                 , div
                     [ class "card-picture"
-                    , style [ ( "background-image", "url(\"img/" ++ imgURL ++ "\")" ) ]
+                    , style [ ( "background-image", "url(\"/img/" ++ imgURL ++ "\")" ) ]
                     ]
                     []
                 , div [ class "card-desc" ] [ text desc ]

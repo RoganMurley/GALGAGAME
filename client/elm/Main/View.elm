@@ -17,7 +17,7 @@ view ({ hostname, httpPort, frameTime, windowDimensions } as model) =
             Raymarch.Params frameTime windowDimensions
     in
         case model.room of
-            MainMenu _ ->
+            MainMenu ->
                 Html.map MenuMsg <| Menu.view params
 
             Connecting lobby ->

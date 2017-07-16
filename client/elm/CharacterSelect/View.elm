@@ -25,7 +25,7 @@ view params { characters, selected, hover } =
                   else
                     class ""
                 ]
-                [ img [ src ("img/" ++ imgURL), class "character-icon" ] []
+                [ img [ src ("/img/" ++ imgURL), class "character-icon" ] []
                   -- , div [ class "character-name" ] [ text name ]
                 ]
 
@@ -38,7 +38,7 @@ view params { characters, selected, hover } =
                         [ class "character-chosen"
                         , onMouseEnter <| Hover character
                         ]
-                        [ img [ src ("img/" ++ imgURL), class "character-icon" ] []
+                        [ img [ src ("/img/" ++ imgURL), class "character-icon" ] []
                           -- , div [ class "character-name" ] [ text name ]
                         ]
 

@@ -1,6 +1,8 @@
 module Main.State exposing (..)
 
 import Audio exposing (SoundOption(..), playSound, playSoundWith)
+import Compass.State as Compass exposing (goto)
+import Compass.Types as Compass
 import Keyboard
 import Mouse
 import String exposing (dropLeft, length, startsWith)
@@ -12,6 +14,7 @@ import Drag.State as Drag exposing (dragAt, dragEnd, dragStart, getPosition)
 import GameState.Messages as GameState
 import GameState.Types as GameState exposing (GameState(..))
 import GameState.State as GameState exposing (resTick, tickForward, tickZero)
+import List.Extra exposing (find)
 import Lobby.State as Lobby
 import Lobby.Types as Lobby
 import Menu.Messages as Menu
@@ -23,33 +26,46 @@ import Random.String exposing (string)
 import Time exposing (Time, second)
 import Tuple exposing (first)
 import Util exposing (message)
-import Ports exposing (copyInput, selectAllInput, queryParams)
+import Ports exposing (copyInput, selectAllInput)
 import AnimationFrame
 import Window
 import Listener exposing (listen)
 import Main.Types as Main exposing (..)
+import Navigation
 
 
-initModel : Flags -> Main.Model
-initModel ({ hostname, httpPort, play, seed, windowDimensions } as flags) =
-    { room =
-        case play of
-            Just roomID ->
-                Connecting <|
-                    Lobby.modelInit roomID Lobby.CustomGame
+initModel : Flags -> Navigation.Location -> Main.Model
+initModel ({ hostname, httpPort, seed, windowDimensions } as flags) location =
+    locationUpdate
+        { room =
+            initRoom
+            -- case play of
+            --     Just roomID ->
+            --         Connecting <|
+            --             Lobby.modelInit roomID Lobby.CustomGame
+            --
+            --     Nothing ->
+            --         MainMenu seed
+        , hostname = hostname
+        , httpPort = httpPort
+        , frameTime = 0
+        , windowDimensions = windowDimensions
+        , seed = seed
+        }
+        location
 
-            Nothing ->
-                MainMenu seed
-    , hostname = hostname
-    , httpPort = httpPort
-    , frameTime = 0
-    , windowDimensions = windowDimensions
-    }
+
+initRoom : RoomModel
+initRoom =
+    MainMenu
 
 
 update : Msg -> Main.Model -> ( Main.Model, Cmd Msg )
-update msg ({ hostname, room, frameTime } as model) =
+update msg ({ hostname, room, frameTime, seed } as model) =
     case msg of
+        UrlChange l ->
+            ( locationUpdate model l, Cmd.none )
+
         Frame dt ->
             ( { model | frameTime = frameTime + dt }, Cmd.none )
 
@@ -67,7 +83,7 @@ update msg ({ hostname, room, frameTime } as model) =
 
         otherwise ->
             case room of
-                MainMenu seed ->
+                MainMenu ->
                     let
                         generate : Random.Generator a -> a
                         generate generator =
@@ -79,7 +95,9 @@ update msg ({ hostname, room, frameTime } as model) =
                     in
                         case msg of
                             MenuMsg (Menu.Start gameType) ->
-                                ( { model | room = Connecting <| Lobby.modelInit roomID gameType }, Cmd.none )
+                                ( { model | room = Connecting <| Lobby.modelInit roomID gameType }
+                                , goto <| Compass.Play gameType
+                                )
 
                             otherwise ->
                                 ( model, Cmd.none )
@@ -96,7 +114,7 @@ update msg ({ hostname, room, frameTime } as model) =
                                         , roomID = roomID
                                         }
                               }
-                            , queryParams <| "?play=" ++ roomID
+                            , Cmd.none
                             )
 
                         otherwise ->
@@ -242,6 +260,30 @@ connectedUpdate hostname msg ({ chat, game, mode } as model) =
 
         otherwise ->
             Debug.crash "Unexpected action while connected ;_;"
+
+
+locationUpdate : Main.Model -> Navigation.Location -> Main.Model
+locationUpdate model { pathname } =
+    let
+        paths : List ( Compass.Destination, Main.Model -> Main.Model )
+        paths =
+            [ ( Compass.Root
+              , \m -> { m | room = initRoom }
+              )
+            , ( Compass.Play Lobby.ComputerGame
+              , \m -> m
+              )
+            , ( Compass.Play Lobby.CustomGame
+              , \m -> m
+              )
+            ]
+
+        finder : List ( Compass.Destination, Main.Model -> Main.Model ) -> Maybe (Main.Model -> Main.Model)
+        finder =
+            (Maybe.map Tuple.second)
+                << (find (\( d, _ ) -> (Compass.url d) == pathname))
+    in
+        (Maybe.withDefault identity (finder paths)) model
 
 
 connectedReceive : ConnectedModel -> String -> ( ConnectedModel, Cmd Msg )

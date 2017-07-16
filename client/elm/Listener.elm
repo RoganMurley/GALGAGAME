@@ -28,13 +28,13 @@ listen time state =
                     volume =
                         0.5 + 0.1 * (toFloat (List.length m.stack))
                 in
-                    playSoundWith ("sfx/" ++ sfxURL) [ Volume volume ]
+                    playSoundWith ("/sfx/" ++ sfxURL) [ Volume volume ]
             else
                 Cmd.none
     in
         case state of
             Selecting _ ->
-                playSoundWith "music/select.mp3" [ Loop, Once ]
+                playSoundWith "/music/select.mp3" [ Loop, Once ]
 
             PlayingGame _ ( [], _ ) ->
                 Cmd.none
