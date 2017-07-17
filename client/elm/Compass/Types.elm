@@ -1,8 +1,11 @@
 module Compass.Types exposing (..)
 
-import Lobby.Types exposing (GameType)
+
+type Route
+    = Home
+    | Play PlayRoute
 
 
-type Destination
-    = Root
-    | Play GameType
+type PlayRoute
+    = CustomPlay (Maybe String)
+    | ComputerPlay
