@@ -163,7 +163,7 @@ connectedUpdate hostname msg ({ chat, game, mode } as model) =
             , turnOnly model
                 (Cmd.batch
                     [ send hostname "end:"
-                    , playSound "sfx/endTurn.wav"
+                    , playSound "/sfx/endTurn.wav"
                     ]
                 )
             )
@@ -173,7 +173,7 @@ connectedUpdate hostname msg ({ chat, game, mode } as model) =
             , turnOnly model
                 (Cmd.batch
                     [ send hostname ("play:" ++ (toString index))
-                    , playSound "sfx/playCard.wav"
+                    , playSound "/sfx/playCard.wav"
                     ]
                 )
             )
@@ -345,7 +345,7 @@ connectedReceive model msg =
                     GameState.HoverOutcome <|
                         parseHoverOutcome <|
                             dropLeft (length "hover:") msg
-            , playSound "sfx/hover.wav"
+            , playSound "/sfx/hover.wav"
             ]
         )
     else if (startsWith "res:" msg) then
@@ -356,9 +356,9 @@ connectedReceive model msg =
                     dropLeft (length "res:") msg
         )
     else if (startsWith "playCard:" msg) then
-        ( model, playSound "sfx/playCard.wav" )
+        ( model, playSound "/sfx/playCard.wav" )
     else if (startsWith "end:" msg) then
-        ( model, playSound "sfx/endTurn.wav" )
+        ( model, playSound "/sfx/endTurn.wav" )
     else
         Debug.crash ("Error decoding message from server: " ++ msg)
 
