@@ -1,25 +1,23 @@
 module Compass.State exposing (..)
 
-import Compass.Types exposing (Destination(..))
-import Lobby.Types exposing (GameType(..))
-import Navigation
+import Compass.Types exposing (..)
+import UrlParser exposing (Parser, (</>), s, int, string, top, map, oneOf)
 
 
-url : Destination -> String
-url dest =
-    case dest of
-        Root ->
-            "/"
-
-        Play gameType ->
-            case gameType of
-                CustomGame ->
-                    "/play/custom"
-
-                ComputerGame ->
-                    "/play/computer"
+route : Parser (Route -> a) a
+route =
+    oneOf
+        [ map Play playRoute
+        , map Home top
+        ]
 
 
-goto : Destination -> Cmd msg
-goto dest =
-    Navigation.newUrl <| url dest
+playRoute : Parser (PlayRoute -> a) a
+playRoute =
+    (s "play")
+        </> (oneOf
+                [ map ComputerPlay (s "computer")
+                , map (CustomPlay << Just) (s "custom" </> string)
+                , map (CustomPlay Nothing) (s "custom")
+                ]
+            )

@@ -1,7 +1,7 @@
 module Main.State exposing (..)
 
 import Audio exposing (SoundOption(..), playSound, playSoundWith)
-import Compass.State as Compass exposing (goto)
+import Compass.State as Compass
 import Compass.Types as Compass
 import Keyboard
 import Mouse
@@ -14,7 +14,6 @@ import Drag.State as Drag exposing (dragAt, dragEnd, dragStart, getPosition)
 import GameState.Messages as GameState
 import GameState.Types as GameState exposing (GameState(..))
 import GameState.State as GameState exposing (resTick, tickForward, tickZero)
-import List.Extra exposing (find)
 import Lobby.State as Lobby
 import Lobby.Types as Lobby
 import Menu.Messages as Menu
@@ -31,21 +30,14 @@ import AnimationFrame
 import Window
 import Listener exposing (listen)
 import Main.Types as Main exposing (..)
-import Navigation
+import Navigation as Navigation exposing (newUrl)
+import UrlParser exposing (parsePath)
 
 
 initModel : Flags -> Navigation.Location -> Main.Model
 initModel ({ hostname, httpPort, seed, windowDimensions } as flags) location =
     locationUpdate
-        { room =
-            initRoom
-            -- case play of
-            --     Just roomID ->
-            --         Connecting <|
-            --             Lobby.modelInit roomID Lobby.CustomGame
-            --
-            --     Nothing ->
-            --         MainMenu seed
+        { room = initRoom
         , hostname = hostname
         , httpPort = httpPort
         , frameTime = 0
@@ -91,12 +83,22 @@ update msg ({ hostname, room, frameTime, seed } as model) =
                     in
                         case msg of
                             MenuMsg (Menu.Start gameType) ->
-                                ( model, goto <| Compass.Play gameType )
+                                let
+                                    url : String
+                                    url =
+                                        case gameType of
+                                            Lobby.ComputerGame ->
+                                                "computer"
+
+                                            Lobby.CustomGame ->
+                                                "custom"
+                                in
+                                    ( model, newUrl <| "/play/" ++ url )
 
                             otherwise ->
                                 ( model, Cmd.none )
 
-                Connecting ({ roomID } as lobby) ->
+                Connecting ({ roomID, gameType } as lobby) ->
                     case msg of
                         StartGame mode ->
                             ( { model
@@ -108,7 +110,12 @@ update msg ({ hostname, room, frameTime, seed } as model) =
                                         , roomID = roomID
                                         }
                               }
-                            , Cmd.none
+                            , case gameType of
+                                Lobby.ComputerGame ->
+                                    Cmd.none
+
+                                Lobby.CustomGame ->
+                                    newUrl <| "/play/custom/" ++ roomID
                             )
 
                         otherwise ->
@@ -257,44 +264,61 @@ connectedUpdate hostname msg ({ chat, game, mode } as model) =
 
 
 locationUpdate : Main.Model -> Navigation.Location -> Main.Model
-locationUpdate model { pathname } =
-    let
-        paths : List ( Compass.Destination, Main.Model -> Main.Model )
-        paths =
-            [ ( Compass.Root
-              , \m ->
-                    { m
-                        | room = initRoom
-                    }
-              )
-            , ( Compass.Play Lobby.CustomGame
-              , \m ->
-                    { m
-                        | room =
-                            Connecting <|
-                                Lobby.modelInit
-                                    (generate roomIDGenerator model.seed)
-                                    Lobby.CustomGame
-                    }
-              )
-            , ( Compass.Play Lobby.ComputerGame
-              , \m ->
-                    { m
-                        | room =
-                            Connecting <|
-                                Lobby.modelInit
-                                    (generate roomIDGenerator model.seed)
-                                    Lobby.ComputerGame
-                    }
-              )
-            ]
+locationUpdate model location =
+    case parsePath Compass.route location of
+        Just route ->
+            case route of
+                Compass.Home ->
+                    { model | room = initRoom }
 
-        finder : List ( Compass.Destination, Main.Model -> Main.Model ) -> Maybe (Main.Model -> Main.Model)
-        finder =
-            (Maybe.map Tuple.second)
-                << (find (\( d, _ ) -> (Compass.url d) == pathname))
-    in
-        (Maybe.withDefault identity (finder paths)) model
+                Compass.Play playRoute ->
+                    let
+                        randomRoomID : String
+                        randomRoomID =
+                            generate roomIDGenerator model.seed
+                    in
+                        case playRoute of
+                            Compass.ComputerPlay ->
+                                { model
+                                    | room =
+                                        Connecting <|
+                                            Lobby.modelInit
+                                                randomRoomID
+                                                Lobby.ComputerGame
+                                }
+
+                            Compass.CustomPlay mRoomID ->
+                                let
+                                    roomID : String
+                                    roomID =
+                                        case mRoomID of
+                                            Just r ->
+                                                r
+
+                                            Nothing ->
+                                                randomRoomID
+
+                                    lobbyModel : Main.Model
+                                    lobbyModel =
+                                        { model
+                                            | room =
+                                                Connecting <|
+                                                    Lobby.modelInit
+                                                        roomID
+                                                        Lobby.CustomGame
+                                        }
+                                in
+                                    case model.room of
+                                        -- Annoying stateful bit, fix me.
+                                        -- WILL cause bugs.
+                                        Connected _ ->
+                                            model
+
+                                        otherwise ->
+                                            lobbyModel
+
+        Nothing ->
+            { model | room = initRoom }
 
 
 connectedReceive : ConnectedModel -> String -> ( ConnectedModel, Cmd Msg )
