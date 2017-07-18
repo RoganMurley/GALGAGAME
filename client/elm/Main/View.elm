@@ -1,7 +1,9 @@
 module Main.View exposing (..)
 
-import Chat.View as Chat
-import Html exposing (Html, div)
+-- import Chat.View as Chat
+
+import Html as Html exposing (Html, div)
+import GameModal.View as GameModal
 import GameState.View as GameState
 import Lobby.View as Lobby
 import Main.Types as Main exposing (..)
@@ -23,8 +25,9 @@ view ({ hostname, httpPort, frameTime, windowDimensions } as model) =
             Connecting lobby ->
                 Lobby.view params lobby
 
-            Connected { chat, game, roomID } ->
+            Connected { chat, game, modal, roomID } ->
                 div []
-                    [ Chat.view chat
+                    [ --Chat.view chat
+                      Html.map GameModalMsg <| GameModal.view modal
                     , GameState.view game roomID hostname httpPort frameTime windowDimensions
                     ]

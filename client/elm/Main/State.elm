@@ -11,6 +11,7 @@ import Chat.Messages as Chat
 import Chat.State as Chat
 import Drag.Messages as Drag
 import Drag.State as Drag exposing (dragAt, dragEnd, dragStart, getPosition)
+import GameModal.State as GameModal
 import GameState.Messages as GameState
 import GameState.Types as GameState exposing (GameState(..))
 import GameState.State as GameState exposing (resTick, tickForward, tickZero)
@@ -50,6 +51,16 @@ initModel ({ hostname, httpPort, seed, windowDimensions } as flags) location =
 initRoom : RoomModel
 initRoom =
     MainMenu
+
+
+initConnected : Mode -> String -> ConnectedModel
+initConnected mode roomID =
+    { chat = Chat.init
+    , game = Waiting
+    , modal = GameModal.init
+    , mode = mode
+    , roomID = roomID
+    }
 
 
 update : Msg -> Main.Model -> ( Main.Model, Cmd Msg )
@@ -101,15 +112,7 @@ update msg ({ hostname, room, frameTime, seed } as model) =
                 Connecting ({ roomID, gameType } as lobby) ->
                     case msg of
                         StartGame mode ->
-                            ( { model
-                                | room =
-                                    Connected
-                                        { chat = Chat.init
-                                        , game = Waiting
-                                        , mode = mode
-                                        , roomID = roomID
-                                        }
-                              }
+                            ( { model | room = Connected <| initConnected mode roomID }
                             , case gameType of
                                 Lobby.ComputerGame ->
                                     Cmd.none
@@ -147,7 +150,7 @@ connectingUpdate hostname msg model =
 
 
 connectedUpdate : String -> Msg -> ConnectedModel -> ( ConnectedModel, Cmd Msg )
-connectedUpdate hostname msg ({ chat, game, mode } as model) =
+connectedUpdate hostname msg ({ chat, game, modal, mode } as model) =
     case msg of
         Receive str ->
             connectedReceive model str
@@ -192,6 +195,14 @@ connectedUpdate hostname msg ({ chat, game, mode } as model) =
             in
                 ( { model | game = newGame }, cmd )
 
+        GameModalMsg modalMsg ->
+            let
+                newModal =
+                    GameModal.update modalMsg modal
+            in
+                ( { model | modal = newModal }, Cmd.none )
+
+        -- Enter key
         KeyPress 13 ->
             let
                 ( chat, cmd ) =

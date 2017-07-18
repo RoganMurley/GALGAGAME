@@ -220,10 +220,10 @@ staff :: Card
 staff =
   Card
     "Staff"
-    "Hurt for 4"
+    "Hurt for 4, then draw 1"
     "watcher/staff.svg"
     "staff.wav"
-    $ \p -> hurt 4 (other p)
+    $ \p -> (drawCard p) . (hurt 4 (other p))
 
 
 surge :: Card
