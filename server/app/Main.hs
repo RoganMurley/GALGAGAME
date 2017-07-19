@@ -161,6 +161,7 @@ data Command =
   | PlayCardCommand Int
   | HoverCardCommand (Maybe Int)
   | RematchCommand
+  | ConcedeCommand
   | SelectCharacterCommand Text
   | ErrorCommand Text
   deriving (Show)
@@ -309,6 +310,7 @@ actPlay cmd which roomVar =
     trans (PlayCardCommand index)    = Just (PlayCard index)
     trans (HoverCardCommand index)   = Just (HoverCard index)
     trans RematchCommand             = Just Rematch
+    trans ConcedeCommand             = Just Concede
     trans (ChatCommand name content) = Just (Chat name content)
     trans (SelectCharacterCommand n) = Just (SelectCharacter n)
     trans _                          = Nothing
@@ -427,6 +429,8 @@ parseMsg name msg =
       ChatCommand name content
     "rematch" ->
       RematchCommand
+    "concede" ->
+      ConcedeCommand
     "selectCharacter" ->
       SelectCharacterCommand content
     _ ->
