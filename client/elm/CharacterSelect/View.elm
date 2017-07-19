@@ -79,7 +79,7 @@ view params { characters, selected, hover } =
         div []
             [ div
                 [ class "character-select" ]
-                [ text "Choose your Weapons"
+                [ text "Choose your Characters"
                 , div [ class "characters" ]
                     (List.map characterView characters)
                 , cardPreviewView ((\{ cards } -> cards) hover)

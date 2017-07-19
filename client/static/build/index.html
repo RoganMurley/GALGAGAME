@@ -9,7 +9,7 @@
     <link rel="icon" href="/favicon.ico" type="image/x-icon">
   </head>
   <body class="no-select">
-    <div class="version-warning">closed alpha build v0.45</div>
+    <div class="version-warning">closed alpha build 8c99cdb</div>
     <script src="/howler.min.js"></script>
     <script src="/Main.js"></script>
     <script>"use strict";var params=new URLSearchParams(window.location.search),app=Elm.Main.fullscreen({hostname:window.location.hostname,httpPort:window.location.port,seed:(new Date).getTime(),windowDimensions:[window.innerWidth,window.innerHeight]});app.ports.selectAllInput.subscribe(function(e){document.getElementById(e).select()}),app.ports.copyInput.subscribe(function(e){document.getElementById(e).select(),document.execCommand("copy")});var playedSounds={};app.ports.playAudio.subscribe(function(e){var n=e[0],o=e[1],t=e[2],i=e[3];if(t){if(playedSounds[e])return;playedSounds[e]=!0}new Howl({src:[n],loop:o,volume:i}).play()});</script>
