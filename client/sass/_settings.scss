@@ -1,4 +1,4 @@
-.modal-layer {
+.settings-layer {
   z-index: 10000;
 }
 
@@ -20,7 +20,7 @@
   }
 }
 
-.modal-open {
+.settings-open {
   z-index: 10000;
   position: absolute;
 
@@ -30,7 +30,7 @@
   background: rgba(0, 0, 0, 0.9);
 }
 
-.modal-body {
+.settings-body {
   width: 600px;
   height: 400px;
 
@@ -45,7 +45,7 @@
   border: 32px double #fff;
 }
 
-.modal-inner {
+.settings-inner {
   color: #fff;
   font-family: 'Cinzel Decorative', sans-serif;
   font-size: 21px;
@@ -54,4 +54,18 @@
   h1 {
     margin: 0;
   }
+}
+
+.settings-button {
+  font-family: 'Cinzel Decorative', sans-serif;
+  background: none;
+  color: #f00;
+  border-radius: 8px;
+  border-color: #f00;
+  font-size: 28px;
+  padding: 0 24px;
+
+  margin-top: 228px;
+
+  cursor: pointer; cursor: hand;
 }

@@ -11,7 +11,7 @@ import Chat.Messages as Chat
 import Chat.State as Chat
 import Drag.Messages as Drag
 import Drag.State as Drag exposing (dragAt, dragEnd, dragStart, getPosition)
-import GameModal.State as GameModal
+import Settings.State as Settings
 import GameState.Messages as GameState
 import GameState.Types as GameState exposing (GameState(..))
 import GameState.State as GameState exposing (resTick, tickForward, tickZero)
@@ -57,7 +57,7 @@ initConnected : Mode -> String -> ConnectedModel
 initConnected mode roomID =
     { chat = Chat.init
     , game = Waiting
-    , modal = GameModal.init
+    , settings = Settings.init
     , mode = mode
     , roomID = roomID
     }
@@ -150,7 +150,7 @@ connectingUpdate hostname msg model =
 
 
 connectedUpdate : String -> Msg -> ConnectedModel -> ( ConnectedModel, Cmd Msg )
-connectedUpdate hostname msg ({ chat, game, modal, mode } as model) =
+connectedUpdate hostname msg ({ chat, game, settings, mode } as model) =
     case msg of
         Receive str ->
             connectedReceive model str
@@ -195,12 +195,12 @@ connectedUpdate hostname msg ({ chat, game, modal, mode } as model) =
             in
                 ( { model | game = newGame }, cmd )
 
-        GameModalMsg modalMsg ->
+        SettingsMsg settingsMsg ->
             let
-                newModal =
-                    GameModal.update modalMsg modal
+                newsettings =
+                    Settings.update settingsMsg settings
             in
-                ( { model | modal = newModal }, Cmd.none )
+                ( { model | settings = newsettings }, Cmd.none )
 
         -- Enter key
         KeyPress 13 ->
@@ -269,6 +269,9 @@ connectedUpdate hostname msg ({ chat, game, modal, mode } as model) =
 
         PlayingOnly newMsg ->
             ( model, playingOnly model <| message newMsg )
+
+        Concede ->
+            ( model, send hostname "concede:" )
 
         otherwise ->
             Debug.crash "Unexpected action while connected ;_;"
