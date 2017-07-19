@@ -1,7 +1,7 @@
 module Main.Types exposing (..)
 
 import Chat.Types as Chat
-import GameModal.Types as GameModal
+import Settings.Types as Settings
 import GameState.Types as GameState exposing (GameState(..))
 import Lobby.Types as Lobby
 
@@ -29,7 +29,7 @@ type RoomModel
 type alias ConnectedModel =
     { chat : Chat.Model
     , game : GameState.GameState
-    , modal : GameModal.Model
+    , settings : Settings.Model
     , mode : Mode
     , roomID : String
     }

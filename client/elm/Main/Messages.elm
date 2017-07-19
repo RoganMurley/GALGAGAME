@@ -2,7 +2,7 @@ module Main.Messages exposing (Msg(..))
 
 import Chat.Messages as Chat
 import Drag.Messages as Drag
-import GameModal.Messages as GameModal
+import Settings.Messages as Settings
 import GameState.Messages as GameState
 import Lobby.Messages as Lobby
 import Main.Types exposing (Mode)
@@ -30,8 +30,9 @@ type Msg
     | CopyInput String
     | ChatMsg Chat.Msg
     | DragMsg Drag.Msg
-    | GameModalMsg GameModal.Msg
+    | SettingsMsg Settings.Msg
     | GameStateMsg GameState.Msg
     | LobbyMsg Lobby.Msg
     | MenuMsg Menu.Msg
     | PlayingOnly Msg
+    | Concede
