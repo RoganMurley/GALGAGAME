@@ -32,6 +32,13 @@ instance ToJSON GameState where
     toJSON s
 
 
+getStateGen :: GameState -> Gen
+getStateGen (Waiting gen)             = gen
+getStateGen (Selecting _ _ gen)       = gen
+getStateGen (Started (Playing model)) = getGen model
+getStateGen (Started (Ended _ gen))   = gen
+
+
 data PlayState =
     Playing Model
   | Ended (Maybe WhichPlayer) Gen
@@ -54,6 +61,7 @@ data GameCommand =
   | PlayCard Int
   | HoverCard (Maybe Int)
   | Rematch
+  | Concede
   | SelectCharacter Text
   | Chat Username Text
   deriving (Show)
@@ -102,6 +110,8 @@ reverso (Started (Ended which gen)) = Started $ Ended (other <$> which) gen
 
 update :: GameCommand -> WhichPlayer -> GameState -> Either Err (Maybe GameState, [Outcome])
 update (Chat username msg) _ _ = Right (Nothing, [EncodableOutcome $ ChatOutcome username msg])
+update Concede which state =
+  Right (Just . Started $ Ended (Just (other which)) (getStateGen state), [SyncOutcome])
 update cmd which state =
   case state of
     Waiting _ ->

@@ -263,7 +263,7 @@ connectedUpdate hostname msg ({ chat, game, settings, mode } as model) =
                             Cmd.none
 
                         otherwise ->
-                            playSound "sfx/hover.wav"
+                            playSound "/sfx/hover.wav"
                     ]
                 )
 
