@@ -7,6 +7,8 @@ import sass from 'gulp-sass';
 import uglify from 'gulp-uglify';
 import minify from 'gulp-minify-css';
 import inline from 'gulp-inline-source';
+import replace from 'gulp-replace';
+import git from 'git-rev-sync';
 
 
 const dir = {
@@ -41,6 +43,7 @@ gulp.task('sass', () => {
 gulp.task('html', () => {
   return gulp.src('./html/**/*.html')
     .pipe(inline())
+    .pipe(replace('{{git}}', git.long().substring(0, 7)))
     .pipe(gulp.dest(dir.build));
 });
 
