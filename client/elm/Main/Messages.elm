@@ -36,3 +36,4 @@ type Msg
     | MenuMsg Menu.Msg
     | PlayingOnly Msg
     | Concede
+    | SetVolume Int

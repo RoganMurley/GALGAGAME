@@ -1,6 +1,6 @@
 module Main.State exposing (..)
 
-import Audio exposing (SoundOption(..), playSound, playSoundWith)
+import Audio exposing (SoundOption(..), playSound, playSoundWith, setVolume)
 import Compass.State as Compass
 import Compass.Types as Compass
 import Keyboard
@@ -12,6 +12,7 @@ import Chat.State as Chat
 import Drag.Messages as Drag
 import Drag.State as Drag exposing (dragAt, dragEnd, dragStart, getPosition)
 import Settings.State as Settings
+import Settings.Messages as Settings
 import GameState.Messages as GameState
 import GameState.Types as GameState exposing (GameState(..))
 import GameState.State as GameState exposing (resTick, tickForward, tickZero)
@@ -271,7 +272,23 @@ connectedUpdate hostname msg ({ chat, game, settings, mode } as model) =
             ( model, playingOnly model <| message newMsg )
 
         Concede ->
-            ( model, send hostname "concede:" )
+            let
+                newSettings =
+                    Settings.update Settings.CloseSettings settings
+            in
+                ( { model | settings = newSettings }, send hostname "concede:" )
+
+        SetVolume volume ->
+            let
+                newVolume =
+                    clamp 0 100 volume
+
+                newSettings =
+                    { settings | volume = newVolume }
+            in
+                ( { model | settings = newSettings }
+                , setVolume newVolume
+                )
 
         otherwise ->
             Debug.crash "Unexpected action while connected ;_;"

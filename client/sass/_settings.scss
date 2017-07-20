@@ -41,7 +41,7 @@
   top: 50%;
   left: 50%;
 
-  background: rgba(0,0,0,0.5);
+  background: rgba(0, 0, 0, 0.5);
   border: 32px double #fff;
 }
 
@@ -53,6 +53,7 @@
 
   h1 {
     margin: 0;
+    margin-bottom: 64px;
   }
 }
 
@@ -65,7 +66,30 @@
   font-size: 28px;
   padding: 0 24px;
 
-  margin-top: 228px;
-
   cursor: pointer; cursor: hand;
+  margin-top: 115px;
+
+  &:hover {
+    background: rgba(255, 0, 0, 0.1);
+  }
+}
+
+.settings-slider {
+  display: block;
+
+  width: 350px;
+
+  cursor: move; /* fallback if grab cursor is unsupported */
+  cursor: grab;
+  cursor: -moz-grab;
+  cursor: -webkit-grab;
+  &:active {
+    cursor: grabbing;
+    cursor: -moz-grabbing;
+    cursor: -webkit-grabbing;
+  }
+}
+
+.settings-volume {
+  font-family: monospace;
 }
