@@ -1,27 +1,29 @@
 module Settings.State exposing (init, update)
 
 import Settings.Messages exposing (Msg(..))
-import Settings.Types exposing (Model(..))
+import Settings.Types exposing (..)
 
 
 init : Model
 init =
-    Closed
+    { modalState = Closed
+    , volume = 100
+    }
 
 
 update : Msg -> Model -> Model
-update msg model =
+update msg ({ modalState, volume } as m) =
     case msg of
         ToggleSettings ->
-            case model of
+            case modalState of
                 Closed ->
-                    Open
+                    { m | modalState = Open }
 
                 Open ->
-                    Closed
+                    { m | modalState = Closed }
 
         OpenSettings ->
-            Open
+            { m | modalState = Open }
 
         CloseSettings ->
-            Closed
+            { m | modalState = Closed }

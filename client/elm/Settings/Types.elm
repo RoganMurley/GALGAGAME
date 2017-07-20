@@ -1,6 +1,12 @@
-module Settings.Types exposing (Model(..))
+module Settings.Types exposing (..)
 
 
-type Model
+type alias Model =
+    { modalState : ModalState
+    , volume : Int
+    }
+
+
+type ModalState
     = Open
     | Closed

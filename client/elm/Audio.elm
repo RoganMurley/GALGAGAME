@@ -1,7 +1,6 @@
 module Audio exposing (..)
 
-import Ports exposing (playAudio)
-import Main.Messages exposing (Msg)
+import Ports exposing (playAudio, volume)
 
 
 type SoundOption
@@ -10,12 +9,12 @@ type SoundOption
     | Volume Float
 
 
-playSound : String -> Cmd Msg
+playSound : String -> Cmd msg
 playSound name =
     playSoundWith name []
 
 
-playSoundWith : String -> List SoundOption -> Cmd Msg
+playSoundWith : String -> List SoundOption -> Cmd msg
 playSoundWith name options =
     let
         once : Bool
@@ -46,3 +45,8 @@ playSoundWith name options =
                         1.0
     in
         playAudio ( name, once, loop, volume )
+
+
+setVolume : Int -> Cmd msg
+setVolume v =
+    volume v

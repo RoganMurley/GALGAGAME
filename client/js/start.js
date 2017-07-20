@@ -37,3 +37,8 @@ app.ports.playAudio.subscribe(function (input) {
   });
   sound.play();
 });
+
+app.ports.volume.subscribe(function (input) {
+  var v = input / 100;
+  Howler.volume(Math.pow(v, 4));
+});
