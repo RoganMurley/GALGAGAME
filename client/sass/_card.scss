@@ -1,14 +1,13 @@
+$card-width: 228px;
+$card-height: 295px;
 
 .card {
   display: flex;
   justify-content: center;
   flex-flow: column;
 
-  width: 17vw;
-  height: 22vw;
-
-  max-width: 228px;
-  max-height: 295px;
+  width: $card-width;
+  height: $card-height;
 
   margin: 0 4px;
 
@@ -24,18 +23,15 @@
   justify-content: center;
 
   margin: 14px;
-  font-size: 1.7rem;
+  font-size: 26px;
   font-weight: bolder;
 }
 
 .card-picture {
-  width: 10vw;
-  height: 10vw;
+  width: 165px;
+  height: 165px;
 
   margin: auto;
-
-  max-width: 165px;
-  max-height: 165px;
 }
 
 .card-desc {
@@ -48,12 +44,12 @@
   text-align: center;
 
   margin: 18px;
-  font-size: 0.9rem;
+  font-size: 16px;
 }
 
 .my-card {
-  -webkit-transform: translate(20vh);
-  transform: translateY(20vh);
+  -webkit-transform: translate(0.8 * $card-height);
+  transform: translateY(0.8 * $card-height);
 
   -webkit-transition: transform 0.15s ease-out;
   transition: transform 0.15s ease-out;
@@ -65,8 +61,8 @@
 }
 
 .my-card:hover {
-  -webkit-transform: translateY(1vh);
-  transform: translateY(1vh);
+  -webkit-transform: translateY(10px);
+  transform: translateY(10px);
 
   border: 5px double #f5deb3;
 }
@@ -83,8 +79,8 @@
   transition: transform 0.3s ease-out;
 
   &.card-hover {
-    -webkit-transform: translateY(5vh);
-    transform: translateY(5vh);
+    -webkit-transform: translateY(0.12 * $card-height);
+    transform: translateY(0.12 * $card-height);
 
     .other-card {
       border: 5px double #35a0cc;
