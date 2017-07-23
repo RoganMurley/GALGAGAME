@@ -1,5 +1,5 @@
-$card-width: 228px;
-$card-height: 295px;
+$card-width: 13rem;
+$card-height: 17rem;
 
 .card {
   display: flex;
@@ -23,13 +23,15 @@ $card-height: 295px;
   justify-content: center;
 
   margin: 14px;
-  font-size: 26px;
+  font-size: 1.6rem;
   font-weight: bolder;
 }
 
 .card-picture {
-  width: 165px;
-  height: 165px;
+  $card-picture-size: 8.9rem;
+
+  width: $card-picture-size;
+  height: $card-picture-size;
 
   margin: auto;
 }
@@ -44,12 +46,12 @@ $card-height: 295px;
   text-align: center;
 
   margin: 18px;
-  font-size: 16px;
+  font-size: 0.8rem;
 }
 
 .my-card {
-  -webkit-transform: translate(0.8 * $card-height);
-  transform: translateY(0.8 * $card-height);
+  -webkit-transform: translate(0.6 * $card-height);
+  transform: translateY(0.6 * $card-height);
 
   -webkit-transition: transform 0.15s ease-out;
   transition: transform 0.15s ease-out;
@@ -71,7 +73,7 @@ $card-height: 295px;
   background-color: #0c5e7f;
   cursor: auto;
 
-  border: 5px double rgba(0, 0, 0, 0);
+  border: 2px solid #261616;
 }
 
 // Annoying transition overwrite.
