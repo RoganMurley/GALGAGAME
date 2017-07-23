@@ -152,7 +152,7 @@ viewStack stack =
 
                 cardWidth : Int
                 cardWidth =
-                    240
+                    13
 
                 offset : Int -> Int
                 offset x =
@@ -176,7 +176,7 @@ viewStack stack =
                 div
                     [ class (playerClass ++ " stack-card")
                     , style
-                        [ ( "transform", "translateX(" ++ (toString totalOffset) ++ "px)" )
+                        [ ( "transform", "translateX(" ++ (toString (totalOffset / 100)) ++ "rem)" )
                         , ( "z-index", toString (20 - index) )
                         ]
                     ]
