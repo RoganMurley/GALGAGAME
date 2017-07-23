@@ -1,5 +1,5 @@
-$card-width: 13rem;
-$card-height: 17rem;
+$card-width: 14rem;
+$card-height: 18rem;
 
 .card {
   display: flex;
@@ -8,6 +8,12 @@ $card-height: 17rem;
 
   width: $card-width;
   height: $card-height;
+
+  min-width: $card-width;
+  min-height: $card-height;
+
+  max-width: $card-width;
+  max-height: $card-height;
 
   margin: 0 4px;
 
@@ -23,12 +29,12 @@ $card-height: 17rem;
   justify-content: center;
 
   margin: 14px;
-  font-size: 1.6rem;
+  font-size: 1.8rem;
   font-weight: bolder;
 }
 
 .card-picture {
-  $card-picture-size: 8.9rem;
+  $card-picture-size: 9.8rem;
 
   width: $card-picture-size;
   height: $card-picture-size;
@@ -46,7 +52,7 @@ $card-height: 17rem;
   text-align: center;
 
   margin: 18px;
-  font-size: 0.8rem;
+  font-size: 0.9rem;
 }
 
 .my-card {

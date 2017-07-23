@@ -156,7 +156,7 @@ viewStack stack =
 
                 cardWidth : Float
                 cardWidth =
-                    13.0
+                    14.0
 
                 offset : Int -> Float
                 offset x =
@@ -164,13 +164,13 @@ viewStack stack =
 
                 squish : Float -> Float
                 squish x =
-                    Basics.min 0.0 (60.0 - 9.0 * (x + 1.0) * stackLen)
+                    Basics.min 0.0 (15.0 - 0.65 * (x + 1.0) * stackLen)
 
                 totalOffset : Float
                 totalOffset =
                     (offset index)
-                        + (squish (toFloat index))
                         - (cardWidth * stackLen * 0.5)
+                        + (squish (toFloat index))
                         - ((squish (stackLen - 1.0)) * 0.5)
 
                 rot : Float
