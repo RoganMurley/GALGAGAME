@@ -150,24 +150,28 @@ viewStack stack =
                         PlayerB ->
                             "playerb"
 
-                cardWidth : Int
+                stackLen : Float
+                stackLen =
+                    toFloat (List.length stack)
+
+                cardWidth : Float
                 cardWidth =
-                    13
+                    13.0
 
-                offset : Int -> Int
+                offset : Int -> Float
                 offset x =
-                    cardWidth * x
+                    cardWidth * (toFloat x)
 
-                squish : Int -> Int
+                squish : Float -> Float
                 squish x =
-                    Basics.min 0 (60 - 9 * (x + 1) * (List.length stack))
+                    Basics.min 0.0 (60.0 - 9.0 * (x + 1.0) * stackLen)
 
-                totalOffset : Int
+                totalOffset : Float
                 totalOffset =
                     (offset index)
-                        + (squish index)
-                        - (cardWidth * (List.length stack) // 2)
-                        - ((squish ((List.length stack) - 1)) // 2)
+                        + (squish (toFloat index))
+                        - (cardWidth * stackLen * 0.5)
+                        - ((squish (stackLen - 1.0)) * 0.5)
 
                 rot : Float
                 rot =
@@ -176,7 +180,7 @@ viewStack stack =
                 div
                     [ class (playerClass ++ " stack-card")
                     , style
-                        [ ( "transform", "translateX(" ++ (toString (totalOffset / 100)) ++ "rem)" )
+                        [ ( "transform", "translateX(" ++ (toString totalOffset) ++ "rem)" )
                         , ( "z-index", toString (20 - index) )
                         ]
                     ]
