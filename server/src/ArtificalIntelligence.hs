@@ -71,11 +71,24 @@ chooseAction :: Turn -> Model -> Maybe Action
 chooseAction turn model
   | getTurn model /= turn =
     Nothing
+  | winningEnd model =
+    Just EndAction
   | otherwise =
     Just $ maximumBy comparison $ possibleActions model
   where
     comparison :: Action -> Action -> Ordering
     comparison = comparing (evalState . (postulateAction model))
+
+
+winningEnd :: Model -> Bool
+winningEnd m =
+  -- If ending the turn now would win, do it! We don't care about heuristics
+  -- when we have a sure bet :)
+  case fst . runWriter . resolveAll $ m of
+    Ended (Just PlayerA) _ ->
+      True
+    _ ->
+      False
 
 
 -- Some cards entail soft advantages/disadvantages that the AI can't handle.
