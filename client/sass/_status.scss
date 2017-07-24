@@ -1,14 +1,13 @@
-$height: 38px;
+$life-height: 38px;
 
-.life {
+.status {
   position: absolute;
   left: 50%;
   top: 15%;
-  width: 600px;
   transform: translateX(-50%);
 }
 
-.life-mine {
+.status-mine {
   top: 60%;
 
   .life-bar {
@@ -18,14 +17,14 @@ $height: 38px;
   }
 }
 
-
 .life-bar {
     background-color: #82807b;;
 
     display: flex;
 
+    min-width: 600px;
     width: 100%;
-    height: $height;
+    height: $life-height;
 
     outline: 2px solid;
     outline-color: white;
@@ -43,7 +42,7 @@ $height: 38px;
     margin-top: -3px;
 
     width: 100%;
-    height: $height;
+    height: $life-height;
 
     position: absolute;
     z-index: 1;
@@ -53,7 +52,7 @@ $height: 38px;
     background-color: #004561;
 
     // Width is dynamically calculated.
-    height: $height;
+    height: $life-height;
 
     transition: width 0.4s ease-in;
 }

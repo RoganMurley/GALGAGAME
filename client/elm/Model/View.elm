@@ -14,25 +14,31 @@ view : Int -> Model -> Html Msg
 view resTime model =
     div []
         [ viewOtherHand model.otherHand model.otherHover
-        , viewHand model.hand
+        , viewHand model.hand False
         , viewStack model.stack
         , viewTurn (List.length model.hand == maxHandLength) model.turn
-        , viewLife PlayerA model.life
-        , viewLife PlayerB model.otherLife
+        , viewStatus PlayerA model.life
+        , viewStatus PlayerB model.otherLife
         ]
 
 
-viewHand : Hand -> Html Msg
-viewHand hand =
+viewHand : Hand -> Bool -> Html Msg
+viewHand hand resolving =
     let
-        cardView : ( Int, Card ) -> Html Msg
-        cardView ( index, { name, desc, imgURL } ) =
-            div
-                [ class "card my-card"
-                , onClick <| PlayCard index
+        mouseActions : Int -> List (Attribute Msg)
+        mouseActions index =
+            if resolving then
+                []
+            else
+                [ onClick <| PlayCard index
                 , onMouseEnter <| HoverCard <| Just index
                 , onMouseLeave <| HoverCard Nothing
                 ]
+
+        cardView : ( Int, Card ) -> Html Msg
+        cardView ( index, { name, desc, imgURL } ) =
+            div
+                ([ class "card my-card" ] ++ (mouseActions index))
                 [ div [ class "card-title" ] [ text name ]
                 , div
                     [ class "card-picture"
@@ -109,24 +115,27 @@ viewTurn handFull turn =
                 [ text "Opponent's Turn" ]
 
 
-viewLife : WhichPlayer -> Life -> Html Msg
-viewLife which life =
+viewStatus : WhichPlayer -> Life -> Html Msg
+viewStatus which life =
+    div
+        [ classList
+            [ ( "status", True )
+            , ( "status-mine", which == PlayerA )
+            ]
+        ]
+        [ viewLife life
+        ]
+
+
+viewLife : Life -> Html Msg
+viewLife life =
     let
         barWidth : Life -> String
         barWidth barLife =
             (toString (((toFloat barLife) / 50) * 100)) ++ "%"
-
-        whoseLife : String
-        whoseLife =
-            case which of
-                PlayerA ->
-                    "life-mine"
-
-                PlayerB ->
-                    ""
     in
         div
-            [ class "life", class whoseLife ]
+            [ class "life" ]
             [ div
                 [ class "life-bar" ]
                 [ div [ class "life-text" ] [ text ("♥ " ++ (toString life) ++ " ♥") ]
@@ -202,19 +211,12 @@ resView : Res -> Int -> Model -> Html Msg
 resView res resTime model =
     div []
         [ viewOtherHand model.otherHand model.otherHover
-        , viewResHand model.hand
+        , viewHand model.hand True
         , viewStack model.stack
         , viewResTurn
-        , viewLife PlayerA model.life
-        , viewLife PlayerB model.otherLife
+        , viewStatus PlayerA model.life
+        , viewStatus PlayerB model.otherLife
         ]
-
-
-viewResHand : Hand -> Html Msg
-viewResHand hand =
-    div
-        [ class "hand my-hand" ]
-        (List.map Card.view hand)
 
 
 viewResTurn : Html Msg
