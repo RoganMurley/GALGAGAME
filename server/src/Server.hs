@@ -5,6 +5,7 @@ import Prelude hiding (lookup, putStrLn)
 import Control.Concurrent (MVar, newMVar, modifyMVar)
 import Data.Map.Strict (Map, delete, empty, insert, keys, lookup)
 import Data.Monoid ((<>))
+import Data.Text (Text)
 import Data.Text.IO (putStrLn)
 import Data.String.Conversions (cs)
 
@@ -69,8 +70,8 @@ addPlayerClient client room =
         return (r, Nothing)
 
 
-addComputerClient :: MVar Room -> IO (Maybe Client)
-addComputerClient room =
+addComputerClient :: Text -> MVar Room -> IO (Maybe Client)
+addComputerClient guid room =
   modifyMVar room $ \r ->
     case Room.addPlayer client r of
       Just (r', _) ->
@@ -78,7 +79,7 @@ addComputerClient room =
       Nothing ->
         return (r, Nothing)
   where
-    client = Client.cpuClient :: Client
+    client = Client.cpuClient guid :: Client
 
 
 removeClient :: Client -> MVar Room -> IO (Room)

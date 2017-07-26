@@ -16,6 +16,7 @@ import Network.Wai (Application)
 import Network.Wai.Handler.WebSockets
 import Network.Wai.Handler.Warp (run)
 import Safe (readMay)
+import System.IO (BufferMode(LineBuffering), hSetBuffering, stdout)
 import Web.Cookie (parseCookiesText)
 
 import qualified Data.Text as T
@@ -40,10 +41,12 @@ import Room (Room)
 
 import qualified Auth as A
 import qualified Database.Redis as R
+import qualified Data.GUID as GUID
 
 
 main :: IO ()
 main = do
+  hSetBuffering stdout LineBuffering
   state <- newMVar Server.initState
   userConn  <- R.connect $ A.connectInfo A.UserDatabase
   tokenConn <- R.connect $ A.connectInfo A.TokenDatabase
@@ -76,6 +79,7 @@ begin conn roomReq loggedUsername state =
     Just roomName -> do
       roomVar <- Server.getRoom roomName state
       msg <- WS.receiveData conn
+      guid <- GUID.genText
 
       case parsePrefix msg of
         Nothing ->
@@ -94,18 +98,19 @@ begin conn roomReq loggedUsername state =
                         ErrorCommand "room is full"
                     Just (room', which) ->
                       flip finally
-                        (disconnect client roomVar roomName state)
-                        (play which room' (username, conn) roomVar)
+                        (disconnect client (Just which) roomVar roomName state)
+                        (play which room' (username, conn, guid) roomVar)
 
               | prefix == "spectate:" ->
                 flip finally
-                  (disconnect client roomVar roomName state)
-                  (spectate (username, conn) roomVar)
+                  (disconnect client Nothing roomVar roomName state)
+                  (spectate (username, conn, guid) roomVar)
 
               | prefix == "playComputer:" ->
                 do
                   T.putStrLn "Computer game started"
-                  computer <- addComputerClient roomVar
+                  cpuGuid <- GUID.genText
+                  computer <- addComputerClient cpuGuid roomVar
                   added <- addPlayerClient client roomVar
                   case (,) <$> computer <*> added of
                     Nothing ->
@@ -113,12 +118,12 @@ begin conn roomReq loggedUsername state =
                     Just (computerClient, (room', which)) ->
                       flip finally
                         (do
-                          _ <- disconnect client roomVar roomName state
-                          disconnect computerClient roomVar roomName state
+                          _ <- disconnect client (Just which) roomVar roomName state
+                          disconnect computerClient (Just . other $ which) roomVar roomName state
                         )
                         (do
                           _ <- forkIO (computerPlay (other which) roomVar)
-                          play which room' (username, conn) roomVar
+                          play which room' (username, conn, guid) roomVar
                         )
 
               | otherwise ->
@@ -129,7 +134,7 @@ begin conn roomReq loggedUsername state =
                 username :: Username
                 username = fromMaybe "Guest" loggedUsername
                 client :: Client
-                client = Client username (PlayerConnection conn)
+                client = Client username (PlayerConnection conn) guid
     Nothing ->
       (WS.sendTextData conn) . toChat $
         ErrorCommand ("bad room name protocol: " <> roomReq)
@@ -203,10 +208,10 @@ sendExcluding which msg room = do
   sendToSpecs msg room
   sendToPlayer (other which) msg room
 
-spectate :: (Username, WS.Connection) -> MVar Room -> IO ()
-spectate (user, conn) room =
+spectate :: (Username, WS.Connection, Text) -> MVar Room -> IO ()
+spectate (user, conn, guid) room =
   let
-    client = Client user (PlayerConnection conn) :: Client
+    client = Client user (PlayerConnection conn) guid :: Client
   in
     do
       room' <- addSpecClient client room
@@ -219,10 +224,10 @@ spectate (user, conn) room =
         msg <- WS.receiveData conn
         actSpec (parseMsg user msg) room
 
-play :: WhichPlayer -> Room -> (Username, WS.Connection) -> MVar Room -> IO ()
-play which room' (user, conn) room =
+play :: WhichPlayer -> Room -> (Username, WS.Connection, Text) -> MVar Room -> IO ()
+play which room' (user, conn, guid) room =
   let
-    client = Client user (PlayerConnection conn) :: Client
+    client = Client user (PlayerConnection conn) guid :: Client
   in
     do
       Client.send ("acceptPlay:" :: Text) client
@@ -280,12 +285,17 @@ broadcast msg room =
   forM_ (Room.getClients room) (Client.send msg)
 
 
-disconnect :: Client -> MVar Room -> Room.Name -> MVar Server.State -> IO (Server.State)
-disconnect client room name state = do
+disconnect :: Client -> Maybe WhichPlayer -> MVar Room -> Room.Name -> MVar Server.State -> IO (Server.State)
+disconnect client mWhich room name state = do
   r <- Server.removeClient client room
   broadcast (toChat (LeaveCommand (Client.name client))) r
-  Server.deleteRoom name state
-
+  case mWhich of
+    Nothing -> return ()
+    Just which -> broadcast ("leave:" <> (cs $ encode which)) r
+  if Room.empty r then
+    Server.deleteRoom name state
+      else
+        readMVar state
 
 actPlay :: Command -> WhichPlayer -> MVar Room -> IO ()
 actPlay cmd which roomVar =

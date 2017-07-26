@@ -131,10 +131,10 @@ removeClient client room@Room{ room_pa = pa, room_pb = pb, room_specs = specs } 
     newSpecs = filter ((/= Client.name client) . Client.name) specs
     newPlayer :: Player -> Player
     newPlayer Nothing = Nothing
-    newPlayer p@(Just c) =
-      if ((Client.name) c == (Client.name client))
+    newPlayer (Just c) =
+      if (Client.guid c == Client.guid client)
         then Nothing
-        else p
+        else (Just c)
 
 
 userList :: Room -> Text

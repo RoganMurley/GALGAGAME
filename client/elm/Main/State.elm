@@ -386,6 +386,8 @@ connectedReceive model msg =
                 GameState.ResolveOutcome <|
                     dropLeft (length "res:") msg
         )
+    else if (startsWith "leave:" msg) then
+        ( model, Cmd.none )
     else if (startsWith "playCard:" msg) then
         ( model, playSound "/sfx/playCard.wav" )
     else if (startsWith "end:" msg) then
