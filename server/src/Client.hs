@@ -1,5 +1,6 @@
 module Client where
 
+import Data.Aeson (ToJSON(..))
 import Data.Text (Text)
 import Network.WebSockets (Connection, sendTextData)
 
@@ -21,6 +22,14 @@ data Client = Client
   , client_connection :: ClientConnection
   , client_guid       :: Text
   } deriving (Show)
+
+
+instance Eq Client where
+  Client{ client_guid = a } == Client{ client_guid = b } = a == b
+
+
+instance ToJSON Client where
+  toJSON Client{ client_name } = toJSON client_name
 
 
 name :: Client -> Username

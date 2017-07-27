@@ -1,0 +1,19 @@
+.player-name {
+  position: absolute;
+  font-size: 1.8rem;
+  color: #fff;
+  font-family: 'Cinzel Decorative';
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 32px;
+  padding: 4px 18px;
+  margin-left: 8px;
+  margin-top: 8px;
+  margin-bottom: 8px;
+  width: 120px;
+  height: 38px;
+  text-align: center;
+
+  &.other {
+    bottom: 0;
+  }
+}
