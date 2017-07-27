@@ -32,6 +32,7 @@ type alias ConnectedModel =
     , settings : Settings.Model
     , mode : Mode
     , roomID : String
+    , players : ( Maybe String, Maybe String )
     }
 
 

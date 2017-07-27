@@ -132,9 +132,9 @@ removeClient client room@Room{ room_pa = pa, room_pb = pb, room_specs = specs } 
     newPlayer :: Player -> Player
     newPlayer Nothing = Nothing
     newPlayer (Just c) =
-      if (Client.guid c == Client.guid client)
+      if c == client
         then Nothing
-        else (Just c)
+        else Just c
 
 
 userList :: Room -> Text
@@ -144,3 +144,7 @@ userList room
   where
     users :: Text
     users = (intercalate ", ") . (fmap Client.name) $ Room.getClients room
+
+
+connected :: Room -> (Player, Player)
+connected Room{ room_pa, room_pb } = (room_pa, room_pb)

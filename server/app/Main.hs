@@ -233,6 +233,7 @@ play which room' (user, conn, guid) room =
       Client.send ("acceptPlay:" :: Text) client
       Client.send ("chat:Welcome! " <> Room.userList room') client
       broadcast (toChat (PlayCommand (Client.name client))) room'
+      broadcast ("syncPlayers:" <> (cs . encode $ Room.connected room')) room'
       syncRoomClients room'
       forever $ do
         msg <- WS.receiveData conn
@@ -289,9 +290,9 @@ disconnect :: Client -> Maybe WhichPlayer -> MVar Room -> Room.Name -> MVar Serv
 disconnect client mWhich room name state = do
   r <- Server.removeClient client room
   broadcast (toChat (LeaveCommand (Client.name client))) r
-  case mWhich of
+  case mWhich of -- Remove this?
     Nothing -> return ()
-    Just which -> broadcast ("leave:" <> (cs $ encode which)) r
+    Just _ ->  broadcast ("syncPlayers:" <> (cs . encode $ Room.connected r)) r
   if Room.empty r then
     Server.deleteRoom name state
       else

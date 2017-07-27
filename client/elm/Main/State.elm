@@ -20,6 +20,7 @@ import Lobby.State as Lobby
 import Lobby.Types as Lobby
 import Menu.Messages as Menu
 import Model.Types exposing (Hand, Model, WhichPlayer(..))
+import Main.Decoders exposing (decodePlayers)
 import Main.Messages exposing (Msg(..))
 import Random
 import Random.Char exposing (char)
@@ -61,6 +62,7 @@ initConnected mode roomID =
     , settings = Settings.init
     , mode = mode
     , roomID = roomID
+    , players = ( Just "Toad", Just "Toad" )
     }
 
 
@@ -386,8 +388,14 @@ connectedReceive model msg =
                 GameState.ResolveOutcome <|
                     dropLeft (length "res:") msg
         )
-    else if (startsWith "leave:" msg) then
-        ( model, Cmd.none )
+    else if (startsWith "syncPlayers:" msg) then
+        let
+            newPlayers : ( Maybe String, Maybe String )
+            newPlayers =
+                decodePlayers <|
+                    dropLeft (length "syncPlayers:") msg
+        in
+            ( { model | players = newPlayers }, Cmd.none )
     else if (startsWith "playCard:" msg) then
         ( model, playSound "/sfx/playCard.wav" )
     else if (startsWith "end:" msg) then
