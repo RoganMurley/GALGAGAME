@@ -39,17 +39,17 @@ playersView : ( Maybe String, Maybe String ) -> Html msg
 playersView ( pa, pb ) =
     let
         playerView : Maybe String -> Bool -> Html msg
-        playerView mName other =
+        playerView mName me =
             let
-                otherClass : String
-                otherClass =
-                    if other then
-                        "other"
+                meClass : String
+                meClass =
+                    if me then
+                        "me"
                     else
                         ""
             in
                 div
-                    [ class ("player-name " ++ otherClass) ]
+                    [ class ("player-name " ++ meClass) ]
                     [ text <| Maybe.withDefault "" mName ]
     in
         div [ class "player-layer" ]

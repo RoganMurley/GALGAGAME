@@ -123,7 +123,7 @@ striker :: Character
 striker =
   Character
     "Striker"
-    (Cards.dagger, Cards.dagger, Cards.offering, Cards.confound)
+    (Cards.dagger, Cards.fireball, Cards.offering, Cards.confound)
 
 breaker :: Character
 breaker =

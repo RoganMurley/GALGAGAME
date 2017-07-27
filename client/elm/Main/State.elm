@@ -62,7 +62,7 @@ initConnected mode roomID =
     , settings = Settings.init
     , mode = mode
     , roomID = roomID
-    , players = ( Just "Toad", Just "Toad" )
+    , players = ( Nothing, Nothing )
     }
 
 
