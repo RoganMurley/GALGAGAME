@@ -129,7 +129,7 @@ breaker :: Character
 breaker =
   Character
     "Breaker"
-    (Cards.hammer, Cards.lightning, Cards.exile, Cards.hubris)
+    (Cards.hammer, Cards.lightning, Cards.imitate, Cards.hubris)
 
 drinker :: Character
 drinker =
