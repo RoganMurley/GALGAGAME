@@ -10,6 +10,11 @@ import Model.Types exposing (..)
 import Model.State exposing (maxHandLength)
 
 
+cardWidth : Float
+cardWidth =
+    14.0
+
+
 view : Int -> Model -> Html Msg
 view resTime model =
     div []
@@ -35,21 +40,53 @@ viewHand hand resolving =
                 , onMouseLeave <| HoverCard Nothing
                 ]
 
+        calcRot : Int -> Float
+        calcRot index =
+            -1.5 * ((toFloat index) - (cardCount * 0.5))
+
+        calcTrans : Int -> Float
+        calcTrans index =
+            -12.0 * ((toFloat index) - (cardCount * 0.5))
+
+        cardCount : Float
+        cardCount =
+            toFloat <| List.length hand
+
+        totalOffset : Float
+        totalOffset =
+            -14
+
         cardView : ( Int, Card ) -> Html Msg
         cardView ( index, { name, desc, imgURL } ) =
             div
-                ([ class "card my-card" ] ++ (mouseActions index))
-                [ div [ class "card-title" ] [ text name ]
-                , div
-                    [ class "card-picture"
-                    , style [ ( "background-image", "url(\"/img/" ++ imgURL ++ "\")" ) ]
+                [ class "my-card-container"
+                , style
+                    [ ( "transform"
+                      , "translateX("
+                            ++ (toString <| calcTrans index)
+                            ++ "rem) rotate("
+                            ++ (toString <| calcRot index)
+                            ++ "deg)"
+                      )
                     ]
-                    []
-                , div [ class "card-desc" ] [ text desc ]
+                ]
+                [ div
+                    ([ class "card my-card"
+                     ]
+                        ++ (mouseActions index)
+                    )
+                    [ div [ class "card-title" ] [ text name ]
+                    , div
+                        [ class "card-picture"
+                        , style [ ( "background-image", "url(\"/img/" ++ imgURL ++ "\")" ) ]
+                        ]
+                        []
+                    , div [ class "card-desc" ] [ text desc ]
+                    ]
                 ]
     in
         div
-            [ class "hand my-hand" ]
+            [ class "hand my-hand", style [ ( "transform", "translateX(" ++ (toString totalOffset) ++ "rem)" ) ] ]
             (List.map cardView (List.indexedMap (,) hand))
 
 
@@ -162,10 +199,6 @@ viewStack stack =
                 stackLen : Float
                 stackLen =
                     toFloat (List.length stack)
-
-                cardWidth : Float
-                cardWidth =
-                    14.0
 
                 offset : Int -> Float
                 offset x =

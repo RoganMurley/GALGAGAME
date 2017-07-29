@@ -115,7 +115,7 @@ imitate =
           m
       where
         mCard :: Maybe Card
-        mCard = headMay . (shuffle (getGen m)) $ getHand p m
+        mCard = headMay . (filter (/= imitate)) . (shuffle (getGen m)) $ getHand p m
 
 
 -- Balancer
