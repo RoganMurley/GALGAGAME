@@ -54,8 +54,10 @@ $card-height: 18rem;
 }
 
 .my-card {
-  -webkit-transform: translate(0.6 * $card-height);
-  transform: translateY(0.6 * $card-height);
+  position: absolute;
+
+  -webkit-transform: translateY(-0.55 * $card-height);
+  transform: translateY(-0.55 * $card-height);
 
   -webkit-transition: transform 0.15s ease-out;
   transition: transform 0.15s ease-out;
@@ -63,14 +65,15 @@ $card-height: 18rem;
 
   z-index: 10;
 
-  border: 5px double rgba(0, 0, 0, 0);
+  border: 2px solid #261616;
 }
 
 .my-card:hover {
-  -webkit-transform: translateY(10px);
-  transform: translateY(10px);
+  -webkit-transform: translateY(-1.05 * $card-height);
+  transform: translateY(-1.05 * $card-height) scale(1.1);
 
   border: 5px double #f5deb3;
+  z-index: 11;
 }
 
 .other-card {
@@ -80,11 +83,19 @@ $card-height: 18rem;
   border: 2px solid #261616;
 }
 
+.my-card-container {
+  &.hover {
+    z-index: 1;
+  }
+}
+
 // Annoying transition overwrite.
 .other-card-container {
   transition: transform 0.3s ease-out;
 
   &.card-hover {
+    z-index: 1;
+
     -webkit-transform: translateY(0.12 * $card-height);
     transform: translateY(0.12 * $card-height);
 

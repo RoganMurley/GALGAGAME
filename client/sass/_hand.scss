@@ -8,6 +8,7 @@
 
 .my-hand {
   bottom: 0;
+  z-index: 1;
 
   .card {
     margin: 0 4px;
@@ -19,3 +20,5 @@
 
   margin-top: -$card-height * 0.8;
 }
+
+.my-card-container {}

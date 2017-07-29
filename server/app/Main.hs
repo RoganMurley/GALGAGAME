@@ -248,11 +248,11 @@ computerPlay which room =
     lift $ threadDelay 1000000
     command <- lift $ chooseComputerCommand which room
     case command of
-      Just c ->
+      Just c -> do
         lift $ actPlay c which room
+        lift $ threadDelay 10000
       Nothing ->
         return ()
-
     -- Break out if the room's empty.
     r <- lift $ readMVar room
     when (Room.empty r) mzero
