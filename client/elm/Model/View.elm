@@ -52,10 +52,6 @@ viewHand hand resolving =
         cardCount =
             toFloat <| List.length hand
 
-        totalOffset : Float
-        totalOffset =
-            -14
-
         cardView : ( Int, Card ) -> Html Msg
         cardView ( index, { name, desc, imgURL } ) =
             div
@@ -86,19 +82,32 @@ viewHand hand resolving =
                 ]
     in
         div
-            [ class "hand my-hand", style [ ( "transform", "translateX(" ++ (toString totalOffset) ++ "rem)" ) ] ]
+            [ class "hand my-hand" ]
             (List.map cardView (List.indexedMap (,) hand))
 
 
 viewOtherHand : Int -> HoverCardIndex -> Html Msg
-viewOtherHand cardCount hoverIndex =
+viewOtherHand cardCountInt hoverIndex =
     let
+        cardCount : Float
+        cardCount =
+            toFloat cardCountInt
+
         cardView : Int -> Html Msg
         cardView index =
             div [ containerClass index hoverIndex ]
                 [ div
                     [ class "card other-card"
-                    , style [ ( "transform", "rotateZ(" ++ toString (calcRot index) ++ "deg) translateY(" ++ toString (calcTrans index) ++ "px)" ) ]
+                      -- , style [ ( "transform", "rotateZ(" ++ toString (calcRot index) ++ "deg) translateY(" ++ toString (calcTrans index) ++ "px)" ) ]
+                    , style
+                        [ ( "transform"
+                          , "translateX("
+                                ++ (toString <| calcTrans index)
+                                ++ "rem) rotate("
+                                ++ (toString <| calcRot index)
+                                ++ "deg)"
+                          )
+                        ]
                     ]
                     []
                 ]
@@ -118,15 +127,15 @@ viewOtherHand cardCount hoverIndex =
 
         cards : List (Html Msg)
         cards =
-            List.map cardView (List.range 0 (cardCount - 1))
+            List.map cardView (List.range 0 (cardCountInt - 1))
 
-        calcRot : Int -> Int
+        calcRot : Int -> Float
         calcRot index =
-            -2 * (index - (cardCount // 2))
+            1.5 * ((toFloat index) - (cardCount * 0.5))
 
-        calcTrans : Int -> Int
+        calcTrans : Int -> Float
         calcTrans index =
-            -12 * (abs (index - (cardCount // 2)))
+            -12.0 * ((toFloat index) - (cardCount * 0.5))
     in
         div [ class "hand other-hand" ] cards
 
