@@ -22,3 +22,15 @@
     margin-top: -10px;
   }
 }
+
+.stack-head {
+  transform: scale(1.1);
+}
+
+.resolving {
+  .stack-head {
+    border-radius: 12px;
+    border-color: #9ecaed;
+    box-shadow: 0 0 32px #9ecaed;
+  }
+}

@@ -185,6 +185,15 @@ viewStack stack =
                 rot : Float
                 rot =
                     0.1 * (toFloat ((index * 1247823748932 + 142131) % 20) - 10)
+
+                headClass : String
+                headClass =
+                    case index of
+                        0 ->
+                            " stack-head"
+
+                        otherwise ->
+                            ""
             in
                 div
                     [ class (playerClass ++ " stack-card")
@@ -195,7 +204,10 @@ viewStack stack =
                     ]
                     [ div
                         [ style [ ( "transform", "rotate(" ++ (toString rot) ++ "deg)" ) ] ]
-                        [ Card.view card ]
+                        [ div
+                            [ class headClass ]
+                            [ Card.view card ]
+                        ]
                     ]
     in
         div
@@ -209,7 +221,7 @@ viewStack stack =
 
 resView : Res -> Int -> Model -> Html Msg
 resView res resTime model =
-    div []
+    div [ class "resolving" ]
         [ viewOtherHand model.otherHand model.otherHover
         , viewHand model.hand True
         , viewStack model.stack
