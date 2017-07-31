@@ -129,7 +129,7 @@ breaker :: Character
 breaker =
   Character
     "Breaker"
-    (Cards.hammer, Cards.lightning, Cards.imitate, Cards.hubris)
+    (Cards.hammer, Cards.lightning, Cards.exile, Cards.hubris)
 
 drinker :: Character
 drinker =
@@ -141,13 +141,13 @@ watcher :: Character
 watcher =
   Character
     "Watcher"
-    (Cards.staff, Cards.surge, Cards.mindhack, Cards.prophecy)
+    (Cards.staff, Cards.supercharge, Cards.imitate, Cards.prophecy)
 
 shielder :: Character
 shielder =
   Character
     "Shielder"
-    (Cards.sword, Cards.soulburn, Cards.potion, Cards.reflect)
+    (Cards.sword, Cards.overload, Cards.potion, Cards.reflect)
 
 bouncer :: Character
 bouncer =

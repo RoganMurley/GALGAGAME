@@ -32,10 +32,10 @@ offering :: Card
 offering =
   Card
     "Offering"
-    "Hurt yourself for 7, then draw 2"
+    "Hurt yourself for 7, then draw 3"
     "striker/offering.svg"
     "offering.wav"
-    $ \p -> (times 2 (drawCard p)) . (hurt 7 p)
+    $ \p -> (times 3 (drawCard p)) . (hurt 7 p)
 
 
 confound :: Card
@@ -94,28 +94,6 @@ exile =
       . (both (\p -> modHand p $ filter (/= card)))
       . (modStack ((:) stackCard))
       . (modStack (filter (\(StackCard _ c) -> c /= card)))
-
-
-
-imitate :: Card
-imitate =
-  Card
-    "Imitate"
-    "Becomes copy of random card in your hand"
-    "breaker/imitate.svg"
-    "feint.wav"
-    eff
-  where
-    eff :: CardEff
-    eff p m =
-      case mCard of
-        Just c ->
-          modStack ((:) (StackCard p c)) m
-        Nothing ->
-          m
-      where
-        mCard :: Maybe Card
-        mCard = headMay . (filter (/= imitate)) . (shuffle (getGen m)) $ getHand p m
 
 
 -- Balancer
@@ -250,12 +228,12 @@ staff =
     $ \p -> (drawCard p) . (hurt 4 (other p))
 
 
-surge :: Card
-surge =
+supercharge :: Card
+supercharge =
   Card
-    "Surge"
+    "Supercharge"
     "Hurt for 6 for each of your cards to the right"
-    "watcher/surge.svg"
+    "watcher/supercharge.svg"
     "fireball.wav"
     eff
   where
@@ -265,6 +243,26 @@ surge =
         (6 * (length . (filter (\(StackCard o _) -> o == p)) . getStack $ m))
           (other p) m
 
+
+imitate :: Card
+imitate =
+  Card
+    "Imitate"
+    "Becomes copy of random card in your hand"
+    "watcher/imitate.svg"
+    "feint.wav"
+    eff
+  where
+    eff :: CardEff
+    eff p m =
+      case mCard of
+        Just c ->
+          modStack ((:) (StackCard p c)) m
+        Nothing ->
+          m
+      where
+        mCard :: Maybe Card
+        mCard = headMay . (filter (/= imitate)) . (shuffle (getGen m)) $ getHand p m
 
 mindhack :: Card
 mindhack =
@@ -310,6 +308,22 @@ sword =
     "shielder/sword.svg"
     "dagger.wav"
     $ \p -> hurt 10 (other p)
+
+
+overload :: Card
+overload =
+  Card
+    "Overload"
+    "Hurt for 5 for each of their cards to the right"
+    "shielder/overload.svg"
+    "fireball.wav"
+    eff
+  where
+    eff :: CardEff
+    eff p m =
+      hurt
+        (5 * (length . (filter (\(StackCard o _) -> o == (other p))) . getStack $ m))
+          (other p) m
 
 
 soulburn :: Card
