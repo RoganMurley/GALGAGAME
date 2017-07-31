@@ -1,5 +1,6 @@
 module Cards where
 
+import Data.List (delete)
 import Safe (headMay)
 
 import Model
@@ -94,6 +95,29 @@ exile =
       . (both (\p -> modHand p $ filter (/= card)))
       . (modStack ((:) stackCard))
       . (modStack (filter (\(StackCard _ c) -> c /= card)))
+
+
+surprise :: Card
+surprise =
+  Card
+    "Surprise"
+    "Play a random card from your hand"
+    "breaker/surprise.svg"
+    "feint.wav"
+    eff
+  where
+    eff :: CardEff
+    eff p m =
+      case mCard of
+        Just c ->
+          (modStack ((:) (StackCard p c))) .
+            (modHand p (delete c))
+              $ m
+        Nothing ->
+          m
+      where
+        mCard :: Maybe Card
+        mCard = headMay . (shuffle (getGen m)) $ getHand p m
 
 
 -- Balancer
