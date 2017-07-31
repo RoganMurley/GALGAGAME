@@ -33,10 +33,10 @@ offering :: Card
 offering =
   Card
     "Offering"
-    "Hurt yourself for 7, then draw 3"
+    "Hurt yourself for 7, then draw 2"
     "striker/offering.svg"
     "offering.wav"
-    $ \p -> (times 3 (drawCard p)) . (hurt 7 p)
+    $ \p -> (times 2 (drawCard p)) . (hurt 7 p)
 
 
 confound :: Card
