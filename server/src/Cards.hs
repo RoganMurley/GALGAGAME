@@ -252,12 +252,12 @@ staff =
     $ \p -> (drawCard p) . (hurt 4 (other p))
 
 
-supercharge :: Card
-supercharge =
+surge :: Card
+surge =
   Card
-    "Supercharge"
+    "Surge"
     "Hurt for 6 for each of your cards to the right"
-    "watcher/supercharge.svg"
+    "watcher/surge.svg"
     "fireball.wav"
     eff
   where
@@ -334,12 +334,12 @@ sword =
     $ \p -> hurt 10 (other p)
 
 
-overload :: Card
-overload =
+backfire :: Card
+backfire =
   Card
-    "Overload"
+    "Backfire"
     "Hurt for 5 for each of their cards to the right"
-    "shielder/overload.svg"
+    "shielder/backfire.svg"
     "fireball.wav"
     eff
   where
