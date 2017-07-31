@@ -141,13 +141,13 @@ watcher :: Character
 watcher =
   Character
     "Watcher"
-    (Cards.staff, Cards.supercharge, Cards.imitate, Cards.prophecy)
+    (Cards.staff, Cards.surge, Cards.imitate, Cards.prophecy)
 
 shielder :: Character
 shielder =
   Character
     "Shielder"
-    (Cards.sword, Cards.overload, Cards.potion, Cards.reflect)
+    (Cards.sword, Cards.backfire, Cards.potion, Cards.reflect)
 
 bouncer :: Character
 bouncer =
