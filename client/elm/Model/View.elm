@@ -44,9 +44,13 @@ viewHand hand resolving =
         calcRot index =
             -1.5 * ((toFloat index) - (cardCount * 0.5))
 
-        calcTrans : Int -> Float
-        calcTrans index =
+        calcTransX : Int -> Float
+        calcTransX index =
             -12.0 * ((toFloat index) - (cardCount * 0.5))
+
+        calcTransY : Int -> Float
+        calcTransY index =
+            abs (0.8 * ((toFloat index) - (cardCount * 0.5)))
 
         cardCount : Float
         cardCount =
@@ -58,8 +62,10 @@ viewHand hand resolving =
                 [ class "my-card-container"
                 , style
                     [ ( "transform"
-                      , "translateX("
-                            ++ (toString <| calcTrans index)
+                      , "translate("
+                            ++ (toString <| calcTransX index)
+                            ++ "rem, "
+                            ++ (toString <| calcTransY index)
                             ++ "rem) rotate("
                             ++ (toString <| calcRot index)
                             ++ "deg)"
@@ -101,8 +107,10 @@ viewOtherHand cardCountInt hoverIndex =
                       -- , style [ ( "transform", "rotateZ(" ++ toString (calcRot index) ++ "deg) translateY(" ++ toString (calcTrans index) ++ "px)" ) ]
                     , style
                         [ ( "transform"
-                          , "translateX("
-                                ++ (toString <| calcTrans index)
+                          , "translate("
+                                ++ (toString <| calcTransX index)
+                                ++ "rem, "
+                                ++ (toString <| calcTransY index)
                                 ++ "rem) rotate("
                                 ++ (toString <| calcRot index)
                                 ++ "deg)"
@@ -133,9 +141,13 @@ viewOtherHand cardCountInt hoverIndex =
         calcRot index =
             1.5 * ((toFloat index) - (cardCount * 0.5))
 
-        calcTrans : Int -> Float
-        calcTrans index =
+        calcTransX : Int -> Float
+        calcTransX index =
             -12.0 * ((toFloat index) - (cardCount * 0.5))
+
+        calcTransY : Int -> Float
+        calcTransY index =
+            -0.8 * abs (1.5 * ((toFloat index) - (cardCount * 0.5)))
     in
         div [ class "hand other-hand" ] cards
 
