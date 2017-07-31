@@ -1,5 +1,6 @@
 module Cards where
 
+import Data.List (delete)
 import Safe (headMay)
 
 import Model
@@ -97,12 +98,12 @@ exile =
 
 
 
-imitate :: Card
-imitate =
+surprise :: Card
+surprise =
   Card
-    "Imitate"
-    "Becomes copy of random card in your hand"
-    "breaker/imitate.svg"
+    "Surprise"
+    "Play a random card from your hand"
+    "breaker/surprise.svg"
     "feint.wav"
     eff
   where
@@ -110,12 +111,14 @@ imitate =
     eff p m =
       case mCard of
         Just c ->
-          modStack ((:) (StackCard p c)) m
+          (modStack ((:) (StackCard p c))) .
+            (modHand p (delete c))
+              $ m
         Nothing ->
           m
       where
         mCard :: Maybe Card
-        mCard = headMay . (filter (/= imitate)) . (shuffle (getGen m)) $ getHand p m
+        mCard = headMay . (shuffle (getGen m)) $ getHand p m
 
 
 -- Balancer
