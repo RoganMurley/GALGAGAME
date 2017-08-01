@@ -33,6 +33,14 @@ update msg state =
                     otherwise ->
                         ( syncedState, Cmd.none )
 
+        HoverSelf i ->
+            case state of
+                PlayingGame m r ->
+                    ( PlayingGame { m | hover = i } r, Cmd.none )
+
+                s ->
+                    ( s, Cmd.none )
+
         HoverOutcome i ->
             case state of
                 PlayingGame m r ->

@@ -4,7 +4,8 @@ import CharacterSelect.Messages as CharacterSelect
 
 
 type Msg
-    = HoverOutcome (Maybe Int)
+    = HoverSelf (Maybe Int)
+    | HoverOutcome (Maybe Int)
     | ResolveOutcome String
     | SelectingMsg CharacterSelect.Msg
     | Sync String

@@ -32,7 +32,7 @@ modelDecoder =
                 (field "owner" whichDecoder)
                 (field "card" Card.decoder)
     in
-        Json.map6 (\a b c d e f -> Model a b c d e f Nothing)
+        Json.map6 (\a b c d e f -> Model a b c d e f Nothing Nothing)
             (field "handPA" <| list Card.decoder)
             (field "handPB" int)
             (field "stack" <| list stackCardDecoder)

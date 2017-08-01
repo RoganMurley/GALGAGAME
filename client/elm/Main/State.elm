@@ -248,20 +248,26 @@ connectedUpdate hostname msg ({ chat, game, settings, mode } as model) =
                 otherwise ->
                     ( model, Cmd.none )
 
-        HoverCard name ->
+        HoverCard mIndex ->
             let
-                cardName =
-                    case name of
+                index =
+                    case mIndex of
                         Just x ->
                             toString x
 
                         Nothing ->
                             "null"
+
+                ( newGame, cmd ) =
+                    GameState.update
+                        (GameState.HoverSelf mIndex)
+                        model.game
             in
-                ( model
+                ( { model | game = newGame }
                 , Cmd.batch
-                    [ playingOnly model <| message <| Send <| "hover:" ++ cardName
-                    , case name of
+                    [ cmd
+                    , playingOnly model <| message <| Send <| "hover:" ++ index
+                    , case mIndex of
                         Nothing ->
                             Cmd.none
 
@@ -357,37 +363,45 @@ locationUpdate model location =
 connectedReceive : ConnectedModel -> String -> ( ConnectedModel, Cmd Msg )
 connectedReceive model msg =
     if startsWith "chat:" msg then
-        ( model
-        , message <|
-            ChatMsg <|
-                Chat.New <|
-                    dropLeft (length "chat:") msg
-        )
+        let
+            ( newChat, cmd ) =
+                Chat.update
+                    model.chat
+                    (Chat.New <| dropLeft (length "chat:") msg)
+        in
+            ( { model | chat = newChat }, cmd )
     else if (startsWith "sync:" msg) then
-        ( model
-        , message <|
-            GameStateMsg <|
-                GameState.Sync <|
-                    dropLeft (length "sync:") msg
-        )
+        let
+            ( newGame, cmd ) =
+                GameState.update
+                    (GameState.Sync <| dropLeft (length "sync:") msg)
+                    model.game
+        in
+            ( { model | game = newGame }, cmd )
     else if (startsWith "hover:" msg) then
-        ( model
-        , Cmd.batch
-            [ message <|
-                GameStateMsg <|
-                    GameState.HoverOutcome <|
+        let
+            ( newGame, cmd ) =
+                GameState.update
+                    (GameState.HoverOutcome <|
                         parseHoverOutcome <|
                             dropLeft (length "hover:") msg
-            , playSound "/sfx/hover.wav"
-            ]
-        )
+                    )
+                    model.game
+        in
+            ( { model | game = newGame }
+            , Cmd.batch
+                [ cmd
+                , playSound "/sfx/hover.wav"
+                ]
+            )
     else if (startsWith "res:" msg) then
-        ( model
-        , message <|
-            GameStateMsg <|
-                GameState.ResolveOutcome <|
-                    dropLeft (length "res:") msg
-        )
+        let
+            ( newGame, cmd ) =
+                GameState.update
+                    (GameState.ResolveOutcome <| dropLeft (length "res:") msg)
+                    model.game
+        in
+            ( { model | game = newGame }, cmd )
     else if (startsWith "syncPlayers:" msg) then
         let
             newPlayers : ( Maybe String, Maybe String )
