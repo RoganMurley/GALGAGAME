@@ -10,6 +10,7 @@ type alias Model =
     , turn : WhichPlayer
     , life : Life
     , otherLife : Life
+    , hover : Maybe Int
     , otherHover : Maybe Int
     }
 
