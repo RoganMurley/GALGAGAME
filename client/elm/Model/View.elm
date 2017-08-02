@@ -19,7 +19,7 @@ view : Int -> Model -> Html Msg
 view resTime model =
     div []
         [ viewOtherHand model.otherHand model.otherHover
-        , viewHand model.hand False
+        , viewHand model.hand model.hover False
         , viewStack model.stack
         , viewTurn (List.length model.hand == maxHandLength) model.turn
         , viewStatus PlayerA model.life
@@ -27,22 +27,39 @@ view resTime model =
         ]
 
 
-viewHand : Hand -> Bool -> Html Msg
-viewHand hand resolving =
+viewHand : Hand -> HoverCardIndex -> Bool -> Html Msg
+viewHand hand hoverIndex resolving =
     let
+        isHover : Int -> Bool
+        isHover index =
+            case hoverIndex of
+                Nothing ->
+                    False
+
+                Just x ->
+                    index == x
+
         mouseActions : Int -> List (Attribute Msg)
         mouseActions index =
-            if resolving then
-                []
-            else
-                [ onClick <| PlayCard index
-                , onMouseEnter <| HoverCard <| Just index
+            let
+                clickActions =
+                    if resolving then
+                        []
+                    else
+                        [ onClick <| PlayCard index
+                        ]
+            in
+                [ onMouseEnter <| HoverCard <| Just index
                 , onMouseLeave <| HoverCard Nothing
                 ]
+                    ++ clickActions
 
         calcRot : Int -> Float
         calcRot index =
-            -1.5 * ((toFloat index) - (cardCount * 0.5))
+            if isHover index then
+                0
+            else
+                -1.5 * ((toFloat index) - (cardCount * 0.5))
 
         calcTransX : Int -> Float
         calcTransX index =
@@ -50,16 +67,26 @@ viewHand hand resolving =
 
         calcTransY : Int -> Float
         calcTransY index =
-            abs (0.8 * ((toFloat index) - (cardCount * 0.5)))
+            if isHover index then
+                0
+            else
+                abs (0.8 * ((toFloat index) - (cardCount * 0.5)))
 
         cardCount : Float
         cardCount =
             toFloat <| List.length hand
 
+        conditionalClasses : Int -> String
+        conditionalClasses index =
+            if isHover index then
+                " card-hover"
+            else
+                ""
+
         cardView : ( Int, Card ) -> Html Msg
         cardView ( index, { name, desc, imgURL } ) =
             div
-                [ class "my-card-container"
+                [ class <| "my-card-container" ++ (conditionalClasses index)
                 , style
                     [ ( "transform"
                       , "translate("
@@ -73,7 +100,7 @@ viewHand hand resolving =
                     ]
                 ]
                 [ div
-                    ([ class "card my-card"
+                    ([ class <| "card my-card" ++ (conditionalClasses index)
                      ]
                         ++ (mouseActions index)
                     )
@@ -277,7 +304,7 @@ resView : Res -> Int -> Model -> Html Msg
 resView res resTime model =
     div [ class "resolving" ]
         [ viewOtherHand model.otherHand model.otherHover
-        , viewHand model.hand True
+        , viewHand model.hand model.hover True
         , viewStack model.stack
         , viewResTurn
         , viewStatus PlayerA model.life

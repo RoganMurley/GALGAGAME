@@ -59,21 +59,23 @@ $card-height: 18rem;
   -webkit-transform: translateY(-0.55 * $card-height);
   transform: translateY(-0.55 * $card-height);
 
-  -webkit-transition: transform 0.15s ease-out;
-  transition: transform 0.15s ease-out;
+  -webkit-transition: transform 0.21s ease-out;
+  transition: transform 0.21s ease-out;
   cursor: pointer; cursor: hand;
 
   z-index: 10;
 
   border: 2px solid #261616;
-}
 
-.my-card:hover {
-  -webkit-transform: translateY(-1.05 * $card-height);
-  transform: translateY(-1.05 * $card-height) scale(1.1);
+  &.card-hover {
+    -webkit-transform: translateY(-1.05 * $card-height);
+    transform: translateY(-1.05 * $card-height) scale(1.1);
+    transition: none;
 
-  border: 5px double #f5deb3;
-  z-index: 11;
+    border-radius: 12px;
+    border-color: #fff;
+    box-shadow: 0 0 24px #fff;
+  }
 }
 
 .other-card {
@@ -86,7 +88,7 @@ $card-height: 18rem;
 }
 
 .my-card-container {
-  &.hover {
+  &.card-hover {
     z-index: 1;
   }
 }
