@@ -11,6 +11,7 @@ import Model.Types exposing (..)
 import Model.View as Model exposing (view, resView)
 import Raymarch.Types as Raymarch
 import Raymarch.View as Raymarch
+import ViewModel.State as ViewModel
 
 
 view : GameState -> String -> String -> String -> Float -> ( Int, Int ) -> Html Msg
@@ -58,14 +59,14 @@ view state roomID hostname httpPort time ( width, height ) =
             Selecting model ->
                 Html.map (GameStateMsg << GameState.SelectingMsg) <| CharacterSelect.view params model
 
-            PlayingGame m ( res, resTime ) ->
+            PlayingGame ( m, vm ) ( res, resTime ) ->
                 div []
                     [ case res of
                         [] ->
-                            Model.view resTime m
+                            Model.view resTime ( m, vm )
 
                         otherwise ->
-                            resView res resTime m
+                            resView res resTime ( m, vm )
                     , div [] [ Raymarch.view params ]
                     ]
 
@@ -73,7 +74,7 @@ view state roomID hostname httpPort time ( width, height ) =
                 case model of
                     Just m ->
                         div []
-                            [ resView res resTime m
+                            [ resView res resTime ( m, ViewModel.init )
                             , div [] [ Raymarch.view params ]
                             ]
 

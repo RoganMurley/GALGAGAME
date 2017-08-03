@@ -35,16 +35,16 @@ update msg state =
 
         HoverSelf i ->
             case state of
-                PlayingGame m r ->
-                    ( PlayingGame { m | hover = i } r, Cmd.none )
+                PlayingGame ( m, vm ) r ->
+                    ( PlayingGame ( m, { vm | hover = i } ) r, Cmd.none )
 
                 s ->
                     ( s, Cmd.none )
 
         HoverOutcome i ->
             case state of
-                PlayingGame m r ->
-                    ( PlayingGame { m | otherHover = i } r, Cmd.none )
+                PlayingGame ( m, vm ) r ->
+                    ( PlayingGame ( { m | otherHover = i }, vm ) r, Cmd.none )
 
                 s ->
                     ( s, Cmd.none )
@@ -67,12 +67,12 @@ update msg state =
 
                     otherwise ->
                         case ( state, final ) of
-                            ( PlayingGame oldModel _, PlayingGame newModel _ ) ->
-                                ( PlayingGame oldModel ( resList ++ [ newModel ], 0 )
+                            ( PlayingGame ( oldModel, oldVm ) _, PlayingGame ( newModel, _ ) _ ) ->
+                                ( PlayingGame ( oldModel, oldVm ) ( resList ++ [ newModel ], 0 )
                                 , Cmd.none
                                 )
 
-                            ( PlayingGame oldModel _, Ended w _ _ ) ->
+                            ( PlayingGame ( oldModel, oldVm ) _, Ended w _ _ ) ->
                                 ( Ended w (Just oldModel) ( resList, 0 )
                                 , Cmd.none
                                 )
@@ -102,8 +102,8 @@ update msg state =
 setRes : GameState -> List Model -> GameState
 setRes state res =
     case state of
-        PlayingGame m ( _, i ) ->
-            PlayingGame m ( res, i )
+        PlayingGame ( m, vm ) ( _, i ) ->
+            PlayingGame ( m, vm ) ( res, i )
 
         Ended w m ( _, i ) ->
             Ended w m ( res, i )
@@ -117,7 +117,26 @@ setRes state res =
 
 syncState : GameState -> String -> GameState
 syncState oldState msg =
-    decodeState msg oldState
+    carryVm oldState (decodeState msg oldState)
+
+
+
+-- Carry the old viewmodel between a new and olf GameState
+
+
+carryVm : GameState -> GameState -> GameState
+carryVm old new =
+    case old of
+        PlayingGame ( _, vm ) _ ->
+            case new of
+                PlayingGame ( m, _ ) ( res, i ) ->
+                    PlayingGame ( m, vm ) ( res, i )
+
+                otherwise ->
+                    new
+
+        otherwise ->
+            new
 
 
 resDelay : Int
@@ -128,13 +147,13 @@ resDelay =
 resTick : GameState -> GameState
 resTick state =
     case state of
-        PlayingGame model ( res, _ ) ->
+        PlayingGame ( model, vm ) ( res, _ ) ->
             case List.head res of
                 Just newModel ->
-                    PlayingGame newModel ( safeTail res, resDelay )
+                    PlayingGame ( newModel, vm ) ( safeTail res, resDelay )
 
                 Nothing ->
-                    PlayingGame model ( res, 0 )
+                    PlayingGame ( model, vm ) ( res, 0 )
 
         Ended which (Just model) ( res, _ ) ->
             Ended
