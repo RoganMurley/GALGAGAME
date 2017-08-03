@@ -11,7 +11,6 @@ init =
     , turn = PlayerA
     , life = 100
     , otherLife = 100
-    , hover = Nothing
     , otherHover = Nothing
     }
 

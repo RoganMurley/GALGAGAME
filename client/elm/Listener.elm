@@ -39,7 +39,7 @@ listen time state =
             PlayingGame _ ( [], _ ) ->
                 Cmd.none
 
-            PlayingGame m _ ->
+            PlayingGame ( m, _ ) _ ->
                 modelListen state m
 
             Ended _ (Just m) _ ->

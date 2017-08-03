@@ -8,6 +8,7 @@ import Html.Events exposing (..)
 import Main.Messages exposing (Msg(..))
 import Model.Types exposing (..)
 import Model.State exposing (maxHandLength)
+import ViewModel.Types exposing (ViewModel)
 
 
 cardWidth : Float
@@ -15,11 +16,11 @@ cardWidth =
     14.0
 
 
-view : Int -> Model -> Html Msg
-view resTime model =
+view : Int -> ( Model, ViewModel ) -> Html Msg
+view resTime ( model, viewModel ) =
     div []
         [ viewOtherHand model.otherHand model.otherHover
-        , viewHand model.hand model.hover False
+        , viewHand model.hand viewModel.hover False
         , viewStack model.stack
         , viewTurn (List.length model.hand == maxHandLength) model.turn
         , viewStatus PlayerA model.life
@@ -300,11 +301,11 @@ viewStack stack =
 -- RESOLVING VIEW.
 
 
-resView : Res -> Int -> Model -> Html Msg
-resView res resTime model =
+resView : Res -> Int -> ( Model, ViewModel ) -> Html Msg
+resView res resTime ( model, vm ) =
     div [ class "resolving" ]
         [ viewOtherHand model.otherHand model.otherHover
-        , viewHand model.hand model.hover True
+        , viewHand model.hand vm.hover True
         , viewStack model.stack
         , viewResTurn
         , viewStatus PlayerA model.life
