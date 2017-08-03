@@ -17,6 +17,20 @@
 
 html {
   height: 100%;
+
+  @media
+  (-webkit-min-device-pixel-ratio: 2),
+  (min-resolution: 192dpi) {
+    font-size: 14px;
+  }
+
+  @media (max-width: 1919px) {
+    font-size: 15px;
+  }
+
+  @media (max-width: 1279px) {
+    font-size: 14px;
+  }
 }
 
 body {
