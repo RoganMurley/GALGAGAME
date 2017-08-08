@@ -95,7 +95,7 @@ $card-height: 18rem;
 
 // Annoying transition overwrite.
 .other-card-container {
-  transition: transform 0.3s ease-out;
+  transition: transform 0.11s ease-out;
 
   &.card-hover {
     z-index: 1;

@@ -56,22 +56,38 @@ viewHand hand hoverIndex resolving =
                     ++ clickActions
 
         calcRot : Int -> Float
-        calcRot index =
-            if isHover index then
-                0
-            else
-                -1.5 * ((toFloat index) - (cardCount * 0.5))
+        calcRot i =
+            let
+                index : Int
+                index =
+                    if (List.length hand) % 2 == 0 && toFloat i < cardCount * 0.5 then
+                        i + 1
+                    else
+                        i
+            in
+                if isHover index then
+                    0
+                else
+                    -1.5 * ((toFloat index) - (cardCount * 0.5))
 
         calcTransX : Int -> Float
         calcTransX index =
             -12.0 * ((toFloat index) - (cardCount * 0.5))
 
         calcTransY : Int -> Float
-        calcTransY index =
-            if isHover index then
-                0
-            else
-                abs (0.8 * ((toFloat index) - (cardCount * 0.5)))
+        calcTransY i =
+            let
+                index : Int
+                index =
+                    if (List.length hand) % 2 == 0 && toFloat i < cardCount * 0.5 then
+                        i + 1
+                    else
+                        i
+            in
+                if isHover i then
+                    0
+                else
+                    abs (0.8 * ((toFloat index) - (cardCount * 0.5)))
 
         cardCount : Float
         cardCount =
@@ -166,16 +182,32 @@ viewOtherHand cardCountInt hoverIndex =
             List.map cardView (List.range 0 (cardCountInt - 1))
 
         calcRot : Int -> Float
-        calcRot index =
-            1.5 * ((toFloat index) - (cardCount * 0.5))
+        calcRot i =
+            let
+                index : Int
+                index =
+                    if cardCountInt % 2 == 0 && toFloat i < (toFloat cardCountInt) * 0.5 then
+                        i + 1
+                    else
+                        i
+            in
+                1.5 * ((toFloat index) - (cardCount * 0.5))
 
         calcTransX : Int -> Float
         calcTransX index =
             -12.0 * ((toFloat index) - (cardCount * 0.5))
 
         calcTransY : Int -> Float
-        calcTransY index =
-            -0.8 * abs (1.5 * ((toFloat index) - (cardCount * 0.5)))
+        calcTransY i =
+            let
+                index : Int
+                index =
+                    if cardCountInt % 2 == 0 && toFloat i < (toFloat cardCountInt) * 0.5 then
+                        i + 1
+                    else
+                        i
+            in
+                -0.8 * abs (1.5 * ((toFloat index) - (cardCount * 0.5)))
     in
         div [ class "hand other-hand" ] cards
 
