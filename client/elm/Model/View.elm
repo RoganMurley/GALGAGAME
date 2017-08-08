@@ -68,7 +68,7 @@ viewHand hand hoverIndex resolving =
                 if isHover index then
                     0
                 else
-                    -1.5 * ((toFloat index) - (cardCount * 0.5))
+                    -1.5 * (toFloat (ceiling ((toFloat index) - (cardCount * 0.5))))
 
         calcTransX : Int -> Float
         calcTransX index =
@@ -87,7 +87,7 @@ viewHand hand hoverIndex resolving =
                 if isHover i then
                     0
                 else
-                    abs (0.8 * ((toFloat index) - (cardCount * 0.5)))
+                    abs (0.8 * (toFloat (ceiling ((toFloat index) - (cardCount * 0.5)))))
 
         cardCount : Float
         cardCount =
@@ -191,7 +191,7 @@ viewOtherHand cardCountInt hoverIndex =
                     else
                         i
             in
-                1.5 * ((toFloat index) - (cardCount * 0.5))
+                1.5 * (toFloat (ceiling ((toFloat index) - (cardCount * 0.5))))
 
         calcTransX : Int -> Float
         calcTransX index =
@@ -207,7 +207,7 @@ viewOtherHand cardCountInt hoverIndex =
                     else
                         i
             in
-                -0.8 * abs (1.5 * ((toFloat index) - (cardCount * 0.5)))
+                -0.8 * abs (1.5 * (toFloat (ceiling ((toFloat index) - (cardCount * 0.5)))))
     in
         div [ class "hand other-hand" ] cards
 
