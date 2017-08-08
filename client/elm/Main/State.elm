@@ -175,14 +175,19 @@ connectedUpdate hostname msg ({ chat, game, settings, mode } as model) =
             )
 
         PlayCard index ->
-            ( model
-            , turnOnly model
-                (Cmd.batch
-                    [ send hostname ("play:" ++ (toString index))
-                    , playSound "/sfx/playCard.wav"
-                    ]
+            let
+                ( newGame, cmd ) =
+                    GameState.update (GameState.HoverSelf Nothing) game
+            in
+                ( { model | game = newGame }
+                , turnOnly model
+                    (Cmd.batch
+                        [ send hostname ("play:" ++ (toString index))
+                        , playSound "/sfx/playCard.wav"
+                        , cmd
+                        ]
+                    )
                 )
-            )
 
         ChatMsg chatMsg ->
             let
