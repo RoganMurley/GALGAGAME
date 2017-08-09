@@ -16,9 +16,9 @@ cardWidth =
     14.0
 
 
-view : Int -> ( Model, ViewModel ) -> Html Msg
-view resTime ( model, viewModel ) =
-    div []
+view : Int -> ( Model, ViewModel ) -> Float -> Html Msg
+view resTime ( model, viewModel ) time =
+    div [ class "game-container", style [ screenshakeStyle viewModel.shake time ] ]
         [ viewOtherHand model.otherHand model.otherHover
         , viewHand model.hand viewModel.hover False
         , viewStack model.stack
@@ -350,3 +350,23 @@ viewResTurn =
     div
         [ class "turn-indi" ]
         [ text "Resolving..." ]
+
+
+
+-- SCREENSHAKE
+
+
+screenshakeStyle : Float -> Float -> ( String, String )
+screenshakeStyle shake time =
+    let
+        x : Float
+        x =
+            shake * 0.3 * (toFloat (((ceiling time) * 1247823748932 + 142131) % 20) - 10)
+
+        y : Float
+        y =
+            shake * 0.3 * (toFloat (((ceiling time) * 1247823748932 + 142131) % 20) - 10)
+    in
+        ( "transform"
+        , "translate(" ++ (toString x) ++ "px, " ++ (toString y) ++ "px)"
+        )

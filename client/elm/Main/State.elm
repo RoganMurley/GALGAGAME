@@ -176,15 +176,19 @@ connectedUpdate hostname msg ({ chat, game, settings, mode } as model) =
 
         PlayCard index ->
             let
-                ( newGame, cmd ) =
+                ( newGame1, cmd1 ) =
                     GameState.update (GameState.HoverSelf Nothing) game
+
+                ( newGame2, cmd2 ) =
+                    GameState.update (GameState.Shake 1.0) newGame1
             in
-                ( { model | game = newGame }
+                ( { model | game = newGame2 }
                 , turnOnly model
                     (Cmd.batch
                         [ send hostname ("play:" ++ (toString index))
                         , playSound "/sfx/playCard.wav"
-                        , cmd
+                        , cmd1
+                        , cmd2
                         ]
                     )
                 )
@@ -416,7 +420,11 @@ connectedReceive model msg =
         in
             ( { model | players = newPlayers }, Cmd.none )
     else if (startsWith "playCard:" msg) then
-        ( model, playSound "/sfx/playCard.wav" )
+        let
+            ( newGame, _ ) =
+                GameState.update (GameState.Shake 1.0) model.game
+        in
+            ( { model | game = newGame }, playSound "/sfx/playCard.wav" )
     else if (startsWith "end:" msg) then
         ( model, playSound "/sfx/endTurn.wav" )
     else
