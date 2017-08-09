@@ -74,7 +74,7 @@ update msg state =
                                 )
 
                             ( PlayingGame ( oldModel, oldVm ) _, Ended w _ _ ) ->
-                                ( Ended w (Just oldModel) ( resList, 0 )
+                                ( Ended w (Just ( oldModel, oldVm )) ( resList, 0 )
                                 , Cmd.none
                                 )
 
@@ -155,23 +155,34 @@ resDelay =
 
 resTick : GameState -> GameState
 resTick state =
-    case state of
-        PlayingGame ( model, vm ) ( res, _ ) ->
-            case List.head res of
-                Just newModel ->
-                    PlayingGame ( newModel, vm ) ( safeTail res, resDelay )
+    let
+        shakeMag : Float
+        shakeMag =
+            1.1
+    in
+        case state of
+            PlayingGame ( model, vm ) ( res, _ ) ->
+                case List.head res of
+                    Just newModel ->
+                        PlayingGame
+                            ( newModel, { vm | shake = shakeMag } )
+                            ( safeTail res, resDelay )
 
-                Nothing ->
-                    PlayingGame ( model, vm ) ( res, 0 )
+                    Nothing ->
+                        PlayingGame
+                            ( model, vm )
+                            ( res, 0 )
 
-        Ended which (Just model) ( res, _ ) ->
-            Ended
-                which
-                (List.head res)
-                ( List.drop 1 res, resDelay )
+            Ended which (Just ( m, vm )) ( res, _ ) ->
+                Ended
+                    which
+                    (Maybe.map (\x -> ( x, { vm | shake = shakeMag } )) <|
+                        List.head res
+                    )
+                    ( List.drop 1 res, resDelay )
 
-        otherwise ->
-            state
+            otherwise ->
+                state
 
 
 tickForward : GameState -> GameState
@@ -181,7 +192,13 @@ tickForward state =
             PlayingGame ( m, ViewModel.shakeDecay vm ) ( res, tick - 1 )
 
         Ended which model ( res, tick ) ->
-            Ended which model ( res, tick - 1 )
+            let
+                newModel =
+                    Maybe.map
+                        (\( m, vm ) -> ( m, ViewModel.shakeDecay vm ))
+                        model
+            in
+                Ended which newModel ( res, tick - 1 )
 
         otherwise ->
             state

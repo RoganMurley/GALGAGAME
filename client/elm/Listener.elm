@@ -42,7 +42,7 @@ listen time state =
             PlayingGame ( m, _ ) _ ->
                 modelListen state m
 
-            Ended _ (Just m) _ ->
+            Ended _ (Just ( m, vm )) _ ->
                 modelListen state m
 
             otherwise ->

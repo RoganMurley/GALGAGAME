@@ -333,9 +333,9 @@ viewStack stack =
 -- RESOLVING VIEW.
 
 
-resView : Res -> Int -> ( Model, ViewModel ) -> Html Msg
-resView res resTime ( model, vm ) =
-    div [ class "resolving" ]
+resView : Res -> Int -> ( Model, ViewModel ) -> Float -> Html Msg
+resView res resTime ( model, vm ) time =
+    div [ class "game-container resolving", style [ screenshakeStyle vm.shake time ] ]
         [ viewOtherHand model.otherHand model.otherHover
         , viewHand model.hand vm.hover True
         , viewStack model.stack
