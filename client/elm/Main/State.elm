@@ -165,14 +165,18 @@ connectedUpdate hostname msg ({ chat, game, settings, mode } as model) =
             ( model, turnOnly model (send hostname "draw:") )
 
         EndTurn ->
-            ( model
-            , turnOnly model
-                (Cmd.batch
-                    [ send hostname "end:"
-                    , playSound "/sfx/endTurn.wav"
-                    ]
+            let
+                ( newGame, _ ) =
+                    GameState.update (GameState.Shake 0.95) model.game
+            in
+                ( { model | game = newGame }
+                , turnOnly model
+                    (Cmd.batch
+                        [ send hostname "end:"
+                        , playSound "/sfx/endTurn.wav"
+                        ]
+                    )
                 )
-            )
 
         PlayCard index ->
             let
