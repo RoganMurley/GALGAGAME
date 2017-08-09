@@ -95,7 +95,7 @@ winningEnd m =
 -- We manually set biases for these cards.
 biasHand :: Card -> Weight
 biasHand c
-  | c == Cards.badApple     = -6
+  | c == Cards.badApple     = -9
   | c == (Cards.obscured c) = -3
   | c == Cards.hoard        = -6
   | c == Cards.exile        = -3

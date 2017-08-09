@@ -63,7 +63,7 @@ view state roomID hostname httpPort time ( width, height ) =
                 div []
                     [ case res of
                         [] ->
-                            Model.view resTime ( m, vm )
+                            Model.view resTime ( m, vm ) time
 
                         otherwise ->
                             resView res resTime ( m, vm )

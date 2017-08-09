@@ -8,6 +8,7 @@ import GameState.Types exposing (GameState(..))
 import Json.Decode as Json exposing (field, maybe)
 import Main.Messages as Main
 import Model.Types exposing (..)
+import ViewModel.State as ViewModel
 import Util exposing (fromJust, message, safeTail)
 
 
@@ -98,6 +99,14 @@ update msg state =
             in
                 ( Selecting newModel, cmd )
 
+        Shake mag ->
+            case state of
+                PlayingGame ( m, vm ) r ->
+                    ( PlayingGame ( m, { vm | shake = mag } ) r, Cmd.none )
+
+                s ->
+                    ( s, Cmd.none )
+
 
 setRes : GameState -> List Model -> GameState
 setRes state res =
@@ -121,7 +130,7 @@ syncState oldState msg =
 
 
 
--- Carry the old viewmodel between a new and olf GameState
+-- Carry the old viewmodel between a new and old GameState
 
 
 carryVm : GameState -> GameState -> GameState
@@ -168,8 +177,8 @@ resTick state =
 tickForward : GameState -> GameState
 tickForward state =
     case state of
-        PlayingGame model ( res, tick ) ->
-            PlayingGame model ( res, tick - 1 )
+        PlayingGame ( m, vm ) ( res, tick ) ->
+            PlayingGame ( m, ViewModel.shakeDecay vm ) ( res, tick - 1 )
 
         Ended which model ( res, tick ) ->
             Ended which model ( res, tick - 1 )
