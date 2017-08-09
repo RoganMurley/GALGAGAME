@@ -472,14 +472,14 @@ hoard :: Card
 hoard =
   Card
     "Hoard"
-    "Put 3 copies of next card on top of owner's deck"
+    "Put 2 copies of next card on top of owner's deck"
     "collector/hoard.svg"
     "feint.wav"
     $ withStackHead eff
   where
     eff :: StackCard -> CardEff
     eff (StackCard o card) =
-      \_ -> modDeck o ((++) (replicate 3 card))
+      \_ -> modDeck o ((++) (replicate 2 card))
 
 
 transmute :: Card
