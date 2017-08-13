@@ -42,7 +42,7 @@ getRoom name state =
         Nothing ->
           do
             gen <- getGen
-            r <- newMVar (Room.new gen)
+            r <- newMVar (Room.new gen name)
             putStrLn . ("Rooms: " <>) . cs . show . State $ insert name r s
             return (State (insert name r s), r)
 

@@ -119,11 +119,13 @@ allCharacters = [
     , bouncer
   ]
 
+
 striker :: Character
 striker =
   Character
     "Striker"
     (Cards.dagger, Cards.fireball, Cards.offering, Cards.confound)
+
 
 breaker :: Character
 breaker =
@@ -131,11 +133,13 @@ breaker =
     "Breaker"
     (Cards.hammer, Cards.lightning, Cards.exile, Cards.hubris)
 
+
 drinker :: Character
 drinker =
   Character
     "Drinker"
     (Cards.scythe, Cards.bloodsucker, Cards.serpent, Cards.reversal)
+
 
 watcher :: Character
 watcher =
@@ -143,11 +147,13 @@ watcher =
     "Watcher"
     (Cards.staff, Cards.surge, Cards.imitate, Cards.prophecy)
 
+
 shielder :: Character
 shielder =
   Character
     "Shielder"
     (Cards.sword, Cards.soulburn, Cards.potion, Cards.reflect)
+
 
 bouncer :: Character
 bouncer =
@@ -155,11 +161,13 @@ bouncer =
     "Bouncer"
     (Cards.boomerang, Cards.overwhelm, Cards.echo, Cards.feint)
 
+
 balancer :: Character
 balancer =
   Character
     "Balancer"
     (Cards.katana, Cards.curse, Cards.bless, Cards.balance)
+
 
 collector :: Character
 collector =

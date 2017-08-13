@@ -22,17 +22,23 @@ data Room = Room
   { room_pa    :: Player
   , room_pb    :: Player
   , room_specs :: Spectators
+  , room_name  :: Name
   , room_state :: GameState
   } deriving (Show)
 
 
-new :: Gen -> Room
-new gen = Room
+new :: Gen -> Name -> Room
+new gen name = Room
   { room_pa    = Nothing
   , room_pb    = Nothing
   , room_specs = []
+  , room_name  = name
   , room_state = initState gen
   }
+
+
+getName :: Room -> Name
+getName Room{ room_name = name } = name
 
 
 getState :: Room -> GameState
