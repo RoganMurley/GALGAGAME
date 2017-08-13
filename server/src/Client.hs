@@ -2,7 +2,7 @@ module Client where
 
 import Data.Aeson (ToJSON(..))
 import Data.Text (Text)
-import Network.WebSockets (Connection, sendTextData)
+import Network.WebSockets (Connection, receiveData, sendTextData)
 
 import GameState (Username)
 
@@ -47,6 +47,11 @@ guid = client_guid
 send :: Text -> Client -> IO ()
 send message (Client _ (PlayerConnection conn) _) = sendTextData conn message
 send _       _                                    = return ()
+
+
+receive :: Client -> IO (Text)
+receive (Client _ (PlayerConnection conn) _) = receiveData conn
+receive  _                                   = return ("")
 
 
 cpuClient :: Text -> Client

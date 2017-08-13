@@ -80,7 +80,7 @@ register userConn = do
 
 checkAuth :: R.Connection -> Token -> IO (Maybe Username)
 checkAuth tokenConn token = do
-  gotten <- (R.runRedis tokenConn) $ R.get (T.encodeUtf8 token)
+  gotten <- (R.runRedis tokenConn) . R.get $ T.encodeUtf8 token
   case gotten of
     Right username ->
       return (T.decodeUtf8 <$> username)
@@ -89,9 +89,9 @@ checkAuth tokenConn token = do
       return Nothing
 
 
-type Token = Text
+type Token    = Text
 type Username = Text
-type Seconds = Integer
+type Seconds  = Integer
 
 
 data Database =
