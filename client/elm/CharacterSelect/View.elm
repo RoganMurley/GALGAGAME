@@ -72,7 +72,7 @@ view params { characters, selected, hover } =
                     , tr []
                         (List.map
                             (\x -> th [ class "card-type" ] [ text x ])
-                            [ "Weapon", "Magic", "Utility", "Control" ]
+                            [ "Sword", "Sorcery", "Support", "Scourge" ]
                         )
                     ]
     in
