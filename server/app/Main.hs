@@ -111,14 +111,14 @@ beginPlay state client roomVar = do
     Just (room', which) ->
       finally
         (play which room' client roomVar)
-        (disconnect client (Just which) roomVar state)
+        (disconnect client roomVar state)
 
 
 beginSpec :: MVar Server.State -> Client -> MVar Room -> IO ()
 beginSpec state client roomVar =
   finally
     (spectate client roomVar)
-    (disconnect client Nothing roomVar state)
+    (disconnect client roomVar state)
 
 
 beginComputer :: MVar Server.State -> Client -> MVar Room -> IO ()
@@ -135,8 +135,8 @@ beginComputer state client roomVar = do
           _ <- forkIO (computerPlay (other which) roomVar)
           (play which room' client roomVar))
         (do
-          _ <- disconnect computerClient (Just . other $ which) roomVar state
-          (disconnect client (Just which) roomVar state))
+          _ <- disconnect computerClient roomVar state
+          (disconnect client roomVar state))
 
 
 getToken :: WS.PendingConnection -> Maybe A.Token
@@ -277,13 +277,11 @@ broadcast msg room =
   forM_ (Room.getClients room) (Client.send msg)
 
 
-disconnect :: Client -> Maybe WhichPlayer -> MVar Room -> MVar Server.State -> IO (Server.State)
-disconnect client mWhich roomVar state = do
+disconnect :: Client -> MVar Room -> MVar Server.State -> IO (Server.State)
+disconnect client roomVar state = do
   room <- Server.removeClient client roomVar
   broadcast (toChat . LeaveCommand $ Client.name client) room
-  case mWhich of -- Remove this?
-    Nothing -> return ()
-    Just _ ->  syncPlayersRoom room
+  syncPlayersRoom room
   if Room.empty room then
     Server.deleteRoom (Room.getName room) state
       else
