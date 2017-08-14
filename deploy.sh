@@ -9,7 +9,7 @@ fi
 
 echo "Building client code..."
 pushd client
-gulp
+gulp build
 popd
 
 echo "Creating server image..."
