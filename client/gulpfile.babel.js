@@ -63,7 +63,9 @@ gulp.task('copyDeps', () => {
 
 
 // DEFAULT
-gulp.task('default', ['multi', 'sass', 'html', 'copy', 'copyDeps']);
+gulp.task('default', ['build', 'watch']);
+
+gulp.task('build', ['multi', 'sass', 'html', 'copy', 'copyDeps']);
 
 gulp.task('watch', () => {
   gulp.watch('elm/**/*.elm', ['multi']);
