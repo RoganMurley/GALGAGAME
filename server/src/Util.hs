@@ -1,5 +1,7 @@
 module Util where
 
+import Control.Concurrent.STM (STM)
+import Control.Concurrent.STM.TVar (TVar, readTVar, writeTVar)
 import Data.Text (Text)
 import qualified System.Random as R
 import System.Random.Shuffle (shuffle')
@@ -57,3 +59,23 @@ getGen = Gen <$> R.getStdGen
 
 mkGen :: Int -> Gen
 mkGen n = Gen . R.mkStdGen $ n
+
+
+modReadTVar :: TVar a -> (a -> a) -> STM a
+modReadTVar var f = do
+  x <- readTVar var
+  let a = f x in
+    do
+      writeTVar var a
+      return a
+{-# INLINE modReadTVar #-}
+
+
+modReturnTVar :: TVar a -> (a -> (a, b)) -> STM b
+modReturnTVar var f = do
+  x <- readTVar var
+  let (a, b) = f x in
+    do
+      writeTVar var a
+      return b
+{-# INLINE modReturnTVar #-}
