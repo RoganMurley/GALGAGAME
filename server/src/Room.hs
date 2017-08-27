@@ -73,15 +73,6 @@ clientExists client room =
     any (== name) (Client.name <$> (getClients room))
 
 
-getSpeccingName :: Room -> Text
-getSpeccingName room =
-  case getPlayerClient PlayerA room of
-    Just client ->
-      Client.name client
-    Nothing ->
-      "nobody yet..."
-
-
 addSpec :: Client -> Room -> Room
 addSpec client room = room { room_specs = specs }
   where

@@ -78,8 +78,9 @@ register userConn = do
       status internalServerError500
 
 
-checkAuth :: R.Connection -> Token -> IO (Maybe Username)
-checkAuth tokenConn token = do
+checkAuth :: R.Connection -> Maybe Token -> IO (Maybe Username)
+checkAuth _         Nothing      = return Nothing
+checkAuth tokenConn (Just token) = do
   gotten <- (R.runRedis tokenConn) . R.get $ T.encodeUtf8 token
   case gotten of
     Right username ->

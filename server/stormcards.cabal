@@ -39,6 +39,7 @@ library
                      , safe
                      , scotty
                      , scotty-cookie
+                     , stm
                      , string-conversions
                      , text
                      , time
@@ -68,6 +69,7 @@ executable stormcards
                      , string-conversions
                      , text
                      , transformers
+                     , stm
                      , stormcards
                      , wai
                      , wai-websockets

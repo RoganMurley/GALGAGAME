@@ -1,6 +1,8 @@
 module Main where
 
-import Control.Concurrent (MVar, forkIO, newMVar, modifyMVar, readMVar, threadDelay)
+import Control.Concurrent (forkIO, threadDelay)
+import Control.Monad.STM (STM, atomically)
+import Control.Concurrent.STM.TVar (TVar, newTVar, readTVar, readTVarIO)
 import Control.Exception (finally)
 import Control.Monad (forM_, forever, mzero, when)
 import Control.Monad.Trans.Class (lift)
@@ -28,7 +30,7 @@ import Characters (CharModel(..), character_name, toList)
 import Model (Model, modelReverso)
 import Player (WhichPlayer(..), other)
 import GameState (EncodableOutcome(..), GameCommand(..), GameState(..), PlayState(..), Outcome(..), Username, reverso, update)
-import Util (Err, Gen, shuffle)
+import Util (Err, Gen, getGen, modReturnTVar, shuffle)
 
 import qualified Server
 import Server (addComputerClient, addPlayerClient, addSpecClient)
@@ -47,103 +49,97 @@ import qualified Data.GUID as GUID
 main :: IO ()
 main = do
   hSetBuffering stdout LineBuffering
-  state <- newMVar Server.initState
   userConn  <- R.connect $ A.connectInfo A.UserDatabase
   tokenConn <- R.connect $ A.connectInfo A.TokenDatabase
-  authApp <- A.app userConn tokenConn
+  authApp   <- A.app userConn tokenConn
+  state     <- atomically $ newTVar Server.initState
   run 9160 $ waiApp state tokenConn authApp
 
 
-waiApp :: MVar Server.State -> R.Connection -> Application -> Application
+waiApp :: TVar Server.State -> R.Connection -> Application -> Application
 waiApp state tokenConn backupApp =
   websocketsOr WS.defaultConnectionOptions (wsApp state tokenConn) backupApp
 
 
-wsApp :: MVar Server.State -> R.Connection -> WS.ServerApp
+wsApp :: TVar Server.State -> R.Connection -> WS.ServerApp
 wsApp state tokenConn pending = do
-  conn <- WS.acceptRequest pending
-  WS.forkPingThread conn 30
-  roomReq <- WS.receiveData conn
-  case getToken pending of
-    Nothing ->
-      begin conn roomReq Nothing state
-    Just token -> do
-      storedToken <- A.checkAuth tokenConn token
-      begin conn roomReq storedToken state
+  connection <- WS.acceptRequest pending
+  msg        <- WS.receiveData connection
+  usernameM  <- A.checkAuth tokenConn $ getToken pending
+  begin connection msg usernameM state
+  WS.forkPingThread connection 30
 
 
-begin :: WS.Connection -> Text -> Maybe Username -> MVar Server.State -> IO ()
+begin :: WS.Connection -> Text -> Maybe Username -> TVar Server.State -> IO ()
 begin conn roomReq loggedUsername state =
   case parseRoomReq roomReq of
     Nothing ->
-      (WS.sendTextData conn) . toChat $
-        ErrorCommand ("bad room name protocol: " <> roomReq)
+      (WS.sendTextData conn) . toChat . ErrorCommand $ "bad room name protocol: " <> roomReq
     Just roomName -> do
-      roomVar <- Server.getRoom roomName state
       msg <- WS.receiveData conn
-      guid <- GUID.genText
       case parsePrefix msg of
         Nothing ->
-          (WS.sendTextData conn) . toChat $
-            ErrorCommand $ "connection protocol failure" <> msg
-        Just prefix ->
+          (WS.sendTextData conn) . toChat . ErrorCommand $ "connection protocol failure" <> msg
+        Just prefix -> do
+          gen <- getGen
+          roomVar <- atomically $ do
+            newRoomVar <- newTVar $ Room.new gen roomName
+            Server.getOrCreateRoom roomName newRoomVar state
+          guid <- GUID.genText
           beginPrefix prefix state (client guid) roomVar
   where
     client :: Text -> Client
-    client =
-      Client
-        (fromMaybe "Guest" loggedUsername)
-        (PlayerConnection conn)
+    client = Client (fromMaybe "Guest" loggedUsername) (PlayerConnection conn)
 
 
-beginPrefix :: Prefix -> MVar Server.State -> Client -> MVar Room -> IO ()
+beginPrefix :: Prefix -> TVar Server.State -> Client -> TVar Room -> IO ()
 beginPrefix PrefixPlay = beginPlay
 beginPrefix PrefixSpec = beginSpec
 beginPrefix PrefixCpu  = beginComputer
 
 
-beginPlay :: MVar Server.State -> Client -> MVar Room -> IO ()
+beginPlay :: TVar Server.State -> Client -> TVar Room -> IO ()
 beginPlay state client roomVar = do
-  added <- addPlayerClient client roomVar
+  added <- atomically $ addPlayerClient client roomVar
   case added of
     Nothing ->
       Client.send (toChat $ ErrorCommand "room is full") client
-    Just (room', which) ->
+    Just which ->
       finally
-        (play which room' client roomVar)
+        (play which client roomVar)
         (disconnect client roomVar state)
 
 
-beginSpec :: MVar Server.State -> Client -> MVar Room -> IO ()
+beginSpec :: TVar Server.State -> Client -> TVar Room -> IO ()
 beginSpec state client roomVar =
   finally
     (spectate client roomVar)
     (disconnect client roomVar state)
 
 
-beginComputer :: MVar Server.State -> Client -> MVar Room -> IO ()
+beginComputer :: TVar Server.State -> Client -> TVar Room -> IO ()
 beginComputer state client roomVar = do
   cpuGuid  <- GUID.genText
-  computer <- addComputerClient cpuGuid roomVar
-  added    <- addPlayerClient client roomVar
+  (computer, added) <- atomically $ do
+    computerAdded <- addComputerClient cpuGuid roomVar
+    playerAdded <- addPlayerClient client roomVar
+    return (computerAdded, playerAdded)
   case (,) <$> computer <*> added of
     Nothing ->
       Client.send (toChat $ ErrorCommand "room is full") client
-    Just (computerClient, (room', which)) ->
+    Just (computerClient, which) ->
       finally
         (do
           _ <- forkIO (computerPlay (other which) roomVar)
-          (play which room' client roomVar))
+          (play which client roomVar))
         (do
           _ <- disconnect computerClient roomVar state
           (disconnect client roomVar state))
 
 
 getToken :: WS.PendingConnection -> Maybe A.Token
-getToken pending = loginCookie
+getToken pending = snd <$> find (\x -> fst x == "login") cookies
   where
-    loginCookie :: Maybe A.Token
-    loginCookie = snd <$> find (\x -> fst x == "login") cookies
     cookies :: [(Text, Text)]
     cookies = case cookieString of
       Just str ->
@@ -171,24 +167,24 @@ data Command =
   deriving (Show)
 
 
-roomUpdate :: GameCommand -> WhichPlayer -> MVar Room -> IO (Either Err (Room, [Outcome]))
-roomUpdate cmd which room =
-  modifyMVar room $ \r ->
-    case updateRoom r of
+roomUpdate :: GameCommand -> WhichPlayer -> TVar Room -> STM (Room, Either Err [Outcome])
+roomUpdate cmd which roomVar =
+  modReturnTVar roomVar $ \room ->
+    case updateRoom room of
       Left err ->
-        return (r, Left err)
+        (room, (room, Left err))
       Right (Nothing, o) ->
-        return (r, Right (r, o))
-      Right (Just r', o) ->
-        return (r', Right (r', o))
+        (room, (room, Right o))
+      Right (Just r, o) ->
+        (r, (r, Right o))
   where
     updateRoom :: Room -> Either Err (Maybe Room, [Outcome])
-    updateRoom r =
-      case update cmd which (Room.getState r) of
+    updateRoom room =
+      case update cmd which (Room.getState room) of
         Left err ->
           Left err
         Right (newState, outcomes) ->
-          Right ((Room.setState r) <$> newState, outcomes)
+          Right ((Room.setState room) <$> newState, outcomes)
 
 
 sendToPlayer :: WhichPlayer -> Text -> Room -> IO ()
@@ -211,9 +207,9 @@ sendExcluding which msg room = do
   sendToPlayer (other which) msg room
 
 
-spectate :: Client -> MVar Room -> IO ()
+spectate :: Client -> TVar Room -> IO ()
 spectate client roomVar = do
-  room <- addSpecClient client roomVar
+  room <- atomically $ addSpecClient client roomVar
   Client.send ("acceptSpec:" :: Text) client
   broadcast (toChat (SpectateCommand (Client.name client))) room
   syncClient client (Room.getState room)
@@ -222,37 +218,38 @@ spectate client roomVar = do
     actSpec (parseMsg (Client.name client) msg) roomVar
 
 
-play :: WhichPlayer -> Room -> Client -> MVar Room -> IO ()
-play which room' client room = do
+play :: WhichPlayer -> Client -> TVar Room -> IO ()
+play which client roomVar = do
   Client.send ("acceptPlay:" :: Text) client
-  syncPlayersRoom room'
-  syncRoomClients room'
+  room <- atomically $ readTVar roomVar
+  syncPlayersRoom room
+  syncRoomClients room
   forever $ do
     msg <- Client.receive client
-    actPlay (parseMsg (Client.name client) msg) which room
+    actPlay (parseMsg (Client.name client) msg) which roomVar
 
 
-computerPlay :: WhichPlayer -> MVar Room -> IO ()
-computerPlay which room =
+computerPlay :: WhichPlayer -> TVar Room -> IO ()
+computerPlay which roomVar =
   do
   _ <- runMaybeT . forever $ do
     lift $ threadDelay 1000000
-    command <- lift $ chooseComputerCommand which room
+    command <- lift $ chooseComputerCommand which roomVar
     case command of
       Just c -> do
-        lift $ actPlay c which room
+        lift $ actPlay c which roomVar
         lift $ threadDelay 10000
       Nothing ->
         return ()
     -- Break out if the room's empty.
-    r <- lift $ readMVar room
-    when (Room.empty r) mzero
+    room <- lift . atomically $ readTVar roomVar
+    when (Room.empty room) mzero
   return ()
 
 
-chooseComputerCommand :: WhichPlayer -> MVar Room -> IO (Maybe Command)
+chooseComputerCommand :: WhichPlayer -> TVar Room -> IO (Maybe Command)
 chooseComputerCommand which room = do
-  r <- readMVar room
+  r <- atomically $ readTVar room
   case Room.getState r of
     Selecting charModel _ gen ->
       return . Just . SelectCharacterCommand $ randomChar charModel gen
@@ -261,11 +258,9 @@ chooseComputerCommand which room = do
     _ ->
       return Nothing
   where
-    -- So ugly kill me
     trans :: Action -> Command
     trans EndAction = EndTurnCommand
     trans (PlayAction index) = PlayCardCommand index
-    -- Unsafe and ugly fix me please
     randomChar :: CharModel -> Gen -> Text
     randomChar (CharModel selected _ allChars) gen =
       character_name . head . (drop (length . Characters.toList $ selected))
@@ -277,27 +272,26 @@ broadcast msg room =
   forM_ (Room.getClients room) (Client.send msg)
 
 
-disconnect :: Client -> MVar Room -> MVar Server.State -> IO (Server.State)
+disconnect :: Client -> TVar Room -> TVar Server.State -> IO (Server.State)
 disconnect client roomVar state = do
-  room <- Server.removeClient client roomVar
+  room <- atomically $ Server.removeClient client roomVar
   broadcast (toChat . LeaveCommand $ Client.name client) room
   syncPlayersRoom room
   if Room.empty room then
-    Server.deleteRoom (Room.getName room) state
+    atomically $ Server.deleteRoom (Room.getName room) state
       else
-        readMVar state
+        readTVarIO state
 
 
-actPlay :: Command -> WhichPlayer -> MVar Room -> IO ()
+actPlay :: Command -> WhichPlayer -> TVar Room -> IO ()
 actPlay cmd which roomVar =
   case trans cmd of
     Just command -> do
-      updated <- roomUpdate command which roomVar
+      (room, updated) <- atomically $ roomUpdate command which roomVar
       case updated of
-        Left err -> do
-          room <- readMVar roomVar
+        Left err ->
           sendToPlayer which (toChat (ErrorCommand err)) room
-        Right (room, outcomes) ->
+        Right outcomes ->
           forM_ outcomes $
             \outcome ->
               do
@@ -317,9 +311,10 @@ actPlay cmd which roomVar =
     trans _                          = Nothing
 
 
-actSpec :: Command -> MVar Room -> IO ()
-actSpec cmd room =
-  readMVar room >>= broadcast (toChat cmd)
+actSpec :: Command -> TVar Room -> IO ()
+actSpec cmd roomVar = do
+  room <- atomically $ readTVar roomVar
+  broadcast (toChat cmd) room
 
 
 actOutcome :: Room -> Outcome -> IO ()
@@ -450,7 +445,7 @@ parseMsg name msg =
     _ ->
       ErrorCommand ("Unknown Command " <> (cs (show command)))
   where
-    parsed = T.breakOn ":" msg :: (Text, Text)
+    parsed  = T.breakOn ":" msg :: (Text, Text)
     command = fst parsed :: Text
     content = T.drop 1 (snd parsed) :: Text
 

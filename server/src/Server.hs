@@ -2,15 +2,13 @@ module Server where
 
 import Prelude hiding (lookup, putStrLn)
 
-import Control.Concurrent (MVar, newMVar, modifyMVar)
+import Control.Monad.STM (STM)
+import Control.Concurrent.STM.TVar (TVar, readTVar)
 import Data.Map.Strict (Map, delete, empty, insert, keys, lookup)
-import Data.Monoid ((<>))
 import Data.Text (Text)
-import Data.Text.IO (putStrLn)
-import Data.String.Conversions (cs)
 
 import Player (WhichPlayer(..))
-import Util (getGen)
+import Util (modReadTVar, modReturnTVar)
 
 import qualified Client
 import Client (Client)
@@ -19,7 +17,7 @@ import qualified Room
 import Room (Room)
 
 
-newtype State = State (Map Room.Name (MVar Room))
+newtype State = State (Map Room.Name (TVar Room))
 
 
 instance Show State where
@@ -31,58 +29,59 @@ initState = State empty
 
 
 -- GETTING / DELETING ROOMS
-getRoom :: Room.Name -> MVar State -> IO (MVar Room)
+getRoom :: Room.Name -> TVar State -> STM (Maybe (TVar Room))
 getRoom name state =
-  modifyMVar state $ \(State s) ->
-      case lookup name s of
-        Just room ->
-          do
-            putStrLn . ("Rooms: " <>) . cs . show . State $ s
-            return (State s, room)
-        Nothing ->
-          do
-            gen <- getGen
-            r <- newMVar (Room.new gen name)
-            putStrLn . ("Rooms: " <>) . cs . show . State $ insert name r s
-            return (State (insert name r s), r)
+  (lookup name) . (\(State s) -> s) <$> readTVar state
 
 
-deleteRoom :: Room.Name -> MVar State -> IO (State)
+createRoom :: Room.Name -> TVar Room -> TVar State -> STM (TVar Room)
+createRoom name roomVar state =
+  modReturnTVar state (\(State s) -> (State $ insert name roomVar s, roomVar))
+
+
+getOrCreateRoom :: Room.Name -> TVar Room ->  TVar State -> STM (TVar Room)
+getOrCreateRoom name roomVar state = do
+  gotRoom <- getRoom name state
+  case gotRoom of
+    Nothing ->
+      createRoom name roomVar state
+    Just r ->
+      return r
+
+
+deleteRoom :: Room.Name -> TVar State -> STM (State)
 deleteRoom name state =
-  modifyMVar state $ \(State s) ->
-    let s' = State (delete name s) in return (s', s')
+  modReadTVar state $ \(State s) -> State (delete name s)
 
 
 -- ADDING/REMOVING CLIENTS.
-addSpecClient :: Client -> MVar Room -> IO (Room)
-addSpecClient client room =
-  modifyMVar room $ \r ->
-    let r' = Room.addSpec client r in return (r', r')
+addSpecClient :: Client -> TVar Room -> STM Room
+addSpecClient client roomVar =
+  modReadTVar roomVar $ Room.addSpec client
 
 
-addPlayerClient :: Client -> MVar Room -> IO (Maybe (Room, WhichPlayer))
-addPlayerClient client room =
-  modifyMVar room $ \r ->
-    case Room.addPlayer client r of
-      Just (r', p) ->
-        return (r', Just (r', p))
+addPlayerClient :: Client -> TVar Room -> STM (Maybe WhichPlayer)
+addPlayerClient client roomVar =
+  modReturnTVar roomVar $ \room ->
+    case Room.addPlayer client room of
+      Just (room', which) ->
+        (room', Just (which))
       Nothing ->
-        return (r, Nothing)
+        (room, Nothing)
 
 
-addComputerClient :: Text -> MVar Room -> IO (Maybe Client)
+addComputerClient :: Text -> TVar Room -> STM (Maybe Client)
 addComputerClient guid room =
-  modifyMVar room $ \r ->
+  modReturnTVar room $ \r ->
     case Room.addPlayer client r of
       Just (r', _) ->
-        return (r', Just client)
+        (r', Just client)
       Nothing ->
-        return (r, Nothing)
+        (r, Nothing)
   where
     client = Client.cpuClient guid :: Client
 
 
-removeClient :: Client -> MVar Room -> IO (Room)
-removeClient client room =
-  modifyMVar room $ \r ->
-    let r' = Room.removeClient client r in return (r', r')
+removeClient :: Client -> TVar Room -> STM (Room)
+removeClient client roomVar =
+  modReadTVar roomVar $ Room.removeClient client
