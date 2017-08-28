@@ -82,9 +82,7 @@ begin conn roomReq loggedUsername state =
           (WS.sendTextData conn) . toChat . ErrorCommand $ "connection protocol failure" <> msg
         Just prefix -> do
           gen <- getGen
-          roomVar <- atomically $ do
-            newRoomVar <- newTVar $ Room.new gen roomName
-            Server.getOrCreateRoom roomName newRoomVar state
+          roomVar <- atomically $ Server.getOrCreateRoom roomName gen state
           guid <- GUID.genText
           beginPrefix prefix state (client guid) roomVar
   where
