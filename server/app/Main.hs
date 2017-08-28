@@ -8,8 +8,6 @@ import Control.Monad (forM_, forever, mzero, when)
 import Control.Monad.Trans.Class (lift)
 import Control.Monad.Trans.Maybe (runMaybeT)
 import Data.Aeson (encode)
-import Data.ByteString (ByteString)
-import Data.List (find)
 import Data.Maybe (fromMaybe)
 import Data.Monoid ((<>))
 import Data.String.Conversions (cs)
@@ -18,14 +16,14 @@ import Network.Wai (Application)
 import Network.Wai.Handler.WebSockets
 import Network.Wai.Handler.Warp (run)
 import System.IO (BufferMode(LineBuffering), hSetBuffering, stdout)
-import Web.Cookie (parseCookiesText)
 
 import ArtificalIntelligence (Action(..), chooseAction)
 import Characters (CharModel(..), character_name, toList)
 import Model (Model, modelReverso)
+import Negotiation (Prefix(..), parseRoomReq, parsePrefix)
 import Player (WhichPlayer(..), other)
 import GameState (EncodableOutcome(..), GameCommand(..), GameState(..), PlayState(..), Outcome(..), Username, reverso, update)
-import Util (Err, Gen, breakAt, getGen, modReturnTVar, shuffle)
+import Util (Err, Gen, getGen, modReturnTVar, shuffle)
 
 import qualified Server
 import Server (addComputerClient, addPlayerClient, addSpecClient)
@@ -68,7 +66,7 @@ wsApp :: TVar Server.State -> R.Connection -> WS.ServerApp
 wsApp state tokenConn pending = do
   connection <- WS.acceptRequest pending
   msg        <- WS.receiveData connection
-  usernameM  <- A.checkAuth tokenConn $ getToken pending
+  usernameM  <- A.checkAuth tokenConn $ A.getToken pending
   begin connection msg usernameM state
   WS.forkPingThread connection 30
 
@@ -77,12 +75,12 @@ begin :: WS.Connection -> Text -> Maybe Username -> TVar Server.State -> IO ()
 begin conn roomReq loggedUsername state =
   case parseRoomReq roomReq of
     Nothing ->
-      (WS.sendTextData conn) . toChat . ErrorCommand $ "bad room name protocol: " <> roomReq
+      (WS.sendTextData conn) . Command.toChat . ErrorCommand $ "bad room name protocol: " <> roomReq
     Just roomName -> do
       msg <- WS.receiveData conn
       case parsePrefix msg of
         Nothing ->
-          (WS.sendTextData conn) . toChat . ErrorCommand $ "connection protocol failure" <> msg
+          (WS.sendTextData conn) . Command.toChat . ErrorCommand $ "connection protocol failure" <> msg
         Just prefix -> do
           gen <- getGen
           roomVar <- atomically $ Server.getOrCreateRoom roomName gen state
@@ -104,7 +102,7 @@ beginPlay state client roomVar = do
   added <- atomically $ addPlayerClient client roomVar
   case added of
     Nothing ->
-      Client.send (toChat $ ErrorCommand "room is full") client
+      Client.send (Command.toChat $ ErrorCommand "room is full") client
     Just which ->
       finally
         (play which client roomVar)
@@ -127,7 +125,7 @@ beginComputer state client roomVar = do
     return (computerAdded, playerAdded)
   case (,) <$> computer <*> added of
     Nothing ->
-      Client.send (toChat $ ErrorCommand "room is full") client
+      Client.send (Command.toChat $ ErrorCommand "room is full") client
     Just (computerClient, which) ->
       finally
         (do
@@ -136,21 +134,6 @@ beginComputer state client roomVar = do
         (do
           _ <- disconnect computerClient roomVar state
           (disconnect client roomVar state))
-
-
-getToken :: WS.PendingConnection -> Maybe A.Token
-getToken pending = snd <$> find (\x -> fst x == "login") cookies
-  where
-    cookies :: [(Text, Text)]
-    cookies = case cookieString of
-      Just str ->
-        parseCookiesText str
-      Nothing ->
-        []
-    cookieString :: Maybe ByteString
-    cookieString = snd <$> find (\x -> fst x == "Cookie") headers
-    headers :: WS.Headers
-    headers = WS.requestHeaders . WS.pendingRequest $ pending
 
 
 roomUpdate :: GameCommand -> WhichPlayer -> TVar Room -> STM (Room, Either Err [Outcome])
@@ -197,7 +180,7 @@ spectate :: Client -> TVar Room -> IO ()
 spectate client roomVar = do
   room <- atomically $ addSpecClient client roomVar
   Client.send ("acceptSpec:" :: Text) client
-  broadcast (toChat (SpectateCommand (Client.name client))) room
+  broadcast (Command.toChat (SpectateCommand (Client.name client))) room
   syncClient client (Room.getState room)
   forever $ do
     msg <- Client.receive client
@@ -240,7 +223,7 @@ chooseComputerCommand which room = do
     Selecting charModel _ gen ->
       return . Just . SelectCharacterCommand $ randomChar charModel gen
     Started (Playing m) ->
-      return . (fmap trans) $ chooseAction which m
+      return $ trans <$> chooseAction which m
     _ ->
       return Nothing
   where
@@ -261,7 +244,7 @@ broadcast msg room =
 disconnect :: Client -> TVar Room -> TVar Server.State -> IO (Server.State)
 disconnect client roomVar state = do
   room <- atomically $ Server.removeClient client roomVar
-  broadcast (toChat . LeaveCommand $ Client.name client) room
+  broadcast (Command.toChat . LeaveCommand $ Client.name client) room
   syncPlayersRoom room
   if Room.empty room then
     atomically $ Server.deleteRoom (Room.getName room) state
@@ -276,7 +259,7 @@ actPlay cmd which roomVar =
       (room, updated) <- atomically $ roomUpdate command which roomVar
       case updated of
         Left err ->
-          sendToPlayer which (toChat (ErrorCommand err)) room
+          sendToPlayer which (Command.toChat (ErrorCommand err)) room
         Right outcomes ->
           forM_ outcomes $
             \outcome ->
@@ -300,50 +283,38 @@ actPlay cmd which roomVar =
 actSpec :: Command -> TVar Room -> IO ()
 actSpec cmd roomVar = do
   room <- atomically $ readTVar roomVar
-  broadcast (toChat cmd) room
+  broadcast (Command.toChat cmd) room
 
 
 actOutcome :: Room -> Outcome -> IO ()
-actOutcome room SyncOutcome =
-  syncRoomClients room
-actOutcome room (PlayCardOutcome which) =
-  sendExcluding which "playCard:" room
-actOutcome room (EndTurnOutcome which) =
-  sendExcluding which "end:" room
-actOutcome room (EncodableOutcome outcome) =
-  actEncodable outcome
-    where
-      actEncodable :: EncodableOutcome -> IO ()
-      actEncodable (HoverOutcome which _) =
-        sendExcluding which (("hover:" <>) . cs . encode $ outcome) room
-      actEncodable (ChatOutcome username msg) =
-        broadcast ("chat:" <> username <> ": " <> msg) room
-      actEncodable (ResolveOutcome models final) =
-        resolveRoomClients (models, final) room
+actOutcome room SyncOutcome                = syncRoomClients room
+actOutcome room (PlayCardOutcome which)    = sendExcluding which "playCard:" room
+actOutcome room (EndTurnOutcome which)     = sendExcluding which "end:" room
+actOutcome room (EncodableOutcome outcome) = actEncodable outcome
+  where
+    actEncodable :: EncodableOutcome -> IO ()
+    actEncodable (HoverOutcome which _) =
+      sendExcluding which (("hover:" <>) . cs . encode $ outcome) room
+    actEncodable (ChatOutcome username msg) =
+      broadcast ("chat:" <> username <> ": " <> msg) room
+    actEncodable (ResolveOutcome models final) =
+      resolveRoomClients (models, final) room
 
 
 logOutcome :: Outcome -> IO ()
-logOutcome SyncOutcome =
-  T.putStrLn "syncing"
-logOutcome (PlayCardOutcome _) =
-  T.putStrLn "playing card"
-logOutcome (EndTurnOutcome _) =
-  T.putStrLn "ending turn"
-logOutcome (EncodableOutcome outcome) =
-  logEncodable outcome
-    where
-      logEncodable :: EncodableOutcome -> IO()
-      logEncodable (HoverOutcome _ _) =
-        T.putStrLn "hovering"
-      logEncodable (ChatOutcome _ _) =
-        T.putStrLn "chatting"
-      logEncodable (ResolveOutcome _ _) =
-        T.putStrLn "resolving"
+logOutcome SyncOutcome                = T.putStrLn "syncing"
+logOutcome (PlayCardOutcome _)        = T.putStrLn "playing card"
+logOutcome (EndTurnOutcome _)         = T.putStrLn "ending turn"
+logOutcome (EncodableOutcome outcome) = logEncodable outcome
+  where
+    logEncodable :: EncodableOutcome -> IO()
+    logEncodable (HoverOutcome _ _)   = T.putStrLn "hovering"
+    logEncodable (ChatOutcome _ _)    = T.putStrLn "chatting"
+    logEncodable (ResolveOutcome _ _) = T.putStrLn "resolving"
 
 
 syncClient :: Client -> GameState -> IO ()
-syncClient client game =
-  Client.send (("sync:" <>) . cs . encode $ game) client
+syncClient client game = Client.send (("sync:" <>) . cs . encode $ game) client
 
 
 syncRoomClients :: Room -> IO ()
@@ -357,7 +328,6 @@ syncRoomClients room = do
     syncMsgPb = ("sync:" <>) . cs . encode . reverso $ game :: Text
 
 
--- TIDY ME
 syncPlayersRoom :: Room -> IO ()
 syncPlayersRoom room = do
   sendExcluding PlayerB (syncMsg True) room
@@ -380,43 +350,3 @@ resolveRoomClients (models, final) room = do
     resMsgPb = ("res:" <>) . cs . encode $ reversoOutcome :: Text
     outcome = ResolveOutcome models final :: EncodableOutcome
     reversoOutcome = ResolveOutcome (modelReverso <$> models) (reverso final) :: EncodableOutcome
-
-
-toChat :: Command -> Text
-toChat (SpectateCommand name) =
-  "chat:" <> name <> " started spectating"
-toChat (PlayCommand name) =
-  "chat:" <> name <> " started playing"
-toChat (LeaveCommand name) =
-  "chat:" <> name <> " disconnected"
-toChat (ChatCommand name message) =
-  "chat:" <> name <> ": " <> message
-toChat (ErrorCommand err) =
-  "error:" <> err
-toChat _ =
-  "chat:" <> "Command cannot be processed to text :/"
-
-
--- PARSING.
-parseRoomReq :: Text -> Maybe Text
-parseRoomReq msg =
-  case breakAt ":" msg of
-    ("room", name) ->
-      Just name
-    _ ->
-      Nothing
-
-
-parsePrefix :: Text -> Maybe Prefix
-parsePrefix msg =
-  case breakAt ":" msg of
-    ("spectate", _)     -> Just PrefixSpec
-    ("play", _)         -> Just PrefixPlay
-    ("playComputer", _) -> Just PrefixCpu
-    _                   -> Nothing
-
-
-data Prefix =
-    PrefixSpec
-  | PrefixPlay
-  | PrefixCpu

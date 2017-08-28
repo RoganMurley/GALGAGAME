@@ -3,7 +3,6 @@ module Command where
 import Data.Monoid ((<>))
 import Data.String.Conversions (cs)
 
-import qualified Data.Text as Text
 import Data.Text (Text)
 
 import GameState (Username)
@@ -60,3 +59,18 @@ parse name msg =
         SelectCharacterCommand content
       _ ->
         ErrorCommand $ "Unknown Command " <> (cs $ show command)
+
+
+toChat :: Command -> Text
+toChat (SpectateCommand name) =
+  "chat:" <> name <> " started spectating"
+toChat (PlayCommand name) =
+  "chat:" <> name <> " started playing"
+toChat (LeaveCommand name) =
+  "chat:" <> name <> " disconnected"
+toChat (ChatCommand name message) =
+  "chat:" <> name <> ": " <> message
+toChat (ErrorCommand err) =
+  "error:" <> err
+toChat _ =
+  "chat:" <> "Command cannot be processed to text :/"

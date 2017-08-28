@@ -23,6 +23,7 @@ library
                      , Command
                      , GameState
                      , Model
+                     , Negotiation
                      , Player
                      , Room
                      , Server
@@ -30,6 +31,7 @@ library
   build-depends:       base >= 4.7 && < 5
                      , aeson
                      , bcrypt
+                     , bytestring
                      , containers
                      , cookie
                      , guid
@@ -59,7 +61,6 @@ executable stormcards
   main-is:             Main.hs
   ghc-options:         -threaded -rtsopts -with-rtsopts=-N -Wall -O2
   build-depends:       base
-                     , bytestring
                      , aeson
                      , cookie
                      , guid

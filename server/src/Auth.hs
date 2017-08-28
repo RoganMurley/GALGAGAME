@@ -2,13 +2,17 @@ module Auth where
 
 import Control.Monad.Trans.Class (lift)
 import Crypto.BCrypt (validatePassword, hashPasswordUsingPolicy, slowerBcryptHashingPolicy)
+import Data.ByteString (ByteString)
+import Data.List (find)
 import Data.String.Conversions (cs)
 import Data.Time.Clock (secondsToDiffTime)
 import Network.HTTP.Types.Status
 import Network.Wai (Application)
-import Web.Cookie (setCookieMaxAge)
+import Web.Cookie (parseCookiesText, setCookieMaxAge)
 import Web.Scotty
 import Web.Scotty.Cookie (deleteCookie, getCookie, makeSimpleCookie, setCookie)
+
+import qualified Network.WebSockets as WS
 
 import qualified Data.GUID as GUID
 import qualified Database.Redis as R
@@ -114,3 +118,18 @@ connectInfo database =
 
 loginTimeout :: Seconds
 loginTimeout = 60
+
+
+getToken :: WS.PendingConnection -> Maybe Token
+getToken pending = snd <$> find (\x -> fst x == "login") cookies
+  where
+    cookies :: [(Text, Text)]
+    cookies = case cookieString of
+      Just str ->
+        parseCookiesText str
+      Nothing ->
+        []
+    cookieString :: Maybe ByteString
+    cookieString = snd <$> find (\x -> fst x == "Cookie") cookieHeaders
+    cookieHeaders :: WS.Headers
+    cookieHeaders = WS.requestHeaders . WS.pendingRequest $ pending
