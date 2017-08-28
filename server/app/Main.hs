@@ -13,24 +13,19 @@ import Data.List (find)
 import Data.Maybe (fromMaybe)
 import Data.Monoid ((<>))
 import Data.String.Conversions (cs)
-import Data.Text (Text)
+
 import Network.Wai (Application)
 import Network.Wai.Handler.WebSockets
 import Network.Wai.Handler.Warp (run)
-import Safe (readMay)
 import System.IO (BufferMode(LineBuffering), hSetBuffering, stdout)
 import Web.Cookie (parseCookiesText)
-
-import qualified Data.Text as T
-import qualified Data.Text.IO as T
-import qualified Network.WebSockets as WS
 
 import ArtificalIntelligence (Action(..), chooseAction)
 import Characters (CharModel(..), character_name, toList)
 import Model (Model, modelReverso)
 import Player (WhichPlayer(..), other)
 import GameState (EncodableOutcome(..), GameCommand(..), GameState(..), PlayState(..), Outcome(..), Username, reverso, update)
-import Util (Err, Gen, getGen, modReturnTVar, shuffle)
+import Util (Err, Gen, breakAt, getGen, modReturnTVar, shuffle)
 
 import qualified Server
 import Server (addComputerClient, addPlayerClient, addSpecClient)
@@ -38,8 +33,16 @@ import Server (addComputerClient, addPlayerClient, addSpecClient)
 import qualified Client
 import Client (Client(..), ClientConnection(..))
 
+import qualified Command
+import Command (Command(..))
+
 import qualified Room
 import Room (Room)
+
+import Data.Text (Text)
+import qualified Data.Text.IO as T
+
+import qualified Network.WebSockets as WS
 
 import qualified Auth as A
 import qualified Database.Redis as R
@@ -150,21 +153,6 @@ getToken pending = snd <$> find (\x -> fst x == "login") cookies
     headers = WS.requestHeaders . WS.pendingRequest $ pending
 
 
-data Command =
-    ChatCommand Username Text
-  | PlayCommand Username
-  | SpectateCommand Username
-  | LeaveCommand Username
-  | EndTurnCommand
-  | PlayCardCommand Int
-  | HoverCardCommand (Maybe Int)
-  | RematchCommand
-  | ConcedeCommand
-  | SelectCharacterCommand Text
-  | ErrorCommand Text
-  deriving (Show)
-
-
 roomUpdate :: GameCommand -> WhichPlayer -> TVar Room -> STM (Room, Either Err [Outcome])
 roomUpdate cmd which roomVar =
   modReturnTVar roomVar $ \room ->
@@ -213,7 +201,7 @@ spectate client roomVar = do
   syncClient client (Room.getState room)
   forever $ do
     msg <- Client.receive client
-    actSpec (parseMsg (Client.name client) msg) roomVar
+    actSpec (Command.parse (Client.name client) msg) roomVar
 
 
 play :: WhichPlayer -> Client -> TVar Room -> IO ()
@@ -224,7 +212,7 @@ play which client roomVar = do
   syncRoomClients room
   forever $ do
     msg <- Client.receive client
-    actPlay (parseMsg (Client.name client) msg) which roomVar
+    actPlay (Command.parse (Client.name client) msg) which roomVar
 
 
 computerPlay :: WhichPlayer -> TVar Room -> IO ()
@@ -410,59 +398,22 @@ toChat _ =
 
 
 -- PARSING.
-parseMsg :: Username -> Text -> Command
-parseMsg _ ""     = ErrorCommand "Command not found"
-parseMsg name msg =
-  case command of
-    "end" ->
-      EndTurnCommand
-    "play" ->
-      case readMay . cs $ content of
-        Just index ->
-          PlayCardCommand index
-        Nothing ->
-          ErrorCommand (content <> " not a hand card index")
-    "hover" ->
-      case content of
-        "null" ->
-          HoverCardCommand Nothing
-        _ ->
-          case readMay . cs $ content of
-            Just index ->
-              HoverCardCommand (Just index)
-            Nothing ->
-              ErrorCommand (content <> " not a hand card index")
-    "chat" ->
-      ChatCommand name content
-    "rematch" ->
-      RematchCommand
-    "concede" ->
-      ConcedeCommand
-    "selectCharacter" ->
-      SelectCharacterCommand content
-    _ ->
-      ErrorCommand ("Unknown Command " <> (cs (show command)))
-  where
-    parsed  = T.breakOn ":" msg :: (Text, Text)
-    command = fst parsed :: Text
-    content = T.drop 1 (snd parsed) :: Text
-
-
 parseRoomReq :: Text -> Maybe Text
 parseRoomReq msg =
-  case T.breakOn ":" msg of
+  case breakAt ":" msg of
     ("room", name) ->
-      Just . (T.drop 1) $ name
+      Just name
     _ ->
       Nothing
 
 
 parsePrefix :: Text -> Maybe Prefix
-parsePrefix msg
-  | T.isPrefixOf "spectate:"     msg = Just PrefixSpec
-  | T.isPrefixOf "play:"         msg = Just PrefixPlay
-  | T.isPrefixOf "playComputer:" msg = Just PrefixCpu
-  | otherwise                        = Nothing
+parsePrefix msg =
+  case breakAt ":" msg of
+    ("spectate", _)     -> Just PrefixSpec
+    ("play", _)         -> Just PrefixPlay
+    ("playComputer", _) -> Just PrefixCpu
+    _                   -> Nothing
 
 
 data Prefix =
