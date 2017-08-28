@@ -3,12 +3,12 @@ module Server where
 import Prelude hiding (lookup, putStrLn)
 
 import Control.Monad.STM (STM)
-import Control.Concurrent.STM.TVar (TVar, readTVar)
+import Control.Concurrent.STM.TVar (TVar, newTVar, readTVar)
 import Data.Map.Strict (Map, delete, empty, insert, keys, lookup)
 import Data.Text (Text)
 
 import Player (WhichPlayer(..))
-import Util (modReadTVar, modReturnTVar)
+import Util (Gen, modReadTVar, modReturnTVar)
 
 import qualified Client
 import Client (Client)
@@ -39,12 +39,13 @@ createRoom name roomVar state =
   modReturnTVar state (\(State s) -> (State $ insert name roomVar s, roomVar))
 
 
-getOrCreateRoom :: Room.Name -> TVar Room ->  TVar State -> STM (TVar Room)
-getOrCreateRoom name roomVar state = do
-  gotRoom <- getRoom name state
-  case gotRoom of
+getOrCreateRoom :: Room.Name -> Gen -> TVar State -> STM (TVar Room)
+getOrCreateRoom name gen state = do
+  newRoomVar      <- newTVar $ Room.new gen name
+  existingRoomVar <- getRoom name state
+  case existingRoomVar of
     Nothing ->
-      createRoom name roomVar state
+      createRoom name newRoomVar state
     Just r ->
       return r
 
