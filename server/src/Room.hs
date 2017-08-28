@@ -1,12 +1,13 @@
 module Room where
 
+import Control.Monad (forM_)
 import Data.Maybe (maybeToList)
 import Data.Monoid ((<>))
 import Data.Text (Text, intercalate)
 
 import Characters (initCharModel)
 import GameState (GameState(..), Username, initState)
-import Player (WhichPlayer(..))
+import Player (WhichPlayer(..), other)
 import Util (Gen)
 
 import qualified Client
@@ -145,3 +146,27 @@ userList room
 
 connected :: Room -> (Player, Player)
 connected Room{ room_pa, room_pb } = (room_pa, room_pb)
+
+
+-- Sending messages.
+broadcast :: Text -> Room -> IO ()
+broadcast msg room = forM_ (Room.getClients room) (Client.send msg)
+
+
+sendToPlayer :: WhichPlayer -> Text -> Room -> IO ()
+sendToPlayer which msg room =
+  case Room.getPlayerClient which room of
+    Just client ->
+      Client.send msg client
+    Nothing ->
+      return ()
+
+
+sendToSpecs :: Text -> Room -> IO ()
+sendToSpecs msg room = forM_ (Room.getSpecs room) (Client.send msg)
+
+
+sendExcluding :: WhichPlayer -> Text -> Room -> IO ()
+sendExcluding which msg room = do
+  sendToSpecs msg room
+  sendToPlayer (other which) msg room
