@@ -3,6 +3,7 @@ module Util where
 import Control.Concurrent.STM (STM)
 import Control.Concurrent.STM.TVar (TVar, readTVar, writeTVar)
 import Data.Text (Text)
+import qualified Data.Text as T
 import qualified System.Random as R
 import System.Random.Shuffle (shuffle')
 
@@ -15,13 +16,11 @@ times :: Int -> (a -> a) -> a -> a
 times n f x = (iterate f x) !! n
 
 
--- Convenient shuffle.
 shuffle :: Gen -> [a] -> [a]
 shuffle _ []       = []
 shuffle (Gen g) xs = shuffle' xs (length xs) g
 
 
--- Delete index.
 deleteIndex :: Int -> [a] -> [a]
 deleteIndex n xs =
   ys ++ (tail zs)
@@ -29,7 +28,6 @@ deleteIndex n xs =
       (ys, zs) = splitAt n xs
 
 
--- Unsafe fromRight.
 fromRight :: Either a b -> b
 fromRight (Right x) = x
 fromRight _ = error "Unsafe fromRight unwrapping failure"
@@ -79,3 +77,12 @@ modReturnTVar var f = do
       writeTVar var a
       return b
 {-# INLINE modReturnTVar #-}
+
+
+-- Works like Text.breakOn, but drops the text that was brokeOn.
+breakAt :: Text -> Text -> (Text, Text)
+breakAt b t =
+  let
+    (x, y) = T.breakOn b t :: (Text, Text)
+  in
+    (x, T.drop (T.length b) y)
