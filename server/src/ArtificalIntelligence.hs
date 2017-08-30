@@ -69,12 +69,9 @@ postulateAction model action =
 
 chooseAction :: Turn -> Model -> Maybe Action
 chooseAction turn model
-  | getTurn model /= turn =
-    Nothing
-  | winningEnd model =
-    Just EndAction
-  | otherwise =
-    Just $ maximumBy comparison $ possibleActions model
+  | getTurn model /= turn = Nothing
+  | winningEnd model      = Just EndAction
+  | otherwise             = Just $ maximumBy comparison $ possibleActions model
   where
     comparison :: Action -> Action -> Ordering
     comparison = comparing (evalState . (postulateAction model))
