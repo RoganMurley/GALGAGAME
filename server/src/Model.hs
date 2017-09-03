@@ -305,14 +305,14 @@ playCard index which m
   | turn /= which = Left "You can't play a card when it's not your turn"
   | otherwise =
     case card of
+      Nothing ->
+        Left "You can't play a card you don't have in your hand"
       Just c ->
         Right
           . resetPasses
           . swapTurn
           . (modStack ((:) c))
           $ modHand which (deleteIndex index) m
-      Nothing ->
-        Left "You can't play a card you don't have in your hand"
   where
     hand = getHand which m :: Hand
     turn = getTurn m :: Turn

@@ -4,7 +4,7 @@ import Data.Aeson (ToJSON(..))
 import Data.Text (Text)
 import Network.WebSockets (Connection, receiveData, sendTextData)
 
-import GameState (Username)
+import Username (Username(Username))
 
 
 data ClientConnection =
@@ -55,4 +55,4 @@ receive  _                                   = return ("")
 
 
 cpuClient :: Text -> Client
-cpuClient = Client "CPU" ComputerConnection
+cpuClient = Client (Username "CPU") ComputerConnection

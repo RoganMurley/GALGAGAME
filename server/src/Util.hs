@@ -79,7 +79,7 @@ modReturnTVar var f = do
 {-# INLINE modReturnTVar #-}
 
 
--- Works like Text.breakOn, but drops the text that was brokeOn.
+-- Works like Text.breakOn, but drops the text that was broke on.
 breakAt :: Text -> Text -> (Text, Text)
 breakAt b t =
   let
