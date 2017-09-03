@@ -21,12 +21,15 @@ library
                      , Characters
                      , Client
                      , Command
+                     , GameCommand
                      , GameState
                      , Model
                      , Negotiation
+                     , Outcome
                      , Player
                      , Room
                      , Server
+                     , Username
                      , Util
   build-depends:       base >= 4.7 && < 5
                      , aeson

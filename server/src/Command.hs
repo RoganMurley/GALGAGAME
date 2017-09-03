@@ -2,11 +2,10 @@ module Command where
 
 import Data.Monoid ((<>))
 import Data.String.Conversions (cs)
-
 import Data.Text (Text)
-
-import GameState (Username)
 import Safe (readMay)
+
+import Username (Username(..))
 import Util (breakAt)
 
 
@@ -62,13 +61,13 @@ parse name msg =
 
 
 toChat :: Command -> Text
-toChat (SpectateCommand name) =
+toChat (SpectateCommand (Username name)) =
   "chat:" <> name <> " started spectating"
-toChat (PlayCommand name) =
+toChat (PlayCommand (Username name)) =
   "chat:" <> name <> " started playing"
-toChat (LeaveCommand name) =
+toChat (LeaveCommand (Username name)) =
   "chat:" <> name <> " disconnected"
-toChat (ChatCommand name message) =
+toChat (ChatCommand (Username name) message) =
   "chat:" <> name <> ": " <> message
 toChat (ErrorCommand err) =
   "error:" <> err

@@ -22,7 +22,9 @@ import Characters (CharModel(..), character_name, toList)
 import Model (Model, modelReverso)
 import Negotiation (Prefix(..), parseRoomReq, parsePrefix)
 import Player (WhichPlayer(..), other)
-import GameState (EncodableOutcome(..), GameCommand(..), GameState(..), PlayState(..), Outcome(..), Username, reverso, update)
+import GameCommand (GameCommand(..), update)
+import GameState (GameState(..), PlayState(..), reverso)
+import Username (Username(Username))
 import Util (Err, Gen, getGen, modReturnTVar, shuffle)
 
 import qualified Server
@@ -31,6 +33,9 @@ import Server (addComputerClient, addPlayerClient, addSpecClient)
 import qualified Client
 import Client (Client(..), ClientConnection(..))
 
+import qualified Outcome
+import Outcome (Outcome)
+
 import qualified Command
 import Command (Command(..))
 
@@ -38,7 +43,6 @@ import qualified Room
 import Room (Room)
 
 import Data.Text (Text)
-import qualified Data.Text.IO as T
 
 import qualified Network.WebSockets as WS
 
@@ -68,7 +72,7 @@ wsApp state tokenConn pending = do
   msg        <- WS.receiveData connection
   usernameM  <- A.checkAuth tokenConn $ A.getToken pending
   WS.forkPingThread connection 30
-  begin connection msg usernameM state
+  begin connection msg (Username <$> usernameM) state
 
 
 begin :: WS.Connection -> Text -> Maybe Username -> TVar Server.State -> IO ()
@@ -88,7 +92,7 @@ begin conn roomReq usernameM state =
           beginPrefix
             prefix
             state
-            (Client (fromMaybe "Guest" usernameM) (PlayerConnection conn) guid)
+            (Client (fromMaybe (Username "Guest") usernameM) (PlayerConnection conn) guid)
             roomVar
 
 
@@ -237,11 +241,7 @@ actPlay cmd which roomVar =
         Left err ->
           Room.sendToPlayer which (Command.toChat (ErrorCommand err)) room
         Right outcomes ->
-          forM_ outcomes $
-            \outcome ->
-              do
-                logOutcome outcome
-                actOutcome room outcome
+          forM_ outcomes (actOutcome room)
     Nothing ->
       actSpec cmd roomVar
   where
@@ -260,33 +260,6 @@ actSpec :: Command -> TVar Room -> IO ()
 actSpec cmd roomVar = do
   room <- atomically $ readTVar roomVar
   Room.broadcast (Command.toChat cmd) room
-
-
-actOutcome :: Room -> Outcome -> IO ()
-actOutcome room SyncOutcome                = syncRoomClients room
-actOutcome room (PlayCardOutcome which)    = Room.sendExcluding which "playCard:" room
-actOutcome room (EndTurnOutcome which)     = Room.sendExcluding which "end:" room
-actOutcome room (EncodableOutcome outcome) = actEncodable outcome
-  where
-    actEncodable :: EncodableOutcome -> IO ()
-    actEncodable (HoverOutcome which _) =
-      Room.sendExcluding which (("hover:" <>) . cs . encode $ outcome) room
-    actEncodable (ChatOutcome username msg) =
-      Room.broadcast ("chat:" <> username <> ": " <> msg) room
-    actEncodable (ResolveOutcome models final) =
-      resolveRoomClients (models, final) room
-
-
-logOutcome :: Outcome -> IO ()
-logOutcome SyncOutcome                = T.putStrLn "syncing"
-logOutcome (PlayCardOutcome _)        = T.putStrLn "playing card"
-logOutcome (EndTurnOutcome _)         = T.putStrLn "ending turn"
-logOutcome (EncodableOutcome outcome) = logEncodable outcome
-  where
-    logEncodable :: EncodableOutcome -> IO()
-    logEncodable (HoverOutcome _ _)   = T.putStrLn "hovering"
-    logEncodable (ChatOutcome _ _)    = T.putStrLn "chatting"
-    logEncodable (ResolveOutcome _ _) = T.putStrLn "resolving"
 
 
 syncClient :: Client -> GameState -> IO ()
@@ -324,5 +297,20 @@ resolveRoomClients (models, final) room = do
   where
     msgPa = ("res:" <>) . cs . encode $ outcome :: Text
     msgPb = ("res:" <>) . cs . encode $ reversoOutcome :: Text
-    outcome = ResolveOutcome models final :: EncodableOutcome
-    reversoOutcome = ResolveOutcome (modelReverso <$> models) (reverso final) :: EncodableOutcome
+    outcome = Outcome.Resolve models final :: Outcome.Encodable
+    reversoOutcome = Outcome.Resolve (modelReverso <$> models) (reverso final) :: Outcome.Encodable
+
+
+actOutcome :: Room -> Outcome -> IO ()
+actOutcome room Outcome.Sync =
+  syncRoomClients room
+actOutcome room (Outcome.PlayCard which) =
+  Room.sendExcluding which "playCard:" room
+actOutcome room (Outcome.EndTurn which) =
+  Room.sendExcluding which "end:" room
+actOutcome room (Outcome.Encodable o@(Outcome.Hover which _)) =
+  Room.sendExcluding which (("hover:" <>) . cs . encode $ o) room
+actOutcome room (Outcome.Encodable (Outcome.Chat (Username username) msg)) =
+  Room.broadcast ("chat:" <> username <> ": " <> msg) room
+actOutcome room (Outcome.Encodable (Outcome.Resolve models final)) =
+  resolveRoomClients (models, final) room

@@ -6,8 +6,9 @@ import Data.Monoid ((<>))
 import Data.Text (Text, intercalate)
 
 import Characters (initCharModel)
-import GameState (GameState(..), Username, initState)
+import GameState (GameState(..), initState)
 import Player (WhichPlayer(..), other)
+import Username (Username(Username))
 import Util (Gen)
 
 import qualified Client
@@ -141,7 +142,10 @@ userList room
   | otherwise   = "Users: " <> users
   where
     users :: Text
-    users = (intercalate ", ") . (fmap Client.name) $ Room.getClients room
+    users =
+        (intercalate ", ")
+      . (fmap ((\(Username u) -> u) . Client.name))
+      $ Room.getClients room
 
 
 connected :: Room -> (Player, Player)
