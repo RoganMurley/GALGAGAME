@@ -6,7 +6,8 @@ import Data.String.Conversions (cs)
 import Data.Text (Text)
 import Safe (atMay, headMay, tailSafe)
 
-import Player(WhichPlayer(..), other)
+import Mirror (Mirror(..))
+import Player (WhichPlayer(..), other)
 import Util (Err, Gen, deleteIndex)
 
 
@@ -107,12 +108,13 @@ maxLife :: Life
 maxLife = 50
 
 
-modelReverso :: Model -> Model
-modelReverso (Model turn stack pa pb passes gen) =
-  (Model (other turn) (stackRev stack) pb pa passes gen)
-  where
-    stackRev :: Stack -> Stack
-    stackRev = fmap (\(StackCard p c) -> StackCard (other p) c)
+instance Mirror Model where
+  mirror (Model turn stack pa pb passes gen) =
+    Model (mirror turn) (mirror <$> stack) pb pa passes gen
+
+
+instance Mirror StackCard where
+  mirror (StackCard p c) = StackCard (mirror p) c
 
 
 swapTurn :: Model -> Model
@@ -121,7 +123,7 @@ swapTurn model = (modPasses incPasses) . (modTurn other) $ model
 
 -- STACK CARD
 changeOwner :: StackCard -> StackCard
-changeOwner (StackCard o c) = StackCard (other o) c
+changeOwner = mirror
 
 
 withStackHead :: (StackCard -> CardEff) -> CardEff

@@ -2,10 +2,11 @@ module GameState where
 
 import Data.Aeson (ToJSON(..), (.=), object)
 
-import Characters (Character(..), CharModel, FinalSelection, characterModelReverso)
+import Characters (Character(..), CharModel, FinalSelection)
+import Mirror (Mirror(..))
 import Model
-import Player (WhichPlayer(..), other)
-import Util (Err, Gen, shuffle, split)
+import Player (WhichPlayer(..))
+import Util (Gen, shuffle, split)
 
 
 data GameState =
@@ -49,6 +50,12 @@ instance ToJSON PlayState where
       "winner" .= winner
     ]
 
+instance Mirror GameState where
+  mirror (Waiting gen)               = Waiting gen
+  mirror (Selecting m t gen)         = Selecting (mirror m) t gen
+  mirror (Started (Playing model))   = Started . Playing . mirror $ model
+  mirror (Started (Ended which gen)) = Started $ Ended (mirror <$> which) gen
+
 
 initState :: Gen -> GameState
 initState = Waiting
@@ -80,10 +87,3 @@ buildDeck (Character _ ca, Character _ cb, Character _ cc) =
   concat $ f <$> [ca, cb, cc]
   where
     f (a, b, c, d) = concat . (replicate 3) $ [a, b, c, d]
-
-
-reverso :: GameState -> GameState
-reverso (Waiting gen)               = Waiting gen
-reverso (Selecting m t gen)         = Selecting (characterModelReverso m) t gen
-reverso (Started (Playing model))   = Started . Playing $ modelReverso model
-reverso (Started (Ended which gen)) = Started $ Ended (other <$> which) gen

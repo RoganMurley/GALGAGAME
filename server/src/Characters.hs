@@ -6,6 +6,7 @@ import Safe (headMay)
 
 import qualified Cards
 
+import Mirror (Mirror(..))
 import Model (Card(..))
 import Player (WhichPlayer(..))
 
@@ -53,12 +54,11 @@ instance ToJSON CharModel where
     ]
 
 
+instance Mirror CharModel where
+  mirror (CharModel pa pb cs) = CharModel pb pa cs
+
+
 type FinalSelection = (Character, Character, Character)
-
-
-characterModelReverso :: CharModel -> CharModel
-characterModelReverso (CharModel pa pb cs) =
-  CharModel pb pa cs
 
 
 initCharModel :: CharModel

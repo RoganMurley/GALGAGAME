@@ -19,11 +19,12 @@ import System.IO (BufferMode(LineBuffering), hSetBuffering, stdout)
 
 import ArtificalIntelligence (Action(..), chooseAction)
 import Characters (CharModel(..), character_name, toList)
-import Model (Model, modelReverso)
+import Mirror (mirror)
+import Model (Model)
 import Negotiation (Prefix(..), parseRoomReq, parsePrefix)
 import Player (WhichPlayer(..), other)
 import GameCommand (GameCommand(..), update)
-import GameState (GameState(..), PlayState(..), reverso)
+import GameState (GameState(..), PlayState(..))
 import Username (Username(Username))
 import Util (Err, Gen, getGen, modReturnTVar, shuffle)
 
@@ -274,7 +275,7 @@ syncRoomClients room = do
   where
     game = Room.getState room :: GameState
     syncMsgPa = ("sync:" <>) . cs . encode $ game :: Text
-    syncMsgPb = ("sync:" <>) . cs . encode . reverso $ game :: Text
+    syncMsgPb = ("sync:" <>) . cs . encode . mirror $ game :: Text
 
 
 syncPlayersRoom :: Room -> IO ()
@@ -285,8 +286,7 @@ syncPlayersRoom room = do
     syncMsg :: Bool -> Text
     syncMsg rev =
       "syncPlayers:" <>
-        (cs . encode . (if rev then reversoPlayers else id) $ Room.connected room)
-    reversoPlayers (a, b) = (b, a)
+        (cs . encode . (if rev then mirror else id) $ Room.connected room)
 
 
 resolveRoomClients :: ([Model], GameState) -> Room -> IO ()
@@ -296,9 +296,9 @@ resolveRoomClients (models, final) room = do
   Room.sendToSpecs msgPa room
   where
     msgPa = ("res:" <>) . cs . encode $ outcome :: Text
-    msgPb = ("res:" <>) . cs . encode $ reversoOutcome :: Text
+    msgPb = ("res:" <>) . cs . encode $ mirrorOutcome :: Text
     outcome = Outcome.Resolve models final :: Outcome.Encodable
-    reversoOutcome = Outcome.Resolve (modelReverso <$> models) (reverso final) :: Outcome.Encodable
+    mirrorOutcome = Outcome.Resolve (mirror <$> models) (mirror final) :: Outcome.Encodable
 
 
 actOutcome :: Room -> Outcome -> IO ()

@@ -23,6 +23,7 @@ library
                      , Command
                      , GameCommand
                      , GameState
+                     , Mirror
                      , Model
                      , Negotiation
                      , Outcome
