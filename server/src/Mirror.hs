@@ -6,8 +6,8 @@ class Mirror a where
   mirror :: a -> a
 
 {-
-  mirror a != a
-  mirror . mirror $ a == a
+  LAWS:
+    mirror . mirror $ a == a
 -}
 
 
