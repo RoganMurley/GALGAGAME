@@ -105,6 +105,6 @@ unwrap :: MirrorTestTree a -> [TestTree]
 unwrap (MirrorTestTree x) = x
 
 
-mirrorProperties :: forall a . (Arbitrary a, Eq a, Mirror a, Show a) => MirrorTestTree a
+mirrorProperties :: ∀ a . (Arbitrary a, Eq a, Mirror a, Show a) => MirrorTestTree a
 mirrorProperties =
   MirrorTestTree $ [ QC.testProperty "twice" ((\x -> (mirror . mirror $ x) == x)  :: a -> Bool) ]
