@@ -5,7 +5,7 @@ import Data.Aeson (ToJSON(..), (.=), object)
 import Characters (Character(..), CharModel, FinalSelection)
 import Mirror (Mirror(..))
 import Model
-import Player (WhichPlayer(..))
+import Player (WhichPlayer(..), other)
 import Util (Gen, shuffle, split)
 
 
@@ -54,7 +54,7 @@ instance Mirror GameState where
   mirror (Waiting gen)               = Waiting gen
   mirror (Selecting m t gen)         = Selecting (mirror m) t gen
   mirror (Started (Playing model))   = Started . Playing . mirror $ model
-  mirror (Started (Ended which gen)) = Started $ Ended (mirror <$> which) gen
+  mirror (Started (Ended which gen)) = Started $ Ended (other <$> which) gen
 
 
 initState :: Gen -> GameState
