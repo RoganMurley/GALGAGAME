@@ -1,6 +1,8 @@
 {-# LANGUAGE ExistentialQuantification, ScopedTypeVariables, UnicodeSyntax #-}
 module MirrorSpec where
 
+import Data.Coerce (coerce)
+
 import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.QuickCheck (Arbitrary, testProperty)
 
@@ -17,10 +19,6 @@ import Model (Model, StackCard)
 newtype PhantomTree a = PhantomTree [TestTree]
 
 
-unphantom :: PhantomTree a -> [TestTree]
-unphantom (PhantomTree x) = x
-
-
 prop :: ∀ a . (Arbitrary a, Eq a, Mirror a, Show a) => PhantomTree a
 prop =
   PhantomTree [
@@ -32,8 +30,8 @@ tests :: TestTree
 tests =
   testGroup "Mirror"
     [
-      testGroup "StackCard"   $ unphantom (prop :: PhantomTree StackCard)
-    , testGroup "Model"       $ unphantom (prop :: PhantomTree Model)
-    , testGroup "GameState"   $ unphantom (prop :: PhantomTree GameState)
-    , testGroup "CharModel"   $ unphantom (prop :: PhantomTree CharModel)
+      testGroup "StackCard" $ coerce (prop :: PhantomTree StackCard)
+    , testGroup "Model"     $ coerce (prop :: PhantomTree Model)
+    , testGroup "GameState" $ coerce (prop :: PhantomTree GameState)
+    , testGroup "CharModel" $ coerce (prop :: PhantomTree CharModel)
     ]
