@@ -1,6 +1,5 @@
 module Model where
 
-
 import Data.Aeson (ToJSON(..), (.=), object)
 import Data.String.Conversions (cs)
 import Data.Text (Text)
@@ -110,11 +109,11 @@ maxLife = 50
 
 instance Mirror Model where
   mirror (Model turn stack pa pb passes gen) =
-    Model (mirror turn) (mirror <$> stack) pb pa passes gen
+    Model (other turn) (mirror <$> stack) pb pa passes gen
 
 
 instance Mirror StackCard where
-  mirror (StackCard p c) = StackCard (mirror p) c
+  mirror (StackCard p c) = StackCard (other p) c
 
 
 swapTurn :: Model -> Model
