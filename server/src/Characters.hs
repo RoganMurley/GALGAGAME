@@ -21,6 +21,7 @@ data SelectedCharacters
     | ThreeSelected Character Character Character
     deriving (Eq, Show)
 
+
 instance ToJSON SelectedCharacters where
   toJSON s = toJSON . toList $ s
 
@@ -29,6 +30,7 @@ data Character = Character
   { character_name  :: Text
   , character_cards :: CharacterCards
   } deriving (Eq, Show)
+
 
 instance ToJSON Character where
   toJSON Character{ character_name, character_cards } =
@@ -45,6 +47,7 @@ data CharModel =
   , charmodel_pb         :: SelectedCharacters
   , charmodel_characters :: [Character]
   } deriving (Eq, Show)
+
 
 instance ToJSON CharModel where
   toJSON CharModel{ charmodel_pa, charmodel_characters } =

@@ -3,11 +3,11 @@ module Model where
 import Data.Aeson (ToJSON(..), (.=), object)
 import Data.String.Conversions (cs)
 import Data.Text (Text)
-import Safe (atMay, headMay, tailSafe)
+import Safe (headMay, tailSafe)
 
 import Mirror (Mirror(..))
 import Player (WhichPlayer(..), other)
-import Util (Err, Gen, deleteIndex)
+import Util (Gen)
 
 
 data Model = Model
@@ -299,25 +299,6 @@ drawCard which model =
         "the_end.svg"
         "feint.wave"
         (hurt 10)
-
-
-playCard :: Int -> WhichPlayer -> Model -> Either Err Model
-playCard index which m
-  | turn /= which = Left "You can't play a card when it's not your turn"
-  | otherwise =
-    case card of
-      Nothing ->
-        Left "You can't play a card you don't have in your hand"
-      Just c ->
-        Right
-          . resetPasses
-          . swapTurn
-          . (modStack ((:) c))
-          $ modHand which (deleteIndex index) m
-  where
-    hand = getHand which m :: Hand
-    turn = getTurn m :: Turn
-    card = (StackCard which) <$> (atMay hand index) :: Maybe StackCard
 
 
 bounceAll :: WhichPlayer -> Model -> Model
