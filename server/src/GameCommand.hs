@@ -65,6 +65,9 @@ update cmd which state =
           case cmd of
             Rematch ->
               Right . (\x -> (x, [Outcome.Sync])) . Just $ Selecting initCharModel (fromMaybe PlayerA winner) (fst $ split gen)
+            HoverCard _ ->
+              -- Ignore hovers when the game is over.
+              Right (Nothing, [])
             _ ->
               Left ("Unknown command " <> (cs $ show cmd) <> " on an Ended GameState")
 
