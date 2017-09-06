@@ -17,14 +17,9 @@ data GameState =
 
 
 instance ToJSON GameState where
-  toJSON (Waiting _) =
-    object [
-      "waiting" .= True
-    ]
-  toJSON (Selecting m _ _) =
-    toJSON m
-  toJSON (Started s) =
-    toJSON s
+  toJSON (Waiting _)       = object [ "waiting" .= True ]
+  toJSON (Selecting m _ _) = toJSON m
+  toJSON (Started s)       = toJSON s
 
 
 getStateGen :: GameState -> Gen
@@ -41,14 +36,8 @@ data PlayState =
 
 
 instance ToJSON PlayState where
-  toJSON (Playing model) =
-    object [
-      "playing" .= model
-    ]
-  toJSON (Ended winner _) =
-    object [
-      "winner" .= winner
-    ]
+  toJSON (Playing model)  = object [ "playing" .= model ]
+  toJSON (Ended winner _) = object [ "winner" .= winner ]
 
 instance Mirror GameState where
   mirror (Waiting gen)               = Waiting gen

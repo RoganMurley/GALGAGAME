@@ -1,6 +1,6 @@
 module Act where
 
-import Control.Concurrent.STM.TVar (TVar, newTVar, readTVar, readTVarIO)
+import Control.Concurrent.STM.TVar (TVar, readTVarIO)
 import Control.Monad (forM_)
 import Control.Monad.STM (STM, atomically)
 import Data.Aeson (encode)
@@ -9,10 +9,10 @@ import Data.String.Conversions (cs)
 import Data.Text (Text)
 
 import GameCommand (GameCommand(..), update)
-import GameState (GameState(..), PlayState(..))
+import GameState (GameState(..))
 import Mirror (mirror)
 import Model (Model)
-import Player (WhichPlayer(..), other)
+import Player (WhichPlayer(..))
 import Username (Username(Username))
 import Util (Err, modReturnTVar)
 
@@ -23,7 +23,7 @@ import qualified Outcome
 import Outcome (Outcome)
 
 import qualified Client
-import Client (Client(..), ClientConnection(..))
+import Client (Client(..))
 
 import qualified Room
 import Room (Room)

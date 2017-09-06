@@ -5,14 +5,14 @@ import Data.Maybe (fromMaybe)
 import Data.Monoid ((<>))
 import Data.String.Conversions (cs)
 import Data.Text (Text)
-import Safe (headMay, tailSafe)
+import Safe (atMay, headMay, tailSafe)
 
 import Characters (CharModel(..), SelectedCharacters(..), selectChar, initCharModel)
 import GameState (GameState(..), PlayState(..), getStateGen, initModel)
 import Model
 import Player (WhichPlayer(..), other)
 import Username (Username)
-import Util (Err, Gen, split)
+import Util (Err, Gen, deleteIndex, split)
 
 import qualified Outcome as Outcome
 import Outcome (Outcome)
@@ -30,23 +30,16 @@ data GameCommand =
 
 
 update :: GameCommand -> WhichPlayer -> GameState -> Either Err (Maybe GameState, [Outcome])
-update (Chat username msg) _ _ = Right (Nothing, [Outcome.Encodable $ Outcome.Chat username msg])
-update Concede which state =
-  Right (Just . Started $ Ended (Just (other which)) (getStateGen state), [Outcome.Sync])
+update (Chat username msg) _     _     = chat    username msg
+update Concede             which state = concede which    state
 update cmd which state =
   case state of
     Waiting _ ->
       Left ("Unknown command " <> (cs $ show cmd) <> " on a waiting GameState")
     Selecting selectModel turn gen ->
       case cmd of
-        SelectCharacter n ->
-          let
-            startIfBothReady :: GameState -> GameState
-            startIfBothReady (Selecting (CharModel (ThreeSelected c1 c2 c3) (ThreeSelected ca cb cc) _) _ _) =
-              Started . Playing $ initModel turn (c1, c2, c3) (ca, cb, cc) gen
-            startIfBothReady s = s
-          in
-            Right (Just . startIfBothReady $ Selecting (selectChar selectModel which n) turn gen, [Outcome.Sync])
+        SelectCharacter name ->
+          select which name (selectModel, turn, gen)
         _ ->
           Left ("Unknown command " <> (cs $ show cmd) <> " on a selecting GameState")
     Started started ->
@@ -56,20 +49,85 @@ update cmd which state =
             EndTurn ->
               endTurn which model
             PlayCard index ->
-              ((\x -> (x, [Outcome.Sync, Outcome.PlayCard which])) . Just . Started . Playing) <$> (playCard index which model)
+              playCard index which model
             HoverCard index ->
-              (\x -> (Nothing, [x])) <$> (hoverCard index which model)
+              hoverCard index which model
             _ ->
               Left ("Unknown command " <> (cs $ show cmd) <> " on a Playing GameState")
         Ended winner gen ->
           case cmd of
             Rematch ->
-              Right . (\x -> (x, [Outcome.Sync])) . Just $ Selecting initCharModel (fromMaybe PlayerA winner) (fst $ split gen)
+              rematch (winner, gen)
             HoverCard _ ->
-              -- Ignore hovers when the game is over.
-              Right (Nothing, [])
+              ignore
             _ ->
               Left ("Unknown command " <> (cs $ show cmd) <> " on an Ended GameState")
+
+
+ignore :: Either Err (Maybe GameState, [Outcome])
+ignore = Right (Nothing, [])
+
+
+rematch :: (Maybe WhichPlayer, Gen) -> Either Err (Maybe GameState, [Outcome])
+rematch (winner, gen) =
+  Right (
+    Just $ Selecting initCharModel (fromMaybe PlayerA winner) (fst $ split gen)
+  , [ Outcome.Sync ]
+  )
+
+
+chat :: Username -> Text -> Either Err (Maybe GameState, [Outcome])
+chat username msg =
+  Right (
+    Nothing
+  , [ Outcome.Encodable $ Outcome.Chat username msg ]
+  )
+
+
+concede :: WhichPlayer -> GameState -> Either Err (Maybe GameState, [Outcome])
+concede which state =
+  Right (
+    Just . Started $ Ended (Just (other which)) (getStateGen state)
+  , [ Outcome.Sync ]
+  )
+
+
+select :: WhichPlayer -> Text -> (CharModel, Turn, Gen) -> Either Err (Maybe GameState, [Outcome])
+select which name (charModel, turn, gen) =
+  Right (
+    Just . startIfBothReady $ Selecting (selectChar charModel which name) turn gen
+  , [ Outcome.Sync ]
+  )
+  where
+    startIfBothReady :: GameState -> GameState
+    startIfBothReady (Selecting (CharModel (ThreeSelected c1 c2 c3) (ThreeSelected ca cb cc) _) _ _) =
+      Started . Playing $ initModel turn (c1, c2, c3) (ca, cb, cc) gen
+    startIfBothReady s = s
+
+
+playCard :: Int -> WhichPlayer -> Model -> Either Err (Maybe GameState, [Outcome])
+playCard index which m
+  | turn /= which = Left "You can't play a card when it's not your turn"
+  | otherwise     =
+    case card of
+      Nothing ->
+        Left "You can't play a card you don't have in your hand"
+      Just c ->
+        Right (
+          Just
+            . Started
+              . Playing
+                . resetPasses
+                  . swapTurn
+                    . (modStack ((:) c))
+                      $ modHand which (deleteIndex index) m
+        , [ Outcome.Sync, Outcome.PlayCard which ]
+        )
+  where
+    hand = getHand which m :: Hand
+    turn = getTurn m :: Turn
+    card = (StackCard which) <$> (atMay hand index) :: Maybe StackCard
+
 
 
 endTurn :: WhichPlayer -> Model -> Either Err (Maybe GameState, [Outcome])
@@ -101,7 +159,7 @@ resolveAll model
   | null stack = return (Playing model)
   | otherwise =
     do
-      tell [model]
+      tell [ model ]
       case resolveOne model of
         Playing newModel ->
           resolveAll newModel
@@ -120,6 +178,7 @@ resolveAll model
               id
             Just (StackCard o c) ->
               (card_eff c) o
+
 
 lifeGate :: Model -> PlayState
 lifeGate m
@@ -140,14 +199,11 @@ lifeGate m
     lifePB = getLife PlayerB m :: Life
 
 
-hoverCard :: Maybe Int -> WhichPlayer -> Model -> Either Err Outcome
-hoverCard index which model =
-  case index of
-    Just i ->
-      if i < (length . (getHand which) $ model)
-        then
-          Right . Outcome.Encodable $ Outcome.Hover which (Just i)
-        else
-          Left ("Hover index out of bounds (" <> (cs . show $ i ) <> ")" :: Err)
-    Nothing ->
-      Right . Outcome.Encodable $ Outcome.Hover which Nothing
+hoverCard :: Maybe Int -> WhichPlayer -> Model -> Either Err (Maybe GameState, [Outcome])
+hoverCard (Just i) which model
+  | i >= (length . (getHand which) $ model) =
+    Left ("Hover index out of bounds (" <> (cs . show $ i ) <> ")" :: Err)
+  | otherwise =
+    Right (Nothing, [ Outcome.Encodable $ Outcome.Hover which (Just i) ])
+hoverCard Nothing which _ =
+  Right (Nothing, [ Outcome.Encodable $ Outcome.Hover which Nothing ])
