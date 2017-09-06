@@ -2,7 +2,7 @@ module GameState where
 
 import Data.Aeson (ToJSON(..), (.=), object)
 
-import Characters (Character(..), CharModel, FinalSelection)
+import Characters (Character(..), CharacterCards, CharModel, FinalSelection)
 import Mirror (Mirror(..))
 import Model
 import Player (WhichPlayer(..), other)
@@ -86,4 +86,5 @@ buildDeck :: FinalSelection -> Deck
 buildDeck (Character _ ca, Character _ cb, Character _ cc) =
   concat $ f <$> [ca, cb, cc]
   where
+    f :: CharacterCards -> [Card]
     f (a, b, c, d) = concat . (replicate 3) $ [a, b, c, d]
