@@ -1,6 +1,6 @@
 module Act where
 
-import Control.Concurrent.STM.TVar (TVar, readTVarIO)
+import Control.Concurrent.STM.TVar (TVar, readTVar)
 import Control.Monad (forM_)
 import Control.Monad.STM (STM, atomically)
 import Data.Aeson (encode)
