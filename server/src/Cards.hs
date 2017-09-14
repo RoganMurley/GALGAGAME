@@ -49,6 +49,16 @@ confound =
     $ \_ m -> modStack (shuffle (getGen m)) m
 
 
+-- superheat :: Card
+-- superheat =
+--   Card
+--     "Superheat"
+--     "Change next card to (GOLD: draw 2)"
+--     "striker/transmute.svg"
+--     "fireball.wav"
+--     $ \_ -> modStackHead (\(StackCard w _) -> StackCard w gold)
+
+
 -- Breaker
 hammer :: Card
 hammer =
@@ -95,6 +105,26 @@ exile =
       . (both (\p -> modHand p $ filter (/= card)))
       . (modStack ((:) stackCard))
       . (modStack (filter (\(StackCard _ c) -> c /= card)))
+
+
+lifeseed :: Card
+lifeseed =
+  Card
+    "Lifeseed"
+    "Add 2 (LIFESPROUT: Heal for 9) to hand"
+    "breaker/lifeseed.svg"
+    "recharge.wav"
+    $ \p -> modHand p (times 2 ((:) lifesprout))
+
+
+lifesprout :: Card
+lifesprout =
+  Card
+    "Lifesprout"
+    "Heal for 9"
+    "breaker/lifesprout.svg"
+    "recharge.wav"
+    $ heal 9
 
 
 surprise :: Card
@@ -288,6 +318,7 @@ imitate =
         mCard :: Maybe Card
         mCard = headMay . (filter (/= imitate)) . (shuffle (getGen m)) $ getHand p m
 
+
 mindhack :: Card
 mindhack =
   Card
@@ -408,6 +439,7 @@ overwhelm =
     "superego.wav"
     $ \p m -> hurt (3 * (length . (getHand p) $ m)) (other p) m
 
+
 echo :: Card
 echo =
   Card
@@ -421,6 +453,7 @@ echo =
     eff _ = modStackHead
       (\(StackCard which (Card name desc pic sfx e)) ->
         StackCard which (Card name desc pic sfx (\w -> (e w) . (e w))))
+
 
 return' :: Card
 return' =
@@ -502,6 +535,24 @@ gold =
     $ \p -> (drawCard p) . (drawCard p)
 
 
+goldrush :: Card
+goldrush =
+  Card
+    "Goldrush"
+    "Both players draw for each card they own to the right"
+    "collector/goldrush.svg"
+    "feint.wav"
+    eff
+  where
+    eff :: CardEff
+    eff _ m =
+      both
+        (\p -> times (length . (filter (owner p)) . getStack $ m) (drawCard p))
+          m
+    owner :: WhichPlayer -> StackCard -> Bool
+    owner w (StackCard o _) = w == o
+
+
 -- Potential future cards
 soulheal :: Card
 soulheal =
@@ -511,14 +562,3 @@ soulheal =
     ""
     "resolve.wav"
     $ \p m -> heal (quot (getLife p m) 2) p m
-
-
-
-treasure :: Card
-treasure =
-  Card
-    "Treasure"
-    "Both draw 2"
-    ""
-    "gold.wav"
-    $ \_ -> times 2 (both drawCard)
