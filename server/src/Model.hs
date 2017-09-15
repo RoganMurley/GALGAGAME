@@ -303,16 +303,18 @@ drawCard which model =
 
 bounceAll :: WhichPlayer -> Model -> Model
 bounceAll w m =
-  (modStack (filter (not . owner)))
-    . (modHand w ((++) (getCard <$> (filter owner s))))
+  (modStack (filter (not . (owned w))))
+    . (modHand w ((++) (getCard <$> (filter (owned w) s))))
       $ m
   where
     s :: Stack
     s = getStack m
-    owner :: StackCard -> Bool
-    owner (StackCard o _) = w == o
     getCard :: StackCard -> Card
     getCard (StackCard _ card) = card
+
+
+owned :: WhichPlayer -> StackCard -> Bool
+owned w (StackCard o _) = w == o
 
 
 both :: (WhichPlayer -> a -> a) -> a -> a
