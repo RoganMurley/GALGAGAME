@@ -545,12 +545,10 @@ goldrush =
     eff
   where
     eff :: CardEff
-    eff _ m =
-      both
-        (\p -> times (length . (filter (owner p)) . getStack $ m) (drawCard p))
-          m
-    owner :: WhichPlayer -> StackCard -> Bool
-    owner w (StackCard o _) = w == o
+    eff _ m = both (\p -> times (ownerLen p) (drawCard p)) m
+      where
+        ownerLen :: WhichPlayer -> Int
+        ownerLen w = length . (filter (owned w)) . getStack $ m
 
 
 -- Potential future cards
