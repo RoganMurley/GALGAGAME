@@ -49,16 +49,6 @@ confound =
     $ \_ m -> modStack (shuffle (getGen m)) m
 
 
--- superheat :: Card
--- superheat =
---   Card
---     "Superheat"
---     "Change next card to (GOLD: draw 2)"
---     "striker/transmute.svg"
---     "fireball.wav"
---     $ \_ -> modStackHead (\(StackCard w _) -> StackCard w gold)
-
-
 -- Breaker
 hammer :: Card
 hammer =
@@ -302,7 +292,7 @@ imitate :: Card
 imitate =
   Card
     "Imitate"
-    "Becomes copy of random card in your hand"
+    "Become a copy of random card in your hand"
     "watcher/imitate.svg"
     "feint.wav"
     eff
@@ -515,12 +505,12 @@ hoard =
       \_ -> modDeck o ((++) (replicate 2 card))
 
 
-transmute :: Card
-transmute =
+alchemy :: Card
+alchemy =
   Card
-    "Transmute"
+    "Alchemy"
     "Change next card to (GOLD: draw 2)"
-    "collector/transmute.svg"
+    "collector/alchemy.svg"
     "feint.wav"
     $ \_ -> modStackHead (\(StackCard w _) -> StackCard w gold)
 
