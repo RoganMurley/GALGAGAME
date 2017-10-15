@@ -551,6 +551,21 @@ goldrush =
         ownerLen w = length . (filter (owned w)) . getStack $ m
 
 
+duplicate :: Card
+duplicate =
+  Card
+    "Duplicate"
+    "Add a copy of the next card to your hand"
+    "collector/duplicate.svg"
+    "feint.wav"
+    $ \p m ->
+      case headMay (getStack m) of
+        Just (StackCard _ c) ->
+          modHand p ((:) c) m
+        Nothing ->
+          m
+
+
 -- Potential future cards
 soulheal :: Card
 soulheal =
