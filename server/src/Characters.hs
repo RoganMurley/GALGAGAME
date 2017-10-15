@@ -176,4 +176,4 @@ collector :: Character
 collector =
   Character
     "Collecter"
-    (Cards.relicblade, Cards.greed, Cards.goldrush, Cards.transmute)
+    (Cards.relicblade, Cards.greed, Cards.duplicate, Cards.transmute)
