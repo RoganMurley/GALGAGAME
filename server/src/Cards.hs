@@ -107,6 +107,16 @@ lifeseed =
     $ \p -> modHand p (times 2 ((:) lifesprout))
 
 
+plenty :: Card
+plenty =
+  Card
+    "Plenty"
+    "Both draw 1"
+    "breaker/plenty.svg"
+    "feint.wav"
+    $ \_ -> both drawCard
+
+
 lifesprout :: Card
 lifesprout =
   Card
@@ -542,7 +552,7 @@ gold =
     "Draw 2"
     "collector/gold.svg"
     "feint.wav"
-    $ \p -> (drawCard p) . (drawCard p)
+    $ \p -> times 2 (drawCard p)
 
 
 goldrush :: Card
