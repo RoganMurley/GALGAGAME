@@ -389,6 +389,26 @@ soulburn =
         hurt (max dmg 1) (other p) m
 
 
+summon :: Card
+summon =
+  Card
+    "Summon"
+    "Add (DEMON: Hurt for 14) to your hand"
+    "shielder/summon.svg"
+    "feint.wav"
+    $ \p -> modHand p ((:) demon)
+
+
+demon :: Card
+demon =
+  Card
+    "Demon"
+    "Hurt for 14"
+    "shielder/demon.svg"
+    "envy.wav"
+    $ \p -> hurt 14 (other p)
+
+
 potion :: Card
 potion =
   Card

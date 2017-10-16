@@ -155,7 +155,7 @@ shielder :: Character
 shielder =
   Character
     "Shielder"
-    (Cards.sword, Cards.soulburn, Cards.potion, Cards.reflect)
+    (Cards.sword, Cards.summon, Cards.potion, Cards.reflect)
 
 
 bouncer :: Character
