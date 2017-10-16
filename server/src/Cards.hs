@@ -101,7 +101,7 @@ lifeseed :: Card
 lifeseed =
   Card
     "Lifeseed"
-    "Add 2 (LIFESPROUT: Heal for 9) to hand"
+    "Add 2 (LIFESPROUT: Heal for 9) to your hand"
     "breaker/lifeseed.svg"
     "recharge.wav"
     $ \p -> modHand p (times 2 ((:) lifesprout))
@@ -393,20 +393,20 @@ summon :: Card
 summon =
   Card
     "Summon"
-    "Add (DEMON: Hurt for 14) to your hand"
+    "Add 2 (DEMON: Hurt for 8) to your hand"
     "shielder/summon.svg"
     "feint.wav"
-    $ \p -> modHand p ((:) demon)
+    $ \p -> modHand p (times 2 ((:) demon))
 
 
 demon :: Card
 demon =
   Card
     "Demon"
-    "Hurt for 14"
+    "Hurt for 8"
     "shielder/demon.svg"
     "envy.wav"
-    $ \p -> hurt 14 (other p)
+    $ \p -> hurt 8 (other p)
 
 
 potion :: Card
