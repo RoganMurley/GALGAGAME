@@ -1,6 +1,7 @@
 module Cards where
 
 import Data.List (delete)
+import Data.Monoid ((<>))
 import Safe (headMay)
 
 import Model
@@ -101,7 +102,7 @@ lifeseed :: Card
 lifeseed =
   Card
     "Lifeseed"
-    "Add 2 (LIFESPROUT: Heal for 9) to your hand"
+    ("Add 2 " <> description lifesprout <> " to your hand")
     "breaker/lifeseed.svg"
     "recharge.wav"
     $ \p -> modHand p (times 2 ((:) lifesprout))
@@ -125,6 +126,21 @@ lifesprout =
     "breaker/lifesprout.svg"
     "recharge.wav"
     $ heal 9
+
+
+duplicate :: Card
+duplicate =
+  Card
+    "Duplicate"
+    "Add a copy of the next card to your hand"
+    "breaker/duplicate.svg"
+    "feint.wav"
+    $ \p m ->
+      case headMay (getStack m) of
+        Just (StackCard _ c) ->
+          modHand p ((:) c) m
+        Nothing ->
+          m
 
 
 surprise :: Card
@@ -245,7 +261,7 @@ serpent :: Card
 serpent =
   Card
     "Serpent"
-    "Add 2 (BAD APPLE: Hurt yourself for 8) to their hand"
+    ("Add 2 " <> description badApple <> " to their hand")
     "drinker/serpent.svg"
     "siren.wav"
     $ \p -> modHand (other p) (times 2 ((:) badApple))
@@ -403,7 +419,7 @@ summon :: Card
 summon =
   Card
     "Summon"
-    "Add 2 (DEMON: Hurt for 8) to your hand"
+    ("Add 2 " <> description demon <> " to your hand")
     "shielder/summon.svg"
     "feint.wav"
     $ \p -> modHand p (times 2 ((:) demon))
@@ -525,21 +541,17 @@ hoard :: Card
 hoard =
   Card
     "Hoard"
-    "Put 2 copies of next card on top of owner's deck"
+    ("Add " <> description gold <> " to your hand")
     "collector/hoard.svg"
     "feint.wav"
-    $ withStackHead eff
-  where
-    eff :: StackCard -> CardEff
-    eff (StackCard o card) =
-      \_ -> modDeck o ((++) (replicate 2 card))
+    $ \p -> modHand p ((:) gold)
 
 
 alchemy :: Card
 alchemy =
   Card
     "Alchemy"
-    "Change next card to (GOLD: draw 2)"
+    ("Change next card to " <> description gold)
     "collector/alchemy.svg"
     "feint.wav"
     $ \_ -> modStackHead (\(StackCard w _) -> StackCard w gold)
@@ -569,21 +581,6 @@ goldrush =
       where
         ownerLen :: WhichPlayer -> Int
         ownerLen w = length . (filter (owned w)) . getStack $ m
-
-
-duplicate :: Card
-duplicate =
-  Card
-    "Duplicate"
-    "Add a copy of the next card to your hand"
-    "collector/duplicate.svg"
-    "feint.wav"
-    $ \p m ->
-      case headMay (getStack m) of
-        Just (StackCard _ c) ->
-          modHand p ((:) c) m
-        Nothing ->
-          m
 
 
 -- Potential future cards

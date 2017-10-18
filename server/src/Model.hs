@@ -1,8 +1,9 @@
 module Model where
 
 import Data.Aeson (ToJSON(..), (.=), object)
+import Data.Monoid ((<>))
 import Data.String.Conversions (cs)
-import Data.Text (Text)
+import Data.Text (Text, toUpper)
 import Safe (headMay, tailSafe)
 
 import Mirror (Mirror(..))
@@ -319,3 +320,11 @@ owned w (StackCard o _) = w == o
 
 both :: (WhichPlayer -> a -> a) -> a -> a
 both f x = (f PlayerA) . (f PlayerB) $ x
+
+
+description :: Card -> Text
+description Card{ card_name, card_desc } =
+  "(" <> n <> ": " <> d <> ")"
+  where
+    d = card_desc :: Text
+    n = toUpper card_name :: Text

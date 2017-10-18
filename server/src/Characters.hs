@@ -134,7 +134,7 @@ breaker :: Character
 breaker =
   Character
     "Breaker"
-    (Cards.hammer, Cards.lightning, Cards.plenty, Cards.hubris)
+    (Cards.hammer, Cards.lightning, Cards.duplicate, Cards.hubris)
 
 
 drinker :: Character
@@ -176,4 +176,4 @@ collector :: Character
 collector =
   Character
     "Collecter"
-    (Cards.relicblade, Cards.greed, Cards.duplicate, Cards.alchemy)
+    (Cards.relicblade, Cards.greed, Cards.hoard, Cards.alchemy)
