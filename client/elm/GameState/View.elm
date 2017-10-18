@@ -11,6 +11,7 @@ import Model.Types exposing (..)
 import Model.View as Model exposing (view, resView)
 import Raymarch.Types as Raymarch
 import Raymarch.View as Raymarch
+import ViewModel.State as ViewModel
 
 
 view : GameState -> String -> String -> String -> Float -> ( Int, Int ) -> Html Msg
@@ -69,8 +70,8 @@ view state roomID hostname httpPort time ( width, height ) =
                     , div [] [ Raymarch.view params ]
                     ]
 
-            Ended winner model ( res, resTime ) ->
-                case model of
+            Ended winner final resModel ( res, resTime ) ->
+                case resModel of
                     Just ( m, vm ) ->
                         div []
                             [ resView res resTime ( m, vm ) time
@@ -78,29 +79,29 @@ view state roomID hostname httpPort time ( width, height ) =
                             ]
 
                     Nothing ->
-                        div []
-                            [ div [ class "endgame" ]
-                                (case winner of
-                                    Nothing ->
-                                        [ div [ class "draw" ] [ text "DRAW" ]
-                                        , button
-                                            [ class "rematch", onClick Rematch ]
-                                            [ text "Rematch" ]
-                                        ]
+                        let
+                            ( endGameText, endGameClass ) =
+                                case winner of
+                                    Just PlayerA ->
+                                        ( "VICTORY", "victory" )
 
-                                    Just player ->
-                                        [ if player == PlayerA then
-                                            div
-                                                [ class "victory" ]
-                                                [ text "VICTORY" ]
-                                          else
-                                            div
-                                                [ class "defeat" ]
-                                                [ text "DEFEAT" ]
+                                    Just PlayerB ->
+                                        ( "DEFEAT", "defeat" )
+
+                                    Nothing ->
+                                        ( "DRAW", "draw" )
+                        in
+                            div []
+                                [ div [ class ("endgame-layer " ++ endGameClass) ]
+                                    [ div [ class "endgame-container" ]
+                                        [ div
+                                            [ class endGameClass ]
+                                            [ text endGameText ]
                                         , button
                                             [ class "rematch", onClick Rematch ]
                                             [ text "Rematch" ]
                                         ]
-                                )
-                            , div [] [ Raymarch.view params ]
-                            ]
+                                    ]
+                                , Model.view resTime ( final, ViewModel.init ) time
+                                , div [] [ Raymarch.view params ]
+                                ]

@@ -11,14 +11,9 @@ import Util exposing (fromJust)
 import ViewModel.State as ViewModel
 
 
-decodeState : String -> GameState -> GameState
+decodeState : String -> GameState -> Result String GameState
 decodeState msg oldState =
-    case Json.decodeString (stateDecoder oldState) msg of
-        Ok result ->
-            result
-
-        Err err ->
-            Debug.crash err
+    Json.decodeString (stateDecoder oldState) msg
 
 
 stateDecoder : GameState -> Decoder GameState
@@ -74,8 +69,9 @@ selectingDecoder oldState =
 
 endedDecoder : Decoder GameState
 endedDecoder =
-    Json.map (\w -> Ended w Nothing ( [], 0 ))
+    Json.map2 (\w m -> Ended w m Nothing ( [], 0 ))
         (field "winner" <| maybe whichDecoder)
+        (field "final" <| modelDecoder)
 
 
 playingDecoder : Decoder GameState

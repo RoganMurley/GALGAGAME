@@ -9,4 +9,4 @@ type GameState
     = Waiting
     | Selecting CharacterSelect.Model
     | PlayingGame ( Model, ViewModel ) ( Res, Int )
-    | Ended (Maybe WhichPlayer) (Maybe ( Model, ViewModel )) ( Res, Int )
+    | Ended (Maybe WhichPlayer) Model (Maybe ( Model, ViewModel )) ( Res, Int )

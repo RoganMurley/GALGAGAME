@@ -26,24 +26,31 @@ getStateGen :: GameState -> Gen
 getStateGen (Waiting gen)             = gen
 getStateGen (Selecting _ _ gen)       = gen
 getStateGen (Started (Playing model)) = getGen model
-getStateGen (Started (Ended _ gen))   = gen
+getStateGen (Started (Ended _ _ gen)) = gen
 
 
 data PlayState =
     Playing Model
-  | Ended (Maybe WhichPlayer) Gen
+  | Ended (Maybe WhichPlayer) Model Gen
   deriving (Eq, Show)
 
 
 instance ToJSON PlayState where
-  toJSON (Playing model)  = object [ "playing" .= model ]
-  toJSON (Ended winner _) = object [ "winner" .= winner ]
+  toJSON (Playing model) =
+    object [
+      "playing" .= model
+    ]
+  toJSON (Ended winner model _) =
+    object [
+      "winner" .= winner
+    , "final"  .= model
+    ]
 
 instance Mirror GameState where
-  mirror (Waiting gen)               = Waiting gen
-  mirror (Selecting m t gen)         = Selecting (mirror m) t gen
-  mirror (Started (Playing model))   = Started . Playing . mirror $ model
-  mirror (Started (Ended which gen)) = Started $ Ended (other <$> which) gen
+  mirror (Waiting gen)             = Waiting gen
+  mirror (Selecting m t gen)       = Selecting (mirror m) t gen
+  mirror (Started (Playing m)) = Started . Playing . mirror $ m
+  mirror (Started (Ended w m gen)) = Started $ Ended (other <$> w) (mirror m) gen
 
 
 initState :: Gen -> GameState
