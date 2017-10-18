@@ -57,18 +57,10 @@ viewHand hand hoverIndex resolving =
 
         calcRot : Int -> Float
         calcRot i =
-            let
-                index : Int
-                index =
-                    if (List.length hand) % 2 == 0 && toFloat i < cardCount * 0.5 then
-                        i + 1
-                    else
-                        i
-            in
-                if isHover index then
-                    0
-                else
-                    -1.5 * (toFloat (ceiling ((toFloat index) - (cardCount * 0.5))))
+            if isHover i then
+                0
+            else
+                -1.5 * (toFloat (ceiling ((toFloat i) - (cardCount * 0.5))))
 
         calcTransX : Int -> Float
         calcTransX index =
