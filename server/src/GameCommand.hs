@@ -8,7 +8,7 @@ import Data.Text (Text)
 import Safe (atMay, headMay, tailSafe)
 
 import Characters (CharModel(..), SelectedCharacters(..), selectChar, initCharModel)
-import GameState (GameState(..), PlayState(..), getStateGen, initModel)
+import GameState (GameState(..), PlayState(..), initModel)
 import Model
 import Player (WhichPlayer(..), other)
 import Username (Username)
@@ -54,7 +54,7 @@ update cmd which state =
               hoverCard index which model
             _ ->
               Left ("Unknown command " <> (cs $ show cmd) <> " on a Playing GameState")
-        Ended winner gen ->
+        Ended winner _ gen ->
           case cmd of
             Rematch ->
               rematch (winner, gen)
@@ -85,11 +85,13 @@ chat username msg =
 
 
 concede :: WhichPlayer -> GameState -> Either Err (Maybe GameState, [Outcome])
-concede which state =
+concede which (Started (Playing model)) =
   Right (
-    Just . Started $ Ended (Just (other which)) (getStateGen state)
+    Just . Started $ Ended (Just (other which)) model (getGen model)
   , [ Outcome.Sync ]
   )
+concede _ _ =
+  Left "Cannot concede when not playing"
 
 
 select :: WhichPlayer -> Text -> (CharModel, Turn, Gen) -> Either Err (Maybe GameState, [Outcome])
@@ -141,8 +143,8 @@ endTurn which model
           (Playing m, res) ->
             let newState = Started . Playing . drawCards . resetPasses . swapTurn $ m in
               Right (Just newState, [Outcome.Encodable $ Outcome.Resolve res newState, Outcome.EndTurn which])
-          (Ended w g, res) ->
-            let newState = Started (Ended w g) in
+          (Ended w m g, res) ->
+            let newState = Started (Ended w m g) in
               Right (Just newState, [Outcome.Encodable $ Outcome.Resolve res newState, Outcome.EndTurn which])
       NoPass ->
         Right (Just . Started . Playing . swapTurn $ model, [Outcome.Sync])
@@ -163,8 +165,8 @@ resolveAll model
       case resolveOne model of
         Playing newModel ->
           resolveAll newModel
-        Ended which gen ->
-          return (Ended which gen)
+        Ended w m gen ->
+          return (Ended w m gen)
   where
     stack = getStack model :: Stack
     resolveOne :: Model -> PlayState
@@ -183,11 +185,11 @@ resolveAll model
 lifeGate :: Model -> PlayState
 lifeGate m
   | lifePA <= 0 && lifePB <= 0 =
-    Ended Nothing gen
+    Ended Nothing m gen
   | lifePB <= 0 =
-    Ended (Just PlayerA) gen
+    Ended (Just PlayerA) m gen
   | lifePA <= 0 =
-    Ended (Just PlayerB) gen
+    Ended (Just PlayerB) m gen
   | otherwise =
     Playing
       . (setLife PlayerA (min maxLife lifePA))

@@ -1,7 +1,6 @@
 module GameState.State exposing (resTick, update, tickForward, tickZero)
 
 import CharacterSelect.State as CharacterSelect
-import CharacterSelect.Types as CharacterSelect
 import GameState.Decoders exposing (decodeState, resDecoder)
 import GameState.Messages exposing (Msg(..))
 import GameState.Types exposing (GameState(..))
@@ -73,8 +72,8 @@ update msg state =
                                 , Cmd.none
                                 )
 
-                            ( PlayingGame ( oldModel, oldVm ) _, Ended w _ _ ) ->
-                                ( Ended w (Just ( oldModel, oldVm )) ( resList, 0 )
+                            ( PlayingGame ( oldModel, oldVm ) _, Ended w f _ _ ) ->
+                                ( Ended w f (Just ( oldModel, oldVm )) ( resList, 0 )
                                 , Cmd.none
                                 )
 
@@ -84,20 +83,18 @@ update msg state =
                                 )
 
         SelectingMsg selectMsg ->
-            let
-                model : CharacterSelect.Model
-                model =
-                    case state of
-                        Selecting m ->
-                            m
+            case state of
+                Selecting m ->
+                    let
+                        ( newModel, cmd ) =
+                            CharacterSelect.update selectMsg m
+                    in
+                        ( Selecting newModel, cmd )
 
-                        otherwise ->
-                            Debug.crash "Expected a selecting state"
-
-                ( newModel, cmd ) =
-                    CharacterSelect.update selectMsg model
-            in
-                ( Selecting newModel, cmd )
+                otherwise ->
+                    Debug.log
+                        "Expected a selecting state"
+                        ( state, Cmd.none )
 
         Shake mag ->
             case state of
@@ -114,19 +111,30 @@ setRes state res =
         PlayingGame ( m, vm ) ( _, i ) ->
             PlayingGame ( m, vm ) ( res, i )
 
-        Ended w m ( _, i ) ->
-            Ended w m ( res, i )
+        Ended w f m ( _, i ) ->
+            Ended w f m ( res, i )
 
         Waiting ->
-            Debug.crash "Set res on a waiting state"
+            Debug.log
+                "Set res on a waiting state"
+                state
 
         Selecting _ ->
-            Debug.crash "Set res on a Selecting state"
+            Debug.log
+                "Set res on a Selecting state"
+                state
 
 
 syncState : GameState -> String -> GameState
 syncState oldState msg =
-    carryVm oldState (decodeState msg oldState)
+    case (decodeState msg oldState) of
+        Ok newState ->
+            carryVm oldState newState
+
+        Err err ->
+            Debug.log
+                err
+                oldState
 
 
 
@@ -173,9 +181,10 @@ resTick state =
                             ( model, vm )
                             ( res, 0 )
 
-            Ended which (Just ( m, vm )) ( res, _ ) ->
+            Ended which final (Just ( m, vm )) ( res, _ ) ->
                 Ended
                     which
+                    final
                     (Maybe.map (\x -> ( x, { vm | shake = shakeMag } )) <|
                         List.head res
                     )
@@ -191,14 +200,14 @@ tickForward state =
         PlayingGame ( m, vm ) ( res, tick ) ->
             PlayingGame ( m, ViewModel.shakeDecay vm ) ( res, tick - 1 )
 
-        Ended which model ( res, tick ) ->
+        Ended which final resModel ( res, tick ) ->
             let
                 newModel =
                     Maybe.map
                         (\( m, vm ) -> ( m, ViewModel.shakeDecay vm ))
-                        model
+                        resModel
             in
-                Ended which newModel ( res, tick - 1 )
+                Ended which final newModel ( res, tick - 1 )
 
         otherwise ->
             state
@@ -210,7 +219,7 @@ tickZero state =
         PlayingGame _ ( _, 0 ) ->
             True
 
-        Ended _ _ ( _, 0 ) ->
+        Ended _ _ _ ( _, 0 ) ->
             True
 
         otherwise ->

@@ -251,7 +251,7 @@ connectedUpdate hostname msg ({ chat, game, settings, mode } as model) =
 
         Rematch ->
             case model.game of
-                Ended which _ _ ->
+                Ended which _ _ _ ->
                     ( model, playingOnly model <| send hostname "rematch:" )
 
                 otherwise ->
@@ -308,7 +308,9 @@ connectedUpdate hostname msg ({ chat, game, settings, mode } as model) =
                 )
 
         otherwise ->
-            Debug.crash "Unexpected action while connected ;_;"
+            Debug.log
+                ("Unexpected action while connected ;_;")
+                ( model, Cmd.none )
 
 
 locationUpdate : Main.Model -> Navigation.Location -> Main.Model
@@ -388,21 +390,25 @@ connectedReceive model msg =
         in
             ( { model | game = newGame }, cmd )
     else if (startsWith "hover:" msg) then
-        let
-            ( newGame, cmd ) =
-                GameState.update
-                    (GameState.HoverOutcome <|
-                        parseHoverOutcome <|
-                            dropLeft (length "hover:") msg
+        case parseHoverOutcome <| dropLeft (length "hover:") msg of
+            Ok hoverOutcome ->
+                let
+                    ( newGame, cmd ) =
+                        GameState.update
+                            (GameState.HoverOutcome hoverOutcome)
+                            model.game
+                in
+                    ( { model | game = newGame }
+                    , Cmd.batch
+                        [ cmd
+                        , playSound "/sfx/hover.wav"
+                        ]
                     )
-                    model.game
-        in
-            ( { model | game = newGame }
-            , Cmd.batch
-                [ cmd
-                , playSound "/sfx/hover.wav"
-                ]
-            )
+
+            Err err ->
+                Debug.log
+                    err
+                    ( model, Cmd.none )
     else if (startsWith "res:" msg) then
         let
             ( newGame, cmd ) =
@@ -413,12 +419,18 @@ connectedReceive model msg =
             ( { model | game = newGame }, cmd )
     else if (startsWith "syncPlayers:" msg) then
         let
-            newPlayers : ( Maybe String, Maybe String )
+            newPlayers : Result String ( Maybe String, Maybe String )
             newPlayers =
-                decodePlayers <|
-                    dropLeft (length "syncPlayers:") msg
+                decodePlayers (dropLeft (length "syncPlayers:") msg)
         in
-            ( { model | players = newPlayers }, Cmd.none )
+            case newPlayers of
+                Ok p ->
+                    ( { model | players = p }, Cmd.none )
+
+                Err err ->
+                    Debug.log
+                        err
+                        ( model, Cmd.none )
     else if (startsWith "playCard:" msg) then
         let
             ( newGame, _ ) =
@@ -428,22 +440,19 @@ connectedReceive model msg =
     else if (startsWith "end:" msg) then
         ( model, playSound "/sfx/endTurn.wav" )
     else
-        Debug.crash ("Error decoding message from server: " ++ msg)
+        Debug.log
+            ("Error decoding message from server: " ++ msg)
+            ( model, Cmd.none )
 
 
-parseHoverOutcome : String -> Maybe Int
+parseHoverOutcome : String -> Result String (Maybe Int)
 parseHoverOutcome msg =
     case msg of
         "null" ->
-            Nothing
+            Ok Nothing
 
         otherwise ->
-            case String.toInt msg of
-                Ok index ->
-                    Just index
-
-                Err err ->
-                    Debug.crash err
+            Result.map Just <| String.toInt msg
 
 
 send : String -> String -> Cmd Msg

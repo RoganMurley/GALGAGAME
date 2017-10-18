@@ -20,9 +20,9 @@ data Action = PlayAction Int | EndAction
 
 
 evalState :: PlayState -> Weight
-evalState (Ended (Just PlayerA) _) = 100
-evalState (Ended (Just PlayerB) _) = -200
-evalState (Ended Nothing  _)       = 50
+evalState (Ended (Just PlayerA) _ _) = 100
+evalState (Ended (Just PlayerB) _ _) = -200
+evalState (Ended Nothing _ _)        = 50
 evalState (Playing model)          = evalModel model
   where
     evalModel :: Model -> Weight
@@ -83,7 +83,7 @@ winningEnd m =
   -- If ending the turn now would win, do it! We don't care about heuristics
   -- when we have a sure bet :)
   case fst . runWriter . resolveAll $ m of
-    Ended (Just PlayerA) _ ->
+    Ended (Just PlayerA) _ _ ->
       True
     _ ->
       False
