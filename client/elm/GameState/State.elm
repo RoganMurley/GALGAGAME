@@ -72,8 +72,8 @@ update msg state =
                                 , Cmd.none
                                 )
 
-                            ( PlayingGame ( oldModel, oldVm ) _, Ended w f _ _ ) ->
-                                ( Ended w f (Just ( oldModel, oldVm )) ( resList, 0 )
+                            ( PlayingGame ( oldModel, oldVm ) _, Ended w f _ _ _ ) ->
+                                ( Ended w f oldVm (Just oldModel) ( resList, 0 )
                                 , Cmd.none
                                 )
 
@@ -111,8 +111,8 @@ setRes state res =
         PlayingGame ( m, vm ) ( _, i ) ->
             PlayingGame ( m, vm ) ( res, i )
 
-        Ended w f m ( _, i ) ->
-            Ended w f m ( res, i )
+        Ended w f vm m ( _, i ) ->
+            Ended w f vm m ( res, i )
 
         Waiting ->
             Debug.log
@@ -181,13 +181,12 @@ resTick state =
                             ( model, vm )
                             ( res, 0 )
 
-            Ended which final (Just ( m, vm )) ( res, _ ) ->
+            Ended which final vm (Just m) ( res, _ ) ->
                 Ended
                     which
                     final
-                    (Maybe.map (\x -> ( x, { vm | shake = shakeMag } )) <|
-                        List.head res
-                    )
+                    { vm | shake = shakeMag }
+                    (List.head res)
                     ( List.drop 1 res, resDelay )
 
             otherwise ->
@@ -200,14 +199,8 @@ tickForward state =
         PlayingGame ( m, vm ) ( res, tick ) ->
             PlayingGame ( m, ViewModel.shakeDecay vm ) ( res, tick - 1 )
 
-        Ended which final resModel ( res, tick ) ->
-            let
-                newModel =
-                    Maybe.map
-                        (\( m, vm ) -> ( m, ViewModel.shakeDecay vm ))
-                        resModel
-            in
-                Ended which final newModel ( res, tick - 1 )
+        Ended which final vm resModel ( res, tick ) ->
+            Ended which final (ViewModel.shakeDecay vm) resModel ( res, tick - 1 )
 
         otherwise ->
             state
@@ -219,7 +212,7 @@ tickZero state =
         PlayingGame _ ( _, 0 ) ->
             True
 
-        Ended _ _ _ ( _, 0 ) ->
+        Ended _ _ _ _ ( _, 0 ) ->
             True
 
         otherwise ->

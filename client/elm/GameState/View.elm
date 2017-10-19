@@ -11,7 +11,6 @@ import Model.Types exposing (..)
 import Model.View as Model exposing (view, resView)
 import Raymarch.Types as Raymarch
 import Raymarch.View as Raymarch
-import ViewModel.State as ViewModel
 
 
 view : GameState -> String -> String -> String -> Float -> ( Int, Int ) -> Html Msg
@@ -70,9 +69,9 @@ view state roomID hostname httpPort time ( width, height ) =
                     , div [] [ Raymarch.view params ]
                     ]
 
-            Ended winner final resModel ( res, resTime ) ->
+            Ended winner final vm resModel ( res, resTime ) ->
                 case resModel of
-                    Just ( m, vm ) ->
+                    Just m ->
                         div []
                             [ resView res resTime ( m, vm ) time
                             , div [] [ Raymarch.view params ]
@@ -102,6 +101,6 @@ view state roomID hostname httpPort time ( width, height ) =
                                             [ text "Rematch" ]
                                         ]
                                     ]
-                                , resView res resTime ( final, ViewModel.init ) time
+                                , resView res resTime ( final, vm ) time
                                 , div [] [ Raymarch.view params ]
                                 ]
