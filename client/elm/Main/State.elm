@@ -251,7 +251,7 @@ connectedUpdate hostname msg ({ chat, game, settings, mode } as model) =
 
         Rematch ->
             case model.game of
-                Ended which _ _ _ ->
+                Ended which _ _ _ _ ->
                     ( model, playingOnly model <| send hostname "rematch:" )
 
                 otherwise ->

@@ -69,7 +69,7 @@ selectingDecoder oldState =
 
 endedDecoder : Decoder GameState
 endedDecoder =
-    Json.map2 (\w m -> Ended w m Nothing ( [], 0 ))
+    Json.map2 (\w m -> Ended w m ViewModel.init Nothing ( [], 0 ))
         (field "winner" <| maybe whichDecoder)
         (field "final" <| modelDecoder)
 
