@@ -102,6 +102,6 @@ view state roomID hostname httpPort time ( width, height ) =
                                             [ text "Rematch" ]
                                         ]
                                     ]
-                                , Model.view resTime ( final, ViewModel.init ) time
+                                , resView res resTime ( final, ViewModel.init ) time
                                 , div [] [ Raymarch.view params ]
                                 ]
