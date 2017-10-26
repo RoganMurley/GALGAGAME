@@ -419,20 +419,20 @@ summon :: Card
 summon =
   Card
     "Summon"
-    ("Add 2 " <> description demon <> " to your hand")
+    ("Add 3 " <> description demon <> " to your hand")
     "shielder/summon.svg"
     "feint.wav"
-    $ \p -> modHand p (times 2 ((:) demon))
+    $ \p -> modHand p (times 3 ((:) demon))
 
 
 demon :: Card
 demon =
   Card
     "Demon"
-    "Hurt for 8"
+    "Hurt for 5"
     "shielder/demon.svg"
     "envy.wav"
-    $ \p -> hurt 8 (other p)
+    $ \p -> hurt 5 (other p)
 
 
 potion :: Card
