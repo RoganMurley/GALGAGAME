@@ -9,3 +9,4 @@ type Route
 type PlayRoute
     = CustomPlay (Maybe String)
     | ComputerPlay
+    | QuickPlay

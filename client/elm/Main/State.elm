@@ -106,6 +106,9 @@ update msg ({ hostname, room, frameTime, seed } as model) =
 
                                             Lobby.CustomGame ->
                                                 "custom"
+
+                                            Lobby.QuickplayGame ->
+                                                "quickplay"
                                 in
                                     ( model, newUrl <| "/play/" ++ url )
 
@@ -122,6 +125,9 @@ update msg ({ hostname, room, frameTime, seed } as model) =
 
                                 Lobby.CustomGame ->
                                     newUrl <| "/play/custom/" ++ roomID
+
+                                Lobby.QuickplayGame ->
+                                    Cmd.none
                             )
 
                         otherwise ->
@@ -366,6 +372,15 @@ locationUpdate model location =
 
                                         otherwise ->
                                             lobbyModel
+
+                            Compass.QuickPlay ->
+                                { model
+                                    | room =
+                                        Connecting <|
+                                            Lobby.modelInit
+                                                randomRoomID
+                                                Lobby.QuickplayGame
+                                }
 
         Nothing ->
             { model | room = initRoom }

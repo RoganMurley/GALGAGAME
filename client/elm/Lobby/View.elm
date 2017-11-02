@@ -23,6 +23,9 @@ view params { error, gameType } =
                 ComputerGame ->
                     "Computer"
 
+                QuickplayGame ->
+                    "Quickplay"
+
         nameInputID : String
         nameInputID =
             "playername-input"

@@ -32,6 +32,9 @@ update ({ error, gameType } as model) msg =
                                 ComputerGame ->
                                     "playComputer:"
 
+                                QuickplayGame ->
+                                    "queue:"
+
                         Spectating ->
                             "spectate:"
             in
