@@ -28,7 +28,7 @@ stateDecoder oldState =
 
 waitingDecoder : Decoder GameState
 waitingDecoder =
-    Json.map (\_ -> Waiting) <| field "waiting" Json.bool
+    Json.map Waiting <| field "waiting" Json.string
 
 
 selectingDecoder : GameState -> Decoder GameState

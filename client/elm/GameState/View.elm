@@ -5,7 +5,7 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import CharacterSelect.View as CharacterSelect
 import GameState.Messages as GameState
-import GameState.Types exposing (GameState(..))
+import GameState.Types exposing (GameState(..), WaitType(..))
 import Main.Messages exposing (Msg(..))
 import Model.Types exposing (..)
 import Model.View as Model exposing (view, resView)
@@ -20,40 +20,11 @@ view state roomID hostname httpPort time ( width, height ) =
             Raymarch.Params time ( width, height )
     in
         case state of
-            Waiting ->
-                let
-                    portProtocol =
-                        if httpPort /= "" then
-                            ":" ++ httpPort
-                        else
-                            ""
-
-                    challengeLink =
-                        "http://" ++ hostname ++ portProtocol ++ "/play/custom/" ++ roomID
-
-                    myID =
-                        "challenge-link"
-                in
-                    div []
-                        [ div [ class "waiting" ]
-                            [ div [ class "waiting-prompt" ]
-                                [ text "Give this link to your opponent:" ]
-                            , div [ class "input-group" ]
-                                [ input
-                                    [ value challengeLink
-                                    , type_ "text"
-                                    , readonly True
-                                    , id myID
-                                    , onClick <| SelectAllInput myID
-                                    ]
-                                    []
-                                , button
-                                    [ onClick <| CopyInput myID ]
-                                    [ text "copy" ]
-                                ]
-                            ]
-                        , div [] [ Raymarch.view params ]
-                        ]
+            Waiting waitType ->
+                div []
+                    [ waitingView waitType httpPort hostname roomID
+                    , Raymarch.view params
+                    ]
 
             Selecting model ->
                 Html.map (GameStateMsg << GameState.SelectingMsg) <| CharacterSelect.view params model
@@ -104,3 +75,54 @@ view state roomID hostname httpPort time ( width, height ) =
                                 , resView res resTime ( final, vm ) time
                                 , div [] [ Raymarch.view params ]
                                 ]
+
+
+waitingView : WaitType -> String -> String -> String -> Html Msg
+waitingView waitType httpPort hostname roomID =
+    let
+        portProtocol =
+            if httpPort /= "" then
+                ":" ++ httpPort
+            else
+                ""
+
+        challengeLink =
+            "http://" ++ hostname ++ portProtocol ++ "/play/custom/" ++ roomID
+
+        myID =
+            "challenge-link"
+
+        waitingPrompt =
+            case waitType of
+                CustomWait ->
+                    "Give this link to your opponent:"
+
+                QuickplayWait ->
+                    "Searching for opponent..."
+
+        waitingInfo : Html Msg
+        waitingInfo =
+            case waitType of
+                CustomWait ->
+                    div [ class "input-group" ]
+                        [ input
+                            [ value challengeLink
+                            , type_ "text"
+                            , readonly True
+                            , id myID
+                            , onClick <| SelectAllInput myID
+                            ]
+                            []
+                        , button
+                            [ onClick <| CopyInput myID ]
+                            [ text "copy" ]
+                        ]
+
+                QuickplayWait ->
+                    div [] []
+    in
+        div [ class "waiting" ]
+            [ div [ class "waiting-prompt" ]
+                [ text waitingPrompt ]
+            , waitingInfo
+            ]

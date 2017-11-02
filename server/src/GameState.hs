@@ -10,7 +10,7 @@ import Util (Gen, shuffle, split)
 
 
 data GameState =
-    Waiting Gen
+    Waiting WaitType Gen
   | Selecting CharModel Turn Gen
   | Started PlayState
   deriving (Eq, Show)
