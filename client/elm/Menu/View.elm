@@ -17,7 +17,9 @@ view params =
             , h2 [] [ text "A card game of risk & reward" ]
             , div [ class "main-menu-buttons" ]
                 [ button
-                    [ class "menu-button", disabled True ]
+                    [ class "menu-button"
+                    , onClick <| Start Lobby.QuickplayGame
+                    ]
                     [ text "Quickplay" ]
                 , button
                     [ class "menu-button"

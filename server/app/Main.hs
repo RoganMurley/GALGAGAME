@@ -90,9 +90,10 @@ begin conn roomReq usernameM state =
 
 
 beginPrefix :: Prefix -> TVar Server.State -> Client -> TVar Room -> IO ()
-beginPrefix PrefixPlay = beginPlay
-beginPrefix PrefixSpec = beginSpec
-beginPrefix PrefixCpu  = beginComputer
+beginPrefix PrefixPlay  = beginPlay
+beginPrefix PrefixSpec  = beginSpec
+beginPrefix PrefixCpu   = beginComputer
+beginPrefix PrefixQueue = beginQueue
 
 
 beginPlay :: TVar Server.State -> Client -> TVar Room -> IO ()
@@ -132,6 +133,19 @@ beginComputer state client roomVar = do
         (do
           _ <- disconnect computerClient roomVar state
           (disconnect client roomVar state))
+
+
+beginQueue :: TVar Server.State -> Client -> TVar Room -> IO ()
+beginQueue state client roomVar = do
+  putStrLn "Starting to queue"
+  roomM <- atomically $ Server.queue (client, roomVar) state
+  case roomM of
+    Just (_, existingRoom) ->
+      beginPlay state client existingRoom
+    Nothing ->
+      finally
+        (beginPlay state client roomVar)
+        (atomically $ Server.dequeue client state)
 
 
 spectate :: Client -> TVar Room -> IO ()

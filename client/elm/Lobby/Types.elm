@@ -11,3 +11,4 @@ type alias Model =
 type GameType
     = CustomGame
     | ComputerGame
+    | QuickplayGame

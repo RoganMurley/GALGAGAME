@@ -59,6 +59,14 @@ mkGen :: Int -> Gen
 mkGen n = Gen . R.mkStdGen $ n
 
 
+modTVar :: TVar a -> (a -> a) -> STM ()
+modTVar var f = do
+  x <- readTVar var
+  writeTVar var (f x)
+
+{-# INLINE modTVar #-}
+
+
 modReadTVar :: TVar a -> (a -> a) -> STM a
 modReadTVar var f = do
   x <- readTVar var
