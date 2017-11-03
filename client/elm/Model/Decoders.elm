@@ -18,7 +18,7 @@ whichDecoder =
                     succeed PlayerB
 
                 otherwise ->
-                    fail ("Invalid player " ++ s)
+                    fail ("Invalid WhichPlayer " ++ s)
     in
         string |> Json.andThen decode
 

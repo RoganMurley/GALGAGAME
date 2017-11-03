@@ -13,5 +13,5 @@ type GameState
 
 
 type WaitType
-    = QuickplayWait
-    | CustomWait
+    = WaitQuickplay
+    | WaitCustom

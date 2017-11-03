@@ -17,13 +17,24 @@ data GameState =
 
 
 instance ToJSON GameState where
-  toJSON (Waiting _)       = object [ "waiting" .= True ]
+  toJSON (Waiting t _)     = object [ "waiting" .= toJSON t ]
   toJSON (Selecting m _ _) = toJSON m
   toJSON (Started s)       = toJSON s
 
 
+data WaitType =
+    WaitCustom
+  | WaitQuickplay
+  deriving (Eq, Show)
+
+
+instance ToJSON WaitType where
+  toJSON WaitCustom    = "custom"
+  toJSON WaitQuickplay = "quickplay"
+
+
 getStateGen :: GameState -> Gen
-getStateGen (Waiting gen)             = gen
+getStateGen (Waiting _ gen)           = gen
 getStateGen (Selecting _ _ gen)       = gen
 getStateGen (Started (Playing model)) = getGen model
 getStateGen (Started (Ended _ _ gen)) = gen
@@ -47,13 +58,13 @@ instance ToJSON PlayState where
     ]
 
 instance Mirror GameState where
-  mirror (Waiting gen)             = Waiting gen
+  mirror (Waiting wait gen)        = Waiting wait gen
   mirror (Selecting m t gen)       = Selecting (mirror m) t gen
   mirror (Started (Playing m)) = Started . Playing . mirror $ m
   mirror (Started (Ended w m gen)) = Started $ Ended (other <$> w) (mirror m) gen
 
 
-initState :: Gen -> GameState
+initState :: WaitType -> Gen -> GameState
 initState = Waiting
 
 

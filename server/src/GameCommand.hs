@@ -34,7 +34,7 @@ update (Chat username msg) _     _     = chat    username msg
 update Concede             which state = concede which    state
 update cmd which state =
   case state of
-    Waiting _ ->
+    Waiting _ _ ->
       Left ("Unknown command " <> (cs $ show cmd) <> " on a waiting GameState")
     Selecting selectModel turn gen ->
       case cmd of

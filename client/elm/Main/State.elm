@@ -58,7 +58,7 @@ initRoom =
 initConnected : Mode -> String -> ConnectedModel
 initConnected mode roomID =
     { chat = Chat.init
-    , game = Waiting
+    , game = Waiting GameState.WaitQuickplay
     , settings = Settings.init
     , mode = mode
     , roomID = roomID

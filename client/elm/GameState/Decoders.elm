@@ -4,7 +4,7 @@ import Json.Decode as Json exposing (Decoder, fail, field, index, int, list, may
 import Card.Decoders as Card
 import Card.Types exposing (Card)
 import CharacterSelect.Types as CharacterSelect
-import GameState.Types exposing (GameState(..))
+import GameState.Types exposing (GameState(..), WaitType(..))
 import Model.Decoders exposing (modelDecoder, whichDecoder)
 import Model.Types exposing (..)
 import Util exposing (fromJust)
@@ -28,7 +28,21 @@ stateDecoder oldState =
 
 waitingDecoder : Decoder GameState
 waitingDecoder =
-    Json.map Waiting <| field "waiting" Json.string
+    let
+        decode : String -> Decoder WaitType
+        decode s =
+            case s of
+                "quickplay" ->
+                    succeed WaitQuickplay
+
+                "custom" ->
+                    succeed WaitCustom
+
+                otherwise ->
+                    fail ("Invalid WaitType " ++ s)
+    in
+        Json.map Waiting
+            (field "waiting" (string |> Json.andThen decode))
 
 
 selectingDecoder : GameState -> Decoder GameState
