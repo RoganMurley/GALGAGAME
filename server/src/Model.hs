@@ -268,6 +268,9 @@ resetPasses = setPasses NoPass
 getGen :: Getter Model Gen
 getGen = model_gen
 
+setGen :: Setter Model Gen
+setGen gen model = model { model_gen = gen }
+
 
 -- ACTIONS
 hurt :: Life -> WhichPlayer -> Model -> Model

@@ -9,7 +9,7 @@ import GameCommand (GameCommand(..), resolveAll, update)
 import GameState
 import Model
 import Player (WhichPlayer(..))
-import Util (fromRight)
+import Util (Gen, fromRight)
 
 import qualified Cards
 
@@ -59,23 +59,23 @@ possibleActions m =
         [EndAction]
 
 
-postulateAction :: Model -> Action -> PlayState
-postulateAction model action =
+postulateAction :: Model -> Gen -> Action -> PlayState
+postulateAction model gen action =
   -- DANGEROUS, WE NEED TO SPLIT UP THE COMMAND STUFF IN GAMESTATE
   (\(Started p) -> p) . fromJust . fst . fromRight $ update command PlayerA state
   where
     command = toCommand action :: GameCommand
-    state = Started (Playing model) :: GameState
+    state = Started $ Playing $ setGen gen model :: GameState
 
 
-chooseAction :: Turn -> Model -> Maybe Action
-chooseAction turn model
+chooseAction :: Gen -> Turn -> Model -> Maybe Action
+chooseAction gen turn model
   | getTurn model /= turn = Nothing
   | winningEnd model      = Just EndAction
   | otherwise             = Just $ maximumBy comparison $ possibleActions model
   where
     comparison :: Action -> Action -> Ordering
-    comparison = comparing (evalState . (postulateAction model))
+    comparison = comparing (evalState . (postulateAction model gen))
 
 
 winningEnd :: Model -> Bool

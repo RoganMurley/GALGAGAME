@@ -52,7 +52,7 @@ split (Gen g) = (Gen g1, Gen g2)
 
 
 getGen :: IO Gen
-getGen = Gen <$> R.getStdGen
+getGen = Gen <$> R.newStdGen
 
 
 mkGen :: Int -> Gen

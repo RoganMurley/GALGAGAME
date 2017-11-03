@@ -145,7 +145,6 @@ beginComputer state client roomVar = do
 
 beginQueue :: TVar Server.State -> Client -> TVar Room -> IO ()
 beginQueue state client roomVar = do
-  putStrLn "Starting to queue"
   roomM <- atomically $ Server.queue (client, roomVar) state
   case roomM of
     Just (_, existingRoom) ->
@@ -183,7 +182,8 @@ computerPlay which roomVar =
   do
   _ <- runMaybeT . forever $ do
     lift $ threadDelay 1000000
-    command <- lift $ chooseComputerCommand which roomVar
+    gen <- lift $ getGen
+    command <- lift $ chooseComputerCommand which roomVar gen
     case command of
       Just c -> do
         lift $ actPlay c which roomVar
@@ -196,22 +196,22 @@ computerPlay which roomVar =
   return ()
 
 
-chooseComputerCommand :: WhichPlayer -> TVar Room -> IO (Maybe Command)
-chooseComputerCommand which room = do
+chooseComputerCommand :: WhichPlayer -> TVar Room -> Gen -> IO (Maybe Command)
+chooseComputerCommand which room gen = do
   r <- atomically $ readTVar room
   case Room.getState r of
-    Selecting charModel _ gen ->
-      return . Just . SelectCharacterCommand $ randomChar charModel gen
+    Selecting charModel _ _ ->
+      return . Just . SelectCharacterCommand $ randomChar charModel
     Started (Playing m) ->
-      return $ trans <$> chooseAction which m
+      return $ trans <$> chooseAction gen which m
     _ ->
       return Nothing
   where
     trans :: Action -> Command
     trans EndAction          = EndTurnCommand
     trans (PlayAction index) = PlayCardCommand index
-    randomChar :: CharModel -> Gen -> Text
-    randomChar (CharModel selected _ allChars) gen =
+    randomChar :: CharModel -> Text
+    randomChar (CharModel selected _ allChars) =
       character_name . head . (drop (length . Characters.toList $ selected))
         $ shuffle gen allChars
 
