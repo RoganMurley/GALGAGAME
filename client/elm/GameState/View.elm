@@ -98,7 +98,7 @@ waitingView waitType httpPort hostname roomID =
                     "Give this link to your opponent:"
 
                 WaitQuickplay ->
-                    "Searching for opponent..."
+                    "Searching for opponent"
 
         waitingInfo : Html Msg
         waitingInfo =
@@ -119,7 +119,13 @@ waitingView waitType httpPort hostname roomID =
                         ]
 
                 WaitQuickplay ->
-                    div [] []
+                    div []
+                        [ div [ class "lds-facebook" ]
+                            [ div [] []
+                            , div [] []
+                            , div [] []
+                            ]
+                        ]
     in
         div [ class "waiting" ]
             [ div [ class "waiting-prompt" ]
