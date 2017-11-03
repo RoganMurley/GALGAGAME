@@ -8,6 +8,7 @@ import Data.Map.Strict (Map, delete, empty, insert, keys, lookup)
 import Data.Text (Text)
 import Safe (headMay)
 
+import GameState (WaitType(..))
 import Player (WhichPlayer(..))
 import Util (Gen, modReadTVar, modReturnTVar, modTVar)
 
@@ -45,9 +46,9 @@ createRoom name roomVar state =
     (\(State s m) -> (State (insert name roomVar s) m, roomVar))
 
 
-getOrCreateRoom :: Room.Name -> Gen -> TVar State -> STM (TVar Room)
-getOrCreateRoom name gen state = do
-  newRoomVar      <- newTVar $ Room.new gen name
+getOrCreateRoom :: Room.Name -> WaitType -> Gen -> TVar State -> STM (TVar Room)
+getOrCreateRoom name wait gen state = do
+  newRoomVar      <- newTVar $ Room.new wait gen name
   existingRoomVar <- getRoom name state
   case existingRoomVar of
     Nothing ->

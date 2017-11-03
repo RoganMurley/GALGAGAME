@@ -94,16 +94,16 @@ waitingView waitType httpPort hostname roomID =
 
         waitingPrompt =
             case waitType of
-                CustomWait ->
+                WaitCustom ->
                     "Give this link to your opponent:"
 
-                QuickplayWait ->
+                WaitQuickplay ->
                     "Searching for opponent..."
 
         waitingInfo : Html Msg
         waitingInfo =
             case waitType of
-                CustomWait ->
+                WaitCustom ->
                     div [ class "input-group" ]
                         [ input
                             [ value challengeLink
@@ -118,7 +118,7 @@ waitingView waitType httpPort hostname roomID =
                             [ text "copy" ]
                         ]
 
-                QuickplayWait ->
+                WaitQuickplay ->
                     div [] []
     in
         div [ class "waiting" ]

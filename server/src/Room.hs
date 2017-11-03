@@ -6,7 +6,7 @@ import Data.Monoid ((<>))
 import Data.Text (Text, intercalate)
 
 import Characters (initCharModel)
-import GameState (GameState(..), initState)
+import GameState (GameState(..), WaitType(..), initState)
 import Player (WhichPlayer(..), other)
 import Username (Username(Username))
 import Util (Gen)
@@ -29,13 +29,13 @@ data Room = Room
   } deriving (Show)
 
 
-new :: Gen -> Name -> Room
-new gen name = Room
+new :: WaitType -> Gen -> Name -> Room
+new wait gen name = Room
   { room_pa    = Nothing
   , room_pb    = Nothing
   , room_specs = []
   , room_name  = name
-  , room_state = initState gen
+  , room_state = initState wait gen
   }
 
 
@@ -100,7 +100,7 @@ ifFullInit :: Room -> Room
 ifFullInit room =
   if full room then
     case getState room of
-      Waiting gen ->
+      Waiting _ gen ->
         room { room_state = Selecting initCharModel PlayerA gen }
       _ ->
         room

@@ -21,7 +21,7 @@ import ArtificalIntelligence (Action(..), chooseAction)
 import Characters (CharModel(..), character_name, toList)
 import Negotiation (Prefix(..), parseRoomReq, parsePrefix)
 import Player (WhichPlayer(..), other)
-import GameState (GameState(..), PlayState(..))
+import GameState (GameState(..), PlayState(..), WaitType(..))
 import Username (Username(Username))
 import Util (Gen, getGen, shuffle)
 
@@ -81,7 +81,7 @@ begin conn roomReq usernameM state =
         Just prefix -> do
           gen <- getGen
           guid <- GUID.genText
-          roomVar <- atomically $ Server.getOrCreateRoom roomName gen state
+          roomVar <- atomically $ Server.getOrCreateRoom roomName (prefixWaitType prefix) gen state
           beginPrefix
             prefix
             state
@@ -94,6 +94,14 @@ beginPrefix PrefixPlay  = beginPlay
 beginPrefix PrefixSpec  = beginSpec
 beginPrefix PrefixCpu   = beginComputer
 beginPrefix PrefixQueue = beginQueue
+
+
+prefixWaitType :: Prefix -> WaitType
+prefixWaitType PrefixPlay  = WaitCustom
+prefixWaitType PrefixSpec  = WaitCustom
+prefixWaitType PrefixCpu   = WaitCustom
+prefixWaitType PrefixQueue = WaitQuickplay
+
 
 
 beginPlay :: TVar Server.State -> Client -> TVar Room -> IO ()

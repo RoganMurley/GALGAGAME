@@ -114,7 +114,7 @@ setRes state res =
         Ended w f vm m ( _, i ) ->
             Ended w f vm m ( res, i )
 
-        Waiting ->
+        Waiting _ ->
             Debug.log
                 "Set res on a waiting state"
                 state
