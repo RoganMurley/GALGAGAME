@@ -112,14 +112,13 @@ toList (ThreeSelected a b c) = [ a, b, c ]
 -- CHARACTERS
 allCharacters :: [Character]
 allCharacters = [
-      shielder
-    , balancer
-    , breaker
-    , striker
-    , collector
-    , drinker
-    , watcher
-    , bouncer
+    shielder
+  , watcher
+  , drinker
+  , collector
+  , striker
+  , breaker
+  , balancer
   ]
 
 
@@ -134,7 +133,7 @@ breaker :: Character
 breaker =
   Character
     "Breaker"
-    (Cards.hammer, Cards.lightning, Cards.duplicate, Cards.hubris)
+    (Cards.hammer, Cards.lightning, Cards.feint, Cards.hubris)
 
 
 drinker :: Character
@@ -148,21 +147,14 @@ watcher :: Character
 watcher =
   Character
     "Watcher"
-    (Cards.staff, Cards.surge, Cards.imitate, Cards.prophecy)
+    (Cards.staff, Cards.surge, Cards.echo, Cards.prophecy)
 
 
 shielder :: Character
 shielder =
   Character
     "Shielder"
-    (Cards.sword, Cards.summon, Cards.potion, Cards.reflect)
-
-
-bouncer :: Character
-bouncer =
-  Character
-    "Bouncer"
-    (Cards.boomerang, Cards.overwhelm, Cards.echo, Cards.feint)
+    (Cards.boomerang, Cards.overwhelm, Cards.potion, Cards.reflect)
 
 
 balancer :: Character
@@ -176,4 +168,4 @@ collector :: Character
 collector =
   Character
     "Collecter"
-    (Cards.relicblade, Cards.greed, Cards.hoard, Cards.alchemy)
+    (Cards.relicblade, Cards.greed, Cards.imitate, Cards.alchemy)
