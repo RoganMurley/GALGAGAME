@@ -26,8 +26,7 @@ view params { characters, selected, hover } =
                     class ""
                 ]
                 [ img [ src ("/img/" ++ imgURL), class "character-icon" ] []
-
-                -- , div [ class "character-name" ] [ text name ]
+                  -- , div [ class "character-name" ] [ text name ]
                 ]
 
         selectedView : List Character -> Html Msg
@@ -40,8 +39,7 @@ view params { characters, selected, hover } =
                         , onMouseEnter <| Hover character
                         ]
                         [ img [ src ("/img/" ++ imgURL), class "character-icon" ] []
-
-                        -- , div [ class "character-name" ] [ text name ]
+                          -- , div [ class "character-name" ] [ text name ]
                         ]
 
                 unchosen : List (Html Msg)
@@ -74,7 +72,7 @@ view params { characters, selected, hover } =
                     , tr []
                         (List.map
                             (\x -> th [ class "card-type" ] [ text x ])
-                            [ "Sword", "Sorcery", "Support", "Scourge" ]
+                            [ "Weapon", "Magic", "Support", "Control" ]
                         )
                     ]
     in
