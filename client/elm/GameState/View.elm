@@ -79,7 +79,7 @@ view state roomID hostname httpPort time ( width, height ) =
                                         ]
                                     ]
                                 , resView res resTime ( final, vm ) time
-                                , div [] [ Raymarch.view params ]
+                                , div [] [ Animation.view params resTime ]
                                 ]
 
 
