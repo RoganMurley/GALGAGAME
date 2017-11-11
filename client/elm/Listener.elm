@@ -12,7 +12,7 @@ listen time state =
     let
         modelListen : GameState -> Model -> Cmd Msg
         modelListen state m =
-            if GameState.tickZero state then
+            if GameState.gameTickStart state then
                 let
                     -- FIX ME, UNSAFE
                     sfxURL : String

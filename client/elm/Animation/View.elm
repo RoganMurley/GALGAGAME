@@ -10,14 +10,17 @@ import Raymarch.Shaders as Raymarch
 import WebGL
 
 
-view : Params -> Html msg
-view (Params theta ( w, h )) =
+view : Params -> Float -> Html msg
+view (Params theta ( w, h )) resTheta =
     let
         time =
             theta / 1000
 
+        resTime =
+            resTheta / 1000
+
         downscale =
-            4
+            5
     in
         WebGL.toHtml
             [ width (w // downscale)
@@ -41,5 +44,5 @@ view (Params theta ( w, h )) =
                 Animation.vertexShader
                 Animation.fragmentShader
                 quadMesh
-                (uniforms time ( w // downscale, h // downscale ))
+                (uniforms resTime ( w // downscale, h // downscale ))
             ]

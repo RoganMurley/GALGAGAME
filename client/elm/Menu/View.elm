@@ -6,11 +6,7 @@ import Html.Events exposing (..)
 import Lobby.Types as Lobby
 import Menu.Messages exposing (Msg(..))
 import Raymarch.Types as Raymarch
-
-
--- import Raymarch.View as Raymarch
-
-import Animation.View as Animation
+import Raymarch.View as Raymarch
 
 
 view : Raymarch.Params -> Html Msg
@@ -37,5 +33,5 @@ view params =
                     [ text "Computer" ]
                 ]
             ]
-        , div [] [ Animation.view params ]
+        , div [] [ Raymarch.view params ]
         ]
