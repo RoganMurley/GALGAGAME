@@ -16,7 +16,7 @@ cardWidth =
     14.0
 
 
-view : Int -> ( Model, ViewModel ) -> Float -> Html Msg
+view : Float -> ( Model, ViewModel ) -> Float -> Html Msg
 view resTime ( model, viewModel ) time =
     div [ class "game-container", style [ screenshakeStyle viewModel.shake time ] ]
         [ viewOtherHand model.otherHand model.otherHover
@@ -325,7 +325,7 @@ viewStack stack =
 -- RESOLVING VIEW.
 
 
-resView : Res -> Int -> ( Model, ViewModel ) -> Float -> Html Msg
+resView : Res -> Float -> ( Model, ViewModel ) -> Float -> Html Msg
 resView res resTime ( model, vm ) time =
     div [ class "game-container resolving", style [ screenshakeStyle vm.shake time ] ]
         [ viewOtherHand model.otherHand model.otherHover

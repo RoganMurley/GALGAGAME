@@ -1,4 +1,4 @@
-module GameState.State exposing (resTick, update, tickForward, tickZero)
+module GameState.State exposing (resTick, update, tickForward, gameTickStart)
 
 import CharacterSelect.State as CharacterSelect
 import GameState.Decoders exposing (decodeState, resDecoder)
@@ -68,12 +68,12 @@ update msg state =
                     otherwise ->
                         case ( state, final ) of
                             ( PlayingGame ( oldModel, oldVm ) _, PlayingGame ( newModel, _ ) _ ) ->
-                                ( PlayingGame ( oldModel, oldVm ) ( resList ++ [ newModel ], 0 )
+                                ( PlayingGame ( oldModel, oldVm ) ( resList ++ [ newModel ], resTickMax )
                                 , Cmd.none
                                 )
 
                             ( PlayingGame ( oldModel, oldVm ) _, Ended w f _ _ _ ) ->
-                                ( Ended w f oldVm (Just oldModel) ( resList, 0 )
+                                ( Ended w f oldVm (Just oldModel) ( resList, resTickMax )
                                 , Cmd.none
                                 )
 
@@ -156,11 +156,6 @@ carryVm old new =
             new
 
 
-resDelay : Int
-resDelay =
-    35
-
-
 resTick : GameState -> GameState
 resTick state =
     let
@@ -174,7 +169,7 @@ resTick state =
                     Just newModel ->
                         PlayingGame
                             ( newModel, { vm | shake = shakeMag } )
-                            ( safeTail res, resDelay )
+                            ( safeTail res, 0 )
 
                     Nothing ->
                         PlayingGame
@@ -187,32 +182,48 @@ resTick state =
                     final
                     { vm | shake = shakeMag }
                     (List.head res)
-                    ( List.drop 1 res, resDelay )
+                    ( List.drop 1 res, 0 )
 
             otherwise ->
                 state
 
 
-tickForward : GameState -> GameState
-tickForward state =
-    case state of
+resTickMax : Float
+resTickMax =
+    1000.0
+
+
+tickZero : Float -> Bool
+tickZero tick =
+    tick > resTickMax
+
+
+tickForward : GameState -> Float -> GameState
+tickForward game dt =
+    case game of
         PlayingGame ( m, vm ) ( res, tick ) ->
-            PlayingGame ( m, ViewModel.shakeDecay vm ) ( res, tick - 1 )
+            if tickZero tick then
+                resTick game
+            else
+                PlayingGame ( m, (ViewModel.shakeDecay vm) ) ( res, tick + dt )
 
         Ended which final vm resModel ( res, tick ) ->
-            Ended which final (ViewModel.shakeDecay vm) resModel ( res, tick - 1 )
+            if tickZero tick then
+                resTick game
+            else
+                Ended which final (ViewModel.shakeDecay vm) resModel ( res, tick + dt )
 
         otherwise ->
-            state
+            game
 
 
-tickZero : GameState -> Bool
-tickZero state =
-    case state of
-        PlayingGame _ ( _, 0 ) ->
+gameTickStart : GameState -> Bool
+gameTickStart game =
+    case game of
+        PlayingGame ( _, _ ) ( _, 0.0 ) ->
             True
 
-        Ended _ _ _ _ ( _, 0 ) ->
+        Ended _ _ _ _ ( _, 0.0 ) ->
             True
 
         otherwise ->
