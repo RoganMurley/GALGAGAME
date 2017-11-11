@@ -132,7 +132,7 @@ duplicate :: Card
 duplicate =
   Card
     "Duplicate"
-    "Add a copy of the next card to your hand"
+    "Add a copy of the card to the right to your hand"
     "breaker/duplicate.svg"
     "feint.wav"
     $ \p m ->
@@ -221,7 +221,7 @@ balance :: Card
 balance =
   Card
     "Balance"
-    "Next card changes owner to weakest player"
+    "Change card to the right's owner to weakest player"
     "balancer/balance.svg"
     "feint.wav"
     $ \_ m -> modStackHead (eff (getLife PlayerA m, getLife PlayerB m)) m
@@ -318,7 +318,7 @@ imitate :: Card
 imitate =
   Card
     "Imitate"
-    "Become a copy of random card in your hand"
+    "Create a copy of a random card from your hand to the right"
     "watcher/imitate.svg"
     "feint.wav"
     eff
@@ -364,7 +364,7 @@ prophecy :: Card
 prophecy =
   Card
     "Prophecy"
-    "Bounce all cards to the right to hand"
+    "Return all cards to the right to hand"
     "watcher/prophecy.svg"
     "precognition.wav"
     $ \_ -> (bounceAll PlayerA) . (bounceAll PlayerB)
@@ -480,7 +480,7 @@ echo :: Card
 echo =
   Card
     "Echo"
-    "Next card activates twice"
+    "When the card to the right activates, it does so twice"
     "bouncer/echo.svg"
     "echo.wav"
     eff
@@ -495,7 +495,7 @@ return' :: Card
 return' =
   Card
     "Return"
-    "Next card bounces to hand after activating"
+    "Card to the right returns to hand after activating"
     "bouncer/return.svg"
     "echo.wav"
     eff
@@ -510,7 +510,7 @@ feint :: Card
 feint =
   Card
     "Feint"
-    "Bounce all of your cards to the right to hand"
+    "Return all of your cards to the right to hand"
     "bouncer/feint.svg"
     "feint.wav"
     bounceAll
@@ -551,7 +551,7 @@ alchemy :: Card
 alchemy =
   Card
     "Alchemy"
-    ("Change next card to " <> description gold)
+    ("Change card to the right to " <> description gold)
     "collector/alchemy.svg"
     "feint.wav"
     $ \_ -> modStackHead (\(StackCard w _) -> StackCard w gold)
