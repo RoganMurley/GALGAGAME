@@ -92,7 +92,7 @@ obliterate =
             if ((uv.x - .5) * (uv.x - .5) + (uv.y - .5) * (uv.y - .5) < radius * radius) {
                 if ((uv.x - .4) * (uv.x - .5) + (uv.y - .4) * (uv.y - .4) > radius * radius * (1.8 - .6 * abs(sin(4. * time)))) {
                     if (uv.x < abs(sin(time) * 3.)) {
-                        gl_FragColor = vec4(1., .02, .02, 1.);
+                        gl_FragColor = vec4(.02, 1., .02, 1.);
                         return;
                     }
                 }
