@@ -5,6 +5,7 @@ import Drag.Messages as Drag
 import Settings.Messages as Settings
 import GameState.Messages as GameState
 import Lobby.Messages as Lobby
+import Lab.Messages as Lab
 import Main.Types exposing (Mode)
 import Menu.Messages as Menu
 import Navigation
@@ -34,6 +35,7 @@ type Msg
     | GameStateMsg GameState.Msg
     | LobbyMsg Lobby.Msg
     | MenuMsg Menu.Msg
+    | LabMsg Lab.Msg
     | PlayingOnly Msg
     | Concede
     | SetVolume Int

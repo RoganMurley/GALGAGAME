@@ -18,6 +18,7 @@ import GameState.Types as GameState exposing (GameState(..))
 import GameState.State as GameState exposing (resTick, tickForward)
 import Lobby.State as Lobby
 import Lobby.Types as Lobby
+import Lab.State as Lab
 import Menu.Messages as Menu
 import Model.Types exposing (Hand, Model, WhichPlayer(..))
 import Main.Decoders exposing (decodePlayers)
@@ -153,6 +154,14 @@ update msg ({ hostname, room, frameTime, seed } as model) =
                     in
                         ( { model | room = Connected newRoom }, cmd )
 
+                Lab lab ->
+                    case msg of
+                        LabMsg labMsg ->
+                            ( { model | room = Lab <| Lab.update lab labMsg }, Cmd.none )
+
+                        otherwise ->
+                            ( model, Cmd.none )
+
 
 connectingUpdate : String -> Msg -> Lobby.Model -> ( Lobby.Model, Cmd Msg )
 connectingUpdate hostname msg model =
@@ -240,28 +249,6 @@ connectedUpdate hostname msg ({ chat, game, settings, mode } as model) =
         KeyPress _ ->
             ( model, Cmd.none )
 
-        -- Tick t ->
-        --     letResolveStep
-        --         tickedGame =
-        --             GameState.tickForwardRes game
-        --
-        --         resolveCommand =
-        --             if tickZero model.game then
-        --                 [ message ResolveStep ]
-        --             else
-        --                 []
-        --
-        --         listenCommand =
-        --             [ listen t tickedGame ]
-        --
-        --         commands =
-        --             resolveCommand ++ listenCommand
-        --     in
-        --         ( { model | game = tickedGame }
-        --         , Cmd.batch commands
-        --         )
-        -- ResolveStep ->
-        --     ( { model | game = resTick game }, Cmd.none )
         Rematch ->
             case model.game of
                 Ended which _ _ _ _ ->
@@ -333,6 +320,9 @@ locationUpdate model location =
             case route of
                 Compass.Home ->
                     { model | room = initRoom }
+
+                Compass.Lab ->
+                    { model | room = Lab Lab.init }
 
                 Compass.Play playRoute ->
                     let
@@ -518,6 +508,9 @@ tickForwardRoom room dt =
         Connected model ->
             Connected (tickForwardConnected model dt)
 
+        Lab model ->
+            Lab (Lab.tickForward model dt)
+
         otherwise ->
             room
 
@@ -549,7 +542,6 @@ subscriptions model =
         , Mouse.moves <| DragMsg << Drag.At
         , Mouse.ups <| DragMsg << Drag.End
         , Keyboard.presses KeyPress
-          -- , Time.every (second / 60) Tick
         , AnimationFrame.diffs Frame
         , Window.resizes (\{ width, height } -> Resize width height)
         ]

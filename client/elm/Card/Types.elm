@@ -12,3 +12,4 @@ type alias Card =
 
 type Anim
     = Slash
+    | Obliterate
