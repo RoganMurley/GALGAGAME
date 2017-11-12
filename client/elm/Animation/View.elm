@@ -24,27 +24,42 @@ view (Params theta ( w, h )) resTheta animParams =
         downscale =
             5
     in
-        WebGL.toHtml
-            [ width (w // downscale)
-            , height (h // downscale)
-            , style
-                [ ( "position", "absolute" )
-                , ( "top", "0" )
-                , ( "z-index", "-999" )
-                , ( "width", "100%" )
-                , ( "height", "100%" )
+        Html.div []
+            [ WebGL.toHtml
+                [ width (w // downscale)
+                , height (h // downscale)
+                , style
+                    [ ( "position", "absolute" )
+                    , ( "top", "0" )
+                    , ( "z-index", "-999" )
+                    , ( "width", "100%" )
+                    , ( "height", "100%" )
+                    ]
                 ]
-            ]
-            [ WebGL.entityWith
-                []
-                Raymarch.vertexShader
-                Raymarch.fragmentShader
-                quadMesh
-                (uniforms time ( w, h ))
-            , WebGL.entityWith
-                []
-                Raymarch.vertexShader
-                (animToFragmentShader animParams)
-                quadMesh
-                (uniforms resTime ( w // downscale, h // downscale ))
+                [ WebGL.entityWith
+                    []
+                    Raymarch.vertexShader
+                    Raymarch.fragmentShader
+                    quadMesh
+                    (uniforms time ( w, h ))
+                ]
+            , WebGL.toHtml
+                [ width w
+                , height h
+                , style
+                    [ ( "position", "absolute" )
+                    , ( "top", "0" )
+                    , ( "z-index", "999" )
+                    , ( "width", "100%" )
+                    , ( "height", "100%" )
+                    , ( "pointer-events", "none" )
+                    ]
+                ]
+                [ WebGL.entityWith
+                    []
+                    Raymarch.vertexShader
+                    (animToFragmentShader animParams)
+                    quadMesh
+                    (uniforms resTime ( w, h ))
+                ]
             ]
