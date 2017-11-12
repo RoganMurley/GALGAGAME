@@ -49,7 +49,7 @@ view state roomID hostname httpPort time ( width, height ) =
                 case resModel of
                     Just m ->
                         div []
-                            [ resView res resTime ( m, vm ) time
+                            [ resView (res ++ [ final ]) resTime ( m, vm ) time
                             , Raymarch.view params
                             ]
 
