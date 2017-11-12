@@ -1,5 +1,6 @@
 module Raymarch.View exposing (..)
 
+import Animation.Shaders
 import Html exposing (Html)
 import Html.Attributes exposing (width, height, style)
 import Raymarch.Meshes exposing (quadMesh)
@@ -18,20 +19,41 @@ view (Params theta ( w, h )) =
         downscale =
             5
     in
-        WebGL.toHtml
-            [ width (w // downscale)
-            , height (h // downscale)
-            , style
-                [ ( "position", "absolute" )
-                , ( "top", "0" )
-                , ( "z-index", "-999" )
-                , ( "width", "100%" )
-                , ( "height", "100%" )
+        Html.div []
+            [ WebGL.toHtml
+                [ width (w // downscale)
+                , height (h // downscale)
+                , style
+                    [ ( "position", "absolute" )
+                    , ( "top", "0" )
+                    , ( "z-index", "-999" )
+                    , ( "width", "100%" )
+                    , ( "height", "100%" )
+                    ]
                 ]
-            ]
-            [ WebGL.entityWith []
-                vertexShader
-                fragmentShader
-                quadMesh
-                (uniforms time ( w, h ))
+                [ WebGL.entityWith []
+                    vertexShader
+                    fragmentShader
+                    quadMesh
+                    (uniforms time ( w, h ))
+                ]
+            , WebGL.toHtml
+                [ width w
+                , height h
+                , style
+                    [ ( "position", "absolute" )
+                    , ( "top", "0" )
+                    , ( "z-index", "999" )
+                    , ( "width", "100%" )
+                    , ( "height", "100%" )
+                    , ( "pointer-events", "none" )
+                    ]
+                ]
+                [ WebGL.entityWith
+                    []
+                    vertexShader
+                    Animation.Shaders.null
+                    quadMesh
+                    (uniforms time ( w, h ))
+                ]
             ]
