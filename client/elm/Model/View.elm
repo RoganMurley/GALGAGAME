@@ -16,7 +16,7 @@ cardWidth =
     14.0
 
 
-view : Int -> ( Model, ViewModel ) -> Float -> Html Msg
+view : Float -> ( Model, ViewModel ) -> Float -> Html Msg
 view resTime ( model, viewModel ) time =
     div [ class "game-container", style [ screenshakeStyle viewModel.shake time ] ]
         [ viewOtherHand model.otherHand model.otherHover
@@ -325,16 +325,25 @@ viewStack stack =
 -- RESOLVING VIEW.
 
 
-resView : Res -> Int -> ( Model, ViewModel ) -> Float -> Html Msg
+resView : Res -> Float -> ( Model, ViewModel ) -> Float -> Html Msg
 resView res resTime ( model, vm ) time =
-    div [ class "game-container resolving", style [ screenshakeStyle vm.shake time ] ]
-        [ viewOtherHand model.otherHand model.otherHover
-        , viewHand model.hand vm.hover True
-        , viewStack model.stack
-        , viewResTurn
-        , viewStatus PlayerA model.life
-        , viewStatus PlayerB model.otherLife
-        ]
+    let
+        nextLife : Res -> Life
+        nextLife r =
+            (\m -> m.life) (Maybe.withDefault model (List.head r))
+
+        nextOtherLife : Res -> Life
+        nextOtherLife r =
+            (\m -> m.otherLife) (Maybe.withDefault model (List.head r))
+    in
+        div [ class "game-container resolving", style [ screenshakeStyle vm.shake time ] ]
+            [ viewOtherHand model.otherHand model.otherHover
+            , viewHand model.hand vm.hover True
+            , viewStack model.stack
+            , viewResTurn
+            , viewStatus PlayerA (nextLife res)
+            , viewStatus PlayerB (nextOtherLife res)
+            ]
 
 
 viewResTurn : Html Msg

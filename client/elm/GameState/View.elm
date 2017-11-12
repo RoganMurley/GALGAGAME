@@ -5,12 +5,14 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import CharacterSelect.View as CharacterSelect
 import GameState.Messages as GameState
+import GameState.State exposing (activeAnim)
 import GameState.Types exposing (GameState(..), WaitType(..))
 import Main.Messages exposing (Msg(..))
 import Model.Types exposing (..)
 import Model.View as Model exposing (view, resView)
 import Raymarch.Types as Raymarch
 import Raymarch.View as Raymarch
+import Animation.View as Animation
 
 
 view : GameState -> String -> String -> String -> Float -> ( Int, Int ) -> Html Msg
@@ -31,21 +33,24 @@ view state roomID hostname httpPort time ( width, height ) =
 
             PlayingGame ( m, vm ) ( res, resTime ) ->
                 div []
-                    [ case res of
+                    (case res of
                         [] ->
-                            Model.view resTime ( m, vm ) time
+                            [ Model.view resTime ( m, vm ) time
+                            , Raymarch.view params
+                            ]
 
                         otherwise ->
-                            resView res resTime ( m, vm ) time
-                    , div [] [ Raymarch.view params ]
-                    ]
+                            [ resView res resTime ( m, vm ) time
+                            , Animation.view params resTime (activeAnim state)
+                            ]
+                    )
 
             Ended winner final vm resModel ( res, resTime ) ->
                 case resModel of
                     Just m ->
                         div []
-                            [ resView res resTime ( m, vm ) time
-                            , div [] [ Raymarch.view params ]
+                            [ resView (res ++ [ final ]) resTime ( m, vm ) time
+                            , Animation.view params resTime (activeAnim state)
                             ]
 
                     Nothing ->
@@ -73,7 +78,7 @@ view state roomID hostname httpPort time ( width, height ) =
                                         ]
                                     ]
                                 , resView res resTime ( final, vm ) time
-                                , div [] [ Raymarch.view params ]
+                                , Animation.view params resTime (activeAnim state)
                                 ]
 
 
