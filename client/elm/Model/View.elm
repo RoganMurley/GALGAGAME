@@ -330,11 +330,11 @@ resView res resTime ( model, vm ) time =
     let
         nextLife : Res -> Life
         nextLife r =
-            (\m -> m.life) (Maybe.withDefault (model) (List.head r))
+            (\m -> m.life) (Maybe.withDefault model (List.head r))
 
         nextOtherLife : Res -> Life
         nextOtherLife r =
-            (\m -> m.otherLife) (Maybe.withDefault (model) (List.head r))
+            (\m -> m.otherLife) (Maybe.withDefault model (List.head r))
     in
         div [ class "game-container resolving", style [ screenshakeStyle vm.shake time ] ]
             [ viewOtherHand model.otherHand model.otherHover

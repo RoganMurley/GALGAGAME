@@ -1,4 +1,4 @@
-module Card.Types exposing (Card)
+module Card.Types exposing (Anim(..), Card)
 
 
 type alias Card =
@@ -6,4 +6,9 @@ type alias Card =
     , desc : String
     , imgURL : String
     , sfxURL : String
+    , anim : Maybe Anim
     }
+
+
+type Anim
+    = Slash

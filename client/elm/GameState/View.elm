@@ -5,6 +5,7 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import CharacterSelect.View as CharacterSelect
 import GameState.Messages as GameState
+import GameState.State exposing (activeAnim)
 import GameState.Types exposing (GameState(..), WaitType(..))
 import Main.Messages exposing (Msg(..))
 import Model.Types exposing (..)
@@ -41,7 +42,7 @@ view state roomID hostname httpPort time ( width, height ) =
                         otherwise ->
                             [ resView res resTime ( m, vm ) time
                             , div []
-                                [ Animation.view params resTime
+                                [ Animation.view params resTime (activeAnim state)
                                 ]
                             ]
                     )
@@ -79,7 +80,7 @@ view state roomID hostname httpPort time ( width, height ) =
                                         ]
                                     ]
                                 , resView res resTime ( final, vm ) time
-                                , div [] [ Animation.view params resTime ]
+                                , div [] [ Animation.view params resTime (activeAnim state) ]
                                 ]
 
 
