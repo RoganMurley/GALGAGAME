@@ -1,17 +1,19 @@
 module Animation.View exposing (..)
 
+import Card.Types as Card
 import Html exposing (Html)
 import Html.Attributes exposing (width, height, style)
 import Raymarch.Meshes exposing (quadMesh)
 import Raymarch.State exposing (uniforms)
 import Raymarch.Types exposing (Params(..))
-import Animation.Shaders as Animation
+import Animation.State exposing (animToFragmentShader)
 import Raymarch.Shaders as Raymarch
+import Model.Types exposing (WhichPlayer(..))
 import WebGL
 
 
-view : Params -> Float -> Html msg
-view (Params theta ( w, h )) resTheta =
+view : Params -> Float -> Maybe ( WhichPlayer, Card.Anim ) -> Html msg
+view (Params theta ( w, h )) resTheta animParams =
     let
         time =
             theta / 1000
@@ -41,8 +43,8 @@ view (Params theta ( w, h )) resTheta =
                 (uniforms time ( w, h ))
             , WebGL.entityWith
                 []
-                Animation.vertexShader
-                Animation.fragmentShader
+                Raymarch.vertexShader
+                (animToFragmentShader animParams)
                 quadMesh
                 (uniforms resTime ( w // downscale, h // downscale ))
             ]

@@ -1,5 +1,6 @@
-module GameState.State exposing (resTick, update, tickForward, gameTickStart)
+module GameState.State exposing (activeAnim, resTick, update, tickForward, gameTickStart)
 
+import Card.Types exposing (Anim)
 import CharacterSelect.State as CharacterSelect
 import GameState.Decoders exposing (decodeState, resDecoder)
 import GameState.Messages exposing (Msg(..))
@@ -228,3 +229,30 @@ gameTickStart game =
 
         otherwise ->
             False
+
+
+
+-- TOTALLY REDO THIS AWFUL CODE
+
+
+activeAnim : GameState -> Maybe ( WhichPlayer, Anim )
+activeAnim game =
+    case game of
+        PlayingGame ( model, _ ) ( _, _ ) ->
+            case List.head model.stack of
+                Just { card, owner } ->
+                    Maybe.map ((,) owner) card.anim
+
+                Nothing ->
+                    Nothing
+
+        Ended _ _ _ (Just model) ( _, _ ) ->
+            case List.head model.stack of
+                Just { card, owner } ->
+                    Maybe.map ((,) owner) card.anim
+
+                Nothing ->
+                    Nothing
+
+        otherwise ->
+            Nothing
