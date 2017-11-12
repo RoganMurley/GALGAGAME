@@ -50,7 +50,7 @@ view state roomID hostname httpPort time ( width, height ) =
                     Just m ->
                         div []
                             [ resView (res ++ [ final ]) resTime ( m, vm ) time
-                            , Raymarch.view params
+                            , Animation.view params resTime (activeAnim state)
                             ]
 
                     Nothing ->
