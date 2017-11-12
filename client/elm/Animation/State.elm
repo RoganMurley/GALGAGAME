@@ -19,5 +19,11 @@ animToFragmentShader params =
         Just ( _, Obliterate ) ->
             Shaders.obliterate
 
+        Just ( PlayerA, Heal ) ->
+            Shaders.healA
+
+        Just ( PlayerB, Heal ) ->
+            Shaders.healB
+
         Nothing ->
             Shaders.null

@@ -475,7 +475,7 @@ potion =
     "Heal for 10"
     "shielder/potion.svg"
     "potion.wav"
-    Nothing
+    (Just Heal)
     $ heal 10
 
 

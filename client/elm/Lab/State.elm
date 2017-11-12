@@ -10,7 +10,7 @@ import GameState.State exposing (tickZero)
 init : Model
 init =
     { player = PlayerA
-    , anim = Slash
+    , anim = Heal
     , time = 0.0
     }
 

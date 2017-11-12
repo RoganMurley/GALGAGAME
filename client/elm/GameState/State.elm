@@ -191,7 +191,7 @@ resTick state =
 
 resTickMax : Float
 resTickMax =
-    900.0
+    800.0
 
 
 tickZero : Float -> Bool

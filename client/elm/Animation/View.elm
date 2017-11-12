@@ -10,6 +10,7 @@ import Animation.State exposing (animToFragmentShader)
 import Raymarch.Shaders as Raymarch
 import Model.Types exposing (WhichPlayer(..))
 import WebGL
+import WebGL.Settings.Blend as WebGL
 
 
 view : Params -> Float -> Maybe ( WhichPlayer, Card.Anim ) -> Html msg
@@ -37,7 +38,7 @@ view (Params theta ( w, h )) resTheta animParams =
                     ]
                 ]
                 [ WebGL.entityWith
-                    []
+                    [ WebGL.add WebGL.srcAlpha WebGL.oneMinusSrcAlpha ]
                     Raymarch.vertexShader
                     Raymarch.fragmentShader
                     quadMesh
@@ -56,7 +57,7 @@ view (Params theta ( w, h )) resTheta animParams =
                     ]
                 ]
                 [ WebGL.entityWith
-                    []
+                    [ WebGL.add WebGL.srcAlpha WebGL.oneMinusSrcAlpha ]
                     Raymarch.vertexShader
                     (animToFragmentShader animParams)
                     quadMesh
