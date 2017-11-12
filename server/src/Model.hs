@@ -53,6 +53,7 @@ type CardEff = (WhichPlayer -> Model -> Model)
 
 data CardAnim =
     Slash
+  | Heal
   | Obliterate
   deriving (Show, Eq)
 
@@ -101,6 +102,7 @@ instance ToJSON Card where
 
 instance ToJSON CardAnim where
   toJSON Slash      = "slash"
+  toJSON Heal       = "heal"
   toJSON Obliterate = "obliterate"
 
 

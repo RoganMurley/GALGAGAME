@@ -18,6 +18,7 @@ view params { player, anim, time } =
             [ fieldset []
                 [ legend [] [ text "Animation:" ]
                 , radio (SetAnim Slash) "anim" "Slash"
+                , radio (SetAnim Heal) "anim" "Heal"
                 , radio (SetAnim Obliterate) "anim" "Obliterate"
                 ]
             , fieldset []

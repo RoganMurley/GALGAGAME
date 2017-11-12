@@ -12,4 +12,5 @@ type alias Card =
 
 type Anim
     = Slash
+    | Heal
     | Obliterate

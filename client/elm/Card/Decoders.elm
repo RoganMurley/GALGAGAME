@@ -23,5 +23,8 @@ animDecoder s =
         "obliterate" ->
             succeed Obliterate
 
+        "heal" ->
+            succeed Heal
+
         otherwise ->
             fail ("Invalid Anim " ++ s)
