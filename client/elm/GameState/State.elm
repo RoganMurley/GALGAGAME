@@ -69,17 +69,17 @@ update msg state =
                     otherwise ->
                         case ( state, final ) of
                             ( PlayingGame ( oldModel, oldVm ) _, PlayingGame ( newModel, _ ) _ ) ->
-                                ( PlayingGame ( oldModel, oldVm ) ( resList ++ [ newModel ], resTickMax )
+                                ( resTick <| PlayingGame ( oldModel, oldVm ) ( resList ++ [ newModel ], 0 )
                                 , Cmd.none
                                 )
 
                             ( PlayingGame ( oldModel, oldVm ) _, Ended w f _ _ _ ) ->
-                                ( Ended w f oldVm (Just oldModel) ( resList, resTickMax )
+                                ( resTick <| Ended w f oldVm (Just oldModel) ( resList, 0 )
                                 , Cmd.none
                                 )
 
                             otherwise ->
-                                ( setRes final resList
+                                ( resTick <| setRes final resList
                                 , Cmd.none
                                 )
 
