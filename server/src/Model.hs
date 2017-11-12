@@ -51,7 +51,9 @@ type CardImgURL = Text
 type CardSndURL = Text
 type CardEff = (WhichPlayer -> Model -> Model)
 
-data CardAnim = Slash
+data CardAnim =
+    Slash
+  | Obliterate
   deriving (Show, Eq)
 
 type Hand = [Card]
@@ -98,7 +100,8 @@ instance ToJSON Card where
 
 
 instance ToJSON CardAnim where
-  toJSON Slash = "slash"
+  toJSON Slash      = "slash"
+  toJSON Obliterate = "obliterate"
 
 
 instance ToJSON StackCard where

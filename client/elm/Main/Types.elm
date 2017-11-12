@@ -3,6 +3,7 @@ module Main.Types exposing (..)
 import Chat.Types as Chat
 import Settings.Types as Settings
 import GameState.Types as GameState exposing (GameState(..))
+import Lab.Types as Lab
 import Lobby.Types as Lobby
 
 
@@ -24,6 +25,7 @@ type RoomModel
     = MainMenu
     | Connecting Lobby.Model
     | Connected ConnectedModel
+    | Lab Lab.Model
 
 
 type alias ConnectedModel =

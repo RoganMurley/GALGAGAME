@@ -84,7 +84,7 @@ hubris =
     "Remove all cards to the right"
     "breaker/hubris.svg"
     "hubris.wav"
-    Nothing
+    (Just Obliterate)
     $ \_ -> setStack []
 
 

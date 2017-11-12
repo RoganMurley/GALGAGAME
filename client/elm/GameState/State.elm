@@ -1,4 +1,4 @@
-module GameState.State exposing (activeAnim, resTick, update, tickForward, gameTickStart)
+module GameState.State exposing (activeAnim, resTick, update, tickForward, tickZero, gameTickStart)
 
 import Card.Types exposing (Anim)
 import CharacterSelect.State as CharacterSelect

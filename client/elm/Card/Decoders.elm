@@ -20,5 +20,8 @@ animDecoder s =
         "slash" ->
             succeed Slash
 
+        "obliterate" ->
+            succeed Obliterate
+
         otherwise ->
             fail ("Invalid Anim " ++ s)

@@ -16,5 +16,8 @@ animToFragmentShader params =
         Just ( PlayerB, Slash ) ->
             Shaders.slashB
 
+        Just ( _, Obliterate ) ->
+            Shaders.obliterate
+
         Nothing ->
             Shaders.null
