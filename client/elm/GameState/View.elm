@@ -36,14 +36,12 @@ view state roomID hostname httpPort time ( width, height ) =
                     (case res of
                         [] ->
                             [ Model.view resTime ( m, vm ) time
-                            , div [] [ Raymarch.view params ]
+                            , Raymarch.view params
                             ]
 
                         otherwise ->
                             [ resView res resTime ( m, vm ) time
-                            , div []
-                                [ Animation.view params resTime (activeAnim state)
-                                ]
+                            , Animation.view params resTime (activeAnim state)
                             ]
                     )
 
@@ -52,7 +50,7 @@ view state roomID hostname httpPort time ( width, height ) =
                     Just m ->
                         div []
                             [ resView res resTime ( m, vm ) time
-                            , div [] [ Raymarch.view params ]
+                            , Raymarch.view params
                             ]
 
                     Nothing ->
@@ -80,7 +78,7 @@ view state roomID hostname httpPort time ( width, height ) =
                                         ]
                                     ]
                                 , resView res resTime ( final, vm ) time
-                                , div [] [ Animation.view params resTime (activeAnim state) ]
+                                , Animation.view params resTime (activeAnim state)
                                 ]
 
 
