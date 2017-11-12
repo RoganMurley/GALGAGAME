@@ -25,7 +25,6 @@ type Msg
     | Tick Time
     | Frame Float
     | Resize Int Int
-      -- | ResolveStep
     | HoverCard (Maybe Int)
     | SelectAllInput String
     | CopyInput String
