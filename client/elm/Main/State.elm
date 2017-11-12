@@ -15,7 +15,7 @@ import Settings.State as Settings
 import Settings.Messages as Settings
 import GameState.Messages as GameState
 import GameState.Types as GameState exposing (GameState(..))
-import GameState.State as GameState exposing (resTick, tickForward, tickZero)
+import GameState.State as GameState exposing (resTick, tickForward)
 import Lobby.State as Lobby
 import Lobby.Types as Lobby
 import Menu.Messages as Menu
@@ -25,7 +25,6 @@ import Main.Messages exposing (Msg(..))
 import Random
 import Random.Char exposing (char)
 import Random.String exposing (string)
-import Time exposing (Time, second)
 import Tuple exposing (first)
 import Util exposing (message)
 import Ports exposing (copyInput, selectAllInput)
@@ -73,7 +72,17 @@ update msg ({ hostname, room, frameTime, seed } as model) =
             ( locationUpdate model l, Cmd.none )
 
         Frame dt ->
-            ( { model | frameTime = frameTime + dt }, Cmd.none )
+            ( { model
+                | frameTime = frameTime + dt
+                , room = tickForwardRoom room dt
+              }
+            , case room of
+                Connected connected ->
+                    listen frameTime connected.game
+
+                otherwise ->
+                    Cmd.none
+            )
 
         Resize w h ->
             ( { model | windowDimensions = ( w, h ) }, Cmd.none )
@@ -231,30 +240,28 @@ connectedUpdate hostname msg ({ chat, game, settings, mode } as model) =
         KeyPress _ ->
             ( model, Cmd.none )
 
-        Tick t ->
-            let
-                tickedGame =
-                    tickForward game
-
-                resolveCommand =
-                    if tickZero model.game then
-                        [ message ResolveStep ]
-                    else
-                        []
-
-                listenCommand =
-                    [ listen t tickedGame ]
-
-                commands =
-                    resolveCommand ++ listenCommand
-            in
-                ( { model | game = tickedGame }
-                , Cmd.batch commands
-                )
-
-        ResolveStep ->
-            ( { model | game = resTick game }, Cmd.none )
-
+        -- Tick t ->
+        --     letResolveStep
+        --         tickedGame =
+        --             GameState.tickForwardRes game
+        --
+        --         resolveCommand =
+        --             if tickZero model.game then
+        --                 [ message ResolveStep ]
+        --             else
+        --                 []
+        --
+        --         listenCommand =
+        --             [ listen t tickedGame ]
+        --
+        --         commands =
+        --             resolveCommand ++ listenCommand
+        --     in
+        --         ( { model | game = tickedGame }
+        --         , Cmd.batch commands
+        --         )
+        -- ResolveStep ->
+        --     ( { model | game = resTick game }, Cmd.none )
         Rematch ->
             case model.game of
                 Ended which _ _ _ _ ->
@@ -505,6 +512,21 @@ turnOnly { mode, game } cmdMsg =
                     Cmd.none
 
 
+tickForwardRoom : RoomModel -> Float -> RoomModel
+tickForwardRoom room dt =
+    case room of
+        Connected model ->
+            Connected (tickForwardConnected model dt)
+
+        otherwise ->
+            room
+
+
+tickForwardConnected : ConnectedModel -> Float -> ConnectedModel
+tickForwardConnected model dt =
+    { model | game = GameState.tickForward model.game dt }
+
+
 roomIDGenerator : Random.Generator String
 roomIDGenerator =
     string 8 Random.Char.english
@@ -527,7 +549,7 @@ subscriptions model =
         , Mouse.moves <| DragMsg << Drag.At
         , Mouse.ups <| DragMsg << Drag.End
         , Keyboard.presses KeyPress
-        , Time.every (second / 60) Tick
+          -- , Time.every (second / 60) Tick
         , AnimationFrame.diffs Frame
         , Window.resizes (\{ width, height } -> Resize width height)
         ]

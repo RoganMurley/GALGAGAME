@@ -1,20 +1,25 @@
-module Raymarch.View exposing (..)
+module Animation.View exposing (..)
 
-import Animation.Shaders
+import Card.Types as Card
 import Html exposing (Html)
 import Html.Attributes exposing (width, height, style)
 import Raymarch.Meshes exposing (quadMesh)
-import Raymarch.Types exposing (Params(..))
-import Raymarch.Shaders exposing (fragmentShader, vertexShader)
 import Raymarch.State exposing (uniforms)
+import Raymarch.Types exposing (Params(..))
+import Animation.State exposing (animToFragmentShader)
+import Raymarch.Shaders as Raymarch
+import Model.Types exposing (WhichPlayer(..))
 import WebGL
 
 
-view : Params -> Html msg
-view (Params theta ( w, h )) =
+view : Params -> Float -> Maybe ( WhichPlayer, Card.Anim ) -> Html msg
+view (Params theta ( w, h )) resTheta animParams =
     let
         time =
             theta / 1000
+
+        resTime =
+            resTheta / 1000
 
         downscale =
             5
@@ -31,9 +36,10 @@ view (Params theta ( w, h )) =
                     , ( "height", "100%" )
                     ]
                 ]
-                [ WebGL.entityWith []
-                    vertexShader
-                    fragmentShader
+                [ WebGL.entityWith
+                    []
+                    Raymarch.vertexShader
+                    Raymarch.fragmentShader
                     quadMesh
                     (uniforms time ( w, h ))
                 ]
@@ -51,9 +57,9 @@ view (Params theta ( w, h )) =
                 ]
                 [ WebGL.entityWith
                     []
-                    vertexShader
-                    Animation.Shaders.null
+                    Raymarch.vertexShader
+                    (animToFragmentShader animParams)
                     quadMesh
-                    (uniforms time ( w, h ))
+                    (uniforms resTime ( w, h ))
                 ]
             ]

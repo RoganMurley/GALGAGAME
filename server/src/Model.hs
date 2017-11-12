@@ -34,11 +34,12 @@ data Card = Card
   , card_desc :: CardDesc
   , card_img  :: CardImgURL
   , card_snd  :: CardSndURL
+  , card_anim :: Maybe CardAnim
   , card_eff  :: CardEff
   }
 
 instance Eq Card where
-  (Card n1 d1 i1 _ _) == (Card n2 d2 i2 _ _) =
+  (Card n1 d1 i1 _ _ _) == (Card n2 d2 i2 _ _ _) =
     n1 == n2 && d1 == d2 && i1 == i2
 
 instance Show Card where
@@ -49,6 +50,9 @@ type CardDesc = Text
 type CardImgURL = Text
 type CardSndURL = Text
 type CardEff = (WhichPlayer -> Model -> Model)
+
+data CardAnim = Slash
+  deriving (Show, Eq)
 
 type Hand = [Card]
 type Deck = [Card]
@@ -82,14 +86,19 @@ instance ToJSON Model where
 
 
 instance ToJSON Card where
-  toJSON (Card name desc imageURL sfxURL _) =
+  toJSON (Card name desc imageURL sfxURL anim _) =
     object
       [
         "name"     .= name
       , "desc"     .= desc
       , "imageURL" .= imageURL
       , "sfxURL"   .= sfxURL
+      , "anim"     .= anim
       ]
+
+
+instance ToJSON CardAnim where
+  toJSON Slash = "slash"
 
 
 instance ToJSON StackCard where
@@ -302,6 +311,7 @@ drawCard which model =
         "You're out of cards, hurt yourself for 10."
         "the_end.svg"
         "feint.wave"
+        Nothing
         (hurt 10)
 
 
