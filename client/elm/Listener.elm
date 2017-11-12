@@ -45,8 +45,8 @@ listen time state =
             Ended _ _ _ (Just m) _ ->
                 modelListen state m
 
-            Ended _ f _ Nothing _ ->
-                modelListen state f
+            Ended _ _ _ Nothing _ ->
+                Cmd.none
 
             otherwise ->
                 Cmd.none
