@@ -1,0 +1,15 @@
+.lab {
+  fieldset {
+    border: none;
+    color: #fff;
+    font-family: monospace;
+
+    label {
+      display: block;
+    }
+  }
+
+  .sets {
+    display: flex;
+  }
+}
