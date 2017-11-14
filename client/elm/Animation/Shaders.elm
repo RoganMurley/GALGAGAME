@@ -16,9 +16,7 @@ slash =
         void main ()
         {
             vec2 uv = gl_FragCoord.xy / resolution.xy;
-            if (flipper == 1.) {
-                uv = vec2(1., 1.) - uv;
-            }
+            uv = abs(vec2(flipper, flipper) - uv);
 
             float radius = 0.3;
 
@@ -47,9 +45,7 @@ heal =
         void main ()
         {
             vec2 uv = gl_FragCoord.xy / resolution.xy;
-            if (flipper == 1.) {
-                uv = vec2(1., 1.) - uv;
-            }
+            uv = abs(vec2(flipper, flipper) - uv);
 
             float intensity = cos(time + 0.5) * time - uv.y;
             gl_FragColor = vec4(0., 1., 0., intensity);
@@ -70,9 +66,7 @@ obliterate =
         void main ()
         {
             vec2 uv = gl_FragCoord.xy / resolution.xy;
-            if (flipper == 1.) {
-                uv = vec2(1., 1.) - uv;
-            }
+            uv = abs(vec2(flipper, flipper) - uv);
 
             float d = distance(uv, vec2(uv.x, 0.5));
             gl_FragColor = vec4(1., 1., 1., sin(time) * d);
