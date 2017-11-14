@@ -8,4 +8,5 @@ type alias Model =
     { player : WhichPlayer
     , anim : Anim
     , time : Float
+    , custom : String
     }

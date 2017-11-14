@@ -9,10 +9,27 @@ import GameState.State exposing (tickZero)
 
 init : Model
 init =
-    { player = PlayerA
-    , anim = Heal
-    , time = 0.0
-    }
+    let
+        initCustom : String
+        initCustom =
+            """
+                precision mediump float;
+
+                uniform float time;
+                uniform vec2 resolution;
+
+                void main ()
+                {
+                    vec2 uv = gl_FragCoord.xy / resolution.xy;
+                    gl_FragColor = vec4(uv, .5 * sin(.5 * time), 1.);
+                }
+            """
+    in
+        { player = PlayerA
+        , anim = Custom initCustom
+        , time = 0.0
+        , custom = initCustom
+        }
 
 
 update : Model -> Msg -> Model

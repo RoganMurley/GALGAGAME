@@ -14,3 +14,4 @@ type Anim
     = Slash
     | Heal
     | Obliterate
+    | Custom String
