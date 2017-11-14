@@ -4,10 +4,11 @@ import Card.Types as Card
 import Html exposing (Html)
 import Html.Attributes exposing (width, height, style)
 import Raymarch.Meshes exposing (quadMesh)
-import Raymarch.State exposing (uniforms)
+import Raymarch.State as Raymarch
 import Raymarch.Types exposing (Params(..))
-import Animation.State exposing (animToFragmentShader)
-import Raymarch.Shaders as Raymarch
+import Animation.State exposing (animToFragmentShader, uniforms)
+import Animation.Shaders
+import Raymarch.Shaders
 import Model.Types exposing (WhichPlayer(..))
 import WebGL
 import WebGL.Settings.Blend as WebGL
@@ -24,6 +25,12 @@ view (Params theta ( w, h )) resTheta animParams =
 
         downscale =
             5
+
+        which =
+            Maybe.map (\( w, _ ) -> w) animParams
+
+        anim =
+            Maybe.map (\( _, a ) -> a) animParams
     in
         Html.div []
             [ WebGL.toHtml
@@ -39,10 +46,10 @@ view (Params theta ( w, h )) resTheta animParams =
                 ]
                 [ WebGL.entityWith
                     [ WebGL.add WebGL.srcAlpha WebGL.oneMinusSrcAlpha ]
-                    Raymarch.vertexShader
-                    Raymarch.fragmentShader
+                    Raymarch.Shaders.vertexShader
+                    Raymarch.Shaders.fragmentShader
                     quadMesh
-                    (uniforms time ( w, h ))
+                    (Raymarch.uniforms time ( w, h ))
                 ]
             , WebGL.toHtml
                 [ width w
@@ -58,9 +65,9 @@ view (Params theta ( w, h )) resTheta animParams =
                 ]
                 [ WebGL.entityWith
                     [ WebGL.add WebGL.srcAlpha WebGL.oneMinusSrcAlpha ]
-                    Raymarch.vertexShader
-                    (animToFragmentShader animParams)
+                    Animation.Shaders.vertex
+                    (animToFragmentShader anim)
                     quadMesh
-                    (uniforms resTime ( w, h ))
+                    (uniforms resTime which ( w, h ))
                 ]
             ]
