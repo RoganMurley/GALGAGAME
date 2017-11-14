@@ -1,20 +1,24 @@
 module Animation.Shaders exposing (..)
 
-import Raymarch.Types exposing (Uniforms, Vertex)
+import Animation.Types exposing (Uniforms, Vertex)
 import WebGL exposing (Shader)
 
 
-slashA : Shader {} Uniforms {}
-slashA =
+slash : Shader {} Uniforms {}
+slash =
     [glsl|
         precision mediump float;
 
         uniform float time;
         uniform vec2 resolution;
+        uniform float flipper;
 
         void main ()
         {
             vec2 uv = gl_FragCoord.xy / resolution.xy;
+            if (flipper == 1.) {
+                uv = vec2(1., 1.) - uv;
+            }
 
             float radius = 0.3;
 
@@ -31,65 +35,23 @@ slashA =
     |]
 
 
-slashB : Shader {} Uniforms {}
-slashB =
+heal : Shader {} Uniforms {}
+heal =
     [glsl|
         precision mediump float;
 
         uniform float time;
         uniform vec2 resolution;
+        uniform float flipper;
 
         void main ()
         {
             vec2 uv = gl_FragCoord.xy / resolution.xy;
-
-            float radius = 0.3;
-
-            gl_FragColor = vec4(1., 1., 1., 0.);
-            if ((uv.x - .5) * (uv.x - .5) + (uv.y - .5) * (uv.y - .5) < radius * radius) {
-                if ((uv.x - .6) * (uv.x - .5) + (uv.y - .6) * (uv.y - .6) > radius * radius * (1.8 - .6 * abs(sin(4. * time)))) {
-                    if ((1. - uv.x) < abs(sin(time) * 3.)) {
-                        gl_FragColor = vec4(1., .02, .02, 1.);
-                    }
-                }
+            if (flipper == 1.) {
+                uv = vec2(1., 1.) - uv;
             }
-        }
-
-    |]
-
-
-healA : Shader {} Uniforms {}
-healA =
-    [glsl|
-        precision mediump float;
-
-        uniform float time;
-        uniform vec2 resolution;
-
-        void main ()
-        {
-            vec2 uv = gl_FragCoord.xy / resolution.xy;
 
             float intensity = cos(time + 0.5) * time - uv.y;
-            gl_FragColor = vec4(0., 1., 0., intensity);
-        }
-
-    |]
-
-
-healB : Shader {} Uniforms {}
-healB =
-    [glsl|
-        precision mediump float;
-
-        uniform float time;
-        uniform vec2 resolution;
-
-        void main ()
-        {
-            vec2 uv = gl_FragCoord.xy / resolution.xy;
-
-            float intensity = cos(time + 0.5) * time - (1. - uv.y);
             gl_FragColor = vec4(0., 1., 0., intensity);
         }
 
@@ -103,10 +65,14 @@ obliterate =
 
         uniform float time;
         uniform vec2 resolution;
+        uniform float flipper;
 
         void main ()
         {
             vec2 uv = gl_FragCoord.xy / resolution.xy;
+            if (flipper == 1.) {
+                uv = vec2(1., 1.) - uv;
+            }
 
             float d = distance(uv, vec2(uv.x, 0.5));
             gl_FragColor = vec4(1., 1., 1., sin(time) * d);
@@ -116,11 +82,25 @@ obliterate =
     |]
 
 
-null : Shader {} Uniforms {}
+null : Shader {} a {}
 null =
     [glsl|
         void main ()
         {
             discard;
         }
+    |]
+
+
+vertex : Shader Vertex a {}
+vertex =
+    [glsl|
+        precision mediump float;
+
+        attribute vec3 position;
+
+        void main () {
+            gl_Position = vec4(position, 1.);
+        }
+
     |]
