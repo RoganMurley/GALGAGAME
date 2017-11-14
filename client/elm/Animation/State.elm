@@ -4,7 +4,7 @@ import Card.Types exposing (Anim(..))
 import Model.Types exposing (WhichPlayer(..))
 import Animation.Shaders as Shaders
 import Raymarch.Types exposing (Uniforms)
-import WebGL exposing (Shader)
+import WebGL exposing (Shader, unsafeShader)
 
 
 animToFragmentShader : Maybe ( WhichPlayer, Anim ) -> Shader {} Uniforms {}
@@ -24,6 +24,9 @@ animToFragmentShader params =
 
         Just ( PlayerB, Heal ) ->
             Shaders.healB
+
+        Just ( _, Custom s ) ->
+            unsafeShader s
 
         Nothing ->
             Shaders.null

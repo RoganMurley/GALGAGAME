@@ -12,7 +12,7 @@ import Model.Types exposing (WhichPlayer(..))
 
 
 view : Params -> Model -> Html Msg
-view params { player, anim, time } =
+view params { player, anim, time, custom } =
     div [ class "lab" ]
         [ div [ class "sets" ]
             [ fieldset []
@@ -20,6 +20,7 @@ view params { player, anim, time } =
                 , radio (SetAnim Slash) "anim" "Slash"
                 , radio (SetAnim Heal) "anim" "Heal"
                 , radio (SetAnim Obliterate) "anim" "Obliterate"
+                , radio (SetAnim (Custom custom)) "anim" "Custom"
                 ]
             , fieldset []
                 [ legend [] [ text "Owner:" ]

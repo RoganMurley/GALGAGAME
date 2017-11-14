@@ -12,4 +12,8 @@
   .sets {
     display: flex;
   }
+
+  canvas {
+    z-index: -1 !important;
+  }
 }
