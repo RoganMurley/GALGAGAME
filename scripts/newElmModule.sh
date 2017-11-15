@@ -1,0 +1,13 @@
+#!/bin/bash
+name=$1
+set -e
+
+pushd client/elm
+mkdir $name
+
+cp Example/* $name
+
+for file in $name/*
+do
+  sed -i s/Example/$name/g $file
+done
