@@ -5,16 +5,17 @@ import Html.Attributes exposing (..)
 import Connected.Types exposing (..)
 import GameState.View as GameState
 import Main.Messages exposing (Msg(..))
+import Main.Types exposing (Flags)
 import Settings.View as Settings
 import Raymarch.Types as Raymarch
 
 
-view : Model -> String -> String -> Raymarch.Params -> Html Msg
-view { game, settings, roomID, players } hostname httpPort params =
+view : Model -> Flags -> Html Msg
+view { game, settings, roomID, players } flags =
     div []
         [ Settings.view settings
         , playersView players
-        , GameState.view game roomID hostname httpPort params
+        , GameState.view game roomID flags
         ]
 
 

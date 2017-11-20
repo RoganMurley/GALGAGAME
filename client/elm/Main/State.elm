@@ -4,39 +4,31 @@ import Compass.State as Compass
 import Compass.Types as Compass
 import Mouse
 import WebSocket
-import Connected.State as Connected
 import Drag.Messages as Drag
+import Lab.State as Lab
 import Lobby.State as Lobby
 import Lobby.Types as Lobby
-import Lab.State as Lab
-import Menu.Messages as Menu
 import Main.Messages exposing (Msg(..))
-import Random
-import Random.Char exposing (char)
-import Random.String exposing (string)
-import Tuple exposing (first)
+import Navigation
+import Room.State as Room
+import Room.Types as Room
+import Room.Generators exposing (generate)
 import Util exposing (message, send)
 import Ports exposing (copyInput, selectAllInput)
 import AnimationFrame
 import Window
 import Listener exposing (listen)
 import Main.Types as Main exposing (..)
-import Navigation as Navigation exposing (newUrl)
 import UrlParser exposing (parsePath)
 
 
-initModel : Flags -> Navigation.Location -> Main.Model
-initModel flags location =
+init : Flags -> Navigation.Location -> Main.Model
+init flags location =
     locationUpdate
-        { room = initRoom
+        { room = Room.init
         , flags = flags
         }
         location
-
-
-initRoom : RoomModel
-initRoom =
-    MainMenu
 
 
 update : Msg -> Main.Model -> ( Main.Model, Cmd Msg )
@@ -52,10 +44,10 @@ update msg ({ room, flags } as model) =
             Frame dt ->
                 ( { model
                     | flags = { flags | time = time + dt }
-                    , room = tickRoom room dt
+                    , room = Room.tick room dt
                   }
                 , case room of
-                    Connected connected ->
+                    Room.Connected connected ->
                         listen time connected.game
 
                     otherwise ->
@@ -63,7 +55,12 @@ update msg ({ room, flags } as model) =
                 )
 
             Resize w h ->
-                ( { model | flags = { flags | windowDimensions = ( w, h ) } }, Cmd.none )
+                ( { model
+                    | flags =
+                        { flags | dimensions = ( w, h ) }
+                  }
+                , Cmd.none
+                )
 
             SelectAllInput elementId ->
                 ( model, selectAllInput elementId )
@@ -75,82 +72,11 @@ update msg ({ room, flags } as model) =
                 ( model, send hostname str )
 
             otherwise ->
-                case room of
-                    MainMenu ->
-                        let
-                            roomID : String
-                            roomID =
-                                generate roomIDGenerator seed
-                        in
-                            case msg of
-                                MenuMsg (Menu.Start gameType) ->
-                                    let
-                                        url : String
-                                        url =
-                                            case gameType of
-                                                Lobby.ComputerGame ->
-                                                    "computer"
-
-                                                Lobby.CustomGame ->
-                                                    "custom"
-
-                                                Lobby.QuickplayGame ->
-                                                    "quickplay"
-                                    in
-                                        ( model, newUrl <| "/play/" ++ url )
-
-                                otherwise ->
-                                    ( model, Cmd.none )
-
-                    Connecting ({ roomID, gameType } as lobby) ->
-                        case msg of
-                            StartGame mode ->
-                                ( { model | room = Connected <| Connected.init mode roomID }
-                                , case gameType of
-                                    Lobby.ComputerGame ->
-                                        Cmd.none
-
-                                    Lobby.CustomGame ->
-                                        newUrl <| "/play/custom/" ++ roomID
-
-                                    Lobby.QuickplayGame ->
-                                        Cmd.none
-                                )
-
-                            otherwise ->
-                                let
-                                    ( newRoom, cmd ) =
-                                        connectingUpdate hostname msg lobby
-                                in
-                                    ( { model | room = Connecting newRoom }, cmd )
-
-                    Connected connected ->
-                        let
-                            ( newRoom, cmd ) =
-                                Connected.update hostname msg connected
-                        in
-                            ( { model | room = Connected newRoom }, cmd )
-
-                    Lab lab ->
-                        case msg of
-                            LabMsg labMsg ->
-                                ( { model | room = Lab <| Lab.update lab labMsg }, Cmd.none )
-
-                            otherwise ->
-                                ( model, Cmd.none )
-
-
-connectingUpdate : String -> Msg -> Lobby.Model -> ( Lobby.Model, Cmd Msg )
-connectingUpdate hostname msg model =
-    case msg of
-        LobbyMsg lobbyMsg ->
-            Lobby.update model lobbyMsg
-
-        Receive str ->
-            ( model, Lobby.receive str )
-
-        otherwise ->
-            ( model, Cmd.none )
+                let
+                    ( newRoom, cmd ) =
+                        Room.update room msg flags
+                in
+                    ( { model | room = newRoom }, cmd )
 
 
 locationUpdate : Main.Model -> Navigation.Location -> Main.Model
@@ -159,23 +85,23 @@ locationUpdate model location =
         Just route ->
             case route of
                 Compass.Home ->
-                    { model | room = initRoom }
+                    { model | room = Room.init }
 
                 Compass.Lab ->
-                    { model | room = Lab Lab.init }
+                    { model | room = Room.Lab Lab.init }
 
                 Compass.Play playRoute ->
                     let
                         randomRoomID : String
                         randomRoomID =
-                            generate roomIDGenerator model.flags.seed
+                            generate Room.Generators.roomID model.flags.seed
                     in
                         case playRoute of
                             Compass.ComputerPlay ->
                                 { model
                                     | room =
-                                        Connecting <|
-                                            Lobby.modelInit
+                                        Room.Lobby <|
+                                            Lobby.init
                                                 randomRoomID
                                                 Lobby.ComputerGame
                                 }
@@ -195,8 +121,8 @@ locationUpdate model location =
                                     lobbyModel =
                                         { model
                                             | room =
-                                                Connecting <|
-                                                    Lobby.modelInit
+                                                Room.Lobby <|
+                                                    Lobby.init
                                                         roomID
                                                         Lobby.CustomGame
                                         }
@@ -204,7 +130,7 @@ locationUpdate model location =
                                     case model.room of
                                         -- Annoying stateful bit, fix me.
                                         -- WILL cause bugs.
-                                        Connected _ ->
+                                        Room.Connected _ ->
                                             model
 
                                         otherwise ->
@@ -213,53 +139,26 @@ locationUpdate model location =
                             Compass.QuickPlay ->
                                 { model
                                     | room =
-                                        Connecting <|
-                                            Lobby.modelInit
+                                        Room.Lobby <|
+                                            Lobby.init
                                                 randomRoomID
                                                 Lobby.QuickplayGame
                                 }
 
         Nothing ->
-            { model | room = initRoom }
-
-
-tickRoom : RoomModel -> Float -> RoomModel
-tickRoom room dt =
-    case room of
-        MainMenu ->
-            MainMenu
-
-        Connecting model ->
-            Connecting model
-
-        Connected model ->
-            Connected <| Connected.tick model dt
-
-        Lab model ->
-            Lab <| Lab.tick model dt
-
-
-roomIDGenerator : Random.Generator String
-roomIDGenerator =
-    string 8 Random.Char.english
-
-
-usernameNumberGenerator : Random.Generator String
-usernameNumberGenerator =
-    string 3 <| char 48 57
-
-
-generate : Random.Generator a -> Seed -> a
-generate generator seed =
-    first <| Random.step generator <| Random.initialSeed seed
+            { model | room = Room.init }
 
 
 subscriptions : Main.Model -> Sub Msg
 subscriptions model =
-    Sub.batch
-        [ WebSocket.listen ("ws://" ++ model.flags.hostname ++ ":9160") Receive
-        , Mouse.moves <| DragMsg << Drag.At
-        , Mouse.ups <| DragMsg << Drag.End
-        , AnimationFrame.diffs Frame
-        , Window.resizes (\{ width, height } -> Resize width height)
-        ]
+    let
+        websocketAddress =
+            "ws://" ++ model.flags.hostname ++ ":9160"
+    in
+        Sub.batch
+            [ WebSocket.listen websocketAddress Receive
+            , Mouse.moves <| DragMsg << Drag.At
+            , Mouse.ups <| DragMsg << Drag.End
+            , AnimationFrame.diffs Frame
+            , Window.resizes (\{ width, height } -> Resize width height)
+            ]

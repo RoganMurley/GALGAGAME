@@ -8,8 +8,8 @@ import String exposing (dropLeft, length, startsWith)
 import Util exposing (message)
 
 
-modelInit : String -> GameType -> Model
-modelInit roomID gameType =
+init : String -> GameType -> Model
+init roomID gameType =
     { roomID = roomID
     , error = ""
     , gameType = gameType
