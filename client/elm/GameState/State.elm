@@ -3,6 +3,7 @@ module GameState.State exposing (activeAnim, resTick, update, tick, tickZero, ga
 import Audio exposing (playSound)
 import Card.Types exposing (Anim)
 import CharacterSelect.State as CharacterSelect
+import Connected.Types exposing (Mode(..))
 import GameState.Decoders exposing (decodeState, resDecoder)
 import GameState.Messages exposing (..)
 import GameState.Types exposing (GameState(..))
@@ -14,8 +15,8 @@ import ViewModel.State as ViewModel
 import Util exposing (fromJust, message, safeTail, send)
 
 
-update : Msg -> GameState -> Flags -> ( GameState, Cmd Main.Msg )
-update msg state flags =
+update : Msg -> GameState -> Mode -> Flags -> ( GameState, Cmd Main.Msg )
+update msg state mode flags =
     case msg of
         Sync str ->
             let
@@ -107,50 +108,76 @@ update msg state flags =
                 otherwise ->
                     ( state, Cmd.none )
 
-        TurnAction action ->
-            let
-                myTurn : GameState -> Bool
-                myTurn s =
-                    case s of
-                        PlayingGame ( m, _ ) _ ->
-                            m.turn == PlayerA
+        PlayingOnly playingOnly ->
+            updatePlayingOnly playingOnly state mode flags
+
+
+updatePlayingOnly : PlayingOnly -> GameState -> Mode -> Flags -> ( GameState, Cmd Main.Msg )
+updatePlayingOnly msg state mode ({ hostname } as flags) =
+    let
+        legal =
+            case mode of
+                Playing ->
+                    True
+
+                Spectating ->
+                    False
+    in
+        if not legal then
+            ( state, Cmd.none )
+        else
+            case msg of
+                Rematch ->
+                    case state of
+                        Ended _ _ _ _ _ ->
+                            ( state, send hostname "rematch:" )
 
                         otherwise ->
-                            False
-            in
-                if myTurn state then
-                    updateTurn action state flags
-                else
-                    ( state, Cmd.none )
+                            ( state, Cmd.none )
+
+                TurnOnly turnOnly ->
+                    updateTurnOnly turnOnly state mode flags
 
 
-updateTurn : TurnAction -> GameState -> Flags -> ( GameState, Cmd Main.Msg )
-updateTurn action state ({ hostname } as flags) =
-    case action of
-        EndTurn ->
-            ( state
-            , Cmd.batch
-                [ send hostname "end:"
-                , playSound "/sfx/endTurn.wav"
-                ]
-            )
+updateTurnOnly : TurnOnly -> GameState -> Mode -> Flags -> ( GameState, Cmd Main.Msg )
+updateTurnOnly msg state mode ({ hostname } as flags) =
+    let
+        legal =
+            case state of
+                PlayingGame ( { turn }, _ ) _ ->
+                    turn == PlayerA
 
-        PlayCard index ->
-            let
-                ( newState1, cmd1 ) =
-                    update (HoverSelf Nothing) state flags
+                otherwise ->
+                    False
+    in
+        if not legal then
+            ( state, Cmd.none )
+        else
+            case msg of
+                EndTurn ->
+                    ( state
+                    , Cmd.batch
+                        [ send hostname "end:"
+                        , playSound "/sfx/endTurn.wav"
+                        ]
+                    )
 
-                ( newState2, cmd2 ) =
-                    update (Shake 1.0) newState1 flags
-            in
-                ( newState2
-                , Cmd.batch
-                    [ send hostname ("play:" ++ (toString index))
-                    , playSound "/sfx/playCard.wav"
-                    , cmd1
-                    , cmd2
-                    ]
-                )
+                PlayCard index ->
+                    let
+                        ( newState1, cmd1 ) =
+                            update (HoverSelf Nothing) state mode flags
+
+                        ( newState2, cmd2 ) =
+                            update (Shake 1.0) newState1 mode flags
+                    in
+                        ( newState2
+                        , Cmd.batch
+                            [ send hostname ("play:" ++ (toString index))
+                            , playSound "/sfx/playCard.wav"
+                            , cmd1
+                            , cmd2
+                            ]
+                        )
 
 
 setRes : GameState -> List Model -> GameState

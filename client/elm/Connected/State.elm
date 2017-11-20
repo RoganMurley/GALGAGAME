@@ -28,7 +28,7 @@ update : Flags -> Msg -> Model -> ( Model, Cmd Msg )
 update ({ hostname } as flags) msg ({ game, settings, mode } as model) =
     case msg of
         Receive str ->
-            receive model str flags
+            receive model str mode flags
 
         DragMsg dragMsg ->
             ( model, Cmd.none )
@@ -36,7 +36,7 @@ update ({ hostname } as flags) msg ({ game, settings, mode } as model) =
         GameStateMsg gameMsg ->
             let
                 ( newGame, cmd ) =
-                    GameState.update gameMsg game flags
+                    GameState.update gameMsg game mode flags
             in
                 ( { model | game = newGame }, cmd )
 
@@ -44,14 +44,6 @@ update ({ hostname } as flags) msg ({ game, settings, mode } as model) =
             ( { model | settings = Settings.update settingsMsg settings }
             , Cmd.none
             )
-
-        Rematch ->
-            case model.game of
-                Ended which _ _ _ _ ->
-                    ( model, playingOnly model <| send hostname "rematch:" )
-
-                otherwise ->
-                    ( model, Cmd.none )
 
         HoverCard mIndex ->
             let
@@ -67,6 +59,7 @@ update ({ hostname } as flags) msg ({ game, settings, mode } as model) =
                     GameState.update
                         (GameState.HoverSelf mIndex)
                         model.game
+                        mode
                         flags
             in
                 ( { model | game = newGame }
@@ -125,14 +118,15 @@ playingOnly { mode } cmdMsg =
             cmdMsg
 
 
-receive : Model -> String -> Flags -> ( Model, Cmd Msg )
-receive model msg flags =
+receive : Model -> String -> Mode -> Flags -> ( Model, Cmd Msg )
+receive model msg mode flags =
     if (startsWith "sync:" msg) then
         let
             ( newGame, cmd ) =
                 GameState.update
                     (GameState.Sync <| dropLeft (length "sync:") msg)
                     model.game
+                    mode
                     flags
         in
             ( { model | game = newGame }, cmd )
@@ -144,6 +138,7 @@ receive model msg flags =
                         GameState.update
                             (GameState.HoverOutcome hoverOutcome)
                             model.game
+                            mode
                             flags
                 in
                     ( { model | game = newGame }
@@ -163,6 +158,7 @@ receive model msg flags =
                 GameState.update
                     (GameState.ResolveOutcome <| dropLeft (length "res:") msg)
                     model.game
+                    mode
                     flags
         in
             ( { model | game = newGame }, cmd )
@@ -183,7 +179,7 @@ receive model msg flags =
     else if (startsWith "playCard:" msg) then
         let
             ( newGame, _ ) =
-                GameState.update (GameState.Shake 1.0) model.game flags
+                GameState.update (GameState.Shake 1.0) model.game mode flags
         in
             ( { model | game = newGame }, playSound "/sfx/playCard.wav" )
     else if (startsWith "end:" msg) then

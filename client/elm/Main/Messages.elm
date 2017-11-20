@@ -14,11 +14,8 @@ type Msg
     = UrlChange Navigation.Location
     | Send String
     | Receive String
-    | StartGame Mode
-    | Rematch
     | Frame Float
     | Resize Int Int
-    | HoverCard (Maybe Int)
     | SelectAllInput String
     | CopyInput String
     | DragMsg Drag.Msg
@@ -28,5 +25,7 @@ type Msg
     | MenuMsg Menu.Msg
     | LabMsg Lab.Msg
     | PlayingOnly Msg
-    | Concede
     | SetVolume Int
+    | Concede
+    | HoverCard (Maybe Int)
+    | StartGame Mode
