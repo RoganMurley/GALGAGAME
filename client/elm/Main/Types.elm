@@ -7,11 +7,7 @@ import Lobby.Types as Lobby
 
 type alias Model =
     { room : RoomModel
-    , hostname : String
-    , httpPort : String
-    , frameTime : Float
-    , seed : Seed
-    , windowDimensions : ( Int, Int )
+    , flags : Flags
     }
 
 
@@ -30,5 +26,6 @@ type alias Flags =
     { hostname : String
     , httpPort : String
     , seed : Seed
+    , time : Float
     , windowDimensions : ( Int, Int )
     }

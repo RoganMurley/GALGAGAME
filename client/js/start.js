@@ -5,7 +5,8 @@ var app = Elm.Main.fullscreen({
   hostname: window.location.hostname,
   httpPort: window.location.port,
   seed: new Date().getTime(),
-  windowDimensions: [ window.innerWidth, window.innerHeight ]
+  windowDimensions: [ window.innerWidth, window.innerHeight ],
+  time: 0
 });
 
 app.ports.selectAllInput.subscribe(function (elementId) {

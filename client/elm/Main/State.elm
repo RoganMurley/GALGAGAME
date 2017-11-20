@@ -26,14 +26,10 @@ import UrlParser exposing (parsePath)
 
 
 initModel : Flags -> Navigation.Location -> Main.Model
-initModel ({ hostname, httpPort, seed, windowDimensions } as flags) location =
+initModel flags location =
     locationUpdate
         { room = initRoom
-        , hostname = hostname
-        , httpPort = httpPort
-        , frameTime = 0
-        , windowDimensions = windowDimensions
-        , seed = seed
+        , flags = flags
         }
         location
 
@@ -44,100 +40,104 @@ initRoom =
 
 
 update : Msg -> Main.Model -> ( Main.Model, Cmd Msg )
-update msg ({ hostname, room, frameTime, seed } as model) =
-    case msg of
-        UrlChange l ->
-            ( locationUpdate model l, Cmd.none )
+update msg ({ room, flags } as model) =
+    let
+        { hostname, time, seed } =
+            flags
+    in
+        case msg of
+            UrlChange l ->
+                ( locationUpdate model l, Cmd.none )
 
-        Frame dt ->
-            ( { model
-                | frameTime = frameTime + dt
-                , room = tickRoom room dt
-              }
-            , case room of
-                Connected connected ->
-                    listen frameTime connected.game
+            Frame dt ->
+                ( { model
+                    | flags = { flags | time = time + dt }
+                    , room = tickRoom room dt
+                  }
+                , case room of
+                    Connected connected ->
+                        listen time connected.game
 
-                otherwise ->
-                    Cmd.none
-            )
+                    otherwise ->
+                        Cmd.none
+                )
 
-        Resize w h ->
-            ( { model | windowDimensions = ( w, h ) }, Cmd.none )
+            Resize w h ->
+                ( { model | flags = { flags | windowDimensions = ( w, h ) } }, Cmd.none )
 
-        SelectAllInput elementId ->
-            ( model, selectAllInput elementId )
+            SelectAllInput elementId ->
+                ( model, selectAllInput elementId )
 
-        CopyInput elementId ->
-            ( model, copyInput elementId )
+            CopyInput elementId ->
+                ( model, copyInput elementId )
 
-        Send str ->
-            ( model, send hostname str )
+            Send str ->
+                ( model, send hostname str )
 
-        otherwise ->
-            case room of
-                MainMenu ->
-                    let
-                        roomID : String
-                        roomID =
-                            generate roomIDGenerator seed
-                    in
+            otherwise ->
+                case room of
+                    MainMenu ->
+                        let
+                            roomID : String
+                            roomID =
+                                generate roomIDGenerator seed
+                        in
+                            case msg of
+                                MenuMsg (Menu.Start gameType) ->
+                                    let
+                                        url : String
+                                        url =
+                                            case gameType of
+                                                Lobby.ComputerGame ->
+                                                    "computer"
+
+                                                Lobby.CustomGame ->
+                                                    "custom"
+
+                                                Lobby.QuickplayGame ->
+                                                    "quickplay"
+                                    in
+                                        ( model, newUrl <| "/play/" ++ url )
+
+                                otherwise ->
+                                    ( model, Cmd.none )
+
+                    Connecting ({ roomID, gameType } as lobby) ->
                         case msg of
-                            MenuMsg (Menu.Start gameType) ->
+                            StartGame mode ->
+                                ( { model | room = Connected <| Connected.init mode roomID }
+                                , case gameType of
+                                    Lobby.ComputerGame ->
+                                        Cmd.none
+
+                                    Lobby.CustomGame ->
+                                        newUrl <| "/play/custom/" ++ roomID
+
+                                    Lobby.QuickplayGame ->
+                                        Cmd.none
+                                )
+
+                            otherwise ->
                                 let
-                                    url : String
-                                    url =
-                                        case gameType of
-                                            Lobby.ComputerGame ->
-                                                "computer"
-
-                                            Lobby.CustomGame ->
-                                                "custom"
-
-                                            Lobby.QuickplayGame ->
-                                                "quickplay"
+                                    ( newRoom, cmd ) =
+                                        connectingUpdate hostname msg lobby
                                 in
-                                    ( model, newUrl <| "/play/" ++ url )
+                                    ( { model | room = Connecting newRoom }, cmd )
+
+                    Connected connected ->
+                        let
+                            ( newRoom, cmd ) =
+                                Connected.update hostname msg connected
+                        in
+                            ( { model | room = Connected newRoom }, cmd )
+
+                    Lab lab ->
+                        case msg of
+                            LabMsg labMsg ->
+                                ( { model | room = Lab <| Lab.update lab labMsg }, Cmd.none )
 
                             otherwise ->
                                 ( model, Cmd.none )
-
-                Connecting ({ roomID, gameType } as lobby) ->
-                    case msg of
-                        StartGame mode ->
-                            ( { model | room = Connected <| Connected.init mode roomID }
-                            , case gameType of
-                                Lobby.ComputerGame ->
-                                    Cmd.none
-
-                                Lobby.CustomGame ->
-                                    newUrl <| "/play/custom/" ++ roomID
-
-                                Lobby.QuickplayGame ->
-                                    Cmd.none
-                            )
-
-                        otherwise ->
-                            let
-                                ( newRoom, cmd ) =
-                                    connectingUpdate hostname msg lobby
-                            in
-                                ( { model | room = Connecting newRoom }, cmd )
-
-                Connected connected ->
-                    let
-                        ( newRoom, cmd ) =
-                            Connected.update hostname msg connected
-                    in
-                        ( { model | room = Connected newRoom }, cmd )
-
-                Lab lab ->
-                    case msg of
-                        LabMsg labMsg ->
-                            ( { model | room = Lab <| Lab.update lab labMsg }, Cmd.none )
-
-                        otherwise ->
-                            ( model, Cmd.none )
 
 
 connectingUpdate : String -> Msg -> Lobby.Model -> ( Lobby.Model, Cmd Msg )
@@ -168,7 +168,7 @@ locationUpdate model location =
                     let
                         randomRoomID : String
                         randomRoomID =
-                            generate roomIDGenerator model.seed
+                            generate roomIDGenerator model.flags.seed
                     in
                         case playRoute of
                             Compass.ComputerPlay ->
@@ -257,7 +257,7 @@ generate generator seed =
 subscriptions : Main.Model -> Sub Msg
 subscriptions model =
     Sub.batch
-        [ WebSocket.listen ("ws://" ++ model.hostname ++ ":9160") Receive
+        [ WebSocket.listen ("ws://" ++ model.flags.hostname ++ ":9160") Receive
         , Mouse.moves <| DragMsg << Drag.At
         , Mouse.ups <| DragMsg << Drag.End
         , AnimationFrame.diffs Frame
