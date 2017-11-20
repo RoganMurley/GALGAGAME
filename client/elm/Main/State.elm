@@ -1,33 +1,21 @@
 module Main.State exposing (..)
 
-import Audio exposing (SoundOption(..), playSound, playSoundWith, setVolume)
 import Compass.State as Compass
 import Compass.Types as Compass
-import Keyboard
 import Mouse
-import String exposing (dropLeft, length, startsWith)
 import WebSocket
-import Chat.Messages as Chat
-import Chat.State as Chat
+import Connected.State as Connected
 import Drag.Messages as Drag
-import Drag.State as Drag exposing (dragAt, dragEnd, dragStart, getPosition)
-import Settings.State as Settings
-import Settings.Messages as Settings
-import GameState.Messages as GameState
-import GameState.Types as GameState exposing (GameState(..))
-import GameState.State as GameState exposing (resTick, tickForward)
 import Lobby.State as Lobby
 import Lobby.Types as Lobby
 import Lab.State as Lab
 import Menu.Messages as Menu
-import Model.Types exposing (Hand, Model, WhichPlayer(..))
-import Main.Decoders exposing (decodePlayers)
 import Main.Messages exposing (Msg(..))
 import Random
 import Random.Char exposing (char)
 import Random.String exposing (string)
 import Tuple exposing (first)
-import Util exposing (message)
+import Util exposing (message, send)
 import Ports exposing (copyInput, selectAllInput)
 import AnimationFrame
 import Window
@@ -55,17 +43,6 @@ initRoom =
     MainMenu
 
 
-initConnected : Mode -> String -> ConnectedModel
-initConnected mode roomID =
-    { chat = Chat.init
-    , game = Waiting GameState.WaitQuickplay
-    , settings = Settings.init
-    , mode = mode
-    , roomID = roomID
-    , players = ( Nothing, Nothing )
-    }
-
-
 update : Msg -> Main.Model -> ( Main.Model, Cmd Msg )
 update msg ({ hostname, room, frameTime, seed } as model) =
     case msg of
@@ -75,7 +52,7 @@ update msg ({ hostname, room, frameTime, seed } as model) =
         Frame dt ->
             ( { model
                 | frameTime = frameTime + dt
-                , room = tickForwardRoom room dt
+                , room = tickRoom room dt
               }
             , case room of
                 Connected connected ->
@@ -128,7 +105,7 @@ update msg ({ hostname, room, frameTime, seed } as model) =
                 Connecting ({ roomID, gameType } as lobby) ->
                     case msg of
                         StartGame mode ->
-                            ( { model | room = Connected <| initConnected mode roomID }
+                            ( { model | room = Connected <| Connected.init mode roomID }
                             , case gameType of
                                 Lobby.ComputerGame ->
                                     Cmd.none
@@ -147,10 +124,10 @@ update msg ({ hostname, room, frameTime, seed } as model) =
                             in
                                 ( { model | room = Connecting newRoom }, cmd )
 
-                Connected connectedModel ->
+                Connected connected ->
                     let
                         ( newRoom, cmd ) =
-                            connectedUpdate hostname msg connectedModel
+                            Connected.update hostname msg connected
                     in
                         ( { model | room = Connected newRoom }, cmd )
 
@@ -174,143 +151,6 @@ connectingUpdate hostname msg model =
 
         otherwise ->
             ( model, Cmd.none )
-
-
-connectedUpdate : String -> Msg -> ConnectedModel -> ( ConnectedModel, Cmd Msg )
-connectedUpdate hostname msg ({ chat, game, settings, mode } as model) =
-    case msg of
-        Receive str ->
-            connectedReceive model str
-
-        DragMsg dragMsg ->
-            ( { model | chat = Drag.update dragMsg chat }, Cmd.none )
-
-        DrawCard ->
-            ( model, turnOnly model (send hostname "draw:") )
-
-        EndTurn ->
-            ( model
-            , turnOnly model
-                (Cmd.batch
-                    [ send hostname "end:"
-                    , playSound "/sfx/endTurn.wav"
-                    ]
-                )
-            )
-
-        PlayCard index ->
-            let
-                ( newGame1, cmd1 ) =
-                    GameState.update (GameState.HoverSelf Nothing) game
-
-                ( newGame2, cmd2 ) =
-                    GameState.update (GameState.Shake 1.0) newGame1
-            in
-                ( { model | game = newGame2 }
-                , turnOnly model
-                    (Cmd.batch
-                        [ send hostname ("play:" ++ (toString index))
-                        , playSound "/sfx/playCard.wav"
-                        , cmd1
-                        , cmd2
-                        ]
-                    )
-                )
-
-        ChatMsg chatMsg ->
-            let
-                ( newChat, cmd ) =
-                    Chat.update chat chatMsg
-            in
-                ( { model | chat = newChat }, cmd )
-
-        GameStateMsg gameMsg ->
-            let
-                ( newGame, cmd ) =
-                    GameState.update gameMsg game
-            in
-                ( { model | game = newGame }, cmd )
-
-        SettingsMsg settingsMsg ->
-            let
-                newsettings =
-                    Settings.update settingsMsg settings
-            in
-                ( { model | settings = newsettings }, Cmd.none )
-
-        -- Enter key
-        KeyPress 13 ->
-            let
-                ( chat, cmd ) =
-                    Chat.update model.chat Chat.Send
-            in
-                ( { model | chat = chat }, cmd )
-
-        KeyPress _ ->
-            ( model, Cmd.none )
-
-        Rematch ->
-            case model.game of
-                Ended which _ _ _ _ ->
-                    ( model, playingOnly model <| send hostname "rematch:" )
-
-                otherwise ->
-                    ( model, Cmd.none )
-
-        HoverCard mIndex ->
-            let
-                index =
-                    case mIndex of
-                        Just x ->
-                            toString x
-
-                        Nothing ->
-                            "null"
-
-                ( newGame, cmd ) =
-                    GameState.update
-                        (GameState.HoverSelf mIndex)
-                        model.game
-            in
-                ( { model | game = newGame }
-                , Cmd.batch
-                    [ cmd
-                    , playingOnly model <| message <| Send <| "hover:" ++ index
-                    , case mIndex of
-                        Nothing ->
-                            Cmd.none
-
-                        otherwise ->
-                            playSound "/sfx/hover.wav"
-                    ]
-                )
-
-        PlayingOnly newMsg ->
-            ( model, playingOnly model <| message newMsg )
-
-        Concede ->
-            let
-                newSettings =
-                    Settings.update Settings.CloseSettings settings
-            in
-                ( { model | settings = newSettings }, send hostname "concede:" )
-
-        SetVolume volume ->
-            let
-                newVolume =
-                    clamp 0 100 volume
-
-                newSettings =
-                    { settings | volume = newVolume }
-            in
-                ( { model | settings = newSettings }
-                , setVolume newVolume
-                )
-
-        otherwise ->
-            Debug.log
-                ("Unexpected action while connected ;_;")
-                ( model, Cmd.none )
 
 
 locationUpdate : Main.Model -> Navigation.Location -> Main.Model
@@ -383,141 +223,20 @@ locationUpdate model location =
             { model | room = initRoom }
 
 
-connectedReceive : ConnectedModel -> String -> ( ConnectedModel, Cmd Msg )
-connectedReceive model msg =
-    if startsWith "chat:" msg then
-        let
-            ( newChat, cmd ) =
-                Chat.update
-                    model.chat
-                    (Chat.New <| dropLeft (length "chat:") msg)
-        in
-            ( { model | chat = newChat }, cmd )
-    else if (startsWith "sync:" msg) then
-        let
-            ( newGame, cmd ) =
-                GameState.update
-                    (GameState.Sync <| dropLeft (length "sync:") msg)
-                    model.game
-        in
-            ( { model | game = newGame }, cmd )
-    else if (startsWith "hover:" msg) then
-        case parseHoverOutcome <| dropLeft (length "hover:") msg of
-            Ok hoverOutcome ->
-                let
-                    ( newGame, cmd ) =
-                        GameState.update
-                            (GameState.HoverOutcome hoverOutcome)
-                            model.game
-                in
-                    ( { model | game = newGame }
-                    , Cmd.batch
-                        [ cmd
-                        , playSound "/sfx/hover.wav"
-                        ]
-                    )
-
-            Err err ->
-                Debug.log
-                    err
-                    ( model, Cmd.none )
-    else if (startsWith "res:" msg) then
-        let
-            ( newGame, cmd ) =
-                GameState.update
-                    (GameState.ResolveOutcome <| dropLeft (length "res:") msg)
-                    model.game
-        in
-            ( { model | game = newGame }, cmd )
-    else if (startsWith "syncPlayers:" msg) then
-        let
-            newPlayers : Result String ( Maybe String, Maybe String )
-            newPlayers =
-                decodePlayers (dropLeft (length "syncPlayers:") msg)
-        in
-            case newPlayers of
-                Ok p ->
-                    ( { model | players = p }, Cmd.none )
-
-                Err err ->
-                    Debug.log
-                        err
-                        ( model, Cmd.none )
-    else if (startsWith "playCard:" msg) then
-        let
-            ( newGame, _ ) =
-                GameState.update (GameState.Shake 1.0) model.game
-        in
-            ( { model | game = newGame }, playSound "/sfx/playCard.wav" )
-    else if (startsWith "end:" msg) then
-        ( model, playSound "/sfx/endTurn.wav" )
-    else
-        Debug.log
-            ("Error decoding message from server: " ++ msg)
-            ( model, Cmd.none )
-
-
-parseHoverOutcome : String -> Result String (Maybe Int)
-parseHoverOutcome msg =
-    case msg of
-        "null" ->
-            Ok Nothing
-
-        otherwise ->
-            Result.map Just <| String.toInt msg
-
-
-send : String -> String -> Cmd Msg
-send hostname =
-    WebSocket.send <| "ws://" ++ hostname ++ ":9160"
-
-
-playingOnly : ConnectedModel -> Cmd Msg -> Cmd Msg
-playingOnly { mode } cmdMsg =
-    case mode of
-        Spectating ->
-            Cmd.none
-
-        Playing ->
-            cmdMsg
-
-
-turnOnly : ConnectedModel -> Cmd Msg -> Cmd Msg
-turnOnly { mode, game } cmdMsg =
-    case mode of
-        Spectating ->
-            Cmd.none
-
-        Playing ->
-            case game of
-                PlayingGame ( model, vm ) res ->
-                    case model.turn of
-                        PlayerA ->
-                            cmdMsg
-
-                        PlayerB ->
-                            Cmd.none
-
-                otherwise ->
-                    Cmd.none
-
-
-tickForwardRoom : RoomModel -> Float -> RoomModel
-tickForwardRoom room dt =
+tickRoom : RoomModel -> Float -> RoomModel
+tickRoom room dt =
     case room of
+        MainMenu ->
+            MainMenu
+
+        Connecting model ->
+            Connecting model
+
         Connected model ->
-            Connected (tickForwardConnected model dt)
+            Connected <| Connected.tick model dt
 
         Lab model ->
-            Lab (Lab.tickForward model dt)
-
-        otherwise ->
-            room
-
-
-tickForwardConnected : ConnectedModel -> Float -> ConnectedModel
-tickForwardConnected model dt =
-    { model | game = GameState.tickForward model.game dt }
+            Lab <| Lab.tick model dt
 
 
 roomIDGenerator : Random.Generator String
@@ -541,7 +260,6 @@ subscriptions model =
         [ WebSocket.listen ("ws://" ++ model.hostname ++ ":9160") Receive
         , Mouse.moves <| DragMsg << Drag.At
         , Mouse.ups <| DragMsg << Drag.End
-        , Keyboard.presses KeyPress
         , AnimationFrame.diffs Frame
         , Window.resizes (\{ width, height } -> Resize width height)
         ]

@@ -1,15 +1,13 @@
 module Main.Messages exposing (Msg(..))
 
-import Chat.Messages as Chat
+import Connected.Types exposing (Mode)
 import Drag.Messages as Drag
 import Settings.Messages as Settings
 import GameState.Messages as GameState
 import Lobby.Messages as Lobby
 import Lab.Messages as Lab
-import Main.Types exposing (Mode)
 import Menu.Messages as Menu
 import Navigation
-import Time exposing (Time)
 
 
 type Msg
@@ -20,15 +18,12 @@ type Msg
     | EndTurn
     | PlayCard Int
     | StartGame Mode
-    | KeyPress Int
     | Rematch
-    | Tick Time
     | Frame Float
     | Resize Int Int
     | HoverCard (Maybe Int)
     | SelectAllInput String
     | CopyInput String
-    | ChatMsg Chat.Msg
     | DragMsg Drag.Msg
     | SettingsMsg Settings.Msg
     | GameStateMsg GameState.Msg

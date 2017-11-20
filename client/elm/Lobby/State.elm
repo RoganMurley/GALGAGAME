@@ -3,7 +3,7 @@ module Lobby.State exposing (..)
 import Lobby.Messages exposing (Msg(..))
 import Lobby.Types exposing (GameType(..), Model)
 import Main.Messages as Main
-import Main.Types exposing (Mode(..))
+import Connected.Types exposing (Mode(..))
 import String exposing (dropLeft, length, startsWith)
 import Util exposing (message)
 

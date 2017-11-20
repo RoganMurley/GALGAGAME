@@ -1,9 +1,7 @@
 module Util exposing (..)
 
 import Task
-
-
--- Convert to pixel css representation.
+import WebSocket
 
 
 px : Int -> String
@@ -11,17 +9,9 @@ px number =
     toString number ++ "px"
 
 
-
--- Turn a message into a command.
-
-
 message : msg -> Cmd msg
 message x =
     Task.perform identity (Task.succeed x)
-
-
-
--- Unsafe fromJust.
 
 
 fromJust : Maybe a -> a
@@ -34,10 +24,6 @@ fromJust x =
             Debug.crash "error: fromJust Nothing"
 
 
-
--- A safe tail.
-
-
 safeTail : List a -> List a
 safeTail l =
     case List.tail l of
@@ -48,5 +34,6 @@ safeTail l =
             []
 
 
-
---
+send : String -> String -> Cmd msg
+send hostname =
+    WebSocket.send <| "ws://" ++ hostname ++ ":9160"

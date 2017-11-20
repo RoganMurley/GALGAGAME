@@ -1,6 +1,6 @@
 module Lobby.Messages exposing (Msg(..))
 
-import Main.Types exposing (Mode)
+import Connected.Types exposing (Mode)
 
 
 type Msg
