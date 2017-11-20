@@ -135,6 +135,35 @@ updatePlayingOnly msg state mode ({ hostname } as flags) =
                         otherwise ->
                             ( state, Cmd.none )
 
+                HoverCard mIndex ->
+                    let
+                        index =
+                            case mIndex of
+                                Just x ->
+                                    toString x
+
+                                Nothing ->
+                                    "null"
+
+                        ( newState, cmd ) =
+                            update (HoverSelf mIndex) state mode flags
+
+                        sound =
+                            case mIndex of
+                                Nothing ->
+                                    Cmd.none
+
+                                otherwise ->
+                                    playSound "/sfx/hover.wav"
+                    in
+                        ( newState
+                        , Cmd.batch
+                            [ cmd
+                            , message <| Main.Send <| "hover:" ++ index
+                            , sound
+                            ]
+                        )
+
                 TurnOnly turnOnly ->
                     updateTurnOnly turnOnly state mode flags
 

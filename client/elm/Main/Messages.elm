@@ -27,5 +27,4 @@ type Msg
     | PlayingOnly Msg
     | SetVolume Int
     | Concede
-    | HoverCard (Maybe Int)
     | StartGame Mode
