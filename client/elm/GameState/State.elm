@@ -1,4 +1,4 @@
-module GameState.State exposing (activeAnim, resTick, update, tickForward, tickZero, gameTickStart)
+module GameState.State exposing (activeAnim, resTick, update, tick, tickZero, gameTickStart)
 
 import Card.Types exposing (Anim)
 import CharacterSelect.State as CharacterSelect
@@ -199,8 +199,8 @@ tickZero tick =
     tick > resTickMax
 
 
-tickForward : GameState -> Float -> GameState
-tickForward game dt =
+tick : GameState -> Float -> GameState
+tick game dt =
     case game of
         PlayingGame ( m, vm ) ( res, tick ) ->
             if tickZero tick then

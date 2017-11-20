@@ -15,71 +15,68 @@ import Raymarch.View as Raymarch
 import Animation.View as Animation
 
 
-view : GameState -> String -> String -> String -> Float -> ( Int, Int ) -> Html Msg
-view state roomID hostname httpPort time ( width, height ) =
-    let
-        params =
-            Raymarch.Params time ( width, height )
-    in
-        case state of
-            Waiting waitType ->
-                div []
-                    [ waitingView waitType httpPort hostname roomID
-                    , Raymarch.view params
-                    ]
+view : GameState -> String -> String -> String -> Raymarch.Params -> Html Msg
+view state roomID hostname httpPort ((Raymarch.Params time ( width, height )) as params) =
+    case state of
+        Waiting waitType ->
+            div []
+                [ waitingView waitType httpPort hostname roomID
+                , Raymarch.view params
+                ]
 
-            Selecting model ->
-                Html.map (GameStateMsg << GameState.SelectingMsg) <| CharacterSelect.view params model
+        Selecting model ->
+            Html.map (GameStateMsg << GameState.SelectingMsg) <|
+                CharacterSelect.view params model
 
-            PlayingGame ( m, vm ) ( res, resTime ) ->
-                div []
-                    (case res of
-                        [] ->
-                            [ Model.view resTime ( m, vm ) time
-                            , Raymarch.view params
-                            ]
+        PlayingGame ( m, vm ) ( res, resTime ) ->
+            div []
+                (case res of
+                    [] ->
+                        [ Model.view resTime ( m, vm ) time
+                        , Raymarch.view params
+                        ]
 
-                        otherwise ->
-                            [ resView res resTime ( m, vm ) time
-                            , Animation.view params resTime (activeAnim state)
-                            ]
-                    )
+                    otherwise ->
+                        [ resView res resTime ( m, vm ) time
+                        , Animation.view params resTime (activeAnim state)
+                        ]
+                )
 
-            Ended winner final vm resModel ( res, resTime ) ->
-                case resModel of
-                    Just m ->
+        Ended winner final vm resModel ( res, resTime ) ->
+            case resModel of
+                Just m ->
+                    div []
+                        [ resView (res ++ [ final ]) resTime ( m, vm ) time
+                        , Animation.view params resTime (activeAnim state)
+                        ]
+
+                Nothing ->
+                    let
+                        ( endGameText, endGameClass ) =
+                            case winner of
+                                Just PlayerA ->
+                                    ( "VICTORY", "victory" )
+
+                                Just PlayerB ->
+                                    ( "DEFEAT", "defeat" )
+
+                                Nothing ->
+                                    ( "DRAW", "draw" )
+                    in
                         div []
-                            [ resView (res ++ [ final ]) resTime ( m, vm ) time
+                            [ div [ class ("endgame-layer " ++ endGameClass) ]
+                                [ div [ class "endgame-container" ]
+                                    [ div
+                                        [ class endGameClass ]
+                                        [ text endGameText ]
+                                    , button
+                                        [ class "rematch", onClick Rematch ]
+                                        [ text "Rematch" ]
+                                    ]
+                                ]
+                            , resView res resTime ( final, vm ) time
                             , Animation.view params resTime (activeAnim state)
                             ]
-
-                    Nothing ->
-                        let
-                            ( endGameText, endGameClass ) =
-                                case winner of
-                                    Just PlayerA ->
-                                        ( "VICTORY", "victory" )
-
-                                    Just PlayerB ->
-                                        ( "DEFEAT", "defeat" )
-
-                                    Nothing ->
-                                        ( "DRAW", "draw" )
-                        in
-                            div []
-                                [ div [ class ("endgame-layer " ++ endGameClass) ]
-                                    [ div [ class "endgame-container" ]
-                                        [ div
-                                            [ class endGameClass ]
-                                            [ text endGameText ]
-                                        , button
-                                            [ class "rematch", onClick Rematch ]
-                                            [ text "Rematch" ]
-                                        ]
-                                    ]
-                                , resView res resTime ( final, vm ) time
-                                , Animation.view params resTime (activeAnim state)
-                                ]
 
 
 waitingView : WaitType -> String -> String -> String -> Html Msg

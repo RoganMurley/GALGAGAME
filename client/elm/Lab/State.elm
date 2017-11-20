@@ -44,8 +44,8 @@ update model msg =
             { model | anim = anim }
 
 
-tickForward : Model -> Float -> Model
-tickForward model dt =
+tick : Model -> Float -> Model
+tick model dt =
     let
         newTime : Float
         newTime =
