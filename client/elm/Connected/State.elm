@@ -10,6 +10,7 @@ import Model.Types exposing (WhichPlayer(..))
 import Settings.State as Settings
 import Settings.Messages as Settings
 import Main.Messages exposing (Msg(..))
+import Main.Types exposing (Flags)
 import String exposing (dropLeft, length, startsWith)
 import Util exposing (message, send)
 
@@ -24,8 +25,8 @@ init mode roomID =
     }
 
 
-update : String -> Msg -> Model -> ( Model, Cmd Msg )
-update hostname msg ({ game, settings, mode } as model) =
+update : Flags -> Msg -> Model -> ( Model, Cmd Msg )
+update { hostname } msg ({ game, settings, mode } as model) =
     case msg of
         Receive str ->
             receive model str

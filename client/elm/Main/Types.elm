@@ -1,25 +1,12 @@
 module Main.Types exposing (..)
 
-import Connected.Types as Connected
-import Lab.Types as Lab
-import Lobby.Types as Lobby
+import Room.Types as Room
 
 
 type alias Model =
-    { room : RoomModel
+    { room : Room.Model
     , flags : Flags
     }
-
-
-type alias Seed =
-    Int
-
-
-type RoomModel
-    = MainMenu
-    | Connecting Lobby.Model
-    | Connected Connected.Model
-    | Lab Lab.Model
 
 
 type alias Flags =
@@ -27,5 +14,9 @@ type alias Flags =
     , httpPort : String
     , seed : Seed
     , time : Float
-    , windowDimensions : ( Int, Int )
+    , dimensions : ( Int, Int )
     }
+
+
+type alias Seed =
+    Int
