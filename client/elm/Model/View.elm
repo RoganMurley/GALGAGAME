@@ -50,8 +50,9 @@ viewHand hand hoverIndex resolving =
                     else
                         [ onClick <|
                             GameStateMsg <|
-                                GameState.TurnAction <|
-                                    GameState.PlayCard index
+                                GameState.PlayingOnly <|
+                                    GameState.TurnOnly <|
+                                        GameState.PlayCard index
                         ]
             in
                 [ onMouseEnter <| HoverCard <| Just index
@@ -219,7 +220,9 @@ viewTurn handFull turn =
                         [ class "turn-indi pass-button"
                         , onClick <|
                             GameStateMsg <|
-                                GameState.TurnAction GameState.EndTurn
+                                GameState.PlayingOnly <|
+                                    GameState.TurnOnly <|
+                                        GameState.EndTurn
                         ]
                         [ text "Pass" ]
 

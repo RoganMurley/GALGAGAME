@@ -10,9 +10,14 @@ type Msg
     | SelectingMsg CharacterSelect.Msg
     | Sync String
     | Shake Float
-    | TurnAction TurnAction
+    | PlayingOnly PlayingOnly
 
 
-type TurnAction
+type PlayingOnly
+    = Rematch
+    | TurnOnly TurnOnly
+
+
+type TurnOnly
     = EndTurn
     | PlayCard Int

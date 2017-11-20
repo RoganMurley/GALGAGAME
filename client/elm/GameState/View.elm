@@ -75,7 +75,12 @@ view state roomID { hostname, httpPort, time, dimensions } =
                                             [ class endGameClass ]
                                             [ text endGameText ]
                                         , button
-                                            [ class "rematch", onClick Rematch ]
+                                            [ class "rematch"
+                                            , onClick <|
+                                                GameStateMsg <|
+                                                    GameState.PlayingOnly <|
+                                                        GameState.Rematch
+                                            ]
                                             [ text "Rematch" ]
                                         ]
                                     ]
