@@ -14,9 +14,6 @@ type Msg
     = UrlChange Navigation.Location
     | Send String
     | Receive String
-    | DrawCard
-    | EndTurn
-    | PlayCard Int
     | StartGame Mode
     | Rematch
     | Frame Float

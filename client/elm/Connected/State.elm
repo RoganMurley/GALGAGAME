@@ -6,7 +6,6 @@ import Connected.Decoders exposing (decodeHoverOutcome, decodePlayers)
 import GameState.Messages as GameState
 import GameState.State as GameState
 import GameState.Types exposing (..)
-import Model.Types exposing (WhichPlayer(..))
 import Settings.State as Settings
 import Settings.Messages as Settings
 import Main.Messages exposing (Msg(..))
@@ -26,59 +25,25 @@ init mode roomID =
 
 
 update : Flags -> Msg -> Model -> ( Model, Cmd Msg )
-update { hostname } msg ({ game, settings, mode } as model) =
+update ({ hostname } as flags) msg ({ game, settings, mode } as model) =
     case msg of
         Receive str ->
-            receive model str
+            receive model str flags
 
         DragMsg dragMsg ->
             ( model, Cmd.none )
 
-        DrawCard ->
-            ( model, turnOnly model (send hostname "draw:") )
-
-        EndTurn ->
-            ( model
-            , turnOnly model
-                (Cmd.batch
-                    [ send hostname "end:"
-                    , playSound "/sfx/endTurn.wav"
-                    ]
-                )
-            )
-
-        PlayCard index ->
-            let
-                ( newGame1, cmd1 ) =
-                    GameState.update (GameState.HoverSelf Nothing) game
-
-                ( newGame2, cmd2 ) =
-                    GameState.update (GameState.Shake 1.0) newGame1
-            in
-                ( { model | game = newGame2 }
-                , turnOnly model
-                    (Cmd.batch
-                        [ send hostname ("play:" ++ (toString index))
-                        , playSound "/sfx/playCard.wav"
-                        , cmd1
-                        , cmd2
-                        ]
-                    )
-                )
-
         GameStateMsg gameMsg ->
             let
                 ( newGame, cmd ) =
-                    GameState.update gameMsg game
+                    GameState.update gameMsg game flags
             in
                 ( { model | game = newGame }, cmd )
 
         SettingsMsg settingsMsg ->
-            let
-                newsettings =
-                    Settings.update settingsMsg settings
-            in
-                ( { model | settings = newsettings }, Cmd.none )
+            ( { model | settings = Settings.update settingsMsg settings }
+            , Cmd.none
+            )
 
         Rematch ->
             case model.game of
@@ -102,6 +67,7 @@ update { hostname } msg ({ game, settings, mode } as model) =
                     GameState.update
                         (GameState.HoverSelf mIndex)
                         model.game
+                        flags
             in
                 ( { model | game = newGame }
                 , Cmd.batch
@@ -120,11 +86,11 @@ update { hostname } msg ({ game, settings, mode } as model) =
             ( model, playingOnly model <| message newMsg )
 
         Concede ->
-            let
-                newSettings =
-                    Settings.update Settings.CloseSettings settings
-            in
-                ( { model | settings = newSettings }, send hostname "concede:" )
+            ( { model
+                | settings = Settings.update Settings.CloseSettings settings
+              }
+            , send hostname "concede:"
+            )
 
         SetVolume volume ->
             let
@@ -159,34 +125,15 @@ playingOnly { mode } cmdMsg =
             cmdMsg
 
 
-turnOnly : Model -> Cmd Msg -> Cmd Msg
-turnOnly { mode, game } cmdMsg =
-    case mode of
-        Spectating ->
-            Cmd.none
-
-        Playing ->
-            case game of
-                PlayingGame ( model, vm ) res ->
-                    case model.turn of
-                        PlayerA ->
-                            cmdMsg
-
-                        PlayerB ->
-                            Cmd.none
-
-                otherwise ->
-                    Cmd.none
-
-
-receive : Model -> String -> ( Model, Cmd Msg )
-receive model msg =
+receive : Model -> String -> Flags -> ( Model, Cmd Msg )
+receive model msg flags =
     if (startsWith "sync:" msg) then
         let
             ( newGame, cmd ) =
                 GameState.update
                     (GameState.Sync <| dropLeft (length "sync:") msg)
                     model.game
+                    flags
         in
             ( { model | game = newGame }, cmd )
     else if (startsWith "hover:" msg) then
@@ -197,6 +144,7 @@ receive model msg =
                         GameState.update
                             (GameState.HoverOutcome hoverOutcome)
                             model.game
+                            flags
                 in
                     ( { model | game = newGame }
                     , Cmd.batch
@@ -215,6 +163,7 @@ receive model msg =
                 GameState.update
                     (GameState.ResolveOutcome <| dropLeft (length "res:") msg)
                     model.game
+                    flags
         in
             ( { model | game = newGame }, cmd )
     else if (startsWith "syncPlayers:" msg) then
@@ -234,7 +183,7 @@ receive model msg =
     else if (startsWith "playCard:" msg) then
         let
             ( newGame, _ ) =
-                GameState.update (GameState.Shake 1.0) model.game
+                GameState.update (GameState.Shake 1.0) model.game flags
         in
             ( { model | game = newGame }, playSound "/sfx/playCard.wav" )
     else if (startsWith "end:" msg) then

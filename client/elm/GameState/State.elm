@@ -1,19 +1,21 @@
 module GameState.State exposing (activeAnim, resTick, update, tick, tickZero, gameTickStart)
 
+import Audio exposing (playSound)
 import Card.Types exposing (Anim)
 import CharacterSelect.State as CharacterSelect
 import GameState.Decoders exposing (decodeState, resDecoder)
-import GameState.Messages exposing (Msg(..))
+import GameState.Messages exposing (..)
 import GameState.Types exposing (GameState(..))
 import Json.Decode as Json exposing (field, maybe)
 import Main.Messages as Main
+import Main.Types exposing (Flags)
 import Model.Types exposing (..)
 import ViewModel.State as ViewModel
-import Util exposing (fromJust, message, safeTail)
+import Util exposing (fromJust, message, safeTail, send)
 
 
-update : Msg -> GameState -> ( GameState, Cmd Main.Msg )
-update msg state =
+update : Msg -> GameState -> Flags -> ( GameState, Cmd Main.Msg )
+update msg state flags =
     case msg of
         Sync str ->
             let
@@ -102,8 +104,53 @@ update msg state =
                 PlayingGame ( m, vm ) r ->
                     ( PlayingGame ( m, { vm | shake = mag } ) r, Cmd.none )
 
-                s ->
-                    ( s, Cmd.none )
+                otherwise ->
+                    ( state, Cmd.none )
+
+        TurnAction action ->
+            let
+                myTurn : GameState -> Bool
+                myTurn s =
+                    case s of
+                        PlayingGame ( m, _ ) _ ->
+                            m.turn == PlayerA
+
+                        otherwise ->
+                            False
+            in
+                if myTurn state then
+                    updateTurn action state flags
+                else
+                    ( state, Cmd.none )
+
+
+updateTurn : TurnAction -> GameState -> Flags -> ( GameState, Cmd Main.Msg )
+updateTurn action state ({ hostname } as flags) =
+    case action of
+        EndTurn ->
+            ( state
+            , Cmd.batch
+                [ send hostname "end:"
+                , playSound "/sfx/endTurn.wav"
+                ]
+            )
+
+        PlayCard index ->
+            let
+                ( newState1, cmd1 ) =
+                    update (HoverSelf Nothing) state flags
+
+                ( newState2, cmd2 ) =
+                    update (Shake 1.0) newState1 flags
+            in
+                ( newState2
+                , Cmd.batch
+                    [ send hostname ("play:" ++ (toString index))
+                    , playSound "/sfx/playCard.wav"
+                    , cmd1
+                    , cmd2
+                    ]
+                )
 
 
 setRes : GameState -> List Model -> GameState
