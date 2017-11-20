@@ -45,36 +45,6 @@ update ({ hostname } as flags) msg ({ game, settings, mode } as model) =
             , Cmd.none
             )
 
-        HoverCard mIndex ->
-            let
-                index =
-                    case mIndex of
-                        Just x ->
-                            toString x
-
-                        Nothing ->
-                            "null"
-
-                ( newGame, cmd ) =
-                    GameState.update
-                        (GameState.HoverSelf mIndex)
-                        model.game
-                        mode
-                        flags
-            in
-                ( { model | game = newGame }
-                , Cmd.batch
-                    [ cmd
-                    , playingOnly model <| message <| Send <| "hover:" ++ index
-                    , case mIndex of
-                        Nothing ->
-                            Cmd.none
-
-                        otherwise ->
-                            playSound "/sfx/hover.wav"
-                    ]
-                )
-
         PlayingOnly newMsg ->
             ( model, playingOnly model <| message newMsg )
 

@@ -55,8 +55,15 @@ viewHand hand hoverIndex resolving =
                                         GameState.PlayCard index
                         ]
             in
-                [ onMouseEnter <| HoverCard <| Just index
-                , onMouseLeave <| HoverCard Nothing
+                [ onMouseEnter <|
+                    GameStateMsg <|
+                        GameState.PlayingOnly <|
+                            GameState.HoverCard <|
+                                Just index
+                , onMouseLeave <|
+                    GameStateMsg <|
+                        GameState.PlayingOnly <|
+                            GameState.HoverCard Nothing
                 ]
                     ++ clickActions
 
@@ -145,8 +152,7 @@ viewOtherHand cardCountInt hoverIndex =
             div [ containerClass index hoverIndex ]
                 [ div
                     [ class "card other-card"
-
-                    -- , style [ ( "transform", "rotateZ(" ++ toString (calcRot index) ++ "deg) translateY(" ++ toString (calcTrans index) ++ "px)" ) ]
+                      -- , style [ ( "transform", "rotateZ(" ++ toString (calcRot index) ++ "deg) translateY(" ++ toString (calcTrans index) ++ "px)" ) ]
                     , style
                         [ ( "transform"
                           , "translate("

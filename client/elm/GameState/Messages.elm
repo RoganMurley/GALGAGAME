@@ -16,6 +16,7 @@ type Msg
 type PlayingOnly
     = Rematch
     | TurnOnly TurnOnly
+    | HoverCard (Maybe Int)
 
 
 type TurnOnly
