@@ -1,6 +1,6 @@
-module Connected.Decoders exposing (decodePlayers)
+module Connected.Decoders exposing (decodeHoverOutcome, decodePlayers)
 
-import Json.Decode as Json exposing (Decoder, index, maybe, string)
+import Json.Decode as Json exposing (Decoder, index, int, maybe, string)
 
 
 decodePlayers : String -> Result String ( Maybe String, Maybe String )
@@ -11,3 +11,8 @@ decodePlayers msg =
 playersDecoder : Decoder ( Maybe String, Maybe String )
 playersDecoder =
     Json.map2 (,) (index 0 (maybe string)) (index 1 (maybe string))
+
+
+decodeHoverOutcome : String -> Result String (Maybe Int)
+decodeHoverOutcome msg =
+    Json.decodeString (maybe int) msg

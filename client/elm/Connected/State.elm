@@ -2,7 +2,7 @@ module Connected.State exposing (init, update, tick)
 
 import Audio exposing (playSound, setVolume)
 import Connected.Types exposing (..)
-import Connected.Decoders exposing (decodePlayers)
+import Connected.Decoders exposing (decodeHoverOutcome, decodePlayers)
 import GameState.Messages as GameState
 import GameState.State as GameState
 import GameState.Types exposing (..)
@@ -189,7 +189,7 @@ receive model msg =
         in
             ( { model | game = newGame }, cmd )
     else if (startsWith "hover:" msg) then
-        case parseHoverOutcome <| dropLeft (length "hover:") msg of
+        case decodeHoverOutcome <| dropLeft (length "hover:") msg of
             Ok hoverOutcome ->
                 let
                     ( newGame, cmd ) =
@@ -242,13 +242,3 @@ receive model msg =
         Debug.log
             ("Error decoding message from server: " ++ msg)
             ( model, Cmd.none )
-
-
-parseHoverOutcome : String -> Result String (Maybe Int)
-parseHoverOutcome msg =
-    case msg of
-        "null" ->
-            Ok Nothing
-
-        otherwise ->
-            Result.map Just <| String.toInt msg
