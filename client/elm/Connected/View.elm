@@ -7,7 +7,6 @@ import GameState.View as GameState
 import Main.Messages exposing (Msg(..))
 import Main.Types exposing (Flags)
 import Settings.View as Settings
-import Raymarch.Types as Raymarch
 
 
 view : Model -> Flags -> Html Msg

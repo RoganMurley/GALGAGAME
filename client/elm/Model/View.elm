@@ -6,6 +6,7 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Main.Messages exposing (Msg(..))
+import GameState.Messages as GameState
 import Model.Types exposing (..)
 import Model.State exposing (maxHandLength)
 import ViewModel.Types exposing (ViewModel)
@@ -47,7 +48,10 @@ viewHand hand hoverIndex resolving =
                     if resolving then
                         []
                     else
-                        [ onClick <| PlayCard index
+                        [ onClick <|
+                            GameStateMsg <|
+                                GameState.TurnAction <|
+                                    GameState.PlayCard index
                         ]
             in
                 [ onMouseEnter <| HoverCard <| Just index
@@ -140,7 +144,8 @@ viewOtherHand cardCountInt hoverIndex =
             div [ containerClass index hoverIndex ]
                 [ div
                     [ class "card other-card"
-                      -- , style [ ( "transform", "rotateZ(" ++ toString (calcRot index) ++ "deg) translateY(" ++ toString (calcTrans index) ++ "px)" ) ]
+
+                    -- , style [ ( "transform", "rotateZ(" ++ toString (calcRot index) ++ "deg) translateY(" ++ toString (calcTrans index) ++ "px)" ) ]
                     , style
                         [ ( "transform"
                           , "translate("
@@ -211,7 +216,11 @@ viewTurn handFull turn =
             case handFull of
                 False ->
                     button
-                        [ class "turn-indi pass-button", onClick EndTurn ]
+                        [ class "turn-indi pass-button"
+                        , onClick <|
+                            GameStateMsg <|
+                                GameState.TurnAction GameState.EndTurn
+                        ]
                         [ text "Pass" ]
 
                 True ->
