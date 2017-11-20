@@ -5,6 +5,7 @@ import Card.Types exposing (Anim)
 import CharacterSelect.State as CharacterSelect
 import Connected.Types exposing (Mode(..))
 import GameState.Decoders exposing (decodeState, resDecoder)
+import GameState.Encoders exposing (encodeHoverIndex)
 import GameState.Messages exposing (..)
 import GameState.Types exposing (GameState(..))
 import Json.Decode as Json exposing (field, maybe)
@@ -137,14 +138,6 @@ updatePlayingOnly msg state mode ({ hostname } as flags) =
 
                 HoverCard mIndex ->
                     let
-                        index =
-                            case mIndex of
-                                Just x ->
-                                    toString x
-
-                                Nothing ->
-                                    "null"
-
                         ( newState, cmd ) =
                             update (HoverSelf mIndex) state mode flags
 
@@ -159,7 +152,10 @@ updatePlayingOnly msg state mode ({ hostname } as flags) =
                         ( newState
                         , Cmd.batch
                             [ cmd
-                            , message <| Main.Send <| "hover:" ++ index
+                            , message <|
+                                Main.Send <|
+                                    "hover:"
+                                        ++ (encodeHoverIndex mIndex)
                             , sound
                             ]
                         )
