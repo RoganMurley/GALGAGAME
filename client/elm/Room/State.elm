@@ -6,9 +6,8 @@ import Lobby.State as Lobby
 import Lobby.Types as Lobby
 import Main.Messages as Main
 import Main.Types exposing (Flags)
-import Menu.Messages as Menu
-import Navigation as Navigation exposing (newUrl)
-import Room.Generators exposing (generate)
+import Menu.State as Menu
+import Navigation exposing (newUrl)
 import Room.Types exposing (..)
 import Room.Messages exposing (..)
 
@@ -24,27 +23,7 @@ update model msg ({ hostname, seed } as flags) =
         MenuMsg menuMsg ->
             case model of
                 MainMenu ->
-                    let
-                        roomID : String
-                        roomID =
-                            generate Room.Generators.roomID seed
-                    in
-                        case menuMsg of
-                            Menu.Start gameType ->
-                                let
-                                    url : String
-                                    url =
-                                        case gameType of
-                                            Lobby.ComputerGame ->
-                                                "computer"
-
-                                            Lobby.CustomGame ->
-                                                "custom"
-
-                                            Lobby.QuickplayGame ->
-                                                "quickplay"
-                                in
-                                    ( model, newUrl <| "/play/" ++ url )
+                    ( model, Menu.update menuMsg flags )
 
                 otherwise ->
                     ( model, Cmd.none )
