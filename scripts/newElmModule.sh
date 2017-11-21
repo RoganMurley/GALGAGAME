@@ -5,7 +5,7 @@ set -e
 pushd client/elm
 mkdir $name
 
-cp Example/* $name
+cp .Example/* $name
 
 for file in $name/*
 do
