@@ -65,16 +65,6 @@ tick model dt =
     { model | game = GameState.tick model.game dt }
 
 
-playingOnly : Model -> Cmd Msg -> Cmd Msg
-playingOnly { mode } cmdMsg =
-    case mode of
-        Spectating ->
-            Cmd.none
-
-        Playing ->
-            cmdMsg
-
-
 receive : Model -> String -> Flags -> ( Model, Cmd Main.Msg )
 receive ({ mode } as model) msg flags =
     if (startsWith "sync:" msg) then
