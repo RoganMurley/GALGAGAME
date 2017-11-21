@@ -8,6 +8,7 @@ route : Parser (Route -> a) a
 route =
     oneOf
         [ map Play playRoute
+        , map Spec specRoute
         , map Lab labRoute
         , map Home top
         ]
@@ -23,6 +24,11 @@ playRoute =
                 , map QuickPlay (s "quickplay")
                 ]
             )
+
+
+specRoute : Parser (String -> a) a
+specRoute =
+    s "spec" </> string
 
 
 labRoute : Parser a a

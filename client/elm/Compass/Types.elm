@@ -4,6 +4,7 @@ module Compass.Types exposing (..)
 type Route
     = Home
     | Play PlayRoute
+    | Spec String
     | Lab
 
 
