@@ -1,9 +1,9 @@
 module CharacterSelect.State exposing (..)
 
-import Connected.Types exposing (Mode)
 import CharacterSelect.Types exposing (Model)
 import CharacterSelect.Messages exposing (Msg(..))
 import Main.Messages as Main
+import Mode exposing (Mode)
 import Util
 
 

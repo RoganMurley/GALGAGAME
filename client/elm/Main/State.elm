@@ -3,12 +3,12 @@ module Main.State exposing (..)
 import Compass.State as Compass
 import Compass.Types as Compass
 import Connected.State as Connected
-import Connected.Types exposing (Mode(..))
 import WebSocket
 import Lab.State as Lab
 import Lobby.State as Lobby
 import Lobby.Types as Lobby
 import Main.Messages exposing (Msg(..))
+import Mode exposing (Mode(..))
 import Navigation
 import Room.State as Room
 import Room.Types as Room

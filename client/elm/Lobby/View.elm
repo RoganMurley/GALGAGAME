@@ -1,11 +1,11 @@
 module Lobby.View exposing (view)
 
-import Connected.Types exposing (Mode(..))
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Lobby.Messages exposing (Msg(..))
 import Lobby.Types exposing (..)
+import Mode exposing (Mode(..))
 import Raymarch.Types as Raymarch
 import Raymarch.View as Raymarch
 

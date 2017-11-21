@@ -3,7 +3,6 @@ module GameState.State exposing (activeAnim, resTick, update, tick, tickZero, ga
 import Audio exposing (playSound)
 import Card.Types exposing (Anim)
 import CharacterSelect.State as CharacterSelect
-import Connected.Types exposing (Mode(..))
 import Connected.Messages as Connected
 import GameState.Decoders exposing (decodeState, resDecoder)
 import GameState.Encoders exposing (encodeHoverIndex)
@@ -12,6 +11,7 @@ import GameState.Types exposing (GameState(..))
 import Json.Decode as Json exposing (field, maybe)
 import Main.Messages as Main
 import Main.Types exposing (Flags)
+import Mode exposing (Mode(..))
 import Model.Types exposing (..)
 import Room.Messages as Room
 import ViewModel.State as ViewModel
