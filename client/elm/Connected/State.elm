@@ -11,6 +11,7 @@ import Settings.State as Settings
 import Settings.Messages as Settings
 import Main.Messages as Main
 import Main.Types exposing (Flags)
+import Mode exposing (Mode(..))
 import String exposing (dropLeft, length, startsWith)
 import Util exposing (message, send)
 

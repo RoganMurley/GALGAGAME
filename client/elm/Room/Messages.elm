@@ -1,10 +1,10 @@
 module Room.Messages exposing (Msg(..))
 
 import Connected.Messages as Connected
-import Connected.Types exposing (Mode)
 import Lab.Messages as Lab
 import Lobby.Messages as Lobby
 import Menu.Messages as Menu
+import Mode exposing (Mode)
 
 
 type Msg

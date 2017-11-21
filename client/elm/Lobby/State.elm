@@ -3,8 +3,7 @@ module Lobby.State exposing (..)
 import Lobby.Messages exposing (Msg(..))
 import Lobby.Types exposing (GameType(..), Model)
 import Main.Messages as Main
-import Connected.Types exposing (Mode(..))
-import Lobby.Messages as Lobby
+import Mode exposing (Mode(..))
 import Room.Messages as Room
 import String exposing (dropLeft, length, startsWith)
 import Util exposing (message)
@@ -65,7 +64,7 @@ receive msg =
         message <|
             Main.RoomMsg <|
                 Room.LobbyMsg <|
-                    Lobby.JoinRoomErr <|
+                    JoinRoomErr <|
                         dropLeft (length "error:") msg
     else
         -- Defer other messages.

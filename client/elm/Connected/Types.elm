@@ -1,6 +1,7 @@
 module Connected.Types exposing (..)
 
 import GameState.Types as GameState exposing (GameState)
+import Mode exposing (Mode)
 import Settings.Types as Settings
 
 
@@ -11,8 +12,3 @@ type alias Model =
     , roomID : String
     , players : ( Maybe String, Maybe String )
     }
-
-
-type Mode
-    = Spectating
-    | Playing
