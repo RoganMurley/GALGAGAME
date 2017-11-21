@@ -12,13 +12,13 @@ import Settings.View as Settings
 view : Model -> Flags -> Html Msg
 view { game, settings, roomID, players } flags =
     div []
-        [ Settings.view settings
+        [ Html.map RoomMsg <| Settings.view settings
         , playersView players
         , GameState.view game roomID flags
         ]
 
 
-playersView : ( Maybe String, Maybe String ) -> Html msg
+playersView : ( Maybe String, Maybe String ) -> Html Msg
 playersView ( pa, pb ) =
     let
         playerView : Maybe String -> Bool -> Html msg

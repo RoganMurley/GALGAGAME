@@ -1,14 +1,15 @@
-module Connected.State exposing (init, update, tick)
+module Connected.State exposing (init, update, receive, tick)
 
 import Audio exposing (playSound, setVolume)
 import Connected.Types exposing (..)
 import Connected.Decoders exposing (decodeHoverOutcome, decodePlayers)
+import Connected.Messages exposing (..)
 import GameState.Messages as GameState
 import GameState.State as GameState
 import GameState.Types exposing (..)
 import Settings.State as Settings
 import Settings.Messages as Settings
-import Main.Messages exposing (Msg(..))
+import Main.Messages as Main
 import Main.Types exposing (Flags)
 import String exposing (dropLeft, length, startsWith)
 import Util exposing (message, send)
@@ -24,15 +25,9 @@ init mode roomID =
     }
 
 
-update : Flags -> Msg -> Model -> ( Model, Cmd Msg )
+update : Flags -> Msg -> Model -> ( Model, Cmd Main.Msg )
 update ({ hostname } as flags) msg ({ game, settings, mode } as model) =
     case msg of
-        Receive str ->
-            receive model str mode flags
-
-        DragMsg dragMsg ->
-            ( model, Cmd.none )
-
         GameStateMsg gameMsg ->
             let
                 ( newGame, cmd ) =
@@ -45,9 +40,6 @@ update ({ hostname } as flags) msg ({ game, settings, mode } as model) =
             , Cmd.none
             )
 
-        PlayingOnly newMsg ->
-            ( model, playingOnly model <| message newMsg )
-
         Concede ->
             ( { model
                 | settings = Settings.update Settings.CloseSettings settings
@@ -59,18 +51,13 @@ update ({ hostname } as flags) msg ({ game, settings, mode } as model) =
             let
                 newVolume =
                     clamp 0 100 volume
-
-                newSettings =
-                    { settings | volume = newVolume }
             in
-                ( { model | settings = newSettings }
+                ( { model
+                    | settings =
+                        { settings | volume = newVolume }
+                  }
                 , setVolume newVolume
                 )
-
-        otherwise ->
-            Debug.log
-                ("Unexpected action while connected ;_;")
-                ( model, Cmd.none )
 
 
 tick : Model -> Float -> Model
@@ -88,8 +75,8 @@ playingOnly { mode } cmdMsg =
             cmdMsg
 
 
-receive : Model -> String -> Mode -> Flags -> ( Model, Cmd Msg )
-receive model msg mode flags =
+receive : Model -> String -> Flags -> ( Model, Cmd Main.Msg )
+receive ({ mode } as model) msg flags =
     if (startsWith "sync:" msg) then
         let
             ( newGame, cmd ) =
