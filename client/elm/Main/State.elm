@@ -2,6 +2,8 @@ module Main.State exposing (..)
 
 import Compass.State as Compass
 import Compass.Types as Compass
+import Connected.State as Connected
+import Connected.Types exposing (Mode(..))
 import WebSocket
 import Lab.State as Lab
 import Lobby.State as Lobby
@@ -149,6 +151,13 @@ locationUpdate model location =
                                                 randomRoomID
                                                 Lobby.QuickplayGame
                                 }
+
+                Compass.Spec roomID ->
+                    { model
+                        | room =
+                            Room.Connected <|
+                                Connected.init Spectating roomID
+                    }
 
         Nothing ->
             { model | room = Room.init }
