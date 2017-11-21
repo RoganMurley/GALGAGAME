@@ -9,18 +9,19 @@ import String exposing (dropLeft, length, startsWith)
 import Util exposing (message)
 
 
-init : String -> GameType -> Model
-init roomID gameType =
+init : String -> GameType -> Mode -> Model
+init roomID gameType mode =
     { roomID = roomID
     , error = ""
     , gameType = gameType
+    , mode = mode
     }
 
 
 update : Model -> Msg -> ( Model, Cmd Main.Msg )
-update ({ error, gameType } as model) msg =
+update ({ error, gameType, mode } as model) msg =
     case msg of
-        JoinRoom mode ->
+        JoinRoom ->
             let
                 prefix : String
                 prefix =

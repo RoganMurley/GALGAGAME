@@ -2,7 +2,6 @@ module Main.State exposing (..)
 
 import Compass.State as Compass
 import Compass.Types as Compass
-import Connected.State as Connected
 import WebSocket
 import Lab.State as Lab
 import Lobby.State as Lobby
@@ -111,6 +110,7 @@ locationUpdate model location =
                                             Lobby.init
                                                 randomRoomID
                                                 Lobby.ComputerGame
+                                                Playing
                                 }
 
                             Compass.CustomPlay mRoomID ->
@@ -132,6 +132,7 @@ locationUpdate model location =
                                                     Lobby.init
                                                         roomID
                                                         Lobby.CustomGame
+                                                        Playing
                                         }
                                 in
                                     case model.room of
@@ -150,13 +151,17 @@ locationUpdate model location =
                                             Lobby.init
                                                 randomRoomID
                                                 Lobby.QuickplayGame
+                                                Playing
                                 }
 
                 Compass.Spec roomID ->
                     { model
                         | room =
-                            Room.Connected <|
-                                Connected.init Spectating roomID
+                            Room.Lobby <|
+                                Lobby.init
+                                    roomID
+                                    Lobby.ComputerGame
+                                    Spectating
                     }
 
         Nothing ->

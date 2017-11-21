@@ -5,7 +5,6 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Lobby.Messages exposing (Msg(..))
 import Lobby.Types exposing (..)
-import Mode exposing (Mode(..))
 import Raymarch.Types as Raymarch
 import Raymarch.View as Raymarch
 
@@ -18,12 +17,12 @@ view params { error, gameType } =
             , div []
                 [ div [ class "input-group" ]
                     [ button
-                        [ onClick <| JoinRoom Playing
+                        [ onClick <| JoinRoom
                         ]
                         [ text "Login & Play" ]
                     , div [ class "vertical-rule" ] []
                     , button
-                        [ onClick <| JoinRoom Playing
+                        [ onClick <| JoinRoom
                         ]
                         [ text "Play as Guest" ]
                     ]

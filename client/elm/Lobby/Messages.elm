@@ -4,5 +4,5 @@ import Mode exposing (Mode)
 
 
 type Msg
-    = JoinRoom Mode
+    = JoinRoom
     | JoinRoomErr String
