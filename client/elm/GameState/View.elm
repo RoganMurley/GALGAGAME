@@ -4,19 +4,21 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import CharacterSelect.View as CharacterSelect
-import GameState.Messages as GameState
+import Connected.Messages as Connected
+import GameState.Messages exposing (..)
 import GameState.State exposing (activeAnim)
 import GameState.Types exposing (GameState(..), WaitType(..))
-import Main.Messages exposing (Msg(..))
+import Main.Messages as Main
 import Main.Types exposing (Flags)
 import Model.Types exposing (..)
 import Model.View as Model exposing (view, resView)
 import Raymarch.Types as Raymarch
 import Raymarch.View as Raymarch
+import Room.Messages as Room
 import Animation.View as Animation
 
 
-view : GameState -> String -> Flags -> Html Msg
+view : GameState -> String -> Flags -> Html Main.Msg
 view state roomID { hostname, httpPort, time, dimensions } =
     let
         params =
@@ -30,7 +32,13 @@ view state roomID { hostname, httpPort, time, dimensions } =
                     ]
 
             Selecting model ->
-                Html.map (GameStateMsg << GameState.SelectingMsg) <|
+                Html.map
+                    (Main.RoomMsg
+                        << Room.ConnectedMsg
+                        << Connected.GameStateMsg
+                        << SelectingMsg
+                    )
+                <|
                     CharacterSelect.view params model
 
             PlayingGame ( m, vm ) ( res, resTime ) ->
@@ -77,9 +85,11 @@ view state roomID { hostname, httpPort, time, dimensions } =
                                         , button
                                             [ class "rematch"
                                             , onClick <|
-                                                GameStateMsg <|
-                                                    GameState.PlayingOnly <|
-                                                        GameState.Rematch
+                                                Main.RoomMsg <|
+                                                    Room.ConnectedMsg <|
+                                                        Connected.GameStateMsg <|
+                                                            PlayingOnly <|
+                                                                Rematch
                                             ]
                                             [ text "Rematch" ]
                                         ]
@@ -89,7 +99,7 @@ view state roomID { hostname, httpPort, time, dimensions } =
                                 ]
 
 
-waitingView : WaitType -> String -> String -> String -> Html Msg
+waitingView : WaitType -> String -> String -> String -> Html Main.Msg
 waitingView waitType httpPort hostname roomID =
     let
         portProtocol =
@@ -112,7 +122,7 @@ waitingView waitType httpPort hostname roomID =
                 WaitQuickplay ->
                     "Searching for opponent"
 
-        waitingInfo : Html Msg
+        waitingInfo : Html Main.Msg
         waitingInfo =
             case waitType of
                 WaitCustom ->
@@ -122,11 +132,11 @@ waitingView waitType httpPort hostname roomID =
                             , type_ "text"
                             , readonly True
                             , id myID
-                            , onClick <| SelectAllInput myID
+                            , onClick <| Main.SelectAllInput myID
                             ]
                             []
                         , button
-                            [ onClick <| CopyInput myID ]
+                            [ onClick <| Main.CopyInput myID ]
                             [ text "copy" ]
                         ]
 

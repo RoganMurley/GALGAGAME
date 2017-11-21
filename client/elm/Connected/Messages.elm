@@ -1,7 +1,11 @@
 module Connected.Messages exposing (Msg(..))
 
-import Connected.Types exposing (..)
+import GameState.Messages as GameState
+import Settings.Messages as Settings
 
 
 type Msg
-    = Msg
+    = Concede
+    | GameStateMsg GameState.Msg
+    | SetVolume Int
+    | SettingsMsg Settings.Msg

@@ -1,30 +1,15 @@
 module Main.Messages exposing (Msg(..))
 
-import Connected.Types exposing (Mode)
-import Drag.Messages as Drag
-import Settings.Messages as Settings
-import GameState.Messages as GameState
-import Lobby.Messages as Lobby
-import Lab.Messages as Lab
-import Menu.Messages as Menu
-import Navigation
+import Navigation exposing (Location)
+import Room.Messages as Room
 
 
 type Msg
-    = UrlChange Navigation.Location
-    | Send String
-    | Receive String
+    = CopyInput String
     | Frame Float
+    | Receive String
     | Resize Int Int
+    | RoomMsg Room.Msg
     | SelectAllInput String
-    | CopyInput String
-    | DragMsg Drag.Msg
-    | SettingsMsg Settings.Msg
-    | GameStateMsg GameState.Msg
-    | LobbyMsg Lobby.Msg
-    | MenuMsg Menu.Msg
-    | LabMsg Lab.Msg
-    | PlayingOnly Msg
-    | SetVolume Int
-    | Concede
-    | StartGame Mode
+    | Send String
+    | UrlChange Location

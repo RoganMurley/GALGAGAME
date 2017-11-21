@@ -1,13 +1,14 @@
 module CharacterSelect.State exposing (..)
 
+import Connected.Types exposing (Mode)
 import CharacterSelect.Types exposing (Model)
 import CharacterSelect.Messages exposing (Msg(..))
 import Main.Messages as Main
 import Util
 
 
-update : Msg -> Model -> ( Model, Cmd Main.Msg )
-update msg model =
+update : Msg -> Model -> Mode -> ( Model, Cmd Main.Msg )
+update msg model mode =
     case msg of
         Hover character ->
             ( { model | hover = character }, Cmd.none )
@@ -17,9 +18,8 @@ update msg model =
                 cmd : Cmd Main.Msg
                 cmd =
                     Util.message <|
-                        Main.PlayingOnly <|
-                            Main.Send <|
-                                "selectCharacter:"
-                                    ++ name
+                        Main.Send <|
+                            "selectCharacter:"
+                                ++ name
             in
                 ( model, cmd )

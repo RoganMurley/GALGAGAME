@@ -2,9 +2,7 @@ module Main.State exposing (..)
 
 import Compass.State as Compass
 import Compass.Types as Compass
-import Mouse
 import WebSocket
-import Drag.Messages as Drag
 import Lab.State as Lab
 import Lobby.State as Lobby
 import Lobby.Types as Lobby
@@ -38,8 +36,8 @@ update msg ({ room, flags } as model) =
             flags
     in
         case msg of
-            UrlChange l ->
-                ( locationUpdate model l, Cmd.none )
+            CopyInput elementId ->
+                ( model, copyInput elementId )
 
             Frame dt ->
                 ( { model
@@ -65,18 +63,25 @@ update msg ({ room, flags } as model) =
             SelectAllInput elementId ->
                 ( model, selectAllInput elementId )
 
-            CopyInput elementId ->
-                ( model, copyInput elementId )
-
             Send str ->
                 ( model, send hostname str )
 
-            otherwise ->
+            Receive str ->
                 let
                     ( newRoom, cmd ) =
-                        Room.update room msg flags
+                        Room.receive str room flags
                 in
                     ( { model | room = newRoom }, cmd )
+
+            RoomMsg roomMsg ->
+                let
+                    ( newRoom, cmd ) =
+                        Room.update room roomMsg flags
+                in
+                    ( { model | room = newRoom }, cmd )
+
+            UrlChange l ->
+                ( locationUpdate model l, Cmd.none )
 
 
 locationUpdate : Main.Model -> Navigation.Location -> Main.Model
@@ -157,8 +162,6 @@ subscriptions model =
     in
         Sub.batch
             [ WebSocket.listen websocketAddress Receive
-            , Mouse.moves <| DragMsg << Drag.At
-            , Mouse.ups <| DragMsg << Drag.End
             , AnimationFrame.diffs Frame
             , Window.resizes (\{ width, height } -> Resize width height)
             ]

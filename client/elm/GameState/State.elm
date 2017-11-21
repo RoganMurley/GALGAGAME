@@ -4,6 +4,7 @@ import Audio exposing (playSound)
 import Card.Types exposing (Anim)
 import CharacterSelect.State as CharacterSelect
 import Connected.Types exposing (Mode(..))
+import Connected.Messages as Connected
 import GameState.Decoders exposing (decodeState, resDecoder)
 import GameState.Encoders exposing (encodeHoverIndex)
 import GameState.Messages exposing (..)
@@ -12,6 +13,7 @@ import Json.Decode as Json exposing (field, maybe)
 import Main.Messages as Main
 import Main.Types exposing (Flags)
 import Model.Types exposing (..)
+import Room.Messages as Room
 import ViewModel.State as ViewModel
 import Util exposing (fromJust, message, safeTail, send)
 
@@ -33,7 +35,13 @@ update msg state mode flags =
                                 ( syncedState, Cmd.none )
 
                             otherwise ->
-                                ( state, message <| Main.GameStateMsg <| msg )
+                                ( state
+                                , message <|
+                                    Main.RoomMsg <|
+                                        Room.ConnectedMsg <|
+                                            Connected.GameStateMsg <|
+                                                msg
+                                )
 
                     otherwise ->
                         ( syncedState, Cmd.none )
@@ -92,7 +100,7 @@ update msg state mode flags =
                 Selecting m ->
                     let
                         ( newModel, cmd ) =
-                            CharacterSelect.update selectMsg m
+                            CharacterSelect.update selectMsg m mode
                     in
                         ( Selecting newModel, cmd )
 

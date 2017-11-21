@@ -2,10 +2,12 @@ module Model.View exposing (..)
 
 import Card.Types exposing (Card)
 import Card.View as Card
+import Connected.Messages as Connected
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Main.Messages exposing (Msg(..))
+import Room.Messages as Room
 import GameState.Messages as GameState
 import Model.Types exposing (..)
 import Model.State exposing (maxHandLength)
@@ -49,21 +51,27 @@ viewHand hand hoverIndex resolving =
                         []
                     else
                         [ onClick <|
-                            GameStateMsg <|
-                                GameState.PlayingOnly <|
-                                    GameState.TurnOnly <|
-                                        GameState.PlayCard index
+                            RoomMsg <|
+                                Room.ConnectedMsg <|
+                                    Connected.GameStateMsg <|
+                                        GameState.PlayingOnly <|
+                                            GameState.TurnOnly <|
+                                                GameState.PlayCard index
                         ]
             in
                 [ onMouseEnter <|
-                    GameStateMsg <|
-                        GameState.PlayingOnly <|
-                            GameState.HoverCard <|
-                                Just index
+                    RoomMsg <|
+                        Room.ConnectedMsg <|
+                            Connected.GameStateMsg <|
+                                GameState.PlayingOnly <|
+                                    GameState.HoverCard <|
+                                        Just index
                 , onMouseLeave <|
-                    GameStateMsg <|
-                        GameState.PlayingOnly <|
-                            GameState.HoverCard Nothing
+                    RoomMsg <|
+                        Room.ConnectedMsg <|
+                            Connected.GameStateMsg <|
+                                GameState.PlayingOnly <|
+                                    GameState.HoverCard Nothing
                 ]
                     ++ clickActions
 
@@ -225,10 +233,12 @@ viewTurn handFull turn =
                     button
                         [ class "turn-indi pass-button"
                         , onClick <|
-                            GameStateMsg <|
-                                GameState.PlayingOnly <|
-                                    GameState.TurnOnly <|
-                                        GameState.EndTurn
+                            RoomMsg <|
+                                Room.ConnectedMsg <|
+                                    Connected.GameStateMsg <|
+                                        GameState.PlayingOnly <|
+                                            GameState.TurnOnly <|
+                                                GameState.EndTurn
                         ]
                         [ text "Pass" ]
 
@@ -364,7 +374,7 @@ resView res resTime ( model, vm ) time =
             ]
 
 
-viewResTurn : Html Msg
+viewResTurn : Html msg
 viewResTurn =
     div
         [ class "turn-indi" ]
