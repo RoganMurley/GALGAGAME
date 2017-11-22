@@ -12,7 +12,7 @@ import Navigation
 import Room.State as Room
 import Room.Types as Room
 import Room.Generators exposing (generate)
-import Util exposing (message, send)
+import Util exposing (send)
 import Ports exposing (copyInput, selectAllInput)
 import AnimationFrame
 import Window

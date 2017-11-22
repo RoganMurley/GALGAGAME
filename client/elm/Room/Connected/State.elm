@@ -12,7 +12,7 @@ import Settings.Messages as Settings
 import Main.Messages as Main
 import Main.Types exposing (Flags)
 import Mode exposing (Mode(..))
-import Util exposing (message, send, splitOn)
+import Util exposing (send, splitOn)
 
 
 init : Mode -> String -> Model
