@@ -4,12 +4,11 @@ import Connected.Messages as Connected
 import Html exposing (..)
 import Html.Attributes as H exposing (..)
 import Html.Events exposing (onClick, onInput)
-import Room.Messages as Room
-import Settings.Messages exposing (Msg(..))
+import Settings.Messages as Settings
 import Settings.Types exposing (..)
 
 
-view : Model -> Html Room.Msg
+view : Model -> Html Connected.Msg
 view { modalState, volume } =
     let
         settingsStyle =
@@ -25,9 +24,8 @@ view { modalState, volume } =
                 [ class "settings-icon"
                 , src "/img/icon/settings.svg"
                 , onClick <|
-                    Room.ConnectedMsg <|
-                        Connected.SettingsMsg <|
-                            ToggleSettings
+                    Connected.SettingsMsg <|
+                        Settings.ToggleSettings
                 ]
                 []
             , div
@@ -49,18 +47,15 @@ view { modalState, volume } =
                                 , value <| toString volume
                                 , onInput
                                     (\v ->
-                                        Room.ConnectedMsg <|
-                                            Connected.SetVolume <|
-                                                Result.withDefault 0 (String.toInt v)
+                                        Connected.SetVolume <|
+                                            Result.withDefault 0 (String.toInt v)
                                     )
                                 ]
                                 []
                             ]
                         , button
                             [ class "settings-button"
-                            , onClick <|
-                                Room.ConnectedMsg <|
-                                    Connected.Concede
+                            , onClick Connected.Concede
                             ]
                             [ text "Concede" ]
                         ]
