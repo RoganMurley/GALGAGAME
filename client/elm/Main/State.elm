@@ -1,7 +1,7 @@
 module Main.State exposing (..)
 
-import Compass.State as Compass
-import Compass.Types as Compass
+import Routing.State as Routing
+import Routing.Types as Routing
 import WebSocket
 import Lab.State as Lab
 import Lobby.State as Lobby
@@ -87,23 +87,23 @@ update msg ({ room, flags } as model) =
 
 locationUpdate : Main.Model -> Navigation.Location -> Main.Model
 locationUpdate model location =
-    case parsePath Compass.route location of
+    case parsePath Routing.route location of
         Just route ->
             case route of
-                Compass.Home ->
+                Routing.Home ->
                     { model | room = Room.init }
 
-                Compass.Lab ->
+                Routing.Lab ->
                     { model | room = Room.Lab Lab.init }
 
-                Compass.Play playRoute ->
+                Routing.Play playRoute ->
                     let
                         randomRoomID : String
                         randomRoomID =
                             generate Room.Generators.roomID model.flags.seed
                     in
                         case playRoute of
-                            Compass.ComputerPlay ->
+                            Routing.ComputerPlay ->
                                 { model
                                     | room =
                                         Room.Lobby <|
@@ -113,7 +113,7 @@ locationUpdate model location =
                                                 Playing
                                 }
 
-                            Compass.CustomPlay mRoomID ->
+                            Routing.CustomPlay mRoomID ->
                                 let
                                     roomID : String
                                     roomID =
@@ -144,7 +144,7 @@ locationUpdate model location =
                                         otherwise ->
                                             lobbyModel
 
-                            Compass.QuickPlay ->
+                            Routing.QuickPlay ->
                                 { model
                                     | room =
                                         Room.Lobby <|
@@ -154,7 +154,7 @@ locationUpdate model location =
                                                 Playing
                                 }
 
-                Compass.Spec roomID ->
+                Routing.Spec roomID ->
                     { model
                         | room =
                             Room.Lobby <|

@@ -1,4 +1,4 @@
-module Compass.Types exposing (..)
+module Routing.Types exposing (..)
 
 
 type Route
