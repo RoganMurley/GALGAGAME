@@ -1,5 +1,6 @@
 module Util exposing (..)
 
+import Regex exposing (HowMany(AtMost), regex, split)
 import Task
 import WebSocket
 
@@ -27,3 +28,13 @@ safeTail l =
 send : String -> String -> Cmd msg
 send hostname =
     WebSocket.send <| "ws://" ++ hostname ++ ":9160"
+
+
+splitOn : String -> String -> ( String, String )
+splitOn sep str =
+    case split (AtMost 1) (regex sep) str of
+        [ x, xs ] ->
+            ( x, xs )
+
+        otherwise ->
+            ( "", str )
