@@ -1,6 +1,6 @@
 module CharacterSelect.Messages exposing (Msg(..))
 
-import CharacterSelect.Types exposing (Character)
+import CharacterSelect.Character exposing (Character)
 
 
 type Msg

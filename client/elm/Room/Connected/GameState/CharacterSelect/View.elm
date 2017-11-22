@@ -2,8 +2,9 @@ module CharacterSelect.View exposing (..)
 
 import Card.Types exposing (Card)
 import Card.View as Card
+import CharacterSelect.Character exposing (Character)
 import CharacterSelect.Messages exposing (..)
-import CharacterSelect.Types exposing (Character, Model)
+import CharacterSelect.Types exposing (Model)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
@@ -12,8 +13,11 @@ import Raymarch.View as Raymarch
 
 
 view : Raymarch.Params -> Model -> Html Msg
-view params { characters, selected, hover } =
+view params { characters, selected, vm } =
     let
+        { hover } =
+            vm
+
         characterView : Character -> Html Msg
         characterView ({ name, imgURL } as character) =
             div
@@ -26,7 +30,8 @@ view params { characters, selected, hover } =
                     class ""
                 ]
                 [ img [ src ("/img/" ++ imgURL), class "character-icon" ] []
-                  -- , div [ class "character-name" ] [ text name ]
+
+                -- , div [ class "character-name" ] [ text name ]
                 ]
 
         selectedView : List Character -> Html Msg
@@ -39,7 +44,8 @@ view params { characters, selected, hover } =
                         , onMouseEnter <| Hover character
                         ]
                         [ img [ src ("/img/" ++ imgURL), class "character-icon" ] []
-                          -- , div [ class "character-name" ] [ text name ]
+
+                        -- , div [ class "character-name" ] [ text name ]
                         ]
 
                 unchosen : List (Html Msg)

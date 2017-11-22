@@ -3,15 +3,18 @@ module CharacterSelect.State exposing (..)
 import CharacterSelect.Types exposing (Model)
 import CharacterSelect.Messages exposing (Msg(..))
 import Main.Messages as Main
-import Mode exposing (Mode)
 import Util
 
 
-update : Msg -> Model -> Mode -> ( Model, Cmd Main.Msg )
-update msg model mode =
+update : Msg -> Model -> ( Model, Cmd Main.Msg )
+update msg ({ vm } as model) =
     case msg of
         Hover character ->
-            ( { model | hover = character }, Cmd.none )
+            ( { model
+                | vm = { vm | hover = character }
+              }
+            , Cmd.none
+            )
 
         Select { name } ->
             let

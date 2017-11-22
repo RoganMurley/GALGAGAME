@@ -1,6 +1,12 @@
 module Model.ViewModel exposing (..)
 
 
+type alias ViewModel =
+    { hover : Maybe Int
+    , shake : Float
+    }
+
+
 init : ViewModel
 init =
     { hover = Nothing
@@ -19,9 +25,3 @@ shakeDecay vm =
                 vm.shake * 0.9
     in
         { vm | shake = newShake }
-
-
-type alias ViewModel =
-    { hover : Maybe Int
-    , shake : Float
-    }
