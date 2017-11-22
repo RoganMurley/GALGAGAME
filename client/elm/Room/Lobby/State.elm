@@ -79,3 +79,16 @@ receive msg =
                 message <|
                     Main.Receive <|
                         msg
+
+
+gameTypeToString : GameType -> String
+gameTypeToString gameType =
+    case gameType of
+        CustomGame ->
+            "Custom"
+
+        ComputerGame ->
+            "Computer"
+
+        QuickplayGame ->
+            "Quickplay"
