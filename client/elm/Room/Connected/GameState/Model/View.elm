@@ -11,7 +11,7 @@ import Room.Messages as Room
 import GameState.Messages as GameState
 import Model.Types exposing (..)
 import Model.State exposing (maxHandLength)
-import ViewModel.Types exposing (ViewModel)
+import Model.ViewModel exposing (..)
 
 
 cardWidth : Float
@@ -160,7 +160,8 @@ viewOtherHand cardCountInt hoverIndex =
             div [ containerClass index hoverIndex ]
                 [ div
                     [ class "card other-card"
-                      -- , style [ ( "transform", "rotateZ(" ++ toString (calcRot index) ++ "deg) translateY(" ++ toString (calcTrans index) ++ "px)" ) ]
+
+                    -- , style [ ( "transform", "rotateZ(" ++ toString (calcRot index) ++ "deg) translateY(" ++ toString (calcTrans index) ++ "px)" ) ]
                     , style
                         [ ( "transform"
                           , "translate("

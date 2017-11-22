@@ -2,7 +2,7 @@ module GameState.Types exposing (..)
 
 import CharacterSelect.Types as CharacterSelect
 import Model.Types exposing (Model, Res, WhichPlayer)
-import ViewModel.Types exposing (ViewModel)
+import Model.ViewModel exposing (ViewModel)
 
 
 type GameState

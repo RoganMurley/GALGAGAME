@@ -8,7 +8,7 @@ import GameState.Types exposing (GameState(..), WaitType(..))
 import Model.Decoders exposing (modelDecoder, whichDecoder)
 import Model.Types exposing (..)
 import Util exposing (fromJust)
-import ViewModel.State as ViewModel
+import Model.ViewModel
 
 
 decodeState : String -> GameState -> Result String GameState
@@ -83,14 +83,14 @@ selectingDecoder oldState =
 
 endedDecoder : Decoder GameState
 endedDecoder =
-    Json.map2 (\w m -> Ended w m ViewModel.init Nothing ( [], 0 ))
+    Json.map2 (\w m -> Ended w m Model.ViewModel.init Nothing ( [], 0 ))
         (field "winner" <| maybe whichDecoder)
         (field "final" <| modelDecoder)
 
 
 playingDecoder : Decoder GameState
 playingDecoder =
-    Json.map (\m -> PlayingGame ( m, ViewModel.init ) ( [], 0 ))
+    Json.map (\m -> PlayingGame ( m, Model.ViewModel.init ) ( [], 0 ))
         (field "playing" <| modelDecoder)
 
 
