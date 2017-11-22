@@ -65,7 +65,7 @@ update msg state mode flags =
         ResolveOutcome str ->
             let
                 ( final, resList ) =
-                    case Json.decodeString (resDecoder state) str of
+                    case Json.decodeString resDecoder str of
                         Ok result ->
                             result
 
@@ -100,7 +100,7 @@ update msg state mode flags =
                 Selecting m ->
                     let
                         ( newModel, cmd ) =
-                            CharacterSelect.update selectMsg m mode
+                            CharacterSelect.update selectMsg m
                     in
                         ( Selecting newModel, cmd )
 
@@ -235,7 +235,7 @@ setRes state res =
 
 syncState : GameState -> String -> GameState
 syncState oldState msg =
-    case (decodeState msg oldState) of
+    case decodeState msg of
         Ok newState ->
             carryVm oldState newState
 
@@ -256,6 +256,9 @@ carryVm old new =
             case new of
                 PlayingGame ( m, _ ) ( res, i ) ->
                     PlayingGame ( m, vm ) ( res, i )
+
+                Selecting ({ vm } as selecting) ->
+                    Selecting { selecting | vm = vm }
 
                 otherwise ->
                     new

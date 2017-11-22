@@ -14,16 +14,6 @@ message x =
     Task.perform identity (Task.succeed x)
 
 
-fromJust : Maybe a -> a
-fromJust x =
-    case x of
-        Just y ->
-            y
-
-        Nothing ->
-            Debug.crash "error: fromJust Nothing"
-
-
 safeTail : List a -> List a
 safeTail l =
     case List.tail l of

@@ -1,21 +1,11 @@
 module CharacterSelect.Types exposing (..)
 
-import Card.Types exposing (Card)
-
-
-type alias Name =
-    String
-
-
-type alias Character =
-    { name : Name
-    , imgURL : String
-    , cards : ( Card, Card, Card, Card )
-    }
+import CharacterSelect.Character exposing (Character)
+import CharacterSelect.ViewModel exposing (ViewModel)
 
 
 type alias Model =
     { characters : List Character
     , selected : List Character
-    , hover : Character
+    , vm : ViewModel
     }
