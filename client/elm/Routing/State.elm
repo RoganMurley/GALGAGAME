@@ -1,6 +1,6 @@
-module Compass.State exposing (..)
+module Routing.State exposing (..)
 
-import Compass.Types exposing (..)
+import Routing.Types exposing (..)
 import UrlParser exposing (Parser, (</>), s, int, string, top, map, oneOf)
 
 
