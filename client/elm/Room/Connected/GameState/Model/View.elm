@@ -6,9 +6,9 @@ import Connected.Messages as Connected
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import Main.Messages exposing (Msg(..))
+import Main.Messages as Main
 import Room.Messages as Room
-import GameState.Messages as GameState
+import GameState.Messages exposing (..)
 import Model.Types exposing (..)
 import Model.State exposing (maxHandLength)
 import Model.ViewModel exposing (..)
@@ -19,19 +19,29 @@ cardWidth =
     14.0
 
 
-view : Float -> ( Model, ViewModel ) -> Float -> Html Msg
+playingOnly : PlayingOnly -> Main.Msg
+playingOnly =
+    Main.RoomMsg
+        << Room.ConnectedMsg
+        << Connected.GameStateMsg
+        << PlayingOnly
+
+
+view : Float -> ( Model, ViewModel ) -> Float -> Html Main.Msg
 view resTime ( model, viewModel ) time =
     div [ class "game-container", style [ screenshakeStyle viewModel.shake time ] ]
         [ viewOtherHand model.otherHand model.otherHover
-        , viewHand model.hand viewModel.hover False
+        , Html.map playingOnly <|
+            viewHand model.hand viewModel.hover False
         , viewStack model.stack
-        , viewTurn (List.length model.hand == maxHandLength) model.turn
+        , Html.map playingOnly <|
+            viewTurn (List.length model.hand == maxHandLength) model.turn
         , viewStatus PlayerA model.life
         , viewStatus PlayerB model.otherLife
         ]
 
 
-viewHand : Hand -> HoverCardIndex -> Bool -> Html Msg
+viewHand : Hand -> HoverCardIndex -> Bool -> Html PlayingOnly
 viewHand hand hoverIndex resolving =
     let
         isHover : Int -> Bool
@@ -43,7 +53,7 @@ viewHand hand hoverIndex resolving =
                 Just x ->
                     index == x
 
-        mouseActions : Int -> List (Attribute Msg)
+        mouseActions : Int -> List (Attribute PlayingOnly)
         mouseActions index =
             let
                 clickActions =
@@ -51,27 +61,15 @@ viewHand hand hoverIndex resolving =
                         []
                     else
                         [ onClick <|
-                            RoomMsg <|
-                                Room.ConnectedMsg <|
-                                    Connected.GameStateMsg <|
-                                        GameState.PlayingOnly <|
-                                            GameState.TurnOnly <|
-                                                GameState.PlayCard index
+                            TurnOnly <|
+                                PlayCard index
                         ]
             in
                 [ onMouseEnter <|
-                    RoomMsg <|
-                        Room.ConnectedMsg <|
-                            Connected.GameStateMsg <|
-                                GameState.PlayingOnly <|
-                                    GameState.HoverCard <|
-                                        Just index
+                    HoverCard <|
+                        Just index
                 , onMouseLeave <|
-                    RoomMsg <|
-                        Room.ConnectedMsg <|
-                            Connected.GameStateMsg <|
-                                GameState.PlayingOnly <|
-                                    GameState.HoverCard Nothing
+                    HoverCard Nothing
                 ]
                     ++ clickActions
 
@@ -112,7 +110,7 @@ viewHand hand hoverIndex resolving =
             else
                 ""
 
-        cardView : ( Int, Card ) -> Html Msg
+        cardView : ( Int, Card ) -> Html PlayingOnly
         cardView ( index, { name, desc, imgURL } ) =
             div
                 [ class <| "my-card-container" ++ (conditionalClasses index)
@@ -148,20 +146,18 @@ viewHand hand hoverIndex resolving =
             (List.map cardView (List.indexedMap (,) hand))
 
 
-viewOtherHand : Int -> HoverCardIndex -> Html Msg
+viewOtherHand : Int -> HoverCardIndex -> Html msg
 viewOtherHand cardCountInt hoverIndex =
     let
         cardCount : Float
         cardCount =
             toFloat cardCountInt
 
-        cardView : Int -> Html Msg
+        cardView : Int -> Html msg
         cardView index =
             div [ containerClass index hoverIndex ]
                 [ div
                     [ class "card other-card"
-
-                    -- , style [ ( "transform", "rotateZ(" ++ toString (calcRot index) ++ "deg) translateY(" ++ toString (calcTrans index) ++ "px)" ) ]
                     , style
                         [ ( "transform"
                           , "translate("
@@ -190,7 +186,7 @@ viewOtherHand cardCountInt hoverIndex =
                 Nothing ->
                     class "other-card-container"
 
-        cards : List (Html Msg)
+        cards : List (Html msg)
         cards =
             List.map cardView (List.range 0 (cardCountInt - 1))
 
@@ -225,7 +221,7 @@ viewOtherHand cardCountInt hoverIndex =
         div [ class "hand other-hand" ] cards
 
 
-viewTurn : Bool -> WhichPlayer -> Html Msg
+viewTurn : Bool -> WhichPlayer -> Html PlayingOnly
 viewTurn handFull turn =
     case turn of
         PlayerA ->
@@ -234,12 +230,8 @@ viewTurn handFull turn =
                     button
                         [ class "turn-indi pass-button"
                         , onClick <|
-                            RoomMsg <|
-                                Room.ConnectedMsg <|
-                                    Connected.GameStateMsg <|
-                                        GameState.PlayingOnly <|
-                                            GameState.TurnOnly <|
-                                                GameState.EndTurn
+                            TurnOnly <|
+                                EndTurn
                         ]
                         [ text "Pass" ]
 
@@ -254,7 +246,7 @@ viewTurn handFull turn =
                 [ text "Opponent's Turn" ]
 
 
-viewStatus : WhichPlayer -> Life -> Html Msg
+viewStatus : WhichPlayer -> Life -> Html msg
 viewStatus which life =
     div
         [ classList
@@ -266,7 +258,7 @@ viewStatus which life =
         ]
 
 
-viewLife : Life -> Html Msg
+viewLife : Life -> Html msg
 viewLife life =
     let
         barWidth : Life -> String
@@ -283,10 +275,10 @@ viewLife life =
             ]
 
 
-viewStack : Stack -> Html Msg
+viewStack : Stack -> Html msg
 viewStack stack =
     let
-        viewStackCard : ( Int, StackCard ) -> Html Msg
+        viewStackCard : ( Int, StackCard ) -> Html msg
         viewStackCard ( index, { owner, card } ) =
             let
                 playerClass : String
@@ -354,7 +346,7 @@ viewStack stack =
 -- RESOLVING VIEW.
 
 
-resView : Res -> Float -> ( Model, ViewModel ) -> Float -> Html Msg
+resView : Res -> Float -> ( Model, ViewModel ) -> Float -> Html Main.Msg
 resView res resTime ( model, vm ) time =
     let
         nextLife : Res -> Life
@@ -367,7 +359,8 @@ resView res resTime ( model, vm ) time =
     in
         div [ class "game-container resolving", style [ screenshakeStyle vm.shake time ] ]
             [ viewOtherHand model.otherHand model.otherHover
-            , viewHand model.hand vm.hover True
+            , Html.map playingOnly <|
+                viewHand model.hand vm.hover True
             , viewStack model.stack
             , viewResTurn
             , viewStatus PlayerA (nextLife res)
