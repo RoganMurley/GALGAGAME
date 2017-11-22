@@ -6,13 +6,15 @@ import Connected.Types exposing (..)
 import GameState.View as GameState
 import Main.Messages exposing (Msg(..))
 import Main.Types exposing (Flags)
+import Room.Messages as Room
 import Settings.View as Settings
 
 
 view : Model -> Flags -> Html Msg
 view { game, settings, roomID, players } flags =
     div []
-        [ Html.map RoomMsg <| Settings.view settings
+        [ Html.map (RoomMsg << Room.ConnectedMsg) <|
+            Settings.view settings
         , playersView players
         , GameState.view game roomID flags
         ]
