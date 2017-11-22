@@ -1,6 +1,4 @@
-module ViewModel.State exposing (..)
-
-import ViewModel.Types exposing (ViewModel)
+module Model.ViewModel exposing (..)
 
 
 init : ViewModel
@@ -21,3 +19,9 @@ shakeDecay vm =
                 vm.shake * 0.9
     in
         { vm | shake = newShake }
+
+
+type alias ViewModel =
+    { hover : Maybe Int
+    , shake : Float
+    }

@@ -14,8 +14,8 @@ import Main.Types exposing (Flags)
 import Mode exposing (Mode(..))
 import Model.Types exposing (..)
 import Room.Messages as Room
-import ViewModel.State as ViewModel
-import Util exposing (fromJust, message, safeTail, send)
+import Model.ViewModel
+import Util exposing (message, safeTail, send)
 
 
 update : Msg -> GameState -> Mode -> Flags -> ( GameState, Cmd Main.Msg )
@@ -313,13 +313,13 @@ tick game dt =
             if tickZero tick then
                 resTick game
             else
-                PlayingGame ( m, (ViewModel.shakeDecay vm) ) ( res, tick + dt )
+                PlayingGame ( m, (Model.ViewModel.shakeDecay vm) ) ( res, tick + dt )
 
         Ended which final vm resModel ( res, tick ) ->
             if tickZero tick then
                 resTick game
             else
-                Ended which final (ViewModel.shakeDecay vm) resModel ( res, tick + dt )
+                Ended which final (Model.ViewModel.shakeDecay vm) resModel ( res, tick + dt )
 
         otherwise ->
             game
