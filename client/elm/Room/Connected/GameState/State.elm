@@ -252,13 +252,18 @@ syncState oldState msg =
 carryVm : GameState -> GameState -> GameState
 carryVm old new =
     case old of
+        Selecting { vm } ->
+            case new of
+                Selecting selecting ->
+                    Selecting { selecting | vm = vm }
+
+                otherwise ->
+                    new
+
         PlayingGame ( _, vm ) _ ->
             case new of
                 PlayingGame ( m, _ ) ( res, i ) ->
                     PlayingGame ( m, vm ) ( res, i )
-
-                Selecting ({ vm } as selecting) ->
-                    Selecting { selecting | vm = vm }
 
                 otherwise ->
                     new
