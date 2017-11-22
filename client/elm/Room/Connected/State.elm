@@ -12,8 +12,7 @@ import Settings.Messages as Settings
 import Main.Messages as Main
 import Main.Types exposing (Flags)
 import Mode exposing (Mode(..))
-import String exposing (dropLeft, length, startsWith)
-import Util exposing (message, send)
+import Util exposing (message, send, splitOn)
 
 
 init : Mode -> String -> Model
@@ -68,71 +67,82 @@ tick model dt =
 
 receive : Model -> String -> Flags -> ( Model, Cmd Main.Msg )
 receive ({ mode } as model) msg flags =
-    if (startsWith "sync:" msg) then
-        let
-            ( newGame, cmd ) =
-                GameState.update
-                    (GameState.Sync <| dropLeft (length "sync:") msg)
-                    model.game
-                    mode
-                    flags
-        in
-            ( { model | game = newGame }, cmd )
-    else if (startsWith "hover:" msg) then
-        case decodeHoverOutcome <| dropLeft (length "hover:") msg of
-            Ok hoverOutcome ->
+    let
+        ( command, content ) =
+            splitOn ":" msg
+    in
+        case command of
+            "sync" ->
                 let
                     ( newGame, cmd ) =
                         GameState.update
-                            (GameState.HoverOutcome hoverOutcome)
+                            (GameState.Sync content)
                             model.game
                             mode
                             flags
                 in
-                    ( { model | game = newGame }
-                    , Cmd.batch
-                        [ cmd
-                        , playSound "/sfx/hover.wav"
-                        ]
-                    )
+                    ( { model | game = newGame }, cmd )
 
-            Err err ->
+            "hover" ->
+                case decodeHoverOutcome content of
+                    Ok hoverOutcome ->
+                        let
+                            ( newGame, cmd ) =
+                                GameState.update
+                                    (GameState.HoverOutcome hoverOutcome)
+                                    model.game
+                                    mode
+                                    flags
+                        in
+                            ( { model | game = newGame }
+                            , Cmd.batch
+                                [ cmd
+                                , playSound "/sfx/hover.wav"
+                                ]
+                            )
+
+                    Err err ->
+                        Debug.log
+                            err
+                            ( model, Cmd.none )
+
+            "res" ->
+                let
+                    ( newGame, cmd ) =
+                        GameState.update
+                            (GameState.ResolveOutcome content)
+                            model.game
+                            mode
+                            flags
+                in
+                    ( { model | game = newGame }, cmd )
+
+            "syncPlayers" ->
+                let
+                    newPlayers : Result String ( Maybe String, Maybe String )
+                    newPlayers =
+                        decodePlayers content
+                in
+                    case newPlayers of
+                        Ok p ->
+                            ( { model | players = p }, Cmd.none )
+
+                        Err err ->
+                            Debug.log
+                                err
+                                ( model, Cmd.none )
+
+            "playCard" ->
+                let
+                    ( newGame, _ ) =
+                        GameState.update (GameState.Shake 1.0) model.game mode flags
+                in
+                    ( { model | game = newGame }, playSound "/sfx/playCard.wav" )
+
+            "end" ->
+                ( model, playSound "/sfx/endTurn.wav" )
+
+            otherwise ->
                 Debug.log
-                    err
+                    ("Error decoding message from server: " ++ msg)
                     ( model, Cmd.none )
-    else if (startsWith "res:" msg) then
-        let
-            ( newGame, cmd ) =
-                GameState.update
-                    (GameState.ResolveOutcome <| dropLeft (length "res:") msg)
-                    model.game
-                    mode
-                    flags
-        in
-            ( { model | game = newGame }, cmd )
-    else if (startsWith "syncPlayers:" msg) then
-        let
-            newPlayers : Result String ( Maybe String, Maybe String )
-            newPlayers =
-                decodePlayers (dropLeft (length "syncPlayers:") msg)
-        in
-            case newPlayers of
-                Ok p ->
-                    ( { model | players = p }, Cmd.none )
-
-                Err err ->
-                    Debug.log
-                        err
-                        ( model, Cmd.none )
-    else if (startsWith "playCard:" msg) then
-        let
-            ( newGame, _ ) =
-                GameState.update (GameState.Shake 1.0) model.game mode flags
-        in
-            ( { model | game = newGame }, playSound "/sfx/playCard.wav" )
-    else if (startsWith "end:" msg) then
-        ( model, playSound "/sfx/endTurn.wav" )
-    else
-        Debug.log
-            ("Error decoding message from server: " ++ msg)
-            ( model, Cmd.none )

@@ -5,8 +5,7 @@ import Lobby.Types exposing (GameType(..), Model)
 import Main.Messages as Main
 import Mode exposing (Mode(..))
 import Room.Messages as Room
-import String exposing (dropLeft, length, startsWith)
-import Util exposing (message)
+import Util exposing (message, splitOn)
 
 
 init : String -> GameType -> Mode -> Model
@@ -53,20 +52,30 @@ update ({ error, gameType, mode } as model) msg =
 
 receive : String -> Cmd Main.Msg
 receive msg =
-    if startsWith "acceptPlay:" msg then
-        message <|
-            Main.RoomMsg <|
-                Room.StartGame Playing
-    else if startsWith "acceptSpec:" msg then
-        message <|
-            Main.RoomMsg <|
-                Room.StartGame Spectating
-    else if startsWith "error:" msg then
-        message <|
-            Main.RoomMsg <|
-                Room.LobbyMsg <|
-                    JoinRoomErr <|
-                        dropLeft (length "error:") msg
-    else
-        -- Defer other messages.
-        message <| Main.Receive <| msg
+    let
+        ( command, content ) =
+            splitOn ":" msg
+    in
+        case command of
+            "acceptPlay" ->
+                message <|
+                    Main.RoomMsg <|
+                        Room.StartGame Playing
+
+            "acceptSpec" ->
+                message <|
+                    Main.RoomMsg <|
+                        Room.StartGame Spectating
+
+            "error" ->
+                message <|
+                    Main.RoomMsg <|
+                        Room.LobbyMsg <|
+                            JoinRoomErr <|
+                                content
+
+            otherwise ->
+                -- Defer other messages.
+                message <|
+                    Main.Receive <|
+                        msg
