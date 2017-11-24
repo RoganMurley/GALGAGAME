@@ -41,6 +41,7 @@ library
                      , cookie
                      , guid
                      , hedis
+                     , hslogger
                      , http-types
                      , random
                      , random-shuffle
@@ -70,6 +71,7 @@ executable stormcards
                      , cookie
                      , guid
                      , hedis
+                     , hslogger
                      , http-types
                      , random
                      , safe

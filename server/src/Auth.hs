@@ -11,6 +11,7 @@ import Network.Wai (Application)
 import Web.Cookie (parseCookiesText, setCookieMaxAge)
 import Web.Scotty
 import Web.Scotty.Cookie (deleteCookie, getCookie, makeSimpleCookie, setCookie)
+import System.Log.Logger (Priority(DEBUG), errorM, setLevel, updateGlobalLogger)
 
 import qualified Network.WebSockets as WS
 
@@ -23,7 +24,8 @@ import qualified Data.Text.Encoding as T
 
 
 app :: R.Connection -> R.Connection -> IO Application
-app userConn tokenConn =
+app userConn tokenConn = do
+  updateGlobalLogger "auth" $ setLevel DEBUG
   scottyApp $ do
     post "/login"    $ login userConn tokenConn
     post "/logout"   $ logout tokenConn
@@ -53,7 +55,7 @@ login userConn tokenConn = do
         Nothing ->
           status unauthorized401
     Left _ -> do
-      lift . T.putStrLn $ "Database connection error"
+      lift $ errorM "auth" "Database connection error"
       status internalServerError500
 
 
@@ -90,7 +92,7 @@ checkAuth tokenConn (Just token) = do
     Right username ->
       return (T.decodeUtf8 <$> username)
     Left _ -> do
-      T.putStrLn $ "Database connection error"
+      errorM "auth" "Database connection error"
       return Nothing
 
 

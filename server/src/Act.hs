@@ -7,6 +7,8 @@ import Data.Aeson (encode)
 import Data.Monoid ((<>))
 import Data.String.Conversions (cs)
 import Data.Text (Text)
+import System.Log.Logger (infoM, warningM)
+import Text.Printf (printf)
 
 import GameCommand (GameCommand(..), update)
 import GameState (GameState(..))
@@ -50,12 +52,14 @@ roomUpdate cmd which roomVar =
 
 
 actPlay :: Command -> WhichPlayer -> TVar Room -> IO ()
-actPlay cmd which roomVar =
+actPlay cmd which roomVar = do
+  infoM "app" $ printf "Command: %s" (show cmd)
   case trans cmd of
     Just command -> do
       (room, updated) <- atomically $ roomUpdate command which roomVar
       case updated of
-        Left err ->
+        Left err -> do
+          warningM "app" $ printf "Command error: %s" (show err)
           Room.sendToPlayer which (Command.toChat (ErrorCommand err)) room
         Right outcomes ->
           forM_ outcomes (actOutcome room)
