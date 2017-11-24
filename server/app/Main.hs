@@ -8,17 +8,19 @@ import Control.Monad (forever, mzero, when)
 import Control.Monad.Trans.Class (lift)
 import Control.Monad.Trans.Maybe (runMaybeT)
 import Data.Maybe (fromMaybe)
-import Data.Monoid ((<>))
+import Data.String.Conversions (cs)
 import Data.Text (Text)
+import Text.Printf (printf)
 
 import Network.Wai (Application)
 import Network.Wai.Handler.WebSockets
 import Network.Wai.Handler.Warp (run)
 import System.IO (BufferMode(LineBuffering), hSetBuffering, stdout)
+import System.Log.Logger (Priority(DEBUG), infoM, warningM, setLevel, updateGlobalLogger)
 
 import Act (actPlay, actSpec, syncClient, syncPlayersRoom, syncRoomClients)
 import ArtificalIntelligence (Action(..), chooseAction)
-import Characters (CharModel(..), character_name, toList)
+import Characters (CharModel(..), allSelected, character_name, toList)
 import Negotiation (Prefix(..), parseRoomReq, parsePrefix)
 import Player (WhichPlayer(..), other)
 import GameState (GameState(..), PlayState(..), WaitType(..))
@@ -46,6 +48,7 @@ import qualified Data.GUID as GUID
 
 main :: IO ()
 main = do
+  updateGlobalLogger "app" $ setLevel DEBUG
   hSetBuffering stdout LineBuffering
   userConn  <- R.connect $ A.connectInfo A.UserDatabase
   tokenConn <- R.connect $ A.connectInfo A.TokenDatabase
@@ -70,23 +73,33 @@ wsApp state tokenConn pending = do
 
 begin :: WS.Connection -> Text -> Maybe Username -> TVar Server.State -> IO ()
 begin conn roomReq usernameM state =
-  case parseRoomReq roomReq of
-    Nothing ->
-      (WS.sendTextData conn) . Command.toChat . ErrorCommand $ "bad room name protocol: " <> roomReq
-    Just roomName -> do
-      msg <- WS.receiveData conn
-      case parsePrefix msg of
+  let
+    username :: Username
+    username = fromMaybe (Username "Guest") usernameM
+    connectionFail :: String -> IO ()
+    connectionFail str = do
+      warningM "app" str
+      (WS.sendTextData conn) . Command.toChat . ErrorCommand $ cs str
+  in
+    do
+      infoM "app" $ printf "<%s>: New connection" (show username)
+      case parseRoomReq roomReq of
         Nothing ->
-          (WS.sendTextData conn) . Command.toChat . ErrorCommand $ "connection protocol failure" <> msg
-        Just prefix -> do
-          gen <- getGen
-          guid <- GUID.genText
-          roomVar <- atomically $ Server.getOrCreateRoom roomName (prefixWaitType prefix) gen state
-          beginPrefix
-            prefix
-            state
-            (Client (fromMaybe (Username "Guest") usernameM) (PlayerConnection conn) guid)
-            roomVar
+          connectionFail $ printf "<%s>: Bad room name protocol %s" (show username) roomReq
+        Just roomName -> do
+          msg <- WS.receiveData conn
+          case parsePrefix msg of
+            Nothing ->
+              connectionFail $ printf "<%s>: Connection protocol failure" msg
+            Just prefix -> do
+              gen <- getGen
+              guid <- GUID.genText
+              roomVar <- atomically $ Server.getOrCreateRoom roomName (prefixWaitType prefix) gen state
+              beginPrefix
+                prefix
+                state
+                (Client username (PlayerConnection conn) guid)
+                roomVar
 
 
 beginPrefix :: Prefix -> TVar Server.State -> Client -> TVar Room -> IO ()
@@ -106,9 +119,11 @@ prefixWaitType PrefixQueue = WaitQuickplay
 
 beginPlay :: TVar Server.State -> Client -> TVar Room -> IO ()
 beginPlay state client roomVar = do
+  infoM "app" $ printf "<%s>: Begin playing" (show $ Client.name client)
   added <- atomically $ addPlayerClient client roomVar
   case added of
-    Nothing ->
+    Nothing -> do
+      infoM "app" $ printf "<%s>: Room is full" (show $ Client.name client)
       Client.send (Command.toChat $ ErrorCommand "room is full") client
     Just which ->
       finally
@@ -117,7 +132,8 @@ beginPlay state client roomVar = do
 
 
 beginSpec :: TVar Server.State -> Client -> TVar Room -> IO ()
-beginSpec state client roomVar =
+beginSpec state client roomVar = do
+  infoM "app" $ printf "<%s>: Begin spectating" (show $ Client.name client)
   finally
     (spectate client roomVar)
     (disconnect client roomVar state)
@@ -125,14 +141,16 @@ beginSpec state client roomVar =
 
 beginComputer :: TVar Server.State -> Client -> TVar Room -> IO ()
 beginComputer state client roomVar = do
+  infoM "app" $ printf "<%s>: Begin AI game" (show $ Client.name client)
   cpuGuid  <- GUID.genText
   (computer, added) <- atomically $ do
     computerAdded <- addComputerClient cpuGuid roomVar
     playerAdded <- addPlayerClient client roomVar
     return (computerAdded, playerAdded)
   case (,) <$> computer <*> added of
-    Nothing ->
-      Client.send (Command.toChat $ ErrorCommand "room is full") client
+    Nothing -> do
+      infoM "app" $ printf "<%s>: Room is full" (show $ Client.name client)
+      Client.send (Command.toChat $ ErrorCommand "Room is full") client
     Just (computerClient, which) ->
       finally
         (do
@@ -145,11 +163,14 @@ beginComputer state client roomVar = do
 
 beginQueue :: TVar Server.State -> Client -> TVar Room -> IO ()
 beginQueue state client roomVar = do
+  infoM "app" $ printf "<%s>: Begin quickplay game" (show $ Client.name client)
   roomM <- atomically $ Server.queue (client, roomVar) state
   case roomM of
-    Just (_, existingRoom) ->
+    Just (_, existingRoom) -> do
+      infoM "app" $ printf "<%s>: Joining existing quickplay room" (show $ Client.name client)
       beginPlay state client existingRoom
-    Nothing ->
+    Nothing -> do
+      infoM "app" $ printf "<%s>: Creating new quickplay room" (show $ Client.name client)
       finally
         (beginPlay state client roomVar)
         (atomically $ Server.dequeue client state)
@@ -193,6 +214,7 @@ computerPlay which roomVar =
     -- Break out if the room's empty.
     room <- lift . atomically $ readTVar roomVar
     when (Room.empty room) mzero
+  infoM "app" $ printf "AI signing off"
   return ()
 
 
@@ -201,7 +223,10 @@ chooseComputerCommand which room gen = do
   r <- atomically $ readTVar room
   case Room.getState r of
     Selecting charModel _ _ ->
-      return . Just . SelectCharacterCommand $ randomChar charModel
+      if allSelected charModel which then
+        return Nothing
+          else
+            return . Just . SelectCharacterCommand $ randomChar charModel
     Started (Playing m) ->
       return $ trans <$> chooseAction gen which m
     _ ->
@@ -222,6 +247,12 @@ disconnect client roomVar state = do
   Room.broadcast (Command.toChat . LeaveCommand $ Client.name client) room
   syncPlayersRoom room
   if Room.empty room then
-    atomically $ Server.deleteRoom (Room.getName room) state
+    (do
+      infoM "app" $ printf "<%s>: Room is empty, deleting room" (show $ Client.name client)
+      atomically $ Server.deleteRoom (Room.getName room) state
+    )
       else
-        readTVarIO state
+        (do
+          infoM "app" $ printf "<%s>: Room is not empty, retaining room" (show $ Client.name client)
+          readTVarIO state
+        )

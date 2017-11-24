@@ -61,6 +61,12 @@ instance Mirror CharModel where
   mirror (CharModel pa pb cs) = CharModel pb pa cs
 
 
+allSelected :: CharModel -> WhichPlayer -> Bool
+allSelected (CharModel (ThreeSelected _ _ _) _                     _) PlayerA = True
+allSelected (CharModel _                     (ThreeSelected _ _ _) _) PlayerB = True
+allSelected _                                                         _       = False
+
+
 type FinalSelection = (Character, Character, Character)
 
 
