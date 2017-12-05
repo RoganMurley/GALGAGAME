@@ -19,7 +19,6 @@ import qualified Data.GUID as GUID
 import qualified Database.Redis as R
 
 import Data.Text (Text)
-import qualified Data.Text.IO as T
 import qualified Data.Text.Encoding as T
 
 
