@@ -22,6 +22,8 @@ library
                      , Characters
                      , Client
                      , Command
+                     , DSL.Alpha
+                     , DSL.Beta
                      , GameCommand
                      , GameState
                      , Mirror
@@ -39,6 +41,7 @@ library
                      , bytestring
                      , containers
                      , cookie
+                     , free
                      , guid
                      , hedis
                      , hslogger
@@ -61,6 +64,7 @@ library
                      , RecordWildCards
                      , NamedFieldPuns
                      , ScopedTypeVariables
+                     , DeriveFunctor
 
 executable stormcards
   hs-source-dirs:      app

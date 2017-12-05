@@ -48,6 +48,7 @@ import qualified Data.GUID as GUID
 
 main :: IO ()
 main = do
+  putStrLn "toad"
   updateGlobalLogger "app" $ setLevel DEBUG
   hSetBuffering stdout LineBuffering
   userConn  <- R.connect $ A.connectInfo A.UserDatabase
