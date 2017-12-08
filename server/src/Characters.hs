@@ -115,6 +115,11 @@ toList (TwoSelected a b)     = [ a, b ]
 toList (ThreeSelected a b c) = [ a, b, c ]
 
 
+allCards :: FinalSelection -> [Card]
+allCards (Character _ a, Character _ b, Character _ c) =
+  concat $ (\(p, q, r, s) -> [p, q, r, s]) <$> [a, b, c]
+
+
 -- CHARACTERS
 allCharacters :: [Character]
 allCharacters = [
