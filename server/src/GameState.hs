@@ -36,7 +36,7 @@ instance ToJSON WaitType where
 getStateGen :: GameState -> Gen
 getStateGen (Waiting _ gen)           = gen
 getStateGen (Selecting _ _ gen)       = gen
-getStateGen (Started (Playing model)) = getGen model
+getStateGen (Started (Playing model)) = model_gen model
 getStateGen (Started (Ended _ _ gen)) = gen
 
 
