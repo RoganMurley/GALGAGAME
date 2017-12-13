@@ -22,8 +22,6 @@ library
                      , Characters
                      , Client
                      , Command
-                     , DSL.Alpha
-                     , DSL.Beta
                      , GameCommand
                      , GameState
                      , Mirror
