@@ -4,15 +4,15 @@ module Model where
 import Control.Monad.Free (Free(..), MonadFree, liftF)
 import Control.Monad.Free.TH (makeFree)
 import Data.Aeson (ToJSON(..), (.=), object)
+import Data.List (partition)
 import Data.Monoid ((<>))
 import Data.String.Conversions (cs)
 import Data.Text (Text, toUpper)
 import Safe (headMay, tailSafe)
-import Text.Printf (printf)
 
 import Mirror (Mirror(..))
-import Player (WhichPlayer(..), other, perspective)
-import Util (Gen, mkGen)
+import Player (WhichPlayer(..), other)
+import Util (Gen)
 
 
 type Program a = Free DSL a
@@ -24,7 +24,7 @@ data Card = Card
   , card_img  :: Text
   , card_snd  :: Text
   , card_anim :: Maybe CardAnim
-  , card_eff  :: Program ()
+  , card_eff  :: WhichPlayer -> Program ()
   }
 
 
@@ -134,8 +134,10 @@ instance Mirror Model where
 instance Mirror StackCard where
   mirror (StackCard p c) = StackCard (other p) c
 
+
 changeOwner :: StackCard -> StackCard
 changeOwner = mirror
+
 
 owner :: WhichPlayer -> StackCard -> Bool
 owner w (StackCard o _) = w == o
@@ -175,7 +177,7 @@ data DSL n =
   | GetLife WhichPlayer (Life -> n)
   | GetPasses (Passes -> n)
   | GetStack (Stack -> n)
-  | GetTurn WhichPlayer (Turn -> n) -- WhichPlayer parameter for mirroring
+  | GetTurn (Turn -> n)
   | SetGen Gen n
   | SetDeck WhichPlayer Deck n
   | SetHand WhichPlayer Hand n
@@ -187,28 +189,6 @@ data DSL n =
 
 
 makeFree ''DSL
-
-
-instance Mirror (Free DSL a) where
-  mirror (Free f) = Free (mirror f)
-  mirror (Pure a) = Pure a
-
-
-instance (Mirror n) => Mirror (DSL n) where
-  mirror (GetGen f)      = GetGen (mirror . f)
-  mirror (GetDeck w f)   = GetDeck (other w) (mirror . f)
-  mirror (GetHand w f)   = GetHand (other w) (mirror . f)
-  mirror (GetLife w f)   = GetLife (other w) (mirror . f)
-  mirror (GetPasses f)   = GetPasses (mirror . f)
-  mirror (GetStack f)    = GetStack (mirror . f)
-  mirror (GetTurn w f)   = GetTurn (other w) (mirror . f)
-  mirror (SetDeck w d n) = SetDeck (other w) d (mirror n)
-  mirror (SetGen g n)    = SetGen g (mirror n)
-  mirror (SetHand w h n) = SetHand (other w) h (mirror n)
-  mirror (SetLife w l n) = SetLife (other w) l (mirror n)
-  mirror (SetPasses p n) = SetPasses p (mirror n)
-  mirror (SetStack s n)  = SetStack (mirror <$> s) (mirror n)
-  mirror (SetTurn t n)   = SetTurn (other t) (mirror n)
 
 
 modifier :: (WhichPlayer -> Program a) -> (WhichPlayer -> a -> Program ()) -> WhichPlayer -> (a -> a) -> Program ()
@@ -238,7 +218,7 @@ modStackAll f = modStack $ fmap f
 
 
 modTurn :: (Turn -> Turn) -> Program ()
-modTurn f = (getTurn PlayerA) >>= (setTurn . f)
+modTurn f = getTurn >>= (setTurn . f)
 
 
 modPasses :: (Passes -> Passes) -> Program ()
@@ -290,19 +270,19 @@ draw w =
         "the_end.svg"
         "feint.wave"
         Nothing
-        $ hurt 10 PlayerA
+        $ hurt 10
 
 
 bounceAll :: WhichPlayer -> Program ()
 bounceAll w = do
-  (ours, theirs) <- break (owned w) <$> getStack
+  (ours, theirs) <- partition (owned w) <$> getStack
   setStack theirs
   let oursCards = (\(StackCard _ c) -> c) <$> ours
   modHand w $ (++) oursCards
 
 
 incPasses :: Passes -> Passes
-incPasses NoPass = OnePass
+incPasses NoPass  = OnePass
 incPasses OnePass = NoPass
 
 
@@ -327,7 +307,7 @@ effI m (Free (GetHand w f))   = (effI m) . f . pmodel_hand $ getPmodel w m
 effI m (Free (GetLife w f))   = (effI m) . f . pmodel_life $ getPmodel w m
 effI m (Free (GetPasses f))   = (effI m) . f . model_passes $ m
 effI m (Free (GetStack f))    = (effI m) . f . model_stack $ m
-effI m (Free (GetTurn w f))   = (effI m) . f . model_turn . (perspective w) $ m
+effI m (Free (GetTurn f))     = (effI m) . f . model_turn $ m
 effI m (Free (SetGen g n))    = effI (m { model_gen = g }) n
 effI m (Free (SetDeck w d n)) = effI (modPmodel (\pm -> pm { pmodel_deck = d }) w m) n
 effI m (Free (SetHand w h n)) = effI (modPmodel (\pm -> pm { pmodel_hand = reverse . (take maxHandLength) $ reverse h }) w m) n
@@ -337,6 +317,13 @@ effI m (Free (SetStack s n))  = effI (m { model_stack = s }) n
 effI m (Free (SetTurn t n))   = effI (m { model_turn = t }) n
 effI m (Pure x)               = (m, x)
 
+
+modI :: Model -> Program a -> Model
+modI m p = fst $ effI m p
+
+
+evalI :: Model -> Program a -> a
+evalI m p = snd $ effI m p
 
 -- logI :: Model -> Program a -> [String]
 -- logI m (Free (GetGen f))      = "GetGen"                       : logI (fst $ effI m (f (mkGen 0))) (f (mkGen 0))
