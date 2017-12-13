@@ -87,7 +87,7 @@ chat username msg =
 concede :: WhichPlayer -> GameState -> Either Err (Maybe GameState, [Outcome])
 concede which (Started (Playing model)) =
   Right (
-    Just . Started $ Ended (Just (other which)) model (getGen model)
+    Just . Started $ Ended (Just (other which)) model (evalI model getGen)
   , [ Outcome.Sync ]
   )
 concede _ _ =
@@ -116,19 +116,27 @@ playCard index which m
         Left "You can't play a card you don't have in your hand"
       Just c ->
         Right (
-          Just
-            . Started
-              . Playing
-                . resetPasses
-                  . swapTurn
-                    . (modStack ((:) c))
-                      $ modHand which (deleteIndex index) m
-        , [ Outcome.Sync, Outcome.PlayCard which ]
+            Just
+              . Started
+                . Playing
+                  $ modI m
+                    $ do
+                      swapTurn
+                      resetPasses
+                      modStack ((:) c)
+                      modHand which (deleteIndex index)
+          , [
+            Outcome.Sync,
+            Outcome.PlayCard which
+          ]
         )
   where
-    hand = getHand which m :: Hand
-    turn = getTurn m :: Turn
-    card = (StackCard which) <$> (atMay hand index) :: Maybe StackCard
+    (hand, turn, card) =
+      evalI m $ do
+        h <- getHand which
+        t <- getTurn
+        let c = (StackCard which) <$> (atMay hand index) :: Maybe StackCard
+        return (h, t, c)
 
 
 
@@ -141,19 +149,51 @@ endTurn which model
       OnePass ->
         case runWriter . resolveAll $ model of
           (Playing m, res) ->
-            let newState = Started . Playing . drawCards . resetPasses . swapTurn $ m in
-              Right (Just newState, [Outcome.Encodable $ Outcome.Resolve res newState, Outcome.EndTurn which])
+            let
+              newState =
+                Started . Playing $
+                  modI m $ do
+                    swapTurn
+                    resetPasses
+                    drawCards
+            in
+              Right (
+                Just newState,
+                [
+                  Outcome.Encodable $ Outcome.Resolve res newState,
+                  Outcome.EndTurn which
+                ]
+              )
           (Ended w m g, res) ->
             let newState = Started (Ended w m g) in
-              Right (Just newState, [Outcome.Encodable $ Outcome.Resolve res newState, Outcome.EndTurn which])
+              Right (
+                Just newState,
+                [
+                  Outcome.Encodable $ Outcome.Resolve res newState,
+                  Outcome.EndTurn which
+                ]
+              )
       NoPass ->
-        Right (Just . Started . Playing . swapTurn $ model, [Outcome.Sync])
+        Right (
+          Just $ Started $ Playing $ modI model swapTurn,
+          [
+            Outcome.Sync
+          ]
+        )
   where
-    turn = getTurn model :: Turn
-    passes = getPasses model :: Passes
-    handFull = length (getHand which model) >= maxHandLength :: Bool
-    drawCards :: Model -> Model
-    drawCards m = (drawCard PlayerA) . (drawCard PlayerB) $ m
+    (turn, passes) =
+      evalI model $ do
+        t <- getTurn
+        p <- getPasses
+        return (t, p)
+    handFull :: Bool
+    handFull = evalI model $ do
+      hand <- getHand which
+      return ((length hand) >= maxHandLength)
+    drawCards :: Program ()
+    drawCards = do
+      draw PlayerA
+      draw PlayerB
 
 
 resolveAll :: Model -> Writer [Model] PlayState
@@ -168,18 +208,17 @@ resolveAll model
         Ended w m gen ->
           return (Ended w m gen)
   where
-    stack = getStack model :: Stack
+    stack = evalI model getStack :: Stack
     resolveOne :: Model -> PlayState
     resolveOne m =
-      lifeGate . eff $ modStack tailSafe m
-      where
-        eff :: Model -> Model
-        eff =
+      lifeGate $
+        modI m $ do
+          modStack tailSafe
           case headMay stack of
-            Nothing ->
-              id
             Just (StackCard o c) ->
               (card_eff c) o
+            Nothing ->
+              return ()
 
 
 lifeGate :: Model -> PlayState
@@ -191,19 +230,18 @@ lifeGate m
   | lifePA <= 0 =
     Ended (Just PlayerB) m gen
   | otherwise =
-    Playing
-      . (setLife PlayerA (min maxLife lifePA))
-      . (setLife PlayerB (min maxLife lifePB))
-      $ m
+    Playing $ modI m $ do
+      setLife PlayerA (min maxLife lifePA)
+      setLife PlayerB (min maxLife lifePB)
   where
-    gen = getGen m :: Gen
-    lifePA = getLife PlayerA m :: Life
-    lifePB = getLife PlayerB m :: Life
+    gen = evalI m getGen :: Gen
+    lifePA = evalI m (getLife PlayerA) :: Life
+    lifePB = evalI m (getLife PlayerB) :: Life
 
 
 hoverCard :: Maybe Int -> WhichPlayer -> Model -> Either Err (Maybe GameState, [Outcome])
 hoverCard (Just i) which model
-  | i >= (length . (getHand which) $ model) =
+  | i >= (length (evalI model $ getHand which :: Hand) :: Int) =
     Left ("Hover index out of bounds (" <> (cs . show $ i ) <> ")" :: Err)
   | otherwise =
     Right (Nothing, [ Outcome.Encodable $ Outcome.Hover which (Just i) ])
