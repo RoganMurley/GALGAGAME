@@ -2,10 +2,10 @@ module Cards where
 
 import Control.Monad (when)
 import Data.Monoid ((<>))
+import Player (other)
 import Safe (headMay)
 
 import Model
-import Player (WhichPlayer(..))
 import Util (shuffle)
 
 
@@ -18,7 +18,8 @@ dagger =
     "striker/dagger.svg"
     "dagger.wav"
     (Just Slash)
-    $ hurt 7 PlayerB
+    $ \w -> do
+      hurt 7 (other w)
 
 
 fireball :: Card
@@ -29,9 +30,9 @@ fireball =
     "striker/fireball.svg"
     "fireball.wav"
     Nothing
-    $ do
+    $ \w -> do
       len <- length <$> getStack
-      hurt (len * 5) PlayerB
+      hurt (len * 5) (other w)
 
 
 offering :: Card
@@ -42,10 +43,10 @@ offering =
     "striker/offering.svg"
     "offering.wav"
     Nothing
-    $ do
-      hurt 7 PlayerA
-      draw PlayerA
-      draw PlayerA
+    $ \w -> do
+      hurt 7 w
+      draw w
+      draw w
 
 
 confound :: Card
@@ -56,7 +57,7 @@ confound =
     "striker/confound.svg"
     "confound.wav"
     Nothing
-    $ do
+    $ \_ -> do
       gen <- getGen
       modStack $ shuffle gen
 
@@ -70,7 +71,8 @@ hammer =
     "breaker/hammer.svg"
     "hammer.wav"
     (Just Slash)
-    $ hurt 8 PlayerB
+    $ \w -> do
+      hurt 8 (other w)
 
 
 lightning :: Card
@@ -81,9 +83,9 @@ lightning =
     "breaker/lightning.svg"
     "lightning.wav"
     Nothing
-    $ do
+    $ \w -> do
       len <- length <$> getStack
-      hurt (len * 4) PlayerB
+      hurt (len * 4) (other w)
 
 
 hubris :: Card
@@ -94,7 +96,8 @@ hubris =
     "breaker/hubris.svg"
     "hubris.wav"
     (Just Obliterate)
-    $ setStack []
+    $ \_ -> do
+      setStack []
 
 
 -- Balancer
@@ -106,7 +109,8 @@ katana =
     "balancer/katana.svg"
     "axe.mp3"
     (Just Slash)
-    $ hurt 9 PlayerB
+    $ \w -> do
+      hurt 9 (other w)
 
 
 curse :: Card
@@ -117,12 +121,12 @@ curse =
     "balancer/curse.svg"
     "frostbite.mp3"
     Nothing
-    $ do
+    $ \w -> do
       let dmg = 15
-      paLife <- getLife PlayerA
-      pbLife <- getLife PlayerB
-      when (paLife <= pbLife) $ hurt dmg PlayerA
-      when (pbLife >= paLife) $ hurt dmg PlayerB
+      paLife <- getLife w
+      pbLife <- getLife (other w)
+      when (paLife <= pbLife) (hurt dmg w)
+      when (paLife >= pbLife) (hurt dmg (other w))
 
 
 bless :: Card
@@ -133,12 +137,12 @@ bless =
     "balancer/bless.svg"
     "oath.wav"
     Nothing
-    $ do
+    $ \w -> do
       let mag = 15
-      paLife <- getLife PlayerA
-      pbLife <- getLife PlayerB
-      when (paLife <= pbLife) $ heal mag PlayerA
-      when (pbLife >= paLife) $ heal mag PlayerB
+      paLife <- getLife w
+      pbLife <- getLife (other w)
+      when (paLife <= pbLife) (heal mag w)
+      when (paLife >= pbLife) (heal mag (other w))
 
 
 balance :: Card
@@ -149,13 +153,11 @@ balance =
     "balancer/balance.svg"
     "feint.wav"
     Nothing
-    $ do
-      paLife <- getLife PlayerA
-      pbLife <- getLife PlayerB
-      when (paLife < pbLife) $
-        modStackHead (\(StackCard _ c) -> StackCard PlayerB c)
-      when (pbLife > paLife) $
-        modStackHead (\(StackCard _ c) -> StackCard PlayerA c)
+    $ \w -> do
+      paLife <- getLife w
+      pbLife <- getLife (other w)
+      when (paLife < pbLife) (modStackHead (\(StackCard _ c) -> StackCard (other w) c))
+      when (paLife > pbLife) (modStackHead (\(StackCard _ c) -> StackCard w c))
 
 
 -- Drinker
@@ -167,20 +169,21 @@ scythe =
     "drinker/scythe.svg"
     "bite.wav"
     (Just Slash)
-    $ lifesteal 5 PlayerB
+    $ \w -> do
+      lifesteal 5 (other w)
 
 
 bloodsucker :: Card
 bloodsucker =
   Card
-  "Bloodsucker"
-  "Lifesteal for 3 for each card to the right"
-  "drinker/bloodsucker.svg"
-  "succubus.wav"
-  Nothing
-  $ do
-    len <- length <$> getStack
-    lifesteal (len * 3) PlayerB
+    "Bloodsucker"
+    "Lifesteal for 3 for each card to the right"
+    "drinker/bloodsucker.svg"
+    "succubus.wav"
+    Nothing
+    $ \w -> do
+      len <- length <$> getStack
+      lifesteal (len * 3) (other w)
 
 
 serpent :: Card
@@ -191,9 +194,9 @@ serpent =
     "drinker/serpent.svg"
     "siren.wav"
     Nothing
-    $ do
-      addToHand PlayerB badApple
-      addToHand PlayerB badApple
+    $ \w -> do
+      addToHand (other w) badApple
+      addToHand (other w) badApple
 
 
 badApple :: Card
@@ -204,7 +207,8 @@ badApple =
     "drinker/bad-apple.svg"
     "song.wav"
     Nothing
-    $ hurt 8 PlayerA
+    $ \w -> do
+      hurt 8 w
 
 
 reversal :: Card
@@ -215,7 +219,8 @@ reversal =
     "drinker/reversal.svg"
     "reversal.wav"
     Nothing
-    $ modStack reverse
+    $ \_ -> do
+      modStack reverse
 
 
 -- Watcher
@@ -227,9 +232,9 @@ staff =
     "watcher/staff.svg"
     "staff.wav"
     (Just Slash)
-    $ do
-      hurt 4 PlayerB
-      draw PlayerA
+    $ \w -> do
+      hurt 4 (other w)
+      draw w
 
 
 surge :: Card
@@ -240,9 +245,9 @@ surge =
     "watcher/surge.svg"
     "fireball.wav"
     Nothing
-    $ do
-      len <- length . (filter (owner PlayerA)) <$> getStack
-      hurt (len * 6) PlayerB
+    $ \w -> do
+      len <- length . (filter (owner w)) <$> getStack
+      hurt (len * 6) (other w)
 
 
 imitate :: Card
@@ -253,13 +258,13 @@ imitate =
     "watcher/imitate.svg"
     "feint.wav"
     Nothing
-    $ do
+    $ \w -> do
       gen <- getGen
-      hand <- getHand PlayerA
+      hand <- getHand w
       mCard <- return . headMay . (filter (/= imitate)) . (shuffle gen) $ hand
       case mCard of
         Just c ->
-          modStack ((:) (StackCard PlayerA c))
+          modStack ((:) (StackCard w c))
         Nothing ->
           return ()
 
@@ -272,9 +277,9 @@ prophecy =
     "watcher/prophecy.svg"
     "precognition.wav"
     Nothing
-    $ do
-      bounceAll PlayerA
-      bounceAll PlayerB
+    $ \w -> do
+      bounceAll w
+      bounceAll (other w)
 
 
 -- Shielder
@@ -286,7 +291,8 @@ sword =
     "shielder/sword.svg"
     "dagger.wav"
     (Just Slash)
-    $ hurt 10 PlayerB
+    $ \w -> do
+      hurt 10 (other w)
 
 
 potion :: Card
@@ -297,7 +303,8 @@ potion =
     "shielder/potion.svg"
     "potion.wav"
     (Just Heal)
-    $ heal 10 PlayerA
+    $ \w -> do
+      heal 10 w
 
 
 reflect :: Card
@@ -308,7 +315,8 @@ reflect =
     "shielder/reflect.svg"
     "reflect.wav"
     Nothing
-    $ modStackAll changeOwner
+    $ \_ -> do
+      modStackAll changeOwner
 
 
 -- Bouncer
@@ -320,9 +328,9 @@ boomerang =
     "bouncer/boomerang.svg"
     "boomerang.wav"
     (Just Slash)
-    $ do
-      hurt 3 PlayerB
-      addToHand PlayerA boomerang
+    $ \w -> do
+      hurt 3 (other w)
+      addToHand w boomerang
 
 
 overwhelm :: Card
@@ -333,9 +341,9 @@ overwhelm =
     "bouncer/overwhelm.svg"
     "superego.wav"
     Nothing
-    $ do
-      len <- length <$> getHand PlayerA
-      hurt (len * 3) PlayerB
+    $ \w -> do
+      len <- length <$> getHand w
+      hurt (len * 3) (other w)
 
 
 echo :: Card
@@ -346,9 +354,10 @@ echo =
     "bouncer/echo.svg"
     "echo.wav"
     Nothing
-    $ modStackHead
-      (\(StackCard which (Card name desc pic sfx anim e)) ->
-        StackCard which (Card name desc pic sfx anim (e >> e)))
+    $ \_ -> do
+      modStackHead $
+        \(StackCard which (Card name desc pic sfx anim e)) ->
+          StackCard which (Card name desc pic sfx anim (e >> e))
 
 
 feint :: Card
@@ -359,7 +368,7 @@ feint =
     "bouncer/feint.svg"
     "feint.wav"
     Nothing
-    $ bounceAll PlayerA
+    $ bounceAll
 
 
 -- Collector
@@ -371,7 +380,8 @@ relicblade =
     "collector/relicblade.svg"
     "dagger.wav"
     (Just Slash)
-    $ hurt 6 PlayerB
+    $ \w -> do
+      hurt 6 (other w)
 
 
 greed :: Card
@@ -382,9 +392,9 @@ greed =
     "collector/greed.svg"
     "envy.wav"
     Nothing
-    $ do
-      len <- length <$> getHand PlayerB
-      hurt (len * 3) PlayerB
+    $ \w -> do
+      len <- length <$> getHand (other w)
+      hurt (len * 3) (other w)
 
 
 alchemy :: Card
@@ -395,7 +405,8 @@ alchemy =
     "collector/alchemy.svg"
     "feint.wav"
     Nothing
-    $ modStackHead (\(StackCard w _) -> StackCard w gold)
+    $ \_ -> do
+      modStackHead (\(StackCard o _) -> StackCard o gold)
 
 
 gold :: Card
@@ -406,6 +417,6 @@ gold =
     "collector/gold.svg"
     "feint.wav"
     Nothing
-    $ do
-      draw PlayerA
-      draw PlayerA
+    $ \w -> do
+      draw w
+      draw w

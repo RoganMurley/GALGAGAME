@@ -27,13 +27,13 @@ evalState (Playing model)          = evalModel model
   where
     evalModel :: Model -> Weight
     evalModel m
-      | (length $ snd $ effI m $ getStack) > 0 =
+      | (length $ evalI m $ getStack) > 0 =
         evalState . fst . runWriter . resolveAll $ m
       | otherwise =
           (evalPlayer PlayerA m) - (evalPlayer PlayerB m)
     evalPlayer :: WhichPlayer -> Model -> Weight
     evalPlayer which m =
-      snd $ effI m $ do
+      evalI m $ do
         life <- getLife which
         hand <- getHand which
         return (life + 7 * (length hand) + (sum . (fmap biasHand) $ hand))
@@ -49,15 +49,13 @@ possibleActions m =
   endAction ++ (PlayAction <$> xs)
   where
     handLength :: Int
-    handLength = length . snd . (effI m) $ getHand PlayerA
+    handLength = length $ evalI m $ getHand PlayerA
     xs :: [Int]
     xs = [ x | x <- [0..maxHandLength], x < handLength]
     endAction :: [Action]
     endAction
-      | handLength == maxHandLength =
-        []
-      | otherwise =
-        [EndAction]
+      | handLength == maxHandLength = []
+      | otherwise = [ EndAction ]
 
 
 postulateAction :: Model -> Gen -> Action -> PlayState
@@ -66,7 +64,7 @@ postulateAction model gen action =
   (\(Started p) -> p) . fromJust . fst . fromRight $ update command PlayerA state
   where
     command = toCommand action :: GameCommand
-    state = Started $ Playing $ fst $ effI model $ setGen gen :: GameState
+    state = Started $ Playing $ modI model $ setGen gen :: GameState
 
 
 chooseAction :: Gen -> Turn -> Model -> Maybe Action
@@ -76,9 +74,9 @@ chooseAction gen turn model
   | otherwise         = Just $ maximumBy comparison $ possibleActions model
   where
     comparison :: Action -> Action -> Ordering
-    comparison = comparing (evalState . (postulateAction model gen))
+    comparison = comparing $ evalState . (postulateAction model gen)
     modelTurn :: Turn
-    modelTurn = snd $ effI model $ getTurn PlayerA
+    modelTurn = evalI model $ getTurn
 
 
 winningEnd :: Model -> Bool
