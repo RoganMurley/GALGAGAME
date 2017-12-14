@@ -156,8 +156,8 @@ balance =
     $ \w -> do
       paLife <- getLife w
       pbLife <- getLife (other w)
-      when (paLife < pbLife) (modStackHead (\(StackCard _ c) -> StackCard (other w) c))
-      when (paLife > pbLife) (modStackHead (\(StackCard _ c) -> StackCard w c))
+      when (paLife < pbLife) (modStackHead (\(StackCard _ c) -> StackCard w c))
+      when (paLife > pbLife) (modStackHead (\(StackCard _ c) -> StackCard (other w) c))
 
 
 -- Drinker
@@ -357,7 +357,7 @@ echo =
     $ \_ -> do
       modStackHead $
         \(StackCard which (Card name desc pic sfx anim e)) ->
-          StackCard which (Card name desc pic sfx anim (e >> e))
+          StackCard which (Card name desc pic sfx anim (\w -> (e w) >> (e w)))
 
 
 feint :: Card
