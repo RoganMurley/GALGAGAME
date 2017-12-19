@@ -13,7 +13,7 @@ import Room.State as Room
 import Room.Types as Room
 import Room.Generators exposing (generate)
 import Util exposing (send)
-import Ports exposing (copyInput, selectAllInput)
+import Ports exposing (analytics, copyInput, selectAllInput)
 import AnimationFrame
 import Window
 import Listener exposing (listen)
@@ -82,7 +82,9 @@ update msg ({ room, flags } as model) =
                     ( { model | room = newRoom }, cmd )
 
             UrlChange l ->
-                ( locationUpdate model l, Cmd.none )
+                ( locationUpdate model l
+                , analytics "test"
+                )
 
 
 locationUpdate : Main.Model -> Navigation.Location -> Main.Model

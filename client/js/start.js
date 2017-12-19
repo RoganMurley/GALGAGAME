@@ -43,3 +43,9 @@ app.ports.volume.subscribe(function (input) {
   var v = input / 100;
   Howler.volume(Math.pow(v, 4));
 });
+
+app.ports.analytics.subscribe(function () {
+  ga('set', 'page', location.pathname);
+  ga('send', 'pageview');
+  console.log(location.pathname);
+});
