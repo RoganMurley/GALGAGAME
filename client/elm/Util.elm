@@ -25,9 +25,14 @@ safeTail l =
             []
 
 
+websocketAddress : String -> String
+websocketAddress hostname =
+    "wss://" ++ hostname ++ ":9160"
+
+
 send : String -> String -> Cmd msg
 send hostname =
-    WebSocket.send <| "ws://" ++ hostname ++ ":9160"
+    WebSocket.send <| websocketAddress hostname
 
 
 splitOn : String -> String -> ( String, String )
