@@ -6,6 +6,9 @@ services:
     ports:
       - "80:80"
       - "443:443"
+      - "9160:9160"
+    links:
+      - game
     restart: always
   redis:
     build:
@@ -13,8 +16,6 @@ services:
     restart: always
   game:
     image: "game-stormcards"
-    ports:
-      - "9160:9160"
     links:
       - redis
     restart: always

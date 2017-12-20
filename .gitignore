@@ -2,5 +2,6 @@ elm-stuff/
 node_modules/
 .stack-work/
 client/static/build/
+client/ssl
 .DS_Store
 .images/**

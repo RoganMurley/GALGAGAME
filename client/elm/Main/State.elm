@@ -12,7 +12,7 @@ import Navigation
 import Room.State as Room
 import Room.Types as Room
 import Room.Generators exposing (generate)
-import Util exposing (send)
+import Util exposing (send, websocketAddress)
 import Ports exposing (analytics, copyInput, selectAllInput)
 import AnimationFrame
 import Window
@@ -172,12 +172,8 @@ locationUpdate model location =
 
 subscriptions : Main.Model -> Sub Msg
 subscriptions model =
-    let
-        websocketAddress =
-            "ws://" ++ model.flags.hostname ++ ":9160"
-    in
-        Sub.batch
-            [ WebSocket.listen websocketAddress Receive
-            , AnimationFrame.diffs Frame
-            , Window.resizes (\{ width, height } -> Resize width height)
-            ]
+    Sub.batch
+        [ WebSocket.listen (websocketAddress model.flags.hostname) Receive
+        , AnimationFrame.diffs Frame
+        , Window.resizes (\{ width, height } -> Resize width height)
+        ]
