@@ -23,6 +23,7 @@ import qualified Data.GUID as GUID
 import qualified Database.Redis as R
 
 import Data.Text (Text)
+import qualified Data.Text as T
 import qualified Data.Text.Encoding as T
 
 
@@ -37,8 +38,9 @@ app userConn tokenConn = do
 
 login :: R.Connection -> R.Connection -> ActionM ()
 login userConn tokenConn = do
-  username <- param "username"
+  usernameRaw <- param "username"
   password <- param "password"
+  let username = (cs . T.toLower $ usernameRaw) :: ByteString
   gotten <- lift . (R.runRedis userConn) $ R.get username
   case gotten of
     Right pass ->
@@ -86,8 +88,9 @@ logout tokenConn = do
 
 register :: R.Connection -> ActionM ()
 register userConn = do
-  username <- param "username"
+  usernameRaw <- param "username"
   password <- param "password"
+  let username = (cs . T.toLower $ usernameRaw) :: ByteString
   alreadyExists <- lift . (R.runRedis userConn) $ R.exists username
   case alreadyExists of
     Right False -> do
@@ -97,14 +100,20 @@ register userConn = do
           json $ object [ "error" .= err ]
           status badRequest400
         Nothing -> do
-          p <- lift $ hashPasswordUsingPolicy slowerBcryptHashingPolicy password
-          case p of
-            Just hashedPassword -> do
-              _ <- lift . (R.runRedis userConn) $ R.set username hashedPassword
-              json $ object [ ]
-              status created201
-            Nothing ->
-              status internalServerError500
+          case legalPassword password of
+            Just err -> do
+              lift $ debugM "auth" ("Registration: (" <> (cs password) <> ") " <> (cs err))
+              json $ object [ "error" .= err ]
+              status badRequest400
+            Nothing -> do
+              p <- lift $ hashPasswordUsingPolicy slowerBcryptHashingPolicy password
+              case p of
+                Just hashedPassword -> do
+                  _ <- lift . (R.runRedis userConn) $ R.set username hashedPassword
+                  json $ object [ ]
+                  status created201
+                Nothing ->
+                  status internalServerError500
     Right True -> do
       lift $ debugM "auth" ("Registration: user " <> (cs username) <> " already exists")
       json $ object [ "error" .= ("Username already exists" :: Text) ]
@@ -172,4 +181,10 @@ legalName :: ByteString -> Maybe Text
 legalName n
   | length n < 3  = Just "Username too short"
   | length n > 12 = Just "Username too long"
+  | otherwise     = Nothing
+
+
+legalPassword :: ByteString -> Maybe Text
+legalPassword p
+  | length p < 8  = Just "Password too short"
   | otherwise     = Nothing

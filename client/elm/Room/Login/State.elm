@@ -88,9 +88,9 @@ receive _ =
 
 usernameInvalid : String -> Bool
 usernameInvalid username =
-    (String.length username < 1) || (String.length username > 12)
+    (String.length username < 3) || (String.length username > 12)
 
 
 passwordInvalid : String -> Bool
 passwordInvalid password =
-    (String.length password < 1) || (String.length password > 12)
+    (String.length password < 3) || (String.length password > 12)
