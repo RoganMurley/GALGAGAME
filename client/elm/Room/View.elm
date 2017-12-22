@@ -4,6 +4,7 @@ import Connected.View as Connected
 import Html as Html exposing (Html, div, text)
 import Lab.View as Lab
 import Lobby.View as Lobby
+import Login.View as Login
 import Main.Messages as Main
 import Main.Types exposing (Flags)
 import Menu.View as Menu
@@ -33,3 +34,7 @@ view model flags =
             Lab lab ->
                 Html.map (Main.RoomMsg << LabMsg) <|
                     Lab.view params lab
+
+            Login login ->
+                Html.map (Main.RoomMsg << LoginMsg) <|
+                    Login.view params login

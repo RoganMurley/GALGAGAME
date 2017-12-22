@@ -10,6 +10,7 @@ route =
         [ map Play playRoute
         , map Spec specRoute
         , map Lab labRoute
+        , map Login loginRoute
         , map Home top
         ]
 
@@ -29,6 +30,11 @@ playRoute =
 specRoute : Parser (String -> a) a
 specRoute =
     s "spec" </> string
+
+
+loginRoute : Parser a a
+loginRoute =
+    s "login"
 
 
 labRoute : Parser a a

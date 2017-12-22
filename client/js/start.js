@@ -47,5 +47,4 @@ app.ports.volume.subscribe(function (input) {
 app.ports.analytics.subscribe(function () {
   ga('set', 'page', location.pathname);
   ga('send', 'pageview');
-  console.log(location.pathname);
 });
