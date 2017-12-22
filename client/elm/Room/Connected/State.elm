@@ -26,7 +26,7 @@ init mode roomID =
 
 
 update : Flags -> Msg -> Model -> ( Model, Cmd Main.Msg )
-update ({ hostname } as flags) msg ({ game, settings, mode } as model) =
+update flags msg ({ game, settings, mode } as model) =
     case msg of
         GameStateMsg gameMsg ->
             let
@@ -44,7 +44,7 @@ update ({ hostname } as flags) msg ({ game, settings, mode } as model) =
             ( { model
                 | settings = Settings.update Settings.CloseSettings settings
               }
-            , send hostname "concede:"
+            , send flags "concede:"
             )
 
         SetVolume volume ->

@@ -6,7 +6,6 @@ services:
     ports:
       - "8000:80"
       - "4430:443"
-      - "9160:9160"
     volumes:
       - ./client/static/build:/usr/share/nginx/html
     links:

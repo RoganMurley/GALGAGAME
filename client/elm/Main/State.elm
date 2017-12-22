@@ -6,6 +6,7 @@ import WebSocket
 import Lab.State as Lab
 import Lobby.State as Lobby
 import Lobby.Types as Lobby
+import Login.State as Login
 import Main.Messages exposing (Msg(..))
 import Mode exposing (Mode(..))
 import Navigation
@@ -33,7 +34,7 @@ init flags location =
 update : Msg -> Main.Model -> ( Main.Model, Cmd Msg )
 update msg ({ room, flags } as model) =
     let
-        { hostname, time, seed } =
+        { time, seed } =
             flags
     in
         case msg of
@@ -65,7 +66,7 @@ update msg ({ room, flags } as model) =
                 ( model, selectAllInput elementId )
 
             Send str ->
-                ( model, send hostname str )
+                ( model, send flags str )
 
             Receive str ->
                 let
@@ -166,6 +167,33 @@ locationUpdate model location =
                                     Spectating
                     }
 
+                Routing.Login ->
+                    let
+                        -- Annoying stateful bit, fix me.
+                        -- WILL cause bugs.
+                        nextPath : Maybe String
+                        nextPath =
+                            case model.room of
+                                Room.Lobby { gameType, roomID } ->
+                                    case gameType of
+                                        Lobby.CustomGame ->
+                                            Just <| "/play/custom/" ++ roomID
+
+                                        Lobby.ComputerGame ->
+                                            Just "/play/computer/"
+
+                                        Lobby.QuickplayGame ->
+                                            Just "/play/quickplay/"
+
+                                otherwise ->
+                                    Nothing
+                    in
+                        { model
+                            | room =
+                                Room.Login <|
+                                    Login.init nextPath
+                        }
+
         Nothing ->
             { model | room = Room.init }
 
@@ -173,7 +201,7 @@ locationUpdate model location =
 subscriptions : Main.Model -> Sub Msg
 subscriptions model =
     Sub.batch
-        [ WebSocket.listen (websocketAddress model.flags.hostname) Receive
+        [ WebSocket.listen (websocketAddress model.flags) Receive
         , AnimationFrame.diffs Frame
         , Window.resizes (\{ width, height } -> Resize width height)
         ]
