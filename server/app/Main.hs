@@ -15,6 +15,7 @@ import Text.Printf (printf)
 import Network.Wai (Application)
 import Network.Wai.Handler.WebSockets
 import Network.Wai.Handler.Warp (run)
+import System.Environment (lookupEnv)
 import System.IO (BufferMode(LineBuffering), hSetBuffering, stdout)
 import System.Log.Logger (Priority(DEBUG), infoM, warningM, setLevel, updateGlobalLogger)
 
@@ -50,10 +51,20 @@ main :: IO ()
 main = do
   updateGlobalLogger "app" $ setLevel DEBUG
   hSetBuffering stdout LineBuffering
-  userConn  <- R.connect $ A.connectInfo A.UserDatabase
-  tokenConn <- R.connect $ A.connectInfo A.TokenDatabase
+
+  -- If we're on production, these env vars will be present.
+  -- Defined in `redis.prod.env` secret.
+  redisHost     <- lookupEnv "REDIS_HOST"
+  redisPort     <- lookupEnv "REDIS_PORT"
+  redisPassword <- lookupEnv "REDIS_PASSWORD"
+
+  let connect = R.connect . (A.connectInfo (redisHost, redisPort, redisPassword))
+  userConn  <- connect A.UserDatabase
+  tokenConn <- connect A.TokenDatabase
+
   authApp   <- A.app userConn tokenConn
   state     <- atomically $ newTVar Server.initState
+
   run 9160 $ waiApp state tokenConn authApp
 
 
