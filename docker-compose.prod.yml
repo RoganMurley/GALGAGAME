@@ -9,12 +9,7 @@ services:
     links:
       - game
     restart: always
-  redis:
-    build:
-      context: "redis"
-    restart: always
   game:
     image: "game-stormcards"
-    links:
-      - redis
+    env_file: "redis/redis.prod.env"
     restart: always
