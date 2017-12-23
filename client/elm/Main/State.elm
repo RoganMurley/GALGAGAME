@@ -84,7 +84,10 @@ update msg ({ room, flags } as model) =
 
             UrlChange l ->
                 ( locationUpdate model l
-                , analytics "test"
+                , Cmd.batch
+                    [ analytics "test"
+                    , send flags "reconnect:" -- Reopen ws connection
+                    ]
                 )
 
 
