@@ -31,7 +31,6 @@ data GameCommand =
 
 update :: GameCommand -> WhichPlayer -> GameState -> Either Err (Maybe GameState, [Outcome])
 update (Chat username msg) _     _     = chat    username msg
-update Concede             which state = concede which    state
 update cmd which state =
   case state of
     Waiting _ _ ->
@@ -52,6 +51,8 @@ update cmd which state =
               playCard index which model
             HoverCard index ->
               hoverCard index which model
+            Concede ->
+              concede which state
             _ ->
               Left ("Unknown command " <> (cs $ show cmd) <> " on a Playing GameState")
         Ended winner _ gen ->
