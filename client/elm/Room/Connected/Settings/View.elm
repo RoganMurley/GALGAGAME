@@ -8,8 +8,8 @@ import Settings.Messages as Settings
 import Settings.Types exposing (..)
 
 
-view : Model -> Html Connected.Msg
-view { modalState, volume } =
+view : Model -> List (Html Connected.Msg) -> Html Connected.Msg
+view { modalState, volume } nestedViews =
     let
         settingsStyle =
             case modalState of
@@ -53,11 +53,7 @@ view { modalState, volume } =
                                 ]
                                 []
                             ]
-                        , button
-                            [ class "settings-button"
-                            , onClick Connected.Concede
-                            ]
-                            [ text "Concede" ]
+                        , div [] nestedViews
                         ]
                     ]
                 ]
