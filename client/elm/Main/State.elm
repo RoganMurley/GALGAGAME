@@ -1,5 +1,6 @@
 module Main.State exposing (..)
 
+import Audio exposing (setVolume)
 import Routing.State as Routing
 import Routing.Types as Routing
 import WebSocket
@@ -20,6 +21,7 @@ import Window
 import Listener exposing (listen)
 import Main.Types as Main exposing (..)
 import UrlParser exposing (parsePath)
+import Settings.State as Settings
 
 
 init : Flags -> Navigation.Location -> Main.Model
@@ -27,12 +29,13 @@ init flags location =
     locationUpdate
         { room = Room.init
         , flags = flags
+        , settings = Settings.init
         }
         location
 
 
 update : Msg -> Main.Model -> ( Main.Model, Cmd Msg )
-update msg ({ room, flags } as model) =
+update msg ({ room, settings, flags } as model) =
     let
         { time, seed } =
             flags
@@ -68,6 +71,11 @@ update msg ({ room, flags } as model) =
             Send str ->
                 ( model, send flags str )
 
+            SettingsMsg settingsMsg ->
+                ( { model | settings = Settings.update settingsMsg settings }
+                , Cmd.none
+                )
+
             Receive str ->
                 let
                     ( newRoom, cmd ) =
@@ -89,6 +97,18 @@ update msg ({ room, flags } as model) =
                     , send flags "reconnect:" -- Reopen ws connection
                     ]
                 )
+
+            SetVolume volume ->
+                let
+                    newVolume =
+                        clamp 0 100 volume
+                in
+                    ( { model
+                        | settings =
+                            { settings | volume = newVolume }
+                      }
+                    , setVolume newVolume
+                    )
 
 
 locationUpdate : Main.Model -> Navigation.Location -> Main.Model

@@ -1,14 +1,14 @@
 module Settings.View exposing (view)
 
-import Connected.Messages as Connected
 import Html exposing (..)
 import Html.Attributes as H exposing (..)
 import Html.Events exposing (onClick, onInput)
+import Main.Messages as Main
 import Settings.Messages as Settings
 import Settings.Types exposing (..)
 
 
-view : Model -> List (Html Connected.Msg) -> Html Connected.Msg
+view : Model -> List (Html Main.Msg) -> Html Main.Msg
 view { modalState, volume } nestedViews =
     let
         settingsStyle =
@@ -24,7 +24,7 @@ view { modalState, volume } nestedViews =
                 [ class "settings-icon"
                 , src "/img/icon/settings.svg"
                 , onClick <|
-                    Connected.SettingsMsg <|
+                    Main.SettingsMsg <|
                         Settings.ToggleSettings
                 ]
                 []
@@ -47,7 +47,7 @@ view { modalState, volume } nestedViews =
                                 , value <| toString volume
                                 , onInput
                                     (\v ->
-                                        Connected.SetVolume <|
+                                        Main.SetVolume <|
                                             Result.withDefault 0 (String.toInt v)
                                     )
                                 ]
