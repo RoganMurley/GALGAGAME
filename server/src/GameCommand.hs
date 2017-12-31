@@ -144,7 +144,7 @@ playCard index which m
 endTurn :: WhichPlayer -> Model -> Either Err (Maybe GameState, [Outcome])
 endTurn which model
   | turn /= which = Left "You can't end the turn when it's not your turn"
-  | handFull      = Left "You can't end the turn when your hand is full"
+  | full          = Left "You can't end the turn when your hand is full"
   | otherwise     =
     case passes of
       OnePass ->
@@ -187,10 +187,8 @@ endTurn which model
         t <- getTurn
         p <- getPasses
         return (t, p)
-    handFull :: Bool
-    handFull = evalI model $ do
-      hand <- getHand which
-      return ((length hand) >= maxHandLength)
+    full :: Bool
+    full = evalI model $ handFull PlayerA
     drawCards :: Program ()
     drawCards = do
       draw PlayerA

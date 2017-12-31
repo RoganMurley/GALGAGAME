@@ -300,6 +300,13 @@ addToHand :: WhichPlayer -> Card -> Program ()
 addToHand w c = modHand w ((:) c)
 
 
+handFull :: WhichPlayer -> Program Bool
+handFull w = do
+  handLength <- length <$> getHand w
+  return $ handLength >= maxHandLength
+
+
+
 effI :: Model -> Program a -> (Model, a)
 effI m (Free (GetGen f))      = (effI m) . f . model_gen $ m
 effI m (Free (GetDeck w f))   = (effI m) . f . pmodel_deck $ getPmodel w m
