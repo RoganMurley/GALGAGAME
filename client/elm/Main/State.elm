@@ -1,6 +1,8 @@
 module Main.State exposing (..)
 
 import Audio exposing (setVolume)
+import Json.Decode as Json
+import Http
 import Routing.State as Routing
 import Routing.Types as Routing
 import WebSocket
@@ -14,8 +16,8 @@ import Navigation
 import Room.State as Room
 import Room.Types as Room
 import Room.Generators exposing (generate)
-import Util exposing (send, websocketAddress)
-import Ports exposing (analytics, copyInput, selectAllInput)
+import Util exposing (authLocation, send, websocketAddress)
+import Ports exposing (analytics, copyInput, reload, selectAllInput)
 import AnimationFrame
 import Window
 import Listener exposing (listen)
@@ -93,7 +95,7 @@ update msg ({ room, settings, flags } as model) =
             UrlChange l ->
                 ( locationUpdate model l
                 , Cmd.batch
-                    [ analytics "test"
+                    [ analytics ()
                     , send flags "reconnect:" -- Reopen ws connection
                     ]
                 )
@@ -109,6 +111,21 @@ update msg ({ room, settings, flags } as model) =
                       }
                     , setVolume newVolume
                     )
+
+            Logout ->
+                ( model
+                , Http.send LogoutCallback <|
+                    Http.post
+                        ((authLocation flags) ++ "/logout")
+                        Http.emptyBody
+                        (Json.succeed ())
+                )
+
+            LogoutCallback (Ok _) ->
+                ( model, reload () )
+
+            LogoutCallback (Err _) ->
+                ( model, Cmd.none )
 
 
 locationUpdate : Main.Model -> Navigation.Location -> Main.Model

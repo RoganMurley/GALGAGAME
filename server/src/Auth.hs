@@ -83,9 +83,11 @@ logout tokenConn = do
     Just t -> do
       _ <- lift . (R.runRedis tokenConn) $ R.del [T.encodeUtf8 t]
       deleteCookie "login"
-      status noContent204
-    Nothing ->
-      status noContent204
+      json $ object []
+      status ok200
+    Nothing -> do
+      json $ object []
+      status ok200
 
 
 register :: R.Connection -> ActionM ()

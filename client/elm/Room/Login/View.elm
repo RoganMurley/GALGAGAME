@@ -1,4 +1,4 @@
-module Login.View exposing (view)
+module Login.View exposing (logoutView, view)
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -6,6 +6,7 @@ import Html.Events exposing (..)
 import Login.Messages exposing (..)
 import Login.Types exposing (..)
 import Login.State exposing (passwordInvalid, usernameInvalid)
+import Main.Messages as Main
 import Raymarch.Types as Raymarch
 import Raymarch.View as Raymarch
 
@@ -45,3 +46,11 @@ view params { username, password, error, submitting } =
                 []
                 [ Raymarch.view params ]
             ]
+
+
+logoutView : List (Html Main.Msg)
+logoutView =
+    [ button
+        [ class "settings-button", onClick Main.Logout ]
+        [ text "Logout" ]
+    ]

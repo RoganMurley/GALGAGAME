@@ -50,19 +50,27 @@ view model settings flags =
 
 settingsView : Model -> List (Html Main.Msg)
 settingsView model =
-    case model of
-        MainMenu ->
-            []
+    let
+        baseViews : List (Html Main.Msg)
+        baseViews =
+            Login.logoutView
+    in
+        case model of
+            MainMenu ->
+                baseViews
 
-        Lobby _ ->
-            []
+            Lobby _ ->
+                baseViews
 
-        Connected { game } ->
-            List.map (Html.map (Main.RoomMsg << ConnectedMsg)) <|
-                Connected.concedeView game
+            Connected { game } ->
+                List.concat
+                    [ baseViews
+                    , List.map (Html.map (Main.RoomMsg << ConnectedMsg)) <|
+                        Connected.concedeView game
+                    ]
 
-        Lab _ ->
-            []
+            Lab _ ->
+                baseViews
 
-        Login _ ->
-            []
+            Login _ ->
+                baseViews
