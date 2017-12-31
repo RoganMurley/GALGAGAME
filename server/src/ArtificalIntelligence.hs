@@ -76,18 +76,20 @@ chooseAction gen turn model
     comparison :: Action -> Action -> Ordering
     comparison = comparing $ evalState . (postulateAction model gen)
     modelTurn :: Turn
-    modelTurn = evalI model $ getTurn
+    modelTurn = evalI model getTurn
 
 
 winningEnd :: Model -> Bool
-winningEnd m =
-  -- If ending the turn now would win, do it! We don't care about heuristics
-  -- when we have a sure bet :)
-  case fst . runWriter . resolveAll $ m of
-    Ended (Just PlayerA) _ _ ->
-      True
-    _ ->
-      False
+winningEnd model
+  | evalI model $ handFull PlayerA = False
+  | otherwise                      =
+    -- If ending the turn now would win, do it! We don't care about heuristics
+    -- when we have a sure bet :)
+    case fst . runWriter . resolveAll $ model of
+      Ended (Just PlayerA) _ _ ->
+        True
+      _ ->
+        False
 
 
 -- Some cards entail soft advantages/disadvantages that the AI can't handle.
