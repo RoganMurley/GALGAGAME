@@ -63,17 +63,26 @@
 .settings-button {
   font-family: 'Cinzel Decorative', sans-serif;
   background: none;
-  color: #f00;
+  color: #fff;
   border-radius: 8px;
-  border-color: #f00;
+  border-color: #fff;
   font-size: 28px;
   padding: 0 24px;
 
   cursor: pointer; cursor: hand;
   margin-top: 115px;
+  margin-right: 15px;
 
   &:hover {
-    background: rgba(255, 0, 0, 0.1);
+    background: rgba(255, 255, 255, 0.2);
+  }
+}
+
+.settings-concede {
+  color: #f00;
+  border-color: #f00;
+  &:hover {
+    background: rgba(255, 0, 0, 0.2);
   }
 }
 

@@ -1,5 +1,6 @@
 module Main.Messages exposing (Msg(..))
 
+import Http
 import Navigation exposing (Location)
 import Room.Messages as Room
 import Settings.Messages as Settings
@@ -16,3 +17,5 @@ type Msg
     | SettingsMsg Settings.Msg
     | SetVolume Int
     | UrlChange Location
+    | Logout
+    | LogoutCallback (Result Http.Error ())
