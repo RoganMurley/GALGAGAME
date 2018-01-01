@@ -96,7 +96,8 @@ update msg ({ room, settings, flags } as model) =
                 ( locationUpdate model l
                 , Cmd.batch
                     [ analytics ()
-                    , send flags "reconnect:" -- Reopen ws connection
+
+                    -- , send flags "reconnect:" -- Reopen ws connection
                     ]
                 )
 
