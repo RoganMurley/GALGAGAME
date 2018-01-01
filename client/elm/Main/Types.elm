@@ -17,6 +17,7 @@ type alias Flags =
     , seed : Seed
     , time : Float
     , dimensions : ( Int, Int )
+    , username : Maybe String
     }
 
 

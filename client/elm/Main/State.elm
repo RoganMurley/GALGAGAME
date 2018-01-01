@@ -9,6 +9,7 @@ import WebSocket
 import Lab.State as Lab
 import Lobby.State as Lobby
 import Lobby.Types as Lobby
+import Login.Decoders as Login
 import Login.State as Login
 import Main.Messages exposing (Msg(..))
 import Mode exposing (Mode(..))
@@ -126,6 +127,27 @@ update msg ({ room, settings, flags } as model) =
                 ( model, reload () )
 
             LogoutCallback (Err _) ->
+                ( model, Cmd.none )
+
+            GetAuth ->
+                ( model
+                , Http.send GetAuthCallback <|
+                    Http.get
+                        ((authLocation flags) ++ "/me")
+                        (Json.maybe Login.authDecoder)
+                )
+
+            GetAuthCallback (Ok username) ->
+                let
+                    newFlags : Flags
+                    newFlags =
+                        { flags | username = username }
+                in
+                    ( { model | flags = newFlags }
+                    , Cmd.none
+                    )
+
+            GetAuthCallback (Err _) ->
                 ( model, Cmd.none )
 
 

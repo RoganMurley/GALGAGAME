@@ -19,3 +19,5 @@ type Msg
     | UrlChange Location
     | Logout
     | LogoutCallback (Result Http.Error ())
+    | GetAuth
+    | GetAuthCallback (Result Http.Error (Maybe String))

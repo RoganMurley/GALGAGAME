@@ -43,17 +43,17 @@ view model settings flags =
                         Login.view params login
     in
         div []
-            [ Settings.view settings (settingsView model)
+            [ Settings.view settings (settingsView model flags)
             , roomView
             ]
 
 
-settingsView : Model -> List (Html Main.Msg)
-settingsView model =
+settingsView : Model -> Flags -> List (Html Main.Msg)
+settingsView model flags =
     let
         baseViews : List (Html Main.Msg)
         baseViews =
-            Login.logoutView
+            Login.logoutView flags
     in
         case model of
             MainMenu ->
