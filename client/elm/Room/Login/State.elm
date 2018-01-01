@@ -9,7 +9,7 @@ import Main.Messages as Main
 import Main.Types exposing (Flags)
 import Navigation
 import Room.Messages as Room
-import Util exposing (authLocation, send)
+import Util exposing (authLocation, message, send)
 
 
 init : Maybe String -> Model
@@ -53,6 +53,7 @@ update model msg flags =
             ( model
             , Cmd.batch
                 [ Navigation.newUrl model.nextUrl
+                , message Main.GetAuth
 
                 -- Reconnect so that the ws connection has our login cookie
                 , send flags "reconnect:"

@@ -7,6 +7,7 @@ import Login.Messages exposing (..)
 import Login.Types exposing (..)
 import Login.State exposing (passwordInvalid, usernameInvalid)
 import Main.Messages as Main
+import Main.Types exposing (Flags)
 import Raymarch.Types as Raymarch
 import Raymarch.View as Raymarch
 
@@ -48,9 +49,14 @@ view params { username, password, error, submitting } =
             ]
 
 
-logoutView : List (Html Main.Msg)
-logoutView =
-    [ button
-        [ class "settings-button", onClick Main.Logout ]
-        [ text "Logout" ]
-    ]
+logoutView : Flags -> List (Html Main.Msg)
+logoutView { username } =
+    case username of
+        Just _ ->
+            [ button
+                [ class "settings-button", onClick Main.Logout ]
+                [ text "Logout" ]
+            ]
+
+        Nothing ->
+            []

@@ -33,9 +33,23 @@ app :: R.Connection -> R.Connection -> IO Application
 app userConn tokenConn = do
   updateGlobalLogger "auth" $ setLevel DEBUG
   scottyApp $ do
-    post "/auth/login"    $ login userConn tokenConn
-    post "/auth/logout"   $ logout tokenConn
+    get  "/auth/me"       $ me                tokenConn
+    post "/auth/login"    $ login    userConn tokenConn
+    post "/auth/logout"   $ logout            tokenConn
     post "/auth/register" $ register userConn
+
+
+me :: R.Connection -> ActionM ()
+me tokenConn = do
+  token     <- getCookie loginCookieName
+  usernameM <- lift $ checkAuth tokenConn token
+  case usernameM of
+    Just username -> do
+      json $ object [ "username" .= username ]
+      status ok200
+    Nothing -> do
+      json $ object [ "error" .= ("Not logged in" :: Text) ]
+      status unauthorized401
 
 
 login :: R.Connection -> R.Connection -> ActionM ()
@@ -51,7 +65,7 @@ login userConn tokenConn = do
           case validatePassword hashedPassword password of
             True -> do
               token <- lift GUID.genText
-              let cookie = (makeSimpleCookie "login" token) {
+              let cookie = (makeSimpleCookie loginCookieName token) {
                   setCookieMaxAge = Just (secondsToDiffTime loginTimeout),
                   setCookieSecure = True,
                   setCookieHttpOnly = True,
@@ -78,11 +92,11 @@ login userConn tokenConn = do
 
 logout :: R.Connection -> ActionM ()
 logout tokenConn = do
-  token <- getCookie "login"
+  token <- getCookie loginCookieName
   case token of
     Just t -> do
       _ <- lift . (R.runRedis tokenConn) $ R.del [T.encodeUtf8 t]
-      deleteCookie "login"
+      deleteCookie loginCookieName
       json $ object []
       status ok200
     Nothing -> do
@@ -136,7 +150,6 @@ checkAuth tokenConn (Just token) = do
     Right username ->
       return (T.decodeUtf8 <$> username)
     Left _ -> do
-      errorM "auth" "Database connection error"
       return Nothing
 
 
@@ -170,12 +183,16 @@ connectInfo (host, portString, password) database =
     port = R.PortNumber <$> (portString >>= readMay)
 
 
+loginCookieName :: Text
+loginCookieName = "login"
+
+
 loginTimeout :: Seconds
 loginTimeout = 3600 * 24 * 7
 
 
 getToken :: WS.PendingConnection -> Maybe Token
-getToken pending = snd <$> find (((==) "login") . fst) cookies
+getToken pending = snd <$> find (((==) loginCookieName) . fst) cookies
   where
     cookies :: [(Text, Text)]
     cookies = case cookieString of
