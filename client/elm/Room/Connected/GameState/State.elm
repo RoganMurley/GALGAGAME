@@ -122,7 +122,7 @@ update msg state mode flags =
 
 
 updatePlayingOnly : PlayingOnly -> GameState -> Mode -> Flags -> ( GameState, Cmd Main.Msg )
-updatePlayingOnly msg state mode ({ hostname } as flags) =
+updatePlayingOnly msg state mode flags =
     let
         legal =
             case mode of
@@ -139,7 +139,7 @@ updatePlayingOnly msg state mode ({ hostname } as flags) =
                 Rematch ->
                     case state of
                         Ended _ _ _ _ _ ->
-                            ( state, send hostname "rematch:" )
+                            ( state, send flags "rematch:" )
 
                         otherwise ->
                             ( state, Cmd.none )
@@ -173,7 +173,7 @@ updatePlayingOnly msg state mode ({ hostname } as flags) =
 
 
 updateTurnOnly : TurnOnly -> GameState -> Mode -> Flags -> ( GameState, Cmd Main.Msg )
-updateTurnOnly msg state mode ({ hostname } as flags) =
+updateTurnOnly msg state mode flags =
     let
         legal =
             case state of
@@ -190,7 +190,7 @@ updateTurnOnly msg state mode ({ hostname } as flags) =
                 EndTurn ->
                     ( state
                     , Cmd.batch
-                        [ send hostname "end:"
+                        [ send flags "end:"
                         , playSound "/sfx/endTurn.wav"
                         ]
                     )
@@ -205,7 +205,7 @@ updateTurnOnly msg state mode ({ hostname } as flags) =
                     in
                         ( newState2
                         , Cmd.batch
-                            [ send hostname ("play:" ++ (toString index))
+                            [ send flags ("play:" ++ (toString index))
                             , playSound "/sfx/playCard.wav"
                             , cmd1
                             , cmd2

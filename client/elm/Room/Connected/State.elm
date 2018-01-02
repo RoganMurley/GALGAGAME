@@ -7,18 +7,16 @@ import Connected.Messages exposing (..)
 import GameState.Messages as GameState
 import GameState.State as GameState
 import GameState.Types exposing (..)
-import Settings.State as Settings
 import Settings.Messages as Settings
 import Main.Messages as Main
 import Main.Types exposing (Flags)
 import Mode exposing (Mode(..))
-import Util exposing (send, splitOn)
+import Util exposing (message, send, splitOn)
 
 
 init : Mode -> String -> Model
 init mode roomID =
     { game = Waiting WaitQuickplay
-    , settings = Settings.init
     , mode = mode
     , roomID = roomID
     , players = ( Nothing, Nothing )
@@ -26,7 +24,7 @@ init mode roomID =
 
 
 update : Flags -> Msg -> Model -> ( Model, Cmd Main.Msg )
-update ({ hostname } as flags) msg ({ game, settings, mode } as model) =
+update flags msg ({ game, mode } as model) =
     case msg of
         GameStateMsg gameMsg ->
             let
@@ -35,29 +33,15 @@ update ({ hostname } as flags) msg ({ game, settings, mode } as model) =
             in
                 ( { model | game = newGame }, cmd )
 
-        SettingsMsg settingsMsg ->
-            ( { model | settings = Settings.update settingsMsg settings }
-            , Cmd.none
-            )
-
         Concede ->
-            ( { model
-                | settings = Settings.update Settings.CloseSettings settings
-              }
-            , send hostname "concede:"
+            ( model
+            , Cmd.batch
+                [ message <|
+                    Main.SettingsMsg <|
+                        Settings.CloseSettings
+                , send flags "concede:"
+                ]
             )
-
-        SetVolume volume ->
-            let
-                newVolume =
-                    clamp 0 100 volume
-            in
-                ( { model
-                    | settings =
-                        { settings | volume = newVolume }
-                  }
-                , setVolume newVolume
-                )
 
 
 tick : Model -> Float -> Model

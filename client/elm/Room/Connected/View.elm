@@ -1,21 +1,20 @@
-module Connected.View exposing (view)
+module Connected.View exposing (concedeView, view)
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
+import Html.Events exposing (..)
+import Connected.Messages as Connected
 import Connected.Types exposing (..)
+import GameState.Types exposing (GameState(..))
 import GameState.View as GameState
 import Main.Messages exposing (Msg(..))
 import Main.Types exposing (Flags)
-import Room.Messages as Room
-import Settings.View as Settings
 
 
 view : Model -> Flags -> Html Msg
-view { game, settings, roomID, players } flags =
+view { game, roomID, players } flags =
     div []
-        [ Html.map (RoomMsg << Room.ConnectedMsg) <|
-            Settings.view settings
-        , playersView players
+        [ playersView players
         , GameState.view game roomID flags
         ]
 
@@ -41,3 +40,21 @@ playersView ( pa, pb ) =
             [ playerView pb True
             , playerView pa False
             ]
+
+
+concedeView : GameState -> List (Html Connected.Msg)
+concedeView state =
+    case state of
+        PlayingGame _ _ ->
+            [ button
+                [ classList
+                    [ ( "settings-button", True )
+                    , ( "settings-concede", True )
+                    ]
+                , onClick Connected.Concede
+                ]
+                [ text "Concede" ]
+            ]
+
+        otherwise ->
+            []

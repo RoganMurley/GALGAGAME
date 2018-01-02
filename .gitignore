@@ -2,5 +2,7 @@ elm-stuff/
 node_modules/
 .stack-work/
 client/static/build/
+client/ssl
+redis/redis.prod.env
 .DS_Store
 .images/**

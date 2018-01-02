@@ -109,7 +109,7 @@ waitingView waitType httpPort hostname roomID =
                 ""
 
         challengeLink =
-            "http://" ++ hostname ++ portProtocol ++ "/play/custom/" ++ roomID
+            "https://" ++ hostname ++ portProtocol ++ "/play/custom/" ++ roomID
 
         myID =
             "challenge-link"

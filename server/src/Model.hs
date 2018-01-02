@@ -1,6 +1,10 @@
+{-# LANGUAGE TemplateHaskell, FlexibleContexts, FlexibleInstances #-}
 module Model where
 
+import Control.Monad.Free (Free(..), MonadFree, liftF)
+import Control.Monad.Free.TH (makeFree)
 import Data.Aeson (ToJSON(..), (.=), object)
+import Data.List (partition)
 import Data.Monoid ((<>))
 import Data.String.Conversions (cs)
 import Data.Text (Text, toUpper)
@@ -11,81 +15,26 @@ import Player (WhichPlayer(..), other)
 import Util (Gen)
 
 
-data Model = Model
-  { model_turn   :: Turn
-  , model_stack  :: Stack
-  , model_pa     :: PlayerModel
-  , model_pb     :: PlayerModel
-  , model_passes :: Passes
-  , model_gen    :: Gen
-  }
-  deriving (Eq, Show)
+type Program a = Free DSL a
 
-
-data PlayerModel = PlayerModel
-  { pmodel_hand :: Hand
-  , pmodel_deck :: Deck
-  , pmodel_life :: Life
-  }
-  deriving (Eq, Show)
 
 data Card = Card
-  { card_name :: CardName
-  , card_desc :: CardDesc
-  , card_img  :: CardImgURL
-  , card_snd  :: CardSndURL
+  { card_name :: Text
+  , card_desc :: Text
+  , card_img  :: Text
+  , card_snd  :: Text
   , card_anim :: Maybe CardAnim
-  , card_eff  :: CardEff
+  , card_eff  :: WhichPlayer -> Program ()
   }
+
 
 instance Eq Card where
   (Card n1 d1 i1 _ _ _) == (Card n2 d2 i2 _ _ _) =
     n1 == n2 && d1 == d2 && i1 == i2
 
+
 instance Show Card where
   show = cs . card_name
-
-type CardName = Text
-type CardDesc = Text
-type CardImgURL = Text
-type CardSndURL = Text
-type CardEff = (WhichPlayer -> Model -> Model)
-
-data CardAnim =
-    Slash
-  | Heal
-  | Obliterate
-  deriving (Show, Eq)
-
-type Hand = [Card]
-type Deck = [Card]
-type Stack = [StackCard]
-
-data StackCard = StackCard
-  { stackcard_owner :: WhichPlayer
-  , stackcard_card  :: Card
-  }
-  deriving (Eq, Show)
-
-type Life = Int
-
-type Turn = WhichPlayer
-
-data Passes = NoPass | OnePass
-  deriving (Eq, Show)
-
-
-instance ToJSON Model where
-  toJSON model =
-    object
-      [
-        "turn"    .= getTurn model
-      , "stack"   .= getStack model
-      , "handPA"  .= getHand PlayerA model
-      , "handPB"  .= length (getHand PlayerB model)
-      , "lifePA"  .= getLife PlayerA model
-      , "lifePB"  .= getLife PlayerB model
-      ]
 
 
 instance ToJSON Card where
@@ -106,11 +55,66 @@ instance ToJSON CardAnim where
   toJSON Obliterate = "obliterate"
 
 
+data CardAnim =
+    Slash
+  | Heal
+  | Obliterate
+  deriving (Show, Eq)
+
+
+data Model = Model
+  { model_turn   :: Turn
+  , model_stack  :: Stack
+  , model_pa     :: PlayerModel
+  , model_pb     :: PlayerModel
+  , model_passes :: Passes
+  , model_gen    :: Gen
+  }
+  deriving (Eq, Show)
+
+
+data PlayerModel = PlayerModel
+  { pmodel_hand :: Hand
+  , pmodel_deck :: Deck
+  , pmodel_life :: Life
+  }
+  deriving (Eq, Show)
+
+type Hand = [Card]
+type Deck = [Card]
+type Stack = [StackCard]
+
+data StackCard = StackCard
+  { stackcard_owner :: WhichPlayer
+  , stackcard_card  :: Card
+  }
+  deriving (Eq, Show)
+
+type Life = Int
+
+type Turn = WhichPlayer
+
+data Passes = NoPass | OnePass
+  deriving (Eq, Show)
+
+
+instance ToJSON Model where
+  toJSON Model{ model_turn, model_stack, model_pa, model_pb } =
+    object
+      [
+        "turn"   .= model_turn
+      , "stack"  .= model_stack
+      , "handPA" .= pmodel_hand model_pa
+      , "handPB" .= length (pmodel_hand model_pb)
+      , "lifePA" .= pmodel_life model_pa
+      , "lifePB" .= pmodel_life model_pb
+      ]
+
 instance ToJSON StackCard where
-  toJSON StackCard{ stackcard_owner=owner, stackcard_card=card } =
+  toJSON StackCard{ stackcard_owner, stackcard_card } =
     object [
-      "owner" .= owner
-    , "card"  .= card
+      "owner" .= stackcard_owner
+    , "card"  .= stackcard_card
     ]
 
 
@@ -131,183 +135,132 @@ instance Mirror StackCard where
   mirror (StackCard p c) = StackCard (other p) c
 
 
-swapTurn :: Model -> Model
-swapTurn model = (modPasses incPasses) . (modTurn other) $ model
-
-
--- STACK CARD
 changeOwner :: StackCard -> StackCard
 changeOwner = mirror
 
 
-withStackHead :: (StackCard -> CardEff) -> CardEff
-withStackHead eff =
-  (\p m ->
-    case headMay (getStack m) of
-      Nothing ->
-        m
-      Just card ->
-        (eff card) p m
-  )
-
-
--- GENERIC
-type Setter   a b = b -> a -> a
-type Getter   a b = a -> b
-type Modifier a b = (b -> b) -> a -> a
-
-modifier :: Setter a b -> Getter a b -> Modifier a b
-modifier set get f = (\m -> set (f (get m)) m)
+owner :: WhichPlayer -> StackCard -> Bool
+owner w (StackCard o _) = w == o
 
 
 -- PLAYER MODEL
-getPmodel :: WhichPlayer -> Getter Model PlayerModel
+getPmodel :: WhichPlayer -> (Model -> PlayerModel)
 getPmodel PlayerA = model_pa
 getPmodel PlayerB = model_pb
+
 
 setPmodel :: PlayerModel -> WhichPlayer -> Model -> Model
 setPmodel pmodel PlayerA model = model { model_pa = pmodel }
 setPmodel pmodel PlayerB model = model { model_pb = pmodel }
 
+
 modPmodel :: (PlayerModel -> PlayerModel) -> WhichPlayer -> Model -> Model
 modPmodel f p m = setPmodel (f (getPmodel p m)) p m
 
 
--- TURN
-getTurn :: Getter Model Turn
-getTurn = model_turn
-
-setTurn :: Setter Model Turn
-setTurn turn model = model { model_turn = turn }
-
-modTurn :: Modifier Model Turn
-modTurn = modifier setTurn getTurn
+owned :: WhichPlayer -> StackCard -> Bool
+owned w (StackCard o _) = w == o
 
 
--- LIFE.
-getLife :: WhichPlayer -> Getter Model Life
-getLife w m = pmodel_life $ getPmodel w m
+description :: Card -> Text
+description Card{ card_name, card_desc } =
+  "(" <> toUpper card_name <> ": " <> card_desc <> ")"
 
 
-setLife :: WhichPlayer -> Setter Model Life
-setLife w life = modPmodel (\pm -> pm { pmodel_life = life }) w
+-- DSL
 
 
-modLife :: WhichPlayer -> Modifier Model Life
-modLife w = modifier (setLife w) (getLife w)
+data DSL n =
+    GetGen (Gen -> n)
+  | GetDeck WhichPlayer (Deck -> n)
+  | GetHand WhichPlayer (Hand-> n)
+  | GetLife WhichPlayer (Life -> n)
+  | GetPasses (Passes -> n)
+  | GetStack (Stack -> n)
+  | GetTurn (Turn -> n)
+  | SetGen Gen n
+  | SetDeck WhichPlayer Deck n
+  | SetHand WhichPlayer Hand n
+  | SetLife WhichPlayer Life n
+  | SetPasses Passes n
+  | SetStack Stack n
+  | SetTurn Turn n
+  deriving (Functor)
 
 
--- HAND.
-getHand :: WhichPlayer -> Getter Model Hand
-getHand w m = pmodel_hand $ getPmodel w m
+makeFree ''DSL
 
 
-setHand :: WhichPlayer -> Setter Model Hand
-setHand w h =
-  modPmodel (\pm -> pm {
-    -- Reverse once to make sure things are taken from the right end,
-    -- then again to preserve initial order.
-    pmodel_hand = reverse . (take maxHandLength) $ reverse h
-  }) w
+modifier :: (WhichPlayer -> Program a) -> (WhichPlayer -> a -> Program ()) -> WhichPlayer -> (a -> a) -> Program ()
+modifier getter setter w f = do
+  x <- getter w
+  setter w (f x)
 
 
-modHand :: WhichPlayer -> Modifier Model Hand
-modHand w = modifier (setHand w) (getHand w)
+modLife :: WhichPlayer -> (Life -> Life) -> Program ()
+modLife = modifier getLife setLife
 
 
--- DECK.
-getDeck :: WhichPlayer -> Getter Model Deck
-getDeck w m = pmodel_deck $ getPmodel w m
+modHand :: WhichPlayer -> (Hand -> Hand) -> Program ()
+modHand = modifier getHand setHand
 
 
-setDeck :: WhichPlayer -> Setter Model Deck
-setDeck w d = modPmodel (\pm -> pm { pmodel_deck = d }) w
+modDeck :: WhichPlayer -> (Deck -> Deck) -> Program ()
+modDeck = modifier getDeck setDeck
 
 
-modDeck :: WhichPlayer -> Modifier Model Deck
-modDeck w = modifier (setDeck w) (getDeck w)
+modStack :: (Stack -> Stack) -> Program ()
+modStack f = getStack >>= (setStack . f)
 
 
--- STACK
-getStack :: Getter Model Stack
-getStack = model_stack
+modStackAll :: (StackCard -> StackCard) -> Program ()
+modStackAll f = modStack $ fmap f
 
 
-setStack :: Setter Model Stack
-setStack stack model = model { model_stack = stack }
+modTurn :: (Turn -> Turn) -> Program ()
+modTurn f = getTurn >>= (setTurn . f)
 
 
-modStack :: Modifier Model Stack
-modStack = modifier setStack getStack
+modPasses :: (Passes -> Passes) -> Program ()
+modPasses f = getPasses >>= (setPasses . f)
 
 
-modStackHead :: Modifier Model StackCard
-modStackHead f m =
-  case headMay stack of
-    Nothing ->
-      m
+modStackHead :: (StackCard -> StackCard) -> Program ()
+modStackHead f = do
+  s <- getStack
+  case headMay s of
     Just c ->
-      setStack (f c : (tailSafe stack)) m
-  where
-    stack = getStack m :: Stack
-
-
-modStackAll :: Modifier Model StackCard
-modStackAll f = modStack (fmap f)
-
-
--- Passes.
-getPasses :: Getter Model Passes
-getPasses = model_passes
-
-
-setPasses :: Setter Model Passes
-setPasses passes model = model { model_passes = passes }
-
-
-modPasses :: Modifier Model Passes
-modPasses = modifier setPasses getPasses
-
-
-incPasses :: Passes -> Passes
-incPasses NoPass = OnePass
-incPasses OnePass = NoPass
-
-
-resetPasses :: Model -> Model
-resetPasses = setPasses NoPass
-
-
--- GEN
-getGen :: Getter Model Gen
-getGen = model_gen
-
-setGen :: Setter Model Gen
-setGen gen model = model { model_gen = gen }
-
-
--- ACTIONS
-hurt :: Life -> WhichPlayer -> Model -> Model
-hurt damage which model = modLife which (-damage+) model
-
-
-heal :: Life -> WhichPlayer -> Model -> Model
-heal life PlayerA model = modLife PlayerA (life+) model
-heal life PlayerB model = modLife PlayerB (life+) model
-
-
-lifesteal :: Life -> WhichPlayer -> Model -> Model
-lifesteal damage which = (hurt damage which) . (heal damage (other which))
-
-
-drawCard :: WhichPlayer -> Model -> Model
-drawCard which model =
-  case headMay (getDeck which model) of
-    Just card ->
-      modDeck which tailSafe $
-        modHand which ((:) card) model
+      setStack $ f c : (tailSafe s)
     Nothing ->
-      modHand which ((:) theEnd) model
+      return ()
+
+
+hurt :: Life -> WhichPlayer -> Program ()
+hurt dmg w =
+  modLife w (-dmg+)
+
+
+heal :: Life -> WhichPlayer -> Program ()
+heal mag w =
+  modLife w (+mag)
+
+
+lifesteal :: Life -> WhichPlayer -> Program ()
+lifesteal dmg w = do
+  hurt dmg w
+  heal dmg (other w)
+
+
+draw :: WhichPlayer -> Program ()
+draw w =
+  do
+    deck <- getDeck w
+    case headMay deck of
+      Just card -> do
+        modDeck w tailSafe
+        addToHand w card
+      Nothing ->
+        addToHand w theEnd
   where
     theEnd :: Card
     theEnd =
@@ -317,32 +270,81 @@ drawCard which model =
         "the_end.svg"
         "feint.wave"
         Nothing
-        (hurt 10)
+        $ hurt 10
 
 
-bounceAll :: WhichPlayer -> Model -> Model
-bounceAll w m =
-  (modStack (filter (not . (owned w))))
-    . (modHand w ((++) (getCard <$> (filter (owned w) s))))
-      $ m
-  where
-    s :: Stack
-    s = getStack m
-    getCard :: StackCard -> Card
-    getCard (StackCard _ card) = card
+bounceAll :: WhichPlayer -> Program ()
+bounceAll w = do
+  (ours, theirs) <- partition (owned w) <$> getStack
+  setStack theirs
+  let oursCards = (\(StackCard _ c) -> c) <$> ours
+  modHand w $ (++) oursCards
 
 
-owned :: WhichPlayer -> StackCard -> Bool
-owned w (StackCard o _) = w == o
+incPasses :: Passes -> Passes
+incPasses NoPass  = OnePass
+incPasses OnePass = NoPass
 
 
-both :: (WhichPlayer -> a -> a) -> a -> a
-both f x = (f PlayerA) . (f PlayerB) $ x
+resetPasses :: Program ()
+resetPasses = setPasses NoPass
 
 
-description :: Card -> Text
-description Card{ card_name, card_desc } =
-  "(" <> n <> ": " <> d <> ")"
-  where
-    d = card_desc :: Text
-    n = toUpper card_name :: Text
+swapTurn :: Program ()
+swapTurn = do
+  modTurn other
+  modPasses incPasses
+
+
+addToHand :: WhichPlayer -> Card -> Program ()
+addToHand w c = modHand w ((:) c)
+
+
+handFull :: WhichPlayer -> Program Bool
+handFull w = do
+  handLength <- length <$> getHand w
+  return $ handLength >= maxHandLength
+
+
+
+effI :: Model -> Program a -> (Model, a)
+effI m (Free (GetGen f))      = (effI m) . f . model_gen $ m
+effI m (Free (GetDeck w f))   = (effI m) . f . pmodel_deck $ getPmodel w m
+effI m (Free (GetHand w f))   = (effI m) . f . pmodel_hand $ getPmodel w m
+effI m (Free (GetLife w f))   = (effI m) . f . pmodel_life $ getPmodel w m
+effI m (Free (GetPasses f))   = (effI m) . f . model_passes $ m
+effI m (Free (GetStack f))    = (effI m) . f . model_stack $ m
+effI m (Free (GetTurn f))     = (effI m) . f . model_turn $ m
+effI m (Free (SetGen g n))    = effI (m { model_gen = g }) n
+effI m (Free (SetDeck w d n)) = effI (modPmodel (\pm -> pm { pmodel_deck = d }) w m) n
+effI m (Free (SetHand w h n)) = effI (modPmodel (\pm -> pm { pmodel_hand = reverse . (take maxHandLength) $ reverse h }) w m) n
+effI m (Free (SetLife w l n)) = effI (modPmodel (\pm -> pm { pmodel_life = l }) w m) n
+effI m (Free (SetPasses p n)) = effI (m { model_passes = p }) n
+effI m (Free (SetStack s n))  = effI (m { model_stack = s }) n
+effI m (Free (SetTurn t n))   = effI (m { model_turn = t }) n
+effI m (Pure x)               = (m, x)
+
+
+modI :: Model -> Program a -> Model
+modI m p = fst $ effI m p
+
+
+evalI :: Model -> Program a -> a
+evalI m p = snd $ effI m p
+
+-- logI :: Model -> Program a -> [String]
+-- logI m (Free (GetGen f))      = "GetGen"                       : logI (fst $ effI m (f (mkGen 0))) (f (mkGen 0))
+-- logI m (Free (GetDeck w f))   = "GetDeck"                      : logI (fst $ effI m (f []))        (f [])
+-- logI m (Free (GetHand w f))   = "GetHand"                      : logI (fst $ effI m (f []))        (f [])
+-- logI m (Free (GetLife w f))   = "GetLife"                      : logI (fst $ effI m (f 0))         (f 0)
+-- logI m (Free (GetPasses f))   = "GetPasses"                    : logI (fst $ effI m (f NoPass))    (f NoPass)
+-- logI m (Free (GetStack f))    = "GetStack"                     : logI (fst $ effI m (f []))        (f [])
+-- logI m (Free (GetTurn w f))   = "GetTurn"                      : logI (fst $ effI m (f PlayerA))   (f PlayerA)
+-- logI m (Free (SetGen g n))    = printf "SetGen %s"    (show g) : logI (fst $ effI m n)             n
+-- logI m (Free (SetDeck w d n)) = printf "SetDeck %s"   (show d) : logI (fst $ effI m n)             n
+-- logI m (Free (SetHand w h n)) = printf "SetHand %s"   (show h) : logI (fst $ effI m n)             n
+-- logI m (Free (SetLife w l n)) = printf "SetLife %d"   l        : logI (fst $ effI m n)             n
+-- logI m (Free (SetPasses p n)) = printf "SetPasses %s" (show p) : logI (fst $ effI m n)             n
+-- logI m (Free (SetStack s n))  = printf "SetStack %s"  (show s) : logI (fst $ effI m n)             n
+-- logI m (Free (SetTurn t n))   = printf "SetTurn %s"   (show t) : logI (fst $ effI m n)             n
+-- logI m (Pure _)               = []

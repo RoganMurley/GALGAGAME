@@ -4,11 +4,16 @@ import Data.Text (Text)
 import Util (breakAt)
 
 
-parseRoomReq :: Text -> Maybe Text
+data RoomRequest = ReconnectRequest | RoomRequest Text
+
+
+parseRoomReq :: Text -> Maybe RoomRequest
 parseRoomReq msg =
   case breakAt ":" msg of
+    ("reconnect", "") ->
+      Just ReconnectRequest
     ("room", name) ->
-      Just name
+      Just . RoomRequest $ name
     _ ->
       Nothing
 

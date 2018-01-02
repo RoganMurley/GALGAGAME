@@ -5,14 +5,18 @@ services:
       context: "client"
     ports:
       - "8000:80"
+      - "4430:443"
     volumes:
       - ./client/static/build:/usr/share/nginx/html
+    links:
+      - game
+    restart: always
   redis:
     build:
       context: "redis"
+    restart: always
   game:
     image: "game-stormcards"
-    ports:
-      - "9160:9160"
     links:
       - redis
+    restart: always
