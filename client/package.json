@@ -1,5 +1,5 @@
 {
-  "name": "stormcards",
+  "name": "hubris",
   "version": "1.0.0",
   "description": "",
   "main": "gulpfile.js",
@@ -23,9 +23,9 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://RoganMurley@bitbucket.org/RoganMurley/stormcards.git"
+    "url": "git+https://github.com/RoganMurley/hubris.git"
   },
   "author": "",
   "license": "",
-  "homepage": "https://bitbucket.org/RoganMurley/stormcards#readme"
+  "homepage": "https://playhubris.com"
 }
