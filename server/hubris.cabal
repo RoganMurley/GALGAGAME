@@ -1,13 +1,13 @@
-name:                stormcards
+name:                hubris
 version:             0.1.0.0
 synopsis:            Initial project template from stack
 description:         Please see README.md
-homepage:            https://github.com/githubuser/stormcards#readme
+homepage:            https://github.com/RoganMurley/hubris
 license:             BSD3
 license-file:        LICENSE
 author:              Rogan Murley
-maintainer:          Rogan@roganmurley.com
-copyright:           2016 Rogan Murley
+maintainer:          rogan@roganmurley.com
+copyright:           2017 Rogan Murley
 category:            Game
 build-type:          Simple
 -- extra-source-files:
@@ -64,7 +64,7 @@ library
                      , ScopedTypeVariables
                      , DeriveFunctor
 
-executable stormcards
+executable hubris
   hs-source-dirs:      app
   main-is:             Main.hs
   ghc-options:         -threaded -rtsopts -with-rtsopts=-N -Wall -O2
@@ -81,7 +81,7 @@ executable stormcards
                      , text
                      , transformers
                      , stm
-                     , stormcards
+                     , hubris
                      , wai
                      , wai-websockets
                      , warp
@@ -91,14 +91,14 @@ executable stormcards
                      , RecordWildCards
                      , NamedFieldPuns
 
-test-suite stormcards-test
+test-suite hubris-test
   type:                exitcode-stdio-1.0
   hs-source-dirs:      test
   main-is:             Spec.hs
   build-depends:       base
                      , quickcheck-instances
                      , random
-                     , stormcards
+                     , hubris
                      , tasty
                      , tasty-hunit
                      , tasty-quickcheck
@@ -111,4 +111,4 @@ test-suite stormcards-test
 
 source-repository head
   type:     git
-  location: https://github.com/githubuser/stormcards
+  location: https://github.com/githubuser/hubris

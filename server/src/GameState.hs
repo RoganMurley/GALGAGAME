@@ -2,7 +2,7 @@ module GameState where
 
 import Data.Aeson (ToJSON(..), (.=), object)
 
-import Characters (Character(..), CharacterCards, CharModel, FinalSelection, allCards)
+import Characters (CharModel, FinalSelection, allCards)
 import Mirror (Mirror(..))
 import Model
 import Player (WhichPlayer(..), other)

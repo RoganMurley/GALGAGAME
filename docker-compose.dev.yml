@@ -16,7 +16,7 @@ services:
       context: "redis"
     restart: always
   game:
-    image: "game-stormcards"
+    image: "game-hubris"
     links:
       - redis
     restart: always
