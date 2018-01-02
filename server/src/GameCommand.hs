@@ -188,7 +188,7 @@ endTurn which model
         p <- getPasses
         return (t, p)
     full :: Bool
-    full = evalI model $ handFull PlayerA
+    full = evalI model $ handFull which
     drawCards :: Program ()
     drawCards = do
       draw PlayerA
