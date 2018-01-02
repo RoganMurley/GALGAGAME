@@ -15,13 +15,14 @@ import Text.Printf (printf)
 import Network.Wai (Application)
 import Network.Wai.Handler.WebSockets
 import Network.Wai.Handler.Warp (run)
+import System.Environment (lookupEnv)
 import System.IO (BufferMode(LineBuffering), hSetBuffering, stdout)
 import System.Log.Logger (Priority(DEBUG), infoM, warningM, setLevel, updateGlobalLogger)
 
 import Act (actPlay, actSpec, syncClient, syncPlayersRoom, syncRoomClients)
 import ArtificalIntelligence (Action(..), chooseAction)
 import Characters (CharModel(..), allSelected, character_name, toList)
-import Negotiation (Prefix(..), parseRoomReq, parsePrefix)
+import Negotiation (Prefix(..), RoomRequest(..), parseRoomReq, parsePrefix)
 import Player (WhichPlayer(..), other)
 import GameState (GameState(..), PlayState(..), WaitType(..))
 import Username (Username(Username))
@@ -48,13 +49,22 @@ import qualified Data.GUID as GUID
 
 main :: IO ()
 main = do
-  putStrLn "toad"
   updateGlobalLogger "app" $ setLevel DEBUG
   hSetBuffering stdout LineBuffering
-  userConn  <- R.connect $ A.connectInfo A.UserDatabase
-  tokenConn <- R.connect $ A.connectInfo A.TokenDatabase
+
+  -- If we're on production, these env vars will be present.
+  -- Defined in `redis.prod.env` secret.
+  redisHost     <- lookupEnv "REDIS_HOST"
+  redisPort     <- lookupEnv "REDIS_PORT"
+  redisPassword <- lookupEnv "REDIS_PASSWORD"
+
+  let connect = R.connect . (A.connectInfo (redisHost, redisPort, redisPassword))
+  userConn  <- connect A.UserDatabase
+  tokenConn <- connect A.TokenDatabase
+
   authApp   <- A.app userConn tokenConn
   state     <- atomically $ newTVar Server.initState
+
   run 9160 $ waiApp state tokenConn authApp
 
 
@@ -85,9 +95,7 @@ begin conn roomReq usernameM state =
     do
       infoM "app" $ printf "<%s>: New connection" (show username)
       case parseRoomReq roomReq of
-        Nothing ->
-          connectionFail $ printf "<%s>: Bad room name protocol %s" (show username) roomReq
-        Just roomName -> do
+        Just (RoomRequest roomName) -> do
           msg <- WS.receiveData conn
           case parsePrefix msg of
             Nothing ->
@@ -101,6 +109,10 @@ begin conn roomReq usernameM state =
                 state
                 (Client username (PlayerConnection conn) guid)
                 roomVar
+        Nothing ->
+          connectionFail $ printf "<%s>: Bad room name protocol %s" (show username) roomReq
+        Just ReconnectRequest ->
+          return ()
 
 
 beginPrefix :: Prefix -> TVar Server.State -> Client -> TVar Room -> IO ()
@@ -183,9 +195,14 @@ spectate client roomVar = do
   Client.send ("acceptSpec:" :: Text) client
   Room.broadcast (Command.toChat (SpectateCommand (Client.name client))) room
   syncClient client (Room.getState room)
-  forever $ do
-    msg <- Client.receive client
-    actSpec (Command.parse (Client.name client) msg) roomVar
+  _ <- runMaybeT . forever $ do
+    msg <- lift $ Client.receive client
+    case msg of
+      "reconnect:" ->
+        mzero
+      _ ->
+        lift $ actSpec (Command.parse (Client.name client) msg) roomVar
+  return ()
 
 
 play :: WhichPlayer -> Client -> TVar Room -> IO ()
@@ -194,14 +211,18 @@ play which client roomVar = do
   room <- atomically $ readTVar roomVar
   syncPlayersRoom room
   syncRoomClients room
-  forever $ do
-    msg <- Client.receive client
-    actPlay (Command.parse (Client.name client) msg) which roomVar
+  _ <- runMaybeT . forever $ do
+    msg <- lift $ Client.receive client
+    case msg of
+      "reconnect:" ->
+        mzero
+      _ ->
+        lift $ actPlay (Command.parse (Client.name client) msg) which roomVar
+  return ()
 
 
 computerPlay :: WhichPlayer -> TVar Room -> IO ()
-computerPlay which roomVar =
-  do
+computerPlay which roomVar = do
   _ <- runMaybeT . forever $ do
     lift $ threadDelay 1000000
     gen <- lift $ getGen

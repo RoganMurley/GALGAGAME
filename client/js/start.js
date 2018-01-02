@@ -6,7 +6,8 @@ var app = Elm.Main.fullscreen({
   httpPort: window.location.port,
   seed: new Date().getTime(),
   dimensions: [ window.innerWidth, window.innerHeight ],
-  time: 0
+  time: 0,
+  username: null,
 });
 
 app.ports.selectAllInput.subscribe(function (elementId) {
@@ -42,4 +43,13 @@ app.ports.playAudio.subscribe(function (input) {
 app.ports.volume.subscribe(function (input) {
   var v = input / 100;
   Howler.volume(Math.pow(v, 4));
+});
+
+app.ports.reload.subscribe(function () {
+  location.reload();
+});
+
+app.ports.analytics.subscribe(function () {
+  ga('set', 'page', location.pathname);
+  ga('send', 'pageview');
 });

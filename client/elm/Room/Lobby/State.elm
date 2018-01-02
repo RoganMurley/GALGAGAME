@@ -1,9 +1,10 @@
 module Lobby.State exposing (..)
 
 import Lobby.Messages exposing (Msg(..))
-import Lobby.Types exposing (GameType(..), Model)
+import Lobby.Types exposing (GameType(..), LoginState(..), Model)
 import Main.Messages as Main
 import Mode exposing (Mode(..))
+import Navigation
 import Room.Messages as Room
 import Util exposing (message, splitOn)
 
@@ -14,6 +15,7 @@ init roomID gameType mode =
     , error = ""
     , gameType = gameType
     , mode = mode
+    , login = ChooseLoginOption
     }
 
 
@@ -48,6 +50,11 @@ update ({ error, gameType, mode } as model) msg =
 
         JoinRoomErr error ->
             ( { model | error = error }, Cmd.none )
+
+        GotoLogin ->
+            ( model
+            , Navigation.newUrl "/login/"
+            )
 
 
 receive : String -> Cmd Main.Msg

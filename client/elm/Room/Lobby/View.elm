@@ -15,21 +15,14 @@ view params { error, gameType } =
     div []
         [ div [ class "connecting-box" ]
             [ h1 [] [ text <| (gameTypeToString gameType) ++ " Game" ]
-            , div []
+            , div
+                []
                 [ div [ class "input-group" ]
-                    [ button
-                        [ onClick <| JoinRoom
-                        ]
-                        [ text "Login & Play" ]
+                    [ button [ onClick <| GotoLogin ] [ text "Login & Play" ]
                     , div [ class "vertical-rule" ] []
-                    , button
-                        [ onClick <| JoinRoom
-                        ]
-                        [ text "Play as Guest" ]
+                    , button [ onClick <| JoinRoom ] [ text "Play as Guest" ]
                     ]
-                , div
-                    [ class "error" ]
-                    [ text error ]
+                , div [ class "error" ] [ text error ]
                 ]
             ]
         , div

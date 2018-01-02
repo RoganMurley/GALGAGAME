@@ -11,5 +11,10 @@ class Mirror a where
 -}
 
 
+
+instance Mirror () where
+  mirror = id
+
+
 instance Mirror (a, a) where
   mirror (x, y) = (y, x)

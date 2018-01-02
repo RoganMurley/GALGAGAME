@@ -6,6 +6,7 @@ type Route
     | Play PlayRoute
     | Spec String
     | Lab
+    | Login
 
 
 type PlayRoute

@@ -4,6 +4,7 @@ import Connected.State as Connected
 import Lab.State as Lab
 import Lobby.State as Lobby
 import Lobby.Types as Lobby
+import Login.State as Login
 import Main.Messages as Main
 import Main.Types exposing (Flags)
 import Menu.State as Menu
@@ -60,6 +61,18 @@ update model msg ({ hostname, seed } as flags) =
                 otherwise ->
                     ( model, Cmd.none )
 
+        LoginMsg loginMsg ->
+            case model of
+                Login login ->
+                    let
+                        ( newLogin, cmd ) =
+                            Login.update login loginMsg flags
+                    in
+                        ( Login newLogin, cmd )
+
+                otherwise ->
+                    ( model, Cmd.none )
+
         StartGame mode ->
             case model of
                 Lobby ({ roomID, gameType } as lobby) ->
@@ -95,6 +108,9 @@ receive str model flags =
             in
                 ( Connected newConnected, cmd )
 
+        Login login ->
+            ( Login login, Login.receive str )
+
         Lab lab ->
             ( Lab lab, Cmd.none )
 
@@ -107,6 +123,9 @@ tick room dt =
 
         Lobby lobby ->
             Lobby lobby
+
+        Login login ->
+            Login login
 
         Connected connected ->
             Connected <| Connected.tick connected dt

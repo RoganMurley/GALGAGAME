@@ -1,5 +1,6 @@
 module Util exposing (..)
 
+import Main.Types exposing (Flags)
 import Regex exposing (HowMany(AtMost), regex, split)
 import Task
 import WebSocket
@@ -25,9 +26,33 @@ safeTail l =
             []
 
 
-send : String -> String -> Cmd msg
-send hostname =
-    WebSocket.send <| "ws://" ++ hostname ++ ":9160"
+websocketAddress : Flags -> String
+websocketAddress { hostname, httpPort } =
+    let
+        portProtocol =
+            if httpPort /= "" then
+                ":" ++ httpPort
+            else
+                ""
+    in
+        "wss://" ++ hostname ++ portProtocol ++ "/game/"
+
+
+authLocation : Flags -> String
+authLocation { hostname, httpPort } =
+    let
+        portProtocol =
+            if httpPort /= "" then
+                ":" ++ httpPort
+            else
+                ""
+    in
+        "https://" ++ hostname ++ portProtocol ++ "/auth"
+
+
+send : Flags -> String -> Cmd msg
+send flags =
+    WebSocket.send <| websocketAddress flags
 
 
 splitOn : String -> String -> ( String, String )

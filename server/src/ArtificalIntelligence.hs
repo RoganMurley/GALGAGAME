@@ -27,15 +27,16 @@ evalState (Playing model)          = evalModel model
   where
     evalModel :: Model -> Weight
     evalModel m
-      | (length . getStack $ m) > 0 =
+      | (length $ evalI m $ getStack) > 0 =
         evalState . fst . runWriter . resolveAll $ m
       | otherwise =
           (evalPlayer PlayerA m) - (evalPlayer PlayerB m)
     evalPlayer :: WhichPlayer -> Model -> Weight
     evalPlayer which m =
-        (getLife which m)
-      + (length . (getHand which) $ m) * 7
-      + (sum . (fmap biasHand) . (getHand which) $ m)
+      evalI m $ do
+        life <- getLife which
+        hand <- getHand which
+        return (life + 7 * (length hand) + (sum . (fmap biasHand) $ hand))
 
 
 toCommand :: Action -> GameCommand
@@ -48,15 +49,13 @@ possibleActions m =
   endAction ++ (PlayAction <$> xs)
   where
     handLength :: Int
-    handLength = length . (getHand PlayerA) $ m
+    handLength = length $ evalI m $ getHand PlayerA
     xs :: [Int]
     xs = [ x | x <- [0..maxHandLength], x < handLength]
     endAction :: [Action]
     endAction
-      | handLength == maxHandLength =
-        []
-      | otherwise =
-        [EndAction]
+      | handLength == maxHandLength = []
+      | otherwise = [ EndAction ]
 
 
 postulateAction :: Model -> Gen -> Action -> PlayState
@@ -65,28 +64,32 @@ postulateAction model gen action =
   (\(Started p) -> p) . fromJust . fst . fromRight $ update command PlayerA state
   where
     command = toCommand action :: GameCommand
-    state = Started $ Playing $ setGen gen model :: GameState
+    state = Started $ Playing $ modI model $ setGen gen :: GameState
 
 
 chooseAction :: Gen -> Turn -> Model -> Maybe Action
 chooseAction gen turn model
-  | getTurn model /= turn = Nothing
-  | winningEnd model      = Just EndAction
-  | otherwise             = Just $ maximumBy comparison $ possibleActions model
+  | modelTurn /= turn = Nothing
+  | winningEnd model  = Just EndAction
+  | otherwise         = Just $ maximumBy comparison $ possibleActions model
   where
     comparison :: Action -> Action -> Ordering
-    comparison = comparing (evalState . (postulateAction model gen))
+    comparison = comparing $ evalState . (postulateAction model gen)
+    modelTurn :: Turn
+    modelTurn = evalI model getTurn
 
 
 winningEnd :: Model -> Bool
-winningEnd m =
-  -- If ending the turn now would win, do it! We don't care about heuristics
-  -- when we have a sure bet :)
-  case fst . runWriter . resolveAll $ m of
-    Ended (Just PlayerA) _ _ ->
-      True
-    _ ->
-      False
+winningEnd model
+  | evalI model $ handFull PlayerA = False
+  | otherwise                      =
+    -- If ending the turn now would win, do it! We don't care about heuristics
+    -- when we have a sure bet :)
+    case fst . runWriter . resolveAll $ model of
+      Ended (Just PlayerA) _ _ ->
+        True
+      _ ->
+        False
 
 
 -- Some cards entail soft advantages/disadvantages that the AI can't handle.
@@ -94,7 +97,4 @@ winningEnd m =
 biasHand :: Card -> Weight
 biasHand c
   | c == Cards.badApple     = -9
-  | c == (Cards.obscured c) = -3
-  | c == Cards.hoard        = -6
-  | c == Cards.exile        = -3
   | otherwise               = 0
