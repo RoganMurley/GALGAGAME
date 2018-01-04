@@ -48,8 +48,8 @@ me tokenConn = do
       json $ object [ "username" .= username ]
       status ok200
     Nothing -> do
-      json $ object [ "error" .= ("Not logged in" :: Text) ]
-      status unauthorized401
+      json $ object [ ]
+      status ok200
 
 
 login :: R.Connection -> R.Connection -> ActionM ()
@@ -76,7 +76,7 @@ login userConn tokenConn = do
               _ <- lift . (R.runRedis tokenConn) $ do
                 _ <- R.set (cs token) username
                 R.expire (cs token) loginTimeout
-              json $ object []
+              json $ object [ ]
               status ok200
             False -> do
               json $ object [ "error" .= ("Wrong username or password" :: Text) ]
@@ -97,10 +97,10 @@ logout tokenConn = do
     Just t -> do
       _ <- lift . (R.runRedis tokenConn) $ R.del [T.encodeUtf8 t]
       deleteCookie loginCookieName
-      json $ object []
+      json $ object [ ]
       status ok200
     Nothing -> do
-      json $ object []
+      json $ object [ ]
       status ok200
 
 

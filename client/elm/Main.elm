@@ -12,8 +12,17 @@ main : Program Flags Model Msg
 main =
     Navigation.programWithFlags
         UrlChange
-        { init = \flags location -> ( init flags location, message GetAuth )
+        { init = initFull
         , view = view
         , update = update
         , subscriptions = subscriptions
         }
+
+
+initFull : Flags -> Navigation.Location -> ( Model, Cmd Msg )
+initFull flags location =
+    let
+        ( model, cmd ) =
+            init flags location
+    in
+        ( model, Cmd.batch [ cmd, message GetAuth ] )

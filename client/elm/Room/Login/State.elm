@@ -54,8 +54,7 @@ update model msg flags =
             , Cmd.batch
                 [ Navigation.newUrl model.nextUrl
                 , message Main.GetAuth
-
-                -- Reconnect so that the ws connection has our login cookie
+                  -- Reconnect so that the ws connection has our login cookie
                 , send flags "reconnect:"
                 ]
             )

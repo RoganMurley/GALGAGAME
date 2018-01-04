@@ -99,3 +99,16 @@ gameTypeToString gameType =
 
         QuickplayGame ->
             "Quickplay"
+
+
+skipLobbyCmd : Maybe String -> Cmd Main.Msg
+skipLobbyCmd username =
+    case username of
+        Just _ ->
+            message <|
+                Main.RoomMsg <|
+                    Room.LobbyMsg
+                        JoinRoom
+
+        Nothing ->
+            Cmd.none
