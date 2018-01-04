@@ -24,10 +24,11 @@ import Window
 import Listener exposing (listen)
 import Main.Types as Main exposing (..)
 import UrlParser exposing (parsePath)
+import Util exposing (message)
 import Settings.State as Settings
 
 
-init : Flags -> Navigation.Location -> Main.Model
+init : Flags -> Navigation.Location -> ( Main.Model, Cmd Msg )
 init flags location =
     locationUpdate
         { room = Room.init
@@ -93,14 +94,18 @@ update msg ({ room, settings, flags } as model) =
                 in
                     ( { model | room = newRoom }, cmd )
 
-            UrlChange l ->
-                ( locationUpdate model l
-                , Cmd.batch
-                    [ analytics ()
-
-                    -- , send flags "reconnect:" -- Reopen ws connection
-                    ]
-                )
+            UrlChange location ->
+                let
+                    ( newModel, cmd ) =
+                        locationUpdate model location
+                in
+                    ( newModel
+                    , Cmd.batch
+                        [ cmd
+                        , analytics ()
+                          -- , send flags "reconnect:" -- Reopen ws connection
+                        ]
+                    )
 
             SetVolume volume ->
                 let
@@ -144,40 +149,50 @@ update msg ({ room, settings, flags } as model) =
                         { flags | username = username }
                 in
                     ( { model | flags = newFlags }
-                    , Cmd.none
+                    , Lobby.skipLobbyCmd username
                     )
 
             GetAuthCallback (Err _) ->
                 ( model, Cmd.none )
 
 
-locationUpdate : Main.Model -> Navigation.Location -> Main.Model
+locationUpdate : Main.Model -> Navigation.Location -> ( Main.Model, Cmd Msg )
 locationUpdate model location =
     case parsePath Routing.route location of
         Just route ->
             case route of
                 Routing.Home ->
-                    { model | room = Room.init }
+                    ( { model | room = Room.init }
+                    , Cmd.none
+                    )
 
                 Routing.Lab ->
-                    { model | room = Room.Lab Lab.init }
+                    ( { model | room = Room.Lab Lab.init }
+                    , Cmd.none
+                    )
 
                 Routing.Play playRoute ->
                     let
+                        username : Maybe String
+                        username =
+                            model.flags.username
+
                         randomRoomID : String
                         randomRoomID =
                             generate Room.Generators.roomID model.flags.seed
                     in
                         case playRoute of
                             Routing.ComputerPlay ->
-                                { model
+                                ( { model
                                     | room =
                                         Room.Lobby <|
                                             Lobby.init
                                                 randomRoomID
                                                 Lobby.ComputerGame
                                                 Playing
-                                }
+                                  }
+                                , Lobby.skipLobbyCmd username
+                                )
 
                             Routing.CustomPlay mRoomID ->
                                 let
@@ -205,30 +220,34 @@ locationUpdate model location =
                                         -- Annoying stateful bit, fix me.
                                         -- WILL cause bugs.
                                         Room.Connected _ ->
-                                            model
+                                            ( model, Lobby.skipLobbyCmd username )
 
                                         otherwise ->
-                                            lobbyModel
+                                            ( lobbyModel, Lobby.skipLobbyCmd username )
 
                             Routing.QuickPlay ->
-                                { model
+                                ( { model
                                     | room =
                                         Room.Lobby <|
                                             Lobby.init
                                                 randomRoomID
                                                 Lobby.QuickplayGame
                                                 Playing
-                                }
+                                  }
+                                , Lobby.skipLobbyCmd username
+                                )
 
                 Routing.Spec roomID ->
-                    { model
+                    ( { model
                         | room =
                             Room.Lobby <|
                                 Lobby.init
                                     roomID
                                     Lobby.ComputerGame
                                     Spectating
-                    }
+                      }
+                    , Cmd.none
+                    )
 
                 Routing.Login ->
                     let
@@ -251,14 +270,18 @@ locationUpdate model location =
                                 otherwise ->
                                     Nothing
                     in
-                        { model
+                        ( { model
                             | room =
                                 Room.Login <|
                                     Login.init nextPath
-                        }
+                          }
+                        , Cmd.none
+                        )
 
         Nothing ->
-            { model | room = Room.init }
+            ( { model | room = Room.init }
+            , Cmd.none
+            )
 
 
 subscriptions : Main.Model -> Sub Msg
