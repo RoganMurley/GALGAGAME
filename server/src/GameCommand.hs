@@ -189,7 +189,7 @@ endTurn which model
         return (t, p)
     full :: Bool
     full = evalI model $ handFull which
-    drawCards :: Program ()
+    drawCards :: AlphaProgram ()
     drawCards = do
       draw PlayerA
       draw PlayerB
@@ -215,7 +215,7 @@ resolveAll model
           modStack tailSafe
           case headMay stack of
             Just (StackCard o c) ->
-              (card_eff c) o
+              alphaI $ (card_eff c) o
             Nothing ->
               return ()
 

@@ -15,16 +15,13 @@ import Player (WhichPlayer(..), other)
 import Util (Gen)
 
 
-type Program a = Free DSL a
-
-
 data Card = Card
   { card_name :: Text
   , card_desc :: Text
   , card_img  :: Text
   , card_snd  :: Text
   , card_anim :: Maybe CardAnim
-  , card_eff  :: WhichPlayer -> Program ()
+  , card_eff  :: WhichPlayer -> BetaProgram ()
   }
 
 
@@ -117,15 +114,6 @@ instance ToJSON StackCard where
     , "card"  .= stackcard_card
     ]
 
-
-maxHandLength :: Int
-maxHandLength = 6
-
-
-maxLife :: Life
-maxLife = 50
-
-
 instance Mirror Model where
   mirror (Model turn stack pa pb passes gen) =
     Model (other turn) (mirror <$> stack) pb pa passes gen
@@ -135,6 +123,49 @@ instance Mirror StackCard where
   mirror (StackCard p c) = StackCard (other p) c
 
 
+-- DSLs
+data Alpha n =
+    GetGen (Gen -> n)
+  | GetDeck WhichPlayer (Deck -> n)
+  | GetHand WhichPlayer (Hand-> n)
+  | GetLife WhichPlayer (Life -> n)
+  | GetPasses (Passes -> n)
+  | GetStack (Stack -> n)
+  | GetTurn (Turn -> n)
+  | SetGen Gen n
+  | SetDeck WhichPlayer Deck n
+  | SetHand WhichPlayer Hand n
+  | SetLife WhichPlayer Life n
+  | SetPasses Passes n
+  | SetStack Stack n
+  | SetTurn Turn n
+  deriving (Functor)
+
+
+data Beta n
+  = BetaRaw (AlphaProgram ()) n
+  | BetaDraw WhichPlayer n
+  deriving (Functor)
+
+
+type AlphaProgram a = Free Alpha a
+type BetaProgram a = Free Beta a
+
+
+makeFree ''Alpha
+makeFree ''Beta
+
+
+-- Constants
+maxHandLength :: Int
+maxHandLength = 6
+
+
+maxLife :: Life
+maxLife = 50
+
+
+-- Helper functions
 changeOwner :: StackCard -> StackCard
 changeOwner = mirror
 
@@ -167,65 +198,41 @@ description Card{ card_name, card_desc } =
   "(" <> toUpper card_name <> ": " <> card_desc <> ")"
 
 
--- DSL
-
-
-data DSL n =
-    GetGen (Gen -> n)
-  | GetDeck WhichPlayer (Deck -> n)
-  | GetHand WhichPlayer (Hand-> n)
-  | GetLife WhichPlayer (Life -> n)
-  | GetPasses (Passes -> n)
-  | GetStack (Stack -> n)
-  | GetTurn (Turn -> n)
-  | SetGen Gen n
-  | SetDeck WhichPlayer Deck n
-  | SetHand WhichPlayer Hand n
-  | SetLife WhichPlayer Life n
-  | SetPasses Passes n
-  | SetStack Stack n
-  | SetTurn Turn n
-  deriving (Functor)
-
-
-makeFree ''DSL
-
-
-modifier :: (WhichPlayer -> Program a) -> (WhichPlayer -> a -> Program ()) -> WhichPlayer -> (a -> a) -> Program ()
+-- Actions
+modifier :: (WhichPlayer -> AlphaProgram a) -> (WhichPlayer -> a -> AlphaProgram ()) -> WhichPlayer -> (a -> a) -> AlphaProgram ()
 modifier getter setter w f = do
   x <- getter w
   setter w (f x)
 
 
-modLife :: WhichPlayer -> (Life -> Life) -> Program ()
+modLife :: WhichPlayer -> (Life -> Life) -> AlphaProgram ()
 modLife = modifier getLife setLife
 
-
-modHand :: WhichPlayer -> (Hand -> Hand) -> Program ()
+modHand :: WhichPlayer -> (Hand -> Hand) -> AlphaProgram ()
 modHand = modifier getHand setHand
 
 
-modDeck :: WhichPlayer -> (Deck -> Deck) -> Program ()
+modDeck :: WhichPlayer -> (Deck -> Deck) -> AlphaProgram ()
 modDeck = modifier getDeck setDeck
 
 
-modStack :: (Stack -> Stack) -> Program ()
+modStack :: (Stack -> Stack) -> AlphaProgram ()
 modStack f = getStack >>= (setStack . f)
 
 
-modStackAll :: (StackCard -> StackCard) -> Program ()
+modStackAll :: (StackCard -> StackCard) -> AlphaProgram ()
 modStackAll f = modStack $ fmap f
 
 
-modTurn :: (Turn -> Turn) -> Program ()
+modTurn :: (Turn -> Turn) -> AlphaProgram ()
 modTurn f = getTurn >>= (setTurn . f)
 
 
-modPasses :: (Passes -> Passes) -> Program ()
+modPasses :: (Passes -> Passes) -> AlphaProgram ()
 modPasses f = getPasses >>= (setPasses . f)
 
 
-modStackHead :: (StackCard -> StackCard) -> Program ()
+modStackHead :: (StackCard -> StackCard) -> AlphaProgram ()
 modStackHead f = do
   s <- getStack
   case headMay s of
@@ -235,23 +242,23 @@ modStackHead f = do
       return ()
 
 
-hurt :: Life -> WhichPlayer -> Program ()
+hurt :: Life -> WhichPlayer -> AlphaProgram ()
 hurt dmg w =
   modLife w (-dmg+)
 
 
-heal :: Life -> WhichPlayer -> Program ()
+heal :: Life -> WhichPlayer -> AlphaProgram ()
 heal mag w =
   modLife w (+mag)
 
 
-lifesteal :: Life -> WhichPlayer -> Program ()
+lifesteal :: Life -> WhichPlayer -> AlphaProgram ()
 lifesteal dmg w = do
   hurt dmg w
   heal dmg (other w)
 
 
-draw :: WhichPlayer -> Program ()
+draw :: WhichPlayer -> AlphaProgram ()
 draw w =
   do
     deck <- getDeck w
@@ -270,10 +277,10 @@ draw w =
         "the_end.svg"
         "feint.wave"
         Nothing
-        $ hurt 10
+        $ betaRaw . (hurt 10)
 
 
-bounceAll :: WhichPlayer -> Program ()
+bounceAll :: WhichPlayer -> AlphaProgram ()
 bounceAll w = do
   (ours, theirs) <- partition (owned w) <$> getStack
   setStack theirs
@@ -286,28 +293,28 @@ incPasses NoPass  = OnePass
 incPasses OnePass = NoPass
 
 
-resetPasses :: Program ()
+resetPasses :: AlphaProgram ()
 resetPasses = setPasses NoPass
 
 
-swapTurn :: Program ()
+swapTurn :: AlphaProgram ()
 swapTurn = do
   modTurn other
   modPasses incPasses
 
 
-addToHand :: WhichPlayer -> Card -> Program ()
+addToHand :: WhichPlayer -> Card -> AlphaProgram ()
 addToHand w c = modHand w ((:) c)
 
 
-handFull :: WhichPlayer -> Program Bool
+handFull :: WhichPlayer -> AlphaProgram Bool
 handFull w = do
   handLength <- length <$> getHand w
   return $ handLength >= maxHandLength
 
 
 
-effI :: Model -> Program a -> (Model, a)
+effI :: Model -> AlphaProgram a -> (Model, a)
 effI m (Free (GetGen f))      = (effI m) . f . model_gen $ m
 effI m (Free (GetDeck w f))   = (effI m) . f . pmodel_deck $ getPmodel w m
 effI m (Free (GetHand w f))   = (effI m) . f . pmodel_hand $ getPmodel w m
@@ -325,26 +332,15 @@ effI m (Free (SetTurn t n))   = effI (m { model_turn = t }) n
 effI m (Pure x)               = (m, x)
 
 
-modI :: Model -> Program a -> Model
+modI :: Model -> AlphaProgram a -> Model
 modI m p = fst $ effI m p
 
 
-evalI :: Model -> Program a -> a
+evalI :: Model -> AlphaProgram a -> a
 evalI m p = snd $ effI m p
 
--- logI :: Model -> Program a -> [String]
--- logI m (Free (GetGen f))      = "GetGen"                       : logI (fst $ effI m (f (mkGen 0))) (f (mkGen 0))
--- logI m (Free (GetDeck w f))   = "GetDeck"                      : logI (fst $ effI m (f []))        (f [])
--- logI m (Free (GetHand w f))   = "GetHand"                      : logI (fst $ effI m (f []))        (f [])
--- logI m (Free (GetLife w f))   = "GetLife"                      : logI (fst $ effI m (f 0))         (f 0)
--- logI m (Free (GetPasses f))   = "GetPasses"                    : logI (fst $ effI m (f NoPass))    (f NoPass)
--- logI m (Free (GetStack f))    = "GetStack"                     : logI (fst $ effI m (f []))        (f [])
--- logI m (Free (GetTurn w f))   = "GetTurn"                      : logI (fst $ effI m (f PlayerA))   (f PlayerA)
--- logI m (Free (SetGen g n))    = printf "SetGen %s"    (show g) : logI (fst $ effI m n)             n
--- logI m (Free (SetDeck w d n)) = printf "SetDeck %s"   (show d) : logI (fst $ effI m n)             n
--- logI m (Free (SetHand w h n)) = printf "SetHand %s"   (show h) : logI (fst $ effI m n)             n
--- logI m (Free (SetLife w l n)) = printf "SetLife %d"   l        : logI (fst $ effI m n)             n
--- logI m (Free (SetPasses p n)) = printf "SetPasses %s" (show p) : logI (fst $ effI m n)             n
--- logI m (Free (SetStack s n))  = printf "SetStack %s"  (show s) : logI (fst $ effI m n)             n
--- logI m (Free (SetTurn t n))   = printf "SetTurn %s"   (show t) : logI (fst $ effI m n)             n
--- logI m (Pure _)               = []
+
+alphaI :: BetaProgram a -> AlphaProgram a
+alphaI (Free (BetaRaw p n))  = p      >> alphaI n
+alphaI (Free (BetaDraw w n)) = draw w >> alphaI n
+alphaI (Pure x)              = Pure x

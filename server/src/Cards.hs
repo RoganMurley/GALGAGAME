@@ -18,7 +18,7 @@ dagger =
     "striker/dagger.svg"
     "dagger.wav"
     (Just Slash)
-    $ \w -> do
+    $ \w -> betaRaw $ do
       hurt 7 (other w)
 
 
@@ -30,7 +30,7 @@ fireball =
     "striker/fireball.svg"
     "fireball.wav"
     Nothing
-    $ \w -> do
+    $ \w -> betaRaw $ do
       len <- length <$> getStack
       hurt (len * 5) (other w)
 
@@ -43,7 +43,7 @@ offering =
     "striker/offering.svg"
     "offering.wav"
     Nothing
-    $ \w -> do
+    $ \w -> betaRaw $ do
       hurt 7 w
       draw w
       draw w
@@ -57,7 +57,7 @@ confound =
     "striker/confound.svg"
     "confound.wav"
     Nothing
-    $ \_ -> do
+    $ \_ -> betaRaw $ do
       gen <- getGen
       modStack $ shuffle gen
 
@@ -71,7 +71,7 @@ hammer =
     "breaker/hammer.svg"
     "hammer.wav"
     (Just Slash)
-    $ \w -> do
+    $ \w -> betaRaw $ do
       hurt 8 (other w)
 
 
@@ -83,7 +83,7 @@ lightning =
     "breaker/lightning.svg"
     "lightning.wav"
     Nothing
-    $ \w -> do
+    $ \w -> betaRaw $ do
       len <- length <$> getStack
       hurt (len * 4) (other w)
 
@@ -96,7 +96,7 @@ hubris =
     "breaker/hubris.svg"
     "hubris.wav"
     (Just Obliterate)
-    $ \_ -> do
+    $ \_ -> betaRaw $ do
       setStack []
 
 
@@ -109,7 +109,7 @@ katana =
     "balancer/katana.svg"
     "axe.mp3"
     (Just Slash)
-    $ \w -> do
+    $ \w -> betaRaw $ do
       hurt 9 (other w)
 
 
@@ -121,7 +121,7 @@ curse =
     "balancer/curse.svg"
     "frostbite.mp3"
     Nothing
-    $ \w -> do
+    $ \w -> betaRaw $ do
       let dmg = 15
       paLife <- getLife w
       pbLife <- getLife (other w)
@@ -137,7 +137,7 @@ bless =
     "balancer/bless.svg"
     "oath.wav"
     Nothing
-    $ \w -> do
+    $ \w -> betaRaw $ do
       let mag = 15
       paLife <- getLife w
       pbLife <- getLife (other w)
@@ -153,7 +153,7 @@ balance =
     "balancer/balance.svg"
     "feint.wav"
     Nothing
-    $ \w -> do
+    $ \w -> betaRaw $ do
       paLife <- getLife w
       pbLife <- getLife (other w)
       when (paLife < pbLife) (modStackHead (\(StackCard _ c) -> StackCard w c))
@@ -169,7 +169,7 @@ scythe =
     "drinker/scythe.svg"
     "bite.wav"
     (Just Slash)
-    $ \w -> do
+    $ \w -> betaRaw $ do
       lifesteal 5 (other w)
 
 
@@ -181,7 +181,7 @@ bloodsucker =
     "drinker/bloodsucker.svg"
     "succubus.wav"
     Nothing
-    $ \w -> do
+    $ \w -> betaRaw $ do
       len <- length <$> getStack
       lifesteal (len * 3) (other w)
 
@@ -194,7 +194,7 @@ serpent =
     "drinker/serpent.svg"
     "siren.wav"
     Nothing
-    $ \w -> do
+    $ \w -> betaRaw $ do
       addToHand (other w) badApple
       addToHand (other w) badApple
 
@@ -207,7 +207,7 @@ badApple =
     "drinker/bad-apple.svg"
     "song.wav"
     Nothing
-    $ \w -> do
+    $ \w -> betaRaw $ do
       hurt 8 w
 
 
@@ -219,7 +219,7 @@ reversal =
     "drinker/reversal.svg"
     "reversal.wav"
     Nothing
-    $ \_ -> do
+    $ \_ -> betaRaw $ do
       modStack reverse
 
 
@@ -232,7 +232,7 @@ staff =
     "watcher/staff.svg"
     "staff.wav"
     (Just Slash)
-    $ \w -> do
+    $ \w -> betaRaw $ do
       hurt 4 (other w)
       draw w
 
@@ -245,7 +245,7 @@ surge =
     "watcher/surge.svg"
     "fireball.wav"
     Nothing
-    $ \w -> do
+    $ \w -> betaRaw $ do
       len <- length . (filter (owner w)) <$> getStack
       hurt (len * 6) (other w)
 
@@ -258,7 +258,7 @@ imitate =
     "watcher/imitate.svg"
     "feint.wav"
     Nothing
-    $ \w -> do
+    $ \w -> betaRaw $ do
       gen <- getGen
       hand <- getHand w
       mCard <- return . headMay . (filter (/= imitate)) . (shuffle gen) $ hand
@@ -277,7 +277,7 @@ prophecy =
     "watcher/prophecy.svg"
     "precognition.wav"
     Nothing
-    $ \w -> do
+    $ \w -> betaRaw $ do
       bounceAll w
       bounceAll (other w)
 
@@ -291,7 +291,7 @@ sword =
     "shielder/sword.svg"
     "dagger.wav"
     (Just Slash)
-    $ \w -> do
+    $ \w -> betaRaw $ do
       hurt 10 (other w)
 
 
@@ -303,7 +303,7 @@ potion =
     "shielder/potion.svg"
     "potion.wav"
     (Just Heal)
-    $ \w -> do
+    $ \w -> betaRaw $ do
       heal 10 w
 
 
@@ -315,7 +315,7 @@ reflect =
     "shielder/reflect.svg"
     "reflect.wav"
     Nothing
-    $ \_ -> do
+    $ \_ -> betaRaw $ do
       modStackAll changeOwner
 
 
@@ -328,7 +328,7 @@ boomerang =
     "bouncer/boomerang.svg"
     "boomerang.wav"
     (Just Slash)
-    $ \w -> do
+    $ \w -> betaRaw $ do
       hurt 3 (other w)
       addToHand w boomerang
 
@@ -341,7 +341,7 @@ overwhelm =
     "bouncer/overwhelm.svg"
     "superego.wav"
     Nothing
-    $ \w -> do
+    $ \w -> betaRaw $ do
       len <- length <$> getHand w
       hurt (len * 3) (other w)
 
@@ -354,7 +354,7 @@ echo =
     "bouncer/echo.svg"
     "echo.wav"
     Nothing
-    $ \_ -> do
+    $ \_ -> betaRaw $ do
       modStackHead $
         \(StackCard which (Card name desc pic sfx anim e)) ->
           StackCard which (Card name desc pic sfx anim (\w -> (e w) >> (e w)))
@@ -368,7 +368,7 @@ feint =
     "bouncer/feint.svg"
     "feint.wav"
     Nothing
-    $ bounceAll
+    $ \w -> betaRaw $ bounceAll w
 
 
 -- Collector
@@ -380,7 +380,7 @@ relicblade =
     "collector/relicblade.svg"
     "dagger.wav"
     (Just Slash)
-    $ \w -> do
+    $ \w -> betaRaw $ do
       hurt 6 (other w)
 
 
@@ -392,7 +392,7 @@ greed =
     "collector/greed.svg"
     "envy.wav"
     Nothing
-    $ \w -> do
+    $ \w -> betaRaw $ do
       len <- length <$> getHand (other w)
       hurt (len * 3) (other w)
 
@@ -405,7 +405,7 @@ alchemy =
     "collector/alchemy.svg"
     "feint.wav"
     Nothing
-    $ \_ -> do
+    $ \_ -> betaRaw $ do
       modStackHead (\(StackCard o _) -> StackCard o gold)
 
 
@@ -417,6 +417,6 @@ gold =
     "collector/gold.svg"
     "feint.wav"
     Nothing
-    $ \w -> do
+    $ \w -> betaRaw $ do
       draw w
       draw w
