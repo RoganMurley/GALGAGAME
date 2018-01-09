@@ -13,6 +13,7 @@ import Data.Monoid ((<>))
 import Data.String.Conversions (cs)
 import Data.Text (Text, toUpper)
 import Safe (headMay, tailSafe)
+import Text.Printf (printf)
 
 import Mirror (Mirror(..))
 import Player (WhichPlayer(..), other)
@@ -362,20 +363,20 @@ makeFree ''LogDSL
 
 
 logI :: Alpha a -> LogProgram ()
-logI (GetGen _)      = log "Get gen"
-logI (GetDeck _ _)   = log "Get deck"
-logI (GetHand _ _)   = log "Get hand"
-logI (GetLife _ _)   = log "Get life"
-logI (GetPasses _)   = log "Get passes"
-logI (GetStack _)    = log "Get stack"
-logI (GetTurn _)     = log "Get turn"
-logI (SetGen _ _)    = log "Set gen"
-logI (SetDeck _ _ _) = log "Set deck"
-logI (SetHand _ _ _) = log "Set hand"
-logI (SetLife _ _ _) = log "Set life"
-logI (SetPasses _ _) = log "Set passes"
-logI (SetStack _ _)  = log "Set stack"
-logI (SetTurn _ _)   = log "Set turn"
+logI (GetGen _)      = log $ "Get gen"
+logI (GetDeck _ _)   = log $ "Get deck"
+logI (GetHand _ _)   = log $ "Get hand"
+logI (GetLife _ _)   = log $ "Get life"
+logI (GetPasses _)   = log $ "Get passes"
+logI (GetStack _)    = log $ "Get stack"
+logI (GetTurn _)     = log $ "Get turn"
+logI (SetGen g _)    = log $ printf "Set gen %s"     (show g)
+logI (SetDeck w d _) = log $ printf "Set deck %s %s" (show w) (show d)
+logI (SetHand w h _) = log $ printf "Set hand %s %s" (show w) (show h)
+logI (SetLife w l _) = log $ printf "Set life %s %s" (show w) (show l)
+logI (SetPasses p _) = log $ printf "Set passes %s"  (show p)
+logI (SetStack s _)  = log $ printf "Set stack %s"   (show s)
+logI (SetTurn t _)   = log $ printf "Set turn %s"    (show t)
 
 
 type Program = Free (Sum Alpha LogDSL)
@@ -410,7 +411,7 @@ execute = execute' ""
       let
         (model, program) = progI m p
       in
-                                          execute' (s ++ "<PROG>") model program
+                                          execute' s model program
     execute' s m (Free (InR (Log l n))) =
                                           execute' (s ++ l ++ "\n") m n
     execute' s m (Pure x) =
