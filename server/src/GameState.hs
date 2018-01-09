@@ -2,11 +2,11 @@ module GameState where
 
 import Data.Aeson (ToJSON(..), (.=), object)
 
-import Characters (CharModel, FinalSelection, allCards)
+import Characters (CharModel, FinalSelection, allCards, drinker)
 import Mirror (Mirror(..))
 import Model
 import Player (WhichPlayer(..), other)
-import Util (Gen, shuffle, split)
+import Util (Gen, mkGen, shuffle, split)
 
 
 data GameState =
@@ -81,6 +81,10 @@ initModel turn ca cb gen =
     initDeckPB = shuffle genPB (buildDeck cb) :: Deck
     (handPB, deckPB) = splitAt (initHandLength PlayerB turn) initDeckPB :: (Hand, Deck)
     pm_b = PlayerModel handPB deckPB maxLife :: PlayerModel
+
+
+testModel :: Model
+testModel = initModel PlayerA (drinker, drinker, drinker) (drinker, drinker, drinker) (mkGen 0)
 
 
 initHandLength :: WhichPlayer -> Turn -> Int

@@ -1,9 +1,13 @@
 {-# LANGUAGE TemplateHaskell, FlexibleContexts, FlexibleInstances #-}
 module Model where
 
-import Control.Monad.Free (Free(..), MonadFree, liftF)
+import Prelude hiding (log)
+
+import Control.Monad (when)
+import Control.Monad.Free (Free(..), MonadFree, foldFree, liftF)
 import Control.Monad.Free.TH (makeFree)
 import Data.Aeson (ToJSON(..), (.=), object)
+import Data.Functor.Sum (Sum(..))
 import Data.List (partition)
 import Data.Monoid ((<>))
 import Data.String.Conversions (cs)
@@ -344,3 +348,88 @@ alphaI :: BetaProgram a -> AlphaProgram a
 alphaI (Free (BetaRaw p n))  = p      >> alphaI n
 alphaI (Free (BetaDraw w n)) = draw w >> alphaI n
 alphaI (Pure x)              = Pure x
+
+
+data LogDSL a
+  = Log String a
+  deriving (Functor)
+
+
+type LogProgram a = Free LogDSL a
+
+
+makeFree ''LogDSL
+
+
+logI :: Alpha a -> LogProgram ()
+logI (GetGen _)      = log "Get gen"
+logI (GetDeck _ _)   = log "Get deck"
+logI (GetHand _ _)   = log "Get hand"
+logI (GetLife _ _)   = log "Get life"
+logI (GetPasses _)   = log "Get passes"
+logI (GetStack _)    = log "Get stack"
+logI (GetTurn _)     = log "Get turn"
+logI (SetGen _ _)    = log "Set gen"
+logI (SetDeck _ _ _) = log "Set deck"
+logI (SetHand _ _ _) = log "Set hand"
+logI (SetLife _ _ _) = log "Set life"
+logI (SetPasses _ _) = log "Set passes"
+logI (SetStack _ _)  = log "Set stack"
+logI (SetTurn _ _)   = log "Set turn"
+
+
+type Program = Free (Sum Alpha LogDSL)
+
+
+superI :: Alpha a -> Program a
+superI op = toRight (logI op) *> toLeft (liftF op)
+
+
+progI :: Model -> Alpha a -> (Model, a)
+progI m (GetGen f)      = (m, f $ model_gen m)
+progI m (GetPasses f)   = (m, f $ model_passes m)
+progI m (GetStack f)    = (m, f $ model_stack m)
+progI m (GetTurn f)     = (m, f $ model_turn m)
+progI m (GetDeck w f)   = (m, f . pmodel_deck $ getPmodel w m)
+progI m (GetHand w f)   = (m, f . pmodel_hand $ getPmodel w m )
+progI m (GetLife w f)   = (m, f . pmodel_life $ getPmodel w m)
+progI m (SetGen g n)    = (m { model_gen = g }, n)
+progI m (SetDeck w d n) = (modPmodel (\pm -> pm { pmodel_deck = d }) w m, n)
+progI m (SetHand w h n) = (modPmodel (\pm -> pm { pmodel_hand = reverse . (take maxHandLength) $ reverse h }) w m, n)
+progI m (SetLife w l n) = (modPmodel (\pm -> pm { pmodel_life = l }) w m, n)
+progI m (SetPasses p n) = (m { model_passes = p }, n)
+progI m (SetStack s n)  = (m { model_stack = s }, n)
+progI m (SetTurn t n)   = (m { model_turn = t }, n)
+
+
+execute :: Model -> Program a -> (Model, a, String)
+execute = execute' ""
+  where
+    execute' :: String -> Model -> Program a -> (Model, a, String)
+    execute' s m (Free (InL p))  =
+      let
+        (model, program) = progI m p
+      in
+                                          execute' (s ++ "<PROG>") model program
+    execute' s m (Free (InR (Log l n))) =
+                                          execute' (s ++ l ++ "\n") m n
+    execute' s m (Pure x) =
+                                          (m, x, s)
+
+
+toLeft :: (Functor f, Functor g) => Free f a -> Free (Sum f g) a
+toLeft (Free f) = Free $ InL (toLeft <$> f)
+toLeft (Pure x) = Pure x
+
+
+toRight :: (Functor f, Functor g) => Free g a -> Free (Sum f g) a
+toRight (Free f) = Free $ InR (toRight <$> f)
+toRight (Pure x) = Pure x
+
+
+prog :: Program Life
+prog = foldFree superI $ do
+  setLife PlayerA 10
+  life <- getLife PlayerA
+  when (life < 10) $ setLife PlayerA 999
+  getLife PlayerA
