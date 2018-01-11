@@ -3,7 +3,6 @@ module Model where
 
 import Prelude hiding (log)
 
-import Control.Monad (when)
 import Control.Monad.Free (Free(..), MonadFree, foldFree, liftF)
 import Control.Monad.Free.TH (makeFree)
 import Data.Aeson (ToJSON(..), (.=), object)
@@ -319,31 +318,21 @@ handFull w = do
   return $ handLength >= maxHandLength
 
 
-
-effI :: Model -> AlphaProgram a -> (Model, a)
-effI m (Free (GetGen f))      = (effI m) . f . model_gen $ m
-effI m (Free (GetDeck w f))   = (effI m) . f . pmodel_deck $ getPmodel w m
-effI m (Free (GetHand w f))   = (effI m) . f . pmodel_hand $ getPmodel w m
-effI m (Free (GetLife w f))   = (effI m) . f . pmodel_life $ getPmodel w m
-effI m (Free (GetPasses f))   = (effI m) . f . model_passes $ m
-effI m (Free (GetStack f))    = (effI m) . f . model_stack $ m
-effI m (Free (GetTurn f))     = (effI m) . f . model_turn $ m
-effI m (Free (SetGen g n))    = effI (m { model_gen = g }) n
-effI m (Free (SetDeck w d n)) = effI (modPmodel (\pm -> pm { pmodel_deck = d }) w m) n
-effI m (Free (SetHand w h n)) = effI (modPmodel (\pm -> pm { pmodel_hand = reverse . (take maxHandLength) $ reverse h }) w m) n
-effI m (Free (SetLife w l n)) = effI (modPmodel (\pm -> pm { pmodel_life = l }) w m) n
-effI m (Free (SetPasses p n)) = effI (m { model_passes = p }) n
-effI m (Free (SetStack s n))  = effI (m { model_stack = s }) n
-effI m (Free (SetTurn t n))   = effI (m { model_turn = t }) n
-effI m (Pure x)               = (m, x)
-
-
-modI :: Model -> AlphaProgram () -> Model
-modI m p = fst $ effI m p
-
-
-evalI :: Model -> AlphaProgram a -> a
-evalI m p = snd $ effI m p
+alphaEffI :: Model -> Alpha a -> (Model, a)
+alphaEffI m (GetGen f)      = (m, f $ model_gen m)
+alphaEffI m (GetPasses f)   = (m, f $ model_passes m)
+alphaEffI m (GetStack f)    = (m, f $ model_stack m)
+alphaEffI m (GetTurn f)     = (m, f $ model_turn m)
+alphaEffI m (GetDeck w f)   = (m, f . pmodel_deck $ getPmodel w m)
+alphaEffI m (GetHand w f)   = (m, f . pmodel_hand $ getPmodel w m )
+alphaEffI m (GetLife w f)   = (m, f . pmodel_life $ getPmodel w m)
+alphaEffI m (SetGen g n)    = (m { model_gen = g }, n)
+alphaEffI m (SetDeck w d n) = (modPmodel (\pm -> pm { pmodel_deck = d }) w m, n)
+alphaEffI m (SetHand w h n) = (modPmodel (\pm -> pm { pmodel_hand = reverse . (take maxHandLength) $ reverse h }) w m, n)
+alphaEffI m (SetLife w l n) = (modPmodel (\pm -> pm { pmodel_life = l }) w m, n)
+alphaEffI m (SetPasses p n) = (m { model_passes = p }, n)
+alphaEffI m (SetStack s n)  = (m { model_stack = s }, n)
+alphaEffI m (SetTurn t n)   = (m { model_turn = t }, n)
 
 
 alphaI :: BetaProgram a -> AlphaProgram a
@@ -353,7 +342,7 @@ alphaI (Free (BetaGetLife w f)) = getLife w >>= (\l -> alphaI (f l))
 alphaI (Pure x)                 = Pure x
 
 
--- Anim DSL
+-- Animation DSL
 data AnimDSL a
   = AnimSlash a
   deriving (Functor)
@@ -368,7 +357,7 @@ animI (BetaSlash _ _ _) = liftF $ AnimSlash ()
 animI (BetaGetLife _ _) = Pure ()
 
 
--- Log DSL
+-- Logging DSL
 data LogDSL a
   = Log String a
   deriving (Functor)
@@ -381,13 +370,13 @@ makeFree ''LogDSL
 
 
 logI :: Alpha a -> LogProgram ()
-logI (GetGen _)      = log $        "Get gen"
+logI (GetGen _)      = log $ printf "Get gen"
 logI (GetDeck w _)   = log $ printf "Get deck %s" (show w)
 logI (GetHand w _)   = log $ printf "Get hand %s" (show w)
 logI (GetLife w _)   = log $ printf "Get life %s" (show w)
-logI (GetPasses _)   = log $        "Get passes"
-logI (GetStack _)    = log $        "Get stack"
-logI (GetTurn _)     = log $        "Get turn"
+logI (GetPasses _)   = log $ printf "Get passes"
+logI (GetStack _)    = log $ printf "Get stack"
+logI (GetTurn _)     = log $ printf "Get turn"
 logI (SetGen g _)    = log $ printf "Set gen %s"     (show g)
 logI (SetDeck w d _) = log $ printf "Set deck %s %s" (show w) (show d)
 logI (SetHand w h _) = log $ printf "Set hand %s %s" (show w) (show h)
@@ -397,45 +386,60 @@ logI (SetStack s _)  = log $ printf "Set stack %s"   (show s)
 logI (SetTurn t _)   = log $ printf "Set turn %s"    (show t)
 
 
-type Program = Free (Sum Alpha LogDSL)
+type AlphaLogProgram = Free (Sum Alpha LogDSL)
 
 
-superI :: Alpha a -> Program a
-superI op = toRight (logI op) *> toLeft (liftF op)
+alphaDecorateLog :: ∀ a . Alpha a -> AlphaLogProgram a
+alphaDecorateLog x =
+  let
+    alpha   = liftF x :: AlphaProgram a
+    logging = logI x  :: LogProgram ()
+  in
+    toLeft alpha <* toRight logging
 
 
-progI :: Model -> Alpha a -> (Model, a)
-progI m (GetGen f)      = (m, f $ model_gen m)
-progI m (GetPasses f)   = (m, f $ model_passes m)
-progI m (GetStack f)    = (m, f $ model_stack m)
-progI m (GetTurn f)     = (m, f $ model_turn m)
-progI m (GetDeck w f)   = (m, f . pmodel_deck $ getPmodel w m)
-progI m (GetHand w f)   = (m, f . pmodel_hand $ getPmodel w m )
-progI m (GetLife w f)   = (m, f . pmodel_life $ getPmodel w m)
-progI m (SetGen g n)    = (m { model_gen = g }, n)
-progI m (SetDeck w d n) = (modPmodel (\pm -> pm { pmodel_deck = d }) w m, n)
-progI m (SetHand w h n) = (modPmodel (\pm -> pm { pmodel_hand = reverse . (take maxHandLength) $ reverse h }) w m, n)
-progI m (SetLife w l n) = (modPmodel (\pm -> pm { pmodel_life = l }) w m, n)
-progI m (SetPasses p n) = (m { model_passes = p }, n)
-progI m (SetStack s n)  = (m { model_stack = s }, n)
-progI m (SetTurn t n)   = (m { model_turn = t }, n)
+type AlphaLogAnimProgram = Free (Sum (Sum Alpha LogDSL) AnimDSL)
 
 
-execute :: Model -> Program a -> (Model, a, String)
-execute = execute' ""
+betaI :: ∀ a . Beta a -> AlphaLogAnimProgram a
+betaI x =
+  let
+    anim     = animI x                         :: AnimProgram ()
+    alpha    = alphaI $ liftF x                :: AlphaProgram a
+    alphaLog = foldFree alphaDecorateLog alpha :: AlphaLogProgram a
+  in
+    toLeft alphaLog <* toRight anim
+
+
+execute :: Model -> AlphaLogAnimProgram a -> (Model, a, String, [CardAnim])
+execute = execute' "" []
   where
-    execute' :: String -> Model -> Program a -> (Model, a, String)
-    execute' s m (Free (InL p))  =
-      let
-        (model, program) = progI m p
-      in
-                                          execute' s model program
-    execute' s m (Free (InR (Log l n))) =
-                                          execute' (s ++ l ++ "\n") m n
-    execute' s m (Pure x) =
-                                          (m, x, s)
+    execute' :: String -> [CardAnim] -> Model -> AlphaLogAnimProgram a -> (Model, a, String, [CardAnim])
+    execute' s a m (Pure x) =
+      (m, x, s, a)
+    execute' s a m (Free (InR (AnimSlash n))) =
+      execute' s (Slash : a) m n
+    execute' s a m (Free (InL (InL p)))  =
+      (uncurry (execute' s a)) (alphaEffI m p)
+    execute' s a m (Free (InL (InR (Log l n)))) =
+      execute' (s ++ l ++ "\n") a m n
 
 
+effI :: Model -> AlphaProgram a -> (Model, a)
+effI m (Pure x) = (m, x)
+effI m (Free p) = (uncurry effI) (alphaEffI m p)
+
+
+modI :: Model -> AlphaProgram () -> Model
+modI m p = fst $ effI m p
+
+
+evalI :: Model -> AlphaProgram a -> a
+evalI m p = snd $ effI m p
+
+
+
+-- FREE MONAD HELPERS
 toLeft :: (Functor f, Functor g) => Free f a -> Free (Sum f g) a
 toLeft (Free f) = Free $ toLeft <$> InL f
 toLeft (Pure x) = Pure x
@@ -444,70 +448,3 @@ toLeft (Pure x) = Pure x
 toRight :: (Functor f, Functor g) => Free g a -> Free (Sum f g) a
 toRight (Free f) = Free $ toRight <$> InR f
 toRight (Pure x) = Pure x
-
-
-prog :: Program Life
-prog = foldFree superI $ do
-  setLife PlayerA 10
-  life <- getLife PlayerA
-  when (life < 10) $ setLife PlayerA 999
-  getLife PlayerA
-
-
-hyperI :: Beta a -> Free (Sum Alpha AnimDSL) a
-hyperI op = toRight (animI op) *> toLeft (alphaI $ liftF op)
-
-
-exec :: Model -> Free (Sum Alpha AnimDSL) a -> (Model, a, String)
-exec = execute' ""
-  where
-    execute' :: String -> Model -> Free (Sum Alpha AnimDSL) a -> (Model, a, String)
-    execute' s m (Free (InL p))  =
-      let
-        (model, program) = progI m p
-      in
-                                          execute' s model program
-    execute' s m (Free (InR (AnimSlash n))) =
-                                          execute' (s ++ "slash\n") m n
-    execute' s m (Pure x) =
-                                          (m, x, s)
-
-
-bar ::  Free (Sum Alpha AnimDSL) Life
-bar = foldFree hyperI $ do
-  betaSlash 8 PlayerA
-  l <- betaGetLife PlayerA
-  when (l < 30) $ betaSlash 1 PlayerB
-  return l
-
-
-type FullProgram = Free (Sum AnimDSL (Sum Alpha LogDSL))
-
-
-ultraI :: ∀ a . Beta a -> FullProgram a
-ultraI op = toRight (foldFree superI (alphaI $ liftF op)) <* toLeft (animI op)
-
-
-baz ::  BetaProgram Life
-baz = do
-  betaSlash 8 PlayerA
-  l <- betaGetLife PlayerA
-  when (l < 45) $ betaSlash 1 PlayerB
-  return l
-
-
-ultraExec :: Model -> FullProgram a -> (Model, a, String, String)
-ultraExec = execute' "" ""
-  where
-    execute' :: String -> String -> Model -> FullProgram a -> (Model, a, String, String)
-    execute' s a m (Free (InL (AnimSlash n))) =
-                                          execute' s (a ++ "slash\n") m n
-    execute' s a m (Free (InR (InL p)))  =
-      let
-        (model, program) = progI m p
-      in
-                                          execute' s a model program
-    execute' s a m (Free (InR (InR (Log l n)))) =
-                                          execute' (s ++ l ++ "\n") a m n
-    execute' s a m (Pure x) =
-                                          (m, x, s, a)
