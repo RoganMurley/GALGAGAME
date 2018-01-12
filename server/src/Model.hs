@@ -24,13 +24,12 @@ data Card = Card
   , card_desc :: Text
   , card_img  :: Text
   , card_snd  :: Text
-  , card_anim :: Maybe CardAnim
   , card_eff  :: WhichPlayer -> BetaProgram ()
   }
 
 
 instance Eq Card where
-  (Card n1 d1 i1 _ _ _) == (Card n2 d2 i2 _ _ _) =
+  (Card n1 d1 i1 _ _) == (Card n2 d2 i2 _ _) =
     n1 == n2 && d1 == d2 && i1 == i2
 
 
@@ -39,14 +38,13 @@ instance Show Card where
 
 
 instance ToJSON Card where
-  toJSON (Card name desc imageURL sfxURL anim _) =
+  toJSON (Card name desc imageURL sfxURL _) =
     object
       [
         "name"     .= name
       , "desc"     .= desc
       , "imageURL" .= imageURL
       , "sfxURL"   .= sfxURL
-      , "anim"     .= anim
       ]
 
 
@@ -150,6 +148,7 @@ data Beta n
   = BetaRaw (AlphaProgram ()) n
   | BetaSlash Life WhichPlayer n
   | BetaGetLife WhichPlayer (Life -> n)
+  | BetaNull n
   deriving (Functor)
 
 
@@ -281,7 +280,6 @@ draw w =
         "You're out of cards, hurt yourself for 10."
         "the_end.svg"
         "feint.wave"
-        Nothing
         $ betaRaw . (hurt 10)
 
 
@@ -339,12 +337,14 @@ alphaI :: BetaProgram a -> AlphaProgram a
 alphaI (Free (BetaRaw p n))     = p         >>  alphaI n
 alphaI (Free (BetaSlash d w n)) = hurt d w  >>  alphaI n
 alphaI (Free (BetaGetLife w f)) = getLife w >>= (\l -> alphaI (f l))
+alphaI (Free (BetaNull n))      = alphaI n
 alphaI (Pure x)                 = Pure x
 
 
 -- Animation DSL
 data AnimDSL a
-  = AnimSlash a
+  = AnimNull a
+  | AnimSlash a
   deriving (Functor)
 
 
@@ -355,6 +355,7 @@ animI :: Beta a -> AnimProgram ()
 animI (BetaRaw _ _)     = Pure ()
 animI (BetaSlash _ _ _) = liftF $ AnimSlash ()
 animI (BetaGetLife _ _) = Pure ()
+animI (BetaNull _)      = liftF $ AnimNull ()
 
 
 -- Logging DSL
@@ -411,14 +412,16 @@ betaI x =
     toLeft alphaLog <* toRight anim
 
 
-execute :: Model -> AlphaLogAnimProgram a -> (Model, a, String, [CardAnim])
+execute :: Model -> AlphaLogAnimProgram a -> (Model, a, String, [(Model, Maybe CardAnim)])
 execute = execute' "" []
   where
-    execute' :: String -> [CardAnim] -> Model -> AlphaLogAnimProgram a -> (Model, a, String, [CardAnim])
+    execute' :: String -> [(Model, Maybe CardAnim)] -> Model -> AlphaLogAnimProgram a -> (Model, a, String, [(Model, Maybe CardAnim)])
     execute' s a m (Pure x) =
       (m, x, s, a)
     execute' s a m (Free (InR (AnimSlash n))) =
-      execute' s (Slash : a) m n
+      execute' s ((m, Just Slash) : a) m n
+    execute' s a m (Free (InR (AnimNull n))) =
+      execute' s ((m, Nothing) : a) m n
     execute' s a m (Free (InL (InL p)))  =
       (uncurry (execute' s a)) (alphaEffI m p)
     execute' s a m (Free (InL (InR (Log l n)))) =

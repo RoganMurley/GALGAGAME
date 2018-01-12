@@ -13,7 +13,7 @@ import Text.Printf (printf)
 import GameCommand (GameCommand(..), update)
 import GameState (GameState(..))
 import Mirror (mirror)
-import Model (Model)
+import Model (CardAnim, Model)
 import Player (WhichPlayer(..))
 import Username (Username(Username))
 import Util (Err, modReturnTVar)
@@ -110,16 +110,22 @@ syncPlayersRoom room = do
         (cs . encode . (if rev then mirror else id) $ Room.connected room)
 
 
-resolveRoomClients :: ([Model], GameState) -> Room -> IO ()
-resolveRoomClients (models, final) room = do
+resolveRoomClients :: ([(Model, Maybe CardAnim)], GameState) -> Room -> IO ()
+resolveRoomClients (modelsAnims, final) room = do
   Room.sendToPlayer PlayerA msgPa room
   Room.sendToPlayer PlayerB msgPb room
   Room.sendToSpecs msgPa room
   where
     msgPa = ("res:" <>) . cs . encode $ outcome :: Text
     msgPb = ("res:" <>) . cs . encode $ mirrorOutcome :: Text
-    outcome = Outcome.Resolve models final :: Outcome.Encodable
-    mirrorOutcome = Outcome.Resolve (mirror <$> models) (mirror final) :: Outcome.Encodable
+    outcome :: Outcome.Encodable
+    outcome =
+      Outcome.Resolve modelsAnims final
+    mirrorOutcome :: Outcome.Encodable
+    mirrorOutcome =
+      Outcome.Resolve
+        ((\(x, y) -> (mirror x, y)) <$> modelsAnims)
+        (mirror final)
 
 
 actOutcome :: Room -> Outcome -> IO ()

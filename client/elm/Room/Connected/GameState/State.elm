@@ -81,7 +81,7 @@ update msg state mode flags =
                     otherwise ->
                         case ( state, final ) of
                             ( PlayingGame ( oldModel, oldVm ) _, PlayingGame ( newModel, _ ) _ ) ->
-                                ( resTick <| PlayingGame ( oldModel, oldVm ) ( resList ++ [ newModel ], 0 )
+                                ( resTick <| PlayingGame ( oldModel, oldVm ) ( resList ++ [ ( newModel, Nothing ) ], 0 )
                                 , Cmd.none
                                 )
 
@@ -213,7 +213,7 @@ updateTurnOnly msg state mode flags =
                         )
 
 
-setRes : GameState -> List Model -> GameState
+setRes : GameState -> Res -> GameState
 setRes state res =
     case state of
         PlayingGame ( m, vm ) ( _, i ) ->
@@ -282,7 +282,7 @@ resTick state =
         case state of
             PlayingGame ( model, vm ) ( res, _ ) ->
                 case List.head res of
-                    Just newModel ->
+                    Just ( newModel, _ ) ->
                         PlayingGame
                             ( newModel, { vm | shake = shakeMag } )
                             ( safeTail res, 0 )
@@ -297,7 +297,7 @@ resTick state =
                     which
                     final
                     { vm | shake = shakeMag }
-                    (List.head res)
+                    (Maybe.map Tuple.first <| List.head res)
                     ( List.drop 1 res, 0 )
 
             otherwise ->
@@ -356,7 +356,8 @@ activeAnim game =
         PlayingGame ( model, _ ) ( _, _ ) ->
             case List.head model.stack of
                 Just { card, owner } ->
-                    Maybe.map ((,) owner) card.anim
+                    -- Maybe.map ((,) owner) card.anim
+                    Nothing
 
                 Nothing ->
                     Nothing
@@ -364,7 +365,8 @@ activeAnim game =
         Ended _ _ _ (Just model) ( _, _ ) ->
             case List.head model.stack of
                 Just { card, owner } ->
-                    Maybe.map ((,) owner) card.anim
+                    -- Maybe.map ((,) owner) card.anim
+                    Nothing
 
                 Nothing ->
                     Nothing

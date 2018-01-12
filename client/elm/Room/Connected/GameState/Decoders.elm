@@ -2,7 +2,7 @@ module GameState.Decoders exposing (decodeState, resDecoder)
 
 import Json.Decode as Json exposing (Decoder, fail, field, index, int, list, maybe, string, succeed)
 import Card.Decoders as Card
-import Card.Types exposing (Card)
+import Card.Types exposing (Anim, Card)
 import CharacterSelect.Character as CharacterSelect
 import CharacterSelect.ViewModel
 import GameState.Types exposing (GameState(..), WaitType(..))
@@ -97,11 +97,18 @@ playingDecoder =
         (field "playing" <| modelDecoder)
 
 
-resDecoder : Decoder ( GameState, List Model )
+resDecoder : Decoder ( GameState, Res )
 resDecoder =
-    Json.map2 (,)
-        (field "final" <| stateDecoder)
-        (field "list" <| list <| modelDecoder)
+    let
+        resPairDecoder : Decoder ( Model, Maybe Anim )
+        resPairDecoder =
+            Json.map2 (,)
+                (index 0 modelDecoder)
+                (index 1 (maybe (string |> Json.andThen Card.animDecoder)))
+    in
+        Json.map2 (,)
+            (field "final" <| stateDecoder)
+            (field "list" <| list resPairDecoder)
 
 
 collapseResults : Decoder (Result String a) -> Decoder a
