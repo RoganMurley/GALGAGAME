@@ -1,4 +1,4 @@
-module Card.Decoders exposing (decoder)
+module Card.Decoders exposing (..)
 
 import Card.Types exposing (Anim(..), Card)
 import Json.Decode as Json exposing (Decoder, fail, field, maybe, string, succeed)
@@ -6,12 +6,11 @@ import Json.Decode as Json exposing (Decoder, fail, field, maybe, string, succee
 
 decoder : Decoder Card
 decoder =
-    Json.map5 Card
+    Json.map4 Card
         (field "name" string)
         (field "desc" string)
         (field "imageURL" string)
         (field "sfxURL" string)
-        (field "anim" <| maybe (string |> Json.andThen animDecoder))
 
 
 animDecoder : String -> Decoder Anim

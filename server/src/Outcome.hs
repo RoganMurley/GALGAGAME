@@ -4,7 +4,7 @@ import Data.Aeson (ToJSON(..), (.=), object)
 import Data.Text (Text)
 
 import GameState (GameState)
-import Model (Model)
+import Model (CardAnim, Model)
 import Player (WhichPlayer)
 import Username (Username)
 
@@ -23,7 +23,7 @@ data Outcome =
 data Encodable =
     Chat Username Text
   | Hover ExcludePlayer (Maybe Int)
-  | Resolve [Model] GameState
+  | Resolve [(Model, Maybe CardAnim)] GameState
   deriving (Eq, Show)
 
 

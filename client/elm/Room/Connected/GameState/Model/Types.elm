@@ -1,6 +1,6 @@
 module Model.Types exposing (..)
 
-import Card.Types exposing (Card)
+import Card.Types exposing (Anim, Card)
 
 
 type alias Model =
@@ -42,4 +42,4 @@ type alias StackCard =
 
 
 type alias Res =
-    List Model
+    List ( Model, Maybe Anim )

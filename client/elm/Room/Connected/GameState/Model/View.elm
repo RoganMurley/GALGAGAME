@@ -349,13 +349,17 @@ viewStack stack =
 resView : Res -> Float -> ( Model, ViewModel ) -> Float -> Html Main.Msg
 resView res resTime ( model, vm ) time =
     let
+        headModel : Maybe Model
+        headModel =
+            Maybe.map Tuple.first <| List.head res
+
         nextLife : Res -> Life
         nextLife r =
-            (\m -> m.life) (Maybe.withDefault model (List.head r))
+            (\m -> m.life) (Maybe.withDefault model headModel)
 
         nextOtherLife : Res -> Life
         nextOtherLife r =
-            (\m -> m.otherLife) (Maybe.withDefault model (List.head r))
+            (\m -> m.otherLife) (Maybe.withDefault model headModel)
     in
         div [ class "game-container resolving", style [ screenshakeStyle vm.shake time ] ]
             [ viewOtherHand model.otherHand model.otherHover

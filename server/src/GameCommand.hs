@@ -1,5 +1,6 @@
 module GameCommand where
 
+import Control.Monad.Free (foldFree)
 import Control.Monad.Trans.Writer (Writer, runWriter, tell)
 import Data.Maybe (fromMaybe)
 import Data.Monoid ((<>))
@@ -195,29 +196,30 @@ endTurn which model
       draw PlayerB
 
 
-resolveAll :: Model -> Writer [Model] PlayState
+resolveAll :: Model -> Writer [(Model, Maybe CardAnim)] PlayState
 resolveAll model
   | null stack = return (Playing model)
   | otherwise =
     do
-      tell [ model ]
-      case resolveOne model of
-        Playing newModel ->
-          resolveAll newModel
-        Ended w m gen ->
-          return (Ended w m gen)
+      tell anims
+      case lifeGate m of
+        Playing m' ->
+          resolveAll m'
+        Ended w m' gen ->
+          return (Ended w m' gen)
   where
     stack = evalI model getStack :: Stack
-    resolveOne :: Model -> PlayState
-    resolveOne m =
-      lifeGate $
-        modI m $ do
-          modStack tailSafe
-          case headMay stack of
-            Just (StackCard o c) ->
-              alphaI $ (card_eff c) o
-            Nothing ->
-              return ()
+    card :: Maybe (BetaProgram ())
+    card = (\(StackCard o c) -> (card_eff c) o) <$> headMay stack
+    program :: AlphaLogAnimProgram ()
+    program = case card of
+      Just betaProgram -> do
+        foldFree betaI $ betaRaw $ modStack tailSafe
+        foldFree betaI betaProgram
+      Nothing ->
+        return ()
+    (m, _, _, anims) = execute model program :: (Model, (), String, [(Model, Maybe CardAnim)])
+
 
 
 lifeGate :: Model -> PlayState

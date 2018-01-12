@@ -9,6 +9,10 @@ import Model
 import Util (shuffle)
 
 
+tempAnimFix :: AlphaProgram () -> BetaProgram ()
+tempAnimFix p = betaNull >> betaRaw p
+
+
 -- Striker
 dagger :: Card
 dagger =
@@ -17,9 +21,8 @@ dagger =
     "Hurt for 7"
     "striker/dagger.svg"
     "dagger.wav"
-    (Just Slash)
-    $ \w -> betaRaw $ do
-      hurt 7 (other w)
+    $ \w -> do
+      betaSlash 7 (other w)
 
 
 fireball :: Card
@@ -29,8 +32,7 @@ fireball =
     "Hurt for 5 for each card to the right"
     "striker/fireball.svg"
     "fireball.wav"
-    Nothing
-    $ \w -> betaRaw $ do
+    $ \w -> tempAnimFix $ do
       len <- length <$> getStack
       hurt (len * 5) (other w)
 
@@ -42,8 +44,7 @@ offering =
     "Hurt yourself for 7, then draw 2"
     "striker/offering.svg"
     "offering.wav"
-    Nothing
-    $ \w -> betaRaw $ do
+    $ \w -> tempAnimFix $ do
       hurt 7 w
       draw w
       draw w
@@ -56,8 +57,7 @@ confound =
     "Shuffle the order of cards to the right"
     "striker/confound.svg"
     "confound.wav"
-    Nothing
-    $ \_ -> betaRaw $ do
+    $ \_ -> tempAnimFix $ do
       gen <- getGen
       modStack $ shuffle gen
 
@@ -70,8 +70,7 @@ hammer =
     "Hurt for 8"
     "breaker/hammer.svg"
     "hammer.wav"
-    (Just Slash)
-    $ \w -> betaRaw $ do
+    $ \w -> tempAnimFix $ do
       hurt 8 (other w)
 
 
@@ -82,8 +81,7 @@ lightning =
     "Hurt for 4 for each card to the right"
     "breaker/lightning.svg"
     "lightning.wav"
-    Nothing
-    $ \w -> betaRaw $ do
+    $ \w -> tempAnimFix $ do
       len <- length <$> getStack
       hurt (len * 4) (other w)
 
@@ -95,8 +93,7 @@ hubris =
     "Remove all cards to the right"
     "breaker/hubris.svg"
     "hubris.wav"
-    (Just Obliterate)
-    $ \_ -> betaRaw $ do
+    $ \_ -> tempAnimFix $ do
       setStack []
 
 
@@ -108,8 +105,7 @@ katana =
     "Hurt for 9"
     "balancer/katana.svg"
     "axe.mp3"
-    (Just Slash)
-    $ \w -> betaRaw $ do
+    $ \w -> tempAnimFix $ do
       hurt 9 (other w)
 
 
@@ -120,8 +116,7 @@ curse =
     "Hurt weakest player for 15"
     "balancer/curse.svg"
     "frostbite.mp3"
-    Nothing
-    $ \w -> betaRaw $ do
+    $ \w -> tempAnimFix $ do
       let dmg = 15
       paLife <- getLife w
       pbLife <- getLife (other w)
@@ -136,8 +131,7 @@ bless =
     "Heal weakest player for 15"
     "balancer/bless.svg"
     "oath.wav"
-    Nothing
-    $ \w -> betaRaw $ do
+    $ \w -> tempAnimFix $ do
       let mag = 15
       paLife <- getLife w
       pbLife <- getLife (other w)
@@ -152,8 +146,7 @@ balance =
     "Change card to the right's owner to weakest player"
     "balancer/balance.svg"
     "feint.wav"
-    Nothing
-    $ \w -> betaRaw $ do
+    $ \w -> tempAnimFix $ do
       paLife <- getLife w
       pbLife <- getLife (other w)
       when (paLife < pbLife) (modStackHead (\(StackCard _ c) -> StackCard w c))
@@ -168,8 +161,7 @@ scythe =
     "Lifesteal for 5"
     "drinker/scythe.svg"
     "bite.wav"
-    (Just Slash)
-    $ \w -> betaRaw $ do
+    $ \w -> tempAnimFix $ do
       lifesteal 5 (other w)
 
 
@@ -180,8 +172,7 @@ bloodsucker =
     "Lifesteal for 3 for each card to the right"
     "drinker/bloodsucker.svg"
     "succubus.wav"
-    Nothing
-    $ \w -> betaRaw $ do
+    $ \w -> tempAnimFix $ do
       len <- length <$> getStack
       lifesteal (len * 3) (other w)
 
@@ -193,8 +184,7 @@ serpent =
     ("Add 2 " <> description badApple <> " to their hand")
     "drinker/serpent.svg"
     "siren.wav"
-    Nothing
-    $ \w -> betaRaw $ do
+    $ \w -> tempAnimFix $ do
       addToHand (other w) badApple
       addToHand (other w) badApple
 
@@ -206,8 +196,7 @@ badApple =
     "Hurt yourself for 8"
     "drinker/bad-apple.svg"
     "song.wav"
-    Nothing
-    $ \w -> betaRaw $ do
+    $ \w -> tempAnimFix $ do
       hurt 8 w
 
 
@@ -218,8 +207,7 @@ reversal =
     "Reverse the order of cards to the right"
     "drinker/reversal.svg"
     "reversal.wav"
-    Nothing
-    $ \_ -> betaRaw $ do
+    $ \_ -> tempAnimFix $ do
       modStack reverse
 
 
@@ -231,8 +219,7 @@ staff =
     "Hurt for 4, then draw 1"
     "watcher/staff.svg"
     "staff.wav"
-    (Just Slash)
-    $ \w -> betaRaw $ do
+    $ \w -> tempAnimFix $ do
       hurt 4 (other w)
       draw w
 
@@ -244,8 +231,7 @@ surge =
     "Hurt for 6 for each of your cards to the right"
     "watcher/surge.svg"
     "fireball.wav"
-    Nothing
-    $ \w -> betaRaw $ do
+    $ \w -> tempAnimFix $ do
       len <- length . (filter (owner w)) <$> getStack
       hurt (len * 6) (other w)
 
@@ -257,8 +243,7 @@ imitate =
     "This card becomes a copy of a random card in your hand"
     "watcher/imitate.svg"
     "feint.wav"
-    Nothing
-    $ \w -> betaRaw $ do
+    $ \w -> tempAnimFix $ do
       gen <- getGen
       hand <- getHand w
       mCard <- return . headMay . (filter (/= imitate)) . (shuffle gen) $ hand
@@ -276,8 +261,7 @@ prophecy =
     "Return all cards to the right to hand"
     "watcher/prophecy.svg"
     "precognition.wav"
-    Nothing
-    $ \w -> betaRaw $ do
+    $ \w -> tempAnimFix $ do
       bounceAll w
       bounceAll (other w)
 
@@ -290,8 +274,7 @@ sword =
     "Hurt for 10"
     "shielder/sword.svg"
     "dagger.wav"
-    (Just Slash)
-    $ \w -> betaRaw $ do
+    $ \w -> tempAnimFix $ do
       hurt 10 (other w)
 
 
@@ -302,8 +285,7 @@ potion =
     "Heal for 10"
     "shielder/potion.svg"
     "potion.wav"
-    (Just Heal)
-    $ \w -> betaRaw $ do
+    $ \w -> tempAnimFix $ do
       heal 10 w
 
 
@@ -314,8 +296,7 @@ reflect =
     "All cards to the right change owner"
     "shielder/reflect.svg"
     "reflect.wav"
-    Nothing
-    $ \_ -> betaRaw $ do
+    $ \_ -> tempAnimFix $ do
       modStackAll changeOwner
 
 
@@ -327,8 +308,7 @@ boomerang =
     "Hurt for 3, bounce this card to hand"
     "bouncer/boomerang.svg"
     "boomerang.wav"
-    (Just Slash)
-    $ \w -> betaRaw $ do
+    $ \w -> tempAnimFix $ do
       hurt 3 (other w)
       addToHand w boomerang
 
@@ -340,8 +320,7 @@ overwhelm =
     "Hurt for 3 for each card in your hand"
     "bouncer/overwhelm.svg"
     "superego.wav"
-    Nothing
-    $ \w -> betaRaw $ do
+    $ \w -> tempAnimFix $ do
       len <- length <$> getHand w
       hurt (len * 3) (other w)
 
@@ -353,11 +332,10 @@ echo =
     "When the card to the right activates, it does so twice"
     "bouncer/echo.svg"
     "echo.wav"
-    Nothing
-    $ \_ -> betaRaw $ do
+    $ \_ -> tempAnimFix $ do
       modStackHead $
-        \(StackCard which (Card name desc pic sfx anim e)) ->
-          StackCard which (Card name desc pic sfx anim (\w -> (e w) >> (e w)))
+        \(StackCard which (Card name desc pic sfx e)) ->
+          StackCard which (Card name desc pic sfx (\w -> (e w) >> (e w)))
 
 
 feint :: Card
@@ -367,8 +345,7 @@ feint =
     "Return all of your cards to the right to hand"
     "bouncer/feint.svg"
     "feint.wav"
-    Nothing
-    $ \w -> betaRaw $ bounceAll w
+    $ \w -> tempAnimFix $ bounceAll w
 
 
 -- Collector
@@ -379,8 +356,7 @@ relicblade =
     "Hurt for 6"
     "collector/relicblade.svg"
     "dagger.wav"
-    (Just Slash)
-    $ \w -> betaRaw $ do
+    $ \w -> tempAnimFix $ do
       hurt 6 (other w)
 
 
@@ -391,8 +367,7 @@ greed =
     "Hurt for 3 for each card in their hand"
     "collector/greed.svg"
     "envy.wav"
-    Nothing
-    $ \w -> betaRaw $ do
+    $ \w -> tempAnimFix $ do
       len <- length <$> getHand (other w)
       hurt (len * 3) (other w)
 
@@ -404,8 +379,7 @@ alchemy =
     ("Change card to the right to " <> description gold)
     "collector/alchemy.svg"
     "feint.wav"
-    Nothing
-    $ \_ -> betaRaw $ do
+    $ \_ -> tempAnimFix $ do
       modStackHead (\(StackCard o _) -> StackCard o gold)
 
 
@@ -416,7 +390,6 @@ gold =
     "Draw 2"
     "collector/gold.svg"
     "feint.wav"
-    Nothing
-    $ \w -> betaRaw $ do
+    $ \w -> tempAnimFix $ do
       draw w
       draw w

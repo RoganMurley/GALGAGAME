@@ -6,7 +6,6 @@ type alias Card =
     , desc : String
     , imgURL : String
     , sfxURL : String
-    , anim : Maybe Anim
     }
 
 
