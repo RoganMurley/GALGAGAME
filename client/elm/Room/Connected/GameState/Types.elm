@@ -8,8 +8,8 @@ import Model.ViewModel exposing (ViewModel)
 type GameState
     = Waiting WaitType
     | Selecting CharacterSelect.Model
-    | PlayingGame ( Model, ViewModel ) ( Res, Float )
-    | Ended (Maybe WhichPlayer) Model ViewModel (Maybe Model) ( Res, Float )
+    | PlayingGame ( Model, ViewModel ) ( List Res, Float )
+    | Ended (Maybe WhichPlayer) Model ViewModel (Maybe Model) ( List Res, Float )
 
 
 type WaitType

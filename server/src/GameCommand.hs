@@ -196,21 +196,23 @@ endTurn which model
       draw PlayerB
 
 
-resolveAll :: Model -> Writer [(Model, Maybe CardAnim)] PlayState
-resolveAll model
-  | null stack = return (Playing model)
-  | otherwise =
-    do
-      tell anims
+resolveAll :: Model -> Writer [(Model, Maybe CardAnim, StackCard)] PlayState
+resolveAll model =
+  case stackCard of
+    Just c -> do
+      tell ((\(x, y) -> (x, y, c)) <$> anims)
       case lifeGate m of
         Playing m' ->
           resolveAll m'
         Ended w m' gen ->
           return (Ended w m' gen)
+    Nothing ->
+      return (Playing model)
   where
-    stack = evalI model getStack :: Stack
+    stackCard :: Maybe StackCard
+    stackCard = evalI model (headMay <$> getStack)
     card :: Maybe (BetaProgram ())
-    card = (\(StackCard o c) -> (card_eff c) o) <$> headMay stack
+    card = (\(StackCard o c) -> (card_eff c) o) <$> stackCard
     program :: AlphaLogAnimProgram ()
     program = case card of
       Just betaProgram -> do

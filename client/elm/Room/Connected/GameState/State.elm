@@ -81,17 +81,17 @@ update msg state mode flags =
                     otherwise ->
                         case ( state, final ) of
                             ( PlayingGame ( oldModel, oldVm ) _, PlayingGame ( newModel, _ ) _ ) ->
-                                ( resTick <| PlayingGame ( oldModel, oldVm ) ( resList ++ [ ( newModel, Nothing ) ], 0 )
+                                ( PlayingGame ( oldModel, oldVm ) ( resList, 0 )
                                 , Cmd.none
                                 )
 
                             ( PlayingGame ( oldModel, oldVm ) _, Ended w f _ _ _ ) ->
-                                ( resTick <| Ended w f oldVm (Just oldModel) ( resList, 0 )
+                                ( Ended w f oldVm (Just oldModel) ( resList, 0 )
                                 , Cmd.none
                                 )
 
                             otherwise ->
-                                ( resTick <| setRes final resList
+                                ( setRes final resList
                                 , Cmd.none
                                 )
 
@@ -213,7 +213,7 @@ updateTurnOnly msg state mode flags =
                         )
 
 
-setRes : GameState -> Res -> GameState
+setRes : GameState -> List Res -> GameState
 setRes state res =
     case state of
         PlayingGame ( m, vm ) ( _, i ) ->
@@ -280,16 +280,16 @@ resTick state =
             1.1
     in
         case state of
-            PlayingGame ( model, vm ) ( res, _ ) ->
+            PlayingGame ( m, vm ) ( res, _ ) ->
                 case List.head res of
-                    Just ( newModel, _ ) ->
+                    Just { model } ->
                         PlayingGame
-                            ( newModel, { vm | shake = shakeMag } )
+                            ( model, { vm | shake = shakeMag } )
                             ( safeTail res, 0 )
 
                     Nothing ->
                         PlayingGame
-                            ( model, vm )
+                            ( m, vm )
                             ( res, 0 )
 
             Ended which final vm (Just m) ( res, _ ) ->
@@ -297,7 +297,7 @@ resTick state =
                     which
                     final
                     { vm | shake = shakeMag }
-                    (Maybe.map Tuple.first <| List.head res)
+                    (Maybe.map .model <| List.head res)
                     ( List.drop 1 res, 0 )
 
             otherwise ->
@@ -352,24 +352,22 @@ gameTickStart game =
 
 activeAnim : GameState -> Maybe ( WhichPlayer, Anim )
 activeAnim game =
-    case game of
-        PlayingGame ( model, _ ) ( _, _ ) ->
-            case List.head model.stack of
-                Just { card, owner } ->
-                    -- Maybe.map ((,) owner) card.anim
-                    Nothing
+    let
+        resAnim : List Res -> Maybe ( WhichPlayer, Anim )
+        resAnim res =
+            case List.head res of
+                Just { anim } ->
+                    Maybe.map (\a -> ( PlayerA, a )) anim
 
-                Nothing ->
+                otherwise ->
                     Nothing
+    in
+        case game of
+            PlayingGame ( _, _ ) ( res, _ ) ->
+                resAnim res
 
-        Ended _ _ _ (Just model) ( _, _ ) ->
-            case List.head model.stack of
-                Just { card, owner } ->
-                    -- Maybe.map ((,) owner) card.anim
-                    Nothing
+            Ended _ _ _ (Just model) ( res, _ ) ->
+                resAnim res
 
-                Nothing ->
-                    Nothing
-
-        otherwise ->
-            Nothing
+            otherwise ->
+                Nothing
