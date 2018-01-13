@@ -10,7 +10,7 @@ import Util (shuffle)
 
 
 tempAnimFix :: AlphaProgram () -> BetaProgram ()
-tempAnimFix p = betaNull >> betaRaw p
+tempAnimFix p = betaRaw p >> betaNull
 
 
 -- Striker
@@ -70,8 +70,7 @@ hammer =
     "Hurt for 8"
     "breaker/hammer.svg"
     "hammer.wav"
-    $ \w -> tempAnimFix $ do
-      hurt 8 (other w)
+    $ \w -> betaSlash 8 (other w)
 
 
 lightning :: Card
@@ -105,8 +104,7 @@ katana =
     "Hurt for 9"
     "balancer/katana.svg"
     "axe.mp3"
-    $ \w -> tempAnimFix $ do
-      hurt 9 (other w)
+    $ \w -> betaSlash 9 (other w)
 
 
 curse :: Card
@@ -274,8 +272,7 @@ sword =
     "Hurt for 10"
     "shielder/sword.svg"
     "dagger.wav"
-    $ \w -> tempAnimFix $ do
-      hurt 10 (other w)
+    $ \w -> betaSlash 10 (other w)
 
 
 potion :: Card
@@ -356,8 +353,7 @@ relicblade =
     "Hurt for 6"
     "collector/relicblade.svg"
     "dagger.wav"
-    $ \w -> tempAnimFix $ do
-      hurt 6 (other w)
+    $ \w -> betaSlash 6 (other w)
 
 
 greed :: Card

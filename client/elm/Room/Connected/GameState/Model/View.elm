@@ -312,15 +312,6 @@ viewStack stack =
                 rot : Float
                 rot =
                     0.1 * (toFloat ((index * 1247823748932 + 142131) % 20) - 10)
-
-                headClass : String
-                headClass =
-                    case index of
-                        0 ->
-                            " stack-head"
-
-                        otherwise ->
-                            ""
             in
                 div
                     [ class (playerClass ++ " stack-card")
@@ -331,9 +322,7 @@ viewStack stack =
                     ]
                     [ div
                         [ style [ ( "transform", "rotate(" ++ (toString rot) ++ "deg)" ) ] ]
-                        [ div
-                            [ class headClass ]
-                            [ Card.view card ]
+                        [ div [] [ Card.view card ]
                         ]
                     ]
     in
@@ -346,20 +335,20 @@ viewStack stack =
 -- RESOLVING VIEW.
 
 
-resView : Res -> Float -> ( Model, ViewModel ) -> Float -> Html Main.Msg
+resView : List Res -> Float -> ( Model, ViewModel ) -> Float -> Html Main.Msg
 resView res resTime ( model, vm ) time =
     let
         headModel : Maybe Model
         headModel =
-            Maybe.map Tuple.first <| List.head res
+            Maybe.map .model <| List.head res
 
-        nextLife : Res -> Life
-        nextLife r =
-            (\m -> m.life) (Maybe.withDefault model headModel)
+        nextLife : Life
+        nextLife =
+            .life (Maybe.withDefault model headModel)
 
-        nextOtherLife : Res -> Life
-        nextOtherLife r =
-            (\m -> m.otherLife) (Maybe.withDefault model headModel)
+        nextOtherLife : Life
+        nextOtherLife =
+            .otherLife (Maybe.withDefault model headModel)
     in
         div [ class "game-container resolving", style [ screenshakeStyle vm.shake time ] ]
             [ viewOtherHand model.otherHand model.otherHover
@@ -367,8 +356,8 @@ resView res resTime ( model, vm ) time =
                 viewHand model.hand vm.hover True
             , viewStack model.stack
             , viewResTurn
-            , viewStatus PlayerA (nextLife res)
-            , viewStatus PlayerB (nextOtherLife res)
+            , viewStatus PlayerA nextLife
+            , viewStatus PlayerB nextOtherLife
             ]
 
 

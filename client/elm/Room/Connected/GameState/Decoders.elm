@@ -6,7 +6,7 @@ import Card.Types exposing (Anim, Card)
 import CharacterSelect.Character as CharacterSelect
 import CharacterSelect.ViewModel
 import GameState.Types exposing (GameState(..), WaitType(..))
-import Model.Decoders exposing (modelDecoder, whichDecoder)
+import Model.Decoders exposing (modelDecoder, stackCardDecoder, whichDecoder)
 import Model.Types exposing (..)
 import Model.ViewModel
 
@@ -97,18 +97,19 @@ playingDecoder =
         (field "playing" <| modelDecoder)
 
 
-resDecoder : Decoder ( GameState, Res )
+resDecoder : Decoder ( GameState, List Res )
 resDecoder =
     let
-        resPairDecoder : Decoder ( Model, Maybe Anim )
-        resPairDecoder =
-            Json.map2 (,)
+        resListDecoder : Decoder Res
+        resListDecoder =
+            Json.map3 Res
                 (index 0 modelDecoder)
                 (index 1 (maybe (string |> Json.andThen Card.animDecoder)))
+                (index 2 stackCardDecoder)
     in
         Json.map2 (,)
             (field "final" <| stateDecoder)
-            (field "list" <| list resPairDecoder)
+            (field "list" <| list resListDecoder)
 
 
 collapseResults : Decoder (Result String a) -> Decoder a

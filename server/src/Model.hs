@@ -280,7 +280,7 @@ draw w =
         "You're out of cards, hurt yourself for 10."
         "the_end.svg"
         "feint.wave"
-        $ betaRaw . (hurt 10)
+        $ \w' -> (betaRaw $ hurt 10 w') >> betaNull
 
 
 bounceAll :: WhichPlayer -> AlphaProgram ()
@@ -419,9 +419,9 @@ execute = execute' "" []
     execute' s a m (Pure x) =
       (m, x, s, a)
     execute' s a m (Free (InR (AnimSlash n))) =
-      execute' s ((m, Just Slash) : a) m n
+      execute' s (a ++ [(m, Just Slash)]) m n
     execute' s a m (Free (InR (AnimNull n))) =
-      execute' s ((m, Nothing) : a) m n
+      execute' s (a ++ [(m, Nothing)]) m n
     execute' s a m (Free (InL (InL p)))  =
       (uncurry (execute' s a)) (alphaEffI m p)
     execute' s a m (Free (InL (InR (Log l n)))) =

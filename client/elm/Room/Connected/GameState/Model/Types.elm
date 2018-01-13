@@ -42,4 +42,7 @@ type alias StackCard =
 
 
 type alias Res =
-    List ( Model, Maybe Anim )
+    { model : Model
+    , anim : Maybe Anim
+    , stackCard : StackCard
+    }

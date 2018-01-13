@@ -59,7 +59,7 @@ view state roomID { hostname, httpPort, time, dimensions } =
                 case resModel of
                     Just m ->
                         div []
-                            [ resView (res ++ [ ( final, Nothing ) ]) resTime ( m, vm ) time
+                            [ resView res resTime ( m, vm ) time
                             , Animation.view params resTime (activeAnim state)
                             ]
 
