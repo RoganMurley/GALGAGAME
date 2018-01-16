@@ -16,13 +16,13 @@ uniforms theta which ( width, height ) =
     , flipper =
         case which of
             Nothing ->
-                0.0
+                1.0
 
             Just PlayerA ->
-                0.0
+                1.0
 
             Just PlayerB ->
-                1.0
+                0.0
     }
 
 
