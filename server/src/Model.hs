@@ -168,6 +168,7 @@ data Alpha n =
 data Beta n
   = BetaRaw (AlphaProgram ()) n
   | BetaSlash Life WhichPlayer n
+  | BetaHeal Life WhichPlayer n
   | BetaGetLife WhichPlayer (Life -> n)
   | BetaNull n
   deriving (Functor)
@@ -179,6 +180,13 @@ type BetaProgram a = Free Beta a
 
 makeFree ''Alpha
 makeFree ''Beta
+
+
+-- Beta actions
+betaLifesteal :: Life -> WhichPlayer -> BetaProgram ()
+betaLifesteal dmg w = do
+  betaSlash dmg w
+  betaHeal dmg (other w)
 
 
 -- Constants
@@ -357,6 +365,7 @@ alphaEffI m (SetTurn t n)   = (m { model_turn = t }, n)
 alphaI :: BetaProgram a -> AlphaProgram a
 alphaI (Free (BetaRaw p n))     = p         >>  alphaI n
 alphaI (Free (BetaSlash d w n)) = hurt d w  >>  alphaI n
+alphaI (Free (BetaHeal h w n))  = heal h w  >>  alphaI n
 alphaI (Free (BetaGetLife w f)) = getLife w >>= (\l -> alphaI (f l))
 alphaI (Free (BetaNull n))      = alphaI n
 alphaI (Pure x)                 = Pure x
@@ -366,6 +375,7 @@ alphaI (Pure x)                 = Pure x
 data AnimDSL a
   = AnimNull a
   | AnimSlash WhichPlayer a
+  | AnimHeal WhichPlayer a
   deriving (Functor)
 
 
@@ -375,6 +385,7 @@ type AnimProgram a = Free AnimDSL a
 animI :: Beta a -> AnimProgram ()
 animI (BetaRaw _ _)     = Pure ()
 animI (BetaSlash _ w _) = liftF $ AnimSlash w ()
+animI (BetaHeal _ w _)  = liftF $ AnimHeal w ()
 animI (BetaGetLife _ _) = Pure ()
 animI (BetaNull _)      = liftF $ AnimNull ()
 
@@ -382,11 +393,13 @@ animI (BetaNull _)      = liftF $ AnimNull ()
 animate :: AnimDSL a -> Maybe CardAnim
 animate (AnimNull _)    = Nothing
 animate (AnimSlash w _) = Just . Slash $ w
+animate (AnimHeal w _)  = Just . Heal $ w
 
 
 animNext :: AnimDSL a -> a
 animNext (AnimNull n)    = n
 animNext (AnimSlash _ n) = n
+animNext (AnimHeal _ n)  = n
 
 
 -- Logging DSL

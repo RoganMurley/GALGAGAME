@@ -159,8 +159,8 @@ scythe =
     "Lifesteal for 5"
     "drinker/scythe.svg"
     "bite.wav"
-    $ \w -> tempAnimFix $ do
-      lifesteal 5 (other w)
+    $ \w -> do
+      betaLifesteal 5 (other w)
 
 
 bloodsucker :: Card
@@ -217,9 +217,9 @@ staff =
     "Hurt for 4, then draw 1"
     "watcher/staff.svg"
     "staff.wav"
-    $ \w -> tempAnimFix $ do
-      hurt 4 (other w)
-      draw w
+    $ \w -> do
+      betaSlash 4 (other w)
+      tempAnimFix $ draw w
 
 
 surge :: Card
@@ -282,8 +282,8 @@ potion =
     "Heal for 10"
     "shielder/potion.svg"
     "potion.wav"
-    $ \w -> tempAnimFix $ do
-      heal 10 w
+    $ \w -> do
+      betaHeal 10 w
 
 
 reflect :: Card
