@@ -37,11 +37,6 @@ activeStackCard { resList } =
     Maybe.map .stackCard <| List.head resList
 
 
-nextActiveModel : Resolvable.Model -> Model.Model
-nextActiveModel res =
-    activeModel { res | resList = List.drop 1 res.resList }
-
-
 tickStart : Resolvable.Model -> Bool
 tickStart { tick } =
     tick == 0.0
