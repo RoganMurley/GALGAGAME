@@ -64,13 +64,13 @@ resTickMax =
 
 
 resolveStep : Resolvable.Model -> Resolvable.Model
-resolveStep ({ vm, resList } as model) =
+resolveStep ({ vm, resList, final } as model) =
     case resList of
         r :: rs ->
             { vm = { vm | shake = 1.1 }
             , resList = rs
             , tick = 0
-            , final = r.model
+            , final = final
             }
 
         otherwise ->

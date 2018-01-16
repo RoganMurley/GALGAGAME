@@ -28,7 +28,7 @@ init =
             """
     in
         { player = PlayerA
-        , anim = Slash
+        , anim = Slash PlayerA
         , time = 0.0
         , custom = initCustom
         }

@@ -2,6 +2,7 @@ module Animation.Types exposing (..)
 
 import Math.Vector2 exposing (Vec2)
 import Math.Vector3 exposing (Vec3)
+import Model.Types exposing (WhichPlayer)
 
 
 type alias Uniforms =
@@ -17,7 +18,7 @@ type alias Vertex =
 
 
 type Anim
-    = Slash
-    | Heal
-    | Obliterate
+    = Slash WhichPlayer
+    | Heal WhichPlayer
+    | Obliterate WhichPlayer
     | Custom String

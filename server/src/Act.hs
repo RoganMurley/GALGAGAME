@@ -124,7 +124,7 @@ resolveRoomClients (resList, final) room = do
     mirrorOutcome :: Outcome.Encodable
     mirrorOutcome =
       Outcome.Resolve
-        ((\(x, y, z) -> (mirror x, y, mirror z)) <$> resList)
+        ((\(x, y, z) -> (mirror x, mirror <$> y, mirror z)) <$> resList)
         (mirror final)
 
 
