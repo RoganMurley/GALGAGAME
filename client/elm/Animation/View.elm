@@ -1,6 +1,6 @@
 module Animation.View exposing (..)
 
-import Card.Types as Card
+import Animation.Types exposing (Anim)
 import Html exposing (Html)
 import Html.Attributes exposing (width, height, style)
 import Raymarch.Meshes exposing (quadMesh)
@@ -14,8 +14,8 @@ import WebGL
 import WebGL.Settings.Blend as WebGL
 
 
-view : Params -> Float -> Maybe ( WhichPlayer, Card.Anim ) -> Html msg
-view (Params theta ( w, h )) resTheta animParams =
+view : Params -> Float -> Maybe Anim -> Html msg
+view (Params theta ( w, h )) resTheta anim =
     let
         time =
             theta / 1000
@@ -27,10 +27,7 @@ view (Params theta ( w, h )) resTheta animParams =
             5
 
         which =
-            Maybe.map (\( w, _ ) -> w) animParams
-
-        anim =
-            Maybe.map (\( _, a ) -> a) animParams
+            Just PlayerA
     in
         Html.div []
             [ WebGL.toHtml

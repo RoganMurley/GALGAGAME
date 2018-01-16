@@ -1,24 +1,26 @@
-module GameState.State exposing (activeAnim, resTick, update, tick, tickZero, gameTickStart)
+module GameState.State exposing (update, tick, tickZero, gameTickStart, resolvable)
 
 import Audio exposing (playSound)
-import Card.Types exposing (Anim)
 import CharacterSelect.State as CharacterSelect
 import Connected.Messages as Connected
-import GameState.Decoders exposing (decodeState, resDecoder)
+import GameState.Decoders exposing (playStateDecoder, stateDecoder)
 import GameState.Encoders exposing (encodeHoverIndex)
 import GameState.Messages exposing (..)
-import GameState.Types exposing (GameState(..))
+import GameState.Types exposing (GameState(..), PlayState(..))
 import Json.Decode as Json exposing (field, maybe)
 import Main.Messages as Main
 import Main.Types exposing (Flags)
-import Mode exposing (Mode(..))
+import Mode as Mode
 import Model.Types exposing (..)
+import Resolvable.Decoders exposing (resolveDataDecoder)
+import Resolvable.State as Resolvable
+import Resolvable.Types as Resolvable
 import Room.Messages as Room
 import Model.ViewModel
-import Util exposing (message, safeTail, send)
+import Util exposing (message, safeTail, send, unsafeForceDecode)
 
 
-update : Msg -> GameState -> Mode -> Flags -> ( GameState, Cmd Main.Msg )
+update : Msg -> GameState -> Mode.Mode -> Flags -> ( GameState, Cmd Main.Msg )
 update msg state mode flags =
     case msg of
         Sync str ->
@@ -28,72 +30,74 @@ update msg state mode flags =
                     syncState state str
             in
                 case state of
-                    PlayingGame _ ( res, _ ) ->
+                    Started started ->
                         -- If we're resolving, defer update until later.
-                        case res of
-                            [] ->
-                                ( syncedState, Cmd.none )
-
-                            otherwise ->
-                                ( state
-                                , message <|
-                                    Main.RoomMsg <|
-                                        Room.ConnectedMsg <|
-                                            Connected.GameStateMsg <|
-                                                msg
-                                )
+                        if Resolvable.resolving <| resolvable started then
+                            ( state
+                            , message <|
+                                Main.RoomMsg <|
+                                    Room.ConnectedMsg <|
+                                        Connected.GameStateMsg <|
+                                            msg
+                            )
+                        else
+                            ( syncedState, Cmd.none )
 
                     otherwise ->
                         ( syncedState, Cmd.none )
 
         HoverSelf i ->
             case state of
-                PlayingGame ( m, vm ) r ->
-                    ( PlayingGame ( m, { vm | hover = i } ) r, Cmd.none )
+                Started (Playing ({ vm } as m)) ->
+                    let
+                        newVm : Model.ViewModel.ViewModel
+                        newVm =
+                            { vm | hover = i }
+                    in
+                        ( Started <| Playing { m | vm = newVm }
+                        , Cmd.none
+                        )
 
                 s ->
                     ( s, Cmd.none )
 
         HoverOutcome i ->
             case state of
-                PlayingGame ( m, vm ) r ->
-                    ( PlayingGame ( { m | otherHover = i }, vm ) r, Cmd.none )
+                Started (Playing ({ final } as m)) ->
+                    let
+                        newFinal : Model
+                        newFinal =
+                            { final | otherHover = i }
+                    in
+                        ( Started <| Playing { m | final = newFinal }
+                        , Cmd.none
+                        )
 
                 s ->
                     ( s, Cmd.none )
 
         ResolveOutcome str ->
             let
-                ( final, resList ) =
-                    case Json.decodeString resDecoder str of
-                        Ok result ->
-                            result
+                resList : List Resolvable.ResolveData
+                resList =
+                    unsafeForceDecode ((Json.field "list") (Json.list resolveDataDecoder)) str
 
-                        Err err ->
-                            Debug.crash err
+                finalState : PlayState
+                finalState =
+                    unsafeForceDecode ((Json.field "final") playStateDecoder) str
+
+                model : Model
+                model =
+                    .final <| resolvable finalState
+
+                newState : GameState
+                newState =
+                    carryVm state <|
+                        resMap
+                            (\_ -> Resolvable.init model resList)
+                            (Started finalState)
             in
-                case resList of
-                    [] ->
-                        ( setRes final []
-                        , Cmd.none
-                        )
-
-                    otherwise ->
-                        case ( state, final ) of
-                            ( PlayingGame ( oldModel, oldVm ) _, PlayingGame ( newModel, _ ) _ ) ->
-                                ( PlayingGame ( oldModel, oldVm ) ( resList, 0 )
-                                , Cmd.none
-                                )
-
-                            ( PlayingGame ( oldModel, oldVm ) _, Ended w f _ _ _ ) ->
-                                ( Ended w f oldVm (Just oldModel) ( resList, 0 )
-                                , Cmd.none
-                                )
-
-                            otherwise ->
-                                ( setRes final resList
-                                , Cmd.none
-                                )
+                ( newState, Cmd.none )
 
         SelectingMsg selectMsg ->
             case state of
@@ -111,8 +115,18 @@ update msg state mode flags =
 
         Shake mag ->
             case state of
-                PlayingGame ( m, vm ) r ->
-                    ( PlayingGame ( m, { vm | shake = mag } ) r, Cmd.none )
+                Started started ->
+                    let
+                        vm : Model.ViewModel.ViewModel
+                        vm =
+                            .vm <| resolvable started
+                    in
+                        ( Started <|
+                            resMapPlay
+                                (\r -> { r | vm = { vm | shake = mag } })
+                                started
+                        , Cmd.none
+                        )
 
                 otherwise ->
                     ( state, Cmd.none )
@@ -121,15 +135,15 @@ update msg state mode flags =
             updatePlayingOnly playingOnly state mode flags
 
 
-updatePlayingOnly : PlayingOnly -> GameState -> Mode -> Flags -> ( GameState, Cmd Main.Msg )
+updatePlayingOnly : PlayingOnly -> GameState -> Mode.Mode -> Flags -> ( GameState, Cmd Main.Msg )
 updatePlayingOnly msg state mode flags =
     let
         legal =
             case mode of
-                Playing ->
+                Mode.Playing ->
                     True
 
-                Spectating ->
+                Mode.Spectating ->
                     False
     in
         if not legal then
@@ -138,7 +152,7 @@ updatePlayingOnly msg state mode flags =
             case msg of
                 Rematch ->
                     case state of
-                        Ended _ _ _ _ _ ->
+                        Started (Ended _ _) ->
                             ( state, send flags "rematch:" )
 
                         otherwise ->
@@ -172,13 +186,13 @@ updatePlayingOnly msg state mode flags =
                     updateTurnOnly turnOnly state mode flags
 
 
-updateTurnOnly : TurnOnly -> GameState -> Mode -> Flags -> ( GameState, Cmd Main.Msg )
+updateTurnOnly : TurnOnly -> GameState -> Mode.Mode -> Flags -> ( GameState, Cmd Main.Msg )
 updateTurnOnly msg state mode flags =
     let
         legal =
             case state of
-                PlayingGame ( { turn }, _ ) _ ->
-                    turn == PlayerA
+                Started (Playing { final }) ->
+                    final.turn == PlayerA
 
                 otherwise ->
                     False
@@ -213,29 +227,9 @@ updateTurnOnly msg state mode flags =
                         )
 
 
-setRes : GameState -> List Res -> GameState
-setRes state res =
-    case state of
-        PlayingGame ( m, vm ) ( _, i ) ->
-            PlayingGame ( m, vm ) ( res, i )
-
-        Ended w f vm m ( _, i ) ->
-            Ended w f vm m ( res, i )
-
-        Waiting _ ->
-            Debug.log
-                "Set res on a waiting state"
-                state
-
-        Selecting _ ->
-            Debug.log
-                "Set res on a Selecting state"
-                state
-
-
 syncState : GameState -> String -> GameState
 syncState oldState msg =
-    case decodeState msg of
+    case Json.decodeString stateDecoder msg of
         Ok newState ->
             carryVm oldState newState
 
@@ -243,10 +237,6 @@ syncState oldState msg =
             Debug.log
                 err
                 oldState
-
-
-
--- Carry the old viewmodel between a new and old GameState
 
 
 carryVm : GameState -> GameState -> GameState
@@ -260,10 +250,16 @@ carryVm old new =
                 otherwise ->
                     new
 
-        PlayingGame ( _, vm ) _ ->
+        Started oldStarted ->
             case new of
-                PlayingGame ( m, _ ) ( res, i ) ->
-                    PlayingGame ( m, vm ) ( res, i )
+                Started newStarted ->
+                    let
+                        oldVm : Model.ViewModel.ViewModel
+                        oldVm =
+                            .vm <| resolvable oldStarted
+                    in
+                        Started <|
+                            resMapPlay (\r -> { r | vm = oldVm }) newStarted
 
                 otherwise ->
                     new
@@ -272,102 +268,57 @@ carryVm old new =
             new
 
 
-resTick : GameState -> GameState
-resTick state =
-    let
-        shakeMag : Float
-        shakeMag =
-            1.1
-    in
-        case state of
-            PlayingGame ( m, vm ) ( res, _ ) ->
-                case List.head res of
-                    Just { model } ->
-                        PlayingGame
-                            ( model, { vm | shake = shakeMag } )
-                            ( safeTail res, 0 )
+resMap : (Resolvable.Model -> Resolvable.Model) -> GameState -> GameState
+resMap f state =
+    case state of
+        Started started ->
+            Started <| resMapPlay f started
 
-                    Nothing ->
-                        PlayingGame
-                            ( m, vm )
-                            ( res, 0 )
-
-            Ended which final vm (Just m) ( res, _ ) ->
-                Ended
-                    which
-                    final
-                    { vm | shake = shakeMag }
-                    (Maybe.map .model <| List.head res)
-                    ( List.drop 1 res, 0 )
-
-            otherwise ->
-                state
+        otherwise ->
+            state
 
 
-resTickMax : Float
-resTickMax =
-    800.0
+resMapPlay : (Resolvable.Model -> Resolvable.Model) -> PlayState -> PlayState
+resMapPlay f started =
+    resolvableSet started <|
+        f (resolvable started)
 
 
-tickZero : Float -> Bool
-tickZero tick =
-    tick > resTickMax
+resolvableSet : PlayState -> Resolvable.Model -> PlayState
+resolvableSet s r =
+    case s of
+        Playing _ ->
+            Playing r
+
+        Ended w _ ->
+            Ended w r
 
 
 tick : GameState -> Float -> GameState
-tick game dt =
-    case game of
-        PlayingGame ( m, vm ) ( res, tick ) ->
-            if tickZero tick then
-                resTick game
-            else
-                PlayingGame ( m, (Model.ViewModel.shakeDecay vm) ) ( res, tick + dt )
+tick state dt =
+    resMap (Resolvable.tick dt) state
 
-        Ended which final vm resModel ( res, tick ) ->
-            if tickZero tick then
-                resTick game
-            else
-                Ended which final (Model.ViewModel.shakeDecay vm) resModel ( res, tick + dt )
 
-        otherwise ->
-            game
+tickZero : PlayState -> Bool
+tickZero started =
+    Resolvable.tickZero <| .tick <| resolvable started
 
 
 gameTickStart : GameState -> Bool
-gameTickStart game =
-    case game of
-        PlayingGame ( _, _ ) ( _, 0.0 ) ->
-            True
-
-        Ended _ _ _ _ ( _, 0.0 ) ->
-            True
+gameTickStart state =
+    case state of
+        Started started ->
+            Resolvable.tickStart <| resolvable started
 
         otherwise ->
             False
 
 
+resolvable : PlayState -> Resolvable.Model
+resolvable state =
+    case state of
+        Playing r ->
+            r
 
--- TOTALLY REDO THIS AWFUL CODE
-
-
-activeAnim : GameState -> Maybe ( WhichPlayer, Anim )
-activeAnim game =
-    let
-        resAnim : List Res -> Maybe ( WhichPlayer, Anim )
-        resAnim res =
-            case List.head res of
-                Just { anim } ->
-                    Maybe.map (\a -> ( PlayerA, a )) anim
-
-                otherwise ->
-                    Nothing
-    in
-        case game of
-            PlayingGame ( _, _ ) ( res, _ ) ->
-                resAnim res
-
-            Ended _ _ _ (Just model) ( res, _ ) ->
-                resAnim res
-
-            otherwise ->
-                Nothing
+        Ended _ r ->
+            r

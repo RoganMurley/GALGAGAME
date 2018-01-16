@@ -1,7 +1,7 @@
-module Card.Decoders exposing (..)
+module Card.Decoders exposing (decoder)
 
-import Card.Types exposing (Anim(..), Card)
-import Json.Decode as Json exposing (Decoder, fail, field, maybe, string, succeed)
+import Card.Types exposing (Card)
+import Json.Decode as Json exposing (Decoder, field, string)
 
 
 decoder : Decoder Card
@@ -11,19 +11,3 @@ decoder =
         (field "desc" string)
         (field "imageURL" string)
         (field "sfxURL" string)
-
-
-animDecoder : String -> Decoder Anim
-animDecoder s =
-    case s of
-        "slash" ->
-            succeed Slash
-
-        "obliterate" ->
-            succeed Obliterate
-
-        "heal" ->
-            succeed Heal
-
-        otherwise ->
-            fail ("Invalid Anim " ++ s)

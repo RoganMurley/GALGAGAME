@@ -14,3 +14,10 @@ type alias Uniforms =
 type alias Vertex =
     { position : Vec3
     }
+
+
+type Anim
+    = Slash
+    | Heal
+    | Obliterate
+    | Custom String

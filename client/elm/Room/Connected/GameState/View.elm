@@ -3,23 +3,26 @@ module GameState.View exposing (view)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
+import Animation.Types exposing (Anim)
 import CharacterSelect.View as CharacterSelect
 import Connected.Messages as Connected
 import GameState.Messages exposing (..)
-import GameState.State exposing (activeAnim)
-import GameState.Types exposing (GameState(..), WaitType(..))
+import GameState.State exposing (resolvable)
+import GameState.Types exposing (GameState(..), PlayState(..), WaitType(..))
 import Main.Messages as Main
 import Main.Types exposing (Flags)
 import Model.Types exposing (..)
 import Model.View as Model exposing (view, resView)
 import Raymarch.Types as Raymarch
 import Raymarch.View as Raymarch
+import Resolvable.State exposing (activeAnim, activeModel, resolving)
+import Resolvable.Types as Resolvable
 import Room.Messages as Room
 import Animation.View as Animation
 
 
 view : GameState -> String -> Flags -> Html Main.Msg
-view state roomID { hostname, httpPort, time, dimensions } =
+view state roomID ({ hostname, httpPort, time, dimensions } as flags) =
     let
         params =
             Raymarch.Params time dimensions
@@ -41,62 +44,69 @@ view state roomID { hostname, httpPort, time, dimensions } =
                 <|
                     CharacterSelect.view params model
 
-            PlayingGame ( m, vm ) ( res, resTime ) ->
-                div []
-                    (case res of
-                        [] ->
-                            [ Model.view resTime ( m, vm ) time
-                            , Raymarch.view params
-                            ]
+            Started started ->
+                let
+                    res : Resolvable.Model
+                    res =
+                        resolvable started
+
+                    model : Model
+                    model =
+                        activeModel res
+
+                    anim : Maybe Anim
+                    anim =
+                        activeAnim res
+                in
+                    case res.resList of
+                        resData :: _ ->
+                            div []
+                                [ resView res.vm resData time
+                                , Animation.view params res.tick anim
+                                ]
 
                         otherwise ->
-                            [ resView res resTime ( m, vm ) time
-                            , Animation.view params resTime (activeAnim state)
-                            ]
-                    )
-
-            Ended winner final vm resModel ( res, resTime ) ->
-                case resModel of
-                    Just m ->
-                        div []
-                            [ resView res resTime ( m, vm ) time
-                            , Animation.view params resTime (activeAnim state)
-                            ]
-
-                    Nothing ->
-                        let
-                            ( endGameText, endGameClass ) =
-                                case winner of
-                                    Just PlayerA ->
-                                        ( "VICTORY", "victory" )
-
-                                    Just PlayerB ->
-                                        ( "DEFEAT", "defeat" )
-
-                                    Nothing ->
-                                        ( "DRAW", "draw" )
-                        in
-                            div []
-                                [ div [ class ("endgame-layer " ++ endGameClass) ]
-                                    [ div [ class "endgame-container" ]
-                                        [ div
-                                            [ class endGameClass ]
-                                            [ text endGameText ]
-                                        , button
-                                            [ class "rematch"
-                                            , onClick <|
-                                                Main.RoomMsg <|
-                                                    Room.ConnectedMsg <|
-                                                        Connected.GameStateMsg <|
-                                                            PlayingOnly <|
-                                                                Rematch
-                                            ]
-                                            [ text "Rematch" ]
+                            case started of
+                                Playing _ ->
+                                    div []
+                                        [ Model.view ( model, res.vm ) time
+                                        , Raymarch.view params
                                         ]
-                                    ]
-                                , resView res resTime ( final, vm ) time
-                                , Animation.view params resTime (activeAnim state)
-                                ]
+
+                                Ended winner _ ->
+                                    let
+                                        ( endGameText, endGameClass ) =
+                                            case winner of
+                                                Just PlayerA ->
+                                                    ( "VICTORY", "victory" )
+
+                                                Just PlayerB ->
+                                                    ( "DEFEAT", "defeat" )
+
+                                                Nothing ->
+                                                    ( "DRAW", "draw" )
+                                    in
+                                        div []
+                                            [ div [ class ("endgame-layer " ++ endGameClass) ]
+                                                [ div [ class "endgame-container" ]
+                                                    [ div
+                                                        [ class endGameClass ]
+                                                        [ text endGameText ]
+                                                    , button
+                                                        [ class "rematch"
+                                                        , onClick <|
+                                                            Main.RoomMsg <|
+                                                                Room.ConnectedMsg <|
+                                                                    Connected.GameStateMsg <|
+                                                                        PlayingOnly <|
+                                                                            Rematch
+                                                        ]
+                                                        [ text "Rematch" ]
+                                                    ]
+                                                ]
+                                            , view (Started (Playing res)) roomID flags
+                                            , Animation.view params res.tick anim
+                                            ]
 
 
 waitingView : WaitType -> String -> String -> String -> Html Main.Msg

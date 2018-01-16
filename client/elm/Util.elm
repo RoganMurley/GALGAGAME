@@ -1,6 +1,7 @@
 module Util exposing (..)
 
 import Main.Types exposing (Flags)
+import Json.Decode as Json
 import Regex exposing (HowMany(AtMost), regex, split)
 import Task
 import WebSocket
@@ -63,3 +64,13 @@ splitOn sep str =
 
         otherwise ->
             ( "", str )
+
+
+unsafeForceDecode : Json.Decoder a -> String -> a
+unsafeForceDecode decoder str =
+    case Json.decodeString decoder str of
+        Ok result ->
+            result
+
+        Err err ->
+            Debug.crash err
