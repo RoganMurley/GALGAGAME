@@ -57,11 +57,16 @@ instance ToJSON PlayState where
     , "final"  .= model
     ]
 
+
+instance Mirror PlayState where
+  mirror (Playing m)     = Playing . mirror $ m
+  mirror (Ended w m gen) = Ended (other <$> w) (mirror m) gen
+
+
 instance Mirror GameState where
-  mirror (Waiting wait gen)        = Waiting wait gen
-  mirror (Selecting m t gen)       = Selecting (mirror m) t gen
-  mirror (Started (Playing m)) = Started . Playing . mirror $ m
-  mirror (Started (Ended w m gen)) = Started $ Ended (other <$> w) (mirror m) gen
+  mirror (Waiting wait gen)  = Waiting wait gen
+  mirror (Selecting m t gen) = Selecting (mirror m) t gen
+  mirror (Started started)   = Started $ mirror started
 
 
 initState :: WaitType -> Gen -> GameState

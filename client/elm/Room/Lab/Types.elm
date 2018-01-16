@@ -1,6 +1,6 @@
 module Lab.Types exposing (Model)
 
-import Card.Types exposing (Anim)
+import Animation.Types exposing (Anim)
 import Model.Types exposing (WhichPlayer)
 
 

@@ -1,6 +1,7 @@
 module Model.Types exposing (..)
 
-import Card.Types exposing (Anim, Card)
+import Animation.Types exposing (Anim)
+import Card.Types exposing (Card)
 
 
 type alias Model =
@@ -38,11 +39,4 @@ type alias HoverCardIndex =
 type alias StackCard =
     { owner : WhichPlayer
     , card : Card
-    }
-
-
-type alias Res =
-    { model : Model
-    , anim : Maybe Anim
-    , stackCard : StackCard
     }

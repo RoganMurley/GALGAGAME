@@ -1,10 +1,10 @@
 module Lab.State exposing (..)
 
+import Animation.Types exposing (Anim(..))
 import Lab.Messages exposing (Msg(..))
 import Lab.Types exposing (Model)
-import Card.Types exposing (Anim(..))
 import Model.Types exposing (WhichPlayer(..))
-import GameState.State exposing (tickZero)
+import Resolvable.State exposing (tickZero)
 
 
 init : Model

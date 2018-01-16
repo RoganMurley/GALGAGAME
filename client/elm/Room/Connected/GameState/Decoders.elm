@@ -1,19 +1,14 @@
-module GameState.Decoders exposing (decodeState, resDecoder)
+module GameState.Decoders exposing (..)
 
 import Json.Decode as Json exposing (Decoder, fail, field, index, int, list, maybe, string, succeed)
 import Card.Decoders as Card
-import Card.Types exposing (Anim, Card)
+import Card.Types exposing (Card)
 import CharacterSelect.Character as CharacterSelect
 import CharacterSelect.ViewModel
-import GameState.Types exposing (GameState(..), WaitType(..))
+import GameState.Types exposing (GameState(..), PlayState(..), WaitType(..), Winner)
 import Model.Decoders exposing (modelDecoder, stackCardDecoder, whichDecoder)
-import Model.Types exposing (..)
-import Model.ViewModel
-
-
-decodeState : String -> Result String GameState
-decodeState msg =
-    Json.decodeString stateDecoder msg
+import Model.Types exposing (Model)
+import Resolvable.State as Resolvable
 
 
 stateDecoder : Decoder GameState
@@ -21,7 +16,14 @@ stateDecoder =
     Json.oneOf
         [ waitingDecoder
         , selectingDecoder
-        , playingDecoder
+        , Json.map Started playStateDecoder
+        ]
+
+
+playStateDecoder : Decoder PlayState
+playStateDecoder =
+    Json.oneOf
+        [ playingDecoder
         , endedDecoder
         ]
 
@@ -84,32 +86,27 @@ selectingDecoder =
                 (field "selected" <| list characterDecoder)
 
 
-endedDecoder : Decoder GameState
+endedDecoder : Decoder PlayState
 endedDecoder =
-    Json.map2 (\w m -> Ended w m Model.ViewModel.init Nothing ( [], 0 ))
-        (field "winner" <| maybe whichDecoder)
-        (field "final" <| modelDecoder)
-
-
-playingDecoder : Decoder GameState
-playingDecoder =
-    Json.map (\m -> PlayingGame ( m, Model.ViewModel.init ) ( [], 0 ))
-        (field "playing" <| modelDecoder)
-
-
-resDecoder : Decoder ( GameState, List Res )
-resDecoder =
     let
-        resListDecoder : Decoder Res
-        resListDecoder =
-            Json.map3 Res
-                (index 0 modelDecoder)
-                (index 1 (maybe (string |> Json.andThen Card.animDecoder)))
-                (index 2 stackCardDecoder)
+        endedInit : Winner -> Model -> PlayState
+        endedInit w m =
+            Ended w (Resolvable.init m [])
     in
-        Json.map2 (,)
-            (field "final" <| stateDecoder)
-            (field "list" <| list resListDecoder)
+        Json.map2 endedInit
+            (field "winner" <| maybe whichDecoder)
+            (field "final" <| modelDecoder)
+
+
+playingDecoder : Decoder PlayState
+playingDecoder =
+    let
+        playingInit : Model -> PlayState
+        playingInit m =
+            Playing (Resolvable.init m [])
+    in
+        Json.map playingInit
+            (field "playing" <| modelDecoder)
 
 
 collapseResults : Decoder (Result String a) -> Decoder a

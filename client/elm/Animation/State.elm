@@ -1,7 +1,7 @@
 module Animation.State exposing (..)
 
 import Math.Vector2 exposing (vec2)
-import Card.Types exposing (Anim(..))
+import Animation.Types exposing (Anim(..))
 import Model.Types exposing (WhichPlayer(..))
 import Animation.Shaders as Shaders
 import Animation.Types exposing (Uniforms)

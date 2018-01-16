@@ -7,7 +7,7 @@ import Lab.Messages exposing (Msg(..))
 import Lab.Types exposing (Model)
 import Raymarch.Types exposing (Params(..))
 import Animation.View as Animation
-import Card.Types exposing (Anim(..))
+import Animation.Types exposing (Anim(..))
 import Model.Types exposing (WhichPlayer(..))
 
 
@@ -28,7 +28,7 @@ view params { player, anim, time, custom } =
                 , radio (SetPlayer PlayerB) "which-player" "Player B"
                 ]
             ]
-        , Animation.view params time (Just ( player, anim ))
+        , Animation.view params time (Just anim)
         ]
 
 

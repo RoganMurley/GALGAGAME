@@ -11,7 +11,7 @@ import System.Log.Logger (infoM, warningM)
 import Text.Printf (printf)
 
 import GameCommand (GameCommand(..), update)
-import GameState (GameState(..))
+import GameState (GameState(..), PlayState)
 import Mirror (mirror)
 import Model (CardAnim, Model, StackCard)
 import Player (WhichPlayer(..))
@@ -110,7 +110,7 @@ syncPlayersRoom room = do
         (cs . encode . (if rev then mirror else id) $ Room.connected room)
 
 
-resolveRoomClients :: ([(Model, Maybe CardAnim, StackCard)], GameState) -> Room -> IO ()
+resolveRoomClients :: ([(Model, Maybe CardAnim, StackCard)], PlayState) -> Room -> IO ()
 resolveRoomClients (resList, final) room = do
   Room.sendToPlayer PlayerA msgPa room
   Room.sendToPlayer PlayerB msgPb room

@@ -1,10 +1,11 @@
 module Listener exposing (..)
 
 import Audio exposing (SoundOption(..), playSound, playSoundWith)
-import GameState.State as GameState
+import GameState.State as GameState exposing (resolvable)
 import GameState.Types exposing (GameState(..))
 import Model.Types exposing (Model)
 import Main.Messages exposing (Msg)
+import Resolvable.State exposing (activeModel, activeStackCard)
 
 
 listen : Float -> GameState -> Cmd Msg
@@ -14,21 +15,30 @@ listen time state =
         modelListen state m =
             if GameState.gameTickStart state then
                 let
-                    -- FIX ME, UNSAFE
-                    sfxURL : String
+                    sfxURL : Maybe String
                     sfxURL =
-                        case List.head m.stack of
-                            Nothing ->
-                                ""
+                        case state of
+                            Started started ->
+                                case activeStackCard <| resolvable started of
+                                    Just { card } ->
+                                        Just card.sfxURL
 
-                            Just { card } ->
-                                card.sfxURL
+                                    Nothing ->
+                                        Nothing
+
+                            otherwise ->
+                                Nothing
 
                     volume : Float
                     volume =
                         0.5 + 0.1 * (toFloat (List.length m.stack))
                 in
-                    playSoundWith ("/sfx/" ++ sfxURL) [ Volume volume ]
+                    case sfxURL of
+                        Just url ->
+                            playSoundWith ("/sfx/" ++ url) [ Volume volume ]
+
+                        Nothing ->
+                            Cmd.none
             else
                 Cmd.none
     in
@@ -36,17 +46,10 @@ listen time state =
             Selecting _ ->
                 playSoundWith "/music/select.mp3" [ Loop, Once ]
 
-            PlayingGame _ ( [], _ ) ->
-                Cmd.none
-
-            PlayingGame ( m, _ ) _ ->
-                modelListen state m
-
-            Ended _ _ _ (Just m) _ ->
-                modelListen state m
-
-            Ended _ _ _ Nothing _ ->
-                Cmd.none
+            Started started ->
+                modelListen state <|
+                    activeModel <|
+                        resolvable started
 
             otherwise ->
                 Cmd.none

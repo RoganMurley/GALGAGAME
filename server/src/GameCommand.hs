@@ -152,26 +152,31 @@ endTurn which model
         case runWriter . resolveAll $ model of
           (Playing m, res) ->
             let
-              newState =
-                Started . Playing $
+              newPlayState :: PlayState
+              newPlayState =
+                Playing $
                   modI m $ do
                     swapTurn
                     resetPasses
                     drawCards
+              newState = Started newPlayState :: GameState
             in
               Right (
                 Just newState,
                 [
-                  Outcome.Encodable $ Outcome.Resolve res newState,
+                  Outcome.Encodable $ Outcome.Resolve res newPlayState,
                   Outcome.EndTurn which
                 ]
               )
           (Ended w m g, res) ->
-            let newState = Started (Ended w m g) in
+            let
+              newPlayState = Ended w m g          :: PlayState
+              newState     = Started newPlayState :: GameState
+            in
               Right (
                 Just newState,
                 [
-                  Outcome.Encodable $ Outcome.Resolve res newState,
+                  Outcome.Encodable $ Outcome.Resolve res newPlayState,
                   Outcome.EndTurn which
                 ]
               )

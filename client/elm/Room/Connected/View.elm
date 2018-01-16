@@ -5,7 +5,7 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Connected.Messages as Connected
 import Connected.Types exposing (..)
-import GameState.Types exposing (GameState(..))
+import GameState.Types exposing (GameState(..), PlayState(..))
 import GameState.View as GameState
 import Main.Messages exposing (Msg(..))
 import Main.Types exposing (Flags)
@@ -45,7 +45,7 @@ playersView ( pa, pb ) =
 concedeView : GameState -> List (Html Connected.Msg)
 concedeView state =
     case state of
-        PlayingGame _ _ ->
+        Started (Playing _) ->
             [ button
                 [ classList
                     [ ( "settings-button", True )

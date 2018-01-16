@@ -7,6 +7,8 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Main.Messages as Main
+import Resolvable.State exposing (activeAnim, activeModel, nextActiveModel, resolving)
+import Resolvable.Types as Resolvable
 import Room.Messages as Room
 import GameState.Messages exposing (..)
 import Model.Types exposing (..)
@@ -27,8 +29,8 @@ playingOnly =
         << PlayingOnly
 
 
-view : Float -> ( Model, ViewModel ) -> Float -> Html Main.Msg
-view resTime ( model, viewModel ) time =
+view : ( Model, ViewModel ) -> Float -> Html Main.Msg
+view ( model, viewModel ) time =
     div [ class "game-container", style [ screenshakeStyle viewModel.shake time ] ]
         [ viewOtherHand model.otherHand model.otherHover
         , Html.map playingOnly <|
@@ -312,6 +314,15 @@ viewStack stack =
                 rot : Float
                 rot =
                     0.1 * (toFloat ((index * 1247823748932 + 142131) % 20) - 10)
+
+                headClass : String
+                headClass =
+                    case index of
+                        0 ->
+                            " stack-head"
+
+                        otherwise ->
+                            ""
             in
                 div
                     [ class (playerClass ++ " stack-card")
@@ -322,7 +333,7 @@ viewStack stack =
                     ]
                     [ div
                         [ style [ ( "transform", "rotate(" ++ (toString rot) ++ "deg)" ) ] ]
-                        [ div [] [ Card.view card ]
+                        [ div [ class headClass ] [ Card.view card ]
                         ]
                     ]
     in
@@ -335,29 +346,21 @@ viewStack stack =
 -- RESOLVING VIEW.
 
 
-resView : List Res -> Float -> ( Model, ViewModel ) -> Float -> Html Main.Msg
-resView res resTime ( model, vm ) time =
+resView : Model.ViewModel.ViewModel -> Resolvable.ResolveData -> Float -> Html Main.Msg
+resView vm { model, stackCard } time =
     let
-        headModel : Maybe Model
-        headModel =
-            Maybe.map .model <| List.head res
-
-        nextLife : Life
-        nextLife =
-            .life (Maybe.withDefault model headModel)
-
-        nextOtherLife : Life
-        nextOtherLife =
-            .otherLife (Maybe.withDefault model headModel)
+        stack : List StackCard
+        stack =
+            stackCard :: model.stack
     in
         div [ class "game-container resolving", style [ screenshakeStyle vm.shake time ] ]
             [ viewOtherHand model.otherHand model.otherHover
             , Html.map playingOnly <|
                 viewHand model.hand vm.hover True
-            , viewStack model.stack
+            , viewStack stack
             , viewResTurn
-            , viewStatus PlayerA nextLife
-            , viewStatus PlayerB nextOtherLife
+            , viewStatus PlayerA model.life
+            , viewStatus PlayerB model.otherLife
             ]
 
 
