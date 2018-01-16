@@ -7,7 +7,6 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Main.Messages as Main
-import Resolvable.State exposing (activeAnim, activeModel, nextActiveModel, resolving)
 import Resolvable.Types as Resolvable
 import Room.Messages as Room
 import GameState.Messages exposing (..)
