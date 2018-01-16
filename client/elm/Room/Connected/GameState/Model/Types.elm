@@ -1,6 +1,5 @@
 module Model.Types exposing (..)
 
-import Animation.Types exposing (Anim)
 import Card.Types exposing (Card)
 
 

@@ -49,14 +49,35 @@ instance ToJSON Card where
 
 
 instance ToJSON CardAnim where
-  toJSON Slash      = "slash"
-  toJSON Heal       = "heal"
-  toJSON Obliterate = "obliterate"
+  toJSON (Slash w)  =
+    object
+      [
+       "player" .= w
+      , "anim"  .= ("slash" :: Text)
+      ]
+  toJSON (Heal w)   =
+    object
+      [
+       "player" .= w
+      , "anim"  .= ("heal" :: Text)
+      ]
+  toJSON Obliterate =
+    object
+      [
+       "player" .= PlayerA
+      , "anim"  .= ("obliterate" :: Text)
+      ]
+
+
+instance Mirror CardAnim where
+  mirror (Slash w)  = Slash (other w)
+  mirror (Heal w)   = Heal  (other w)
+  mirror Obliterate = Obliterate
 
 
 data CardAnim =
-    Slash
-  | Heal
+    Slash WhichPlayer
+  | Heal WhichPlayer
   | Obliterate
   deriving (Show, Eq)
 
@@ -344,7 +365,7 @@ alphaI (Pure x)                 = Pure x
 -- Animation DSL
 data AnimDSL a
   = AnimNull a
-  | AnimSlash a
+  | AnimSlash WhichPlayer a
   deriving (Functor)
 
 
@@ -353,9 +374,19 @@ type AnimProgram a = Free AnimDSL a
 
 animI :: Beta a -> AnimProgram ()
 animI (BetaRaw _ _)     = Pure ()
-animI (BetaSlash _ _ _) = liftF $ AnimSlash ()
+animI (BetaSlash _ w _) = liftF $ AnimSlash w ()
 animI (BetaGetLife _ _) = Pure ()
 animI (BetaNull _)      = liftF $ AnimNull ()
+
+
+animate :: AnimDSL a -> Maybe CardAnim
+animate (AnimNull _)    = Nothing
+animate (AnimSlash w _) = Just . Slash $ w
+
+
+animNext :: AnimDSL a -> a
+animNext (AnimNull n)    = n
+animNext (AnimSlash _ n) = n
 
 
 -- Logging DSL
@@ -418,10 +449,8 @@ execute = execute' "" []
     execute' :: String -> [(Model, Maybe CardAnim)] -> Model -> AlphaLogAnimProgram a -> (Model, a, String, [(Model, Maybe CardAnim)])
     execute' s a m (Pure x) =
       (m, x, s, a)
-    execute' s a m (Free (InR (AnimSlash n))) =
-      execute' s (a ++ [(m, Just Slash)]) m n
-    execute' s a m (Free (InR (AnimNull n))) =
-      execute' s (a ++ [(m, Nothing)]) m n
+    execute' s a m (Free (InR anim)) =
+      execute' s (a ++ [(m, animate anim)]) m (animNext anim)
     execute' s a m (Free (InL (InL p)))  =
       (uncurry (execute' s a)) (alphaEffI m p)
     execute' s a m (Free (InL (InR (Log l n)))) =

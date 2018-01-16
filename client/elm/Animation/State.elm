@@ -27,15 +27,15 @@ uniforms theta which ( width, height ) =
 
 
 animToFragmentShader : Maybe Anim -> Shader {} Uniforms {}
-animToFragmentShader params =
-    case params of
-        Just Slash ->
+animToFragmentShader anim =
+    case anim of
+        Just (Slash _) ->
             Shaders.slash
 
-        Just Obliterate ->
+        Just (Obliterate _) ->
             Shaders.obliterate
 
-        Just Heal ->
+        Just (Heal _) ->
             Shaders.heal
 
         Just (Custom s) ->
@@ -43,3 +43,19 @@ animToFragmentShader params =
 
         Nothing ->
             Shaders.null
+
+
+getWhichPlayer : Anim -> WhichPlayer
+getWhichPlayer anim =
+    case anim of
+        Slash w ->
+            w
+
+        Obliterate w ->
+            w
+
+        Heal w ->
+            w
+
+        Custom _ ->
+            PlayerA

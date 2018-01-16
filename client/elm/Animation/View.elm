@@ -6,7 +6,7 @@ import Html.Attributes exposing (width, height, style)
 import Raymarch.Meshes exposing (quadMesh)
 import Raymarch.State as Raymarch
 import Raymarch.Types exposing (Params(..))
-import Animation.State exposing (animToFragmentShader, uniforms)
+import Animation.State exposing (animToFragmentShader, getWhichPlayer, uniforms)
 import Animation.Shaders
 import Raymarch.Shaders
 import Model.Types exposing (WhichPlayer(..))
@@ -26,8 +26,9 @@ view (Params theta ( w, h )) resTheta anim =
         downscale =
             5
 
+        which : Maybe WhichPlayer
         which =
-            Just PlayerA
+            Maybe.map getWhichPlayer anim
     in
         Html.div []
             [ WebGL.toHtml
