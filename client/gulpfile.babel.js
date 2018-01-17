@@ -9,6 +9,12 @@ import minify from 'gulp-minify-css';
 import inline from 'gulp-inline-source';
 import replace from 'gulp-replace';
 import git from 'git-rev-sync';
+import identity from 'gulp-identity';
+import yargs from 'yargs';
+
+
+const minifyJs = yargs.argv.production ? uglify : identity;
+const minifyCss = yargs.argv.production ? minify : identity;
 
 
 const dir = {
@@ -24,7 +30,7 @@ gulp.task('multi', ['init'], () => {
   return gulp.src('elm/Main.elm')
     .pipe(plumber())
     .pipe(elm.make({filetype: 'js', warn: true}))
-    .pipe(uglify())
+    .pipe(minifyJs())
     .pipe(gulp.dest(dir.build));
 });
 
@@ -34,7 +40,7 @@ gulp.task('sass', () => {
   return gulp.src('./sass/**/*.scss')
     .pipe(plumber())
     .pipe(sass().on('error', sass.logError))
-    .pipe(minify())
+    .pipe(minifyCss())
     .pipe(gulp.dest(dir.build));
 });
 
