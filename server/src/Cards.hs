@@ -9,10 +9,6 @@ import Model
 import Util (shuffle)
 
 
-tempAnimFix :: AlphaProgram () -> BetaProgram ()
-tempAnimFix p = betaRaw p >> betaNull
-
-
 -- Striker
 dagger :: Card
 dagger =
@@ -45,9 +41,8 @@ offering =
     "offering.wav"
     $ \w -> do
       betaSlash 7 w
-      tempAnimFix $ do
-        draw w
-        draw w
+      betaDraw w
+      betaDraw w
 
 
 confound :: Card
@@ -57,9 +52,11 @@ confound =
     "Shuffle the order of cards to the right"
     "striker/confound.svg"
     "confound.wav"
-    $ \_ -> tempAnimFix $ do
-      gen <- getGen
-      modStack $ shuffle gen
+    $ \_ -> do
+      gen <- betaGetGen
+      betaNull
+      betaRaw $ modStack $ shuffle gen
+      betaNull
 
 
 -- Breaker
@@ -92,8 +89,10 @@ hubris =
     "Remove all cards to the right"
     "breaker/hubris.svg"
     "hubris.wav"
-    $ \_ -> tempAnimFix $ do
-      setStack []
+    $ \_ -> do
+      betaNull
+      betaRaw $ setStack []
+      betaNull
 
 
 -- Balancer
@@ -144,11 +143,14 @@ balance =
     "Change card to the right's owner to weakest player"
     "balancer/balance.svg"
     "feint.wav"
-    $ \w -> tempAnimFix $ do
-      paLife <- getLife w
-      pbLife <- getLife (other w)
-      when (paLife < pbLife) (modStackHead (\(StackCard _ c) -> StackCard w c))
-      when (paLife > pbLife) (modStackHead (\(StackCard _ c) -> StackCard (other w) c))
+    $ \w -> do
+      paLife <- betaGetLife w
+      pbLife <- betaGetLife (other w)
+      betaNull
+      betaRaw $ do
+        when (paLife < pbLife) (modStackHead (\(StackCard _ c) -> StackCard w c))
+        when (paLife > pbLife) (modStackHead (\(StackCard _ c) -> StackCard (other w) c))
+      betaNull
 
 
 -- Drinker
@@ -181,9 +183,12 @@ serpent =
     ("Add 2 " <> description badApple <> " to their hand")
     "drinker/serpent.svg"
     "siren.wav"
-    $ \w -> tempAnimFix $ do
-      addToHand (other w) badApple
-      addToHand (other w) badApple
+    $ \w -> do
+      betaNull
+      betaRaw $ addToHand (other w) badApple
+      betaNull
+      betaRaw $ addToHand (other w) badApple
+      betaNull
 
 
 badApple :: Card
@@ -204,8 +209,10 @@ reversal =
     "Reverse the order of cards to the right"
     "drinker/reversal.svg"
     "reversal.wav"
-    $ \_ -> tempAnimFix $ do
-      modStack reverse
+    $ \_ -> do
+      betaNull
+      betaRaw $ modStack reverse
+      betaNull
 
 
 -- Watcher
@@ -218,7 +225,7 @@ staff =
     "staff.wav"
     $ \w -> do
       betaSlash 4 (other w)
-      tempAnimFix $ draw w
+      betaDraw w
 
 
 surge :: Card
@@ -240,15 +247,18 @@ imitate =
     "This card becomes a copy of a random card in your hand"
     "watcher/imitate.svg"
     "feint.wav"
-    $ \w -> tempAnimFix $ do
-      gen <- getGen
-      hand <- getHand w
-      mCard <- return . headMay . (filter (/= imitate)) . (shuffle gen) $ hand
-      case mCard of
-        Just c ->
-          modStack ((:) (StackCard w c))
-        Nothing ->
-          return ()
+    $ \w -> do
+      betaNull
+      betaRaw $ do
+        gen <- getGen
+        hand <- getHand w
+        mCard <- return . headMay . (filter (/= imitate)) . (shuffle gen) $ hand
+        case mCard of
+          Just c ->
+            modStack ((:) (StackCard w c))
+          Nothing ->
+            return ()
+      betaNull
 
 
 prophecy :: Card
@@ -258,9 +268,12 @@ prophecy =
     "Return all cards to the right to hand"
     "watcher/prophecy.svg"
     "precognition.wav"
-    $ \w -> tempAnimFix $ do
-      bounceAll w
-      bounceAll (other w)
+    $ \w -> do
+      betaNull
+      betaRaw $ do
+        bounceAll w
+        bounceAll (other w)
+      betaNull
 
 
 -- Shielder
@@ -291,8 +304,10 @@ reflect =
     "All cards to the right change owner"
     "shielder/reflect.svg"
     "reflect.wav"
-    $ \_ -> tempAnimFix $ do
-      modStackAll changeOwner
+    $ \_ -> do
+      betaNull
+      betaRaw $ modStackAll changeOwner
+      betaNull
 
 
 -- Bouncer
@@ -305,7 +320,8 @@ boomerang =
     "boomerang.wav"
     $ \w -> do
       betaSlash 3 (other w)
-      tempAnimFix $ addToHand w boomerang
+      betaRaw $ addToHand w boomerang
+      betaNull
 
 
 overwhelm :: Card
@@ -327,10 +343,12 @@ echo =
     "When the card to the right activates, it does so twice"
     "bouncer/echo.svg"
     "echo.wav"
-    $ \_ -> tempAnimFix $ do
-      modStackHead $
-        \(StackCard which (Card name desc pic sfx e)) ->
-          StackCard which (Card name desc pic sfx (\w -> (e w) >> (e w)))
+    $ \_ -> do
+      betaRaw $ do
+        modStackHead $
+          \(StackCard which (Card name desc pic sfx e)) ->
+            StackCard which (Card name desc pic sfx (\w -> (e w) >> (e w)))
+      betaNull
 
 
 feint :: Card
@@ -340,7 +358,10 @@ feint =
     "Return all of your cards to the right to hand"
     "bouncer/feint.svg"
     "feint.wav"
-    $ \w -> tempAnimFix $ bounceAll w
+    $ \w -> do
+      betaNull
+      betaRaw $ bounceAll w
+      betaNull
 
 
 -- Collector
@@ -373,8 +394,10 @@ alchemy =
     ("Change card to the right to " <> description gold)
     "collector/alchemy.svg"
     "feint.wav"
-    $ \_ -> tempAnimFix $ do
-      modStackHead (\(StackCard o _) -> StackCard o gold)
+    $ \_ -> do
+      betaNull
+      betaRaw $ modStackHead (\(StackCard o _) -> StackCard o gold)
+      betaNull
 
 
 gold :: Card
@@ -384,6 +407,6 @@ gold =
     "Draw 2"
     "collector/gold.svg"
     "feint.wav"
-    $ \w -> tempAnimFix $ do
-      draw w
-      draw w
+    $ \w -> do
+      betaDraw w
+      betaDraw w

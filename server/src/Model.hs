@@ -169,8 +169,11 @@ data Beta n
   = BetaRaw (AlphaProgram ()) n
   | BetaSlash Life WhichPlayer n
   | BetaHeal Life WhichPlayer n
-  | BetaGetLife WhichPlayer (Life -> n)
+  | BetaDraw WhichPlayer n
+  | BetaGetDeck WhichPlayer (Deck -> n)
   | BetaGetHand WhichPlayer (Hand -> n)
+  | BetaGetLife WhichPlayer (Life -> n)
+  | BetaGetGen (Gen -> n)
   | BetaGetStack (Stack -> n)
   | BetaNull n
   deriving (Functor)
@@ -368,8 +371,11 @@ alphaI :: BetaProgram a -> AlphaProgram a
 alphaI (Free (BetaRaw p n))     = p         >>  alphaI n
 alphaI (Free (BetaSlash d w n)) = hurt d w  >>  alphaI n
 alphaI (Free (BetaHeal h w n))  = heal h w  >>  alphaI n
+alphaI (Free (BetaDraw w n))    = draw w    >>  alphaI n
+alphaI (Free (BetaGetGen f))    = getGen    >>= alphaI . f
 alphaI (Free (BetaGetLife w f)) = getLife w >>= alphaI . f
 alphaI (Free (BetaGetHand w f)) = getHand w >>= alphaI . f
+alphaI (Free (BetaGetDeck w f)) = getDeck w >>= alphaI . f
 alphaI (Free (BetaGetStack f))  = getStack  >>= alphaI . f
 alphaI (Free (BetaNull n))      = alphaI n
 alphaI (Pure x)                 = Pure x
@@ -390,6 +396,7 @@ animI :: Beta a -> AnimProgram ()
 animI (BetaSlash _ w _) = liftF $ AnimSlash w ()
 animI (BetaHeal _ w _)  = liftF $ AnimHeal w ()
 animI (BetaNull _)      = liftF $ AnimNull ()
+animI (BetaDraw _ _)    = liftF $ AnimNull ()
 animI _                 = Pure ()
 
 
