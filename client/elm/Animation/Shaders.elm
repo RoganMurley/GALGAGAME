@@ -47,7 +47,7 @@ heal =
             vec2 uv = gl_FragCoord.xy / resolution.xy;
             uv = abs(vec2(flipper, flipper) - uv);
 
-            float intensity = cos(time + 0.5) * time - uv.y;
+            float intensity = cos(time + 0.5) * time - abs(1. - uv.y);
             gl_FragColor = vec4(0., 1., 0., intensity);
         }
 
