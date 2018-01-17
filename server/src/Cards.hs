@@ -21,8 +21,7 @@ dagger =
     "Hurt for 7"
     "striker/dagger.svg"
     "dagger.wav"
-    $ \w -> do
-      betaSlash 7 (other w)
+    $ \w -> betaSlash 7 (other w)
 
 
 fireball :: Card
@@ -32,9 +31,9 @@ fireball =
     "Hurt for 5 for each card to the right"
     "striker/fireball.svg"
     "fireball.wav"
-    $ \w -> tempAnimFix $ do
-      len <- length <$> getStack
-      hurt (len * 5) (other w)
+    $ \w -> do
+      len <- length <$> betaGetStack
+      betaSlash (len * 5) (other w)
 
 
 offering :: Card
@@ -44,10 +43,11 @@ offering =
     "Hurt yourself for 7, then draw 2"
     "striker/offering.svg"
     "offering.wav"
-    $ \w -> tempAnimFix $ do
-      hurt 7 w
-      draw w
-      draw w
+    $ \w -> do
+      betaSlash 7 w
+      tempAnimFix $ do
+        draw w
+        draw w
 
 
 confound :: Card
@@ -80,9 +80,9 @@ lightning =
     "Hurt for 4 for each card to the right"
     "breaker/lightning.svg"
     "lightning.wav"
-    $ \w -> tempAnimFix $ do
-      len <- length <$> getStack
-      hurt (len * 4) (other w)
+    $ \w -> do
+      len <- length <$> betaGetStack
+      betaSlash (len * 4) (other w)
 
 
 hubris :: Card
@@ -114,12 +114,12 @@ curse =
     "Hurt weakest player for 15"
     "balancer/curse.svg"
     "frostbite.mp3"
-    $ \w -> tempAnimFix $ do
+    $ \w -> do
       let dmg = 15
-      paLife <- getLife w
-      pbLife <- getLife (other w)
-      when (paLife <= pbLife) (hurt dmg w)
-      when (paLife >= pbLife) (hurt dmg (other w))
+      paLife <- betaGetLife w
+      pbLife <- betaGetLife (other w)
+      when (paLife <= pbLife) (betaSlash dmg w)
+      when (paLife >= pbLife) (betaSlash dmg (other w))
 
 
 bless :: Card
@@ -129,12 +129,12 @@ bless =
     "Heal weakest player for 15"
     "balancer/bless.svg"
     "oath.wav"
-    $ \w -> tempAnimFix $ do
+    $ \w -> do
       let mag = 15
-      paLife <- getLife w
-      pbLife <- getLife (other w)
-      when (paLife <= pbLife) (heal mag w)
-      when (paLife >= pbLife) (heal mag (other w))
+      paLife <- betaGetLife w
+      pbLife <- betaGetLife (other w)
+      when (paLife <= pbLife) (betaHeal mag w)
+      when (paLife >= pbLife) (betaHeal mag (other w))
 
 
 balance :: Card
@@ -159,8 +159,7 @@ scythe =
     "Lifesteal for 5"
     "drinker/scythe.svg"
     "bite.wav"
-    $ \w -> do
-      betaLifesteal 5 (other w)
+    $ \w -> betaLifesteal 5 (other w)
 
 
 bloodsucker :: Card
@@ -170,9 +169,9 @@ bloodsucker =
     "Lifesteal for 3 for each card to the right"
     "drinker/bloodsucker.svg"
     "succubus.wav"
-    $ \w -> tempAnimFix $ do
-      len <- length <$> getStack
-      lifesteal (len * 3) (other w)
+    $ \w -> do
+      len <- length <$> betaGetStack
+      betaLifesteal (len * 3) (other w)
 
 
 serpent :: Card
@@ -194,8 +193,8 @@ badApple =
     "Hurt yourself for 8"
     "drinker/bad-apple.svg"
     "song.wav"
-    $ \w -> tempAnimFix $ do
-      hurt 8 w
+    $ \w -> do
+      betaSlash 8 w
 
 
 reversal :: Card
@@ -229,9 +228,9 @@ surge =
     "Hurt for 6 for each of your cards to the right"
     "watcher/surge.svg"
     "fireball.wav"
-    $ \w -> tempAnimFix $ do
-      len <- length . (filter (owner w)) <$> getStack
-      hurt (len * 6) (other w)
+    $ \w -> do
+      len <- length . (filter (owner w)) <$> betaGetStack
+      betaSlash (len * 6) (other w)
 
 
 imitate :: Card
@@ -282,8 +281,7 @@ potion =
     "Heal for 10"
     "shielder/potion.svg"
     "potion.wav"
-    $ \w -> do
-      betaHeal 10 w
+    $ betaHeal 10
 
 
 reflect :: Card
@@ -305,9 +303,9 @@ boomerang =
     "Hurt for 3, bounce this card to hand"
     "bouncer/boomerang.svg"
     "boomerang.wav"
-    $ \w -> tempAnimFix $ do
-      hurt 3 (other w)
-      addToHand w boomerang
+    $ \w -> do
+      betaSlash 3 (other w)
+      tempAnimFix $ addToHand w boomerang
 
 
 overwhelm :: Card
@@ -317,9 +315,9 @@ overwhelm =
     "Hurt for 3 for each card in your hand"
     "bouncer/overwhelm.svg"
     "superego.wav"
-    $ \w -> tempAnimFix $ do
-      len <- length <$> getHand w
-      hurt (len * 3) (other w)
+    $ \w -> do
+      len <- length <$> betaGetHand w
+      betaSlash (len * 3) (other w)
 
 
 echo :: Card
@@ -363,9 +361,9 @@ greed =
     "Hurt for 3 for each card in their hand"
     "collector/greed.svg"
     "envy.wav"
-    $ \w -> tempAnimFix $ do
-      len <- length <$> getHand (other w)
-      hurt (len * 3) (other w)
+    $ \w -> do
+      len <- length <$> betaGetHand (other w)
+      betaSlash (len * 3) (other w)
 
 
 alchemy :: Card

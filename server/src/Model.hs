@@ -170,6 +170,8 @@ data Beta n
   | BetaSlash Life WhichPlayer n
   | BetaHeal Life WhichPlayer n
   | BetaGetLife WhichPlayer (Life -> n)
+  | BetaGetHand WhichPlayer (Hand -> n)
+  | BetaGetStack (Stack -> n)
   | BetaNull n
   deriving (Functor)
 
@@ -366,7 +368,9 @@ alphaI :: BetaProgram a -> AlphaProgram a
 alphaI (Free (BetaRaw p n))     = p         >>  alphaI n
 alphaI (Free (BetaSlash d w n)) = hurt d w  >>  alphaI n
 alphaI (Free (BetaHeal h w n))  = heal h w  >>  alphaI n
-alphaI (Free (BetaGetLife w f)) = getLife w >>= (\l -> alphaI (f l))
+alphaI (Free (BetaGetLife w f)) = getLife w >>= alphaI . f
+alphaI (Free (BetaGetHand w f)) = getHand w >>= alphaI . f
+alphaI (Free (BetaGetStack f))  = getStack  >>= alphaI . f
 alphaI (Free (BetaNull n))      = alphaI n
 alphaI (Pure x)                 = Pure x
 
@@ -383,11 +387,10 @@ type AnimProgram a = Free AnimDSL a
 
 
 animI :: Beta a -> AnimProgram ()
-animI (BetaRaw _ _)     = Pure ()
 animI (BetaSlash _ w _) = liftF $ AnimSlash w ()
 animI (BetaHeal _ w _)  = liftF $ AnimHeal w ()
-animI (BetaGetLife _ _) = Pure ()
 animI (BetaNull _)      = liftF $ AnimNull ()
+animI _                 = Pure ()
 
 
 animate :: AnimDSL a -> Maybe CardAnim
