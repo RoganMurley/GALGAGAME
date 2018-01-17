@@ -50,6 +50,8 @@ app.ports.reload.subscribe(function () {
 });
 
 app.ports.analytics.subscribe(function () {
-  ga('set', 'page', location.pathname);
-  ga('send', 'pageview');
+  if (ga) {
+    ga('set', 'page', location.pathname);
+    ga('send', 'pageview');
+  }
 });
