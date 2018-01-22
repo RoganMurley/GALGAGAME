@@ -206,7 +206,7 @@ resolveAll model =
   case stackCard of
     Just c -> do
       tell ((\(x, y) -> (x, y, c)) <$> anims)
-      case lifeGate m of
+      case checkWin m of
         Playing m' ->
           resolveAll m'
         Ended w m' gen ->
@@ -220,17 +220,18 @@ resolveAll model =
     card = (\(StackCard o c) -> (card_eff c) o) <$> stackCard
     program :: AlphaLogAnimProgram ()
     program = case card of
-      Just betaProgram -> do
-        foldFree betaI $ betaRaw $ modStack tailSafe
-        foldFree betaI betaProgram
+      Just betaProgram ->
+        foldFree betaI $ do
+          betaRaw $ modStack tailSafe
+          betaProgram
       Nothing ->
         return ()
     (m, _, _, anims) = execute model program :: (Model, (), String, [(Model, Maybe CardAnim)])
 
 
 
-lifeGate :: Model -> PlayState
-lifeGate m
+checkWin :: Model -> PlayState
+checkWin m
   | lifePA <= 0 && lifePB <= 0 =
     Ended Nothing m gen
   | lifePB <= 0 =
@@ -238,13 +239,14 @@ lifeGate m
   | lifePA <= 0 =
     Ended (Just PlayerB) m gen
   | otherwise =
-    Playing $ modI m $ do
-      setLife PlayerA (min maxLife lifePA)
-      setLife PlayerB (min maxLife lifePB)
+    Playing m
   where
-    gen = evalI m getGen :: Gen
-    lifePA = evalI m (getLife PlayerA) :: Life
-    lifePB = evalI m (getLife PlayerB) :: Life
+    (gen, lifePA, lifePB) =
+      evalI m $ do
+        g  <- getGen
+        la <- getLife PlayerA
+        lb <- getLife PlayerB
+        return (g, la, lb)
 
 
 hoverCard :: Maybe Int -> WhichPlayer -> Model -> Either Err (Maybe GameState, [Outcome])

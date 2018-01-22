@@ -360,8 +360,18 @@ alphaEffI m (GetHand w f)   = (m, f . pmodel_hand $ getPmodel w m )
 alphaEffI m (GetLife w f)   = (m, f . pmodel_life $ getPmodel w m)
 alphaEffI m (SetGen g n)    = (m { model_gen = g }, n)
 alphaEffI m (SetDeck w d n) = (modPmodel (\pm -> pm { pmodel_deck = d }) w m, n)
-alphaEffI m (SetHand w h n) = (modPmodel (\pm -> pm { pmodel_hand = reverse . (take maxHandLength) $ reverse h }) w m, n)
-alphaEffI m (SetLife w l n) = (modPmodel (\pm -> pm { pmodel_life = l }) w m, n)
+alphaEffI m (SetHand w h n) =
+                              let
+                                newHand :: Hand
+                                newHand = reverse . take maxHandLength $ reverse h
+                              in
+                                (modPmodel (\pm -> pm { pmodel_hand = newHand }) w m, n)
+alphaEffI m (SetLife w l n) =
+                              let
+                                newLife :: Life
+                                newLife = max 0 . min maxLife $ l
+                              in
+                                (modPmodel (\pm -> pm { pmodel_life = newLife }) w m, n)
 alphaEffI m (SetPasses p n) = (m { model_passes = p }, n)
 alphaEffI m (SetStack s n)  = (m { model_stack = s }, n)
 alphaEffI m (SetTurn t n)   = (m { model_turn = t }, n)
