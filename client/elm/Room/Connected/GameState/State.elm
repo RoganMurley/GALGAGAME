@@ -1,4 +1,4 @@
-module GameState.State exposing (update, tick, tickZero, gameTickStart, resolvable)
+module GameState.State exposing (update, tick, tickZero, resolvable)
 
 import Audio exposing (playSound)
 import CharacterSelect.State as CharacterSelect
@@ -302,16 +302,6 @@ tick state dt =
 tickZero : PlayState -> Bool
 tickZero started =
     Resolvable.tickZero <| .tick <| resolvable started
-
-
-gameTickStart : GameState -> Bool
-gameTickStart state =
-    case state of
-        Started started ->
-            Resolvable.tickStart <| resolvable started
-
-        otherwise ->
-            False
 
 
 resolvable : PlayState -> Resolvable.Model

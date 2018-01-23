@@ -24,12 +24,7 @@ activeModel model =
 
 activeAnim : Resolvable.Model -> Maybe Anim
 activeAnim { resList } =
-    case List.head resList of
-        Just data ->
-            data.anim
-
-        Nothing ->
-            Nothing
+    List.head resList |> Maybe.andThen .anim
 
 
 activeStackCard : Resolvable.Model -> Maybe Model.StackCard
