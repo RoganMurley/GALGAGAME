@@ -5,5 +5,4 @@ type alias Card =
     { name : String
     , desc : String
     , imgURL : String
-    , sfxURL : String
     }

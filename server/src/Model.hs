@@ -23,13 +23,12 @@ data Card = Card
   { card_name :: Text
   , card_desc :: Text
   , card_img  :: Text
-  , card_snd  :: Text
   , card_eff  :: WhichPlayer -> BetaProgram ()
   }
 
 
 instance Eq Card where
-  (Card n1 d1 i1 _ _) == (Card n2 d2 i2 _ _) =
+  (Card n1 d1 i1 _) == (Card n2 d2 i2 _) =
     n1 == n2 && d1 == d2 && i1 == i2
 
 
@@ -38,13 +37,12 @@ instance Show Card where
 
 
 instance ToJSON Card where
-  toJSON (Card name desc imageURL sfxURL _) =
+  toJSON (Card name desc imageURL _) =
     object
       [
         "name"     .= name
       , "desc"     .= desc
       , "imageURL" .= imageURL
-      , "sfxURL"   .= sfxURL
       ]
 
 
@@ -313,7 +311,6 @@ draw w =
         "The End"
         "You're out of cards, hurt yourself for 10."
         "the_end.svg"
-        "feint.wave"
         $ \w' -> (betaRaw $ hurt 10 w') >> betaNull
 
 

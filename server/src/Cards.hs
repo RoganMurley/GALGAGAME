@@ -16,7 +16,6 @@ dagger =
     "Dagger"
     "Hurt for 7"
     "striker/dagger.svg"
-    "dagger.wav"
     $ \w -> betaSlash 7 (other w)
 
 
@@ -26,7 +25,6 @@ fireball =
     "Fireball"
     "Hurt for 5 for each card to the right"
     "striker/fireball.svg"
-    "fireball.wav"
     $ \w -> do
       len <- length <$> betaGetStack
       betaSlash (len * 5) (other w)
@@ -38,7 +36,6 @@ offering =
     "Offering"
     "Hurt yourself for 7, then draw 2"
     "striker/offering.svg"
-    "offering.wav"
     $ \w -> do
       betaSlash 7 w
       betaDraw w
@@ -51,7 +48,6 @@ confound =
     "Confound"
     "Shuffle the order of cards to the right"
     "striker/confound.svg"
-    "confound.wav"
     $ \_ -> do
       gen <- betaGetGen
       betaNull
@@ -66,7 +62,6 @@ hammer =
     "Hammer"
     "Hurt for 8"
     "breaker/hammer.svg"
-    "hammer.wav"
     $ \w -> betaSlash 8 (other w)
 
 
@@ -76,7 +71,6 @@ lightning =
     "Lightning"
     "Hurt for 4 for each card to the right"
     "breaker/lightning.svg"
-    "lightning.wav"
     $ \w -> do
       len <- length <$> betaGetStack
       betaSlash (len * 4) (other w)
@@ -88,7 +82,6 @@ hubris =
     "Hubris"
     "Remove all cards to the right"
     "breaker/hubris.svg"
-    "hubris.wav"
     $ \_ -> do
       betaNull
       betaRaw $ setStack []
@@ -102,7 +95,6 @@ katana =
     "Katana"
     "Hurt for 9"
     "balancer/katana.svg"
-    "axe.mp3"
     $ \w -> betaSlash 9 (other w)
 
 
@@ -112,7 +104,6 @@ curse =
     "Curse"
     "Hurt weakest player for 15"
     "balancer/curse.svg"
-    "frostbite.mp3"
     $ \w -> do
       let dmg = 15
       paLife <- betaGetLife w
@@ -127,7 +118,6 @@ bless =
     "Bless"
     "Heal weakest player for 15"
     "balancer/bless.svg"
-    "oath.wav"
     $ \w -> do
       let mag = 15
       paLife <- betaGetLife w
@@ -142,7 +132,6 @@ balance =
     "Balance"
     "Change card to the right's owner to weakest player"
     "balancer/balance.svg"
-    "feint.wav"
     $ \w -> do
       paLife <- betaGetLife w
       pbLife <- betaGetLife (other w)
@@ -160,7 +149,6 @@ scythe =
     "Scythe"
     "Lifesteal for 5"
     "drinker/scythe.svg"
-    "bite.wav"
     $ \w -> betaLifesteal 5 (other w)
 
 
@@ -170,7 +158,6 @@ bloodsucker =
     "Bloodsucker"
     "Lifesteal for 3 for each card to the right"
     "drinker/bloodsucker.svg"
-    "succubus.wav"
     $ \w -> do
       len <- length <$> betaGetStack
       betaLifesteal (len * 3) (other w)
@@ -182,7 +169,6 @@ serpent =
     "Serpent"
     ("Add 2 " <> description badApple <> " to their hand")
     "drinker/serpent.svg"
-    "siren.wav"
     $ \w -> do
       betaNull
       betaRaw $ addToHand (other w) badApple
@@ -197,7 +183,6 @@ badApple =
     "Bad Apple"
     "Hurt yourself for 8"
     "drinker/bad-apple.svg"
-    "song.wav"
     $ \w -> do
       betaSlash 8 w
 
@@ -208,7 +193,6 @@ reversal =
     "Reversal"
     "Reverse the order of cards to the right"
     "drinker/reversal.svg"
-    "reversal.wav"
     $ \_ -> do
       betaNull
       betaRaw $ modStack reverse
@@ -222,7 +206,6 @@ staff =
     "Staff"
     "Hurt for 4, then draw 1"
     "watcher/staff.svg"
-    "staff.wav"
     $ \w -> do
       betaSlash 4 (other w)
       betaDraw w
@@ -234,7 +217,6 @@ surge =
     "Surge"
     "Hurt for 6 for each of your cards to the right"
     "watcher/surge.svg"
-    "fireball.wav"
     $ \w -> do
       len <- length . (filter (owner w)) <$> betaGetStack
       betaSlash (len * 6) (other w)
@@ -246,7 +228,6 @@ imitate =
     "Imitate"
     "This card becomes a copy of a random card in your hand"
     "watcher/imitate.svg"
-    "feint.wav"
     $ \w -> do
       betaNull
       betaRaw $ do
@@ -267,7 +248,6 @@ prophecy =
     "Prophecy"
     "Return all cards to the right to hand"
     "watcher/prophecy.svg"
-    "precognition.wav"
     $ \w -> do
       betaNull
       betaRaw $ do
@@ -283,7 +263,6 @@ sword =
     "Sword"
     "Hurt for 10"
     "shielder/sword.svg"
-    "dagger.wav"
     $ \w -> betaSlash 10 (other w)
 
 
@@ -293,7 +272,6 @@ potion =
     "Potion"
     "Heal for 10"
     "shielder/potion.svg"
-    "potion.wav"
     $ betaHeal 10
 
 
@@ -303,7 +281,6 @@ reflect =
     "Reflect"
     "All cards to the right change owner"
     "shielder/reflect.svg"
-    "reflect.wav"
     $ \_ -> do
       betaNull
       betaRaw $ modStackAll changeOwner
@@ -317,7 +294,6 @@ boomerang =
     "Boomerang"
     "Hurt for 3, bounce this card to hand"
     "bouncer/boomerang.svg"
-    "boomerang.wav"
     $ \w -> do
       betaSlash 3 (other w)
       betaRaw $ addToHand w boomerang
@@ -330,7 +306,6 @@ overwhelm =
     "Overwhelm"
     "Hurt for 3 for each card in your hand"
     "bouncer/overwhelm.svg"
-    "superego.wav"
     $ \w -> do
       len <- length <$> betaGetHand w
       betaSlash (len * 3) (other w)
@@ -342,12 +317,11 @@ echo =
     "Echo"
     "When the card to the right activates, it does so twice"
     "bouncer/echo.svg"
-    "echo.wav"
     $ \_ -> do
       betaRaw $ do
         modStackHead $
-          \(StackCard which (Card name desc pic sfx e)) ->
-            StackCard which (Card name desc pic sfx (\w -> (e w) >> (e w)))
+          \(StackCard which (Card name desc pic e)) ->
+            StackCard which (Card name desc pic (\w -> (e w) >> (e w)))
       betaNull
 
 
@@ -357,7 +331,6 @@ feint =
     "Feint"
     "Return all of your cards to the right to hand"
     "bouncer/feint.svg"
-    "feint.wav"
     $ \w -> do
       betaNull
       betaRaw $ bounceAll w
@@ -371,7 +344,6 @@ relicblade =
     "Relicblade"
     "Hurt for 6"
     "collector/relicblade.svg"
-    "dagger.wav"
     $ \w -> betaSlash 6 (other w)
 
 
@@ -381,7 +353,6 @@ greed =
     "Greed"
     "Hurt for 3 for each card in their hand"
     "collector/greed.svg"
-    "envy.wav"
     $ \w -> do
       len <- length <$> betaGetHand (other w)
       betaSlash (len * 3) (other w)
@@ -393,7 +364,6 @@ alchemy =
     "Alchemy"
     ("Change card to the right to " <> description gold)
     "collector/alchemy.svg"
-    "feint.wav"
     $ \_ -> do
       betaNull
       betaRaw $ modStackHead (\(StackCard o _) -> StackCard o gold)
@@ -406,7 +376,6 @@ gold =
     "Gold"
     "Draw 2"
     "collector/gold.svg"
-    "feint.wav"
     $ \w -> do
       betaDraw w
       betaDraw w
