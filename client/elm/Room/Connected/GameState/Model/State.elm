@@ -13,8 +13,3 @@ init =
     , otherLife = 100
     , otherHover = Nothing
     }
-
-
-maxHandLength : Int
-maxHandLength =
-    6

@@ -12,6 +12,7 @@
     ],
     "exposed-modules": [],
     "dependencies": {
+        "elm-community/easing-functions": "1.0.2 <= v < 2.0.0",
         "elm-community/json-extra": "2.6.0 <= v < 3.0.0",
         "elm-community/linear-algebra": "1.1.0 <= v < 2.0.0",
         "elm-community/list-extra": "6.1.0 <= v < 7.0.0",

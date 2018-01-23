@@ -20,5 +20,6 @@ type alias Vertex =
 type Anim
     = Slash WhichPlayer
     | Heal WhichPlayer
+    | Draw WhichPlayer
     | Obliterate WhichPlayer
     | Custom String
