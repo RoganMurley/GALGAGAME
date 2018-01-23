@@ -1,6 +1,7 @@
 module Model.Types exposing (..)
 
 import Card.Types exposing (Card)
+import Hand.Types exposing (Hand)
 
 
 type alias Model =
@@ -25,14 +26,6 @@ type alias Stack =
 type WhichPlayer
     = PlayerA
     | PlayerB
-
-
-type alias Hand =
-    List Card
-
-
-type alias HoverCardIndex =
-    Maybe Int
 
 
 type alias StackCard =

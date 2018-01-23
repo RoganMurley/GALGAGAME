@@ -32,11 +32,14 @@ animToFragmentShader anim =
         Just (Slash _) ->
             Shaders.slash
 
+        Just (Heal _) ->
+            Shaders.heal
+
         Just (Obliterate _) ->
             Shaders.obliterate
 
-        Just (Heal _) ->
-            Shaders.heal
+        Just (Draw _) ->
+            Shaders.null
 
         Just (Custom s) ->
             unsafeShader s
@@ -49,6 +52,9 @@ getWhichPlayer : Anim -> WhichPlayer
 getWhichPlayer anim =
     case anim of
         Slash w ->
+            w
+
+        Draw w ->
             w
 
         Obliterate w ->
