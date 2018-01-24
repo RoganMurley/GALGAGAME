@@ -57,7 +57,7 @@ view state roomID ({ hostname, httpPort, time, dimensions } as flags) =
                     case res.resList of
                         resData :: _ ->
                             div []
-                                [ resView res.vm resData time
+                                [ resView res.vm resData time res.tick
                                 , Animation.view params res.tick anim
                                 ]
 

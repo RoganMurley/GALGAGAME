@@ -1,18 +1,29 @@
 module Hand.View exposing (..)
 
-import Animation.Types exposing (Anim)
+import Animation.Types exposing (Anim(Draw))
 import Card.Types exposing (Card)
+import Ease
 import GameState.Messages exposing (PlayingOnly(HoverCard, TurnOnly), TurnOnly(PlayCard))
 import Hand.Types exposing (..)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Model.Types exposing (WhichPlayer(..))
+import Resolvable.State exposing (resTickMax)
 
 
-viewHand : Hand -> HoverCardIndex -> Bool -> Maybe Anim -> Html PlayingOnly
-viewHand hand hover resolving anim =
+viewHand : Hand -> HoverCardIndex -> Float -> Bool -> Maybe Anim -> Html PlayingOnly
+viewHand finalHand hover resTick resolving anim =
     let
+        hand : Hand
+        hand =
+            case anim of
+                Just (Draw PlayerA) ->
+                    List.drop 1 finalHand
+
+                otherwise ->
+                    finalHand
+
         mouseActions : Int -> List (Attribute PlayingOnly)
         mouseActions index =
             let
@@ -49,12 +60,21 @@ viewHand hand hover resolving anim =
             div
                 [ class <| "my-card-container" ++ (conditionalClasses index)
                 , style
-                    [ buildTransform
-                        PlayerA
-                        { cardCount = cardCount
-                        , hover = hover
-                        , index = index
-                        }
+                    [ transformCss <|
+                        transformEase Ease.outQuint
+                            (resTick / resTickMax)
+                            (buildTransform PlayerA
+                                { cardCount = cardCount
+                                , hover = hover
+                                , index = index
+                                }
+                            )
+                            (buildTransform PlayerA
+                                { cardCount = List.length finalHand
+                                , hover = hover
+                                , index = index
+                                }
+                            )
                     ]
                 ]
                 [ div
@@ -85,12 +105,13 @@ viewOtherHand cardCount hover =
                 [ div
                     [ class "card other-card"
                     , style
-                        [ buildTransform
-                            PlayerB
-                            { cardCount = cardCount
-                            , hover = hover
-                            , index = index
-                            }
+                        [ transformCss <|
+                            buildTransform
+                                PlayerB
+                                { cardCount = cardCount
+                                , hover = hover
+                                , index = index
+                                }
                         ]
                     ]
                     []
@@ -132,7 +153,7 @@ calcTransX { index, cardCount } =
         c =
             toFloat cardCount
     in
-        -12.0 * (i - (c * 0.5))
+        12.0 * (i - (c * 0.5) + 1.0)
 
 
 calcTransY : HandIndex -> Float
@@ -167,16 +188,23 @@ calcRot { hover, index, cardCount } =
             c =
                 toFloat cardCount
         in
-            -1.5 * (toFloat (ceiling (i - (c * 0.5))))
+            1.5 * (toFloat (ceiling (i - (c * 0.5))))
 
 
-buildTransform : WhichPlayer -> HandIndex -> ( String, String )
+type alias Transform =
+    { x : Float
+    , y : Float
+    , r : Float
+    }
+
+
+buildTransform : WhichPlayer -> HandIndex -> Transform
 buildTransform which handIndex =
     let
-        transX =
+        x =
             calcTransX handIndex
 
-        transY =
+        y =
             case which of
                 PlayerA ->
                     calcTransY handIndex
@@ -184,7 +212,7 @@ buildTransform which handIndex =
                 PlayerB ->
                     -(calcTransY handIndex)
 
-        rot =
+        r =
             case which of
                 PlayerA ->
                     calcRot handIndex
@@ -192,12 +220,33 @@ buildTransform which handIndex =
                 PlayerB ->
                     -(calcRot handIndex)
     in
-        ( "transform"
-        , "translate("
-            ++ toString transX
-            ++ "rem, "
-            ++ toString transY
-            ++ "rem) rotate("
-            ++ toString rot
-            ++ "deg)"
-        )
+        { x = x, y = y, r = r }
+
+
+transformCss : Transform -> ( String, String )
+transformCss { x, y, r } =
+    ( "transform"
+    , "translate("
+        ++ toString x
+        ++ "rem, "
+        ++ toString y
+        ++ "rem) rotate("
+        ++ toString r
+        ++ "deg)"
+    )
+
+
+transformEase : Ease.Easing -> Float -> Transform -> Transform -> Transform
+transformEase easing t start final =
+    let
+        diff : Transform
+        diff =
+            { x = final.x - start.x
+            , y = final.y - start.y
+            , r = final.r - start.r
+            }
+    in
+        { x = start.x + (easing t) * diff.x
+        , y = start.y + (easing t) * diff.y
+        , r = start.r + (easing t) * diff.r
+        }
