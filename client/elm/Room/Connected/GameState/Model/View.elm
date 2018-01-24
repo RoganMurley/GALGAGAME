@@ -183,17 +183,23 @@ resView vm { model, stackCard, anim } time resTick =
             , Html.map playingOnly <|
                 viewHand model.hand vm.hover resTick True anim
             , viewStack stack
-            , viewResTurn
+            , viewResTurn stackCard
             , viewStatus PlayerA model.life
             , viewStatus PlayerB model.otherLife
             ]
 
 
-viewResTurn : Html msg
-viewResTurn =
+viewResTurn : Maybe StackCard -> Html msg
+viewResTurn stackCard =
     div
         [ class "turn-indi" ]
-        [ text "Resolving..." ]
+        [ case stackCard of
+            Just _ ->
+                text "Resolving..."
+
+            Nothing ->
+                text ""
+        ]
 
 
 
