@@ -15,14 +15,15 @@ import Resolvable.State exposing (resTickMax)
 viewHand : Hand -> HoverCardIndex -> Float -> Bool -> Maybe Anim -> Html PlayingOnly
 viewHand finalHand hover resTick resolving anim =
     let
-        hand : Hand
-        hand =
+        ( hand, drawingCard ) =
             case anim of
                 Just (Draw PlayerA) ->
-                    List.take (List.length finalHand - 1) finalHand
+                    ( List.take (List.length finalHand - 1) finalHand
+                    , List.head <| List.reverse finalHand
+                    )
 
                 otherwise ->
-                    finalHand
+                    ( finalHand, Nothing )
 
         mouseActions : Int -> List (Attribute PlayingOnly)
         mouseActions index =
@@ -90,10 +91,48 @@ viewHand finalHand hover resTick resolving anim =
                     , div [ class "card-desc" ] [ text desc ]
                     ]
                 ]
+
+        drawingCardView : Html msg
+        drawingCardView =
+            case drawingCard of
+                Nothing ->
+                    text ""
+
+                Just { name, desc, imgURL } ->
+                    div
+                        [ style
+                            [ transformCss <|
+                                transformEase Ease.outQuint
+                                    (resTick / resTickMax)
+                                    { x = 100
+                                    , y = -10.0
+                                    , r = 30.0
+                                    }
+                                    (buildTransform PlayerA
+                                        { cardCount = List.length finalHand
+                                        , hover = hover
+                                        , index = List.length finalHand - 1
+                                        }
+                                    )
+                            ]
+                        ]
+                        [ div
+                            [ class "card my-card" ]
+                            [ div [ class "card-title" ] [ text name ]
+                            , div
+                                [ class "card-picture"
+                                , style [ ( "background-image", "url(\"/img/" ++ imgURL ++ "\")" ) ]
+                                ]
+                                []
+                            , div [ class "card-desc" ] [ text desc ]
+                            ]
+                        ]
     in
         div
             [ class "hand my-hand" ]
-            (List.map cardView <| List.indexedMap (,) hand)
+            (drawingCardView
+                :: (List.map cardView <| List.indexedMap (,) hand)
+            )
 
 
 viewOtherHand : Int -> HoverCardIndex -> Float -> Maybe Anim -> Html msg
