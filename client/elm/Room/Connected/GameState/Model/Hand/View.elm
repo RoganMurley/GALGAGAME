@@ -179,7 +179,7 @@ buildTransform which handIndex =
         transY =
             case which of
                 PlayerA ->
-                    (calcTransY handIndex)
+                    calcTransY handIndex
 
                 PlayerB ->
                     -(calcTransY handIndex)
@@ -190,7 +190,7 @@ buildTransform which handIndex =
                     calcRot handIndex
 
                 PlayerB ->
-                    -1.5 * (calcRot handIndex)
+                    -(calcRot handIndex)
     in
         ( "transform"
         , "translate("
