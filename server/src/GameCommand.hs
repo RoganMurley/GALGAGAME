@@ -152,19 +152,22 @@ endTurn which model
         case runWriter . resolveAll $ model of
           (Playing m, res) ->
             let
+              endProgram :: BetaProgram ()
+              endProgram = do
+                  betaRaw swapTurn
+                  betaRaw resetPasses
+                  drawCards
+              (newModel, _, _, endAnims) = execute m $ foldFree betaI endProgram
               newPlayState :: PlayState
-              newPlayState =
-                Playing $
-                  modI m $ do
-                    swapTurn
-                    resetPasses
-                    drawCards
+              newPlayState = Playing newModel
               newState = Started newPlayState :: GameState
+              endRes :: [(Model, Maybe CardAnim, Maybe StackCard)]
+              endRes = (\(x, y) -> (x, y, Nothing)) <$> endAnims
             in
               Right (
                 Just newState,
                 [
-                  Outcome.Encodable $ Outcome.Resolve res newPlayState,
+                  Outcome.Encodable $ Outcome.Resolve (res ++ endRes) newPlayState,
                   Outcome.EndTurn which
                 ]
               )
@@ -195,17 +198,17 @@ endTurn which model
         return (t, p)
     full :: Bool
     full = evalI model $ handFull which
-    drawCards :: AlphaProgram ()
+    drawCards :: BetaProgram ()
     drawCards = do
-      draw PlayerA
-      draw PlayerB
+      betaDraw PlayerA
+      betaDraw PlayerB
 
 
-resolveAll :: Model -> Writer [(Model, Maybe CardAnim, StackCard)] PlayState
+resolveAll :: Model -> Writer [(Model, Maybe CardAnim, Maybe StackCard)] PlayState
 resolveAll model =
   case stackCard of
     Just c -> do
-      tell ((\(x, y) -> (x, y, c)) <$> anims)
+      tell ((\(x, y) -> (x, y, Just c)) <$> anims)
       case checkWin m of
         Playing m' ->
           resolveAll m'

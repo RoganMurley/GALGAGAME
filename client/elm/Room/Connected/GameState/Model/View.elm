@@ -167,11 +167,18 @@ viewStack stack =
 resView : Model.ViewModel.ViewModel -> Resolvable.ResolveData -> Float -> Float -> Html Main.Msg
 resView vm { model, stackCard, anim } time resTick =
     let
-        stack : List StackCard
-        stack =
-            stackCard :: model.stack
+        ( stack, hasStackCardClass ) =
+            case stackCard of
+                Just c ->
+                    ( c :: model.stack, "hasStackCard" )
+
+                Nothing ->
+                    ( model.stack, "" )
     in
-        div [ class "game-container resolving", style [ screenshakeStyle vm.shake time ] ]
+        div
+            [ class ("game-container resolving " ++ hasStackCardClass)
+            , style [ screenshakeStyle vm.shake time ]
+            ]
             [ viewOtherHand model.otherHand model.otherHover resTick anim
             , Html.map playingOnly <|
                 viewHand model.hand vm.hover resTick True anim

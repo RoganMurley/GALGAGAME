@@ -11,4 +11,4 @@ resolveDataDecoder =
     Json.map3 (\m a s -> { model = m, anim = a, stackCard = s })
         (index 0 modelDecoder)
         (index 1 <| maybe Animation.decoder)
-        (index 2 stackCardDecoder)
+        (index 2 <| maybe stackCardDecoder)

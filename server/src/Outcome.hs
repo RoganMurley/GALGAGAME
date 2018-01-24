@@ -23,7 +23,7 @@ data Outcome =
 data Encodable =
     Chat Username Text
   | Hover ExcludePlayer (Maybe Int)
-  | Resolve [(Model, Maybe CardAnim, StackCard)] PlayState
+  | Resolve [(Model, Maybe CardAnim, Maybe StackCard)] PlayState
   deriving (Eq, Show)
 
 
