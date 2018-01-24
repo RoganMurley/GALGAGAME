@@ -11,6 +11,7 @@ decoder =
         [ slashDecoder
         , healDecoder
         , obliterateDecoder
+        , drawDecoder
         ]
 
 
@@ -46,3 +47,10 @@ obliterateDecoder =
     Json.map2 (\w _ -> Obliterate w)
         (field "player" whichDecoder)
         (field "anim" (constDecoder "obliterate"))
+
+
+drawDecoder : Decoder Anim
+drawDecoder =
+    Json.map2 (\w _ -> Draw w)
+        (field "player" whichDecoder)
+        (field "anim" (constDecoder "draw"))

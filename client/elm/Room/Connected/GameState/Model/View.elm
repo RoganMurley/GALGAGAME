@@ -28,7 +28,7 @@ view ( model, viewModel ) time =
     div [ class "game-container", style [ screenshakeStyle viewModel.shake time ] ]
         [ viewOtherHand model.otherHand model.otherHover
         , Html.map playingOnly <|
-            viewHand model.hand viewModel.hover False Nothing
+            viewHand model.hand viewModel.hover 0 False Nothing
         , viewStack model.stack
         , Html.map playingOnly <|
             viewTurn (List.length model.hand == maxHandLength) model.turn
@@ -164,8 +164,8 @@ viewStack stack =
 -- RESOLVING VIEW.
 
 
-resView : Model.ViewModel.ViewModel -> Resolvable.ResolveData -> Float -> Html Main.Msg
-resView vm { model, stackCard, anim } time =
+resView : Model.ViewModel.ViewModel -> Resolvable.ResolveData -> Float -> Float -> Html Main.Msg
+resView vm { model, stackCard, anim } time resTick =
     let
         stack : List StackCard
         stack =
@@ -174,7 +174,7 @@ resView vm { model, stackCard, anim } time =
         div [ class "game-container resolving", style [ screenshakeStyle vm.shake time ] ]
             [ viewOtherHand model.otherHand model.otherHover
             , Html.map playingOnly <|
-                viewHand model.hand vm.hover True anim
+                viewHand model.hand vm.hover resTick True anim
             , viewStack stack
             , viewResTurn
             , viewStatus PlayerA model.life

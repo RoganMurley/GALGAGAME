@@ -59,6 +59,12 @@ instance ToJSON CardAnim where
        "player" .= w
       , "anim"  .= ("heal" :: Text)
       ]
+  toJSON (Draw w)   =
+    object
+      [
+       "player" .= w
+      , "anim"  .= ("draw" :: Text)
+      ]
   toJSON Obliterate =
     object
       [
@@ -70,12 +76,14 @@ instance ToJSON CardAnim where
 instance Mirror CardAnim where
   mirror (Slash w)  = Slash (other w)
   mirror (Heal w)   = Heal  (other w)
+  mirror (Draw w)   = Draw  (other w)
   mirror Obliterate = Obliterate
 
 
 data CardAnim =
     Slash WhichPlayer
   | Heal WhichPlayer
+  | Draw WhichPlayer
   | Obliterate
   deriving (Show, Eq)
 
@@ -393,6 +401,7 @@ data AnimDSL a
   = AnimNull a
   | AnimSlash WhichPlayer a
   | AnimHeal WhichPlayer a
+  | AnimDraw WhichPlayer a
   deriving (Functor)
 
 
@@ -403,7 +412,7 @@ animI :: Beta a -> AnimProgram ()
 animI (BetaSlash _ w _) = liftF $ AnimSlash w ()
 animI (BetaHeal _ w _)  = liftF $ AnimHeal w ()
 animI (BetaNull _)      = liftF $ AnimNull ()
-animI (BetaDraw _ _)    = liftF $ AnimNull ()
+animI (BetaDraw w _)    = liftF $ AnimDraw w ()
 animI _                 = Pure ()
 
 
@@ -411,12 +420,14 @@ animate :: AnimDSL a -> Maybe CardAnim
 animate (AnimNull _)    = Nothing
 animate (AnimSlash w _) = Just . Slash $ w
 animate (AnimHeal w _)  = Just . Heal $ w
+animate (AnimDraw w _)  = Just . Draw $ w
 
 
 animNext :: AnimDSL a -> a
 animNext (AnimNull n)    = n
 animNext (AnimSlash _ n) = n
 animNext (AnimHeal _ n)  = n
+animNext (AnimDraw _ n)  = n
 
 
 -- Logging DSL
