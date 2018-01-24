@@ -19,7 +19,7 @@ viewHand finalHand hover resTick resolving anim =
         hand =
             case anim of
                 Just (Draw PlayerA) ->
-                    List.drop 1 finalHand
+                    List.take (List.length finalHand - 1) finalHand
 
                 otherwise ->
                     finalHand
@@ -96,9 +96,18 @@ viewHand finalHand hover resTick resolving anim =
             (List.map cardView <| List.indexedMap (,) hand)
 
 
-viewOtherHand : Int -> HoverCardIndex -> Html msg
-viewOtherHand cardCount hover =
+viewOtherHand : Int -> HoverCardIndex -> Float -> Maybe Anim -> Html msg
+viewOtherHand finalCardCount hover resTick anim =
     let
+        cardCount : Int
+        cardCount =
+            case anim of
+                Just (Draw PlayerB) ->
+                    finalCardCount - 1
+
+                otherwise ->
+                    finalCardCount
+
         cardView : Int -> Html msg
         cardView index =
             div [ containerClass index hover ]
@@ -106,12 +115,20 @@ viewOtherHand cardCount hover =
                     [ class "card other-card"
                     , style
                         [ transformCss <|
-                            buildTransform
-                                PlayerB
-                                { cardCount = cardCount
-                                , hover = hover
-                                , index = index
-                                }
+                            transformEase Ease.outQuint
+                                (resTick / resTickMax)
+                                (buildTransform PlayerB
+                                    { cardCount = cardCount
+                                    , hover = hover
+                                    , index = index
+                                    }
+                                )
+                                (buildTransform PlayerB
+                                    { cardCount = finalCardCount
+                                    , hover = hover
+                                    , index = index
+                                    }
+                                )
                         ]
                     ]
                     []
