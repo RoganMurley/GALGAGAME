@@ -16,5 +16,5 @@ type alias Model =
 type alias ResolveData =
     { model : Model.Model
     , anim : Maybe Anim
-    , stackCard : Model.StackCard
+    , stackCard : Maybe Model.StackCard
     }

@@ -29,7 +29,7 @@ activeAnim { resList } =
 
 activeStackCard : Resolvable.Model -> Maybe Model.StackCard
 activeStackCard { resList } =
-    Maybe.map .stackCard <| List.head resList
+    List.head resList |> Maybe.andThen .stackCard
 
 
 tickStart : Resolvable.Model -> Bool

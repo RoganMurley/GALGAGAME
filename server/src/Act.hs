@@ -110,7 +110,7 @@ syncPlayersRoom room = do
         (cs . encode . (if rev then mirror else id) $ Room.connected room)
 
 
-resolveRoomClients :: ([(Model, Maybe CardAnim, StackCard)], PlayState) -> Room -> IO ()
+resolveRoomClients :: ([(Model, Maybe CardAnim, Maybe StackCard)], PlayState) -> Room -> IO ()
 resolveRoomClients (resList, final) room = do
   Room.sendToPlayer PlayerA msgPa room
   Room.sendToPlayer PlayerB msgPb room
@@ -124,7 +124,7 @@ resolveRoomClients (resList, final) room = do
     mirrorOutcome :: Outcome.Encodable
     mirrorOutcome =
       Outcome.Resolve
-        ((\(x, y, z) -> (mirror x, mirror <$> y, mirror z)) <$> resList)
+        ((\(x, y, z) -> (mirror x, mirror <$> y, mirror <$> z)) <$> resList)
         (mirror final)
 
 
