@@ -7,6 +7,7 @@ import Hand.Types exposing (..)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
+import Model.Types exposing (WhichPlayer(..))
 
 
 viewHand : Hand -> HoverCardIndex -> Bool -> Maybe Anim -> Html PlayingOnly
@@ -32,21 +33,6 @@ viewHand hand hover resolving anim =
                 ]
                     ++ clickActions
 
-        calcTransY : Int -> Float
-        calcTransY i =
-            let
-                index : Int
-                index =
-                    if (List.length hand) % 2 == 0 && i < cardCount // 2 then
-                        i + 1
-                    else
-                        i
-            in
-                if isHover hover i then
-                    0
-                else
-                    abs (0.8 * (toFloat (ceiling ((toFloat index) - ((toFloat cardCount) * 0.5)))))
-
         cardCount : Int
         cardCount =
             List.length hand
@@ -63,15 +49,12 @@ viewHand hand hover resolving anim =
             div
                 [ class <| "my-card-container" ++ (conditionalClasses index)
                 , style
-                    [ ( "transform"
-                      , "translate("
-                            ++ (toString <| calcTransX index cardCount)
-                            ++ "rem, "
-                            ++ (toString <| calcTransY index)
-                            ++ "rem) rotate("
-                            ++ (toString <| calcRot hover index cardCount)
-                            ++ "deg)"
-                      )
+                    [ buildTransform
+                        PlayerA
+                        { cardCount = cardCount
+                        , hover = hover
+                        , index = index
+                        }
                     ]
                 ]
                 [ div
@@ -94,27 +77,20 @@ viewHand hand hover resolving anim =
 
 
 viewOtherHand : Int -> HoverCardIndex -> Html msg
-viewOtherHand cardCountInt hover =
+viewOtherHand cardCount hover =
     let
-        cardCount : Float
-        cardCount =
-            toFloat cardCountInt
-
         cardView : Int -> Html msg
         cardView index =
             div [ containerClass index hover ]
                 [ div
                     [ class "card other-card"
                     , style
-                        [ ( "transform"
-                          , "translate("
-                                ++ (toString <| calcTransX index cardCountInt)
-                                ++ "rem, "
-                                ++ (toString <| calcTransY index)
-                                ++ "rem) rotate("
-                                ++ (toString <| -(calcRot hover index cardCountInt))
-                                ++ "deg)"
-                          )
+                        [ buildTransform
+                            PlayerB
+                            { cardCount = cardCount
+                            , hover = hover
+                            , index = index
+                            }
                         ]
                     ]
                     []
@@ -132,24 +108,9 @@ viewOtherHand cardCountInt hover =
 
                 Nothing ->
                     class "other-card-container"
-
-        cards : List (Html msg)
-        cards =
-            List.map cardView (List.range 0 (cardCountInt - 1))
-
-        calcTransY : Int -> Float
-        calcTransY i =
-            let
-                index : Int
-                index =
-                    if cardCountInt % 2 == 0 && toFloat i < (toFloat cardCountInt) * 0.5 then
-                        i + 1
-                    else
-                        i
-            in
-                -0.8 * abs (1.5 * (toFloat (ceiling ((toFloat index) - (cardCount * 0.5)))))
     in
-        div [ class "hand other-hand" ] cards
+        div [ class "hand other-hand" ]
+            (List.map cardView <| List.range 0 <| cardCount - 1)
 
 
 isHover : HoverCardIndex -> Int -> Bool
@@ -162,8 +123,8 @@ isHover hoverIndex index =
             index == x
 
 
-calcTransX : Int -> Int -> Float
-calcTransX index cardCount =
+calcTransX : HandIndex -> Float
+calcTransX { index, cardCount } =
     let
         i =
             toFloat index
@@ -174,8 +135,28 @@ calcTransX index cardCount =
         -12.0 * (i - (c * 0.5))
 
 
-calcRot : HoverCardIndex -> Int -> Int -> Float
-calcRot hover index cardCount =
+calcTransY : HandIndex -> Float
+calcTransY { hover, index, cardCount } =
+    let
+        i : Float
+        i =
+            if cardCount % 2 == 0 && index < cardCount // 2 then
+                toFloat <| index + 1
+            else
+                toFloat index
+
+        c : Float
+        c =
+            toFloat cardCount
+    in
+        if isHover hover index then
+            0
+        else
+            abs (0.8 * (toFloat (ceiling (i - (c * 0.5)))))
+
+
+calcRot : HandIndex -> Float
+calcRot { hover, index, cardCount } =
     if isHover hover index then
         0
     else
@@ -187,3 +168,36 @@ calcRot hover index cardCount =
                 toFloat cardCount
         in
             -1.5 * (toFloat (ceiling (i - (c * 0.5))))
+
+
+buildTransform : WhichPlayer -> HandIndex -> ( String, String )
+buildTransform which handIndex =
+    let
+        transX =
+            calcTransX handIndex
+
+        transY =
+            case which of
+                PlayerA ->
+                    (calcTransY handIndex)
+
+                PlayerB ->
+                    -(calcTransY handIndex)
+
+        rot =
+            case which of
+                PlayerA ->
+                    calcRot handIndex
+
+                PlayerB ->
+                    -1.5 * (calcRot handIndex)
+    in
+        ( "transform"
+        , "translate("
+            ++ toString transX
+            ++ "rem, "
+            ++ toString transY
+            ++ "rem) rotate("
+            ++ toString rot
+            ++ "deg)"
+        )

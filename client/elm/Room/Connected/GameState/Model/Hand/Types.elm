@@ -9,3 +9,10 @@ type alias Hand =
 
 type alias HoverCardIndex =
     Maybe Int
+
+
+type alias HandIndex =
+    { cardCount : Int
+    , hover : HoverCardIndex
+    , index : Int
+    }
