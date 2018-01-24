@@ -171,9 +171,9 @@ serpent =
     "drinker/serpent.svg"
     $ \w -> do
       betaNull
-      betaRaw $ addToHand (other w) badApple
+      betaAddToHand (other w) badApple
       betaNull
-      betaRaw $ addToHand (other w) badApple
+      betaAddToHand (other w) badApple
       betaNull
 
 
@@ -296,7 +296,7 @@ boomerang =
     "bouncer/boomerang.svg"
     $ \w -> do
       betaSlash 3 (other w)
-      betaRaw $ addToHand w boomerang
+      betaAddToHand w boomerang
       betaNull
 
 
