@@ -130,22 +130,23 @@ viewHand finalHand hover resTick resolving anim =
     in
         div
             [ class "hand my-hand" ]
-            (drawingCardView
-                :: (List.map cardView <| List.indexedMap (,) hand)
+            ((List.map cardView <| List.indexedMap (,) hand)
+                ++ [ drawingCardView ]
             )
 
 
 viewOtherHand : Int -> HoverCardIndex -> Float -> Maybe Anim -> Html msg
 viewOtherHand finalCardCount hover resTick anim =
     let
-        cardCount : Int
-        cardCount =
+        ( cardCount, drawingCard ) =
             case anim of
                 Just (Draw PlayerB) ->
-                    finalCardCount - 1
+                    ( finalCardCount - 1
+                    , Just finalCardCount
+                    )
 
                 otherwise ->
-                    finalCardCount
+                    ( finalCardCount, Nothing )
 
         cardView : Int -> Html msg
         cardView index =
@@ -185,9 +186,40 @@ viewOtherHand finalCardCount hover resTick anim =
 
                 Nothing ->
                     class "other-card-container"
+
+        drawingCardView : Html msg
+        drawingCardView =
+            case drawingCard of
+                Nothing ->
+                    text ""
+
+                Just index ->
+                    div [ containerClass index hover ]
+                        [ div
+                            [ class "card other-card"
+                            , style
+                                [ transformCss <|
+                                    transformEase Ease.outQuint
+                                        (resTick / resTickMax)
+                                        { x = 100
+                                        , y = 10.0
+                                        , r = -30.0
+                                        }
+                                        (buildTransform PlayerB
+                                            { cardCount = finalCardCount
+                                            , hover = hover
+                                            , index = index - 1
+                                            }
+                                        )
+                                ]
+                            ]
+                            []
+                        ]
     in
         div [ class "hand other-hand" ]
-            (List.map cardView <| List.range 0 <| cardCount - 1)
+            ((List.map cardView <| List.range 0 <| cardCount - 1)
+                ++ [ drawingCardView ]
+            )
 
 
 isHover : HoverCardIndex -> Int -> Bool
