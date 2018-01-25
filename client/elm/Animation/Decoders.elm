@@ -1,7 +1,7 @@
 module Animation.Decoders exposing (decoder)
 
 import Animation.Types exposing (Anim(..))
-import Json.Decode as Json exposing (Decoder, fail, field, oneOf, string, succeed)
+import Json.Decode as Json exposing (Decoder, fail, field, index, int, oneOf, string, succeed)
 import Model.Decoders exposing (whichDecoder)
 
 
@@ -30,9 +30,10 @@ constDecoder x =
 
 slashDecoder : Decoder Anim
 slashDecoder =
-    Json.map2 (\w _ -> Slash w)
+    Json.map3 (\w _ d -> Slash w d)
         (field "player" whichDecoder)
-        (field "anim" (constDecoder "slash"))
+        (field "anim" <| index 0 <| constDecoder "slash")
+        (field "anim" <| index 1 int)
 
 
 healDecoder : Decoder Anim

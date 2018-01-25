@@ -170,11 +170,8 @@ serpent =
     ("Add 2 " <> description badApple <> " to their hand")
     "drinker/serpent.svg"
     $ \w -> do
-      betaNull
       betaAddToHand (other w) badApple
-      betaNull
       betaAddToHand (other w) badApple
-      betaNull
 
 
 badApple :: Card
@@ -297,7 +294,6 @@ boomerang =
     $ \w -> do
       betaSlash 3 (other w)
       betaAddToHand w boomerang
-      betaNull
 
 
 overwhelm :: Card

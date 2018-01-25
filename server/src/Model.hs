@@ -47,19 +47,19 @@ instance ToJSON Card where
 
 
 instance ToJSON CardAnim where
-  toJSON (Slash w)  =
+  toJSON (Slash w d) =
     object
       [
        "player" .= w
-      , "anim"  .= ("slash" :: Text)
+      , "anim"  .= ("slash" :: Text, d)
       ]
-  toJSON (Heal w)   =
+  toJSON (Heal w) =
     object
       [
        "player" .= w
       , "anim"  .= ("heal" :: Text)
       ]
-  toJSON (Draw w)   =
+  toJSON (Draw w) =
     object
       [
        "player" .= w
@@ -74,14 +74,14 @@ instance ToJSON CardAnim where
 
 
 instance Mirror CardAnim where
-  mirror (Slash w)  = Slash (other w)
-  mirror (Heal w)   = Heal  (other w)
-  mirror (Draw w)   = Draw  (other w)
-  mirror Obliterate = Obliterate
+  mirror (Slash w d) = Slash (other w) d
+  mirror (Heal w)    = Heal  (other w)
+  mirror (Draw w)    = Draw  (other w)
+  mirror Obliterate  = Obliterate
 
 
 data CardAnim =
-    Slash WhichPlayer
+    Slash WhichPlayer Int
   | Heal WhichPlayer
   | Draw WhichPlayer
   | Obliterate
@@ -401,7 +401,7 @@ alphaI (Pure x)                     = Pure x
 -- Animation DSL
 data AnimDSL a
   = AnimNull a
-  | AnimSlash WhichPlayer a
+  | AnimSlash WhichPlayer Life a
   | AnimHeal WhichPlayer a
   | AnimDraw WhichPlayer a
   deriving (Functor)
@@ -411,7 +411,7 @@ type AnimProgram a = Free AnimDSL a
 
 
 animI :: Beta a -> AnimProgram ()
-animI (BetaSlash _ w _)     = liftF $ AnimSlash w ()
+animI (BetaSlash d w _)     = liftF $ AnimSlash w d ()
 animI (BetaHeal _ w _)      = liftF $ AnimHeal w ()
 animI (BetaNull _)          = liftF $ AnimNull ()
 animI (BetaDraw w _)        = liftF $ AnimDraw w ()
@@ -420,17 +420,17 @@ animI _                     = Pure ()
 
 
 animate :: AnimDSL a -> Maybe CardAnim
-animate (AnimNull _)    = Nothing
-animate (AnimSlash w _) = Just . Slash $ w
-animate (AnimHeal w _)  = Just . Heal $ w
-animate (AnimDraw w _)  = Just . Draw $ w
+animate (AnimNull _)      = Nothing
+animate (AnimSlash w d _) = Just $ Slash w d
+animate (AnimHeal w _)    = Just . Heal $ w
+animate (AnimDraw w _)    = Just . Draw $ w
 
 
 animNext :: AnimDSL a -> a
-animNext (AnimNull n)    = n
-animNext (AnimSlash _ n) = n
-animNext (AnimHeal _ n)  = n
-animNext (AnimDraw _ n)  = n
+animNext (AnimNull n)      = n
+animNext (AnimSlash _ _ n) = n
+animNext (AnimHeal _ n)    = n
+animNext (AnimDraw _ n)    = n
 
 
 -- Logging DSL

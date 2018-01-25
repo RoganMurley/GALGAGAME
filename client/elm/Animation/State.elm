@@ -1,10 +1,10 @@
 module Animation.State exposing (..)
 
-import Math.Vector2 exposing (vec2)
-import Animation.Types exposing (Anim(..))
-import Model.Types exposing (WhichPlayer(..))
 import Animation.Shaders as Shaders
-import Animation.Types exposing (Uniforms)
+import Animation.Types exposing (Anim(..), Uniforms)
+import Ease
+import Model.Types exposing (WhichPlayer(..))
+import Math.Vector2 exposing (vec2)
 import Raymarch.Types exposing (Height, Width)
 import WebGL exposing (Shader, unsafeShader)
 
@@ -29,7 +29,7 @@ uniforms theta which ( width, height ) =
 animToFragmentShader : Maybe Anim -> Shader {} Uniforms {}
 animToFragmentShader anim =
     case anim of
-        Just (Slash _) ->
+        Just (Slash _ _) ->
             Shaders.slash
 
         Just (Heal _) ->
@@ -51,7 +51,7 @@ animToFragmentShader anim =
 getWhichPlayer : Anim -> WhichPlayer
 getWhichPlayer anim =
     case anim of
-        Slash w ->
+        Slash w _ ->
             w
 
         Draw w ->
@@ -65,3 +65,22 @@ getWhichPlayer anim =
 
         Custom _ ->
             PlayerA
+
+
+animToShake : Anim -> Float
+animToShake anim =
+    case anim of
+        Slash _ d ->
+            5.0 * Ease.outQuad (toFloat d / 50.0)
+
+        Heal _ ->
+            0.0
+
+        Obliterate _ ->
+            0.0
+
+        Draw _ ->
+            0.0
+
+        otherwise ->
+            0.0
