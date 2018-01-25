@@ -17,7 +17,7 @@ view params { player, anim, time, custom } =
         [ div [ class "sets" ]
             [ fieldset []
                 [ legend [] [ text "Animation:" ]
-                , radio (SetAnim (Slash PlayerA)) "anim" "Slash"
+                , radio (SetAnim (Slash PlayerA 10)) "anim" "Slash"
                 , radio (SetAnim (Heal PlayerA)) "anim" "Heal"
                 , radio (SetAnim (Obliterate PlayerA)) "anim" "Obliterate"
                 , radio (SetAnim (Custom custom)) "anim" "Custom"

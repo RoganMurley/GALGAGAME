@@ -23,7 +23,7 @@ listen time state =
                     animSfx : Anim -> Maybe String
                     animSfx anim =
                         case anim of
-                            Slash _ ->
+                            Slash _ _ ->
                                 Just "slash.mp3"
 
                             Heal _ ->

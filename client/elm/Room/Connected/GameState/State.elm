@@ -92,10 +92,11 @@ update msg state mode flags =
 
                 newState : GameState
                 newState =
-                    carryVm state <|
-                        resMap
-                            (\_ -> Resolvable.init model resList)
-                            (Started finalState)
+                    resMap Resolvable.shakeStep <|
+                        carryVm state <|
+                            resMap
+                                (\_ -> Resolvable.init model resList)
+                                (Started finalState)
             in
                 ( newState, Cmd.none )
 
