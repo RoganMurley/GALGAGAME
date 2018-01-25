@@ -29,6 +29,9 @@ listen time state =
                             Heal _ ->
                                 Just "heal.mp3"
 
+                            Draw _ ->
+                                Just "draw.wav"
+
                             otherwise ->
                                 Nothing
 
