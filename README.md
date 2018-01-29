@@ -1,5 +1,5 @@
 # Hubris
-Hurbris is a browser-based multiplayer digital card game written in the purely functional programming languages Haskell and Elm.
+Hurbris is a browser-based multiplayer digital card game written in the purely functional programming languages Haskell and Elm. It is a WIP under active development.
 
 Try it at https://www.playhubris.com.
 
