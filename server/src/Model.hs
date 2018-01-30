@@ -328,7 +328,7 @@ bounceAll w = do
   (ours, theirs) <- partition (owned w) <$> getStack
   setStack theirs
   let oursCards = (\(StackCard _ c) -> c) <$> ours
-  modHand w $ \h -> h (++) oursCards
+  modHand w $ \h -> h ++ oursCards
 
 
 incPasses :: Passes -> Passes
