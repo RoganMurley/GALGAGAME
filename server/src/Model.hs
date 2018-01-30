@@ -3,6 +3,7 @@ module Model where
 
 import Prelude hiding (log)
 
+import Control.Monad (when)
 import Control.Monad.Free (Free(..), MonadFree, foldFree, liftF)
 import Control.Monad.Free.TH (makeFree)
 import Data.Aeson (ToJSON(..), (.=), object)
@@ -153,6 +154,16 @@ instance Mirror StackCard where
 
 
 -- DSLs
+toLeft :: (Functor f, Functor g) => Free f a -> Free (Sum f g) a
+toLeft (Free f) = Free $ toLeft <$> InL f
+toLeft (Pure x) = Pure x
+
+
+toRight :: (Functor f, Functor g) => Free g a -> Free (Sum f g) a
+toRight (Free f) = Free $ toRight <$> InR f
+toRight (Pure x) = Pure x
+
+
 data Alpha n =
     GetGen (Gen -> n)
   | GetDeck WhichPlayer (Deck -> n)
@@ -407,16 +418,24 @@ data AnimDSL a
   deriving (Functor)
 
 
-type AnimProgram a = Free AnimDSL a
+type AlphaAnimProgram = Free (Sum Alpha AnimDSL)
 
 
-animI :: Beta a -> AnimProgram ()
-animI (BetaSlash d w _)     = liftF $ AnimSlash w d ()
-animI (BetaHeal _ w _)      = liftF $ AnimHeal w ()
-animI (BetaNull _)          = liftF $ AnimNull ()
-animI (BetaDraw w _)        = liftF $ AnimDraw w ()
-animI (BetaAddToHand w _ _) = liftF $ AnimDraw w ()
+animI :: Beta a -> AlphaAnimProgram ()
+animI (BetaSlash d w _)     = toRight . liftF $ AnimSlash w d ()
+animI (BetaHeal _ w _)      = toRight . liftF $ AnimHeal w ()
+animI (BetaNull _)          = toRight . liftF $ AnimNull ()
+animI (BetaAddToHand w _ _) = drawAnim w
+animI (BetaDraw w _)        = drawAnim w
 animI _                     = Pure ()
+
+
+drawAnim :: WhichPlayer -> AlphaAnimProgram ()
+drawAnim w =
+  do
+    handLength <- length <$> toLeft (getHand w)
+    when (handLength < maxHandLength) $
+      toRight . liftF $ AnimDraw w ()
 
 
 animate :: AnimDSL a -> Maybe CardAnim
@@ -474,17 +493,22 @@ alphaDecorateLog x =
     toLeft alpha <* toRight logging
 
 
+liftAlphaAnim :: ∀ a . Sum Alpha AnimDSL a -> AlphaLogAnimProgram a
+liftAlphaAnim (InL alpha) = toLeft $ alphaDecorateLog alpha
+liftAlphaAnim (InR anim)  = toRight $ liftF anim
+
+
 type AlphaLogAnimProgram = Free (Sum (Sum Alpha LogDSL) AnimDSL)
 
 
 betaI :: ∀ a . Beta a -> AlphaLogAnimProgram a
 betaI x =
   let
-    anim     = animI x                         :: AnimProgram ()
-    alpha    = alphaI $ liftF x                :: AlphaProgram a
-    alphaLog = foldFree alphaDecorateLog alpha :: AlphaLogProgram a
+    alpha    = alphaI $ liftF x                 :: AlphaProgram a
+    alphaLog = foldFree alphaDecorateLog alpha  :: AlphaLogProgram a
+    anim     = foldFree liftAlphaAnim $ animI x :: AlphaLogAnimProgram ()
   in
-    toLeft alphaLog <* toRight anim
+  toLeft alphaLog <* anim
 
 
 execute :: Model -> AlphaLogAnimProgram a -> (Model, a, String, [(Model, Maybe CardAnim)])
@@ -512,15 +536,3 @@ modI m p = fst $ effI m p
 
 evalI :: Model -> AlphaProgram a -> a
 evalI m p = snd $ effI m p
-
-
-
--- FREE MONAD HELPERS
-toLeft :: (Functor f, Functor g) => Free f a -> Free (Sum f g) a
-toLeft (Free f) = Free $ toLeft <$> InL f
-toLeft (Pure x) = Pure x
-
-
-toRight :: (Functor f, Functor g) => Free g a -> Free (Sum f g) a
-toRight (Free f) = Free $ toRight <$> InR f
-toRight (Pure x) = Pure x
