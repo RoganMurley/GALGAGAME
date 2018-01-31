@@ -8,8 +8,8 @@ import Hand.Types exposing (..)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
+import Model.Types exposing (WhichPlayer(..))
 import Resolvable.State exposing (resTickMax)
-import WhichPlayer.Types exposing (WhichPlayer(..))
 
 
 viewHand : Hand -> HoverCardIndex -> Float -> Bool -> Maybe Anim -> Html PlayingOnly

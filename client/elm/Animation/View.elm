@@ -9,9 +9,9 @@ import Raymarch.Types exposing (Params(..))
 import Animation.State exposing (animToFragmentShader, getWhichPlayer, uniforms)
 import Animation.Shaders
 import Raymarch.Shaders
-import Model.Types exposing (WhichPlayer(..))
 import WebGL
 import WebGL.Settings.Blend as WebGL
+import WhichPlayer.Types exposing (WhichPlayer(..))
 
 
 view : Params -> Float -> Maybe Anim -> Html msg

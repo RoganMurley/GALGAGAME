@@ -1,7 +1,8 @@
 module Model.Types exposing (..)
 
-import Card.Types exposing (Card)
 import Hand.Types exposing (Hand)
+import Stack.Types exposing (Stack)
+import WhichPlayer.Types exposing (WhichPlayer)
 
 
 type alias Model =
@@ -17,18 +18,3 @@ type alias Model =
 
 type alias Life =
     Int
-
-
-type alias Stack =
-    List StackCard
-
-
-type WhichPlayer
-    = PlayerA
-    | PlayerB
-
-
-type alias StackCard =
-    { owner : WhichPlayer
-    , card : Card
-    }

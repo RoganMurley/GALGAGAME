@@ -1,9 +1,10 @@
 module GameState.View exposing (view)
 
+import Animation.Types exposing (Anim)
+import Animation.View as Animation
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import Animation.Types exposing (Anim)
 import CharacterSelect.View as CharacterSelect
 import Connected.Messages as Connected
 import GameState.Messages exposing (..)
@@ -18,7 +19,7 @@ import Raymarch.View as Raymarch
 import Resolvable.State exposing (activeAnim, resolving)
 import Resolvable.Types as Resolvable
 import Room.Messages as Room
-import Animation.View as Animation
+import WhichPlayer.Types exposing (WhichPlayer(..))
 
 
 view : GameState -> String -> Flags -> Html Main.Msg

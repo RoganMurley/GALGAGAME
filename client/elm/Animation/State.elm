@@ -3,10 +3,10 @@ module Animation.State exposing (..)
 import Animation.Shaders as Shaders
 import Animation.Types exposing (Anim(..), Uniforms)
 import Ease
-import Model.Types exposing (WhichPlayer(..))
 import Math.Vector2 exposing (vec2)
 import Raymarch.Types exposing (Height, Width)
 import WebGL exposing (Shader, unsafeShader)
+import WhichPlayer.Types exposing (WhichPlayer(..))
 
 
 uniforms : Float -> Maybe WhichPlayer -> ( Width, Height ) -> Uniforms

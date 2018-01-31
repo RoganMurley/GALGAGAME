@@ -13,6 +13,8 @@ import Room.Messages as Room
 import GameState.Messages exposing (..)
 import Model.Types exposing (..)
 import Model.ViewModel exposing (..)
+import Stack.Types exposing (..)
+import WhichPlayer.Types exposing (WhichPlayer(..))
 
 
 playingOnly : PlayingOnly -> Main.Msg
