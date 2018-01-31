@@ -219,18 +219,18 @@ surge =
       betaSlash (len * 6) (other w)
 
 
-imitate :: Card
-imitate =
+mimic :: Card
+mimic =
   Card
-    "Imitate"
-    "This card becomes a copy of a random card in your hand"
+    "Mimic"
+    "Play a copy of a random card in your hand"
     "watcher/imitate.svg"
     $ \w -> do
       betaNull
       betaRaw $ do
         gen <- getGen
         hand <- getHand w
-        mCard <- return . headMay . (filter (/= imitate)) . (shuffle gen) $ hand
+        mCard <- return . headMay . (filter (/= mimic)) . (shuffle gen) $ hand
         case mCard of
           Just c ->
             modStack ((:) (StackCard w c))
@@ -289,7 +289,7 @@ boomerang :: Card
 boomerang =
   Card
     "Boomerang"
-    "Hurt for 3, bounce this card to hand"
+    "Hurt for 3, return this card to hand"
     "bouncer/boomerang.svg"
     $ \w -> do
       betaSlash 3 (other w)
