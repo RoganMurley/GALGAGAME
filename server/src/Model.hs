@@ -506,8 +506,8 @@ type AlphaLogAnimProgram = Free (Sum (Sum Alpha LogDSL) AnimDSL)
 betaI :: ∀ a . Beta a -> AlphaLogAnimProgram a
 betaI x =
   let
-    alpha     = alphaI $ liftF x                 :: AlphaProgram a
-    embedAnim = animI x                          :: (AlphaProgram a -> AlphaAnimProgram a)
+    alpha     = alphaI $ liftF x :: AlphaProgram a
+    embedAnim = animI x          :: (AlphaProgram a -> AlphaAnimProgram a)
   in
     foldFree liftAlphaAnim $ embedAnim alpha
 
