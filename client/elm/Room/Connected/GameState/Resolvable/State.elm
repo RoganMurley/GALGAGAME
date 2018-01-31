@@ -5,6 +5,7 @@ import Animation.Types exposing (Anim)
 import Model.Types as Model
 import Resolvable.Types as Resolvable
 import Model.ViewModel
+import Stack.Types exposing (StackCard)
 
 
 init : Model.Model -> List Resolvable.ResolveData -> Resolvable.Model
@@ -28,7 +29,7 @@ activeAnim { resList } =
     List.head resList |> Maybe.andThen .anim
 
 
-activeStackCard : Resolvable.Model -> Maybe Model.StackCard
+activeStackCard : Resolvable.Model -> Maybe StackCard
 activeStackCard { resList } =
     List.head resList |> Maybe.andThen .stackCard
 

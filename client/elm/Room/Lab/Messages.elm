@@ -1,7 +1,7 @@
 module Lab.Messages exposing (Msg(..))
 
 import Animation.Types exposing (Anim)
-import Model.Types exposing (WhichPlayer)
+import WhichPlayer.Types exposing (WhichPlayer)
 
 
 type Msg

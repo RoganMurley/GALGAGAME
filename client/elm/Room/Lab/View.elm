@@ -1,14 +1,14 @@
 module Lab.View exposing (view)
 
+import Animation.View as Animation
+import Animation.Types exposing (Anim(..))
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Lab.Messages exposing (Msg(..))
 import Lab.Types exposing (Model)
 import Raymarch.Types exposing (Params(..))
-import Animation.View as Animation
-import Animation.Types exposing (Anim(..))
-import Model.Types exposing (WhichPlayer(..))
+import WhichPlayer.Types exposing (WhichPlayer(..))
 
 
 view : Params -> Model -> Html Msg

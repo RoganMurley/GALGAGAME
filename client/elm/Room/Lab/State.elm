@@ -3,8 +3,8 @@ module Lab.State exposing (..)
 import Animation.Types exposing (Anim(..))
 import Lab.Messages exposing (Msg(..))
 import Lab.Types exposing (Model)
-import Model.Types exposing (WhichPlayer(..))
 import Resolvable.State exposing (tickZero)
+import WhichPlayer.Types exposing (WhichPlayer(..))
 
 
 init : Model

@@ -18,6 +18,7 @@ import Resolvable.Types as Resolvable
 import Room.Messages as Room
 import Model.ViewModel
 import Util exposing (message, safeTail, send, unsafeForceDecode)
+import WhichPlayer.Types exposing (WhichPlayer(..))
 
 
 update : Msg -> GameState -> Mode.Mode -> Flags -> ( GameState, Cmd Main.Msg )
