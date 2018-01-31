@@ -421,21 +421,23 @@ data AnimDSL a
 type AlphaAnimProgram = Free (Sum Alpha AnimDSL)
 
 
-animI :: Beta a -> AlphaAnimProgram ()
-animI (BetaSlash d w _)     = toRight . liftF $ AnimSlash w d ()
-animI (BetaHeal _ w _)      = toRight . liftF $ AnimHeal w ()
-animI (BetaNull _)          = toRight . liftF $ AnimNull ()
+animI :: Beta a -> ((AlphaProgram a) -> AlphaAnimProgram a)
+animI (BetaSlash d w _)     = \a -> (toLeft a) <* (toRight . liftF $ AnimSlash w d ())
+animI (BetaHeal _ w _)      = \a -> (toLeft a) <* (toRight . liftF $ AnimHeal w ())
+animI (BetaNull _)          = \a -> (toLeft a) <* (toRight . liftF $ AnimNull ())
 animI (BetaAddToHand w _ _) = drawAnim w
 animI (BetaDraw w _)        = drawAnim w
-animI _                     = Pure ()
+animI _                     = toLeft
 
 
-drawAnim :: WhichPlayer -> AlphaAnimProgram ()
-drawAnim w =
+drawAnim :: WhichPlayer -> ((AlphaProgram a) -> AlphaAnimProgram a)
+drawAnim w alpha =
   do
     handLength <- length <$> toLeft (getHand w)
+    final <- toLeft alpha
     when (handLength < maxHandLength) $
       toRight . liftF $ AnimDraw w ()
+    return final
 
 
 animate :: AnimDSL a -> Maybe CardAnim
@@ -504,11 +506,10 @@ type AlphaLogAnimProgram = Free (Sum (Sum Alpha LogDSL) AnimDSL)
 betaI :: ∀ a . Beta a -> AlphaLogAnimProgram a
 betaI x =
   let
-    alpha    = alphaI $ liftF x                 :: AlphaProgram a
-    alphaLog = foldFree alphaDecorateLog alpha  :: AlphaLogProgram a
-    anim     = foldFree liftAlphaAnim $ animI x :: AlphaLogAnimProgram ()
+    alpha     = alphaI $ liftF x                 :: AlphaProgram a
+    embedAnim = animI x                          :: (AlphaProgram a -> AlphaAnimProgram a)
   in
-  toLeft alphaLog <* anim
+    foldFree liftAlphaAnim $ embedAnim alpha
 
 
 execute :: Model -> AlphaLogAnimProgram a -> (Model, a, String, [(Model, Maybe CardAnim)])
