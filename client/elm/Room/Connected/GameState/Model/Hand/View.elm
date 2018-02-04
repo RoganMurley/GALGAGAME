@@ -9,6 +9,7 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Resolvable.State exposing (resTickMax)
+import Transform exposing (Transform)
 import WhichPlayer.Types exposing (WhichPlayer(..))
 
 
@@ -61,8 +62,8 @@ viewHand finalHand hover resTick resolving anim =
             div
                 [ class <| "my-card-container" ++ (conditionalClasses index)
                 , style
-                    [ transformCss <|
-                        transformEase Ease.outQuint
+                    [ Transform.toCss <|
+                        Transform.ease Ease.outQuint
                             (resTick / resTickMax)
                             (buildTransform PlayerA
                                 { cardCount = cardCount
@@ -101,8 +102,8 @@ viewHand finalHand hover resTick resolving anim =
                 Just { name, desc, imgURL } ->
                     div
                         [ style
-                            [ transformCss <|
-                                transformEase Ease.outQuint
+                            [ Transform.toCss <|
+                                Transform.ease Ease.outQuint
                                     (resTick / resTickMax)
                                     { x = 100
                                     , y = -10.0
@@ -154,8 +155,8 @@ viewOtherHand finalCardCount hover resTick anim =
                 [ div
                     [ class "card other-card"
                     , style
-                        [ transformCss <|
-                            transformEase Ease.outQuint
+                        [ Transform.toCss <|
+                            Transform.ease Ease.outQuint
                                 (resTick / resTickMax)
                                 (buildTransform PlayerB
                                     { cardCount = cardCount
@@ -198,8 +199,8 @@ viewOtherHand finalCardCount hover resTick anim =
                         [ div
                             [ class "card other-card"
                             , style
-                                [ transformCss <|
-                                    transformEase Ease.outQuint
+                                [ Transform.toCss <|
+                                    Transform.ease Ease.outQuint
                                         (resTick / resTickMax)
                                         { x = 100
                                         , y = 10.0
@@ -279,13 +280,6 @@ calcRot { hover, index, cardCount } =
             1.5 * (toFloat (ceiling (i - (c * 0.5))))
 
 
-type alias Transform =
-    { x : Float
-    , y : Float
-    , r : Float
-    }
-
-
 buildTransform : WhichPlayer -> HandIndex -> Transform
 buildTransform which handIndex =
     let
@@ -309,32 +303,3 @@ buildTransform which handIndex =
                     -(calcRot handIndex)
     in
         { x = x, y = y, r = r }
-
-
-transformCss : Transform -> ( String, String )
-transformCss { x, y, r } =
-    ( "transform"
-    , "translate("
-        ++ toString x
-        ++ "rem, "
-        ++ toString y
-        ++ "rem) rotate("
-        ++ toString r
-        ++ "deg)"
-    )
-
-
-transformEase : Ease.Easing -> Float -> Transform -> Transform -> Transform
-transformEase easing t start final =
-    let
-        diff : Transform
-        diff =
-            { x = final.x - start.x
-            , y = final.y - start.y
-            , r = final.r - start.r
-            }
-    in
-        { x = start.x + (easing t) * diff.x
-        , y = start.y + (easing t) * diff.y
-        , r = start.r + (easing t) * diff.r
-        }
