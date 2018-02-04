@@ -50,17 +50,13 @@ viewHand finalHand hover resTick resolving anim =
         cardCount =
             List.length hand
 
-        conditionalClasses : Int -> String
-        conditionalClasses index =
-            if isHover hover index then
-                " card-hover"
-            else
-                ""
-
         cardView : ( Int, Card ) -> Html PlayingOnly
         cardView ( index, { name, desc, imgURL } ) =
             div
-                [ class <| "my-card-container" ++ (conditionalClasses index)
+                [ classList
+                    [ ( "my-card-container", True )
+                    , ( "card-hover", isHover hover index )
+                    ]
                 , style
                     [ Transform.toCss <|
                         Transform.ease Ease.outQuint
@@ -80,8 +76,13 @@ viewHand finalHand hover resTick resolving anim =
                     ]
                 ]
                 [ div
-                    ([ class <| "card my-card" ++ (conditionalClasses index) ]
-                        ++ (mouseActions index)
+                    ([ classList
+                        [ ( "card", True )
+                        , ( "my-card", True )
+                        , ( "card-hover", isHover hover index )
+                        ]
+                     ]
+                        ++ mouseActions index
                     )
                     [ div [ class "card-title" ] [ text name ]
                     , div

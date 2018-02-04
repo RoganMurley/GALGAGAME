@@ -4,6 +4,7 @@ import Card.View as Card
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Stack.Types exposing (Stack, StackCard)
+import Transform exposing (Transform)
 import WhichPlayer.Types exposing (WhichPlayer(..))
 
 
@@ -12,65 +13,78 @@ view stack =
     let
         viewStackCard : ( Int, StackCard ) -> Html msg
         viewStackCard ( index, { owner, card } ) =
-            let
-                cardWidth : Float
-                cardWidth =
-                    14.0
-
-                playerClass : String
-                playerClass =
-                    case owner of
-                        PlayerA ->
-                            "playera"
-
-                        PlayerB ->
-                            "playerb"
-
-                stackLen : Float
-                stackLen =
-                    toFloat (List.length stack)
-
-                offset : Int -> Float
-                offset x =
-                    cardWidth * (toFloat x)
-
-                squish : Float -> Float
-                squish x =
-                    Basics.min 0.0 (15.0 - 0.65 * (x + 1.0) * stackLen)
-
-                totalOffset : Float
-                totalOffset =
-                    (offset index)
-                        - (cardWidth * stackLen * 0.5)
-                        + (squish (toFloat index))
-                        - ((squish (stackLen - 1.0)) * 0.5)
-
-                rot : Float
-                rot =
-                    0.1 * (toFloat ((index * 1247823748932 + 142131) % 20) - 10)
-
-                headClass : String
-                headClass =
-                    case index of
-                        0 ->
-                            " stack-head"
-
-                        otherwise ->
-                            ""
-            in
-                div
-                    [ class (playerClass ++ " stack-card")
-                    , style
-                        [ ( "transform", "translateX(" ++ (toString totalOffset) ++ "rem)" )
-                        , ( "z-index", toString (20 - index) )
-                        ]
+            div
+                [ classList
+                    [ ( "stack-card", True )
+                    , ( playerClass owner, True )
                     ]
+                , style
+                    [ Transform.toCss <| outerTransform index (List.length stack)
+                    , ( "z-index", toString (20 - index) )
+                    ]
+                ]
+                [ div
+                    [ style [ Transform.toCss <| innerTransform index ] ]
                     [ div
-                        [ style [ ( "transform", "rotate(" ++ (toString rot) ++ "deg)" ) ] ]
-                        [ div [ class headClass ] [ Card.view card ]
-                        ]
+                        [ classList [ ( "stack-head", index == 0 ) ] ]
+                        [ Card.view card ]
                     ]
+                ]
     in
         div
             [ class "stack-container" ]
-            [ div [ class "stack" ] (List.map viewStackCard (List.indexedMap (,) stack)) ]
+            [ div
+                [ class "stack" ]
+                (List.map viewStackCard (List.indexedMap (,) stack))
+            ]
+
+
+playerClass : WhichPlayer -> String
+playerClass which =
+    case which of
+        PlayerA ->
+            "playera"
+
+        PlayerB ->
+            "playerb"
+
+
+outerTransform : Int -> Int -> Transform
+outerTransform index stackLen =
+    let
+        cardWidth : Float
+        cardWidth =
+            14.0
+
+        offset : Float -> Float
+        offset x =
+            cardWidth * x
+
+        squish : Float -> Float
+        squish x =
+            Basics.min 0.0 (15.0 - 0.65 * (x + 1.0) * (toFloat stackLen))
+
+        x : Float
+        x =
+            (offset <| toFloat index)
+                - (cardWidth * (toFloat stackLen) * 0.5)
+                + (squish (toFloat index))
+                - ((squish ((toFloat stackLen) - 1.0)) * 0.5)
+    in
+        { x = x
+        , y = 0.0
+        , r = 0.0
+        }
+
+
+innerTransform : Int -> Transform
+innerTransform index =
+    let
+        -- Pseudrandom
+        r =
+            0.1 * (toFloat ((index * 1247823748932 + 142131) % 20) - 10)
+    in
+        { x = 0.0
+        , y = 0.0
+        , r = r
+        }
