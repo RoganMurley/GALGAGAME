@@ -8,23 +8,34 @@ import Hand.Types exposing (..)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
+import Maybe.Extra as Maybe
 import Resolvable.State exposing (resTickMax)
 import Transform exposing (Transform)
 import WhichPlayer.Types exposing (WhichPlayer(..))
 
 
-viewHand : Hand -> HoverCardIndex -> Float -> Bool -> Maybe Anim -> Html PlayingOnly
-viewHand finalHand hover resTick resolving anim =
+viewHand : Hand -> HoverCardIndex -> Maybe ( Float, Maybe Anim ) -> Html PlayingOnly
+viewHand finalHand hover resInfo =
     let
         ( hand, drawingCard ) =
-            case anim of
-                Just (Draw PlayerA) ->
+            case resInfo of
+                Just ( _, Just (Draw PlayerA) ) ->
                     ( List.take (List.length finalHand - 1) finalHand
                     , List.head <| List.reverse finalHand
                     )
 
                 otherwise ->
                     ( finalHand, Nothing )
+
+        resTick =
+            Maybe.withDefault 0.0 <|
+                Maybe.map Tuple.first resInfo
+
+        anim =
+            Maybe.map Tuple.second resInfo
+
+        resolving =
+            Maybe.isJust resInfo
 
         mouseActions : Int -> List (Attribute PlayingOnly)
         mouseActions index =
@@ -137,18 +148,22 @@ viewHand finalHand hover resTick resolving anim =
             )
 
 
-viewOtherHand : Int -> HoverCardIndex -> Float -> Maybe Anim -> Html msg
-viewOtherHand finalCardCount hover resTick anim =
+viewOtherHand : Int -> HoverCardIndex -> Maybe ( Float, Maybe Anim ) -> Html msg
+viewOtherHand finalCardCount hover resInfo =
     let
         ( cardCount, drawingCard ) =
-            case anim of
-                Just (Draw PlayerB) ->
+            case resInfo of
+                Just ( _, Just (Draw PlayerB) ) ->
                     ( finalCardCount - 1
                     , Just finalCardCount
                     )
 
                 otherwise ->
                     ( finalCardCount, Nothing )
+
+        resTick =
+            Maybe.withDefault 0.0 <|
+                Maybe.map Tuple.first resInfo
 
         cardView : Int -> Html msg
         cardView index =

@@ -28,10 +28,10 @@ playingOnly =
 view : ( Model, ViewModel ) -> Float -> Html Main.Msg
 view ( model, viewModel ) time =
     div [ class "game-container", style [ screenshakeStyle viewModel.shake time ] ]
-        [ viewOtherHand model.otherHand model.otherHover 0 Nothing
+        [ viewOtherHand model.otherHand model.otherHover Nothing
         , Html.map playingOnly <|
-            viewHand model.hand viewModel.hover 0 False Nothing
-        , Stack.view model.stack
+            viewHand model.hand viewModel.hover Nothing
+        , Stack.view model.stack Nothing
         , Html.map playingOnly <|
             viewTurn (List.length model.hand == maxHandLength) model.turn
         , viewStatus PlayerA model.life
@@ -107,15 +107,18 @@ resView vm { model, stackCard, anim } time resTick =
 
                 Nothing ->
                     ( model.stack, "" )
+
+        resInfo =
+            Just ( resTick, anim )
     in
         div
             [ class ("game-container resolving " ++ hasStackCardClass)
             , style [ screenshakeStyle vm.shake time ]
             ]
-            [ viewOtherHand model.otherHand model.otherHover resTick anim
+            [ viewOtherHand model.otherHand model.otherHover resInfo
             , Html.map playingOnly <|
-                viewHand model.hand vm.hover resTick True anim
-            , Stack.view stack
+                viewHand model.hand vm.hover resInfo
+            , Stack.view stack resInfo
             , viewResTurn stackCard
             , viewStatus PlayerA model.life
             , viewStatus PlayerB model.otherLife
