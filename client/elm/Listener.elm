@@ -32,6 +32,9 @@ listen time state =
                             Draw _ ->
                                 Just "draw.wav"
 
+                            Reverse _ ->
+                                Just "reverse.mp3"
+
                             otherwise ->
                                 Nothing
 
