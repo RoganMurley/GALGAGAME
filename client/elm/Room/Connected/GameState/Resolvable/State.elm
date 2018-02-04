@@ -1,6 +1,6 @@
 module Resolvable.State exposing (..)
 
-import Animation.State exposing (animToShake)
+import Animation.State exposing (animToShake, animToResTickMax)
 import Animation.Types exposing (Anim)
 import Model.Types as Model
 import Resolvable.Types as Resolvable
@@ -41,7 +41,7 @@ tickStart { tick } =
 
 tick : Float -> Resolvable.Model -> Resolvable.Model
 tick dt model =
-    if tickZero model.tick then
+    if tickZero model.tick (activeAnim model) then
         resolveStep model
     else
         { model
@@ -50,14 +50,9 @@ tick dt model =
         }
 
 
-tickZero : Float -> Bool
-tickZero tick =
-    tick > resTickMax
-
-
-resTickMax : Float
-resTickMax =
-    800.0
+tickZero : Float -> Maybe Anim -> Bool
+tickZero tick anim =
+    tick > animToResTickMax anim
 
 
 resolveStep : Resolvable.Model -> Resolvable.Model

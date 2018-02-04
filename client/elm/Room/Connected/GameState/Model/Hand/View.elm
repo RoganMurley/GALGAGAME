@@ -1,5 +1,6 @@
 module Hand.View exposing (..)
 
+import Animation.State exposing (animToResTickMax)
 import Animation.Types exposing (Anim(Draw))
 import Card.Types exposing (Card)
 import Ease
@@ -9,7 +10,6 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Maybe.Extra as Maybe
-import Resolvable.State exposing (resTickMax)
 import Transform exposing (Transform)
 import WhichPlayer.Types exposing (WhichPlayer(..))
 
@@ -32,7 +32,11 @@ viewHand finalHand hover resInfo =
                 Maybe.map Tuple.first resInfo
 
         anim =
-            Maybe.map Tuple.second resInfo
+            Maybe.join <|
+                Maybe.map Tuple.second resInfo
+
+        resTickMax =
+            animToResTickMax anim
 
         resolving =
             Maybe.isJust resInfo
@@ -164,6 +168,13 @@ viewOtherHand finalCardCount hover resInfo =
         resTick =
             Maybe.withDefault 0.0 <|
                 Maybe.map Tuple.first resInfo
+
+        anim =
+            Maybe.join <|
+                Maybe.map Tuple.second resInfo
+
+        resTickMax =
+            animToResTickMax anim
 
         cardView : Int -> Html msg
         cardView index =

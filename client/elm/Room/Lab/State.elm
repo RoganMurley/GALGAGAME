@@ -45,11 +45,11 @@ update model msg =
 
 
 tick : Model -> Float -> Model
-tick model dt =
+tick ({ time, anim } as model) dt =
     let
         newTime : Float
         newTime =
-            if tickZero model.time then
+            if tickZero time (Just anim) then
                 0.0
             else
                 model.time + dt

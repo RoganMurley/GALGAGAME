@@ -303,7 +303,11 @@ tick state dt =
 
 tickZero : PlayState -> Bool
 tickZero started =
-    Resolvable.tickZero <| .tick <| resolvable started
+    let
+        res =
+            resolvable started
+    in
+        Resolvable.tickZero res.tick (Resolvable.activeAnim res)
 
 
 resolvable : PlayState -> Resolvable.Model
