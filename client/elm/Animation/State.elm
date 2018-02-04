@@ -90,3 +90,13 @@ animToShake anim =
 
         otherwise ->
             0.0
+
+
+animToResTickMax : Maybe Anim -> Float
+animToResTickMax anim =
+    case anim of
+        Just (Reverse _) ->
+            1500.0
+
+        otherwise ->
+            800.0

@@ -438,6 +438,7 @@ animI (BetaHeal _ w _)      = \a -> (toLeft a) <* (toRight . liftF $ AnimHeal w 
 animI (BetaNull _)          = \a -> (toLeft a) <* (toRight . liftF $ AnimNull ())
 animI (BetaAddToHand w _ _) = drawAnim w
 animI (BetaDraw w _)        = drawAnim w
+animI (BetaReverse _)       = \a -> (toLeft a) <* (toRight . liftF $ AnimReverse ())
 animI _                     = toLeft
 
 

@@ -31,7 +31,7 @@ view ( model, viewModel ) time =
         [ viewOtherHand model.otherHand model.otherHover Nothing
         , Html.map playingOnly <|
             viewHand model.hand viewModel.hover Nothing
-        , Stack.view model.stack Nothing
+        , Stack.view model.stack Nothing Nothing
         , Html.map playingOnly <|
             viewTurn (List.length model.hand == maxHandLength) model.turn
         , viewStatus PlayerA model.life
@@ -100,25 +100,17 @@ viewLife life =
 resView : Model.ViewModel.ViewModel -> Resolvable.ResolveData -> Float -> Float -> Html Main.Msg
 resView vm { model, stackCard, anim } time resTick =
     let
-        ( stack, hasStackCardClass ) =
-            case stackCard of
-                Just c ->
-                    ( c :: model.stack, "hasStackCard" )
-
-                Nothing ->
-                    ( model.stack, "" )
-
         resInfo =
             Just ( resTick, anim )
     in
         div
-            [ class ("game-container resolving " ++ hasStackCardClass)
+            [ class ("game-container resolving")
             , style [ screenshakeStyle vm.shake time ]
             ]
             [ viewOtherHand model.otherHand model.otherHover resInfo
             , Html.map playingOnly <|
                 viewHand model.hand vm.hover resInfo
-            , Stack.view stack resInfo
+            , Stack.view model.stack stackCard resInfo
             , viewResTurn stackCard
             , viewStatus PlayerA model.life
             , viewStatus PlayerB model.otherLife

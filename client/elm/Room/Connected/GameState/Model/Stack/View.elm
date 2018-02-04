@@ -1,43 +1,95 @@
 module Stack.View exposing (..)
 
-import Animation.Types exposing (Anim)
+import Animation.State exposing (animToResTickMax)
+import Animation.Types exposing (Anim(Reverse))
 import Card.View as Card
+import Ease
 import Html exposing (..)
 import Html.Attributes exposing (..)
+import Maybe.Extra as Maybe
 import Stack.Types exposing (Stack, StackCard)
 import Transform exposing (Transform)
 import WhichPlayer.Types exposing (WhichPlayer(..))
 
 
-view : Stack -> Maybe ( Float, Maybe Anim ) -> Html msg
-view finalStack resInfo =
+view : Stack -> Maybe StackCard -> Maybe ( Float, Maybe Anim ) -> Html msg
+view bareFinalStack stackCard resInfo =
     let
-        stack =
-            finalStack
+        -- Tidy this and sort out final naming
+        finalStack =
+            maybeCons stackCard bareFinalStack
+
+        ( stack, reversing ) =
+            case resInfo of
+                Just ( _, Just (Reverse _) ) ->
+                    ( maybeCons stackCard <| List.reverse bareFinalStack, True )
+
+                otherwise ->
+                    ( finalStack, False )
+
+        maybeCons : Maybe a -> List a -> List a
+        maybeCons m xs =
+            case m of
+                Just x ->
+                    x :: xs
+
+                Nothing ->
+                    xs
 
         resTick =
             Maybe.withDefault 0.0 <|
                 Maybe.map Tuple.first resInfo
 
+        anim =
+            Maybe.map Tuple.second resInfo
+
+        resTickMax =
+            animToResTickMax (Maybe.join anim)
+
+        stackLen =
+            List.length stack
+
         viewStackCard : ( Int, StackCard ) -> Html msg
-        viewStackCard ( index, { owner, card } ) =
-            div
-                [ classList
-                    [ ( "stack-card", True )
-                    , ( playerClass owner, True )
+        viewStackCard ( finalIndex, { owner, card } ) =
+            let
+                index =
+                    if reversing then
+                        (if finalIndex == 0 then
+                            0
+                         else
+                            stackLen - finalIndex
+                        )
+                    else
+                        finalIndex
+            in
+                div
+                    [ classList
+                        [ ( "stack-card", True )
+                        , ( playerClass owner, True )
+                        ]
+                    , style
+                        [ Transform.toCss <|
+                            Transform.ease Ease.inOutCirc
+                                (resTick / resTickMax)
+                                (outerTransform finalIndex stackLen)
+                                (outerTransform index stackLen)
+                        , ( "z-index", toString (20 - index) )
+                        ]
                     ]
-                , style
-                    [ Transform.toCss <| outerTransform index (List.length stack)
-                    , ( "z-index", toString (20 - index) )
-                    ]
-                ]
-                [ div
-                    [ style [ Transform.toCss <| innerTransform index ] ]
                     [ div
-                        [ classList [ ( "stack-head", index == 0 ) ] ]
-                        [ Card.view card ]
+                        [ style
+                            [ Transform.toCss <|
+                                Transform.ease Ease.outQuint
+                                    (resTick / resTickMax)
+                                    (innerTransform finalIndex)
+                                    (innerTransform index)
+                            ]
+                        ]
+                        [ div
+                            [ classList [ ( "stack-head", index == 0 ) ] ]
+                            [ Card.view card ]
+                        ]
                     ]
-                ]
     in
         div
             [ class "stack-container" ]
