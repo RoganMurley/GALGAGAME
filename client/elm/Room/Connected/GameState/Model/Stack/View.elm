@@ -1,5 +1,6 @@
 module Stack.View exposing (..)
 
+import Animation.Types exposing (Anim)
 import Card.View as Card
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -8,9 +9,16 @@ import Transform exposing (Transform)
 import WhichPlayer.Types exposing (WhichPlayer(..))
 
 
-view : Stack -> Html msg
-view stack =
+view : Stack -> Maybe ( Float, Maybe Anim ) -> Html msg
+view finalStack resInfo =
     let
+        stack =
+            finalStack
+
+        resTick =
+            Maybe.withDefault 0.0 <|
+                Maybe.map Tuple.first resInfo
+
         viewStackCard : ( Int, StackCard ) -> Html msg
         viewStackCard ( index, { owner, card } ) =
             div
