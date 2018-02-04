@@ -190,10 +190,7 @@ reversal =
     "Reversal"
     "Reverse the order of cards to the right"
     "drinker/reversal.svg"
-    $ \_ -> do
-      betaNull
-      betaRaw $ modStack reverse
-      betaNull
+    $ const betaReverse
 
 
 -- Watcher

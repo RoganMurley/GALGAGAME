@@ -1,7 +1,6 @@
 module GameState.Types exposing (..)
 
 import CharacterSelect.Types as CharacterSelect
-import Model.Types exposing (Model)
 import Resolvable.Types as Resolvable
 import WhichPlayer.Types exposing (WhichPlayer)
 

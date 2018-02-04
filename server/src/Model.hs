@@ -66,6 +66,12 @@ instance ToJSON CardAnim where
        "player" .= w
       , "anim"  .= ("draw" :: Text)
       ]
+  toJSON Reverse =
+    object
+      [
+       "player" .= PlayerA
+      , "anim"  .= ("reverse" :: Text)
+      ]
   toJSON Obliterate =
     object
       [
@@ -78,6 +84,7 @@ instance Mirror CardAnim where
   mirror (Slash w d) = Slash (other w) d
   mirror (Heal w)    = Heal  (other w)
   mirror (Draw w)    = Draw  (other w)
+  mirror Reverse     = Reverse
   mirror Obliterate  = Obliterate
 
 
@@ -85,6 +92,7 @@ data CardAnim =
     Slash WhichPlayer Int
   | Heal WhichPlayer
   | Draw WhichPlayer
+  | Reverse
   | Obliterate
   deriving (Show, Eq)
 
@@ -188,6 +196,7 @@ data Beta n
   | BetaHeal Life WhichPlayer n
   | BetaDraw WhichPlayer n
   | BetaAddToHand WhichPlayer Card n
+  | BetaReverse n
   | BetaGetDeck WhichPlayer (Deck -> n)
   | BetaGetHand WhichPlayer (Hand -> n)
   | BetaGetLife WhichPlayer (Life -> n)
@@ -395,16 +404,17 @@ alphaEffI m (SetTurn t n)   = (m { model_turn = t }, n)
 
 
 alphaI :: BetaProgram a -> AlphaProgram a
-alphaI (Free (BetaRaw p n))         = p             >>  alphaI n
-alphaI (Free (BetaSlash d w n))     = hurt d w      >>  alphaI n
-alphaI (Free (BetaHeal h w n))      = heal h w      >>  alphaI n
-alphaI (Free (BetaDraw w n))        = draw w        >>  alphaI n
-alphaI (Free (BetaAddToHand w c n)) = addToHand w c >>  alphaI n
-alphaI (Free (BetaGetGen f))        = getGen        >>= alphaI . f
-alphaI (Free (BetaGetLife w f))     = getLife w     >>= alphaI . f
-alphaI (Free (BetaGetHand w f))     = getHand w     >>= alphaI . f
-alphaI (Free (BetaGetDeck w f))     = getDeck w     >>= alphaI . f
-alphaI (Free (BetaGetStack f))      = getStack      >>= alphaI . f
+alphaI (Free (BetaRaw p n))         = p                >>  alphaI n
+alphaI (Free (BetaSlash d w n))     = hurt d w         >>  alphaI n
+alphaI (Free (BetaHeal h w n))      = heal h w         >>  alphaI n
+alphaI (Free (BetaDraw w n))        = draw w           >>  alphaI n
+alphaI (Free (BetaAddToHand w c n)) = addToHand w c    >>  alphaI n
+alphaI (Free (BetaReverse n))       = modStack reverse >>  alphaI n
+alphaI (Free (BetaGetGen f))        = getGen           >>= alphaI . f
+alphaI (Free (BetaGetLife w f))     = getLife w        >>= alphaI . f
+alphaI (Free (BetaGetHand w f))     = getHand w        >>= alphaI . f
+alphaI (Free (BetaGetDeck w f))     = getDeck w        >>= alphaI . f
+alphaI (Free (BetaGetStack f))      = getStack         >>= alphaI . f
 alphaI (Free (BetaNull n))          = alphaI n
 alphaI (Pure x)                     = Pure x
 
@@ -415,6 +425,7 @@ data AnimDSL a
   | AnimSlash WhichPlayer Life a
   | AnimHeal WhichPlayer a
   | AnimDraw WhichPlayer a
+  | AnimReverse a
   deriving (Functor)
 
 
@@ -445,6 +456,7 @@ animate (AnimNull _)      = Nothing
 animate (AnimSlash w d _) = Just $ Slash w d
 animate (AnimHeal w _)    = Just . Heal $ w
 animate (AnimDraw w _)    = Just . Draw $ w
+animate (AnimReverse _)   = Just Reverse
 
 
 animNext :: AnimDSL a -> a
@@ -452,6 +464,7 @@ animNext (AnimNull n)      = n
 animNext (AnimSlash _ _ n) = n
 animNext (AnimHeal _ n)    = n
 animNext (AnimDraw _ n)    = n
+animNext (AnimReverse n)   = n
 
 
 -- Logging DSL

@@ -21,5 +21,6 @@ type Anim
     = Slash WhichPlayer Int
     | Heal WhichPlayer
     | Draw WhichPlayer
+    | Reverse WhichPlayer
     | Obliterate WhichPlayer
     | Custom String
