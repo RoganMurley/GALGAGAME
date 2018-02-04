@@ -43,7 +43,7 @@ view finalStack resInfo =
             [ class "stack-container" ]
             [ div
                 [ class "stack" ]
-                (List.map viewStackCard (List.indexedMap (,) stack))
+                (List.map viewStackCard <| List.indexedMap (,) stack)
             ]
 
 

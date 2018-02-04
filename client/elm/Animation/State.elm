@@ -41,6 +41,9 @@ animToFragmentShader anim =
         Just (Draw _) ->
             Shaders.null
 
+        Just (Reverse _) ->
+            Shaders.null
+
         Just (Custom s) ->
             unsafeShader s
 
@@ -61,6 +64,9 @@ getWhichPlayer anim =
             w
 
         Heal w ->
+            w
+
+        Reverse w ->
             w
 
         Custom _ ->

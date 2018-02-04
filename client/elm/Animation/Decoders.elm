@@ -10,8 +10,9 @@ decoder =
     oneOf
         [ slashDecoder
         , healDecoder
-        , obliterateDecoder
         , drawDecoder
+        , reverseDecoder
+        , obliterateDecoder
         ]
 
 
@@ -43,15 +44,22 @@ healDecoder =
         (field "anim" (constDecoder "heal"))
 
 
-obliterateDecoder : Decoder Anim
-obliterateDecoder =
-    Json.map2 (\w _ -> Obliterate w)
-        (field "player" WhichPlayer.decoder)
-        (field "anim" (constDecoder "obliterate"))
-
-
 drawDecoder : Decoder Anim
 drawDecoder =
     Json.map2 (\w _ -> Draw w)
         (field "player" WhichPlayer.decoder)
         (field "anim" (constDecoder "draw"))
+
+
+reverseDecoder : Decoder Anim
+reverseDecoder =
+    Json.map2 (\w _ -> Reverse w)
+        (field "player" WhichPlayer.decoder)
+        (field "anim" (constDecoder "reverse"))
+
+
+obliterateDecoder : Decoder Anim
+obliterateDecoder =
+    Json.map2 (\w _ -> Obliterate w)
+        (field "player" WhichPlayer.decoder)
+        (field "anim" (constDecoder "obliterate"))
