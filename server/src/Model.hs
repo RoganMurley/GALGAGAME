@@ -203,6 +203,7 @@ data Beta n
   | BetaHeal Life WhichPlayer n
   | BetaDraw WhichPlayer n
   | BetaAddToHand WhichPlayer Card n
+  | BetaObliterate n
   | BetaReverse n
   | BetaPlay WhichPlayer Card n
   | BetaGetDeck WhichPlayer (Deck -> n)
@@ -421,6 +422,7 @@ alphaI (Free (BetaSlash d w n))     = hurt d w         >>  alphaI n
 alphaI (Free (BetaHeal h w n))      = heal h w         >>  alphaI n
 alphaI (Free (BetaDraw w n))        = draw w           >>  alphaI n
 alphaI (Free (BetaAddToHand w c n)) = addToHand w c    >>  alphaI n
+alphaI (Free (BetaObliterate n))    = setStack []      >>  alphaI n
 alphaI (Free (BetaReverse n))       = modStack reverse >>  alphaI n
 alphaI (Free (BetaPlay w c n))      = play w c         >>  alphaI n
 alphaI (Free (BetaGetGen f))        = getGen           >>= alphaI . f
@@ -438,6 +440,7 @@ data AnimDSL a
   | AnimSlash WhichPlayer Life a
   | AnimHeal WhichPlayer a
   | AnimDraw WhichPlayer a
+  | AnimObliterate a
   | AnimReverse a
   | AnimPlay WhichPlayer Card a
   deriving (Functor)
@@ -452,6 +455,7 @@ animI (BetaHeal _ w _)      = \a -> (toLeft a) <* (toRight . liftF $ AnimHeal w 
 animI (BetaNull _)          = \a -> (toLeft a) <* (toRight . liftF $ AnimNull ())
 animI (BetaAddToHand w _ _) = drawAnim w
 animI (BetaDraw w _)        = drawAnim w
+animI (BetaObliterate _)    = \a -> (toLeft a) <* (toRight . liftF $ AnimObliterate ())
 animI (BetaReverse _)       = \a -> (toLeft a) <* (toRight . liftF $ AnimReverse ())
 animI (BetaPlay w c _)      = \a -> (toLeft a) <* (toRight . liftF $ AnimPlay w c ())
 animI _                     = toLeft
@@ -469,21 +473,23 @@ drawAnim w alpha =
 
 
 animate :: AnimDSL a -> Maybe CardAnim
-animate (AnimNull _)      = Nothing
-animate (AnimSlash w d _) = Just $ Slash w d
-animate (AnimHeal w _)    = Just . Heal $ w
-animate (AnimDraw w _)    = Just . Draw $ w
-animate (AnimReverse _)   = Just Reverse
-animate (AnimPlay w c _)  = Just $ Play w c
+animate (AnimNull _)       = Nothing
+animate (AnimSlash w d _)  = Just $ Slash w d
+animate (AnimHeal w _)     = Just . Heal $ w
+animate (AnimDraw w _)     = Just . Draw $ w
+animate (AnimReverse _)    = Just Reverse
+animate (AnimObliterate _) = Just Obliterate
+animate (AnimPlay w c _)   = Just $ Play w c
 
 
 animNext :: AnimDSL a -> a
-animNext (AnimNull n)      = n
-animNext (AnimSlash _ _ n) = n
-animNext (AnimHeal _ n)    = n
-animNext (AnimDraw _ n)    = n
-animNext (AnimReverse n)   = n
-animNext (AnimPlay _ _ n)  = n
+animNext (AnimNull n)       = n
+animNext (AnimSlash _ _ n)  = n
+animNext (AnimHeal _ n)     = n
+animNext (AnimDraw _ n)     = n
+animNext (AnimObliterate n) = n
+animNext (AnimReverse n)    = n
+animNext (AnimPlay _ _ n)   = n
 
 
 -- Logging DSL
