@@ -3,7 +3,6 @@ module Model where
 
 import Prelude hiding (log)
 
-import Control.Monad (when)
 import Control.Monad.Free (Free(..), MonadFree, foldFree, liftF)
 import Control.Monad.Free.TH (makeFree)
 import Data.Aeson (ToJSON(..), (.=), object)
@@ -447,8 +446,9 @@ drawAnim w alpha =
   do
     handLength <- length <$> toLeft (getHand w)
     final <- toLeft alpha
-    when (handLength < maxHandLength) $
-      toRight . liftF $ AnimDraw w ()
+    if (handLength < maxHandLength)
+      then toRight . liftF $ AnimDraw w ()
+      else toRight . liftF $ AnimNull ()
     return final
 
 

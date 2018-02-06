@@ -13,19 +13,18 @@ import WhichPlayer.Types exposing (WhichPlayer(..))
 
 
 view : Stack -> Maybe StackCard -> Maybe ( Float, Maybe Anim ) -> Html msg
-view bareFinalStack stackCard resInfo =
+view finalStack stackCard resInfo =
     let
-        -- Tidy this and sort out final naming
-        finalStack =
-            maybeCons stackCard bareFinalStack
+        stack =
+            maybeCons stackCard finalStack
 
-        ( stack, reversing ) =
+        reversing =
             case resInfo of
                 Just ( _, Just (Reverse _) ) ->
-                    ( maybeCons stackCard <| List.reverse bareFinalStack, True )
+                    True
 
                 otherwise ->
-                    ( finalStack, False )
+                    False
 
         maybeCons : Maybe a -> List a -> List a
         maybeCons m xs =
@@ -71,8 +70,8 @@ view bareFinalStack stackCard resInfo =
                         [ Transform.toCss <|
                             Transform.ease Ease.inOutCirc
                                 (resTick / resTickMax)
-                                (outerTransform finalIndex stackLen)
                                 (outerTransform index stackLen)
+                                (outerTransform finalIndex stackLen)
                         , ( "z-index", toString (20 - index) )
                         ]
                     ]
@@ -81,8 +80,8 @@ view bareFinalStack stackCard resInfo =
                             [ Transform.toCss <|
                                 Transform.ease Ease.outQuint
                                     (resTick / resTickMax)
-                                    (innerTransform finalIndex)
                                     (innerTransform index)
+                                    (innerTransform finalIndex)
                             ]
                         ]
                         [ div
