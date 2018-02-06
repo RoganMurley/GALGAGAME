@@ -30,8 +30,7 @@ view params { characters, selected, vm } =
                     class ""
                 ]
                 [ img [ src ("/img/" ++ imgURL), class "character-icon" ] []
-
-                -- , div [ class "character-name" ] [ text name ]
+                  -- , div [ class "character-name" ] [ text name ]
                 ]
 
         selectedView : List Character -> Html Msg
@@ -44,8 +43,7 @@ view params { characters, selected, vm } =
                         , onMouseEnter <| Hover character
                         ]
                         [ img [ src ("/img/" ++ imgURL), class "character-icon" ] []
-
-                        -- , div [ class "character-name" ] [ text name ]
+                          -- , div [ class "character-name" ] [ text name ]
                         ]
 
                 unchosen : List (Html Msg)
@@ -58,12 +56,13 @@ view params { characters, selected, vm } =
                     [ div
                         [ class "characters-all-chosen" ]
                         ((List.map chosenView selected) ++ unchosen)
-                    , if List.length selected >= 3 then
-                        div
-                            [ class "ready-up" ]
-                            [ text "Waiting for opponent" ]
-                      else
-                        div [] []
+                    , div
+                        [ class "ready-up" ]
+                        [ if List.length selected >= 3 then
+                            text "Waiting for opponent"
+                          else
+                            text ""
+                        ]
                     ]
 
         cardPreviewView : ( Card, Card, Card, Card ) -> Html Msg

@@ -83,7 +83,7 @@ animToShake anim =
             0.0
 
         Obliterate _ ->
-            0.0
+            100.0
 
         Draw _ ->
             0.0
