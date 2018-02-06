@@ -131,8 +131,6 @@ resolveRoomClients (resList, final) room = do
 actOutcome :: Room -> Outcome -> IO ()
 actOutcome room Outcome.Sync =
   syncRoomClients room
-actOutcome room (Outcome.PlayCard which) =
-  Room.sendExcluding which "playCard:" room
 actOutcome room (Outcome.EndTurn which) =
   Room.sendExcluding which "end:" room
 actOutcome room (Outcome.Encodable o@(Outcome.Hover which _)) =

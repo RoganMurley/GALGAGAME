@@ -12,3 +12,8 @@ type alias StackCard =
 
 type alias Stack =
     List StackCard
+
+
+type StackAnim
+    = Reversing
+    | Playing

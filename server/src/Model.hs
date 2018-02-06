@@ -77,6 +77,12 @@ instance ToJSON CardAnim where
        "player" .= PlayerA
       , "anim"  .= ("obliterate" :: Text)
       ]
+  toJSON (Play w c) =
+    object
+      [
+       "player" .= w
+      , "anim"  .= ("play" :: Text, c)
+      ]
 
 
 instance Mirror CardAnim where
@@ -85,6 +91,7 @@ instance Mirror CardAnim where
   mirror (Draw w)    = Draw  (other w)
   mirror Reverse     = Reverse
   mirror Obliterate  = Obliterate
+  mirror (Play w c)  = Play (other w) c
 
 
 data CardAnim =
@@ -93,6 +100,7 @@ data CardAnim =
   | Draw WhichPlayer
   | Reverse
   | Obliterate
+  | Play WhichPlayer Card
   deriving (Show, Eq)
 
 
@@ -196,6 +204,7 @@ data Beta n
   | BetaDraw WhichPlayer n
   | BetaAddToHand WhichPlayer Card n
   | BetaReverse n
+  | BetaPlay WhichPlayer Card n
   | BetaGetDeck WhichPlayer (Deck -> n)
   | BetaGetHand WhichPlayer (Hand -> n)
   | BetaGetLife WhichPlayer (Life -> n)
@@ -342,6 +351,10 @@ draw w =
         $ \w' -> (betaRaw $ hurt 10 w') >> betaNull
 
 
+play :: WhichPlayer -> Card -> AlphaProgram ()
+play w c = modStack $ (:) (StackCard w c)
+
+
 bounceAll :: WhichPlayer -> AlphaProgram ()
 bounceAll w = do
   (ours, theirs) <- partition (owned w) <$> getStack
@@ -409,6 +422,7 @@ alphaI (Free (BetaHeal h w n))      = heal h w         >>  alphaI n
 alphaI (Free (BetaDraw w n))        = draw w           >>  alphaI n
 alphaI (Free (BetaAddToHand w c n)) = addToHand w c    >>  alphaI n
 alphaI (Free (BetaReverse n))       = modStack reverse >>  alphaI n
+alphaI (Free (BetaPlay w c n))      = play w c         >>  alphaI n
 alphaI (Free (BetaGetGen f))        = getGen           >>= alphaI . f
 alphaI (Free (BetaGetLife w f))     = getLife w        >>= alphaI . f
 alphaI (Free (BetaGetHand w f))     = getHand w        >>= alphaI . f
@@ -425,6 +439,7 @@ data AnimDSL a
   | AnimHeal WhichPlayer a
   | AnimDraw WhichPlayer a
   | AnimReverse a
+  | AnimPlay WhichPlayer Card a
   deriving (Functor)
 
 
@@ -438,6 +453,7 @@ animI (BetaNull _)          = \a -> (toLeft a) <* (toRight . liftF $ AnimNull ()
 animI (BetaAddToHand w _ _) = drawAnim w
 animI (BetaDraw w _)        = drawAnim w
 animI (BetaReverse _)       = \a -> (toLeft a) <* (toRight . liftF $ AnimReverse ())
+animI (BetaPlay w c _)      = \a -> (toLeft a) <* (toRight . liftF $ AnimPlay w c ())
 animI _                     = toLeft
 
 
@@ -458,6 +474,7 @@ animate (AnimSlash w d _) = Just $ Slash w d
 animate (AnimHeal w _)    = Just . Heal $ w
 animate (AnimDraw w _)    = Just . Draw $ w
 animate (AnimReverse _)   = Just Reverse
+animate (AnimPlay w c _)  = Just $ Play w c
 
 
 animNext :: AnimDSL a -> a
@@ -466,6 +483,7 @@ animNext (AnimSlash _ _ n) = n
 animNext (AnimHeal _ n)    = n
 animNext (AnimDraw _ n)    = n
 animNext (AnimReverse n)   = n
+animNext (AnimPlay _ _ n)  = n
 
 
 -- Logging DSL

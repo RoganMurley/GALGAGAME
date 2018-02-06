@@ -117,27 +117,31 @@ playCard index which m
       Nothing ->
         Left "You can't play a card you don't have in your hand"
       Just c ->
-        Right (
-            Just
-              . Started
-                . Playing
-                  $ modI m
-                    $ do
-                      swapTurn
-                      resetPasses
-                      modStack ((:) c)
-                      modHand which (deleteIndex index)
-          , [
-            Outcome.Sync,
-            Outcome.PlayCard which
-          ]
-        )
+        let
+          playCardProgram :: BetaProgram ()
+          playCardProgram = do
+            betaRaw (do
+              swapTurn
+              resetPasses
+              modHand which (deleteIndex index))
+            betaPlay which c
+          (newModel, _, _, anims) = execute m $ foldFree betaI playCardProgram
+          newPlayState = Playing newModel :: PlayState
+          res :: [(Model, Maybe CardAnim, Maybe StackCard)]
+          res = (\(x, y) -> (x, y, Nothing)) <$> anims
+        in
+          Right (
+            Just . Started $ newPlayState,
+            [
+              Outcome.Encodable $ Outcome.Resolve res newPlayState
+            ]
+          )
   where
     (hand, turn, card) =
       evalI m $ do
         h <- getHand which
         t <- getTurn
-        let c = (StackCard which) <$> (atMay hand index) :: Maybe StackCard
+        let c = atMay hand index :: Maybe Card
         return (h, t, c)
 
 

@@ -44,6 +44,9 @@ animToFragmentShader anim =
         Just (Reverse _) ->
             Shaders.null
 
+        Just (Play _ _) ->
+            Shaders.null
+
         Just (Custom s) ->
             unsafeShader s
 
@@ -69,6 +72,9 @@ getWhichPlayer anim =
         Reverse w ->
             w
 
+        Play w _ ->
+            w
+
         Custom _ ->
             PlayerA
 
@@ -79,14 +85,11 @@ animToShake anim =
         Slash _ d ->
             5.0 * Ease.outQuad (toFloat d / 50.0)
 
-        Heal _ ->
-            0.0
-
         Obliterate _ ->
             100.0
 
-        Draw _ ->
-            0.0
+        Play _ _ ->
+            1.0
 
         otherwise ->
             0.0
@@ -97,6 +100,9 @@ animToResTickMax anim =
     case anim of
         Just (Reverse _) ->
             1500.0
+
+        Just (Play _ _) ->
+            500.0
 
         otherwise ->
             800.0
