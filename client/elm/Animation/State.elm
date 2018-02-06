@@ -91,7 +91,7 @@ animToShake anim =
             5.0 * Ease.outQuad (toFloat d / 50.0)
 
         Obliterate _ ->
-            100.0
+            20.0
 
         Play _ _ ->
             1.0

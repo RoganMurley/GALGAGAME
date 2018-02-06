@@ -82,10 +82,9 @@ hubris =
     "Hubris"
     "Remove all cards to the right"
     "breaker/hubris.svg"
-    $ \_ -> do
+    $ \w -> do
       betaNull
-      betaRaw $ setStack []
-      betaNull
+      betaObliterate
 
 
 -- Balancer
