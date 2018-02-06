@@ -171,8 +171,7 @@ endTurn which model
               Right (
                 Just newState,
                 [
-                  Outcome.Encodable $ Outcome.Resolve (res ++ endRes) newPlayState,
-                  Outcome.EndTurn which
+                  Outcome.Encodable $ Outcome.Resolve (res ++ endRes) newPlayState
                 ]
               )
           (Ended w m g, res) ->
@@ -183,17 +182,19 @@ endTurn which model
               Right (
                 Just newState,
                 [
-                  Outcome.Encodable $ Outcome.Resolve res newPlayState,
-                  Outcome.EndTurn which
+                  Outcome.Encodable $ Outcome.Resolve res newPlayState
                 ]
               )
       NoPass ->
-        Right (
-          Just $ Started $ Playing $ modI model swapTurn,
-          [
-            Outcome.Sync
-          ]
-        )
+        let
+          newPlayState = Playing $ modI model swapTurn :: PlayState
+        in
+          Right (
+            Just . Started $ newPlayState,
+            [
+              Outcome.Encodable $ Outcome.Resolve [] newPlayState
+            ]
+          )
   where
     (turn, passes) =
       evalI model $ do

@@ -14,7 +14,6 @@ type ExcludePlayer = WhichPlayer
 
 data Outcome =
     Sync
-  | EndTurn ExcludePlayer
   | Encodable Encodable
   deriving (Eq, Show)
 
