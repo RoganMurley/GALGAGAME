@@ -29,8 +29,13 @@ uniforms theta which ( width, height ) =
 animToFragmentShader : Maybe Anim -> Shader {} Uniforms {}
 animToFragmentShader anim =
     case anim of
-        Just (Slash _ _) ->
-            Shaders.slash
+        Just (Slash _ d) ->
+            case d of
+                0 ->
+                    Shaders.null
+
+                otherwise ->
+                    Shaders.slash
 
         Just (Heal _) ->
             Shaders.heal
