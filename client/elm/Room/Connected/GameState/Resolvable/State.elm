@@ -67,7 +67,7 @@ resolveStep ({ vm, resList, final } as model) =
                 }
 
         otherwise ->
-            model
+            { model | tick = 0 }
 
 
 shakeStep : Resolvable.Model -> Resolvable.Model

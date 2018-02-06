@@ -26,11 +26,11 @@ playingOnly =
 
 
 view : ( Model, ViewModel ) -> Float -> Html Main.Msg
-view ( model, viewModel ) time =
-    div [ class "game-container", style [ screenshakeStyle viewModel.shake time ] ]
+view ( model, vm ) time =
+    div [ class "game-container", style [ screenshakeStyle (Debug.log "vmshake" vm.shake) time ] ]
         [ viewOtherHand model.otherHand model.otherHover Nothing
         , Html.map playingOnly <|
-            viewHand model.hand viewModel.hover Nothing
+            viewHand model.hand vm.hover Nothing
         , Stack.view model.stack Nothing Nothing
         , Html.map playingOnly <|
             viewTurn (List.length model.hand == maxHandLength) model.turn
