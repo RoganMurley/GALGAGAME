@@ -1,39 +1,34 @@
 module Stack.View exposing (..)
 
 import Animation.State exposing (animToResTickMax)
-import Animation.Types exposing (Anim(Reverse))
+import Animation.Types exposing (Anim(Play, Reverse))
 import Card.View as Card
 import Ease
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Maybe.Extra as Maybe
-import Stack.Types exposing (Stack, StackCard)
+import Stack.Types exposing (Stack, StackAnim(..), StackCard)
 import Transform exposing (Transform)
+import Util exposing (maybeCons)
 import WhichPlayer.Types exposing (WhichPlayer(..))
 
 
 view : Stack -> Maybe StackCard -> Maybe ( Float, Maybe Anim ) -> Html msg
 view finalStack stackCard resInfo =
     let
-        stack =
-            maybeCons stackCard finalStack
-
-        reversing =
+        stackAnim =
             case resInfo of
+                Just ( _, Just (Play _ _) ) ->
+                    Just Playing
+
                 Just ( _, Just (Reverse _) ) ->
-                    True
+                    Just Reversing
 
                 otherwise ->
-                    False
+                    Nothing
 
-        maybeCons : Maybe a -> List a -> List a
-        maybeCons m xs =
-            case m of
-                Just x ->
-                    x :: xs
-
-                Nothing ->
-                    xs
+        stack =
+            maybeCons stackCard finalStack
 
         resTick =
             Maybe.withDefault 0.0 <|
@@ -48,18 +43,39 @@ view finalStack stackCard resInfo =
         stackLen =
             List.length stack
 
+        hasStackCard =
+            Maybe.isJust stackCard
+
         viewStackCard : ( Int, StackCard ) -> Html msg
         viewStackCard ( finalIndex, { owner, card } ) =
             let
                 index =
-                    if reversing then
-                        (if finalIndex == 0 then
-                            0
-                         else
-                            stackLen - finalIndex
-                        )
-                    else
-                        finalIndex
+                    case stackAnim of
+                        Just Playing ->
+                            if finalIndex == 0 then
+                                0
+                            else
+                                finalIndex - 1
+
+                        Just Reversing ->
+                            if finalIndex == 0 then
+                                0
+                            else
+                                stackLen - finalIndex
+
+                        otherwise ->
+                            finalIndex
+
+                outerEase =
+                    case stackAnim of
+                        Just Playing ->
+                            Ease.outQuad
+
+                        Just Reversing ->
+                            Ease.inOutCirc
+
+                        otherwise ->
+                            identity
             in
                 div
                     [ classList
@@ -68,11 +84,11 @@ view finalStack stackCard resInfo =
                         ]
                     , style
                         [ Transform.toCss <|
-                            Transform.ease Ease.inOutCirc
+                            Transform.ease outerEase
                                 (resTick / resTickMax)
                                 (outerTransform index stackLen)
                                 (outerTransform finalIndex stackLen)
-                        , ( "z-index", toString (20 - index) )
+                        , ( "z-index", toString (20 - finalIndex) )
                         ]
                     ]
                     [ div
@@ -85,7 +101,7 @@ view finalStack stackCard resInfo =
                             ]
                         ]
                         [ div
-                            [ classList [ ( "stack-head", index == 0 ) ] ]
+                            [ classList [ ( "stack-head", index == 0 && hasStackCard ) ] ]
                             [ Card.view card ]
                         ]
                     ]

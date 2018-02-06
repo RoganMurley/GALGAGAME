@@ -35,6 +35,9 @@ listen time state =
                             Reverse _ ->
                                 Just "reverse.mp3"
 
+                            Play _ _ ->
+                                Just "playCard.wav"
+
                             otherwise ->
                                 Nothing
 

@@ -116,13 +116,6 @@ receive ({ mode } as model) msg flags =
                                 err
                                 ( model, Cmd.none )
 
-            "playCard" ->
-                let
-                    ( newGame, _ ) =
-                        GameState.update (GameState.Shake 1.0) model.game mode flags
-                in
-                    ( { model | game = newGame }, playSound "/sfx/playCard.wav" )
-
             "end" ->
                 ( model, playSound "/sfx/endTurn.wav" )
 

@@ -2,7 +2,6 @@ module GameState.State exposing (update, tick, tickZero, resolvable)
 
 import Audio exposing (playSound)
 import CharacterSelect.State as CharacterSelect
-import Connected.Messages as Connected
 import GameState.Decoders exposing (playStateDecoder, stateDecoder)
 import GameState.Encoders exposing (encodeHoverIndex)
 import GameState.Messages exposing (..)
@@ -15,7 +14,6 @@ import Model.Types exposing (..)
 import Resolvable.Decoders exposing (resolveDataDecoder)
 import Resolvable.State as Resolvable
 import Resolvable.Types as Resolvable
-import Room.Messages as Room
 import Model.ViewModel
 import Util exposing (message, safeTail, send, unsafeForceDecode)
 import WhichPlayer.Types exposing (WhichPlayer(..))
@@ -25,27 +23,7 @@ update : Msg -> GameState -> Mode.Mode -> Flags -> ( GameState, Cmd Main.Msg )
 update msg state mode flags =
     case msg of
         Sync str ->
-            let
-                syncedState : GameState
-                syncedState =
-                    syncState state str
-            in
-                case state of
-                    Started started ->
-                        -- If we're resolving, defer update until later.
-                        if Resolvable.resolving <| resolvable started then
-                            ( state
-                            , message <|
-                                Main.RoomMsg <|
-                                    Room.ConnectedMsg <|
-                                        Connected.GameStateMsg <|
-                                            msg
-                            )
-                        else
-                            ( syncedState, Cmd.none )
-
-                    otherwise ->
-                        ( syncedState, Cmd.none )
+            ( syncState state str, Cmd.none )
 
         HoverSelf i ->
             case state of
@@ -79,6 +57,27 @@ update msg state mode flags =
 
         ResolveOutcome str ->
             let
+                oldResList : List Resolvable.ResolveData
+                oldResList =
+                    case state of
+                        Started playState ->
+                            .resList <| resolvable playState
+
+                        otherwise ->
+                            []
+
+                oldTick : Float
+                oldTick =
+                    case ( state, oldResList ) of
+                        ( Started playState, [] ) ->
+                            0
+
+                        ( Started playState, _ ) ->
+                            .tick <| resolvable playState
+
+                        otherwise ->
+                            0
+
                 resList : List Resolvable.ResolveData
                 resList =
                     unsafeForceDecode ((Json.field "list") (Json.list resolveDataDecoder)) str
@@ -96,7 +95,13 @@ update msg state mode flags =
                     resMap Resolvable.shakeStep <|
                         carryVm state <|
                             resMap
-                                (\_ -> Resolvable.init model resList)
+                                (\_ ->
+                                    { vm = Model.ViewModel.init
+                                    , tick = oldTick
+                                    , final = model
+                                    , resList = oldResList ++ resList
+                                    }
+                                )
                                 (Started finalState)
             in
                 ( newState, Cmd.none )
