@@ -116,9 +116,6 @@ receive ({ mode } as model) msg flags =
                                 err
                                 ( model, Cmd.none )
 
-            "end" ->
-                ( model, playSound "/sfx/endTurn.wav" )
-
             otherwise ->
                 Debug.log
                     ("Error decoding message from server: " ++ msg)

@@ -131,8 +131,6 @@ resolveRoomClients (resList, final) room = do
 actOutcome :: Room -> Outcome -> IO ()
 actOutcome room Outcome.Sync =
   syncRoomClients room
-actOutcome room (Outcome.EndTurn which) =
-  Room.sendExcluding which "end:" room
 actOutcome room (Outcome.Encodable o@(Outcome.Hover which _)) =
   Room.sendExcluding which (("hover:" <>) . cs . encode $ o) room
 actOutcome room (Outcome.Encodable (Outcome.Chat (Username username) msg)) =
