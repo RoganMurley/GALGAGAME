@@ -1,5 +1,6 @@
 module Model.View exposing (..)
 
+import Animation.State exposing (animShake)
 import Connected.Messages as Connected
 import Hand.State exposing (maxHandLength)
 import Html exposing (..)
@@ -14,6 +15,7 @@ import Model.Types exposing (..)
 import Model.ViewModel exposing (..)
 import Stack.Types exposing (..)
 import Stack.View as Stack
+import Transform as Transform exposing (Transform)
 import WhichPlayer.Types exposing (WhichPlayer(..))
 
 
@@ -27,7 +29,7 @@ playingOnly =
 
 view : ( Model, ViewModel ) -> Float -> Html Main.Msg
 view ( model, vm ) time =
-    div [ class "game-container", style [ screenshakeStyle vm.shake time ] ]
+    div [ class "game-container", style [ Transform.toCss <| screenshakeStyle 0 ] ]
         [ viewOtherHand model.otherHand model.otherHover Nothing
         , Html.map playingOnly <|
             viewHand model.hand vm.hover Nothing
@@ -105,7 +107,7 @@ resView vm { model, stackCard, anim } time resTick =
     in
         div
             [ class ("game-container resolving")
-            , style [ screenshakeStyle vm.shake time ]
+            , style [ Transform.toCss <| screenshakeStyle <| animShake anim resTick ]
             ]
             [ viewOtherHand model.otherHand model.otherHover resInfo
             , Html.map playingOnly <|
@@ -134,17 +136,11 @@ viewResTurn stackCard =
 -- SCREENSHAKE
 
 
-screenshakeStyle : Float -> Float -> ( String, String )
-screenshakeStyle shake time =
+screenshakeStyle : Float -> Transform
+screenshakeStyle shake =
     let
-        x : Float
-        x =
-            shake * 0.3 * (toFloat (((ceiling time) * 1247823748932 + 142131) % 20) - 10)
-
-        y : Float
-        y =
-            shake * 0.3 * (toFloat (((ceiling time) * 1247823748932 + 142131) % 20) - 10)
+        origin : Transform
+        origin =
+            Transform.origin
     in
-        ( "transform"
-        , "translate(" ++ (toString x) ++ "px, " ++ (toString y) ++ "px)"
-        )
+        { origin | x = shake, y = shake }

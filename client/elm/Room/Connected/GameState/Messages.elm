@@ -9,7 +9,6 @@ type Msg
     | ResolveOutcome String
     | SelectingMsg CharacterSelect.Msg
     | Sync String
-    | Shake Float
     | PlayingOnly PlayingOnly
 
 

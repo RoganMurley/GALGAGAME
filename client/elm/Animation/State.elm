@@ -84,20 +84,27 @@ getWhichPlayer anim =
             PlayerA
 
 
-animToShake : Anim -> Float
-animToShake anim =
-    case anim of
-        Slash _ d ->
-            5.0 * Ease.outQuad (toFloat d / 50.0)
+animShake : Maybe Anim -> Float -> Float
+animShake anim tick =
+    let
+        baseMag =
+            case anim of
+                Just (Slash _ d) ->
+                    5.0 * Ease.outQuad (toFloat d / 50.0)
 
-        Obliterate _ ->
-            20.0
+                Just (Obliterate _) ->
+                    20.0
 
-        Play _ _ ->
-            1.0
+                Just (Play _ _) ->
+                    1.0
 
-        otherwise ->
-            0.0
+                otherwise ->
+                    0.0
+
+        mag =
+            baseMag * (1.0 - Ease.outQuad (tick / animToResTickMax anim))
+    in
+        mag * 0.03 * (toFloat (((ceiling tick) * 1247823748932 + 142131) % 20) - 10)
 
 
 animToResTickMax : Maybe Anim -> Float
