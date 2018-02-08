@@ -92,17 +92,16 @@ update msg state mode flags =
 
                 newState : GameState
                 newState =
-                    resMap Resolvable.shakeStep <|
-                        carryVm state <|
-                            resMap
-                                (\_ ->
-                                    { vm = Model.ViewModel.init
-                                    , tick = oldTick
-                                    , final = model
-                                    , resList = oldResList ++ resList
-                                    }
-                                )
-                                (Started finalState)
+                    carryVm state <|
+                        resMap
+                            (\_ ->
+                                { vm = Model.ViewModel.init
+                                , tick = oldTick
+                                , final = model
+                                , resList = oldResList ++ resList
+                                }
+                            )
+                            (Started finalState)
             in
                 ( newState, Cmd.none )
 
@@ -119,24 +118,6 @@ update msg state mode flags =
                     Debug.log
                         "Expected a selecting state"
                         ( state, Cmd.none )
-
-        Shake mag ->
-            case state of
-                Started started ->
-                    let
-                        vm : Model.ViewModel.ViewModel
-                        vm =
-                            .vm <| resolvable started
-                    in
-                        ( Started <|
-                            resMapPlay
-                                (\r -> { r | vm = { vm | shake = mag } })
-                                started
-                        , Cmd.none
-                        )
-
-                otherwise ->
-                    ( state, Cmd.none )
 
         PlayingOnly playingOnly ->
             updatePlayingOnly playingOnly state mode flags
@@ -218,18 +199,14 @@ updateTurnOnly msg state mode flags =
 
                 PlayCard index ->
                     let
-                        ( newState1, cmd1 ) =
+                        ( newState, cmd ) =
                             update (HoverSelf Nothing) state mode flags
-
-                        ( newState2, cmd2 ) =
-                            update (Shake 1.0) newState1 mode flags
                     in
-                        ( newState2
+                        ( newState
                         , Cmd.batch
                             [ send flags ("play:" ++ (toString index))
                             , playSound "/sfx/playCard.wav"
-                            , cmd1
-                            , cmd2
+                            , cmd
                             ]
                         )
 

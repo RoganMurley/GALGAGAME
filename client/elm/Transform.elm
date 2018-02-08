@@ -37,3 +37,8 @@ toCss { x, y, r } =
         ++ toString r
         ++ "deg)"
     )
+
+
+origin : Transform
+origin =
+    { x = 0, y = 0, r = 0 }

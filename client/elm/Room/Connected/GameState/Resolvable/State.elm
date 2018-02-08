@@ -1,6 +1,6 @@
 module Resolvable.State exposing (..)
 
-import Animation.State exposing (animToShake, animToResTickMax)
+import Animation.State exposing (animToResTickMax)
 import Animation.Types exposing (Anim)
 import Model.Types as Model
 import Resolvable.Types as Resolvable
@@ -46,7 +46,6 @@ tick dt model =
     else
         { model
             | tick = model.tick + dt
-            , vm = Model.ViewModel.shakeDecay model.vm
         }
 
 
@@ -59,29 +58,14 @@ resolveStep : Resolvable.Model -> Resolvable.Model
 resolveStep ({ vm, resList, final } as model) =
     case resList of
         r :: rs ->
-            shakeStep
-                { vm = vm
-                , resList = rs
-                , tick = 0
-                , final = final
-                }
+            { vm = vm
+            , resList = rs
+            , tick = 0
+            , final = final
+            }
 
         otherwise ->
             { model | tick = 0 }
-
-
-shakeStep : Resolvable.Model -> Resolvable.Model
-shakeStep ({ vm } as model) =
-    let
-        shake =
-            Maybe.withDefault 0 <|
-                Maybe.map animToShake <|
-                    activeAnim model
-
-        newVm =
-            { vm | shake = shake }
-    in
-        { model | vm = newVm }
 
 
 resolving : Resolvable.Model -> Bool
