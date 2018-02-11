@@ -3,11 +3,11 @@ version:             0.1.0.0
 synopsis:            Initial project template from stack
 description:         Please see README.md
 homepage:            https://github.com/RoganMurley/hubris
-license:             BSD3
+license:             MIT
 license-file:        LICENSE
 author:              Rogan Murley
 maintainer:          rogan@roganmurley.com
-copyright:           2017 Rogan Murley
+copyright:           2018 Rogan Murley
 category:            Game
 build-type:          Simple
 -- extra-source-files:
@@ -22,6 +22,11 @@ library
                      , Characters
                      , Client
                      , Command
+                     , DSL.Alpha
+                     , DSL.Anim
+                     , DSL.Beta
+                     , DSL.Log
+                     , DSL.Util
                      , GameCommand
                      , GameState
                      , Mirror
@@ -33,6 +38,15 @@ library
                      , Server
                      , Username
                      , Util
+  other-modules:       DSL.Alpha.Actions
+                     , DSL.Alpha.DSL
+                     , DSL.Alpha.Interpreters
+                     , DSL.Anim.Actions
+                     , DSL.Anim.DSL
+                     , DSL.Anim.Interpreters
+                     , DSL.Beta.Actions
+                     , DSL.Beta.DSL
+                     , DSL.Beta.Interpreters
   build-depends:       base >= 4.7 && < 5
                      , aeson
                      , bcrypt
