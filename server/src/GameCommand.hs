@@ -15,7 +15,9 @@ import Player (WhichPlayer(..), other)
 import Username (Username)
 import Util (Err, Gen, deleteIndex, split)
 
-import qualified Outcome as Outcome
+import qualified DSL.Alpha as Alpha
+import qualified DSL.Beta as Beta
+import qualified Outcome
 import Outcome (Outcome)
 
 
@@ -89,7 +91,7 @@ chat username msg =
 concede :: WhichPlayer -> GameState -> Either Err (Maybe GameState, [Outcome])
 concede which (Started (Playing model)) =
   Right (
-    Just . Started $ Ended (Just (other which)) model (evalI model getGen)
+    Just . Started $ Ended (Just (other which)) model (Alpha.evalI model Alpha.getGen)
   , [ Outcome.Sync ]
   )
 concede _ _ =
@@ -118,14 +120,14 @@ playCard index which m
         Left "You can't play a card you don't have in your hand"
       Just c ->
         let
-          playCardProgram :: BetaProgram ()
+          playCardProgram :: Beta.Program ()
           playCardProgram = do
-            betaRaw (do
-              swapTurn
-              resetPasses
-              modHand which (deleteIndex index))
-            betaPlay which c
-          (newModel, _, _, anims) = execute m $ foldFree betaI playCardProgram
+            Beta.raw (do
+              Alpha.swapTurn
+              Alpha.resetPasses
+              Alpha.modHand which (deleteIndex index))
+            Beta.play which c
+          (newModel, _, _, anims) = Beta.execute m $ foldFree Beta.betaI playCardProgram
           newPlayState = Playing newModel :: PlayState
           res :: [(Model, Maybe CardAnim, Maybe StackCard)]
           res = (\(x, y) -> (x, y, Nothing)) <$> anims
@@ -138,9 +140,9 @@ playCard index which m
           )
   where
     (hand, turn, card) =
-      evalI m $ do
-        h <- getHand which
-        t <- getTurn
+      Alpha.evalI m $ do
+        h <- Alpha.getHand which
+        t <- Alpha.getTurn
         let c = atMay hand index :: Maybe Card
         return (h, t, c)
 
@@ -156,12 +158,12 @@ endTurn which model
         case runWriter . resolveAll $ model of
           (Playing m, res) ->
             let
-              endProgram :: BetaProgram ()
+              endProgram :: Beta.Program ()
               endProgram = do
-                  betaRaw swapTurn
-                  betaRaw resetPasses
+                  Beta.raw Alpha.swapTurn
+                  Beta.raw Alpha.resetPasses
                   drawCards
-              (newModel, _, _, endAnims) = execute m $ foldFree betaI endProgram
+              (newModel, _, _, endAnims) = Beta.execute m $ foldFree Beta.betaI endProgram
               newPlayState :: PlayState
               newPlayState = Playing newModel
               newState = Started newPlayState :: GameState
@@ -187,7 +189,7 @@ endTurn which model
               )
       NoPass ->
         let
-          newPlayState = Playing $ modI model swapTurn :: PlayState
+          newPlayState = Playing $ Alpha.modI model Alpha.swapTurn :: PlayState
         in
           Right (
             Just . Started $ newPlayState,
@@ -197,16 +199,16 @@ endTurn which model
           )
   where
     (turn, passes) =
-      evalI model $ do
-        t <- getTurn
-        p <- getPasses
+      Alpha.evalI model $ do
+        t <- Alpha.getTurn
+        p <- Alpha.getPasses
         return (t, p)
     full :: Bool
-    full = evalI model $ handFull which
-    drawCards :: BetaProgram ()
+    full = Alpha.evalI model $ Alpha.handFull which
+    drawCards :: Beta.Program ()
     drawCards = do
-      betaDraw PlayerA
-      betaDraw PlayerB
+      Beta.draw PlayerA
+      Beta.draw PlayerB
 
 
 resolveAll :: Model -> Writer [(Model, Maybe CardAnim, Maybe StackCard)] PlayState
@@ -223,18 +225,18 @@ resolveAll model =
       return (Playing model)
   where
     stackCard :: Maybe StackCard
-    stackCard = evalI model (headMay <$> getStack)
-    card :: Maybe (BetaProgram ())
+    stackCard = Alpha.evalI model (headMay <$> Alpha.getStack)
+    card :: Maybe (Beta.Program ())
     card = (\(StackCard o c) -> (card_eff c) o) <$> stackCard
-    program :: AlphaLogAnimProgram ()
+    program :: Beta.AlphaLogAnimProgram ()
     program = case card of
-      Just betaProgram ->
-        foldFree betaI $ do
-          betaRaw $ modStack tailSafe
-          betaProgram
+      Just p ->
+        foldFree Beta.betaI $ do
+          Beta.raw $ Alpha.modStack tailSafe
+          p
       Nothing ->
         return ()
-    (m, _, _, anims) = execute model program :: (Model, (), String, [(Model, Maybe CardAnim)])
+    (m, _, _, anims) = Beta.execute model program :: (Model, (), String, [(Model, Maybe CardAnim)])
 
 
 
@@ -250,16 +252,16 @@ checkWin m
     Playing m
   where
     (gen, lifePA, lifePB) =
-      evalI m $ do
-        g  <- getGen
-        la <- getLife PlayerA
-        lb <- getLife PlayerB
+      Alpha.evalI m $ do
+        g  <- Alpha.getGen
+        la <- Alpha.getLife PlayerA
+        lb <- Alpha.getLife PlayerB
         return (g, la, lb)
 
 
 hoverCard :: Maybe Int -> WhichPlayer -> Model -> Either Err (Maybe GameState, [Outcome])
 hoverCard (Just i) which model
-  | i >= (length (evalI model $ getHand which :: Hand) :: Int) =
+  | i >= (length (Alpha.evalI model $ Alpha.getHand which :: Hand) :: Int) =
     Left ("Hover index out of bounds (" <> (cs . show $ i ) <> ")" :: Err)
   | otherwise =
     Right (Nothing, [ Outcome.Encodable $ Outcome.Hover which (Just i) ])

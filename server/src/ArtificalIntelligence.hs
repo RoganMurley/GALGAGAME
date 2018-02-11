@@ -5,6 +5,7 @@ import Data.List (maximumBy)
 import Data.Maybe (fromJust)
 import Data.Ord (comparing)
 
+import DSL.Alpha
 import GameCommand (GameCommand(..), resolveAll, update)
 import GameState
 import Model
