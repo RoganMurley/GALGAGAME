@@ -11,6 +11,7 @@ import Safe (atMay, headMay, tailSafe)
 import Characters (CharModel(..), SelectedCharacters(..), selectChar, initCharModel)
 import GameState (GameState(..), PlayState(..), initModel)
 import Model
+import ModelDiff (ModelDiff)
 import Player (WhichPlayer(..), other)
 import Username (Username)
 import Util (Err, Gen, deleteIndex, split)
@@ -129,13 +130,13 @@ playCard index which m
             Beta.play which c
           (newModel, _, _, anims) = Beta.execute m $ foldFree Beta.betaI playCardProgram
           newPlayState = Playing newModel :: PlayState
-          res :: [(Model, Maybe CardAnim, Maybe StackCard)]
+          res :: [(ModelDiff, Maybe CardAnim, Maybe StackCard)]
           res = (\(x, y) -> (x, y, Nothing)) <$> anims
         in
           Right (
             Just . Started $ newPlayState,
             [
-              Outcome.Encodable $ Outcome.Resolve res newPlayState
+              Outcome.Encodable $ Outcome.Resolve res m newPlayState
             ]
           )
   where
@@ -167,13 +168,13 @@ endTurn which model
               newPlayState :: PlayState
               newPlayState = Playing newModel
               newState = Started newPlayState :: GameState
-              endRes :: [(Model, Maybe CardAnim, Maybe StackCard)]
+              endRes :: [(ModelDiff, Maybe CardAnim, Maybe StackCard)]
               endRes = (\(x, y) -> (x, y, Nothing)) <$> endAnims
             in
               Right (
                 Just newState,
                 [
-                  Outcome.Encodable $ Outcome.Resolve (res ++ endRes) newPlayState
+                  Outcome.Encodable $ Outcome.Resolve (res ++ endRes) model newPlayState
                 ]
               )
           (Ended w m g, res) ->
@@ -184,7 +185,7 @@ endTurn which model
               Right (
                 Just newState,
                 [
-                  Outcome.Encodable $ Outcome.Resolve res newPlayState
+                  Outcome.Encodable $ Outcome.Resolve res model newPlayState
                 ]
               )
       NoPass ->
@@ -194,7 +195,7 @@ endTurn which model
           Right (
             Just . Started $ newPlayState,
             [
-              Outcome.Encodable $ Outcome.Resolve [] newPlayState
+              Outcome.Encodable $ Outcome.Resolve [] model newPlayState
             ]
           )
   where
@@ -211,7 +212,7 @@ endTurn which model
       Beta.draw PlayerB
 
 
-resolveAll :: Model -> Writer [(Model, Maybe CardAnim, Maybe StackCard)] PlayState
+resolveAll :: Model -> Writer [(ModelDiff, Maybe CardAnim, Maybe StackCard)] PlayState
 resolveAll model =
   case stackCard of
     Just c -> do
@@ -236,7 +237,7 @@ resolveAll model =
           p
       Nothing ->
         return ()
-    (m, _, _, anims) = Beta.execute model program :: (Model, (), String, [(Model, Maybe CardAnim)])
+    (m, _, _, anims) = Beta.execute model program :: (Model, (), String, [(ModelDiff, Maybe CardAnim)])
 
 
 

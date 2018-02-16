@@ -5,6 +5,7 @@ import Data.Text (Text)
 
 import GameState (PlayState)
 import Model (CardAnim, Model, StackCard)
+import ModelDiff (ModelDiff)
 import Player (WhichPlayer)
 import Username (Username)
 
@@ -21,7 +22,7 @@ data Outcome =
 data Encodable =
     Chat Username Text
   | Hover ExcludePlayer (Maybe Int)
-  | Resolve [(Model, Maybe CardAnim, Maybe StackCard)] PlayState
+  | Resolve [(ModelDiff, Maybe CardAnim, Maybe StackCard)] Model PlayState
   deriving (Eq, Show)
 
 
@@ -33,8 +34,9 @@ instance ToJSON Encodable where
     ]
   toJSON (Hover _ index) =
     toJSON index
-  toJSON (Resolve res state) =
+  toJSON (Resolve res initial state) =
     object [
-      "list"  .= res
-    , "final" .= state
+      "list"    .= res
+    , "initial" .= initial
+    , "final"   .= state
     ]

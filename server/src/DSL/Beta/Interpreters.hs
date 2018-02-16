@@ -8,6 +8,7 @@ import DSL.Beta.DSL
 import DSL.Util (toLeft, toRight)
 import Player (WhichPlayer(..))
 import Model (CardAnim, Model, maxHandLength)
+import ModelDiff (ModelDiff)
 
 import qualified DSL.Alpha as Alpha
 import qualified DSL.Anim as Anim
@@ -70,18 +71,19 @@ betaI :: ∀ a . DSL a -> AlphaLogAnimProgram a
 betaI x = (foldFree liftAlphaAnim) . (animI x) . alphaI $ liftF x
 
 
-execute :: Model -> AlphaLogAnimProgram a -> (Model, a, String, [(Model, Maybe CardAnim)])
-execute = execute' "" []
+execute :: Model -> AlphaLogAnimProgram a -> (Model, a, String, [(ModelDiff, Maybe CardAnim)])
+execute = execute' "" [] ModelDiff.base
   where
-    execute' :: String -> [(Model, Maybe CardAnim)] -> Model -> AlphaLogAnimProgram a -> (Model, a, String, [(Model, Maybe CardAnim)])
-    execute' s a m (Pure x) =
+    execute' :: String -> [(ModelDiff, Maybe CardAnim)] -> ModelDiff -> Model -> AlphaLogAnimProgram a -> (Model, a, String, [(ModelDiff, Maybe CardAnim)])
+    execute' s a _ m (Pure x) =
       (m, x, s, a)
-    execute' s a m (Free (InR anim)) =
-      execute' s (a ++ [(m, Anim.animate anim)]) m (Anim.next anim)
-    execute' s a m (Free (InL (InL p))) =
+    execute' s a d m (Free (InR anim)) =
+      execute' s (a ++ [(d, Anim.animate anim)]) ModelDiff.base m (Anim.next anim)
+    execute' s a d m (Free (InL (InL p))) =
       let
-         (d, n) = Alpha.alphaEffI m p
+         (newDiff, n) = Alpha.alphaEffI m p
+         newModel = ModelDiff.update m newDiff
       in
-        execute' s a (ModelDiff.update m d) n
-    execute' s a m (Free (InL (InR (Log.Log l n)))) =
-      execute' (s ++ l ++ "\n") a m n
+        execute' s a (ModelDiff.merge d newDiff) newModel n
+    execute' s a d m (Free (InL (InR (Log.Log l n)))) =
+      execute' (s ++ l ++ "\n") a d m n
