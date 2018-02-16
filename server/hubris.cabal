@@ -31,6 +31,7 @@ library
                      , GameState
                      , Mirror
                      , Model
+                     , ModelDiff
                      , Negotiation
                      , Outcome
                      , Player

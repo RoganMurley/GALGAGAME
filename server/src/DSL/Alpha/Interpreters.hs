@@ -5,6 +5,7 @@ import Data.Functor.Sum (Sum(..))
 import DSL.Alpha.DSL
 import DSL.Util (toLeft, toRight)
 import Model
+import ModelDiff (PlayerModelDiff(..), ModelDiff(..), modPmodelDiff)
 import Text.Printf (printf)
 
 import qualified DSL.Log as Log
@@ -74,3 +75,20 @@ decorateLog x =
     logging = logI x  :: Log.Program ()
   in
     toLeft alpha <* toRight logging
+
+
+diffI :: DSL a -> ModelDiff -> ModelDiff
+diffI (SetGen g _)    diff  = diff { modeldiff_gen = Just g }
+diffI (SetDeck w d _) diff  = modPmodelDiff (\pm -> pm { pmodeldiff_deck = Just d }) w diff
+diffI (SetHand w h _) diff  = modPmodelDiff (\pm -> pm { pmodeldiff_hand = Just h }) w diff
+diffI (SetLife w l _) diff  = modPmodelDiff (\pm -> pm { pmodeldiff_life = Just l }) w diff
+diffI (SetPasses p _) diff  = diff { modeldiff_passes = Just p }
+diffI (SetStack s _)  diff  = diff { modeldiff_stack = Just s }
+diffI (SetTurn t _)   diff  = diff { modeldiff_turn = Just t }
+diffI (GetGen _)      diff  = diff
+diffI (GetDeck _ _)   diff  = diff
+diffI (GetHand _ _)   diff  = diff
+diffI (GetLife _ _)   diff  = diff
+diffI (GetPasses _)   diff  = diff
+diffI (GetStack _)    diff  = diff
+diffI (GetTurn _)     diff  = diff

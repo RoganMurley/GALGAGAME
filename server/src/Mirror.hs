@@ -18,3 +18,9 @@ instance Mirror () where
 
 instance Mirror (a, a) where
   mirror (x, y) = (y, x)
+
+instance (Mirror a) => Mirror (Maybe a) where
+  mirror = fmap mirror
+
+instance (Mirror a) => Mirror [a] where
+  mirror = fmap mirror

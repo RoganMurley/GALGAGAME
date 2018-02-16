@@ -1,0 +1,93 @@
+module ModelDiff where
+
+import Data.Aeson (ToJSON(..), (.=), object)
+import Data.Maybe (fromMaybe)
+import Mirror (Mirror(..))
+import Model (Hand, Deck, Life, Model(..), Passes, PlayerModel(..), Turn, Stack)
+import Player (WhichPlayer(..), other)
+import Util (Gen)
+
+
+
+data ModelDiff = ModelDiff
+  { modeldiff_turn   :: Maybe Turn
+  , modeldiff_stack  :: Maybe Stack
+  , modeldiff_pa     :: PlayerModelDiff
+  , modeldiff_pb     :: PlayerModelDiff
+  , modeldiff_passes :: Maybe Passes
+  , modeldiff_gen    :: Maybe Gen
+  }
+  deriving (Eq, Show)
+
+
+data PlayerModelDiff = PlayerModelDiff
+  { pmodeldiff_hand :: Maybe Hand
+  , pmodeldiff_deck :: Maybe Deck
+  , pmodeldiff_life :: Maybe Life
+  }
+  deriving (Eq, Show)
+
+
+instance ToJSON ModelDiff where
+  toJSON ModelDiff{ modeldiff_turn, modeldiff_stack, modeldiff_pa, modeldiff_pb } =
+    object
+      [
+        "turn"   .= modeldiff_turn
+      , "stack"  .= modeldiff_stack
+      , "handPA" .= pmodeldiff_hand modeldiff_pa
+      , "handPB" .= (length <$> pmodeldiff_hand modeldiff_pb)
+      , "lifePA" .= pmodeldiff_life modeldiff_pa
+      , "lifePB" .= pmodeldiff_life modeldiff_pb
+      ]
+
+
+instance Mirror ModelDiff where
+  mirror (ModelDiff turn stack pa pb passes gen) =
+    ModelDiff (other <$> turn) (mirror stack) pb pa passes gen
+
+
+getPmodelDiff :: WhichPlayer -> ModelDiff -> PlayerModelDiff
+getPmodelDiff PlayerA = modeldiff_pa
+getPmodelDiff PlayerB = modeldiff_pb
+
+
+setPmodelDiff :: PlayerModelDiff -> WhichPlayer -> ModelDiff -> ModelDiff
+setPmodelDiff pmodeldiff PlayerA modeldiff = modeldiff { modeldiff_pa = pmodeldiff }
+setPmodelDiff pmodeldiff PlayerB modeldiff = modeldiff { modeldiff_pb = pmodeldiff }
+
+
+modPmodelDiff :: (PlayerModelDiff -> PlayerModelDiff) -> WhichPlayer -> ModelDiff -> ModelDiff
+modPmodelDiff f p m = setPmodelDiff (f (getPmodelDiff p m)) p m
+
+
+update :: Model -> ModelDiff -> Model
+update m d =
+  Model
+    { model_turn   = fromMaybe (model_turn m)   (modeldiff_turn d)
+    , model_stack  = fromMaybe (model_stack m)  (modeldiff_stack d)
+    , model_passes = fromMaybe (model_passes m) (modeldiff_passes d)
+    , model_gen    = fromMaybe (model_gen m)    (modeldiff_gen d)
+    , model_pa     = updateP   (model_pa m)     (modeldiff_pa d)
+    , model_pb     = updateP   (model_pb m)     (modeldiff_pb d)
+    }
+
+
+updateP :: PlayerModel -> PlayerModelDiff -> PlayerModel
+updateP m d =
+  PlayerModel
+    { pmodel_hand = fromMaybe (pmodel_hand m) (pmodeldiff_hand d)
+    , pmodel_deck = fromMaybe (pmodel_deck m) (pmodeldiff_deck d)
+    , pmodel_life = fromMaybe (pmodel_life m) (pmodeldiff_life d)
+    }
+
+
+base :: ModelDiff
+base =
+  ModelDiff
+    { modeldiff_turn   = Nothing
+    , modeldiff_stack  = Nothing
+    , modeldiff_passes = Nothing
+    , modeldiff_gen    = Nothing
+    , modeldiff_pa     = PlayerModelDiff Nothing Nothing Nothing
+    , modeldiff_pb     = PlayerModelDiff Nothing Nothing Nothing
+    }
