@@ -7,8 +7,8 @@ import Stack.Decoders as Stack
 import WhichPlayer.Decoders as WhichPlayer
 
 
-modelDecoder : Decoder Model
-modelDecoder =
+decoder : Decoder Model
+decoder =
     Json.map6 (\a b c d e f -> Model a b c d e f Nothing)
         (field "handPA" <| list Card.decoder)
         (field "handPB" int)

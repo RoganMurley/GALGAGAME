@@ -14,6 +14,7 @@ import GameCommand (GameCommand(..), update)
 import GameState (GameState(..), PlayState)
 import Mirror (mirror)
 import Model (CardAnim, Model, StackCard)
+import ModelDiff (ModelDiff)
 import Player (WhichPlayer(..))
 import Username (Username(Username))
 import Util (Err, modReturnTVar)
@@ -110,8 +111,8 @@ syncPlayersRoom room = do
         (cs . encode . (if rev then mirror else id) $ Room.connected room)
 
 
-resolveRoomClients :: ([(Model, Maybe CardAnim, Maybe StackCard)], PlayState) -> Room -> IO ()
-resolveRoomClients (resList, final) room = do
+resolveRoomClients :: ([(ModelDiff, Maybe CardAnim, Maybe StackCard)], Model, PlayState) -> Room -> IO ()
+resolveRoomClients (resList, initial, final) room = do
   Room.sendToPlayer PlayerA msgPa room
   Room.sendToPlayer PlayerB msgPb room
   Room.sendToSpecs msgPa room
@@ -120,11 +121,12 @@ resolveRoomClients (resList, final) room = do
     msgPb = ("res:" <>) . cs . encode $ mirrorOutcome :: Text
     outcome :: Outcome.Encodable
     outcome =
-      Outcome.Resolve resList final
+      Outcome.Resolve resList initial final
     mirrorOutcome :: Outcome.Encodable
     mirrorOutcome =
       Outcome.Resolve
         ((\(x, y, z) -> (mirror x, mirror y, mirror z)) <$> resList)
+        (mirror initial)
         (mirror final)
 
 
@@ -135,5 +137,5 @@ actOutcome room (Outcome.Encodable o@(Outcome.Hover which _)) =
   Room.sendExcluding which (("hover:" <>) . cs . encode $ o) room
 actOutcome room (Outcome.Encodable (Outcome.Chat (Username username) msg)) =
   Room.broadcast ("chat:" <> username <> ": " <> msg) room
-actOutcome room (Outcome.Encodable (Outcome.Resolve models final)) =
-  resolveRoomClients (models, final) room
+actOutcome room (Outcome.Encodable (Outcome.Resolve models initial final)) =
+  resolveRoomClients (models, initial, final) room

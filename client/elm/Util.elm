@@ -84,3 +84,8 @@ maybeCons m xs =
 
         Nothing ->
             xs
+
+
+zip : List a -> List b -> List ( a, b )
+zip =
+    List.map2 (,)

@@ -10,8 +10,9 @@ import Json.Decode as Json exposing (field, maybe)
 import Main.Messages as Main
 import Main.Types exposing (Flags)
 import Mode as Mode
+import Model.Decoders as Model
 import Model.Types exposing (..)
-import Resolvable.Decoders exposing (resolveDataDecoder)
+import Resolvable.Decoders exposing (resolveDiffDataDecoder)
 import Resolvable.State as Resolvable
 import Resolvable.Types as Resolvable
 import Model.ViewModel
@@ -78,9 +79,13 @@ update msg state mode flags =
                         otherwise ->
                             0
 
+                resDiffList : List Resolvable.ResolveDiffData
+                resDiffList =
+                    unsafeForceDecode ((Json.field "list") (Json.list resolveDiffDataDecoder)) str
+
                 resList : List Resolvable.ResolveData
                 resList =
-                    unsafeForceDecode ((Json.field "list") (Json.list resolveDataDecoder)) str
+                    Resolvable.resDiffToData initial resDiffList
 
                 finalState : PlayState
                 finalState =
@@ -89,6 +94,10 @@ update msg state mode flags =
                 model : Model
                 model =
                     .final <| resolvable finalState
+
+                initial : Model
+                initial =
+                    unsafeForceDecode ((Json.field "initial") Model.decoder) str
 
                 newState : GameState
                 newState =

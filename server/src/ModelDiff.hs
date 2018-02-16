@@ -1,5 +1,6 @@
 module ModelDiff where
 
+import Control.Applicative ((<|>))
 import Data.Aeson (ToJSON(..), (.=), object)
 import Data.Maybe (fromMaybe)
 import Mirror (Mirror(..))
@@ -90,4 +91,25 @@ base =
     , modeldiff_gen    = Nothing
     , modeldiff_pa     = PlayerModelDiff Nothing Nothing Nothing
     , modeldiff_pb     = PlayerModelDiff Nothing Nothing Nothing
+    }
+
+
+merge :: ModelDiff -> ModelDiff -> ModelDiff
+merge a b =
+  ModelDiff
+    { modeldiff_turn   = (modeldiff_turn b)   <|> (modeldiff_turn a)
+    , modeldiff_stack  = (modeldiff_stack b)  <|> (modeldiff_stack a)
+    , modeldiff_passes = (modeldiff_passes b) <|> (modeldiff_passes a)
+    , modeldiff_gen    = (modeldiff_gen b)    <|> (modeldiff_gen a)
+    , modeldiff_pa     = mergeP (modeldiff_pa b) (modeldiff_pa a)
+    , modeldiff_pb     = mergeP (modeldiff_pb b) (modeldiff_pb a)
+    }
+
+
+mergeP :: PlayerModelDiff -> PlayerModelDiff -> PlayerModelDiff
+mergeP a b =
+  PlayerModelDiff
+    { pmodeldiff_hand = (pmodeldiff_hand b) <|> (pmodeldiff_hand a),
+      pmodeldiff_deck = (pmodeldiff_deck b) <|> (pmodeldiff_deck a),
+      pmodeldiff_life = (pmodeldiff_life b) <|> (pmodeldiff_life a)
     }

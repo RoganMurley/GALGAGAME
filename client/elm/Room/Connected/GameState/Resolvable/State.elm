@@ -2,10 +2,12 @@ module Resolvable.State exposing (..)
 
 import Animation.State exposing (animToResTickMax)
 import Animation.Types exposing (Anim)
+import Model.Diff as Model
 import Model.Types as Model
 import Resolvable.Types as Resolvable
 import Model.ViewModel
 import Stack.Types exposing (StackCard)
+import Util exposing (zip)
 
 
 init : Model.Model -> List Resolvable.ResolveData -> Resolvable.Model
@@ -71,3 +73,34 @@ resolveStep ({ vm, resList, final } as model) =
 resolving : Resolvable.Model -> Bool
 resolving { resList } =
     List.length resList > 0
+
+
+merge : Model.Model -> Resolvable.ResolveDiffData -> Resolvable.ResolveData
+merge model diffData =
+    { model = Model.merge diffData.diff model
+    , anim = diffData.anim
+    , stackCard = diffData.stackCard
+    }
+
+
+resDiffToData : Model.Model -> List Resolvable.ResolveDiffData -> List Resolvable.ResolveData
+resDiffToData model resDiffs =
+    let
+        diffs : List Model.Diff
+        diffs =
+            List.map .diff resDiffs
+
+        models : List Model.Model
+        models =
+            List.drop 1 <|
+                List.scanl Model.merge model diffs
+
+        combine : ( Model.Model, Resolvable.ResolveDiffData ) -> Resolvable.ResolveData
+        combine ( m, { anim, stackCard } ) =
+            { model = m
+            , anim = anim
+            , stackCard = stackCard
+            }
+    in
+        List.map combine <|
+            zip models resDiffs

@@ -6,7 +6,7 @@ import Card.Types exposing (Card)
 import CharacterSelect.Character as CharacterSelect
 import CharacterSelect.ViewModel
 import GameState.Types exposing (GameState(..), PlayState(..), WaitType(..), Winner)
-import Model.Decoders exposing (modelDecoder)
+import Model.Decoders as Model
 import Model.Types exposing (Model)
 import Resolvable.State as Resolvable
 import WhichPlayer.Decoders as WhichPlayer
@@ -96,7 +96,7 @@ endedDecoder =
     in
         Json.map2 endedInit
             (field "winner" <| maybe WhichPlayer.decoder)
-            (field "final" <| modelDecoder)
+            (field "final" <| Model.decoder)
 
 
 playingDecoder : Decoder PlayState
@@ -107,7 +107,7 @@ playingDecoder =
             Playing (Resolvable.init m [])
     in
         Json.map playingInit
-            (field "playing" <| modelDecoder)
+            (field "playing" <| Model.decoder)
 
 
 collapseResults : Decoder (Result String a) -> Decoder a
