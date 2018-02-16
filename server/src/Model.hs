@@ -96,7 +96,7 @@ instance ToJSON StackCard where
 
 instance Mirror Model where
   mirror (Model turn stack pa pb passes gen) =
-    Model (other turn) (mirror <$> stack) pb pa passes gen
+    Model (other turn) (mirror stack) pb pa passes gen
 
 
 instance Mirror StackCard where
@@ -177,7 +177,7 @@ owner :: WhichPlayer -> StackCard -> Bool
 owner w (StackCard o _) = w == o
 
 
-getPmodel :: WhichPlayer -> (Model -> PlayerModel)
+getPmodel :: WhichPlayer -> Model -> PlayerModel
 getPmodel PlayerA = model_pa
 getPmodel PlayerB = model_pb
 
