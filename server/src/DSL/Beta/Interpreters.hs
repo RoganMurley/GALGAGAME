@@ -12,6 +12,7 @@ import Model (CardAnim, Model, maxHandLength)
 import qualified DSL.Alpha as Alpha
 import qualified DSL.Anim as Anim
 import qualified DSL.Log as Log
+import qualified ModelDiff
 
 
 alphaI :: Program a -> Alpha.Program a
@@ -77,7 +78,10 @@ execute = execute' "" []
       (m, x, s, a)
     execute' s a m (Free (InR anim)) =
       execute' s (a ++ [(m, Anim.animate anim)]) m (Anim.next anim)
-    execute' s a m (Free (InL (InL p)))  =
-      (uncurry (execute' s a)) (Alpha.alphaEffI m p)
+    execute' s a m (Free (InL (InL p))) =
+      let
+         (d, n) = Alpha.alphaEffI m p
+      in
+        execute' s a (ModelDiff.update m d) n
     execute' s a m (Free (InL (InR (Log.Log l n)))) =
       execute' (s ++ l ++ "\n") a m n
