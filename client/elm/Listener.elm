@@ -46,6 +46,9 @@ listen time state =
                             Transmute _ _ _ ->
                                 Just "transmute.mp3"
 
+                            Obliterate _ ->
+                                Just "obliterate.mp3"
+
                             otherwise ->
                                 Nothing
 
