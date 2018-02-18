@@ -43,6 +43,9 @@ listen time state =
                             Play _ _ ->
                                 Just "playCard.wav"
 
+                            Transmute _ _ _ ->
+                                Just "transmute.mp3"
+
                             otherwise ->
                                 Nothing
 
