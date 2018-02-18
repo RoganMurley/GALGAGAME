@@ -50,7 +50,7 @@ view finalStack stackCard resInfo =
             Maybe.isJust stackCard
 
         viewStackCard : ( Int, StackCard ) -> Html msg
-        viewStackCard ( finalIndex, { owner, card } ) =
+        viewStackCard ( finalIndex, finalCard ) =
             let
                 index =
                     case stackAnim of
@@ -68,6 +68,17 @@ view finalStack stackCard resInfo =
 
                         otherwise ->
                             finalIndex
+
+                { owner, card } =
+                    case ( index, stackAnim ) of
+                        ( 1, Just (Transmuting initialCard _) ) ->
+                            if resTick < (resTickMax * 0.5) then
+                                initialCard
+                            else
+                                finalCard
+
+                        otherwise ->
+                            finalCard
 
                 outerEase =
                     case stackAnim of

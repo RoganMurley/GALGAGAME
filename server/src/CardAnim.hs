@@ -72,4 +72,4 @@ instance Mirror CardAnim where
   mirror Reverse       = Reverse
   mirror Obliterate    = Obliterate
   mirror (Play w c)    = Play (other w) c
-  mirror (Transmute ca cb) = Transmute ca cb
+  mirror (Transmute ca cb) = Transmute (mirror ca) (mirror cb)
