@@ -2,10 +2,11 @@ module CardAnim where
 
 import Card (Card(..))
 import Data.Aeson (ToJSON(..), (.=), object)
+import Data.Text (Text)
 import Life (Life)
 import Mirror (Mirror(..))
 import Player (WhichPlayer(..), other)
-import Data.Text (Text)
+import StackCard (StackCard)
 
 
 data CardAnim
@@ -15,6 +16,7 @@ data CardAnim
   | Reverse
   | Obliterate
   | Play WhichPlayer Card
+  | Transmute StackCard StackCard
   deriving (Show, Eq)
 
 
@@ -55,12 +57,19 @@ instance ToJSON CardAnim where
      "player" .= w
     , "anim"  .= ("play" :: Text, c)
     ]
+  toJSON (Transmute ca cb) =
+    object
+    [
+     "player" .= PlayerA
+    , "anim"  .= ("transmute" :: Text, ca, cb)
+    ]
 
 
 instance Mirror CardAnim where
-  mirror (Slash w d) = Slash (other w) d
-  mirror (Heal w)    = Heal  (other w)
-  mirror (Draw w)    = Draw  (other w)
-  mirror Reverse     = Reverse
-  mirror Obliterate  = Obliterate
-  mirror (Play w c)  = Play (other w) c
+  mirror (Slash w d)   = Slash (other w) d
+  mirror (Heal w)      = Heal  (other w)
+  mirror (Draw w)      = Draw  (other w)
+  mirror Reverse       = Reverse
+  mirror Obliterate    = Obliterate
+  mirror (Play w c)    = Play (other w) c
+  mirror (Transmute ca cb) = Transmute ca cb

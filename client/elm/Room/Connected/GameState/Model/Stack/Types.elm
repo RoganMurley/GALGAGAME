@@ -17,3 +17,4 @@ type alias Stack =
 type StackAnim
     = Reversing
     | Playing
+    | Transmuting StackCard StackCard

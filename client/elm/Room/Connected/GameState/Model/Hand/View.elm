@@ -10,7 +10,7 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Maybe.Extra as Maybe
-import Transform exposing (Transform)
+import Transform exposing (Transform, origin)
 import WhichPlayer.Types exposing (WhichPlayer(..))
 
 
@@ -121,9 +121,10 @@ viewHand finalHand hover resInfo =
                             [ Transform.toCss <|
                                 Transform.ease Ease.outQuint
                                     (resTick / resTickMax)
-                                    { x = 100
-                                    , y = -10.0
-                                    , r = 30.0
+                                    { origin
+                                        | x = 100
+                                        , y = -10.0
+                                        , r = 30.0
                                     }
                                     (buildTransform PlayerA
                                         { cardCount = List.length finalHand
@@ -229,9 +230,10 @@ viewOtherHand finalCardCount hover resInfo =
                                 [ Transform.toCss <|
                                     Transform.ease Ease.outQuint
                                         (resTick / resTickMax)
-                                        { x = 100
-                                        , y = 10.0
-                                        , r = -30.0
+                                        { origin
+                                            | x = 100
+                                            , y = 10.0
+                                            , r = -30.0
                                         }
                                         (buildTransform PlayerB
                                             { cardCount = finalCardCount
@@ -329,4 +331,4 @@ buildTransform which handIndex =
                 PlayerB ->
                     -(calcRot handIndex)
     in
-        { x = x, y = y, r = r }
+        { origin | x = x, y = y, r = r }

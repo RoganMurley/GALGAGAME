@@ -3,6 +3,7 @@ module Animation.Decoders exposing (decoder)
 import Animation.Types exposing (Anim(..))
 import Card.Decoders as Card
 import Json.Decode as Json exposing (Decoder, fail, field, index, int, oneOf, string, succeed)
+import Stack.Decoders as Stack
 import WhichPlayer.Decoders as WhichPlayer
 
 
@@ -15,6 +16,7 @@ decoder =
         , reverseDecoder
         , obliterateDecoder
         , playDecoder
+        , transmuteDecoder
         ]
 
 
@@ -73,3 +75,12 @@ playDecoder =
         (field "player" WhichPlayer.decoder)
         (field "anim" <| index 0 <| constDecoder "play")
         (field "anim" <| index 1 <| Card.decoder)
+
+
+transmuteDecoder : Decoder Anim
+transmuteDecoder =
+    Json.map4 (\w _ ca cb -> Transmute w ca cb)
+        (field "player" WhichPlayer.decoder)
+        (field "anim" <| index 0 <| constDecoder "transmute")
+        (field "anim" <| index 1 <| Stack.stackCardDecoder)
+        (field "anim" <| index 2 <| Stack.stackCardDecoder)
