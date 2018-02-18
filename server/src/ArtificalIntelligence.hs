@@ -1,10 +1,11 @@
 module ArtificalIntelligence where
 
+
+import Card (Card)
 import Control.Monad.Trans.Writer (runWriter)
 import Data.List (maximumBy)
 import Data.Maybe (fromJust)
 import Data.Ord (comparing)
-
 import DSL.Alpha
 import GameCommand (GameCommand(..), resolveAll, update)
 import GameState

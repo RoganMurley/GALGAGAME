@@ -4,7 +4,8 @@ import Control.Monad.Free (Free(..), liftF)
 import Data.Functor.Sum (Sum(..))
 import DSL.Alpha.DSL
 import DSL.Util (toLeft, toRight)
-import Model
+import Life (Life, maxLife)
+import Model (Hand, Model(..), PlayerModel(..), getPmodel, maxHandLength)
 import ModelDiff (PlayerModelDiff(..), ModelDiff(..), modPmodelDiff)
 import Text.Printf (printf)
 

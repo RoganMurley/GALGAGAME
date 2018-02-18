@@ -3,8 +3,9 @@ module GameState where
 import Data.Aeson (ToJSON(..), (.=), object)
 
 import Characters (CharModel, FinalSelection, allCards, drinker)
+import Life (maxLife)
 import Mirror (Mirror(..))
-import Model
+import Model (Hand, Deck, PlayerModel(..), Model(..), Passes(..), Turn, maxHandLength)
 import Player (WhichPlayer(..), other)
 import Util (Gen, mkGen, shuffle, split)
 

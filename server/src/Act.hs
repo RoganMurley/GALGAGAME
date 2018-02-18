@@ -1,5 +1,6 @@
 module Act where
 
+import CardAnim (CardAnim)
 import Control.Concurrent.STM.TVar (TVar, readTVar)
 import Control.Monad (forM_)
 import Control.Monad.STM (STM, atomically)
@@ -7,17 +8,18 @@ import Data.Aeson (encode)
 import Data.Monoid ((<>))
 import Data.String.Conversions (cs)
 import Data.Text (Text)
-import System.Log.Logger (infoM, warningM)
-import Text.Printf (printf)
-
 import GameCommand (GameCommand(..), update)
 import GameState (GameState(..), PlayState)
 import Mirror (mirror)
-import Model (CardAnim, Model, StackCard)
+import Model (Model)
 import ModelDiff (ModelDiff)
 import Player (WhichPlayer(..))
+import StackCard (StackCard)
+import System.Log.Logger (infoM, warningM)
+import Text.Printf (printf)
 import Username (Username(Username))
 import Util (Err, modReturnTVar)
+
 
 import qualified Command
 import Command (Command(..))

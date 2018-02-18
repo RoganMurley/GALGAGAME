@@ -4,8 +4,8 @@ module DSL.Beta.Actions where
 import Control.Monad.Free (MonadFree, liftF)
 import Control.Monad.Free.TH (makeFree)
 import DSL.Beta.DSL (DSL(..), Program)
+import Life (Life)
 import Player (WhichPlayer(..), other)
-import Model (Life)
 
 
 makeFree ''DSL

@@ -1,9 +1,11 @@
 module DSL.Beta.DSL where
 
+import Card (Card)
 import Control.Monad.Free (Free(..))
 import Player (WhichPlayer(..))
 import Util (Gen)
-import Model (Card, Deck, Hand, Life, Stack)
+import Life (Life)
+import Model (Deck, Hand, Stack)
 
 import qualified DSL.Alpha.DSL as Alpha
 
