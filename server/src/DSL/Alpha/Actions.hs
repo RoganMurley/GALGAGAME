@@ -122,3 +122,8 @@ draw w =
         addToHand w card
       Nothing ->
         addToHand w theEnd
+
+
+transmute :: Card -> Program ()
+transmute c = do
+  modStackHead (\(StackCard o _) -> StackCard o c)

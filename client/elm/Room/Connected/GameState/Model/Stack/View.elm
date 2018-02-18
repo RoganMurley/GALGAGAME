@@ -1,14 +1,14 @@
 module Stack.View exposing (..)
 
 import Animation.State exposing (animToResTickMax)
-import Animation.Types exposing (Anim(Play, Reverse))
+import Animation.Types exposing (Anim(Play, Reverse, Transmute))
 import Card.View as Card
 import Ease
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Maybe.Extra as Maybe
 import Stack.Types exposing (Stack, StackAnim(..), StackCard)
-import Transform exposing (Transform)
+import Transform exposing (Transform, origin)
 import Util exposing (maybeCons)
 import WhichPlayer.Types exposing (WhichPlayer(..))
 
@@ -23,6 +23,9 @@ view finalStack stackCard resInfo =
 
                 Just ( _, Just (Reverse _) ) ->
                     Just Reversing
+
+                Just ( _, Just (Transmute _ ca cb) ) ->
+                    Just (Transmuting ca cb)
 
                 otherwise ->
                     Nothing
@@ -74,8 +77,20 @@ view finalStack stackCard resInfo =
                         Just Reversing ->
                             Ease.inOutCirc
 
+                        Just (Transmuting _ _) ->
+                            Ease.outQuad
+
                         otherwise ->
                             identity
+
+                outerSkew : Transform -> Transform
+                outerSkew trans =
+                    case ( index, stackAnim ) of
+                        ( 1, Just (Transmuting _ _) ) ->
+                            { trans | sx = 180 }
+
+                        otherwise ->
+                            trans
             in
                 div
                     [ classList
@@ -86,7 +101,7 @@ view finalStack stackCard resInfo =
                         [ Transform.toCss <|
                             Transform.ease outerEase
                                 (resTick / resTickMax)
-                                (outerTransform index stackLen)
+                                (outerSkew <| outerTransform index stackLen)
                                 (outerTransform finalIndex stackLen)
                         , ( "z-index", toString (20 - finalIndex) )
                         ]
@@ -146,9 +161,10 @@ outerTransform index stackLen =
                 + (squish (toFloat index))
                 - ((squish ((toFloat stackLen) - 1.0)) * 0.5)
     in
-        { x = x
-        , y = 0.0
-        , r = 0.0
+        { origin
+            | x = x
+            , y = 0.0
+            , r = 0.0
         }
 
 
@@ -159,7 +175,8 @@ innerTransform index =
         r =
             0.1 * (toFloat ((index * 1247823748932 + 142131) % 20) - 10)
     in
-        { x = 0.0
-        , y = 0.0
-        , r = r
+        { origin
+            | x = 0.0
+            , y = 0.0
+            , r = r
         }

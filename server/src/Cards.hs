@@ -359,10 +359,7 @@ alchemy =
     "Alchemy"
     ("Change card to the right to " <> description gold)
     "collector/alchemy.svg"
-    $ \_ -> do
-      Beta.null
-      Beta.raw $ Alpha.modStackHead (\(StackCard o _) -> StackCard o gold)
-      Beta.null
+    $ \_ -> Beta.transmute gold
 
 
 gold :: Card

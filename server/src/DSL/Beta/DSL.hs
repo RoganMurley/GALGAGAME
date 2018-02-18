@@ -19,6 +19,7 @@ data DSL n
   | Obliterate n
   | Reverse n
   | Play WhichPlayer Card n
+  | Transmute Card n
   | GetDeck WhichPlayer (Deck -> n)
   | GetHand WhichPlayer (Hand -> n)
   | GetLife WhichPlayer (Life -> n)

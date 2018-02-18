@@ -4,6 +4,7 @@ import Control.Monad.Free (Free(..))
 import Card (Card)
 import Life (Life)
 import Player (WhichPlayer)
+import StackCard (StackCard)
 
 
 data DSL a
@@ -14,6 +15,7 @@ data DSL a
   | Obliterate a
   | Reverse a
   | Play WhichPlayer Card a
+  | Transmute StackCard StackCard a
   deriving (Functor)
 
 

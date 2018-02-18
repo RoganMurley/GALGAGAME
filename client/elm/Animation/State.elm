@@ -52,6 +52,9 @@ animToFragmentShader anim =
         Just (Play _ _) ->
             Shaders.null
 
+        Just (Transmute _ _ _) ->
+            Shaders.null
+
         Just (Custom s) ->
             unsafeShader s
 
@@ -78,6 +81,9 @@ getWhichPlayer anim =
             w
 
         Play w _ ->
+            w
+
+        Transmute w _ _ ->
             w
 
         Custom _ ->
