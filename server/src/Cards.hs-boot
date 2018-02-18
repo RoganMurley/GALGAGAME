@@ -1,5 +1,5 @@
 module Cards where
 
-import Model (Card)
+import Card (Card)
 
 theEnd :: Card

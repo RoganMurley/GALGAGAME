@@ -1,10 +1,11 @@
 module Cards where
 
 import Control.Monad (when)
+import Card (Card(Card), description)
 import Data.Monoid ((<>))
-import Model (Card(Card), StackCard(StackCard), changeOwner, description, owner)
 import Player (other)
 import Safe (headMay)
+import StackCard (StackCard(StackCard), changeOwner, isOwner)
 import Util (shuffle)
 
 import qualified DSL.Alpha as Alpha
@@ -213,7 +214,7 @@ surge =
     "Hurt for 6 for each of your cards to the right"
     "watcher/surge.svg"
     $ \w -> do
-      len <- length . (filter (owner w)) <$> Beta.getStack
+      len <- length . (filter (isOwner w)) <$> Beta.getStack
       Beta.slash (len * 6) (other w)
 
 

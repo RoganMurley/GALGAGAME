@@ -1,12 +1,13 @@
 module Outcome where
 
+import CardAnim (CardAnim)
 import Data.Aeson (ToJSON(..), (.=), object)
 import Data.Text (Text)
-
 import GameState (PlayState)
-import Model (CardAnim, Model, StackCard)
+import Model (Model)
 import ModelDiff (ModelDiff)
 import Player (WhichPlayer)
+import StackCard (StackCard)
 import Username (Username)
 
 

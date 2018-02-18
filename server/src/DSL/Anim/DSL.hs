@@ -1,7 +1,8 @@
 module DSL.Anim.DSL where
 
 import Control.Monad.Free (Free(..))
-import Model (Card, Life)
+import Card (Card)
+import Life (Life)
 import Player (WhichPlayer)
 
 

@@ -1,13 +1,16 @@
 {-# LANGUAGE TemplateHaskell, FlexibleContexts #-}
 module DSL.Alpha.Actions where
 
+import Card (Card)
 import Control.Monad.Free (MonadFree, liftF)
 import Control.Monad.Free.TH (makeFree)
 import Data.List (partition)
 import DSL.Alpha.DSL (DSL(..), Program)
 import Player (WhichPlayer(..), other)
-import Model (Card, Deck, Hand, Life, Passes(..), Stack, StackCard(StackCard), Turn, maxHandLength, owned)
+import Life (Life)
+import Model (Deck, Hand, Passes(..), Stack, Turn, maxHandLength)
 import Safe (headMay, tailSafe)
+import StackCard(StackCard(StackCard), isOwner)
 
 import {-# SOURCE #-} Cards (theEnd)
 
@@ -79,7 +82,7 @@ play w c = modStack $ (:) (StackCard w c)
 
 bounceAll :: WhichPlayer -> Program ()
 bounceAll w = do
-  (ours, theirs) <- partition (owned w) <$> getStack
+  (ours, theirs) <- partition (isOwner w) <$> getStack
   setStack theirs
   let oursCards = (\(StackCard _ c) -> c) <$> ours
   modHand w $ \h -> h ++ oursCards

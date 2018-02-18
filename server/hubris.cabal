@@ -18,6 +18,8 @@ library
   exposed-modules:     Act
                      , ArtificalIntelligence
                      , Auth
+                     , Card
+                     , CardAnim
                      , Cards
                      , Characters
                      , Client
@@ -29,6 +31,7 @@ library
                      , DSL.Util
                      , GameCommand
                      , GameState
+                     , Life
                      , Mirror
                      , Model
                      , ModelDiff
@@ -37,6 +40,7 @@ library
                      , Player
                      , Room
                      , Server
+                     , StackCard
                      , Username
                      , Util
   other-modules:       DSL.Alpha.Actions

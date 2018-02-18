@@ -1,14 +1,14 @@
 module Characters where
 
+import Card (Card(..))
 import Data.Aeson (ToJSON(..), (.=), object)
 import Data.Text (Text)
+import Mirror (Mirror(..))
+import Player (WhichPlayer(..))
 import Safe (headMay)
 
 import qualified Cards
 
-import Mirror (Mirror(..))
-import Model (Card(..))
-import Player (WhichPlayer(..))
 
 
 type CharacterCards = (Card, Card, Card, Card)

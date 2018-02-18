@@ -3,7 +3,8 @@ module DSL.Alpha.DSL where
 import Control.Monad.Free (Free)
 import Player (WhichPlayer)
 import Util (Gen)
-import Model (Deck, Hand, Life, Passes, Stack, Turn)
+import Life (Life)
+import Model (Deck, Hand, Passes, Stack, Turn)
 
 
 data DSL n =

@@ -2,12 +2,13 @@
 
 module DSL.Beta.Interpreters where
 
+import CardAnim (CardAnim)
 import Control.Monad.Free (Free(..), foldFree, liftF)
 import Data.Functor.Sum (Sum(..))
 import DSL.Beta.DSL
 import DSL.Util (toLeft, toRight)
 import Player (WhichPlayer(..))
-import Model (CardAnim, Model, maxHandLength)
+import Model (Model, maxHandLength)
 import ModelDiff (ModelDiff)
 
 import qualified DSL.Alpha as Alpha
