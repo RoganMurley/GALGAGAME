@@ -137,11 +137,9 @@ balance =
     $ \w -> do
       paLife <- Beta.getLife w
       pbLife <- Beta.getLife (other w)
-      Beta.null
-      Beta.raw $ do
-        when (paLife < pbLife) (Alpha.modStackHead (\(StackCard _ c) -> StackCard w c))
-        when (paLife > pbLife) (Alpha.modStackHead (\(StackCard _ c) -> StackCard (other w) c))
-      Beta.null
+      when (paLife > pbLife) (Beta.setHeadOwner (other w))
+      when (paLife < pbLife) (Beta.setHeadOwner w)
+      when (paLife == pbLife) Beta.null
 
 
 -- Drinker

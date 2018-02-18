@@ -127,3 +127,8 @@ draw w =
 transmute :: Card -> Program ()
 transmute c = do
   modStackHead (\(StackCard o _) -> StackCard o c)
+
+
+setHeadOwner :: WhichPlayer -> Program ()
+setHeadOwner w = do
+  modStackHead (\(StackCard _ c) -> StackCard w c)
