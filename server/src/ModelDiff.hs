@@ -2,6 +2,7 @@ module ModelDiff where
 
 import Control.Applicative ((<|>))
 import Data.Aeson (ToJSON(..), (.=), object)
+import Data.Aeson.Types (Pair, Value(Null))
 import Data.Maybe (fromMaybe)
 import Mirror (Mirror(..))
 import Model (Hand, Deck, Life, Model(..), Passes, PlayerModel(..), Turn, Stack)
@@ -29,9 +30,13 @@ data PlayerModelDiff = PlayerModelDiff
   deriving (Eq, Show)
 
 
+omitNull :: [Pair] -> [Pair]
+omitNull = filter ((/= Null) . snd)
+
+
 instance ToJSON ModelDiff where
   toJSON ModelDiff{ modeldiff_turn, modeldiff_stack, modeldiff_pa, modeldiff_pb } =
-    object
+    object . (omitNull) $
       [
         "turn"   .= modeldiff_turn
       , "stack"  .= modeldiff_stack

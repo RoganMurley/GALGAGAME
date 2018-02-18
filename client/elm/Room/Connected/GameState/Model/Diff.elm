@@ -23,12 +23,12 @@ type alias Diff =
 decoder : Decoder Diff
 decoder =
     Json.map6 Diff
-        (field "handPA" <| maybe <| list Card.decoder)
-        (field "handPB" <| maybe int)
-        (field "stack" <| maybe <| list Stack.stackCardDecoder)
-        (field "turn" <| maybe WhichPlayer.decoder)
-        (field "lifePA" <| maybe int)
-        (field "lifePB" <| maybe int)
+        (maybe <| field "handPA" <| list Card.decoder)
+        (maybe <| field "handPB" int)
+        (maybe <| field "stack" <| list Stack.stackCardDecoder)
+        (maybe <| field "turn" WhichPlayer.decoder)
+        (maybe <| field "lifePA" int)
+        (maybe <| field "lifePB" int)
 
 
 merge : Diff -> Model -> Model
