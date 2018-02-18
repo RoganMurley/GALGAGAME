@@ -20,6 +20,7 @@ data DSL n
   | Reverse n
   | Play WhichPlayer Card n
   | Transmute Card n
+  | SetHeadOwner WhichPlayer n
   | GetDeck WhichPlayer (Deck -> n)
   | GetHand WhichPlayer (Hand -> n)
   | GetLife WhichPlayer (Life -> n)

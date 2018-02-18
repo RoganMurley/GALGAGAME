@@ -130,9 +130,6 @@ allCharacters = [
   , striker
   , breaker
   , balancer
-  , Character "Goldy1" (Cards.alchemy, Cards.alchemy, Cards.alchemy, Cards.alchemy)
-  , Character "Goldy2" (Cards.alchemy, Cards.alchemy, Cards.alchemy, Cards.alchemy)
-  , Character "Goldy3" (Cards.alchemy, Cards.alchemy, Cards.alchemy, Cards.alchemy)
   ]
 
 
