@@ -18,8 +18,8 @@ const minifyCss = yargs.argv.production ? minify : identity;
 
 
 const dir = {
-  dev: './static/dev',
-  build: './static/build'
+  dev: 'static/dev',
+  build: 'static/build'
 };
 
 
@@ -37,7 +37,7 @@ gulp.task('multi', ['init'], () => {
 
 // SASS
 gulp.task('sass', () => {
-  return gulp.src('./sass/**/*.scss')
+  return gulp.src('sass/**/*.scss')
     .pipe(plumber())
     .pipe(sass().on('error', sass.logError))
     .pipe(minifyCss())
@@ -47,7 +47,7 @@ gulp.task('sass', () => {
 
 // HTML
 gulp.task('html', () => {
-  return gulp.src('./html/**/*.html')
+  return gulp.src('html/**/*.html')
     .pipe(inline())
     .pipe(replace('{{git}}', git.long().substring(0, 7)))
     .pipe(gulp.dest(dir.build));
@@ -63,7 +63,7 @@ gulp.task('copy', () => {
 
 // COPYDEPS
 gulp.task('copyDeps', () => {
-  return gulp.src("./node_modules/howler/dist/howler.min.js")
+  return gulp.src("node_modules/howler/dist/howler.min.js")
     .pipe(gulp.dest(dir.build));
 });
 
@@ -75,7 +75,7 @@ gulp.task('build', ['multi', 'sass', 'html', 'copy', 'copyDeps']);
 
 gulp.task('watch', () => {
   gulp.watch('elm/**/*.elm', ['multi']);
-  gulp.watch('./sass/**/*.scss', ['sass']);
+  gulp.watch('sass/**/*.scss', ['sass']);
   gulp.watch(`${dir.dev}/**`, ['copy']);
   gulp.watch("node_modules/**", ['copyDeps']);
   gulp.watch(`${dir.dev}/html/*`, ['html']);
