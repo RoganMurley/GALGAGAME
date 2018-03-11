@@ -83,7 +83,7 @@ animSfx anim =
             Just "victory.wav"
 
         GameEnd (Just PlayerB) ->
-            Just "defeat.wav"
+            Just "defeat.mp3"
 
         GameEnd Nothing ->
             Just "draw.wav"
