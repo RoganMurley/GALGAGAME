@@ -13,6 +13,7 @@ decoder =
         [ slashDecoder
         , healDecoder
         , drawDecoder
+        , biteDecoder
         , reverseDecoder
         , obliterateDecoder
         , playDecoder
@@ -54,6 +55,14 @@ drawDecoder =
     Json.map2 (\w _ -> Draw w)
         (field "player" WhichPlayer.decoder)
         (field "anim" (constDecoder "draw"))
+
+
+biteDecoder : Decoder Anim
+biteDecoder =
+    Json.map3 (\w _ d -> Bite w d)
+        (field "player" WhichPlayer.decoder)
+        (field "anim" <| index 0 <| constDecoder "bite")
+        (field "anim" <| index 1 int)
 
 
 reverseDecoder : Decoder Anim

@@ -11,11 +11,12 @@ next (Null n)          = n
 next (Slash _ _ n)     = n
 next (Heal _ n)        = n
 next (Draw _ n)        = n
+next (Bite _ _ n)     = n
 next (Obliterate n)    = n
 next (Reverse n)       = n
 next (Play _ _ n)      = n
 next (Transmute _ _ n) = n
-next (GameEnd _ n) = n
+next (GameEnd _ n)     = n
 
 
 animate :: DSL a -> Maybe CardAnim
@@ -23,8 +24,9 @@ animate (Null _)            = Nothing
 animate (Slash w d _)       = Just $ CardAnim.Slash w d
 animate (Heal w _)          = Just . CardAnim.Heal $ w
 animate (Draw w _)          = Just . CardAnim.Draw $ w
+animate (Bite w d _)        = Just $ CardAnim.Bite w d
 animate (Reverse _)         = Just CardAnim.Reverse
 animate (Obliterate _)      = Just CardAnim.Obliterate
 animate (Play w c _)        = Just $ CardAnim.Play w c
 animate (Transmute ca cb _) = Just $ CardAnim.Transmute ca cb
-animate (GameEnd w _) = Just $ CardAnim.GameEnd w
+animate (GameEnd w _)       = Just $ CardAnim.GameEnd w

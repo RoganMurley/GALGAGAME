@@ -15,6 +15,7 @@ data DSL n
   | Slash Life WhichPlayer n
   | Heal Life WhichPlayer n
   | Draw WhichPlayer n
+  | Bite Life WhichPlayer n
   | AddToHand WhichPlayer Card n
   | Obliterate n
   | Reverse n

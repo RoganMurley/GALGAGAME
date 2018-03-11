@@ -64,6 +64,9 @@ animSfx anim =
         Draw _ ->
             Just "draw.wav"
 
+        Bite _ d ->
+            Just "bite.wav"
+
         Reverse _ ->
             Just "reverse.mp3"
 

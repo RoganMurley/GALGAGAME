@@ -46,6 +46,9 @@ animToFragmentShader anim =
         Just (Draw _) ->
             Shaders.null
 
+        Just (Bite _ _) ->
+            Shaders.null
+
         Just (Reverse _) ->
             Shaders.null
 
@@ -80,6 +83,9 @@ getWhichPlayer anim =
         Heal w ->
             w
 
+        Bite w _ ->
+            w
+
         Reverse w ->
             w
 
@@ -102,6 +108,9 @@ animShake anim tick =
         baseMag =
             case anim of
                 Just (Slash _ d) ->
+                    5.0 * Ease.outQuad (toFloat d / 50.0)
+
+                Just (Bite _ d) ->
                     5.0 * Ease.outQuad (toFloat d / 50.0)
 
                 Just (Obliterate _) ->

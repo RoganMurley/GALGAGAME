@@ -13,6 +13,7 @@ data CardAnim
   = Slash WhichPlayer Life
   | Heal WhichPlayer
   | Draw WhichPlayer
+  | Bite WhichPlayer Life
   | Reverse
   | Obliterate
   | Play WhichPlayer Card
@@ -39,6 +40,12 @@ instance ToJSON CardAnim where
     [
      "player" .= w
     , "anim"  .= ("draw" :: Text)
+    ]
+  toJSON (Bite w d) =
+    object
+    [
+     "player" .= w
+    , "anim"  .= ("bite" :: Text, d)
     ]
   toJSON Reverse =
     object
@@ -76,6 +83,7 @@ instance Mirror CardAnim where
   mirror (Slash w d)       = Slash (other w) d
   mirror (Heal w)          = Heal  (other w)
   mirror (Draw w)          = Draw  (other w)
+  mirror (Bite w d)        = Bite (other w) d
   mirror Reverse           = Reverse
   mirror Obliterate        = Obliterate
   mirror (Play w c)        = Play (other w) c
