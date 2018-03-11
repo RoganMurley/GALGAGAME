@@ -23,7 +23,7 @@ Try it at https://www.playhubris.com.
 * `gulp build`
 
 ### Run locally
-* `docker-compose -f docker-compose.dev.yaml up`
+* `docker-compose -f docker-compose.dev.yml up`
 
 App will be served at https://localhost:4430.
 
