@@ -7,6 +7,7 @@ import GameState.Types exposing (GameState(..))
 import Main.Messages exposing (Msg)
 import Resolvable.State exposing (activeAnim, tickStart)
 import Resolvable.Types as Resolvable
+import WhichPlayer.Types exposing (WhichPlayer(..))
 
 
 listen : Float -> GameState -> Cmd Msg
@@ -19,38 +20,6 @@ listen time state =
                     sfxURL : Maybe String
                     sfxURL =
                         activeAnim res |> Maybe.andThen animSfx
-
-                    animSfx : Anim -> Maybe String
-                    animSfx anim =
-                        case anim of
-                            Slash _ d ->
-                                case d of
-                                    0 ->
-                                        Nothing
-
-                                    otherwise ->
-                                        Just "slash.mp3"
-
-                            Heal _ ->
-                                Just "heal.mp3"
-
-                            Draw _ ->
-                                Just "draw.wav"
-
-                            Reverse _ ->
-                                Just "reverse.mp3"
-
-                            Play _ _ ->
-                                Just "playCard.wav"
-
-                            Transmute _ _ _ ->
-                                Just "transmute.mp3"
-
-                            Obliterate _ ->
-                                Just "obliterate.mp3"
-
-                            otherwise ->
-                                Nothing
 
                     volume : Float
                     volume =
@@ -76,3 +45,45 @@ listen time state =
 
             otherwise ->
                 Cmd.none
+
+
+animSfx : Anim -> Maybe String
+animSfx anim =
+    case anim of
+        Slash _ d ->
+            case d of
+                0 ->
+                    Nothing
+
+                otherwise ->
+                    Just "slash.mp3"
+
+        Heal _ ->
+            Just "heal.mp3"
+
+        Draw _ ->
+            Just "draw.wav"
+
+        Reverse _ ->
+            Just "reverse.mp3"
+
+        Play _ _ ->
+            Just "playCard.wav"
+
+        Transmute _ _ _ ->
+            Just "transmute.mp3"
+
+        Obliterate _ ->
+            Just "obliterate.mp3"
+
+        GameEnd (Just PlayerA) ->
+            Just "victory.wav"
+
+        GameEnd (Just PlayerB) ->
+            Just "defeat.wav"
+
+        GameEnd Nothing ->
+            Just "draw.wav"
+
+        otherwise ->
+            Nothing

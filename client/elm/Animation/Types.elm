@@ -27,4 +27,5 @@ type Anim
     | Obliterate WhichPlayer
     | Play WhichPlayer Card
     | Transmute WhichPlayer StackCard StackCard
+    | GameEnd (Maybe WhichPlayer)
     | Custom String

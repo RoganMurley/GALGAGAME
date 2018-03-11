@@ -15,6 +15,7 @@ next (Obliterate n)    = n
 next (Reverse n)       = n
 next (Play _ _ n)      = n
 next (Transmute _ _ n) = n
+next (GameEnd _ n) = n
 
 
 animate :: DSL a -> Maybe CardAnim
@@ -26,3 +27,4 @@ animate (Reverse _)         = Just CardAnim.Reverse
 animate (Obliterate _)      = Just CardAnim.Obliterate
 animate (Play w c _)        = Just $ CardAnim.Play w c
 animate (Transmute ca cb _) = Just $ CardAnim.Transmute ca cb
+animate (GameEnd w _) = Just $ CardAnim.GameEnd w
