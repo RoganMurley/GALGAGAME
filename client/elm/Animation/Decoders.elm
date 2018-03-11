@@ -19,6 +19,7 @@ decoder =
         , playDecoder
         , transmuteDecoder
         , gameEndDecoder
+        , adhocDecoder
         ]
 
 
@@ -101,3 +102,12 @@ gameEndDecoder =
     Json.map2 (\_ -> GameEnd)
         (field "anim" <| index 0 <| constDecoder "gameEnd")
         (field "anim" <| index 1 <| Json.maybe WhichPlayer.decoder)
+
+
+adhocDecoder : Decoder Anim
+adhocDecoder =
+    Json.map4 (\_ -> Adhoc)
+        (field "anim" <| index 0 <| constDecoder "gameEnd")
+        (field "player" WhichPlayer.decoder)
+        (field "anim" <| index 2 <| Json.string)
+        (field "anim" <| index 3 <| Json.string)

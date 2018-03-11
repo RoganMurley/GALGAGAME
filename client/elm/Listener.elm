@@ -79,14 +79,19 @@ animSfx anim =
         Obliterate _ ->
             Just "obliterate.mp3"
 
-        GameEnd (Just PlayerA) ->
-            Just "victory.wav"
+        GameEnd winner ->
+            case winner of
+                Just PlayerA ->
+                    Just "victory.wav"
 
-        GameEnd (Just PlayerB) ->
-            Just "defeat.mp3"
+                Just PlayerB ->
+                    Just "defeat.mp3"
 
-        GameEnd Nothing ->
-            Just "draw.wav"
+                Nothing ->
+                    Just "draw.wav"
+
+        Adhoc _ _ sfx ->
+            Just sfx
 
         otherwise ->
             Nothing

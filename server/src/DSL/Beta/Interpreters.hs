@@ -37,6 +37,7 @@ alphaI (Free (GetLife w f))      = Alpha.getLife w        >>= alphaI . f
 alphaI (Free (GetHand w f))      = Alpha.getHand w        >>= alphaI . f
 alphaI (Free (GetDeck w f))      = Alpha.getDeck w        >>= alphaI . f
 alphaI (Free (GetStack f))       = Alpha.getStack         >>= alphaI . f
+alphaI (Free (RawAnim _ n))      = alphaI n
 alphaI (Free (Null n))           = alphaI n
 alphaI (Pure x)                  = Pure x
 
@@ -54,6 +55,7 @@ animI (Reverse _)        = \a -> (toLeft a) <* (toRight . liftF $ Anim.Reverse (
 animI (Play w c _)       = \a -> (toLeft a) <* (toRight . liftF $ Anim.Play w c ())
 animI (Transmute c _)    = transmuteAnim c
 animI (SetHeadOwner w _) = setHeadOwnerAnim w
+animI (RawAnim r _)      = \a -> (toLeft a) <* (toRight . liftF $ Anim.Raw r ())
 animI _                  = toLeft
 
 

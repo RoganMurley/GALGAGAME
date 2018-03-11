@@ -29,4 +29,13 @@ type Anim
     | Play WhichPlayer Card
     | Transmute WhichPlayer StackCard StackCard
     | GameEnd (Maybe WhichPlayer)
+    | Adhoc WhichPlayer ShaderName SfxUrl
     | Custom String
+
+
+type alias SfxUrl =
+    String
+
+
+type alias ShaderName =
+    String
