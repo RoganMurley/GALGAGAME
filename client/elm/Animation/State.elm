@@ -61,6 +61,11 @@ animToFragmentShader anim =
         Just (GameEnd _) ->
             Shaders.null
 
+        Just (Adhoc _ name _) ->
+            case name of
+                otherwise ->
+                    Shaders.null
+
         Just (Custom s) ->
             unsafeShader s
 
@@ -97,6 +102,9 @@ getWhichPlayer anim =
 
         GameEnd _ ->
             PlayerA
+
+        Adhoc w _ _ ->
+            w
 
         Custom _ ->
             PlayerA

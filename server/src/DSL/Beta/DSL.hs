@@ -1,6 +1,7 @@
 module DSL.Beta.DSL where
 
 import Card (Card)
+import CardAnim (CardAnim)
 import Control.Monad.Free (Free(..))
 import Player (WhichPlayer(..))
 import Util (Gen)
@@ -27,6 +28,7 @@ data DSL n
   | GetLife WhichPlayer (Life -> n)
   | GetGen (Gen -> n)
   | GetStack (Stack -> n)
+  | RawAnim CardAnim n
   | Null n
   deriving (Functor)
 

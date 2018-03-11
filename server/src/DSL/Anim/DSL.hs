@@ -2,6 +2,7 @@ module DSL.Anim.DSL where
 
 import Control.Monad.Free (Free(..))
 import Card (Card)
+import CardAnim (CardAnim)
 import Life (Life)
 import Player (WhichPlayer)
 import StackCard (StackCard)
@@ -9,6 +10,7 @@ import StackCard (StackCard)
 
 data DSL a
   = Null a
+  | Raw CardAnim a
   | Slash WhichPlayer Life a
   | Heal WhichPlayer a
   | Draw WhichPlayer a
