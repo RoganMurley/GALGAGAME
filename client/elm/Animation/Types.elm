@@ -23,6 +23,7 @@ type Anim
     = Slash WhichPlayer Int
     | Heal WhichPlayer
     | Draw WhichPlayer
+    | Bite WhichPlayer Int
     | Reverse WhichPlayer
     | Obliterate WhichPlayer
     | Play WhichPlayer Card

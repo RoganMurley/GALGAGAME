@@ -181,7 +181,7 @@ badApple =
     "Hurt yourself for 8"
     "drinker/bad-apple.svg"
     $ \w -> do
-      Beta.slash 8 w
+      Beta.bite 8 w
 
 
 reversal :: Card

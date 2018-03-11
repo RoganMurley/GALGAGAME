@@ -12,6 +12,7 @@ data DSL a
   | Slash WhichPlayer Life a
   | Heal WhichPlayer a
   | Draw WhichPlayer a
+  | Bite WhichPlayer Life a
   | Obliterate a
   | Reverse a
   | Play WhichPlayer Card a
