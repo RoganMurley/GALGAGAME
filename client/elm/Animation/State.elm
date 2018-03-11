@@ -55,6 +55,9 @@ animToFragmentShader anim =
         Just (Transmute _ _ _) ->
             Shaders.null
 
+        Just (GameEnd _) ->
+            Shaders.null
+
         Just (Custom s) ->
             unsafeShader s
 
@@ -85,6 +88,9 @@ getWhichPlayer anim =
 
         Transmute w _ _ ->
             w
+
+        GameEnd _ ->
+            PlayerA
 
         Custom _ ->
             PlayerA

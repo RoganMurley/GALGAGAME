@@ -17,6 +17,7 @@ decoder =
         , obliterateDecoder
         , playDecoder
         , transmuteDecoder
+        , gameEndDecoder
         ]
 
 
@@ -84,3 +85,10 @@ transmuteDecoder =
         (field "anim" <| index 0 <| constDecoder "transmute")
         (field "anim" <| index 1 <| Stack.stackCardDecoder)
         (field "anim" <| index 2 <| Stack.stackCardDecoder)
+
+
+gameEndDecoder : Decoder Anim
+gameEndDecoder =
+    Json.map2 (\_ -> GameEnd)
+        (field "anim" <| index 0 <| constDecoder "gameEnd")
+        (field "anim" <| index 1 <| Json.maybe WhichPlayer.decoder)

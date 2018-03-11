@@ -1,7 +1,7 @@
 module GameCommand where
 
 import Card (Card(..))
-import CardAnim (CardAnim)
+import CardAnim (CardAnim(..))
 import Characters (CharModel(..), SelectedCharacters(..), selectChar, initCharModel)
 import Control.Monad.Free (foldFree)
 import Control.Monad.Trans.Writer (Writer, runWriter, tell)
@@ -12,6 +12,7 @@ import Data.Text (Text)
 import GameState (GameState(..), PlayState(..), initModel)
 import Model (Hand, Passes(..), Model, Turn)
 import ModelDiff (ModelDiff)
+import Outcome (Outcome)
 import Player (WhichPlayer(..), other)
 import Safe (atMay, headMay, tailSafe)
 import StackCard(StackCard(..))
@@ -21,8 +22,8 @@ import Util (Err, Gen, deleteIndex, split)
 
 import qualified DSL.Alpha as Alpha
 import qualified DSL.Beta as Beta
+import qualified ModelDiff
 import qualified Outcome
-import Outcome (Outcome)
 
 
 data GameCommand =
@@ -37,7 +38,7 @@ data GameCommand =
 
 
 update :: GameCommand -> WhichPlayer -> GameState -> Either Err (Maybe GameState, [Outcome])
-update (Chat username msg) _     _     = chat    username msg
+update (Chat username msg) _ _ = chat username msg
 update cmd which state =
   case state of
     Waiting _ _ ->
@@ -223,7 +224,8 @@ resolveAll model =
       case checkWin m of
         Playing m' ->
           resolveAll m'
-        Ended w m' gen ->
+        Ended w m' gen -> do
+          tell [(ModelDiff.base, Just (GameEnd w), Nothing)]
           return (Ended w m' gen)
     Nothing ->
       return (Playing model)
