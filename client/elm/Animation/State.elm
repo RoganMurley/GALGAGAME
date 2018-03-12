@@ -148,5 +148,8 @@ animToResTickMax anim =
         Just (Obliterate _) ->
             3000.0
 
+        Just (GameEnd _) ->
+            2500.0
+
         otherwise ->
             800.0

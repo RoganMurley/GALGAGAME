@@ -1,12 +1,14 @@
 module GameState.View exposing (view)
 
-import Animation.Types exposing (Anim)
+import Animation.State exposing (animToResTickMax)
+import Animation.Types exposing (Anim(GameEnd))
 import Animation.View as Animation
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import CharacterSelect.View as CharacterSelect
 import Connected.Messages as Connected
+import Endgame.View as Endgame
 import GameState.Messages exposing (..)
 import GameState.State exposing (resolvable)
 import GameState.Types exposing (GameState(..), PlayState(..), WaitType(..))
@@ -19,7 +21,6 @@ import Raymarch.View as Raymarch
 import Resolvable.State exposing (activeAnim, resolving)
 import Resolvable.Types as Resolvable
 import Room.Messages as Room
-import WhichPlayer.Types exposing (WhichPlayer(..))
 
 
 view : GameState -> String -> Flags -> Html Main.Msg
@@ -59,6 +60,7 @@ view state roomID ({ hostname, httpPort, time, dimensions } as flags) =
                         resData :: _ ->
                             div []
                                 [ resView res.vm resData time res.tick
+                                , Endgame.view res.tick anim
                                 , Animation.view params res.tick anim
                                 ]
 
@@ -72,42 +74,22 @@ view state roomID ({ hostname, httpPort, time, dimensions } as flags) =
                                     Playing _ ->
                                         div []
                                             [ Model.view ( model, res.vm ) time
+                                            , Endgame.view 0.0 Nothing
                                             , Raymarch.view params
                                             ]
 
                                     Ended winner _ ->
                                         let
-                                            ( endGameText, endGameClass ) =
-                                                case winner of
-                                                    Just PlayerA ->
-                                                        ( "VICTORY", "victory" )
+                                            endAnim =
+                                                Just (GameEnd winner)
 
-                                                    Just PlayerB ->
-                                                        ( "DEFEAT", "defeat" )
-
-                                                    Nothing ->
-                                                        ( "DRAW", "draw" )
+                                            endTick =
+                                                animToResTickMax endAnim
                                         in
                                             div []
-                                                [ div [ class ("endgame-layer " ++ endGameClass) ]
-                                                    [ div [ class "endgame-container" ]
-                                                        [ div
-                                                            [ class endGameClass ]
-                                                            [ text endGameText ]
-                                                        , button
-                                                            [ class "rematch"
-                                                            , onClick <|
-                                                                Main.RoomMsg <|
-                                                                    Room.ConnectedMsg <|
-                                                                        Connected.GameStateMsg <|
-                                                                            PlayingOnly <|
-                                                                                Rematch
-                                                            ]
-                                                            [ text "Rematch" ]
-                                                        ]
-                                                    ]
-                                                , view (Started (Playing res)) roomID flags
-                                                , Animation.view params res.tick anim
+                                                [ Model.view ( model, res.vm ) time
+                                                , Endgame.view endTick endAnim
+                                                , Raymarch.view params
                                                 ]
 
 
