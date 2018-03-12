@@ -12,6 +12,9 @@
   &.draw {
     background: rgba(0, 0, 0, 0.75);
   }
+  &.no-win {
+    display: none;
+  }
 }
 
 .endgame-container {
