@@ -14,6 +14,7 @@ import Mirror (mirror)
 import Model (Model)
 import ModelDiff (ModelDiff)
 import Player (WhichPlayer(..))
+import Replay (Replay(Replay))
 import StackCard (StackCard)
 import System.Log.Logger (infoM, warningM)
 import Text.Printf (printf)
@@ -74,6 +75,7 @@ actPlay cmd which roomVar = do
     trans (PlayCardCommand index)    = Just (PlayCard index)
     trans (HoverCardCommand index)   = Just (HoverCard index)
     trans RematchCommand             = Just Rematch
+    trans PlayReplayCommand         = Just PlayReplay
     trans ConcedeCommand             = Just Concede
     trans (ChatCommand name content) = Just (Chat name content)
     trans (SelectCharacterCommand n) = Just (SelectCharacter n)
@@ -141,3 +143,5 @@ actOutcome room (Outcome.Encodable (Outcome.Chat (Username username) msg)) =
   Room.broadcast ("chat:" <> username <> ": " <> msg) room
 actOutcome room (Outcome.Encodable (Outcome.Resolve models initial final)) =
   resolveRoomClients (models, initial, final) room
+actOutcome room (Outcome.Encodable (Outcome.PlayReplay (Replay (initial, replayData)) final)) =
+  actOutcome room $ Outcome.Encodable $ Outcome.Resolve replayData initial final

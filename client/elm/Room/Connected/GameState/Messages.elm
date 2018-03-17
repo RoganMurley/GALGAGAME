@@ -15,6 +15,7 @@ type Msg
 type PlayingOnly
     = Rematch
     | TurnOnly TurnOnly
+    | WatchReplay
     | HoverCard (Maybe Int)
 
 

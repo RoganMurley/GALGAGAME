@@ -4,7 +4,7 @@ import Animation.State exposing (animToResTickMax)
 import Animation.Types exposing (Anim(GameEnd))
 import Connected.Messages as Connected
 import Ease
-import GameState.Messages exposing (Msg(PlayingOnly), PlayingOnly(Rematch))
+import GameState.Messages exposing (Msg(PlayingOnly), PlayingOnly(Rematch, WatchReplay))
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
@@ -60,5 +60,15 @@ view resTick anim =
                     , disabled isDisabled
                     ]
                     [ text "Rematch" ]
+                , button
+                    [ class "replay"
+                    , onClick <|
+                        Main.RoomMsg <|
+                            Room.ConnectedMsg <|
+                                Connected.GameStateMsg <|
+                                    PlayingOnly WatchReplay
+                    , disabled isDisabled
+                    ]
+                    [ text "Replay" ]
                 ]
             ]
