@@ -7,6 +7,7 @@ import Life (maxLife)
 import Mirror (Mirror(..))
 import Model (Hand, Deck, PlayerModel(..), Model(..), Passes(..), Turn, maxHandLength)
 import Player (WhichPlayer(..), other)
+import Replay (Replay)
 import Util (Gen, mkGen, shuffle, split)
 
 
@@ -37,22 +38,22 @@ instance ToJSON WaitType where
 getStateGen :: GameState -> Gen
 getStateGen (Waiting _ gen)           = gen
 getStateGen (Selecting _ _ gen)       = gen
-getStateGen (Started (Playing model)) = model_gen model
-getStateGen (Started (Ended _ _ gen)) = gen
+getStateGen (Started (Playing model _)) = model_gen model
+getStateGen (Started (Ended _ _ _ gen)) = gen
 
 
 data PlayState =
-    Playing Model
-  | Ended (Maybe WhichPlayer) Model Gen
+    Playing Model Replay
+  | Ended (Maybe WhichPlayer) Model Replay Gen
   deriving (Eq, Show)
 
 
 instance ToJSON PlayState where
-  toJSON (Playing model) =
+  toJSON (Playing model _) =
     object [
       "playing" .= model
     ]
-  toJSON (Ended winner model _) =
+  toJSON (Ended winner model _ _) =
     object [
       "winner" .= winner
     , "final"  .= model
@@ -60,8 +61,8 @@ instance ToJSON PlayState where
 
 
 instance Mirror PlayState where
-  mirror (Playing m)     = Playing . mirror $ m
-  mirror (Ended w m gen) = Ended (other <$> w) (mirror m) gen
+  mirror (Playing m r)     = Playing (mirror m) (mirror r)
+  mirror (Ended w m r gen) = Ended (other <$> w) (mirror m) (mirror r) gen
 
 
 instance Mirror GameState where

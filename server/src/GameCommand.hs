@@ -14,6 +14,7 @@ import Model (Hand, Passes(..), Model, Turn)
 import ModelDiff (ModelDiff)
 import Outcome (Outcome)
 import Player (WhichPlayer(..), other)
+import Replay (Replay(..))
 import Safe (atMay, headMay, tailSafe)
 import StackCard(StackCard(..))
 import Username (Username)
@@ -24,6 +25,7 @@ import qualified DSL.Alpha as Alpha
 import qualified DSL.Beta as Beta
 import qualified ModelDiff
 import qualified Outcome
+import qualified Replay
 
 
 data GameCommand =
@@ -51,19 +53,19 @@ update cmd which state =
           Left ("Unknown command " <> (cs $ show cmd) <> " on a selecting GameState")
     Started started ->
       case started of
-        Playing model ->
+        Playing model replay ->
           case cmd of
             EndTurn ->
-              endTurn which model
+              endTurn which model replay
             PlayCard index ->
-              playCard index which model
+              playCard index which model replay
             HoverCard index ->
               hoverCard index which model
             Concede ->
               concede which state
             _ ->
               Left ("Unknown command " <> (cs $ show cmd) <> " on a Playing GameState")
-        Ended winner _ gen ->
+        Ended winner _ _ gen ->
           case cmd of
             Rematch ->
               rematch (winner, gen)
@@ -94,11 +96,14 @@ chat username msg =
 
 
 concede :: WhichPlayer -> GameState -> Either Err (Maybe GameState, [Outcome])
-concede which (Started (Playing model)) =
-  Right (
-    Just . Started $ Ended (Just (other which)) model (Alpha.evalI model Alpha.getGen)
-  , [ Outcome.Sync ]
-  )
+concede which (Started (Playing model replay)) =
+  let
+    gen = Alpha.evalI model Alpha.getGen :: Gen
+  in
+    Right (
+      Just . Started $ Ended (Just (other which)) model replay gen
+    , [ Outcome.Sync ]
+    )
 concede _ _ =
   Left "Cannot concede when not playing"
 
@@ -112,12 +117,16 @@ select which name (charModel, turn, gen) =
   where
     startIfBothReady :: GameState -> GameState
     startIfBothReady (Selecting (CharModel (ThreeSelected c1 c2 c3) (ThreeSelected ca cb cc) _) _ _) =
-      Started . Playing $ initModel turn (c1, c2, c3) (ca, cb, cc) gen
+      let
+        model = initModel turn (c1, c2, c3) (ca, cb, cc) gen :: Model
+        replay = Replay.init model :: Replay
+      in
+        Started $ Playing model replay
     startIfBothReady s = s
 
 
-playCard :: Int -> WhichPlayer -> Model -> Either Err (Maybe GameState, [Outcome])
-playCard index which m
+playCard :: Int -> WhichPlayer -> Model -> Replay -> Either Err (Maybe GameState, [Outcome])
+playCard index which m replay
   | turn /= which = Left "You can't play a card when it's not your turn"
   | otherwise     =
     case card of
@@ -133,9 +142,9 @@ playCard index which m
               Alpha.modHand which (deleteIndex index))
             Beta.play which c
           (newModel, _, _, anims) = Beta.execute m $ foldFree Beta.betaI playCardProgram
-          newPlayState = Playing newModel :: PlayState
           res :: [(ModelDiff, Maybe CardAnim, Maybe StackCard)]
           res = (\(x, y) -> (x, y, Nothing)) <$> anims
+          newPlayState = Playing newModel (Replay.add replay res) :: PlayState
         in
           Right (
             Just . Started $ newPlayState,
@@ -153,15 +162,15 @@ playCard index which m
 
 
 
-endTurn :: WhichPlayer -> Model -> Either Err (Maybe GameState, [Outcome])
-endTurn which model
+endTurn :: WhichPlayer -> Model -> Replay -> Either Err (Maybe GameState, [Outcome])
+endTurn which model replay
   | turn /= which = Left "You can't end the turn when it's not your turn"
   | full          = Left "You can't end the turn when your hand is full"
   | otherwise     =
     case passes of
       OnePass ->
-        case runWriter . resolveAll $ model of
-          (Playing m, res) ->
+        case runWriter $ resolveAll model replay of
+          (Playing m newReplay, res) ->
             let
               endProgram :: Beta.Program ()
               endProgram = do
@@ -169,11 +178,11 @@ endTurn which model
                   Beta.raw Alpha.resetPasses
                   drawCards
               (newModel, _, _, endAnims) = Beta.execute m $ foldFree Beta.betaI endProgram
-              newPlayState :: PlayState
-              newPlayState = Playing newModel
-              newState = Started newPlayState :: GameState
               endRes :: [(ModelDiff, Maybe CardAnim, Maybe StackCard)]
               endRes = (\(x, y) -> (x, y, Nothing)) <$> endAnims
+              newPlayState :: PlayState
+              newPlayState = Playing newModel (Replay.add newReplay endRes)
+              newState = Started newPlayState :: GameState
             in
               Right (
                 Just newState,
@@ -181,9 +190,9 @@ endTurn which model
                   Outcome.Encodable $ Outcome.Resolve (res ++ endRes) model newPlayState
                 ]
               )
-          (Ended w m g, res) ->
+          (Ended w m newReplay g, res) ->
             let
-              newPlayState = Ended w m g          :: PlayState
+              newPlayState = Ended w m newReplay g   :: PlayState
               newState     = Started newPlayState :: GameState
             in
               Right (
@@ -194,7 +203,8 @@ endTurn which model
               )
       NoPass ->
         let
-          newPlayState = Playing $ Alpha.modI model Alpha.swapTurn :: PlayState
+          newModel = Alpha.modI model Alpha.swapTurn :: Model
+          newPlayState = Playing newModel replay :: PlayState
         in
           Right (
             Just . Started $ newPlayState,
@@ -216,19 +226,21 @@ endTurn which model
       Beta.draw PlayerB
 
 
-resolveAll :: Model -> Writer [(ModelDiff, Maybe CardAnim, Maybe StackCard)] PlayState
-resolveAll model =
+resolveAll :: Model -> Replay -> Writer [(ModelDiff, Maybe CardAnim, Maybe StackCard)] PlayState
+resolveAll model replay =
   case stackCard of
     Just c -> do
-      tell ((\(x, y) -> (x, y, Just c)) <$> anims)
-      case checkWin m of
-        Playing m' ->
-          resolveAll m'
-        Ended w m' gen -> do
-          tell [(ModelDiff.base, Just (GameEnd w), Nothing)]
-          return (Ended w m' gen)
+      let animsWithCard = (\(x, y) -> (x, y, Just c)) <$> anims
+      tell animsWithCard
+      case checkWin m (Replay.add replay animsWithCard) of
+        Playing m' newReplay ->
+          resolveAll m' newReplay
+        Ended w m' newReplay gen -> do
+          let endAnim = [(ModelDiff.base, Just (GameEnd w), Nothing)]
+          tell endAnim
+          return (Ended w m' (Replay.add newReplay endAnim) gen)
     Nothing ->
-      return (Playing model)
+      return (Playing model replay)
   where
     stackCard :: Maybe StackCard
     stackCard = Alpha.evalI model (headMay <$> Alpha.getStack)
@@ -246,16 +258,16 @@ resolveAll model =
 
 
 
-checkWin :: Model -> PlayState
-checkWin m
+checkWin :: Model -> Replay -> PlayState
+checkWin m r
   | lifePA <= 0 && lifePB <= 0 =
-    Ended Nothing m gen
+    Ended Nothing m r gen
   | lifePB <= 0 =
-    Ended (Just PlayerA) m gen
+    Ended (Just PlayerA) m r gen
   | lifePA <= 0 =
-    Ended (Just PlayerB) m gen
+    Ended (Just PlayerB) m r gen
   | otherwise =
-    Playing m
+    Playing m r
   where
     (gen, lifePA, lifePB) =
       Alpha.evalI m $ do
