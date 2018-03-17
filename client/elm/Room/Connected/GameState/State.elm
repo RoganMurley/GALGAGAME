@@ -182,6 +182,14 @@ updatePlayingOnly msg state mode flags =
                 TurnOnly turnOnly ->
                     updateTurnOnly turnOnly state mode flags
 
+                WatchReplay ->
+                    case state of
+                        Started (Ended _ _) ->
+                            ( state, send flags "watchReplay:" )
+
+                        otherwise ->
+                            ( state, Cmd.none )
+
 
 updateTurnOnly : TurnOnly -> GameState -> Mode.Mode -> Flags -> ( GameState, Cmd Main.Msg )
 updateTurnOnly msg state mode flags =

@@ -36,6 +36,7 @@ data GameCommand =
   | Concede
   | SelectCharacter Text
   | Chat Username Text
+  | PlayReplay
   deriving (Show)
 
 
@@ -65,12 +66,14 @@ update cmd which state =
               concede which state
             _ ->
               Left ("Unknown command " <> (cs $ show cmd) <> " on a Playing GameState")
-        Ended winner _ _ gen ->
+        ps@(Ended winner _ replay gen) ->
           case cmd of
             Rematch ->
               rematch (winner, gen)
             HoverCard _ ->
               ignore
+            PlayReplay ->
+              playReplay replay ps
             _ ->
               Left ("Unknown command " <> (cs $ show cmd) <> " on an Ended GameState")
 
@@ -161,7 +164,6 @@ playCard index which m replay
         return (h, t, c)
 
 
-
 endTurn :: WhichPlayer -> Model -> Replay -> Either Err (Maybe GameState, [Outcome])
 endTurn which model replay
   | turn /= which = Left "You can't end the turn when it's not your turn"
@@ -224,6 +226,16 @@ endTurn which model replay
     drawCards = do
       Beta.draw PlayerA
       Beta.draw PlayerB
+
+
+playReplay :: Replay -> PlayState -> Either Err (Maybe GameState, [Outcome])
+playReplay replay state =
+  Right (
+    Nothing,
+    [
+      Outcome.Encodable $ Outcome.PlayReplay replay state
+    ]
+  )
 
 
 resolveAll :: Model -> Replay -> Writer [(ModelDiff, Maybe CardAnim, Maybe StackCard)] PlayState
