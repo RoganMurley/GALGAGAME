@@ -249,7 +249,7 @@ chooseComputerCommand which room gen = do
         return Nothing
           else
             return . Just . SelectCharacterCommand $ randomChar charModel
-    Started (Playing m) ->
+    Started (Playing m _) ->
       return $ trans <$> chooseAction gen which m
     _ ->
       return Nothing
