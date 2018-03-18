@@ -22,6 +22,7 @@ import System.Log.Logger (Priority(DEBUG), infoM, warningM, setLevel, updateGlob
 import Act (actPlay, actSpec, syncClient, syncPlayersRoom, syncRoomClients)
 import ArtificalIntelligence (Action(..), chooseAction)
 import Characters (CharModel(..), allSelected, character_name, toList)
+import Database (Database(..), connectInfo)
 import Negotiation (Prefix(..), RoomRequest(..), parseRoomReq, parsePrefix)
 import Player (WhichPlayer(..), other)
 import GameState (GameState(..), PlayState(..), WaitType(..))
@@ -58,32 +59,33 @@ main = do
   redisPort     <- lookupEnv "REDIS_PORT"
   redisPassword <- lookupEnv "REDIS_PASSWORD"
 
-  let connect = R.connect . (A.connectInfo (redisHost, redisPort, redisPassword))
-  userConn  <- connect A.UserDatabase
-  tokenConn <- connect A.TokenDatabase
+  let connect = R.connect . (connectInfo (redisHost, redisPort, redisPassword))
+  userConn   <- connect UserDatabase
+  tokenConn  <- connect TokenDatabase
+  replayConn <- connect ReplayDatabase
 
   authApp   <- A.app userConn tokenConn
   state     <- atomically $ newTVar Server.initState
 
-  run 9160 $ waiApp state tokenConn authApp
+  run 9160 $ waiApp state tokenConn replayConn authApp
 
 
-waiApp :: TVar Server.State -> R.Connection -> Application -> Application
-waiApp state tokenConn backupApp =
-  websocketsOr WS.defaultConnectionOptions (wsApp state tokenConn) backupApp
+waiApp :: TVar Server.State -> R.Connection -> R.Connection -> Application -> Application
+waiApp state tokenConn replayConn backupApp =
+  websocketsOr WS.defaultConnectionOptions (wsApp state tokenConn replayConn) backupApp
 
 
-wsApp :: TVar Server.State -> R.Connection -> WS.ServerApp
-wsApp state tokenConn pending = do
+wsApp :: TVar Server.State -> R.Connection -> R.Connection -> WS.ServerApp
+wsApp state tokenConn replayConn pending = do
   connection <- WS.acceptRequest pending
   msg        <- WS.receiveData connection
   usernameM  <- A.checkAuth tokenConn $ A.getToken pending
   WS.forkPingThread connection 30
-  begin connection msg (Username <$> usernameM) state
+  begin connection msg (Username <$> usernameM) state replayConn
 
 
-begin :: WS.Connection -> Text -> Maybe Username -> TVar Server.State -> IO ()
-begin conn roomReq usernameM state =
+begin :: WS.Connection -> Text -> Maybe Username -> TVar Server.State -> R.Connection -> IO ()
+begin conn roomReq usernameM state replayConn =
   let
     username :: Username
     username = fromMaybe (Username "Guest") usernameM
@@ -109,13 +111,14 @@ begin conn roomReq usernameM state =
                 state
                 (Client username (PlayerConnection conn) guid)
                 roomVar
+                replayConn
         Nothing ->
           connectionFail $ printf "<%s>: Bad room name protocol %s" (show username) roomReq
         Just ReconnectRequest ->
           return ()
 
 
-beginPrefix :: Prefix -> TVar Server.State -> Client -> TVar Room -> IO ()
+beginPrefix :: Prefix -> TVar Server.State -> Client -> TVar Room -> R.Connection -> IO ()
 beginPrefix PrefixPlay  = beginPlay
 beginPrefix PrefixSpec  = beginSpec
 beginPrefix PrefixCpu   = beginComputer
@@ -130,8 +133,8 @@ prefixWaitType PrefixQueue = WaitQuickplay
 
 
 
-beginPlay :: TVar Server.State -> Client -> TVar Room -> IO ()
-beginPlay state client roomVar = do
+beginPlay :: TVar Server.State -> Client -> TVar Room -> R.Connection -> IO ()
+beginPlay state client roomVar replayConn = do
   infoM "app" $ printf "<%s>: Begin playing" (show $ Client.name client)
   added <- atomically $ addPlayerClient client roomVar
   case added of
@@ -140,20 +143,20 @@ beginPlay state client roomVar = do
       Client.send (Command.toChat $ ErrorCommand "room is full") client
     Just which ->
       finally
-        (play which client roomVar)
+        (play which client roomVar replayConn)
         (disconnect client roomVar state)
 
 
-beginSpec :: TVar Server.State -> Client -> TVar Room -> IO ()
-beginSpec state client roomVar = do
+beginSpec :: TVar Server.State -> Client -> TVar Room -> R.Connection -> IO ()
+beginSpec state client roomVar _ = do
   infoM "app" $ printf "<%s>: Begin spectating" (show $ Client.name client)
   finally
     (spectate client roomVar)
     (disconnect client roomVar state)
 
 
-beginComputer :: TVar Server.State -> Client -> TVar Room -> IO ()
-beginComputer state client roomVar = do
+beginComputer :: TVar Server.State -> Client -> TVar Room -> R.Connection -> IO ()
+beginComputer state client roomVar replayConn = do
   infoM "app" $ printf "<%s>: Begin AI game" (show $ Client.name client)
   cpuGuid  <- GUID.genText
   (computer, added) <- atomically $ do
@@ -167,25 +170,25 @@ beginComputer state client roomVar = do
     Just (computerClient, which) ->
       finally
         (do
-          _ <- forkIO (computerPlay (other which) roomVar)
-          (play which client roomVar))
+          _ <- forkIO (computerPlay (other which) roomVar replayConn)
+          (play which client roomVar replayConn))
         (do
           _ <- disconnect computerClient roomVar state
           (disconnect client roomVar state))
 
 
-beginQueue :: TVar Server.State -> Client -> TVar Room -> IO ()
-beginQueue state client roomVar = do
+beginQueue :: TVar Server.State -> Client -> TVar Room -> R.Connection -> IO ()
+beginQueue state client roomVar replayConn = do
   infoM "app" $ printf "<%s>: Begin quickplay game" (show $ Client.name client)
   roomM <- atomically $ Server.queue (client, roomVar) state
   case roomM of
     Just (_, existingRoom) -> do
       infoM "app" $ printf "<%s>: Joining existing quickplay room" (show $ Client.name client)
-      beginPlay state client existingRoom
+      beginPlay state client existingRoom replayConn
     Nothing -> do
       infoM "app" $ printf "<%s>: Creating new quickplay room" (show $ Client.name client)
       finally
-        (beginPlay state client roomVar)
+        (beginPlay state client roomVar replayConn)
         (atomically $ Server.dequeue client state)
 
 
@@ -205,8 +208,8 @@ spectate client roomVar = do
   return ()
 
 
-play :: WhichPlayer -> Client -> TVar Room -> IO ()
-play which client roomVar = do
+play :: WhichPlayer -> Client -> TVar Room -> R.Connection -> IO ()
+play which client roomVar replayConn = do
   Client.send ("acceptPlay:" :: Text) client
   room <- atomically $ readTVar roomVar
   syncPlayersRoom room
@@ -217,19 +220,19 @@ play which client roomVar = do
       "reconnect:" ->
         mzero
       _ ->
-        lift $ actPlay (Command.parse (Client.name client) msg) which roomVar
+        lift $ actPlay (Command.parse (Client.name client) msg) which roomVar replayConn
   return ()
 
 
-computerPlay :: WhichPlayer -> TVar Room -> IO ()
-computerPlay which roomVar = do
+computerPlay :: WhichPlayer -> TVar Room -> R.Connection -> IO ()
+computerPlay which roomVar replayConn = do
   _ <- runMaybeT . forever $ do
     lift $ threadDelay 1000000
     gen <- lift $ getGen
     command <- lift $ chooseComputerCommand which roomVar gen
     case command of
       Just c -> do
-        lift $ actPlay c which roomVar
+        lift $ actPlay c which roomVar replayConn
         lift $ threadDelay 10000
       Nothing ->
         return ()

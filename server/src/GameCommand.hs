@@ -103,11 +103,15 @@ concede which (Started (Playing model replay)) =
   let
     gen = Alpha.evalI model Alpha.getGen :: Gen
     anims = [(ModelDiff.base, Just (GameEnd (Just (other which))), Nothing)]
-    newPlayState = Ended (Just (other which)) model (Replay.add replay anims) gen :: PlayState
+    newReplay = Replay.add replay anims :: Replay
+    newPlayState = Ended (Just (other which)) model newReplay gen :: PlayState
   in
     Right (
       Just . Started $ newPlayState
-    , [ Outcome.Encodable $ Outcome.Resolve anims model newPlayState ]
+    , [
+        Outcome.Encodable $ Outcome.Resolve anims model newPlayState
+      , Outcome.SaveReplay newReplay newPlayState
+      ]
     )
 concede _ _ =
   Left "Cannot concede when not playing"
@@ -203,6 +207,7 @@ endTurn which model replay
                 Just newState,
                 [
                   Outcome.Encodable $ Outcome.Resolve res model newPlayState
+                , Outcome.SaveReplay newReplay newPlayState
                 ]
               )
       NoPass ->
