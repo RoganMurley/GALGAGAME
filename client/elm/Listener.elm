@@ -38,7 +38,7 @@ listen time state =
     in
         case state of
             Selecting _ ->
-                playSoundWith "/music/select.mp3" [ Loop, Once ]
+                playSoundWith "/music/slowsadjazz.mp3" [ Loop, Once ]
 
             Started started ->
                 modelListen <| resolvable started
@@ -56,7 +56,7 @@ animSfx anim =
                     Nothing
 
                 otherwise ->
-                    Just "slash.mp3"
+                    Just "damage.mp3"
 
         Heal _ ->
             Just "heal.mp3"
