@@ -3,8 +3,16 @@ module Settings.Types exposing (..)
 
 type alias Model =
     { modalState : ModalState
-    , volume : Int
+    , masterVolume : Int
+    , musicVolume : Int
+    , sfxVolume : Int
     }
+
+
+type VolumeType
+    = Master
+    | Music
+    | Sfx
 
 
 type ModalState

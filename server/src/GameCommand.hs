@@ -103,7 +103,7 @@ concede which (Started (Playing model replay)) =
   let
     gen = Alpha.evalI model Alpha.getGen :: Gen
     anims = [(ModelDiff.base, Just (GameEnd (Just (other which))), Nothing)]
-    newPlayState = Ended (Just (other which)) model replay gen :: PlayState
+    newPlayState = Ended (Just (other which)) model (Replay.add replay anims) gen :: PlayState
   in
     Right (
       Just . Started $ newPlayState

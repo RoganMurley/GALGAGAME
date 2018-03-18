@@ -26,6 +26,7 @@ import Main.Types as Main exposing (..)
 import UrlParser exposing (parsePath)
 import Util exposing (message)
 import Settings.State as Settings
+import Settings.Types as Settings
 
 
 init : Flags -> Navigation.Location -> ( Main.Model, Cmd Msg )
@@ -107,15 +108,23 @@ update msg ({ room, settings, flags } as model) =
                         ]
                     )
 
-            SetVolume volume ->
+            SetVolume volumeType volume ->
                 let
                     newVolume =
                         clamp 0 100 volume
+
+                    newSettings =
+                        case volumeType of
+                            Settings.Master ->
+                                { settings | masterVolume = newVolume }
+
+                            Settings.Music ->
+                                { settings | musicVolume = newVolume }
+
+                            Settings.Sfx ->
+                                { settings | sfxVolume = newVolume }
                 in
-                    ( { model
-                        | settings =
-                            { settings | volume = newVolume }
-                      }
+                    ( { model | settings = newSettings }
                     , setVolume newVolume
                     )
 

@@ -9,7 +9,7 @@ import Settings.Types exposing (..)
 
 
 view : Model -> List (Html Main.Msg) -> Html Main.Msg
-view { modalState, volume } nestedViews =
+view { modalState, masterVolume, musicVolume, sfxVolume } nestedViews =
     let
         settingsStyle =
             case modalState of
@@ -44,10 +44,42 @@ view { modalState, volume } nestedViews =
                                 , type_ "range"
                                 , H.min "0"
                                 , H.max "100"
-                                , value <| toString volume
+                                , value <| toString masterVolume
                                 , onInput
                                     (\v ->
-                                        Main.SetVolume <|
+                                        Main.SetVolume Master <|
+                                            Result.withDefault 0 (String.toInt v)
+                                    )
+                                ]
+                                []
+                            ]
+                        , label [ class "settings-volume" ]
+                            [ text "Music Volume"
+                            , input
+                                [ class "settings-slider"
+                                , type_ "range"
+                                , H.min "0"
+                                , H.max "100"
+                                , value <| toString musicVolume
+                                , onInput
+                                    (\v ->
+                                        Main.SetVolume Music <|
+                                            Result.withDefault 0 (String.toInt v)
+                                    )
+                                ]
+                                []
+                            ]
+                        , label [ class "settings-volume" ]
+                            [ text "SFX Volume"
+                            , input
+                                [ class "settings-slider"
+                                , type_ "range"
+                                , H.min "0"
+                                , H.max "100"
+                                , value <| toString sfxVolume
+                                , onInput
+                                    (\v ->
+                                        Main.SetVolume Sfx <|
                                             Result.withDefault 0 (String.toInt v)
                                     )
                                 ]
