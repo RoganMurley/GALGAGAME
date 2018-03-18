@@ -7,12 +7,14 @@ import Settings.Types exposing (..)
 init : Model
 init =
     { modalState = Closed
-    , volume = 100
+    , masterVolume = 100
+    , musicVolume = 100
+    , sfxVolume = 100
     }
 
 
 update : Msg -> Model -> Model
-update msg ({ modalState, volume } as m) =
+update msg ({ modalState, masterVolume } as m) =
     case msg of
         ToggleSettings ->
             case modalState of

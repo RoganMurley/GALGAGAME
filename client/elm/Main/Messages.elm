@@ -4,6 +4,7 @@ import Http
 import Navigation exposing (Location)
 import Room.Messages as Room
 import Settings.Messages as Settings
+import Settings.Types exposing (VolumeType)
 
 
 type Msg
@@ -15,7 +16,7 @@ type Msg
     | SelectAllInput String
     | Send String
     | SettingsMsg Settings.Msg
-    | SetVolume Int
+    | SetVolume VolumeType Int
     | UrlChange Location
     | Logout
     | LogoutCallback (Result Http.Error ())

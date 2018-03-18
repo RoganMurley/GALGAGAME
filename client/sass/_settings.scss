@@ -56,7 +56,7 @@
 
   h1 {
     margin: 0;
-    margin-bottom: 64px;
+    margin-bottom: 32px;
   }
 }
 
@@ -70,7 +70,7 @@
   padding: 0 24px;
 
   cursor: pointer; cursor: hand;
-  margin-top: 115px;
+  margin-top: 20px;
   margin-right: 15px;
 
   &:hover {
@@ -104,4 +104,5 @@
 
 .settings-volume {
   font-family: monospace;
+  font-size: 1.2rem;
 }
