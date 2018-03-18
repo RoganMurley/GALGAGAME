@@ -25,11 +25,15 @@ import Util (Err, modReturnTVar)
 import qualified Command
 import Command (Command(..))
 
+import qualified Client
+import Client (Client(..))
+
+import qualified Database.Redis as R
+
 import qualified Outcome
 import Outcome (Outcome)
 
-import qualified Client
-import Client (Client(..))
+import qualified Replay
 
 import qualified Room
 import Room (Room)
@@ -55,8 +59,8 @@ roomUpdate cmd which roomVar =
           Right ((Room.setState room) <$> newState, outcomes)
 
 
-actPlay :: Command -> WhichPlayer -> TVar Room -> IO ()
-actPlay cmd which roomVar = do
+actPlay :: Command -> WhichPlayer -> TVar Room -> R.Connection -> IO ()
+actPlay cmd which roomVar replayConn = do
   infoM "app" $ printf "Command: %s" (show cmd)
   case trans cmd of
     Just command -> do
@@ -66,7 +70,7 @@ actPlay cmd which roomVar = do
           warningM "app" $ printf "Command error: %s" (show err)
           Room.sendToPlayer which (Command.toChat (ErrorCommand err)) room
         Right outcomes ->
-          forM_ outcomes (actOutcome room)
+          forM_ outcomes (actOutcome replayConn room)
     Nothing ->
       actSpec cmd roomVar
   where
@@ -75,7 +79,7 @@ actPlay cmd which roomVar = do
     trans (PlayCardCommand index)    = Just (PlayCard index)
     trans (HoverCardCommand index)   = Just (HoverCard index)
     trans RematchCommand             = Just Rematch
-    trans PlayReplayCommand         = Just PlayReplay
+    trans PlayReplayCommand          = Just PlayReplay
     trans ConcedeCommand             = Just Concede
     trans (ChatCommand name content) = Just (Chat name content)
     trans (SelectCharacterCommand n) = Just (SelectCharacter n)
@@ -134,14 +138,21 @@ resolveRoomClients (resList, initial, final) room = do
         (mirror final)
 
 
-actOutcome :: Room -> Outcome -> IO ()
-actOutcome room Outcome.Sync =
+actOutcome :: R.Connection -> Room -> Outcome -> IO ()
+actOutcome _ room Outcome.Sync =
   syncRoomClients room
-actOutcome room (Outcome.Encodable o@(Outcome.Hover which _)) =
+actOutcome _ room (Outcome.Encodable o@(Outcome.Hover which _)) =
   Room.sendExcluding which (("hover:" <>) . cs . encode $ o) room
-actOutcome room (Outcome.Encodable (Outcome.Chat (Username username) msg)) =
+actOutcome _ room (Outcome.Encodable (Outcome.Chat (Username username) msg)) =
   Room.broadcast ("chat:" <> username <> ": " <> msg) room
-actOutcome room (Outcome.Encodable (Outcome.Resolve models initial final)) =
+actOutcome _ room (Outcome.Encodable (Outcome.Resolve models initial final)) =
   resolveRoomClients (models, initial, final) room
-actOutcome room (Outcome.Encodable (Outcome.PlayReplay (Replay (initial, replayData)) final)) =
-  actOutcome room $ Outcome.Encodable $ Outcome.Resolve replayData initial final
+actOutcome replayConn room (Outcome.Encodable (Outcome.PlayReplay (Replay (initial, replayData)) final)) =
+  actOutcome replayConn room $
+    Outcome.Encodable $ Outcome.Resolve replayData initial final
+actOutcome replayConn _ (Outcome.SaveReplay replay _) = do
+  infoM "app" "Saving replay..."
+  result <- Replay.save replayConn replay
+  if result
+    then return ()
+    else warningM "app" "Failed to save replay"

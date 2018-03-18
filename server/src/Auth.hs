@@ -7,7 +7,6 @@ import Crypto.BCrypt (validatePassword, hashPasswordUsingPolicy, slowerBcryptHas
 import Data.Aeson ((.=), object)
 import Data.ByteString (ByteString, length)
 import Data.List (find)
-import Data.Maybe (fromMaybe)
 import Data.Monoid ((<>))
 import Data.String.Conversions (cs)
 import Data.Time.Clock (secondsToDiffTime)
@@ -16,7 +15,6 @@ import Network.Wai (Application)
 import Web.Cookie (parseCookiesText, sameSiteStrict, setCookieHttpOnly, setCookieMaxAge, setCookiePath, setCookieSameSite, setCookieSecure)
 import Web.Scotty
 import Web.Scotty.Cookie (deleteCookie, getCookie, makeSimpleCookie, setCookie)
-import Safe (readMay)
 import System.Log.Logger (Priority(DEBUG), debugM, errorM, setLevel, updateGlobalLogger)
 
 import qualified Network.WebSockets as WS
@@ -156,31 +154,6 @@ checkAuth tokenConn (Just token) = do
 type Token    = Text
 type Username = Text
 type Seconds  = Integer
-
-
-data Database =
-    UserDatabase
-  | TokenDatabase
-
-
-connectInfo :: (Maybe String, Maybe String, Maybe String) -> Database -> R.ConnectInfo
-connectInfo (host, portString, password) database =
-  R.defaultConnectInfo
-    { R.connectAuth     = cs <$> password
-    , R.connectHost     = fromMaybe defaultHost host
-    , R.connectPort     = fromMaybe defaultPort port
-    , R.connectDatabase = asId database
-    }
-  where
-    asId :: Database -> Integer
-    asId UserDatabase  = 0
-    asId TokenDatabase = 1
-    defaultHost :: R.HostName
-    defaultHost = "redis"
-    defaultPort :: R.PortID
-    defaultPort = R.PortNumber 6379
-    port :: Maybe R.PortID
-    port = R.PortNumber <$> (portString >>= readMay)
 
 
 loginCookieName :: Text

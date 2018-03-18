@@ -17,6 +17,7 @@ type ExcludePlayer = WhichPlayer
 
 data Outcome =
     Sync
+  | SaveReplay Replay PlayState
   | Encodable Encodable
   deriving (Eq, Show)
 
