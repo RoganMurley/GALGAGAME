@@ -9,6 +9,7 @@ route =
     oneOf
         [ map Play playRoute
         , map Spec specRoute
+        , map Replay replayRoute
         , map Lab labRoute
         , map Login loginRoute
         , map Home top
@@ -40,3 +41,8 @@ loginRoute =
 labRoute : Parser a a
 labRoute =
     s "lab"
+
+
+replayRoute : Parser (String -> a) a
+replayRoute =
+    s "replay" </> string

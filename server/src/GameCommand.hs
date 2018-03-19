@@ -14,7 +14,6 @@ import Model (Hand, Passes(..), Model, Turn)
 import ModelDiff (ModelDiff)
 import Outcome (Outcome)
 import Player (WhichPlayer(..), other)
-import Replay (Replay(..))
 import Safe (atMay, headMay, tailSafe)
 import StackCard(StackCard(..))
 import Username (Username)
@@ -25,7 +24,8 @@ import qualified DSL.Alpha as Alpha
 import qualified DSL.Beta as Beta
 import qualified ModelDiff
 import qualified Outcome
-import qualified Replay
+import qualified Replay.Active as Active
+import qualified Replay.Final as Final
 
 
 data GameCommand =
@@ -36,7 +36,6 @@ data GameCommand =
   | Concede
   | SelectCharacter Text
   | Chat Username Text
-  | PlayReplay
   deriving (Show)
 
 
@@ -66,14 +65,12 @@ update cmd which state =
               concede which state
             _ ->
               Left ("Unknown command " <> (cs $ show cmd) <> " on a Playing GameState")
-        ps@(Ended winner _ replay gen) ->
+        Ended winner _ _ gen ->
           case cmd of
             Rematch ->
               rematch (winner, gen)
             HoverCard _ ->
               ignore
-            PlayReplay ->
-              playReplay replay ps
             _ ->
               Left ("Unknown command " <> (cs $ show cmd) <> " on an Ended GameState")
 
@@ -103,14 +100,15 @@ concede which (Started (Playing model replay)) =
   let
     gen = Alpha.evalI model Alpha.getGen :: Gen
     anims = [(ModelDiff.base, Just (GameEnd (Just (other which))), Nothing)]
-    newReplay = Replay.add replay anims :: Replay
+    newReplay = Active.add replay anims :: Active.Replay
     newPlayState = Ended (Just (other which)) model newReplay gen :: PlayState
+    finalReplay = Final.finalise newReplay newPlayState :: Final.Replay
   in
     Right (
       Just . Started $ newPlayState
     , [
         Outcome.Encodable $ Outcome.Resolve anims model newPlayState
-      , Outcome.SaveReplay newReplay newPlayState
+      , Outcome.SaveReplay finalReplay
       ]
     )
 concede _ _ =
@@ -128,13 +126,13 @@ select which name (charModel, turn, gen) =
     startIfBothReady (Selecting (CharModel (ThreeSelected c1 c2 c3) (ThreeSelected ca cb cc) _) _ _) =
       let
         model = initModel turn (c1, c2, c3) (ca, cb, cc) gen :: Model
-        replay = Replay.init model :: Replay
+        replay = Active.init model :: Active.Replay
       in
         Started $ Playing model replay
     startIfBothReady s = s
 
 
-playCard :: Int -> WhichPlayer -> Model -> Replay -> Either Err (Maybe GameState, [Outcome])
+playCard :: Int -> WhichPlayer -> Model -> Active.Replay -> Either Err (Maybe GameState, [Outcome])
 playCard index which m replay
   | turn /= which = Left "You can't play a card when it's not your turn"
   | otherwise     =
@@ -153,7 +151,7 @@ playCard index which m replay
           (newModel, _, _, anims) = Beta.execute m $ foldFree Beta.betaI playCardProgram
           res :: [(ModelDiff, Maybe CardAnim, Maybe StackCard)]
           res = (\(x, y) -> (x, y, Nothing)) <$> anims
-          newPlayState = Playing newModel (Replay.add replay res) :: PlayState
+          newPlayState = Playing newModel (Active.add replay res) :: PlayState
         in
           Right (
             Just . Started $ newPlayState,
@@ -170,7 +168,7 @@ playCard index which m replay
         return (h, t, c)
 
 
-endTurn :: WhichPlayer -> Model -> Replay -> Either Err (Maybe GameState, [Outcome])
+endTurn :: WhichPlayer -> Model -> Active.Replay -> Either Err (Maybe GameState, [Outcome])
 endTurn which model replay
   | turn /= which = Left "You can't end the turn when it's not your turn"
   | full          = Left "You can't end the turn when your hand is full"
@@ -189,7 +187,7 @@ endTurn which model replay
               endRes :: [(ModelDiff, Maybe CardAnim, Maybe StackCard)]
               endRes = (\(x, y) -> (x, y, Nothing)) <$> endAnims
               newPlayState :: PlayState
-              newPlayState = Playing newModel (Replay.add newReplay endRes)
+              newPlayState = Playing newModel (Active.add newReplay endRes)
               newState = Started newPlayState :: GameState
             in
               Right (
@@ -200,14 +198,15 @@ endTurn which model replay
               )
           (Ended w m newReplay g, res) ->
             let
-              newPlayState = Ended w m newReplay g   :: PlayState
-              newState     = Started newPlayState :: GameState
+              newPlayState = Ended w m newReplay g :: PlayState
+              newState     = Started newPlayState  :: GameState
+              finalReplay = Final.finalise newReplay newPlayState :: Final.Replay
             in
               Right (
                 Just newState,
                 [
                   Outcome.Encodable $ Outcome.Resolve res model newPlayState
-                , Outcome.SaveReplay newReplay newPlayState
+                , Outcome.SaveReplay finalReplay
                 ]
               )
       NoPass ->
@@ -235,29 +234,19 @@ endTurn which model replay
       Beta.draw PlayerB
 
 
-playReplay :: Replay -> PlayState -> Either Err (Maybe GameState, [Outcome])
-playReplay replay state =
-  Right (
-    Nothing,
-    [
-      Outcome.Encodable $ Outcome.PlayReplay replay state
-    ]
-  )
-
-
-resolveAll :: Model -> Replay -> Writer [(ModelDiff, Maybe CardAnim, Maybe StackCard)] PlayState
+resolveAll :: Model -> Active.Replay -> Writer [(ModelDiff, Maybe CardAnim, Maybe StackCard)] PlayState
 resolveAll model replay =
   case stackCard of
     Just c -> do
       let animsWithCard = (\(x, y) -> (x, y, Just c)) <$> anims
       tell animsWithCard
-      case checkWin m (Replay.add replay animsWithCard) of
+      case checkWin m (Active.add replay animsWithCard) of
         Playing m' newReplay ->
           resolveAll m' newReplay
         Ended w m' newReplay gen -> do
           let endAnim = [(ModelDiff.base, Just (GameEnd w), Nothing)]
           tell endAnim
-          return (Ended w m' (Replay.add newReplay endAnim) gen)
+          return (Ended w m' (Active.add newReplay endAnim) gen)
     Nothing ->
       return (Playing model replay)
   where
@@ -277,7 +266,7 @@ resolveAll model replay =
 
 
 
-checkWin :: Model -> Replay -> PlayState
+checkWin :: Model -> Active.Replay -> PlayState
 checkWin m r
   | lifePA <= 0 && lifePB <= 0 =
     Ended Nothing m r gen

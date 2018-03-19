@@ -7,9 +7,10 @@ import GameState (PlayState)
 import Model (Model)
 import ModelDiff (ModelDiff)
 import Player (WhichPlayer)
-import Replay (Replay(Replay))
 import StackCard (StackCard)
 import Username (Username)
+
+import qualified Replay.Final as Final
 
 
 type ExcludePlayer = WhichPlayer
@@ -17,7 +18,7 @@ type ExcludePlayer = WhichPlayer
 
 data Outcome =
     Sync
-  | SaveReplay Replay PlayState
+  | SaveReplay Final.Replay
   | Encodable Encodable
   deriving (Eq, Show)
 
@@ -25,7 +26,6 @@ data Outcome =
 data Encodable =
     Chat Username Text
   | Hover ExcludePlayer (Maybe Int)
-  | PlayReplay Replay PlayState
   | Resolve [(ModelDiff, Maybe CardAnim, Maybe StackCard)] Model PlayState
   deriving (Eq, Show)
 
@@ -38,8 +38,6 @@ instance ToJSON Encodable where
     ]
   toJSON (Hover _ index) =
     toJSON index
-  toJSON (PlayReplay (Replay (initial, replayData)) final) =
-    toJSON $ Resolve replayData initial final
   toJSON (Resolve res initial state) =
     object [
       "list"    .= res

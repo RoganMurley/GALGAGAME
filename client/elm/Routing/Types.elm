@@ -5,6 +5,7 @@ type Route
     = Home
     | Play PlayRoute
     | Spec String
+    | Replay String
     | Lab
     | Login
 

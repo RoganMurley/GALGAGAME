@@ -14,7 +14,6 @@ import Mirror (mirror)
 import Model (Model)
 import ModelDiff (ModelDiff)
 import Player (WhichPlayer(..))
-import Replay (Replay(Replay))
 import StackCard (StackCard)
 import System.Log.Logger (infoM, warningM)
 import Text.Printf (printf)
@@ -33,7 +32,7 @@ import qualified Database.Redis as R
 import qualified Outcome
 import Outcome (Outcome)
 
-import qualified Replay
+import qualified Replay.Final
 
 import qualified Room
 import Room (Room)
@@ -79,7 +78,6 @@ actPlay cmd which roomVar replayConn = do
     trans (PlayCardCommand index)    = Just (PlayCard index)
     trans (HoverCardCommand index)   = Just (HoverCard index)
     trans RematchCommand             = Just Rematch
-    trans PlayReplayCommand          = Just PlayReplay
     trans ConcedeCommand             = Just Concede
     trans (ChatCommand name content) = Just (Chat name content)
     trans (SelectCharacterCommand n) = Just (SelectCharacter n)
@@ -147,12 +145,9 @@ actOutcome _ room (Outcome.Encodable (Outcome.Chat (Username username) msg)) =
   Room.broadcast ("chat:" <> username <> ": " <> msg) room
 actOutcome _ room (Outcome.Encodable (Outcome.Resolve models initial final)) =
   resolveRoomClients (models, initial, final) room
-actOutcome replayConn room (Outcome.Encodable (Outcome.PlayReplay (Replay (initial, replayData)) final)) =
-  actOutcome replayConn room $
-    Outcome.Encodable $ Outcome.Resolve replayData initial final
-actOutcome replayConn _ (Outcome.SaveReplay replay _) = do
+actOutcome replayConn _ (Outcome.SaveReplay replay) = do
   infoM "app" "Saving replay..."
-  result <- Replay.save replayConn replay
+  result <- Replay.Final.save replayConn replay
   if result
     then return ()
     else warningM "app" "Failed to save replay"

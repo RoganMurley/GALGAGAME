@@ -6,6 +6,7 @@ import Http
 import Routing.State as Routing
 import Routing.Types as Routing
 import WebSocket
+import GameState.Types exposing (GameState(Started))
 import Lab.State as Lab
 import Lobby.State as Lobby
 import Lobby.Types as Lobby
@@ -14,6 +15,7 @@ import Login.State as Login
 import Main.Messages exposing (Msg(..))
 import Mode exposing (Mode(..))
 import Navigation
+import Replay.State as Replay
 import Room.State as Room
 import Room.Types as Room
 import Room.Generators exposing (generate)
@@ -57,6 +59,14 @@ update msg ({ room, settings, flags } as model) =
                 , case room of
                     Room.Connected connected ->
                         listen time connected.game
+
+                    Room.Replay { replay } ->
+                        case replay of
+                            Nothing ->
+                                Cmd.none
+
+                            Just state ->
+                                listen time (Started state)
 
                     otherwise ->
                         Cmd.none
@@ -256,6 +266,14 @@ locationUpdate model location =
                                     Spectating
                       }
                     , Cmd.none
+                    )
+
+                Routing.Replay replayID ->
+                    ( { model
+                        | room =
+                            Room.Replay Replay.init
+                      }
+                    , Replay.getReplay replayID
                     )
 
                 Routing.Login ->

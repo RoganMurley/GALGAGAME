@@ -39,7 +39,8 @@ library
                      , Negotiation
                      , Outcome
                      , Player
-                     , Replay
+                     , Replay.Active
+                     , Replay.Final
                      , Room
                      , Server
                      , StackCard
