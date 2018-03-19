@@ -13,11 +13,15 @@ type GameState
 
 type PlayState
     = Playing Resolvable.Model
-    | Ended Winner Resolvable.Model
+    | Ended Winner Resolvable.Model (Maybe ReplayId)
 
 
 type alias Winner =
     Maybe WhichPlayer
+
+
+type alias ReplayId =
+    String
 
 
 type WaitType

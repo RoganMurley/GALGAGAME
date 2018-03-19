@@ -24,7 +24,7 @@ view params { replay } ({ time } as flags) =
                         , div [] []
                         , div [] []
                         ]
-                    , Endgame.view 0.0 Nothing
+                    , Endgame.view 0.0 Nothing Nothing
                     , Raymarch.view params
                     ]
 

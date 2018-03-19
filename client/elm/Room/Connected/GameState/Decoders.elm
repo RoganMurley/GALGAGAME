@@ -92,7 +92,7 @@ endedDecoder =
     let
         endedInit : Winner -> Model -> PlayState
         endedInit w m =
-            Ended w (Resolvable.init m [])
+            Ended w (Resolvable.init m []) Nothing
     in
         Json.map2 endedInit
             (field "winner" <| maybe WhichPlayer.decoder)

@@ -33,16 +33,16 @@ finalise :: Active.Replay -> PlayState -> Replay
 finalise active final = Replay (active, final)
 
 
-save :: R.Connection -> Replay -> IO Bool
+save :: R.Connection -> Replay -> IO (Maybe Text)
 save conn replay = do
   result <- (R.runRedis conn) $ do
     _ <- R.set key value
     R.expire key replayTimeout
   case result of
     Right _ ->
-      return True
+      return (Just . cs $ key)
     Left _ ->
-      return False
+      return Nothing
   where
     value = cs $ encode replay
     key = cs . show $ hash value

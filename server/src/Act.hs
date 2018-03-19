@@ -145,9 +145,11 @@ actOutcome _ room (Outcome.Encodable (Outcome.Chat (Username username) msg)) =
   Room.broadcast ("chat:" <> username <> ": " <> msg) room
 actOutcome _ room (Outcome.Encodable (Outcome.Resolve models initial final)) =
   resolveRoomClients (models, initial, final) room
-actOutcome replayConn _ (Outcome.SaveReplay replay) = do
+actOutcome replayConn room (Outcome.SaveReplay replay) = do
   infoM "app" "Saving replay..."
   result <- Replay.Final.save replayConn replay
-  if result
-    then return ()
-    else warningM "app" "Failed to save replay"
+  case result of
+    Just replayId ->
+      Room.broadcast ("replaySaved:" <> replayId) room
+    Nothing ->
+      warningM "app" "Failed to save replay"

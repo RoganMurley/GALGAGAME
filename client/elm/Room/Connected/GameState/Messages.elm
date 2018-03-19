@@ -10,12 +10,13 @@ type Msg
     | SelectingMsg CharacterSelect.Msg
     | Sync String
     | PlayingOnly PlayingOnly
+    | ReplaySaved String
+    | GotoReplay String
 
 
 type PlayingOnly
     = Rematch
     | TurnOnly TurnOnly
-    | WatchReplay
     | HoverCard (Maybe Int)
 
 

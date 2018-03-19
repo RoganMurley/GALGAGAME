@@ -116,6 +116,17 @@ receive ({ mode } as model) msg flags =
                                 err
                                 ( model, Cmd.none )
 
+            "replaySaved" ->
+                let
+                    ( newGame, cmd ) =
+                        GameState.update
+                            (GameState.ReplaySaved content)
+                            model.game
+                            mode
+                            flags
+                in
+                    ( { model | game = newGame }, cmd )
+
             otherwise ->
                 Debug.log
                     ("Error decoding message from server: " ++ msg)
