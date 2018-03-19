@@ -8,6 +8,7 @@ import Control.Monad (forever, mzero, when)
 import Control.Monad.Trans.Class (lift)
 import Control.Monad.Trans.Maybe (runMaybeT)
 import Data.Maybe (fromMaybe)
+import Data.Monoid ((<>))
 import Data.String.Conversions (cs)
 import Data.Text (Text)
 import Text.Printf (printf)
@@ -23,11 +24,12 @@ import Act (actPlay, actSpec, syncClient, syncPlayersRoom, syncRoomClients)
 import ArtificalIntelligence (Action(..), chooseAction)
 import Characters (CharModel(..), allSelected, character_name, toList)
 import Database (Database(..), connectInfo)
+import GameState (GameState(..), PlayState(..), WaitType(..))
 import Negotiation (Prefix(..), RoomRequest(..), parseRoomReq, parsePrefix)
 import Player (WhichPlayer(..), other)
-import GameState (GameState(..), PlayState(..), WaitType(..))
 import Username (Username(Username))
 import Util (Gen, getGen, shuffle)
+
 
 import qualified Server
 import Server (addComputerClient, addPlayerClient, addSpecClient)
@@ -40,6 +42,8 @@ import Command (Command(..))
 
 import qualified Room
 import Room (Room)
+
+import qualified Replay.Final
 
 import qualified Network.WebSockets as WS
 
@@ -112,10 +116,17 @@ begin conn roomReq usernameM state replayConn =
                 (Client username (PlayerConnection conn) guid)
                 roomVar
                 replayConn
-        Nothing ->
-          connectionFail $ printf "<%s>: Bad room name protocol %s" (show username) roomReq
         Just ReconnectRequest ->
           return ()
+        Just (PlayReplayRequest replayId) -> do
+          mReplay <- Replay.Final.load replayConn replayId
+          case mReplay of
+            Just replay ->
+              WS.sendTextData conn ("replay:" <> replay)
+            Nothing ->
+              WS.sendTextData conn ("replayNotFound:" :: Text)
+        Nothing ->
+          connectionFail $ printf "<%s>: Bad room name protocol %s" (show username) roomReq
 
 
 beginPrefix :: Prefix -> TVar Server.State -> Client -> TVar Room -> R.Connection -> IO ()
@@ -130,7 +141,6 @@ prefixWaitType PrefixPlay  = WaitCustom
 prefixWaitType PrefixSpec  = WaitCustom
 prefixWaitType PrefixCpu   = WaitCustom
 prefixWaitType PrefixQueue = WaitQuickplay
-
 
 
 beginPlay :: TVar Server.State -> Client -> TVar Room -> R.Connection -> IO ()

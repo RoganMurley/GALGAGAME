@@ -7,8 +7,9 @@ import Life (maxLife)
 import Mirror (Mirror(..))
 import Model (Hand, Deck, PlayerModel(..), Model(..), Passes(..), Turn, maxHandLength)
 import Player (WhichPlayer(..), other)
-import Replay (Replay)
 import Util (Gen, mkGen, shuffle, split)
+
+import qualified Replay.Active as Active
 
 
 data GameState =
@@ -36,15 +37,15 @@ instance ToJSON WaitType where
 
 
 getStateGen :: GameState -> Gen
-getStateGen (Waiting _ gen)           = gen
-getStateGen (Selecting _ _ gen)       = gen
+getStateGen (Waiting _ gen)             = gen
+getStateGen (Selecting _ _ gen)         = gen
 getStateGen (Started (Playing model _)) = model_gen model
 getStateGen (Started (Ended _ _ _ gen)) = gen
 
 
 data PlayState =
-    Playing Model Replay
-  | Ended (Maybe WhichPlayer) Model Replay Gen
+    Playing Model Active.Replay
+  | Ended (Maybe WhichPlayer) Model Active.Replay Gen
   deriving (Eq, Show)
 
 

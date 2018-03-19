@@ -11,6 +11,7 @@ import Menu.State as Menu
 import Navigation exposing (newUrl)
 import Room.Types exposing (..)
 import Room.Messages exposing (..)
+import Replay.State as Replay
 
 
 init : Model
@@ -73,6 +74,14 @@ update model msg ({ hostname, seed } as flags) =
                 otherwise ->
                     ( model, Cmd.none )
 
+        ReplayMsg replayMsg ->
+            case model of
+                Replay replay ->
+                    ( Replay <| Replay.update replay replayMsg, Cmd.none )
+
+                otherwise ->
+                    ( model, Cmd.none )
+
         StartGame mode ->
             case model of
                 Lobby ({ roomID, gameType } as lobby) ->
@@ -108,6 +117,9 @@ receive str model flags =
             in
                 ( Connected newConnected, cmd )
 
+        Replay replay ->
+            ( Replay replay, Replay.receive str )
+
         Login login ->
             ( Login login, Login.receive str )
 
@@ -129,6 +141,9 @@ tick room dt =
 
         Connected connected ->
             Connected <| Connected.tick connected dt
+
+        Replay replay ->
+            Replay <| Replay.tick replay dt
 
         Lab lab ->
             Lab <| Lab.tick lab dt

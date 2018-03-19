@@ -9,6 +9,7 @@ import Main.Messages as Main
 import Main.Types exposing (Flags)
 import Menu.View as Menu
 import Raymarch.Types as Raymarch
+import Replay.View as Replay
 import Room.Messages exposing (..)
 import Room.Types exposing (..)
 import Settings.Types as Settings
@@ -33,6 +34,9 @@ view model settings flags =
 
                 Connected connected ->
                     Connected.view connected flags
+
+                Replay replay ->
+                    Replay.view params replay flags
 
                 Lab lab ->
                     Html.map (Main.RoomMsg << LabMsg) <|
@@ -73,4 +77,7 @@ settingsView model flags =
                 baseViews
 
             Login _ ->
+                baseViews
+
+            Replay _ ->
                 baseViews

@@ -4,7 +4,10 @@ import Data.Text (Text)
 import Util (breakAt)
 
 
-data RoomRequest = ReconnectRequest | RoomRequest Text
+data RoomRequest =
+    RoomRequest Text
+  | ReconnectRequest
+  | PlayReplayRequest Text
 
 
 parseRoomReq :: Text -> Maybe RoomRequest
@@ -14,6 +17,8 @@ parseRoomReq msg =
       Just ReconnectRequest
     ("room", name) ->
       Just . RoomRequest $ name
+    ("playReplay", replayId) ->
+      Just . PlayReplayRequest $ replayId
     _ ->
       Nothing
 

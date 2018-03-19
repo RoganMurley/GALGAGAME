@@ -1,4 +1,4 @@
-module GameState.State exposing (update, tick, tickZero, resolvable)
+module GameState.State exposing (update, tick, tickZero, resolvable, resMapPlay)
 
 import Audio exposing (playSound)
 import CharacterSelect.State as CharacterSelect

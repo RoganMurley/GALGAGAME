@@ -13,7 +13,7 @@ import Model
 import Player (WhichPlayer(..))
 import Util (Gen, fromRight)
 
-import qualified Replay
+import qualified Replay.Active
 import qualified Cards
 
 
@@ -31,7 +31,7 @@ evalState (Playing model _)            = evalModel model
     evalModel :: Model -> Weight
     evalModel m
       | (length $ evalI m $ getStack) > 0 =
-        evalState . fst . runWriter $ resolveAll m Replay.null
+        evalState . fst . runWriter $ resolveAll m Replay.Active.null
       | otherwise =
           (evalPlayer PlayerA m) - (evalPlayer PlayerB m)
     evalPlayer :: WhichPlayer -> Model -> Weight
@@ -67,7 +67,7 @@ postulateAction model gen action =
   (\(Started p) -> p) . fromJust . fst . fromRight $ update command PlayerA state
   where
     command = toCommand action :: GameCommand
-    state = Started $ Playing (modI model $ setGen gen) (Replay.null) :: GameState
+    state = Started $ Playing (modI model $ setGen gen) (Replay.Active.null) :: GameState
 
 
 chooseAction :: Gen -> Turn -> Model -> Maybe Action
@@ -88,7 +88,7 @@ winningEnd model
   | otherwise                      =
     -- If ending the turn now would win, do it! We don't care about heuristics
     -- when we have a sure bet :)
-    case fst . runWriter $ resolveAll model Replay.null of
+    case fst . runWriter $ resolveAll model Replay.Active.null of
       Ended (Just PlayerA) _ _ _ ->
         True
       _ ->
