@@ -12,6 +12,8 @@ import Main.Types exposing (Flags)
 import Mode as Mode
 import Model.Decoders as Model
 import Model.Types exposing (..)
+import Navigation
+import Ports exposing (reload)
 import Resolvable.Decoders exposing (resolveDiffDataDecoder)
 import Resolvable.State as Resolvable
 import Resolvable.Types as Resolvable
@@ -114,6 +116,14 @@ update msg state mode flags =
             in
                 ( newState, Cmd.none )
 
+        ReplaySaved replayId ->
+            case state of
+                Started (Ended winner res _) ->
+                    ( Started (Ended winner res (Just replayId)), Cmd.none )
+
+                otherwise ->
+                    ( state, Cmd.none )
+
         SelectingMsg selectMsg ->
             case state of
                 Selecting m ->
@@ -130,6 +140,14 @@ update msg state mode flags =
 
         PlayingOnly playingOnly ->
             updatePlayingOnly playingOnly state mode flags
+
+        GotoReplay replayId ->
+            ( state
+            , Cmd.batch
+                [ Navigation.newUrl <| "/replay/" ++ replayId
+                , reload ()
+                ]
+            )
 
 
 updatePlayingOnly : PlayingOnly -> GameState -> Mode.Mode -> Flags -> ( GameState, Cmd Main.Msg )
@@ -149,7 +167,7 @@ updatePlayingOnly msg state mode flags =
             case msg of
                 Rematch ->
                     case state of
-                        Started (Ended _ _) ->
+                        Started (Ended _ _ _) ->
                             ( state, send flags "rematch:" )
 
                         otherwise ->
@@ -181,14 +199,6 @@ updatePlayingOnly msg state mode flags =
 
                 TurnOnly turnOnly ->
                     updateTurnOnly turnOnly state mode flags
-
-                WatchReplay ->
-                    case state of
-                        Started (Ended _ _) ->
-                            ( state, send flags "watchReplay:" )
-
-                        otherwise ->
-                            ( state, Cmd.none )
 
 
 updateTurnOnly : TurnOnly -> GameState -> Mode.Mode -> Flags -> ( GameState, Cmd Main.Msg )
@@ -291,8 +301,8 @@ resolvableSet s r =
         Playing _ ->
             Playing r
 
-        Ended w _ ->
-            Ended w r
+        Ended w _ replay ->
+            Ended w r replay
 
 
 tick : GameState -> Float -> GameState
@@ -315,5 +325,5 @@ resolvable state =
         Playing r ->
             r
 
-        Ended _ r ->
+        Ended _ r _ ->
             r

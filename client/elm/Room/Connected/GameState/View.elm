@@ -60,7 +60,7 @@ view state roomID ({ hostname, httpPort, time, dimensions } as flags) =
                         resData :: _ ->
                             div []
                                 [ resView res.vm resData time res.tick
-                                , Endgame.view res.tick anim
+                                , Endgame.view res.tick anim Nothing
                                 , Animation.view params res.tick anim
                                 ]
 
@@ -74,11 +74,11 @@ view state roomID ({ hostname, httpPort, time, dimensions } as flags) =
                                     Playing _ ->
                                         div []
                                             [ Model.view ( model, res.vm ) time
-                                            , Endgame.view 0.0 Nothing
+                                            , Endgame.view 0.0 Nothing Nothing
                                             , Raymarch.view params
                                             ]
 
-                                    Ended winner _ ->
+                                    Ended winner _ mReplayId ->
                                         let
                                             endAnim =
                                                 Just (GameEnd winner)
@@ -88,7 +88,7 @@ view state roomID ({ hostname, httpPort, time, dimensions } as flags) =
                                         in
                                             div []
                                                 [ Model.view ( model, res.vm ) time
-                                                , Endgame.view endTick endAnim
+                                                , Endgame.view endTick endAnim mReplayId
                                                 , Raymarch.view params
                                                 ]
 

@@ -18,7 +18,6 @@ data Command =
   | PlayCardCommand Int
   | HoverCardCommand (Maybe Int)
   | RematchCommand
-  | PlayReplayCommand
   | ConcedeCommand
   | SelectCharacterCommand Text
   | ErrorCommand Text
@@ -53,8 +52,6 @@ parse name msg =
         ChatCommand name content
       "rematch" ->
         RematchCommand
-      "watchReplay" ->
-        PlayReplayCommand
       "concede" ->
         ConcedeCommand
       "selectCharacter" ->

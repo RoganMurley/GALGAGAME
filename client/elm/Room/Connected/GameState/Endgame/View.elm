@@ -4,7 +4,7 @@ import Animation.State exposing (animToResTickMax)
 import Animation.Types exposing (Anim(GameEnd))
 import Connected.Messages as Connected
 import Ease
-import GameState.Messages exposing (Msg(PlayingOnly), PlayingOnly(Rematch, WatchReplay))
+import GameState.Messages exposing (Msg(GotoReplay, PlayingOnly), PlayingOnly(Rematch))
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
@@ -13,8 +13,8 @@ import Room.Messages as Room
 import WhichPlayer.Types exposing (WhichPlayer(..))
 
 
-view : Float -> Maybe Anim -> Html Main.Msg
-view resTick anim =
+view : Float -> Maybe Anim -> Maybe String -> Html Main.Msg
+view resTick anim mReplayId =
     let
         ( endGameText, endGameClass ) =
             case anim of
@@ -37,7 +37,24 @@ view resTick anim =
             Ease.outQuint <| resTick / resTickMax
 
         isDisabled =
-            progress < 1.0
+            progress < 0.8
+
+        watchReplayButton =
+            case mReplayId of
+                Just replayId ->
+                    button
+                        [ class "replay"
+                        , onClick <|
+                            Main.RoomMsg <|
+                                Room.ConnectedMsg <|
+                                    Connected.GameStateMsg <|
+                                        GotoReplay replayId
+                        , disabled isDisabled
+                        ]
+                        [ text "Replay" ]
+
+                Nothing ->
+                    div [] []
     in
         div
             [ classList
@@ -60,15 +77,6 @@ view resTick anim =
                     , disabled isDisabled
                     ]
                     [ text "Rematch" ]
-                , button
-                    [ class "replay"
-                    , onClick <|
-                        Main.RoomMsg <|
-                            Room.ConnectedMsg <|
-                                Connected.GameStateMsg <|
-                                    PlayingOnly WatchReplay
-                    , disabled isDisabled
-                    ]
-                    [ text "Replay" ]
+                , watchReplayButton
                 ]
             ]
