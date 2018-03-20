@@ -11,26 +11,28 @@ import qualified Database.Redis as R
 import qualified Replay.Active as Active
 
 
-newtype Replay = Replay (Active.Replay, PlayState)
+data Replay = Replay Active.Replay PlayState
   deriving (Show, Eq)
 
 
 instance ToJSON Replay where
-  toJSON (Replay (Active.Replay (initial, res), final)) =
+  toJSON (Replay (Active.Replay initial res pa pb) final) =
     object [
       "list"    .= res
     , "initial" .= initial
     , "final"   .= final
+    , "pa"      .= pa
+    , "pb"      .= pb
     ]
 
 
 instance Mirror Replay where
-  mirror (Replay (active, final)) =
-    Replay (mirror active, mirror final)
+  mirror (Replay active final) =
+    Replay (mirror active) (mirror final)
 
 
 finalise :: Active.Replay -> PlayState -> Replay
-finalise active final = Replay (active, final)
+finalise = Replay
 
 
 save :: R.Connection -> Replay -> IO (Maybe Text)
