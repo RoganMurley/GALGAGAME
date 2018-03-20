@@ -16,7 +16,7 @@ import Outcome (Outcome)
 import Player (WhichPlayer(..), other)
 import Safe (atMay, headMay, tailSafe)
 import StackCard(StackCard(..))
-import Username (Username)
+import Username (Username(Username))
 import Util (Err, Gen, deleteIndex, split)
 
 
@@ -126,7 +126,7 @@ select which name (charModel, turn, gen) =
     startIfBothReady (Selecting (CharModel (ThreeSelected c1 c2 c3) (ThreeSelected ca cb cc) _) _ _) =
       let
         model = initModel turn (c1, c2, c3) (ca, cb, cc) gen :: Model
-        replay = Active.init model :: Active.Replay
+        replay = Active.init model (Username "") (Username "") :: Active.Replay
       in
         Started $ Playing model replay
     startIfBothReady s = s
