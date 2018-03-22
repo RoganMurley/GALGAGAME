@@ -16,7 +16,7 @@ import Outcome (Outcome)
 import Player (WhichPlayer(..), other)
 import Safe (atMay, headMay, tailSafe)
 import StackCard(StackCard(..))
-import Username (Username(Username))
+import Username (Username)
 import Util (Err, Gen, deleteIndex, split)
 
 
@@ -39,16 +39,16 @@ data GameCommand =
   deriving (Show)
 
 
-update :: GameCommand -> WhichPlayer -> GameState -> Either Err (Maybe GameState, [Outcome])
-update (Chat username msg) _ _ = chat username msg
-update cmd which state =
+update :: GameCommand -> WhichPlayer -> GameState -> (Username, Username) -> Either Err (Maybe GameState, [Outcome])
+update (Chat username msg) _ _ _ = chat username msg
+update cmd which state usernames =
   case state of
     Waiting _ _ ->
       Left ("Unknown command " <> (cs $ show cmd) <> " on a waiting GameState")
     Selecting selectModel turn gen ->
       case cmd of
         SelectCharacter name ->
-          select which name (selectModel, turn, gen)
+          select which name (selectModel, turn, gen) usernames
         _ ->
           Left ("Unknown command " <> (cs $ show cmd) <> " on a selecting GameState")
     Started started ->
@@ -115,8 +115,8 @@ concede _ _ =
   Left "Cannot concede when not playing"
 
 
-select :: WhichPlayer -> Text -> (CharModel, Turn, Gen) -> Either Err (Maybe GameState, [Outcome])
-select which name (charModel, turn, gen) =
+select :: WhichPlayer -> Text -> (CharModel, Turn, Gen) -> (Username, Username) -> Either Err (Maybe GameState, [Outcome])
+select which name (charModel, turn, gen) (usernamePa, usernamePb) =
   Right (
     Just . startIfBothReady $ Selecting (selectChar charModel which name) turn gen
   , [ Outcome.Sync ]
@@ -126,7 +126,7 @@ select which name (charModel, turn, gen) =
     startIfBothReady (Selecting (CharModel (ThreeSelected c1 c2 c3) (ThreeSelected ca cb cc) _) _ _) =
       let
         model = initModel turn (c1, c2, c3) (ca, cb, cc) gen :: Model
-        replay = Active.init model (Username "") (Username "") :: Active.Replay
+        replay = Active.init model usernamePa usernamePb :: Active.Replay
       in
         Started $ Playing model replay
     startIfBothReady s = s

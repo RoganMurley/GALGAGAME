@@ -1,7 +1,7 @@
 module Room where
 
 import Control.Monad (forM_)
-import Data.Maybe (maybeToList)
+import Data.Maybe (fromMaybe, maybeToList)
 import Data.Monoid ((<>))
 import Data.Text (Text, intercalate)
 
@@ -146,6 +146,15 @@ userList room
         (intercalate ", ")
       . (fmap ((\(Username u) -> u) . Client.name))
       $ Room.getClients room
+
+
+getUsernames :: Room -> (Username, Username)
+getUsernames room = (fromMaybe (Username "") usernamePa, fromMaybe (Username "") usernamePb)
+  where
+    clientA    = getPlayerClient PlayerA room :: Maybe Client
+    clientB    = getPlayerClient PlayerB room :: Maybe Client
+    usernamePa = Client.name <$> clientA      :: Maybe Username
+    usernamePb = Client.name <$> clientB      :: Maybe Username
 
 
 connected :: Room -> (Player, Player)

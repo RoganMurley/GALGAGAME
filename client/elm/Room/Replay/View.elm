@@ -1,5 +1,6 @@
 module Replay.View exposing (view)
 
+import Connected.View exposing (playersView)
 import Endgame.View as Endgame
 import GameState.Types exposing (GameState(Started))
 import GameState.View as GameState
@@ -28,8 +29,10 @@ view params { replay } ({ time } as flags) =
                     , Raymarch.view params
                     ]
 
-                Just state ->
-                    [ GameState.view (Started state) "" flags ]
+                Just { state, usernamePa, usernamePb } ->
+                    [ playersView ( Just usernamePa, Just usernamePb )
+                    , GameState.view (Started state) "" flags
+                    ]
     in
         div [ class "replay" ]
             replayView

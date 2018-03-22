@@ -54,7 +54,11 @@ view resTick anim mReplayId =
                         [ text "Replay" ]
 
                 Nothing ->
-                    div [] []
+                    button
+                        [ class "replay"
+                        , disabled True
+                        ]
+                        [ text "Replay" ]
     in
         div
             [ classList

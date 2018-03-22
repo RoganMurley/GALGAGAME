@@ -81,6 +81,10 @@ update msg state mode flags =
                         otherwise ->
                             0
 
+                initial : Model
+                initial =
+                    unsafeForceDecode ((Json.field "initial") Model.decoder) str
+
                 resDiffList : List Resolvable.ResolveDiffData
                 resDiffList =
                     unsafeForceDecode ((Json.field "list") (Json.list resolveDiffDataDecoder)) str
@@ -97,21 +101,19 @@ update msg state mode flags =
                 model =
                     .final <| resolvable finalState
 
-                initial : Model
-                initial =
-                    unsafeForceDecode ((Json.field "initial") Model.decoder) str
+                res : Resolvable.Model
+                res =
+                    { vm = Model.ViewModel.init
+                    , tick = oldTick
+                    , final = model
+                    , resList = oldResList ++ resList
+                    }
 
                 newState : GameState
                 newState =
                     carryVm state <|
                         resMap
-                            (\_ ->
-                                { vm = Model.ViewModel.init
-                                , tick = oldTick
-                                , final = model
-                                , resList = oldResList ++ resList
-                                }
-                            )
+                            (\_ -> res)
                             (Started finalState)
             in
                 ( newState, Cmd.none )

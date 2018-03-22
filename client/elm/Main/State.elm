@@ -65,7 +65,7 @@ update msg ({ room, settings, flags } as model) =
                             Nothing ->
                                 Cmd.none
 
-                            Just state ->
+                            Just { state } ->
                                 listen time (Started state)
 
                     otherwise ->

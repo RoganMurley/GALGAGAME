@@ -1,4 +1,4 @@
-module Connected.View exposing (concedeView, view)
+module Connected.View exposing (concedeView, playersView, view)
 
 import Html exposing (..)
 import Html.Attributes exposing (..)

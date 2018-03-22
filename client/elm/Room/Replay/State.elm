@@ -10,6 +10,7 @@ import Model.Types exposing (Model)
 import Model.ViewModel
 import Replay.Messages exposing (Msg(..))
 import Replay.Types as Replay
+import Replay.Types exposing (Replay)
 import Resolvable.Decoders exposing (resolveDiffDataDecoder)
 import Resolvable.State as Resolvable
 import Resolvable.Types as Resolvable
@@ -66,9 +67,28 @@ receive msg =
                         , resList = resList
                         }
 
-                    replay : PlayState
-                    replay =
+                    state : PlayState
+                    state =
                         resMapPlay (\_ -> res) finalState
+
+                    usernamePa : String
+                    usernamePa =
+                        unsafeForceDecode
+                            ((Json.field "pa") Json.string)
+                            content
+
+                    usernamePb : String
+                    usernamePb =
+                        unsafeForceDecode
+                            ((Json.field "pb") Json.string)
+                            content
+
+                    replay : Replay
+                    replay =
+                        { state = state
+                        , usernamePa = usernamePa
+                        , usernamePb = usernamePb
+                        }
                 in
                     message <|
                         Main.RoomMsg <|
@@ -98,6 +118,8 @@ tick : Replay.Model -> Float -> Replay.Model
 tick model dt =
     let
         newReplay =
-            Maybe.map (resMapPlay (Resolvable.tick dt)) model.replay
+            Maybe.map
+                (\r -> { r | state = resMapPlay (Resolvable.tick dt) r.state })
+                model.replay
     in
         { model | replay = newReplay }

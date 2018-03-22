@@ -1,8 +1,15 @@
-module Replay.Types exposing (Model)
+module Replay.Types exposing (..)
 
 import GameState.Types exposing (PlayState)
 
 
 type alias Model =
-    { replay : Maybe PlayState
+    { replay : Maybe Replay
+    }
+
+
+type alias Replay =
+    { state : PlayState
+    , usernamePa : String
+    , usernamePb : String
     }
