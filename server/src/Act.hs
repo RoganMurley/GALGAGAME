@@ -51,7 +51,7 @@ roomUpdate cmd which roomVar =
   where
     updateRoom :: Room -> Either Err (Maybe Room, [Outcome])
     updateRoom room =
-      case update cmd which (Room.getState room) of
+      case update cmd which (Room.getState room) (Room.getUsernames room) of
         Left err ->
           Left err
         Right (newState, outcomes) ->

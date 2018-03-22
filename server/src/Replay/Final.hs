@@ -1,12 +1,12 @@
 module Replay.Final where
 
 import Data.Aeson (ToJSON(..), (.=), encode, object)
-import Data.Hashable (Hashable(hash))
 import Data.String.Conversions (cs)
 import Data.Text (Text)
 import GameState (PlayState)
 import Mirror (Mirror(..))
 
+import qualified Data.GUID as GUID
 import qualified Database.Redis as R
 import qualified Replay.Active as Active
 
@@ -37,19 +37,15 @@ finalise = Replay
 
 save :: R.Connection -> Replay -> IO (Maybe Text)
 save conn replay = do
-  result <- (R.runRedis conn) $ do
-    _ <- R.set key value
-    R.expire key replayTimeout
+  replayId <- GUID.genText
+  let value = cs (encode replay)
+  let key = cs replayId
+  result <- R.runRedis conn (R.set key value)
   case result of
     Right _ ->
       return (Just . cs $ key)
     Left _ ->
       return Nothing
-  where
-    value = cs $ encode replay
-    key = cs . show $ hash value
-    replayTimeout = 3600 * 24 -- 1 day
-
 
 load :: R.Connection -> Text -> IO (Maybe Text)
 load conn replayId = do

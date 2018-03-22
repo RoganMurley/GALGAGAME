@@ -1,7 +1,7 @@
 module Replay.Messages exposing (Msg(..))
 
-import GameState.Types exposing (PlayState)
+import Replay.Types exposing (Replay)
 
 
 type Msg
-    = SetReplay PlayState
+    = SetReplay Replay

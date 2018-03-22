@@ -11,6 +11,7 @@ import GameCommand (GameCommand(..), resolveAll, update)
 import GameState
 import Model
 import Player (WhichPlayer(..))
+import Username (Username(Username))
 import Util (Gen, fromRight)
 
 import qualified Replay.Active
@@ -64,7 +65,7 @@ possibleActions m =
 postulateAction :: Model -> Gen -> Action -> PlayState
 postulateAction model gen action =
   -- DANGEROUS, WE NEED TO SPLIT UP THE COMMAND STUFF IN GAMESTATE
-  (\(Started p) -> p) . fromJust . fst . fromRight $ update command PlayerA state
+  (\(Started p) -> p) . fromJust . fst . fromRight $ update command PlayerA state (Username "", Username "")
   where
     command = toCommand action :: GameCommand
     state = Started $ Playing (modI model $ setGen gen) (Replay.Active.null) :: GameState
