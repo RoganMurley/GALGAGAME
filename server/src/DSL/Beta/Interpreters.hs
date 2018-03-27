@@ -9,7 +9,7 @@ import Data.Functor.Sum (Sum(..))
 import DSL.Beta.DSL
 import DSL.Util (toLeft, toRight)
 import Player (WhichPlayer(..))
-import Model (Model, maxHandLength)
+import Model (Model, gameover, maxHandLength)
 import ModelDiff (ModelDiff)
 import Safe (headMay)
 import StackCard (StackCard(..))
@@ -110,14 +110,17 @@ betaI :: ∀ a . DSL a -> AlphaLogAnimProgram a
 betaI x = (foldFree liftAlphaAnim) . (animI x) . alphaI $ liftF x
 
 
-execute :: Model -> AlphaLogAnimProgram a -> (Model, a, String, [(ModelDiff, Maybe CardAnim)])
+execute :: Model -> AlphaLogAnimProgram () -> (Model, String, [(ModelDiff, Maybe CardAnim)])
 execute = execute' "" [] ModelDiff.base
   where
-    execute' :: String -> [(ModelDiff, Maybe CardAnim)] -> ModelDiff -> Model -> AlphaLogAnimProgram a -> (Model, a, String, [(ModelDiff, Maybe CardAnim)])
-    execute' s a _ m (Pure x) =
-      (m, x, s, a)
+    execute' :: String -> [(ModelDiff, Maybe CardAnim)] -> ModelDiff -> Model -> AlphaLogAnimProgram () -> (Model, String, [(ModelDiff, Maybe CardAnim)])
+    execute' s a _ m (Pure _) =
+      (m, s, a)
     execute' s a d m (Free (InR anim)) =
-      execute' s (a ++ [(d, Anim.animate anim)]) ModelDiff.base m (Anim.next anim)
+      let
+        next = if gameover m then Pure () else Anim.next anim
+      in
+          execute' s (a ++ [(d, Anim.animate anim)]) ModelDiff.base m next
     execute' s a d m (Free (InL (InL p))) =
       let
          (newDiff, n) = Alpha.alphaEffI m p

@@ -148,7 +148,7 @@ playCard index which m replay
               Alpha.resetPasses
               Alpha.modHand which (deleteIndex index))
             Beta.play which c
-          (newModel, _, _, anims) = Beta.execute m $ foldFree Beta.betaI playCardProgram
+          (newModel, _, anims) = Beta.execute m $ foldFree Beta.betaI playCardProgram
           res :: [(ModelDiff, Maybe CardAnim, Maybe StackCard)]
           res = (\(x, y) -> (x, y, Nothing)) <$> anims
           newPlayState = Playing newModel (Active.add replay res) :: PlayState
@@ -183,7 +183,7 @@ endTurn which model replay
                   Beta.raw Alpha.swapTurn
                   Beta.raw Alpha.resetPasses
                   drawCards
-              (newModel, _, _, endAnims) = Beta.execute m $ foldFree Beta.betaI endProgram
+              (newModel, _, endAnims) = Beta.execute m $ foldFree Beta.betaI endProgram
               endRes :: [(ModelDiff, Maybe CardAnim, Maybe StackCard)]
               endRes = (\(x, y) -> (x, y, Nothing)) <$> endAnims
               newPlayState :: PlayState
@@ -262,7 +262,7 @@ resolveAll model replay =
           p
       Nothing ->
         return ()
-    (m, _, _, anims) = Beta.execute model program :: (Model, (), String, [(ModelDiff, Maybe CardAnim)])
+    (m, _, anims) = Beta.execute model program :: (Model, String, [(ModelDiff, Maybe CardAnim)])
 
 
 

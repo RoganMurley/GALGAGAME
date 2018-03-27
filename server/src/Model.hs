@@ -78,3 +78,10 @@ setPmodel pmodel PlayerB model = model { model_pb = pmodel }
 
 modPmodel :: (PlayerModel -> PlayerModel) -> WhichPlayer -> Model -> Model
 modPmodel f p m = setPmodel (f (getPmodel p m)) p m
+
+
+gameover :: Model -> Bool
+gameover model = (lifePA <= 0) || (lifePB <= 0)
+  where
+    lifePA = pmodel_life $ model_pa model :: Life
+    lifePB = pmodel_life $ model_pb model :: Life
