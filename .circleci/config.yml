@@ -6,8 +6,8 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Greeting
-          command: echo Hello, world.
+          name: Server tests
+          command: cd server; stack test
       - run:
-          name: Print the Current Time
-          command: date
+          name: Client build
+          command: cd client; gulp build
