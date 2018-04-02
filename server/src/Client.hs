@@ -1,5 +1,7 @@
 module Client where
 
+import Config (App)
+import Control.Monad.IO.Class (liftIO)
 import Data.Aeson (ToJSON(..))
 import Data.Text (Text)
 import Network.WebSockets (Connection, receiveData, sendTextData)
@@ -44,13 +46,13 @@ guid :: Client -> Text
 guid = client_guid
 
 
-send :: Text -> Client -> IO ()
-send message (Client _ (PlayerConnection conn) _) = sendTextData conn message
+send :: Text -> Client -> App ()
+send message (Client _ (PlayerConnection conn) _) = liftIO $ sendTextData conn message
 send _       _                                    = return ()
 
 
-receive :: Client -> IO (Text)
-receive (Client _ (PlayerConnection conn) _) = receiveData conn
+receive :: Client -> App (Text)
+receive (Client _ (PlayerConnection conn) _) = liftIO $ receiveData conn
 receive  _                                   = return ("")
 
 

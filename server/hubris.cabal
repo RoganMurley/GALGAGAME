@@ -24,6 +24,7 @@ library
                      , Characters
                      , Client
                      , Command
+                     , Config
                      , Database
                      , DSL.Alpha
                      , DSL.Anim
@@ -99,6 +100,7 @@ executable hubris
                      , hedis
                      , hslogger
                      , http-types
+                     , lifted-base
                      , random
                      , safe
                      , string-conversions

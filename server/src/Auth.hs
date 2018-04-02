@@ -2,6 +2,8 @@ module Auth where
 
 import Prelude hiding (length)
 
+import Config (App, Config(..), getConfig, getTokenConn, runApp)
+import Control.Monad.IO.Class (liftIO)
 import Control.Monad.Trans.Class (lift)
 import Crypto.BCrypt (validatePassword, hashPasswordUsingPolicy, slowerBcryptHashingPolicy)
 import Data.Aeson ((.=), object)
@@ -27,20 +29,21 @@ import qualified Data.Text as T
 import qualified Data.Text.Encoding as T
 
 
-app :: R.Connection -> R.Connection -> IO Application
-app userConn tokenConn = do
-  updateGlobalLogger "auth" $ setLevel DEBUG
-  scottyApp $ do
-    get  "/auth/me"       $ me                tokenConn
-    post "/auth/login"    $ login    userConn tokenConn
-    post "/auth/logout"   $ logout            tokenConn
-    post "/auth/register" $ register userConn
+app :: App Application
+app = do
+  liftIO $ updateGlobalLogger "auth" $ setLevel DEBUG
+  config <- getConfig
+  liftIO $ scottyApp $ do
+    get  "/auth/me"       $ me       config
+    post "/auth/login"    $ login    config
+    post "/auth/logout"   $ logout   config
+    post "/auth/register" $ register config
 
 
-me :: R.Connection -> ActionM ()
-me tokenConn = do
+me :: Config -> ActionM ()
+me config = do
   token     <- getCookie loginCookieName
-  usernameM <- lift $ checkAuth tokenConn token
+  usernameM <- lift $ runApp (checkAuth token) config
   case usernameM of
     Just username -> do
       json $ object [ "username" .= username ]
@@ -50,8 +53,10 @@ me tokenConn = do
       status ok200
 
 
-login :: R.Connection -> R.Connection -> ActionM ()
-login userConn tokenConn = do
+login :: Config -> ActionM ()
+login config = do
+  let userConn = Config.userConn config
+  let tokenConn = Config.tokenConn config
   usernameRaw <- param "username"
   password <- param "password"
   let username = (cs . T.toLower $ usernameRaw) :: ByteString
@@ -88,8 +93,9 @@ login userConn tokenConn = do
       status internalServerError500
 
 
-logout :: R.Connection -> ActionM ()
-logout tokenConn = do
+logout :: Config -> ActionM ()
+logout config = do
+  let tokenConn = Config.tokenConn config
   token <- getCookie loginCookieName
   case token of
     Just t -> do
@@ -102,12 +108,13 @@ logout tokenConn = do
       status ok200
 
 
-register :: R.Connection -> ActionM ()
-register userConn = do
+register :: Config -> ActionM ()
+register config = do
+  let conn = userConn config
   usernameRaw <- param "username"
   password <- param "password"
   let username = (cs . T.toLower $ usernameRaw) :: ByteString
-  alreadyExists <- lift . (R.runRedis userConn) $ R.exists username
+  alreadyExists <- lift . (R.runRedis conn) $ R.exists username
   case alreadyExists of
     Right False -> do
       case legalName username of
@@ -125,7 +132,7 @@ register userConn = do
               p <- lift $ hashPasswordUsingPolicy slowerBcryptHashingPolicy password
               case p of
                 Just hashedPassword -> do
-                  _ <- lift . (R.runRedis userConn) $ R.set username hashedPassword
+                  _ <- lift . (R.runRedis conn) $ R.set username hashedPassword
                   json $ object [ ]
                   status created201
                 Nothing ->
@@ -140,15 +147,16 @@ register userConn = do
       status internalServerError500
 
 
-checkAuth :: R.Connection -> Maybe Token -> IO (Maybe Username)
-checkAuth _         Nothing      = return Nothing
-checkAuth tokenConn (Just token) = do
-  gotten <- (R.runRedis tokenConn) . R.get $ T.encodeUtf8 token
+checkAuth :: Maybe Token -> App (Maybe Username)
+checkAuth Nothing      = return Nothing
+checkAuth (Just token) = do
+  conn <- getTokenConn
+  gotten <- liftIO $ (R.runRedis conn) . R.get $ T.encodeUtf8 token
   case gotten of
     Right username ->
-      return (T.decodeUtf8 <$> username)
+      liftIO $ return (T.decodeUtf8 <$> username)
     Left _ -> do
-      return Nothing
+      liftIO $ return Nothing
 
 
 type Token    = Text

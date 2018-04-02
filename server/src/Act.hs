@@ -1,8 +1,10 @@
 module Act where
 
 import CardAnim (CardAnim)
+import Config (App)
 import Control.Concurrent.STM.TVar (TVar, readTVar)
 import Control.Monad (forM_)
+import Control.Monad.IO.Class (liftIO)
 import Control.Monad.STM (STM, atomically)
 import Data.Aeson (encode)
 import Data.Monoid ((<>))
@@ -26,8 +28,6 @@ import Command (Command(..))
 
 import qualified Client
 import Client (Client(..))
-
-import qualified Database.Redis as R
 
 import qualified Outcome
 import Outcome (Outcome)
@@ -58,18 +58,18 @@ roomUpdate cmd which roomVar =
           Right ((Room.setState room) <$> newState, outcomes)
 
 
-actPlay :: Command -> WhichPlayer -> TVar Room -> R.Connection -> IO ()
-actPlay cmd which roomVar replayConn = do
-  infoM "app" $ printf "Command: %s" (show cmd)
+actPlay :: Command -> WhichPlayer -> TVar Room -> App ()
+actPlay cmd which roomVar = do
+  liftIO $ infoM "app" $ printf "Command: %s" (show cmd)
   case trans cmd of
     Just command -> do
-      (room, updated) <- atomically $ roomUpdate command which roomVar
+      (room, updated) <- liftIO $ atomically $ roomUpdate command which roomVar
       case updated of
         Left err -> do
-          warningM "app" $ printf "Command error: %s" (show err)
+          liftIO $ warningM "app" $ printf "Command error: %s" (show err)
           Room.sendToPlayer which (Command.toChat (ErrorCommand err)) room
         Right outcomes ->
-          forM_ outcomes (actOutcome replayConn room)
+          forM_ outcomes (actOutcome room)
     Nothing ->
       actSpec cmd roomVar
   where
@@ -84,18 +84,18 @@ actPlay cmd which roomVar replayConn = do
     trans _                          = Nothing
 
 
-actSpec :: Command -> TVar Room -> IO ()
+actSpec :: Command -> TVar Room -> App ()
 actSpec cmd roomVar = do
-  room <- atomically $ readTVar roomVar
+  room <- liftIO . atomically $ readTVar roomVar
   Room.broadcast (Command.toChat cmd) room
 
 
-syncClient :: Client -> GameState -> IO ()
+syncClient :: Client -> GameState -> App ()
 syncClient client game =
   Client.send (("sync:" <>) . cs . encode $ game) client
 
 
-syncRoomClients :: Room -> IO ()
+syncRoomClients :: Room -> App ()
 syncRoomClients room = do
   Room.sendToPlayer PlayerA syncMsgPa room
   Room.sendToPlayer PlayerB syncMsgPb room
@@ -106,7 +106,7 @@ syncRoomClients room = do
     syncMsgPb = ("sync:" <>) . cs . encode . mirror $ game :: Text
 
 
-syncPlayersRoom :: Room -> IO ()
+syncPlayersRoom :: Room -> App ()
 syncPlayersRoom room = do
   Room.sendExcluding PlayerB (syncMsg True) room
   Room.sendToPlayer PlayerB (syncMsg False) room
@@ -117,7 +117,7 @@ syncPlayersRoom room = do
         (cs . encode . (if rev then mirror else id) $ Room.connected room)
 
 
-resolveRoomClients :: ([(ModelDiff, Maybe CardAnim, Maybe StackCard)], Model, PlayState) -> Room -> IO ()
+resolveRoomClients :: ([(ModelDiff, Maybe CardAnim, Maybe StackCard)], Model, PlayState) -> Room -> App ()
 resolveRoomClients (resList, initial, final) room = do
   Room.sendToPlayer PlayerA msgPa room
   Room.sendToPlayer PlayerB msgPb room
@@ -136,20 +136,20 @@ resolveRoomClients (resList, initial, final) room = do
         (mirror final)
 
 
-actOutcome :: R.Connection -> Room -> Outcome -> IO ()
-actOutcome _ room Outcome.Sync =
+actOutcome :: Room -> Outcome -> App ()
+actOutcome room Outcome.Sync =
   syncRoomClients room
-actOutcome _ room (Outcome.Encodable o@(Outcome.Hover which _)) =
+actOutcome room (Outcome.Encodable o@(Outcome.Hover which _)) =
   Room.sendExcluding which (("hover:" <>) . cs . encode $ o) room
-actOutcome _ room (Outcome.Encodable (Outcome.Chat (Username username) msg)) =
+actOutcome room (Outcome.Encodable (Outcome.Chat (Username username) msg)) =
   Room.broadcast ("chat:" <> username <> ": " <> msg) room
-actOutcome _ room (Outcome.Encodable (Outcome.Resolve models initial final)) =
+actOutcome room (Outcome.Encodable (Outcome.Resolve models initial final)) =
   resolveRoomClients (models, initial, final) room
-actOutcome replayConn room (Outcome.SaveReplay replay) = do
-  infoM "app" "Saving replay..."
-  result <- Replay.Final.save replayConn replay
+actOutcome room (Outcome.SaveReplay replay) = do
+  liftIO $ infoM "app" "Saving replay..."
+  result <- Replay.Final.save replay
   case result of
     Just replayId ->
       Room.broadcast ("replaySaved:" <> replayId) room
     Nothing ->
-      warningM "app" "Failed to save replay"
+      liftIO $ warningM "app" "Failed to save replay"

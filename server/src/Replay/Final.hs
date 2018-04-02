@@ -1,5 +1,7 @@
 module Replay.Final where
 
+import Config (App, getReplayConn)
+import Control.Monad.IO.Class (liftIO)
 import Data.Aeson (ToJSON(..), (.=), encode, object)
 import Data.String.Conversions (cs)
 import Data.Text (Text)
@@ -35,22 +37,23 @@ finalise :: Active.Replay -> PlayState -> Replay
 finalise = Replay
 
 
-save :: R.Connection -> Replay -> IO (Maybe Text)
-save conn replay = do
-  replayId <- GUID.genText
+save :: Replay -> App (Maybe Text)
+save replay = do
+  conn <- getReplayConn
+  replayId <- liftIO GUID.genText
   let value = cs (encode replay)
   let key = cs replayId
-  result <- R.runRedis conn (R.set key value)
+  result <- liftIO . (R.runRedis conn) $ R.set key value
   case result of
     Right _ ->
       return (Just . cs $ key)
     Left _ ->
       return Nothing
 
-load :: R.Connection -> Text -> IO (Maybe Text)
-load conn replayId = do
-  result <- (R.runRedis conn) $ do
-    R.get (cs replayId)
+load :: Text -> App (Maybe Text)
+load replayId = do
+  conn <- getReplayConn
+  result <- liftIO . (R.runRedis conn) $ R.get (cs replayId)
   case result of
     Right replay ->
       return $ cs <$> replay
