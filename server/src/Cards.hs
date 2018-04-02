@@ -370,6 +370,7 @@ gold =
       Beta.draw w
       Beta.draw w
 
+
 theEnd :: Card
 theEnd =
   Card
@@ -377,3 +378,41 @@ theEnd =
     "You're out of cards, hurt yourself for 10."
     "the_end.svg"
     $ Beta.slash 10
+
+
+allCards :: [Card]
+allCards =
+  [
+    dagger
+  , fireball
+  , offering
+  , confound
+  , hammer
+  , lightning
+  , hubris
+  , katana
+  , curse
+  , bless
+  , balance
+  , scythe
+  , bloodsucker
+  , serpent
+  , badApple
+  , reversal
+  , staff
+  , surge
+  , mimic
+  , prophecy
+  , sword
+  , potion
+  , reflect
+  , boomerang
+  , overwhelm
+  , echo
+  , feint
+  , relicblade
+  , greed
+  , alchemy
+  , gold
+  , theEnd
+  ]
