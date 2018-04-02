@@ -1,5 +1,6 @@
 module Room where
 
+import Config (App)
 import Control.Monad (forM_)
 import Data.Maybe (fromMaybe, maybeToList)
 import Data.Monoid ((<>))
@@ -162,11 +163,11 @@ connected Room{ room_pa, room_pb } = (room_pa, room_pb)
 
 
 -- Sending messages.
-broadcast :: Text -> Room -> IO ()
+broadcast :: Text -> Room -> App ()
 broadcast msg room = forM_ (Room.getClients room) (Client.send msg)
 
 
-sendToPlayer :: WhichPlayer -> Text -> Room -> IO ()
+sendToPlayer :: WhichPlayer -> Text -> Room -> App ()
 sendToPlayer which msg room =
   case Room.getPlayerClient which room of
     Just client ->
@@ -175,11 +176,11 @@ sendToPlayer which msg room =
       return ()
 
 
-sendToSpecs :: Text -> Room -> IO ()
+sendToSpecs :: Text -> Room -> App ()
 sendToSpecs msg room = forM_ (Room.getSpecs room) (Client.send msg)
 
 
-sendExcluding :: WhichPlayer -> Text -> Room -> IO ()
+sendExcluding :: WhichPlayer -> Text -> Room -> App ()
 sendExcluding which msg room = do
   sendToSpecs msg room
   sendToPlayer (other which) msg room
