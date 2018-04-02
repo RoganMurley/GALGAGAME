@@ -7,11 +7,19 @@ import Test.Tasty.QuickCheck (Arbitrary, CoArbitrary, arbitrary, coarbitrary, el
 
 import System.Random (mkStdGen)
 
+import Card (Card(..))
+import Cards (allCards)
+import CardAnim (CardAnim(..))
 import Characters (Character(..), CharModel(..), SelectedCharacters(..))
-import GameState (GameState(..), PlayState(..))
-import Model (Card(..), Model(..), PlayerModel(..), Passes(..), StackCard(..))
+import GameState (GameState(..), PlayState(..), WaitType(..))
+import Model (Model(..), PlayerModel(..), Passes(..))
+import ModelDiff (ModelDiff(..), PlayerModelDiff(..))
 import Player (WhichPlayer(..))
+import StackCard (StackCard(..))
+import Username (Username(Username))
 
+import qualified Replay.Active as Active
+import qualified Replay.Final as Final
 import qualified Util as Util
 
 
@@ -29,7 +37,7 @@ instance Arbitrary StackCard where
 
 
 instance Arbitrary Card where
-  arbitrary = Card <$> arbitrary <*> arbitrary <*> arbitrary <*> arbitrary <*> arbitrary
+  arbitrary = elements allCards
 
 
 instance Arbitrary Model where
@@ -44,6 +52,10 @@ instance Arbitrary PlayerModel where
   arbitrary = PlayerModel <$> arbitrary <*> arbitrary <*> arbitrary
 
 
+instance Arbitrary WaitType where
+  arbitrary = elements [WaitCustom, WaitQuickplay]
+
+
 instance Arbitrary Passes where
   arbitrary = elements [NoPass, OnePass]
 
@@ -55,7 +67,7 @@ instance Arbitrary Util.Gen where
 instance Arbitrary GameState where
   arbitrary = oneof
     [
-      Waiting   <$> arbitrary
+      Waiting   <$> arbitrary <*> arbitrary
     , Selecting <$> arbitrary <*> arbitrary <*> arbitrary
     , Started   <$> arbitrary
     ]
@@ -64,8 +76,8 @@ instance Arbitrary GameState where
 instance Arbitrary PlayState where
   arbitrary = oneof
     [
-      Playing <$> arbitrary
-    , Ended   <$> arbitrary <*> arbitrary
+      Playing <$> arbitrary <*> arbitrary
+    , Ended   <$> arbitrary <*> arbitrary <*> arbitrary <*> arbitrary
     ]
 
 
@@ -84,4 +96,39 @@ instance Arbitrary SelectedCharacters where
     , OneSelected   <$> arbitrary
     , TwoSelected   <$> arbitrary <*> arbitrary
     , ThreeSelected <$> arbitrary <*> arbitrary <*> arbitrary
+    ]
+
+
+instance Arbitrary Active.Replay where
+    arbitrary = Active.Replay <$> arbitrary <*> arbitrary <*> arbitrary <*> arbitrary
+
+
+instance Arbitrary Final.Replay where
+    arbitrary = Final.Replay <$> arbitrary <*> arbitrary
+
+
+instance Arbitrary Username where
+    arbitrary = Username <$> arbitrary
+
+
+instance Arbitrary ModelDiff where
+  arbitrary = ModelDiff <$> arbitrary <*> arbitrary <*> arbitrary <*> arbitrary <*> arbitrary <*> arbitrary
+
+
+instance Arbitrary PlayerModelDiff where
+  arbitrary = PlayerModelDiff <$> arbitrary <*> arbitrary <*> arbitrary
+
+
+instance Arbitrary CardAnim where
+  arbitrary = oneof
+    [ Slash <$> arbitrary <*> arbitrary
+    , Heal <$> arbitrary
+    , Draw <$> arbitrary
+    , Bite <$> arbitrary <*> arbitrary
+    , pure Reverse
+    , pure Obliterate
+    , Play <$> arbitrary <*> arbitrary
+    , Transmute <$> arbitrary <*> arbitrary
+    , GameEnd <$> arbitrary
+    , Adhoc <$> arbitrary <*> arbitrary <*> arbitrary
     ]
