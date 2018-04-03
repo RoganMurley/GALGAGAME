@@ -4,6 +4,7 @@ import Control.Applicative ((<|>))
 import Data.Aeson (ToJSON(..), (.=), object)
 import Data.Aeson.Types (Pair, Value(Null))
 import Data.Maybe (fromMaybe)
+import Data.Monoid ((<>), Monoid)
 import Life (Life)
 import Mirror (Mirror(..))
 import Model (Hand, Deck, Model(..), Passes, PlayerModel(..), Turn, Stack)
@@ -88,34 +89,38 @@ updateP m d =
     }
 
 
-base :: ModelDiff
-base =
-  ModelDiff
-    { modeldiff_turn   = Nothing
-    , modeldiff_stack  = Nothing
-    , modeldiff_passes = Nothing
-    , modeldiff_gen    = Nothing
-    , modeldiff_pa     = PlayerModelDiff Nothing Nothing Nothing
-    , modeldiff_pb     = PlayerModelDiff Nothing Nothing Nothing
-    }
+instance Monoid ModelDiff where
+
+  mempty =
+      ModelDiff
+        { modeldiff_turn   = Nothing
+        , modeldiff_stack  = Nothing
+        , modeldiff_passes = Nothing
+        , modeldiff_gen    = Nothing
+        , modeldiff_pa     = mempty
+        , modeldiff_pb     = mempty
+        }
+
+  mappend a b =
+    ModelDiff
+      { modeldiff_turn   = (modeldiff_turn b)   <|> (modeldiff_turn a)
+      , modeldiff_stack  = (modeldiff_stack b)  <|> (modeldiff_stack a)
+      , modeldiff_passes = (modeldiff_passes b) <|> (modeldiff_passes a)
+      , modeldiff_gen    = (modeldiff_gen b)    <|> (modeldiff_gen a)
+      , modeldiff_pa     = (modeldiff_pa b) <> (modeldiff_pa a)
+      , modeldiff_pb     = (modeldiff_pb b) <> (modeldiff_pb a)
+      }
 
 
-merge :: ModelDiff -> ModelDiff -> ModelDiff
-merge a b =
-  ModelDiff
-    { modeldiff_turn   = (modeldiff_turn b)   <|> (modeldiff_turn a)
-    , modeldiff_stack  = (modeldiff_stack b)  <|> (modeldiff_stack a)
-    , modeldiff_passes = (modeldiff_passes b) <|> (modeldiff_passes a)
-    , modeldiff_gen    = (modeldiff_gen b)    <|> (modeldiff_gen a)
-    , modeldiff_pa     = mergeP (modeldiff_pa b) (modeldiff_pa a)
-    , modeldiff_pb     = mergeP (modeldiff_pb b) (modeldiff_pb a)
-    }
 
+instance Monoid PlayerModelDiff where
 
-mergeP :: PlayerModelDiff -> PlayerModelDiff -> PlayerModelDiff
-mergeP a b =
-  PlayerModelDiff
-    { pmodeldiff_hand = (pmodeldiff_hand b) <|> (pmodeldiff_hand a),
-      pmodeldiff_deck = (pmodeldiff_deck b) <|> (pmodeldiff_deck a),
-      pmodeldiff_life = (pmodeldiff_life b) <|> (pmodeldiff_life a)
-    }
+  mempty =
+    PlayerModelDiff Nothing Nothing Nothing
+
+  mappend a b =
+    PlayerModelDiff
+      { pmodeldiff_hand = (pmodeldiff_hand b) <|> (pmodeldiff_hand a),
+        pmodeldiff_deck = (pmodeldiff_deck b) <|> (pmodeldiff_deck a),
+        pmodeldiff_life = (pmodeldiff_life b) <|> (pmodeldiff_life a)
+      }

@@ -22,7 +22,6 @@ import Util (Err, Gen, deleteIndex, split)
 
 import qualified DSL.Alpha as Alpha
 import qualified DSL.Beta as Beta
-import qualified ModelDiff
 import qualified Outcome
 import qualified Replay.Active as Active
 import qualified Replay.Final as Final
@@ -99,7 +98,7 @@ concede :: WhichPlayer -> GameState -> Either Err (Maybe GameState, [Outcome])
 concede which (Started (Playing model replay)) =
   let
     gen = Alpha.evalI model Alpha.getGen :: Gen
-    anims = [(ModelDiff.base, Just (GameEnd (Just (other which))), Nothing)]
+    anims = [(mempty, Just (GameEnd (Just (other which))), Nothing)]
     newReplay = Active.add replay anims :: Active.Replay
     newPlayState = Ended (Just (other which)) model newReplay gen :: PlayState
     finalReplay = Final.finalise newReplay newPlayState :: Final.Replay
@@ -244,7 +243,7 @@ resolveAll model replay =
         Playing m' newReplay ->
           resolveAll m' newReplay
         Ended w m' newReplay gen -> do
-          let endAnim = [(ModelDiff.base, Just (GameEnd w), Nothing)]
+          let endAnim = [(mempty, Just (GameEnd w), Nothing)]
           tell endAnim
           return (Ended w m' (Active.add newReplay endAnim) gen)
     Nothing ->
