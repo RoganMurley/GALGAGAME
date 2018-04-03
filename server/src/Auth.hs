@@ -43,7 +43,7 @@ app = do
 me :: Config -> ActionM ()
 me config = do
   token     <- getCookie loginCookieName
-  usernameM <- lift $ runApp (checkAuth token) config
+  usernameM <- lift . runApp config $ checkAuth token
   case usernameM of
     Just username -> do
       json $ object [ "username" .= username ]
