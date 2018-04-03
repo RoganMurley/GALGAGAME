@@ -14,8 +14,8 @@ data Config = Config
   }
 
 
-runApp :: App a -> Config -> IO a
-runApp = runReaderT
+runApp :: Config -> App a -> IO a
+runApp = flip runReaderT
 
 
 getConfig :: App Config

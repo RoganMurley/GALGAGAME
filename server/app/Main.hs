@@ -73,7 +73,7 @@ main = do
 
   let config = Config userConn tokenConn replayConn
 
-  authApp   <- runApp A.app config
+  authApp   <- runApp config A.app
   state     <- atomically $ newTVar Server.initState
 
   run 9160 $ waiApp state config authApp
@@ -89,15 +89,12 @@ waiApp state config backupApp =
 
 wsApp :: TVar Server.State -> Config -> WS.ServerApp
 wsApp state config pending =
-  runApp
-    (do
-      connection <- liftIO $ WS.acceptRequest pending
-      msg        <- liftIO $ WS.receiveData connection
-      usernameM  <- A.checkAuth (A.getToken pending)
-      liftIO $ WS.forkPingThread connection 30
-      begin connection msg (Username <$> usernameM) state
-    )
-    config
+  runApp config $ do
+    connection <- liftIO $ WS.acceptRequest pending
+    msg        <- liftIO $ WS.receiveData connection
+    usernameM  <- A.checkAuth (A.getToken pending)
+    liftIO $ WS.forkPingThread connection 30
+    begin connection msg (Username <$> usernameM) state
 
 
 connectionFail :: WS.Connection -> String -> App ()
