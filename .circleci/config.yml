@@ -5,6 +5,7 @@ jobs:
       - image: fpco/stack-build
     steps:
       - checkout
+      - setup_remote_docker
       - run:
           name: Server tests
           command: cd server; stack test
