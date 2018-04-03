@@ -6,6 +6,7 @@ import Card (Card)
 import CardAnim (CardAnim)
 import Control.Monad.Free (Free(..), foldFree, liftF)
 import Data.Functor.Sum (Sum(..))
+import Data.Monoid ((<>))
 import DSL.Beta.DSL
 import DSL.Util (toLeft, toRight)
 import Player (WhichPlayer(..))
@@ -111,7 +112,7 @@ betaI x = (foldFree liftAlphaAnim) . (animI x) . alphaI $ liftF x
 
 
 execute :: Model -> AlphaLogAnimProgram () -> (Model, String, [(ModelDiff, Maybe CardAnim)])
-execute = execute' "" [] ModelDiff.base
+execute = execute' "" [] mempty
   where
     execute' :: String -> [(ModelDiff, Maybe CardAnim)] -> ModelDiff -> Model -> AlphaLogAnimProgram () -> (Model, String, [(ModelDiff, Maybe CardAnim)])
     execute' s a _ m (Pure _) =
@@ -120,12 +121,12 @@ execute = execute' "" [] ModelDiff.base
       let
         next = if gameover m then Pure () else Anim.next anim
       in
-          execute' s (a ++ [(d, Anim.animate anim)]) ModelDiff.base m next
+          execute' s (a ++ [(d, Anim.animate anim)]) mempty m next
     execute' s a d m (Free (InL (InL p))) =
       let
          (newDiff, n) = Alpha.alphaEffI m p
          newModel = ModelDiff.update m newDiff
       in
-        execute' s a (ModelDiff.merge d newDiff) newModel n
+        execute' s a (d <> newDiff) newModel n
     execute' s a d m (Free (InL (InR (Log.Log l n)))) =
       execute' (s ++ l ++ "\n") a d m n
