@@ -2,7 +2,7 @@ version: 2
 jobs:
   build:
     docker:
-      - image: arekczarnik/docker-circleci-haskell
+      - image: schmolt/hubris-circleci
     steps:
       - checkout
       - run:
@@ -10,4 +10,4 @@ jobs:
           command: cd server; stack setup --stack-yaml=circleci.stack.yaml; stack test --stack-yaml=circleci.stack.yaml
       - run:
           name: Client build
-          command: cd client; gulp build
+          command: cd client; npm install; elm-package install; gulp build
