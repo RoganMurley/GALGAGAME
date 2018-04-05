@@ -22,7 +22,7 @@ jobs:
               mv ~/docker-compose /usr/local/bin/docker-compose
       - run:
           name: Setup Server
-          command: cd server; stack setup
+          command: cd server; docker pull fpco/stack-build:lts-7.0; stack setup
       # - run:
       #     name: Server tests
       #     command: stack test
