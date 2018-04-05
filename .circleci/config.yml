@@ -21,11 +21,17 @@ jobs:
               chmod +x ~/docker-compose
               mv ~/docker-compose /usr/local/bin/docker-compose
       - run:
-          name: Server tests
-          command: cd server; stack setup --stack-yaml=circleci.stack.yaml; stack test --stack-yaml=circleci.stack.yaml
+          name: Setup Server
+          command: cd server; stack setup
+      # - run:
+      #     name: Server tests
+      #     command: stack test
       - run:
-          name: Client build
-          command: cd client; npm install; elm-package install --yes; gulp build
+          name: Setup Client
+          command: cd client; npm install; elm-package install --yes
+      # - run:
+      #     name: Client build
+      #     command: cd client; gulp build
       - run:
           name: Deploy
           command: ./scripts/deploy.sh
