@@ -11,6 +11,3 @@ jobs:
       - run:
           name: Client build
           command: cd client; npm install; elm-package install --yes; gulp build
-      - run:
-          name: Deploy
-          command: ./scripts/deploy.sh
