@@ -4,7 +4,8 @@ import Control.Applicative ((<|>))
 import Data.Aeson (ToJSON(..), (.=), object)
 import Data.Aeson.Types (Pair, Value(Null))
 import Data.Maybe (fromMaybe)
-import Data.Monoid ((<>), Monoid)
+import Data.Monoid (Monoid)
+import Data.Semigroup ((<>), Semigroup)
 import Life (Life)
 import Mirror (Mirror(..))
 import Model (Hand, Deck, Model(..), Passes, PlayerModel(..), Turn, Stack)
@@ -89,19 +90,8 @@ updateP m d =
     }
 
 
-instance Monoid ModelDiff where
-
-  mempty =
-      ModelDiff
-        { modeldiff_turn   = Nothing
-        , modeldiff_stack  = Nothing
-        , modeldiff_passes = Nothing
-        , modeldiff_gen    = Nothing
-        , modeldiff_pa     = mempty
-        , modeldiff_pb     = mempty
-        }
-
-  mappend a b =
+instance Semigroup ModelDiff where
+  a <> b =
     ModelDiff
       { modeldiff_turn   = (modeldiff_turn b)   <|> (modeldiff_turn a)
       , modeldiff_stack  = (modeldiff_stack b)  <|> (modeldiff_stack a)
@@ -112,15 +102,28 @@ instance Monoid ModelDiff where
       }
 
 
-
-instance Monoid PlayerModelDiff where
-
+instance Monoid ModelDiff where
+  mappend = (<>)
   mempty =
-    PlayerModelDiff Nothing Nothing Nothing
+      ModelDiff
+        { modeldiff_turn   = Nothing
+        , modeldiff_stack  = Nothing
+        , modeldiff_passes = Nothing
+        , modeldiff_gen    = Nothing
+        , modeldiff_pa     = mempty
+        , modeldiff_pb     = mempty
+        }
 
-  mappend a b =
+
+instance Semigroup PlayerModelDiff where
+  a <> b =
     PlayerModelDiff
       { pmodeldiff_hand = (pmodeldiff_hand b) <|> (pmodeldiff_hand a),
         pmodeldiff_deck = (pmodeldiff_deck b) <|> (pmodeldiff_deck a),
         pmodeldiff_life = (pmodeldiff_life b) <|> (pmodeldiff_life a)
       }
+
+
+instance Monoid PlayerModelDiff where
+  mappend = (<>)
+  mempty = PlayerModelDiff Nothing Nothing Nothing
