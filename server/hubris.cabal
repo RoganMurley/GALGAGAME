@@ -72,7 +72,7 @@ library
                      , safe
                      , scotty
                      , scotty-cookie
-                     , semigroup
+                     , semigroups
                      , stm
                      , string-conversions
                      , text
