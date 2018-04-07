@@ -17,7 +17,7 @@ jobs:
       - run:
           name: Setup Client
           command: cd client &&
-                   sudo npm install -g gulp elm &&
+                   npm install -g gulp elm &&
                    npm install &&
                    elm-package install --yes &&
                    gulp build
