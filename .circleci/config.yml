@@ -1,11 +1,10 @@
 version: 2
 jobs:
   build:
-    docker:
-      - image: schmolt/hubris-circleci
+    machine:
+      image: circleci/classic:edge
     steps:
       - checkout
-      - setup_remote_docker
       - run:
           name: Install Docker client
           command: |
@@ -26,12 +25,12 @@ jobs:
       # - run:
       #     name: Server tests
       #     command: stack test
-      - run:
-          name: Setup Client
-          command: cd client; npm install; elm-package install --yes
+      # - run:
+      #     name: Setup Client
+      #     command: cd client; npm install; elm-package install --yes
       # - run:
       #     name: Client build
       #     command: cd client; gulp build
-      - run:
-          name: Deploy
-          command: ./scripts/deploy.sh
+      # - run:
+      #     name: Deploy
+      #     command: ./scripts/deploy.sh
