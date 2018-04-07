@@ -7,24 +7,24 @@ jobs:
       - checkout
       - run:
           name: Setup Server
-          command: cd server; sudo curl -sSL https://get.haskellstack.org/ | sh; stack docker pull; stack setup
-      # - run:
-      #     name: Server tests
-      #     command: stack test
-      # - run:
-      #     name: Server build
-      #     command: stack image container
-      # - run:
-      #     name: Setup Client
-      #     command: cd client; sudo npm install -g gulp elm; npm install; elm-package install --yes
-      # - run:
-      #     name: Client build
-      #     command: cd client; gulp build
-      # - run:
-      #     name: Setup Docker machine
-      #     command: base=https://github.com/docker/machine/releases/download/v0.14.0 &&
-      #              curl -L $base/docker-machine-$(uname -s)-$(uname -m) >/tmp/docker-machine &&
-      #              sudo install /tmp/docker-machine /usr/local/bin/docker-machine
-      # - run:
-      #     name: Deploy
-      #     command: ./scripts/decryptSecrets.sh; ./scripts/deploy.sh
+          command: cd server && sudo curl -sSL https://get.haskellstack.org/ | sh && stack docker pull && stack setup && stack install
+      - run:
+          name: Server tests
+          command: stack test
+      - run:
+          name: Server build
+          command: stack image container
+      - run:
+          name: Setup Client
+          command: cd client && sudo npm install -g gulp elm && npm install && elm-package install --yes
+      - run:
+          name: Client build
+          command: cd client && gulp build
+      - run:
+          name: Setup Docker machine
+          command: base=https://github.com/docker/machine/releases/download/v0.14.0 &&
+                   curl -L $base/docker-machine-$(uname -s)-$(uname -m) >/tmp/docker-machine &&
+                   sudo install /tmp/docker-machine /usr/local/bin/docker-machine
+      - run:
+          name: Deploy
+          command: ./scripts/decryptSecrets.sh && ./scripts/deploy.sh
