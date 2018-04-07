@@ -26,8 +26,5 @@ jobs:
                    curl -L $base/docker-machine-$(uname -s)-$(uname -m) >/tmp/docker-machine &&
                    sudo install /tmp/docker-machine /usr/local/bin/docker-machine
       - run:
-          name: Decrypt secrets
-          command: openssl aes-256-cbc -e -in secret-env-plain -out secret-env-cipher -k $KEY
-      - run:
           name: Deploy
-          command: ./scripts/deploy.sh
+          command: ./scripts/decryptSecrets.sh; ./scripts/deploy.sh
