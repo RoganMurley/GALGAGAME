@@ -6,31 +6,28 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Install Docker client
-          command: |
-              set -x
-              VER="17.03.0-ce"
-              curl -L -o /tmp/docker-$VER.tgz https://get.docker.com/builds/Linux/x86_64/docker-$VER.tgz
-              tar -xz -C /tmp -f /tmp/docker-$VER.tgz
-              mv /tmp/docker/* /usr/bin
-      - run:
-          name: Install Docker Compose
-          command: |
-              curl -L https://github.com/docker/compose/releases/download/1.19.0/docker-compose-`uname -s`-`uname -m` > ~/docker-compose
-              chmod +x ~/docker-compose
-              mv ~/docker-compose /usr/local/bin/docker-compose
-      - run:
           name: Setup Server
-          command: cd server; docker pull fpco/stack-build:lts-7.0; stack setup
-      # - run:
-      #     name: Server tests
-      #     command: stack test
-      # - run:
-      #     name: Setup Client
-      #     command: cd client; npm install; elm-package install --yes
-      # - run:
-      #     name: Client build
-      #     command: cd client; gulp build
-      # - run:
-      #     name: Deploy
-      #     command: ./scripts/deploy.sh
+          command: cd server; sudo curl -sSL https://get.haskellstack.org/ | sh; stack docker pull; stack setup
+      - run:
+          name: Server tests
+          command: stack test
+      - run:
+          name: Server build
+          command: stack image container
+      - run:
+          name: Setup Client
+          command: cd client; sudo npm install -g gulp elm; npm install; elm-package install --yes
+      - run:
+          name: Client build
+          command: cd client; gulp build
+      - run:
+          name: Setup Docker machine
+          command: base=https://github.com/docker/machine/releases/download/v0.14.0 &&
+                   curl -L $base/docker-machine-$(uname -s)-$(uname -m) >/tmp/docker-machine &&
+                   sudo install /tmp/docker-machine /usr/local/bin/docker-machine
+      - run:
+          name: Decrypt secrets
+          command: openssl aes-256-cbc -e -in secret-env-plain -out secret-env-cipher -k $KEY
+      - run:
+          name: Deploy
+          command: ./scripts/deploy.sh

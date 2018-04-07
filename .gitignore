@@ -2,7 +2,8 @@ elm-stuff/
 node_modules/
 .stack-work/
 client/static/build/
-client/ssl
+client/ssl/www.playhubris.com.ca-bundle
+client/ssl/www.playhubris.com.key
 redis/redis.prod.env
 .DS_Store
 .images/**
