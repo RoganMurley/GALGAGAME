@@ -26,11 +26,3 @@ Try it at https://www.playhubris.com.
 * `docker-compose -f docker-compose.dev.yml up`
 
 App will be served at https://localhost:4430.
-
-
-## Secrets
-Secrets aren't included in this repo (because they're secret, duh) but may be needed for dev or deployment.
-
-* SSL certificate in `client/ssl/`.
-* Export `DIGITALOCEAN_ACCESS_TOKEN` for deployment.
-* `redis/redis.prod.env` environment file for production (we use a Redis container locally, but on live we rely on an external Redis instance as we use immutable depoyments).
