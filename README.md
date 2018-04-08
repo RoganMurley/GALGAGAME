@@ -3,6 +3,9 @@ Hubris is a browser-based multiplayer digital card game written in the purely fu
 
 Try it at https://www.playhubris.com.
 
+[![CircleCI](https://circleci.com/gh/RoganMurley/hubris.svg?style=shield)](https://circleci.com/gh/RoganMurley/hubris)
+
+
 ## Dependencies:
 * [npm](https://www.npmjs.com/get-npm)
 * [gulp](https://www.npmjs.com/package/gulp)
