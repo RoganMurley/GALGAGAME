@@ -1,13 +1,31 @@
 version: 2
 jobs:
   build:
-    docker:
-      - image: schmolt/hubris-circleci
+    machine:
+      image: circleci/classic:edge
     steps:
       - checkout
       - run:
-          name: Server tests
-          command: cd server; stack setup --stack-yaml=circleci.stack.yaml; stack test --stack-yaml=circleci.stack.yaml
+          name: Server
+          command: cd server &&
+                   sudo curl -sSL https://get.haskellstack.org/ | sh &&
+                   stack docker pull &&
+                   stack setup &&
+                   stack install &&
+                   stack test &&
+                   stack image container
       - run:
-          name: Client build
-          command: cd client; npm install; elm-package install --yes; gulp build
+          name: Setup Client
+          command: cd client &&
+                   npm install -g gulp elm &&
+                   npm install &&
+                   elm-package install --yes &&
+                   gulp build
+      - run:
+          name: Setup Docker machine
+          command: base=https://github.com/docker/machine/releases/download/v0.14.0 &&
+                   curl -L $base/docker-machine-$(uname -s)-$(uname -m) >/tmp/docker-machine &&
+                   sudo install /tmp/docker-machine /usr/local/bin/docker-machine
+      - run:
+          name: Deploy
+          command: ./scripts/decryptSecrets.sh && ./scripts/deploy.sh
