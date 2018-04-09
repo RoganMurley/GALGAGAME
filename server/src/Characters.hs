@@ -34,11 +34,11 @@ data Character = Character
 
 instance ToJSON Character where
   toJSON Character{ character_name, character_cards } =
-      object [
-        "name"    .= character_name
-      , "img_url" .= (card_img . (\(c, _, _, _) -> c) $ character_cards :: Text)
-      , "cards"   .= character_cards
-      ]
+      object
+        [ "name"    .= character_name
+        , "img_url" .= (card_img . (\(c, _, _, _) -> c) $ character_cards :: Text)
+        , "cards"   .= character_cards
+        ]
 
 
 data CharModel =
@@ -51,10 +51,10 @@ data CharModel =
 
 instance ToJSON CharModel where
   toJSON CharModel{ charmodel_pa, charmodel_characters } =
-    object [
-      "selecting" .= charmodel_characters
-    , "selected"  .= charmodel_pa
-    ]
+    object
+      [ "selecting" .= charmodel_characters
+      , "selected"  .= charmodel_pa
+      ]
 
 
 instance Mirror CharModel where
@@ -122,8 +122,8 @@ allCards (Character _ a, Character _ b, Character _ c) =
 
 -- CHARACTERS
 allCharacters :: [Character]
-allCharacters = [
-    shielder
+allCharacters =
+  [ shielder
   , watcher
   , drinker
   , collector

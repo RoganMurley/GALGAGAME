@@ -382,8 +382,7 @@ theEnd =
 
 allCards :: [Card]
 allCards =
-  [
-    dagger
+  [ dagger
   , fireball
   , offering
   , confound

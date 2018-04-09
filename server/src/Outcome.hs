@@ -32,15 +32,15 @@ data Encodable =
 
 instance ToJSON Encodable where
   toJSON (Chat name msg) =
-    object [
-      "name" .= name
-    , "msg"  .= msg
-    ]
+    object
+      [ "name" .= name
+      , "msg"  .= msg
+      ]
   toJSON (Hover _ index) =
     toJSON index
   toJSON (Resolve res initial state) =
-    object [
-      "list"    .= res
-    , "initial" .= initial
-    , "final"   .= state
-    ]
+    object
+      [ "list"    .= res
+      , "initial" .= initial
+      , "final"   .= state
+      ]

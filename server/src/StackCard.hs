@@ -15,10 +15,10 @@ data StackCard = StackCard
 
 instance ToJSON StackCard where
   toJSON StackCard{ stackcard_owner, stackcard_card } =
-    object [
-      "owner" .= stackcard_owner
-    , "card"  .= stackcard_card
-    ]
+    object
+      [ "owner" .= stackcard_owner
+      , "card"  .= stackcard_card
+      ]
 
 
 instance Mirror StackCard where
