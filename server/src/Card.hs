@@ -21,8 +21,7 @@ instance Show Card where
 instance ToJSON Card where
   toJSON (Card name desc imageURL _) =
     object
-      [
-        "name"     .= name
+      [ "name"     .= name
       , "desc"     .= desc
       , "imageURL" .= imageURL
       ]

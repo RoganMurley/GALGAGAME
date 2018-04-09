@@ -35,8 +35,7 @@ prop =
 tests :: TestTree
 tests =
   testGroup "Mirror"
-    [
-      testGroup "StackCard"     $ coerce (prop :: PhantomTree StackCard)
+    [ testGroup "StackCard"     $ coerce (prop :: PhantomTree StackCard)
     , testGroup "Model"         $ coerce (prop :: PhantomTree Model)
     , testGroup "GameState"     $ coerce (prop :: PhantomTree GameState)
     , testGroup "PlayState"     $ coerce (prop :: PhantomTree PlayState)

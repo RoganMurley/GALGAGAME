@@ -40,8 +40,7 @@ omitNull = filter ((/= Null) . snd)
 instance ToJSON ModelDiff where
   toJSON ModelDiff{ modeldiff_turn, modeldiff_stack, modeldiff_pa, modeldiff_pb } =
     object . (omitNull) $
-      [
-        "turn"   .= modeldiff_turn
+      [ "turn"   .= modeldiff_turn
       , "stack"  .= modeldiff_stack
       , "handPA" .= pmodeldiff_hand modeldiff_pa
       , "handPB" .= (length <$> pmodeldiff_hand modeldiff_pb)

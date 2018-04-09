@@ -30,62 +30,52 @@ type ShaderName = Text
 instance ToJSON CardAnim where
   toJSON (Slash w d) =
     object
-    [
-     "player" .= w
+    [ "player" .= w
     , "anim"  .= ("slash" :: Text, d)
     ]
   toJSON (Heal w) =
     object
-    [
-     "player" .= w
+    [ "player" .= w
     , "anim"  .= ("heal" :: Text)
     ]
   toJSON (Draw w) =
     object
-    [
-     "player" .= w
+    [ "player" .= w
     , "anim"  .= ("draw" :: Text)
     ]
   toJSON (Bite w d) =
     object
-    [
-     "player" .= w
+    [ "player" .= w
     , "anim"  .= ("bite" :: Text, d)
     ]
   toJSON Reverse =
     object
-    [
-     "player" .= PlayerA
+    [ "player" .= PlayerA
     , "anim"  .= ("reverse" :: Text)
     ]
   toJSON Obliterate =
     object
-    [
-     "player" .= PlayerA
+    [ "player" .= PlayerA
     , "anim"  .= ("obliterate" :: Text)
     ]
   toJSON (Play w c) =
     object
-    [
-     "player" .= w
+    [ "player" .= w
     , "anim"  .= ("play" :: Text, c)
     ]
   toJSON (Transmute ca cb) =
     object
-    [
-     "player" .= PlayerA
+    [ "player" .= PlayerA
     , "anim"  .= ("transmute" :: Text, ca, cb)
     ]
   toJSON (GameEnd w) =
     object
-    [
-     "player" .= PlayerA
+    [ "player" .= PlayerA
     , "anim"  .= ("gameEnd" :: Text, w)
     ]
   toJSON (Adhoc w n s) =
     object
-    [
-     "player" .= w
+    [ "player" .= w
     , "anim"  .= ("adhoc" :: Text, n, s)
     ]
 

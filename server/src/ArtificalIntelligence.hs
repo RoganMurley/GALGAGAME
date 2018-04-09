@@ -50,8 +50,7 @@ toCommand EndAction      = EndTurn
 
 
 possibleActions :: Model -> [Action]
-possibleActions m =
-  endAction ++ (PlayAction <$> xs)
+possibleActions m = endAction ++ (PlayAction <$> xs)
   where
     handLength :: Int
     handLength = length $ evalI m $ getHand PlayerA
@@ -91,15 +90,13 @@ winningEnd model
     -- If ending the turn now would win, do it! We don't care about heuristics
     -- when we have a sure bet :)
     case fst . runWriter $ resolveAll model Replay.Active.null of
-      Ended (Just PlayerA) _ _ _ ->
-        True
-      _ ->
-        False
+      Ended (Just PlayerA) _ _ _ -> True
+      _                          -> False
 
 
 -- Some cards entail soft advantages/disadvantages that the AI can't handle.
 -- We manually set biases for these cards.
 biasHand :: Card -> Weight
 biasHand c
-  | c == Cards.badApple     = -9
-  | otherwise               = 0
+  | c == Cards.badApple = -9
+  | otherwise           = 0

@@ -1,7 +1,10 @@
-import Test.Tasty (defaultMain)
+import Test.Tasty (defaultMain, testGroup)
 
-import qualified MirrorSpec as MirrorSpec
+import qualified MirrorSpec
 
 
 main :: IO ()
-main = defaultMain MirrorSpec.tests
+main = defaultMain $
+  testGroup "Tests"
+    [ MirrorSpec.tests
+    ]
