@@ -32,4 +32,7 @@ docker-compose -f docker-compose.prod.yml build
 echo "Booting compose..."
 docker-compose -f docker-compose.prod.yml up -d
 
+echo "Flipping floating IP..."
+./scripts/flip $name
+
 echo "SUCCESS!"
