@@ -27,5 +27,10 @@ jobs:
                    curl -L $base/docker-machine-$(uname -s)-$(uname -m) >/tmp/docker-machine &&
                    sudo install /tmp/docker-machine /usr/local/bin/docker-machine
       - run:
+          name: Setup Python
+          command: sudo apt-get update &&
+                   sudo apt-get install python3-pip &&
+                   /usr/bin/python3 -m pip install requests
+      - run:
           name: Deploy
-          command: if [ $CIRCLE_BRANCH == 'master' ]; then ./scripts/decryptSecrets && pip install requests && ./scripts/deploy; fi
+          command: if [ $CIRCLE_BRANCH == 'master' ]; then ./scripts/decryptSecrets && ./scripts/deploy; fi
