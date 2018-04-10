@@ -1,0 +1,50 @@
+#!/usr/bin/python3
+import os
+import sys
+
+import requests
+
+
+def get_droplets(token):
+    req = requests.get(
+        'https://api.digitalocean.com/v2/droplets',
+        headers={'Authorization': 'Bearer {}'.format(token)},
+    )
+    return req.json()['droplets']
+
+
+def flip_ip(token, droplet_id):
+    req = requests.post(
+        'https://api.digitalocean.com/v2/floating_ips/138.68.116.26/actions',
+        headers={'Authorization': 'Bearer {}'.format(token)},
+        json={
+            'type': 'assign',
+            'droplet_id': droplet_id,
+        },
+    )
+    return req
+
+
+def get_droplet_by_name(droplets, name):
+    for droplet in droplets:
+        if droplet['name'] == name:
+            return droplet
+
+
+def main():
+    token = os.environ.get('DIGITALOCEAN_ACCESS_TOKEN')
+    name = sys.argv[1]
+
+    droplets = get_droplets(token)
+    droplet = get_droplet_by_name(droplets, name)
+
+    if droplet is None:
+        print("Droplet '{}' not found".format(name))
+    else:
+        droplet_id = droplet['id']
+        response = flip_ip(token, droplet_id)
+        print(response.text)
+
+
+if __name__ == "__main__":
+    main()

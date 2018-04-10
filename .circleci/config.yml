@@ -28,4 +28,4 @@ jobs:
                    sudo install /tmp/docker-machine /usr/local/bin/docker-machine
       - run:
           name: Deploy
-          command: if [ $CIRCLE_BRANCH == 'master' ]; then ./scripts/decryptSecrets.sh && ./scripts/deploy.sh; fi
+          command: if [ $CIRCLE_BRANCH == 'master' ]; then ./scripts/decryptSecrets && ./scripts/deploy; fi
