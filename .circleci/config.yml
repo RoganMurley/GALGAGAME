@@ -30,7 +30,7 @@ jobs:
           name: Setup Python
           command: sudo apt-get update &&
                    sudo apt-get install python3-pip &&
-                   /usr/bin/python3 -m pip install requests
+                   sudo /usr/bin/python3 -m pip install requests==2.18.4
       - run:
           name: Deploy
           command: if [ $CIRCLE_BRANCH == 'master' ]; then ./scripts/decryptSecrets && ./scripts/deploy; fi
