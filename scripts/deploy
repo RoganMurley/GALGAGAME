@@ -35,4 +35,7 @@ docker-compose -f docker-compose.prod.yml up -d
 echo "Flipping floating IP..."
 ./scripts/flip $name
 
+echo "Purging other droplets"
+./scripts/purgeOtherDroplets $name
+
 echo "SUCCESS!"
