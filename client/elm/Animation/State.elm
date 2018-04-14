@@ -5,12 +5,15 @@ import Animation.Types exposing (Anim(..), Uniforms)
 import Ease
 import Math.Vector2 exposing (vec2)
 import Raymarch.Types exposing (Height, Width)
+import Texture.State as Texture
+import Texture.Types as Texture
 import WebGL exposing (Shader, unsafeShader)
+import WebGL.Texture exposing (Texture)
 import WhichPlayer.Types exposing (WhichPlayer(..))
 
 
-uniforms : Float -> Maybe WhichPlayer -> ( Width, Height ) -> Uniforms
-uniforms theta which ( width, height ) =
+uniforms : Float -> Maybe WhichPlayer -> ( Width, Height ) -> Texture -> Uniforms
+uniforms theta which ( width, height ) texture =
     { time = theta
     , resolution = vec2 (toFloat width) (toFloat height)
     , flipper =
@@ -23,6 +26,7 @@ uniforms theta which ( width, height ) =
 
             Just PlayerB ->
                 0.0
+    , texture = texture
     }
 
 
@@ -44,7 +48,7 @@ animToFragmentShader anim =
             Shaders.obliterate
 
         Just (Draw _) ->
-            Shaders.null
+            Shaders.draw
 
         Just (Bite _ _) ->
             Shaders.null
@@ -153,3 +157,20 @@ animToResTickMax anim =
 
         otherwise ->
             800.0
+
+
+animToTexture : Maybe Anim -> Texture.Model -> Texture
+animToTexture anim textures =
+    let
+        loaded : Maybe Texture
+        loaded =
+            case anim of
+                Just (Draw _) ->
+                    Texture.load textures "feint"
+
+                otherwise ->
+                    Nothing
+    in
+        Maybe.withDefault
+            (Texture.null textures)
+            loaded

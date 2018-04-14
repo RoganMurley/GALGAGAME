@@ -76,6 +76,27 @@ obliterate =
     |]
 
 
+draw : Shader {} Uniforms {}
+draw =
+    [glsl|
+        precision mediump float;
+
+        uniform float time;
+        uniform vec2 resolution;
+        uniform float flipper;
+        uniform sampler2D texture;
+
+        void main ()
+        {
+            vec2 uv = gl_FragCoord.xy / resolution.xy;
+            uv = abs(vec2(flipper, flipper) - uv);
+
+            gl_FragColor = texture2D(texture, uv);
+        }
+
+    |]
+
+
 null : Shader {} a {}
 null =
     [glsl|

@@ -9,13 +9,14 @@ import GameState.Types exposing (GameState(..), PlayState(..))
 import GameState.View as GameState
 import Main.Messages exposing (Msg(..))
 import Main.Types exposing (Flags)
+import Texture.Types as Texture
 
 
-view : Model -> Flags -> Html Msg
-view { game, roomID, players } flags =
+view : Model -> Flags -> Texture.Model -> Html Msg
+view { game, roomID, players } flags textures =
     div []
         [ playersView players
-        , GameState.view game roomID flags
+        , GameState.view game roomID flags textures
         ]
 
 
