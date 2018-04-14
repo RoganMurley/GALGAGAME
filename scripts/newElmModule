@@ -9,5 +9,5 @@ cp .Example/* $name
 
 for file in $name/*
 do
-  sed -i "" s/Example/$name/g $file
+  sed -i "s/Example/$name/g" $file
 done

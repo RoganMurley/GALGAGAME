@@ -29,20 +29,30 @@ import UrlParser exposing (parsePath)
 import Util exposing (message)
 import Settings.State as Settings
 import Settings.Types as Settings
+import Texture.State as Texture
 
 
 init : Flags -> Navigation.Location -> ( Main.Model, Cmd Msg )
 init flags location =
-    locationUpdate
-        { room = Room.init
-        , flags = flags
-        , settings = Settings.init
-        }
-        location
+    let
+        fetchTextures : Cmd Msg
+        fetchTextures =
+            Cmd.map TextureMsg Texture.fetchTextures
+
+        ( model, cmd ) =
+            locationUpdate
+                { room = Room.init
+                , flags = flags
+                , settings = Settings.init
+                , textures = Texture.init
+                }
+                location
+    in
+        ( model, Cmd.batch [ fetchTextures, cmd ] )
 
 
 update : Msg -> Main.Model -> ( Main.Model, Cmd Msg )
-update msg ({ room, settings, flags } as model) =
+update msg ({ room, settings, textures, flags } as model) =
     let
         { time, seed } =
             flags
@@ -173,6 +183,15 @@ update msg ({ room, settings, flags } as model) =
 
             GetAuthCallback (Err _) ->
                 ( model, Cmd.none )
+
+            TextureMsg textureMsg ->
+                let
+                    ( newTextures, cmd ) =
+                        Texture.update textureMsg textures
+                in
+                    ( { model | textures = newTextures }
+                    , Cmd.map TextureMsg cmd
+                    )
 
 
 locationUpdate : Main.Model -> Navigation.Location -> ( Main.Model, Cmd Msg )

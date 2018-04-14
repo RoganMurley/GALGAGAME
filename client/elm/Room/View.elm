@@ -14,10 +14,11 @@ import Room.Messages exposing (..)
 import Room.Types exposing (..)
 import Settings.Types as Settings
 import Settings.View as Settings
+import Texture.Types as Texture
 
 
-view : Model -> Settings.Model -> Flags -> Html Main.Msg
-view model settings flags =
+view : Model -> Settings.Model -> Flags -> Texture.Model -> Html Main.Msg
+view model settings flags textures =
     let
         params =
             Raymarch.Params flags.time flags.dimensions
@@ -33,14 +34,14 @@ view model settings flags =
                         Lobby.view params lobby
 
                 Connected connected ->
-                    Connected.view connected flags
+                    Connected.view connected flags textures
 
                 Replay replay ->
-                    Replay.view params replay flags
+                    Replay.view params replay flags textures
 
                 Lab lab ->
                     Html.map (Main.RoomMsg << LabMsg) <|
-                        Lab.view params lab
+                        Lab.view params lab textures
 
                 Login login ->
                     Html.map (Main.RoomMsg << LoginMsg) <|

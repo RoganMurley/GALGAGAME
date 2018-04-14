@@ -4,6 +4,7 @@ import Card.Types exposing (Card)
 import Math.Vector2 exposing (Vec2)
 import Math.Vector3 exposing (Vec3)
 import Stack.Types exposing (StackCard)
+import WebGL.Texture exposing (Texture)
 import WhichPlayer.Types exposing (WhichPlayer)
 
 
@@ -11,6 +12,7 @@ type alias Uniforms =
     { time : Float
     , resolution : Vec2
     , flipper : Float
+    , texture : Texture
     }
 
 

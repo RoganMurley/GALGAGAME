@@ -2,12 +2,14 @@ module Main.Types exposing (..)
 
 import Room.Types as Room
 import Settings.Types as Settings
+import Texture.Types as Texture
 
 
 type alias Model =
     { room : Room.Model
     , flags : Flags
     , settings : Settings.Model
+    , textures : Texture.Model
     }
 
 

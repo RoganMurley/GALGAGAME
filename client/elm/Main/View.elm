@@ -7,5 +7,5 @@ import Room.View as Room
 
 
 view : Model -> Html Msg
-view { room, settings, flags } =
-    Room.view room settings flags
+view { room, settings, flags, textures } =
+    Room.view room settings flags textures
