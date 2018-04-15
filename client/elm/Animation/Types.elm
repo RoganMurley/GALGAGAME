@@ -40,6 +40,7 @@ type Anim
     | Obliterate WhichPlayer
     | Play WhichPlayer Card
     | Transmute WhichPlayer StackCard StackCard
+    | Overdraw WhichPlayer
     | GameEnd (Maybe WhichPlayer)
     | Adhoc WhichPlayer ShaderName SfxUrl
     | Custom String

@@ -67,7 +67,7 @@ drawAnim w alpha =
     final <- toLeft alpha
     if (handLength < maxHandLength)
       then toRight . liftF $ Anim.Draw w ()
-      else toRight . liftF $ Anim.Null ()
+      else toRight . liftF $ Anim.Overdraw w ()
     return final
 
 

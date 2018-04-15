@@ -85,7 +85,7 @@ fetchTextures =
 
 texturePaths : List ( String, String )
 texturePaths =
-    [ ( "null", "/img/textures/null.png" )
+    [ ( "cross", "/img/textures/cross.png" )
     , ( "feint", "/img/textures/feint.png" )
     ]
 
