@@ -9,10 +9,11 @@ import Lab.Messages exposing (Msg(..))
 import Lab.Types exposing (Model)
 import Raymarch.Types exposing (Params(..))
 import WhichPlayer.Types exposing (WhichPlayer(..))
+import Texture.Types as Texture
 
 
-view : Params -> Model -> Html Msg
-view params { player, anim, time, custom } =
+view : Params -> Model -> Texture.Model -> Html Msg
+view params { player, anim, time, custom } textures =
     div [ class "lab" ]
         [ div [ class "sets" ]
             [ fieldset []
@@ -28,7 +29,7 @@ view params { player, anim, time, custom } =
                 , radio (SetPlayer PlayerB) "which-player" "Player B"
                 ]
             ]
-        , Animation.view params time (Just anim)
+        , Animation.view params time (Just anim) textures
         ]
 
 
