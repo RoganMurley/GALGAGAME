@@ -2,7 +2,7 @@ module Animation.View exposing (..)
 
 import Animation.Types exposing (Anim)
 import Html exposing (Html)
-import Html.Attributes exposing (width, height, style)
+import Html.Attributes exposing (class, width, height, style)
 import Raymarch.Meshes exposing (quadMesh)
 import Raymarch.State as Raymarch
 import Raymarch.Types exposing (Params(..))
@@ -100,13 +100,7 @@ view (Params theta ( w, h )) resTheta anim textures =
             [ WebGL.toHtml
                 [ width (w // downscale)
                 , height (h // downscale)
-                , style
-                    [ ( "position", "absolute" )
-                    , ( "top", "0" )
-                    , ( "z-index", "-999" )
-                    , ( "width", "100%" )
-                    , ( "height", "100%" )
-                    ]
+                , class "raymarch-canvas"
                 ]
                 [ WebGL.entityWith
                     [ WebGL.add WebGL.srcAlpha WebGL.oneMinusSrcAlpha ]
@@ -118,14 +112,7 @@ view (Params theta ( w, h )) resTheta anim textures =
             , WebGL.toHtml
                 [ width w
                 , height h
-                , style
-                    [ ( "position", "absolute" )
-                    , ( "top", "0" )
-                    , ( "z-index", "999" )
-                    , ( "width", "100%" )
-                    , ( "height", "100%" )
-                    , ( "pointer-events", "none" )
-                    ]
+                , class "animation-canvas"
                 ]
                 [ animEntity ]
             ]
