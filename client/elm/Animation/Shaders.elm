@@ -76,8 +76,8 @@ obliterate =
     |]
 
 
-draw : Shader {} (Uniforms (Textured {})) {}
-draw =
+overdraw : Shader {} (Uniforms (Textured {})) {}
+overdraw =
     [glsl|
         precision mediump float;
 

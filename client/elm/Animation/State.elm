@@ -35,39 +35,42 @@ animToFragShader anim =
         Slash _ d ->
             case d of
                 0 ->
-                    BaseShader <| Shaders.null
+                    BaseShader Shaders.null
 
                 otherwise ->
-                    BaseShader <| Shaders.slash
+                    BaseShader Shaders.slash
 
         Heal _ ->
-            BaseShader <| Shaders.heal
+            BaseShader Shaders.heal
 
         Obliterate _ ->
-            BaseShader <| Shaders.obliterate
+            BaseShader Shaders.obliterate
 
         Draw _ ->
-            TexturedShader Shaders.draw
+            BaseShader Shaders.null
 
         Bite _ _ ->
-            BaseShader <| Shaders.null
+            BaseShader Shaders.null
 
         Reverse _ ->
-            BaseShader <| Shaders.null
+            BaseShader Shaders.null
 
         Play _ _ ->
-            BaseShader <| Shaders.null
+            BaseShader Shaders.null
 
         Transmute _ _ _ ->
-            BaseShader <| Shaders.null
+            BaseShader Shaders.null
 
         GameEnd _ ->
-            BaseShader <| Shaders.null
+            BaseShader Shaders.null
+
+        Overdraw _ ->
+            TexturedShader Shaders.overdraw
 
         Adhoc _ name _ ->
             case name of
                 otherwise ->
-                    BaseShader <| Shaders.null
+                    BaseShader Shaders.null
 
         Custom s ->
             BaseShader <| unsafeShader s
@@ -98,6 +101,9 @@ getWhichPlayer anim =
             w
 
         Transmute w _ _ ->
+            w
+
+        Overdraw w ->
             w
 
         GameEnd _ ->
@@ -158,8 +164,8 @@ animToResTickMax anim =
 animToTexture : Anim -> Texture.Model -> Maybe Texture
 animToTexture anim textures =
     case anim of
-        Draw _ ->
-            Texture.load textures "feint"
+        Overdraw _ ->
+            Texture.load textures "cross"
 
         otherwise ->
             Nothing

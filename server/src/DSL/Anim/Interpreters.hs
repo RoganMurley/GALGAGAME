@@ -17,6 +17,7 @@ next (Obliterate n)    = n
 next (Reverse n)       = n
 next (Play _ _ n)      = n
 next (Transmute _ _ n) = n
+next (Overdraw _ n)    = n
 next (GameEnd _ n)     = n
 
 
@@ -31,4 +32,5 @@ animate (Reverse _)         = Just CardAnim.Reverse
 animate (Obliterate _)      = Just CardAnim.Obliterate
 animate (Play w c _)        = Just $ CardAnim.Play w c
 animate (Transmute ca cb _) = Just $ CardAnim.Transmute ca cb
+animate (Overdraw w _)      = Just $ CardAnim.Overdraw w
 animate (GameEnd w _)       = Just $ CardAnim.GameEnd w

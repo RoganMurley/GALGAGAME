@@ -18,6 +18,7 @@ decoder =
         , obliterateDecoder
         , playDecoder
         , transmuteDecoder
+        , overdrawDecoder
         , gameEndDecoder
         , adhocDecoder
         ]
@@ -95,6 +96,13 @@ transmuteDecoder =
         (field "anim" <| index 0 <| constDecoder "transmute")
         (field "anim" <| index 1 <| Stack.stackCardDecoder)
         (field "anim" <| index 2 <| Stack.stackCardDecoder)
+
+
+overdrawDecoder : Decoder Anim
+overdrawDecoder =
+    Json.map2 (\w _ -> Overdraw w)
+        (field "player" WhichPlayer.decoder)
+        (field "anim" (constDecoder "overdraw"))
 
 
 gameEndDecoder : Decoder Anim
