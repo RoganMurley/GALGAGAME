@@ -1,10 +1,10 @@
 module Animation.Shaders exposing (..)
 
-import Animation.Types exposing (Uniforms, Vertex)
+import Animation.Types exposing (Uniforms, Textured, Vertex)
 import WebGL exposing (Shader)
 
 
-slash : Shader {} Uniforms {}
+slash : Shader {} (Uniforms {}) {}
 slash =
     [glsl|
         precision mediump float;
@@ -33,7 +33,7 @@ slash =
     |]
 
 
-heal : Shader {} Uniforms {}
+heal : Shader {} (Uniforms {}) {}
 heal =
     [glsl|
         precision mediump float;
@@ -54,7 +54,7 @@ heal =
     |]
 
 
-obliterate : Shader {} Uniforms {}
+obliterate : Shader {} (Uniforms {}) {}
 obliterate =
     [glsl|
         precision mediump float;
@@ -76,7 +76,7 @@ obliterate =
     |]
 
 
-draw : Shader {} Uniforms {}
+draw : Shader {} (Uniforms (Textured {})) {}
 draw =
     [glsl|
         precision mediump float;

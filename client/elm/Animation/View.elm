@@ -6,7 +6,8 @@ import Html.Attributes exposing (width, height, style)
 import Raymarch.Meshes exposing (quadMesh)
 import Raymarch.State as Raymarch
 import Raymarch.Types exposing (Params(..))
-import Animation.State exposing (animToFragmentShader, animToTexture, getWhichPlayer, uniforms)
+import Animation.Types exposing (FragShader(..))
+import Animation.State exposing (animToFragShader, animToTexture, getWhichPlayer, uniforms)
 import Animation.Shaders
 import Raymarch.Shaders
 import Texture.Types as Texture
@@ -32,9 +33,68 @@ view (Params theta ( w, h )) resTheta anim textures =
         which =
             Maybe.map getWhichPlayer anim
 
-        texture : Texture
-        texture =
-            animToTexture anim textures
+        animEntity : WebGL.Entity
+        animEntity =
+            case anim of
+                Just a ->
+                    let
+                        texture : Maybe Texture
+                        texture =
+                            animToTexture a textures
+
+                        shader : FragShader
+                        shader =
+                            animToFragShader a
+
+                        myUniforms =
+                            uniforms resTime which ( w, h )
+                    in
+                        case shader of
+                            BaseShader s ->
+                                WebGL.entityWith
+                                    [ WebGL.add WebGL.srcAlpha WebGL.oneMinusSrcAlpha ]
+                                    Animation.Shaders.vertex
+                                    s
+                                    quadMesh
+                                    myUniforms
+
+                            TexturedShader s ->
+                                case texture of
+                                    Just tex ->
+                                        let
+                                            { time, resolution, flipper } =
+                                                myUniforms
+
+                                            newUniforms : Animation.Types.Uniforms (Animation.Types.Textured {})
+                                            newUniforms =
+                                                { time = time
+                                                , resolution = resolution
+                                                , flipper = flipper
+                                                , texture = tex
+                                                }
+                                        in
+                                            WebGL.entityWith
+                                                [ WebGL.add WebGL.srcAlpha WebGL.oneMinusSrcAlpha ]
+                                                Animation.Shaders.vertex
+                                                s
+                                                quadMesh
+                                                newUniforms
+
+                                    Nothing ->
+                                        WebGL.entityWith
+                                            [ WebGL.add WebGL.srcAlpha WebGL.oneMinusSrcAlpha ]
+                                            Animation.Shaders.vertex
+                                            Animation.Shaders.null
+                                            quadMesh
+                                            myUniforms
+
+                Nothing ->
+                    WebGL.entityWith
+                        [ WebGL.add WebGL.srcAlpha WebGL.oneMinusSrcAlpha ]
+                        Animation.Shaders.vertex
+                        Animation.Shaders.null
+                        quadMesh
+                        (uniforms resTime which ( w, h ))
     in
         Html.div []
             [ WebGL.toHtml
@@ -67,11 +127,5 @@ view (Params theta ( w, h )) resTheta anim textures =
                     , ( "pointer-events", "none" )
                     ]
                 ]
-                [ WebGL.entityWith
-                    [ WebGL.add WebGL.srcAlpha WebGL.oneMinusSrcAlpha ]
-                    Animation.Shaders.vertex
-                    (animToFragmentShader anim)
-                    quadMesh
-                    (uniforms resTime which ( w, h ) texture)
-                ]
+                [ animEntity ]
             ]
