@@ -1,10 +1,10 @@
 module Animation.Shaders exposing (..)
 
-import Animation.Types exposing (Uniforms, Vertex)
+import Animation.Types exposing (Uniforms, Textured, Vertex)
 import WebGL exposing (Shader)
 
 
-slash : Shader {} Uniforms {}
+slash : Shader {} (Uniforms {}) {}
 slash =
     [glsl|
         precision mediump float;
@@ -33,7 +33,7 @@ slash =
     |]
 
 
-heal : Shader {} Uniforms {}
+heal : Shader {} (Uniforms {}) {}
 heal =
     [glsl|
         precision mediump float;
@@ -54,7 +54,7 @@ heal =
     |]
 
 
-obliterate : Shader {} Uniforms {}
+obliterate : Shader {} (Uniforms {}) {}
 obliterate =
     [glsl|
         precision mediump float;
@@ -71,6 +71,27 @@ obliterate =
             float d = distance(uv, vec2(uv.x, 0.5));
             gl_FragColor = vec4(1., 1., 1., sin(time) * d);
 
+        }
+
+    |]
+
+
+overdraw : Shader {} (Uniforms (Textured {})) {}
+overdraw =
+    [glsl|
+        precision mediump float;
+
+        uniform float time;
+        uniform vec2 resolution;
+        uniform float flipper;
+        uniform sampler2D texture;
+
+        void main ()
+        {
+            vec2 uv = gl_FragCoord.xy / resolution.xy;
+            uv = abs(vec2(flipper, flipper) - uv);
+
+            gl_FragColor = texture2D(texture, uv);
         }
 
     |]

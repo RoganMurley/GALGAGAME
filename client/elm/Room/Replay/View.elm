@@ -11,10 +11,11 @@ import Main.Messages as Main
 import Raymarch.Types as Raymarch
 import Raymarch.View as Raymarch
 import Replay.Types exposing (..)
+import Texture.Types as Texture
 
 
-view : Raymarch.Params -> Model -> Flags -> Html Main.Msg
-view params { replay } ({ time } as flags) =
+view : Raymarch.Params -> Model -> Flags -> Texture.Model -> Html Main.Msg
+view params { replay } ({ time } as flags) textures =
     let
         replayView : List (Html Main.Msg)
         replayView =
@@ -31,7 +32,7 @@ view params { replay } ({ time } as flags) =
 
                 Just { state, usernamePa, usernamePb } ->
                     [ playersView ( Just usernamePa, Just usernamePb )
-                    , GameState.view (Started state) "" flags
+                    , GameState.view (Started state) "" flags textures
                     ]
     in
         div [ class "replay" ]

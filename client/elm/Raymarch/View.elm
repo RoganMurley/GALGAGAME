@@ -2,7 +2,7 @@ module Raymarch.View exposing (..)
 
 import Animation.Shaders
 import Html exposing (Html)
-import Html.Attributes exposing (width, height, style)
+import Html.Attributes exposing (class, width, height, style)
 import Raymarch.Meshes exposing (quadMesh)
 import Raymarch.Types exposing (Params(..))
 import Raymarch.Shaders exposing (fragmentShader, vertexShader)
@@ -23,13 +23,7 @@ view (Params theta ( w, h )) =
             [ WebGL.toHtml
                 [ width (w // downscale)
                 , height (h // downscale)
-                , style
-                    [ ( "position", "absolute" )
-                    , ( "top", "0" )
-                    , ( "z-index", "-999" )
-                    , ( "width", "100%" )
-                    , ( "height", "100%" )
-                    ]
+                , class "raymarch-canvas"
                 ]
                 [ WebGL.entityWith []
                     vertexShader
@@ -40,14 +34,7 @@ view (Params theta ( w, h )) =
             , WebGL.toHtml
                 [ width w
                 , height h
-                , style
-                    [ ( "position", "absolute" )
-                    , ( "top", "0" )
-                    , ( "z-index", "999" )
-                    , ( "width", "100%" )
-                    , ( "height", "100%" )
-                    , ( "pointer-events", "none" )
-                    ]
+                , class "animation-canvas"
                 ]
                 [ WebGL.entityWith
                     []

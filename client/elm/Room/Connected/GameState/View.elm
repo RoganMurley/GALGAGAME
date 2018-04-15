@@ -21,10 +21,11 @@ import Raymarch.View as Raymarch
 import Resolvable.State exposing (activeAnim, resolving)
 import Resolvable.Types as Resolvable
 import Room.Messages as Room
+import Texture.Types as Texture
 
 
-view : GameState -> String -> Flags -> Html Main.Msg
-view state roomID ({ hostname, httpPort, time, dimensions } as flags) =
+view : GameState -> String -> Flags -> Texture.Model -> Html Main.Msg
+view state roomID ({ hostname, httpPort, time, dimensions } as flags) textures =
     let
         params =
             Raymarch.Params time dimensions
@@ -61,7 +62,7 @@ view state roomID ({ hostname, httpPort, time, dimensions } as flags) =
                             div []
                                 [ resView res.vm resData time res.tick
                                 , Endgame.view res.tick anim Nothing
-                                , Animation.view params res.tick anim
+                                , Animation.view params res.tick anim textures
                                 ]
 
                         otherwise ->

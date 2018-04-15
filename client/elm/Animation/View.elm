@@ -2,20 +2,23 @@ module Animation.View exposing (..)
 
 import Animation.Types exposing (Anim)
 import Html exposing (Html)
-import Html.Attributes exposing (width, height, style)
+import Html.Attributes exposing (class, width, height, style)
 import Raymarch.Meshes exposing (quadMesh)
 import Raymarch.State as Raymarch
 import Raymarch.Types exposing (Params(..))
-import Animation.State exposing (animToFragmentShader, getWhichPlayer, uniforms)
+import Animation.Types exposing (FragShader(..))
+import Animation.State exposing (animToFragShader, animToTexture, getWhichPlayer, uniforms)
 import Animation.Shaders
 import Raymarch.Shaders
+import Texture.Types as Texture
+import WhichPlayer.Types exposing (WhichPlayer(..))
 import WebGL
 import WebGL.Settings.Blend as WebGL
-import WhichPlayer.Types exposing (WhichPlayer(..))
+import WebGL.Texture exposing (Texture)
 
 
-view : Params -> Float -> Maybe Anim -> Html msg
-view (Params theta ( w, h )) resTheta anim =
+view : Params -> Float -> Maybe Anim -> Texture.Model -> Html msg
+view (Params theta ( w, h )) resTheta anim textures =
     let
         time =
             theta / 1000
@@ -29,18 +32,75 @@ view (Params theta ( w, h )) resTheta anim =
         which : Maybe WhichPlayer
         which =
             Maybe.map getWhichPlayer anim
+
+        animEntity : WebGL.Entity
+        animEntity =
+            case anim of
+                Just a ->
+                    let
+                        texture : Maybe Texture
+                        texture =
+                            animToTexture a textures
+
+                        shader : FragShader
+                        shader =
+                            animToFragShader a
+
+                        myUniforms =
+                            uniforms resTime which ( w, h )
+                    in
+                        case shader of
+                            BaseShader s ->
+                                WebGL.entityWith
+                                    [ WebGL.add WebGL.srcAlpha WebGL.oneMinusSrcAlpha ]
+                                    Animation.Shaders.vertex
+                                    s
+                                    quadMesh
+                                    myUniforms
+
+                            TexturedShader s ->
+                                case texture of
+                                    Just tex ->
+                                        let
+                                            { time, resolution, flipper } =
+                                                myUniforms
+
+                                            newUniforms : Animation.Types.Uniforms (Animation.Types.Textured {})
+                                            newUniforms =
+                                                { time = time
+                                                , resolution = resolution
+                                                , flipper = flipper
+                                                , texture = tex
+                                                }
+                                        in
+                                            WebGL.entityWith
+                                                [ WebGL.add WebGL.srcAlpha WebGL.oneMinusSrcAlpha ]
+                                                Animation.Shaders.vertex
+                                                s
+                                                quadMesh
+                                                newUniforms
+
+                                    Nothing ->
+                                        WebGL.entityWith
+                                            [ WebGL.add WebGL.srcAlpha WebGL.oneMinusSrcAlpha ]
+                                            Animation.Shaders.vertex
+                                            Animation.Shaders.null
+                                            quadMesh
+                                            myUniforms
+
+                Nothing ->
+                    WebGL.entityWith
+                        [ WebGL.add WebGL.srcAlpha WebGL.oneMinusSrcAlpha ]
+                        Animation.Shaders.vertex
+                        Animation.Shaders.null
+                        quadMesh
+                        (uniforms resTime which ( w, h ))
     in
         Html.div []
             [ WebGL.toHtml
                 [ width (w // downscale)
                 , height (h // downscale)
-                , style
-                    [ ( "position", "absolute" )
-                    , ( "top", "0" )
-                    , ( "z-index", "-999" )
-                    , ( "width", "100%" )
-                    , ( "height", "100%" )
-                    ]
+                , class "raymarch-canvas"
                 ]
                 [ WebGL.entityWith
                     [ WebGL.add WebGL.srcAlpha WebGL.oneMinusSrcAlpha ]
@@ -52,20 +112,7 @@ view (Params theta ( w, h )) resTheta anim =
             , WebGL.toHtml
                 [ width w
                 , height h
-                , style
-                    [ ( "position", "absolute" )
-                    , ( "top", "0" )
-                    , ( "z-index", "999" )
-                    , ( "width", "100%" )
-                    , ( "height", "100%" )
-                    , ( "pointer-events", "none" )
-                    ]
+                , class "animation-canvas"
                 ]
-                [ WebGL.entityWith
-                    [ WebGL.add WebGL.srcAlpha WebGL.oneMinusSrcAlpha ]
-                    Animation.Shaders.vertex
-                    (animToFragmentShader anim)
-                    quadMesh
-                    (uniforms resTime which ( w, h ))
-                ]
+                [ animEntity ]
             ]

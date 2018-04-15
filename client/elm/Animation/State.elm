@@ -1,15 +1,18 @@
 module Animation.State exposing (..)
 
 import Animation.Shaders as Shaders
-import Animation.Types exposing (Anim(..), Uniforms)
+import Animation.Types exposing (Anim(..), FragShader(..), Uniforms)
 import Ease
 import Math.Vector2 exposing (vec2)
 import Raymarch.Types exposing (Height, Width)
+import Texture.State as Texture
+import Texture.Types as Texture
 import WebGL exposing (Shader, unsafeShader)
+import WebGL.Texture exposing (Texture)
 import WhichPlayer.Types exposing (WhichPlayer(..))
 
 
-uniforms : Float -> Maybe WhichPlayer -> ( Width, Height ) -> Uniforms
+uniforms : Float -> Maybe WhichPlayer -> ( Width, Height ) -> Uniforms {}
 uniforms theta which ( width, height ) =
     { time = theta
     , resolution = vec2 (toFloat width) (toFloat height)
@@ -26,51 +29,51 @@ uniforms theta which ( width, height ) =
     }
 
 
-animToFragmentShader : Maybe Anim -> Shader {} Uniforms {}
-animToFragmentShader anim =
+animToFragShader : Anim -> FragShader
+animToFragShader anim =
     case anim of
-        Just (Slash _ d) ->
+        Slash _ d ->
             case d of
                 0 ->
-                    Shaders.null
+                    BaseShader Shaders.null
 
                 otherwise ->
-                    Shaders.slash
+                    BaseShader Shaders.slash
 
-        Just (Heal _) ->
-            Shaders.heal
+        Heal _ ->
+            BaseShader Shaders.heal
 
-        Just (Obliterate _) ->
-            Shaders.obliterate
+        Obliterate _ ->
+            BaseShader Shaders.obliterate
 
-        Just (Draw _) ->
-            Shaders.null
+        Draw _ ->
+            BaseShader Shaders.null
 
-        Just (Bite _ _) ->
-            Shaders.null
+        Bite _ _ ->
+            BaseShader Shaders.null
 
-        Just (Reverse _) ->
-            Shaders.null
+        Reverse _ ->
+            BaseShader Shaders.null
 
-        Just (Play _ _) ->
-            Shaders.null
+        Play _ _ ->
+            BaseShader Shaders.null
 
-        Just (Transmute _ _ _) ->
-            Shaders.null
+        Transmute _ _ _ ->
+            BaseShader Shaders.null
 
-        Just (GameEnd _) ->
-            Shaders.null
+        GameEnd _ ->
+            BaseShader Shaders.null
 
-        Just (Adhoc _ name _) ->
+        Overdraw _ ->
+            TexturedShader Shaders.overdraw
+
+        Adhoc _ name _ ->
             case name of
                 otherwise ->
-                    Shaders.null
+                    BaseShader Shaders.null
 
-        Just (Custom s) ->
-            unsafeShader s
-
-        Nothing ->
-            Shaders.null
+        Custom s ->
+            BaseShader <| unsafeShader s
 
 
 getWhichPlayer : Anim -> WhichPlayer
@@ -98,6 +101,9 @@ getWhichPlayer anim =
             w
 
         Transmute w _ _ ->
+            w
+
+        Overdraw w ->
             w
 
         GameEnd _ ->
@@ -153,3 +159,13 @@ animToResTickMax anim =
 
         otherwise ->
             800.0
+
+
+animToTexture : Anim -> Texture.Model -> Maybe Texture
+animToTexture anim textures =
+    case anim of
+        Overdraw _ ->
+            Texture.load textures "cross"
+
+        otherwise ->
+            Nothing

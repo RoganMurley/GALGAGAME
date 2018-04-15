@@ -79,6 +79,9 @@ animSfx anim =
         Obliterate _ ->
             Just "obliterate.mp3"
 
+        Overdraw _ ->
+            Just "overdraw.mp3"
+
         GameEnd winner ->
             case winner of
                 Just PlayerA ->

@@ -18,6 +18,7 @@ data CardAnim
   | Obliterate
   | Play WhichPlayer Card
   | Transmute StackCard StackCard
+  | Overdraw WhichPlayer
   | GameEnd (Maybe WhichPlayer)
   | Adhoc WhichPlayer ShaderName SfxUrl
   deriving (Show, Eq)
@@ -68,6 +69,11 @@ instance ToJSON CardAnim where
     [ "player" .= PlayerA
     , "anim"  .= ("transmute" :: Text, ca, cb)
     ]
+  toJSON (Overdraw w) =
+    object
+    [ "player" .= w
+    , "anim"  .= ("overdraw" :: Text)
+    ]
   toJSON (GameEnd w) =
     object
     [ "player" .= PlayerA
@@ -90,4 +96,5 @@ instance Mirror CardAnim where
   mirror (Play w c)        = Play (other w) c
   mirror (Transmute ca cb) = Transmute (mirror ca) (mirror cb)
   mirror (GameEnd w)       = GameEnd (other <$> w)
+  mirror (Overdraw w)      = Overdraw (other w)
   mirror (Adhoc w n s)     = Adhoc (other w) n s
