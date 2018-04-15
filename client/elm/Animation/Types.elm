@@ -4,16 +4,26 @@ import Card.Types exposing (Card)
 import Math.Vector2 exposing (Vec2)
 import Math.Vector3 exposing (Vec3)
 import Stack.Types exposing (StackCard)
+import WebGL exposing (Shader)
 import WebGL.Texture exposing (Texture)
 import WhichPlayer.Types exposing (WhichPlayer)
 
 
-type alias Uniforms =
-    { time : Float
-    , resolution : Vec2
-    , flipper : Float
-    , texture : Texture
+type alias Uniforms a =
+    { a
+        | time : Float
+        , resolution : Vec2
+        , flipper : Float
     }
+
+
+type alias Textured a =
+    { a | texture : Texture }
+
+
+type FragShader
+    = BaseShader (Shader {} (Uniforms {}) {})
+    | TexturedShader (Shader {} (Uniforms (Textured {})) {})
 
 
 type alias Vertex =
