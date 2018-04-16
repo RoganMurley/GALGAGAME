@@ -3,13 +3,14 @@ module GameCommand where
 import Card (Card(..))
 import CardAnim (CardAnim(..))
 import Characters (CharModel(..), SelectedCharacters(..), selectChar, initCharModel)
+import Control.Monad (replicateM_)
 import Control.Monad.Free (foldFree)
 import Control.Monad.Trans.Writer (Writer, runWriter, tell)
 import Data.Maybe (fromMaybe)
 import Data.Monoid ((<>))
 import Data.String.Conversions (cs)
 import Data.Text (Text)
-import GameState (GameState(..), PlayState(..), initModel)
+import GameState (GameState(..), PlayState(..), initHandLength, initModel)
 import Model (Hand, Passes(..), Model, Turn)
 import ModelDiff (ModelDiff)
 import Outcome (Outcome)
@@ -116,19 +117,45 @@ concede _ _ =
 
 select :: WhichPlayer -> Text -> (CharModel, Turn, Gen) -> (Username, Username) -> Either Err (Maybe GameState, [Outcome])
 select which name (charModel, turn, gen) (usernamePa, usernamePb) =
-  Right (
-    Just . startIfBothReady $ Selecting (selectChar charModel which name) turn gen
-  , [ Outcome.Sync ]
-  )
-  where
-    startIfBothReady :: GameState -> GameState
-    startIfBothReady (Selecting (CharModel (ThreeSelected c1 c2 c3) (ThreeSelected ca cb cc) _) _ _) =
-      let
-        model = initModel turn (c1, c2, c3) (ca, cb, cc) gen :: Model
-        replay = Active.init model usernamePa usernamePb :: Active.Replay
-      in
-        Started $ Playing model replay
-    startIfBothReady s = s
+  let
+    newCharModel :: CharModel
+    newCharModel = selectChar charModel which name
+    result :: Maybe ([(ModelDiff, Maybe CardAnim, Maybe StackCard)], Model, PlayState)
+    result =
+      case newCharModel of
+        (CharModel (ThreeSelected c1 c2 c3) (ThreeSelected ca cb cc) _) ->
+          let
+            model = initModel turn (c1, c2, c3) (ca, cb, cc) gen :: Model
+            replay = Active.init model usernamePa usernamePb :: Active.Replay
+            startProgram :: Beta.Program ()
+            startProgram = do
+                replicateM_ (initHandLength PlayerA turn) (Beta.draw PlayerA)
+                replicateM_ (initHandLength PlayerB turn) (Beta.draw PlayerB)
+            (newModel, _, anims) = Beta.execute model $ foldFree Beta.betaI startProgram
+            res :: [(ModelDiff, Maybe CardAnim, Maybe StackCard)]
+            res = (\(x, y) -> (x, y, Nothing)) <$> anims
+            playstate :: PlayState
+            playstate = Playing newModel (Active.add replay res)
+          in
+            Just (res, model, playstate)
+        _ ->
+          Nothing
+    state :: GameState
+    state =
+      case result of
+        Nothing ->
+          Selecting newCharModel turn gen
+        Just (_, _, playstate) ->
+          Started playstate
+    outcomes :: [Outcome]
+    outcomes =
+      case result of
+        Nothing ->
+          [ Outcome.Sync ]
+        Just (res, model, playstate) ->
+          [ Outcome.Encodable $ Outcome.Resolve res model playstate ]
+  in
+    Right (Just state, outcomes)
 
 
 playCard :: Int -> WhichPlayer -> Model -> Active.Replay -> Either Err (Maybe GameState, [Outcome])

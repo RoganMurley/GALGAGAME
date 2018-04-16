@@ -5,7 +5,7 @@ import Data.Aeson (ToJSON(..), (.=), object)
 import Characters (CharModel, FinalSelection, allCards)
 import Life (maxLife)
 import Mirror (Mirror(..))
-import Model (Hand, Deck, PlayerModel(..), Model(..), Passes(..), Turn, maxHandLength)
+import Model (Deck, PlayerModel(..), Model(..), Passes(..), Turn, maxHandLength)
 import Player (WhichPlayer(..), other)
 import Util (Gen, shuffle, split)
 
@@ -82,13 +82,11 @@ initModel turn ca cb gen =
   where
     (genPA, genPB) = split gen :: (Gen, Gen)
     -- PlayerA
-    initDeckPA = shuffle genPA (buildDeck ca) :: Deck
-    (handPA, deckPA) = splitAt (initHandLength PlayerA turn) initDeckPA :: (Hand, Deck)
-    pm_a = PlayerModel handPA deckPA maxLife :: PlayerModel
+    deckPA = shuffle genPA (buildDeck ca) :: Deck
+    pm_a = PlayerModel [] deckPA maxLife :: PlayerModel
     -- PlayerB
-    initDeckPB = shuffle genPB (buildDeck cb) :: Deck
-    (handPB, deckPB) = splitAt (initHandLength PlayerB turn) initDeckPB :: (Hand, Deck)
-    pm_b = PlayerModel handPB deckPB maxLife :: PlayerModel
+    deckPB = shuffle genPB (buildDeck cb) :: Deck
+    pm_b = PlayerModel [] deckPB maxLife :: PlayerModel
 
 
 initHandLength :: WhichPlayer -> Turn -> Int
