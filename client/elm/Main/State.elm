@@ -7,6 +7,7 @@ import Routing.State as Routing
 import Routing.Types as Routing
 import WebSocket
 import GameState.Types exposing (GameState(Started))
+import Clock.State as Clock
 import Lab.State as Lab
 import Lobby.State as Lobby
 import Lobby.Types as Lobby
@@ -323,6 +324,14 @@ locationUpdate model location =
                           }
                         , Cmd.none
                         )
+
+                Routing.Clock ->
+                    ( { model
+                        | room =
+                            Room.Clock Clock.init
+                      }
+                    , Cmd.none
+                    )
 
         Nothing ->
             ( { model | room = Room.init }

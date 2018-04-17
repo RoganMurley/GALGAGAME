@@ -1,5 +1,6 @@
 module Room.View exposing (view)
 
+import Clock.View as Clock
 import Connected.View as Connected
 import Html as Html exposing (Html, div, text)
 import Lab.View as Lab
@@ -46,6 +47,9 @@ view model settings flags textures =
                 Login login ->
                     Html.map (Main.RoomMsg << LoginMsg) <|
                         Login.view params login
+
+                Clock clock ->
+                    Clock.view params clock textures
     in
         div []
             [ Settings.view settings (settingsView model flags)
@@ -61,12 +65,6 @@ settingsView model flags =
             Login.logoutView flags
     in
         case model of
-            MainMenu ->
-                baseViews
-
-            Lobby _ ->
-                baseViews
-
             Connected { game } ->
                 List.concat
                     [ baseViews
@@ -74,11 +72,5 @@ settingsView model flags =
                         Connected.concedeView game
                     ]
 
-            Lab _ ->
-                baseViews
-
-            Login _ ->
-                baseViews
-
-            Replay _ ->
+            otherwise ->
                 baseViews

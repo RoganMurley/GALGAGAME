@@ -1,5 +1,6 @@
 module Room.Types exposing (..)
 
+import Clock.Types as Clock
 import Connected.Types as Connected
 import Lab.Types as Lab
 import Lobby.Types as Lobby
@@ -14,3 +15,4 @@ type Model
     | Replay Replay.Model
     | Lab Lab.Model
     | Login Login.Model
+    | Clock Clock.Model

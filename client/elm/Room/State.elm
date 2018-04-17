@@ -1,5 +1,6 @@
 module Room.State exposing (init, tick, receive, update)
 
+import Clock.State as Clock
 import Connected.State as Connected
 import Lab.State as Lab
 import Lobby.State as Lobby
@@ -126,6 +127,9 @@ receive str model flags =
         Lab lab ->
             ( Lab lab, Cmd.none )
 
+        Clock clock ->
+            ( Clock clock, Cmd.none )
+
 
 tick : Model -> Float -> Model
 tick room dt =
@@ -147,3 +151,6 @@ tick room dt =
 
         Lab lab ->
             Lab <| Lab.tick lab dt
+
+        Clock clock ->
+            Clock <| Clock.tick clock dt
