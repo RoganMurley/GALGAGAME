@@ -4,7 +4,7 @@ import Clock.Types exposing (Model)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Main.Messages as Main
-import Raymarch.Meshes exposing (quadMesh)
+import Clock.Meshes
 import Clock.Shaders
 import Clock.State exposing (uniforms)
 import Raymarch.Types exposing (Params(..))
@@ -38,7 +38,7 @@ view (Params _ ( w, h )) { time } textures =
                             [ WebGL.add WebGL.srcAlpha WebGL.oneMinusSrcAlpha ]
                             Clock.Shaders.vertex
                             Clock.Shaders.fragment
-                            quadMesh
+                            Clock.Meshes.quad
                             (uniforms theta ( w, h ) texture)
                         ]
                     ]
