@@ -2,6 +2,8 @@ module Clock.Shaders exposing (..)
 
 import Clock.Types exposing (Uniforms, Vertex)
 import Math.Vector2 exposing (Vec2)
+import Math.Vector3 exposing (Vec3)
+import Math.Matrix4 exposing (Mat4)
 import WebGL exposing (Shader)
 
 
@@ -26,6 +28,23 @@ fragment =
     |]
 
 
+matte : Shader {} { u | color : Vec3 } { vcoord : Vec2 }
+matte =
+    [glsl|
+        precision mediump float;
+
+        uniform vec3 color;
+
+        varying vec2 vcoord;
+
+        void main ()
+        {
+            gl_FragColor = vec4(color, 1.0);
+        }
+
+    |]
+
+
 null : Shader {} a {}
 null =
     [glsl|
@@ -36,7 +55,7 @@ null =
     |]
 
 
-vertex : Shader Vertex Uniforms { vcoord : Vec2 }
+vertex : Shader Vertex { u | perspective : Mat4, camera : Mat4, rotation : Mat4 } { vcoord : Vec2 }
 vertex =
     [glsl|
         precision mediump float;
