@@ -28,7 +28,7 @@ view (Params _ ( w, h )) { time } textures =
             Texture.load textures "clock"
 
         positions =
-            Clock.State.clockFace 12 (vec3 0 0 0) 1.0
+            Clock.State.clockFace 12 (vec3 0 0 0) (1)
     in
         div [ class "clock" ]
             (case mTexture of
