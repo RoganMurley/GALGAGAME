@@ -4,7 +4,6 @@ import Clock.Types exposing (Model)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Main.Messages as Main
-import Math.Matrix4 exposing (Mat4, transform)
 import Math.Vector3 exposing (vec3)
 import Clock.Meshes
 import Clock.Shaders
@@ -32,33 +31,30 @@ view (Params _ ( w, h )) { time } textures =
             Clock.State.clockFace 12 (vec3 0 0 0) 1
     in
         div [ class "clock" ]
-            (case mTexture of
-                Just texture ->
-                    let
-                        makeEntity index ( pos, rot ) =
-                            WebGL.entityWith
-                                [ WebGL.add WebGL.srcAlpha WebGL.oneMinusSrcAlpha ]
-                                Clock.Shaders.vertex
-                                Clock.Shaders.fragment
-                                (mesh pos rot)
-                                (uniforms theta ( w, h ) texture pos)
-
-                        entities =
+            [ WebGL.toHtml
+                [ width (w // downscale)
+                , height (h // downscale)
+                , class "raymarch-canvas"
+                ]
+                (case mTexture of
+                    Just texture ->
+                        let
+                            makeEntity index ( pos, rot ) =
+                                WebGL.entityWith
+                                    [ WebGL.add WebGL.srcAlpha WebGL.oneMinusSrcAlpha ]
+                                    Clock.Shaders.vertex
+                                    Clock.Shaders.fragment
+                                    mesh
+                                    (uniforms theta ( w, h ) texture pos rot)
+                        in
                             List.indexedMap makeEntity positions
-                    in
-                        [ WebGL.toHtml
-                            [ width (w // downscale)
-                            , height (h // downscale)
-                            , class "raymarch-canvas"
-                            ]
-                            entities
-                        ]
 
-                Nothing ->
-                    [ div [ class "error" ] [ text "Loading..." ] ]
-            )
+                    Nothing ->
+                        []
+                )
+            ]
 
 
-mesh : Math.Vector3.Vec3 -> Math.Matrix4.Mat4 -> WebGL.Mesh Clock.Types.Vertex
-mesh pos rot =
-    Clock.Meshes.quad pos rot 0.2
+mesh : WebGL.Mesh Clock.Types.Vertex
+mesh =
+    Clock.Meshes.quad 0.2

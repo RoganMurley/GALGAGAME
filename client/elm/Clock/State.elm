@@ -19,12 +19,14 @@ tick ({ time } as model) dt =
     { model | time = time + dt }
 
 
-uniforms : Float -> ( Width, Height ) -> Texture -> Vec3 -> Uniforms
-uniforms t ( width, height ) texture pos =
+uniforms : Float -> ( Width, Height ) -> Texture -> Vec3 -> Mat4 -> Uniforms
+uniforms t ( width, height ) texture pos rot =
     { time = t
     , resolution = vec2 (toFloat width) (toFloat height)
     , texture = texture
-    , rotation = makeRotate -t (vec3 0 0 1)
+    , rotation = rot
+    , worldPos = pos
+    , worldRot = makeRotate -t (vec3 0 0 1)
     , perspective = makePerspective 45 ((toFloat width) / (toFloat height)) 0.01 100
     , camera = makeLookAt (vec3 0 0 (4 + (sin t))) (vec3 0 0 0) (vec3 0 1 0)
     }

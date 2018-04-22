@@ -55,7 +55,7 @@ null =
     |]
 
 
-vertex : Shader Vertex { u | perspective : Mat4, camera : Mat4, rotation : Mat4 } { vcoord : Vec2 }
+vertex : Shader Vertex { u | perspective : Mat4, camera : Mat4, worldPos : Vec3, rotation : Mat4, worldRot : Mat4 } { vcoord : Vec2 }
 vertex =
     [glsl|
         precision mediump float;
@@ -66,11 +66,13 @@ vertex =
         uniform mat4 perspective;
         uniform mat4 camera;
         uniform mat4 rotation;
+        uniform vec3 worldPos;
+        uniform mat4 worldRot;
 
         varying vec2 vcoord;
 
         void main () {
-            gl_Position = perspective * camera * rotation * vec4(position, 1.0);
+            gl_Position = perspective * camera * worldRot * (vec4(worldPos, 1.0) + rotation * vec4(position, 1.0));
             vcoord = coord.xy;
         }
 

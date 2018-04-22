@@ -15,6 +15,8 @@ type alias Uniforms =
     , resolution : Vec2
     , texture : Texture
     , rotation : Mat4
+    , worldPos : Vec3
+    , worldRot : Mat4
     , perspective : Mat4
     , camera : Mat4
     }
