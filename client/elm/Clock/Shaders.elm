@@ -61,7 +61,7 @@ vertex =
         precision mediump float;
 
         attribute vec3 position;
-        attribute vec3 coord;
+        attribute vec2 coord;
 
         uniform mat4 perspective;
         uniform mat4 camera;

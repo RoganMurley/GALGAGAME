@@ -22,5 +22,5 @@ type alias Uniforms =
 
 type alias Vertex =
     { position : Vec3
-    , coord : Vec3
+    , coord : Vec2
     }
