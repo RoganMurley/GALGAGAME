@@ -25,25 +25,25 @@ view (Params _ ( w, h )) { time } textures =
             1
 
         mTexture =
-            Texture.load textures "clock"
+            Texture.load textures "sword"
 
         positions =
-            Clock.State.clockFace 12 (vec3 0 0 0) (1)
+            Clock.State.clockFace 12 (vec3 0 0 0) 1
     in
         div [ class "clock" ]
             (case mTexture of
                 Just texture ->
                     let
-                        makeEntity pos =
+                        makeEntity index pos =
                             WebGL.entityWith
                                 [ WebGL.add WebGL.srcAlpha WebGL.oneMinusSrcAlpha ]
                                 Clock.Shaders.vertex
                                 Clock.Shaders.fragment
-                                (Clock.Meshes.quad pos 0.2)
+                                (mesh pos)
                                 (uniforms theta ( w, h ) texture)
 
                         entities =
-                            List.map makeEntity positions
+                            List.indexedMap makeEntity positions
                     in
                         [ WebGL.toHtml
                             [ width (w // downscale)
@@ -51,39 +51,13 @@ view (Params _ ( w, h )) { time } textures =
                             , class "raymarch-canvas"
                             ]
                             entities
-                          -- [ WebGL.entityWith
-                          --     [ WebGL.add WebGL.srcAlpha WebGL.oneMinusSrcAlpha ]
-                          --     Clock.Shaders.vertex
-                          --     Clock.Shaders.fragment
-                          --     (Clock.Meshes.quad (vec3 -0.5 -0.5 0) 0.2)
-                          --     (uniforms theta ( w, h ) texture)
-                          -- , WebGL.entityWith
-                          --     [ WebGL.add WebGL.srcAlpha WebGL.oneMinusSrcAlpha ]
-                          --     Clock.Shaders.vertex
-                          --     Clock.Shaders.fragment
-                          --     (Clock.Meshes.quad (vec3 0.5 0.5 -0.3) 0.3)
-                          --     (uniforms theta ( w, h ) texture)
-                          -- , WebGL.entityWith
-                          --     [ WebGL.add WebGL.srcAlpha WebGL.oneMinusSrcAlpha ]
-                          --     Clock.Shaders.vertex
-                          --     Clock.Shaders.fragment
-                          --     (Clock.Meshes.quad (vec3 -0.5 0.5 0.7) 0.1)
-                          --     (uniforms theta ( w, h ) texture)
-                          -- , WebGL.entityWith
-                          --     [ WebGL.add WebGL.srcAlpha WebGL.oneMinusSrcAlpha ]
-                          --     Clock.Shaders.vertex
-                          --     Clock.Shaders.fragment
-                          --     (Clock.Meshes.quad (vec3 0.5 -0.5 0.1) 0.4)
-                          --     (uniforms theta ( w, h ) texture)
-                          -- , WebGL.entityWith
-                          --     [ WebGL.add WebGL.srcAlpha WebGL.oneMinusSrcAlpha ]
-                          --     Clock.Shaders.vertex
-                          --     Clock.Shaders.matte
-                          --     (Clock.Meshes.quad (vec3 theta 0.0 (-10.0 * theta)) 1.0)
-                          --     (Clock.State.cameraUniforms (vec3 1.0 0.0 0.0))
-                          -- ]
                         ]
 
                 Nothing ->
-                    [ div [ class "error" ] [ text "error loading texture" ] ]
+                    [ div [ class "error" ] [ text "Loading..." ] ]
             )
+
+
+mesh : Math.Vector3.Vec3 -> WebGL.Mesh Clock.Types.Vertex
+mesh pos =
+    Clock.Meshes.quad pos 0.2
