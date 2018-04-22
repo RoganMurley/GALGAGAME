@@ -21,19 +21,16 @@ view (Params _ ( w, h )) { time } textures =
         theta =
             time / 1000
 
-        downscale =
-            1
-
         mTexture =
             Texture.load textures "sword"
 
-        positions =
+        points =
             Clock.State.clockFace 12 (vec3 0 0 0) 1
     in
         div [ class "clock" ]
             [ WebGL.toHtml
-                [ width (w // downscale)
-                , height (h // downscale)
+                [ width w
+                , height h
                 , class "raymarch-canvas"
                 ]
                 (case mTexture of
@@ -44,17 +41,12 @@ view (Params _ ( w, h )) { time } textures =
                                     [ WebGL.add WebGL.srcAlpha WebGL.oneMinusSrcAlpha ]
                                     Clock.Shaders.vertex
                                     Clock.Shaders.fragment
-                                    mesh
+                                    Clock.Meshes.quad
                                     (uniforms theta ( w, h ) texture pos rot)
                         in
-                            List.indexedMap makeEntity positions
+                            List.indexedMap makeEntity points
 
                     Nothing ->
                         []
                 )
             ]
-
-
-mesh : WebGL.Mesh Clock.Types.Vertex
-mesh =
-    Clock.Meshes.quad 0.2
