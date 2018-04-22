@@ -4,6 +4,7 @@ import Clock.Types exposing (Model)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Main.Messages as Main
+import Math.Matrix4 exposing (Mat4, transform)
 import Math.Vector3 exposing (vec3)
 import Clock.Meshes
 import Clock.Shaders
@@ -34,13 +35,13 @@ view (Params _ ( w, h )) { time } textures =
             (case mTexture of
                 Just texture ->
                     let
-                        makeEntity index pos =
+                        makeEntity index ( pos, rot ) =
                             WebGL.entityWith
                                 [ WebGL.add WebGL.srcAlpha WebGL.oneMinusSrcAlpha ]
                                 Clock.Shaders.vertex
                                 Clock.Shaders.fragment
-                                (mesh pos)
-                                (uniforms theta ( w, h ) texture)
+                                (mesh pos rot)
+                                (uniforms theta ( w, h ) texture pos)
 
                         entities =
                             List.indexedMap makeEntity positions
@@ -58,6 +59,6 @@ view (Params _ ( w, h )) { time } textures =
             )
 
 
-mesh : Math.Vector3.Vec3 -> WebGL.Mesh Clock.Types.Vertex
-mesh pos =
-    Clock.Meshes.quad pos 0.2
+mesh : Math.Vector3.Vec3 -> Math.Matrix4.Mat4 -> WebGL.Mesh Clock.Types.Vertex
+mesh pos rot =
+    Clock.Meshes.quad pos rot 0.2
