@@ -7,7 +7,7 @@ import WebGL.Texture exposing (Texture)
 
 
 type alias Model =
-    { time : Float, turns : Int }
+    { time : Float, turns : Int, maxTick : Float }
 
 
 type alias Uniforms =

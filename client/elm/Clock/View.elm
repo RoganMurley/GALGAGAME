@@ -16,16 +16,16 @@ import WebGL.Settings.Blend as WebGL
 
 
 view : Params -> Model -> Texture.Model -> Html Main.Msg
-view (Params _ ( w, h )) { time } textures =
+view (Params _ ( w, h )) ({ time } as model) textures =
     let
         theta =
             time / 1000
 
         mTexture =
-            Texture.load textures "sword"
+            Texture.load textures "wireframe-sword"
 
         points =
-            Clock.State.clockFace 12 (vec3 0 0 0) 1 time
+            Clock.State.clockFace 12 (vec3 0 0 0) 1 model
     in
         div [ class "clock" ]
             [ WebGL.toHtml

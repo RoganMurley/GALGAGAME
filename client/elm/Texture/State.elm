@@ -88,6 +88,7 @@ texturePaths =
     [ ( "cross", "/img/textures/cross.png" )
     , ( "feint", "/img/textures/feint.png" )
     , ( "clock", "/img/textures/clock.png" )
+    , ( "wireframe-sword", "/img/textures/wireframe-sword.png" )
     , ( "sword", "/img/textures/sword.png" )
     , ( "wand", "/img/textures/wand.png" )
     , ( "chalice", "/img/textures/chalice.png" )
