@@ -25,7 +25,7 @@ view (Params _ ( w, h )) { time } textures =
             Texture.load textures "sword"
 
         points =
-            Clock.State.clockFace 12 (vec3 0 0 0) 1
+            Clock.State.clockFace 12 (vec3 0 0 0) 1 time
     in
         div [ class "clock" ]
             [ WebGL.toHtml

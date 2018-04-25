@@ -7,12 +7,11 @@ import WebGL.Texture exposing (Texture)
 
 
 type alias Model =
-    { time : Float }
+    { time : Float, turns : Int }
 
 
 type alias Uniforms =
-    { time : Float
-    , resolution : Vec2
+    { resolution : Vec2
     , texture : Texture
     , rotation : Mat4
     , scale : Mat4
