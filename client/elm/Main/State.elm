@@ -7,6 +7,7 @@ import Routing.State as Routing
 import Routing.Types as Routing
 import WebSocket
 import GameState.Types exposing (GameState(Started))
+import Clock.Listener as Clock
 import Clock.State as Clock
 import Lab.State as Lab
 import Lobby.State as Lobby
@@ -78,6 +79,9 @@ update msg ({ room, settings, textures, flags } as model) =
 
                             Just { state } ->
                                 listen time (Started state)
+
+                    Room.Clock clock ->
+                        Clock.listen clock
 
                     otherwise ->
                         Cmd.none
