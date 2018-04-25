@@ -13,24 +13,20 @@ init : Model
 init =
     { time = 0.0
     , turns = 0
+    , maxTick = 1000
     }
 
 
-maxTick : Float
-maxTick =
-    800
-
-
 tick : Model -> Float -> Model
-tick ({ time, turns } as model) dt =
+tick ({ time, turns, maxTick } as model) dt =
     let
-        ( newTime, newTurns ) =
+        ( newTime, newTurns, newMaxTick ) =
             if time < maxTick then
-                ( time + dt, turns )
+                ( time + dt, turns, maxTick )
             else
-                ( 0, turns + 1 )
+                ( 0, turns + 1, maxTick )
     in
-        { model | time = newTime, turns = newTurns }
+        { model | time = newTime, turns = newTurns, maxTick = newMaxTick }
 
 
 uniforms : Float -> ( Width, Height ) -> Texture -> Vec3 -> Mat4 -> Uniforms
@@ -46,8 +42,8 @@ uniforms t ( width, height ) texture pos rot =
     }
 
 
-clockFace : Int -> Vec3 -> Float -> Float -> List ( Vec3, Mat4 )
-clockFace n origin radius time =
+clockFace : Int -> Vec3 -> Float -> Model -> List ( Vec3, Mat4 )
+clockFace n origin radius { time, maxTick } =
     let
         indexes : List Int
         indexes =
