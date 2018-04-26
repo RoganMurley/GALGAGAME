@@ -4,6 +4,7 @@ import Clock.Types exposing (Model)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Main.Messages as Main
+import Math.Matrix4 exposing (makeRotate, makeScale3)
 import Math.Vector3 exposing (vec3)
 import Clock.Meshes
 import Clock.Shaders
@@ -21,11 +22,16 @@ view (Params _ ( w, h )) ({ time } as model) textures =
         theta =
             time / 1000
 
-        mTexture =
-            Texture.load textures "wireframe-sword"
+        mTextures =
+            Maybe.map2 (,)
+                (Texture.load textures "wireframe-sword")
+                (Texture.load textures "clock")
 
         points =
             Clock.State.clockFace 12 (vec3 0 0 0) 1 model
+
+        locals =
+            uniforms theta ( w, h )
     in
         div [ class "clock" ]
             [ WebGL.toHtml
@@ -33,18 +39,31 @@ view (Params _ ( w, h )) ({ time } as model) textures =
                 , height h
                 , class "raymarch-canvas"
                 ]
-                (case mTexture of
-                    Just texture ->
+                (case mTextures of
+                    Just ( sword, circle ) ->
                         let
-                            makeEntity index ( pos, rot ) =
+                            makeEntity ( pos, rot ) =
                                 WebGL.entityWith
                                     [ WebGL.add WebGL.srcAlpha WebGL.oneMinusSrcAlpha ]
                                     Clock.Shaders.vertex
                                     Clock.Shaders.fragment
                                     Clock.Meshes.quad
-                                    (uniforms theta ( w, h ) texture pos rot)
+                                    (locals sword pos rot (makeScale3 0.2 0.2 1))
                         in
-                            List.indexedMap makeEntity points
+                            List.concat
+                                [ [ WebGL.entityWith
+                                        [ WebGL.add WebGL.srcAlpha WebGL.oneMinusSrcAlpha ]
+                                        Clock.Shaders.vertex
+                                        Clock.Shaders.fragment
+                                        Clock.Meshes.quad
+                                        (locals circle
+                                            (vec3 0 1 0)
+                                            (makeScale3 0.3 0.3 1)
+                                            (makeRotate 0 <| vec3 0 0 1)
+                                        )
+                                  ]
+                                , List.map makeEntity points
+                                ]
 
                     Nothing ->
                         []
