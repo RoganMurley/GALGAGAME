@@ -2,7 +2,7 @@ module Clock.State exposing (..)
 
 import Clock.Types exposing (Model, Uniforms)
 import Ease
-import Math.Matrix4 exposing (Mat4, identity, makeLookAt, makePerspective, makeRotate, makeScale3, mul)
+import Math.Matrix4 exposing (Mat4, identity, makeLookAt, makePerspective, makeRotate, mul)
 import Math.Vector2 exposing (vec2)
 import Math.Vector3 exposing (Vec3, vec3)
 import Raymarch.Types exposing (Height, Width)
@@ -29,12 +29,12 @@ tick ({ time, turns, maxTick } as model) dt =
         { model | time = newTime, turns = newTurns, maxTick = newMaxTick }
 
 
-uniforms : Float -> ( Width, Height ) -> Texture -> Vec3 -> Mat4 -> Uniforms
-uniforms t ( width, height ) texture pos rot =
+uniforms : Float -> ( Width, Height ) -> Texture -> Vec3 -> Mat4 -> Mat4 -> Uniforms
+uniforms t ( width, height ) texture pos rot scale =
     { resolution = vec2 (toFloat width) (toFloat height)
     , texture = texture
     , rotation = rot
-    , scale = makeScale3 0.2 0.2 1
+    , scale = scale
     , worldPos = pos
     , worldRot = makeRotate 0 (vec3 0 0 1)
     , perspective = makePerspective 45 ((toFloat width) / (toFloat height)) 0.01 100
