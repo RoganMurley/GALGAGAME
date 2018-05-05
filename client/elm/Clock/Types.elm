@@ -10,15 +10,16 @@ type alias Model =
     { time : Float, turns : Int, maxTick : Float }
 
 
-type alias Uniforms =
-    { resolution : Vec2
-    , texture : Texture
-    , rotation : Mat4
-    , scale : Mat4
-    , worldPos : Vec3
-    , worldRot : Mat4
-    , perspective : Mat4
-    , camera : Mat4
+type alias Uniforms a =
+    { a
+        | resolution : Vec2
+        , texture : Texture
+        , rotation : Mat4
+        , scale : Mat4
+        , worldPos : Vec3
+        , worldRot : Mat4
+        , perspective : Mat4
+        , camera : Mat4
     }
 
 

@@ -7,7 +7,7 @@ import Math.Matrix4 exposing (Mat4)
 import WebGL exposing (Shader)
 
 
-fragment : Shader {} Uniforms { vcoord : Vec2 }
+fragment : Shader {} (Uniforms {}) { vcoord : Vec2 }
 fragment =
     [glsl|
         precision mediump float;
@@ -44,7 +44,7 @@ matte =
     |]
 
 
-vertex : Shader Vertex { u | perspective : Mat4, camera : Mat4, scale : Mat4, worldPos : Vec3, rotation : Mat4, worldRot : Mat4 } { vcoord : Vec2 }
+vertex : Shader Vertex (Uniforms u) { vcoord : Vec2 }
 vertex =
     [glsl|
         precision mediump float;

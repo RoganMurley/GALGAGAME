@@ -29,7 +29,7 @@ tick ({ time, turns, maxTick } as model) dt =
         { model | time = newTime, turns = newTurns, maxTick = newMaxTick }
 
 
-uniforms : Float -> ( Width, Height ) -> Texture -> Vec3 -> Mat4 -> Mat4 -> Uniforms
+uniforms : Float -> ( Width, Height ) -> Texture -> Vec3 -> Mat4 -> Mat4 -> Uniforms {}
 uniforms t ( width, height ) texture pos rot scale =
     { resolution = vec2 (toFloat width) (toFloat height)
     , texture = texture

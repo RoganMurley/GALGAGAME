@@ -6,14 +6,13 @@ import Html.Attributes exposing (..)
 import Main.Messages as Main
 import Math.Matrix4 exposing (makeRotate, makeScale3)
 import Math.Vector3 exposing (vec3)
-import Clock.Meshes
+import Clock.Primitives as Primitives
 import Clock.Shaders
 import Clock.State exposing (uniforms)
 import Raymarch.Types exposing (Params(..))
 import Texture.State as Texture
 import Texture.Types as Texture
 import WebGL
-import WebGL.Settings.Blend as WebGL
 
 
 view : Params -> Model -> Texture.Model -> Html Main.Msg
@@ -32,13 +31,6 @@ view (Params _ ( w, h )) ({ time } as model) textures =
 
         locals =
             uniforms theta ( w, h )
-
-        texEntity =
-            WebGL.entityWith
-                [ WebGL.add WebGL.srcAlpha WebGL.oneMinusSrcAlpha ]
-                Clock.Shaders.vertex
-                Clock.Shaders.fragment
-                Clock.Meshes.quad
     in
         div [ class "clock" ]
             [ WebGL.toHtml
@@ -50,31 +42,31 @@ view (Params _ ( w, h )) ({ time } as model) textures =
                     Just ( sword, circle ) ->
                         let
                             makeEntity ( pos, rot ) =
-                                texEntity <|
+                                Primitives.quad Clock.Shaders.fragment <|
                                     locals sword pos rot (makeScale3 0.2 0.2 1)
                         in
                             List.concat
-                                [ [ texEntity <|
+                                [ [ Primitives.circle <|
                                         locals circle
                                             (vec3 0 1 0)
                                             (makeScale3 0.3 0.3 1)
                                             (makeRotate 0 <| vec3 0 0 1)
                                   ]
                                 , List.map makeEntity points
-                                , [ texEntity <|
+                                , [ Primitives.circle <|
                                         locals circle
                                             (vec3 0 0 0)
                                             (makeScale3 0.2 0.2 1)
                                             (makeRotate theta <| vec3 0 0 1)
-                                  , texEntity <|
+                                  , Primitives.circle <|
                                         locals circle
                                             (vec3 0 0 0)
-                                            (makeScale3 0.7 0.7 1)
+                                            (makeScale3 0.75 0.75 1)
                                             (makeRotate 0 <| vec3 0 0 1)
-                                  , texEntity <|
+                                  , Primitives.circle <|
                                         locals circle
                                             (vec3 0 0 0)
-                                            (makeScale3 1.55 1.55 1)
+                                            (makeScale3 1.25 1.25 1)
                                             (makeRotate -theta <| vec3 0 0 1)
                                   ]
                                 ]
