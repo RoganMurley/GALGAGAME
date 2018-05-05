@@ -2,7 +2,7 @@ module Clock.State exposing (..)
 
 import Clock.Types exposing (Model, Uniforms)
 import Ease
-import Math.Matrix4 exposing (Mat4, identity, makeLookAt, makePerspective, makeRotate, mul)
+import Math.Matrix4 exposing (Mat4, identity, makeLookAt, makeOrtho, makeRotate, mul)
 import Math.Vector2 exposing (vec2)
 import Math.Vector3 exposing (Vec3, vec3)
 import Raymarch.Types exposing (Height, Width)
@@ -37,8 +37,8 @@ uniforms t ( width, height ) texture pos rot scale =
     , scale = scale
     , worldPos = pos
     , worldRot = makeRotate 0 (vec3 0 0 1)
-    , perspective = makePerspective 45 ((toFloat width) / (toFloat height)) 0.01 100
-    , camera = makeLookAt (vec3 0 0 2) (vec3 0 0 0) (vec3 0 1 0)
+    , perspective = makeOrtho 0 (toFloat width / 2) (toFloat height / 2) 0 0.01 100
+    , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
     }
 
 

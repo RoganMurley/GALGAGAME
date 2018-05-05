@@ -16,6 +16,7 @@ import Login.Decoders as Login
 import Login.State as Login
 import Main.Messages exposing (Msg(..))
 import Mode exposing (Mode(..))
+import Mouse
 import Navigation
 import Replay.State as Replay
 import Room.State as Room
@@ -167,6 +168,14 @@ update msg ({ room, settings, textures, flags } as model) =
 
             LogoutCallback (Err _) ->
                 ( model, Cmd.none )
+
+            MousePosition mouse ->
+                ( { model
+                    | flags =
+                        { flags | mouse = mouse }
+                  }
+                , Cmd.none
+                )
 
             GetAuth ->
                 ( model
@@ -349,4 +358,5 @@ subscriptions model =
         [ WebSocket.listen (websocketAddress model.flags) Receive
         , AnimationFrame.diffs Frame
         , Window.resizes (\{ width, height } -> Resize width height)
+        , Mouse.moves MousePosition
         ]
