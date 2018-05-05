@@ -1,5 +1,6 @@
 module Main.Types exposing (..)
 
+import Mouse exposing (Position)
 import Room.Types as Room
 import Settings.Types as Settings
 import Texture.Types as Texture
@@ -19,6 +20,7 @@ type alias Flags =
     , seed : Seed
     , time : Float
     , dimensions : ( Int, Int )
+    , mouse : Position
     , username : Maybe String
     }
 

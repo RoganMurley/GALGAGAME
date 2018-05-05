@@ -1,6 +1,7 @@
 module Main.Messages exposing (Msg(..))
 
 import Http
+import Mouse
 import Navigation exposing (Location)
 import Room.Messages as Room
 import Settings.Messages as Settings
@@ -15,6 +16,7 @@ type Msg
     | GetAuthCallback (Result Http.Error (Maybe String))
     | Logout
     | LogoutCallback (Result Http.Error ())
+    | MousePosition Mouse.Position
     | Receive String
     | Resize Int Int
     | RoomMsg Room.Msg

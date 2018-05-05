@@ -49,7 +49,7 @@ view model settings flags textures =
                         Login.view params login
 
                 Clock clock ->
-                    Clock.view params clock textures
+                    Clock.view params flags.mouse clock textures
     in
         div []
             [ Settings.view settings (settingsView model flags)
