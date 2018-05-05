@@ -34,7 +34,7 @@ view (Params _ ( w, h )) mouse ({ time } as model) textures =
             uniforms theta ( w, h )
 
         radius =
-            toFloat h / 2
+            0.8 * (toFloat h / 2)
     in
         div [ class "clock" ]
             [ WebGL.toHtml
@@ -48,6 +48,54 @@ view (Params _ ( w, h )) mouse ({ time } as model) textures =
                             makeEntity ( pos, rot ) =
                                 Primitives.quad Clock.Shaders.fragment <|
                                     locals sword pos rot (makeScale3 (0.13 * radius) (0.13 * radius) 1)
+
+                            handView : Int -> List WebGL.Entity
+                            handView n =
+                                let
+                                    ( width, height, spacing ) =
+                                        ( 0.1 * radius, 0.1 * radius, 35.0 )
+
+                                    origin =
+                                        vec3
+                                            ((toFloat w / 2) - (0.5 * (width + spacing) * (toFloat n)))
+                                            (toFloat h - height)
+                                            0
+
+                                    entity : Int -> WebGL.Entity
+                                    entity i =
+                                        Primitives.quad Clock.Shaders.fragment <|
+                                            locals sword
+                                                (Math.Vector3.add origin <|
+                                                    vec3 ((toFloat i) * (width + spacing)) 0 0
+                                                )
+                                                (makeScale3 width height 1)
+                                                (makeRotate pi <| vec3 0 0 1)
+                                in
+                                    List.map entity (List.range 0 n)
+
+                            otherHandView : Int -> List WebGL.Entity
+                            otherHandView n =
+                                let
+                                    ( width, height, spacing ) =
+                                        ( 0.1 * radius, 0.1 * radius, 35.0 )
+
+                                    origin =
+                                        vec3
+                                            ((toFloat w / 2) - (0.5 * (width + spacing) * (toFloat n)))
+                                            height
+                                            0
+
+                                    entity : Int -> WebGL.Entity
+                                    entity i =
+                                        Primitives.quad Clock.Shaders.fragment <|
+                                            locals sword
+                                                (Math.Vector3.add origin <|
+                                                    vec3 ((toFloat i) * (width + spacing)) 0 0
+                                                )
+                                                (makeScale3 width height 1)
+                                                (makeRotate 0 <| vec3 0 0 1)
+                                in
+                                    List.map entity (List.range 0 n)
                         in
                             List.concat
                                 [ [ Primitives.circle <|
@@ -83,6 +131,8 @@ view (Params _ ( w, h )) mouse ({ time } as model) textures =
                                             (makeScale3 (0.1 * radius) (0.1 * radius) 1)
                                             (makeRotate pi <| vec3 0 0 1)
                                   ]
+                                , handView 5
+                                , otherHandView 4
                                 ]
 
                     Nothing ->
