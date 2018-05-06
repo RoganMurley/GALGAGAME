@@ -115,10 +115,24 @@ view (Params _ ( w, h )) mouse ({ time } as model) textures =
                                             (vec3 (toFloat w / 2) ((toFloat h / 2) - (0.65 * radius)) 0)
                                             (makeScale3 (0.15 * radius) (0.15 * radius) 1)
                                             (makeRotate 0 <| vec3 0 0 1)
-                                  , Primitives.circle <|
+                                  ]
+                                , [ Primitives.gear <|
                                         locals circle
-                                            (vec3 (toFloat w / 2) (toFloat h / 2) 0)
-                                            (makeScale3 (0.15 * radius) (0.15 * radius) 1)
+                                            (vec3
+                                                ((toFloat w / 2) + radius * 0.1)
+                                                ((toFloat h / 2))
+                                                0
+                                            )
+                                            (makeScale3 (0.1 * radius) (0.1 * radius) 1)
+                                            (makeRotate theta <| vec3 0 0 1)
+                                  , Primitives.gear <|
+                                        locals circle
+                                            (vec3
+                                                ((toFloat w / 2) - radius * 0.065)
+                                                ((toFloat h / 2) - radius * 0.02)
+                                                0
+                                            )
+                                            (makeScale3 (0.1 * radius) (0.1 * radius) 1)
                                             (makeRotate -theta <| vec3 0 0 1)
                                   ]
                                 , [ Primitives.quad Clock.Shaders.fragment <|
