@@ -4,6 +4,7 @@ import Clock.Primitives as Primitives
 import Clock.Shaders
 import Clock.State exposing (uniforms)
 import Clock.Types exposing (Model)
+import Ease
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Main.Messages as Main
@@ -17,7 +18,7 @@ import WebGL
 
 
 view : Params -> Mouse.Position -> Model -> Texture.Model -> Html Main.Msg
-view (Params _ ( w, h )) mouse ({ time } as model) textures =
+view (Params _ ( w, h )) mouse ({ time, maxTick } as model) textures =
     let
         theta =
             time / 1000
@@ -124,7 +125,9 @@ view (Params _ ( w, h )) mouse ({ time } as model) textures =
                                                 0
                                             )
                                             (makeScale3 (0.1 * radius) (0.1 * radius) 1)
-                                            (makeRotate theta <| vec3 0 0 1)
+                                            (makeRotate (2 * pi * 0.09 * (Ease.inQuad <| time / maxTick)) <|
+                                                vec3 0 0 1
+                                            )
                                   , Primitives.gear <|
                                         locals circle
                                             (vec3
@@ -133,7 +136,9 @@ view (Params _ ( w, h )) mouse ({ time } as model) textures =
                                                 0
                                             )
                                             (makeScale3 (0.1 * radius) (0.1 * radius) 1)
-                                            (makeRotate -theta <| vec3 0 0 1)
+                                            (makeRotate -(2 * pi * 0.09 * (Ease.inQuad <| time / maxTick)) <|
+                                                vec3 0 0 1
+                                            )
                                   ]
                                 , [ Primitives.quad Clock.Shaders.fragment <|
                                         locals sword
