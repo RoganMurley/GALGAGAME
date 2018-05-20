@@ -49,8 +49,8 @@ uniforms t ( width, height ) texture pos rot scale =
     }
 
 
-clockFace : Int -> Vec3 -> Float -> Float -> Float -> List ( Vec3, Mat4 )
-clockFace n origin radius time maxTick =
+clockFace : Int -> Vec3 -> Float -> Float -> List ( Vec3, Mat4 )
+clockFace n origin radius progress =
     let
         indexes : List Int
         indexes =
@@ -63,10 +63,6 @@ clockFace n origin radius time maxTick =
         segmentAngle : Float
         segmentAngle =
             2.0 * pi / (toFloat n)
-
-        progress : Float
-        progress =
-            Ease.inQuad <| time / maxTick
 
         rot : Int -> Float
         rot i =

@@ -1,5 +1,6 @@
 module Clock.View exposing (view)
 
+import Animation.Types exposing (Anim(Rotate))
 import Animation.State exposing (animToResTickMax)
 import Clock.Primitives as Primitives
 import Clock.Shaders
@@ -28,7 +29,7 @@ view (Params _ ( w, h )) mouse { res } textures =
                 (Texture.load textures "clock")
 
         points =
-            Clock.State.clockFace 12 (vec3 (toFloat w / 2) (toFloat h / 2) 0) ((0.65 * radius)) res.tick maxTick
+            Clock.State.clockFace 12 (vec3 (toFloat w / 2) (toFloat h / 2) 0) ((0.65 * radius)) rotateProgress
 
         locals =
             uniforms 0 ( w, h )
@@ -36,8 +37,19 @@ view (Params _ ( w, h )) mouse { res } textures =
         radius =
             0.8 * (toFloat h / 2)
 
+        anim =
+            activeAnim res
+
         maxTick =
-            animToResTickMax <| activeAnim res
+            animToResTickMax anim
+
+        rotateProgress =
+            case anim of
+                Just (Rotate _) ->
+                    Ease.inQuad <| res.tick / maxTick
+
+                otherwise ->
+                    0
     in
         div [ class "clock" ]
             [ WebGL.toHtml
@@ -127,7 +139,7 @@ view (Params _ ( w, h )) mouse { res } textures =
                                                 0
                                             )
                                             (makeScale3 (0.1 * radius) (0.1 * radius) 1)
-                                            (makeRotate (2 * pi * 0.09 * (Ease.inQuad <| res.tick / maxTick)) <|
+                                            (makeRotate (2 * pi * 0.09 * rotateProgress) <|
                                                 vec3 0 0 1
                                             )
                                   , Primitives.gear <|
@@ -138,7 +150,7 @@ view (Params _ ( w, h )) mouse { res } textures =
                                                 0
                                             )
                                             (makeScale3 (0.1 * radius) (0.1 * radius) 1)
-                                            (makeRotate -(2 * pi * 0.09 * (Ease.inQuad <| res.tick / maxTick)) <|
+                                            (makeRotate -(2 * pi * 0.09 * rotateProgress) <|
                                                 vec3 0 0 1
                                             )
                                   ]
