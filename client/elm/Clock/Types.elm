@@ -4,10 +4,11 @@ import Math.Matrix4 exposing (Mat4)
 import Math.Vector2 exposing (Vec2)
 import Math.Vector3 exposing (Vec3)
 import WebGL.Texture exposing (Texture)
+import Resolvable.Types as Resolvable
 
 
 type alias Model =
-    { time : Float, turns : Int, maxTick : Float }
+    { res : Resolvable.Model }
 
 
 type alias Uniforms a =

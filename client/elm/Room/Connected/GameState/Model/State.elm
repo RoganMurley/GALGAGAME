@@ -1,6 +1,7 @@
 module Model.State exposing (..)
 
-import Model.Types exposing (Model, WhichPlayer(..))
+import Model.Types exposing (Model)
+import WhichPlayer.Types exposing (WhichPlayer(..))
 
 
 init : Model

@@ -46,24 +46,6 @@ animToFragShader anim =
         Obliterate _ ->
             BaseShader Shaders.obliterate
 
-        Draw _ ->
-            BaseShader Shaders.null
-
-        Bite _ _ ->
-            BaseShader Shaders.null
-
-        Reverse _ ->
-            BaseShader Shaders.null
-
-        Play _ _ ->
-            BaseShader Shaders.null
-
-        Transmute _ _ _ ->
-            BaseShader Shaders.null
-
-        GameEnd _ ->
-            BaseShader Shaders.null
-
         Overdraw _ ->
             TexturedShader Shaders.overdraw
 
@@ -74,6 +56,9 @@ animToFragShader anim =
 
         Custom s ->
             BaseShader <| unsafeShader s
+
+        otherwise ->
+            BaseShader Shaders.null
 
 
 getWhichPlayer : Anim -> WhichPlayer
@@ -108,6 +93,9 @@ getWhichPlayer anim =
 
         GameEnd _ ->
             PlayerA
+
+        Rotate w ->
+            w
 
         Adhoc w _ _ ->
             w
@@ -156,6 +144,9 @@ animToResTickMax anim =
 
         Just (GameEnd _) ->
             2500.0
+
+        Just (Rotate _) ->
+            1000.0
 
         otherwise ->
             800.0
