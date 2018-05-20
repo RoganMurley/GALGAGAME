@@ -1,6 +1,6 @@
 module Clock.View exposing (view)
 
-import Animation.Types exposing (Anim(Rotate))
+import Animation.Types exposing (Anim(..))
 import Animation.State exposing (animToResTickMax)
 import Clock.Primitives as Primitives
 import Clock.Shaders
@@ -35,7 +35,12 @@ view (Params _ ( w, h )) mouse { res } textures =
             uniforms 0 ( w, h )
 
         radius =
-            0.8 * (toFloat h / 2)
+            case anim of
+                Just (GameStart _) ->
+                    0.8 * (toFloat h / 2) * (Ease.outQuint <| res.tick / maxTick)
+
+                otherwise ->
+                    0.8 * (toFloat h / 2)
 
         anim =
             activeAnim res
@@ -50,6 +55,9 @@ view (Params _ ( w, h )) mouse { res } textures =
 
                 otherwise ->
                     0
+
+        z =
+            0
     in
         div [ class "clock" ]
             [ WebGL.toHtml
@@ -115,19 +123,19 @@ view (Params _ ( w, h )) mouse { res } textures =
                             List.concat
                                 [ [ Primitives.circle <|
                                         locals circle
-                                            (vec3 (toFloat w / 2) (toFloat h / 2) 0)
+                                            (vec3 (toFloat w / 2) (toFloat h / 2) z)
                                             (makeScale3 (0.8 * radius) (0.8 * radius) 1)
                                             (makeRotate 0 <| vec3 0 0 1)
                                   ]
                                 , List.map makeEntity points
                                 , [ Primitives.circle <|
                                         locals circle
-                                            (vec3 (toFloat w / 2) (toFloat h / 2) 0)
+                                            (vec3 (toFloat w / 2) (toFloat h / 2) z)
                                             (makeScale3 (0.5 * radius) (0.5 * radius) 1)
                                             (makeRotate 0 <| vec3 0 0 1)
                                   , Primitives.circle <|
                                         locals circle
-                                            (vec3 (toFloat w / 2) ((toFloat h / 2) - (0.65 * radius)) 0)
+                                            (vec3 (toFloat w / 2) ((toFloat h / 2) - (0.65 * radius)) z)
                                             (makeScale3 (0.15 * radius) (0.15 * radius) 1)
                                             (makeRotate 0 <| vec3 0 0 1)
                                   ]
@@ -136,7 +144,7 @@ view (Params _ ( w, h )) mouse { res } textures =
                                             (vec3
                                                 ((toFloat w / 2) + radius * 0.1)
                                                 ((toFloat h / 2))
-                                                0
+                                                z
                                             )
                                             (makeScale3 (0.1 * radius) (0.1 * radius) 1)
                                             (makeRotate (2 * pi * 0.09 * rotateProgress) <|
@@ -147,7 +155,7 @@ view (Params _ ( w, h )) mouse { res } textures =
                                             (vec3
                                                 ((toFloat w / 2) - radius * 0.065)
                                                 ((toFloat h / 2) - radius * 0.02)
-                                                0
+                                                z
                                             )
                                             (makeScale3 (0.1 * radius) (0.1 * radius) 1)
                                             (makeRotate -(2 * pi * 0.09 * rotateProgress) <|
@@ -159,7 +167,7 @@ view (Params _ ( w, h )) mouse { res } textures =
                                             (vec3
                                                 ((toFloat mouse.x))
                                                 ((toFloat mouse.y))
-                                                0
+                                                z
                                             )
                                             (makeScale3 (0.1 * radius) (0.1 * radius) 1)
                                             (makeRotate pi <| vec3 0 0 1)

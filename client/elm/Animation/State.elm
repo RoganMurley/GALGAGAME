@@ -91,6 +91,9 @@ getWhichPlayer anim =
         Overdraw w ->
             w
 
+        GameStart w ->
+            w
+
         GameEnd _ ->
             PlayerA
 
