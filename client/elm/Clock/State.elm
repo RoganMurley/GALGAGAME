@@ -1,8 +1,7 @@
 module Clock.State exposing (..)
 
-import Animation.Types exposing (Anim(Rotate))
+import Animation.Types exposing (Anim(..))
 import Clock.Types exposing (Model, Uniforms)
-import Ease
 import Math.Matrix4 exposing (Mat4, identity, makeLookAt, makeOrtho, makeRotate, mul)
 import Math.Vector2 exposing (vec2)
 import Math.Vector3 exposing (Vec3, vec3)
@@ -18,12 +17,20 @@ init =
     { res =
         Resolvable.init
             (Model.init)
-            (List.repeat 5
-                { model = Model.init
-                , anim = Just (Rotate PlayerA)
-                , stackCard = Nothing
-                }
-            )
+        <|
+            List.concat
+                [ [ { model = Model.init
+                    , anim = Just (GameStart PlayerA)
+                    , stackCard = Nothing
+                    }
+                  ]
+                , (List.repeat 12
+                    { model = Model.init
+                    , anim = Just (Rotate PlayerA)
+                    , stackCard = Nothing
+                    }
+                  )
+                ]
     }
 
 
@@ -44,7 +51,7 @@ uniforms t ( width, height ) texture pos rot scale =
     , scale = scale
     , worldPos = pos
     , worldRot = makeRotate 0 (vec3 0 0 1)
-    , perspective = makeOrtho 0 (toFloat width / 2) (toFloat height / 2) 0 0.01 100
+    , perspective = makeOrtho 0 (toFloat width / 2) (toFloat height / 2) 0 0.01 1000
     , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
     }
 
