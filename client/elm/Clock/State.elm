@@ -1,32 +1,39 @@
 module Clock.State exposing (..)
 
+import Animation.Types exposing (Anim(Rotate))
 import Clock.Types exposing (Model, Uniforms)
 import Ease
 import Math.Matrix4 exposing (Mat4, identity, makeLookAt, makeOrtho, makeRotate, mul)
 import Math.Vector2 exposing (vec2)
 import Math.Vector3 exposing (Vec3, vec3)
+import Model.State as Model
 import Raymarch.Types exposing (Height, Width)
 import WebGL exposing (Texture)
+import WhichPlayer.Types exposing (WhichPlayer(PlayerA))
+import Resolvable.State as Resolvable
 
 
 init : Model
 init =
-    { time = 0.0
-    , turns = 0
-    , maxTick = 1000
+    { res =
+        Resolvable.init
+            (Model.init)
+            (List.repeat 5
+                { model = Model.init
+                , anim = Just (Rotate PlayerA)
+                , stackCard = Nothing
+                }
+            )
     }
 
 
 tick : Model -> Float -> Model
-tick ({ time, turns, maxTick } as model) dt =
+tick ({ res } as model) dt =
     let
-        ( newTime, newTurns, newMaxTick ) =
-            if time < maxTick then
-                ( time + dt, turns, maxTick )
-            else
-                ( 0, turns + 1, maxTick )
+        newRes =
+            Resolvable.tick dt res
     in
-        { model | time = newTime, turns = newTurns, maxTick = newMaxTick }
+        { model | res = newRes }
 
 
 uniforms : Float -> ( Width, Height ) -> Texture -> Vec3 -> Mat4 -> Mat4 -> Uniforms {}
@@ -42,8 +49,8 @@ uniforms t ( width, height ) texture pos rot scale =
     }
 
 
-clockFace : Int -> Vec3 -> Float -> Model -> List ( Vec3, Mat4 )
-clockFace n origin radius { time, maxTick } =
+clockFace : Int -> Vec3 -> Float -> Float -> Float -> List ( Vec3, Mat4 )
+clockFace n origin radius time maxTick =
     let
         indexes : List Int
         indexes =

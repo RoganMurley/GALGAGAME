@@ -3,7 +3,6 @@ module Clock.Shaders exposing (..)
 import Clock.Types exposing (Uniforms, Vertex)
 import Math.Vector2 exposing (Vec2)
 import Math.Vector3 exposing (Vec3)
-import Math.Matrix4 exposing (Mat4)
 import WebGL exposing (Shader)
 
 

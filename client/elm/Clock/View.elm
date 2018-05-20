@@ -1,5 +1,6 @@
 module Clock.View exposing (view)
 
+import Animation.State exposing (animToResTickMax)
 import Clock.Primitives as Primitives
 import Clock.Shaders
 import Clock.State exposing (uniforms)
@@ -12,30 +13,31 @@ import Math.Matrix4 exposing (makeRotate, makeScale3)
 import Math.Vector3 exposing (vec3)
 import Mouse
 import Raymarch.Types exposing (Params(..))
+import Resolvable.State exposing (activeAnim)
 import Texture.State as Texture
 import Texture.Types as Texture
 import WebGL
 
 
 view : Params -> Mouse.Position -> Model -> Texture.Model -> Html Main.Msg
-view (Params _ ( w, h )) mouse ({ time, maxTick } as model) textures =
+view (Params _ ( w, h )) mouse { res } textures =
     let
-        theta =
-            time / 1000
-
         mTextures =
             Maybe.map2 (,)
                 (Texture.load textures "wireframe-sword")
                 (Texture.load textures "clock")
 
         points =
-            Clock.State.clockFace 12 (vec3 (toFloat w / 2) (toFloat h / 2) 0) ((0.65 * radius)) model
+            Clock.State.clockFace 12 (vec3 (toFloat w / 2) (toFloat h / 2) 0) ((0.65 * radius)) res.tick maxTick
 
         locals =
-            uniforms theta ( w, h )
+            uniforms 0 ( w, h )
 
         radius =
             0.8 * (toFloat h / 2)
+
+        maxTick =
+            animToResTickMax <| activeAnim res
     in
         div [ class "clock" ]
             [ WebGL.toHtml
@@ -110,7 +112,7 @@ view (Params _ ( w, h )) mouse ({ time, maxTick } as model) textures =
                                         locals circle
                                             (vec3 (toFloat w / 2) (toFloat h / 2) 0)
                                             (makeScale3 (0.5 * radius) (0.5 * radius) 1)
-                                            (makeRotate theta <| vec3 0 0 1)
+                                            (makeRotate 0 <| vec3 0 0 1)
                                   , Primitives.circle <|
                                         locals circle
                                             (vec3 (toFloat w / 2) ((toFloat h / 2) - (0.65 * radius)) 0)
@@ -125,7 +127,7 @@ view (Params _ ( w, h )) mouse ({ time, maxTick } as model) textures =
                                                 0
                                             )
                                             (makeScale3 (0.1 * radius) (0.1 * radius) 1)
-                                            (makeRotate (2 * pi * 0.09 * (Ease.inQuad <| time / maxTick)) <|
+                                            (makeRotate (2 * pi * 0.09 * (Ease.inQuad <| res.tick / maxTick)) <|
                                                 vec3 0 0 1
                                             )
                                   , Primitives.gear <|
@@ -136,7 +138,7 @@ view (Params _ ( w, h )) mouse ({ time, maxTick } as model) textures =
                                                 0
                                             )
                                             (makeScale3 (0.1 * radius) (0.1 * radius) 1)
-                                            (makeRotate -(2 * pi * 0.09 * (Ease.inQuad <| time / maxTick)) <|
+                                            (makeRotate -(2 * pi * 0.09 * (Ease.inQuad <| res.tick / maxTick)) <|
                                                 vec3 0 0 1
                                             )
                                   ]

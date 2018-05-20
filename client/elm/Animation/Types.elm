@@ -42,6 +42,7 @@ type Anim
     | Transmute WhichPlayer StackCard StackCard
     | Overdraw WhichPlayer
     | GameEnd (Maybe WhichPlayer)
+    | Rotate WhichPlayer
     | Adhoc WhichPlayer ShaderName SfxUrl
     | Custom String
 
