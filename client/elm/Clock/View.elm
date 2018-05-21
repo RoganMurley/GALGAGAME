@@ -28,9 +28,6 @@ view (Params _ ( w, h )) mouse { res } textures =
                 (Texture.load textures "wireframe-sword")
                 (Texture.load textures "clock")
 
-        points =
-            Clock.State.clockFace 12 (vec3 (toFloat w / 2) (toFloat h / 2) 0) ((0.65 * radius)) rotateProgress
-
         locals =
             uniforms 0 ( w, h )
 
@@ -71,9 +68,28 @@ view (Params _ ( w, h )) mouse { res } textures =
                 (case mTextures of
                     Just ( sword, circle ) ->
                         let
-                            makeEntity ( pos, rot ) =
-                                Primitives.quad Clock.Shaders.fragment <|
-                                    locals sword pos rot (makeScale3 (0.13 * radius) (0.13 * radius) 1)
+                            stackView : List WebGL.Entity
+                            stackView =
+                                let
+                                    makeSword ( pos, rot ) =
+                                        Primitives.quad Clock.Shaders.fragment <|
+                                            locals sword pos rot (makeScale3 (0.13 * radius) (0.13 * radius) 1)
+
+                                    stackLen =
+                                        List.length model.stack
+
+                                    points =
+                                        Clock.State.clockFace stackLen (vec3 (toFloat w / 2) (toFloat h / 2) 0) ((0.65 * radius)) rotateProgress
+                                in
+                                    case anim of
+                                        Just (Rotate _) ->
+                                            List.map makeSword points
+
+                                        Just (GameStart _) ->
+                                            List.map makeSword points
+
+                                        otherwise ->
+                                            []
 
                             handView : Int -> List WebGL.Entity
                             handView n =
@@ -130,7 +146,7 @@ view (Params _ ( w, h )) mouse { res } textures =
                                             (makeScale3 (0.8 * radius) (0.8 * radius) 1)
                                             (makeRotate 0 <| vec3 0 0 1)
                                   ]
-                                , List.map makeEntity points
+                                , stackView
                                 , [ Primitives.circle <|
                                         locals circle
                                             (vec3 (toFloat w / 2) (toFloat h / 2) z)
