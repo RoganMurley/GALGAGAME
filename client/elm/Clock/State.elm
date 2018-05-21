@@ -18,10 +18,20 @@ init =
         mInit =
             Model.init
 
+        card =
+            { name = "", desc = "", imgURL = "" }
+
+        stackCard =
+            { owner = PlayerA, card = card }
+
+        stackLen =
+            11
+
         model =
             { mInit
-                | hand = List.repeat 5 { name = "", desc = "", imgURL = "" }
+                | hand = List.repeat 5 card
                 , otherHand = 6
+                , stack = List.repeat stackLen stackCard
             }
     in
         { res =
@@ -32,11 +42,14 @@ init =
                         , stackCard = Nothing
                         }
                       ]
-                    , (List.repeat 12
-                        { model = model
-                        , anim = Just (Rotate PlayerA)
-                        , stackCard = Nothing
-                        }
+                    , (List.map
+                        (\i ->
+                            { model = { model | stack = List.drop i model.stack }
+                            , anim = Just (Rotate PlayerA)
+                            , stackCard = Nothing
+                            }
+                        )
+                        (List.range 0 stackLen)
                       )
                     ]
         }
@@ -67,9 +80,13 @@ uniforms t ( width, height ) texture pos rot scale =
 clockFace : Int -> Vec3 -> Float -> Float -> List ( Vec3, Mat4 )
 clockFace n origin radius progress =
     let
+        segments : Int
+        segments =
+            12
+
         indexes : List Int
         indexes =
-            List.range 0 (n - 1)
+            List.range 1 n
 
         genPoint : Int -> ( Vec3, Mat4 )
         genPoint i =
@@ -77,18 +94,18 @@ clockFace n origin radius progress =
 
         segmentAngle : Float
         segmentAngle =
-            2.0 * pi / (toFloat n)
+            -2.0 * pi / (toFloat segments)
 
         rot : Int -> Float
         rot i =
             (toFloat i)
                 * segmentAngle
-                + progress
+                - progress
                 * segmentAngle
 
         offset : Int -> Vec3
         offset i =
-            Math.Vector3.scale radius <|
+            Math.Vector3.scale -radius <|
                 vec3 (sin (rot i)) (cos (rot i)) 0
 
         rotation : Int -> Mat4
