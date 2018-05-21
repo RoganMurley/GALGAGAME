@@ -14,7 +14,7 @@ import Math.Matrix4 exposing (makeRotate, makeScale3)
 import Math.Vector3 exposing (vec3)
 import Mouse
 import Raymarch.Types exposing (Params(..))
-import Resolvable.State exposing (activeAnim)
+import Resolvable.State exposing (activeAnim, activeModel)
 import Texture.State as Texture
 import Texture.Types as Texture
 import WebGL
@@ -44,6 +44,9 @@ view (Params _ ( w, h )) mouse { res } textures =
 
         anim =
             activeAnim res
+
+        model =
+            activeModel res
 
         maxTick =
             animToResTickMax anim
@@ -94,7 +97,7 @@ view (Params _ ( w, h )) mouse { res } textures =
                                                 (makeScale3 width height 1)
                                                 (makeRotate pi <| vec3 0 0 1)
                                 in
-                                    List.map entity (List.range 0 n)
+                                    List.map entity (List.range 0 (n - 1))
 
                             otherHandView : Int -> List WebGL.Entity
                             otherHandView n =
@@ -118,7 +121,7 @@ view (Params _ ( w, h )) mouse { res } textures =
                                                 (makeScale3 width height 1)
                                                 (makeRotate 0 <| vec3 0 0 1)
                                 in
-                                    List.map entity (List.range 0 n)
+                                    List.map entity (List.range 0 (n - 1))
                         in
                             List.concat
                                 [ [ Primitives.circle <|
@@ -172,8 +175,8 @@ view (Params _ ( w, h )) mouse { res } textures =
                                             (makeScale3 (0.1 * radius) (0.1 * radius) 1)
                                             (makeRotate pi <| vec3 0 0 1)
                                   ]
-                                , handView 5
-                                , otherHandView 4
+                                , handView <| List.length model.hand
+                                , otherHandView model.otherHand
                                 ]
 
                     Nothing ->

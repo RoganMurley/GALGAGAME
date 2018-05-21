@@ -14,24 +14,32 @@ import Resolvable.State as Resolvable
 
 init : Model
 init =
-    { res =
-        Resolvable.init
-            (Model.init)
-        <|
-            List.concat
-                [ [ { model = Model.init
-                    , anim = Just (GameStart PlayerA)
-                    , stackCard = Nothing
-                    }
-                  ]
-                , (List.repeat 12
-                    { model = Model.init
-                    , anim = Just (Rotate PlayerA)
-                    , stackCard = Nothing
-                    }
-                  )
-                ]
-    }
+    let
+        mInit =
+            Model.init
+
+        model =
+            { mInit
+                | hand = List.repeat 5 { name = "", desc = "", imgURL = "" }
+                , otherHand = 6
+            }
+    in
+        { res =
+            Resolvable.init model <|
+                List.concat
+                    [ [ { model = model
+                        , anim = Just (GameStart PlayerA)
+                        , stackCard = Nothing
+                        }
+                      ]
+                    , (List.repeat 12
+                        { model = model
+                        , anim = Just (Rotate PlayerA)
+                        , stackCard = Nothing
+                        }
+                      )
+                    ]
+        }
 
 
 tick : Model -> Float -> Model
