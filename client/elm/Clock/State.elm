@@ -42,6 +42,11 @@ init =
                         , stackCard = Nothing
                         }
                       ]
+                    , [ { model = model
+                        , anim = Just (Draw PlayerA)
+                        , stackCard = Nothing
+                        }
+                      ]
                     , (List.map
                         (\i ->
                             { model = { model | stack = List.drop i model.stack }

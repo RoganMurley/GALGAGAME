@@ -7,12 +7,14 @@ import Clock.Shaders
 import Clock.State exposing (uniforms)
 import Clock.Types exposing (Model)
 import Ease
+import Hand.Types exposing (Hand)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Main.Messages as Main
 import Math.Matrix4 exposing (makeRotate, makeScale3)
 import Math.Vector3 exposing (vec3)
 import Mouse
+import WhichPlayer.Types exposing (WhichPlayer(..))
 import Raymarch.Types exposing (Params(..))
 import Resolvable.State exposing (activeAnim, activeModel)
 import Texture.State as Texture
@@ -71,7 +73,7 @@ view (Params _ ( w, h )) mouse { res } textures =
                             stackView : List WebGL.Entity
                             stackView =
                                 let
-                                    makeSword ( pos, rot ) =
+                                    makeCard ( pos, rot ) =
                                         Primitives.quad Clock.Shaders.fragment <|
                                             locals sword pos rot (makeScale3 (0.13 * radius) (0.13 * radius) 1)
 
@@ -82,18 +84,28 @@ view (Params _ ( w, h )) mouse { res } textures =
                                         Clock.State.clockFace stackLen (vec3 (toFloat w / 2) (toFloat h / 2) 0) ((0.65 * radius)) rotateProgress
                                 in
                                     case anim of
-                                        Just (Rotate _) ->
-                                            List.map makeSword points
-
-                                        Just (GameStart _) ->
-                                            List.map makeSword points
-
-                                        otherwise ->
+                                        Nothing ->
                                             []
 
-                            handView : Int -> List WebGL.Entity
-                            handView n =
+                                        otherwise ->
+                                            List.map makeCard points
+
+                            handView : Hand -> List WebGL.Entity
+                            handView finalHand =
                                 let
+                                    ( hand, drawingCard ) =
+                                        case anim of
+                                            Just (Draw PlayerA) ->
+                                                ( List.take (List.length finalHand - 1) finalHand
+                                                , List.head <| List.reverse finalHand
+                                                )
+
+                                            otherwise ->
+                                                ( finalHand, Nothing )
+
+                                    n =
+                                        List.length hand
+
                                     ( width, height, spacing ) =
                                         ( 0.1 * radius, 0.1 * radius, 35.0 )
 
@@ -112,8 +124,32 @@ view (Params _ ( w, h )) mouse { res } textures =
                                                 )
                                                 (makeScale3 width height 1)
                                                 (makeRotate pi <| vec3 0 0 1)
+
+                                    mainView : List WebGL.Entity
+                                    mainView =
+                                        List.map entity (List.range 0 (n - 1))
+
+                                    drawView : List WebGL.Entity
+                                    drawView =
+                                        case drawingCard of
+                                            Nothing ->
+                                                []
+
+                                            Just _ ->
+                                                let
+                                                    progress =
+                                                        Ease.outQuint <| res.tick / maxTick
+                                                in
+                                                    [ Primitives.quad Clock.Shaders.fragment <|
+                                                        locals sword
+                                                            (Math.Vector3.add origin <|
+                                                                vec3 (toFloat w * 0.5 - progress * (toFloat w * 0.5)) 0 0
+                                                            )
+                                                            (makeScale3 width height 1)
+                                                            (makeRotate pi <| vec3 0 0 1)
+                                                    ]
                                 in
-                                    List.map entity (List.range 0 (n - 1))
+                                    mainView ++ drawView
 
                             otherHandView : Int -> List WebGL.Entity
                             otherHandView n =
@@ -191,7 +227,7 @@ view (Params _ ( w, h )) mouse { res } textures =
                                             (makeScale3 (0.1 * radius) (0.1 * radius) 1)
                                             (makeRotate pi <| vec3 0 0 1)
                                   ]
-                                , handView <| List.length model.hand
+                                , handView model.hand
                                 , otherHandView model.otherHand
                                 ]
 
