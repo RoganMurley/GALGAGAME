@@ -12,7 +12,7 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Main.Messages as Main
 import Math.Matrix4 exposing (makeRotate, makeScale3)
-import Math.Vector3 exposing (vec3)
+import Math.Vector3 exposing (Vec3, vec3)
 import Mouse
 import WhichPlayer.Types exposing (WhichPlayer(..))
 import Raymarch.Types exposing (Params(..))
@@ -106,12 +106,19 @@ view (Params _ ( w, h )) mouse { res } textures =
                                     n =
                                         List.length hand
 
+                                    finalN =
+                                        List.length finalHand
+
+                                    progress =
+                                        Ease.outQuint <| res.tick / maxTick
+
                                     ( width, height, spacing ) =
                                         ( 0.1 * radius, 0.1 * radius, 35.0 )
 
-                                    origin =
+                                    origin : Int -> Vec3
+                                    origin count =
                                         vec3
-                                            ((toFloat w / 2) - (0.5 * (width + spacing) * (toFloat n)))
+                                            ((toFloat w / 2) - (0.5 * (width + spacing) * (toFloat count)))
                                             (toFloat h - height)
                                             0
 
@@ -119,11 +126,14 @@ view (Params _ ( w, h )) mouse { res } textures =
                                     entity i =
                                         Primitives.quad Clock.Shaders.fragment <|
                                             locals sword
-                                                (Math.Vector3.add origin <|
-                                                    vec3 ((toFloat i) * (width + spacing)) 0 0
-                                                )
+                                                (interp progress (getPos i n) (getPos i finalN))
                                                 (makeScale3 width height 1)
                                                 (makeRotate pi <| vec3 0 0 1)
+
+                                    getPos : Int -> Int -> Vec3
+                                    getPos i count =
+                                        Math.Vector3.add (origin count) <|
+                                            vec3 ((toFloat i) * (width + spacing)) 0 0
 
                                     mainView : List WebGL.Entity
                                     mainView =
@@ -136,18 +146,24 @@ view (Params _ ( w, h )) mouse { res } textures =
                                                 []
 
                                             Just _ ->
-                                                let
-                                                    progress =
-                                                        Ease.outQuint <| res.tick / maxTick
-                                                in
-                                                    [ Primitives.quad Clock.Shaders.fragment <|
-                                                        locals sword
-                                                            (Math.Vector3.add origin <|
-                                                                vec3 (toFloat w * 0.5 - progress * (toFloat w * 0.5)) 0 0
-                                                            )
-                                                            (makeScale3 width height 1)
-                                                            (makeRotate pi <| vec3 0 0 1)
-                                                    ]
+                                                [ Primitives.quad Clock.Shaders.fragment <|
+                                                    locals sword
+                                                        (interp
+                                                            progress
+                                                            (vec3 (toFloat w) (toFloat h) 0)
+                                                            (getPos n (n + 1))
+                                                        )
+                                                        (makeScale3 width height 1)
+                                                        (makeRotate pi <| vec3 0 0 1)
+                                                ]
+
+                                    interp : Float -> Vec3 -> Vec3 -> Vec3
+                                    interp t start end =
+                                        let
+                                            diff =
+                                                Math.Vector3.sub end start
+                                        in
+                                            Math.Vector3.add start (Math.Vector3.scale t diff)
                                 in
                                     mainView ++ drawView
 

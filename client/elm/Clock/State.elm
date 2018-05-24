@@ -37,7 +37,7 @@ init =
         { res =
             Resolvable.init model <|
                 List.concat
-                    [ [ { model = model
+                    [ [ { model = { model | hand = List.drop 1 model.hand }
                         , anim = Just (GameStart PlayerA)
                         , stackCard = Nothing
                         }
