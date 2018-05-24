@@ -37,11 +37,19 @@ init =
         { res =
             Resolvable.init model <|
                 List.concat
-                    [ [ { model = { model | hand = List.drop 1 model.hand }
+                    [ [ { model = { model | hand = [] }
                         , anim = Just (GameStart PlayerA)
                         , stackCard = Nothing
                         }
                       ]
+                    , List.map
+                        (\i ->
+                            { model = { model | hand = List.drop (List.length model.hand - i) model.hand }
+                            , anim = Just (Draw PlayerA)
+                            , stackCard = Nothing
+                            }
+                        )
+                        (List.range 0 <| List.length model.hand - 1)
                     , [ { model = model
                         , anim = Just (Draw PlayerA)
                         , stackCard = Nothing
