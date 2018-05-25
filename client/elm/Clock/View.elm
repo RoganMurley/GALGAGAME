@@ -118,7 +118,7 @@ view (Params _ ( w, h )) mouse { res } textures =
                                     origin : Int -> Vec3
                                     origin count =
                                         vec3
-                                            ((toFloat w / 2) - (0.5 * (width + spacing) * (toFloat count)))
+                                            ((toFloat w / 2) - (0.5 * (width + spacing) * (toFloat (count - 1))))
                                             (toFloat h - height)
                                             0
 
@@ -181,9 +181,13 @@ view (Params _ ( w, h )) mouse { res } textures =
                                         Math.Vector3.add (origin count) <|
                                             vec3 ((toFloat i) * (width + spacing)) 0 0
 
+                                    getRot : Int -> Int -> Float
+                                    getRot i count =
+                                        -0.05 * (toFloat (ceiling (toFloat i - ((toFloat count) * 0.5))))
+
                                     origin count =
                                         vec3
-                                            ((toFloat w / 2) - (0.5 * (width + spacing) * (toFloat count)))
+                                            ((toFloat w / 2) - (0.5 * (width + spacing) * (toFloat (count - 1))))
                                             height
                                             0
 
@@ -193,7 +197,10 @@ view (Params _ ( w, h )) mouse { res } textures =
                                             locals sword
                                                 (interp progress (getPos i n) (getPos i finalN))
                                                 (makeScale3 width height 1)
-                                                (makeRotate 0 <| vec3 0 0 1)
+                                                (makeRotate
+                                                    (floatInterp progress (getRot i n) (getRot i finalN))
+                                                    (vec3 0 0 1)
+                                                )
 
                                     mainView : List WebGL.Entity
                                     mainView =
@@ -214,7 +221,10 @@ view (Params _ ( w, h )) mouse { res } textures =
                                                             (getPos n (n + 1))
                                                         )
                                                         (makeScale3 width height 1)
-                                                        (makeRotate 0 <| vec3 0 0 1)
+                                                        (makeRotate
+                                                            (floatInterp progress (0.5 * pi) (getRot n (n + 1)))
+                                                            (vec3 0 0 1)
+                                                        )
                                                 ]
                                 in
                                     mainView ++ drawView
@@ -286,3 +296,8 @@ interp t start end =
     Math.Vector3.add start <|
         Math.Vector3.scale t <|
             Math.Vector3.sub end start
+
+
+floatInterp : Float -> Float -> Float -> Float
+floatInterp t start end =
+    start + (t * (end - start))
