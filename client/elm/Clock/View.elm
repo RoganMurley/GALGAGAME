@@ -178,12 +178,31 @@ view (Params _ ( w, h )) mouse { res } textures =
 
                                     getPos : Int -> Int -> Vec3
                                     getPos i count =
-                                        Math.Vector3.add (origin count) <|
-                                            vec3 ((toFloat i) * (width + spacing)) 0 0
+                                        Math.Vector3.add
+                                            (origin count)
+                                        <|
+                                            Math.Vector3.add
+                                                (vec3 ((toFloat i) * (width + spacing)) 0 0)
+                                            <|
+                                                vec3 0 (getY i count) 0
+
+                                    getY : Int -> Int -> Float
+                                    getY index count =
+                                        let
+                                            i =
+                                                if count % 2 == 0 && index < count // 2 then
+                                                    toFloat <| index + 1
+                                                else
+                                                    toFloat index
+
+                                            c =
+                                                toFloat count
+                                        in
+                                            -(abs <| 4 * (toFloat <| ceiling (i - (c * 0.5))))
 
                                     getRot : Int -> Int -> Float
                                     getRot i count =
-                                        -0.05 * (toFloat (ceiling (toFloat i - ((toFloat count) * 0.5))))
+                                        -0.05 * (toFloat <| ceiling <| toFloat i - ((toFloat count) * 0.5))
 
                                     origin count =
                                         vec3
