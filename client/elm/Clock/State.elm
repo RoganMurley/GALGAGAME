@@ -8,7 +8,7 @@ import Math.Vector3 exposing (Vec3, vec3)
 import Model.State as Model
 import Raymarch.Types exposing (Height, Width)
 import WebGL exposing (Texture)
-import WhichPlayer.Types exposing (WhichPlayer(PlayerA))
+import WhichPlayer.Types exposing (WhichPlayer(..))
 import Resolvable.State as Resolvable
 
 
@@ -25,7 +25,7 @@ init =
             { owner = PlayerA, card = card }
 
         stackLen =
-            11
+            12
 
         model =
             { mInit
@@ -37,11 +37,19 @@ init =
         { res =
             Resolvable.init model <|
                 List.concat
-                    [ [ { model = { model | hand = [] }
+                    [ [ { model = { model | hand = [], otherHand = 0 }
                         , anim = Just (GameStart PlayerA)
                         , stackCard = Nothing
                         }
                       ]
+                    , List.map
+                        (\i ->
+                            { model = { model | hand = [], otherHand = i }
+                            , anim = Just (Draw PlayerB)
+                            , stackCard = Nothing
+                            }
+                        )
+                        (List.range 1 <| model.otherHand)
                     , List.map
                         (\i ->
                             { model = { model | hand = List.drop (List.length model.hand - i) model.hand }
@@ -49,7 +57,7 @@ init =
                             , stackCard = Nothing
                             }
                         )
-                        (List.range 0 <| List.length model.hand - 1)
+                        (List.range 1 <| List.length model.hand - 1)
                     , [ { model = model
                         , anim = Just (Draw PlayerA)
                         , stackCard = Nothing

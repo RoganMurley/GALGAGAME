@@ -156,26 +156,34 @@ view (Params _ ( w, h )) mouse { res } textures =
                                                         (makeScale3 width height 1)
                                                         (makeRotate pi <| vec3 0 0 1)
                                                 ]
-
-                                    interp : Float -> Vec3 -> Vec3 -> Vec3
-                                    interp t start end =
-                                        let
-                                            diff =
-                                                Math.Vector3.sub end start
-                                        in
-                                            Math.Vector3.add start (Math.Vector3.scale t diff)
                                 in
                                     mainView ++ drawView
 
                             otherHandView : Int -> List WebGL.Entity
-                            otherHandView n =
+                            otherHandView finalN =
                                 let
+                                    ( n, drawingCard ) =
+                                        case anim of
+                                            Just (Draw PlayerB) ->
+                                                ( finalN - 1, True )
+
+                                            otherwise ->
+                                                ( finalN, False )
+
+                                    progress =
+                                        Ease.outQuint <| res.tick / maxTick
+
                                     ( width, height, spacing ) =
                                         ( 0.1 * radius, 0.1 * radius, 35.0 )
 
-                                    origin =
+                                    getPos : Int -> Int -> Vec3
+                                    getPos i count =
+                                        Math.Vector3.add (origin count) <|
+                                            vec3 ((toFloat i) * (width + spacing)) 0 0
+
+                                    origin count =
                                         vec3
-                                            ((toFloat w / 2) - (0.5 * (width + spacing) * (toFloat n)))
+                                            ((toFloat w / 2) - (0.5 * (width + spacing) * (toFloat count)))
                                             height
                                             0
 
@@ -183,13 +191,33 @@ view (Params _ ( w, h )) mouse { res } textures =
                                     entity i =
                                         Primitives.quad Clock.Shaders.fragment <|
                                             locals sword
-                                                (Math.Vector3.add origin <|
-                                                    vec3 ((toFloat i) * (width + spacing)) 0 0
-                                                )
+                                                (interp progress (getPos i n) (getPos i finalN))
                                                 (makeScale3 width height 1)
                                                 (makeRotate 0 <| vec3 0 0 1)
+
+                                    mainView : List WebGL.Entity
+                                    mainView =
+                                        List.map entity (List.range 0 (n - 1))
+
+                                    drawView : List WebGL.Entity
+                                    drawView =
+                                        case drawingCard of
+                                            False ->
+                                                []
+
+                                            True ->
+                                                [ Primitives.quad Clock.Shaders.fragment <|
+                                                    locals sword
+                                                        (interp
+                                                            progress
+                                                            (vec3 (toFloat w) 0 0)
+                                                            (getPos n (n + 1))
+                                                        )
+                                                        (makeScale3 width height 1)
+                                                        (makeRotate 0 <| vec3 0 0 1)
+                                                ]
                                 in
-                                    List.map entity (List.range 0 (n - 1))
+                                    mainView ++ drawView
                         in
                             List.concat
                                 [ [ Primitives.circle <|
@@ -251,3 +279,10 @@ view (Params _ ( w, h )) mouse { res } textures =
                         []
                 )
             ]
+
+
+interp : Float -> Vec3 -> Vec3 -> Vec3
+interp t start end =
+    Math.Vector3.add start <|
+        Math.Vector3.scale t <|
+            Math.Vector3.sub end start
