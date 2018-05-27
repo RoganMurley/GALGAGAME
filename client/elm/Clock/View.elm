@@ -81,7 +81,7 @@ view (Params _ ( w, h )) mouse { res } textures =
                                         List.length model.stack
 
                                     points =
-                                        Clock.State.clockFace stackLen (vec3 (toFloat w / 2) (toFloat h / 2) 0) ((0.65 * radius)) rotateProgress
+                                        Clock.State.clockFace stackLen (vec3 (toFloat w / 2) (toFloat h / 2) 0) ((0.62 * radius)) rotateProgress
                                 in
                                     case anim of
                                         Nothing ->
@@ -284,8 +284,8 @@ view (Params _ ( w, h )) mouse { res } textures =
                                             (makeRotate 0 <| vec3 0 0 1)
                                   , Primitives.circle <|
                                         locals circle
-                                            (vec3 (toFloat w / 2) ((toFloat h / 2) - (0.65 * radius)) z)
-                                            (makeScale3 (0.15 * radius) (0.15 * radius) 1)
+                                            (vec3 (toFloat w / 2) ((toFloat h / 2) - (0.615 * radius)) z)
+                                            (makeScale3 (0.13 * radius) (0.13 * radius) 1)
                                             (makeRotate 0 <| vec3 0 0 1)
                                   ]
                                 , [ Primitives.gear <|
