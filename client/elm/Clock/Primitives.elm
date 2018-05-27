@@ -73,16 +73,9 @@ gearFragment =
             float r = length(pos) * 2.0;
             float a = atan(pos.y, pos.x);
 
-            float f = smoothstep(-.5, 1., cos(a * 10.)) * 0.2 + 0.5;
+            float f = smoothstep(-.5, 1., cos(a * 10.)) * .2 + .5;
 
-            vec3 color = vec3(1. - smoothstep(f, f + 0.01, r-0.2));
-
-            float alpha = 0.;
-            if (color.x > .99) {
-                alpha = 1.;
-            }
-
-            gl_FragColor = vec4(color, alpha);
+            gl_FragColor = vec4(1. - smoothstep(f, f + .05, r));
         }
 
     |]
