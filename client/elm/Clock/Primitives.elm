@@ -38,14 +38,11 @@ circleFragment =
 
         void main ()
         {
-            float thickness = 0.01;
-
-            float dist = length(vcoord - vec2(.5, .5));
-            if (dist < 0.5 && dist > 0.5 - thickness) {
-                gl_FragColor = vec4(1., 1., 1., 1.);
-            } else {
-                gl_FragColor = vec4(0, 0, 0, 0);
-            }
+            float radius = .9;
+            float dist = dot(2. * vcoord - 1., 2. * vcoord - 1.);
+            float inner = smoothstep(radius * 1.05, radius * 1.03, dist);
+            float outer = smoothstep(radius * 0.95, radius * 0.98, dist);
+            gl_FragColor = vec4(inner * outer);
         }
 
     |]
