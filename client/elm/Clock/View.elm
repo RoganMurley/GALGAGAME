@@ -128,12 +128,31 @@ view (Params _ ( w, h )) mouse { res } textures =
                                             locals sword
                                                 (interp progress (getPos i n) (getPos i finalN))
                                                 (makeScale3 width height 1)
-                                                (makeRotate pi <| vec3 0 0 1)
+                                                (makeRotate (floatInterp progress (getRot i n) (getRot i finalN)) <| vec3 0 0 1)
 
                                     getPos : Int -> Int -> Vec3
                                     getPos i count =
                                         Math.Vector3.add (origin count) <|
-                                            vec3 ((toFloat i) * (width + spacing)) 0 0
+                                            Math.Vector3.add (vec3 ((toFloat i) * (width + spacing)) 0 0) <|
+                                                vec3 0 (getY i count) 0
+
+                                    getY : Int -> Int -> Float
+                                    getY index count =
+                                        let
+                                            i =
+                                                if count % 2 == 0 && index < count // 2 then
+                                                    toFloat <| index + 1
+                                                else
+                                                    toFloat index
+
+                                            c =
+                                                toFloat count
+                                        in
+                                            abs <| 4 * (toFloat <| ceiling (i - (c * 0.5)))
+
+                                    getRot : Int -> Int -> Float
+                                    getRot i count =
+                                        pi + 0.05 * (toFloat <| ceiling <| toFloat i - ((toFloat count) * 0.5))
 
                                     mainView : List WebGL.Entity
                                     mainView =
@@ -154,7 +173,9 @@ view (Params _ ( w, h )) mouse { res } textures =
                                                             (getPos n (n + 1))
                                                         )
                                                         (makeScale3 width height 1)
-                                                        (makeRotate pi <| vec3 0 0 1)
+                                                        (makeRotate (floatInterp progress 0 (getRot n (n + 1))) <|
+                                                            vec3 0 0 1
+                                                        )
                                                 ]
                                 in
                                     mainView ++ drawView
