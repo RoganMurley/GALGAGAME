@@ -70,7 +70,7 @@ gearFragment =
 
             vec2 pos = vec2(.5) - uv;
 
-            float r = length(pos) * 2.0;
+            float r = length(pos) * 1.5;
             float a = atan(pos.y, pos.x);
 
             float f = smoothstep(-.5, 1., cos(a * 10.)) * .2 + .5;
