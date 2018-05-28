@@ -34,6 +34,8 @@ circleFragment =
     [glsl|
         precision mediump float;
 
+        uniform vec3 color;
+
         varying vec2 vcoord;
 
         void main ()
@@ -42,7 +44,8 @@ circleFragment =
             float dist = dot(2. * vcoord - 1., 2. * vcoord - 1.);
             float inner = smoothstep(radius * 1.05, radius * 1.03, dist);
             float outer = smoothstep(radius * 0.95, radius * 0.98, dist);
-            gl_FragColor = vec4(inner * outer);
+            float intensity = inner * outer;
+            gl_FragColor = vec4(color, inner * outer);
         }
 
     |]

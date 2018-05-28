@@ -75,7 +75,11 @@ view (Params _ ( w, h )) mouse { res } textures =
                                 let
                                     makeCard ( pos, rot ) =
                                         Primitives.quad Clock.Shaders.fragment <|
-                                            locals sword pos rot (makeScale3 (0.13 * radius) (0.13 * radius) 1)
+                                            locals sword
+                                                pos
+                                                rot
+                                                (makeScale3 (0.13 * radius) (0.13 * radius) 1)
+                                                (vec3 1 1 1)
 
                                     stackLen =
                                         List.length model.stack
@@ -129,6 +133,7 @@ view (Params _ ( w, h )) mouse { res } textures =
                                                 (interp progress (getPos i n) (getPos i finalN))
                                                 (makeScale3 width height 1)
                                                 (makeRotate (floatInterp progress (getRot i n) (getRot i finalN)) <| vec3 0 0 1)
+                                                (vec3 1 1 1)
 
                                     getPos : Int -> Int -> Vec3
                                     getPos i count =
@@ -176,6 +181,7 @@ view (Params _ ( w, h )) mouse { res } textures =
                                                         (makeRotate (floatInterp progress 0 (getRot n (n + 1))) <|
                                                             vec3 0 0 1
                                                         )
+                                                        (vec3 1 1 1)
                                                 ]
                                 in
                                     mainView ++ drawView
@@ -241,6 +247,7 @@ view (Params _ ( w, h )) mouse { res } textures =
                                                     (floatInterp progress (getRot i n) (getRot i finalN))
                                                     (vec3 0 0 1)
                                                 )
+                                                (vec3 1 1 1)
 
                                     mainView : List WebGL.Entity
                                     mainView =
@@ -265,9 +272,50 @@ view (Params _ ( w, h )) mouse { res } textures =
                                                             (floatInterp progress (0.5 * pi) (getRot n (n + 1)))
                                                             (vec3 0 0 1)
                                                         )
+                                                        (vec3 1 1 1)
                                                 ]
                                 in
                                     mainView ++ drawView
+
+                            waveView : List WebGL.Entity
+                            waveView =
+                                let
+                                    progress =
+                                        Ease.outQuad <| res.tick / maxTick
+
+                                    sizeA =
+                                        floatInterp progress 0 (3 * radius)
+
+                                    sizeB =
+                                        floatInterp progress (0.5 * radius) (3 * radius)
+
+                                    sizeC =
+                                        floatInterp progress (0.8 * radius) (3 * radius)
+                                in
+                                    case anim of
+                                        Just (Rotate _) ->
+                                            [ Primitives.circle <|
+                                                locals circle
+                                                    (vec3 (toFloat w / 2) (toFloat h / 2) 0)
+                                                    (makeScale3 sizeA sizeA 1)
+                                                    (makeRotate 0 (vec3 0 0 1))
+                                                    (vec3 1 1 1)
+                                            , Primitives.circle <|
+                                                locals circle
+                                                    (vec3 (toFloat w / 2) (toFloat h / 2) 0)
+                                                    (makeScale3 sizeB sizeB 1)
+                                                    (makeRotate 0 (vec3 0 0 1))
+                                                    (vec3 1 1 1)
+                                            , Primitives.circle <|
+                                                locals circle
+                                                    (vec3 (toFloat w / 2) (toFloat h / 2) 0)
+                                                    (makeScale3 sizeC sizeC 1)
+                                                    (makeRotate 0 (vec3 0 0 1))
+                                                    (vec3 1 1 1)
+                                            ]
+
+                                        otherwise ->
+                                            []
                         in
                             List.concat
                                 [ [ Primitives.circle <|
@@ -275,6 +323,7 @@ view (Params _ ( w, h )) mouse { res } textures =
                                             (vec3 (toFloat w / 2) (toFloat h / 2) z)
                                             (makeScale3 (0.8 * radius) (0.8 * radius) 1)
                                             (makeRotate 0 <| vec3 0 0 1)
+                                            (vec3 1 1 1)
                                   ]
                                 , stackView
                                 , [ Primitives.circle <|
@@ -282,11 +331,13 @@ view (Params _ ( w, h )) mouse { res } textures =
                                             (vec3 (toFloat w / 2) (toFloat h / 2) z)
                                             (makeScale3 (0.5 * radius) (0.5 * radius) 1)
                                             (makeRotate 0 <| vec3 0 0 1)
+                                            (vec3 1 1 1)
                                   , Primitives.circle <|
                                         locals circle
                                             (vec3 (toFloat w / 2) ((toFloat h / 2) - (0.615 * radius)) z)
                                             (makeScale3 (0.13 * radius) (0.13 * radius) 1)
                                             (makeRotate 0 <| vec3 0 0 1)
+                                            (vec3 1 1 1)
                                   ]
                                 , [ Primitives.gear <|
                                         locals circle
@@ -299,6 +350,7 @@ view (Params _ ( w, h )) mouse { res } textures =
                                             (makeRotate (2 * pi * 0.09 * rotateProgress) <|
                                                 vec3 0 0 1
                                             )
+                                            (vec3 1 1 1)
                                   , Primitives.gear <|
                                         locals circle
                                             (vec3
@@ -310,6 +362,7 @@ view (Params _ ( w, h )) mouse { res } textures =
                                             (makeRotate -(2 * pi * 0.09 * rotateProgress) <|
                                                 vec3 0 0 1
                                             )
+                                            (vec3 1 1 1)
                                   ]
                                 , [ Primitives.quad Clock.Shaders.fragment <|
                                         locals sword
@@ -320,9 +373,11 @@ view (Params _ ( w, h )) mouse { res } textures =
                                             )
                                             (makeScale3 (0.1 * radius) (0.1 * radius) 1)
                                             (makeRotate pi <| vec3 0 0 1)
+                                            (vec3 1 1 1)
                                   ]
                                 , handView model.hand
                                 , otherHandView model.otherHand
+                                , waveView
                                 ]
 
                     Nothing ->

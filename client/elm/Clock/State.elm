@@ -85,12 +85,13 @@ tick ({ res } as model) dt =
         { model | res = newRes }
 
 
-uniforms : Float -> ( Width, Height ) -> Texture -> Vec3 -> Mat4 -> Mat4 -> Uniforms {}
-uniforms t ( width, height ) texture pos rot scale =
+uniforms : Float -> ( Width, Height ) -> Texture -> Vec3 -> Mat4 -> Mat4 -> Vec3 -> Uniforms {}
+uniforms t ( width, height ) texture pos rot scale color =
     { resolution = vec2 (toFloat width) (toFloat height)
     , texture = texture
     , rotation = rot
     , scale = scale
+    , color = color
     , worldPos = pos
     , worldRot = makeRotate 0 (vec3 0 0 1)
     , perspective = makeOrtho 0 (toFloat width / 2) (toFloat height / 2) 0 0.01 1000
