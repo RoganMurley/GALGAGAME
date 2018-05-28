@@ -17,6 +17,7 @@ type alias Uniforms a =
         , texture : Texture
         , rotation : Mat4
         , scale : Mat4
+        , color : Vec3
         , worldPos : Vec3
         , worldRot : Mat4
         , perspective : Mat4
