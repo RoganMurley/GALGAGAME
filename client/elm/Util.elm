@@ -1,7 +1,8 @@
 module Util exposing (..)
 
-import Main.Types exposing (Flags)
 import Json.Decode as Json
+import Main.Types exposing (Flags)
+import Math.Vector3 exposing (Vec3)
 import Regex exposing (HowMany(AtMost), regex, split)
 import Task
 import WebSocket
@@ -89,3 +90,15 @@ maybeCons m xs =
 zip : List a -> List b -> List ( a, b )
 zip =
     List.map2 (,)
+
+
+interp : Float -> Vec3 -> Vec3 -> Vec3
+interp t start end =
+    Math.Vector3.add start <|
+        Math.Vector3.scale t <|
+            Math.Vector3.sub end start
+
+
+floatInterp : Float -> Float -> Float -> Float
+floatInterp t start end =
+    start + (t * (end - start))

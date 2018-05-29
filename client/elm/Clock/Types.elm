@@ -29,3 +29,10 @@ type alias Vertex =
     { position : Vec3
     , coord : Vec2
     }
+
+
+type alias ClockParams =
+    { w : Float
+    , h : Float
+    , radius : Float
+    }
