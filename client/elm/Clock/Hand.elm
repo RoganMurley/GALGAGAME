@@ -17,8 +17,83 @@ import WhichPlayer.Types exposing (WhichPlayer(..))
 import Util exposing (floatInterp, interp)
 
 
+cardDimensions : ClockParams -> ( Float, Float, Float )
+cardDimensions { w, h, radius } =
+    ( 0.1 * radius, 0.1 * radius, 35.0 )
+
+
+origin : ClockParams -> WhichPlayer -> Int -> Vec3
+origin { w, h, radius } which count =
+    let
+        ( width, height, spacing ) =
+            ( 0.1 * radius, 0.1 * radius, 35.0 )
+
+        x =
+            w / 2 - 0.5 * (width + spacing) * (toFloat <| count - 1)
+
+        y =
+            case which of
+                PlayerA ->
+                    h - height
+
+                PlayerB ->
+                    height
+    in
+        vec3 x y 0
+
+
+rotation : WhichPlayer -> Int -> Int -> Float
+rotation which i count =
+    let
+        magnitude =
+            0.05 * (toFloat i - (toFloat count * 0.5))
+    in
+        case which of
+            PlayerA ->
+                pi + magnitude
+
+            PlayerB ->
+                -magnitude
+
+
+position : ClockParams -> WhichPlayer -> Int -> Int -> Vec3
+position ({ w, h, radius } as params) which index count =
+    let
+        ( width, height, spacing ) =
+            ( 0.1 * radius, 0.1 * radius, 35.0 )
+
+        sign =
+            case which of
+                PlayerA ->
+                    1
+
+                PlayerB ->
+                    -1
+
+        y =
+            let
+                i =
+                    if count % 2 == 0 && index < count // 2 then
+                        toFloat <| index + 1
+                    else
+                        toFloat index
+
+                c =
+                    toFloat count
+            in
+                sign * (abs <| 4 * (toFloat <| ceiling (i - (c * 0.5))))
+    in
+        Math.Vector3.add
+            (origin params which count)
+        <|
+            Math.Vector3.add
+                (vec3 ((toFloat index) * (width + spacing)) 0 0)
+            <|
+                vec3 0 y 0
+
+
 handView : ClockParams -> Hand -> Maybe ( Float, Maybe Anim ) -> Texture -> List WebGL.Entity
-handView { w, h, radius } finalHand resInfo texture =
+handView ({ w, h, radius } as params) finalHand resInfo texture =
     let
         locals =
             uniforms 0 ( floor w, floor h )
@@ -54,47 +129,16 @@ handView { w, h, radius } finalHand resInfo texture =
             Ease.outQuint <| resTick / maxTick
 
         ( width, height, spacing ) =
-            ( 0.1 * radius, 0.1 * radius, 35.0 )
-
-        origin : Int -> Vec3
-        origin count =
-            vec3
-                ((w / 2) - (0.5 * (width + spacing) * (toFloat (count - 1))))
-                (h - height)
-                0
+            cardDimensions params
 
         entity : Int -> WebGL.Entity
         entity i =
             Primitives.quad Clock.Shaders.fragment <|
                 locals texture
-                    (interp progress (getPos i n) (getPos i finalN))
+                    (interp progress (position params PlayerA i n) (position params PlayerA i finalN))
                     (makeScale3 width height 1)
-                    (makeRotate (floatInterp progress (getRot i n) (getRot i finalN)) <| vec3 0 0 1)
+                    (makeRotate (floatInterp progress (rotation PlayerA i n) (rotation PlayerA i finalN)) <| vec3 0 0 1)
                     (vec3 1 1 1)
-
-        getPos : Int -> Int -> Vec3
-        getPos i count =
-            Math.Vector3.add (origin count) <|
-                Math.Vector3.add (vec3 ((toFloat i) * (width + spacing)) 0 0) <|
-                    vec3 0 (getY i count) 0
-
-        getY : Int -> Int -> Float
-        getY index count =
-            let
-                i =
-                    if count % 2 == 0 && index < count // 2 then
-                        toFloat <| index + 1
-                    else
-                        toFloat index
-
-                c =
-                    toFloat count
-            in
-                abs <| 4 * (toFloat <| ceiling (i - (c * 0.5)))
-
-        getRot : Int -> Int -> Float
-        getRot i count =
-            pi + 0.05 * (toFloat <| ceiling <| toFloat i - ((toFloat count) * 0.5))
 
         mainView : List WebGL.Entity
         mainView =
@@ -112,10 +156,10 @@ handView { w, h, radius } finalHand resInfo texture =
                             (interp
                                 progress
                                 (vec3 w h 0)
-                                (getPos n (n + 1))
+                                (position params PlayerA n (n + 1))
                             )
                             (makeScale3 width height 1)
-                            (makeRotate (floatInterp progress 0 (getRot n (n + 1))) <|
+                            (makeRotate (floatInterp progress 0 (rotation PlayerA n (n + 1))) <|
                                 vec3 0 0 1
                             )
                             (vec3 1 1 1)
@@ -125,7 +169,7 @@ handView { w, h, radius } finalHand resInfo texture =
 
 
 otherHandView : ClockParams -> Int -> Maybe ( Float, Maybe Anim ) -> Texture -> List WebGL.Entity
-otherHandView { w, h, radius } finalN resInfo texture =
+otherHandView ({ w, h, radius } as params) finalN resInfo texture =
     let
         locals =
             uniforms 0 ( floor w, floor h )
@@ -153,50 +197,16 @@ otherHandView { w, h, radius } finalN resInfo texture =
             Ease.outQuint <| resTick / maxTick
 
         ( width, height, spacing ) =
-            ( 0.1 * radius, 0.1 * radius, 35.0 )
-
-        getPos : Int -> Int -> Vec3
-        getPos i count =
-            Math.Vector3.add
-                (origin count)
-            <|
-                Math.Vector3.add
-                    (vec3 ((toFloat i) * (width + spacing)) 0 0)
-                <|
-                    vec3 0 (getY i count) 0
-
-        getY : Int -> Int -> Float
-        getY index count =
-            let
-                i =
-                    if count % 2 == 0 && index < count // 2 then
-                        toFloat <| index + 1
-                    else
-                        toFloat index
-
-                c =
-                    toFloat count
-            in
-                -(abs <| 4 * (toFloat <| ceiling (i - (c * 0.5))))
-
-        getRot : Int -> Int -> Float
-        getRot i count =
-            -0.05 * (toFloat <| ceiling <| toFloat i - ((toFloat count) * 0.5))
-
-        origin count =
-            vec3
-                ((w / 2) - (0.5 * (width + spacing) * (toFloat (count - 1))))
-                height
-                0
+            cardDimensions params
 
         entity : Int -> WebGL.Entity
         entity i =
             Primitives.quad Clock.Shaders.fragment <|
                 locals texture
-                    (interp progress (getPos i n) (getPos i finalN))
+                    (interp progress (position params PlayerB i n) (position params PlayerB i finalN))
                     (makeScale3 width height 1)
                     (makeRotate
-                        (floatInterp progress (getRot i n) (getRot i finalN))
+                        (floatInterp progress (rotation PlayerB i n) (rotation PlayerB i finalN))
                         (vec3 0 0 1)
                     )
                     (vec3 1 1 1)
@@ -217,11 +227,11 @@ otherHandView { w, h, radius } finalN resInfo texture =
                             (interp
                                 progress
                                 (vec3 w 0 0)
-                                (getPos n (n + 1))
+                                (position params PlayerB n (n + 1))
                             )
                             (makeScale3 width height 1)
                             (makeRotate
-                                (floatInterp progress (0.5 * pi) (getRot n (n + 1)))
+                                (floatInterp progress (0.5 * pi) (rotation PlayerB n (n + 1)))
                                 (vec3 0 0 1)
                             )
                             (vec3 1 1 1)
