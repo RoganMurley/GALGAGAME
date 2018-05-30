@@ -35,7 +35,13 @@ init =
             }
     in
         { res =
-            Resolvable.init { model | stack = [] } <|
+            Resolvable.init
+                { model
+                    | stack = []
+                    , hand = []
+                    , otherHand = 0
+                }
+            <|
                 List.concat
                     [ [ { model =
                             { model
@@ -99,7 +105,12 @@ init =
                         (List.range 0 model.otherHand)
                     , List.map
                         (\i ->
-                            { model = { model | stack = List.drop i model.stack }
+                            { model =
+                                { model
+                                    | stack = List.drop i model.stack
+                                    , hand = []
+                                    , otherHand = 0
+                                }
                             , anim = Just (Rotate PlayerA)
                             , stackCard = Nothing
                             }
