@@ -82,7 +82,7 @@ getWhichPlayer anim =
         Reverse w ->
             w
 
-        Play w _ ->
+        Play w _ _ ->
             w
 
         Transmute w _ _ ->
@@ -121,7 +121,7 @@ animShake anim tick =
                 Just (Obliterate _) ->
                     20.0
 
-                Just (Play _ _) ->
+                Just (Play _ _ _) ->
                     1.0
 
                 otherwise ->
@@ -139,7 +139,7 @@ animToResTickMax anim =
         Just (Reverse _) ->
             1500.0
 
-        Just (Play _ _) ->
+        Just (Play _ _ _) ->
             500.0
 
         Just (Obliterate _) ->

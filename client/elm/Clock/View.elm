@@ -56,6 +56,9 @@ view (Params _ ( w, h )) mouse { res } textures =
                 Just (Rotate _) ->
                     Ease.inQuad <| res.tick / maxTick
 
+                Just (Play _ _ _) ->
+                    1 - (Ease.outQuad <| res.tick / maxTick)
+
                 otherwise ->
                     0
 
