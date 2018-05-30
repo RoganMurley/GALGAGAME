@@ -83,10 +83,11 @@ obliterateDecoder =
 
 playDecoder : Decoder Anim
 playDecoder =
-    Json.map3 (\w _ c -> Play w c)
+    Json.map4 (\w _ c i -> Play w c i)
         (field "player" WhichPlayer.decoder)
         (field "anim" <| index 0 <| constDecoder "play")
         (field "anim" <| index 1 <| Card.decoder)
+        (field "anim" <| index 2 <| int)
 
 
 transmuteDecoder : Decoder Anim

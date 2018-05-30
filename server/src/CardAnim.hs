@@ -62,7 +62,7 @@ instance ToJSON CardAnim where
   toJSON (Play w c) =
     object
     [ "player" .= w
-    , "anim"  .= ("play" :: Text, c)
+    , "anim"  .= ("play" :: Text, c, 0 :: Int)
     ]
   toJSON (Transmute ca cb) =
     object

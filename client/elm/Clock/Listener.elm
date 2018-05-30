@@ -17,6 +17,9 @@ listen { res } =
             Just (Draw _) ->
                 playSound "/sfx/draw.wav"
 
+            Just (Play _ _ _) ->
+                playSound "/sfx/tick.mp3"
+
             otherwise ->
                 Cmd.none
         )

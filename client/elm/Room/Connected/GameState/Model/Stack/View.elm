@@ -18,7 +18,7 @@ view finalStack stackCard resInfo =
     let
         stackAnim =
             case resInfo of
-                Just ( _, Just (Play _ _) ) ->
+                Just ( _, Just (Play _ _ _) ) ->
                     Just Playing
 
                 Just ( _, Just (Reverse _) ) ->

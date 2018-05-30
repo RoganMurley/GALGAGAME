@@ -38,7 +38,7 @@ type Anim
     | Bite WhichPlayer Int
     | Reverse WhichPlayer
     | Obliterate WhichPlayer
-    | Play WhichPlayer Card
+    | Play WhichPlayer Card Int
     | Transmute WhichPlayer StackCard StackCard
     | Overdraw WhichPlayer
     | GameStart WhichPlayer
