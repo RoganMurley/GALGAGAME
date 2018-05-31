@@ -1,5 +1,6 @@
 module Clock.State exposing (..)
 
+import Animation.State
 import Animation.Types exposing (Anim(..))
 import Clock.Types exposing (Model, Uniforms)
 import Math.Matrix4 exposing (Mat4, identity, makeLookAt, makeOrtho, makeRotate, mul)
@@ -83,7 +84,7 @@ init =
                             { model =
                                 { model
                                     | stack = List.drop (List.length model.stack - i) model.stack
-                                    , hand = List.drop i model.hand
+                                    , hand = List.drop (i + 1) model.hand
                                 }
                             , anim = Just (Play PlayerA card 0)
                             , stackCard = Nothing
@@ -96,13 +97,13 @@ init =
                                 { model
                                     | stack = List.drop (List.length model.stack - i - List.length model.hand) model.stack
                                     , hand = []
-                                    , otherHand = model.otherHand - i
+                                    , otherHand = model.otherHand - (i + 1)
                                 }
                             , anim = Just (Play PlayerB card 0)
                             , stackCard = Nothing
                             }
                         )
-                        (List.range 0 model.otherHand)
+                        (List.range 0 (model.otherHand - 1))
                     , List.map
                         (\i ->
                             { model =
@@ -124,7 +125,12 @@ tick : Model -> Float -> Model
 tick ({ res } as model) dt =
     let
         newRes =
-            Resolvable.tick dt res
+            if res.tick > animToResTickMax (Resolvable.activeAnim res) then
+                Resolvable.resolveStep res
+            else
+                { res
+                    | tick = res.tick + dt
+                }
     in
         { model | res = newRes }
 
@@ -141,3 +147,16 @@ uniforms t ( width, height ) texture pos rot scale color =
     , perspective = makeOrtho 0 (toFloat width / 2) (toFloat height / 2) 0 0.01 1000
     , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
     }
+
+
+animToResTickMax : Maybe Anim -> Float
+animToResTickMax anim =
+    case anim of
+        Just (Draw _) ->
+            500
+
+        Just (Play _ _ _) ->
+            1000
+
+        otherwise ->
+            Animation.State.animToResTickMax anim
