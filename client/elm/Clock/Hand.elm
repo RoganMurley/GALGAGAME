@@ -97,20 +97,18 @@ handView ({ w, h, radius } as params) finalHand resInfo texture =
         locals =
             uniforms 0 ( floor w, floor h )
 
-        ( hand, drawingCard ) =
-            case resInfo of
-                Just ( _, Just (Draw PlayerA) ) ->
-                    ( List.take (List.length finalHand - 1) finalHand
-                    , List.head <| List.reverse finalHand
-                    )
+        hand =
+            case anim of
+                Just (Draw PlayerA) ->
+                    List.take (List.length finalHand - 1) finalHand
 
                 otherwise ->
-                    ( finalHand, Nothing )
+                    finalHand
 
         indexModifier : Int -> Int
         indexModifier =
-            case resInfo of
-                Just ( _, Just (Play PlayerA _ index) ) ->
+            case anim of
+                Just (Play PlayerA _ index) ->
                     \i ->
                         if i >= index then
                             i + 1
@@ -160,28 +158,55 @@ handView ({ w, h, radius } as params) finalHand resInfo texture =
         mainView =
             List.map entity (List.range 0 (n - 1))
 
-        drawView : List WebGL.Entity
-        drawView =
-            case drawingCard of
-                Nothing ->
-                    []
+        extraView : List WebGL.Entity
+        extraView =
+            case anim of
+                Just (Draw PlayerA) ->
+                    let
+                        drawingCard =
+                            List.head <| List.reverse finalHand
+                    in
+                        [ Primitives.quad Clock.Shaders.fragment <|
+                            locals texture
+                                (interp
+                                    progress
+                                    (vec3 w h 0)
+                                    (position params PlayerA n (n + 1))
+                                )
+                                (makeScale3 width height 1)
+                                (makeRotate (floatInterp progress 0 (rotation PlayerA n (n + 1))) <|
+                                    vec3 0 0 1
+                                )
+                                (vec3 1 1 1)
+                        ]
 
-                Just _ ->
-                    [ Primitives.quad Clock.Shaders.fragment <|
-                        locals texture
-                            (interp
-                                progress
-                                (vec3 w h 0)
-                                (position params PlayerA n (n + 1))
-                            )
-                            (makeScale3 width height 1)
-                            (makeRotate (floatInterp progress 0 (rotation PlayerA n (n + 1))) <|
-                                vec3 0 0 1
-                            )
-                            (vec3 1 1 1)
-                    ]
+                Just (Play PlayerA card i) ->
+                    let
+                        playProgress =
+                            Ease.outQuad <| resTick / maxTick
+                    in
+                        [ Primitives.quad Clock.Shaders.fragment <|
+                            locals texture
+                                (interp
+                                    playProgress
+                                    (position params PlayerA i n)
+                                    (vec3 (w / 2) (h / 2 - radius * 0.62) 0)
+                                )
+                                (makeScale3
+                                    (floatInterp playProgress width (0.13 * radius))
+                                    (floatInterp playProgress height (0.13 * radius))
+                                    1
+                                )
+                                (makeRotate (floatInterp playProgress (rotation PlayerA i n) 0) <|
+                                    vec3 0 0 1
+                                )
+                                (vec3 1 1 1)
+                        ]
+
+                otherwise ->
+                    []
     in
-        mainView ++ drawView
+        mainView ++ extraView
 
 
 otherHandView : ClockParams -> Int -> Maybe ( Float, Maybe Anim ) -> Texture -> List WebGL.Entity
@@ -190,18 +215,18 @@ otherHandView ({ w, h, radius } as params) finalN resInfo texture =
         locals =
             uniforms 0 ( floor w, floor h )
 
-        ( n, drawingCard ) =
-            case resInfo of
-                Just ( _, Just (Draw PlayerB) ) ->
-                    ( finalN - 1, True )
+        n =
+            case anim of
+                Just (Draw PlayerB) ->
+                    finalN - 1
 
                 otherwise ->
-                    ( finalN, False )
+                    finalN
 
         indexModifier : Int -> Int
         indexModifier =
-            case resInfo of
-                Just ( _, Just (Play PlayerB _ index) ) ->
+            case anim of
+                Just (Play PlayerB _ index) ->
                     \i ->
                         if i >= index then
                             i + 1
@@ -248,13 +273,10 @@ otherHandView ({ w, h, radius } as params) finalN resInfo texture =
         mainView =
             List.map entity (List.range 0 (n - 1))
 
-        drawView : List WebGL.Entity
-        drawView =
-            case drawingCard of
-                False ->
-                    []
-
-                True ->
+        extraView : List WebGL.Entity
+        extraView =
+            case anim of
+                Just (Draw PlayerB) ->
                     [ Primitives.quad Clock.Shaders.fragment <|
                         locals texture
                             (interp
@@ -269,5 +291,31 @@ otherHandView ({ w, h, radius } as params) finalN resInfo texture =
                             )
                             (vec3 1 1 1)
                     ]
+
+                Just (Play PlayerB _ i) ->
+                    let
+                        playProgress =
+                            Ease.inQuad <| resTick / maxTick
+                    in
+                        [ Primitives.quad Clock.Shaders.fragment <|
+                            locals texture
+                                (interp
+                                    playProgress
+                                    (position params PlayerB i n)
+                                    (vec3 (w / 2) (h / 2 - radius * 0.62) 0)
+                                )
+                                (makeScale3
+                                    (floatInterp playProgress width (0.13 * radius))
+                                    (floatInterp playProgress height (0.13 * radius))
+                                    1
+                                )
+                                (makeRotate (floatInterp playProgress (rotation PlayerB i n) 0) <|
+                                    vec3 0 0 1
+                                )
+                                (vec3 1 1 1)
+                        ]
+
+                otherwise ->
+                    []
     in
-        mainView ++ drawView
+        mainView ++ extraView
