@@ -1,10 +1,9 @@
 module Clock.Hand exposing (..)
 
 import Animation.Types exposing (Anim(..))
-import Animation.State exposing (animToResTickMax)
 import Clock.Primitives as Primitives
 import Clock.Shaders
-import Clock.State exposing (uniforms)
+import Clock.State exposing (animToResTickMax, uniforms)
 import Clock.Types exposing (ClockParams)
 import Ease
 import Hand.Types exposing (Hand)
@@ -108,6 +107,19 @@ handView ({ w, h, radius } as params) finalHand resInfo texture =
                 otherwise ->
                     ( finalHand, Nothing )
 
+        indexModifier : Int -> Int
+        indexModifier =
+            case resInfo of
+                Just ( _, Just (Play PlayerA _ index) ) ->
+                    \i ->
+                        if i >= index then
+                            i + 1
+                        else
+                            i
+
+                otherwise ->
+                    identity
+
         resTick =
             Maybe.withDefault 0.0 <|
                 Maybe.map Tuple.first resInfo
@@ -132,13 +144,17 @@ handView ({ w, h, radius } as params) finalHand resInfo texture =
             cardDimensions params
 
         entity : Int -> WebGL.Entity
-        entity i =
-            Primitives.quad Clock.Shaders.fragment <|
-                locals texture
-                    (interp progress (position params PlayerA i n) (position params PlayerA i finalN))
-                    (makeScale3 width height 1)
-                    (makeRotate (floatInterp progress (rotation PlayerA i n) (rotation PlayerA i finalN)) <| vec3 0 0 1)
-                    (vec3 1 1 1)
+        entity finalI =
+            let
+                i =
+                    indexModifier finalI
+            in
+                Primitives.quad Clock.Shaders.fragment <|
+                    locals texture
+                        (interp progress (position params PlayerA i n) (position params PlayerA finalI finalN))
+                        (makeScale3 width height 1)
+                        (makeRotate (floatInterp progress (rotation PlayerA i n) (rotation PlayerA finalI finalN)) <| vec3 0 0 1)
+                        (vec3 1 1 1)
 
         mainView : List WebGL.Entity
         mainView =
@@ -182,6 +198,19 @@ otherHandView ({ w, h, radius } as params) finalN resInfo texture =
                 otherwise ->
                     ( finalN, False )
 
+        indexModifier : Int -> Int
+        indexModifier =
+            case resInfo of
+                Just ( _, Just (Play PlayerB _ index) ) ->
+                    \i ->
+                        if i >= index then
+                            i + 1
+                        else
+                            i
+
+                otherwise ->
+                    identity
+
         resTick =
             Maybe.withDefault 0.0 <|
                 Maybe.map Tuple.first resInfo
@@ -200,16 +229,20 @@ otherHandView ({ w, h, radius } as params) finalN resInfo texture =
             cardDimensions params
 
         entity : Int -> WebGL.Entity
-        entity i =
-            Primitives.quad Clock.Shaders.fragment <|
-                locals texture
-                    (interp progress (position params PlayerB i n) (position params PlayerB i finalN))
-                    (makeScale3 width height 1)
-                    (makeRotate
-                        (floatInterp progress (rotation PlayerB i n) (rotation PlayerB i finalN))
-                        (vec3 0 0 1)
-                    )
-                    (vec3 1 1 1)
+        entity finalI =
+            let
+                i =
+                    indexModifier finalI
+            in
+                Primitives.quad Clock.Shaders.fragment <|
+                    locals texture
+                        (interp progress (position params PlayerB i n) (position params PlayerB finalI finalN))
+                        (makeScale3 width height 1)
+                        (makeRotate
+                            (floatInterp progress (rotation PlayerB i n) (rotation PlayerB finalI finalN))
+                            (vec3 0 0 1)
+                        )
+                        (vec3 1 1 1)
 
         mainView : List WebGL.Entity
         mainView =

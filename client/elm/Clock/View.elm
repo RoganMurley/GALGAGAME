@@ -1,12 +1,11 @@
 module Clock.View exposing (view)
 
 import Animation.Types exposing (Anim(..))
-import Animation.State exposing (animToResTickMax)
 import Clock.Hand exposing (handView, otherHandView)
 import Clock.Primitives as Primitives
 import Clock.Shaders
 import Clock.Stack
-import Clock.State exposing (uniforms)
+import Clock.State exposing (animToResTickMax, uniforms)
 import Clock.Types exposing (ClockParams, Model)
 import Clock.Wave
 import Ease

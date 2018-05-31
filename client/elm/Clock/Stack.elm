@@ -1,10 +1,9 @@
 module Clock.Stack exposing (..)
 
 import Animation.Types exposing (Anim(..))
-import Animation.State exposing (animToResTickMax)
 import Clock.Primitives as Primitives
 import Clock.Shaders
-import Clock.State exposing (uniforms)
+import Clock.State exposing (animToResTickMax, uniforms)
 import Clock.Types exposing (ClockParams)
 import Ease
 import Math.Matrix4 exposing (Mat4, makeRotate, makeScale3)
@@ -35,7 +34,7 @@ view { w, h, radius } stack resInfo texture =
                     Ease.inQuad <| resTick / maxTick
 
                 Just (Play _ _ _) ->
-                    1 - (Ease.outQuad <| resTick / maxTick)
+                    1 - (Ease.inQuad <| resTick / maxTick)
 
                 otherwise ->
                     0
