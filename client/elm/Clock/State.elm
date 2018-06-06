@@ -35,7 +35,8 @@ init =
                 , stack = List.repeat stackLen stackCard
             }
     in
-        { res =
+        { focus = Just card
+        , res =
             Resolvable.init
                 { model
                     | stack = []

@@ -12,13 +12,13 @@ listen { res } =
     if res.tick == 0 then
         (case activeAnim res of
             Just (Rotate _) ->
-                playSound "/sfx/tick.mp3"
+                playSound "/sfx/evil_tick.mp3"
 
             Just (Draw _) ->
                 playSound "/sfx/draw.wav"
 
             Just (Play _ _ _) ->
-                playSound "/sfx/tick.mp3"
+                playSound "/sfx/tick.wav"
 
             otherwise ->
                 Cmd.none
