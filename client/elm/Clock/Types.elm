@@ -1,5 +1,6 @@
 module Clock.Types exposing (..)
 
+import Card.Types exposing (Card)
 import Math.Matrix4 exposing (Mat4)
 import Math.Vector2 exposing (Vec2)
 import Math.Vector3 exposing (Vec3)
@@ -8,7 +9,9 @@ import Resolvable.Types as Resolvable
 
 
 type alias Model =
-    { res : Resolvable.Model }
+    { res : Resolvable.Model
+    , focus : Maybe Card
+    }
 
 
 type alias Uniforms a =

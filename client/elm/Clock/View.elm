@@ -1,6 +1,7 @@
 module Clock.View exposing (view)
 
 import Animation.Types exposing (Anim(..))
+import Card.Types exposing (Card)
 import Clock.Hand exposing (handView, otherHandView)
 import Clock.Primitives as Primitives
 import Clock.Shaders
@@ -23,7 +24,7 @@ import WebGL
 
 
 view : Params -> Mouse.Position -> Model -> Texture.Model -> Html Main.Msg
-view (Params _ ( w, h )) mouse { res } textures =
+view (Params _ ( w, h )) mouse { res, focus } textures =
     let
         mTextures =
             Maybe.map2 (,)
@@ -148,4 +149,17 @@ view (Params _ ( w, h )) mouse { res } textures =
                     Nothing ->
                         []
                 )
+            , div [ class "text-focus" ]
+                [ textView focus
+                ]
             ]
+
+
+textView : Maybe Card -> Html a
+textView card =
+    case card of
+        Nothing ->
+            text ""
+
+        Just { name } ->
+            text name
