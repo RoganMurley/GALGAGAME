@@ -109,7 +109,7 @@ roundedBoxFragment =
             float b = .4;
             float d = length(max(abs(pos) - b, .0));
 
-            gl_FragColor = vec4(color, step(d, .5 - b));
+            gl_FragColor = vec4(color, smoothstep(d * 0.9, d * 1.1, .5 - b));
         }
 
     |]
