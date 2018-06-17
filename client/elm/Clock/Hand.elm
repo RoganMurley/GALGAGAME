@@ -159,7 +159,7 @@ handView ({ w, h, radius } as params) finalHand resInfo texture =
                         texture
                         pos
                         rot
-                        (makeScale3 width height 1)
+                        (makeScale3 (0.7 * width) height 1)
                         (vec3 0.18 0.49 0.62)
                 , Primitives.quad Clock.Shaders.fragment <|
                     locals texture
@@ -197,7 +197,7 @@ handView ({ w, h, radius } as params) finalHand resInfo texture =
                                 texture
                                 pos
                                 rot
-                                (makeScale3 width height 1)
+                                (makeScale3 (0.7 * width) height 1)
                                 (vec3 0.18 0.49 0.62)
                         , Primitives.quad Clock.Shaders.fragment <|
                             locals texture
@@ -221,12 +221,6 @@ handView ({ w, h, radius } as params) finalHand resInfo texture =
                         rot =
                             makeRotate (floatInterp playProgress (rotation PlayerA i n) 0) <|
                                 vec3 0 0 1
-
-                        scale =
-                            makeScale3
-                                (floatInterp playProgress width (0.13 * radius))
-                                (floatInterp playProgress height (0.13 * radius))
-                                1
                     in
                         [ Primitives.roundedBox <|
                             uniforms 0
@@ -234,12 +228,20 @@ handView ({ w, h, radius } as params) finalHand resInfo texture =
                                 texture
                                 pos
                                 rot
-                                scale
+                                (makeScale3
+                                    (floatInterp playProgress (0.7 * width) (0.7 * 0.13 * radius))
+                                    (floatInterp playProgress height (0.13 * radius))
+                                    1
+                                )
                                 (vec3 0.18 0.49 0.62)
                         , Primitives.quad Clock.Shaders.fragment <|
                             locals texture
                                 pos
-                                scale
+                                (makeScale3
+                                    (floatInterp playProgress width (0.13 * radius))
+                                    (floatInterp playProgress height (0.13 * radius))
+                                    1
+                                )
                                 rot
                                 (vec3 1 1 1)
                         ]
@@ -314,7 +316,7 @@ otherHandView ({ w, h, radius } as params) finalN resInfo texture =
                         texture
                         pos
                         rot
-                        (makeScale3 width height 1)
+                        (makeScale3 (0.7 * width) height 1)
                         (vec3 0.52 0.1 0.2)
                 , Primitives.quad Clock.Shaders.fragment <|
                     locals texture
@@ -350,7 +352,7 @@ otherHandView ({ w, h, radius } as params) finalN resInfo texture =
                                 texture
                                 pos
                                 rot
-                                (makeScale3 width height 1)
+                                (makeScale3 (0.7 * width) height 1)
                                 (vec3 0.52 0.1 0.2)
                         , Primitives.quad Clock.Shaders.fragment <|
                             locals texture
@@ -371,12 +373,6 @@ otherHandView ({ w, h, radius } as params) finalN resInfo texture =
                                 (position params PlayerB i n)
                                 (vec3 (w / 2) (h / 2 - radius * 0.62) 0)
 
-                        scale =
-                            makeScale3
-                                (floatInterp playProgress width (0.13 * radius))
-                                (floatInterp playProgress height (0.13 * radius))
-                                1
-
                         rot =
                             makeRotate (floatInterp playProgress (rotation PlayerB i n) 0) <|
                                 vec3 0 0 1
@@ -387,12 +383,20 @@ otherHandView ({ w, h, radius } as params) finalN resInfo texture =
                                 texture
                                 pos
                                 rot
-                                (makeScale3 width height 1)
+                                (makeScale3
+                                    (floatInterp playProgress (0.7 * width) (0.7 * 0.13 * radius))
+                                    (floatInterp playProgress height (0.13 * radius))
+                                    1
+                                )
                                 (vec3 0.52 0.1 0.2)
                         , Primitives.quad Clock.Shaders.fragment <|
                             locals texture
                                 pos
-                                scale
+                                (makeScale3
+                                    (floatInterp playProgress width (0.13 * radius))
+                                    (floatInterp playProgress height (0.13 * radius))
+                                    1
+                                )
                                 rot
                                 (vec3 1 1 1)
                         ]
