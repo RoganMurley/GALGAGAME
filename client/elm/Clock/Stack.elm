@@ -40,7 +40,15 @@ view { w, h, radius } stack resInfo texture =
                     0
 
         makeCard ( pos, rot ) =
-            Primitives.quad Clock.Shaders.fragment <|
+            [ Primitives.roundedBox <|
+                uniforms 0
+                    ( floor w, floor h )
+                    texture
+                    pos
+                    rot
+                    (makeScale3 (0.13 * radius) (0.17 * radius) 1)
+                    (vec3 0.18 0.49 0.62)
+            , Primitives.quad Clock.Shaders.fragment <|
                 uniforms 0
                     ( floor w, floor h )
                     texture
@@ -48,6 +56,7 @@ view { w, h, radius } stack resInfo texture =
                     rot
                     (makeScale3 (0.13 * radius) (0.13 * radius) 1)
                     (vec3 1 1 1)
+            ]
 
         points =
             clockFace
@@ -58,7 +67,7 @@ view { w, h, radius } stack resInfo texture =
     in
         case anim of
             otherwise ->
-                List.map makeCard points
+                List.concat <| List.map makeCard points
 
 
 clockFace : Int -> Vec3 -> Float -> Float -> List ( Vec3, Mat4 )

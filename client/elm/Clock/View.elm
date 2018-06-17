@@ -129,6 +129,27 @@ view (Params _ ( w, h )) mouse { res, focus } textures =
                                         )
                                         (vec3 1 1 1)
                               ]
+                            , Clock.Stack.view params model.stack resInfo sword
+                            , handView params model.hand resInfo sword
+                            , otherHandView params model.otherHand resInfo sword
+                            , Clock.Wave.view params resInfo sword
+                            , let
+                                unif =
+                                    locals circle
+                                        (vec3
+                                            ((toFloat mouse.x))
+                                            ((toFloat mouse.y))
+                                            z
+                                        )
+                                        (makeScale3
+                                            (radius * 0.1)
+                                            (radius * 0.14)
+                                            1
+                                        )
+                                        (makeRotate 0 <| vec3 0 0 1)
+                                        (vec3 1 1 1)
+                              in
+                                [ Primitives.roundedBox { unif | color = vec3 0.18 0.49 0.62 } ]
                             , [ Primitives.quad Clock.Shaders.fragment <|
                                     locals sword
                                         (vec3
@@ -140,10 +161,6 @@ view (Params _ ( w, h )) mouse { res, focus } textures =
                                         (makeRotate pi <| vec3 0 0 1)
                                         (vec3 1 1 1)
                               ]
-                            , Clock.Stack.view params model.stack resInfo sword
-                            , handView params model.hand resInfo sword
-                            , otherHandView params model.otherHand resInfo sword
-                            , Clock.Wave.view params resInfo sword
                             ]
 
                     Nothing ->
