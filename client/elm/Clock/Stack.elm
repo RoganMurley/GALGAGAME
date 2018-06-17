@@ -46,7 +46,7 @@ view { w, h, radius } stack resInfo texture =
                     texture
                     pos
                     rot
-                    (makeScale3 (0.13 * radius) (0.17 * radius) 1)
+                    (makeScale3 (0.7 * 0.13 * radius) (0.13 * radius) 1)
                     (vec3 0.18 0.49 0.62)
             , Primitives.quad Clock.Shaders.fragment <|
                 uniforms 0
