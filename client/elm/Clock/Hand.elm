@@ -141,22 +141,37 @@ handView ({ w, h, radius } as params) finalHand resInfo texture =
         ( width, height, spacing ) =
             cardDimensions params
 
-        entity : Int -> WebGL.Entity
+        entity : Int -> List WebGL.Entity
         entity finalI =
             let
                 i =
                     indexModifier finalI
+
+                pos =
+                    interp progress (position params PlayerA i n) (position params PlayerA finalI finalN)
+
+                rot =
+                    makeRotate (floatInterp progress (rotation PlayerA i n) (rotation PlayerA finalI finalN)) <| vec3 0 0 1
             in
-                Primitives.quad Clock.Shaders.fragment <|
-                    locals texture
-                        (interp progress (position params PlayerA i n) (position params PlayerA finalI finalN))
+                [ Primitives.roundedBox <|
+                    uniforms 0
+                        ( floor w, floor h )
+                        texture
+                        pos
+                        rot
                         (makeScale3 width height 1)
-                        (makeRotate (floatInterp progress (rotation PlayerA i n) (rotation PlayerA finalI finalN)) <| vec3 0 0 1)
+                        (vec3 0.18 0.49 0.62)
+                , Primitives.quad Clock.Shaders.fragment <|
+                    locals texture
+                        pos
+                        (makeScale3 width height 1)
+                        rot
                         (vec3 1 1 1)
+                ]
 
         mainView : List WebGL.Entity
         mainView =
-            List.map entity (List.range 0 (n - 1))
+            List.concat <| List.map entity (List.range 0 (n - 1))
 
         extraView : List WebGL.Entity
         extraView =
@@ -165,18 +180,30 @@ handView ({ w, h, radius } as params) finalHand resInfo texture =
                     let
                         drawingCard =
                             List.head <| List.reverse finalHand
+
+                        pos =
+                            interp
+                                progress
+                                (vec3 w h 0)
+                                (position params PlayerA n (n + 1))
+
+                        rot =
+                            makeRotate (floatInterp progress 0 (rotation PlayerA n (n + 1))) <|
+                                vec3 0 0 1
                     in
-                        [ Primitives.quad Clock.Shaders.fragment <|
-                            locals texture
-                                (interp
-                                    progress
-                                    (vec3 w h 0)
-                                    (position params PlayerA n (n + 1))
-                                )
+                        [ Primitives.roundedBox <|
+                            uniforms 0
+                                ( floor w, floor h )
+                                texture
+                                pos
+                                rot
                                 (makeScale3 width height 1)
-                                (makeRotate (floatInterp progress 0 (rotation PlayerA n (n + 1))) <|
-                                    vec3 0 0 1
-                                )
+                                (vec3 0.18 0.49 0.62)
+                        , Primitives.quad Clock.Shaders.fragment <|
+                            locals texture
+                                pos
+                                (makeScale3 width height 1)
+                                rot
                                 (vec3 1 1 1)
                         ]
 
@@ -184,22 +211,36 @@ handView ({ w, h, radius } as params) finalHand resInfo texture =
                     let
                         playProgress =
                             Ease.outQuad <| resTick / maxTick
+
+                        pos =
+                            interp
+                                playProgress
+                                (position params PlayerA i n)
+                                (vec3 (w / 2) (h / 2 - radius * 0.62) 0)
+
+                        rot =
+                            makeRotate (floatInterp playProgress (rotation PlayerA i n) 0) <|
+                                vec3 0 0 1
+
+                        scale =
+                            makeScale3
+                                (floatInterp playProgress width (0.13 * radius))
+                                (floatInterp playProgress height (0.13 * radius))
+                                1
                     in
-                        [ Primitives.quad Clock.Shaders.fragment <|
+                        [ Primitives.roundedBox <|
+                            uniforms 0
+                                ( floor w, floor h )
+                                texture
+                                pos
+                                rot
+                                scale
+                                (vec3 0.18 0.49 0.62)
+                        , Primitives.quad Clock.Shaders.fragment <|
                             locals texture
-                                (interp
-                                    playProgress
-                                    (position params PlayerA i n)
-                                    (vec3 (w / 2) (h / 2 - radius * 0.62) 0)
-                                )
-                                (makeScale3
-                                    (floatInterp playProgress width (0.13 * radius))
-                                    (floatInterp playProgress height (0.13 * radius))
-                                    1
-                                )
-                                (makeRotate (floatInterp playProgress (rotation PlayerA i n) 0) <|
-                                    vec3 0 0 1
-                                )
+                                pos
+                                scale
+                                rot
                                 (vec3 1 1 1)
                         ]
 
@@ -253,65 +294,106 @@ otherHandView ({ w, h, radius } as params) finalN resInfo texture =
         ( width, height, spacing ) =
             cardDimensions params
 
-        entity : Int -> WebGL.Entity
+        entity : Int -> List WebGL.Entity
         entity finalI =
             let
                 i =
                     indexModifier finalI
+
+                pos =
+                    interp progress (position params PlayerB i n) (position params PlayerB finalI finalN)
+
+                rot =
+                    makeRotate
+                        (floatInterp progress (rotation PlayerB i n) (rotation PlayerB finalI finalN))
+                        (vec3 0 0 1)
             in
-                Primitives.quad Clock.Shaders.fragment <|
-                    locals texture
-                        (interp progress (position params PlayerB i n) (position params PlayerB finalI finalN))
+                [ Primitives.roundedBox <|
+                    uniforms 0
+                        ( floor w, floor h )
+                        texture
+                        pos
+                        rot
                         (makeScale3 width height 1)
-                        (makeRotate
-                            (floatInterp progress (rotation PlayerB i n) (rotation PlayerB finalI finalN))
-                            (vec3 0 0 1)
-                        )
+                        (vec3 0.52 0.1 0.2)
+                , Primitives.quad Clock.Shaders.fragment <|
+                    locals texture
+                        pos
+                        (makeScale3 width height 1)
+                        rot
                         (vec3 1 1 1)
+                ]
 
         mainView : List WebGL.Entity
         mainView =
-            List.map entity (List.range 0 (n - 1))
+            List.concat <| List.map entity (List.range 0 (n - 1))
 
         extraView : List WebGL.Entity
         extraView =
             case anim of
                 Just (Draw PlayerB) ->
-                    [ Primitives.quad Clock.Shaders.fragment <|
-                        locals texture
-                            (interp
+                    let
+                        pos =
+                            interp
                                 progress
                                 (vec3 w 0 0)
                                 (position params PlayerB n (n + 1))
-                            )
-                            (makeScale3 width height 1)
-                            (makeRotate
+
+                        rot =
+                            makeRotate
                                 (floatInterp progress (0.5 * pi) (rotation PlayerB n (n + 1)))
                                 (vec3 0 0 1)
-                            )
-                            (vec3 1 1 1)
-                    ]
+                    in
+                        [ Primitives.roundedBox <|
+                            uniforms 0
+                                ( floor w, floor h )
+                                texture
+                                pos
+                                rot
+                                (makeScale3 width height 1)
+                                (vec3 0.52 0.1 0.2)
+                        , Primitives.quad Clock.Shaders.fragment <|
+                            locals texture
+                                pos
+                                (makeScale3 width height 1)
+                                rot
+                                (vec3 1 1 1)
+                        ]
 
                 Just (Play PlayerB _ i) ->
                     let
                         playProgress =
                             Ease.inQuad <| resTick / maxTick
+
+                        pos =
+                            interp
+                                playProgress
+                                (position params PlayerB i n)
+                                (vec3 (w / 2) (h / 2 - radius * 0.62) 0)
+
+                        scale =
+                            makeScale3
+                                (floatInterp playProgress width (0.13 * radius))
+                                (floatInterp playProgress height (0.13 * radius))
+                                1
+
+                        rot =
+                            makeRotate (floatInterp playProgress (rotation PlayerB i n) 0) <|
+                                vec3 0 0 1
                     in
-                        [ Primitives.quad Clock.Shaders.fragment <|
+                        [ Primitives.roundedBox <|
+                            uniforms 0
+                                ( floor w, floor h )
+                                texture
+                                pos
+                                rot
+                                (makeScale3 width height 1)
+                                (vec3 0.52 0.1 0.2)
+                        , Primitives.quad Clock.Shaders.fragment <|
                             locals texture
-                                (interp
-                                    playProgress
-                                    (position params PlayerB i n)
-                                    (vec3 (w / 2) (h / 2 - radius * 0.62) 0)
-                                )
-                                (makeScale3
-                                    (floatInterp playProgress width (0.13 * radius))
-                                    (floatInterp playProgress height (0.13 * radius))
-                                    1
-                                )
-                                (makeRotate (floatInterp playProgress (rotation PlayerB i n) 0) <|
-                                    vec3 0 0 1
-                                )
+                                pos
+                                scale
+                                rot
                                 (vec3 1 1 1)
                         ]
 

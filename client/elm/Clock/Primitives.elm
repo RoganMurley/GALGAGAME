@@ -82,3 +82,34 @@ gearFragment =
         }
 
     |]
+
+
+roundedBox : Uniforms u -> Entity
+roundedBox =
+    entity
+        roundedBoxFragment
+        Clock.Meshes.quad
+
+
+roundedBoxFragment : Shader {} (Uniforms u) { vcoord : Vec2 }
+roundedBoxFragment =
+    [glsl|
+        precision mediump float;
+
+        uniform vec2 resolution;
+        uniform vec3 color;
+
+        varying vec2 vcoord;
+
+        void main ()
+        {
+            vec2 uv = vcoord;
+            vec2 pos = vec2(.5) - uv;
+
+            float b = .4;
+            float d = length(max(abs(pos) - b, .0));
+
+            gl_FragColor = vec4(color, step(d, .5 - b));
+        }
+
+    |]
