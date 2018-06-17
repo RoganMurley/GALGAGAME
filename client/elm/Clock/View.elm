@@ -146,7 +146,7 @@ view (Params _ ( w, h )) mouse { res, focus } textures =
                                             (radius * 0.1)
                                             1
                                         )
-                                        (makeRotate 0 <| vec3 0 0 1)
+                                        (makeRotate pi <| vec3 0 0 1)
                                         (vec3 0.18 0.49 0.62)
                               ]
                             , [ Primitives.quad Clock.Shaders.fragment <|

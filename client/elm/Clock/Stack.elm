@@ -12,6 +12,7 @@ import Maybe.Extra as Maybe
 import Stack.Types exposing (Stack)
 import WebGL
 import WebGL.Texture exposing (Texture)
+import WhichPlayer.Types exposing (WhichPlayer(..))
 
 
 view : ClockParams -> Stack -> Maybe ( Float, Maybe Anim ) -> Texture -> List WebGL.Entity
@@ -39,7 +40,8 @@ view { w, h, radius } stack resInfo texture =
                 otherwise ->
                     0
 
-        makeCard ( pos, rot ) =
+        makeCard : WhichPlayer -> ( Vec3, Mat4 ) -> List WebGL.Entity
+        makeCard which ( pos, rot ) =
             [ Primitives.roundedBox <|
                 uniforms 0
                     ( floor w, floor h )
@@ -47,7 +49,13 @@ view { w, h, radius } stack resInfo texture =
                     pos
                     rot
                     (makeScale3 (0.7 * 0.13 * radius) (0.13 * radius) 1)
-                    (vec3 0.18 0.49 0.62)
+                    (case which of
+                        PlayerA ->
+                            vec3 0.18 0.49 0.62
+
+                        PlayerB ->
+                            vec3 0.52 0.1 0.2
+                    )
             , Primitives.quad Clock.Shaders.fragment <|
                 uniforms 0
                     ( floor w, floor h )
@@ -67,7 +75,7 @@ view { w, h, radius } stack resInfo texture =
     in
         case anim of
             otherwise ->
-                List.concat <| List.map makeCard points
+                List.concat <| List.map (makeCard PlayerA) points
 
 
 clockFace : Int -> Vec3 -> Float -> Float -> List ( Vec3, Mat4 )
