@@ -84,7 +84,10 @@ view (Params _ ( w, h )) mouse { res, focus } textures =
                 (case mTextures of
                     Just ( sword, circle ) ->
                         List.concat
-                            [ [ Primitives.circle <|
+                            [ Clock.Stack.view params model.stack resInfo sword
+                            , handView params model.hand resInfo sword
+                            , otherHandView params model.otherHand resInfo sword
+                            , [ Primitives.circle <|
                                     locals circle
                                         (vec3 (toFloat w / 2) (toFloat h / 2) z)
                                         (makeScale3 (0.8 * radius) (0.8 * radius) 1)
@@ -94,7 +97,7 @@ view (Params _ ( w, h )) mouse { res, focus } textures =
                             , [ Primitives.circle <|
                                     locals circle
                                         (vec3 (toFloat w / 2) (toFloat h / 2) z)
-                                        (makeScale3 (0.5 * radius) (0.5 * radius) 1)
+                                        (makeScale3 (0.52 * radius) (0.52 * radius) 1)
                                         (makeRotate 0 <| vec3 0 0 1)
                                         (vec3 1 1 1)
                               , Primitives.circle <|
@@ -129,9 +132,6 @@ view (Params _ ( w, h )) mouse { res, focus } textures =
                                         )
                                         (vec3 1 1 1)
                               ]
-                            , Clock.Stack.view params model.stack resInfo sword
-                            , handView params model.hand resInfo sword
-                            , otherHandView params model.otherHand resInfo sword
                             , Clock.Wave.view params resInfo sword
                             , [ Primitives.roundedBox <|
                                     locals

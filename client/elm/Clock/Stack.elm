@@ -70,7 +70,7 @@ view { w, h, radius } stack resInfo texture =
             clockFace
                 (List.length stack)
                 (vec3 (w / 2) (h / 2) 0)
-                (0.62 * radius)
+                (0.615 * radius)
                 progress
     in
         case anim of
