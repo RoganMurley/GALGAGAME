@@ -148,8 +148,7 @@ view (Params _ ( w, h )) mouse { res, focus } textures =
                                         )
                                         (makeRotate pi <| vec3 0 0 1)
                                         (vec3 0.18 0.49 0.62)
-                              ]
-                            , [ Primitives.quad Clock.Shaders.fragment <|
+                              , Primitives.quad Clock.Shaders.fragment <|
                                     locals sword
                                         (vec3
                                             ((toFloat mouse.x))
