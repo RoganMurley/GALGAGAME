@@ -61,7 +61,7 @@ vertex =
         varying vec2 vcoord;
 
         void main () {
-            gl_Position = perspective * camera * worldRot * (vec4(worldPos, 1.0) + scale * rotation * vec4(position, 1.0));
+            gl_Position = perspective * camera * worldRot * (vec4(worldPos, 1.0) + rotation * scale * vec4(position, 1.0));
             vcoord = coord.xy;
         }
 

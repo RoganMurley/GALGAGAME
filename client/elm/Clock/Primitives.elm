@@ -69,9 +69,7 @@ gearFragment =
 
         void main ()
         {
-            vec2 uv = vcoord;
-
-            vec2 pos = vec2(.5) - uv;
+            vec2 pos = vec2(.5) - vcoord;
 
             float r = length(pos) * 1.5;
             float a = atan(pos.y, pos.x);
@@ -103,13 +101,13 @@ roundedBoxFragment =
 
         void main ()
         {
-            vec2 uv = vcoord;
-            vec2 pos = vec2(.5) - uv;
+            vec2 pos = vec2(.5) - vcoord;
 
             float b = .4;
             float d = length(max(abs(pos) - b, .0));
 
-            gl_FragColor = vec4(color, smoothstep(d * 0.9, d * 1.1, .5 - b));
+            float a = smoothstep(d * 0.9, d * 1.1, .5 - b);
+            gl_FragColor = vec4(color, a);
         }
 
     |]
