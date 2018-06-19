@@ -122,7 +122,7 @@ init =
                             , stackCard = Nothing
                             }
                         )
-                        (List.range 0 stackLen)
+                        (List.range 0 (stackLen - 1))
                     ]
         }
 
