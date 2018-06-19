@@ -66,3 +66,33 @@ vertex =
         }
 
     |]
+
+
+noise : Shader {} (Uniforms { u | time : Float }) { vcoord : Vec2 }
+noise =
+    [glsl|
+        precision mediump float;
+
+        uniform vec2 resolution;
+        uniform float time;
+
+        varying vec2 vcoord;
+
+        float random (in vec2 st) {
+            return fract(sin(dot(st.xy,
+                 vec2(12.9898,78.233)))
+                     * 43758.5453123);
+        }
+
+        void main ()
+        {
+            vec2 pos = vec2(.5) - vcoord;
+            float dist = dot(2. * vcoord - 1., 2. * vcoord - 1.);
+
+            vec2 st = gl_FragCoord.xy;
+            float rnd = random(st * (1. + time));
+
+            gl_FragColor = vec4(vec3(1., 1., 1.), rnd * dist * .02);
+        }
+
+    |]
