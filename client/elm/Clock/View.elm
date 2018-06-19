@@ -13,7 +13,8 @@ import Ease
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Main.Messages as Main
-import Math.Matrix4 exposing (makeRotate, makeScale3)
+import Math.Matrix4 exposing (makeRotate, makeScale3, makeLookAt, makeOrtho)
+import Math.Vector2 exposing (vec2)
 import Math.Vector3 exposing (Vec3, vec3)
 import Mouse
 import Raymarch.Types exposing (Params(..))
@@ -84,7 +85,33 @@ view (Params _ ( w, h )) mouse { res, focus } textures =
                 (case mTextures of
                     Just ( sword, circle ) ->
                         List.concat
-                            [ Clock.Stack.view params model.stack resInfo sword
+                            [ let
+                                pos =
+                                    (vec3 (toFloat w / 2) (toFloat h / 2) z)
+
+                                scale =
+                                    makeScale3 (toFloat w) (toFloat h) 1
+
+                                rot =
+                                    makeRotate 0 <| vec3 0 0 1
+
+                                color =
+                                    vec3 1 1 1
+                              in
+                                [ Primitives.quad Clock.Shaders.noise <|
+                                    { resolution = vec2 (toFloat w) (toFloat h)
+                                    , texture = circle
+                                    , rotation = rot
+                                    , scale = scale
+                                    , color = color
+                                    , worldPos = pos
+                                    , worldRot = makeRotate 0 (vec3 0 0 1)
+                                    , perspective = makeOrtho 0 (toFloat w / 2) (toFloat h / 2) 0 0.01 1000
+                                    , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
+                                    , time = res.tick
+                                    }
+                                ]
+                            , Clock.Stack.view params model.stack resInfo sword
                             , handView params model.hand resInfo sword
                             , otherHandView params model.otherHand resInfo sword
                             , [ Primitives.circle <|
