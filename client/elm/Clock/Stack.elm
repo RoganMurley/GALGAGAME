@@ -16,7 +16,7 @@ import WhichPlayer.Types exposing (WhichPlayer(..))
 
 
 view : ClockParams -> Stack -> Maybe ( Float, Maybe Anim ) -> Texture -> List WebGL.Entity
-view { w, h, radius } stack resInfo texture =
+view { w, h, radius } finalStack resInfo texture =
     let
         resTick =
             Maybe.withDefault 0.0 <|
@@ -65,6 +65,15 @@ view { w, h, radius } stack resInfo texture =
                     (makeScale3 (0.13 * radius) (0.13 * radius) 1)
                     (vec3 1 1 1)
             ]
+
+        stack : Stack
+        stack =
+            case anim of
+                Just (Rotate _) ->
+                    List.drop 1 finalStack
+
+                otherwise ->
+                    finalStack
 
         points =
             clockFace
