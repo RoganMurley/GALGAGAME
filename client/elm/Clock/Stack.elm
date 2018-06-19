@@ -9,7 +9,7 @@ import Ease
 import Math.Matrix4 exposing (Mat4, makeRotate, makeScale3)
 import Math.Vector3 exposing (Vec3, vec3)
 import Maybe.Extra as Maybe
-import Stack.Types exposing (Stack)
+import Stack.Types exposing (Stack, StackCard)
 import WebGL
 import WebGL.Texture exposing (Texture)
 import WhichPlayer.Types exposing (WhichPlayer(..))
@@ -40,8 +40,8 @@ view { w, h, radius } stack resInfo texture =
                 otherwise ->
                     0
 
-        makeCard : WhichPlayer -> ( Vec3, Mat4 ) -> List WebGL.Entity
-        makeCard which ( pos, rot ) =
+        makeCard : ( WhichPlayer, Vec3, Mat4 ) -> List WebGL.Entity
+        makeCard ( which, pos, rot ) =
             [ Primitives.roundedBox <|
                 uniforms 0
                     ( floor w, floor h )
@@ -68,30 +68,30 @@ view { w, h, radius } stack resInfo texture =
 
         points =
             clockFace
-                (List.length stack)
+                stack
                 (vec3 (w / 2) (h / 2) 0)
                 (0.615 * radius)
                 progress
     in
         case anim of
             otherwise ->
-                List.concat <| List.map (makeCard PlayerA) points
+                List.concat <| List.map makeCard points
 
 
-clockFace : Int -> Vec3 -> Float -> Float -> List ( Vec3, Mat4 )
-clockFace n origin radius progress =
+clockFace : Stack -> Vec3 -> Float -> Float -> List ( WhichPlayer, Vec3, Mat4 )
+clockFace stack origin radius progress =
     let
         segments : Int
         segments =
             12
 
-        indexes : List Int
-        indexes =
-            List.range 1 n
-
-        genPoint : Int -> ( Vec3, Mat4 )
-        genPoint i =
-            ( Math.Vector3.add origin <| offset i, rotation i )
+        genPoint : Int -> StackCard -> ( WhichPlayer, Vec3, Mat4 )
+        genPoint index { owner } =
+            let
+                i =
+                    index + 1
+            in
+                ( owner, Math.Vector3.add origin <| offset i, rotation i )
 
         segmentAngle : Float
         segmentAngle =
@@ -111,4 +111,4 @@ clockFace n origin radius progress =
         rotation i =
             makeRotate (2 * pi - rot i) (vec3 0 0 1)
     in
-        List.map genPoint indexes
+        List.indexedMap genPoint stack

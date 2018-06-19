@@ -22,8 +22,11 @@ init =
         card =
             { name = "", desc = "", imgURL = "" }
 
-        stackCard =
+        stackCardA =
             { owner = PlayerA, card = card }
+
+        stackCardB =
+            { stackCardA | owner = PlayerB }
 
         stackLen =
             12
@@ -32,7 +35,9 @@ init =
             { mInit
                 | hand = List.repeat 6 card
                 , otherHand = 6
-                , stack = List.repeat stackLen stackCard
+                , stack =
+                    List.repeat (stackLen // 2) stackCardB
+                        ++ List.repeat (stackLen // 2) stackCardA
             }
     in
         { focus = Just card
