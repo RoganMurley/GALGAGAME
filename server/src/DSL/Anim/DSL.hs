@@ -19,7 +19,7 @@ data DSL a
   | Reverse a
   | Play WhichPlayer Card a
   | Transmute StackCard StackCard a
-  | Overdraw WhichPlayer a
+  | Overdraw WhichPlayer Card a
   | GameEnd (Maybe WhichPlayer) a
   deriving (Functor)
 

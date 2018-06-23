@@ -89,12 +89,18 @@ roundedBox =
         Clock.Meshes.quad
 
 
+roundedBoxDisintegrate : Uniforms { u | time : Float } -> Entity
+roundedBoxDisintegrate =
+    entity
+        Clock.Shaders.roundedBoxDisintegrate
+        Clock.Meshes.quad
+
+
 roundedBoxFragment : Shader {} (Uniforms u) { vcoord : Vec2 }
 roundedBoxFragment =
     [glsl|
         precision mediump float;
 
-        uniform vec2 resolution;
         uniform vec3 color;
 
         varying vec2 vcoord;

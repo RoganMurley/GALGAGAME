@@ -89,6 +89,18 @@ init =
                         (\i ->
                             { model =
                                 { model
+                                    | hand = model.hand
+                                    , stack = []
+                                }
+                            , anim = Just (Overdraw PlayerA card)
+                            , stackCard = Nothing
+                            }
+                        )
+                        (List.range 1 5)
+                    , List.map
+                        (\i ->
+                            { model =
+                                { model
                                     | stack = List.drop (List.length model.stack - i) model.stack
                                     , hand = List.drop (i + 1) model.hand
                                 }
@@ -162,6 +174,9 @@ animToResTickMax anim =
             500
 
         Just (Play _ _ _) ->
+            1000
+
+        Just (Overdraw _ _) ->
             1000
 
         otherwise ->

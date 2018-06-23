@@ -93,6 +93,7 @@ texturePaths =
     , ( "wand", "/img/textures/wand.png" )
     , ( "chalice", "/img/textures/chalice.png" )
     , ( "circle", "/img/textures/circle.png" )
+    , ( "noise", "/img/textures/noise.png" )
     ]
 
 

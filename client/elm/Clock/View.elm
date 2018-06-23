@@ -14,7 +14,6 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Main.Messages as Main
 import Math.Matrix4 exposing (makeRotate, makeScale3, makeLookAt, makeOrtho)
-import Math.Vector2 exposing (vec2)
 import Math.Vector3 exposing (Vec3, vec3)
 import Mouse
 import Raymarch.Types exposing (Params(..))
@@ -30,7 +29,7 @@ view (Params _ ( w, h )) mouse { res, focus } textures =
         mTextures =
             Maybe.map2 (,)
                 (Texture.load textures "wireframe-sword")
-                (Texture.load textures "clock")
+                (Texture.load textures "noise")
 
         locals =
             uniforms 0 ( w, h )
@@ -83,14 +82,14 @@ view (Params _ ( w, h )) mouse { res, focus } textures =
                 , class "raymarch-canvas"
                 ]
                 (case mTextures of
-                    Just ( sword, circle ) ->
+                    Just ( sword, noise ) ->
                         List.concat
                             [ let
                                 pos =
-                                    (vec3 (toFloat w / 2) (toFloat h / 2) z)
+                                    (vec3 (toFloat w / 10) (toFloat h / 2) z)
 
                                 scale =
-                                    makeScale3 (toFloat w) (toFloat h) 1
+                                    makeScale3 (toFloat h / 10) (toFloat h / 10) 1
 
                                 rot =
                                     makeRotate 0 <| vec3 0 0 1
@@ -98,44 +97,43 @@ view (Params _ ( w, h )) mouse { res, focus } textures =
                                 color =
                                     vec3 1 1 1
                               in
-                                [ Primitives.quad Clock.Shaders.noise <|
-                                    { resolution = vec2 (toFloat w) (toFloat h)
-                                    , texture = circle
-                                    , rotation = rot
-                                    , scale = scale
-                                    , color = color
-                                    , worldPos = pos
-                                    , worldRot = makeRotate 0 (vec3 0 0 1)
-                                    , perspective = makeOrtho 0 (toFloat w / 2) (toFloat h / 2) 0 0.01 1000
-                                    , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
-                                    , time = res.tick
-                                    }
+                                [-- Primitives.quad Clock.Shaders.disintegrate <|
+                                 --     { resolution = vec2 (toFloat w) (toFloat h)
+                                 --     , texture = sword
+                                 --     , noise = noise
+                                 --     , rotation = rot
+                                 --     , scale = scale
+                                 --     , color = color
+                                 --     , worldPos = pos
+                                 --     , worldRot = makeRotate 0 (vec3 0 0 1)
+                                 --     , perspective = makeOrtho 0 (toFloat w / 2) (toFloat h / 2) 0 0.01 1000
+                                 --     , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
+                                 --     , time = res.tick
+                                 --     }
                                 ]
                             , Clock.Stack.view params model.stack resInfo sword
-                            , handView params model.hand resInfo sword
-                            , otherHandView params model.otherHand resInfo sword
                             , [ Primitives.circle <|
-                                    locals circle
+                                    locals sword
                                         (vec3 (toFloat w / 2) (toFloat h / 2) z)
                                         (makeScale3 (0.8 * radius) (0.8 * radius) 1)
                                         (makeRotate 0 <| vec3 0 0 1)
                                         (vec3 1 1 1)
                               ]
                             , [ Primitives.circle <|
-                                    locals circle
+                                    locals sword
                                         (vec3 (toFloat w / 2) (toFloat h / 2) z)
                                         (makeScale3 (0.52 * radius) (0.52 * radius) 1)
                                         (makeRotate 0 <| vec3 0 0 1)
                                         (vec3 1 1 1)
                               , Primitives.circle <|
-                                    locals circle
+                                    locals sword
                                         (vec3 (toFloat w / 2) ((toFloat h / 2) - (0.615 * radius)) z)
                                         (makeScale3 (0.13 * radius) (0.13 * radius) 1)
                                         (makeRotate 0 <| vec3 0 0 1)
                                         (vec3 1 1 1)
                               ]
                             , [ Primitives.gear <|
-                                    locals circle
+                                    locals sword
                                         (vec3
                                             ((toFloat w / 2) + radius * 0.1)
                                             ((toFloat h / 2))
@@ -147,7 +145,7 @@ view (Params _ ( w, h )) mouse { res, focus } textures =
                                         )
                                         (vec3 1 1 1)
                               , Primitives.gear <|
-                                    locals circle
+                                    locals sword
                                         (vec3
                                             ((toFloat w / 2) - radius * 0.065)
                                             ((toFloat h / 2) - radius * 0.02)
@@ -159,10 +157,11 @@ view (Params _ ( w, h )) mouse { res, focus } textures =
                                         )
                                         (vec3 1 1 1)
                               ]
+                            , handView params model.hand resInfo sword noise
+                            , otherHandView params model.otherHand resInfo sword
                             , Clock.Wave.view params resInfo sword
                             , [ Primitives.roundedBox <|
-                                    locals
-                                        circle
+                                    locals sword
                                         (vec3
                                             ((toFloat mouse.x))
                                             ((toFloat mouse.y))

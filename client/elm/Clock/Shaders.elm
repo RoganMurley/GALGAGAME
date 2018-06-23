@@ -83,13 +83,61 @@ noise =
 
         void main ()
         {
-            vec2 pos = vec2(.5) - vcoord;
-            float dist = dot(2. * vcoord - 1., 2. * vcoord - 1.);
-
             vec2 st = gl_FragCoord.xy;
             float rnd = random(st * (1. + time));
 
-            gl_FragColor = vec4(vec3(1., 1., 1.), rnd * dist * .02);
+            gl_FragColor = vec4(vec3(1.), rnd);
+        }
+
+    |]
+
+
+disintegrate : Shader {} (Uniforms { u | time : Float, noise : WebGL.Texture }) { vcoord : Vec2 }
+disintegrate =
+    [glsl|
+        precision mediump float;
+
+        uniform float time;
+        uniform sampler2D texture;
+        uniform sampler2D noise;
+
+        varying vec2 vcoord;
+
+        void main ()
+        {
+            vec4 color = texture2D(texture, vcoord);
+            float random = texture2D(noise, vcoord).r;
+            color.a *= floor((1. - time) + min(0.99, random));
+            gl_FragColor = color;
+        }
+
+    |]
+
+
+roundedBoxDisintegrate : Shader {} (Uniforms { u | time : Float }) { vcoord : Vec2 }
+roundedBoxDisintegrate =
+    [glsl|
+        precision mediump float;
+
+        uniform vec3 color;
+        uniform sampler2D texture;
+        uniform float time;
+
+        varying vec2 vcoord;
+
+        void main ()
+        {
+            vec2 pos = vec2(.5) - vcoord;
+
+            float b = .4;
+            float d = length(max(abs(pos) - b, .0));
+
+            float a = smoothstep(d * 0.9, d * 1.1, .5 - b);
+
+            float random = texture2D(texture, vcoord).r;
+            a *= floor((1. - time) + min(0.99, random));
+
+            gl_FragColor = vec4(color, a);
         }
 
     |]
