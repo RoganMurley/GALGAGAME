@@ -45,7 +45,7 @@ circleFragment =
             float inner = smoothstep(radius * 1.05, radius * 1.03, dist);
             float outer = smoothstep(radius * 0.95, radius * 0.98, dist);
             float intensity = inner * outer;
-            gl_FragColor = vec4(color, inner * outer);
+            gl_FragColor = vec4(color, intensity);
         }
 
     |]
