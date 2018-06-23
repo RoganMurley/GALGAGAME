@@ -7,7 +7,8 @@ import Clock.State exposing (animToResTickMax, uniforms)
 import Clock.Types exposing (ClockParams)
 import Ease
 import Hand.Types exposing (Hand)
-import Math.Matrix4 exposing (makeRotate, makeScale3)
+import Math.Matrix4 exposing (makeLookAt, makeOrtho, makeRotate, makeScale3)
+import Math.Vector2 exposing (vec2)
 import Math.Vector3 exposing (Vec3, vec3)
 import Maybe.Extra as Maybe
 import WebGL
@@ -91,8 +92,8 @@ position ({ w, h, radius } as params) which index count =
                 vec3 0 y 0
 
 
-handView : ClockParams -> Hand -> Maybe ( Float, Maybe Anim ) -> Texture -> List WebGL.Entity
-handView ({ w, h, radius } as params) finalHand resInfo texture =
+handView : ClockParams -> Hand -> Maybe ( Float, Maybe Anim ) -> Texture -> Texture -> List WebGL.Entity
+handView ({ w, h, radius } as params) finalHand resInfo texture noise =
     let
         locals =
             uniforms 0 ( floor w, floor h )
@@ -244,6 +245,57 @@ handView ({ w, h, radius } as params) finalHand resInfo texture =
                                 )
                                 rot
                                 (vec3 1 1 1)
+                        ]
+
+                Just (Overdraw PlayerA card) ->
+                    let
+                        pos =
+                            interp
+                                progress
+                                (vec3 w h 0)
+                                (vec3 (w / 2) (h / 2) 0)
+
+                        rot =
+                            makeRotate (floatInterp progress 0 (0.05 * pi)) <|
+                                vec3 0 0 1
+
+                        iWidth =
+                            floatInterp
+                                progress
+                                width
+                                (width * 4)
+
+                        iHeight =
+                            floatInterp
+                                progress
+                                height
+                                (height * 4)
+                    in
+                        [ Primitives.roundedBoxDisintegrate <|
+                            { resolution = vec2 w h
+                            , texture = noise
+                            , rotation = rot
+                            , scale = makeScale3 (0.7 * iWidth) iHeight 1
+                            , color = (vec3 0.18 0.49 0.615)
+                            , worldPos = pos
+                            , worldRot = makeRotate 0 (vec3 0 0 1)
+                            , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
+                            , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
+                            , time = Ease.inQuint <| resTick / maxTick
+                            }
+                        , Primitives.quad Clock.Shaders.disintegrate <|
+                            { resolution = vec2 w h
+                            , texture = texture
+                            , noise = noise
+                            , rotation = rot
+                            , scale = makeScale3 iWidth iHeight 1
+                            , color = vec3 1 1 1
+                            , worldPos = pos
+                            , worldRot = makeRotate 0 (vec3 0 0 1)
+                            , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
+                            , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
+                            , time = Ease.inQuint <| resTick / maxTick
+                            }
                         ]
 
                 otherwise ->

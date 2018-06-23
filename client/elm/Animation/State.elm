@@ -46,7 +46,7 @@ animToFragShader anim =
         Obliterate _ ->
             BaseShader Shaders.obliterate
 
-        Overdraw _ ->
+        Overdraw _ _ ->
             TexturedShader Shaders.overdraw
 
         Adhoc _ name _ ->
@@ -88,7 +88,7 @@ getWhichPlayer anim =
         Transmute w _ _ ->
             w
 
-        Overdraw w ->
+        Overdraw w _ ->
             w
 
         GameStart w ->
@@ -158,7 +158,7 @@ animToResTickMax anim =
 animToTexture : Anim -> Texture.Model -> Maybe Texture
 animToTexture anim textures =
     case anim of
-        Overdraw _ ->
+        Overdraw _ _ ->
             Texture.load textures "cross"
 
         otherwise ->

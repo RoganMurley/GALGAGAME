@@ -6,10 +6,12 @@ import Card (Card)
 import CardAnim (CardAnim)
 import Control.Monad.Free (Free(..), foldFree, liftF)
 import Data.Functor.Sum (Sum(..))
+import Data.Maybe (fromMaybe)
 import Data.Monoid ((<>))
 import DSL.Beta.DSL
 import DSL.Util (toLeft, toRight)
 import Player (WhichPlayer(..))
+
 import Model (Model, gameover, maxHandLength)
 import ModelDiff (ModelDiff)
 import Safe (headMay)
@@ -19,6 +21,8 @@ import qualified DSL.Alpha as Alpha
 import qualified DSL.Anim as Anim
 import qualified DSL.Log as Log
 import qualified ModelDiff
+
+import {-# SOURCE #-} Cards (theEnd)
 
 
 alphaI :: Program a -> Alpha.Program a
@@ -63,11 +67,12 @@ animI _                  = toLeft
 drawAnim :: WhichPlayer -> ((Alpha.Program a) -> AlphaAnimProgram a)
 drawAnim w alpha =
   do
+    nextCard <- headMay <$> toLeft (Alpha.getDeck w)
     handLength <- length <$> toLeft (Alpha.getHand w)
     final <- toLeft alpha
     if (handLength < maxHandLength)
       then toRight . liftF $ Anim.Draw w ()
-      else toRight . liftF $ Anim.Overdraw w ()
+      else toRight . liftF $ Anim.Overdraw w (fromMaybe theEnd nextCard) ()
     return final
 
 
