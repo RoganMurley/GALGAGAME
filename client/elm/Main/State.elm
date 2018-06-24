@@ -8,6 +8,7 @@ import Routing.Types as Routing
 import WebSocket
 import GameState.Types exposing (GameState(Started))
 import Clock.Listener as Clock
+import Clock.Messages as Clock
 import Clock.State as Clock
 import Lab.State as Lab
 import Lobby.State as Lobby
@@ -19,6 +20,7 @@ import Mode exposing (Mode(..))
 import Mouse
 import Navigation
 import Replay.State as Replay
+import Room.Messages as Room
 import Room.State as Room
 import Room.Types as Room
 import Room.Generators exposing (generate)
@@ -158,7 +160,7 @@ update msg ({ room, settings, textures, flags } as model) =
                 ( model
                 , Http.send LogoutCallback <|
                     Http.post
-                        ((authLocation flags) ++ "/logout")
+                        (authLocation flags ++ "/logout")
                         Http.emptyBody
                         (Json.succeed ())
                 )
@@ -170,12 +172,16 @@ update msg ({ room, settings, textures, flags } as model) =
                 ( model, Cmd.none )
 
             MousePosition mouse ->
-                ( { model
-                    | flags =
-                        { flags | mouse = mouse }
-                  }
-                , Cmd.none
-                )
+                let
+                    ( newRoom, newCmd ) =
+                        Room.update
+                            room
+                            (Room.ClockMsg <| Clock.Mouse mouse)
+                            flags
+                in
+                    ( { model | room = newRoom }
+                    , newCmd
+                    )
 
             GetAuth ->
                 ( model

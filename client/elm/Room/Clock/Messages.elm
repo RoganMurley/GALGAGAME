@@ -1,5 +1,7 @@
 module Clock.Messages exposing (Msg(..))
 
+import Mouse exposing (Position)
+
 
 type Msg
-    = Foo
+    = Mouse Position

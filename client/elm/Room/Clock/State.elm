@@ -2,10 +2,12 @@ module Clock.State exposing (..)
 
 import Animation.State
 import Animation.Types exposing (Anim(..))
+import Card.Types exposing (Card)
 import Clock.Messages exposing (Msg(..))
 import Clock.Types exposing (Model, Uniforms)
+import Main.Types exposing (Flags)
 import Math.Matrix4 exposing (Mat4, identity, makeLookAt, makeOrtho, makeRotate, mul)
-import Math.Vector2 exposing (vec2)
+import Math.Vector2 exposing (Vec2, vec2)
 import Math.Vector3 exposing (Vec3, vec3)
 import Model.State as Model
 import Raymarch.Types exposing (Height, Width)
@@ -42,6 +44,7 @@ init =
             }
     in
         { focus = Just card
+        , mouse = vec2 -10000 -10000
         , res =
             Resolvable.init
                 { model
@@ -184,8 +187,20 @@ animToResTickMax anim =
             Animation.State.animToResTickMax anim
 
 
-update : Model -> Msg -> Model
-update model msg =
+update : Flags -> Model -> Msg -> Model
+update flags model msg =
     case msg of
-        Foo ->
-            model
+        Mouse { x, y } ->
+            let
+                pos =
+                    vec2 (toFloat x) (toFloat y)
+            in
+                { model
+                    | focus = getFocus model pos
+                    , mouse = pos
+                }
+
+
+getFocus : Model -> Vec2 -> Maybe Card
+getFocus _ _ =
+    Nothing

@@ -14,8 +14,8 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Main.Messages as Main
 import Math.Matrix4 exposing (makeRotate, makeScale3, makeLookAt, makeOrtho)
+import Math.Vector2 exposing (getX, getY)
 import Math.Vector3 exposing (Vec3, vec3)
-import Mouse
 import Raymarch.Types exposing (Params(..))
 import Resolvable.State exposing (activeAnim, activeModel)
 import Texture.State as Texture
@@ -23,8 +23,8 @@ import Texture.Types as Texture
 import WebGL
 
 
-view : Params -> Mouse.Position -> Model -> Texture.Model -> Html Main.Msg
-view (Params _ ( w, h )) mouse { res, focus } textures =
+view : Params -> Model -> Texture.Model -> Html Main.Msg
+view (Params _ ( w, h )) { res, focus, mouse } textures =
     let
         mTextures =
             Maybe.map2 (,)
@@ -163,8 +163,8 @@ view (Params _ ( w, h )) mouse { res, focus } textures =
                             , [ Primitives.roundedBox <|
                                     locals sword
                                         (vec3
-                                            ((toFloat mouse.x))
-                                            ((toFloat mouse.y))
+                                            (getX mouse)
+                                            (getY mouse)
                                             z
                                         )
                                         (makeScale3
@@ -177,8 +177,8 @@ view (Params _ ( w, h )) mouse { res, focus } textures =
                               , Primitives.quad Clock.Shaders.fragment <|
                                     locals sword
                                         (vec3
-                                            ((toFloat mouse.x))
-                                            ((toFloat mouse.y))
+                                            (getX mouse)
+                                            (getY mouse)
                                             z
                                         )
                                         (makeScale3 (0.1 * radius) (0.1 * radius) 1)

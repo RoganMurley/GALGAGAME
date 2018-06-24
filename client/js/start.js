@@ -6,7 +6,6 @@ var app = Elm.Main.fullscreen({
   httpPort: window.location.port,
   seed: new Date().getTime(),
   dimensions: [ window.innerWidth, window.innerHeight ],
-  mouse: { x: -1000, y: -1000 },
   time: 0,
   username: null,
 });
