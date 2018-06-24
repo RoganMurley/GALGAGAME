@@ -2,6 +2,7 @@ module Clock.State exposing (..)
 
 import Animation.State
 import Animation.Types exposing (Anim(..))
+import Clock.Messages exposing (Msg(..))
 import Clock.Types exposing (Model, Uniforms)
 import Math.Matrix4 exposing (Mat4, identity, makeLookAt, makeOrtho, makeRotate, mul)
 import Math.Vector2 exposing (vec2)
@@ -181,3 +182,10 @@ animToResTickMax anim =
 
         otherwise ->
             Animation.State.animToResTickMax anim
+
+
+update : Model -> Msg -> Model
+update model msg =
+    case msg of
+        Foo ->
+            model

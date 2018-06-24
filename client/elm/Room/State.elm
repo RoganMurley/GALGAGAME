@@ -83,6 +83,14 @@ update model msg ({ hostname, seed } as flags) =
                 otherwise ->
                     ( model, Cmd.none )
 
+        ClockMsg clockMsg ->
+            case model of
+                Clock clock ->
+                    ( Clock <| Clock.update clock clockMsg, Cmd.none )
+
+                otherwise ->
+                    ( model, Cmd.none )
+
         StartGame mode ->
             case model of
                 Lobby ({ roomID, gameType } as lobby) ->
