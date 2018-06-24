@@ -11,6 +11,7 @@ import Resolvable.Types as Resolvable
 type alias Model =
     { res : Resolvable.Model
     , focus : Maybe Card
+    , mouse : Vec2
     }
 
 

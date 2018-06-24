@@ -86,7 +86,7 @@ update model msg ({ hostname, seed } as flags) =
         ClockMsg clockMsg ->
             case model of
                 Clock clock ->
-                    ( Clock <| Clock.update clock clockMsg, Cmd.none )
+                    ( Clock <| Clock.update flags clock clockMsg, Cmd.none )
 
                 otherwise ->
                     ( model, Cmd.none )
