@@ -1,5 +1,6 @@
 module Room.Messages exposing (Msg(..))
 
+import Clock.Messages as Clock
 import Connected.Messages as Connected
 import Lab.Messages as Lab
 import Lobby.Messages as Lobby
@@ -10,7 +11,8 @@ import Replay.Messages as Replay
 
 
 type Msg
-    = ConnectedMsg Connected.Msg
+    = ClockMsg Clock.Msg
+    | ConnectedMsg Connected.Msg
     | LabMsg Lab.Msg
     | LobbyMsg Lobby.Msg
     | LoginMsg Login.Msg
