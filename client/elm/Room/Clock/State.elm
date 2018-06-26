@@ -66,43 +66,43 @@ init =
                         , stackCard = Nothing
                         }
                       ]
-                      -- , List.map
-                      --     (\i ->
-                      --         { model =
-                      --             { model
-                      --                 | hand = []
-                      --                 , otherHand = i
-                      --                 , stack = []
-                      --             }
-                      --         , anim = Just (Draw PlayerB)
-                      --         , stackCard = Nothing
-                      --         }
-                      --     )
-                      --     (List.range 1 <| model.otherHand)
-                      -- , List.map
-                      --     (\i ->
-                      --         { model =
-                      --             { model
-                      --                 | hand = List.drop (List.length model.hand - i) model.hand
-                      --                 , stack = []
-                      --             }
-                      --         , anim = Just (Draw PlayerA)
-                      --         , stackCard = Nothing
-                      --         }
-                      --     )
-                      --     (List.range 1 <| List.length model.hand)
-                      -- , List.map
-                      --     (\i ->
-                      --         { model =
-                      --             { model
-                      --                 | hand = model.hand
-                      --                 , stack = []
-                      --             }
-                      --         , anim = Just (Overdraw PlayerA card)
-                      --         , stackCard = Nothing
-                      --         }
-                      --     )
-                      --     (List.range 1 5)
+                    , List.map
+                        (\i ->
+                            { model =
+                                { model
+                                    | hand = []
+                                    , otherHand = i
+                                    , stack = []
+                                }
+                            , anim = Just (Draw PlayerB)
+                            , stackCard = Nothing
+                            }
+                        )
+                        (List.range 1 <| model.otherHand)
+                    , List.map
+                        (\i ->
+                            { model =
+                                { model
+                                    | hand = List.drop (List.length model.hand - i) model.hand
+                                    , stack = []
+                                }
+                            , anim = Just (Draw PlayerA)
+                            , stackCard = Nothing
+                            }
+                        )
+                        (List.range 1 <| List.length model.hand)
+                    , List.map
+                        (\i ->
+                            { model =
+                                { model
+                                    | hand = model.hand
+                                    , stack = []
+                                }
+                            , anim = Just (Overdraw PlayerA card)
+                            , stackCard = Nothing
+                            }
+                        )
+                        (List.range 1 5)
                     , List.map
                         (\i ->
                             { model =
@@ -235,8 +235,7 @@ getFocus { res } mouse =
                         (Math.Vector3.getY position)
 
                 dist =
-                    Debug.log "dist" <|
-                        Math.Vector2.distance pos mouse
+                    Math.Vector2.distance pos mouse
             in
                 dist < 64
 
@@ -245,8 +244,8 @@ getFocus { res } mouse =
     in
         if hit then
             (Just
-                { name = "Focused card name"
-                , desc = "Focused card desc"
+                { name = "Sword"
+                , desc = "Hurt for 10"
                 , imgURL = ""
                 }
             )
