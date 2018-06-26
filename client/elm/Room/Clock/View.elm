@@ -175,5 +175,8 @@ textView card =
         Nothing ->
             text ""
 
-        Just { name } ->
-            text name
+        Just { name, desc } ->
+            div []
+                [ div [ class "title" ] [ text name ]
+                , div [ class "desc" ] [ text desc ]
+                ]

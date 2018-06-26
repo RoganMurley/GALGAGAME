@@ -1,7 +1,18 @@
 .text-focus {
   color: #fff;
   position: absolute;
-  top: 65%;
+  top: 60%;
   left: 50%;
   transform: translate(-50%, -50%);
+  font-family: monospace;
+  text-align: center;
+
+  .title {
+    font-size: 1.5rem;
+    font-weight: 600;
+  }
+
+  .desc {
+    font-size: 1.2rem;
+  }
 }
