@@ -3,7 +3,7 @@ module Clock.Stack exposing (..)
 import Animation.Types exposing (Anim(..))
 import Clock.Primitives as Primitives
 import Clock.Shaders
-import Clock.State exposing (animToResTickMax, uniforms)
+import Clock.State exposing (animToResTickMax, clockFace, uniforms)
 import Clock.Types exposing (ClockParams)
 import Ease
 import Math.Matrix4 exposing (Mat4, makeRotate, makeScale3)
@@ -85,39 +85,3 @@ view { w, h, radius } finalStack resInfo texture =
         case anim of
             otherwise ->
                 List.concat <| List.map makeCard points
-
-
-clockFace : Stack -> Vec3 -> Float -> Float -> List ( WhichPlayer, Vec3, Mat4 )
-clockFace stack origin radius progress =
-    let
-        segments : Int
-        segments =
-            12
-
-        genPoint : Int -> StackCard -> ( WhichPlayer, Vec3, Mat4 )
-        genPoint index { owner } =
-            let
-                i =
-                    index + 1
-            in
-                ( owner, Math.Vector3.add origin <| offset i, rotation i )
-
-        segmentAngle : Float
-        segmentAngle =
-            -2.0 * pi / toFloat segments
-
-        rot : Int -> Float
-        rot i =
-            (toFloat i * segmentAngle)
-                - (progress * segmentAngle)
-
-        offset : Int -> Vec3
-        offset i =
-            Math.Vector3.scale -radius <|
-                vec3 (sin <| rot i) (cos <| rot i) 0
-
-        rotation : Int -> Mat4
-        rotation i =
-            makeRotate (2 * pi - rot i) (vec3 0 0 1)
-    in
-        List.indexedMap genPoint stack

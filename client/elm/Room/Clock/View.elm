@@ -84,34 +84,7 @@ view (Params _ ( w, h )) { res, focus, mouse } textures =
                 (case mTextures of
                     Just ( sword, noise ) ->
                         List.concat
-                            [ let
-                                pos =
-                                    (vec3 (toFloat w / 10) (toFloat h / 2) z)
-
-                                scale =
-                                    makeScale3 (toFloat h / 10) (toFloat h / 10) 1
-
-                                rot =
-                                    makeRotate 0 <| vec3 0 0 1
-
-                                color =
-                                    vec3 1 1 1
-                              in
-                                [-- Primitives.quad Clock.Shaders.disintegrate <|
-                                 --     { resolution = vec2 (toFloat w) (toFloat h)
-                                 --     , texture = sword
-                                 --     , noise = noise
-                                 --     , rotation = rot
-                                 --     , scale = scale
-                                 --     , color = color
-                                 --     , worldPos = pos
-                                 --     , worldRot = makeRotate 0 (vec3 0 0 1)
-                                 --     , perspective = makeOrtho 0 (toFloat w / 2) (toFloat h / 2) 0 0.01 1000
-                                 --     , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
-                                 --     , time = res.tick
-                                 --     }
-                                ]
-                            , Clock.Stack.view params model.stack resInfo sword
+                            [ Clock.Stack.view params model.stack resInfo sword
                             , [ Primitives.circle <|
                                     locals sword
                                         (vec3 (toFloat w / 2) (toFloat h / 2) z)
