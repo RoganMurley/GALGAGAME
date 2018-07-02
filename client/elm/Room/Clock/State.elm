@@ -180,6 +180,7 @@ tick { dimensions } ({ res } as model) dt =
         { model
             | res = newRes
             , entities = entities
+            , focus = getFocus model
         }
 
 
@@ -222,13 +223,12 @@ update model msg =
                     vec2 (toFloat x) (toFloat y)
             in
                 { model
-                    | focus = getFocus model pos
-                    , mouse = pos
+                    | mouse = pos
                 }
 
 
-getFocus : Model -> Vec2 -> Maybe Card
-getFocus { entities } mouse =
+getFocus : Model -> Maybe Card
+getFocus { entities, mouse } =
     let
         hitTest : { a | position : Vec2 } -> Bool
         hitTest { position } =
