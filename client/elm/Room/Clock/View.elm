@@ -24,7 +24,7 @@ import WebGL
 
 
 view : Params -> Model -> Texture.Model -> Html Main.Msg
-view (Params _ ( w, h )) { res, focus, mouse } textures =
+view (Params _ ( w, h )) { res, focus, mouse, entities } textures =
     let
         mTextures =
             Maybe.map2 (,)
@@ -84,7 +84,7 @@ view (Params _ ( w, h )) { res, focus, mouse } textures =
                 (case mTextures of
                     Just ( sword, noise ) ->
                         List.concat
-                            [ Clock.Stack.view params model.stack resInfo sword
+                            [ Clock.Stack.view params entities sword
                             , [ Primitives.circle <|
                                     locals sword
                                         (vec3 (toFloat w / 2) (toFloat h / 2) z)

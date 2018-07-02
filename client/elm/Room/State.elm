@@ -86,7 +86,7 @@ update model msg ({ hostname, seed } as flags) =
         ClockMsg clockMsg ->
             case model of
                 Clock clock ->
-                    ( Clock <| Clock.update flags clock clockMsg, Cmd.none )
+                    ( Clock <| Clock.update clock clockMsg, Cmd.none )
 
                 otherwise ->
                     ( model, Cmd.none )
@@ -139,8 +139,8 @@ receive str model flags =
             ( Clock clock, Cmd.none )
 
 
-tick : Model -> Float -> Model
-tick room dt =
+tick : Flags -> Model -> Float -> Model
+tick flags room dt =
     case room of
         MainMenu ->
             MainMenu
@@ -161,4 +161,4 @@ tick room dt =
             Lab <| Lab.tick lab dt
 
         Clock clock ->
-            Clock <| Clock.tick clock dt
+            Clock <| Clock.tick flags clock dt

@@ -4,14 +4,16 @@ import Animation.State
 import Animation.Types exposing (Anim(..))
 import Card.Types exposing (Card)
 import Clock.Messages exposing (Msg(..))
-import Clock.Types exposing (Model, Uniforms)
+import Clock.Types exposing (ClockParams, GameEntity, Model, Uniforms)
+import Ease
 import Main.Types exposing (Flags)
 import Math.Matrix4 exposing (Mat4, identity, makeLookAt, makeOrtho, makeRotate, mul)
 import Math.Vector2 exposing (Vec2, vec2)
 import Math.Vector3 exposing (Vec3, vec3)
+import Maybe.Extra as Maybe
 import Model.State as Model
 import Raymarch.Types exposing (Height, Width)
-import Resolvable.State exposing (activeModel)
+import Resolvable.State exposing (activeAnim, activeModel)
 import Stack.Types exposing (Stack, StackCard)
 import WebGL exposing (Texture)
 import WhichPlayer.Types exposing (WhichPlayer(..))
@@ -47,6 +49,7 @@ init =
     in
         { focus = Just card
         , mouse = vec2 -10000 -10000
+        , entities = []
         , res =
             Resolvable.init
                 { model
@@ -145,8 +148,8 @@ init =
         }
 
 
-tick : Model -> Float -> Model
-tick ({ res } as model) dt =
+tick : Flags -> Model -> Float -> Model
+tick { dimensions } ({ res } as model) dt =
     let
         newRes =
             if res.tick > animToResTickMax (Resolvable.activeAnim res) then
@@ -155,8 +158,29 @@ tick ({ res } as model) dt =
                 { res
                     | tick = res.tick + dt
                 }
+
+        resModel =
+            activeModel res
+
+        ( w, h ) =
+            dimensions
+
+        radius =
+            0.8 * (toFloat h / 2)
+
+        resInfo =
+            Just ( res.tick, activeAnim res )
+
+        entities =
+            stackEntities
+                { w = toFloat w, h = toFloat h, radius = radius }
+                resModel.stack
+                resInfo
     in
-        { model | res = newRes }
+        { model
+            | res = newRes
+            , entities = entities
+        }
 
 
 uniforms : Float -> ( Width, Height ) -> Texture -> Vec3 -> Mat4 -> Mat4 -> Vec3 -> Uniforms {}
@@ -189,8 +213,8 @@ animToResTickMax anim =
             Animation.State.animToResTickMax anim
 
 
-update : Flags -> Model -> Msg -> Model
-update { dimensions } model msg =
+update : Model -> Msg -> Model
+update model msg =
     case msg of
         Mouse { x, y } ->
             let
@@ -198,49 +222,24 @@ update { dimensions } model msg =
                     vec2 (toFloat x) (toFloat y)
             in
                 { model
-                    | focus = getFocus dimensions model pos
+                    | focus = getFocus model pos
                     , mouse = pos
                 }
 
 
-getFocus : ( Int, Int ) -> Model -> Vec2 -> Maybe Card
-getFocus ( width, height ) { res } mouse =
+getFocus : Model -> Vec2 -> Maybe Card
+getFocus { entities } mouse =
     let
-        model =
-            activeModel res
-
-        w =
-            toFloat width
-
-        h =
-            toFloat height
-
-        radius =
-            0.8 * (h / 2)
-
-        positions =
-            List.map (\( _, pos, _ ) -> pos) <|
-                clockFace
-                    model.stack
-                    (vec3 (w / 2) (h / 2) 0)
-                    (0.615 * radius)
-                    0
-
-        hitTest position =
+        hitTest : { a | position : Vec2 } -> Bool
+        hitTest { position } =
             let
-                pos : Vec2
-                pos =
-                    vec2
-                        (Math.Vector3.getX position)
-                        (Math.Vector3.getY position)
-
                 dist =
-                    Math.Vector2.distance pos mouse
+                    Math.Vector2.distance position mouse
             in
                 dist < 64
 
         hit =
-            List.any hitTest positions
+            List.any hitTest entities
     in
         if hit then
             (Just
@@ -253,20 +252,67 @@ getFocus ( width, height ) { res } mouse =
             Nothing
 
 
-clockFace : Stack -> Vec3 -> Float -> Float -> List ( WhichPlayer, Vec3, Mat4 )
+stackEntities : ClockParams -> Stack -> Maybe ( Float, Maybe Anim ) -> List (GameEntity { owner : WhichPlayer })
+stackEntities { w, h, radius } finalStack resInfo =
+    let
+        resTick =
+            Maybe.withDefault 0.0 <|
+                Maybe.map Tuple.first resInfo
+
+        anim =
+            Maybe.join <|
+                Maybe.map Tuple.second resInfo
+
+        maxTick =
+            animToResTickMax anim
+
+        progress =
+            case anim of
+                Just (Rotate _) ->
+                    Ease.inQuad <| resTick / maxTick
+
+                Just (Play _ _ _) ->
+                    1 - (Ease.inQuad <| resTick / maxTick)
+
+                otherwise ->
+                    0
+
+        stack : Stack
+        stack =
+            case anim of
+                Just (Rotate _) ->
+                    List.drop 1 finalStack
+
+                otherwise ->
+                    finalStack
+
+        entities =
+            clockFace
+                stack
+                (vec2 (w / 2) (h / 2))
+                (0.615 * radius)
+                progress
+    in
+        entities
+
+
+clockFace : Stack -> Vec2 -> Float -> Float -> List (GameEntity { owner : WhichPlayer })
 clockFace stack origin radius progress =
     let
         segments : Int
         segments =
             12
 
-        genPoint : Int -> StackCard -> ( WhichPlayer, Vec3, Mat4 )
+        genPoint : Int -> StackCard -> GameEntity { owner : WhichPlayer }
         genPoint index { owner } =
             let
                 i =
                     index + 1
             in
-                ( owner, Math.Vector3.add origin <| offset i, rotation i )
+                { owner = owner
+                , position = Math.Vector2.add origin <| offset i
+                , rotation = rotation i
+                }
 
         segmentAngle : Float
         segmentAngle =
@@ -277,13 +323,13 @@ clockFace stack origin radius progress =
             (toFloat i * segmentAngle)
                 - (progress * segmentAngle)
 
-        offset : Int -> Vec3
+        offset : Int -> Vec2
         offset i =
-            Math.Vector3.scale -radius <|
-                vec3 (sin <| rot i) (cos <| rot i) 0
+            Math.Vector2.scale -radius <|
+                vec2 (sin <| rot i) (cos <| rot i)
 
-        rotation : Int -> Mat4
+        rotation : Int -> Float
         rotation i =
-            makeRotate (2 * pi - rot i) (vec3 0 0 1)
+            2 * pi - rot i
     in
         List.indexedMap genPoint stack
