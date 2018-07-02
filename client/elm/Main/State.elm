@@ -67,10 +67,14 @@ update msg ({ room, settings, textures, flags } as model) =
                 ( model, copyInput elementId )
 
             Frame dt ->
-                ( { model
-                    | flags = { flags | time = time + dt }
-                    , room = Room.tick room dt
-                  }
+                ( let
+                    newFlags =
+                        { flags | time = time + dt }
+                  in
+                    { model
+                        | flags = newFlags
+                        , room = Room.tick newFlags room dt
+                    }
                 , case room of
                     Room.Connected connected ->
                         listen time connected.game
