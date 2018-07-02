@@ -190,7 +190,7 @@ animToResTickMax anim =
 
 
 update : Flags -> Model -> Msg -> Model
-update flags model msg =
+update { dimensions } model msg =
     case msg of
         Mouse { x, y } ->
             let
@@ -198,25 +198,25 @@ update flags model msg =
                     vec2 (toFloat x) (toFloat y)
             in
                 { model
-                    | focus = getFocus model pos
+                    | focus = getFocus dimensions model pos
                     , mouse = pos
                 }
 
 
-getFocus : Model -> Vec2 -> Maybe Card
-getFocus { res } mouse =
+getFocus : ( Int, Int ) -> Model -> Vec2 -> Maybe Card
+getFocus ( width, height ) { res } mouse =
     let
         model =
             activeModel res
 
-        radius =
-            0.8 * (h / 2)
-
         w =
-            1920.0
+            toFloat width
 
         h =
-            1080.0
+            toFloat height
+
+        radius =
+            0.8 * (h / 2)
 
         positions =
             List.map (\( _, pos, _ ) -> pos) <|
