@@ -4,7 +4,7 @@ import Animation.Types exposing (Anim(..))
 import Clock.Primitives as Primitives
 import Clock.Shaders
 import Clock.State exposing (animToResTickMax, uniforms)
-import Clock.Types exposing (ClockParams)
+import Clock.Types exposing (ClockParams, GameEntity)
 import Ease
 import Hand.Types exposing (Hand)
 import Math.Matrix4 exposing (makeLookAt, makeOrtho, makeRotate, makeScale3)
@@ -14,7 +14,7 @@ import Maybe.Extra as Maybe
 import WebGL
 import WebGL.Texture exposing (Texture)
 import WhichPlayer.Types exposing (WhichPlayer(..))
-import Util exposing (floatInterp, interp)
+import Util exposing (floatInterp, interp, to3d)
 
 
 cardDimensions : ClockParams -> ( Float, Float, Float )
@@ -92,8 +92,8 @@ position ({ w, h, radius } as params) which index count =
                 vec3 0 y 0
 
 
-handView : ClockParams -> Hand -> Maybe ( Float, Maybe Anim ) -> Texture -> Texture -> List WebGL.Entity
-handView ({ w, h, radius } as params) finalHand resInfo texture noise =
+handView : ClockParams -> Hand -> List (GameEntity {}) -> Maybe ( Float, Maybe Anim ) -> Texture -> Texture -> List WebGL.Entity
+handView ({ w, h, radius } as params) finalHand handEntities resInfo texture noise =
     let
         locals =
             uniforms 0 ( floor w, floor h )
@@ -142,17 +142,14 @@ handView ({ w, h, radius } as params) finalHand resInfo texture noise =
         ( width, height, spacing ) =
             cardDimensions params
 
-        entity : Int -> List WebGL.Entity
-        entity finalI =
+        entity : GameEntity {} -> List WebGL.Entity
+        entity { position, rotation } =
             let
-                i =
-                    indexModifier finalI
+                rot =
+                    makeRotate rotation <| vec3 0 0 1
 
                 pos =
-                    interp progress (position params PlayerA i n) (position params PlayerA finalI finalN)
-
-                rot =
-                    makeRotate (floatInterp progress (rotation PlayerA i n) (rotation PlayerA finalI finalN)) <| vec3 0 0 1
+                    to3d position
             in
                 [ Primitives.roundedBox <|
                     uniforms 0
@@ -172,7 +169,7 @@ handView ({ w, h, radius } as params) finalHand resInfo texture noise =
 
         mainView : List WebGL.Entity
         mainView =
-            List.concat <| List.map entity (List.range 0 (n - 1))
+            List.concat <| List.map entity handEntities
 
         extraView : List WebGL.Entity
         extraView =

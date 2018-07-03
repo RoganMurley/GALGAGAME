@@ -13,7 +13,13 @@ type alias Model =
     { res : Resolvable.Model
     , focus : Maybe Card
     , mouse : Vec2
-    , entities : List (GameEntity { owner : WhichPlayer })
+    , entities : Entities
+    }
+
+
+type alias Entities =
+    { stack : List (GameEntity { owner : WhichPlayer })
+    , hand : List (GameEntity {})
     }
 
 

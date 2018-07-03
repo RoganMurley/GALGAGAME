@@ -5,20 +5,16 @@ import Clock.Shaders
 import Clock.State exposing (animToResTickMax, clockFace, uniforms)
 import Clock.Types exposing (ClockParams, GameEntity)
 import Math.Matrix4 exposing (Mat4, makeRotate, makeScale3)
-import Math.Vector2 exposing (Vec2, vec2)
 import Math.Vector3 exposing (Vec3, vec3)
 import WebGL
 import WebGL.Texture exposing (Texture)
 import WhichPlayer.Types exposing (WhichPlayer(..))
+import Util exposing (to3d)
 
 
 view : ClockParams -> List (GameEntity { owner : WhichPlayer }) -> Texture -> List WebGL.Entity
 view { w, h, radius } entities texture =
     let
-        to3d : Vec2 -> Vec3
-        to3d pos =
-            vec3 (Math.Vector2.getX pos) (Math.Vector2.getY pos) 0
-
         makeCard : GameEntity { owner : WhichPlayer } -> List WebGL.Entity
         makeCard { owner, position, rotation } =
             let
