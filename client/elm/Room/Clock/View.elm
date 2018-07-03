@@ -84,7 +84,7 @@ view (Params _ ( w, h )) { res, focus, mouse, entities } textures =
                 (case mTextures of
                     Just ( sword, noise ) ->
                         List.concat
-                            [ Clock.Stack.view params entities sword
+                            [ Clock.Stack.view params entities.stack sword
                             , [ Primitives.circle <|
                                     locals sword
                                         (vec3 (toFloat w / 2) (toFloat h / 2) z)
@@ -130,7 +130,7 @@ view (Params _ ( w, h )) { res, focus, mouse, entities } textures =
                                         )
                                         (vec3 1 1 1)
                               ]
-                            , handView params model.hand resInfo sword noise
+                            , handView params model.hand entities.hand resInfo sword noise
                             , otherHandView params model.otherHand resInfo sword
                             , Clock.Wave.view params resInfo sword
                             , [ Primitives.roundedBox <|

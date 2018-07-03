@@ -2,7 +2,8 @@ module Util exposing (..)
 
 import Json.Decode as Json
 import Main.Types exposing (Flags)
-import Math.Vector3 exposing (Vec3)
+import Math.Vector2 exposing (Vec2)
+import Math.Vector3 exposing (Vec3, vec3)
 import Regex exposing (HowMany(AtMost), regex, split)
 import Task
 import WebSocket
@@ -99,6 +100,18 @@ interp t start end =
             Math.Vector3.sub end start
 
 
+interp2D : Float -> Vec2 -> Vec2 -> Vec2
+interp2D t start end =
+    Math.Vector2.add start <|
+        Math.Vector2.scale t <|
+            Math.Vector2.sub end start
+
+
 floatInterp : Float -> Float -> Float -> Float
 floatInterp t start end =
     start + (t * (end - start))
+
+
+to3d : Vec2 -> Vec3
+to3d pos =
+    vec3 (Math.Vector2.getX pos) (Math.Vector2.getY pos) 0
