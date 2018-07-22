@@ -96,18 +96,15 @@ init =
                             }
                         )
                         (List.range 1 <| List.length model.hand)
-                    , List.map
-                        (\i ->
-                            { model =
-                                { model
-                                    | hand = model.hand
-                                    , stack = []
-                                }
-                            , anim = Just (Overdraw PlayerA card)
-                            , stackCard = Nothing
+                    , [ { model =
+                            { model
+                                | hand = model.hand
+                                , stack = []
                             }
-                        )
-                        (List.range 1 5)
+                        , anim = Just (Overdraw PlayerA card)
+                        , stackCard = Nothing
+                        }
+                      ]
                     , List.map
                         (\i ->
                             { model =
@@ -454,8 +451,41 @@ calcHandEntities ({ w, h, radius } as params) finalHand resInfo =
         mainEntities =
             List.map entity (List.range 0 (n - 1))
 
+        extraEntities : List (GameEntity {})
         extraEntities =
-            []
+            case anim of
+                Just (Draw PlayerA) ->
+                    let
+                        pos =
+                            interp2D progress
+                                (vec2 w h)
+                                (handCardPosition params PlayerA n (n + 1))
+
+                        rot =
+                            floatInterp progress 0 (handCardRotation PlayerA n (n + 1))
+                    in
+                        [ { position = pos
+                          , rotation = rot
+                          }
+                        ]
+
+                Just (Play PlayerA _ i) ->
+                    let
+                        pos =
+                            interp2D progress
+                                (handCardPosition params PlayerA i n)
+                                (vec2 (w / 2) (h / 2 - radius * 0.62))
+
+                        rot =
+                            floatInterp progress (handCardRotation PlayerA i n) 0
+                    in
+                        [ { position = pos
+                          , rotation = rot
+                          }
+                        ]
+
+                otherwise ->
+                    []
     in
         mainEntities ++ extraEntities
 
