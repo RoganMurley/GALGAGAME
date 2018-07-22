@@ -20,6 +20,7 @@ type alias Model =
 type alias Entities =
     { stack : List (GameEntity { owner : WhichPlayer })
     , hand : List (GameEntity {})
+    , otherHand : List (GameEntity {})
     }
 
 

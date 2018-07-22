@@ -51,7 +51,7 @@ init =
     in
         { focus = Just card
         , mouse = vec2 -10000 -10000
-        , entities = { hand = [], stack = [] }
+        , entities = { hand = [], otherHand = [], stack = [] }
         , res =
             Resolvable.init
                 { model
@@ -181,12 +181,19 @@ tick { dimensions } ({ res } as model) dt =
                 { w = toFloat w, h = toFloat h, radius = radius }
                 resModel.hand
                 resInfo
+
+        otherHandEntities =
+            calcOtherHandEntities
+                { w = toFloat w, h = toFloat h, radius = radius }
+                resModel.otherHand
+                resInfo
     in
         { model
             | res = newRes
             , entities =
                 { stack = stackEntities
                 , hand = handEntities
+                , otherHand = otherHandEntities
                 }
             , focus = getFocus model
         }
@@ -478,6 +485,114 @@ calcHandEntities ({ w, h, radius } as params) finalHand resInfo =
 
                         rot =
                             floatInterp progress (handCardRotation PlayerA i n) 0
+                    in
+                        [ { position = pos
+                          , rotation = rot
+                          }
+                        ]
+
+                otherwise ->
+                    []
+    in
+        mainEntities ++ extraEntities
+
+
+calcOtherHandEntities : ClockParams -> Int -> Maybe ( Float, Maybe Anim ) -> List (GameEntity {})
+calcOtherHandEntities ({ w, h, radius } as params) finalN resInfo =
+    let
+        cardDimensions : ClockParams -> ( Float, Float, Float )
+        cardDimensions { w, h, radius } =
+            ( 0.1 * radius, 0.1 * radius, 35.0 )
+
+        resTick =
+            Maybe.withDefault 0.0 <|
+                Maybe.map Tuple.first resInfo
+
+        anim =
+            Maybe.join <|
+                Maybe.map Tuple.second resInfo
+
+        maxTick =
+            animToResTickMax anim
+
+        n =
+            case anim of
+                Just (Draw PlayerB) ->
+                    finalN - 1
+
+                otherwise ->
+                    finalN
+
+        indexModifier : Int -> Int
+        indexModifier =
+            case anim of
+                Just (Play PlayerB _ index) ->
+                    \i ->
+                        if i >= index then
+                            i + 1
+                        else
+                            i
+
+                otherwise ->
+                    Basics.identity
+
+        progress =
+            Ease.outQuint <| resTick / maxTick
+
+        ( width, height, spacing ) =
+            cardDimensions params
+
+        entity : Int -> GameEntity {}
+        entity finalI =
+            let
+                i =
+                    indexModifier finalI
+
+                pos =
+                    interp2D progress
+                        (handCardPosition params PlayerB i n)
+                        (handCardPosition params PlayerB finalI finalN)
+
+                rot =
+                    floatInterp progress
+                        (handCardRotation PlayerB i n)
+                        (handCardRotation PlayerB finalI finalN)
+            in
+                { position = pos
+                , rotation = rot
+                }
+
+        mainEntities : List (GameEntity {})
+        mainEntities =
+            List.map entity (List.range 0 (n - 1))
+
+        extraEntities : List (GameEntity {})
+        extraEntities =
+            case anim of
+                Just (Draw PlayerB) ->
+                    let
+                        pos =
+                            interp2D progress
+                                (vec2 w 0)
+                                (handCardPosition params PlayerB n (n + 1))
+
+                        rot =
+                            floatInterp progress 0 (handCardRotation PlayerB n (n + 1))
+                    in
+                        [ { position = pos
+                          , rotation = rot
+                          }
+                        ]
+
+                Just (Play PlayerB _ i) ->
+                    let
+                        pos =
+                            interp2D progress
+                                (handCardPosition params PlayerB i n)
+                                (vec2 (w / 2) (h / 2 - radius * 0.62))
+
+                        rot =
+                            floatInterp progress (handCardRotation PlayerB i n) 0
                     in
                         [ { position = pos
                           , rotation = rot

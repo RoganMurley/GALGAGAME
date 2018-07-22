@@ -132,7 +132,7 @@ view (Params _ ( w, h )) { res, focus, mouse, entities } textures =
                             --             (vec3 1 1 1)
                             --   ]
                             , handView params model.hand entities.hand resInfo sword noise
-                            , otherHandView params model.otherHand resInfo sword
+                            , otherHandView params model.otherHand entities.otherHand resInfo sword
                             , Clock.Wave.view params resInfo sword
                             , [ Primitives.roundedBox <|
                                     locals sword
