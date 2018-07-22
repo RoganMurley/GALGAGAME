@@ -105,6 +105,15 @@ init =
                         , stackCard = Nothing
                         }
                       ]
+                    , [ { model =
+                            { model
+                                | hand = model.hand
+                                , stack = []
+                            }
+                        , anim = Just (Overdraw PlayerB card)
+                        , stackCard = Nothing
+                        }
+                      ]
                     , List.map
                         (\i ->
                             { model =
