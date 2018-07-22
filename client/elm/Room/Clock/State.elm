@@ -431,6 +431,9 @@ calcHandEntities ({ w, h, radius } as params) finalHand resInfo =
         progress =
             Ease.outQuint <| resTick / maxTick
 
+        playProgress =
+            Ease.inQuad <| resTick / maxTick
+
         ( width, height, spacing ) =
             cardDimensions params
 
@@ -452,6 +455,7 @@ calcHandEntities ({ w, h, radius } as params) finalHand resInfo =
             in
                 { position = pos
                 , rotation = rot
+                , scale = 1
                 }
 
         mainEntities : List (GameEntity {})
@@ -473,21 +477,26 @@ calcHandEntities ({ w, h, radius } as params) finalHand resInfo =
                     in
                         [ { position = pos
                           , rotation = rot
+                          , scale = 1
                           }
                         ]
 
                 Just (Play PlayerA _ i) ->
                     let
                         pos =
-                            interp2D progress
+                            interp2D playProgress
                                 (handCardPosition params PlayerA i n)
                                 (vec2 (w / 2) (h / 2 - radius * 0.62))
 
                         rot =
-                            floatInterp progress (handCardRotation PlayerA i n) 0
+                            floatInterp playProgress (handCardRotation PlayerA i n) 0
+
+                        scale =
+                            floatInterp playProgress 1 1.3
                     in
                         [ { position = pos
                           , rotation = rot
+                          , scale = scale
                           }
                         ]
 
@@ -539,6 +548,9 @@ calcOtherHandEntities ({ w, h, radius } as params) finalN resInfo =
         progress =
             Ease.outQuint <| resTick / maxTick
 
+        playProgress =
+            Ease.inQuad <| resTick / maxTick
+
         ( width, height, spacing ) =
             cardDimensions params
 
@@ -560,6 +572,7 @@ calcOtherHandEntities ({ w, h, radius } as params) finalN resInfo =
             in
                 { position = pos
                 , rotation = rot
+                , scale = 1
                 }
 
         mainEntities : List (GameEntity {})
@@ -581,21 +594,26 @@ calcOtherHandEntities ({ w, h, radius } as params) finalN resInfo =
                     in
                         [ { position = pos
                           , rotation = rot
+                          , scale = 1
                           }
                         ]
 
                 Just (Play PlayerB _ i) ->
                     let
                         pos =
-                            interp2D progress
+                            interp2D playProgress
                                 (handCardPosition params PlayerB i n)
                                 (vec2 (w / 2) (h / 2 - radius * 0.62))
 
                         rot =
-                            floatInterp progress (handCardRotation PlayerB i n) 0
+                            floatInterp playProgress (handCardRotation PlayerB i n) 0
+
+                        scale =
+                            floatInterp playProgress 1 1.3
                     in
                         [ { position = pos
                           , rotation = rot
+                          , scale = scale
                           }
                         ]
 
@@ -621,6 +639,7 @@ clockFace stack origin radius progress =
                 { owner = owner
                 , position = Math.Vector2.add origin <| offset i
                 , rotation = rotation i
+                , scale = 1.3
                 }
 
         segmentAngle : Float

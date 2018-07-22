@@ -143,7 +143,7 @@ handView ({ w, h, radius } as params) finalHand handEntities resInfo texture noi
             cardDimensions params
 
         entity : GameEntity {} -> List WebGL.Entity
-        entity { position, rotation } =
+        entity { position, rotation, scale } =
             let
                 rot =
                     makeRotate rotation <| vec3 0 0 1
@@ -157,12 +157,12 @@ handView ({ w, h, radius } as params) finalHand handEntities resInfo texture noi
                         texture
                         pos
                         rot
-                        (makeScale3 (0.7 * width) height 1)
+                        (makeScale3 (scale * 0.7 * width) (scale * height) 1)
                         (vec3 0.18 0.49 0.62)
                 , Primitives.quad Clock.Shaders.fragment <|
                     locals texture
                         pos
-                        (makeScale3 width height 1)
+                        (makeScale3 (scale * width) (scale * height) 1)
                         rot
                         (vec3 1 1 1)
                 ]
@@ -276,7 +276,7 @@ otherHandView ({ w, h, radius } as params) finalN otherHandEntities resInfo text
             cardDimensions params
 
         entity : GameEntity {} -> List WebGL.Entity
-        entity { position, rotation } =
+        entity { position, rotation, scale } =
             let
                 rot =
                     makeRotate rotation <| vec3 0 0 1
@@ -290,12 +290,12 @@ otherHandView ({ w, h, radius } as params) finalN otherHandEntities resInfo text
                         texture
                         pos
                         rot
-                        (makeScale3 (0.7 * width) height 1)
+                        (makeScale3 (scale * 0.7 * width) (scale * height) 1)
                         (vec3 0.52 0.1 0.2)
                 , Primitives.quad Clock.Shaders.fragment <|
                     locals texture
                         pos
-                        (makeScale3 width height 1)
+                        (makeScale3 (scale * width) (scale * height) 1)
                         rot
                         (vec3 1 1 1)
                 ]
