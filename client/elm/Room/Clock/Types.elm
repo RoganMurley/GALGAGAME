@@ -55,4 +55,5 @@ type alias GameEntity a =
     { a
         | position : Vec2
         , rotation : Float
+        , scale : Float
     }

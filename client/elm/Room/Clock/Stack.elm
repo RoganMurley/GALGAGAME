@@ -16,7 +16,7 @@ view : ClockParams -> List (GameEntity { owner : WhichPlayer }) -> Texture -> Li
 view { w, h, radius } entities texture =
     let
         makeCard : GameEntity { owner : WhichPlayer } -> List WebGL.Entity
-        makeCard { owner, position, rotation } =
+        makeCard { owner, position, rotation, scale } =
             let
                 pos =
                     to3d position
@@ -30,7 +30,7 @@ view { w, h, radius } entities texture =
                         texture
                         pos
                         rot
-                        (makeScale3 (0.7 * 0.13 * radius) (0.13 * radius) 1)
+                        (makeScale3 (scale * 0.7 * 0.1 * radius) (scale * 0.1 * radius) 1)
                         (case owner of
                             PlayerA ->
                                 vec3 0.18 0.49 0.62
@@ -44,7 +44,7 @@ view { w, h, radius } entities texture =
                         texture
                         pos
                         rot
-                        (makeScale3 (0.13 * radius) (0.13 * radius) 1)
+                        (makeScale3 (scale * 0.1 * radius) (scale * 0.1 * radius) 1)
                         (vec3 1 1 1)
                 ]
     in
