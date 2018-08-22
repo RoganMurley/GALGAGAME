@@ -2,7 +2,6 @@ module GameState.View exposing (view)
 
 import Animation.State exposing (animToResTickMax)
 import Animation.Types exposing (Anim(GameEnd))
-import Animation.View as Animation
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
@@ -18,10 +17,13 @@ import Model.Types exposing (..)
 import Model.View as Model exposing (view, resView)
 import Raymarch.Types as Raymarch
 import Raymarch.View as Raymarch
-import Resolvable.State exposing (activeAnim, resolving)
+import Resolvable.State exposing (activeAnim, activeModel, resolving)
 import Resolvable.Types as Resolvable
 import Room.Messages as Room
 import Texture.Types as Texture
+import Clock.View as Clock
+import Clock.State as Clock
+import Math.Vector2 exposing (vec2)
 
 
 view : GameState -> String -> Flags -> Texture.Model -> Html Main.Msg
@@ -56,14 +58,57 @@ view state roomID ({ hostname, httpPort, time, dimensions } as flags) textures =
                     anim : Maybe Anim
                     anim =
                         activeAnim res
+
+                    -- CLOCK STUFF
+                    ( w, h ) =
+                        dimensions
+
+                    resInfo =
+                        Just ( res.tick, activeAnim res )
+
+                    resModel =
+                        activeModel res
+
+                    clockParams =
+                        { w = toFloat w
+                        , h = toFloat h
+                        , radius = 0.8 * (toFloat h / 2)
+                        }
+
+                    entities =
+                        { stack = stackEntities
+                        , hand = handEntities
+                        , otherHand = otherHandEntities
+                        }
+
+                    stackEntities =
+                        Clock.calcStackEntities
+                            clockParams
+                            resModel.stack
+                            resInfo
+
+                    handEntities =
+                        Clock.calcHandEntities
+                            clockParams
+                            resModel.hand
+                            resInfo
+
+                    otherHandEntities =
+                        Clock.calcOtherHandEntities
+                            clockParams
+                            resModel.otherHand
+                            resInfo
                 in
                     case res.resList of
                         resData :: _ ->
-                            div []
-                                [ resView res.vm resData time res.tick
-                                , Endgame.view res.tick anim Nothing
-                                , Animation.view params res.tick anim textures
-                                ]
+                            Clock.view
+                                params
+                                { res = res
+                                , focus = Nothing
+                                , mouse = vec2 0 0
+                                , entities = entities
+                                }
+                                textures
 
                         otherwise ->
                             let

@@ -136,11 +136,17 @@ animShake anim tick =
 animToResTickMax : Maybe Anim -> Float
 animToResTickMax anim =
     case anim of
+        Just (Draw _) ->
+            500.0
+
         Just (Reverse _) ->
             1500.0
 
         Just (Play _ _ _) ->
-            500.0
+            1000.0
+
+        Just (Overdraw _ _) ->
+            1000.0
 
         Just (Obliterate _) ->
             3000.0
