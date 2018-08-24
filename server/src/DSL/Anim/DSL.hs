@@ -21,6 +21,7 @@ data DSL a
   | Transmute StackCard StackCard a
   | Overdraw WhichPlayer Card a
   | GameEnd (Maybe WhichPlayer) a
+  | Rotate a
   deriving (Functor)
 
 

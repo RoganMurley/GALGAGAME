@@ -15,7 +15,7 @@ import Model (Hand, Passes(..), Model, Turn)
 import ModelDiff (ModelDiff)
 import Outcome (Outcome)
 import Player (WhichPlayer(..), other)
-import Safe (atMay, headMay, tailSafe)
+import Safe (atMay, headMay)
 import StackCard(StackCard(..))
 import Username (Username)
 import Util (Err, Gen, deleteIndex, split)
@@ -284,7 +284,7 @@ resolveAll model replay =
     program = case card of
       Just p ->
         foldFree Beta.betaI $ do
-          Beta.raw $ Alpha.modStack tailSafe
+          Beta.rotate
           p
       Nothing ->
         return ()
