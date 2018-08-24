@@ -19,6 +19,7 @@ next (Play _ _ n)      = n
 next (Transmute _ _ n) = n
 next (Overdraw _ _ n)  = n
 next (GameEnd _ n)     = n
+next (Rotate n)        = n
 
 
 animate :: DSL a -> Maybe CardAnim
@@ -34,3 +35,4 @@ animate (Play w c _)        = Just $ CardAnim.Play w c
 animate (Transmute ca cb _) = Just $ CardAnim.Transmute ca cb
 animate (Overdraw w c _)    = Just $ CardAnim.Overdraw w c
 animate (GameEnd w _)       = Just $ CardAnim.GameEnd w
+animate (Rotate _)          = Just CardAnim.Rotate
