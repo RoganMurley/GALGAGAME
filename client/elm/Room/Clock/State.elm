@@ -309,6 +309,9 @@ calcStackEntities { w, h, radius } finalStack resInfo =
                 Just (Rotate _) ->
                     List.drop 1 finalStack
 
+                Just (Play _ _ _) ->
+                    List.drop 1 finalStack
+
                 otherwise ->
                     finalStack
 
