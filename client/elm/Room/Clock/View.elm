@@ -4,7 +4,6 @@ import Animation.Types exposing (Anim(..))
 import Card.Types exposing (Card)
 import Clock.Hand exposing (handView, otherHandView)
 import Clock.Primitives as Primitives
-import Clock.Shaders
 import Clock.Stack
 import Clock.State exposing (animToResTickMax, uniforms)
 import Clock.Types exposing (ClockParams, Model)
@@ -14,7 +13,6 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Main.Messages as Main
 import Math.Matrix4 exposing (makeRotate, makeScale3, makeLookAt, makeOrtho)
-import Math.Vector2 exposing (getX, getY)
 import Math.Vector3 exposing (Vec3, vec3)
 import Raymarch.Types exposing (Params(..))
 import Resolvable.State exposing (activeAnim, activeModel)
@@ -28,7 +26,7 @@ view (Params _ ( w, h )) { res, focus, mouse, entities } textures =
     let
         mTextures =
             Maybe.map2 (,)
-                (Texture.load textures "dagger")
+                (Texture.load textures "striker/dagger.svg")
                 (Texture.load textures "noise")
 
         locals =
@@ -105,59 +103,34 @@ view (Params _ ( w, h )) { res, focus, mouse, entities } textures =
                                         (makeRotate 0 <| vec3 0 0 1)
                                         (vec3 1 1 1)
                               ]
-                              -- , [ Primitives.gear <|
-                              --         locals dagger
-                              --             (vec3
-                              --                 ((toFloat w / 2) + radius * 0.1)
-                              --                 ((toFloat h / 2))
-                              --                 z
-                              --             )
-                              --             (makeScale3 (0.1 * radius) (0.1 * radius) 1)
-                              --             (makeRotate (2 * pi * 0.09 * rotateProgress) <|
-                              --                 vec3 0 0 1
-                              --             )
-                              --             (vec3 1 1 1)
-                              --   , Primitives.gear <|
-                              --         locals dagger
-                              --             (vec3
-                              --                 ((toFloat w / 2) - radius * 0.065)
-                              --                 ((toFloat h / 2) - radius * 0.02)
-                              --                 z
-                              --             )
-                              --             (makeScale3 (0.1 * radius) (0.1 * radius) 1)
-                              --             (makeRotate -(2 * pi * 0.09 * rotateProgress) <|
-                              --                 vec3 0 0 1
-                              --             )
-                              --             (vec3 1 1 1)
-                              --   ]
-                            , handView params model.hand entities.hand resInfo dagger noise
+                            , handView params model.hand entities.hand resInfo dagger noise textures
                             , otherHandView params model.otherHand entities.otherHand resInfo dagger noise
                             , Clock.Wave.view params resInfo dagger
-                            , [ Primitives.roundedBox <|
-                                    locals dagger
-                                        (vec3
-                                            (getX mouse)
-                                            (getY mouse)
-                                            z
-                                        )
-                                        (makeScale3
-                                            (radius * 0.07)
-                                            (radius * 0.1)
-                                            1
-                                        )
-                                        (makeRotate pi <| vec3 0 0 1)
-                                        (vec3 0.18 0.49 0.62)
-                              , Primitives.quad Clock.Shaders.fragment <|
-                                    locals dagger
-                                        (vec3
-                                            (getX mouse)
-                                            (getY mouse)
-                                            z
-                                        )
-                                        (makeScale3 (0.06 * radius) (0.06 * radius) 1)
-                                        (makeRotate pi <| vec3 0 0 1)
-                                        (vec3 1 1 1)
-                              ]
+                              -- , [ Primitives.roundedBox <|
+                              --         locals dagger
+                              --             (vec3
+                              --                 (getX mouse)
+                              --                 (getY mouse)
+                              --                 z
+                              --             )
+                              --             (makeScale3
+                              --                 (radius * 0.07)
+                              --                 (radius * 0.1)
+                              --                 1
+                              --             )
+                              --             (makeRotate pi <| vec3 0 0 1)
+                              --             (vec3 0.18 0.49 0.62)
+                              --     , Primitives.quad Clock.Shaders.fragment <|
+                              --           locals dagger
+                              --               (vec3
+                              --                   (getX mouse)
+                              --                   (getY mouse)
+                              --                   z
+                              --               )
+                              --               (makeScale3 (0.06 * radius) (0.06 * radius) 1)
+                              --               (makeRotate pi <| vec3 0 0 1)
+                              --               (vec3 1 1 1)
+                              --   ]
                             ]
 
                     Nothing ->

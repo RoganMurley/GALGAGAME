@@ -1,6 +1,8 @@
 module Clock.Hand exposing (..)
 
 import Animation.Types exposing (Anim(..))
+import Card.Types exposing (Card)
+import Clock.Card exposing (cardEntity)
 import Clock.Primitives as Primitives
 import Clock.Shaders
 import Clock.State exposing (animToResTickMax, uniforms)
@@ -11,6 +13,7 @@ import Math.Matrix4 exposing (makeLookAt, makeOrtho, makeRotate, makeScale3)
 import Math.Vector2 exposing (vec2)
 import Math.Vector3 exposing (Vec3, vec3)
 import Maybe.Extra as Maybe
+import Texture.Types as Texture
 import WebGL
 import WebGL.Texture exposing (Texture)
 import WhichPlayer.Types exposing (WhichPlayer(..))
@@ -92,8 +95,8 @@ position ({ w, h, radius } as params) which index count =
                 vec3 0 y 0
 
 
-handView : ClockParams -> Hand -> List (GameEntity {}) -> Maybe ( Float, Maybe Anim ) -> Texture -> Texture -> List WebGL.Entity
-handView ({ w, h, radius } as params) finalHand handEntities resInfo texture noise =
+handView : ClockParams -> Hand -> List (GameEntity { card : Card, owner : WhichPlayer }) -> Maybe ( Float, Maybe Anim ) -> Texture -> Texture -> Texture.Model -> List WebGL.Entity
+handView ({ w, h, radius } as params) finalHand handEntities resInfo texture noise textures =
     let
         locals =
             uniforms 0 ( floor w, floor h )
@@ -142,34 +145,10 @@ handView ({ w, h, radius } as params) finalHand handEntities resInfo texture noi
         ( width, height, spacing ) =
             cardDimensions params
 
-        entity : GameEntity {} -> List WebGL.Entity
-        entity { position, rotation, scale } =
-            let
-                rot =
-                    makeRotate rotation <| vec3 0 0 1
-
-                pos =
-                    to3d position
-            in
-                [ Primitives.roundedBox <|
-                    uniforms 0
-                        ( floor w, floor h )
-                        texture
-                        pos
-                        rot
-                        (makeScale3 (scale * 0.7 * width) (scale * height) 1)
-                        (vec3 0.18 0.49 0.62)
-                , Primitives.quad Clock.Shaders.fragment <|
-                    locals texture
-                        pos
-                        (makeScale3 (scale * 0.6 * width) (scale * 0.6 * height) 1)
-                        rot
-                        (vec3 1 1 1)
-                ]
-
         mainView : List WebGL.Entity
         mainView =
-            List.concat <| List.map entity handEntities
+            List.concat <|
+                List.map (cardEntity params textures) handEntities
 
         extraView : List WebGL.Entity
         extraView =
