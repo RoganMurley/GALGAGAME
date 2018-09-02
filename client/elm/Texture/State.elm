@@ -87,8 +87,8 @@ texturePaths : List ( String, String )
 texturePaths =
     [ ( "cross", "/img/textures/cross.png" )
     , ( "feint", "/img/textures/feint.png" )
-    , ( "dagger", "/img/textures/dagger.png" )
     , ( "noise", "/img/textures/noise.png" )
+    , ( "striker/dagger.svg", "/img/textures/dagger.png" )
     ]
 
 

@@ -395,7 +395,7 @@ handCardPosition ({ w, h, radius } as params) which index count =
                 vec2 0 y
 
 
-calcHandEntities : ClockParams -> Hand -> Maybe ( Float, Maybe Anim ) -> List (GameEntity {})
+calcHandEntities : ClockParams -> Hand -> Maybe ( Float, Maybe Anim ) -> List (GameEntity { card : Card, owner : WhichPlayer })
 calcHandEntities ({ w, h, radius } as params) finalHand resInfo =
     let
         cardDimensions : ClockParams -> ( Float, Float, Float )
@@ -413,13 +413,15 @@ calcHandEntities ({ w, h, radius } as params) finalHand resInfo =
         maxTick =
             animToResTickMax anim
 
-        hand =
+        ( hand, drawingCard ) =
             case anim of
                 Just (Draw PlayerA) ->
-                    List.take (List.length finalHand - 1) finalHand
+                    ( List.take (List.length finalHand - 1) finalHand
+                    , List.head <| List.reverse finalHand
+                    )
 
                 otherwise ->
-                    finalHand
+                    ( finalHand, Nothing )
 
         indexModifier : Int -> Int
         indexModifier =
@@ -449,8 +451,8 @@ calcHandEntities ({ w, h, radius } as params) finalHand resInfo =
         ( width, height, spacing ) =
             cardDimensions params
 
-        entity : Int -> GameEntity {}
-        entity finalI =
+        entity : ( Int, Card ) -> GameEntity { card : Card, owner : WhichPlayer }
+        entity ( finalI, card ) =
             let
                 i =
                     indexModifier finalI
@@ -468,32 +470,41 @@ calcHandEntities ({ w, h, radius } as params) finalHand resInfo =
                 { position = pos
                 , rotation = rot
                 , scale = 1
+                , card = card
+                , owner = PlayerA
                 }
 
-        mainEntities : List (GameEntity {})
+        mainEntities : List (GameEntity { card : Card, owner : WhichPlayer })
         mainEntities =
-            List.map entity (List.range 0 (n - 1))
+            List.map entity <| List.indexedMap (,) hand
 
-        extraEntities : List (GameEntity {})
+        extraEntities : List (GameEntity { card : Card, owner : WhichPlayer })
         extraEntities =
             case anim of
                 Just (Draw PlayerA) ->
-                    let
-                        pos =
-                            interp2D progress
-                                (vec2 w h)
-                                (handCardPosition params PlayerA n (n + 1))
+                    case drawingCard of
+                        Just card ->
+                            let
+                                pos =
+                                    interp2D progress
+                                        (vec2 w h)
+                                        (handCardPosition params PlayerA n (n + 1))
 
-                        rot =
-                            floatInterp progress 0 (handCardRotation PlayerA n (n + 1))
-                    in
-                        [ { position = pos
-                          , rotation = rot
-                          , scale = 1
-                          }
-                        ]
+                                rot =
+                                    floatInterp progress 0 (handCardRotation PlayerA n (n + 1))
+                            in
+                                [ { position = pos
+                                  , rotation = rot
+                                  , scale = 1
+                                  , card = card
+                                  , owner = PlayerA
+                                  }
+                                ]
 
-                Just (Play PlayerA _ i) ->
+                        Nothing ->
+                            []
+
+                Just (Play PlayerA card i) ->
                     let
                         pos =
                             interp2D playProgress
@@ -509,6 +520,8 @@ calcHandEntities ({ w, h, radius } as params) finalHand resInfo =
                         [ { position = pos
                           , rotation = rot
                           , scale = scale
+                          , card = card
+                          , owner = PlayerA
                           }
                         ]
 
