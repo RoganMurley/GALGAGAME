@@ -44,7 +44,7 @@ view { w, h, radius } entities texture =
                         texture
                         pos
                         rot
-                        (makeScale3 (scale * 0.1 * radius) (scale * 0.1 * radius) 1)
+                        (makeScale3 (scale * 0.06 * radius) (scale * 0.06 * radius) 1)
                         (vec3 1 1 1)
                 ]
     in
