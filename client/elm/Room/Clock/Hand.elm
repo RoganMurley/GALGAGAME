@@ -162,7 +162,7 @@ handView ({ w, h, radius } as params) finalHand handEntities resInfo texture noi
                 , Primitives.quad Clock.Shaders.fragment <|
                     locals texture
                         pos
-                        (makeScale3 (scale * width) (scale * height) 1)
+                        (makeScale3 (scale * 0.6 * width) (scale * 0.6 * height) 1)
                         rot
                         (vec3 1 1 1)
                 ]
@@ -215,7 +215,7 @@ handView ({ w, h, radius } as params) finalHand handEntities resInfo texture noi
                             , texture = texture
                             , noise = noise
                             , rotation = rot
-                            , scale = makeScale3 iWidth iHeight 1
+                            , scale = makeScale3 (0.6 * iWidth) (0.6 * iHeight) 1
                             , color = vec3 1 1 1
                             , worldPos = pos
                             , worldRot = makeRotate 0 (vec3 0 0 1)
@@ -295,7 +295,7 @@ otherHandView ({ w, h, radius } as params) finalN otherHandEntities resInfo text
                 , Primitives.quad Clock.Shaders.fragment <|
                     locals texture
                         pos
-                        (makeScale3 (scale * width) (scale * height) 1)
+                        (makeScale3 (scale * 0.6 * width) (scale * 0.6 * height) 1)
                         rot
                         (vec3 1 1 1)
                 ]
@@ -348,7 +348,7 @@ otherHandView ({ w, h, radius } as params) finalN otherHandEntities resInfo text
                             , texture = texture
                             , noise = noise
                             , rotation = rot
-                            , scale = makeScale3 iWidth iHeight 1
+                            , scale = makeScale3 (0.6 * iWidth) (0.6 * iHeight) 1
                             , color = vec3 1 1 1
                             , worldPos = pos
                             , worldRot = makeRotate 0 (vec3 0 0 1)

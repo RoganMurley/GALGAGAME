@@ -28,7 +28,7 @@ view (Params _ ( w, h )) { res, focus, mouse, entities } textures =
     let
         mTextures =
             Maybe.map2 (,)
-                (Texture.load textures "wireframe-sword")
+                (Texture.load textures "dagger")
                 (Texture.load textures "noise")
 
         locals =
@@ -82,60 +82,59 @@ view (Params _ ( w, h )) { res, focus, mouse, entities } textures =
                 , class "raymarch-canvas"
                 ]
                 (case mTextures of
-                    Just ( sword, noise ) ->
+                    Just ( dagger, noise ) ->
                         List.concat
-                            [ Clock.Stack.view params entities.stack sword
+                            [ Clock.Stack.view params entities.stack dagger
                             , [ Primitives.circle <|
-                                    locals sword
+                                    locals dagger
                                         (vec3 (toFloat w / 2) (toFloat h / 2) z)
                                         (makeScale3 (0.8 * radius) (0.8 * radius) 1)
                                         (makeRotate 0 <| vec3 0 0 1)
                                         (vec3 1 1 1)
                               ]
                             , [ Primitives.circle <|
-                                    locals sword
+                                    locals dagger
                                         (vec3 (toFloat w / 2) (toFloat h / 2) z)
                                         (makeScale3 (0.52 * radius) (0.52 * radius) 1)
                                         (makeRotate 0 <| vec3 0 0 1)
                                         (vec3 1 1 1)
                               , Primitives.circle <|
-                                    locals sword
+                                    locals dagger
                                         (vec3 (toFloat w / 2) ((toFloat h / 2) - (0.615 * radius)) z)
                                         (makeScale3 (0.13 * radius) (0.13 * radius) 1)
                                         (makeRotate 0 <| vec3 0 0 1)
                                         (vec3 1 1 1)
                               ]
-
-                            -- , [ Primitives.gear <|
-                            --         locals sword
-                            --             (vec3
-                            --                 ((toFloat w / 2) + radius * 0.1)
-                            --                 ((toFloat h / 2))
-                            --                 z
-                            --             )
-                            --             (makeScale3 (0.1 * radius) (0.1 * radius) 1)
-                            --             (makeRotate (2 * pi * 0.09 * rotateProgress) <|
-                            --                 vec3 0 0 1
-                            --             )
-                            --             (vec3 1 1 1)
-                            --   , Primitives.gear <|
-                            --         locals sword
-                            --             (vec3
-                            --                 ((toFloat w / 2) - radius * 0.065)
-                            --                 ((toFloat h / 2) - radius * 0.02)
-                            --                 z
-                            --             )
-                            --             (makeScale3 (0.1 * radius) (0.1 * radius) 1)
-                            --             (makeRotate -(2 * pi * 0.09 * rotateProgress) <|
-                            --                 vec3 0 0 1
-                            --             )
-                            --             (vec3 1 1 1)
-                            --   ]
-                            , handView params model.hand entities.hand resInfo sword noise
-                            , otherHandView params model.otherHand entities.otherHand resInfo sword noise
-                            , Clock.Wave.view params resInfo sword
+                              -- , [ Primitives.gear <|
+                              --         locals dagger
+                              --             (vec3
+                              --                 ((toFloat w / 2) + radius * 0.1)
+                              --                 ((toFloat h / 2))
+                              --                 z
+                              --             )
+                              --             (makeScale3 (0.1 * radius) (0.1 * radius) 1)
+                              --             (makeRotate (2 * pi * 0.09 * rotateProgress) <|
+                              --                 vec3 0 0 1
+                              --             )
+                              --             (vec3 1 1 1)
+                              --   , Primitives.gear <|
+                              --         locals dagger
+                              --             (vec3
+                              --                 ((toFloat w / 2) - radius * 0.065)
+                              --                 ((toFloat h / 2) - radius * 0.02)
+                              --                 z
+                              --             )
+                              --             (makeScale3 (0.1 * radius) (0.1 * radius) 1)
+                              --             (makeRotate -(2 * pi * 0.09 * rotateProgress) <|
+                              --                 vec3 0 0 1
+                              --             )
+                              --             (vec3 1 1 1)
+                              --   ]
+                            , handView params model.hand entities.hand resInfo dagger noise
+                            , otherHandView params model.otherHand entities.otherHand resInfo dagger noise
+                            , Clock.Wave.view params resInfo dagger
                             , [ Primitives.roundedBox <|
-                                    locals sword
+                                    locals dagger
                                         (vec3
                                             (getX mouse)
                                             (getY mouse)
@@ -149,13 +148,13 @@ view (Params _ ( w, h )) { res, focus, mouse, entities } textures =
                                         (makeRotate pi <| vec3 0 0 1)
                                         (vec3 0.18 0.49 0.62)
                               , Primitives.quad Clock.Shaders.fragment <|
-                                    locals sword
+                                    locals dagger
                                         (vec3
                                             (getX mouse)
                                             (getY mouse)
                                             z
                                         )
-                                        (makeScale3 (0.1 * radius) (0.1 * radius) 1)
+                                        (makeScale3 (0.06 * radius) (0.06 * radius) 1)
                                         (makeRotate pi <| vec3 0 0 1)
                                         (vec3 1 1 1)
                               ]
