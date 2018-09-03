@@ -103,8 +103,8 @@ view (Params _ ( w, h )) { res, focus, mouse, entities } textures =
                                         (makeRotate 0 <| vec3 0 0 1)
                                         (vec3 1 1 1)
                               ]
-                            , handView params model.hand entities.hand resInfo dagger noise textures
-                            , otherHandView params model.otherHand entities.otherHand resInfo dagger noise
+                            , handView params model.hand entities.hand resInfo noise textures
+                            , otherHandView params model.otherHand entities.otherHand resInfo noise textures
                             , Clock.Wave.view params resInfo dagger
                               -- , [ Primitives.roundedBox <|
                               --         locals dagger
