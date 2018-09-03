@@ -2,7 +2,7 @@ module Clock.Hand exposing (..)
 
 import Animation.Types exposing (Anim(..))
 import Card.Types exposing (Card)
-import Clock.Card exposing (cardEntity)
+import Clock.Card exposing (cardEntity, colour)
 import Clock.Primitives as Primitives
 import Clock.Shaders
 import Clock.State exposing (animToResTickMax, uniforms)
@@ -163,7 +163,7 @@ handView ({ w, h, radius } as params) finalHand handEntities resInfo noise textu
                                 (vec3 (w / 2) (h / 2) 0)
 
                         rot =
-                            makeRotate (floatInterp progress 0 (0.05 * pi)) <|
+                            makeRotate (floatInterp progress pi (pi + 0.05 * pi)) <|
                                 vec3 0 0 1
 
                         iWidth =
@@ -188,7 +188,7 @@ handView ({ w, h, radius } as params) finalHand handEntities resInfo noise textu
                                     , texture = noise
                                     , rotation = rot
                                     , scale = makeScale3 (0.7 * iWidth) iHeight 1
-                                    , color = (vec3 0.18 0.49 0.615)
+                                    , color = colour PlayerA
                                     , worldPos = pos
                                     , worldRot = makeRotate 0 (vec3 0 0 1)
                                     , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
@@ -279,7 +279,7 @@ otherHandView ({ w, h, radius } as params) finalN otherHandEntities resInfo nois
                         pos
                         rot
                         (makeScale3 (scale * 0.7 * width) (scale * height) 1)
-                        (vec3 0.52 0.1 0.2)
+                        (colour PlayerB)
                   -- , Primitives.quad Clock.Shaders.fragment <|
                   --     locals texture
                   --         pos
@@ -304,7 +304,7 @@ otherHandView ({ w, h, radius } as params) finalN otherHandEntities resInfo nois
                                 (vec3 (w / 2) (h / 2) 0)
 
                         rot =
-                            makeRotate (floatInterp progress 0 (-0.05 * pi)) <|
+                            makeRotate (floatInterp progress pi (pi - 0.05 * pi)) <|
                                 vec3 0 0 1
 
                         iWidth =
@@ -329,7 +329,7 @@ otherHandView ({ w, h, radius } as params) finalN otherHandEntities resInfo nois
                                     , texture = noise
                                     , rotation = rot
                                     , scale = makeScale3 (0.7 * iWidth) iHeight 1
-                                    , color = vec3 0.52 0.1 0.2
+                                    , color = colour PlayerB
                                     , worldPos = pos
                                     , worldRot = makeRotate 0 (vec3 0 0 1)
                                     , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000

@@ -73,7 +73,7 @@ colour : WhichPlayer -> Vec3
 colour which =
     case which of
         PlayerA ->
-            vec3 0.18 0.49 0.62
+            vec3 0.52 0.1 0.2
 
         PlayerB ->
-            vec3 0.52 0.1 0.2
+            vec3 0.18 0.49 0.62
