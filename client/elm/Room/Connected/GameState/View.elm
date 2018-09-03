@@ -17,7 +17,7 @@ import Model.Types exposing (..)
 import Model.View as Model exposing (view, resView)
 import Raymarch.Types as Raymarch
 import Raymarch.View as Raymarch
-import Resolvable.State exposing (activeAnim, activeModel, resolving)
+import Resolvable.State exposing (activeAnim, activeModel, activeStackCard, resolving)
 import Resolvable.Types as Resolvable
 import Room.Messages as Room
 import Texture.Types as Texture
@@ -69,6 +69,9 @@ view state roomID ({ hostname, httpPort, time, dimensions } as flags) textures =
                     resModel =
                         activeModel res
 
+                    stackCard =
+                        activeStackCard res
+
                     clockParams =
                         { w = toFloat w
                         , h = toFloat h
@@ -85,6 +88,7 @@ view state roomID ({ hostname, httpPort, time, dimensions } as flags) textures =
                         Clock.calcStackEntities
                             clockParams
                             resModel.stack
+                            stackCard
                             resInfo
 
                     handEntities =

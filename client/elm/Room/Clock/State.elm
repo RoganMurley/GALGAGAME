@@ -14,7 +14,7 @@ import Math.Vector3 exposing (Vec3, vec3)
 import Maybe.Extra as Maybe
 import Model.State as Model
 import Raymarch.Types exposing (Height, Width)
-import Resolvable.State exposing (activeAnim, activeModel)
+import Resolvable.State exposing (activeAnim, activeModel, activeStackCard)
 import Resolvable.State as Resolvable
 import Stack.Types exposing (Stack, StackCard)
 import Util exposing (floatInterp, interp, interp2D)
@@ -170,6 +170,9 @@ tick { dimensions } ({ res } as model) dt =
         resModel =
             activeModel res
 
+        stackCard =
+            activeStackCard res
+
         ( w, h ) =
             dimensions
 
@@ -183,6 +186,7 @@ tick { dimensions } ({ res } as model) dt =
             calcStackEntities
                 { w = toFloat w, h = toFloat h, radius = radius }
                 resModel.stack
+                stackCard
                 resInfo
 
         handEntities =
@@ -278,8 +282,8 @@ getFocus { entities, mouse } =
             Nothing
 
 
-calcStackEntities : ClockParams -> Stack -> Maybe ( Float, Maybe Anim ) -> List (GameEntity { card : Card, owner : WhichPlayer })
-calcStackEntities { w, h, radius } finalStack resInfo =
+calcStackEntities : ClockParams -> Stack -> Maybe StackCard -> Maybe ( Float, Maybe Anim ) -> List (GameEntity { card : Card, owner : WhichPlayer })
+calcStackEntities { w, h, radius } finalStack stackCard resInfo =
     let
         resTick =
             Maybe.withDefault 0.0 <|
@@ -307,7 +311,12 @@ calcStackEntities { w, h, radius } finalStack resInfo =
         stack =
             case anim of
                 Just (Rotate _) ->
-                    List.drop 1 finalStack
+                    case stackCard of
+                        Just c ->
+                            c :: finalStack
+
+                        Nothing ->
+                            finalStack
 
                 Just (Play _ _ _) ->
                     List.drop 1 finalStack
@@ -321,8 +330,31 @@ calcStackEntities { w, h, radius } finalStack resInfo =
                 (vec2 (w / 2) (h / 2))
                 (0.615 * radius)
                 progress
+
+        extraEntities =
+            case anim of
+                Just (Rotate _) ->
+                    []
+
+                otherwise ->
+                    case stackCard of
+                        Just { owner, card } ->
+                            [ { owner = owner
+                              , card = card
+                              , position =
+                                    Math.Vector2.add
+                                        (vec2 (w / 2) (h / 2))
+                                    <|
+                                        vec2 0 (-0.615 * radius)
+                              , rotation = pi
+                              , scale = 1.3
+                              }
+                            ]
+
+                        Nothing ->
+                            []
     in
-        entities
+        entities ++ extraEntities
 
 
 handOrigin : ClockParams -> WhichPlayer -> Int -> Vec2
