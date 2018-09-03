@@ -109,7 +109,7 @@ texturePaths =
     , ( "drinker/bad-apple.svg", "/img/textures/bad-apple.png" )
     , ( "collector/relicblade.svg", "/img/textures/relicblade.png" )
     , ( "collector/greed.svg", "/img/textures/greed.png" )
-    , ( "collector/mimic.svg", "/img/textures/mimic.png" )
+    , ( "collector/imitate.svg", "/img/textures/mimic.png" )
     , ( "collector/alchemy.svg", "/img/textures/alchemy.png" )
     , ( "collector/gold.svg", "/img/textures/gold.png" )
     , ( "breaker/hammer.svg", "/img/textures/hammer.png" )
