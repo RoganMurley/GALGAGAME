@@ -512,7 +512,7 @@ calcHandEntities ({ w, h, radius } as params) finalHand resInfo =
                                 (vec2 (w / 2) (h / 2 - radius * 0.62))
 
                         rot =
-                            floatInterp playProgress (handCardRotation PlayerA i n) 0
+                            floatInterp playProgress (handCardRotation PlayerA i n) pi
 
                         scale =
                             floatInterp playProgress 1 1.3
@@ -684,6 +684,6 @@ clockFace stack origin radius progress =
 
         rotation : Int -> Float
         rotation i =
-            2 * pi - rot i
+            pi - rot i
     in
         List.indexedMap genPoint stack
