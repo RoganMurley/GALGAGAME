@@ -278,7 +278,7 @@ getFocus { entities, mouse } =
             Nothing
 
 
-calcStackEntities : ClockParams -> Stack -> Maybe ( Float, Maybe Anim ) -> List (GameEntity { owner : WhichPlayer })
+calcStackEntities : ClockParams -> Stack -> Maybe ( Float, Maybe Anim ) -> List (GameEntity { card : Card, owner : WhichPlayer })
 calcStackEntities { w, h, radius } finalStack resInfo =
     let
         resTick =
@@ -648,20 +648,21 @@ calcOtherHandEntities ({ w, h, radius } as params) finalN resInfo =
         mainEntities ++ extraEntities
 
 
-clockFace : Stack -> Vec2 -> Float -> Float -> List (GameEntity { owner : WhichPlayer })
+clockFace : Stack -> Vec2 -> Float -> Float -> List (GameEntity { card : Card, owner : WhichPlayer })
 clockFace stack origin radius progress =
     let
         segments : Int
         segments =
             12
 
-        genPoint : Int -> StackCard -> GameEntity { owner : WhichPlayer }
-        genPoint index { owner } =
+        genPoint : Int -> StackCard -> GameEntity { card : Card, owner : WhichPlayer }
+        genPoint index { card, owner } =
             let
                 i =
                     index + 1
             in
                 { owner = owner
+                , card = card
                 , position = Math.Vector2.add origin <| offset i
                 , rotation = rotation i
                 , scale = 1.3

@@ -82,7 +82,7 @@ view (Params _ ( w, h )) { res, focus, mouse, entities } textures =
                 (case mTextures of
                     Just ( dagger, noise ) ->
                         List.concat
-                            [ Clock.Stack.view params entities.stack dagger
+                            [ Clock.Stack.view params entities.stack textures
                             , [ Primitives.circle <|
                                     locals dagger
                                         (vec3 (toFloat w / 2) (toFloat h / 2) z)
