@@ -1,5 +1,6 @@
 module Clock.Entity exposing (..)
 
+import Card.Types exposing (Card)
 import Math.Vector2 exposing (Vec2)
 import WhichPlayer.Types exposing (WhichPlayer(..))
 
@@ -13,8 +14,8 @@ type alias GameEntity a =
 
 
 type alias Entities =
-    { stack : List (GameEntity { owner : WhichPlayer })
-    , hand : List (GameEntity {})
+    { stack : List (GameEntity { card : Card, owner : WhichPlayer })
+    , hand : List (GameEntity { card : Card, owner : WhichPlayer })
     , otherHand : List (GameEntity {})
     }
 

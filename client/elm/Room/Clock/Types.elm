@@ -1,11 +1,11 @@
 module Clock.Types exposing (..)
 
 import Card.Types exposing (Card)
+import Clock.Entity exposing (Entities)
 import Math.Matrix4 exposing (Mat4)
 import Math.Vector2 exposing (Vec2)
 import Math.Vector3 exposing (Vec3)
 import WebGL.Texture exposing (Texture)
-import WhichPlayer.Types exposing (WhichPlayer(..))
 import Resolvable.Types as Resolvable
 
 
@@ -14,13 +14,6 @@ type alias Model =
     , focus : Maybe Card
     , mouse : Vec2
     , entities : Entities
-    }
-
-
-type alias Entities =
-    { stack : List (GameEntity { owner : WhichPlayer })
-    , hand : List (GameEntity { card : Card, owner : WhichPlayer })
-    , otherHand : List (GameEntity {})
     }
 
 

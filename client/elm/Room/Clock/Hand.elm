@@ -271,12 +271,12 @@ otherHandView ({ w, h, radius } as params) finalN otherHandEntities resInfo text
                         rot
                         (makeScale3 (scale * 0.7 * width) (scale * height) 1)
                         (vec3 0.52 0.1 0.2)
-                , Primitives.quad Clock.Shaders.fragment <|
-                    locals texture
-                        pos
-                        (makeScale3 (scale * 0.6 * width) (scale * 0.6 * height) 1)
-                        rot
-                        (vec3 1 1 1)
+                  -- , Primitives.quad Clock.Shaders.fragment <|
+                  --     locals texture
+                  --         pos
+                  --         (makeScale3 (scale * 0.6 * width) (scale * 0.6 * height) 1)
+                  --         rot
+                  --         (vec3 1 1 1)
                 ]
 
         mainView : List WebGL.Entity
