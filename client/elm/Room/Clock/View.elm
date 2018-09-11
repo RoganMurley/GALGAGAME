@@ -14,15 +14,17 @@ import Html.Attributes exposing (..)
 import Main.Messages as Main
 import Math.Matrix4 exposing (makeRotate, makeScale3, makeLookAt, makeOrtho)
 import Math.Vector3 exposing (Vec3, vec3)
+import Model.Types exposing (Life)
 import Raymarch.Types exposing (Params(..))
 import Resolvable.State exposing (activeAnim, activeModel)
 import Texture.State as Texture
 import Texture.Types as Texture
 import WebGL
+import WhichPlayer.Types exposing (WhichPlayer(..))
 
 
-view : Params -> Model -> Texture.Model -> Html Main.Msg
-view (Params _ ( w, h )) { res, focus, mouse, entities } textures =
+view : Params -> ( Life, Life ) -> Model -> Texture.Model -> Html Main.Msg
+view (Params _ ( w, h )) ( life, otherLife ) { res, focus, mouse, entities } textures =
     let
         mTextures =
             Maybe.map2 (,)
@@ -106,31 +108,6 @@ view (Params _ ( w, h )) { res, focus, mouse, entities } textures =
                             , handView params model.hand entities.hand resInfo noise textures
                             , otherHandView params model.otherHand entities.otherHand resInfo noise textures
                             , Clock.Wave.view params resInfo dagger
-                              -- , [ Primitives.roundedBox <|
-                              --         locals dagger
-                              --             (vec3
-                              --                 (getX mouse)
-                              --                 (getY mouse)
-                              --                 z
-                              --             )
-                              --             (makeScale3
-                              --                 (radius * 0.07)
-                              --                 (radius * 0.1)
-                              --                 1
-                              --             )
-                              --             (makeRotate pi <| vec3 0 0 1)
-                              --             (vec3 0.18 0.49 0.62)
-                              --     , Primitives.quad Clock.Shaders.fragment <|
-                              --           locals dagger
-                              --               (vec3
-                              --                   (getX mouse)
-                              --                   (getY mouse)
-                              --                   z
-                              --               )
-                              --               (makeScale3 (0.06 * radius) (0.06 * radius) 1)
-                              --               (makeRotate pi <| vec3 0 0 1)
-                              --               (vec3 1 1 1)
-                              --   ]
                             ]
 
                     Nothing ->
@@ -139,6 +116,10 @@ view (Params _ ( w, h )) { res, focus, mouse, entities } textures =
             , div [ class "text-focus" ]
                 [ textView focus
                 ]
+            , div [ class "clock-life" ]
+                [ lifeView life ]
+            , div [ class "clock-life other" ]
+                [ lifeView otherLife ]
             ]
 
 
@@ -153,3 +134,8 @@ textView card =
                 [ div [ class "title" ] [ text name ]
                 , div [ class "desc" ] [ text desc ]
                 ]
+
+
+lifeView : Life -> Html a
+lifeView life =
+    text <| toString life

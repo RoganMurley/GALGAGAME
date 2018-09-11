@@ -107,6 +107,7 @@ view state roomID ({ hostname, httpPort, time, dimensions } as flags) textures =
                         resData :: _ ->
                             Clock.view
                                 params
+                                ( resModel.life, resModel.otherLife )
                                 { res = res
                                 , focus = Nothing
                                 , mouse = vec2 0 0
