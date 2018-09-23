@@ -2,8 +2,10 @@ module Clock.View exposing (view)
 
 import Animation.Types exposing (Anim(..))
 import Card.Types exposing (Card)
+import Clock.Card exposing (cardTexture)
 import Clock.Hand exposing (handView, otherHandView)
 import Clock.Primitives as Primitives
+import Clock.Shaders
 import Clock.Stack
 import Clock.State exposing (animToResTickMax, uniforms)
 import Clock.Types exposing (ClockParams, Model)
@@ -14,13 +16,13 @@ import Html.Attributes exposing (..)
 import Main.Messages as Main
 import Math.Matrix4 exposing (makeRotate, makeScale3, makeLookAt, makeOrtho)
 import Math.Vector3 exposing (Vec3, vec3)
+import Maybe.Extra as Maybe
 import Model.Types exposing (Life)
 import Raymarch.Types exposing (Params(..))
 import Resolvable.State exposing (activeAnim, activeModel)
 import Texture.State as Texture
 import Texture.Types as Texture
 import WebGL
-import WhichPlayer.Types exposing (WhichPlayer(..))
 
 
 view : Params -> ( Life, Life ) -> Model -> Texture.Model -> Html Main.Msg
@@ -108,6 +110,7 @@ view (Params _ ( w, h )) ( life, otherLife ) { res, focus, mouse, entities } tex
                             , handView params model.hand entities.hand resInfo noise textures
                             , otherHandView params model.otherHand entities.otherHand resInfo noise textures
                             , Clock.Wave.view params resInfo dagger
+                            , focusImageView params textures focus
                             ]
 
                     Nothing ->
@@ -121,6 +124,28 @@ view (Params _ ( w, h )) ( life, otherLife ) { res, focus, mouse, entities } tex
             , div [ class "clock-life other" ]
                 [ lifeView otherLife ]
             ]
+
+
+focusImageView : ClockParams -> Texture.Model -> Maybe Card -> List WebGL.Entity
+focusImageView { w, h, radius } textures focus =
+    let
+        mTexture =
+            Maybe.join <| Maybe.map (cardTexture textures) focus
+    in
+        case mTexture of
+            Just texture ->
+                [ Primitives.quad Clock.Shaders.fragment <|
+                    uniforms 0
+                        ( floor w, floor h )
+                        texture
+                        (vec3 (w * 0.5) (h * 0.45) 0)
+                        (makeScale3 (0.2 * radius) (0.2 * radius) 1)
+                        (makeRotate pi <| vec3 0 0 1)
+                        (vec3 1 1 1)
+                ]
+
+            Nothing ->
+                []
 
 
 textView : Maybe Card -> Html a
