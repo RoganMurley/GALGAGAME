@@ -44,9 +44,9 @@ update flags msg ({ game, mode } as model) =
             )
 
 
-tick : Model -> Float -> Model
-tick model dt =
-    { model | game = GameState.tick model.game dt }
+tick : Flags -> Model -> Float -> Model
+tick flags model dt =
+    { model | game = GameState.tick flags model.game dt }
 
 
 receive : Model -> String -> Flags -> ( Model, Cmd Main.Msg )
