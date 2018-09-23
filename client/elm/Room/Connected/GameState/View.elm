@@ -109,7 +109,7 @@ view state roomID ({ hostname, httpPort, time, dimensions } as flags) textures =
                                 params
                                 ( resModel.life, resModel.otherLife )
                                 { res = res
-                                , focus = Nothing
+                                , focus = Maybe.map .card stackCard
                                 , mouse = vec2 0 0
                                 , entities = entities
                                 }
