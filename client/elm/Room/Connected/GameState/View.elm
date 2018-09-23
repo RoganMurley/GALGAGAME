@@ -138,9 +138,16 @@ view state roomID ({ hostname, httpPort, time, dimensions } as flags) textures =
                                                 animToResTickMax endAnim
                                         in
                                             div []
-                                                [ Model.view ( model, res.vm ) time
+                                                [ Clock.view
+                                                    params
+                                                    ( model.life, model.otherLife )
+                                                    { res = res
+                                                    , focus = Nothing
+                                                    , mouse = vec2 0 0
+                                                    , entities = entities
+                                                    }
+                                                    textures
                                                 , Endgame.view endTick endAnim mReplayId
-                                                , Raymarch.view params
                                                 ]
 
 
