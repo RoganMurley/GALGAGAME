@@ -13,8 +13,8 @@ import GameState.State exposing (resolvable)
 import GameState.Types exposing (GameState(..), PlayState(..), WaitType(..))
 import Main.Messages as Main
 import Main.Types exposing (Flags)
+import Maybe.Extra as Maybe
 import Model.Types exposing (..)
-import Model.View as Model exposing (view, resView)
 import Raymarch.Types as Raymarch
 import Raymarch.View as Raymarch
 import Resolvable.State exposing (activeAnim, activeModel, activeStackCard, resolving)
@@ -22,7 +22,6 @@ import Resolvable.Types as Resolvable
 import Room.Messages as Room
 import Texture.Types as Texture
 import Clock.View as Clock
-import Clock.State as Clock
 import Math.Vector2 exposing (vec2)
 
 
@@ -63,6 +62,14 @@ view state roomID ({ hostname, httpPort, time, dimensions } as flags) textures =
                     ( w, h ) =
                         dimensions
 
+                    clock =
+                        case started of
+                            Playing clock ->
+                                clock
+
+                            Ended _ clock _ ->
+                                clock
+
                     resInfo =
                         Just ( res.tick, activeAnim res )
 
@@ -77,43 +84,21 @@ view state roomID ({ hostname, httpPort, time, dimensions } as flags) textures =
                         , h = toFloat h
                         , radius = 0.8 * (toFloat h / 2)
                         }
-
-                    entities =
-                        { stack = stackEntities
-                        , hand = handEntities
-                        , otherHand = otherHandEntities
-                        }
-
-                    stackEntities =
-                        Clock.calcStackEntities
-                            clockParams
-                            resModel.stack
-                            stackCard
-                            resInfo
-
-                    handEntities =
-                        Clock.calcHandEntities
-                            clockParams
-                            resModel.hand
-                            resInfo
-
-                    otherHandEntities =
-                        Clock.calcOtherHandEntities
-                            clockParams
-                            resModel.otherHand
-                            resInfo
                 in
                     case res.resList of
                         resData :: _ ->
-                            Clock.view
-                                params
-                                ( resModel.life, resModel.otherLife )
-                                { res = res
-                                , focus = Maybe.map .card stackCard
-                                , mouse = vec2 0 0
-                                , entities = entities
-                                }
-                                textures
+                            div []
+                                [ Clock.view
+                                    params
+                                    ( resModel.life, resModel.otherLife )
+                                    { res = res
+                                    , focus = Maybe.or (Maybe.map .card stackCard) clock.focus
+                                    , mouse = vec2 0 0
+                                    , entities = clock.entities
+                                    }
+                                    textures
+                                , Endgame.view 0.0 Nothing Nothing
+                                ]
 
                         otherwise ->
                             let
@@ -124,9 +109,12 @@ view state roomID ({ hostname, httpPort, time, dimensions } as flags) textures =
                                 case started of
                                     Playing _ ->
                                         div []
-                                            [ Model.view ( model, res.vm ) time
+                                            [ Clock.view
+                                                params
+                                                ( model.life, model.otherLife )
+                                                clock
+                                                textures
                                             , Endgame.view 0.0 Nothing Nothing
-                                            , Raymarch.view params
                                             ]
 
                                     Ended winner _ mReplayId ->
@@ -141,11 +129,7 @@ view state roomID ({ hostname, httpPort, time, dimensions } as flags) textures =
                                                 [ Clock.view
                                                     params
                                                     ( model.life, model.otherLife )
-                                                    { res = res
-                                                    , focus = Nothing
-                                                    , mouse = vec2 0 0
-                                                    , entities = entities
-                                                    }
+                                                    clock
                                                     textures
                                                 , Endgame.view endTick endAnim mReplayId
                                                 ]

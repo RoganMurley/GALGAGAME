@@ -2,6 +2,7 @@ module GameState.State exposing (update, tick, tickZero, resolvable, resMapPlay)
 
 import Audio exposing (playSound)
 import CharacterSelect.State as CharacterSelect
+import Clock.State as Clock
 import GameState.Decoders exposing (playStateDecoder, stateDecoder)
 import GameState.Encoders exposing (encodeHoverIndex)
 import GameState.Messages exposing (..)
@@ -9,6 +10,7 @@ import GameState.Types exposing (GameState(..), PlayState(..))
 import Json.Decode as Json exposing (field, maybe)
 import Main.Messages as Main
 import Main.Types exposing (Flags)
+import Math.Vector2 exposing (vec2)
 import Mode as Mode
 import Model.Decoders as Model
 import Model.Types exposing (..)
@@ -30,13 +32,16 @@ update msg state mode flags =
 
         HoverSelf i ->
             case state of
-                Started (Playing ({ vm } as m)) ->
+                Started (Playing ({ res } as clock)) ->
                     let
+                        { vm } =
+                            res
+
                         newVm : Model.ViewModel.ViewModel
                         newVm =
                             { vm | hover = i }
                     in
-                        ( Started <| Playing { m | vm = newVm }
+                        ( Started <| Playing { clock | res = { res | vm = newVm } }
                         , Cmd.none
                         )
 
@@ -45,13 +50,16 @@ update msg state mode flags =
 
         HoverOutcome i ->
             case state of
-                Started (Playing ({ final } as m)) ->
+                Started (Playing ({ res } as clock)) ->
                     let
+                        { final } =
+                            res
+
                         newFinal : Model
                         newFinal =
                             { final | otherHover = i }
                     in
-                        ( Started <| Playing { m | final = newFinal }
+                        ( Started <| Playing { clock | res = { res | final = newFinal } }
                         , Cmd.none
                         )
 
@@ -151,6 +159,24 @@ update msg state mode flags =
                 ]
             )
 
+        Mouse { x, y } ->
+            let
+                pos =
+                    vec2 (toFloat x) (toFloat y)
+
+                newState =
+                    case state of
+                        Started (Playing clock) ->
+                            Started (Playing { clock | mouse = pos })
+
+                        Started (Ended w clock r) ->
+                            Started (Ended w { clock | mouse = pos } r)
+
+                        _ ->
+                            state
+            in
+                ( newState, Cmd.none )
+
 
 updatePlayingOnly : PlayingOnly -> GameState -> Mode.Mode -> Flags -> ( GameState, Cmd Main.Msg )
 updatePlayingOnly msg state mode flags =
@@ -208,8 +234,8 @@ updateTurnOnly msg state mode flags =
     let
         legal =
             case state of
-                Started (Playing { final }) ->
-                    final.turn == PlayerA
+                Started (Playing { res }) ->
+                    res.final.turn == PlayerA
 
                 otherwise ->
                     False
@@ -300,16 +326,24 @@ resMapPlay f started =
 resolvableSet : PlayState -> Resolvable.Model -> PlayState
 resolvableSet s r =
     case s of
-        Playing _ ->
-            Playing r
+        Playing clock ->
+            Playing { clock | res = r }
 
-        Ended w _ replay ->
-            Ended w r replay
+        Ended w clock replay ->
+            Ended w { clock | res = r } replay
 
 
-tick : GameState -> Float -> GameState
-tick state dt =
-    resMap (Resolvable.tick dt) state
+tick : Flags -> GameState -> Float -> GameState
+tick flags state dt =
+    case state of
+        Started (Playing clock) ->
+            Started <| Playing <| Clock.tick flags clock dt
+
+        Started (Ended w clock replay) ->
+            Started <| Ended w (Clock.tick flags clock dt) replay
+
+        _ ->
+            state
 
 
 tickZero : PlayState -> Bool
@@ -324,8 +358,8 @@ tickZero started =
 resolvable : PlayState -> Resolvable.Model
 resolvable state =
     case state of
-        Playing r ->
-            r
+        Playing { res } ->
+            res
 
-        Ended _ r _ ->
-            r
+        Ended _ { res } _ ->
+            res

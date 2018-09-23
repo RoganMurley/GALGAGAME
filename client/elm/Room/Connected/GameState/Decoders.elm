@@ -5,6 +5,7 @@ import Card.Decoders as Card
 import Card.Types exposing (Card)
 import CharacterSelect.Character as CharacterSelect
 import CharacterSelect.ViewModel
+import Clock.State exposing (clockInit)
 import GameState.Types exposing (GameState(..), PlayState(..), WaitType(..), Winner)
 import Model.Decoders as Model
 import Model.Types exposing (Model)
@@ -92,7 +93,7 @@ endedDecoder =
     let
         endedInit : Winner -> Model -> PlayState
         endedInit w m =
-            Ended w (Resolvable.init m []) Nothing
+            Ended w (clockInit <| Resolvable.init m []) Nothing
     in
         Json.map2 endedInit
             (field "winner" <| maybe WhichPlayer.decoder)
@@ -104,7 +105,7 @@ playingDecoder =
     let
         playingInit : Model -> PlayState
         playingInit m =
-            Playing (Resolvable.init m [])
+            Playing (clockInit <| Resolvable.init m [])
     in
         Json.map playingInit
             (field "playing" <| Model.decoder)

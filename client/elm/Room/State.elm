@@ -152,7 +152,7 @@ tick flags room dt =
             Login login
 
         Connected connected ->
-            Connected <| Connected.tick connected dt
+            Connected <| Connected.tick flags connected dt
 
         Replay replay ->
             Replay <| Replay.tick replay dt

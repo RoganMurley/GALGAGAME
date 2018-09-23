@@ -16,10 +16,20 @@ import Model.State as Model
 import Raymarch.Types exposing (Height, Width)
 import Resolvable.State exposing (activeAnim, activeModel, activeStackCard)
 import Resolvable.State as Resolvable
+import Resolvable.Types as Resolvable
 import Stack.Types exposing (Stack, StackCard)
 import Util exposing (floatInterp, interp, interp2D)
 import WebGL exposing (Texture)
 import WhichPlayer.Types exposing (WhichPlayer(..))
+
+
+clockInit : Resolvable.Model -> Model
+clockInit res =
+    { focus = Nothing
+    , mouse = vec2 0 0
+    , entities = { hand = [], otherHand = [], stack = [] }
+    , res = res
+    }
 
 
 init : Model
