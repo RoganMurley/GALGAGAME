@@ -91,9 +91,9 @@ view state roomID ({ hostname, httpPort, time, dimensions } as flags) textures =
                                 [ Clock.view
                                     params
                                     ( resModel.life, resModel.otherLife )
-                                    { res = res
+                                    { res = clock.res
                                     , focus = Maybe.or (Maybe.map .card stackCard) clock.focus
-                                    , mouse = vec2 0 0
+                                    , mouse = clock.mouse
                                     , entities = clock.entities
                                     }
                                     textures
