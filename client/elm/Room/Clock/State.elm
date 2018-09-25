@@ -7,6 +7,7 @@ import Clock.Messages exposing (Msg(..))
 import Clock.Types exposing (ClockParams, GameEntity, Model, Uniforms)
 import Ease
 import Hand.Types exposing (Hand)
+import List.Extra as List
 import Main.Types exposing (Flags)
 import Math.Matrix4 exposing (Mat4, identity, makeLookAt, makeOrtho, makeRotate, mul)
 import Math.Vector2 exposing (Vec2, vec2)
@@ -275,21 +276,21 @@ hitTest pos { position } =
 
 
 getFocus : Model -> Maybe Card
-getFocus { entities, mouse } =
+getFocus { entities, mouse, res } =
     let
-        hit =
-            (List.any (hitTest mouse) <| entities.stack)
-                || (List.any (hitTest mouse) <| entities.hand)
+        resCard =
+            Maybe.map .card <| activeStackCard res
+
+        hoverCardHitTest =
+            List.find <| hitTest mouse
+
+        hoverCard =
+            Maybe.map .card <|
+                Maybe.or
+                    (hoverCardHitTest entities.stack)
+                    (hoverCardHitTest entities.hand)
     in
-        if hit then
-            (Just
-                { name = "Sword"
-                , desc = "Hurt for 10"
-                , imgURL = ""
-                }
-            )
-        else
-            Nothing
+        Maybe.or resCard hoverCard
 
 
 calcStackEntities : ClockParams -> Stack -> Maybe StackCard -> Maybe ( Float, Maybe Anim ) -> List (GameEntity { card : Card, owner : WhichPlayer })

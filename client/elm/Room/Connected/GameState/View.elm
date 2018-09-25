@@ -13,7 +13,6 @@ import GameState.State exposing (resolvable)
 import GameState.Types exposing (GameState(..), PlayState(..), WaitType(..))
 import Main.Messages as Main
 import Main.Types exposing (Flags)
-import Maybe.Extra as Maybe
 import Model.Types exposing (..)
 import Raymarch.Types as Raymarch
 import Raymarch.View as Raymarch
@@ -22,7 +21,6 @@ import Resolvable.Types as Resolvable
 import Room.Messages as Room
 import Texture.Types as Texture
 import Clock.View as Clock
-import Math.Vector2 exposing (vec2)
 
 
 view : GameState -> String -> Flags -> Texture.Model -> Html Main.Msg
@@ -92,7 +90,7 @@ view state roomID ({ hostname, httpPort, time, dimensions } as flags) textures =
                                     params
                                     ( resModel.life, resModel.otherLife )
                                     { res = clock.res
-                                    , focus = Maybe.or (Maybe.map .card stackCard) clock.focus
+                                    , focus = clock.focus
                                     , mouse = clock.mouse
                                     , entities = clock.entities
                                     }
