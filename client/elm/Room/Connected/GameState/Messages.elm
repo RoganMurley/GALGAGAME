@@ -14,6 +14,7 @@ type Msg
     | ReplaySaved String
     | GotoReplay String
     | Mouse Position
+    | MouseClick Position
 
 
 type PlayingOnly
