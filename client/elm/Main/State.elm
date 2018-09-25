@@ -189,6 +189,18 @@ update msg ({ room, settings, textures, flags } as model) =
                     , newCmd
                     )
 
+            MouseClick mouse ->
+                let
+                    ( newRoom, newCmd ) =
+                        Room.update
+                            room
+                            (Room.ConnectedMsg <| Connected.GameStateMsg <| GameState.MouseClick mouse)
+                            flags
+                in
+                    ( { model | room = newRoom }
+                    , newCmd
+                    )
+
             GetAuth ->
                 ( model
                 , Http.send GetAuthCallback <|
@@ -371,4 +383,5 @@ subscriptions model =
         , AnimationFrame.diffs Frame
         , Window.resizes (\{ width, height } -> Resize width height)
         , Mouse.moves MousePosition
+        , Mouse.clicks MouseClick
         ]

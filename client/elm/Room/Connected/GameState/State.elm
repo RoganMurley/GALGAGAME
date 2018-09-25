@@ -177,6 +177,26 @@ update msg state mode flags =
             in
                 ( newState, Cmd.none )
 
+        MouseClick { x, y } ->
+            let
+                pos =
+                    vec2 (toFloat x) (toFloat y)
+            in
+                case state of
+                    Started (Playing { entities }) ->
+                        let
+                            index =
+                                0
+                        in
+                            update
+                                (PlayingOnly <| TurnOnly <| PlayCard index)
+                                state
+                                mode
+                                flags
+
+                    _ ->
+                        ( state, Cmd.none )
+
 
 updatePlayingOnly : PlayingOnly -> GameState -> Mode.Mode -> Flags -> ( GameState, Cmd Main.Msg )
 updatePlayingOnly msg state mode flags =
