@@ -3,7 +3,7 @@ module Clock.Card exposing (..)
 import Card.Types exposing (Card)
 import Clock.Primitives
 import Clock.Shaders
-import Clock.State exposing (uniforms)
+import Clock.Uniforms exposing (uniforms)
 import Clock.Types exposing (ClockParams, GameEntity)
 import Math.Matrix4 exposing (makeRotate, makeScale3)
 import Math.Vector3 exposing (Vec3, vec3)
@@ -15,14 +15,15 @@ import WhichPlayer.Types exposing (WhichPlayer(..))
 import Util exposing (to3d)
 
 
-type alias CardEntity =
+type alias CardEntity a =
     GameEntity
-        { card : Card
-        , owner : WhichPlayer
+        { a
+            | card : Card
+            , owner : WhichPlayer
         }
 
 
-cardEntity : ClockParams -> Texture.Model -> CardEntity -> List WebGL.Entity
+cardEntity : ClockParams -> Texture.Model -> CardEntity a -> List WebGL.Entity
 cardEntity { w, h, radius } textures { position, rotation, scale, card, owner } =
     let
         ( width, height, spacing ) =

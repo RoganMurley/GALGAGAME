@@ -7,8 +7,9 @@ import Clock.Hand exposing (handView, otherHandView)
 import Clock.Primitives as Primitives
 import Clock.Shaders
 import Clock.Stack
-import Clock.State exposing (animToResTickMax, uniforms)
+import Clock.State exposing (animToResTickMax)
 import Clock.Types exposing (ClockParams, Model)
+import Clock.Uniforms exposing (uniforms)
 import Clock.Wave
 import Ease
 import Html exposing (..)

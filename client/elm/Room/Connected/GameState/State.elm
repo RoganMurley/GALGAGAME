@@ -8,6 +8,7 @@ import GameState.Encoders exposing (encodeHoverIndex)
 import GameState.Messages exposing (..)
 import GameState.Types exposing (GameState(..), PlayState(..))
 import Json.Decode as Json exposing (field, maybe)
+import List.Extra as List
 import Main.Messages as Main
 import Main.Types exposing (Flags)
 import Math.Vector2 exposing (vec2)
@@ -185,14 +186,20 @@ update msg state mode flags =
                 case state of
                     Started (Playing { entities }) ->
                         let
-                            index =
-                                0
+                            mIndex =
+                                Maybe.map .index <|
+                                    List.find (Clock.hitTest pos) entities.hand
                         in
-                            update
-                                (PlayingOnly <| TurnOnly <| PlayCard index)
-                                state
-                                mode
-                                flags
+                            case mIndex of
+                                Just index ->
+                                    update
+                                        (PlayingOnly <| TurnOnly <| PlayCard index)
+                                        state
+                                        mode
+                                        flags
+
+                                Nothing ->
+                                    ( state, Cmd.none )
 
                     _ ->
                         ( state, Cmd.none )
