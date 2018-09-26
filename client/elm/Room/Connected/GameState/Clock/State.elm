@@ -4,7 +4,6 @@ import Animation.State
 import Animation.Types exposing (Anim(..))
 import Card.Types exposing (Card)
 import Clock.Card exposing (CardEntity)
-import Clock.Messages exposing (Msg(..))
 import Clock.Types exposing (ClockParams, GameEntity, Model)
 import Ease
 import Hand.Types exposing (Hand)
@@ -237,19 +236,6 @@ animToResTickMax anim =
 
         otherwise ->
             Animation.State.animToResTickMax anim
-
-
-update : Model -> Msg -> Model
-update model msg =
-    case msg of
-        Mouse { x, y } ->
-            let
-                pos =
-                    vec2 (toFloat x) (toFloat y)
-            in
-                { model
-                    | mouse = pos
-                }
 
 
 hitTest : Vec2 -> { a | position : Vec2 } -> Bool

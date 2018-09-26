@@ -2,10 +2,8 @@ module Clock.Types exposing (..)
 
 import Card.Types exposing (Card)
 import Clock.Entity exposing (Entities)
-import Math.Matrix4 exposing (Mat4)
 import Math.Vector2 exposing (Vec2)
 import Math.Vector3 exposing (Vec3)
-import WebGL.Texture exposing (Texture)
 import Resolvable.Types as Resolvable
 
 
