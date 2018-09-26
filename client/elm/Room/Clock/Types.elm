@@ -17,20 +17,6 @@ type alias Model =
     }
 
 
-type alias Uniforms a =
-    { a
-        | resolution : Vec2
-        , texture : Texture
-        , rotation : Mat4
-        , scale : Mat4
-        , color : Vec3
-        , worldPos : Vec3
-        , worldRot : Mat4
-        , perspective : Mat4
-        , camera : Mat4
-    }
-
-
 type alias Vertex =
     { position : Vec3
     , coord : Vec2

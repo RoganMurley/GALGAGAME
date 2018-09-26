@@ -2,8 +2,9 @@ module Clock.Wave exposing (..)
 
 import Animation.Types exposing (Anim(..))
 import Clock.Primitives as Primitives
-import Clock.State exposing (animToResTickMax, uniforms)
+import Clock.State exposing (animToResTickMax)
 import Clock.Types exposing (ClockParams)
+import Clock.Uniforms exposing (uniforms)
 import Ease
 import Math.Matrix4 exposing (makeRotate, makeScale3)
 import Math.Vector3 exposing (Vec3, vec3)

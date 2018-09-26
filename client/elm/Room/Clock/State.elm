@@ -3,24 +3,21 @@ module Clock.State exposing (..)
 import Animation.State
 import Animation.Types exposing (Anim(..))
 import Card.Types exposing (Card)
+import Clock.Card exposing (CardEntity)
 import Clock.Messages exposing (Msg(..))
-import Clock.Types exposing (ClockParams, GameEntity, Model, Uniforms)
+import Clock.Types exposing (ClockParams, GameEntity, Model)
 import Ease
 import Hand.Types exposing (Hand)
 import List.Extra as List
 import Main.Types exposing (Flags)
-import Math.Matrix4 exposing (Mat4, identity, makeLookAt, makeOrtho, makeRotate, mul)
 import Math.Vector2 exposing (Vec2, vec2)
-import Math.Vector3 exposing (Vec3, vec3)
 import Maybe.Extra as Maybe
 import Model.State as Model
-import Raymarch.Types exposing (Height, Width)
 import Resolvable.State exposing (activeAnim, activeModel, activeStackCard)
 import Resolvable.State as Resolvable
 import Resolvable.Types as Resolvable
 import Stack.Types exposing (Stack, StackCard)
 import Util exposing (floatInterp, interp, interp2D)
-import WebGL exposing (Texture)
 import WhichPlayer.Types exposing (WhichPlayer(..))
 
 
@@ -193,22 +190,25 @@ tick { dimensions } ({ res } as model) dt =
         resInfo =
             Just ( res.tick, activeAnim res )
 
+        params =
+            { w = toFloat w, h = toFloat h, radius = radius }
+
         stackEntities =
             calcStackEntities
-                { w = toFloat w, h = toFloat h, radius = radius }
+                params
                 resModel.stack
                 stackCard
                 resInfo
 
         handEntities =
             calcHandEntities
-                { w = toFloat w, h = toFloat h, radius = radius }
+                params
                 resModel.hand
                 resInfo
 
         otherHandEntities =
             calcOtherHandEntities
-                { w = toFloat w, h = toFloat h, radius = radius }
+                params
                 resModel.otherHand
                 resInfo
     in
@@ -221,20 +221,6 @@ tick { dimensions } ({ res } as model) dt =
                 }
             , focus = getFocus model
         }
-
-
-uniforms : Float -> ( Width, Height ) -> Texture -> Vec3 -> Mat4 -> Mat4 -> Vec3 -> Uniforms {}
-uniforms t ( width, height ) texture pos rot scale color =
-    { resolution = vec2 (toFloat width) (toFloat height)
-    , texture = texture
-    , rotation = rot
-    , scale = scale
-    , color = color
-    , worldPos = pos
-    , worldRot = makeRotate 0 (vec3 0 0 1)
-    , perspective = makeOrtho 0 (toFloat width / 2) (toFloat height / 2) 0 0.01 1000
-    , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
-    }
 
 
 animToResTickMax : Maybe Anim -> Float
@@ -285,15 +271,14 @@ getFocus { entities, mouse, res } =
             List.find <| hitTest mouse
 
         hoverCard =
-            Maybe.map .card <|
-                Maybe.or
-                    (hoverCardHitTest entities.stack)
-                    (hoverCardHitTest entities.hand)
+            Maybe.or
+                (Maybe.map .card <| hoverCardHitTest entities.stack)
+                (Maybe.map .card <| hoverCardHitTest entities.hand)
     in
         Maybe.or resCard hoverCard
 
 
-calcStackEntities : ClockParams -> Stack -> Maybe StackCard -> Maybe ( Float, Maybe Anim ) -> List (GameEntity { card : Card, owner : WhichPlayer })
+calcStackEntities : ClockParams -> Stack -> Maybe StackCard -> Maybe ( Float, Maybe Anim ) -> List (CardEntity {})
 calcStackEntities { w, h, radius } finalStack stackCard resInfo =
     let
         resTick =
@@ -438,7 +423,7 @@ handCardPosition ({ w, h, radius } as params) which index count =
                 vec2 0 y
 
 
-calcHandEntities : ClockParams -> Hand -> Maybe ( Float, Maybe Anim ) -> List (GameEntity { card : Card, owner : WhichPlayer })
+calcHandEntities : ClockParams -> Hand -> Maybe ( Float, Maybe Anim ) -> List (CardEntity { index : Int })
 calcHandEntities ({ w, h, radius } as params) finalHand resInfo =
     let
         cardDimensions : ClockParams -> ( Float, Float, Float )
@@ -494,7 +479,7 @@ calcHandEntities ({ w, h, radius } as params) finalHand resInfo =
         ( width, height, spacing ) =
             cardDimensions params
 
-        entity : ( Int, Card ) -> GameEntity { card : Card, owner : WhichPlayer }
+        entity : ( Int, Card ) -> CardEntity { index : Int }
         entity ( finalI, card ) =
             let
                 i =
@@ -515,13 +500,14 @@ calcHandEntities ({ w, h, radius } as params) finalHand resInfo =
                 , scale = 1
                 , card = card
                 , owner = PlayerA
+                , index = finalI
                 }
 
-        mainEntities : List (GameEntity { card : Card, owner : WhichPlayer })
+        mainEntities : List (CardEntity { index : Int })
         mainEntities =
             List.map entity <| List.indexedMap (,) hand
 
-        extraEntities : List (GameEntity { card : Card, owner : WhichPlayer })
+        extraEntities : List (CardEntity { index : Int })
         extraEntities =
             case anim of
                 Just (Draw PlayerA) ->
@@ -541,6 +527,7 @@ calcHandEntities ({ w, h, radius } as params) finalHand resInfo =
                                   , scale = 1
                                   , card = card
                                   , owner = PlayerA
+                                  , index = n
                                   }
                                 ]
 
@@ -565,6 +552,7 @@ calcHandEntities ({ w, h, radius } as params) finalHand resInfo =
                           , scale = scale
                           , card = card
                           , owner = PlayerA
+                          , index = i
                           }
                         ]
 
@@ -691,7 +679,7 @@ calcOtherHandEntities ({ w, h, radius } as params) finalN resInfo =
         mainEntities ++ extraEntities
 
 
-clockFace : Stack -> Vec2 -> Float -> Float -> List (GameEntity { card : Card, owner : WhichPlayer })
+clockFace : Stack -> Vec2 -> Float -> Float -> List (CardEntity {})
 clockFace stack origin radius progress =
     let
         segments : Int

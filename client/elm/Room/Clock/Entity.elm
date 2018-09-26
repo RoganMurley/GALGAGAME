@@ -15,7 +15,7 @@ type alias GameEntity a =
 
 type alias Entities =
     { stack : List (GameEntity { card : Card, owner : WhichPlayer })
-    , hand : List (GameEntity { card : Card, owner : WhichPlayer })
+    , hand : List (GameEntity { card : Card, index : Int, owner : WhichPlayer })
     , otherHand : List (GameEntity {})
     }
 

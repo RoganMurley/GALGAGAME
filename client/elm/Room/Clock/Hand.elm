@@ -1,12 +1,12 @@
 module Clock.Hand exposing (..)
 
 import Animation.Types exposing (Anim(..))
-import Card.Types exposing (Card)
-import Clock.Card exposing (cardEntity, colour)
+import Clock.Card exposing (CardEntity, cardEntity, colour)
 import Clock.Primitives as Primitives
 import Clock.Shaders
-import Clock.State exposing (animToResTickMax, uniforms)
+import Clock.State exposing (animToResTickMax)
 import Clock.Types exposing (ClockParams, GameEntity)
+import Clock.Uniforms exposing (uniforms)
 import Ease
 import Hand.Types exposing (Hand)
 import Math.Matrix4 exposing (makeLookAt, makeOrtho, makeRotate, makeScale3)
@@ -96,7 +96,7 @@ position ({ w, h, radius } as params) which index count =
                 vec3 0 y 0
 
 
-handView : ClockParams -> Hand -> List (GameEntity { card : Card, owner : WhichPlayer }) -> Maybe ( Float, Maybe Anim ) -> Texture -> Texture.Model -> List WebGL.Entity
+handView : ClockParams -> Hand -> List (CardEntity { index : Int }) -> Maybe ( Float, Maybe Anim ) -> Texture -> Texture.Model -> List WebGL.Entity
 handView ({ w, h, radius } as params) finalHand handEntities resInfo noise textures =
     let
         locals =
@@ -280,12 +280,13 @@ otherHandView ({ w, h, radius } as params) finalN otherHandEntities resInfo nois
                         rot
                         (makeScale3 (scale * 0.7 * width) (scale * height) 1)
                         (colour PlayerB)
-                  -- , Primitives.quad Clock.Shaders.fragment <|
-                  --     locals texture
-                  --         pos
-                  --         (makeScale3 (scale * 0.6 * width) (scale * 0.6 * height) 1)
-                  --         rot
-                  --         (vec3 1 1 1)
+
+                -- , Primitives.quad Clock.Shaders.fragment <|
+                --     locals texture
+                --         pos
+                --         (makeScale3 (scale * 0.6 * width) (scale * 0.6 * height) 1)
+                --         rot
+                --         (vec3 1 1 1)
                 ]
 
         mainView : List WebGL.Entity

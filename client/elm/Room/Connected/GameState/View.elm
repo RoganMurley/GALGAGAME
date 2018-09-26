@@ -9,15 +9,11 @@ import CharacterSelect.View as CharacterSelect
 import Connected.Messages as Connected
 import Endgame.View as Endgame
 import GameState.Messages exposing (..)
-import GameState.State exposing (resolvable)
 import GameState.Types exposing (GameState(..), PlayState(..), WaitType(..))
 import Main.Messages as Main
 import Main.Types exposing (Flags)
-import Model.Types exposing (..)
 import Raymarch.Types as Raymarch
 import Raymarch.View as Raymarch
-import Resolvable.State exposing (activeAnim, activeModel, activeStackCard, resolving)
-import Resolvable.Types as Resolvable
 import Room.Messages as Room
 import Texture.Types as Texture
 import Clock.View as Clock
@@ -47,58 +43,28 @@ view state roomID ({ hostname, httpPort, time, dimensions } as flags) textures =
                     CharacterSelect.view params model
 
             Started started ->
-                let
-                    res : Resolvable.Model
-                    res =
-                        resolvable started
+                case started of
+                    Playing clock ->
+                        div []
+                            [ Clock.view params clock textures
+                            , Endgame.view 0.0 Nothing Nothing
+                            ]
 
-                    anim : Maybe Anim
-                    anim =
-                        activeAnim res
+                    Ended winner clock mReplayId ->
+                        let
+                            endAnim =
+                                Just <| GameEnd winner
 
-                    -- CLOCK STUFF
-                    ( w, h ) =
-                        dimensions
-
-                    clock =
-                        case started of
-                            Playing clock ->
-                                clock
-
-                            Ended _ clock _ ->
-                                clock
-
-                    resInfo =
-                        Just ( res.tick, activeAnim res )
-
-                    resModel =
-                        activeModel res
-
-                    stackCard =
-                        activeStackCard res
-
-                    clockView =
-                        Clock.view params clock textures
-                in
-                    case started of
-                        Playing _ ->
+                            endTick =
+                                animToResTickMax endAnim
+                        in
                             div []
-                                [ clockView
-                                , Endgame.view 0.0 Nothing Nothing
+                                [ Clock.view params clock textures
+                                , Endgame.view
+                                    endTick
+                                    endAnim
+                                    mReplayId
                                 ]
-
-                        Ended winner _ mReplayId ->
-                            let
-                                endAnim =
-                                    Just (GameEnd winner)
-
-                                endTick =
-                                    animToResTickMax endAnim
-                            in
-                                div []
-                                    [ clockView
-                                    , Endgame.view endTick endAnim mReplayId
-                                    ]
 
 
 waitingView : WaitType -> String -> String -> String -> Html Main.Msg

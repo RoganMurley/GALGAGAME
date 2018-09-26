@@ -2,7 +2,8 @@ module Clock.Primitives exposing (..)
 
 import Clock.Meshes
 import Clock.Shaders
-import Clock.Types exposing (Uniforms, Vertex)
+import Clock.Types exposing (Vertex)
+import Clock.Uniforms exposing (Uniforms)
 import Math.Vector2 exposing (Vec2)
 import WebGL exposing (Entity, Mesh, Shader)
 import WebGL.Settings.Blend as WebGL
