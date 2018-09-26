@@ -11,9 +11,13 @@ import Clock.State exposing (animToResTickMax)
 import Clock.Types exposing (ClockParams, Model)
 import Clock.Uniforms exposing (uniforms)
 import Clock.Wave
+import Connected.Messages as Connected
 import Ease
+import GameState.Messages as GameState
+import Hand.State exposing (maxHandLength)
 import Html exposing (..)
 import Html.Attributes exposing (..)
+import Html.Events exposing (onClick)
 import Main.Messages as Main
 import Math.Matrix4 exposing (makeRotate, makeScale3, makeLookAt, makeOrtho)
 import Math.Vector3 exposing (Vec3, vec3)
@@ -21,9 +25,11 @@ import Maybe.Extra as Maybe
 import Model.Types exposing (Life)
 import Raymarch.Types exposing (Params(..))
 import Resolvable.State exposing (activeAnim, activeModel)
+import Room.Messages as Room
 import Texture.State as Texture
 import Texture.Types as Texture
 import WebGL
+import WhichPlayer.Types exposing (WhichPlayer(..))
 
 
 view : Params -> Model -> Texture.Model -> Html Main.Msg
@@ -124,6 +130,12 @@ view (Params _ ( w, h )) { res, focus, mouse, entities } textures =
                 [ lifeView model.life ]
             , div [ class "clock-life other" ]
                 [ lifeView model.otherLife ]
+            , div [ class "clock-go" ]
+                [ turnView
+                    focus
+                    (List.length model.hand == maxHandLength)
+                    model.turn
+                ]
             ]
 
 
@@ -165,3 +177,35 @@ textView card =
 lifeView : Life -> Html a
 lifeView life =
     text <| toString life
+
+
+turnView : Maybe Card -> Bool -> WhichPlayer -> Html Main.Msg
+turnView focus handFull turn =
+    case ( focus, turn ) of
+        ( Nothing, PlayerA ) ->
+            case handFull of
+                False ->
+                    button
+                        [ class "clock-turn"
+                        , onClick <|
+                            Main.RoomMsg <|
+                                Room.ConnectedMsg <|
+                                    Connected.GameStateMsg <|
+                                        GameState.PlayingOnly <|
+                                            GameState.TurnOnly <|
+                                                GameState.EndTurn
+                        ]
+                        [ text "Go" ]
+
+                True ->
+                    button
+                        [ class "clock-turn clock-turn-disabled" ]
+                        [ text "Hand full" ]
+
+        ( Nothing, PlayerB ) ->
+            div
+                [ class "clock-turn enemy-turn" ]
+                [ text "Opponent's Turn" ]
+
+        _ ->
+            div [] []
