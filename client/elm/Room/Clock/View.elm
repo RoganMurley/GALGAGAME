@@ -25,8 +25,8 @@ import Texture.Types as Texture
 import WebGL
 
 
-view : Params -> ( Life, Life ) -> Model -> Texture.Model -> Html Main.Msg
-view (Params _ ( w, h )) ( life, otherLife ) { res, focus, mouse, entities } textures =
+view : Params -> Model -> Texture.Model -> Html Main.Msg
+view (Params _ ( w, h )) { res, focus, mouse, entities } textures =
     let
         mTextures =
             Maybe.map2 (,)
@@ -120,9 +120,9 @@ view (Params _ ( w, h )) ( life, otherLife ) { res, focus, mouse, entities } tex
                 [ textView focus
                 ]
             , div [ class "clock-life" ]
-                [ lifeView life ]
+                [ lifeView model.life ]
             , div [ class "clock-life other" ]
-                [ lifeView otherLife ]
+                [ lifeView model.otherLife ]
             ]
 
 

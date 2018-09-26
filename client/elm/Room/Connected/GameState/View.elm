@@ -77,60 +77,28 @@ view state roomID ({ hostname, httpPort, time, dimensions } as flags) textures =
                     stackCard =
                         activeStackCard res
 
-                    clockParams =
-                        { w = toFloat w
-                        , h = toFloat h
-                        , radius = 0.8 * (toFloat h / 2)
-                        }
+                    clockView =
+                        Clock.view params clock textures
                 in
-                    case res.resList of
-                        resData :: _ ->
+                    case started of
+                        Playing _ ->
                             div []
-                                [ Clock.view
-                                    params
-                                    ( resModel.life, resModel.otherLife )
-                                    { res = clock.res
-                                    , focus = clock.focus
-                                    , mouse = clock.mouse
-                                    , entities = clock.entities
-                                    }
-                                    textures
+                                [ clockView
                                 , Endgame.view 0.0 Nothing Nothing
                                 ]
 
-                        otherwise ->
+                        Ended winner _ mReplayId ->
                             let
-                                model : Model
-                                model =
-                                    res.final
+                                endAnim =
+                                    Just (GameEnd winner)
+
+                                endTick =
+                                    animToResTickMax endAnim
                             in
-                                case started of
-                                    Playing _ ->
-                                        div []
-                                            [ Clock.view
-                                                params
-                                                ( model.life, model.otherLife )
-                                                clock
-                                                textures
-                                            , Endgame.view 0.0 Nothing Nothing
-                                            ]
-
-                                    Ended winner _ mReplayId ->
-                                        let
-                                            endAnim =
-                                                Just (GameEnd winner)
-
-                                            endTick =
-                                                animToResTickMax endAnim
-                                        in
-                                            div []
-                                                [ Clock.view
-                                                    params
-                                                    ( model.life, model.otherLife )
-                                                    clock
-                                                    textures
-                                                , Endgame.view endTick endAnim mReplayId
-                                                ]
+                                div []
+                                    [ clockView
+                                    , Endgame.view endTick endAnim mReplayId
+                                    ]
 
 
 waitingView : WaitType -> String -> String -> String -> Html Main.Msg
