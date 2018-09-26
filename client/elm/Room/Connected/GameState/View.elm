@@ -52,11 +52,20 @@ view state roomID ({ hostname, httpPort, time, dimensions } as flags) textures =
 
                     Ended winner clock mReplayId ->
                         let
+                            resolving =
+                                not <| List.isEmpty clock.res.resList
+
                             endAnim =
-                                Just <| GameEnd winner
+                                if resolving then
+                                    Nothing
+                                else
+                                    Just <| GameEnd winner
 
                             endTick =
-                                animToResTickMax endAnim
+                                if resolving then
+                                    0
+                                else
+                                    animToResTickMax endAnim
                         in
                             div []
                                 [ Clock.view params clock textures
