@@ -18,7 +18,7 @@ import Player (WhichPlayer(..), other)
 import Safe (atMay, headMay)
 import StackCard(StackCard(..))
 import Username (Username)
-import Util (Err, Gen, deleteIndex, split)
+import Util (Err, Gen, split)
 
 
 import qualified DSL.Alpha as Alpha
@@ -167,14 +167,9 @@ playCard index which m replay
         Left "You can't play a card you don't have in your hand"
       Just c ->
         let
-          playCardProgram :: Beta.Program ()
-          playCardProgram = do
-            Beta.raw (do
-              Alpha.swapTurn
-              Alpha.resetPasses
-              Alpha.modHand which (deleteIndex index))
-            Beta.play which c
-          (newModel, _, anims) = Beta.execute m $ foldFree Beta.betaI playCardProgram
+          program :: Beta.Program ()
+          program = Beta.play which c index
+          (newModel, _, anims) = Beta.execute m $ foldFree Beta.betaI program
           res :: [(ModelDiff, Maybe CardAnim, Maybe StackCard)]
           res = (\(x, y) -> (x, y, Nothing)) <$> anims
           newPlayState = Playing newModel (Active.add replay res) :: PlayState

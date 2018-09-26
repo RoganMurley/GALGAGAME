@@ -20,7 +20,7 @@ data DSL n
   | AddToHand WhichPlayer Card n
   | Obliterate n
   | Reverse n
-  | Play WhichPlayer Card n
+  | Play WhichPlayer Card Int n
   | Transmute Card n
   | Rotate n
   | SetHeadOwner WhichPlayer n

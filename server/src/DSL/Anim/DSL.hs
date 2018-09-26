@@ -17,7 +17,7 @@ data DSL a
   | Bite WhichPlayer Life a
   | Obliterate a
   | Reverse a
-  | Play WhichPlayer Card a
+  | Play WhichPlayer Card Int a
   | Transmute StackCard StackCard a
   | Overdraw WhichPlayer Card a
   | GameEnd (Maybe WhichPlayer) a
