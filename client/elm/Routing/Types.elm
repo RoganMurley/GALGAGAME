@@ -8,7 +8,6 @@ type Route
     | Replay String
     | Lab
     | Login
-    | Clock
 
 
 type PlayRoute

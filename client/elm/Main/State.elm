@@ -8,8 +8,6 @@ import Routing.Types as Routing
 import WebSocket
 import GameState.Messages as GameState
 import GameState.Types exposing (GameState(Started))
-import Clock.Listener as Clock
-import Clock.State as Clock
 import Connected.Messages as Connected
 import Lab.State as Lab
 import Lobby.State as Lobby
@@ -87,9 +85,6 @@ update msg ({ room, settings, textures, flags } as model) =
 
                             Just { state } ->
                                 listen time (Started state)
-
-                    Room.Clock clock ->
-                        Clock.listen clock
 
                     otherwise ->
                         Cmd.none
@@ -361,14 +356,6 @@ locationUpdate model location =
                           }
                         , Cmd.none
                         )
-
-                Routing.Clock ->
-                    ( { model
-                        | room =
-                            Room.Clock Clock.init
-                      }
-                    , Cmd.none
-                    )
 
         Nothing ->
             ( { model | room = Room.init }
