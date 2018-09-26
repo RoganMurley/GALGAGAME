@@ -11,6 +11,7 @@ import Life (Life)
 import Model (Deck, Hand, Passes(..), Stack, Turn, maxHandLength)
 import Safe (headMay, tailSafe)
 import StackCard(StackCard(StackCard), isOwner)
+import Util (deleteIndex)
 
 import {-# SOURCE #-} Cards (theEnd)
 
@@ -76,8 +77,12 @@ lifesteal dmg w = do
   heal dmg (other w)
 
 
-play :: WhichPlayer -> Card -> Program ()
-play w c = modStack $ (:) (StackCard w c)
+play :: WhichPlayer -> Card -> Int -> Program ()
+play w c i = do
+  swapTurn
+  resetPasses
+  modHand w $ deleteIndex i
+  modStack $ (:) (StackCard w c)
 
 
 bounceAll :: WhichPlayer -> Program ()

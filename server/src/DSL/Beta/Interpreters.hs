@@ -34,7 +34,7 @@ alphaI (Free (Bite d w n))       = Alpha.hurt d w          >>  alphaI n
 alphaI (Free (AddToHand w c n))  = Alpha.addToHand w c     >>  alphaI n
 alphaI (Free (Obliterate n))     = Alpha.setStack []       >>  alphaI n
 alphaI (Free (Reverse n))        = Alpha.modStack reverse  >>  alphaI n
-alphaI (Free (Play w c n))       = Alpha.play w c          >>  alphaI n
+alphaI (Free (Play w c i n))     = Alpha.play w c i        >>  alphaI n
 alphaI (Free (Transmute c n))    = Alpha.transmute c       >>  alphaI n
 alphaI (Free (Rotate n))         = Alpha.modStack tailSafe >>  alphaI n
 alphaI (Free (SetHeadOwner w n)) = Alpha.setHeadOwner w    >>  alphaI n
@@ -58,7 +58,7 @@ animI (Draw w _)         = drawAnim w
 animI (Bite d w _)       = \a -> (toLeft a) <* (toRight . liftF $ Anim.Bite w d ())
 animI (Obliterate _)     = \a -> (toLeft a) <* (toRight . liftF $ Anim.Obliterate ())
 animI (Reverse _)        = \a -> (toLeft a) <* (toRight . liftF $ Anim.Reverse ())
-animI (Play w c _)       = \a -> (toLeft a) <* (toRight . liftF $ Anim.Play w c ())
+animI (Play w c i _)     = \a -> (toLeft a) <* (toRight . liftF $ Anim.Play w c i ())
 animI (Rotate _)         = \a -> (toLeft a) <* (toRight . liftF $ Anim.Rotate ())
 animI (Transmute c _)    = transmuteAnim c
 animI (SetHeadOwner w _) = setHeadOwnerAnim w
@@ -128,7 +128,7 @@ execute = execute' "" [] mempty
       let
         next = if gameover m then Pure () else Anim.next anim
       in
-          execute' s (a ++ [(d, Anim.animate anim)]) mempty m next
+        execute' s (a ++ [(d, Anim.animate anim)]) mempty m next
     execute' s a d m (Free (InL (InL p))) =
       let
          (newDiff, n) = Alpha.alphaEffI m p
