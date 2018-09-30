@@ -103,13 +103,9 @@ animToResTickMax anim =
             Animation.State.animToResTickMax anim
 
 
-hitTest : Vec2 -> { a | position : Vec2 } -> Bool
-hitTest pos { position } =
-    let
-        dist =
-            Math.Vector2.distance position pos
-    in
-        dist < 64
+hitTest : Vec2 -> Float -> { a | position : Vec2 } -> Bool
+hitTest pos dist { position } =
+    Math.Vector2.distance position pos < dist
 
 
 getFocus : Model -> Maybe Card
@@ -118,13 +114,10 @@ getFocus { entities, mouse, res } =
         resCard =
             Maybe.map .card <| activeStackCard res
 
-        hoverCardHitTest =
-            List.find <| hitTest mouse
-
         hoverCard =
             Maybe.or
-                (Maybe.map .card <| hoverCardHitTest entities.stack)
-                (Maybe.map .card <| hoverCardHitTest entities.hand)
+                (Maybe.map .card <| (List.find <| hitTest mouse 64) entities.stack)
+                (Maybe.map .card <| (List.find <| hitTest mouse 28) entities.hand)
     in
         Maybe.or resCard hoverCard
 

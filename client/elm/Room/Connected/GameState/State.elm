@@ -11,7 +11,7 @@ import Json.Decode as Json exposing (field, maybe)
 import List.Extra as List
 import Main.Messages as Main
 import Main.Types exposing (Flags)
-import Math.Vector2 exposing (vec2)
+import Math.Vector2 exposing (Vec2, vec2)
 import Mode as Mode
 import Model.Decoders as Model
 import Model.Types exposing (..)
@@ -188,7 +188,7 @@ update msg state mode flags =
                         let
                             mIndex =
                                 Maybe.map .index <|
-                                    List.find (Clock.hitTest pos) entities.hand
+                                    List.find (Clock.hitTest pos 28) entities.hand
                         in
                             case mIndex of
                                 Just index ->
