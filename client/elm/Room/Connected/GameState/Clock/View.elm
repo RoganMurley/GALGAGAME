@@ -198,14 +198,10 @@ turnView focus handFull turn =
                         [ text "Go" ]
 
                 True ->
-                    button
-                        [ class "clock-turn clock-turn-disabled" ]
-                        [ text "Hand full" ]
+                    div [] []
 
         ( Nothing, PlayerB ) ->
-            div
-                [ class "clock-turn enemy-turn" ]
-                [ text "Opponent's Turn" ]
+            div [] []
 
         _ ->
             div [] []
