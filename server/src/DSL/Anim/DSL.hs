@@ -22,6 +22,7 @@ data DSL a
   | Overdraw WhichPlayer Card a
   | GameEnd (Maybe WhichPlayer) a
   | Rotate a
+  | Windup a
   deriving (Functor)
 
 

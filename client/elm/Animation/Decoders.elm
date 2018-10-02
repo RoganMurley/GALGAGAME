@@ -21,6 +21,7 @@ decoder =
         , overdrawDecoder
         , gameEndDecoder
         , rotateDecoder
+        , windupDecoder
         , adhocDecoder
         ]
 
@@ -119,7 +120,14 @@ rotateDecoder : Decoder Anim
 rotateDecoder =
     Json.map2 (\w _ -> Rotate w)
         (field "player" WhichPlayer.decoder)
-        (field "anim" (constDecoder "rotate"))
+        (field "anim" <| constDecoder "rotate")
+
+
+windupDecoder : Decoder Anim
+windupDecoder =
+    Json.map2 (\w _ -> Windup w)
+        (field "player" WhichPlayer.decoder)
+        (field "anim" <| constDecoder "windup")
 
 
 adhocDecoder : Decoder Anim
