@@ -21,6 +21,7 @@ data CardAnim
   | Overdraw WhichPlayer Card
   | GameEnd (Maybe WhichPlayer)
   | Rotate
+  | Windup
   | Adhoc WhichPlayer ShaderName SfxUrl
   deriving (Show, Eq)
 
@@ -85,6 +86,11 @@ instance ToJSON CardAnim where
     [ "player" .= PlayerA
     , "anim"  .= ("rotate" :: Text)
     ]
+  toJSON Windup =
+    object
+    [ "player" .= PlayerA
+    , "anim"  .= ("windup" :: Text)
+    ]
   toJSON (Adhoc w n s) =
     object
     [ "player" .= w
@@ -104,4 +110,5 @@ instance Mirror CardAnim where
   mirror (GameEnd w)       = GameEnd (other <$> w)
   mirror (Overdraw w c)    = Overdraw (other w) c
   mirror Rotate            = Rotate
+  mirror Windup            = Windup
   mirror (Adhoc w n s)     = Adhoc (other w) n s

@@ -141,7 +141,7 @@ calcStackEntities { w, h, radius } finalStack stackCard resInfo =
                 Just (Rotate _) ->
                     Ease.inQuad <| resTick / maxTick
 
-                Just (Play _ _ _) ->
+                Just (Windup _) ->
                     1 - (Ease.inQuad <| resTick / maxTick)
 
                 otherwise ->
@@ -157,9 +157,6 @@ calcStackEntities { w, h, radius } finalStack stackCard resInfo =
 
                         Nothing ->
                             finalStack
-
-                Just (Play _ _ _) ->
-                    List.drop 1 finalStack
 
                 otherwise ->
                     finalStack

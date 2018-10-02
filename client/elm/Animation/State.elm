@@ -100,6 +100,9 @@ getWhichPlayer anim =
         Rotate w ->
             w
 
+        Windup w ->
+            w
+
         Adhoc w _ _ ->
             w
 

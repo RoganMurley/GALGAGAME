@@ -44,6 +44,7 @@ type Anim
     | GameStart WhichPlayer
     | GameEnd (Maybe WhichPlayer)
     | Rotate WhichPlayer
+    | Windup WhichPlayer
     | Adhoc WhichPlayer ShaderName SfxUrl
     | Custom String
 

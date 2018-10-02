@@ -59,11 +59,11 @@ animI (Heal _ w _)       = basicAnim $ Anim.Heal w ()
 animI (Bite d w _)       = basicAnim $ Anim.Bite w d ()
 animI (Obliterate _)     = basicAnim $ Anim.Obliterate ()
 animI (Reverse _)        = basicAnim $ Anim.Reverse ()
-animI (Play w c i _)     = basicAnim $ Anim.Play w c i ()
 animI (Rotate _)         = basicAnim $ Anim.Rotate ()
 animI (RawAnim r _)      = basicAnim $ Anim.Raw r ()
 animI (AddToHand w _ _)  = drawAnim w
 animI (Draw w _)         = drawAnim w
+animI (Play w c i _)     = playAnim w c i
 animI (Transmute c _)    = transmuteAnim c
 animI (SetHeadOwner w _) = setHeadOwnerAnim w
 animI _                  = toLeft
@@ -78,6 +78,14 @@ drawAnim w alpha =
     if (handLength < maxHandLength)
       then toRight . liftF $ Anim.Draw w ()
       else toRight . liftF $ Anim.Overdraw w (fromMaybe theEnd nextCard) ()
+    return final
+
+playAnim :: WhichPlayer -> Card -> Int -> (Alpha.Program a -> AlphaAnimProgram a)
+playAnim w c i alpha =
+  do
+    toRight . liftF $ Anim.Play w c i ()
+    final <- toLeft alpha
+    toRight . liftF $ Anim.Windup ()
     return final
 
 
