@@ -181,8 +181,8 @@ lifeView life =
 
 turnView : Maybe Card -> Bool -> WhichPlayer -> Html Main.Msg
 turnView focus handFull turn =
-    case ( focus, turn ) of
-        ( Nothing, PlayerA ) ->
+    case ( handFull, focus, turn ) of
+        ( False, Nothing, PlayerA ) ->
             case handFull of
                 False ->
                     button
@@ -200,8 +200,11 @@ turnView focus handFull turn =
                 True ->
                     div [] []
 
-        ( Nothing, PlayerB ) ->
+        ( False, Nothing, PlayerB ) ->
+            div [ class "turn-status" ] [ text "Opponent's turn" ]
+
+        ( False, _, _ ) ->
             div [] []
 
-        _ ->
-            div [] []
+        ( True, _, _ ) ->
+            div [ class "turn-status" ] [ text "Hand full" ]
