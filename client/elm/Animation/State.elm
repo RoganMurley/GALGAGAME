@@ -146,7 +146,7 @@ animToResTickMax anim =
             1500.0
 
         Just (Play _ _ _) ->
-            1000.0
+            500.0
 
         Just (Overdraw _ _) ->
             1000.0
@@ -159,6 +159,9 @@ animToResTickMax anim =
 
         Just (Rotate _) ->
             1000.0
+
+        Just (Windup _) ->
+            300.0
 
         otherwise ->
             800.0

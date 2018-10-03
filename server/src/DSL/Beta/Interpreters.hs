@@ -83,8 +83,8 @@ drawAnim w alpha =
 playAnim :: WhichPlayer -> Card -> Int -> (Alpha.Program a -> AlphaAnimProgram a)
 playAnim w c i alpha =
   do
-    toRight . liftF $ Anim.Play w c i ()
     final <- toLeft alpha
+    toRight . liftF $ Anim.Play w c i ()
     toRight . liftF $ Anim.Windup ()
     return final
 

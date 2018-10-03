@@ -1,6 +1,6 @@
 module Clock.State exposing (..)
 
-import Animation.State
+import Animation.State exposing (animToResTickMax)
 import Animation.Types exposing (Anim(..))
 import Card.Types exposing (Card)
 import Clock.Card exposing (CardEntity)
@@ -87,22 +87,6 @@ tick { dimensions } ({ res } as model) dt =
         }
 
 
-animToResTickMax : Maybe Anim -> Float
-animToResTickMax anim =
-    case anim of
-        Just (Draw _) ->
-            500
-
-        Just (Play _ _ _) ->
-            1000
-
-        Just (Overdraw _ _) ->
-            1000
-
-        otherwise ->
-            Animation.State.animToResTickMax anim
-
-
 hitTest : Vec2 -> Float -> { a | position : Vec2 } -> Bool
 hitTest pos dist { position } =
     Math.Vector2.distance position pos < dist
@@ -150,6 +134,9 @@ calcStackEntities { w, h, radius } finalStack stackCard resInfo =
         stack : Stack
         stack =
             case anim of
+                Just (Play _ _ _) ->
+                    List.drop 1 finalStack
+
                 Just (Rotate _) ->
                     case stackCard of
                         Just c ->

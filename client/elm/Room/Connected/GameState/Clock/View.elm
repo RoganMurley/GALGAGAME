@@ -1,5 +1,6 @@
 module Clock.View exposing (view)
 
+import Animation.State exposing (animToResTickMax)
 import Animation.Types exposing (Anim(..))
 import Card.Types exposing (Card)
 import Clock.Card exposing (cardTexture)
@@ -7,7 +8,6 @@ import Clock.Hand exposing (handView, otherHandView)
 import Clock.Primitives as Primitives
 import Clock.Shaders
 import Clock.Stack
-import Clock.State exposing (animToResTickMax)
 import Clock.Types exposing (ClockParams, Model)
 import Clock.Uniforms exposing (uniforms)
 import Clock.Wave
