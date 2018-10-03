@@ -143,7 +143,7 @@ tick flags room dt =
             Connected <| Connected.tick flags connected dt
 
         Replay replay ->
-            Replay <| Replay.tick replay dt
+            Replay <| Replay.tick flags replay dt
 
         Lab lab ->
             Lab <| Lab.tick lab dt
