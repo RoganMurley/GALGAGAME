@@ -1,4 +1,4 @@
-module GameState.State exposing (update, tick, tickZero, resolvable, resMapPlay)
+module GameState.State exposing (playstateTick, update, tick, tickZero, resolvable, resMapPlay)
 
 import Audio exposing (playSound)
 import CharacterSelect.State as CharacterSelect
@@ -363,14 +363,21 @@ resolvableSet s r =
 tick : Flags -> GameState -> Float -> GameState
 tick flags state dt =
     case state of
-        Started (Playing clock) ->
-            Started <| Playing <| Clock.tick flags clock dt
-
-        Started (Ended w clock replay) ->
-            Started <| Ended w (Clock.tick flags clock dt) replay
+        Started started ->
+            Started <| playstateTick flags started dt
 
         _ ->
             state
+
+
+playstateTick : Flags -> PlayState -> Float -> PlayState
+playstateTick flags state dt =
+    case state of
+        Playing clock ->
+            Playing <| Clock.tick flags clock dt
+
+        Ended w clock replay ->
+            Ended w (Clock.tick flags clock dt) replay
 
 
 tickZero : PlayState -> Bool

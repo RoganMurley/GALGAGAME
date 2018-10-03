@@ -37,7 +37,7 @@ view model settings flags textures =
                     Connected.view connected flags textures
 
                 Replay replay ->
-                    Replay.view params replay flags textures
+                    Replay.view replay flags textures
 
                 Lab lab ->
                     Html.map (Main.RoomMsg << LabMsg) <|
