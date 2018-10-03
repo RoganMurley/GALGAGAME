@@ -1,10 +1,10 @@
 module Clock.Hand exposing (..)
 
+import Animation.State exposing (animToResTickMax)
 import Animation.Types exposing (Anim(..))
 import Clock.Card exposing (CardEntity, cardEntity, colour)
 import Clock.Primitives as Primitives
 import Clock.Shaders
-import Clock.State exposing (animToResTickMax)
 import Clock.Types exposing (ClockParams, GameEntity)
 import Clock.Uniforms exposing (uniforms)
 import Ease

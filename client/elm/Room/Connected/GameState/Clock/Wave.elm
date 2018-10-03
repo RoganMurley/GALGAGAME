@@ -1,8 +1,8 @@
 module Clock.Wave exposing (..)
 
+import Animation.State exposing (animToResTickMax)
 import Animation.Types exposing (Anim(..))
 import Clock.Primitives as Primitives
-import Clock.State exposing (animToResTickMax)
 import Clock.Types exposing (ClockParams)
 import Clock.Uniforms exposing (uniforms)
 import Ease
