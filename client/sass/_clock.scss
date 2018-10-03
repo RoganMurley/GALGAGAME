@@ -52,3 +52,16 @@
   font-family: 'Cinzel Decorative', sans-serif;
   font-weight: 900;
 }
+
+
+.turn-status {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+
+  color: #fff;
+  font-size: 1.6rem;
+  font-family: 'Cinzel Decorative', sans-serif;
+  font-weight: 900;
+}
