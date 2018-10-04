@@ -18,22 +18,19 @@
 }
 
 
+.clock-life-container {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+}
+
+
 .clock-life {
   color: #fff;
   position: absolute;
-  bottom: 15%;
-  left: 35%;
-  transform: translate(-50%, -50%);
   text-align: center;
   font-size: 4rem;
   font-family: 'Cinzel Decorative', sans-serif;
-
-  &.other {
-    top: 15%;
-    right: 35%;
-    left: auto;
-    bottom: auto;
-  }
 }
 
 

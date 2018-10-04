@@ -126,10 +126,24 @@ view (Params _ ( w, h )) { res, focus, mouse, entities } textures =
             , div [ class "text-focus" ]
                 [ textView focus
                 ]
-            , div [ class "clock-life" ]
-                [ lifeView model.life ]
-            , div [ class "clock-life other" ]
-                [ lifeView model.otherLife ]
+            , div [ class "clock-life-container" ]
+                [ div
+                    [ class "clock-life"
+                    , style
+                        [ ( "right", (toString (0.5 * radius)) ++ "px" )
+                        , ( "top", (toString (0.7 * radius)) ++ "px" )
+                        ]
+                    ]
+                    [ lifeView model.life ]
+                , div
+                    [ class "clock-life other"
+                    , style
+                        [ ( "left", (toString (0.5 * radius)) ++ "px" )
+                        , ( "bottom", (toString (0.7 * radius)) ++ "px" )
+                        ]
+                    ]
+                    [ lifeView model.otherLife ]
+                ]
             , div [ class "clock-go" ]
                 [ turnView
                     anim
