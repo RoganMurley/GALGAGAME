@@ -132,6 +132,7 @@ view (Params _ ( w, h )) { res, focus, mouse, entities } textures =
                 [ lifeView model.otherLife ]
             , div [ class "clock-go" ]
                 [ turnView
+                    anim
                     focus
                     (List.length model.hand == maxHandLength)
                     model.turn
@@ -179,12 +180,12 @@ lifeView life =
     text <| toString life
 
 
-turnView : Maybe Card -> Bool -> WhichPlayer -> Html Main.Msg
-turnView focus handFull turn =
-    case ( handFull, focus, turn ) of
-        ( False, Nothing, PlayerA ) ->
-            case handFull of
-                False ->
+turnView : Maybe Anim -> Maybe Card -> Bool -> WhichPlayer -> Html Main.Msg
+turnView anim focus handFull turn =
+    case ( anim, handFull, focus ) of
+        ( Nothing, False, Nothing ) ->
+            case turn of
+                PlayerA ->
                     button
                         [ class "clock-turn"
                         , onClick <|
@@ -197,14 +198,11 @@ turnView focus handFull turn =
                         ]
                         [ text "Go" ]
 
-                True ->
-                    div [] []
+                PlayerB ->
+                    div [ class "turn-status" ] [ text "Opponent's turn" ]
 
-        ( False, Nothing, PlayerB ) ->
-            div [ class "turn-status" ] [ text "Opponent's turn" ]
-
-        ( False, _, _ ) ->
-            div [] []
-
-        ( True, _, _ ) ->
+        ( Nothing, True, Nothing ) ->
             div [ class "turn-status" ] [ text "Hand full" ]
+
+        _ ->
+            div [] []
