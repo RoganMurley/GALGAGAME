@@ -52,6 +52,15 @@ view { w, h, radius } resInfo texture =
                         (vec3 1 0 0)
                 ]
 
+            Just (Bite _ _) ->
+                [ Primitives.circle <|
+                    locals texture
+                        (vec3 (w / 2) (h / 2) 0)
+                        (makeScale3 waveSize waveSize 1)
+                        (makeRotate 0 (vec3 0 0 1))
+                        (vec3 1 0 0)
+                ]
+
             Just (Heal _) ->
                 [ Primitives.circle <|
                     locals texture
