@@ -57,12 +57,12 @@ animI (Null _)           = basicAnim $ Anim.Null ()
 animI (Slash d w _)      = basicAnim $ Anim.Slash w d ()
 animI (Heal _ w _)       = basicAnim $ Anim.Heal w ()
 animI (Bite d w _)       = basicAnim $ Anim.Bite w d ()
-animI (Obliterate _)     = basicAnim $ Anim.Obliterate ()
 animI (Reverse _)        = basicAnim $ Anim.Reverse ()
 animI (Rotate _)         = basicAnim $ Anim.Rotate ()
 animI (RawAnim r _)      = basicAnim $ Anim.Raw r ()
 animI (AddToHand w _ _)  = drawAnim w
 animI (Draw w _)         = drawAnim w
+animI (Obliterate _)     = obliterateAnim
 animI (Play w c i _)     = playAnim w c i
 animI (Transmute c _)    = transmuteAnim c
 animI (SetHeadOwner w _) = setHeadOwnerAnim w
@@ -79,6 +79,16 @@ drawAnim w alpha =
       then toRight . liftF $ Anim.Draw w ()
       else toRight . liftF $ Anim.Overdraw w (fromMaybe theEnd nextCard) ()
     return final
+
+
+obliterateAnim :: Alpha.Program a -> AlphaAnimProgram a
+obliterateAnim alpha =
+  do
+    toRight . liftF $ Anim.Obliterate ()
+    final <- toLeft alpha
+    toRight . liftF $ Anim.Null ()
+    return final
+
 
 playAnim :: WhichPlayer -> Card -> Int -> (Alpha.Program a -> AlphaAnimProgram a)
 playAnim w c i alpha =

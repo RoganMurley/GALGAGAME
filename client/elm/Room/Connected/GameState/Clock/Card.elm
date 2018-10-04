@@ -5,7 +5,8 @@ import Clock.Primitives
 import Clock.Shaders
 import Clock.Uniforms exposing (uniforms)
 import Clock.Types exposing (ClockParams, GameEntity)
-import Math.Matrix4 exposing (makeRotate, makeScale3)
+import Math.Matrix4 exposing (Mat4, identity, makeLookAt, makeOrtho, makeRotate, makeScale3)
+import Math.Vector2 exposing (Vec2, vec2)
 import Math.Vector3 exposing (Vec3, vec3)
 import Texture.State as Texture
 import Texture.Types as Texture
@@ -62,6 +63,60 @@ cardEntity { w, h, radius } textures { position, rotation, scale, card, owner } 
                 ]
 
             Nothing ->
+                []
+
+
+dissolvingCardEntity : ClockParams -> Texture.Model -> Float -> CardEntity a -> List WebGL.Entity
+dissolvingCardEntity { w, h, radius } textures progress { position, rotation, scale, card, owner } =
+    let
+        ( width, height, spacing ) =
+            ( 0.1 * radius, 0.1 * radius, 35.0 )
+
+        rot =
+            makeRotate rotation <| vec3 0 0 1
+
+        pos =
+            to3d position
+
+        col =
+            colour owner
+
+        mTexture =
+            cardTexture textures card
+
+        mNoise =
+            Texture.load textures "noise"
+    in
+        case ( mTexture, mNoise ) of
+            ( Just texture, Just noise ) ->
+                [ Clock.Primitives.roundedBoxDisintegrate <|
+                    { resolution = vec2 w h
+                    , texture = noise
+                    , rotation = rot
+                    , scale = makeScale3 (0.7 * width) height 1
+                    , color = col
+                    , worldPos = pos
+                    , worldRot = makeRotate 0 (vec3 0 0 1)
+                    , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
+                    , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
+                    , time = progress
+                    }
+                , Clock.Primitives.quad Clock.Shaders.disintegrate <|
+                    { resolution = vec2 w h
+                    , texture = texture
+                    , noise = noise
+                    , rotation = rot
+                    , scale = makeScale3 (0.6 * width) (0.6 * height) 1
+                    , color = vec3 1 1 1
+                    , worldPos = pos
+                    , worldRot = makeRotate 0 (vec3 0 0 1)
+                    , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
+                    , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
+                    , time = progress
+                    }
+                ]
+
+            _ ->
                 []
 
 
