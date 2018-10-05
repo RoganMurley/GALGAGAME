@@ -1,16 +1,20 @@
 module Clock.Hand exposing (..)
 
+import Animation.State exposing (animToResTickMax)
 import Animation.Types exposing (Anim(..))
+import Clock.Card exposing (CardEntity, cardEntity, colour)
 import Clock.Primitives as Primitives
 import Clock.Shaders
-import Clock.State exposing (animToResTickMax, uniforms)
 import Clock.Types exposing (ClockParams, GameEntity)
+import Clock.Uniforms exposing (uniforms)
 import Ease
 import Hand.Types exposing (Hand)
 import Math.Matrix4 exposing (makeLookAt, makeOrtho, makeRotate, makeScale3)
 import Math.Vector2 exposing (vec2)
 import Math.Vector3 exposing (Vec3, vec3)
 import Maybe.Extra as Maybe
+import Texture.State as Texture
+import Texture.Types as Texture
 import WebGL
 import WebGL.Texture exposing (Texture)
 import WhichPlayer.Types exposing (WhichPlayer(..))
@@ -92,8 +96,8 @@ position ({ w, h, radius } as params) which index count =
                 vec3 0 y 0
 
 
-handView : ClockParams -> Hand -> List (GameEntity {}) -> Maybe ( Float, Maybe Anim ) -> Texture -> Texture -> List WebGL.Entity
-handView ({ w, h, radius } as params) finalHand handEntities resInfo texture noise =
+handView : ClockParams -> Hand -> List (CardEntity { index : Int }) -> Maybe ( Float, Maybe Anim ) -> Texture -> Texture.Model -> List WebGL.Entity
+handView ({ w, h, radius } as params) finalHand handEntities resInfo noise textures =
     let
         locals =
             uniforms 0 ( floor w, floor h )
@@ -142,34 +146,10 @@ handView ({ w, h, radius } as params) finalHand handEntities resInfo texture noi
         ( width, height, spacing ) =
             cardDimensions params
 
-        entity : GameEntity {} -> List WebGL.Entity
-        entity { position, rotation, scale } =
-            let
-                rot =
-                    makeRotate rotation <| vec3 0 0 1
-
-                pos =
-                    to3d position
-            in
-                [ Primitives.roundedBox <|
-                    uniforms 0
-                        ( floor w, floor h )
-                        texture
-                        pos
-                        rot
-                        (makeScale3 (scale * 0.7 * width) (scale * height) 1)
-                        (vec3 0.18 0.49 0.62)
-                , Primitives.quad Clock.Shaders.fragment <|
-                    locals texture
-                        pos
-                        (makeScale3 (scale * width) (scale * height) 1)
-                        rot
-                        (vec3 1 1 1)
-                ]
-
         mainView : List WebGL.Entity
         mainView =
-            List.concat <| List.map entity handEntities
+            List.concat <|
+                List.map (cardEntity params textures) handEntities
 
         extraView : List WebGL.Entity
         extraView =
@@ -183,7 +163,7 @@ handView ({ w, h, radius } as params) finalHand handEntities resInfo texture noi
                                 (vec3 (w / 2) (h / 2) 0)
 
                         rot =
-                            makeRotate (floatInterp progress 0 (0.05 * pi)) <|
+                            makeRotate (floatInterp progress pi (pi + 0.05 * pi)) <|
                                 vec3 0 0 1
 
                         iWidth =
@@ -197,33 +177,41 @@ handView ({ w, h, radius } as params) finalHand handEntities resInfo texture noi
                                 progress
                                 height
                                 (height * 4)
+
+                        mTexture =
+                            Texture.load textures card.imgURL
                     in
-                        [ Primitives.roundedBoxDisintegrate <|
-                            { resolution = vec2 w h
-                            , texture = noise
-                            , rotation = rot
-                            , scale = makeScale3 (0.7 * iWidth) iHeight 1
-                            , color = (vec3 0.18 0.49 0.615)
-                            , worldPos = pos
-                            , worldRot = makeRotate 0 (vec3 0 0 1)
-                            , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
-                            , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
-                            , time = Ease.inQuint <| resTick / maxTick
-                            }
-                        , Primitives.quad Clock.Shaders.disintegrate <|
-                            { resolution = vec2 w h
-                            , texture = texture
-                            , noise = noise
-                            , rotation = rot
-                            , scale = makeScale3 iWidth iHeight 1
-                            , color = vec3 1 1 1
-                            , worldPos = pos
-                            , worldRot = makeRotate 0 (vec3 0 0 1)
-                            , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
-                            , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
-                            , time = Ease.inQuint <| resTick / maxTick
-                            }
-                        ]
+                        case mTexture of
+                            Just texture ->
+                                [ Primitives.roundedBoxDisintegrate <|
+                                    { resolution = vec2 w h
+                                    , texture = noise
+                                    , rotation = rot
+                                    , scale = makeScale3 (0.7 * iWidth) iHeight 1
+                                    , color = colour PlayerA
+                                    , worldPos = pos
+                                    , worldRot = makeRotate 0 (vec3 0 0 1)
+                                    , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
+                                    , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
+                                    , time = Ease.inQuint <| resTick / maxTick
+                                    }
+                                , Primitives.quad Clock.Shaders.disintegrate <|
+                                    { resolution = vec2 w h
+                                    , texture = texture
+                                    , noise = noise
+                                    , rotation = rot
+                                    , scale = makeScale3 (0.6 * iWidth) (0.6 * iHeight) 1
+                                    , color = vec3 1 1 1
+                                    , worldPos = pos
+                                    , worldRot = makeRotate 0 (vec3 0 0 1)
+                                    , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
+                                    , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
+                                    , time = Ease.inQuint <| resTick / maxTick
+                                    }
+                                ]
+
+                            Nothing ->
+                                []
 
                 otherwise ->
                     []
@@ -231,8 +219,8 @@ handView ({ w, h, radius } as params) finalHand handEntities resInfo texture noi
         mainView ++ extraView
 
 
-otherHandView : ClockParams -> Int -> List (GameEntity {}) -> Maybe ( Float, Maybe Anim ) -> Texture -> Texture -> List WebGL.Entity
-otherHandView ({ w, h, radius } as params) finalN otherHandEntities resInfo texture noise =
+otherHandView : ClockParams -> Int -> List (GameEntity {}) -> Maybe ( Float, Maybe Anim ) -> Texture -> Texture.Model -> List WebGL.Entity
+otherHandView ({ w, h, radius } as params) finalN otherHandEntities resInfo noise textures =
     let
         locals =
             uniforms 0 ( floor w, floor h )
@@ -287,17 +275,18 @@ otherHandView ({ w, h, radius } as params) finalN otherHandEntities resInfo text
                 [ Primitives.roundedBox <|
                     uniforms 0
                         ( floor w, floor h )
-                        texture
+                        noise
                         pos
                         rot
                         (makeScale3 (scale * 0.7 * width) (scale * height) 1)
-                        (vec3 0.52 0.1 0.2)
-                , Primitives.quad Clock.Shaders.fragment <|
-                    locals texture
-                        pos
-                        (makeScale3 (scale * width) (scale * height) 1)
-                        rot
-                        (vec3 1 1 1)
+                        (colour PlayerB)
+
+                -- , Primitives.quad Clock.Shaders.fragment <|
+                --     locals texture
+                --         pos
+                --         (makeScale3 (scale * 0.6 * width) (scale * 0.6 * height) 1)
+                --         rot
+                --         (vec3 1 1 1)
                 ]
 
         mainView : List WebGL.Entity
@@ -316,7 +305,7 @@ otherHandView ({ w, h, radius } as params) finalN otherHandEntities resInfo text
                                 (vec3 (w / 2) (h / 2) 0)
 
                         rot =
-                            makeRotate (floatInterp progress 0 (-0.05 * pi)) <|
+                            makeRotate (floatInterp progress pi (pi - 0.05 * pi)) <|
                                 vec3 0 0 1
 
                         iWidth =
@@ -330,33 +319,41 @@ otherHandView ({ w, h, radius } as params) finalN otherHandEntities resInfo text
                                 progress
                                 height
                                 (height * 4)
+
+                        mTexture =
+                            Texture.load textures card.imgURL
                     in
-                        [ Primitives.roundedBoxDisintegrate <|
-                            { resolution = vec2 w h
-                            , texture = noise
-                            , rotation = rot
-                            , scale = makeScale3 (0.7 * iWidth) iHeight 1
-                            , color = vec3 0.52 0.1 0.2
-                            , worldPos = pos
-                            , worldRot = makeRotate 0 (vec3 0 0 1)
-                            , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
-                            , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
-                            , time = Ease.inQuint <| resTick / maxTick
-                            }
-                        , Primitives.quad Clock.Shaders.disintegrate <|
-                            { resolution = vec2 w h
-                            , texture = texture
-                            , noise = noise
-                            , rotation = rot
-                            , scale = makeScale3 iWidth iHeight 1
-                            , color = vec3 1 1 1
-                            , worldPos = pos
-                            , worldRot = makeRotate 0 (vec3 0 0 1)
-                            , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
-                            , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
-                            , time = Ease.inQuint <| resTick / maxTick
-                            }
-                        ]
+                        case mTexture of
+                            Just texture ->
+                                [ Primitives.roundedBoxDisintegrate <|
+                                    { resolution = vec2 w h
+                                    , texture = noise
+                                    , rotation = rot
+                                    , scale = makeScale3 (0.7 * iWidth) iHeight 1
+                                    , color = colour PlayerB
+                                    , worldPos = pos
+                                    , worldRot = makeRotate 0 (vec3 0 0 1)
+                                    , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
+                                    , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
+                                    , time = Ease.inQuint <| resTick / maxTick
+                                    }
+                                , Primitives.quad Clock.Shaders.disintegrate <|
+                                    { resolution = vec2 w h
+                                    , texture = texture
+                                    , noise = noise
+                                    , rotation = rot
+                                    , scale = makeScale3 (0.6 * iWidth) (0.6 * iHeight) 1
+                                    , color = vec3 1 1 1
+                                    , worldPos = pos
+                                    , worldRot = makeRotate 0 (vec3 0 0 1)
+                                    , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
+                                    , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
+                                    , time = Ease.inQuint <| resTick / maxTick
+                                    }
+                                ]
+
+                            Nothing ->
+                                []
 
                 otherwise ->
                     []

@@ -14,13 +14,15 @@ data CardAnim
   | Heal WhichPlayer
   | Draw WhichPlayer
   | Bite WhichPlayer Life
+  | Reflect
   | Reverse
   | Obliterate
-  | Play WhichPlayer Card
+  | Play WhichPlayer Card Int
   | Transmute StackCard StackCard
   | Overdraw WhichPlayer Card
   | GameEnd (Maybe WhichPlayer)
   | Rotate
+  | Windup
   | Adhoc WhichPlayer ShaderName SfxUrl
   deriving (Show, Eq)
 
@@ -50,6 +52,11 @@ instance ToJSON CardAnim where
     [ "player" .= w
     , "anim"  .= ("bite" :: Text, d)
     ]
+  toJSON Reflect =
+    object
+    [ "player" .= PlayerA
+    , "anim"  .= ("reflect" :: Text)
+    ]
   toJSON Reverse =
     object
     [ "player" .= PlayerA
@@ -60,10 +67,10 @@ instance ToJSON CardAnim where
     [ "player" .= PlayerA
     , "anim"  .= ("obliterate" :: Text)
     ]
-  toJSON (Play w c) =
+  toJSON (Play w c i) =
     object
     [ "player" .= w
-    , "anim"  .= ("play" :: Text, c, 0 :: Int)
+    , "anim"  .= ("play" :: Text, c, i)
     ]
   toJSON (Transmute ca cb) =
     object
@@ -85,6 +92,11 @@ instance ToJSON CardAnim where
     [ "player" .= PlayerA
     , "anim"  .= ("rotate" :: Text)
     ]
+  toJSON Windup =
+    object
+    [ "player" .= PlayerA
+    , "anim"  .= ("windup" :: Text)
+    ]
   toJSON (Adhoc w n s) =
     object
     [ "player" .= w
@@ -97,11 +109,13 @@ instance Mirror CardAnim where
   mirror (Heal w)          = Heal  (other w)
   mirror (Draw w)          = Draw  (other w)
   mirror (Bite w d)        = Bite (other w) d
+  mirror Reflect           = Reflect
   mirror Reverse           = Reverse
   mirror Obliterate        = Obliterate
-  mirror (Play w c)        = Play (other w) c
+  mirror (Play w c i)      = Play (other w) c i
   mirror (Transmute ca cb) = Transmute (mirror ca) (mirror cb)
   mirror (GameEnd w)       = GameEnd (other <$> w)
   mirror (Overdraw w c)    = Overdraw (other w) c
   mirror Rotate            = Rotate
+  mirror Windup            = Windup
   mirror (Adhoc w n s)     = Adhoc (other w) n s

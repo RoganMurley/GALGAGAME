@@ -1,6 +1,5 @@
 module Room.State exposing (init, tick, receive, update)
 
-import Clock.State as Clock
 import Connected.State as Connected
 import Lab.State as Lab
 import Lobby.State as Lobby
@@ -83,14 +82,6 @@ update model msg ({ hostname, seed } as flags) =
                 otherwise ->
                     ( model, Cmd.none )
 
-        ClockMsg clockMsg ->
-            case model of
-                Clock clock ->
-                    ( Clock <| Clock.update clock clockMsg, Cmd.none )
-
-                otherwise ->
-                    ( model, Cmd.none )
-
         StartGame mode ->
             case model of
                 Lobby ({ roomID, gameType } as lobby) ->
@@ -135,9 +126,6 @@ receive str model flags =
         Lab lab ->
             ( Lab lab, Cmd.none )
 
-        Clock clock ->
-            ( Clock clock, Cmd.none )
-
 
 tick : Flags -> Model -> Float -> Model
 tick flags room dt =
@@ -152,13 +140,10 @@ tick flags room dt =
             Login login
 
         Connected connected ->
-            Connected <| Connected.tick connected dt
+            Connected <| Connected.tick flags connected dt
 
         Replay replay ->
-            Replay <| Replay.tick replay dt
+            Replay <| Replay.tick flags replay dt
 
         Lab lab ->
             Lab <| Lab.tick lab dt
-
-        Clock clock ->
-            Clock <| Clock.tick flags clock dt

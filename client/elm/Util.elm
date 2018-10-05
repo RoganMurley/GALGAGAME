@@ -9,7 +9,7 @@ import Task
 import WebSocket
 
 
-px : Int -> String
+px : n -> String
 px number =
     toString number ++ "px"
 

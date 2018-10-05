@@ -15,7 +15,7 @@ import Player (WhichPlayer(..))
 import Model (Model, gameover, maxHandLength)
 import ModelDiff (ModelDiff)
 import Safe (headMay, tailSafe)
-import StackCard (StackCard(..))
+import StackCard (StackCard(..), changeOwner)
 
 import qualified DSL.Alpha as Alpha
 import qualified DSL.Anim as Anim
@@ -26,47 +26,52 @@ import {-# SOURCE #-} Cards (theEnd)
 
 
 alphaI :: Program a -> Alpha.Program a
-alphaI (Free (Raw p n))          = p                       >>  alphaI n
-alphaI (Free (Slash d w n))      = Alpha.hurt d w          >>  alphaI n
-alphaI (Free (Heal h w n))       = Alpha.heal h w          >>  alphaI n
-alphaI (Free (Draw w n))         = Alpha.draw w            >>  alphaI n
-alphaI (Free (Bite d w n))       = Alpha.hurt d w          >>  alphaI n
-alphaI (Free (AddToHand w c n))  = Alpha.addToHand w c     >>  alphaI n
-alphaI (Free (Obliterate n))     = Alpha.setStack []       >>  alphaI n
-alphaI (Free (Reverse n))        = Alpha.modStack reverse  >>  alphaI n
-alphaI (Free (Play w c n))       = Alpha.play w c          >>  alphaI n
-alphaI (Free (Transmute c n))    = Alpha.transmute c       >>  alphaI n
-alphaI (Free (Rotate n))         = Alpha.modStack tailSafe >>  alphaI n
-alphaI (Free (SetHeadOwner w n)) = Alpha.setHeadOwner w    >>  alphaI n
-alphaI (Free (GetGen f))         = Alpha.getGen            >>= alphaI . f
-alphaI (Free (GetLife w f))      = Alpha.getLife w         >>= alphaI . f
-alphaI (Free (GetHand w f))      = Alpha.getHand w         >>= alphaI . f
-alphaI (Free (GetDeck w f))      = Alpha.getDeck w         >>= alphaI . f
-alphaI (Free (GetStack f))       = Alpha.getStack          >>= alphaI . f
+alphaI (Free (Raw p n))          = p                             >>  alphaI n
+alphaI (Free (Slash d w n))      = Alpha.hurt d w                >>  alphaI n
+alphaI (Free (Heal h w n))       = Alpha.heal h w                >>  alphaI n
+alphaI (Free (Draw w n))         = Alpha.draw w                  >>  alphaI n
+alphaI (Free (Bite d w n))       = Alpha.hurt d w                >>  alphaI n
+alphaI (Free (AddToHand w c n))  = Alpha.addToHand w c           >>  alphaI n
+alphaI (Free (Obliterate n))     = Alpha.setStack []             >>  alphaI n
+alphaI (Free (Reflect n))        = Alpha.modStackAll changeOwner >>  alphaI n
+alphaI (Free (Reverse n))        = Alpha.modStack reverse        >>  alphaI n
+alphaI (Free (Play w c i n))     = Alpha.play w c i              >>  alphaI n
+alphaI (Free (Transmute c n))    = Alpha.transmute c             >>  alphaI n
+alphaI (Free (Rotate n))         = Alpha.modStack tailSafe       >>  alphaI n
+alphaI (Free (SetHeadOwner w n)) = Alpha.setHeadOwner w          >>  alphaI n
+alphaI (Free (GetGen f))         = Alpha.getGen                  >>= alphaI . f
+alphaI (Free (GetLife w f))      = Alpha.getLife w               >>= alphaI . f
+alphaI (Free (GetHand w f))      = Alpha.getHand w               >>= alphaI . f
+alphaI (Free (GetDeck w f))      = Alpha.getDeck w               >>= alphaI . f
+alphaI (Free (GetStack f))       = Alpha.getStack                >>= alphaI . f
 alphaI (Free (RawAnim _ n))      = alphaI n
 alphaI (Free (Null n))           = alphaI n
 alphaI (Pure x)                  = Pure x
 
 
+basicAnim :: Anim.DSL () -> Alpha.Program a -> AlphaAnimProgram a
+basicAnim anim alphaProgram = toLeft alphaProgram <* (toRight . liftF $ anim)
 
-animI :: DSL a -> ((Alpha.Program a) -> AlphaAnimProgram a)
-animI (Null _)           = \a -> (toLeft a) <* (toRight . liftF $ Anim.Null ())
-animI (Slash d w _)      = \a -> (toLeft a) <* (toRight . liftF $ Anim.Slash w d ())
-animI (Heal _ w _)       = \a -> (toLeft a) <* (toRight . liftF $ Anim.Heal w ())
+
+animI :: DSL a -> (Alpha.Program a -> AlphaAnimProgram a)
+animI (Null _)           = basicAnim $ Anim.Null ()
+animI (Slash d w _)      = basicAnim $ Anim.Slash w d ()
+animI (Heal _ w _)       = basicAnim $ Anim.Heal w ()
+animI (Bite d w _)       = basicAnim $ Anim.Bite w d ()
+animI (Reflect _)        = basicAnim $ Anim.Reflect ()
+animI (Reverse _)        = basicAnim $ Anim.Reverse ()
+animI (Rotate _)         = basicAnim $ Anim.Rotate ()
+animI (RawAnim r _)      = basicAnim $ Anim.Raw r ()
 animI (AddToHand w _ _)  = drawAnim w
 animI (Draw w _)         = drawAnim w
-animI (Bite d w _)       = \a -> (toLeft a) <* (toRight . liftF $ Anim.Bite w d ())
-animI (Obliterate _)     = \a -> (toLeft a) <* (toRight . liftF $ Anim.Obliterate ())
-animI (Reverse _)        = \a -> (toLeft a) <* (toRight . liftF $ Anim.Reverse ())
-animI (Play w c _)       = \a -> (toLeft a) <* (toRight . liftF $ Anim.Play w c ())
-animI (Rotate _)         = \a -> (toLeft a) <* (toRight . liftF $ Anim.Rotate ())
+animI (Obliterate _)     = obliterateAnim
+animI (Play w c i _)     = playAnim w c i
 animI (Transmute c _)    = transmuteAnim c
 animI (SetHeadOwner w _) = setHeadOwnerAnim w
-animI (RawAnim r _)      = \a -> (toLeft a) <* (toRight . liftF $ Anim.Raw r ())
 animI _                  = toLeft
 
 
-drawAnim :: WhichPlayer -> ((Alpha.Program a) -> AlphaAnimProgram a)
+drawAnim :: WhichPlayer -> (Alpha.Program a -> AlphaAnimProgram a)
 drawAnim w alpha =
   do
     nextCard <- headMay <$> toLeft (Alpha.getDeck w)
@@ -78,7 +83,25 @@ drawAnim w alpha =
     return final
 
 
-transmuteAnim :: Card -> ((Alpha.Program a) -> AlphaAnimProgram a)
+obliterateAnim :: Alpha.Program a -> AlphaAnimProgram a
+obliterateAnim alpha =
+  do
+    toRight . liftF $ Anim.Obliterate ()
+    final <- toLeft alpha
+    toRight . liftF $ Anim.Null ()
+    return final
+
+
+playAnim :: WhichPlayer -> Card -> Int -> (Alpha.Program a -> AlphaAnimProgram a)
+playAnim w c i alpha =
+  do
+    final <- toLeft alpha
+    toRight . liftF $ Anim.Play w c i ()
+    toRight . liftF $ Anim.Windup ()
+    return final
+
+
+transmuteAnim :: Card -> (Alpha.Program a -> AlphaAnimProgram a)
 transmuteAnim cb alpha =
   do
     stackHead <- headMay <$> toLeft Alpha.getStack
@@ -98,7 +121,7 @@ setHeadOwnerAnim w alpha =
     stackHead <- headMay <$> toLeft Alpha.getStack
     final <- toLeft alpha
     case stackHead of
-      (Just (StackCard o c)) ->
+      Just (StackCard o c) ->
         toRight . liftF $ Anim.Transmute (StackCard o c) (StackCard w c) ()
       Nothing ->
         toRight . liftF $ Anim.Null ()
@@ -128,7 +151,7 @@ execute = execute' "" [] mempty
       let
         next = if gameover m then Pure () else Anim.next anim
       in
-          execute' s (a ++ [(d, Anim.animate anim)]) mempty m next
+        execute' s (a ++ [(d, Anim.animate anim)]) mempty m next
     execute' s a d m (Free (InL (InL p))) =
       let
          (newDiff, n) = Alpha.alphaEffI m p

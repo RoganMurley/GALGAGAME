@@ -14,6 +14,7 @@ decoder =
         , healDecoder
         , drawDecoder
         , biteDecoder
+        , reflectDecoder
         , reverseDecoder
         , obliterateDecoder
         , playDecoder
@@ -21,6 +22,7 @@ decoder =
         , overdrawDecoder
         , gameEndDecoder
         , rotateDecoder
+        , windupDecoder
         , adhocDecoder
         ]
 
@@ -66,6 +68,13 @@ biteDecoder =
         (field "player" WhichPlayer.decoder)
         (field "anim" <| index 0 <| constDecoder "bite")
         (field "anim" <| index 1 int)
+
+
+reflectDecoder : Decoder Anim
+reflectDecoder =
+    Json.map2 (\w _ -> Reflect w)
+        (field "player" WhichPlayer.decoder)
+        (field "anim" (constDecoder "reflect"))
 
 
 reverseDecoder : Decoder Anim
@@ -119,7 +128,14 @@ rotateDecoder : Decoder Anim
 rotateDecoder =
     Json.map2 (\w _ -> Rotate w)
         (field "player" WhichPlayer.decoder)
-        (field "anim" (constDecoder "rotate"))
+        (field "anim" <| constDecoder "rotate")
+
+
+windupDecoder : Decoder Anim
+windupDecoder =
+    Json.map2 (\w _ -> Windup w)
+        (field "player" WhichPlayer.decoder)
+        (field "anim" <| constDecoder "windup")
 
 
 adhocDecoder : Decoder Anim

@@ -16,4 +16,8 @@
   &.me {
     bottom: 0;
   }
+
+  @media (max-width: 1279px) {
+    display: none;
+  }
 }

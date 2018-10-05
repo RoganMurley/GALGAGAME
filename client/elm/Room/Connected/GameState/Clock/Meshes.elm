@@ -10,16 +10,16 @@ quad : Mesh Vertex
 quad =
     let
         topRight =
-            { position = vec3 1 1 0, coord = vec2 1 1 }
+            { position = vec3 1 1 0, coord = vec2 0 1 }
 
         bottomRight =
-            { position = vec3 1 -1 0, coord = vec2 1 0 }
+            { position = vec3 1 -1 0, coord = vec2 0 0 }
 
         bottomLeft =
-            { position = vec3 -1 -1 0, coord = vec2 0 0 }
+            { position = vec3 -1 -1 0, coord = vec2 1 0 }
 
         topLeft =
-            { position = vec3 -1 1 0, coord = vec2 0 1 }
+            { position = vec3 -1 1 0, coord = vec2 1 1 }
     in
         WebGL.triangles
             [ ( topLeft, topRight, bottomLeft )

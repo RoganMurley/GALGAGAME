@@ -5,11 +5,12 @@ import Card (Card(Card), description)
 import Data.Monoid ((<>))
 import Player (other)
 import Safe (headMay)
-import StackCard (StackCard(StackCard), changeOwner, isOwner)
+import StackCard (StackCard(StackCard), isOwner)
 import Util (shuffle)
 
 import qualified DSL.Alpha as Alpha
 import qualified DSL.Beta as Beta
+import DSL.Beta hiding (reflect)
 
 
 -- Striker
@@ -19,42 +20,41 @@ dagger =
     "Dagger"
     "Hurt for 7"
     "striker/dagger.svg"
-    $ \w -> Beta.slash 7 (other w)
+    $ \w -> slash 7 (other w)
 
 
 fireball :: Card
 fireball =
   Card
     "Fireball"
-    "Hurt for 5 for each card to the right"
+    "Hurt for 5 for each card clockwise"
     "striker/fireball.svg"
     $ \w -> do
-      len <- length <$> Beta.getStack
-      Beta.slash (len * 5) (other w)
+      len <- length <$> getStack
+      slash (len * 5) (other w)
 
 
 offering :: Card
 offering =
   Card
     "Offering"
-    "Hurt yourself for 7, then draw 2"
+    "Pay 4 life to draw 2"
     "striker/offering.svg"
     $ \w -> do
-      Beta.slash 7 w
-      Beta.draw w
-      Beta.draw w
+      slash 4 w
+      draw w
+      draw w
 
 
 confound :: Card
 confound =
   Card
     "Confound"
-    "Shuffle the order of cards to the right"
+    "Shuffle the order of cards clockwise"
     "striker/confound.svg"
     $ \_ -> do
-      gen <- Beta.getGen
-      Beta.null
-      Beta.raw $ Alpha.modStack $ shuffle gen
+      gen <- getGen
+      raw $ Alpha.modStack $ shuffle gen
       Beta.null
 
 
@@ -65,29 +65,28 @@ hammer =
     "Hammer"
     "Hurt for 8"
     "breaker/hammer.svg"
-    $ \w -> Beta.slash 8 (other w)
+    $ \w -> slash 8 (other w)
 
 
 lightning :: Card
 lightning =
   Card
     "Lightning"
-    "Hurt for 4 for each card to the right"
+    "Hurt for 4 for each card clockwise"
     "breaker/lightning.svg"
     $ \w -> do
-      len <- length <$> Beta.getStack
-      Beta.slash (len * 4) (other w)
+      len <- length <$> getStack
+      slash (len * 4) (other w)
 
 
 hubris :: Card
 hubris =
   Card
     "Hubris"
-    "Remove all cards to the right"
+    "Remove all cards clockwise"
     "breaker/hubris.svg"
     $ \_ -> do
-      Beta.null
-      Beta.obliterate
+      obliterate
 
 
 -- Balancer
@@ -97,7 +96,7 @@ katana =
     "Katana"
     "Hurt for 9"
     "balancer/katana.svg"
-    $ \w -> Beta.slash 9 (other w)
+    $ \w -> slash 9 (other w)
 
 
 curse :: Card
@@ -108,10 +107,10 @@ curse =
     "balancer/curse.svg"
     $ \w -> do
       let dmg = 15
-      paLife <- Beta.getLife w
-      pbLife <- Beta.getLife (other w)
-      when (paLife <= pbLife) (Beta.slash dmg w)
-      when (paLife >= pbLife) (Beta.slash dmg (other w))
+      paLife <- getLife w
+      pbLife <- getLife (other w)
+      when (paLife <= pbLife) (slash dmg w)
+      when (paLife >= pbLife) (slash dmg (other w))
 
 
 bless :: Card
@@ -122,23 +121,23 @@ bless =
     "balancer/bless.svg"
     $ \w -> do
       let mag = 15
-      paLife <- Beta.getLife w
-      pbLife <- Beta.getLife (other w)
-      when (paLife <= pbLife) (Beta.heal mag w)
-      when (paLife >= pbLife) (Beta.heal mag (other w))
+      paLife <- getLife w
+      pbLife <- getLife (other w)
+      when (paLife <= pbLife) (heal mag w)
+      when (paLife >= pbLife) (heal mag (other w))
 
 
 balance :: Card
 balance =
   Card
     "Balance"
-    "Change card to the right's owner to weakest player"
+    "Change next card clockwise's owner to weakest player"
     "balancer/balance.svg"
     $ \w -> do
-      paLife <- Beta.getLife w
-      pbLife <- Beta.getLife (other w)
-      when (paLife > pbLife) (Beta.setHeadOwner (other w))
-      when (paLife < pbLife) (Beta.setHeadOwner w)
+      paLife <- getLife w
+      pbLife <- getLife (other w)
+      when (paLife > pbLife) (setHeadOwner (other w))
+      when (paLife < pbLife) (setHeadOwner w)
       when (paLife == pbLife) Beta.null
 
 
@@ -149,18 +148,18 @@ scythe =
     "Scythe"
     "Lifesteal for 5"
     "drinker/scythe.svg"
-    $ \w -> Beta.lifesteal 5 (other w)
+    $ \w -> lifesteal 5 (other w)
 
 
 bloodsucker :: Card
 bloodsucker =
   Card
     "Bloodsucker"
-    "Lifesteal for 3 for each card to the right"
+    "Lifesteal for 3 for each card clockwise"
     "drinker/bloodsucker.svg"
     $ \w -> do
-      len <- length <$> Beta.getStack
-      Beta.lifesteal (len * 3) (other w)
+      len <- length <$> getStack
+      lifesteal (len * 3) (other w)
 
 
 serpent :: Card
@@ -170,25 +169,25 @@ serpent =
     ("Add 2 " <> description badApple <> " to their hand")
     "drinker/serpent.svg"
     $ \w -> do
-      Beta.addToHand (other w) badApple
-      Beta.addToHand (other w) badApple
+      addToHand (other w) badApple
+      addToHand (other w) badApple
 
 
 badApple :: Card
 badApple =
   Card
     "Bad Apple"
-    "Hurt yourself for 8"
+    "Hurt yourself for 4"
     "drinker/bad-apple.svg"
     $ \w -> do
-      Beta.bite 8 w
+      bite 4 w
 
 
 reversal :: Card
 reversal =
   Card
     "Reversal"
-    "Reverse the order of cards to the right"
+    "Reverse the order of cards clockwise"
     "drinker/reversal.svg"
     $ const Beta.reverse
 
@@ -201,19 +200,19 @@ staff =
     "Hurt for 4, then draw 1"
     "watcher/staff.svg"
     $ \w -> do
-      Beta.slash 4 (other w)
-      Beta.draw w
+      slash 4 (other w)
+      draw w
 
 
 surge :: Card
 surge =
   Card
     "Surge"
-    "Hurt for 6 for each of your cards to the right"
+    "Hurt for 6 for each of your cards clockwise"
     "watcher/surge.svg"
     $ \w -> do
-      len <- length . (filter (isOwner w)) <$> Beta.getStack
-      Beta.slash (len * 6) (other w)
+      len <- length . (filter (isOwner w)) <$> getStack
+      slash (len * 6) (other w)
 
 
 mimic :: Card
@@ -223,8 +222,7 @@ mimic =
     "Play a copy of a random card in your hand"
     "watcher/imitate.svg"
     $ \w -> do
-      Beta.null
-      Beta.raw $ do
+      raw $ do
         gen <- Alpha.getGen
         hand <- Alpha.getHand w
         mCard <- return . headMay . (filter (/= mimic)) . (shuffle gen) $ hand
@@ -240,11 +238,10 @@ prophecy :: Card
 prophecy =
   Card
     "Prophecy"
-    "Return all cards to the right to hand"
+    "Return all cards clockwise to hand"
     "watcher/prophecy.svg"
     $ \w -> do
-      Beta.null
-      Beta.raw $ do
+      raw $ do
         Alpha.bounceAll w
         Alpha.bounceAll (other w)
       Beta.null
@@ -257,7 +254,7 @@ sword =
     "Sword"
     "Hurt for 10"
     "shielder/sword.svg"
-    $ \w -> Beta.slash 10 (other w)
+    $ \w -> slash 10 (other w)
 
 
 potion :: Card
@@ -266,19 +263,16 @@ potion =
     "Potion"
     "Heal for 10"
     "shielder/potion.svg"
-    $ Beta.heal 10
+    $ heal 10
 
 
 reflect :: Card
 reflect =
   Card
     "Reflect"
-    "All cards to the right change owner"
+    "All cards clockwise change owner"
     "shielder/reflect.svg"
-    $ \_ -> do
-      Beta.null
-      Beta.raw $ Alpha.modStackAll changeOwner
-      Beta.null
+    $ const Beta.reflect
 
 
 -- Bouncer
@@ -289,8 +283,8 @@ boomerang =
     "Hurt for 3, return this card to hand"
     "bouncer/boomerang.svg"
     $ \w -> do
-      Beta.slash 3 (other w)
-      Beta.addToHand w boomerang
+      slash 3 (other w)
+      addToHand w boomerang
 
 
 overwhelm :: Card
@@ -300,18 +294,18 @@ overwhelm =
     "Hurt for 3 for each card in your hand"
     "bouncer/overwhelm.svg"
     $ \w -> do
-      len <- length <$> Beta.getHand w
-      Beta.slash (len * 3) (other w)
+      len <- length <$> getHand w
+      slash (len * 3) (other w)
 
 
 echo :: Card
 echo =
   Card
     "Echo"
-    "When the card to the right activates, it does so twice"
+    "When the card clockwise activates, it does so twice"
     "bouncer/echo.svg"
     $ \_ -> do
-      Beta.raw $ do
+      raw $ do
         Alpha.modStackHead $
           \(StackCard which (Card name desc pic e)) ->
             StackCard which (Card name desc pic (\w -> (e w) >> (e w)))
@@ -322,11 +316,10 @@ feint :: Card
 feint =
   Card
     "Feint"
-    "Return all of your cards to the right to hand"
+    "Return all of your cards clockwise to hand"
     "bouncer/feint.svg"
     $ \w -> do
-      Beta.null
-      Beta.raw $ Alpha.bounceAll w
+      raw $ Alpha.bounceAll w
       Beta.null
 
 
@@ -337,7 +330,7 @@ relicblade =
     "Relicblade"
     "Hurt for 6"
     "collector/relicblade.svg"
-    $ \w -> Beta.slash 6 (other w)
+    $ \w -> slash 6 (other w)
 
 
 greed :: Card
@@ -347,17 +340,17 @@ greed =
     "Hurt for 3 for each card in their hand"
     "collector/greed.svg"
     $ \w -> do
-      len <- length <$> Beta.getHand (other w)
-      Beta.slash (len * 3) (other w)
+      len <- length <$> getHand (other w)
+      slash (len * 3) (other w)
 
 
 alchemy :: Card
 alchemy =
   Card
     "Alchemy"
-    ("Change card to the right to " <> description gold)
+    ("Change next card clockwise to " <> description gold)
     "collector/alchemy.svg"
-    $ \_ -> Beta.transmute gold
+    $ \_ -> transmute gold
 
 
 gold :: Card
@@ -367,17 +360,17 @@ gold =
     "Draw 2"
     "collector/gold.svg"
     $ \w -> do
-      Beta.draw w
-      Beta.draw w
+      draw w
+      draw w
 
 
 theEnd :: Card
 theEnd =
   Card
     "The End"
-    "You're out of cards, hurt yourself for 10."
+    "You're out of cards, hurt yourself for 10"
     "the_end.svg"
-    $ Beta.slash 10
+    $ slash 10
 
 
 allCards :: [Card]

@@ -2,7 +2,6 @@ module GameState.View exposing (view)
 
 import Animation.State exposing (animToResTickMax)
 import Animation.Types exposing (Anim(GameEnd))
-import Animation.View as Animation
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
@@ -10,18 +9,14 @@ import CharacterSelect.View as CharacterSelect
 import Connected.Messages as Connected
 import Endgame.View as Endgame
 import GameState.Messages exposing (..)
-import GameState.State exposing (resolvable)
 import GameState.Types exposing (GameState(..), PlayState(..), WaitType(..))
 import Main.Messages as Main
 import Main.Types exposing (Flags)
-import Model.Types exposing (..)
-import Model.View as Model exposing (view, resView)
 import Raymarch.Types as Raymarch
 import Raymarch.View as Raymarch
-import Resolvable.State exposing (activeAnim, resolving)
-import Resolvable.Types as Resolvable
 import Room.Messages as Room
 import Texture.Types as Texture
+import Clock.View as Clock
 
 
 view : GameState -> String -> Flags -> Texture.Model -> Html Main.Msg
@@ -48,50 +43,37 @@ view state roomID ({ hostname, httpPort, time, dimensions } as flags) textures =
                     CharacterSelect.view params model
 
             Started started ->
-                let
-                    res : Resolvable.Model
-                    res =
-                        resolvable started
+                case started of
+                    Playing clock ->
+                        div []
+                            [ Clock.view params clock textures
+                            , Endgame.view 0.0 Nothing Nothing
+                            ]
 
-                    anim : Maybe Anim
-                    anim =
-                        activeAnim res
-                in
-                    case res.resList of
-                        resData :: _ ->
+                    Ended winner clock mReplayId ->
+                        let
+                            resolving =
+                                not <| List.isEmpty clock.res.resList
+
+                            endAnim =
+                                if resolving then
+                                    Nothing
+                                else
+                                    Just <| GameEnd winner
+
+                            endTick =
+                                if resolving then
+                                    0
+                                else
+                                    animToResTickMax endAnim
+                        in
                             div []
-                                [ resView res.vm resData time res.tick
-                                , Endgame.view res.tick anim Nothing
-                                , Animation.view params res.tick anim textures
+                                [ Clock.view params clock textures
+                                , Endgame.view
+                                    endTick
+                                    endAnim
+                                    mReplayId
                                 ]
-
-                        otherwise ->
-                            let
-                                model : Model
-                                model =
-                                    res.final
-                            in
-                                case started of
-                                    Playing _ ->
-                                        div []
-                                            [ Model.view ( model, res.vm ) time
-                                            , Endgame.view 0.0 Nothing Nothing
-                                            , Raymarch.view params
-                                            ]
-
-                                    Ended winner _ mReplayId ->
-                                        let
-                                            endAnim =
-                                                Just (GameEnd winner)
-
-                                            endTick =
-                                                animToResTickMax endAnim
-                                        in
-                                            div []
-                                                [ Model.view ( model, res.vm ) time
-                                                , Endgame.view endTick endAnim mReplayId
-                                                , Raymarch.view params
-                                                ]
 
 
 waitingView : WaitType -> String -> String -> String -> Html Main.Msg

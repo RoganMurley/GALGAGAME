@@ -1,159 +1,31 @@
 module Clock.State exposing (..)
 
-import Animation.State
+import Animation.State exposing (animToResTickMax)
 import Animation.Types exposing (Anim(..))
 import Card.Types exposing (Card)
-import Clock.Messages exposing (Msg(..))
-import Clock.Types exposing (ClockParams, GameEntity, Model, Uniforms)
+import Clock.Card exposing (CardEntity)
+import Clock.Types exposing (ClockParams, GameEntity, Model)
 import Ease
 import Hand.Types exposing (Hand)
+import List.Extra as List
 import Main.Types exposing (Flags)
-import Math.Matrix4 exposing (Mat4, identity, makeLookAt, makeOrtho, makeRotate, mul)
 import Math.Vector2 exposing (Vec2, vec2)
-import Math.Vector3 exposing (Vec3, vec3)
 import Maybe.Extra as Maybe
-import Model.State as Model
-import Raymarch.Types exposing (Height, Width)
-import Resolvable.State exposing (activeAnim, activeModel)
+import Resolvable.State exposing (activeAnim, activeModel, activeStackCard)
 import Resolvable.State as Resolvable
+import Resolvable.Types as Resolvable
 import Stack.Types exposing (Stack, StackCard)
 import Util exposing (floatInterp, interp, interp2D)
-import WebGL exposing (Texture)
 import WhichPlayer.Types exposing (WhichPlayer(..))
 
 
-init : Model
-init =
-    let
-        mInit =
-            Model.init
-
-        card =
-            { name = "", desc = "", imgURL = "" }
-
-        stackCardA =
-            { owner = PlayerA, card = card }
-
-        stackCardB =
-            { stackCardA | owner = PlayerB }
-
-        stackLen =
-            12
-
-        model =
-            { mInit
-                | hand = List.repeat 6 card
-                , otherHand = 6
-                , stack =
-                    List.repeat (stackLen // 2) stackCardB
-                        ++ List.repeat (stackLen // 2) stackCardA
-            }
-    in
-        { focus = Just card
-        , mouse = vec2 -10000 -10000
-        , entities = { hand = [], otherHand = [], stack = [] }
-        , res =
-            Resolvable.init
-                { model
-                    | stack = []
-                    , hand = []
-                    , otherHand = 0
-                }
-            <|
-                List.concat
-                    [ [ { model =
-                            { model
-                                | hand = []
-                                , otherHand = 0
-                                , stack = []
-                            }
-                        , anim = Just (GameStart PlayerA)
-                        , stackCard = Nothing
-                        }
-                      ]
-                    , List.map
-                        (\i ->
-                            { model =
-                                { model
-                                    | hand = []
-                                    , otherHand = i
-                                    , stack = []
-                                }
-                            , anim = Just (Draw PlayerB)
-                            , stackCard = Nothing
-                            }
-                        )
-                        (List.range 1 <| model.otherHand)
-                    , List.map
-                        (\i ->
-                            { model =
-                                { model
-                                    | hand = List.drop (List.length model.hand - i) model.hand
-                                    , stack = []
-                                }
-                            , anim = Just (Draw PlayerA)
-                            , stackCard = Nothing
-                            }
-                        )
-                        (List.range 1 <| List.length model.hand)
-                    , [ { model =
-                            { model
-                                | hand = model.hand
-                                , stack = []
-                            }
-                        , anim = Just (Overdraw PlayerA card)
-                        , stackCard = Nothing
-                        }
-                      ]
-                    , [ { model =
-                            { model
-                                | hand = model.hand
-                                , stack = []
-                            }
-                        , anim = Just (Overdraw PlayerB card)
-                        , stackCard = Nothing
-                        }
-                      ]
-                    , List.map
-                        (\i ->
-                            { model =
-                                { model
-                                    | stack = List.drop (List.length model.stack - i) model.stack
-                                    , hand = List.drop (i + 1) model.hand
-                                }
-                            , anim = Just (Play PlayerA card 0)
-                            , stackCard = Nothing
-                            }
-                        )
-                        (List.range 0 <| List.length model.hand - 1)
-                    , List.map
-                        (\i ->
-                            { model =
-                                { model
-                                    | stack = List.drop (List.length model.stack - i - List.length model.hand) model.stack
-                                    , hand = []
-                                    , otherHand = model.otherHand - (i + 1)
-                                }
-                            , anim = Just (Play PlayerB card 0)
-                            , stackCard = Nothing
-                            }
-                        )
-                        (List.range 0 (model.otherHand - 1))
-                    , List.map
-                        (\i ->
-                            { model =
-                                { model
-                                    | stack = List.drop i model.stack
-                                    , hand = []
-                                    , otherHand = 0
-                                }
-                            , anim = Just (Rotate PlayerA)
-                            , stackCard = Nothing
-                            }
-                        )
-                        (List.range 0 (stackLen - 1))
-                    ]
-        }
+clockInit : Resolvable.Model -> Model
+clockInit res =
+    { focus = Nothing
+    , mouse = vec2 0 0
+    , entities = { hand = [], otherHand = [], stack = [] }
+    , res = res
+    }
 
 
 tick : Flags -> Model -> Float -> Model
@@ -170,30 +42,40 @@ tick { dimensions } ({ res } as model) dt =
         resModel =
             activeModel res
 
+        stackCard =
+            activeStackCard res
+
         ( w, h ) =
             dimensions
 
         radius =
-            0.8 * (toFloat h / 2)
+            if h < w then
+                0.8 * (toFloat h / 2)
+            else
+                1.2 * (toFloat w / 2)
 
         resInfo =
             Just ( res.tick, activeAnim res )
 
+        params =
+            { w = toFloat w, h = toFloat h, radius = radius }
+
         stackEntities =
             calcStackEntities
-                { w = toFloat w, h = toFloat h, radius = radius }
+                params
                 resModel.stack
+                stackCard
                 resInfo
 
         handEntities =
             calcHandEntities
-                { w = toFloat w, h = toFloat h, radius = radius }
+                params
                 resModel.hand
                 resInfo
 
         otherHandEntities =
             calcOtherHandEntities
-                { w = toFloat w, h = toFloat h, radius = radius }
+                params
                 resModel.otherHand
                 resInfo
     in
@@ -208,78 +90,27 @@ tick { dimensions } ({ res } as model) dt =
         }
 
 
-uniforms : Float -> ( Width, Height ) -> Texture -> Vec3 -> Mat4 -> Mat4 -> Vec3 -> Uniforms {}
-uniforms t ( width, height ) texture pos rot scale color =
-    { resolution = vec2 (toFloat width) (toFloat height)
-    , texture = texture
-    , rotation = rot
-    , scale = scale
-    , color = color
-    , worldPos = pos
-    , worldRot = makeRotate 0 (vec3 0 0 1)
-    , perspective = makeOrtho 0 (toFloat width / 2) (toFloat height / 2) 0 0.01 1000
-    , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
-    }
-
-
-animToResTickMax : Maybe Anim -> Float
-animToResTickMax anim =
-    case anim of
-        Just (Draw _) ->
-            500
-
-        Just (Play _ _ _) ->
-            1000
-
-        Just (Overdraw _ _) ->
-            1000
-
-        otherwise ->
-            Animation.State.animToResTickMax anim
-
-
-update : Model -> Msg -> Model
-update model msg =
-    case msg of
-        Mouse { x, y } ->
-            let
-                pos =
-                    vec2 (toFloat x) (toFloat y)
-            in
-                { model
-                    | mouse = pos
-                }
-
-
-hitTest : Vec2 -> { a | position : Vec2 } -> Bool
-hitTest pos { position } =
-    let
-        dist =
-            Math.Vector2.distance position pos
-    in
-        dist < 64
+hitTest : Vec2 -> Float -> { a | position : Vec2 } -> Bool
+hitTest pos dist { position } =
+    Math.Vector2.distance position pos < dist
 
 
 getFocus : Model -> Maybe Card
-getFocus { entities, mouse } =
+getFocus { entities, mouse, res } =
     let
-        hit =
-            (List.any (hitTest mouse) <| entities.stack)
-                || (List.any (hitTest mouse) <| entities.hand)
+        resCard =
+            Maybe.map .card <| activeStackCard res
+
+        hoverCard =
+            Maybe.or
+                (Maybe.map .card <| (List.find <| hitTest mouse 64) entities.stack)
+                (Maybe.map .card <| (List.find <| hitTest mouse 28) entities.hand)
     in
-        if hit then
-            (Just
-                { name = "Sword"
-                , desc = "Hurt for 10"
-                , imgURL = ""
-                }
-            )
-        else
-            Nothing
+        Maybe.or resCard hoverCard
 
 
-calcStackEntities : ClockParams -> Stack -> Maybe ( Float, Maybe Anim ) -> List (GameEntity { owner : WhichPlayer })
-calcStackEntities { w, h, radius } finalStack resInfo =
+calcStackEntities : ClockParams -> Stack -> Maybe StackCard -> Maybe ( Float, Maybe Anim ) -> List (CardEntity {})
+calcStackEntities { w, h, radius } finalStack stackCard resInfo =
     let
         resTick =
             Maybe.withDefault 0.0 <|
@@ -297,7 +128,7 @@ calcStackEntities { w, h, radius } finalStack resInfo =
                 Just (Rotate _) ->
                     Ease.inQuad <| resTick / maxTick
 
-                Just (Play _ _ _) ->
+                Just (Windup _) ->
                     1 - (Ease.inQuad <| resTick / maxTick)
 
                 otherwise ->
@@ -306,8 +137,16 @@ calcStackEntities { w, h, radius } finalStack resInfo =
         stack : Stack
         stack =
             case anim of
-                Just (Rotate _) ->
+                Just (Play _ _ _) ->
                     List.drop 1 finalStack
+
+                Just (Rotate _) ->
+                    case stackCard of
+                        Just c ->
+                            c :: finalStack
+
+                        Nothing ->
+                            finalStack
 
                 otherwise ->
                     finalStack
@@ -318,8 +157,31 @@ calcStackEntities { w, h, radius } finalStack resInfo =
                 (vec2 (w / 2) (h / 2))
                 (0.615 * radius)
                 progress
+
+        extraEntities =
+            case anim of
+                Just (Rotate _) ->
+                    []
+
+                otherwise ->
+                    case stackCard of
+                        Just { owner, card } ->
+                            [ { owner = owner
+                              , card = card
+                              , position =
+                                    Math.Vector2.add
+                                        (vec2 (w / 2) (h / 2))
+                                    <|
+                                        vec2 0 (-0.615 * radius)
+                              , rotation = pi
+                              , scale = 1.3
+                              }
+                            ]
+
+                        Nothing ->
+                            []
     in
-        entities
+        entities ++ extraEntities
 
 
 handOrigin : ClockParams -> WhichPlayer -> Int -> Vec2
@@ -392,7 +254,7 @@ handCardPosition ({ w, h, radius } as params) which index count =
                 vec2 0 y
 
 
-calcHandEntities : ClockParams -> Hand -> Maybe ( Float, Maybe Anim ) -> List (GameEntity {})
+calcHandEntities : ClockParams -> Hand -> Maybe ( Float, Maybe Anim ) -> List (CardEntity { index : Int })
 calcHandEntities ({ w, h, radius } as params) finalHand resInfo =
     let
         cardDimensions : ClockParams -> ( Float, Float, Float )
@@ -410,13 +272,15 @@ calcHandEntities ({ w, h, radius } as params) finalHand resInfo =
         maxTick =
             animToResTickMax anim
 
-        hand =
+        ( hand, drawingCard ) =
             case anim of
                 Just (Draw PlayerA) ->
-                    List.take (List.length finalHand - 1) finalHand
+                    ( List.take (List.length finalHand - 1) finalHand
+                    , List.head <| List.reverse finalHand
+                    )
 
                 otherwise ->
-                    finalHand
+                    ( finalHand, Nothing )
 
         indexModifier : Int -> Int
         indexModifier =
@@ -446,8 +310,8 @@ calcHandEntities ({ w, h, radius } as params) finalHand resInfo =
         ( width, height, spacing ) =
             cardDimensions params
 
-        entity : Int -> GameEntity {}
-        entity finalI =
+        entity : ( Int, Card ) -> CardEntity { index : Int }
+        entity ( finalI, card ) =
             let
                 i =
                     indexModifier finalI
@@ -465,32 +329,43 @@ calcHandEntities ({ w, h, radius } as params) finalHand resInfo =
                 { position = pos
                 , rotation = rot
                 , scale = 1
+                , card = card
+                , owner = PlayerA
+                , index = finalI
                 }
 
-        mainEntities : List (GameEntity {})
+        mainEntities : List (CardEntity { index : Int })
         mainEntities =
-            List.map entity (List.range 0 (n - 1))
+            List.map entity <| List.indexedMap (,) hand
 
-        extraEntities : List (GameEntity {})
+        extraEntities : List (CardEntity { index : Int })
         extraEntities =
             case anim of
                 Just (Draw PlayerA) ->
-                    let
-                        pos =
-                            interp2D progress
-                                (vec2 w h)
-                                (handCardPosition params PlayerA n (n + 1))
+                    case drawingCard of
+                        Just card ->
+                            let
+                                pos =
+                                    interp2D progress
+                                        (vec2 w h)
+                                        (handCardPosition params PlayerA n (n + 1))
 
-                        rot =
-                            floatInterp progress 0 (handCardRotation PlayerA n (n + 1))
-                    in
-                        [ { position = pos
-                          , rotation = rot
-                          , scale = 1
-                          }
-                        ]
+                                rot =
+                                    floatInterp progress 0 (handCardRotation PlayerA n (n + 1))
+                            in
+                                [ { position = pos
+                                  , rotation = rot
+                                  , scale = 1
+                                  , card = card
+                                  , owner = PlayerA
+                                  , index = n
+                                  }
+                                ]
 
-                Just (Play PlayerA _ i) ->
+                        Nothing ->
+                            []
+
+                Just (Play PlayerA card i) ->
                     let
                         pos =
                             interp2D playProgress
@@ -498,7 +373,7 @@ calcHandEntities ({ w, h, radius } as params) finalHand resInfo =
                                 (vec2 (w / 2) (h / 2 - radius * 0.62))
 
                         rot =
-                            floatInterp playProgress (handCardRotation PlayerA i n) 0
+                            floatInterp playProgress (handCardRotation PlayerA i n) pi
 
                         scale =
                             floatInterp playProgress 1 1.3
@@ -506,6 +381,9 @@ calcHandEntities ({ w, h, radius } as params) finalHand resInfo =
                         [ { position = pos
                           , rotation = rot
                           , scale = scale
+                          , card = card
+                          , owner = PlayerA
+                          , index = i
                           }
                         ]
 
@@ -632,20 +510,21 @@ calcOtherHandEntities ({ w, h, radius } as params) finalN resInfo =
         mainEntities ++ extraEntities
 
 
-clockFace : Stack -> Vec2 -> Float -> Float -> List (GameEntity { owner : WhichPlayer })
+clockFace : Stack -> Vec2 -> Float -> Float -> List (CardEntity {})
 clockFace stack origin radius progress =
     let
         segments : Int
         segments =
             12
 
-        genPoint : Int -> StackCard -> GameEntity { owner : WhichPlayer }
-        genPoint index { owner } =
+        genPoint : Int -> StackCard -> GameEntity { card : Card, owner : WhichPlayer }
+        genPoint index { card, owner } =
             let
                 i =
                     index + 1
             in
                 { owner = owner
+                , card = card
                 , position = Math.Vector2.add origin <| offset i
                 , rotation = rotation i
                 , scale = 1.3
@@ -667,6 +546,6 @@ clockFace stack origin radius progress =
 
         rotation : Int -> Float
         rotation i =
-            2 * pi - rot i
+            pi - rot i
     in
         List.indexedMap genPoint stack

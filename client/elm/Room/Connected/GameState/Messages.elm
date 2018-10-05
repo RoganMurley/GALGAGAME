@@ -1,5 +1,6 @@
 module GameState.Messages exposing (..)
 
+import Mouse exposing (Position)
 import CharacterSelect.Messages as CharacterSelect
 
 
@@ -12,6 +13,8 @@ type Msg
     | PlayingOnly PlayingOnly
     | ReplaySaved String
     | GotoReplay String
+    | Mouse Position
+    | MouseClick Position
 
 
 type PlayingOnly

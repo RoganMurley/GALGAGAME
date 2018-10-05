@@ -19,8 +19,9 @@ data DSL n
   | Bite Life WhichPlayer n
   | AddToHand WhichPlayer Card n
   | Obliterate n
+  | Reflect n
   | Reverse n
-  | Play WhichPlayer Card n
+  | Play WhichPlayer Card Int n
   | Transmute Card n
   | Rotate n
   | SetHeadOwner WhichPlayer n

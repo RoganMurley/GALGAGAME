@@ -12,7 +12,6 @@ route =
         , map Replay replayRoute
         , map Lab labRoute
         , map Login loginRoute
-        , map Clock clockRoute
         , map Home top
         ]
 
@@ -47,8 +46,3 @@ labRoute =
 replayRoute : Parser (String -> a) a
 replayRoute =
     s "replay" </> string
-
-
-clockRoute : Parser a a
-clockRoute =
-    s "clock"

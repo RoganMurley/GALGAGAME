@@ -6,10 +6,9 @@ import Http
 import Routing.State as Routing
 import Routing.Types as Routing
 import WebSocket
+import GameState.Messages as GameState
 import GameState.Types exposing (GameState(Started))
-import Clock.Listener as Clock
-import Clock.Messages as Clock
-import Clock.State as Clock
+import Connected.Messages as Connected
 import Lab.State as Lab
 import Lobby.State as Lobby
 import Lobby.Types as Lobby
@@ -87,9 +86,6 @@ update msg ({ room, settings, textures, flags } as model) =
                             Just { state } ->
                                 listen time (Started state)
 
-                    Room.Clock clock ->
-                        Clock.listen clock
-
                     otherwise ->
                         Cmd.none
                 )
@@ -136,7 +132,8 @@ update msg ({ room, settings, textures, flags } as model) =
                     , Cmd.batch
                         [ cmd
                         , analytics ()
-                          -- , send flags "reconnect:" -- Reopen ws connection
+
+                        -- , send flags "reconnect:" -- Reopen ws connection
                         ]
                     )
 
@@ -180,7 +177,19 @@ update msg ({ room, settings, textures, flags } as model) =
                     ( newRoom, newCmd ) =
                         Room.update
                             room
-                            (Room.ClockMsg <| Clock.Mouse mouse)
+                            (Room.ConnectedMsg <| Connected.GameStateMsg <| GameState.Mouse mouse)
+                            flags
+                in
+                    ( { model | room = newRoom }
+                    , newCmd
+                    )
+
+            MouseClick mouse ->
+                let
+                    ( newRoom, newCmd ) =
+                        Room.update
+                            room
+                            (Room.ConnectedMsg <| Connected.GameStateMsg <| GameState.MouseClick mouse)
                             flags
                 in
                     ( { model | room = newRoom }
@@ -348,14 +357,6 @@ locationUpdate model location =
                         , Cmd.none
                         )
 
-                Routing.Clock ->
-                    ( { model
-                        | room =
-                            Room.Clock Clock.init
-                      }
-                    , Cmd.none
-                    )
-
         Nothing ->
             ( { model | room = Room.init }
             , Cmd.none
@@ -369,4 +370,5 @@ subscriptions model =
         , AnimationFrame.diffs Frame
         , Window.resizes (\{ width, height } -> Resize width height)
         , Mouse.moves MousePosition
+        , Mouse.clicks MouseClick
         ]
