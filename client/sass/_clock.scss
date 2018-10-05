@@ -48,6 +48,11 @@
   font-size: 1.6rem;
   font-family: 'Cinzel Decorative', sans-serif;
   font-weight: 900;
+
+  &:disabled {
+    background-color: dimgrey;
+    border-color: dimgrey;
+  }
 }
 
 
