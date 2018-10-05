@@ -36,6 +36,7 @@ type Anim
     | Heal WhichPlayer
     | Draw WhichPlayer
     | Bite WhichPlayer Int
+    | Reflect WhichPlayer
     | Reverse WhichPlayer
     | Obliterate WhichPlayer
     | Play WhichPlayer Card Int
@@ -44,6 +45,7 @@ type Anim
     | GameStart WhichPlayer
     | GameEnd (Maybe WhichPlayer)
     | Rotate WhichPlayer
+    | Windup WhichPlayer
     | Adhoc WhichPlayer ShaderName SfxUrl
     | Custom String
 

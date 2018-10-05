@@ -2,8 +2,10 @@ module Clock.Primitives exposing (..)
 
 import Clock.Meshes
 import Clock.Shaders
-import Clock.Types exposing (Uniforms, Vertex)
+import Clock.Types exposing (Vertex)
+import Clock.Uniforms exposing (Uniforms)
 import Math.Vector2 exposing (Vec2)
+import Math.Vector3 exposing (Vec3)
 import WebGL exposing (Entity, Mesh, Shader)
 import WebGL.Settings.Blend as WebGL
 
@@ -93,6 +95,13 @@ roundedBoxDisintegrate : Uniforms { u | time : Float } -> Entity
 roundedBoxDisintegrate =
     entity
         Clock.Shaders.roundedBoxDisintegrate
+        Clock.Meshes.quad
+
+
+roundedBoxTransmute : Uniforms { u | time : Float, finalColor : Vec3 } -> Entity
+roundedBoxTransmute =
+    entity
+        Clock.Shaders.roundedBoxTransmute
         Clock.Meshes.quad
 
 

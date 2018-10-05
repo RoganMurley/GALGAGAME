@@ -8,32 +8,24 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Main.Types exposing (Flags)
 import Main.Messages as Main
-import Raymarch.Types as Raymarch
-import Raymarch.View as Raymarch
 import Replay.Types exposing (..)
 import Texture.Types as Texture
 
 
-view : Raymarch.Params -> Model -> Flags -> Texture.Model -> Html Main.Msg
-view params { replay } ({ time } as flags) textures =
-    let
-        replayView : List (Html Main.Msg)
-        replayView =
-            case replay of
-                Nothing ->
-                    [ div [ class "lds-facebook" ]
-                        [ div [] []
-                        , div [] []
-                        , div [] []
-                        ]
-                    , Endgame.view 0.0 Nothing Nothing
-                    , Raymarch.view params
-                    ]
+view : Model -> Flags -> Texture.Model -> Html Main.Msg
+view { replay } flags textures =
+    div [ class "replay" ] <|
+        case replay of
+            Just { state, usernamePa, usernamePb } ->
+                [ playersView ( Just usernamePa, Just usernamePb )
+                , GameState.view (Started state) "" flags textures
+                ]
 
-                Just { state, usernamePa, usernamePb } ->
-                    [ playersView ( Just usernamePa, Just usernamePb )
-                    , GameState.view (Started state) "" flags textures
+            Nothing ->
+                [ div [ class "lds-facebook" ]
+                    [ div [] []
+                    , div [] []
+                    , div [] []
                     ]
-    in
-        div [ class "replay" ]
-            replayView
+                , Endgame.view 0.0 Nothing Nothing
+                ]

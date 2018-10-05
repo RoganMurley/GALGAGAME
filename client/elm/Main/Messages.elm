@@ -17,6 +17,7 @@ type Msg
     | Logout
     | LogoutCallback (Result Http.Error ())
     | MousePosition Mouse.Position
+    | MouseClick Mouse.Position
     | Receive String
     | Resize Int Int
     | RoomMsg Room.Msg

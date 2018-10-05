@@ -1,10 +1,11 @@
 module Replay.State exposing (..)
 
 import GameState.Decoders exposing (playStateDecoder)
-import GameState.State exposing (resolvable, resMapPlay)
+import GameState.State exposing (playstateTick, resolvable, resMapPlay)
 import GameState.Types exposing (PlayState(..))
 import Json.Decode as Json
 import Main.Messages as Main
+import Main.Types exposing (Flags)
 import Model.Decoders as Model
 import Model.Types exposing (Model)
 import Model.ViewModel
@@ -114,12 +115,12 @@ getReplay replayId =
                 ++ replayId
 
 
-tick : Replay.Model -> Float -> Replay.Model
-tick model dt =
+tick : Flags -> Replay.Model -> Float -> Replay.Model
+tick flags model dt =
     let
         newReplay =
             Maybe.map
-                (\r -> { r | state = resMapPlay (Resolvable.tick dt) r.state })
+                (\r -> { r | state = playstateTick flags r.state dt })
                 model.replay
     in
         { model | replay = newReplay }
