@@ -38,10 +38,10 @@ offering :: Card
 offering =
   Card
     "Offering"
-    "Pay 7 life to draw 2"
+    "Pay 4 life to draw 2"
     "striker/offering.svg"
     $ \w -> do
-      slash 7 w
+      slash 4 w
       draw w
       draw w
 
@@ -177,10 +177,10 @@ badApple :: Card
 badApple =
   Card
     "Bad Apple"
-    "Hurt yourself for 8"
+    "Hurt yourself for 4"
     "drinker/bad-apple.svg"
     $ \w -> do
-      bite 8 w
+      bite 4 w
 
 
 reversal :: Card
