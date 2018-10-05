@@ -5,12 +5,12 @@ import Card (Card(Card), description)
 import Data.Monoid ((<>))
 import Player (other)
 import Safe (headMay)
-import StackCard (StackCard(StackCard), changeOwner, isOwner)
+import StackCard (StackCard(StackCard), isOwner)
 import Util (shuffle)
 
 import qualified DSL.Alpha as Alpha
 import qualified DSL.Beta as Beta
-import DSL.Beta
+import DSL.Beta hiding (reflect)
 
 
 -- Striker
@@ -272,9 +272,7 @@ reflect =
     "Reflect"
     "All cards clockwise change owner"
     "shielder/reflect.svg"
-    $ \_ -> do
-      raw $ Alpha.modStackAll changeOwner
-      Beta.null
+    $ const Beta.reflect
 
 
 -- Bouncer

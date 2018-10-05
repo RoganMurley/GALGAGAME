@@ -14,6 +14,7 @@ decoder =
         , healDecoder
         , drawDecoder
         , biteDecoder
+        , reflectDecoder
         , reverseDecoder
         , obliterateDecoder
         , playDecoder
@@ -67,6 +68,13 @@ biteDecoder =
         (field "player" WhichPlayer.decoder)
         (field "anim" <| index 0 <| constDecoder "bite")
         (field "anim" <| index 1 int)
+
+
+reflectDecoder : Decoder Anim
+reflectDecoder =
+    Json.map2 (\w _ -> Reflect w)
+        (field "player" WhichPlayer.decoder)
+        (field "anim" (constDecoder "reflect"))
 
 
 reverseDecoder : Decoder Anim
