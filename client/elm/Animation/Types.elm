@@ -36,6 +36,7 @@ type Anim
     | Heal WhichPlayer
     | Draw WhichPlayer
     | Bite WhichPlayer Int
+    | Reflect WhichPlayer
     | Reverse WhichPlayer
     | Obliterate WhichPlayer
     | Play WhichPlayer Card Int

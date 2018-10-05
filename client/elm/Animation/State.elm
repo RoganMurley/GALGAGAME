@@ -79,6 +79,9 @@ getWhichPlayer anim =
         Bite w _ ->
             w
 
+        Reflect w ->
+            w
+
         Reverse w ->
             w
 
