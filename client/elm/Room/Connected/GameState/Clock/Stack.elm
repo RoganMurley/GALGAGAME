@@ -2,7 +2,7 @@ module Clock.Stack exposing (..)
 
 import Animation.State exposing (animToResTickMax)
 import Animation.Types exposing (Anim(..))
-import Clock.Card exposing (CardEntity, cardEntity, dissolvingCardEntity)
+import Clock.Card exposing (CardEntity, cardEntity, dissolvingCardEntity, transmutingCardEntity)
 import Clock.Types exposing (ClockParams, GameEntity)
 import Ease
 import Maybe.Extra as Maybe
@@ -37,6 +37,12 @@ view params entities resInfo textures =
                         cardEntity params textures
                     else
                         dissolvingCardEntity params textures progress
+
+                Just (Transmute _ ca cb) ->
+                    if i == 0 then
+                        transmutingCardEntity params textures progress ca cb
+                    else
+                        cardEntity params textures
 
                 _ ->
                     cardEntity params textures

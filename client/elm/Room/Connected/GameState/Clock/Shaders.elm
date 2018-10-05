@@ -142,3 +142,54 @@ roundedBoxDisintegrate =
         }
 
     |]
+
+
+fragmentTransmute : Shader {} (Uniforms { u | time : Float, finalTexture : WebGL.Texture }) { vcoord : Vec2 }
+fragmentTransmute =
+    [glsl|
+        precision mediump float;
+
+        uniform float time;
+        uniform sampler2D texture;
+        uniform sampler2D finalTexture;
+
+        varying vec2 vcoord;
+
+        void main ()
+        {
+            if (vcoord.x > time) {
+                gl_FragColor = texture2D(texture, vcoord);
+            } else {
+                gl_FragColor = texture2D(finalTexture, vcoord);
+            }
+        }
+
+    |]
+
+
+roundedBoxTransmute : Shader {} (Uniforms { u | time : Float, finalColor : Vec3 }) { vcoord : Vec2 }
+roundedBoxTransmute =
+    [glsl|
+        precision mediump float;
+
+        uniform vec3 color;
+        uniform vec3 finalColor;
+        uniform sampler2D texture;
+        uniform float time;
+
+        varying vec2 vcoord;
+
+        void main ()
+        {
+            vec2 pos = vec2(.5) - vcoord;
+
+            float b = .4;
+            float d = length(max(abs(pos) - b, .0));
+
+            float a = smoothstep(d * 0.9, d * 1.1, .5 - b);
+
+            vec3 actualColor = vcoord.x > time ? color : finalColor;
+            gl_FragColor = vec4(actualColor, a);
+        }
+
+    |]
