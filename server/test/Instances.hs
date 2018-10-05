@@ -125,9 +125,10 @@ instance Arbitrary CardAnim where
     , Heal <$> arbitrary
     , Draw <$> arbitrary
     , Bite <$> arbitrary <*> arbitrary
+    , pure Reflect
     , pure Reverse
     , pure Obliterate
-    , Play <$> arbitrary <*> arbitrary
+    , Play <$> arbitrary <*> arbitrary <*> arbitrary
     , Transmute <$> arbitrary <*> arbitrary
     , GameEnd <$> arbitrary
     , Adhoc <$> arbitrary <*> arbitrary <*> arbitrary
