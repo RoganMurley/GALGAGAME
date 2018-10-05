@@ -196,12 +196,16 @@ lifeView life =
 
 turnView : Maybe Anim -> Maybe Card -> Bool -> WhichPlayer -> Html Main.Msg
 turnView anim focus handFull turn =
-    case ( anim, handFull, focus ) of
-        ( Nothing, False, Nothing ) ->
+    case ( anim, focus ) of
+        ( Just (Overdraw _ _), _ ) ->
+            div [] []
+
+        ( Nothing, Nothing ) ->
             case turn of
                 PlayerA ->
                     button
                         [ class "clock-turn"
+                        , disabled handFull
                         , onClick <|
                             Main.RoomMsg <|
                                 Room.ConnectedMsg <|
@@ -214,9 +218,6 @@ turnView anim focus handFull turn =
 
                 PlayerB ->
                     div [ class "turn-status" ] [ text "Opponent's turn" ]
-
-        ( Nothing, True, Nothing ) ->
-            div [ class "turn-status" ] [ text "Hand full" ]
 
         _ ->
             div [] []
