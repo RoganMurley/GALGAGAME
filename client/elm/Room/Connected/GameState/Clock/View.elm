@@ -28,6 +28,7 @@ import Resolvable.State exposing (activeAnim, activeModel)
 import Room.Messages as Room
 import Texture.State as Texture
 import Texture.Types as Texture
+import Util exposing (px)
 import WebGL
 import WhichPlayer.Types exposing (WhichPlayer(..))
 
@@ -124,22 +125,22 @@ view (Params _ ( w, h )) { res, focus, mouse, entities } textures =
                         []
                 )
             , div [ class "text-focus" ]
-                [ textView focus
+                [ textView params focus
                 ]
             , div [ class "clock-life-container" ]
                 [ div
                     [ class "clock-life"
                     , style
-                        [ ( "right", (toString (0.5 * radius)) ++ "px" )
-                        , ( "top", (toString (0.7 * radius)) ++ "px" )
+                        [ ( "right", 0.5 * radius |> px )
+                        , ( "top", 0.7 * radius |> px )
                         ]
                     ]
                     [ lifeView model.life ]
                 , div
                     [ class "clock-life other"
                     , style
-                        [ ( "left", (toString (0.5 * radius)) ++ "px" )
-                        , ( "bottom", (toString (0.7 * radius)) ++ "px" )
+                        [ ( "left", 0.5 * radius |> px )
+                        , ( "bottom", 0.7 * radius |> px )
                         ]
                     ]
                     [ lifeView model.otherLife ]
@@ -176,14 +177,18 @@ focusImageView { w, h, radius } textures focus =
                 []
 
 
-textView : Maybe Card -> Html a
-textView card =
+textView : ClockParams -> Maybe Card -> Html a
+textView { radius } card =
     case card of
         Nothing ->
             text ""
 
         Just { name, desc } ->
-            div []
+            div
+                [ style
+                    [ ( "width", 0.7 * radius |> px )
+                    ]
+                ]
                 [ div [ class "title" ] [ text name ]
                 , div [ class "desc" ] [ text desc ]
                 ]
