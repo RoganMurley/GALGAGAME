@@ -49,7 +49,10 @@ tick { dimensions } ({ res } as model) dt =
             dimensions
 
         radius =
-            0.8 * (toFloat h / 2)
+            if h < w then
+                0.8 * (toFloat h / 2)
+            else
+                1.2 * (toFloat w / 2)
 
         resInfo =
             Just ( res.tick, activeAnim res )

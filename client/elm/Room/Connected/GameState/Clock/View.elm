@@ -45,12 +45,10 @@ view (Params _ ( w, h )) { res, focus, mouse, entities } textures =
             uniforms 0 ( w, h )
 
         radius =
-            case anim of
-                Just (GameStart _) ->
-                    0.8 * (toFloat h / 2) * (Ease.outQuint <| res.tick / maxTick)
-
-                otherwise ->
-                    0.8 * (toFloat h / 2)
+            if h < w then
+                0.8 * (toFloat h / 2)
+            else
+                1.2 * (toFloat w / 2)
 
         anim =
             activeAnim res
