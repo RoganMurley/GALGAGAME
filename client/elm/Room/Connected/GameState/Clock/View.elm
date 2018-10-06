@@ -2,7 +2,6 @@ module Clock.View exposing (view)
 
 import Animation.State exposing (animToResTickMax)
 import Animation.Types exposing (Anim(..))
-import Card.Types exposing (Card)
 import Clock.Card exposing (cardTexture, colour)
 import Clock.Hand exposing (handView, otherHandView)
 import Clock.Primitives as Primitives
@@ -26,6 +25,7 @@ import Model.Types exposing (Life)
 import Raymarch.Types exposing (Params(..))
 import Resolvable.State exposing (activeAnim, activeModel)
 import Room.Messages as Room
+import Stack.Types exposing (StackCard)
 import Texture.State as Texture
 import Texture.Types as Texture
 import Util exposing (px)
@@ -93,6 +93,7 @@ view (Params _ ( w, h )) { res, focus, mouse, entities } textures =
                     Just ( dagger, noise ) ->
                         List.concat
                             [ Clock.Stack.view params entities.stack resInfo textures
+                            , focusImageView params textures focus
                             , [ Primitives.circle <|
                                     locals dagger
                                         (vec3 (toFloat w / 2) (toFloat h / 2) z)
@@ -116,7 +117,6 @@ view (Params _ ( w, h )) { res, focus, mouse, entities } textures =
                             , handView params model.hand entities.hand resInfo noise textures
                             , otherHandView params model.otherHand entities.otherHand resInfo noise textures
                             , Clock.Wave.view params resInfo dagger
-                            , focusImageView params textures focus
                             , lifeOrbView params textures model.life model.otherLife
                             ]
 
@@ -124,7 +124,7 @@ view (Params _ ( w, h )) { res, focus, mouse, entities } textures =
                         []
                 )
             , div [ class "text-focus" ]
-                [ textView params focus
+                [ focusTextView params focus
                 ]
             , div [ class "clock-life-container" ]
                 [ div
@@ -156,23 +156,41 @@ view (Params _ ( w, h )) { res, focus, mouse, entities } textures =
             ]
 
 
-focusImageView : ClockParams -> Texture.Model -> Maybe Card -> List WebGL.Entity
+focusImageView : ClockParams -> Texture.Model -> Maybe StackCard -> List WebGL.Entity
 focusImageView { w, h, radius } textures focus =
     let
         mTexture =
-            Maybe.join <| Maybe.map (cardTexture textures) focus
+            Maybe.join <| Maybe.map (cardTexture textures << .card) focus
     in
         case mTexture of
             Just texture ->
-                [ Primitives.quad Clock.Shaders.fragment <|
-                    uniforms 0
-                        ( floor w, floor h )
-                        texture
-                        (vec3 (w * 0.5) (h * 0.45) 0)
-                        (makeScale3 (0.2 * radius) (0.2 * radius) 1)
-                        (makeRotate pi <| vec3 0 0 1)
-                        (vec3 1 1 1)
-                ]
+                let
+                    background =
+                        case Maybe.map .owner focus of
+                            Just owner ->
+                                [ Primitives.fullCircle <|
+                                    uniforms 0
+                                        ( floor w, floor h )
+                                        texture
+                                        (vec3 (w * 0.5) (h * 0.5) 0)
+                                        (makeScale3 (0.52 * radius) (0.52 * radius) 1)
+                                        (makeRotate pi <| vec3 0 0 1)
+                                        (Math.Vector3.scale 0.5 <| colour owner)
+                                ]
+
+                            Nothing ->
+                                []
+                in
+                    background
+                        ++ [ Primitives.quad Clock.Shaders.fragment <|
+                                uniforms 0
+                                    ( floor w, floor h )
+                                    texture
+                                    (vec3 (w * 0.5) (h * 0.45) 0)
+                                    (makeScale3 (0.2 * radius) (0.2 * radius) 1)
+                                    (makeRotate pi <| vec3 0 0 1)
+                                    (vec3 1 1 1)
+                           ]
 
             Nothing ->
                 []
@@ -224,20 +242,20 @@ lifeOrbView { w, h, radius } textures life otherLife =
                 []
 
 
-textView : ClockParams -> Maybe Card -> Html a
-textView { radius } card =
-    case card of
+focusTextView : ClockParams -> Maybe StackCard -> Html a
+focusTextView { radius } stackCard =
+    case stackCard of
         Nothing ->
             text ""
 
-        Just { name, desc } ->
+        Just { card } ->
             div
                 [ style
                     [ ( "width", 0.7 * radius |> px )
                     ]
                 ]
-                [ div [ class "title" ] [ text name ]
-                , div [ class "desc" ] [ text desc ]
+                [ div [ class "title" ] [ text card.name ]
+                , div [ class "desc" ] [ text card.desc ]
                 ]
 
 
@@ -246,7 +264,7 @@ lifeTextView life =
     text <| toString life
 
 
-turnView : Maybe Anim -> Maybe Card -> Bool -> WhichPlayer -> Html Main.Msg
+turnView : Maybe Anim -> Maybe StackCard -> Bool -> WhichPlayer -> Html Main.Msg
 turnView anim focus handFull turn =
     case ( anim, focus ) of
         ( Just (Overdraw _ _), _ ) ->

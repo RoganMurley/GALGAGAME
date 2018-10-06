@@ -1,15 +1,15 @@
 module Clock.Types exposing (..)
 
-import Card.Types exposing (Card)
 import Clock.Entity exposing (Entities)
 import Math.Vector2 exposing (Vec2)
 import Math.Vector3 exposing (Vec3)
 import Resolvable.Types as Resolvable
+import Stack.Types exposing (StackCard)
 
 
 type alias Model =
     { res : Resolvable.Model
-    , focus : Maybe Card
+    , focus : Maybe StackCard
     , mouse : Vec2
     , entities : Entities
     }
