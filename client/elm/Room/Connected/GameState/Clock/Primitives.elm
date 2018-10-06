@@ -31,6 +31,13 @@ circle =
         Clock.Meshes.quad
 
 
+fullCircle : Uniforms u -> Entity
+fullCircle =
+    entity
+        fullCircleFragment
+        Clock.Meshes.quad
+
+
 circleFragment : Shader {} (Uniforms u) { vcoord : Vec2 }
 circleFragment =
     [glsl|
@@ -47,6 +54,26 @@ circleFragment =
             float inner = smoothstep(radius * 1.05, radius * 1.03, dist);
             float outer = smoothstep(radius * 0.95, radius * 0.98, dist);
             float intensity = inner * outer;
+            gl_FragColor = vec4(color, intensity);
+        }
+
+    |]
+
+
+fullCircleFragment : Shader {} (Uniforms u) { vcoord : Vec2 }
+fullCircleFragment =
+    [glsl|
+        precision mediump float;
+
+        uniform vec3 color;
+
+        varying vec2 vcoord;
+
+        void main ()
+        {
+            float radius = .9;
+            float dist = dot(2. * vcoord - 1., 2. * vcoord - 1.);
+            float intensity = step(dist, radius);
             gl_FragColor = vec4(color, intensity);
         }
 

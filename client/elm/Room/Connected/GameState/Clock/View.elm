@@ -3,7 +3,7 @@ module Clock.View exposing (view)
 import Animation.State exposing (animToResTickMax)
 import Animation.Types exposing (Anim(..))
 import Card.Types exposing (Card)
-import Clock.Card exposing (cardTexture)
+import Clock.Card exposing (cardTexture, colour)
 import Clock.Hand exposing (handView, otherHandView)
 import Clock.Primitives as Primitives
 import Clock.Shaders
@@ -186,7 +186,15 @@ lifeOrbView { w, h, radius } textures life otherLife =
     in
         case mTexture of
             Just texture ->
-                [ Primitives.circle <|
+                [ Primitives.fullCircle <|
+                    uniforms 0
+                        ( floor w, floor h )
+                        texture
+                        (vec3 (w * 0.5 - 0.6 * radius) (h * 0.5 + 0.75 * radius) 0)
+                        (makeScale3 (0.15 * radius) (0.15 * radius) 1)
+                        (makeRotate pi <| vec3 0 0 1)
+                        (colour PlayerA)
+                , Primitives.circle <|
                     uniforms 0
                         ( floor w, floor h )
                         texture
@@ -194,6 +202,14 @@ lifeOrbView { w, h, radius } textures life otherLife =
                         (makeScale3 (0.15 * radius) (0.15 * radius) 1)
                         (makeRotate pi <| vec3 0 0 1)
                         (vec3 1 1 1)
+                , Primitives.fullCircle <|
+                    uniforms 0
+                        ( floor w, floor h )
+                        texture
+                        (vec3 (w * 0.5 + 0.6 * radius) (h * 0.5 - 0.75 * radius) 0)
+                        (makeScale3 (0.15 * radius) (0.15 * radius) 1)
+                        (makeRotate pi <| vec3 0 0 1)
+                        (colour PlayerB)
                 , Primitives.circle <|
                     uniforms 0
                         ( floor w, floor h )
