@@ -95,18 +95,19 @@ hitTest pos dist { position } =
     Math.Vector2.distance position pos < dist
 
 
-getFocus : Model -> Maybe Card
+getFocus : Model -> Maybe StackCard
 getFocus { entities, mouse, res } =
     let
-        resCard =
-            Maybe.map .card <| activeStackCard res
-
         hoverCard =
             Maybe.or
-                (Maybe.map .card <| (List.find <| hitTest mouse 64) entities.stack)
-                (Maybe.map .card <| (List.find <| hitTest mouse 28) entities.hand)
+                (Maybe.map (\{ card, owner } -> { owner = owner, card = card }) <|
+                    List.find (hitTest mouse 64) entities.stack
+                )
+                (Maybe.map (\{ card } -> { owner = PlayerA, card = card }) <|
+                    List.find (hitTest mouse 28) entities.hand
+                )
     in
-        Maybe.or resCard hoverCard
+        Maybe.or (activeStackCard res) hoverCard
 
 
 calcStackEntities : ClockParams -> Stack -> Maybe StackCard -> Maybe ( Float, Maybe Anim ) -> List (CardEntity {})
