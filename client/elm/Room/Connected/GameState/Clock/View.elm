@@ -117,6 +117,7 @@ view (Params _ ( w, h )) { res, focus, mouse, entities } textures =
                             , otherHandView params model.otherHand entities.otherHand resInfo noise textures
                             , Clock.Wave.view params resInfo dagger
                             , focusImageView params textures focus
+                            , lifeOrbView params textures model.life model.otherLife
                             ]
 
                     Nothing ->
@@ -129,19 +130,21 @@ view (Params _ ( w, h )) { res, focus, mouse, entities } textures =
                 [ div
                     [ class "clock-life"
                     , style
-                        [ ( "right", 0.5 * radius |> px )
-                        , ( "top", 0.7 * radius |> px )
+                        [ ( "right", 0.49 * radius |> px )
+                        , ( "top", 0.62 * radius |> px )
+                        , ( "font-size", 0.18 * radius |> px )
                         ]
                     ]
-                    [ lifeView model.life ]
+                    [ lifeTextView model.life ]
                 , div
                     [ class "clock-life other"
                     , style
                         [ ( "left", 0.5 * radius |> px )
-                        , ( "bottom", 0.7 * radius |> px )
+                        , ( "bottom", 0.62 * radius |> px )
+                        , ( "font-size", 0.18 * radius |> px )
                         ]
                     ]
-                    [ lifeView model.otherLife ]
+                    [ lifeTextView model.otherLife ]
                 ]
             , div [ class "clock-go" ]
                 [ turnView
@@ -175,6 +178,36 @@ focusImageView { w, h, radius } textures focus =
                 []
 
 
+lifeOrbView : ClockParams -> Texture.Model -> Life -> Life -> List WebGL.Entity
+lifeOrbView { w, h, radius } textures life otherLife =
+    let
+        mTexture =
+            Texture.load textures "striker/dagger.svg"
+    in
+        case mTexture of
+            Just texture ->
+                [ Primitives.circle <|
+                    uniforms 0
+                        ( floor w, floor h )
+                        texture
+                        (vec3 (w * 0.5 - 0.6 * radius) (h * 0.5 + 0.75 * radius) 0)
+                        (makeScale3 (0.15 * radius) (0.15 * radius) 1)
+                        (makeRotate pi <| vec3 0 0 1)
+                        (vec3 1 1 1)
+                , Primitives.circle <|
+                    uniforms 0
+                        ( floor w, floor h )
+                        texture
+                        (vec3 (w * 0.5 + 0.6 * radius) (h * 0.5 - 0.75 * radius) 0)
+                        (makeScale3 (0.15 * radius) (0.15 * radius) 1)
+                        (makeRotate pi <| vec3 0 0 1)
+                        (vec3 1 1 1)
+                ]
+
+            Nothing ->
+                []
+
+
 textView : ClockParams -> Maybe Card -> Html a
 textView { radius } card =
     case card of
@@ -192,8 +225,8 @@ textView { radius } card =
                 ]
 
 
-lifeView : Life -> Html a
-lifeView life =
+lifeTextView : Life -> Html a
+lifeTextView life =
     text <| toString life
 
 
