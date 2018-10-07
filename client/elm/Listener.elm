@@ -93,8 +93,5 @@ animSfx anim =
                 Nothing ->
                     Just "draw.wav"
 
-        Adhoc _ _ sfx ->
-            Just sfx
-
         otherwise ->
             Nothing

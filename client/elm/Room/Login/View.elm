@@ -8,12 +8,10 @@ import Login.Types exposing (..)
 import Login.State exposing (passwordInvalid, usernameInvalid)
 import Main.Messages as Main
 import Main.Types exposing (Flags)
-import Raymarch.Types as Raymarch
-import Raymarch.View as Raymarch
 
 
-view : Raymarch.Params -> Model -> Html Msg
-view params { username, password, error, submitting } =
+view : Model -> Html Msg
+view { username, password, error, submitting } =
     let
         submitDisabled : Bool
         submitDisabled =
@@ -43,9 +41,6 @@ view params { username, password, error, submitting } =
                     [ text "Login" ]
                 , div [ class "error" ] [ text error ]
                 ]
-            , div
-                []
-                [ Raymarch.view params ]
             ]
 
 

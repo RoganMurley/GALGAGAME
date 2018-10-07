@@ -46,8 +46,6 @@ type Anim
     | GameEnd (Maybe WhichPlayer)
     | Rotate WhichPlayer
     | Windup WhichPlayer
-    | Adhoc WhichPlayer ShaderName SfxUrl
-    | Custom String
 
 
 type alias SfxUrl =

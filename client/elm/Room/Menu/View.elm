@@ -6,12 +6,10 @@ import Html.Events exposing (..)
 import Lobby.State exposing (gameTypeToString)
 import Lobby.Types exposing (GameType(..))
 import Menu.Messages exposing (Msg(..))
-import Raymarch.Types as Raymarch
-import Raymarch.View as Raymarch
 
 
-view : Raymarch.Params -> Html Msg
-view params =
+view : Html Msg
+view =
     div []
         [ div [ class "main-menu" ]
             [ h1 [] [ text "HUBRIS" ]
@@ -20,7 +18,6 @@ view params =
                 List.map menuButton
                     [ QuickplayGame, CustomGame, ComputerGame ]
             ]
-        , div [] [ Raymarch.view params ]
         ]
 
 

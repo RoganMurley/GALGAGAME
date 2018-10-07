@@ -3,7 +3,7 @@ module Clock.Uniforms exposing (Uniforms, uniforms)
 import Math.Matrix4 exposing (Mat4, identity, makeLookAt, makeOrtho, makeRotate)
 import Math.Vector2 exposing (Vec2, vec2)
 import Math.Vector3 exposing (Vec3, vec3)
-import Raymarch.Types exposing (Height, Width)
+import Render exposing (Width, Height)
 import WebGL exposing (Texture)
 
 

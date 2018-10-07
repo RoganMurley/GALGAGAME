@@ -6,12 +6,10 @@ import Html.Events exposing (..)
 import Lobby.Messages exposing (Msg(..))
 import Lobby.State exposing (gameTypeToString)
 import Lobby.Types exposing (..)
-import Raymarch.Types as Raymarch
-import Raymarch.View as Raymarch
 
 
-view : Raymarch.Params -> Model -> Html Msg
-view params { error, gameType } =
+view : Model -> Html Msg
+view { error, gameType } =
     div []
         [ div [ class "connecting-box" ]
             [ h1 [] [ text <| (gameTypeToString gameType) ++ " Game" ]
@@ -25,7 +23,4 @@ view params { error, gameType } =
                 , div [ class "error" ] [ text error ]
                 ]
             ]
-        , div
-            []
-            [ Raymarch.view params ]
         ]

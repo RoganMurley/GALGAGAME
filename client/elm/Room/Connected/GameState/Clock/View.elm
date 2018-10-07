@@ -22,7 +22,7 @@ import Math.Matrix4 exposing (makeRotate, makeScale3, makeLookAt, makeOrtho)
 import Math.Vector3 exposing (Vec3, vec3)
 import Maybe.Extra as Maybe
 import Model.Types exposing (Life)
-import Raymarch.Types exposing (Params(..))
+import Render exposing (Params)
 import Resolvable.State exposing (activeAnim, activeModel)
 import Room.Messages as Room
 import Stack.Types exposing (StackCard)
@@ -34,7 +34,7 @@ import WhichPlayer.Types exposing (WhichPlayer(..))
 
 
 view : Params -> Model -> Texture.Model -> Html Main.Msg
-view (Params _ ( w, h )) { res, focus, mouse, entities } textures =
+view { w, h } { res, focus, mouse, entities } textures =
     let
         mTextures =
             Maybe.map2 (,)
@@ -87,7 +87,7 @@ view (Params _ ( w, h )) { res, focus, mouse, entities } textures =
             [ WebGL.toHtml
                 [ width w
                 , height h
-                , class "raymarch-canvas"
+                , class "webgl-canvas"
                 ]
                 (case mTextures of
                     Just ( dagger, noise ) ->
