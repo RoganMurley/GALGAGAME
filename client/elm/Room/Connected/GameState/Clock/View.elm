@@ -1,6 +1,5 @@
 module Clock.View exposing (view)
 
-import Animation.State exposing (animToResTickMax)
 import Animation.Types exposing (Anim(..))
 import Clock.Card exposing (cardTexture, colour)
 import Clock.Hand exposing (handView, otherHandView)
@@ -11,15 +10,14 @@ import Clock.Types exposing (ClockParams, Model)
 import Clock.Uniforms exposing (uniforms)
 import Clock.Wave
 import Connected.Messages as Connected
-import Ease
 import GameState.Messages as GameState
 import Hand.State exposing (maxHandLength)
-import Html exposing (..)
-import Html.Attributes exposing (..)
+import Html exposing (Html, button, div, text)
+import Html.Attributes exposing (class, disabled, height, width, style)
 import Html.Events exposing (onClick)
 import Main.Messages as Main
-import Math.Matrix4 exposing (makeRotate, makeScale3, makeLookAt, makeOrtho)
-import Math.Vector3 exposing (Vec3, vec3)
+import Math.Matrix4 exposing (makeRotate, makeScale3)
+import Math.Vector3 exposing (vec3)
 import Maybe.Extra as Maybe
 import Model.Types exposing (Life)
 import Render exposing (Params)
@@ -34,7 +32,7 @@ import WhichPlayer.Types exposing (WhichPlayer(..))
 
 
 view : Params -> Model -> Texture.Model -> Html Main.Msg
-view { w, h } { res, focus, mouse, entities } textures =
+view { w, h } { res, focus, entities } textures =
     let
         mTextures =
             Maybe.map2 (,)
@@ -42,7 +40,7 @@ view { w, h } { res, focus, mouse, entities } textures =
                 (Texture.load textures "noise")
 
         locals =
-            uniforms 0 ( w, h )
+            uniforms ( w, h )
 
         radius =
             if h < w then
@@ -55,20 +53,6 @@ view { w, h } { res, focus, mouse, entities } textures =
 
         model =
             activeModel res
-
-        maxTick =
-            animToResTickMax anim
-
-        rotateProgress =
-            case anim of
-                Just (Rotate _) ->
-                    Ease.inQuad <| res.tick / maxTick
-
-                Just (Play _ _ _) ->
-                    1 - (Ease.outQuad <| res.tick / maxTick)
-
-                otherwise ->
-                    0
 
         z =
             0
@@ -114,8 +98,8 @@ view { w, h } { res, focus, mouse, entities } textures =
                                         (makeRotate 0 <| vec3 0 0 1)
                                         (vec3 1 1 1)
                               ]
-                            , handView params model.hand entities.hand resInfo noise textures
-                            , otherHandView params model.otherHand entities.otherHand resInfo noise textures
+                            , handView params entities.hand resInfo noise textures
+                            , otherHandView params entities.otherHand resInfo noise textures
                             , Clock.Wave.view params resInfo dagger
                             , lifeOrbView params textures model.life model.otherLife
                             ]
@@ -169,7 +153,7 @@ focusImageView { w, h, radius } textures focus =
                         case Maybe.map .owner focus of
                             Just owner ->
                                 [ Primitives.fullCircle <|
-                                    uniforms 0
+                                    uniforms
                                         ( floor w, floor h )
                                         texture
                                         (vec3 (w * 0.5) (h * 0.5) 0)
@@ -183,7 +167,7 @@ focusImageView { w, h, radius } textures focus =
                 in
                     background
                         ++ [ Primitives.quad Clock.Shaders.fragment <|
-                                uniforms 0
+                                uniforms
                                     ( floor w, floor h )
                                     texture
                                     (vec3 (w * 0.5) (h * 0.45) 0)
@@ -201,19 +185,29 @@ lifeOrbView { w, h, radius } textures life otherLife =
     let
         mTexture =
             Texture.load textures "striker/dagger.svg"
+
+        lifePercentage =
+            toFloat life / 50
+
+        otherLifePercentage =
+            toFloat otherLife / 50
     in
         case mTexture of
             Just texture ->
                 [ Primitives.fullCircle <|
-                    uniforms 0
+                    uniforms
                         ( floor w, floor h )
                         texture
                         (vec3 (w * 0.5 - 0.6 * radius) (h * 0.5 + 0.75 * radius) 0)
-                        (makeScale3 (0.15 * radius) (0.15 * radius) 1)
+                        (makeScale3
+                            (lifePercentage * 0.15 * radius)
+                            (lifePercentage * 0.15 * radius)
+                            1
+                        )
                         (makeRotate pi <| vec3 0 0 1)
                         (colour PlayerA)
                 , Primitives.circle <|
-                    uniforms 0
+                    uniforms
                         ( floor w, floor h )
                         texture
                         (vec3 (w * 0.5 - 0.6 * radius) (h * 0.5 + 0.75 * radius) 0)
@@ -221,15 +215,19 @@ lifeOrbView { w, h, radius } textures life otherLife =
                         (makeRotate pi <| vec3 0 0 1)
                         (vec3 1 1 1)
                 , Primitives.fullCircle <|
-                    uniforms 0
+                    uniforms
                         ( floor w, floor h )
                         texture
                         (vec3 (w * 0.5 + 0.6 * radius) (h * 0.5 - 0.75 * radius) 0)
-                        (makeScale3 (0.15 * radius) (0.15 * radius) 1)
+                        (makeScale3
+                            (otherLifePercentage * 0.15 * radius)
+                            (otherLifePercentage * 0.15 * radius)
+                            1
+                        )
                         (makeRotate pi <| vec3 0 0 1)
                         (colour PlayerB)
                 , Primitives.circle <|
-                    uniforms 0
+                    uniforms
                         ( floor w, floor h )
                         texture
                         (vec3 (w * 0.5 + 0.6 * radius) (h * 0.5 - 0.75 * radius) 0)

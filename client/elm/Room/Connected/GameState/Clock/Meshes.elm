@@ -1,9 +1,9 @@
 module Clock.Meshes exposing (..)
 
 import Math.Vector2 exposing (vec2)
-import Math.Vector3 exposing (Vec3, vec3)
+import Math.Vector3 exposing (vec3)
 import Clock.Types exposing (Vertex)
-import WebGL exposing (Mesh, triangles)
+import WebGL exposing (Mesh)
 
 
 quad : Mesh Vertex

@@ -8,7 +8,6 @@ import Clock.Shaders
 import Clock.Types exposing (ClockParams, GameEntity)
 import Clock.Uniforms exposing (uniforms)
 import Ease
-import Hand.Types exposing (Hand)
 import Math.Matrix4 exposing (makeLookAt, makeOrtho, makeRotate, makeScale3)
 import Math.Vector2 exposing (vec2)
 import Math.Vector3 exposing (Vec3, vec3)
@@ -22,7 +21,7 @@ import Util exposing (floatInterp, interp, to3d)
 
 
 cardDimensions : ClockParams -> ( Float, Float, Float )
-cardDimensions { w, h, radius } =
+cardDimensions { radius } =
     ( 0.1 * radius, 0.1 * radius, 35.0 )
 
 
@@ -61,10 +60,10 @@ rotation which i count =
 
 
 position : ClockParams -> WhichPlayer -> Int -> Int -> Vec3
-position ({ w, h, radius } as params) which index count =
+position ({ radius } as params) which index count =
     let
-        ( width, height, spacing ) =
-            ( 0.1 * radius, 0.1 * radius, 35.0 )
+        ( width, spacing ) =
+            ( 0.1 * radius, 35.0 )
 
         sign =
             case which of
@@ -91,38 +90,14 @@ position ({ w, h, radius } as params) which index count =
             (origin params which count)
         <|
             Math.Vector3.add
-                (vec3 ((toFloat index) * (width + spacing)) 0 0)
+                (vec3 (toFloat index * (width + spacing)) 0 0)
             <|
                 vec3 0 y 0
 
 
-handView : ClockParams -> Hand -> List (CardEntity { index : Int }) -> Maybe ( Float, Maybe Anim ) -> Texture -> Texture.Model -> List WebGL.Entity
-handView ({ w, h, radius } as params) finalHand handEntities resInfo noise textures =
+handView : ClockParams -> List (CardEntity { index : Int }) -> Maybe ( Float, Maybe Anim ) -> Texture -> Texture.Model -> List WebGL.Entity
+handView ({ w, h } as params) handEntities resInfo noise textures =
     let
-        locals =
-            uniforms 0 ( floor w, floor h )
-
-        hand =
-            case anim of
-                Just (Draw PlayerA) ->
-                    List.take (List.length finalHand - 1) finalHand
-
-                otherwise ->
-                    finalHand
-
-        indexModifier : Int -> Int
-        indexModifier =
-            case anim of
-                Just (Play PlayerA _ index) ->
-                    \i ->
-                        if i >= index then
-                            i + 1
-                        else
-                            i
-
-                otherwise ->
-                    identity
-
         resTick =
             Maybe.withDefault 0.0 <|
                 Maybe.map Tuple.first resInfo
@@ -134,16 +109,10 @@ handView ({ w, h, radius } as params) finalHand handEntities resInfo noise textu
         maxTick =
             animToResTickMax anim
 
-        n =
-            List.length hand
-
-        finalN =
-            List.length finalHand
-
         progress =
             Ease.outQuint <| resTick / maxTick
 
-        ( width, height, spacing ) =
+        ( width, height, _ ) =
             cardDimensions params
 
         mainView : List WebGL.Entity
@@ -213,39 +182,15 @@ handView ({ w, h, radius } as params) finalHand handEntities resInfo noise textu
                             Nothing ->
                                 []
 
-                otherwise ->
+                _ ->
                     []
     in
         mainView ++ extraView
 
 
-otherHandView : ClockParams -> Int -> List (GameEntity {}) -> Maybe ( Float, Maybe Anim ) -> Texture -> Texture.Model -> List WebGL.Entity
-otherHandView ({ w, h, radius } as params) finalN otherHandEntities resInfo noise textures =
+otherHandView : ClockParams -> List (GameEntity {}) -> Maybe ( Float, Maybe Anim ) -> Texture -> Texture.Model -> List WebGL.Entity
+otherHandView ({ w, h } as params) otherHandEntities resInfo noise textures =
     let
-        locals =
-            uniforms 0 ( floor w, floor h )
-
-        n =
-            case anim of
-                Just (Draw PlayerB) ->
-                    finalN - 1
-
-                otherwise ->
-                    finalN
-
-        indexModifier : Int -> Int
-        indexModifier =
-            case anim of
-                Just (Play PlayerB _ index) ->
-                    \i ->
-                        if i >= index then
-                            i + 1
-                        else
-                            i
-
-                otherwise ->
-                    identity
-
         resTick =
             Maybe.withDefault 0.0 <|
                 Maybe.map Tuple.first resInfo
@@ -260,7 +205,7 @@ otherHandView ({ w, h, radius } as params) finalN otherHandEntities resInfo nois
         progress =
             Ease.outQuint <| resTick / maxTick
 
-        ( width, height, spacing ) =
+        ( width, height, _ ) =
             cardDimensions params
 
         entity : GameEntity {} -> List WebGL.Entity
@@ -273,7 +218,7 @@ otherHandView ({ w, h, radius } as params) finalN otherHandEntities resInfo nois
                     to3d position
             in
                 [ Primitives.roundedBox <|
-                    uniforms 0
+                    uniforms
                         ( floor w, floor h )
                         noise
                         pos
@@ -355,7 +300,7 @@ otherHandView ({ w, h, radius } as params) finalN otherHandEntities resInfo nois
                             Nothing ->
                                 []
 
-                otherwise ->
+                _ ->
                     []
     in
         mainView ++ extraView

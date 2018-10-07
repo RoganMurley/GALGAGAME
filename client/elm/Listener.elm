@@ -1,8 +1,8 @@
 module Listener exposing (..)
 
 import Animation.Types exposing (Anim(..))
-import Audio exposing (SoundOption(..), playSound, playSoundWith)
-import GameState.State as GameState exposing (resolvable)
+import Audio exposing (SoundOption(..), playSoundWith)
+import GameState.State exposing (resolvable)
 import GameState.Types exposing (GameState(..))
 import Main.Messages exposing (Msg)
 import Resolvable.State exposing (activeAnim, tickStart)
@@ -10,8 +10,8 @@ import Resolvable.Types as Resolvable
 import WhichPlayer.Types exposing (WhichPlayer(..))
 
 
-listen : Float -> GameState -> Cmd Msg
-listen time state =
+listen : GameState -> Cmd Msg
+listen state =
     let
         modelListen : Resolvable.Model -> Cmd Msg
         modelListen res =
@@ -43,7 +43,7 @@ listen time state =
             Started started ->
                 modelListen <| resolvable started
 
-            otherwise ->
+            _ ->
                 Cmd.none
 
 
@@ -55,7 +55,7 @@ animSfx anim =
                 0 ->
                     Nothing
 
-                otherwise ->
+                _ ->
                     Just "damage.mp3"
 
         Heal _ ->
@@ -64,7 +64,7 @@ animSfx anim =
         Draw _ ->
             Just "draw.wav"
 
-        Bite _ d ->
+        Bite _ _ ->
             Just "bite.wav"
 
         Reverse _ ->
@@ -93,5 +93,5 @@ animSfx anim =
                 Nothing ->
                     Just "draw.wav"
 
-        otherwise ->
+        _ ->
             Nothing

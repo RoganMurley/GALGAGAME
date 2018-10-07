@@ -1,11 +1,11 @@
 module Settings.View exposing (view)
 
-import Html exposing (..)
-import Html.Attributes as H exposing (..)
+import Html exposing (Html, div, h1, img, input, label, text)
+import Html.Attributes as H exposing (class, src, type_, value, style)
 import Html.Events exposing (onClick, onInput)
 import Main.Messages as Main
 import Settings.Messages as Settings
-import Settings.Types exposing (..)
+import Settings.Types exposing (Model, ModalState(..), VolumeType(..))
 
 
 view : Model -> List (Html Main.Msg) -> Html Main.Msg

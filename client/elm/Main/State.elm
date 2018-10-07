@@ -27,9 +27,8 @@ import Ports exposing (analytics, copyInput, reload, selectAllInput)
 import AnimationFrame
 import Window
 import Listener exposing (listen)
-import Main.Types as Main exposing (..)
+import Main.Types as Main exposing (Flags)
 import UrlParser exposing (parsePath)
-import Util exposing (message)
 import Settings.State as Settings
 import Settings.Types as Settings
 import Texture.State as Texture
@@ -56,174 +55,170 @@ init flags location =
 
 update : Msg -> Main.Model -> ( Main.Model, Cmd Msg )
 update msg ({ room, settings, textures, flags } as model) =
-    let
-        { time, seed } =
-            flags
-    in
-        case msg of
-            CopyInput elementId ->
-                ( model, copyInput elementId )
+    case msg of
+        CopyInput elementId ->
+            ( model, copyInput elementId )
 
-            Frame dt ->
-                ( let
-                    newFlags =
-                        { flags | time = time + dt }
-                  in
-                    { model
-                        | flags = newFlags
-                        , room = Room.tick newFlags room dt
-                    }
-                , case room of
-                    Room.Connected connected ->
-                        listen time connected.game
+        Frame dt ->
+            ( let
+                newFlags =
+                    { flags | time = flags.time + dt }
+              in
+                { model
+                    | flags = newFlags
+                    , room = Room.tick newFlags room dt
+                }
+            , case room of
+                Room.Connected connected ->
+                    listen connected.game
 
-                    Room.Replay { replay } ->
-                        case replay of
-                            Nothing ->
-                                Cmd.none
+                Room.Replay { replay } ->
+                    case replay of
+                        Nothing ->
+                            Cmd.none
 
-                            Just { state } ->
-                                listen time (Started state)
+                        Just { state } ->
+                            listen (Started state)
 
-                    otherwise ->
-                        Cmd.none
+                _ ->
+                    Cmd.none
+            )
+
+        Resize w h ->
+            ( { model
+                | flags =
+                    { flags | dimensions = ( w, h ) }
+              }
+            , Cmd.none
+            )
+
+        SelectAllInput elementId ->
+            ( model, selectAllInput elementId )
+
+        Send str ->
+            ( model, send flags str )
+
+        SettingsMsg settingsMsg ->
+            ( { model | settings = Settings.update settingsMsg settings }
+            , Cmd.none
+            )
+
+        Receive str ->
+            let
+                ( newRoom, cmd ) =
+                    Room.receive str room flags
+            in
+                ( { model | room = newRoom }, cmd )
+
+        RoomMsg roomMsg ->
+            let
+                ( newRoom, cmd ) =
+                    Room.update room roomMsg flags
+            in
+                ( { model | room = newRoom }, cmd )
+
+        UrlChange location ->
+            let
+                ( newModel, cmd ) =
+                    locationUpdate model location
+            in
+                ( newModel
+                , Cmd.batch
+                    [ cmd
+                    , analytics ()
+
+                    -- , send flags "reconnect:" -- Reopen ws connection
+                    ]
                 )
 
-            Resize w h ->
-                ( { model
-                    | flags =
-                        { flags | dimensions = ( w, h ) }
-                  }
-                , Cmd.none
+        SetVolume volumeType volume ->
+            let
+                newVolume =
+                    clamp 0 100 volume
+
+                newSettings =
+                    case volumeType of
+                        Settings.Master ->
+                            { settings | masterVolume = newVolume }
+
+                        Settings.Music ->
+                            { settings | musicVolume = newVolume }
+
+                        Settings.Sfx ->
+                            { settings | sfxVolume = newVolume }
+            in
+                ( { model | settings = newSettings }
+                , setVolume newVolume
                 )
 
-            SelectAllInput elementId ->
-                ( model, selectAllInput elementId )
+        Logout ->
+            ( model
+            , Http.send LogoutCallback <|
+                Http.post
+                    (authLocation flags ++ "/logout")
+                    Http.emptyBody
+                    (Json.succeed ())
+            )
 
-            Send str ->
-                ( model, send flags str )
+        LogoutCallback (Ok _) ->
+            ( model, reload () )
 
-            SettingsMsg settingsMsg ->
-                ( { model | settings = Settings.update settingsMsg settings }
-                , Cmd.none
+        LogoutCallback (Err _) ->
+            ( model, Cmd.none )
+
+        MousePosition mouse ->
+            let
+                ( newRoom, newCmd ) =
+                    Room.update
+                        room
+                        (Room.ConnectedMsg <| Connected.GameStateMsg <| GameState.Mouse mouse)
+                        flags
+            in
+                ( { model | room = newRoom }
+                , newCmd
                 )
 
-            Receive str ->
-                let
-                    ( newRoom, cmd ) =
-                        Room.receive str room flags
-                in
-                    ( { model | room = newRoom }, cmd )
-
-            RoomMsg roomMsg ->
-                let
-                    ( newRoom, cmd ) =
-                        Room.update room roomMsg flags
-                in
-                    ( { model | room = newRoom }, cmd )
-
-            UrlChange location ->
-                let
-                    ( newModel, cmd ) =
-                        locationUpdate model location
-                in
-                    ( newModel
-                    , Cmd.batch
-                        [ cmd
-                        , analytics ()
-
-                        -- , send flags "reconnect:" -- Reopen ws connection
-                        ]
-                    )
-
-            SetVolume volumeType volume ->
-                let
-                    newVolume =
-                        clamp 0 100 volume
-
-                    newSettings =
-                        case volumeType of
-                            Settings.Master ->
-                                { settings | masterVolume = newVolume }
-
-                            Settings.Music ->
-                                { settings | musicVolume = newVolume }
-
-                            Settings.Sfx ->
-                                { settings | sfxVolume = newVolume }
-                in
-                    ( { model | settings = newSettings }
-                    , setVolume newVolume
-                    )
-
-            Logout ->
-                ( model
-                , Http.send LogoutCallback <|
-                    Http.post
-                        (authLocation flags ++ "/logout")
-                        Http.emptyBody
-                        (Json.succeed ())
+        MouseClick mouse ->
+            let
+                ( newRoom, newCmd ) =
+                    Room.update
+                        room
+                        (Room.ConnectedMsg <| Connected.GameStateMsg <| GameState.MouseClick mouse)
+                        flags
+            in
+                ( { model | room = newRoom }
+                , newCmd
                 )
 
-            LogoutCallback (Ok _) ->
-                ( model, reload () )
+        GetAuth ->
+            ( model
+            , Http.send GetAuthCallback <|
+                Http.get
+                    (authLocation flags ++ "/me")
+                    (Json.maybe Login.authDecoder)
+            )
 
-            LogoutCallback (Err _) ->
-                ( model, Cmd.none )
-
-            MousePosition mouse ->
-                let
-                    ( newRoom, newCmd ) =
-                        Room.update
-                            room
-                            (Room.ConnectedMsg <| Connected.GameStateMsg <| GameState.Mouse mouse)
-                            flags
-                in
-                    ( { model | room = newRoom }
-                    , newCmd
-                    )
-
-            MouseClick mouse ->
-                let
-                    ( newRoom, newCmd ) =
-                        Room.update
-                            room
-                            (Room.ConnectedMsg <| Connected.GameStateMsg <| GameState.MouseClick mouse)
-                            flags
-                in
-                    ( { model | room = newRoom }
-                    , newCmd
-                    )
-
-            GetAuth ->
-                ( model
-                , Http.send GetAuthCallback <|
-                    Http.get
-                        ((authLocation flags) ++ "/me")
-                        (Json.maybe Login.authDecoder)
+        GetAuthCallback (Ok username) ->
+            let
+                newFlags : Flags
+                newFlags =
+                    { flags | username = username }
+            in
+                ( { model | flags = newFlags }
+                , Lobby.skipLobbyCmd username
                 )
 
-            GetAuthCallback (Ok username) ->
-                let
-                    newFlags : Flags
-                    newFlags =
-                        { flags | username = username }
-                in
-                    ( { model | flags = newFlags }
-                    , Lobby.skipLobbyCmd username
-                    )
+        GetAuthCallback (Err _) ->
+            ( model, Cmd.none )
 
-            GetAuthCallback (Err _) ->
-                ( model, Cmd.none )
-
-            TextureMsg textureMsg ->
-                let
-                    ( newTextures, cmd ) =
-                        Texture.update textureMsg textures
-                in
-                    ( { model | textures = newTextures }
-                    , Cmd.map TextureMsg cmd
-                    )
+        TextureMsg textureMsg ->
+            let
+                ( newTextures, cmd ) =
+                    Texture.update textureMsg textures
+            in
+                ( { model | textures = newTextures }
+                , Cmd.map TextureMsg cmd
+                )
 
 
 locationUpdate : Main.Model -> Navigation.Location -> ( Main.Model, Cmd Msg )
@@ -287,7 +282,7 @@ locationUpdate model location =
                                         Room.Connected _ ->
                                             ( model, Lobby.skipLobbyCmd username )
 
-                                        otherwise ->
+                                        _ ->
                                             ( lobbyModel, Lobby.skipLobbyCmd username )
 
                             Routing.QuickPlay ->
@@ -340,7 +335,7 @@ locationUpdate model location =
                                         Lobby.QuickplayGame ->
                                             Just "/play/quickplay/"
 
-                                otherwise ->
+                                _ ->
                                     Nothing
                     in
                         ( { model

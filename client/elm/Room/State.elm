@@ -8,8 +8,8 @@ import Main.Messages as Main
 import Main.Types exposing (Flags)
 import Menu.State as Menu
 import Navigation exposing (newUrl)
-import Room.Types exposing (..)
-import Room.Messages exposing (..)
+import Room.Types exposing (Model(..))
+import Room.Messages exposing (Msg(..))
 import Replay.State as Replay
 
 
@@ -19,26 +19,26 @@ init =
 
 
 update : Model -> Msg -> Flags -> ( Model, Cmd Main.Msg )
-update model msg ({ hostname, seed } as flags) =
+update model msg flags =
     case msg of
         MenuMsg menuMsg ->
             case model of
                 MainMenu ->
-                    ( model, Menu.update menuMsg flags )
+                    ( model, Menu.update menuMsg )
 
-                otherwise ->
+                _ ->
                     ( model, Cmd.none )
 
         LobbyMsg lobbyMsg ->
             case model of
-                Lobby ({ roomID, gameType } as lobby) ->
+                Lobby lobby ->
                     let
-                        ( newLobby, msg ) =
+                        ( newLobby, newMsg ) =
                             Lobby.update lobby lobbyMsg
                     in
-                        ( Lobby newLobby, msg )
+                        ( Lobby newLobby, newMsg )
 
-                otherwise ->
+                _ ->
                     ( model, Cmd.none )
 
         ConnectedMsg connectedMsg ->
@@ -50,7 +50,7 @@ update model msg ({ hostname, seed } as flags) =
                     in
                         ( Connected newConnected, cmd )
 
-                otherwise ->
+                _ ->
                     ( model, Cmd.none )
 
         LoginMsg loginMsg ->
@@ -62,7 +62,7 @@ update model msg ({ hostname, seed } as flags) =
                     in
                         ( Login newLogin, cmd )
 
-                otherwise ->
+                _ ->
                     ( model, Cmd.none )
 
         ReplayMsg replayMsg ->
@@ -70,12 +70,12 @@ update model msg ({ hostname, seed } as flags) =
                 Replay replay ->
                     ( Replay <| Replay.update replay replayMsg, Cmd.none )
 
-                otherwise ->
+                _ ->
                     ( model, Cmd.none )
 
         StartGame mode ->
             case model of
-                Lobby ({ roomID, gameType } as lobby) ->
+                Lobby { gameType, roomID } ->
                     ( Connected <| Connected.init mode roomID
                     , case gameType of
                         Lobby.ComputerGame ->
@@ -88,7 +88,7 @@ update model msg ({ hostname, seed } as flags) =
                             Cmd.none
                     )
 
-                otherwise ->
+                _ ->
                     ( model, Cmd.none )
 
 

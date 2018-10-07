@@ -5,8 +5,8 @@ import Clock.Primitives
 import Clock.Shaders
 import Clock.Uniforms exposing (uniforms)
 import Clock.Types exposing (ClockParams, GameEntity)
-import Math.Matrix4 exposing (Mat4, identity, makeLookAt, makeOrtho, makeRotate, makeScale3)
-import Math.Vector2 exposing (Vec2, vec2)
+import Math.Matrix4 exposing (makeLookAt, makeOrtho, makeRotate, makeScale3)
+import Math.Vector2 exposing (vec2)
 import Math.Vector3 exposing (Vec3, vec3)
 import Stack.Types exposing (StackCard)
 import Texture.State as Texture
@@ -28,8 +28,8 @@ type alias CardEntity a =
 cardEntity : ClockParams -> Texture.Model -> CardEntity a -> List WebGL.Entity
 cardEntity { w, h, radius } textures { position, rotation, scale, card, owner } =
     let
-        ( width, height, spacing ) =
-            ( 0.1 * radius, 0.1 * radius, 35.0 )
+        ( width, height ) =
+            ( 0.1 * radius, 0.1 * radius )
 
         rot =
             makeRotate rotation <| vec3 0 0 1
@@ -46,7 +46,7 @@ cardEntity { w, h, radius } textures { position, rotation, scale, card, owner } 
         case mTexture of
             Just texture ->
                 [ Clock.Primitives.roundedBox <|
-                    uniforms 0
+                    uniforms
                         ( floor w, floor h )
                         texture
                         pos
@@ -54,7 +54,7 @@ cardEntity { w, h, radius } textures { position, rotation, scale, card, owner } 
                         (makeScale3 (scale * 0.7 * width) (scale * height) 1)
                         col
                 , Clock.Primitives.quad Clock.Shaders.fragment <|
-                    uniforms 0
+                    uniforms
                         ( floor w, floor h )
                         texture
                         pos
@@ -70,8 +70,8 @@ cardEntity { w, h, radius } textures { position, rotation, scale, card, owner } 
 dissolvingCardEntity : ClockParams -> Texture.Model -> Float -> CardEntity a -> List WebGL.Entity
 dissolvingCardEntity { w, h, radius } textures progress { position, rotation, scale, card, owner } =
     let
-        ( width, height, spacing ) =
-            ( 0.1 * radius, 0.1 * radius, 35.0 )
+        ( width, height ) =
+            ( 0.1 * radius, 0.1 * radius )
 
         rot =
             makeRotate rotation <| vec3 0 0 1
@@ -94,7 +94,7 @@ dissolvingCardEntity { w, h, radius } textures progress { position, rotation, sc
                     { resolution = vec2 w h
                     , texture = noise
                     , rotation = rot
-                    , scale = makeScale3 (0.7 * width) height 1
+                    , scale = makeScale3 (scale * 0.7 * width) (scale * height) 1
                     , color = col
                     , worldPos = pos
                     , worldRot = makeRotate 0 (vec3 0 0 1)
@@ -107,7 +107,7 @@ dissolvingCardEntity { w, h, radius } textures progress { position, rotation, sc
                     , texture = texture
                     , noise = noise
                     , rotation = rot
-                    , scale = makeScale3 (0.6 * width) (0.6 * height) 1
+                    , scale = makeScale3 (scale * 0.6 * width) (scale * 0.6 * height) 1
                     , color = vec3 1 1 1
                     , worldPos = pos
                     , worldRot = makeRotate 0 (vec3 0 0 1)
@@ -124,8 +124,8 @@ dissolvingCardEntity { w, h, radius } textures progress { position, rotation, sc
 transmutingCardEntity : ClockParams -> Texture.Model -> Float -> StackCard -> StackCard -> CardEntity a -> List WebGL.Entity
 transmutingCardEntity { w, h, radius } textures progress stackCard finalStackCard { position, rotation, scale } =
     let
-        ( width, height, spacing ) =
-            ( 0.1 * radius, 0.1 * radius, 35.0 )
+        ( width, height ) =
+            ( 0.1 * radius, 0.1 * radius )
 
         rot =
             makeRotate rotation <| vec3 0 0 1

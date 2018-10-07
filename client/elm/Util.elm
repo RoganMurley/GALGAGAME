@@ -19,16 +19,6 @@ message x =
     Task.perform identity (Task.succeed x)
 
 
-safeTail : List a -> List a
-safeTail l =
-    case List.tail l of
-        Just t ->
-            t
-
-        Nothing ->
-            []
-
-
 portProtocol : String -> String
 portProtocol httpPort =
     case httpPort of
@@ -54,13 +44,13 @@ send flags =
     WebSocket.send <| websocketAddress flags
 
 
-splitOn : String -> String -> ( String, String )
-splitOn sep str =
-    case split (AtMost 1) (regex sep) str of
+splitOnColon : String -> ( String, String )
+splitOnColon str =
+    case split (AtMost 1) (regex ":") str of
         [ x, xs ] ->
             ( x, xs )
 
-        otherwise ->
+        _ ->
             ( "", str )
 
 

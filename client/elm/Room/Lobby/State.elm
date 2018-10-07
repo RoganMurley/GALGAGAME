@@ -6,7 +6,7 @@ import Main.Messages as Main
 import Mode exposing (Mode(..))
 import Navigation
 import Room.Messages as Room
-import Util exposing (message, splitOn)
+import Util exposing (message, splitOnColon)
 
 
 init : String -> GameType -> Mode -> Model
@@ -20,7 +20,7 @@ init roomID gameType mode =
 
 
 update : Model -> Msg -> ( Model, Cmd Main.Msg )
-update ({ error, gameType, mode } as model) msg =
+update ({ gameType, mode } as model) msg =
     case msg of
         JoinRoom ->
             let
@@ -61,7 +61,7 @@ receive : String -> Cmd Main.Msg
 receive msg =
     let
         ( command, content ) =
-            splitOn ":" msg
+            splitOnColon msg
     in
         case command of
             "acceptPlay" ->
@@ -81,7 +81,7 @@ receive msg =
                             JoinRoomErr <|
                                 content
 
-            otherwise ->
+            _ ->
                 -- Defer other messages.
                 message <|
                     Main.Receive <|

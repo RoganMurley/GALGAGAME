@@ -1,7 +1,7 @@
 module Model.Diff exposing (..)
 
 import Card.Decoders as Card
-import Json.Decode as Json exposing (Decoder, field, index, int, list, maybe, string)
+import Json.Decode as Json exposing (Decoder, field, int, list, maybe)
 import Model.Types exposing (Life, Model)
 import Hand.Types exposing (Hand)
 import Stack.Decoders as Stack

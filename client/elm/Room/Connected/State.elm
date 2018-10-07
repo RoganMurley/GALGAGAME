@@ -1,17 +1,17 @@
 module Connected.State exposing (init, update, receive, tick)
 
-import Audio exposing (playSound, setVolume)
-import Connected.Types exposing (..)
+import Audio exposing (playSound)
+import Connected.Types exposing (Model)
 import Connected.Decoders exposing (decodeHoverOutcome, decodePlayers)
-import Connected.Messages exposing (..)
+import Connected.Messages exposing (Msg(..))
 import GameState.Messages as GameState
 import GameState.State as GameState
-import GameState.Types exposing (..)
+import GameState.Types exposing (GameState(..), WaitType(..))
 import Settings.Messages as Settings
 import Main.Messages as Main
 import Main.Types exposing (Flags)
 import Mode exposing (Mode(..))
-import Util exposing (message, send, splitOn)
+import Util exposing (message, send, splitOnColon)
 
 
 init : Mode -> String -> Model
@@ -53,7 +53,7 @@ receive : Model -> String -> Flags -> ( Model, Cmd Main.Msg )
 receive ({ mode } as model) msg flags =
     let
         ( command, content ) =
-            splitOn ":" msg
+            splitOnColon msg
     in
         case command of
             "sync" ->
@@ -127,7 +127,7 @@ receive ({ mode } as model) msg flags =
                 in
                     ( { model | game = newGame }, cmd )
 
-            otherwise ->
+            _ ->
                 Debug.log
                     ("Error decoding message from server: " ++ msg)
                     ( model, Cmd.none )

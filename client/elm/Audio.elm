@@ -25,8 +25,8 @@ playSoundWith name options =
         loop =
             List.member Loop options
 
-        volume : Float
-        volume =
+        vol : Float
+        vol =
             let
                 isVolOption : SoundOption -> Bool
                 isVolOption op =
@@ -34,19 +34,19 @@ playSoundWith name options =
                         Volume _ ->
                             True
 
-                        otherwise ->
+                        _ ->
                             False
             in
                 case List.filter isVolOption options of
                     [ Volume v ] ->
                         v
 
-                    otherwise ->
+                    _ ->
                         1.0
     in
-        playAudio ( name, once, loop, volume )
+        playAudio ( name, once, loop, vol )
 
 
 setVolume : Int -> Cmd msg
-setVolume v =
-    volume v
+setVolume vol =
+    volume vol

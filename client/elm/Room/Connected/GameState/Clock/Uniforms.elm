@@ -1,6 +1,6 @@
 module Clock.Uniforms exposing (Uniforms, uniforms)
 
-import Math.Matrix4 exposing (Mat4, identity, makeLookAt, makeOrtho, makeRotate)
+import Math.Matrix4 exposing (Mat4, makeLookAt, makeOrtho, makeRotate)
 import Math.Vector2 exposing (Vec2, vec2)
 import Math.Vector3 exposing (Vec3, vec3)
 import Render exposing (Width, Height)
@@ -21,8 +21,8 @@ type alias Uniforms a =
     }
 
 
-uniforms : Float -> ( Width, Height ) -> Texture -> Vec3 -> Mat4 -> Mat4 -> Vec3 -> Uniforms {}
-uniforms t ( width, height ) texture pos rot scale color =
+uniforms : ( Width, Height ) -> Texture -> Vec3 -> Mat4 -> Mat4 -> Vec3 -> Uniforms {}
+uniforms ( width, height ) texture pos rot scale color =
     { resolution = vec2 (toFloat width) (toFloat height)
     , texture = texture
     , rotation = rot

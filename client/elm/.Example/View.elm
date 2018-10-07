@@ -1,6 +1,6 @@
 module Example.View exposing (view)
 
-import Example.Types exposing (..)
+import Example.Types exposing (Model)
 
 
 view : Model -> Html Msg

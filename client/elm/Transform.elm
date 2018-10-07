@@ -24,11 +24,11 @@ ease easing t start final =
             , sy = final.sy - start.sy
             }
     in
-        { x = start.x + (easing t) * diff.x
-        , y = start.y + (easing t) * diff.y
-        , r = start.r + (easing t) * diff.r
-        , sx = start.sx + (easing t) * diff.sx
-        , sy = start.sy + (easing t) * diff.sy
+        { x = start.x + easing t * diff.x
+        , y = start.y + easing t * diff.y
+        , r = start.r + easing t * diff.r
+        , sx = start.sx + easing t * diff.sx
+        , sy = start.sy + easing t * diff.sy
         }
 
 

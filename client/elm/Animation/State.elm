@@ -1,6 +1,6 @@
 module Animation.State exposing (..)
 
-import Animation.Types exposing (Anim(..), FragShader(..), Uniforms)
+import Animation.Types exposing (Anim(..), FragShader(..))
 import Ease
 import Texture.State as Texture
 import Texture.Types as Texture
@@ -71,13 +71,13 @@ animShake anim tick =
                 Just (Play _ _ _) ->
                     1.0
 
-                otherwise ->
+                _ ->
                     0.0
 
         mag =
             baseMag * (1.0 - Ease.outQuad (tick / animToResTickMax anim))
     in
-        mag * 0.03 * (toFloat (((ceiling tick) * 1247823748932 + 142131) % 20) - 10)
+        mag * 0.03 * (toFloat ((ceiling tick * 1247823748932 + 142131) % 20) - 10)
 
 
 animToResTickMax : Maybe Anim -> Float
@@ -107,7 +107,7 @@ animToResTickMax anim =
         Just (Windup _) ->
             300.0
 
-        otherwise ->
+        _ ->
             800.0
 
 
@@ -117,5 +117,5 @@ animToTexture anim textures =
         Overdraw _ _ ->
             Texture.load textures "cross"
 
-        otherwise ->
+        _ ->
             Nothing

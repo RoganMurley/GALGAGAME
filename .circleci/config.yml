@@ -18,9 +18,11 @@ jobs:
           name: Setup Client
           command: cd client &&
                    npm install -g gulp elm@0.18.0 &&
+                   npm install -g gulp elm-analyse@0.15.0 &&
                    npm install &&
                    elm-package install --yes &&
-                   gulp build
+                   gulp build &&
+                   elm-analyse
       - run:
           name: Setup Docker machine
           command: base=https://github.com/docker/machine/releases/download/v0.14.0 &&

@@ -7,7 +7,7 @@ import Clock.Types exposing (ClockParams)
 import Clock.Uniforms exposing (uniforms)
 import Ease
 import Math.Matrix4 exposing (makeRotate, makeScale3)
-import Math.Vector3 exposing (Vec3, vec3)
+import Math.Vector3 exposing (vec3)
 import Maybe.Extra as Maybe
 import Util exposing (floatInterp)
 import WebGL
@@ -18,7 +18,7 @@ view : ClockParams -> Maybe ( Float, Maybe Anim ) -> Texture -> List WebGL.Entit
 view { w, h, radius } resInfo texture =
     let
         locals =
-            uniforms 0 ( floor w, floor h )
+            uniforms ( floor w, floor h )
 
         resTick =
             Maybe.withDefault 0.0 <|
@@ -36,7 +36,7 @@ view { w, h, radius } resInfo texture =
                 Just (Heal _) ->
                     1 - (Ease.outQuad <| resTick / maxTick)
 
-                otherwise ->
+                _ ->
                     Ease.outQuad <| resTick / maxTick
 
         waveSize =
@@ -70,5 +70,5 @@ view { w, h, radius } resInfo texture =
                         (vec3 0 1 0)
                 ]
 
-            otherwise ->
+            _ ->
                 []
