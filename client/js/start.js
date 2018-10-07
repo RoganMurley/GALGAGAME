@@ -50,7 +50,7 @@ app.ports.reload.subscribe(function () {
 });
 
 app.ports.analytics.subscribe(function () {
-  if (ga) {
+  if (typeof ga !== 'undefined') {
     ga('set', 'page', location.pathname);
     ga('send', 'pageview');
   }
