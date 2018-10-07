@@ -1,9 +1,7 @@
 module Endgame.View exposing (view)
 
-import Animation.State exposing (animToResTickMax)
 import Animation.Types exposing (Anim(GameEnd))
 import Connected.Messages as Connected
-import Ease
 import GameState.Messages exposing (Msg(GotoReplay, PlayingOnly), PlayingOnly(Rematch))
 import Html exposing (Html, button, div, text)
 import Html.Attributes exposing (class, classList, disabled, style)
@@ -14,7 +12,7 @@ import WhichPlayer.Types exposing (WhichPlayer(..))
 
 
 view : Float -> Maybe Anim -> Maybe String -> Html Main.Msg
-view resTick anim mReplayId =
+view progress anim mReplayId =
     let
         ( endGameText, endGameClass ) =
             case anim of
@@ -29,12 +27,6 @@ view resTick anim mReplayId =
 
                 _ ->
                     ( "", "no-win" )
-
-        resTickMax =
-            animToResTickMax anim
-
-        progress =
-            Ease.outQuint <| resTick / resTickMax
 
         isDisabled =
             progress < 0.8
@@ -55,9 +47,7 @@ view resTick anim mReplayId =
 
                 Nothing ->
                     button
-                        [ class "replay"
-                        , disabled True
-                        ]
+                        [ class "replay", disabled True ]
                         [ text "Replay" ]
     in
         div

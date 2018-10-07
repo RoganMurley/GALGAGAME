@@ -1,11 +1,10 @@
 module Clock.State exposing (..)
 
-import Animation.State exposing (animToResTickMax)
+import Animation.State as Animation
 import Animation.Types exposing (Anim(..))
 import Card.Types exposing (Card)
 import Clock.Card exposing (CardEntity)
 import Clock.Types exposing (ClockParams, GameEntity, Model)
-import Ease
 import Hand.Types exposing (Hand)
 import List.Extra as List
 import Main.Types exposing (Flags)
@@ -30,14 +29,6 @@ clockInit res =
 tick : Flags -> Model -> Float -> Model
 tick { dimensions } ({ res } as model) dt =
     let
-        newRes =
-            if res.tick > animToResTickMax (Resolvable.activeAnim res) then
-                Resolvable.resolveStep res
-            else
-                { res
-                    | tick = res.tick + dt
-                }
-
         resModel =
             activeModel res
 
@@ -79,7 +70,7 @@ tick { dimensions } ({ res } as model) dt =
                 resInfo
     in
         { model
-            | res = newRes
+            | res = Resolvable.tick dt res
             , entities =
                 { stack = stackEntities
                 , hand = handEntities
@@ -120,16 +111,16 @@ calcStackEntities { w, h, radius } finalStack stackCard resInfo =
             Maybe.join <|
                 Maybe.map Tuple.second resInfo
 
-        maxTick =
-            animToResTickMax anim
-
         progress =
+            Animation.progress anim resTick
+
+        rotationProgress =
             case anim of
                 Just (Rotate _) ->
-                    Ease.inQuad <| resTick / maxTick
+                    progress
 
                 Just (Windup _) ->
-                    1 - (Ease.inQuad <| resTick / maxTick)
+                    1 - progress
 
                 _ ->
                     0
@@ -156,7 +147,7 @@ calcStackEntities { w, h, radius } finalStack stackCard resInfo =
                 stack
                 (vec2 (w / 2) (h / 2))
                 (0.615 * radius)
-                progress
+                rotationProgress
 
         extraEntities =
             case anim of
@@ -265,9 +256,6 @@ calcHandEntities ({ w, h, radius } as params) finalHand resInfo =
             Maybe.join <|
                 Maybe.map Tuple.second resInfo
 
-        maxTick =
-            animToResTickMax anim
-
         ( hand, drawingCard ) =
             case anim of
                 Just (Draw PlayerA) ->
@@ -298,10 +286,10 @@ calcHandEntities ({ w, h, radius } as params) finalHand resInfo =
             List.length finalHand
 
         progress =
-            Ease.outQuint <| resTick / maxTick
+            Animation.progress anim resTick
 
         playProgress =
-            Ease.inQuad <| resTick / maxTick
+            progress
 
         entity : ( Int, Card ) -> CardEntity { index : Int }
         entity ( finalI, card ) =
@@ -397,9 +385,6 @@ calcOtherHandEntities ({ w, h, radius } as params) finalN resInfo =
             Maybe.join <|
                 Maybe.map Tuple.second resInfo
 
-        maxTick =
-            animToResTickMax anim
-
         n =
             case anim of
                 Just (Draw PlayerB) ->
@@ -422,29 +407,22 @@ calcOtherHandEntities ({ w, h, radius } as params) finalN resInfo =
                     Basics.identity
 
         progress =
-            Ease.outQuint <| resTick / maxTick
-
-        playProgress =
-            Ease.inQuad <| resTick / maxTick
+            Animation.progress anim resTick
 
         entity : Int -> GameEntity {}
         entity finalI =
             let
                 i =
                     indexModifier finalI
-
-                pos =
+            in
+                { position =
                     interp2D progress
                         (handCardPosition params PlayerB i n)
                         (handCardPosition params PlayerB finalI finalN)
-
-                rot =
+                , rotation =
                     floatInterp progress
                         (handCardRotation PlayerB i n)
                         (handCardRotation PlayerB finalI finalN)
-            in
-                { position = pos
-                , rotation = rot
                 , scale = 1
                 }
 
@@ -456,39 +434,27 @@ calcOtherHandEntities ({ w, h, radius } as params) finalN resInfo =
         extraEntities =
             case anim of
                 Just (Draw PlayerB) ->
-                    let
-                        pos =
+                    [ { position =
                             interp2D progress
                                 (vec2 w 0)
                                 (handCardPosition params PlayerB n (n + 1))
-
-                        rot =
+                      , rotation =
                             floatInterp progress 0 (handCardRotation PlayerB n (n + 1))
-                    in
-                        [ { position = pos
-                          , rotation = rot
-                          , scale = 1
-                          }
-                        ]
+                      , scale = 1
+                      }
+                    ]
 
                 Just (Play PlayerB _ i) ->
-                    let
-                        pos =
-                            interp2D playProgress
+                    [ { position =
+                            interp2D progress
                                 (handCardPosition params PlayerB i n)
                                 (vec2 (w / 2) (h / 2 - radius * 0.62))
-
-                        rot =
-                            floatInterp playProgress (handCardRotation PlayerB i n) 0
-
-                        scale =
-                            floatInterp playProgress 1 1.3
-                    in
-                        [ { position = pos
-                          , rotation = rot
-                          , scale = scale
-                          }
-                        ]
+                      , rotation =
+                            floatInterp progress (handCardRotation PlayerB i n) 0
+                      , scale =
+                            floatInterp progress 1 1.3
+                      }
+                    ]
 
                 _ ->
                     []

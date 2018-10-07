@@ -1,6 +1,6 @@
 module Resolvable.State exposing (..)
 
-import Animation.State exposing (animToResTickMax)
+import Animation.State as Animation
 import Animation.Types exposing (Anim)
 import Model.Diff as Model
 import Model.Types as Model
@@ -23,7 +23,9 @@ activeModel : Resolvable.Model -> Model.Model
 activeModel model =
     Maybe.withDefault
         model.final
-        (Maybe.map .model <| List.head model.resList)
+    <|
+        Maybe.map .model <|
+            List.head model.resList
 
 
 activeAnim : Resolvable.Model -> Maybe Anim
@@ -43,7 +45,7 @@ tickStart { tick } =
 
 tick : Float -> Resolvable.Model -> Resolvable.Model
 tick dt model =
-    if tickZero model.tick (activeAnim model) then
+    if tickEnd model.tick (activeAnim model) then
         resolveStep model
     else
         { model
@@ -51,9 +53,9 @@ tick dt model =
         }
 
 
-tickZero : Float -> Maybe Anim -> Bool
-tickZero tick anim =
-    tick > animToResTickMax anim
+tickEnd : Float -> Maybe Anim -> Bool
+tickEnd tick anim =
+    tick > Animation.animMaxTick anim
 
 
 resolveStep : Resolvable.Model -> Resolvable.Model
