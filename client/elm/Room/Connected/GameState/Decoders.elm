@@ -89,10 +89,11 @@ playingDecoder =
     let
         playingInit : Model -> PlayState
         playingInit m =
-            Playing (clockInit <| Resolvable.init m [])
+            Playing <| clockInit <| Resolvable.init m []
     in
-        Json.map playingInit
-            (field "playing" <| Model.decoder)
+        Json.map playingInit <|
+            field "playing" <|
+                Model.decoder
 
 
 collapseResults : Decoder (Result String a) -> Decoder a

@@ -20,16 +20,19 @@ import WhichPlayer.Types exposing (WhichPlayer(..))
 import Util exposing (floatInterp, interp, to3d)
 
 
-cardDimensions : ClockParams -> ( Float, Float, Float )
+cardDimensions : ClockParams -> { width : Float, height : Float, spacing : Float }
 cardDimensions { radius } =
-    ( 0.1 * radius, 0.1 * radius, 35.0 )
+    { width = 0.1 * radius
+    , height = 0.1 * radius
+    , spacing = 35.0
+    }
 
 
 origin : ClockParams -> WhichPlayer -> Int -> Vec3
-origin { w, h, radius } which count =
+origin ({ w, h } as params) which count =
     let
-        ( width, height, spacing ) =
-            ( 0.1 * radius, 0.1 * radius, 35.0 )
+        { width, height, spacing } =
+            cardDimensions params
 
         x =
             w / 2 - 0.5 * (width + spacing) * (toFloat <| count - 1)
@@ -60,10 +63,10 @@ rotation which i count =
 
 
 position : ClockParams -> WhichPlayer -> Int -> Int -> Vec3
-position ({ radius } as params) which index count =
+position params which index count =
     let
-        ( width, spacing ) =
-            ( 0.1 * radius, 35.0 )
+        { width, spacing } =
+            cardDimensions params
 
         sign =
             case which of
@@ -84,7 +87,7 @@ position ({ radius } as params) which index count =
                 c =
                     toFloat count
             in
-                sign * (abs <| 4 * (toFloat <| ceiling (i - (c * 0.5))))
+                sign * (abs <| 4 * (toFloat <| ceiling (i - c * 0.5)))
     in
         Math.Vector3.add
             (origin params which count)
@@ -112,7 +115,7 @@ handView ({ w, h } as params) handEntities resInfo noise textures =
         progress =
             Ease.outQuint <| resTick / maxTick
 
-        ( width, height, _ ) =
+        { width, height } =
             cardDimensions params
 
         mainView : List WebGL.Entity
@@ -205,7 +208,7 @@ otherHandView ({ w, h } as params) otherHandEntities resInfo noise textures =
         progress =
             Ease.outQuint <| resTick / maxTick
 
-        ( width, height, _ ) =
+        { width, height } =
             cardDimensions params
 
         entity : GameEntity {} -> List WebGL.Entity
@@ -225,13 +228,6 @@ otherHandView ({ w, h } as params) otherHandEntities resInfo noise textures =
                         rot
                         (makeScale3 (scale * 0.7 * width) (scale * height) 1)
                         (colour PlayerB)
-
-                -- , Primitives.quad Clock.Shaders.fragment <|
-                --     locals texture
-                --         pos
-                --         (makeScale3 (scale * 0.6 * width) (scale * 0.6 * height) 1)
-                --         rot
-                --         (vec3 1 1 1)
                 ]
 
         mainView : List WebGL.Entity
