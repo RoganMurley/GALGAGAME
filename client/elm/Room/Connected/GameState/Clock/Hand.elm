@@ -2,16 +2,12 @@ module Clock.Hand exposing (..)
 
 import Animation.State as Animation
 import Animation.Types exposing (Anim(..))
-import Clock.Card exposing (CardEntity, cardEntity, colour, dissolvingCardEntity)
-import Clock.Primitives as Primitives
+import Clock.Card exposing (CardEntity, cardEntity, cardBackEntity, colour, dissolvingCardEntity)
 import Clock.Types exposing (ClockParams, GameEntity)
-import Clock.Uniforms exposing (uniforms)
 import Ease
-import Math.Matrix4 exposing (makeRotate, makeScale3)
 import Math.Vector2 exposing (vec2)
 import Math.Vector3 exposing (Vec3, vec3)
 import Maybe.Extra as Maybe
-import Texture.State as Texture
 import Texture.Types as Texture
 import WebGL
 import WhichPlayer.Types exposing (WhichPlayer(..))
@@ -139,32 +135,8 @@ otherHandView ({ w, h } as params) otherHandEntities resInfo textures =
         { width, height } =
             cardDimensions params
 
-        mTexture =
-            Texture.load textures "noise"
-
-        entity : GameEntity {} -> List WebGL.Entity
-        entity { position, rotation, scale } =
-            let
-                rot =
-                    makeRotate rotation <| vec3 0 0 1
-
-                pos =
-                    to3d position
-            in
-                case mTexture of
-                    Just texture ->
-                        [ Primitives.roundedBox <|
-                            uniforms
-                                ( floor w, floor h )
-                                texture
-                                pos
-                                rot
-                                (makeScale3 (scale * 0.7 * width) (scale * height) 1)
-                                (colour PlayerB)
-                        ]
-
-                    Nothing ->
-                        []
+        entity =
+            cardBackEntity params textures
 
         mainView : List WebGL.Entity
         mainView =
