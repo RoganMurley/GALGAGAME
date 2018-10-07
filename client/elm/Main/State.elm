@@ -9,7 +9,6 @@ import WebSocket
 import GameState.Messages as GameState
 import GameState.Types exposing (GameState(Started))
 import Connected.Messages as Connected
-import Lab.State as Lab
 import Lobby.State as Lobby
 import Lobby.Types as Lobby
 import Login.Decoders as Login
@@ -234,11 +233,6 @@ locationUpdate model location =
             case route of
                 Routing.Home ->
                     ( { model | room = Room.init }
-                    , Cmd.none
-                    )
-
-                Routing.Lab ->
-                    ( { model | room = Room.Lab Lab.init }
                     , Cmd.none
                     )
 
