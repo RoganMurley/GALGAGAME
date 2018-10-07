@@ -6,7 +6,6 @@ type Route
     | Play PlayRoute
     | Spec String
     | Replay String
-    | Lab
     | Login
 
 

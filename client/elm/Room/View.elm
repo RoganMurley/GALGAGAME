@@ -2,7 +2,6 @@ module Room.View exposing (view)
 
 import Connected.View as Connected
 import Html as Html exposing (Html, div, text)
-import Lab.View as Lab
 import Lobby.View as Lobby
 import Login.View as Login
 import Main.Messages as Main
@@ -38,10 +37,6 @@ view model settings flags textures =
 
                 Replay replay ->
                     Replay.view replay flags textures
-
-                Lab lab ->
-                    Html.map (Main.RoomMsg << LabMsg) <|
-                        Lab.view params lab textures
 
                 Login login ->
                     Html.map (Main.RoomMsg << LoginMsg) <|
