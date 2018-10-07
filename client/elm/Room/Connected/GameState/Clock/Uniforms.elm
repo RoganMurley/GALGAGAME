@@ -10,7 +10,6 @@ import WebGL exposing (Texture)
 type alias Uniforms a =
     { a
         | resolution : Vec2
-        , texture : Texture
         , rotation : Mat4
         , scale : Mat4
         , color : Vec3
@@ -21,7 +20,7 @@ type alias Uniforms a =
     }
 
 
-uniforms : ( Width, Height ) -> Texture -> Vec3 -> Mat4 -> Mat4 -> Vec3 -> Uniforms {}
+uniforms : ( Width, Height ) -> Texture -> Vec3 -> Mat4 -> Mat4 -> Vec3 -> Uniforms { texture : Texture }
 uniforms ( width, height ) texture pos rot scale color =
     { resolution = vec2 (toFloat width) (toFloat height)
     , texture = texture

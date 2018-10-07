@@ -4,10 +4,10 @@ import Clock.Types exposing (Vertex)
 import Clock.Uniforms exposing (Uniforms)
 import Math.Vector2 exposing (Vec2)
 import Math.Vector3 exposing (Vec3)
-import WebGL exposing (Shader)
+import WebGL exposing (Shader, Texture)
 
 
-fragment : Shader {} (Uniforms {}) { vcoord : Vec2 }
+fragment : Shader {} (Uniforms { texture : Texture }) { vcoord : Vec2 }
 fragment =
     [glsl|
         precision mediump float;
@@ -66,34 +66,7 @@ vertex =
     |]
 
 
-noise : Shader {} (Uniforms { u | time : Float }) { vcoord : Vec2 }
-noise =
-    [glsl|
-        precision mediump float;
-
-        uniform vec2 resolution;
-        uniform float time;
-
-        varying vec2 vcoord;
-
-        float random (in vec2 st) {
-            return fract(sin(dot(st.xy,
-                 vec2(12.9898,78.233)))
-                     * 43758.5453123);
-        }
-
-        void main ()
-        {
-            vec2 st = gl_FragCoord.xy;
-            float rnd = random(st * (1. + time));
-
-            gl_FragColor = vec4(vec3(1.), rnd);
-        }
-
-    |]
-
-
-disintegrate : Shader {} (Uniforms { u | time : Float, noise : WebGL.Texture }) { vcoord : Vec2 }
+disintegrate : Shader {} (Uniforms { u | time : Float, texture : Texture, noise : Texture }) { vcoord : Vec2 }
 disintegrate =
     [glsl|
         precision mediump float;
@@ -115,7 +88,7 @@ disintegrate =
     |]
 
 
-roundedBoxDisintegrate : Shader {} (Uniforms { u | time : Float }) { vcoord : Vec2 }
+roundedBoxDisintegrate : Shader {} (Uniforms { time : Float, texture : Texture }) { vcoord : Vec2 }
 roundedBoxDisintegrate =
     [glsl|
         precision mediump float;
@@ -144,7 +117,7 @@ roundedBoxDisintegrate =
     |]
 
 
-fragmentTransmute : Shader {} (Uniforms { u | time : Float, finalTexture : WebGL.Texture }) { vcoord : Vec2 }
+fragmentTransmute : Shader {} (Uniforms { time : Float, texture : Texture, finalTexture : Texture }) { vcoord : Vec2 }
 fragmentTransmute =
     [glsl|
         precision mediump float;
@@ -174,7 +147,6 @@ roundedBoxTransmute =
 
         uniform vec3 color;
         uniform vec3 finalColor;
-        uniform sampler2D texture;
         uniform float time;
 
         varying vec2 vcoord;
