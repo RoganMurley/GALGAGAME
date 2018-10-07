@@ -8,7 +8,7 @@ import Clock.Uniforms exposing (uniforms)
 import Math.Matrix4 exposing (makeRotate, makeScale3)
 import Math.Vector3 exposing (vec3)
 import Maybe.Extra as Maybe
-import Util exposing (floatInterp)
+import Util exposing (interpFloat)
 import WebGL
 import WebGL.Texture exposing (Texture)
 
@@ -36,7 +36,7 @@ view { w, h, radius } resInfo texture =
                     Animation.progress anim resTick
 
         waveSize =
-            floatInterp progress 0 (3 * radius)
+            interpFloat progress 0 (3 * radius)
     in
         case anim of
             Just (Slash _ _) ->
