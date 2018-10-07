@@ -8,16 +8,11 @@ import CharacterSelect.Types exposing (Model)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import Raymarch.Types as Raymarch
-import Raymarch.View as Raymarch
 
 
-view : Raymarch.Params -> Model -> Html Msg
-view params { characters, selected, vm } =
+view : Model -> Html Msg
+view { characters, selected, vm } =
     let
-        { hover } =
-            vm
-
         characterView : Character -> Html Msg
         characterView ({ name, imgURL } as character) =
             div
@@ -43,10 +38,7 @@ view params { characters, selected, vm } =
                         [ class "character-chosen"
                         , onMouseEnter <| Hover character
                         ]
-                        [ img [ src ("/img/" ++ imgURL), class "character-icon" ] []
-
-                        -- , div [ class "character-name" ] [ text name ]
-                        ]
+                        [ img [ src ("/img/" ++ imgURL), class "character-icon" ] [] ]
 
                 unchosen : List (Html Msg)
                 unchosen =
@@ -87,10 +79,8 @@ view params { characters, selected, vm } =
             [ div
                 [ class "character-select" ]
                 [ text "Choose your Characters"
-                , div [ class "characters" ]
-                    (List.map characterView characters)
-                , cardPreviewView ((\{ cards } -> cards) hover)
+                , div [ class "characters" ] <| List.map characterView characters
+                , cardPreviewView (.cards vm.hover)
                 , selectedView selected
                 ]
-            , div [] [ Raymarch.view params ]
             ]

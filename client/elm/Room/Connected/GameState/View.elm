@@ -12,8 +12,6 @@ import GameState.Messages exposing (..)
 import GameState.Types exposing (GameState(..), PlayState(..), WaitType(..))
 import Main.Messages as Main
 import Main.Types exposing (Flags)
-import Raymarch.Types as Raymarch
-import Raymarch.View as Raymarch
 import Room.Messages as Room
 import Texture.Types as Texture
 import Clock.View as Clock
@@ -22,14 +20,16 @@ import Clock.View as Clock
 view : GameState -> String -> Flags -> Texture.Model -> Html Main.Msg
 view state roomID ({ hostname, httpPort, time, dimensions } as flags) textures =
     let
+        ( w, h ) =
+            dimensions
+
         params =
-            Raymarch.Params time dimensions
+            { time = time, w = w, h = h }
     in
         case state of
             Waiting waitType ->
                 div []
                     [ waitingView waitType httpPort hostname roomID
-                    , Raymarch.view params
                     ]
 
             Selecting model ->
@@ -40,7 +40,7 @@ view state roomID ({ hostname, httpPort, time, dimensions } as flags) textures =
                         << SelectingMsg
                     )
                 <|
-                    CharacterSelect.view params model
+                    CharacterSelect.view model
 
             Started started ->
                 case started of

@@ -131,5 +131,4 @@ instance Arbitrary CardAnim where
     , Play <$> arbitrary <*> arbitrary <*> arbitrary
     , Transmute <$> arbitrary <*> arbitrary
     , GameEnd <$> arbitrary
-    , Adhoc <$> arbitrary <*> arbitrary <*> arbitrary
     ]

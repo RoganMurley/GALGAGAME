@@ -23,7 +23,6 @@ decoder =
         , gameEndDecoder
         , rotateDecoder
         , windupDecoder
-        , adhocDecoder
         ]
 
 
@@ -136,12 +135,3 @@ windupDecoder =
     Json.map2 (\w _ -> Windup w)
         (field "player" WhichPlayer.decoder)
         (field "anim" <| constDecoder "windup")
-
-
-adhocDecoder : Decoder Anim
-adhocDecoder =
-    Json.map4 (\_ -> Adhoc)
-        (field "anim" <| index 0 <| constDecoder "gameEnd")
-        (field "player" WhichPlayer.decoder)
-        (field "anim" <| index 2 <| Json.string)
-        (field "anim" <| index 3 <| Json.string)

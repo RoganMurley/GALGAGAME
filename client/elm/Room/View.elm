@@ -7,7 +7,6 @@ import Login.View as Login
 import Main.Messages as Main
 import Main.Types exposing (Flags)
 import Menu.View as Menu
-import Raymarch.Types as Raymarch
 import Replay.View as Replay
 import Room.Messages exposing (..)
 import Room.Types exposing (..)
@@ -19,18 +18,15 @@ import Texture.Types as Texture
 view : Model -> Settings.Model -> Flags -> Texture.Model -> Html Main.Msg
 view model settings flags textures =
     let
-        params =
-            Raymarch.Params flags.time flags.dimensions
-
         roomView =
             case model of
                 MainMenu ->
                     Html.map (Main.RoomMsg << MenuMsg) <|
-                        Menu.view params
+                        Menu.view
 
                 Lobby lobby ->
                     Html.map (Main.RoomMsg << LobbyMsg) <|
-                        Lobby.view params lobby
+                        Lobby.view lobby
 
                 Connected connected ->
                     Connected.view connected flags textures
@@ -40,7 +36,7 @@ view model settings flags textures =
 
                 Login login ->
                     Html.map (Main.RoomMsg << LoginMsg) <|
-                        Login.view params login
+                        Login.view login
     in
         div []
             [ Settings.view settings (settingsView model flags)

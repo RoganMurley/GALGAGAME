@@ -29,28 +29,24 @@ safeTail l =
             []
 
 
+portProtocol : String -> String
+portProtocol httpPort =
+    case httpPort of
+        "" ->
+            ""
+
+        _ ->
+            ":" ++ httpPort
+
+
 websocketAddress : Flags -> String
 websocketAddress { hostname, httpPort } =
-    let
-        portProtocol =
-            if httpPort /= "" then
-                ":" ++ httpPort
-            else
-                ""
-    in
-        "wss://" ++ hostname ++ portProtocol ++ "/game/"
+    "wss://" ++ hostname ++ portProtocol httpPort ++ "/game/"
 
 
 authLocation : Flags -> String
 authLocation { hostname, httpPort } =
-    let
-        portProtocol =
-            if httpPort /= "" then
-                ":" ++ httpPort
-            else
-                ""
-    in
-        "https://" ++ hostname ++ portProtocol ++ "/auth"
+    "https://" ++ hostname ++ portProtocol httpPort ++ "/auth"
 
 
 send : Flags -> String -> Cmd msg
