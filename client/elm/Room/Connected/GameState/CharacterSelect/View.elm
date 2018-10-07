@@ -2,9 +2,8 @@ module CharacterSelect.View exposing (..)
 
 import Card.Types exposing (Card)
 import Card.View as Card
-import CharacterSelect.Character exposing (Character)
 import CharacterSelect.Messages exposing (Msg(..))
-import CharacterSelect.Types exposing (Model)
+import CharacterSelect.Types exposing (Character, Model)
 import Html exposing (Html, div, img, text, table, td, th, tr)
 import Html.Attributes exposing (class, src)
 import Html.Events exposing (onClick, onMouseEnter)

@@ -1,6 +1,6 @@
 module Animation.State exposing (..)
 
-import Animation.Types exposing (Anim(..), FragShader(..))
+import Animation.Types exposing (Anim(..))
 import Ease
 import WhichPlayer.Types exposing (WhichPlayer(..))
 
@@ -74,7 +74,7 @@ animShake anim tick =
         mag =
             baseMag * (1.0 - Ease.outQuad (tick / animToResTickMax anim))
     in
-        mag * 0.03 * (toFloat ((ceiling tick * 1247823748932 + 142131) % 20) - 10)
+        mag * 0.03 * (toFloat <| (ceiling tick * 1247823748932 + 142131) % 20) - 10
 
 
 animToResTickMax : Maybe Anim -> Float
