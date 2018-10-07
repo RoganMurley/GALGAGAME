@@ -70,9 +70,6 @@ animSfx anim =
         Reverse _ ->
             Just "reverse.mp3"
 
-        Rotate _ ->
-            Just "evil_tick.mp3"
-
         Play _ _ _ ->
             Just "playCard.wav"
 
@@ -83,7 +80,7 @@ animSfx anim =
             Just "obliterate.mp3"
 
         Overdraw _ _ ->
-            Just "overdraw.mp3"
+            Just "burn.mp3"
 
         GameEnd winner ->
             case winner of
