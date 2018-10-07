@@ -1,6 +1,6 @@
 module Audio exposing (..)
 
-import Ports exposing (playAudio, volume)
+import Ports
 
 
 type SoundOption
@@ -44,9 +44,9 @@ playSoundWith name options =
                     _ ->
                         1.0
     in
-        playAudio ( name, once, loop, vol )
+        Ports.playAudio ( name, once, loop, vol )
 
 
 setVolume : Int -> Cmd msg
-setVolume vol =
-    volume vol
+setVolume =
+    Ports.volume
