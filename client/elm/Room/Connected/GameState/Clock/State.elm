@@ -13,7 +13,7 @@ import Maybe.Extra as Maybe
 import Resolvable.State as Resolvable exposing (activeAnim, activeModel, activeStackCard)
 import Resolvable.Types as Resolvable
 import Stack.Types exposing (Stack, StackCard)
-import Util exposing (floatInterp, interp2D)
+import Util exposing (interpFloat, interp2D)
 import WhichPlayer.Types exposing (WhichPlayer(..))
 
 
@@ -303,7 +303,7 @@ calcHandEntities ({ w, h, radius } as params) finalHand resInfo =
                         (handCardPosition params PlayerA finalI finalN)
 
                 rot =
-                    floatInterp progress
+                    interpFloat progress
                         (handCardRotation PlayerA i n)
                         (handCardRotation PlayerA finalI finalN)
             in
@@ -332,7 +332,7 @@ calcHandEntities ({ w, h, radius } as params) finalHand resInfo =
                                         (handCardPosition params PlayerA n (n + 1))
 
                                 rot =
-                                    floatInterp progress 0 (handCardRotation PlayerA n (n + 1))
+                                    interpFloat progress 0 (handCardRotation PlayerA n (n + 1))
                             in
                                 [ { position = pos
                                   , rotation = rot
@@ -354,10 +354,10 @@ calcHandEntities ({ w, h, radius } as params) finalHand resInfo =
                                 (vec2 (w / 2) (h / 2 - radius * 0.62))
 
                         rot =
-                            floatInterp playProgress (handCardRotation PlayerA i n) pi
+                            interpFloat playProgress (handCardRotation PlayerA i n) pi
 
                         scale =
-                            floatInterp playProgress 1 1.3
+                            interpFloat playProgress 1 1.3
                     in
                         [ { position = pos
                           , rotation = rot
@@ -420,7 +420,7 @@ calcOtherHandEntities ({ w, h, radius } as params) finalN resInfo =
                         (handCardPosition params PlayerB i n)
                         (handCardPosition params PlayerB finalI finalN)
                 , rotation =
-                    floatInterp progress
+                    interpFloat progress
                         (handCardRotation PlayerB i n)
                         (handCardRotation PlayerB finalI finalN)
                 , scale = 1
@@ -439,7 +439,7 @@ calcOtherHandEntities ({ w, h, radius } as params) finalN resInfo =
                                 (vec2 w 0)
                                 (handCardPosition params PlayerB n (n + 1))
                       , rotation =
-                            floatInterp progress 0 (handCardRotation PlayerB n (n + 1))
+                            interpFloat progress 0 (handCardRotation PlayerB n (n + 1))
                       , scale = 1
                       }
                     ]
@@ -450,9 +450,9 @@ calcOtherHandEntities ({ w, h, radius } as params) finalN resInfo =
                                 (handCardPosition params PlayerB i n)
                                 (vec2 (w / 2) (h / 2 - radius * 0.62))
                       , rotation =
-                            floatInterp progress (handCardRotation PlayerB i n) 0
+                            interpFloat progress (handCardRotation PlayerB i n) 0
                       , scale =
-                            floatInterp progress 1 1.3
+                            interpFloat progress 1 1.3
                       }
                     ]
 

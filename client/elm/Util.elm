@@ -83,8 +83,8 @@ interp2D t start end =
             Math.Vector2.sub end start
 
 
-floatInterp : Float -> Float -> Float -> Float
-floatInterp t start end =
+interpFloat : Float -> Float -> Float -> Float
+interpFloat t start end =
     start + (t * (end - start))
 
 

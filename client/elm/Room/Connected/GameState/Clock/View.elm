@@ -34,10 +34,8 @@ import WhichPlayer.Types exposing (WhichPlayer(..))
 view : Params -> Model -> Texture.Model -> Html Main.Msg
 view { w, h } { res, focus, entities } textures =
     let
-        mTextures =
-            Maybe.map2 (,)
-                (Texture.load textures "striker/dagger.svg")
-                (Texture.load textures "noise")
+        mTexture =
+            Texture.load textures "striker/dagger.svg"
 
         locals =
             uniforms ( w, h )
@@ -73,34 +71,34 @@ view { w, h } { res, focus, entities } textures =
                 , height h
                 , class "webgl-canvas"
                 ]
-                (case mTextures of
-                    Just ( dagger, noise ) ->
+                (case mTexture of
+                    Just texture ->
                         List.concat
                             [ Clock.Stack.view params entities.stack resInfo textures
                             , focusImageView params textures focus
                             , [ Primitives.circle <|
-                                    locals dagger
+                                    locals texture
                                         (vec3 (toFloat w / 2) (toFloat h / 2) z)
                                         (makeScale3 (0.8 * radius) (0.8 * radius) 1)
                                         (makeRotate 0 <| vec3 0 0 1)
                                         (vec3 1 1 1)
                               ]
                             , [ Primitives.circle <|
-                                    locals dagger
+                                    locals texture
                                         (vec3 (toFloat w / 2) (toFloat h / 2) z)
                                         (makeScale3 (0.52 * radius) (0.52 * radius) 1)
                                         (makeRotate 0 <| vec3 0 0 1)
                                         (vec3 1 1 1)
                               , Primitives.circle <|
-                                    locals dagger
+                                    locals texture
                                         (vec3 (toFloat w / 2) ((toFloat h / 2) - (0.615 * radius)) z)
                                         (makeScale3 (0.13 * radius) (0.13 * radius) 1)
                                         (makeRotate 0 <| vec3 0 0 1)
                                         (vec3 1 1 1)
                               ]
-                            , handView params entities.hand resInfo noise textures
-                            , otherHandView params entities.otherHand resInfo noise textures
-                            , Clock.Wave.view params resInfo dagger
+                            , handView params entities.hand resInfo textures
+                            , otherHandView params entities.otherHand resInfo textures
+                            , Clock.Wave.view params resInfo texture
                             , lifeOrbView params textures model.life model.otherLife
                             ]
 
