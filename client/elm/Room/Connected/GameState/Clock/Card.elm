@@ -67,6 +67,31 @@ cardEntity { w, h, radius } textures { position, rotation, scale, card, owner } 
                 []
 
 
+cardBackEntity : ClockParams -> Texture.Model -> GameEntity {} -> List WebGL.Entity
+cardBackEntity { w, h, radius } textures { position, rotation, scale } =
+    let
+        ( width, height ) =
+            ( 0.1 * radius, 0.1 * radius )
+    in
+        case Texture.load textures "noise" of
+            Just texture ->
+                [ Clock.Primitives.roundedBox <|
+                    { resolution = vec2 w h
+                    , texture = texture
+                    , rotation = makeRotate rotation <| vec3 0 0 1
+                    , scale = makeScale3 (scale * 0.7 * width) (scale * height) 1
+                    , color = colour PlayerB
+                    , worldPos = to3d position
+                    , worldRot = makeRotate 0 <| vec3 0 0 1
+                    , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
+                    , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
+                    }
+                ]
+
+            Nothing ->
+                []
+
+
 dissolvingCardEntity : ClockParams -> Texture.Model -> Float -> CardEntity a -> List WebGL.Entity
 dissolvingCardEntity { w, h, radius } textures progress { position, rotation, scale, card, owner } =
     let
