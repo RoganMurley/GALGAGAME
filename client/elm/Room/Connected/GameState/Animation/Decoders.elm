@@ -34,7 +34,7 @@ constDecoder x =
             if s == x then
                 succeed ()
             else
-                fail (s ++ " does not match " ++ x)
+                fail <| s ++ " does not match " ++ x
     in
         string |> Json.andThen decode
 
@@ -51,14 +51,14 @@ healDecoder : Decoder Anim
 healDecoder =
     Json.map2 (\w _ -> Heal w)
         (field "player" WhichPlayer.decoder)
-        (field "anim" (constDecoder "heal"))
+        (field "anim" <| constDecoder "heal")
 
 
 drawDecoder : Decoder Anim
 drawDecoder =
     Json.map2 (\w _ -> Draw w)
         (field "player" WhichPlayer.decoder)
-        (field "anim" (constDecoder "draw"))
+        (field "anim" <| constDecoder "draw")
 
 
 biteDecoder : Decoder Anim
@@ -73,21 +73,21 @@ reflectDecoder : Decoder Anim
 reflectDecoder =
     Json.map2 (\w _ -> Reflect w)
         (field "player" WhichPlayer.decoder)
-        (field "anim" (constDecoder "reflect"))
+        (field "anim" <| constDecoder "reflect")
 
 
 reverseDecoder : Decoder Anim
 reverseDecoder =
     Json.map2 (\w _ -> Reverse w)
         (field "player" WhichPlayer.decoder)
-        (field "anim" (constDecoder "reverse"))
+        (field "anim" <| constDecoder "reverse")
 
 
 obliterateDecoder : Decoder Anim
 obliterateDecoder =
     Json.map2 (\w _ -> Obliterate w)
         (field "player" WhichPlayer.decoder)
-        (field "anim" (constDecoder "obliterate"))
+        (field "anim" <| constDecoder "obliterate")
 
 
 playDecoder : Decoder Anim

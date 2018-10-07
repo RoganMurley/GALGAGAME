@@ -1,10 +1,9 @@
 module GameState.Decoders exposing (..)
 
-import Json.Decode as Json exposing (Decoder, fail, field, index, list, maybe, string, succeed)
-import Card.Decoders as Card
-import Card.Types exposing (Card)
-import CharacterSelect.Character as CharacterSelect
-import CharacterSelect.ViewModel
+import Json.Decode as Json exposing (Decoder, fail, field, list, maybe, string, succeed)
+import CharacterSelect.Decoders
+import CharacterSelect.State as CharacterSelect
+import CharacterSelect.Types exposing (Character)
 import Clock.State exposing (clockInit)
 import GameState.Types exposing (GameState(..), PlayState(..), WaitType(..), Winner)
 import Model.Decoders as Model
@@ -43,7 +42,7 @@ waitingDecoder =
                     succeed WaitCustom
 
                 _ ->
-                    fail ("Invalid WaitType " ++ s)
+                    fail <| "Invalid WaitType " ++ s
     in
         Json.map Waiting
             (field "waiting" (string |> Json.andThen decode))
@@ -52,22 +51,7 @@ waitingDecoder =
 selectingDecoder : Decoder GameState
 selectingDecoder =
     let
-        characterDecoder : Decoder CharacterSelect.Character
-        characterDecoder =
-            Json.map3 CharacterSelect.Character
-                (field "name" string)
-                (field "img_url" string)
-                (field "cards" characterCardsDecoder)
-
-        characterCardsDecoder : Decoder ( Card, Card, Card, Card )
-        characterCardsDecoder =
-            Json.map4 (,,,)
-                (index 0 Card.decoder)
-                (index 1 Card.decoder)
-                (index 2 Card.decoder)
-                (index 3 Card.decoder)
-
-        makeSelectState : List CharacterSelect.Character -> List CharacterSelect.Character -> Result String GameState
+        makeSelectState : List Character -> List Character -> Result String GameState
         makeSelectState characters selected =
             case List.head characters of
                 Nothing ->
@@ -79,13 +63,13 @@ selectingDecoder =
                             { characters = characters
                             , selected = selected
                             , vm =
-                                CharacterSelect.ViewModel.init initialHover
+                                CharacterSelect.viewModelInit initialHover
                             }
     in
         collapseResults <|
             Json.map2 makeSelectState
-                (field "selecting" <| list characterDecoder)
-                (field "selected" <| list characterDecoder)
+                (field "selecting" <| list CharacterSelect.Decoders.character)
+                (field "selected" <| list CharacterSelect.Decoders.character)
 
 
 endedDecoder : Decoder PlayState
