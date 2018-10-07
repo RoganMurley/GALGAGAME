@@ -2,9 +2,8 @@ module Texture.State exposing (..)
 
 import Dict
 import Task
-import Texture.Messages exposing (..)
-import Texture.Types exposing (..)
-import WebGL.Texture
+import Texture.Messages exposing (Msg(..))
+import Texture.Types exposing (Model)
 import WebGL.Texture exposing (Texture)
 
 
@@ -21,7 +20,7 @@ update msg m =
 
         TexturesError error ->
             let
-                err =
+                _ =
                     Debug.log "Error loading textures: " error
             in
                 ( m, Cmd.none )

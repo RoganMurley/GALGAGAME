@@ -1,8 +1,8 @@
 module Card.View exposing (view)
 
 import Card.Types exposing (Card)
-import Html exposing (..)
-import Html.Attributes exposing (..)
+import Html exposing (Html, div, text)
+import Html.Attributes exposing (class, style)
 
 
 view : Card -> Html msg

@@ -11,11 +11,10 @@ import List.Extra as List
 import Main.Types exposing (Flags)
 import Math.Vector2 exposing (Vec2, vec2)
 import Maybe.Extra as Maybe
-import Resolvable.State exposing (activeAnim, activeModel, activeStackCard)
-import Resolvable.State as Resolvable
+import Resolvable.State as Resolvable exposing (activeAnim, activeModel, activeStackCard)
 import Resolvable.Types as Resolvable
 import Stack.Types exposing (Stack, StackCard)
-import Util exposing (floatInterp, interp, interp2D)
+import Util exposing (floatInterp, interp2D)
 import WhichPlayer.Types exposing (WhichPlayer(..))
 
 
@@ -132,7 +131,7 @@ calcStackEntities { w, h, radius } finalStack stackCard resInfo =
                 Just (Windup _) ->
                     1 - (Ease.inQuad <| resTick / maxTick)
 
-                otherwise ->
+                _ ->
                     0
 
         stack : Stack
@@ -149,7 +148,7 @@ calcStackEntities { w, h, radius } finalStack stackCard resInfo =
                         Nothing ->
                             finalStack
 
-                otherwise ->
+                _ ->
                     finalStack
 
         entities =
@@ -164,7 +163,7 @@ calcStackEntities { w, h, radius } finalStack stackCard resInfo =
                 Just (Rotate _) ->
                     []
 
-                otherwise ->
+                _ ->
                     case stackCard of
                         Just { owner, card } ->
                             [ { owner = owner
@@ -220,9 +219,9 @@ handCardRotation which i count =
 
 
 handCardPosition : ClockParams -> WhichPlayer -> Int -> Int -> Vec2
-handCardPosition ({ w, h, radius } as params) which index count =
+handCardPosition ({ radius } as params) which index count =
     let
-        ( width, height, spacing ) =
+        ( width, _, spacing ) =
             ( 0.1 * radius, 0.1 * radius, 35.0 )
 
         sign =
@@ -250,7 +249,7 @@ handCardPosition ({ w, h, radius } as params) which index count =
             (handOrigin params which count)
         <|
             Math.Vector2.add
-                (vec2 ((toFloat index) * (width + spacing)) 0)
+                (vec2 (toFloat index * (width + spacing)) 0)
             <|
                 vec2 0 y
 
@@ -258,10 +257,6 @@ handCardPosition ({ w, h, radius } as params) which index count =
 calcHandEntities : ClockParams -> Hand -> Maybe ( Float, Maybe Anim ) -> List (CardEntity { index : Int })
 calcHandEntities ({ w, h, radius } as params) finalHand resInfo =
     let
-        cardDimensions : ClockParams -> ( Float, Float, Float )
-        cardDimensions { w, h, radius } =
-            ( 0.1 * radius, 0.1 * radius, 35.0 )
-
         resTick =
             Maybe.withDefault 0.0 <|
                 Maybe.map Tuple.first resInfo
@@ -280,7 +275,7 @@ calcHandEntities ({ w, h, radius } as params) finalHand resInfo =
                     , List.head <| List.reverse finalHand
                     )
 
-                otherwise ->
+                _ ->
                     ( finalHand, Nothing )
 
         indexModifier : Int -> Int
@@ -293,7 +288,7 @@ calcHandEntities ({ w, h, radius } as params) finalHand resInfo =
                         else
                             i
 
-                otherwise ->
+                _ ->
                     Basics.identity
 
         n =
@@ -307,9 +302,6 @@ calcHandEntities ({ w, h, radius } as params) finalHand resInfo =
 
         playProgress =
             Ease.inQuad <| resTick / maxTick
-
-        ( width, height, spacing ) =
-            cardDimensions params
 
         entity : ( Int, Card ) -> CardEntity { index : Int }
         entity ( finalI, card ) =
@@ -388,7 +380,7 @@ calcHandEntities ({ w, h, radius } as params) finalHand resInfo =
                           }
                         ]
 
-                otherwise ->
+                _ ->
                     []
     in
         mainEntities ++ extraEntities
@@ -397,10 +389,6 @@ calcHandEntities ({ w, h, radius } as params) finalHand resInfo =
 calcOtherHandEntities : ClockParams -> Int -> Maybe ( Float, Maybe Anim ) -> List (GameEntity {})
 calcOtherHandEntities ({ w, h, radius } as params) finalN resInfo =
     let
-        cardDimensions : ClockParams -> ( Float, Float, Float )
-        cardDimensions { w, h, radius } =
-            ( 0.1 * radius, 0.1 * radius, 35.0 )
-
         resTick =
             Maybe.withDefault 0.0 <|
                 Maybe.map Tuple.first resInfo
@@ -417,7 +405,7 @@ calcOtherHandEntities ({ w, h, radius } as params) finalN resInfo =
                 Just (Draw PlayerB) ->
                     finalN - 1
 
-                otherwise ->
+                _ ->
                     finalN
 
         indexModifier : Int -> Int
@@ -430,7 +418,7 @@ calcOtherHandEntities ({ w, h, radius } as params) finalN resInfo =
                         else
                             i
 
-                otherwise ->
+                _ ->
                     Basics.identity
 
         progress =
@@ -438,9 +426,6 @@ calcOtherHandEntities ({ w, h, radius } as params) finalN resInfo =
 
         playProgress =
             Ease.inQuad <| resTick / maxTick
-
-        ( width, height, spacing ) =
-            cardDimensions params
 
         entity : Int -> GameEntity {}
         entity finalI =
@@ -505,7 +490,7 @@ calcOtherHandEntities ({ w, h, radius } as params) finalN resInfo =
                           }
                         ]
 
-                otherwise ->
+                _ ->
                     []
     in
         mainEntities ++ extraEntities

@@ -1,8 +1,8 @@
 module Model.Decoders exposing (..)
 
-import Json.Decode as Json exposing (Decoder, fail, field, int, list, string, succeed)
+import Json.Decode as Json exposing (Decoder, field, int, list)
 import Card.Decoders as Card
-import Model.Types exposing (..)
+import Model.Types exposing (Model)
 import Stack.Decoders as Stack
 import WhichPlayer.Decoders as WhichPlayer
 

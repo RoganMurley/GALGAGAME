@@ -1,6 +1,6 @@
 module GameState.Decoders exposing (..)
 
-import Json.Decode as Json exposing (Decoder, fail, field, index, int, list, maybe, string, succeed)
+import Json.Decode as Json exposing (Decoder, fail, field, index, list, maybe, string, succeed)
 import Card.Decoders as Card
 import Card.Types exposing (Card)
 import CharacterSelect.Character as CharacterSelect
@@ -42,7 +42,7 @@ waitingDecoder =
                 "custom" ->
                     succeed WaitCustom
 
-                otherwise ->
+                _ ->
                     fail ("Invalid WaitType " ++ s)
     in
         Json.map Waiting

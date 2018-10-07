@@ -2,13 +2,13 @@ module GameState.View exposing (view)
 
 import Animation.State exposing (animToResTickMax)
 import Animation.Types exposing (Anim(GameEnd))
-import Html exposing (..)
-import Html.Attributes exposing (..)
-import Html.Events exposing (..)
+import Html exposing (Html, button, div, input, text)
+import Html.Attributes exposing (class, id, readonly, type_, value)
+import Html.Events exposing (onClick)
 import CharacterSelect.View as CharacterSelect
 import Connected.Messages as Connected
 import Endgame.View as Endgame
-import GameState.Messages exposing (..)
+import GameState.Messages exposing (Msg(..))
 import GameState.Types exposing (GameState(..), PlayState(..), WaitType(..))
 import Main.Messages as Main
 import Main.Types exposing (Flags)
@@ -18,7 +18,7 @@ import Clock.View as Clock
 
 
 view : GameState -> String -> Flags -> Texture.Model -> Html Main.Msg
-view state roomID ({ hostname, httpPort, time, dimensions } as flags) textures =
+view state roomID { hostname, httpPort, time, dimensions } textures =
     let
         ( w, h ) =
             dimensions

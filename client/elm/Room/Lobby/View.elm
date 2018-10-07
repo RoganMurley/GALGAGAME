@@ -1,18 +1,18 @@
 module Lobby.View exposing (view)
 
-import Html exposing (..)
-import Html.Attributes exposing (..)
-import Html.Events exposing (..)
+import Html exposing (Html, button, div, h1, text)
+import Html.Attributes exposing (class)
+import Html.Events exposing (onClick)
 import Lobby.Messages exposing (Msg(..))
 import Lobby.State exposing (gameTypeToString)
-import Lobby.Types exposing (..)
+import Lobby.Types exposing (GameType(..), Model)
 
 
 view : Model -> Html Msg
 view { error, gameType } =
     div []
         [ div [ class "connecting-box" ]
-            [ h1 [] [ text <| (gameTypeToString gameType) ++ " Game" ]
+            [ h1 [] [ text <| gameTypeToString gameType ++ " Game" ]
             , div
                 []
                 [ div [ class "input-group" ]

@@ -1,0 +1,9 @@
+{
+  "checks": {
+    "DebugCrash": false,
+    "DebugLog": false,
+    "ExposeAll": false,
+    "NonStaticRegex": false,
+    "SingleFieldRecord": false
+  }
+}

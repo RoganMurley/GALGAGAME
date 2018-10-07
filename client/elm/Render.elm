@@ -14,4 +14,7 @@ type alias Height =
 
 
 type alias Params =
-    { time : Time, w : Width, h : Height }
+    { time : Time
+    , w : Width
+    , h : Height
+    }

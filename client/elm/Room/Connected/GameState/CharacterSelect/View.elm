@@ -3,18 +3,18 @@ module CharacterSelect.View exposing (..)
 import Card.Types exposing (Card)
 import Card.View as Card
 import CharacterSelect.Character exposing (Character)
-import CharacterSelect.Messages exposing (..)
+import CharacterSelect.Messages exposing (Msg(..))
 import CharacterSelect.Types exposing (Model)
-import Html exposing (..)
-import Html.Attributes exposing (..)
-import Html.Events exposing (..)
+import Html exposing (Html, div, img, text, table, td, th, tr)
+import Html.Attributes exposing (class, src)
+import Html.Events exposing (onClick, onMouseEnter)
 
 
 view : Model -> Html Msg
 view { characters, selected, vm } =
     let
         characterView : Character -> Html Msg
-        characterView ({ name, imgURL } as character) =
+        characterView character =
             div
                 [ class "character-button"
                 , onMouseEnter <| Hover character
@@ -24,32 +24,30 @@ view { characters, selected, vm } =
                   else
                     class ""
                 ]
-                [ img [ src ("/img/" ++ imgURL), class "character-icon" ] []
-
-                -- , div [ class "character-name" ] [ text name ]
+                [ img [ src ("/img/" ++ character.imgURL), class "character-icon" ] []
                 ]
 
-        selectedView : List Character -> Html Msg
-        selectedView selected =
+        selectedView : Html Msg
+        selectedView =
             let
                 chosenView : Character -> Html Msg
-                chosenView ({ name, imgURL } as character) =
+                chosenView character =
                     div
                         [ class "character-chosen"
                         , onMouseEnter <| Hover character
                         ]
-                        [ img [ src ("/img/" ++ imgURL), class "character-icon" ] [] ]
+                        [ img [ src ("/img/" ++ character.imgURL), class "character-icon" ] [] ]
 
                 unchosen : List (Html Msg)
                 unchosen =
                     List.repeat
-                        (3 - (List.length selected))
+                        (3 - List.length selected)
                         (div [ class "character-unchosen" ] [])
             in
                 div []
                     [ div
                         [ class "characters-all-chosen" ]
-                        ((List.map chosenView selected) ++ unchosen)
+                        (List.map chosenView selected ++ unchosen)
                     , div
                         [ class "ready-up" ]
                         [ if List.length selected >= 3 then
@@ -81,6 +79,6 @@ view { characters, selected, vm } =
                 [ text "Choose your Characters"
                 , div [ class "characters" ] <| List.map characterView characters
                 , cardPreviewView (.cards vm.hover)
-                , selectedView selected
+                , selectedView
                 ]
             ]

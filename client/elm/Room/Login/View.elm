@@ -1,10 +1,10 @@
 module Login.View exposing (logoutView, view)
 
-import Html exposing (..)
-import Html.Attributes exposing (..)
-import Html.Events exposing (..)
-import Login.Messages exposing (..)
-import Login.Types exposing (..)
+import Html exposing (Html, button, div, input, text)
+import Html.Attributes exposing (class, disabled, placeholder, type_)
+import Html.Events exposing (onClick, onInput)
+import Login.Messages exposing (Input(..), Msg(..))
+import Login.Types exposing (Model)
 import Login.State exposing (passwordInvalid, usernameInvalid)
 import Main.Messages as Main
 import Main.Types exposing (Flags)
@@ -15,8 +15,8 @@ view { username, password, error, submitting } =
     let
         submitDisabled : Bool
         submitDisabled =
-            (usernameInvalid username)
-                || (passwordInvalid password)
+            usernameInvalid username
+                || passwordInvalid password
                 || submitting
     in
         div []

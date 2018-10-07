@@ -1,6 +1,6 @@
 module Stack.Decoders exposing (..)
 
-import Json.Decode as Json exposing (Decoder, fail, field, int, list, string, succeed)
+import Json.Decode as Json exposing (Decoder, field)
 import Card.Decoders as Card
 import Stack.Types exposing (StackCard)
 import WhichPlayer.Decoders as WhichPlayer

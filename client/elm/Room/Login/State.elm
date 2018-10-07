@@ -3,8 +3,8 @@ module Login.State exposing (..)
 import Http
 import Json.Decode exposing (maybe)
 import Login.Decoders exposing (loginErrorDecoder)
-import Login.Messages exposing (..)
-import Login.Types exposing (..)
+import Login.Messages exposing (Input(..), Msg(..))
+import Login.Types exposing (Model)
 import Main.Messages as Main
 import Main.Types exposing (Flags)
 import Navigation
@@ -37,7 +37,7 @@ update model msg flags =
                 (Main.RoomMsg << Room.LoginMsg << SubmitCallback)
               <|
                 Http.post
-                    ((authLocation flags) ++ "/login")
+                    (authLocation flags ++ "/login")
                     (Http.multipartBody
                         [ Http.stringPart "username" model.username
                         , Http.stringPart "password" model.password
@@ -54,7 +54,8 @@ update model msg flags =
             , Cmd.batch
                 [ Navigation.newUrl model.nextUrl
                 , message Main.GetAuth
-                  -- Reconnect so that the ws connection has our login cookie
+
+                -- Reconnect so that the ws connection has our login cookie
                 , send flags "reconnect:"
                 ]
             )
@@ -71,7 +72,7 @@ update model msg flags =
                             , Cmd.none
                             )
 
-                        otherwise ->
+                        _ ->
                             ( { model
                                 | error = status.message
                                 , submitting = False
@@ -79,7 +80,7 @@ update model msg flags =
                             , Cmd.none
                             )
 
-                otherwise ->
+                _ ->
                     ( { model
                         | error = "Error connecting to authentication service"
                         , submitting = False

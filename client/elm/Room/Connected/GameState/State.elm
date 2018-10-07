@@ -5,23 +5,23 @@ import CharacterSelect.State as CharacterSelect
 import Clock.State as Clock
 import GameState.Decoders exposing (playStateDecoder, stateDecoder)
 import GameState.Encoders exposing (encodeHoverIndex)
-import GameState.Messages exposing (..)
+import GameState.Messages exposing (Msg(..), PlayingOnly(..), TurnOnly(..))
 import GameState.Types exposing (GameState(..), PlayState(..))
-import Json.Decode as Json exposing (field, maybe)
+import Json.Decode as Json
 import List.Extra as List
 import Main.Messages as Main
 import Main.Types exposing (Flags)
-import Math.Vector2 exposing (Vec2, vec2)
+import Math.Vector2 exposing (vec2)
 import Mode as Mode
 import Model.Decoders as Model
-import Model.Types exposing (..)
+import Model.Types exposing (Model)
+import Model.ViewModel
 import Navigation
 import Ports exposing (reload)
 import Resolvable.Decoders exposing (resolveDiffDataDecoder)
 import Resolvable.State as Resolvable
 import Resolvable.Types as Resolvable
-import Model.ViewModel
-import Util exposing (message, safeTail, send, unsafeForceDecode)
+import Util exposing (message, send, unsafeForceDecode)
 import WhichPlayer.Types exposing (WhichPlayer(..))
 
 
@@ -75,28 +75,28 @@ update msg state mode flags =
                         Started playState ->
                             .resList <| resolvable playState
 
-                        otherwise ->
+                        _ ->
                             []
 
                 oldTick : Float
                 oldTick =
                     case ( state, oldResList ) of
-                        ( Started playState, [] ) ->
+                        ( Started _, [] ) ->
                             0
 
                         ( Started playState, _ ) ->
                             .tick <| resolvable playState
 
-                        otherwise ->
+                        _ ->
                             0
 
                 initial : Model
                 initial =
-                    unsafeForceDecode ((Json.field "initial") Model.decoder) str
+                    unsafeForceDecode (Json.field "initial" Model.decoder) str
 
                 resDiffList : List Resolvable.ResolveDiffData
                 resDiffList =
-                    unsafeForceDecode ((Json.field "list") (Json.list resolveDiffDataDecoder)) str
+                    unsafeForceDecode (Json.field "list" (Json.list resolveDiffDataDecoder)) str
 
                 resList : List Resolvable.ResolveData
                 resList =
@@ -104,7 +104,7 @@ update msg state mode flags =
 
                 finalState : PlayState
                 finalState =
-                    unsafeForceDecode ((Json.field "final") playStateDecoder) str
+                    unsafeForceDecode (Json.field "final" playStateDecoder) str
 
                 model : Model
                 model =
@@ -132,7 +132,7 @@ update msg state mode flags =
                 Started (Ended winner res _) ->
                     ( Started (Ended winner res (Just replayId)), Cmd.none )
 
-                otherwise ->
+                _ ->
                     ( state, Cmd.none )
 
         SelectingMsg selectMsg ->
@@ -144,7 +144,7 @@ update msg state mode flags =
                     in
                         ( Selecting newModel, cmd )
 
-                otherwise ->
+                _ ->
                     Debug.log
                         "Expected a selecting state"
                         ( state, Cmd.none )
@@ -225,7 +225,7 @@ updatePlayingOnly msg state mode flags =
                         Started (Ended _ _ _) ->
                             ( state, send flags "rematch:" )
 
-                        otherwise ->
+                        _ ->
                             ( state, Cmd.none )
 
                 HoverCard mIndex ->
@@ -238,7 +238,7 @@ updatePlayingOnly msg state mode flags =
                                 Nothing ->
                                     Cmd.none
 
-                                otherwise ->
+                                _ ->
                                     playSound "/sfx/hover.wav"
                     in
                         ( newState
@@ -247,7 +247,7 @@ updatePlayingOnly msg state mode flags =
                             , message <|
                                 Main.Send <|
                                     "hover:"
-                                        ++ (encodeHoverIndex mIndex)
+                                        ++ encodeHoverIndex mIndex
                             , sound
                             ]
                         )
@@ -264,7 +264,7 @@ updateTurnOnly msg state mode flags =
                 Started (Playing { res }) ->
                     res.final.turn == PlayerA
 
-                otherwise ->
+                _ ->
                     False
     in
         if not legal then
@@ -286,7 +286,7 @@ updateTurnOnly msg state mode flags =
                     in
                         ( newState
                         , Cmd.batch
-                            [ send flags ("play:" ++ (toString index))
+                            [ send flags <| "play:" ++ toString index
                             , playSound "/sfx/playCard.wav"
                             , cmd
                             ]
@@ -313,7 +313,7 @@ carryVm old new =
                 Selecting selecting ->
                     Selecting { selecting | vm = vm }
 
-                otherwise ->
+                _ ->
                     new
 
         Started oldStarted ->
@@ -327,10 +327,10 @@ carryVm old new =
                         Started <|
                             resMapPlay (\r -> { r | vm = oldVm }) newStarted
 
-                otherwise ->
+                _ ->
                     new
 
-        otherwise ->
+        _ ->
             new
 
 
@@ -340,7 +340,7 @@ resMap f state =
         Started started ->
             Started <| resMapPlay f started
 
-        otherwise ->
+        _ ->
             state
 
 

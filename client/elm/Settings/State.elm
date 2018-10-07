@@ -1,7 +1,7 @@
 module Settings.State exposing (init, update)
 
 import Settings.Messages exposing (Msg(..))
-import Settings.Types exposing (..)
+import Settings.Types exposing (Model, ModalState(..), VolumeType(..))
 
 
 init : Model
@@ -14,7 +14,7 @@ init =
 
 
 update : Msg -> Model -> Model
-update msg ({ modalState, masterVolume } as m) =
+update msg ({ modalState } as m) =
     case msg of
         ToggleSettings ->
             case modalState of

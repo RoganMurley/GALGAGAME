@@ -112,7 +112,7 @@ overdrawDecoder : Decoder Anim
 overdrawDecoder =
     Json.map3 (\w _ c -> Overdraw w c)
         (field "player" WhichPlayer.decoder)
-        (field "anim" <| index 0 <| (constDecoder "overdraw"))
+        (field "anim" <| index 0 <| constDecoder "overdraw")
         (field "anim" <| index 1 <| Card.decoder)
 
 

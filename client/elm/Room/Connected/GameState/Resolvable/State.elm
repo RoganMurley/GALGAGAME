@@ -59,13 +59,13 @@ tickZero tick anim =
 resolveStep : Resolvable.Model -> Resolvable.Model
 resolveStep model =
     case model.resList of
-        r :: rs ->
+        _ :: rs ->
             { model
                 | resList = rs
                 , tick = 0
             }
 
-        otherwise ->
+        _ ->
             { model | tick = 0 }
 
 

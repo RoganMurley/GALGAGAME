@@ -1,10 +1,10 @@
 module Connected.View exposing (concedeView, playersView, view)
 
-import Html exposing (..)
-import Html.Attributes exposing (..)
-import Html.Events exposing (..)
+import Html exposing (Html, button, div, text)
+import Html.Attributes exposing (class, classList)
+import Html.Events exposing (onClick)
 import Connected.Messages as Connected
-import Connected.Types exposing (..)
+import Connected.Types exposing (Model)
 import GameState.Types exposing (GameState(..), PlayState(..))
 import GameState.View as GameState
 import Main.Messages exposing (Msg(..))
@@ -57,5 +57,5 @@ concedeView state =
                 [ text "Concede" ]
             ]
 
-        otherwise ->
+        _ ->
             []

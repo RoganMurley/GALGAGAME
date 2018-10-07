@@ -1,7 +1,7 @@
 module Routing.State exposing (..)
 
-import Routing.Types exposing (..)
-import UrlParser exposing (Parser, (</>), s, int, string, top, map, oneOf)
+import Routing.Types exposing (PlayRoute(..), Route(..))
+import UrlParser exposing (Parser, (</>), s, string, top, map, oneOf)
 
 
 route : Parser (Route -> a) a
@@ -17,14 +17,13 @@ route =
 
 playRoute : Parser (PlayRoute -> a) a
 playRoute =
-    (s "play")
-        </> (oneOf
+    s "play"
+        </> oneOf
                 [ map ComputerPlay (s "computer")
                 , map (CustomPlay << Just) (s "custom" </> string)
                 , map (CustomPlay Nothing) (s "custom")
                 , map QuickPlay (s "quickplay")
                 ]
-            )
 
 
 specRoute : Parser (String -> a) a

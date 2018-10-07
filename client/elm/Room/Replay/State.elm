@@ -10,13 +10,12 @@ import Model.Decoders as Model
 import Model.Types exposing (Model)
 import Model.ViewModel
 import Replay.Messages exposing (Msg(..))
-import Replay.Types as Replay
-import Replay.Types exposing (Replay)
+import Replay.Types as Replay exposing (Replay)
 import Resolvable.Decoders exposing (resolveDiffDataDecoder)
 import Resolvable.State as Resolvable
 import Resolvable.Types as Resolvable
 import Room.Messages as Room
-import Util exposing (message, splitOn, unsafeForceDecode)
+import Util exposing (message, splitOnColon, unsafeForceDecode)
 
 
 init : Replay.Model
@@ -29,7 +28,7 @@ receive : String -> Cmd Main.Msg
 receive msg =
     let
         ( command, content ) =
-            splitOn ":" msg
+            splitOnColon msg
     in
         case command of
             "replay" ->
@@ -37,13 +36,13 @@ receive msg =
                     initial : Model
                     initial =
                         unsafeForceDecode
-                            ((Json.field "initial") Model.decoder)
+                            (Json.field "initial" Model.decoder)
                             content
 
                     resDiffList : List Resolvable.ResolveDiffData
                     resDiffList =
                         unsafeForceDecode
-                            ((Json.field "list") (Json.list resolveDiffDataDecoder))
+                            (Json.field "list" (Json.list resolveDiffDataDecoder))
                             content
 
                     resList : List Resolvable.ResolveData
@@ -53,7 +52,7 @@ receive msg =
                     finalState : PlayState
                     finalState =
                         unsafeForceDecode
-                            ((Json.field "final") playStateDecoder)
+                            (Json.field "final" playStateDecoder)
                             content
 
                     model : Model
@@ -75,13 +74,13 @@ receive msg =
                     usernamePa : String
                     usernamePa =
                         unsafeForceDecode
-                            ((Json.field "pa") Json.string)
+                            (Json.field "pa" Json.string)
                             content
 
                     usernamePb : String
                     usernamePb =
                         unsafeForceDecode
-                            ((Json.field "pb") Json.string)
+                            (Json.field "pb" Json.string)
                             content
 
                     replay : Replay
@@ -96,7 +95,7 @@ receive msg =
                             Room.ReplayMsg <|
                                 SetReplay replay
 
-            otherwise ->
+            _ ->
                 Cmd.none
 
 

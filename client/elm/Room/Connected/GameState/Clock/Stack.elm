@@ -3,7 +3,7 @@ module Clock.Stack exposing (..)
 import Animation.State exposing (animToResTickMax)
 import Animation.Types exposing (Anim(..))
 import Clock.Card exposing (CardEntity, cardEntity, dissolvingCardEntity, transmutingCardEntity)
-import Clock.Types exposing (ClockParams, GameEntity)
+import Clock.Types exposing (ClockParams)
 import Ease
 import Maybe.Extra as Maybe
 import Texture.Types as Texture
@@ -43,11 +43,8 @@ view params entities resInfo textures =
                     if i == n then
                         cardEntity params textures
                     else
-                        (\entity ->
+                        \entity ->
                             let
-                                changeOwner =
-                                    identity
-
                                 ca =
                                     { owner = other entity.owner
                                     , card = entity.card
@@ -65,7 +62,6 @@ view params entities resInfo textures =
                                     ca
                                     cb
                                     entity
-                        )
 
                 Just (Transmute _ ca cb) ->
                     if i == 0 then

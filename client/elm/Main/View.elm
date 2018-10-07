@@ -1,6 +1,6 @@
 module Main.View exposing (..)
 
-import Html exposing (Html, div)
+import Html exposing (Html)
 import Main.Messages exposing (Msg)
 import Main.Types exposing (Model)
 import Room.View as Room

@@ -1,4 +1,4 @@
-module Example.Types exposing (..)
+module Example.Types exposing (Model)
 
 
 type alias Model =

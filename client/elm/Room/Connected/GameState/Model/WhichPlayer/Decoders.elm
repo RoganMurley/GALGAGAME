@@ -16,7 +16,7 @@ decoder =
                 "pb" ->
                     succeed PlayerB
 
-                otherwise ->
+                _ ->
                     fail ("Invalid WhichPlayer " ++ s)
     in
         string |> Json.andThen decode

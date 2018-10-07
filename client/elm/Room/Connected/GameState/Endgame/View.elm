@@ -5,9 +5,9 @@ import Animation.Types exposing (Anim(GameEnd))
 import Connected.Messages as Connected
 import Ease
 import GameState.Messages exposing (Msg(GotoReplay, PlayingOnly), PlayingOnly(Rematch))
-import Html exposing (..)
-import Html.Attributes exposing (..)
-import Html.Events exposing (..)
+import Html exposing (Html, button, div, text)
+import Html.Attributes exposing (class, classList, disabled, style)
+import Html.Events exposing (onClick)
 import Main.Messages as Main
 import Room.Messages as Room
 import WhichPlayer.Types exposing (WhichPlayer(..))
@@ -27,7 +27,7 @@ view resTick anim mReplayId =
                 Just (GameEnd Nothing) ->
                     ( "DRAW", "draw" )
 
-                otherwise ->
+                _ ->
                     ( "", "no-win" )
 
         resTickMax =

@@ -10,7 +10,7 @@ import Resolvable.State exposing (activeAnim)
 listen : Model -> Cmd Msg
 listen { res } =
     if res.tick == 0 then
-        (case activeAnim res of
+        case activeAnim res of
             Just (Rotate _) ->
                 playSound "/sfx/evil_tick.mp3"
 
@@ -20,8 +20,7 @@ listen { res } =
             Just (Play _ _ _) ->
                 playSound "/sfx/tick.wav"
 
-            otherwise ->
+            _ ->
                 Cmd.none
-        )
     else
         Cmd.none
