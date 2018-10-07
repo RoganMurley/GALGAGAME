@@ -64,16 +64,6 @@ unsafeForceDecode decoder str =
             Debug.crash err
 
 
-maybeCons : Maybe a -> List a -> List a
-maybeCons m xs =
-    case m of
-        Just x ->
-            x :: xs
-
-        Nothing ->
-            xs
-
-
 zip : List a -> List b -> List ( a, b )
 zip =
     List.map2 (,)
