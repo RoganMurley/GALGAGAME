@@ -14,18 +14,28 @@ init =
 
 
 update : Msg -> Model -> Model
-update msg ({ modalState } as m) =
+update msg m =
     case msg of
         ToggleSettings ->
-            case modalState of
+            case m.modalState of
                 Closed ->
-                    { m | modalState = Open }
+                    openModal m
 
                 Open ->
-                    { m | modalState = Closed }
+                    closeModal m
 
         OpenSettings ->
-            { m | modalState = Open }
+            openModal m
 
         CloseSettings ->
-            { m | modalState = Closed }
+            closeModal m
+
+
+openModal : Model -> Model
+openModal m =
+    { m | modalState = Open }
+
+
+closeModal : Model -> Model
+closeModal m =
+    { m | modalState = Closed }

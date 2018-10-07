@@ -17,6 +17,6 @@ decoder =
                     succeed PlayerB
 
                 _ ->
-                    fail ("Invalid WhichPlayer " ++ s)
+                    fail <| "Invalid WhichPlayer " ++ s
     in
         string |> Json.andThen decode

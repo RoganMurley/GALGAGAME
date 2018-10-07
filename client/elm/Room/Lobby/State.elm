@@ -41,12 +41,10 @@ update ({ gameType, mode } as model) msg =
                         Spectating ->
                             "spectate:"
             in
-                ( model
-                , Cmd.batch
-                    [ message <| Main.Send <| prefix
-                    , message <| Main.Send <| "room:" ++ model.roomID
-                    ]
-                )
+                model
+                    ! [ message <| Main.Send <| prefix
+                      , message <| Main.Send <| "room:" ++ model.roomID
+                      ]
 
         JoinRoomErr error ->
             ( { model | error = error }, Cmd.none )

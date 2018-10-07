@@ -50,15 +50,13 @@ update model msg flags =
             ( { model | error = error }, Cmd.none )
 
         SubmitCallback (Ok Nothing) ->
-            ( model
-            , Cmd.batch
-                [ Navigation.newUrl model.nextUrl
-                , message Main.GetAuth
+            model
+                ! [ Navigation.newUrl model.nextUrl
+                  , message Main.GetAuth
 
-                -- Reconnect so that the ws connection has our login cookie
-                , send flags "reconnect:"
-                ]
-            )
+                  -- Reconnect so that the ws connection has our login cookie
+                  , send flags "reconnect:"
+                  ]
 
         SubmitCallback (Err httpError) ->
             case httpError of

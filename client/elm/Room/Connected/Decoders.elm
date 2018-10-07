@@ -10,7 +10,9 @@ decodePlayers msg =
 
 playersDecoder : Decoder ( Maybe String, Maybe String )
 playersDecoder =
-    Json.map2 (,) (index 0 (maybe string)) (index 1 (maybe string))
+    Json.map2 (,)
+        (index 0 <| maybe string)
+        (index 1 <| maybe string)
 
 
 decodeHoverOutcome : String -> Result String (Maybe Int)

@@ -25,4 +25,4 @@ initFull flags location =
         ( model, cmd ) =
             init flags location
     in
-        ( model, Cmd.batch [ cmd, message GetAuth ] )
+        model ! [ cmd, message GetAuth ]
