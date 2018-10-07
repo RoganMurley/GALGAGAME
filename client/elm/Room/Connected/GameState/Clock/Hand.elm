@@ -135,12 +135,9 @@ otherHandView ({ w, h } as params) otherHandEntities resInfo textures =
         { width, height } =
             cardDimensions params
 
-        entity =
-            cardBackEntity params textures
-
         mainView : List WebGL.Entity
         mainView =
-            List.concat <| List.map entity otherHandEntities
+            List.map (cardBackEntity params) otherHandEntities
 
         extraView : List WebGL.Entity
         extraView =
