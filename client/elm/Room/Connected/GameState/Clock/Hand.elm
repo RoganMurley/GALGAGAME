@@ -117,40 +117,7 @@ handView ({ w, h } as params) handEntities resInfo textures =
 
         extraView : List WebGL.Entity
         extraView =
-            case anim of
-                Just (Overdraw PlayerA card) ->
-                    let
-                        pos =
-                            interp2D
-                                progress
-                                (vec2 w h)
-                                (vec2 (w / 2) (h / 2))
-
-                        rot =
-                            interpFloat progress pi (pi + 0.05 * pi)
-
-                        scale =
-                            interpFloat progress 1 4
-
-                        disintegrateProgress =
-                            Ease.inQuint (resTick / Animation.animMaxTick anim)
-
-                        entity =
-                            { owner = PlayerA
-                            , card = card
-                            , position = pos
-                            , rotation = rot
-                            , scale = scale
-                            }
-                    in
-                        dissolvingCardEntity
-                            params
-                            textures
-                            disintegrateProgress
-                            entity
-
-                _ ->
-                    []
+            overdrawView params progress anim textures
     in
         mainView ++ extraView
 
@@ -205,39 +172,47 @@ otherHandView ({ w, h } as params) otherHandEntities resInfo textures =
 
         extraView : List WebGL.Entity
         extraView =
-            case anim of
-                Just (Overdraw PlayerB card) ->
-                    let
-                        pos =
-                            interp2D
-                                progress
-                                (vec2 w h)
-                                (vec2 (w / 2) (h / 2))
-
-                        rot =
-                            interpFloat progress pi (pi - 0.05 * pi)
-
-                        scale =
-                            interpFloat progress 1 4
-
-                        disintegrateProgress =
-                            Ease.inQuint (resTick / Animation.animMaxTick anim)
-
-                        entity =
-                            { owner = PlayerB
-                            , card = card
-                            , position = pos
-                            , rotation = rot
-                            , scale = scale
-                            }
-                    in
-                        dissolvingCardEntity
-                            params
-                            textures
-                            disintegrateProgress
-                            entity
-
-                _ ->
-                    []
+            overdrawView params progress anim textures
     in
         mainView ++ extraView
+
+
+overdrawView : ClockParams -> Float -> Maybe Anim -> Texture.Model -> List WebGL.Entity
+overdrawView ({ w, h } as params) resTick anim textures =
+    case anim of
+        Just (Overdraw owner card) ->
+            let
+                progress =
+                    Animation.progress anim resTick
+
+                sign =
+                    case owner of
+                        PlayerA ->
+                            1
+
+                        PlayerB ->
+                            -1
+
+                disintegrateProgress =
+                    Ease.inQuint (resTick / Animation.animMaxTick anim)
+
+                entity =
+                    { owner = owner
+                    , card = card
+                    , position =
+                        interp2D
+                            progress
+                            (vec2 w h)
+                            (vec2 (w / 2) (h / 2))
+                    , rotation = interpFloat progress pi (pi - sign * 0.05 * pi)
+                    , scale = interpFloat progress 1 4
+                    }
+            in
+                dissolvingCardEntity
+                    params
+                    textures
+                    disintegrateProgress
+                    entity
+
+        _ ->
+            []
