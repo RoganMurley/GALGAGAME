@@ -1,11 +1,10 @@
 module Clock.Wave exposing (..)
 
-import Animation.State exposing (animToResTickMax)
+import Animation.State as Animation
 import Animation.Types exposing (Anim(..))
 import Clock.Primitives as Primitives
 import Clock.Types exposing (ClockParams)
 import Clock.Uniforms exposing (uniforms)
-import Ease
 import Math.Matrix4 exposing (makeRotate, makeScale3)
 import Math.Vector3 exposing (vec3)
 import Maybe.Extra as Maybe
@@ -28,16 +27,13 @@ view { w, h, radius } resInfo texture =
             Maybe.join <|
                 Maybe.map Tuple.second resInfo
 
-        maxTick =
-            animToResTickMax anim
-
         progress =
             case anim of
                 Just (Heal _) ->
-                    1 - (Ease.outQuad <| resTick / maxTick)
+                    1 - Animation.progress anim resTick
 
                 _ ->
-                    Ease.outQuad <| resTick / maxTick
+                    Animation.progress anim resTick
 
         waveSize =
             floatInterp progress 0 (3 * radius)

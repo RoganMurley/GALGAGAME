@@ -1,10 +1,9 @@
 module Clock.Stack exposing (..)
 
-import Animation.State exposing (animToResTickMax)
+import Animation.State as Animation
 import Animation.Types exposing (Anim(..))
 import Clock.Card exposing (CardEntity, cardEntity, dissolvingCardEntity, transmutingCardEntity)
 import Clock.Types exposing (ClockParams)
-import Ease
 import Maybe.Extra as Maybe
 import Texture.Types as Texture
 import WebGL
@@ -22,11 +21,8 @@ view params entities resInfo textures =
             Maybe.join <|
                 Maybe.map Tuple.second resInfo
 
-        maxTick =
-            animToResTickMax anim
-
         progress =
-            Ease.outQuint <| resTick / maxTick
+            Animation.progress anim resTick
 
         n =
             List.length entities - 1

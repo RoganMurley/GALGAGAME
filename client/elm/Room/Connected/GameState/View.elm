@@ -1,6 +1,6 @@
 module GameState.View exposing (view)
 
-import Animation.State exposing (animToResTickMax)
+import Animation.State as Animation
 import Animation.Types exposing (Anim(GameEnd))
 import Html exposing (Html, button, div, input, text)
 import Html.Attributes exposing (class, id, readonly, type_, value)
@@ -12,6 +12,7 @@ import GameState.Messages exposing (Msg(..))
 import GameState.Types exposing (GameState(..), PlayState(..), WaitType(..))
 import Main.Messages as Main
 import Main.Types exposing (Flags)
+import Resolvable.State exposing (activeAnim)
 import Room.Messages as Room
 import Texture.Types as Texture
 import Clock.View as Clock
@@ -47,32 +48,29 @@ view state roomID { hostname, httpPort, time, dimensions } textures =
                     Playing clock ->
                         div []
                             [ Clock.view params clock textures
-                            , Endgame.view 0.0 Nothing Nothing
+                            , Endgame.view 0 Nothing Nothing
                             ]
 
                     Ended winner clock mReplayId ->
                         let
+                            anim =
+                                activeAnim clock.res
+
+                            { resList, tick } =
+                                clock.res
+
                             resolving =
-                                not <| List.isEmpty clock.res.resList
+                                not <| List.isEmpty resList
 
-                            endAnim =
+                            ( endAnim, progress ) =
                                 if resolving then
-                                    Nothing
+                                    ( anim, Animation.progress anim tick )
                                 else
-                                    Just <| GameEnd winner
-
-                            endTick =
-                                if resolving then
-                                    0
-                                else
-                                    animToResTickMax endAnim
+                                    ( Just <| GameEnd winner, 1.0 )
                         in
                             div []
                                 [ Clock.view params clock textures
-                                , Endgame.view
-                                    endTick
-                                    endAnim
-                                    mReplayId
+                                , Endgame.view progress endAnim mReplayId
                                 ]
 
 

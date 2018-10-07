@@ -1,4 +1,4 @@
-module GameState.State exposing (playstateTick, update, tick, tickZero, resolvable, resMapPlay)
+module GameState.State exposing (playstateTick, update, tick, tickEnd, resolvable, resMapPlay)
 
 import Audio exposing (playSound)
 import CharacterSelect.State as CharacterSelect
@@ -372,13 +372,14 @@ playstateTick flags state dt =
             Ended w (Clock.tick flags clock dt) replay
 
 
-tickZero : PlayState -> Bool
-tickZero started =
+tickEnd : PlayState -> Bool
+tickEnd started =
     let
         res =
             resolvable started
     in
-        Resolvable.tickZero res.tick (Resolvable.activeAnim res)
+        Resolvable.tickEnd res.tick <|
+            Resolvable.activeAnim res
 
 
 resolvable : PlayState -> Resolvable.Model

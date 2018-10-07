@@ -1,6 +1,6 @@
 module Clock.Hand exposing (..)
 
-import Animation.State exposing (animToResTickMax)
+import Animation.State as Animation
 import Animation.Types exposing (Anim(..))
 import Clock.Card exposing (CardEntity, cardEntity, colour)
 import Clock.Primitives as Primitives
@@ -101,6 +101,9 @@ position params which index count =
 handView : ClockParams -> List (CardEntity { index : Int }) -> Maybe ( Float, Maybe Anim ) -> Texture -> Texture.Model -> List WebGL.Entity
 handView ({ w, h } as params) handEntities resInfo noise textures =
     let
+        { width, height } =
+            cardDimensions params
+
         resTick =
             Maybe.withDefault 0.0 <|
                 Maybe.map Tuple.first resInfo
@@ -109,14 +112,8 @@ handView ({ w, h } as params) handEntities resInfo noise textures =
             Maybe.join <|
                 Maybe.map Tuple.second resInfo
 
-        maxTick =
-            animToResTickMax anim
-
         progress =
-            Ease.outQuint <| resTick / maxTick
-
-        { width, height } =
-            cardDimensions params
+            Animation.progress anim resTick
 
         mainView : List WebGL.Entity
         mainView =
@@ -150,6 +147,9 @@ handView ({ w, h } as params) handEntities resInfo noise textures =
                                 height
                                 (height * 4)
 
+                        disintegrateProgress =
+                            Ease.inQuint (resTick / Animation.animMaxTick anim)
+
                         mTexture =
                             Texture.load textures card.imgURL
                     in
@@ -165,7 +165,7 @@ handView ({ w, h } as params) handEntities resInfo noise textures =
                                     , worldRot = makeRotate 0 (vec3 0 0 1)
                                     , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
                                     , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
-                                    , time = Ease.inQuint <| resTick / maxTick
+                                    , time = disintegrateProgress
                                     }
                                 , Primitives.quad Clock.Shaders.disintegrate <|
                                     { resolution = vec2 w h
@@ -178,7 +178,7 @@ handView ({ w, h } as params) handEntities resInfo noise textures =
                                     , worldRot = makeRotate 0 (vec3 0 0 1)
                                     , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
                                     , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
-                                    , time = Ease.inQuint <| resTick / maxTick
+                                    , time = disintegrateProgress
                                     }
                                 ]
 
@@ -202,11 +202,8 @@ otherHandView ({ w, h } as params) otherHandEntities resInfo noise textures =
             Maybe.join <|
                 Maybe.map Tuple.second resInfo
 
-        maxTick =
-            animToResTickMax anim
-
         progress =
-            Ease.outQuint <| resTick / maxTick
+            Animation.progress anim resTick
 
         { width, height } =
             cardDimensions params
@@ -276,7 +273,7 @@ otherHandView ({ w, h } as params) otherHandEntities resInfo noise textures =
                                     , worldRot = makeRotate 0 (vec3 0 0 1)
                                     , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
                                     , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
-                                    , time = Ease.inQuint <| resTick / maxTick
+                                    , time = progress
                                     }
                                 , Primitives.quad Clock.Shaders.disintegrate <|
                                     { resolution = vec2 w h
@@ -289,7 +286,7 @@ otherHandView ({ w, h } as params) otherHandEntities resInfo noise textures =
                                     , worldRot = makeRotate 0 (vec3 0 0 1)
                                     , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
                                     , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
-                                    , time = Ease.inQuint <| resTick / maxTick
+                                    , time = progress
                                     }
                                 ]
 
