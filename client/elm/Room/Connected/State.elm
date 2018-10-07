@@ -34,14 +34,12 @@ update flags msg ({ game, mode } as model) =
                 ( { model | game = newGame }, cmd )
 
         Concede ->
-            ( model
-            , Cmd.batch
-                [ message <|
-                    Main.SettingsMsg <|
-                        Settings.CloseSettings
-                , send flags "concede:"
-                ]
-            )
+            model
+                ! [ message <|
+                        Main.SettingsMsg <|
+                            Settings.CloseSettings
+                  , send flags "concede:"
+                  ]
 
 
 tick : Flags -> Model -> Float -> Model
@@ -78,12 +76,10 @@ receive ({ mode } as model) msg flags =
                                     mode
                                     flags
                         in
-                            ( { model | game = newGame }
-                            , Cmd.batch
-                                [ cmd
-                                , playSound "/sfx/hover.wav"
-                                ]
-                            )
+                            { model | game = newGame }
+                                ! [ cmd
+                                  , playSound "/sfx/hover.wav"
+                                  ]
 
                     Err err ->
                         Debug.log

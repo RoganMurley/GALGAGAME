@@ -70,6 +70,9 @@ animSfx anim =
         Reverse _ ->
             Just "reverse.mp3"
 
+        Rotate _ ->
+            Just "evil_tick.mp3"
+
         Play _ _ _ ->
             Just "playCard.wav"
 

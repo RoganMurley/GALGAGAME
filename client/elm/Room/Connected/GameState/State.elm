@@ -153,12 +153,10 @@ update msg state mode flags =
             updatePlayingOnly playingOnly state mode flags
 
         GotoReplay replayId ->
-            ( state
-            , Cmd.batch
-                [ Navigation.newUrl <| "/replay/" ++ replayId
-                , reload ()
-                ]
-            )
+            state
+                ! [ Navigation.newUrl <| "/replay/" ++ replayId
+                  , reload ()
+                  ]
 
         Mouse { x, y } ->
             let
@@ -241,16 +239,14 @@ updatePlayingOnly msg state mode flags =
                                 _ ->
                                     playSound "/sfx/hover.wav"
                     in
-                        ( newState
-                        , Cmd.batch
-                            [ cmd
-                            , message <|
-                                Main.Send <|
-                                    "hover:"
-                                        ++ encodeHoverIndex mIndex
-                            , sound
-                            ]
-                        )
+                        newState
+                            ! [ cmd
+                              , message <|
+                                    Main.Send <|
+                                        "hover:"
+                                            ++ encodeHoverIndex mIndex
+                              , sound
+                              ]
 
                 TurnOnly turnOnly ->
                     updateTurnOnly turnOnly state mode flags
@@ -272,25 +268,21 @@ updateTurnOnly msg state mode flags =
         else
             case msg of
                 EndTurn ->
-                    ( state
-                    , Cmd.batch
-                        [ send flags "end:"
-                        , playSound "/sfx/endTurn.wav"
-                        ]
-                    )
+                    state
+                        ! [ send flags "end:"
+                          , playSound "/sfx/endTurn.wav"
+                          ]
 
                 PlayCard index ->
                     let
                         ( newState, cmd ) =
                             update (HoverSelf Nothing) state mode flags
                     in
-                        ( newState
-                        , Cmd.batch
-                            [ send flags <| "play:" ++ toString index
-                            , playSound "/sfx/playCard.wav"
-                            , cmd
-                            ]
-                        )
+                        newState
+                            ! [ send flags <| "play:" ++ toString index
+                              , playSound "/sfx/playCard.wav"
+                              , cmd
+                              ]
 
 
 syncState : GameState -> String -> GameState

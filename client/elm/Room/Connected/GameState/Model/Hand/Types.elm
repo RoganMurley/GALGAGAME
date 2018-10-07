@@ -7,12 +7,8 @@ type alias Hand =
     List Card
 
 
-type alias HoverCardIndex =
-    Maybe Int
-
-
 type alias HandIndex =
     { cardCount : Int
-    , hover : HoverCardIndex
+    , hover : Maybe Int
     , index : Int
     }

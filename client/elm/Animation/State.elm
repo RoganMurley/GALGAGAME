@@ -2,9 +2,6 @@ module Animation.State exposing (..)
 
 import Animation.Types exposing (Anim(..), FragShader(..))
 import Ease
-import Texture.State as Texture
-import Texture.Types as Texture
-import WebGL.Texture exposing (Texture)
 import WhichPlayer.Types exposing (WhichPlayer(..))
 
 
@@ -109,13 +106,3 @@ animToResTickMax anim =
 
         _ ->
             800.0
-
-
-animToTexture : Anim -> Texture.Model -> Maybe Texture
-animToTexture anim textures =
-    case anim of
-        Overdraw _ _ ->
-            Texture.load textures "cross"
-
-        _ ->
-            Nothing

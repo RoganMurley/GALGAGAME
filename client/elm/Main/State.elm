@@ -50,7 +50,7 @@ init flags location =
                 }
                 location
     in
-        ( model, Cmd.batch [ fetchTextures, cmd ] )
+        model ! [ fetchTextures, cmd ]
 
 
 update : Msg -> Main.Model -> ( Main.Model, Cmd Msg )
@@ -122,14 +122,7 @@ update msg ({ room, settings, textures, flags } as model) =
                 ( newModel, cmd ) =
                     locationUpdate model location
             in
-                ( newModel
-                , Cmd.batch
-                    [ cmd
-                    , analytics ()
-
-                    -- , send flags "reconnect:" -- Reopen ws connection
-                    ]
-                )
+                newModel ! [ cmd, analytics () ]
 
         SetVolume volumeType volume ->
             let
