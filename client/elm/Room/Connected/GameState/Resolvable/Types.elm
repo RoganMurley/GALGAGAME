@@ -17,13 +17,13 @@ type alias Model =
 
 type alias ResolveData =
     { model : Model.Model
-    , anim : Maybe Anim
+    , anim : Anim
     , stackCard : Maybe StackCard
     }
 
 
 type alias ResolveDiffData =
     { diff : Model.Diff
-    , anim : Maybe Anim
+    , anim : Anim
     , stackCard : Maybe StackCard
     }

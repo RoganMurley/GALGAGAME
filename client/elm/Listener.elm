@@ -16,23 +16,14 @@ listen state =
         modelListen : Resolvable.Model -> Cmd Msg
         modelListen res =
             if tickStart res then
-                let
-                    sfxURL : Maybe String
-                    sfxURL =
-                        activeAnim res |> Maybe.andThen animSfx
+                case animSfx <| activeAnim res of
+                    Just url ->
+                        playSoundWith
+                            ("/sfx/" ++ url)
+                            [ Volume 0.5 ]
 
-                    volume : Float
-                    volume =
-                        0.5
-                in
-                    case sfxURL of
-                        Just url ->
-                            playSoundWith
-                                ("/sfx/" ++ url)
-                                [ Volume volume ]
-
-                        Nothing ->
-                            Cmd.none
+                    Nothing ->
+                        Cmd.none
             else
                 Cmd.none
     in

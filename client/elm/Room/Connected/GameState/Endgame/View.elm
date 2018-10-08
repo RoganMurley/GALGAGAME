@@ -11,18 +11,18 @@ import Room.Messages as Room
 import WhichPlayer.Types exposing (WhichPlayer(..))
 
 
-view : Float -> Maybe Anim -> Maybe String -> Html Main.Msg
+view : Float -> Anim -> Maybe String -> Html Main.Msg
 view progress anim mReplayId =
     let
         ( endGameText, endGameClass ) =
             case anim of
-                Just (GameEnd (Just PlayerA)) ->
+                GameEnd (Just PlayerA) ->
                     ( "VICTORY", "victory" )
 
-                Just (GameEnd (Just PlayerB)) ->
+                GameEnd (Just PlayerB) ->
                     ( "DEFEAT", "defeat" )
 
-                Just (GameEnd Nothing) ->
+                GameEnd Nothing ->
                     ( "DRAW", "draw" )
 
                 _ ->

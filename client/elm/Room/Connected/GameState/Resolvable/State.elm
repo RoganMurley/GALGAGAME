@@ -1,7 +1,7 @@
 module Resolvable.State exposing (..)
 
 import Animation.State as Animation
-import Animation.Types exposing (Anim)
+import Animation.Types exposing (Anim(NullAnim))
 import Model.Diff as Model
 import Model.Types as Model
 import Resolvable.Types as Resolvable
@@ -28,9 +28,14 @@ activeModel model =
             List.head model.resList
 
 
-activeAnim : Resolvable.Model -> Maybe Anim
+activeAnim : Resolvable.Model -> Anim
 activeAnim { resList } =
-    List.head resList |> Maybe.andThen .anim
+    case List.head resList of
+        Just res ->
+            res.anim
+
+        Nothing ->
+            NullAnim
 
 
 activeStackCard : Resolvable.Model -> Maybe StackCard
@@ -53,7 +58,7 @@ tick dt model =
         }
 
 
-tickEnd : Float -> Maybe Anim -> Bool
+tickEnd : Float -> Anim -> Bool
 tickEnd tick anim =
     tick > Animation.animMaxTick anim
 

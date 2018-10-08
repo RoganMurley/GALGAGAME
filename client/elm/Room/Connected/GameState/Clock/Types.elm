@@ -30,7 +30,7 @@ type alias Context =
     , radius : Float
     , tick : Float
     , progress : Float
-    , anim : Maybe Anim
+    , anim : Anim
     , model : Model.Model
     , stackCard : Maybe StackCard
     , textures : Texture.Model

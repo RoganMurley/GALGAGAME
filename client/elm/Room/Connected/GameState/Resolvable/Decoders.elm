@@ -11,5 +11,5 @@ resolveDiffDataDecoder : Decoder ResolveDiffData
 resolveDiffDataDecoder =
     Json.map3 (\d a s -> { diff = d, anim = a, stackCard = s })
         (index 0 Model.Diff.decoder)
-        (index 1 <| maybe Animation.decoder)
+        (index 1 Animation.decoder)
         (index 2 <| maybe Stack.stackCardDecoder)

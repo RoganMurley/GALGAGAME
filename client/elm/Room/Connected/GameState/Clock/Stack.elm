@@ -15,13 +15,13 @@ view entities ctx =
 
         makeEntity i =
             case ctx.anim of
-                Just (Obliterate _) ->
+                Obliterate _ ->
                     if i == n then
                         cardEntity ctx
                     else
                         dissolvingCardEntity ctx
 
-                Just (Reflect _) ->
+                Reflect _ ->
                     if i == n then
                         cardEntity ctx
                     else
@@ -43,7 +43,7 @@ view entities ctx =
                                     cb
                                     entity
 
-                Just (Transmute _ ca cb) ->
+                Transmute _ ca cb ->
                     if i == 0 then
                         transmutingCardEntity ctx ca cb
                     else

@@ -15,7 +15,7 @@ view ({ w, h, radius, anim } as ctx) =
     let
         progress =
             case anim of
-                Just (Heal _) ->
+                Heal _ ->
                     1 - ctx.progress
 
                 _ ->
@@ -25,7 +25,7 @@ view ({ w, h, radius, anim } as ctx) =
             interpFloat progress 0 (3 * radius)
     in
         case anim of
-            Just (Slash _ _) ->
+            Slash _ _ ->
                 [ Primitives.circle
                     { rotation = makeRotate 0 (vec3 0 0 1)
                     , scale = makeScale3 scale scale 1
@@ -37,7 +37,7 @@ view ({ w, h, radius, anim } as ctx) =
                     }
                 ]
 
-            Just (Bite _ _) ->
+            Bite _ _ ->
                 [ Primitives.circle
                     { rotation = makeRotate 0 (vec3 0 0 1)
                     , scale = makeScale3 scale scale 1
@@ -49,7 +49,7 @@ view ({ w, h, radius, anim } as ctx) =
                     }
                 ]
 
-            Just (Heal _) ->
+            Heal _ ->
                 [ Primitives.circle
                     { rotation = makeRotate 0 (vec3 0 0 1)
                     , scale = makeScale3 scale scale 1

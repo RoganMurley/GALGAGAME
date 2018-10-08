@@ -108,10 +108,10 @@ calcStackEntities ctx =
 
         rotationProgress =
             case anim of
-                Just (Rotate _) ->
+                Rotate _ ->
                     progress
 
-                Just (Windup _) ->
+                Windup _ ->
                     1 - progress
 
                 _ ->
@@ -120,10 +120,10 @@ calcStackEntities ctx =
         stack : Stack
         stack =
             case anim of
-                Just (Play _ _ _) ->
+                Play _ _ _ ->
                     List.drop 1 finalStack
 
-                Just (Rotate _) ->
+                Rotate _ ->
                     case stackCard of
                         Just c ->
                             c :: finalStack
@@ -143,7 +143,7 @@ calcStackEntities ctx =
 
         extraEntities =
             case anim of
-                Just (Rotate _) ->
+                Rotate _ ->
                     []
 
                 _ ->
@@ -244,7 +244,7 @@ calcHandEntities ({ w, h, radius, anim, model, progress } as ctx) =
 
         ( hand, drawingCard ) =
             case anim of
-                Just (Draw PlayerA) ->
+                Draw PlayerA ->
                     ( List.take (List.length finalHand - 1) finalHand
                     , List.head <| List.reverse finalHand
                     )
@@ -255,7 +255,7 @@ calcHandEntities ({ w, h, radius, anim, model, progress } as ctx) =
         indexModifier : Int -> Int
         indexModifier =
             case anim of
-                Just (Play PlayerA _ index) ->
+                Play PlayerA _ index ->
                     \i ->
                         if i >= index then
                             i + 1
@@ -302,7 +302,7 @@ calcHandEntities ({ w, h, radius, anim, model, progress } as ctx) =
         extraEntities : List (CardEntity { index : Int })
         extraEntities =
             case anim of
-                Just (Draw PlayerA) ->
+                Draw PlayerA ->
                     case drawingCard of
                         Just card ->
                             let
@@ -326,7 +326,7 @@ calcHandEntities ({ w, h, radius, anim, model, progress } as ctx) =
                         Nothing ->
                             []
 
-                Just (Play PlayerA card i) ->
+                Play PlayerA card i ->
                     let
                         pos =
                             interp2D progress
@@ -362,7 +362,7 @@ calcOtherHandEntities ({ w, h, radius, anim, model, progress } as ctx) =
 
         n =
             case anim of
-                Just (Draw PlayerB) ->
+                Draw PlayerB ->
                     finalN - 1
 
                 _ ->
@@ -371,7 +371,7 @@ calcOtherHandEntities ({ w, h, radius, anim, model, progress } as ctx) =
         indexModifier : Int -> Int
         indexModifier =
             case anim of
-                Just (Play PlayerB _ index) ->
+                Play PlayerB _ index ->
                     \i ->
                         if i >= index then
                             i + 1
@@ -405,7 +405,7 @@ calcOtherHandEntities ({ w, h, radius, anim, model, progress } as ctx) =
         extraEntities : List (GameEntity {})
         extraEntities =
             case anim of
-                Just (Draw PlayerB) ->
+                Draw PlayerB ->
                     [ { position =
                             interp2D progress
                                 (vec2 w 0)
@@ -416,7 +416,7 @@ calcOtherHandEntities ({ w, h, radius, anim, model, progress } as ctx) =
                       }
                     ]
 
-                Just (Play PlayerB _ i) ->
+                Play PlayerB _ i ->
                     [ { position =
                             interp2D progress
                                 (handCardPosition ctx PlayerB i n)

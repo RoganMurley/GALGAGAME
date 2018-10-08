@@ -6,7 +6,8 @@ import WhichPlayer.Types exposing (WhichPlayer)
 
 
 type Anim
-    = Slash WhichPlayer Int
+    = NullAnim
+    | Slash WhichPlayer Int
     | Heal WhichPlayer
     | Draw WhichPlayer
     | Bite WhichPlayer Int
