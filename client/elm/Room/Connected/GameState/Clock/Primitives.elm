@@ -24,14 +24,14 @@ quad fragment =
         Clock.Meshes.quad
 
 
-circle : Uniforms u -> Entity
+circle : Uniforms {} -> Entity
 circle =
     entity
         circleFragment
         Clock.Meshes.quad
 
 
-fullCircle : Uniforms u -> Entity
+fullCircle : Uniforms {} -> Entity
 fullCircle =
     entity
         fullCircleFragment
@@ -75,37 +75,6 @@ fullCircleFragment =
             float dist = dot(2. * vcoord - 1., 2. * vcoord - 1.);
             float intensity = step(dist, radius);
             gl_FragColor = vec4(color, intensity);
-        }
-
-    |]
-
-
-gear : Uniforms u -> Entity
-gear =
-    entity
-        gearFragment
-        Clock.Meshes.quad
-
-
-gearFragment : Shader {} (Uniforms u) { vcoord : Vec2 }
-gearFragment =
-    [glsl|
-        precision mediump float;
-
-        uniform vec2 resolution;
-
-        varying vec2 vcoord;
-
-        void main ()
-        {
-            vec2 pos = vec2(.5) - vcoord;
-
-            float r = length(pos) * 1.5;
-            float a = atan(pos.y, pos.x);
-
-            float f = smoothstep(-.5, 1., cos(a * 10.)) * .2 + .5;
-
-            gl_FragColor = vec4(1. - smoothstep(f, f + .05, r));
         }
 
     |]

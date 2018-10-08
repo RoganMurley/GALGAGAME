@@ -1,34 +1,16 @@
-module Clock.Uniforms exposing (Uniforms, uniforms)
+module Clock.Uniforms exposing (Uniforms)
 
-import Math.Matrix4 exposing (Mat4, makeLookAt, makeOrtho, makeRotate)
-import Math.Vector2 exposing (Vec2, vec2)
-import Math.Vector3 exposing (Vec3, vec3)
-import Render exposing (Width, Height)
-import WebGL exposing (Texture)
+import Math.Matrix4 exposing (Mat4)
+import Math.Vector3 exposing (Vec3)
 
 
 type alias Uniforms a =
     { a
-        | resolution : Vec2
-        , rotation : Mat4
+        | rotation : Mat4
         , scale : Mat4
         , color : Vec3
         , worldPos : Vec3
         , worldRot : Mat4
         , perspective : Mat4
         , camera : Mat4
-    }
-
-
-uniforms : ( Width, Height ) -> Texture -> Vec3 -> Mat4 -> Mat4 -> Vec3 -> Uniforms { texture : Texture }
-uniforms ( width, height ) texture pos rot scale color =
-    { resolution = vec2 (toFloat width) (toFloat height)
-    , texture = texture
-    , rotation = rot
-    , scale = scale
-    , color = color
-    , worldPos = pos
-    , worldRot = makeRotate 0 (vec3 0 0 1)
-    , perspective = makeOrtho 0 (toFloat width / 2) (toFloat height / 2) 0 0.01 1000
-    , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
     }

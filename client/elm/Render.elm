@@ -1,20 +1,8 @@
-module Render exposing (..)
-
-
-type alias Time =
-    Float
-
-
-type alias Width =
-    Int
-
-
-type alias Height =
-    Int
+module Render exposing (Params)
 
 
 type alias Params =
-    { time : Time
-    , w : Width
-    , h : Height
+    { time : Float
+    , w : Int
+    , h : Int
     }

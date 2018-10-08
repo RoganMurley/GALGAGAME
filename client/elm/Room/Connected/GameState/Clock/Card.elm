@@ -3,11 +3,10 @@ module Clock.Card exposing (..)
 import Card.Types exposing (Card)
 import Clock.Primitives
 import Clock.Shaders
-import Clock.Uniforms exposing (uniforms)
 import Clock.Types exposing (Context, GameEntity)
+import Colour
 import Math.Matrix4 exposing (makeLookAt, makeOrtho, makeRotate, makeScale3)
-import Math.Vector2 exposing (vec2)
-import Math.Vector3 exposing (Vec3, vec3)
+import Math.Vector3 exposing (vec3)
 import Stack.Types exposing (StackCard)
 import Texture.State as Texture
 import Texture.Types as Texture
@@ -38,16 +37,12 @@ cardEntity { w, h, radius, textures } { position, rotation, scale, card, owner }
             to3d position
 
         col =
-            colour owner
-
-        mTexture =
-            cardTexture textures card
+            Colour.card owner
     in
-        case mTexture of
+        case cardTexture textures card of
             Just texture ->
                 [ Clock.Primitives.roundedBox
-                    { resolution = vec2 w h
-                    , rotation = rot
+                    { rotation = rot
                     , scale = makeScale3 (scale * 0.7 * width) (scale * height) 1
                     , color = col
                     , worldPos = pos
@@ -56,13 +51,15 @@ cardEntity { w, h, radius, textures } { position, rotation, scale, card, owner }
                     , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
                     }
                 , Clock.Primitives.quad Clock.Shaders.fragment <|
-                    uniforms
-                        ( floor w, floor h )
-                        texture
-                        pos
-                        rot
-                        (makeScale3 (scale * 0.6 * width) (scale * 0.6 * height) 1)
-                        col
+                    { rotation = rot
+                    , scale = makeScale3 (scale * 0.6 * width) (scale * 0.6 * height) 1
+                    , color = col
+                    , worldPos = pos
+                    , worldRot = makeRotate 0 <| vec3 0 0 1
+                    , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
+                    , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
+                    , texture = texture
+                    }
                 ]
 
             Nothing ->
@@ -76,10 +73,9 @@ cardBackEntity { w, h, radius } { position, rotation, scale } =
             ( 0.1 * radius, 0.1 * radius )
     in
         Clock.Primitives.roundedBox <|
-            { resolution = vec2 w h
-            , rotation = makeRotate rotation <| vec3 0 0 1
+            { rotation = makeRotate rotation <| vec3 0 0 1
             , scale = makeScale3 (scale * 0.7 * width) (scale * height) 1
-            , color = colour PlayerB
+            , color = Colour.card PlayerB
             , worldPos = to3d position
             , worldRot = makeRotate 0 <| vec3 0 0 1
             , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
@@ -103,7 +99,7 @@ dissolvingCardEntity ctx { position, rotation, scale, card, owner } =
             to3d position
 
         col =
-            colour owner
+            Colour.card owner
 
         mTexture =
             cardTexture textures card
@@ -114,8 +110,7 @@ dissolvingCardEntity ctx { position, rotation, scale, card, owner } =
         case ( mTexture, mNoise ) of
             ( Just texture, Just noise ) ->
                 [ Clock.Primitives.roundedBoxDisintegrate <|
-                    { resolution = vec2 w h
-                    , texture = noise
+                    { texture = noise
                     , rotation = rot
                     , scale = makeScale3 (scale * 0.7 * width) (scale * height) 1
                     , color = col
@@ -126,8 +121,7 @@ dissolvingCardEntity ctx { position, rotation, scale, card, owner } =
                     , time = progress
                     }
                 , Clock.Primitives.quad Clock.Shaders.disintegrate <|
-                    { resolution = vec2 w h
-                    , texture = texture
+                    { texture = texture
                     , noise = noise
                     , rotation = rot
                     , scale = makeScale3 (scale * 0.6 * width) (scale * 0.6 * height) 1
@@ -160,7 +154,7 @@ transmutingCardEntity ctx stackCard finalStackCard { position, rotation, scale }
             to3d position
 
         col =
-            colour stackCard.owner
+            Colour.card stackCard.owner
 
         mTexture =
             cardTexture textures stackCard.card
@@ -171,11 +165,10 @@ transmutingCardEntity ctx stackCard finalStackCard { position, rotation, scale }
         case ( mTexture, mFinalTexture ) of
             ( Just texture, Just finalTexture ) ->
                 [ Clock.Primitives.roundedBoxTransmute <|
-                    { resolution = vec2 w h
-                    , rotation = rot
+                    { rotation = rot
                     , scale = makeScale3 (scale * 0.7 * width) (scale * height) 1
                     , color = col
-                    , finalColor = colour finalStackCard.owner
+                    , finalColor = Colour.card finalStackCard.owner
                     , worldPos = pos
                     , worldRot = makeRotate 0 (vec3 0 0 1)
                     , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
@@ -183,8 +176,7 @@ transmutingCardEntity ctx stackCard finalStackCard { position, rotation, scale }
                     , time = progress
                     }
                 , Clock.Primitives.quad Clock.Shaders.fragmentTransmute <|
-                    { resolution = vec2 w h
-                    , texture = texture
+                    { texture = texture
                     , finalTexture = finalTexture
                     , rotation = rot
                     , scale = makeScale3 (scale * 0.6 * width) (scale * 0.6 * height) 1
@@ -204,13 +196,3 @@ transmutingCardEntity ctx stackCard finalStackCard { position, rotation, scale }
 cardTexture : Texture.Model -> Card -> Maybe Texture
 cardTexture textures { imgURL } =
     Texture.load textures imgURL
-
-
-colour : WhichPlayer -> Vec3
-colour which =
-    case which of
-        PlayerA ->
-            vec3 0.52 0.1 0.2
-
-        PlayerB ->
-            vec3 0.18 0.49 0.62
