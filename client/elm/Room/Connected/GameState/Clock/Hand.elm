@@ -90,8 +90,8 @@ position ctx which index count =
                 vec3 0 y 0
 
 
-handView : Context -> List (CardEntity { index : Int }) -> List WebGL.Entity
-handView ctx handEntities =
+handView : List (CardEntity { index : Int }) -> Context -> List WebGL.Entity
+handView handEntities ctx =
     let
         mainView : List WebGL.Entity
         mainView =
@@ -107,8 +107,8 @@ handView ctx handEntities =
         mainView ++ extraView
 
 
-otherHandView : Context -> List (GameEntity {}) -> List WebGL.Entity
-otherHandView ctx otherHandEntities =
+otherHandView : List (GameEntity {}) -> Context -> List WebGL.Entity
+otherHandView otherHandEntities ctx =
     let
         mainView : List WebGL.Entity
         mainView =

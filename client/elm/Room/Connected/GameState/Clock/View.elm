@@ -34,9 +34,6 @@ import WhichPlayer.Types exposing (WhichPlayer(..))
 view : Params -> Model -> Texture.Model -> Html Main.Msg
 view { w, h } { res, focus, entities } textures =
     let
-        mTexture =
-            Texture.load textures "striker/dagger.svg"
-
         ctx =
             contextInit ( w, h ) res textures
 
@@ -49,43 +46,16 @@ view { w, h } { res, focus, entities } textures =
                 , height h
                 , class "webgl-canvas"
                 ]
-                (case mTexture of
-                    Just texture ->
-                        List.concat
-                            -- flatten this
-                            [ Clock.Stack.view ctx entities.stack
-                            , focusImageView ctx focus
-                            , [ Primitives.circle <|
-                                    uniforms ( w, h )
-                                        texture
-                                        (vec3 (toFloat w / 2) (toFloat h / 2) 0)
-                                        (makeScale3 (0.8 * radius) (0.8 * radius) 1)
-                                        (makeRotate 0 <| vec3 0 0 1)
-                                        (vec3 1 1 1)
-                              ]
-                            , [ Primitives.circle <|
-                                    uniforms ( w, h )
-                                        texture
-                                        (vec3 (toFloat w / 2) (toFloat h / 2) 0)
-                                        (makeScale3 (0.52 * radius) (0.52 * radius) 1)
-                                        (makeRotate 0 <| vec3 0 0 1)
-                                        (vec3 1 1 1)
-                              , Primitives.circle <|
-                                    uniforms ( w, h )
-                                        texture
-                                        (vec3 (toFloat w / 2) ((toFloat h / 2) - (0.615 * radius)) 0)
-                                        (makeScale3 (0.13 * radius) (0.13 * radius) 1)
-                                        (makeRotate 0 <| vec3 0 0 1)
-                                        (vec3 1 1 1)
-                              ]
-                            , handView ctx entities.hand
-                            , otherHandView ctx entities.otherHand
-                            , Clock.Wave.view ctx
-                            , lifeOrbView ctx
-                            ]
-
-                    Nothing ->
-                        []
+                (List.concat <|
+                    List.map ((|>) ctx)
+                        [ Clock.Stack.view entities.stack
+                        , focusImageView focus
+                        , circlesView
+                        , handView entities.hand
+                        , otherHandView entities.otherHand
+                        , Clock.Wave.view
+                        , lifeOrbView
+                        ]
                 )
             , div [ class "text-focus" ]
                 [ focusTextView ctx focus
@@ -116,8 +86,37 @@ view { w, h } { res, focus, entities } textures =
             ]
 
 
-focusImageView : Context -> Maybe StackCard -> List WebGL.Entity
-focusImageView { w, h, radius, textures } focus =
+circlesView : Context -> List WebGL.Entity
+circlesView { w, h, radius, textures } =
+    case Texture.load textures "noise" of
+        Just texture ->
+            List.map Primitives.circle
+                [ uniforms ( floor w, floor h )
+                    texture
+                    (vec3 (w / 2) (h / 2) 0)
+                    (makeScale3 (0.8 * radius) (0.8 * radius) 1)
+                    (makeRotate 0 <| vec3 0 0 1)
+                    (vec3 1 1 1)
+                , uniforms ( floor w, floor h )
+                    texture
+                    (vec3 (w / 2) (h / 2) 0)
+                    (makeScale3 (0.52 * radius) (0.52 * radius) 1)
+                    (makeRotate 0 <| vec3 0 0 1)
+                    (vec3 1 1 1)
+                , uniforms ( floor w, floor h )
+                    texture
+                    (vec3 (w / 2) ((h / 2) - (0.615 * radius)) 0)
+                    (makeScale3 (0.13 * radius) (0.13 * radius) 1)
+                    (makeRotate 0 <| vec3 0 0 1)
+                    (vec3 1 1 1)
+                ]
+
+        Nothing ->
+            []
+
+
+focusImageView : Maybe StackCard -> Context -> List WebGL.Entity
+focusImageView focus { w, h, radius, textures } =
     let
         mTexture =
             Maybe.join <| Maybe.map (cardTexture textures << .card) focus
