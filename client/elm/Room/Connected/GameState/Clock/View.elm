@@ -6,7 +6,8 @@ import Clock.Hand exposing (handView, otherHandView)
 import Clock.Primitives as Primitives
 import Clock.Shaders
 import Clock.Stack
-import Clock.Types exposing (ClockParams, Model)
+import Clock.State exposing (contextInit)
+import Clock.Types exposing (Model, Context)
 import Clock.Uniforms exposing (uniforms)
 import Clock.Wave
 import Connected.Messages as Connected
@@ -21,7 +22,6 @@ import Math.Vector3 exposing (vec3)
 import Maybe.Extra as Maybe
 import Model.Types exposing (Life)
 import Render exposing (Params)
-import Resolvable.State exposing (activeAnim, activeModel)
 import Room.Messages as Room
 import Stack.Types exposing (StackCard)
 import Texture.State as Texture
@@ -37,33 +37,11 @@ view { w, h } { res, focus, entities } textures =
         mTexture =
             Texture.load textures "striker/dagger.svg"
 
-        locals =
-            uniforms ( w, h )
+        ctx =
+            contextInit ( w, h ) res textures
 
-        radius =
-            if h < w then
-                0.8 * (toFloat h / 2)
-            else
-                1.2 * (toFloat w / 2)
-
-        anim =
-            activeAnim res
-
-        model =
-            activeModel res
-
-        z =
-            0
-
-        params : ClockParams
-        params =
-            { w = toFloat w
-            , h = toFloat h
-            , radius = radius
-            }
-
-        resInfo =
-            Just ( res.tick, anim )
+        { radius } =
+            ctx
     in
         div [ class "clock" ]
             [ WebGL.toHtml
@@ -74,39 +52,43 @@ view { w, h } { res, focus, entities } textures =
                 (case mTexture of
                     Just texture ->
                         List.concat
-                            [ Clock.Stack.view params entities.stack resInfo textures
-                            , focusImageView params textures focus
+                            -- flatten this
+                            [ Clock.Stack.view ctx entities.stack
+                            , focusImageView ctx focus
                             , [ Primitives.circle <|
-                                    locals texture
-                                        (vec3 (toFloat w / 2) (toFloat h / 2) z)
+                                    uniforms ( w, h )
+                                        texture
+                                        (vec3 (toFloat w / 2) (toFloat h / 2) 0)
                                         (makeScale3 (0.8 * radius) (0.8 * radius) 1)
                                         (makeRotate 0 <| vec3 0 0 1)
                                         (vec3 1 1 1)
                               ]
                             , [ Primitives.circle <|
-                                    locals texture
-                                        (vec3 (toFloat w / 2) (toFloat h / 2) z)
+                                    uniforms ( w, h )
+                                        texture
+                                        (vec3 (toFloat w / 2) (toFloat h / 2) 0)
                                         (makeScale3 (0.52 * radius) (0.52 * radius) 1)
                                         (makeRotate 0 <| vec3 0 0 1)
                                         (vec3 1 1 1)
                               , Primitives.circle <|
-                                    locals texture
-                                        (vec3 (toFloat w / 2) ((toFloat h / 2) - (0.615 * radius)) z)
+                                    uniforms ( w, h )
+                                        texture
+                                        (vec3 (toFloat w / 2) ((toFloat h / 2) - (0.615 * radius)) 0)
                                         (makeScale3 (0.13 * radius) (0.13 * radius) 1)
                                         (makeRotate 0 <| vec3 0 0 1)
                                         (vec3 1 1 1)
                               ]
-                            , handView params entities.hand resInfo textures
-                            , otherHandView params entities.otherHand resInfo textures
-                            , Clock.Wave.view params resInfo texture
-                            , lifeOrbView params textures model.life model.otherLife
+                            , handView ctx entities.hand
+                            , otherHandView ctx entities.otherHand
+                            , Clock.Wave.view ctx
+                            , lifeOrbView ctx
                             ]
 
                     Nothing ->
                         []
                 )
             , div [ class "text-focus" ]
-                [ focusTextView params focus
+                [ focusTextView ctx focus
                 ]
             , div [ class "clock-life-container" ]
                 [ div
@@ -117,7 +99,7 @@ view { w, h } { res, focus, entities } textures =
                         , ( "font-size", 0.18 * radius |> px )
                         ]
                     ]
-                    [ lifeTextView model.life ]
+                    [ lifeTextView ctx.model.life ]
                 , div
                     [ class "clock-life other"
                     , style
@@ -126,20 +108,16 @@ view { w, h } { res, focus, entities } textures =
                         , ( "font-size", 0.18 * radius |> px )
                         ]
                     ]
-                    [ lifeTextView model.otherLife ]
+                    [ lifeTextView ctx.model.otherLife ]
                 ]
             , div [ class "clock-go" ]
-                [ turnView
-                    anim
-                    focus
-                    (List.length model.hand == maxHandLength)
-                    model.turn
+                [ turnView ctx focus
                 ]
             ]
 
 
-focusImageView : ClockParams -> Texture.Model -> Maybe StackCard -> List WebGL.Entity
-focusImageView { w, h, radius } textures focus =
+focusImageView : Context -> Maybe StackCard -> List WebGL.Entity
+focusImageView { w, h, radius, textures } focus =
     let
         mTexture =
             Maybe.join <| Maybe.map (cardTexture textures << .card) focus
@@ -178,9 +156,12 @@ focusImageView { w, h, radius } textures focus =
                 []
 
 
-lifeOrbView : ClockParams -> Texture.Model -> Life -> Life -> List WebGL.Entity
-lifeOrbView { w, h, radius } textures life otherLife =
+lifeOrbView : Context -> List WebGL.Entity
+lifeOrbView { w, h, radius, textures, model } =
     let
+        { life, otherLife } =
+            model
+
         mTexture =
             Texture.load textures "striker/dagger.svg"
 
@@ -238,9 +219,9 @@ lifeOrbView { w, h, radius } textures life otherLife =
                 []
 
 
-focusTextView : ClockParams -> Maybe StackCard -> Html a
-focusTextView { radius } stackCard =
-    case stackCard of
+focusTextView : Context -> Maybe StackCard -> Html a
+focusTextView { radius } focus =
+    case focus of
         Nothing ->
             text ""
 
@@ -260,30 +241,34 @@ lifeTextView life =
     text <| toString life
 
 
-turnView : Maybe Anim -> Maybe StackCard -> Bool -> WhichPlayer -> Html Main.Msg
-turnView anim focus handFull turn =
-    case ( anim, focus ) of
-        ( Just (Overdraw _ _), _ ) ->
-            div [] []
+turnView : Context -> Maybe StackCard -> Html Main.Msg
+turnView { anim, model } focus =
+    let
+        handFull =
+            List.length model.hand == maxHandLength
+    in
+        case ( anim, focus ) of
+            ( Just (Overdraw _ _), _ ) ->
+                div [] []
 
-        ( Nothing, Nothing ) ->
-            case turn of
-                PlayerA ->
-                    button
-                        [ class "clock-turn"
-                        , disabled handFull
-                        , onClick <|
-                            Main.RoomMsg <|
-                                Room.ConnectedMsg <|
-                                    Connected.GameStateMsg <|
-                                        GameState.PlayingOnly <|
-                                            GameState.TurnOnly <|
-                                                GameState.EndTurn
-                        ]
-                        [ text "Go" ]
+            ( Nothing, Nothing ) ->
+                case model.turn of
+                    PlayerA ->
+                        button
+                            [ class "clock-turn"
+                            , disabled handFull
+                            , onClick <|
+                                Main.RoomMsg <|
+                                    Room.ConnectedMsg <|
+                                        Connected.GameStateMsg <|
+                                            GameState.PlayingOnly <|
+                                                GameState.TurnOnly <|
+                                                    GameState.EndTurn
+                            ]
+                            [ text "Go" ]
 
-                PlayerB ->
-                    div [ class "turn-status" ] [ text "Opponent's turn" ]
+                    PlayerB ->
+                        div [ class "turn-status" ] [ text "Opponent's turn" ]
 
-        _ ->
-            div [] []
+            _ ->
+                div [] []

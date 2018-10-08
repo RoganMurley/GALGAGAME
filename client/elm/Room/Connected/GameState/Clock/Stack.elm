@@ -1,43 +1,29 @@
 module Clock.Stack exposing (..)
 
-import Animation.State as Animation
 import Animation.Types exposing (Anim(..))
 import Clock.Card exposing (CardEntity, cardEntity, dissolvingCardEntity, transmutingCardEntity)
-import Clock.Types exposing (ClockParams)
-import Maybe.Extra as Maybe
-import Texture.Types as Texture
+import Clock.Types exposing (Context)
 import WebGL
 import WhichPlayer.State exposing (other)
 
 
-view : ClockParams -> List (CardEntity {}) -> Maybe ( Float, Maybe Anim ) -> Texture.Model -> List WebGL.Entity
-view params entities resInfo textures =
+view : Context -> List (CardEntity {}) -> List WebGL.Entity
+view ctx entities =
     let
-        resTick =
-            Maybe.withDefault 0.0 <|
-                Maybe.map Tuple.first resInfo
-
-        anim =
-            Maybe.join <|
-                Maybe.map Tuple.second resInfo
-
-        progress =
-            Animation.progress anim resTick
-
         n =
             List.length entities - 1
 
         makeEntity i =
-            case anim of
+            case ctx.anim of
                 Just (Obliterate _) ->
                     if i == n then
-                        cardEntity params textures
+                        cardEntity ctx
                     else
-                        dissolvingCardEntity params textures progress
+                        dissolvingCardEntity ctx
 
                 Just (Reflect _) ->
                     if i == n then
-                        cardEntity params textures
+                        cardEntity ctx
                     else
                         \entity ->
                             let
@@ -52,20 +38,18 @@ view params entities resInfo textures =
                                     }
                             in
                                 transmutingCardEntity
-                                    params
-                                    textures
-                                    progress
+                                    ctx
                                     ca
                                     cb
                                     entity
 
                 Just (Transmute _ ca cb) ->
                     if i == 0 then
-                        transmutingCardEntity params textures progress ca cb
+                        transmutingCardEntity ctx ca cb
                     else
-                        cardEntity params textures
+                        cardEntity ctx
 
                 _ ->
-                    cardEntity params textures
+                    cardEntity ctx
     in
         List.concat <| List.indexedMap makeEntity entities

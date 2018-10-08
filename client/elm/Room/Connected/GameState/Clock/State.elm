@@ -4,8 +4,7 @@ import Animation.State as Animation
 import Animation.Types exposing (Anim(..))
 import Card.Types exposing (Card)
 import Clock.Card exposing (CardEntity)
-import Clock.Types exposing (ClockParams, GameEntity, Model)
-import Hand.Types exposing (Hand)
+import Clock.Types exposing (Context, GameEntity, Model)
 import List.Extra as List
 import Main.Types exposing (Flags)
 import Math.Vector2 exposing (Vec2, vec2)
@@ -13,6 +12,8 @@ import Maybe.Extra as Maybe
 import Resolvable.State as Resolvable exposing (activeAnim, activeModel, activeStackCard)
 import Resolvable.Types as Resolvable
 import Stack.Types exposing (Stack, StackCard)
+import Texture.State as Texture
+import Texture.Types as Texture
 import Util exposing (interpFloat, interp2D)
 import WhichPlayer.Types exposing (WhichPlayer(..))
 
@@ -26,57 +27,53 @@ clockInit res =
     }
 
 
-tick : Flags -> Model -> Float -> Model
-tick { dimensions } ({ res } as model) dt =
+contextInit : ( Int, Int ) -> Resolvable.Model -> Texture.Model -> Context
+contextInit ( width, height ) res textures =
     let
-        resModel =
-            activeModel res
+        w =
+            toFloat width
 
-        stackCard =
-            activeStackCard res
-
-        ( w, h ) =
-            dimensions
+        h =
+            toFloat height
 
         radius =
             if h < w then
-                0.8 * (toFloat h / 2)
+                0.8 * h * 0.5
             else
-                1.2 * (toFloat w / 2)
+                1.2 * w * 0.5
 
-        resInfo =
-            Just ( res.tick, activeAnim res )
+        anim =
+            activeAnim res
+    in
+        { w = w
+        , h = h
+        , radius = radius
+        , anim = anim
+        , model = activeModel res
+        , stackCard = activeStackCard res
+        , tick = res.tick
+        , progress = Animation.progress anim res.tick
+        , textures = textures
+        }
 
-        params =
-            { w = toFloat w, h = toFloat h, radius = radius }
 
-        stackEntities =
-            calcStackEntities
-                params
-                resModel.stack
-                stackCard
-                resInfo
-
-        handEntities =
-            calcHandEntities
-                params
-                resModel.hand
-                resInfo
-
-        otherHandEntities =
-            calcOtherHandEntities
-                params
-                resModel.otherHand
-                resInfo
+tick : Flags -> Model -> Float -> Model
+tick { dimensions } model dt =
+    let
+        ctx =
+            contextInit dimensions model.res Texture.init
     in
         { model
-            | res = Resolvable.tick dt res
+            | res = Resolvable.tick dt model.res
             , entities =
-                { stack = stackEntities
-                , hand = handEntities
-                , otherHand = otherHandEntities
+                { stack =
+                    calcStackEntities ctx
+                , hand =
+                    calcHandEntities ctx
+                , otherHand =
+                    calcOtherHandEntities ctx
                 }
-            , focus = getFocus model
+            , focus = getFocus ctx model
         }
 
 
@@ -85,8 +82,8 @@ hitTest pos dist { position } =
     Math.Vector2.distance position pos < dist
 
 
-getFocus : Model -> Maybe StackCard
-getFocus { entities, mouse, res } =
+getFocus : Context -> Model -> Maybe StackCard
+getFocus { stackCard } { entities, mouse } =
     let
         hoverCard =
             Maybe.or
@@ -97,22 +94,17 @@ getFocus { entities, mouse, res } =
                     List.find (hitTest mouse 28) entities.hand
                 )
     in
-        Maybe.or (activeStackCard res) hoverCard
+        Maybe.or stackCard hoverCard
 
 
-calcStackEntities : ClockParams -> Stack -> Maybe StackCard -> Maybe ( Float, Maybe Anim ) -> List (CardEntity {})
-calcStackEntities { w, h, radius } finalStack stackCard resInfo =
+calcStackEntities : Context -> List (CardEntity {})
+calcStackEntities ctx =
     let
-        resTick =
-            Maybe.withDefault 0.0 <|
-                Maybe.map Tuple.first resInfo
+        { w, h, radius, anim, model, progress, stackCard } =
+            ctx
 
-        anim =
-            Maybe.join <|
-                Maybe.map Tuple.second resInfo
-
-        progress =
-            Animation.progress anim resTick
+        finalStack =
+            model.stack
 
         rotationProgress =
             case anim of
@@ -162,8 +154,7 @@ calcStackEntities { w, h, radius } finalStack stackCard resInfo =
                               , position =
                                     Math.Vector2.add
                                         (vec2 (w / 2) (h / 2))
-                                    <|
-                                        vec2 0 (-0.615 * radius)
+                                        (vec2 0 (-0.615 * radius))
                               , rotation = pi
                               , scale = 1.3
                               }
@@ -175,7 +166,7 @@ calcStackEntities { w, h, radius } finalStack stackCard resInfo =
         entities ++ extraEntities
 
 
-handOrigin : ClockParams -> WhichPlayer -> Int -> Vec2
+handOrigin : Context -> WhichPlayer -> Int -> Vec2
 handOrigin { w, h, radius } which count =
     let
         ( width, height, spacing ) =
@@ -209,8 +200,8 @@ handCardRotation which i count =
                 -magnitude
 
 
-handCardPosition : ClockParams -> WhichPlayer -> Int -> Int -> Vec2
-handCardPosition ({ radius } as params) which index count =
+handCardPosition : Context -> WhichPlayer -> Int -> Int -> Vec2
+handCardPosition ({ radius } as ctx) which index count =
     let
         ( width, _, spacing ) =
             ( 0.1 * radius, 0.1 * radius, 35.0 )
@@ -237,7 +228,7 @@ handCardPosition ({ radius } as params) which index count =
                 sign * (abs <| 4 * (toFloat <| ceiling (i - (c * 0.5))))
     in
         Math.Vector2.add
-            (handOrigin params which count)
+            (handOrigin ctx which count)
         <|
             Math.Vector2.add
                 (vec2 (toFloat index * (width + spacing)) 0)
@@ -245,16 +236,11 @@ handCardPosition ({ radius } as params) which index count =
                 vec2 0 y
 
 
-calcHandEntities : ClockParams -> Hand -> Maybe ( Float, Maybe Anim ) -> List (CardEntity { index : Int })
-calcHandEntities ({ w, h, radius } as params) finalHand resInfo =
+calcHandEntities : Context -> List (CardEntity { index : Int })
+calcHandEntities ({ w, h, radius, anim, model, progress } as ctx) =
     let
-        resTick =
-            Maybe.withDefault 0.0 <|
-                Maybe.map Tuple.first resInfo
-
-        anim =
-            Maybe.join <|
-                Maybe.map Tuple.second resInfo
+        finalHand =
+            model.hand
 
         ( hand, drawingCard ) =
             case anim of
@@ -285,12 +271,6 @@ calcHandEntities ({ w, h, radius } as params) finalHand resInfo =
         finalN =
             List.length finalHand
 
-        progress =
-            Animation.progress anim resTick
-
-        playProgress =
-            progress
-
         entity : ( Int, Card ) -> CardEntity { index : Int }
         entity ( finalI, card ) =
             let
@@ -299,8 +279,8 @@ calcHandEntities ({ w, h, radius } as params) finalHand resInfo =
 
                 pos =
                     interp2D progress
-                        (handCardPosition params PlayerA i n)
-                        (handCardPosition params PlayerA finalI finalN)
+                        (handCardPosition ctx PlayerA i n)
+                        (handCardPosition ctx PlayerA finalI finalN)
 
                 rot =
                     interpFloat progress
@@ -329,7 +309,7 @@ calcHandEntities ({ w, h, radius } as params) finalHand resInfo =
                                 pos =
                                     interp2D progress
                                         (vec2 w h)
-                                        (handCardPosition params PlayerA n (n + 1))
+                                        (handCardPosition ctx PlayerA n (n + 1))
 
                                 rot =
                                     interpFloat progress 0 (handCardRotation PlayerA n (n + 1))
@@ -349,15 +329,15 @@ calcHandEntities ({ w, h, radius } as params) finalHand resInfo =
                 Just (Play PlayerA card i) ->
                     let
                         pos =
-                            interp2D playProgress
-                                (handCardPosition params PlayerA i n)
+                            interp2D progress
+                                (handCardPosition ctx PlayerA i n)
                                 (vec2 (w / 2) (h / 2 - radius * 0.62))
 
                         rot =
-                            interpFloat playProgress (handCardRotation PlayerA i n) pi
+                            interpFloat progress (handCardRotation PlayerA i n) pi
 
                         scale =
-                            interpFloat playProgress 1 1.3
+                            interpFloat progress 1 1.3
                     in
                         [ { position = pos
                           , rotation = rot
@@ -374,16 +354,11 @@ calcHandEntities ({ w, h, radius } as params) finalHand resInfo =
         mainEntities ++ extraEntities
 
 
-calcOtherHandEntities : ClockParams -> Int -> Maybe ( Float, Maybe Anim ) -> List (GameEntity {})
-calcOtherHandEntities ({ w, h, radius } as params) finalN resInfo =
+calcOtherHandEntities : Context -> List (GameEntity {})
+calcOtherHandEntities ({ w, h, radius, anim, model, progress } as ctx) =
     let
-        resTick =
-            Maybe.withDefault 0.0 <|
-                Maybe.map Tuple.first resInfo
-
-        anim =
-            Maybe.join <|
-                Maybe.map Tuple.second resInfo
+        finalN =
+            model.otherHand
 
         n =
             case anim of
@@ -404,10 +379,7 @@ calcOtherHandEntities ({ w, h, radius } as params) finalN resInfo =
                             i
 
                 _ ->
-                    Basics.identity
-
-        progress =
-            Animation.progress anim resTick
+                    identity
 
         entity : Int -> GameEntity {}
         entity finalI =
@@ -417,8 +389,8 @@ calcOtherHandEntities ({ w, h, radius } as params) finalN resInfo =
             in
                 { position =
                     interp2D progress
-                        (handCardPosition params PlayerB i n)
-                        (handCardPosition params PlayerB finalI finalN)
+                        (handCardPosition ctx PlayerB i n)
+                        (handCardPosition ctx PlayerB finalI finalN)
                 , rotation =
                     interpFloat progress
                         (handCardRotation PlayerB i n)
@@ -437,7 +409,7 @@ calcOtherHandEntities ({ w, h, radius } as params) finalN resInfo =
                     [ { position =
                             interp2D progress
                                 (vec2 w 0)
-                                (handCardPosition params PlayerB n (n + 1))
+                                (handCardPosition ctx PlayerB n (n + 1))
                       , rotation =
                             interpFloat progress 0 (handCardRotation PlayerB n (n + 1))
                       , scale = 1
@@ -447,7 +419,7 @@ calcOtherHandEntities ({ w, h, radius } as params) finalN resInfo =
                 Just (Play PlayerB _ i) ->
                     [ { position =
                             interp2D progress
-                                (handCardPosition params PlayerB i n)
+                                (handCardPosition ctx PlayerB i n)
                                 (vec2 (w / 2) (h / 2 - radius * 0.62))
                       , rotation =
                             interpFloat progress (handCardRotation PlayerB i n) 0
