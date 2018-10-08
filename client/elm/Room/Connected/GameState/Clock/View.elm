@@ -215,7 +215,7 @@ lifeTextView { radius, model } =
             , ( "font-size", 0.18 * radius |> px )
             ]
         ]
-        [ text model.life ]
+        [ text <| toString model.life ]
     , div
         [ class "clock-life other"
         , style
@@ -224,7 +224,7 @@ lifeTextView { radius, model } =
             , ( "font-size", 0.18 * radius |> px )
             ]
         ]
-        [ text model.otherLife ]
+        [ text <| toString model.otherLife ]
     ]
 
 
