@@ -7,8 +7,8 @@ import WebGL
 import WhichPlayer.State exposing (other)
 
 
-view : Context -> List (CardEntity {}) -> List WebGL.Entity
-view ctx entities =
+view : List (CardEntity {}) -> Context -> List WebGL.Entity
+view entities ctx =
     let
         n =
             List.length entities - 1
