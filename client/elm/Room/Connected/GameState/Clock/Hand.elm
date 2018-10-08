@@ -2,7 +2,7 @@ module Clock.Hand exposing (..)
 
 import Animation.State as Animation
 import Animation.Types exposing (Anim(..))
-import Clock.Card exposing (CardEntity, cardEntity, cardBackEntity, colour, dissolvingCardEntity)
+import Clock.Card exposing (CardEntity, cardEntity, cardBackEntity, dissolvingCardEntity)
 import Clock.Types exposing (ClockParams, GameEntity)
 import Ease
 import Math.Vector2 exposing (vec2)
@@ -11,7 +11,7 @@ import Maybe.Extra as Maybe
 import Texture.Types as Texture
 import WebGL
 import WhichPlayer.Types exposing (WhichPlayer(..))
-import Util exposing (interpFloat, interp2D, to3d)
+import Util exposing (interpFloat, interp2D)
 
 
 cardDimensions : ClockParams -> { width : Float, height : Float, spacing : Float }
@@ -93,7 +93,7 @@ position params which index count =
 
 
 handView : ClockParams -> List (CardEntity { index : Int }) -> Maybe ( Float, Maybe Anim ) -> Texture.Model -> List WebGL.Entity
-handView ({ w, h } as params) handEntities resInfo textures =
+handView params handEntities resInfo textures =
     let
         resTick =
             Maybe.withDefault 0.0 <|
@@ -119,7 +119,7 @@ handView ({ w, h } as params) handEntities resInfo textures =
 
 
 otherHandView : ClockParams -> List (GameEntity {}) -> Maybe ( Float, Maybe Anim ) -> Texture.Model -> List WebGL.Entity
-otherHandView ({ w, h } as params) otherHandEntities resInfo textures =
+otherHandView params otherHandEntities resInfo textures =
     let
         resTick =
             Maybe.withDefault 0.0 <|
@@ -131,9 +131,6 @@ otherHandView ({ w, h } as params) otherHandEntities resInfo textures =
 
         progress =
             Animation.progress anim resTick
-
-        { width, height } =
-            cardDimensions params
 
         mainView : List WebGL.Entity
         mainView =
