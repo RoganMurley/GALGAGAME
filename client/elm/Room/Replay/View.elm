@@ -1,5 +1,6 @@
 module Replay.View exposing (view)
 
+import Animation.Types exposing (Anim(NullAnim))
 import Connected.View exposing (playersView)
 import Endgame.View as Endgame
 import GameState.Types exposing (GameState(Started))
@@ -27,5 +28,5 @@ view { replay } flags textures =
                     , div [] []
                     , div [] []
                     ]
-                , Endgame.view 0.0 Nothing Nothing
+                , Endgame.view 0.0 NullAnim Nothing
                 ]

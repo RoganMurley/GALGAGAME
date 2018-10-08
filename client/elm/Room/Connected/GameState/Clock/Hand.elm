@@ -126,7 +126,7 @@ otherHandView otherHandEntities ctx =
 overdrawView : Context -> List WebGL.Entity
 overdrawView ({ w, h, progress, tick, anim } as ctx) =
     case anim of
-        Just (Overdraw owner card) ->
+        Overdraw owner card ->
             let
                 sign =
                     case owner of

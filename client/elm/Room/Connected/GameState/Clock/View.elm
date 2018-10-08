@@ -163,8 +163,8 @@ lifeOrbView { w, h, radius, model } =
             { rotation = makeRotate 0 (vec3 0 0 1)
             , scale =
                 makeScale3
-                    (lifePercentage * 0.15 * radius)
-                    (lifePercentage * 0.15 * radius)
+                    (otherLifePercentage * 0.15 * radius)
+                    (otherLifePercentage * 0.15 * radius)
                     1
             , color = Colour.card PlayerB
             , worldPos = vec3 (w * 0.5 + 0.6 * radius) (h * 0.5 - 0.75 * radius) 0
@@ -231,10 +231,10 @@ turnView { anim, model } focus =
             List.length model.hand == maxHandLength
     in
         case ( anim, focus ) of
-            ( Just (Overdraw _ _), _ ) ->
+            ( Overdraw _ _, _ ) ->
                 div [] []
 
-            ( Nothing, Nothing ) ->
+            ( NullAnim, Nothing ) ->
                 case model.turn of
                     PlayerA ->
                         button

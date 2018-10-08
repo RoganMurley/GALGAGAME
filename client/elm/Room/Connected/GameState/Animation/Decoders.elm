@@ -23,6 +23,7 @@ decoder =
         , gameEndDecoder
         , rotateDecoder
         , windupDecoder
+        , nullDecoder
         ]
 
 
@@ -135,3 +136,8 @@ windupDecoder =
     Json.map2 (\w _ -> Windup w)
         (field "player" WhichPlayer.decoder)
         (field "anim" <| constDecoder "windup")
+
+
+nullDecoder : Decoder Anim
+nullDecoder =
+    Json.succeed NullAnim

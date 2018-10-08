@@ -1,7 +1,7 @@
 module GameState.View exposing (view)
 
 import Animation.State as Animation
-import Animation.Types exposing (Anim(GameEnd))
+import Animation.Types exposing (Anim(GameEnd, NullAnim))
 import Html exposing (Html, button, div, input, text)
 import Html.Attributes exposing (class, id, readonly, type_, value)
 import Html.Events exposing (onClick)
@@ -48,7 +48,7 @@ view state roomID { hostname, httpPort, time, dimensions } textures =
                     Playing clock ->
                         div []
                             [ Clock.view params clock textures
-                            , Endgame.view 0 Nothing Nothing
+                            , Endgame.view 0 NullAnim Nothing
                             ]
 
                     Ended winner clock mReplayId ->
@@ -66,7 +66,7 @@ view state roomID { hostname, httpPort, time, dimensions } textures =
                                 if resolving then
                                     ( anim, Animation.progress anim tick )
                                 else
-                                    ( Just <| GameEnd winner, 1.0 )
+                                    ( GameEnd winner, 1.0 )
                         in
                             div []
                                 [ Clock.view params clock textures
