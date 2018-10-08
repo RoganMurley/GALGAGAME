@@ -20,7 +20,6 @@ import Main.Messages as Main
 import Math.Matrix4 exposing (makeRotate, makeScale3)
 import Math.Vector3 exposing (vec3)
 import Maybe.Extra as Maybe
-import Model.Types exposing (Life)
 import Render exposing (Params)
 import Room.Messages as Room
 import Stack.Types exposing (StackCard)
@@ -36,9 +35,6 @@ view { w, h } { res, focus, entities } textures =
     let
         ctx =
             contextInit ( w, h ) res textures
-
-        { radius } =
-            ctx
     in
         div [ class "clock" ]
             [ WebGL.toHtml
@@ -57,32 +53,9 @@ view { w, h } { res, focus, entities } textures =
                         , lifeOrbView
                         ]
                 )
-            , div [ class "text-focus" ]
-                [ focusTextView ctx focus
-                ]
-            , div [ class "clock-life-container" ]
-                [ div
-                    [ class "clock-life"
-                    , style
-                        [ ( "right", 0.49 * radius |> px )
-                        , ( "top", 0.62 * radius |> px )
-                        , ( "font-size", 0.18 * radius |> px )
-                        ]
-                    ]
-                    [ lifeTextView ctx.model.life ]
-                , div
-                    [ class "clock-life other"
-                    , style
-                        [ ( "left", 0.5 * radius |> px )
-                        , ( "bottom", 0.62 * radius |> px )
-                        , ( "font-size", 0.18 * radius |> px )
-                        ]
-                    ]
-                    [ lifeTextView ctx.model.otherLife ]
-                ]
-            , div [ class "clock-go" ]
-                [ turnView ctx focus
-                ]
+            , div [ class "text-focus" ] [ focusTextView ctx focus ]
+            , div [ class "clock-life-container" ] (lifeTextView ctx)
+            , div [ class "clock-go" ] [ turnView ctx focus ]
             ]
 
 
@@ -158,17 +131,14 @@ focusImageView focus { w, h, radius, textures } =
 lifeOrbView : Context -> List WebGL.Entity
 lifeOrbView { w, h, radius, textures, model } =
     let
-        { life, otherLife } =
-            model
-
         mTexture =
             Texture.load textures "striker/dagger.svg"
 
         lifePercentage =
-            toFloat life / 50
+            toFloat model.life / 50
 
         otherLifePercentage =
-            toFloat otherLife / 50
+            toFloat model.otherLife / 50
     in
         case mTexture of
             Just texture ->
@@ -235,9 +205,27 @@ focusTextView { radius } focus =
                 ]
 
 
-lifeTextView : Life -> Html a
-lifeTextView life =
-    text <| toString life
+lifeTextView : Context -> List (Html a)
+lifeTextView { radius, model } =
+    [ div
+        [ class "clock-life"
+        , style
+            [ ( "right", 0.49 * radius |> px )
+            , ( "top", 0.62 * radius |> px )
+            , ( "font-size", 0.18 * radius |> px )
+            ]
+        ]
+        [ text model.life ]
+    , div
+        [ class "clock-life other"
+        , style
+            [ ( "left", 0.5 * radius |> px )
+            , ( "bottom", 0.62 * radius |> px )
+            , ( "font-size", 0.18 * radius |> px )
+            ]
+        ]
+        [ text model.otherLife ]
+    ]
 
 
 turnView : Context -> Maybe StackCard -> Html Main.Msg
