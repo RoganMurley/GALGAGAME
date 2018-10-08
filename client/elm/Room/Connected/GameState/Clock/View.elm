@@ -1,15 +1,15 @@
 module Clock.View exposing (view)
 
 import Animation.Types exposing (Anim(..))
-import Clock.Card exposing (cardTexture, colour)
+import Clock.Card exposing (cardTexture)
 import Clock.Hand exposing (handView, otherHandView)
 import Clock.Primitives as Primitives
 import Clock.Shaders
 import Clock.Stack
 import Clock.State exposing (contextInit)
 import Clock.Types exposing (Model, Context)
-import Clock.Uniforms exposing (uniforms)
 import Clock.Wave
+import Colour
 import Connected.Messages as Connected
 import GameState.Messages as GameState
 import Hand.State exposing (maxHandLength)
@@ -17,13 +17,12 @@ import Html exposing (Html, button, div, text)
 import Html.Attributes exposing (class, disabled, height, width, style)
 import Html.Events exposing (onClick)
 import Main.Messages as Main
-import Math.Matrix4 exposing (makeRotate, makeScale3)
+import Math.Matrix4 exposing (makeLookAt, makeOrtho, makeRotate, makeScale3)
 import Math.Vector3 exposing (vec3)
 import Maybe.Extra as Maybe
 import Render exposing (Params)
 import Room.Messages as Room
 import Stack.Types exposing (StackCard)
-import Texture.State as Texture
 import Texture.Types as Texture
 import Util exposing (px)
 import WebGL
@@ -60,132 +59,129 @@ view { w, h } { res, focus, entities } textures =
 
 
 circlesView : Context -> List WebGL.Entity
-circlesView { w, h, radius, textures } =
-    case Texture.load textures "noise" of
-        Just texture ->
-            List.map Primitives.circle
-                [ uniforms ( floor w, floor h )
-                    texture
-                    (vec3 (w / 2) (h / 2) 0)
-                    (makeScale3 (0.8 * radius) (0.8 * radius) 1)
-                    (makeRotate 0 <| vec3 0 0 1)
-                    (vec3 1 1 1)
-                , uniforms ( floor w, floor h )
-                    texture
-                    (vec3 (w / 2) (h / 2) 0)
-                    (makeScale3 (0.52 * radius) (0.52 * radius) 1)
-                    (makeRotate 0 <| vec3 0 0 1)
-                    (vec3 1 1 1)
-                , uniforms ( floor w, floor h )
-                    texture
-                    (vec3 (w / 2) ((h / 2) - (0.615 * radius)) 0)
-                    (makeScale3 (0.13 * radius) (0.13 * radius) 1)
-                    (makeRotate 0 <| vec3 0 0 1)
-                    (vec3 1 1 1)
-                ]
-
-        Nothing ->
-            []
+circlesView { w, h, radius } =
+    List.map Primitives.circle
+        [ { rotation = makeRotate 0 <| vec3 0 0 1
+          , scale = makeScale3 (0.8 * radius) (0.8 * radius) 1
+          , color = Colour.white
+          , worldPos = vec3 (w / 2) (h / 2) 0
+          , worldRot = makeRotate 0 <| vec3 0 0 1
+          , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
+          , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
+          }
+        , { rotation = makeRotate 0 <| vec3 0 0 1
+          , scale = makeScale3 (0.52 * radius) (0.52 * radius) 1
+          , color = Colour.white
+          , worldPos = vec3 (w / 2) (h / 2) 0
+          , worldRot = makeRotate 0 <| vec3 0 0 1
+          , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
+          , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
+          }
+        , { rotation = makeRotate 0 <| vec3 0 0 1
+          , scale = makeScale3 (0.13 * radius) (0.13 * radius) 1
+          , color = Colour.white
+          , worldPos = vec3 (w / 2) ((h / 2) - (0.617 * radius)) 0
+          , worldRot = makeRotate 0 <| vec3 0 0 1
+          , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
+          , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
+          }
+        ]
 
 
 focusImageView : Maybe StackCard -> Context -> List WebGL.Entity
 focusImageView focus { w, h, radius, textures } =
     let
-        mTexture =
-            Maybe.join <| Maybe.map (cardTexture textures << .card) focus
-    in
-        case mTexture of
-            Just texture ->
-                let
-                    background =
-                        case Maybe.map .owner focus of
-                            Just owner ->
-                                [ Primitives.fullCircle <|
-                                    uniforms
-                                        ( floor w, floor h )
-                                        texture
-                                        (vec3 (w * 0.5) (h * 0.5) 0)
-                                        (makeScale3 (0.52 * radius) (0.52 * radius) 1)
-                                        (makeRotate pi <| vec3 0 0 1)
-                                        (Math.Vector3.scale 0.5 <| colour owner)
-                                ]
+        background =
+            case Maybe.map .owner focus of
+                Just owner ->
+                    [ Primitives.fullCircle
+                        { rotation = makeRotate 0 (vec3 0 0 1)
+                        , scale = makeScale3 (0.52 * radius) (0.52 * radius) 1
+                        , color = Colour.focusBackground owner
+                        , worldPos = vec3 (w * 0.5) (h * 0.5) 0
+                        , worldRot = makeRotate 0 (vec3 0 0 1)
+                        , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
+                        , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
+                        }
+                    ]
 
-                            Nothing ->
-                                []
-                in
-                    background
-                        ++ [ Primitives.quad Clock.Shaders.fragment <|
-                                uniforms
-                                    ( floor w, floor h )
-                                    texture
-                                    (vec3 (w * 0.5) (h * 0.45) 0)
-                                    (makeScale3 (0.2 * radius) (0.2 * radius) 1)
-                                    (makeRotate pi <| vec3 0 0 1)
-                                    (vec3 1 1 1)
-                           ]
+                Nothing ->
+                    []
+    in
+        case Maybe.join <| Maybe.map (cardTexture textures << .card) focus of
+            Just texture ->
+                background
+                    ++ [ Primitives.quad Clock.Shaders.fragment
+                            { rotation = makeRotate pi (vec3 0 0 1)
+                            , scale = makeScale3 (0.2 * radius) (0.2 * radius) 1
+                            , color = Colour.white
+                            , worldPos = vec3 (w * 0.5) (h * 0.45) 0
+                            , worldRot = makeRotate 0 (vec3 0 0 1)
+                            , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
+                            , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
+                            , texture = texture
+                            }
+                       ]
 
             Nothing ->
                 []
 
 
 lifeOrbView : Context -> List WebGL.Entity
-lifeOrbView { w, h, radius, textures, model } =
+lifeOrbView { w, h, radius, model } =
     let
-        mTexture =
-            Texture.load textures "striker/dagger.svg"
-
         lifePercentage =
             toFloat model.life / 50
 
         otherLifePercentage =
             toFloat model.otherLife / 50
     in
-        case mTexture of
-            Just texture ->
-                [ Primitives.fullCircle <|
-                    uniforms
-                        ( floor w, floor h )
-                        texture
-                        (vec3 (w * 0.5 - 0.6 * radius) (h * 0.5 + 0.75 * radius) 0)
-                        (makeScale3
-                            (lifePercentage * 0.15 * radius)
-                            (lifePercentage * 0.15 * radius)
-                            1
-                        )
-                        (makeRotate pi <| vec3 0 0 1)
-                        (colour PlayerA)
-                , Primitives.circle <|
-                    uniforms
-                        ( floor w, floor h )
-                        texture
-                        (vec3 (w * 0.5 - 0.6 * radius) (h * 0.5 + 0.75 * radius) 0)
-                        (makeScale3 (0.15 * radius) (0.15 * radius) 1)
-                        (makeRotate pi <| vec3 0 0 1)
-                        (vec3 1 1 1)
-                , Primitives.fullCircle <|
-                    uniforms
-                        ( floor w, floor h )
-                        texture
-                        (vec3 (w * 0.5 + 0.6 * radius) (h * 0.5 - 0.75 * radius) 0)
-                        (makeScale3
-                            (otherLifePercentage * 0.15 * radius)
-                            (otherLifePercentage * 0.15 * radius)
-                            1
-                        )
-                        (makeRotate pi <| vec3 0 0 1)
-                        (colour PlayerB)
-                , Primitives.circle <|
-                    uniforms
-                        ( floor w, floor h )
-                        texture
-                        (vec3 (w * 0.5 + 0.6 * radius) (h * 0.5 - 0.75 * radius) 0)
-                        (makeScale3 (0.15 * radius) (0.15 * radius) 1)
-                        (makeRotate pi <| vec3 0 0 1)
-                        (vec3 1 1 1)
-                ]
-
-            Nothing ->
-                []
+        [ Primitives.fullCircle
+            { rotation = makeRotate 0 (vec3 0 0 1)
+            , scale =
+                makeScale3
+                    (lifePercentage * 0.15 * radius)
+                    (lifePercentage * 0.15 * radius)
+                    1
+            , color = Colour.card PlayerA
+            , worldPos = vec3 (w * 0.5 - 0.6 * radius) (h * 0.5 + 0.75 * radius) 0
+            , worldRot = makeRotate 0 (vec3 0 0 1)
+            , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
+            , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
+            }
+        , Primitives.circle
+            { rotation = makeRotate 0 (vec3 0 0 1)
+            , scale =
+                makeScale3 (0.15 * radius) (0.15 * radius) 1
+            , color = Colour.white
+            , worldPos = vec3 (w * 0.5 - 0.6 * radius) (h * 0.5 + 0.75 * radius) 0
+            , worldRot = makeRotate 0 (vec3 0 0 1)
+            , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
+            , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
+            }
+        , Primitives.fullCircle
+            { rotation = makeRotate 0 (vec3 0 0 1)
+            , scale =
+                makeScale3
+                    (lifePercentage * 0.15 * radius)
+                    (lifePercentage * 0.15 * radius)
+                    1
+            , color = Colour.card PlayerB
+            , worldPos = vec3 (w * 0.5 + 0.6 * radius) (h * 0.5 - 0.75 * radius) 0
+            , worldRot = makeRotate 0 (vec3 0 0 1)
+            , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
+            , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
+            }
+        , Primitives.circle
+            { rotation = makeRotate 0 (vec3 0 0 1)
+            , scale = makeScale3 (0.15 * radius) (0.15 * radius) 1
+            , color = Colour.white
+            , worldPos = vec3 (w * 0.5 + 0.6 * radius) (h * 0.5 - 0.75 * radius) 0
+            , worldRot = makeRotate 0 (vec3 0 0 1)
+            , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
+            , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
+            }
+        ]
 
 
 focusTextView : Context -> Maybe StackCard -> Html a
