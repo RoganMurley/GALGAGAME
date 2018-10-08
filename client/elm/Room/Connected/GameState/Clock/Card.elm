@@ -4,7 +4,7 @@ import Card.Types exposing (Card)
 import Clock.Primitives
 import Clock.Shaders
 import Clock.Uniforms exposing (uniforms)
-import Clock.Types exposing (ClockParams, GameEntity)
+import Clock.Types exposing (Context, GameEntity)
 import Math.Matrix4 exposing (makeLookAt, makeOrtho, makeRotate, makeScale3)
 import Math.Vector2 exposing (vec2)
 import Math.Vector3 exposing (Vec3, vec3)
@@ -25,8 +25,8 @@ type alias CardEntity a =
         }
 
 
-cardEntity : ClockParams -> Texture.Model -> CardEntity a -> List WebGL.Entity
-cardEntity { w, h, radius } textures { position, rotation, scale, card, owner } =
+cardEntity : Context -> CardEntity a -> List WebGL.Entity
+cardEntity { w, h, radius, textures } { position, rotation, scale, card, owner } =
     let
         ( width, height ) =
             ( 0.1 * radius, 0.1 * radius )
@@ -69,7 +69,7 @@ cardEntity { w, h, radius } textures { position, rotation, scale, card, owner } 
                 []
 
 
-cardBackEntity : ClockParams -> GameEntity {} -> WebGL.Entity
+cardBackEntity : Context -> GameEntity {} -> WebGL.Entity
 cardBackEntity { w, h, radius } { position, rotation, scale } =
     let
         ( width, height ) =
@@ -87,9 +87,12 @@ cardBackEntity { w, h, radius } { position, rotation, scale } =
             }
 
 
-dissolvingCardEntity : ClockParams -> Texture.Model -> Float -> CardEntity a -> List WebGL.Entity
-dissolvingCardEntity { w, h, radius } textures progress { position, rotation, scale, card, owner } =
+dissolvingCardEntity : Context -> CardEntity a -> List WebGL.Entity
+dissolvingCardEntity ctx { position, rotation, scale, card, owner } =
     let
+        { w, h, radius, progress, textures } =
+            ctx
+
         ( width, height ) =
             ( 0.1 * radius, 0.1 * radius )
 
@@ -141,9 +144,12 @@ dissolvingCardEntity { w, h, radius } textures progress { position, rotation, sc
                 []
 
 
-transmutingCardEntity : ClockParams -> Texture.Model -> Float -> StackCard -> StackCard -> CardEntity a -> List WebGL.Entity
-transmutingCardEntity { w, h, radius } textures progress stackCard finalStackCard { position, rotation, scale } =
+transmutingCardEntity : Context -> StackCard -> StackCard -> CardEntity a -> List WebGL.Entity
+transmutingCardEntity ctx stackCard finalStackCard { position, rotation, scale } =
     let
+        { w, h, radius, progress, textures } =
+            ctx
+
         ( width, height ) =
             ( 0.1 * radius, 0.1 * radius )
 

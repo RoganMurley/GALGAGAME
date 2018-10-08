@@ -3,18 +3,16 @@ module Clock.Hand exposing (..)
 import Animation.State as Animation
 import Animation.Types exposing (Anim(..))
 import Clock.Card exposing (CardEntity, cardEntity, cardBackEntity, dissolvingCardEntity)
-import Clock.Types exposing (ClockParams, GameEntity)
+import Clock.Types exposing (Context, GameEntity)
 import Ease
 import Math.Vector2 exposing (vec2)
 import Math.Vector3 exposing (Vec3, vec3)
-import Maybe.Extra as Maybe
-import Texture.Types as Texture
 import WebGL
 import WhichPlayer.Types exposing (WhichPlayer(..))
 import Util exposing (interpFloat, interp2D)
 
 
-cardDimensions : ClockParams -> { width : Float, height : Float, spacing : Float }
+cardDimensions : Context -> { width : Float, height : Float, spacing : Float }
 cardDimensions { radius } =
     { width = 0.1 * radius
     , height = 0.1 * radius
@@ -22,11 +20,11 @@ cardDimensions { radius } =
     }
 
 
-origin : ClockParams -> WhichPlayer -> Int -> Vec3
-origin ({ w, h } as params) which count =
+origin : Context -> WhichPlayer -> Int -> Vec3
+origin ({ w, h } as ctx) which count =
     let
         { width, height, spacing } =
-            cardDimensions params
+            cardDimensions ctx
 
         x =
             w / 2 - 0.5 * (width + spacing) * (toFloat <| count - 1)
@@ -56,11 +54,11 @@ rotation which i count =
                 -magnitude
 
 
-position : ClockParams -> WhichPlayer -> Int -> Int -> Vec3
-position params which index count =
+position : Context -> WhichPlayer -> Int -> Int -> Vec3
+position ctx which index count =
     let
         { width, spacing } =
-            cardDimensions params
+            cardDimensions ctx
 
         sign =
             case which of
@@ -84,7 +82,7 @@ position params which index count =
                 sign * (abs <| 4 * (toFloat <| ceiling (i - c * 0.5)))
     in
         Math.Vector3.add
-            (origin params which count)
+            (origin ctx which count)
         <|
             Math.Vector3.add
                 (vec3 (toFloat index * (width + spacing)) 0 0)
@@ -92,65 +90,44 @@ position params which index count =
                 vec3 0 y 0
 
 
-handView : ClockParams -> List (CardEntity { index : Int }) -> Maybe ( Float, Maybe Anim ) -> Texture.Model -> List WebGL.Entity
-handView params handEntities resInfo textures =
+handView : Context -> List (CardEntity { index : Int }) -> List WebGL.Entity
+handView ctx handEntities =
     let
-        resTick =
-            Maybe.withDefault 0.0 <|
-                Maybe.map Tuple.first resInfo
-
-        anim =
-            Maybe.join <|
-                Maybe.map Tuple.second resInfo
-
-        progress =
-            Animation.progress anim resTick
-
         mainView : List WebGL.Entity
         mainView =
             List.concat <|
-                List.map (cardEntity params textures) handEntities
+                List.map (cardEntity ctx) handEntities
 
         extraView : List WebGL.Entity
         extraView =
-            overdrawView params progress anim textures
+            overdrawView ctx
+
+        -- Overdraw view duplicated?
     in
         mainView ++ extraView
 
 
-otherHandView : ClockParams -> List (GameEntity {}) -> Maybe ( Float, Maybe Anim ) -> Texture.Model -> List WebGL.Entity
-otherHandView params otherHandEntities resInfo textures =
+otherHandView : Context -> List (GameEntity {}) -> List WebGL.Entity
+otherHandView ctx otherHandEntities =
     let
-        resTick =
-            Maybe.withDefault 0.0 <|
-                Maybe.map Tuple.first resInfo
-
-        anim =
-            Maybe.join <|
-                Maybe.map Tuple.second resInfo
-
-        progress =
-            Animation.progress anim resTick
-
         mainView : List WebGL.Entity
         mainView =
-            List.map (cardBackEntity params) otherHandEntities
+            List.map (cardBackEntity ctx) otherHandEntities
 
         extraView : List WebGL.Entity
         extraView =
-            overdrawView params progress anim textures
+            overdrawView ctx
+
+        -- Overdraw view duplicated?
     in
         mainView ++ extraView
 
 
-overdrawView : ClockParams -> Float -> Maybe Anim -> Texture.Model -> List WebGL.Entity
-overdrawView ({ w, h } as params) resTick anim textures =
+overdrawView : Context -> List WebGL.Entity
+overdrawView ({ w, h, progress, tick, anim } as ctx) =
     case anim of
         Just (Overdraw owner card) ->
             let
-                progress =
-                    Animation.progress anim resTick
-
                 sign =
                     case owner of
                         PlayerA ->
@@ -158,9 +135,6 @@ overdrawView ({ w, h } as params) resTick anim textures =
 
                         PlayerB ->
                             -1
-
-                disintegrateProgress =
-                    Ease.inQuint (resTick / Animation.animMaxTick anim)
 
                 entity =
                     { owner = owner
@@ -175,9 +149,10 @@ overdrawView ({ w, h } as params) resTick anim textures =
                     }
             in
                 dissolvingCardEntity
-                    params
-                    textures
-                    disintegrateProgress
+                    { ctx
+                        | progress =
+                            Ease.inQuint (tick / Animation.animMaxTick anim)
+                    }
                     entity
 
         _ ->
