@@ -2,7 +2,6 @@ module Clock.View exposing (view)
 
 import Animation.Types exposing (Anim(..))
 import Card.State exposing (cardTexture)
-import Clock.Hand exposing (handView, otherHandView, millView)
 import Clock.Primitives as Primitives
 import Clock.Shaders
 import Clock.Stack
@@ -13,6 +12,7 @@ import Colour
 import Connected.Messages as Connected
 import GameState.Messages as GameState
 import Hand.State exposing (maxHandLength)
+import Hand.View as Hand
 import Html exposing (Html, button, div, text)
 import Html.Attributes exposing (class, disabled, height, width, style)
 import Html.Events exposing (onClick)
@@ -46,11 +46,11 @@ view { w, h } { res, focus, entities } textures =
                         [ Clock.Stack.view entities.stack
                         , focusImageView focus
                         , circlesView
-                        , handView entities.hand
-                        , otherHandView entities.otherHand
+                        , Hand.view entities.hand
+                        , Hand.otherView entities.otherHand
                         , Clock.Wave.view
                         , lifeOrbView
-                        , millView
+                        , Hand.millView
                         ]
                 )
             , div [ class "text-focus" ] [ focusTextView ctx focus ]
