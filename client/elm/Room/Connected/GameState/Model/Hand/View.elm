@@ -1,4 +1,4 @@
-module Clock.Hand exposing (..)
+module Hand.View exposing (..)
 
 import Animation.State as Animation
 import Animation.Types exposing (Anim(..))
@@ -92,14 +92,14 @@ position ctx which index count =
                 vec3 0 y 0
 
 
-handView : List (Card.Entity { index : Int }) -> Context -> List WebGL.Entity
-handView handEntities ctx =
+view : List (Card.Entity { index : Int }) -> Context -> List WebGL.Entity
+view handEntities ctx =
     List.concat <|
         List.map (Card.view ctx) handEntities
 
 
-otherHandView : List (GameEntity {}) -> Context -> List WebGL.Entity
-otherHandView otherHandEntities ctx =
+otherView : List (GameEntity {}) -> Context -> List WebGL.Entity
+otherView otherHandEntities ctx =
     List.map (Card.backView ctx) otherHandEntities
 
 
