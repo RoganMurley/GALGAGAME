@@ -3,12 +3,12 @@ module Card.View exposing (..)
 import Card.State exposing (cardTexture)
 import Card.Types as Card
 import Clock.Entity exposing (GameEntity)
-import Clock.Primitives
-import Clock.Shaders
 import Clock.Types exposing (Context)
 import Colour
 import Math.Matrix4 exposing (makeLookAt, makeOrtho, makeRotate, makeScale3)
 import Math.Vector3 exposing (vec3)
+import Render.Primitives
+import Render.Shaders
 import Stack.Types exposing (StackCard)
 import Texture.State as Texture
 import Util exposing (to3d)
@@ -40,7 +40,7 @@ view { w, h, radius, textures } { position, rotation, scale, card, owner } =
     in
         case cardTexture textures card of
             Just texture ->
-                [ Clock.Primitives.roundedBox
+                [ Render.Primitives.roundedBox
                     { rotation = rot
                     , scale = makeScale3 (scale * 0.7 * width) (scale * height) 1
                     , color = col
@@ -49,7 +49,7 @@ view { w, h, radius, textures } { position, rotation, scale, card, owner } =
                     , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
                     , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
                     }
-                , Clock.Primitives.quad Clock.Shaders.fragment <|
+                , Render.Primitives.quad Render.Shaders.fragment <|
                     { rotation = rot
                     , scale = makeScale3 (scale * 0.6 * width) (scale * 0.6 * height) 1
                     , color = col
@@ -71,7 +71,7 @@ backView { w, h, radius } { position, rotation, scale } =
         { width, height } =
             baseDimensions radius
     in
-        Clock.Primitives.roundedBox <|
+        Render.Primitives.roundedBox <|
             { rotation = makeRotate rotation <| vec3 0 0 1
             , scale = makeScale3 (scale * 0.7 * width) (scale * height) 1
             , color = Colour.card PlayerB
@@ -108,7 +108,7 @@ dissolvingView ctx { position, rotation, scale, card, owner } =
     in
         case ( mTexture, mNoise ) of
             ( Just texture, Just noise ) ->
-                [ Clock.Primitives.roundedBoxDisintegrate <|
+                [ Render.Primitives.roundedBoxDisintegrate <|
                     { texture = noise
                     , rotation = rot
                     , scale = makeScale3 (scale * 0.7 * width) (scale * height) 1
@@ -119,7 +119,7 @@ dissolvingView ctx { position, rotation, scale, card, owner } =
                     , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
                     , time = progress
                     }
-                , Clock.Primitives.quad Clock.Shaders.disintegrate <|
+                , Render.Primitives.quad Render.Shaders.disintegrate <|
                     { texture = texture
                     , noise = noise
                     , rotation = rot
@@ -163,7 +163,7 @@ transmutingView ctx stackCard finalStackCard { position, rotation, scale } =
     in
         case ( mTexture, mFinalTexture ) of
             ( Just texture, Just finalTexture ) ->
-                [ Clock.Primitives.roundedBoxTransmute <|
+                [ Render.Primitives.roundedBoxTransmute <|
                     { rotation = rot
                     , scale = makeScale3 (scale * 0.7 * width) (scale * height) 1
                     , color = col
@@ -174,7 +174,7 @@ transmutingView ctx stackCard finalStackCard { position, rotation, scale } =
                     , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
                     , time = progress
                     }
-                , Clock.Primitives.quad Clock.Shaders.fragmentTransmute <|
+                , Render.Primitives.quad Render.Shaders.fragmentTransmute <|
                     { texture = texture
                     , finalTexture = finalTexture
                     , rotation = rot

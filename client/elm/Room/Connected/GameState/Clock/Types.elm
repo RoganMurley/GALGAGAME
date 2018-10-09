@@ -4,7 +4,6 @@ import Animation.Types exposing (Anim)
 import Card.Types exposing (Card)
 import Clock.Entity exposing (GameEntity)
 import Math.Vector2 exposing (Vec2)
-import Math.Vector3 exposing (Vec3)
 import Model.Types as Model
 import Resolvable.Types as Resolvable
 import Stack.Types exposing (StackCard)
@@ -17,12 +16,6 @@ type alias Model =
     , focus : Maybe StackCard
     , mouse : Vec2
     , entities : Entities
-    }
-
-
-type alias Vertex =
-    { position : Vec3
-    , coord : Vec2
     }
 
 

@@ -1,4 +1,4 @@
-module Clock.Stack exposing (..)
+module Stack.View exposing (..)
 
 import Animation.Types exposing (Anim(..))
 import Card.Types as Card
