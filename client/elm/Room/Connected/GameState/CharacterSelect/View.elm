@@ -1,11 +1,10 @@
 module CharacterSelect.View exposing (..)
 
 import Card.Types exposing (Card)
-import Card.View as Card
 import CharacterSelect.Messages exposing (Msg(..))
 import CharacterSelect.Types exposing (Character, Model)
 import Html exposing (Html, div, img, text, table, td, th, tr)
-import Html.Attributes exposing (class, src)
+import Html.Attributes exposing (class, src, style)
 import Html.Events exposing (onClick, onMouseEnter)
 
 
@@ -61,7 +60,7 @@ view { characters, selected, vm } =
             let
                 eachView : Card -> Html Msg
                 eachView c =
-                    td [] [ Card.view c ]
+                    td [] [ cardView c ]
             in
                 table [ class "card-preview" ]
                     [ tr [] (List.map eachView [ c1, c2, c3, c4 ])
@@ -81,3 +80,18 @@ view { characters, selected, vm } =
                 , selectedView
                 ]
             ]
+
+
+cardView : Card -> Html msg
+cardView { name, desc, imgURL } =
+    div
+        [ class "card"
+        ]
+        [ div [ class "card-title" ] [ text name ]
+        , div
+            [ class "card-picture"
+            , style [ ( "background-image", "url(\"/img/" ++ imgURL ++ "\")" ) ]
+            ]
+            []
+        , div [ class "card-desc" ] [ text desc ]
+        ]
