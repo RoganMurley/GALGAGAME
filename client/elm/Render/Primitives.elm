@@ -27,63 +27,21 @@ quad fragment =
 circle : Uniforms {} -> Entity
 circle =
     entity
-        circleFragment
+        Render.Shaders.circleFragment
         Render.Meshes.quad
 
 
 fullCircle : Uniforms {} -> Entity
 fullCircle =
     entity
-        fullCircleFragment
+        Render.Shaders.fullCircleFragment
         Render.Meshes.quad
-
-
-circleFragment : Shader {} (Uniforms u) { vcoord : Vec2 }
-circleFragment =
-    [glsl|
-        precision mediump float;
-
-        uniform vec3 color;
-
-        varying vec2 vcoord;
-
-        void main ()
-        {
-            float radius = .9;
-            float dist = dot(2. * vcoord - 1., 2. * vcoord - 1.);
-            float inner = smoothstep(radius * 1.05, radius * 1.03, dist);
-            float outer = smoothstep(radius * 0.95, radius * 0.98, dist);
-            float intensity = inner * outer;
-            gl_FragColor = vec4(color, intensity);
-        }
-
-    |]
-
-
-fullCircleFragment : Shader {} (Uniforms u) { vcoord : Vec2 }
-fullCircleFragment =
-    [glsl|
-        precision mediump float;
-
-        uniform vec3 color;
-
-        varying vec2 vcoord;
-
-        void main ()
-        {
-            float radius = .9;
-            float dist = dot(2. * vcoord - 1., 2. * vcoord - 1.);
-            float intensity = step(dist, radius);
-            gl_FragColor = vec4(color, intensity);
-        }
-
-    |]
 
 
 roundedBox : Uniforms {} -> Entity
 roundedBox =
     entity
-        roundedBoxFragment
+        Render.Shaders.roundedBoxFragment
         Render.Meshes.quad
 
 
@@ -99,26 +57,3 @@ roundedBoxTransmute =
     entity
         Render.Shaders.roundedBoxTransmute
         Render.Meshes.quad
-
-
-roundedBoxFragment : Shader {} (Uniforms {}) { vcoord : Vec2 }
-roundedBoxFragment =
-    [glsl|
-        precision mediump float;
-
-        uniform vec3 color;
-
-        varying vec2 vcoord;
-
-        void main ()
-        {
-            vec2 pos = vec2(.5) - vcoord;
-
-            float b = .4;
-            float d = length(max(abs(pos) - b, .0));
-
-            float a = smoothstep(d * 0.9, d * 1.1, .5 - b);
-            gl_FragColor = vec4(color, a);
-        }
-
-    |]
