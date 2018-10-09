@@ -16,7 +16,7 @@ type Anim
     | Obliterate WhichPlayer
     | Play WhichPlayer Card Int
     | Transmute WhichPlayer StackCard StackCard
-    | Overdraw WhichPlayer Card
+    | Mill WhichPlayer Card
     | GameStart WhichPlayer
     | GameEnd (Maybe WhichPlayer)
     | Rotate WhichPlayer

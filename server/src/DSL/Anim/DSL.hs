@@ -20,7 +20,7 @@ data DSL a
   | Reverse a
   | Play WhichPlayer Card Int a
   | Transmute StackCard StackCard a
-  | Overdraw WhichPlayer Card a
+  | Mill WhichPlayer Card a
   | GameEnd (Maybe WhichPlayer) a
   | Rotate a
   | Windup a

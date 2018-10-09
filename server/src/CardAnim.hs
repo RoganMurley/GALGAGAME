@@ -19,7 +19,7 @@ data CardAnim
   | Obliterate
   | Play WhichPlayer Card Int
   | Transmute StackCard StackCard
-  | Overdraw WhichPlayer Card
+  | Mill WhichPlayer Card
   | GameEnd (Maybe WhichPlayer)
   | Rotate
   | Windup
@@ -76,10 +76,10 @@ instance ToJSON CardAnim where
     [ "player" .= PlayerA
     , "anim"  .= ("transmute" :: Text, ca, cb)
     ]
-  toJSON (Overdraw w c) =
+  toJSON (Mill w c) =
     object
     [ "player" .= w
-    , "anim"  .= ("overdraw" :: Text, c)
+    , "anim"  .= ("mill" :: Text, c)
     ]
   toJSON (GameEnd w) =
     object
@@ -109,6 +109,6 @@ instance Mirror CardAnim where
   mirror (Play w c i)      = Play (other w) c i
   mirror (Transmute ca cb) = Transmute (mirror ca) (mirror cb)
   mirror (GameEnd w)       = GameEnd (other <$> w)
-  mirror (Overdraw w c)    = Overdraw (other w) c
+  mirror (Mill w c)    = Mill (other w) c
   mirror Rotate            = Rotate
   mirror Windup            = Windup

@@ -42,7 +42,7 @@ animMaxTick anim =
         Play _ _ _ ->
             500.0
 
-        Overdraw _ _ ->
+        Mill _ _ ->
             1000.0
 
         Obliterate _ ->
@@ -74,7 +74,7 @@ progress anim tick =
                 Heal _ ->
                     Ease.outQuad
 
-                Overdraw _ _ ->
+                Mill _ _ ->
                     Ease.outQuint
 
                 Rotate _ ->
