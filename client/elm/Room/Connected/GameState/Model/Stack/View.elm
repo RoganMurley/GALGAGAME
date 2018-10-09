@@ -3,7 +3,7 @@ module Stack.View exposing (..)
 import Animation.Types exposing (Anim(..))
 import Card.Types as Card
 import Card.View as Card
-import Clock.Types exposing (Context)
+import Game.Types exposing (Context)
 import WebGL
 import WhichPlayer.State exposing (other)
 

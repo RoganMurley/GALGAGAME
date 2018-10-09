@@ -1,7 +1,7 @@
 module GameState.Types exposing (..)
 
-import Clock.Types as Clock
 import CharacterSelect.Types as CharacterSelect
+import Game.Types as Game
 import WhichPlayer.Types exposing (WhichPlayer)
 
 
@@ -12,8 +12,8 @@ type GameState
 
 
 type PlayState
-    = Playing Clock.Model
-    | Ended Winner Clock.Model (Maybe ReplayId)
+    = Playing Game.Model
+    | Ended Winner Game.Model (Maybe ReplayId)
 
 
 type alias Winner =

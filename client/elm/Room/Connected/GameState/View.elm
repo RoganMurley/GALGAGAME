@@ -12,10 +12,10 @@ import GameState.Messages exposing (Msg(..))
 import GameState.Types exposing (GameState(..), PlayState(..), WaitType(..))
 import Main.Messages as Main
 import Main.Types exposing (Flags)
+import Model.View as Model
 import Resolvable.State exposing (activeAnim)
 import Room.Messages as Room
 import Texture.Types as Texture
-import Clock.View as Clock
 
 
 view : GameState -> String -> Flags -> Texture.Model -> Html Main.Msg
@@ -45,19 +45,19 @@ view state roomID { hostname, httpPort, time, dimensions } textures =
 
             Started started ->
                 case started of
-                    Playing clock ->
+                    Playing game ->
                         div []
-                            [ Clock.view params clock textures
+                            [ Model.view params game textures
                             , Endgame.view 0 NullAnim Nothing
                             ]
 
-                    Ended winner clock mReplayId ->
+                    Ended winner game mReplayId ->
                         let
                             anim =
-                                activeAnim clock.res
+                                activeAnim game.res
 
                             { resList, tick } =
-                                clock.res
+                                game.res
 
                             resolving =
                                 not <| List.isEmpty resList
@@ -69,7 +69,7 @@ view state roomID { hostname, httpPort, time, dimensions } textures =
                                     ( GameEnd winner, 1.0 )
                         in
                             div []
-                                [ Clock.view params clock textures
+                                [ Model.view params game textures
                                 , Endgame.view progress endAnim mReplayId
                                 ]
 

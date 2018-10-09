@@ -1,6 +1,6 @@
 module Card.Types exposing (Card, Entity)
 
-import Clock.Entity exposing (GameEntity)
+import Model.Entity exposing (GameEntity)
 import WhichPlayer.Types exposing (WhichPlayer)
 
 

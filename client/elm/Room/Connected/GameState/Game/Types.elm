@@ -1,9 +1,9 @@
-module Clock.Types exposing (..)
+module Game.Types exposing (..)
 
 import Animation.Types exposing (Anim)
 import Card.Types exposing (Card)
-import Clock.Entity exposing (GameEntity)
 import Math.Vector2 exposing (Vec2)
+import Model.Entity exposing (GameEntity)
 import Model.Types as Model
 import Resolvable.Types as Resolvable
 import Stack.Types exposing (StackCard)
