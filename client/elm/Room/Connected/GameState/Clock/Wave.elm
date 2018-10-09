@@ -1,12 +1,12 @@
 module Clock.Wave exposing (..)
 
 import Animation.Types exposing (Anim(..))
-import Clock.Primitives as Primitives
 import Clock.Types exposing (Context)
 import Colour
 import Math.Matrix4 exposing (makeLookAt, makeOrtho, makeRotate, makeScale3)
 import Math.Vector3 exposing (vec3)
 import Util exposing (interpFloat)
+import Render.Primitives
 import WebGL
 
 
@@ -26,7 +26,7 @@ view ({ w, h, radius, anim } as ctx) =
     in
         case anim of
             Slash _ _ ->
-                [ Primitives.circle
+                [ Render.Primitives.circle
                     { rotation = makeRotate 0 (vec3 0 0 1)
                     , scale = makeScale3 scale scale 1
                     , color = Colour.red
@@ -38,7 +38,7 @@ view ({ w, h, radius, anim } as ctx) =
                 ]
 
             Bite _ _ ->
-                [ Primitives.circle
+                [ Render.Primitives.circle
                     { rotation = makeRotate 0 (vec3 0 0 1)
                     , scale = makeScale3 scale scale 1
                     , color = Colour.red
@@ -50,7 +50,7 @@ view ({ w, h, radius, anim } as ctx) =
                 ]
 
             Heal _ ->
-                [ Primitives.circle
+                [ Render.Primitives.circle
                     { rotation = makeRotate 0 (vec3 0 0 1)
                     , scale = makeScale3 scale scale 1
                     , color = Colour.green

@@ -1,4 +1,4 @@
-module Clock.Uniforms exposing (Uniforms)
+module Render.Uniforms exposing (Uniforms)
 
 import Math.Matrix4 exposing (Mat4)
 import Math.Vector3 exposing (Vec3)

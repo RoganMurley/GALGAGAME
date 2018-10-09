@@ -1,11 +1,11 @@
-module Clock.Primitives exposing (..)
+module Render.Primitives exposing (..)
 
-import Clock.Meshes
-import Clock.Shaders
-import Clock.Types exposing (Vertex)
-import Clock.Uniforms exposing (Uniforms)
 import Math.Vector2 exposing (Vec2)
 import Math.Vector3 exposing (Vec3)
+import Render.Meshes
+import Render.Shaders
+import Render.Types exposing (Vertex)
+import Render.Uniforms exposing (Uniforms)
 import WebGL exposing (Entity, Mesh, Shader, Texture)
 import WebGL.Settings.Blend as WebGL
 
@@ -14,28 +14,28 @@ entity : Shader {} (Uniforms u) { vcoord : Vec2 } -> Mesh Vertex -> Uniforms u -
 entity =
     WebGL.entityWith
         [ WebGL.add WebGL.srcAlpha WebGL.oneMinusSrcAlpha ]
-        Clock.Shaders.vertex
+        Render.Shaders.vertex
 
 
 quad : Shader {} (Uniforms u) { vcoord : Vec2 } -> Uniforms u -> Entity
 quad fragment =
     entity
         fragment
-        Clock.Meshes.quad
+        Render.Meshes.quad
 
 
 circle : Uniforms {} -> Entity
 circle =
     entity
         circleFragment
-        Clock.Meshes.quad
+        Render.Meshes.quad
 
 
 fullCircle : Uniforms {} -> Entity
 fullCircle =
     entity
         fullCircleFragment
-        Clock.Meshes.quad
+        Render.Meshes.quad
 
 
 circleFragment : Shader {} (Uniforms u) { vcoord : Vec2 }
@@ -84,21 +84,21 @@ roundedBox : Uniforms {} -> Entity
 roundedBox =
     entity
         roundedBoxFragment
-        Clock.Meshes.quad
+        Render.Meshes.quad
 
 
 roundedBoxDisintegrate : Uniforms { texture : Texture, time : Float } -> Entity
 roundedBoxDisintegrate =
     entity
-        Clock.Shaders.roundedBoxDisintegrate
-        Clock.Meshes.quad
+        Render.Shaders.roundedBoxDisintegrate
+        Render.Meshes.quad
 
 
 roundedBoxTransmute : Uniforms { time : Float, finalColor : Vec3 } -> Entity
 roundedBoxTransmute =
     entity
-        Clock.Shaders.roundedBoxTransmute
-        Clock.Meshes.quad
+        Render.Shaders.roundedBoxTransmute
+        Render.Meshes.quad
 
 
 roundedBoxFragment : Shader {} (Uniforms {}) { vcoord : Vec2 }

@@ -2,9 +2,6 @@ module Clock.View exposing (view)
 
 import Animation.Types exposing (Anim(..))
 import Card.State exposing (cardTexture)
-import Clock.Primitives as Primitives
-import Clock.Shaders
-import Clock.Stack
 import Clock.State exposing (contextInit)
 import Clock.Types exposing (Model, Context)
 import Clock.Wave
@@ -20,9 +17,12 @@ import Main.Messages as Main
 import Math.Matrix4 exposing (makeLookAt, makeOrtho, makeRotate, makeScale3)
 import Math.Vector3 exposing (vec3)
 import Maybe.Extra as Maybe
-import Render exposing (Params)
+import Render.Primitives
+import Render.Shaders
+import Render.Types exposing (Params)
 import Room.Messages as Room
 import Stack.Types exposing (StackCard)
+import Stack.View as Stack
 import Texture.Types as Texture
 import Util exposing (px)
 import WebGL
@@ -43,7 +43,7 @@ view { w, h } { res, focus, entities } textures =
                 ]
                 (List.concat <|
                     List.map ((|>) ctx)
-                        [ Clock.Stack.view entities.stack
+                        [ Stack.view entities.stack
                         , focusImageView focus
                         , circlesView
                         , Hand.view entities.hand
@@ -61,7 +61,7 @@ view { w, h } { res, focus, entities } textures =
 
 circlesView : Context -> List WebGL.Entity
 circlesView { w, h, radius } =
-    List.map Primitives.circle
+    List.map Render.Primitives.circle
         [ { rotation = makeRotate 0 <| vec3 0 0 1
           , scale = makeScale3 (0.8 * radius) (0.8 * radius) 1
           , color = Colour.white
@@ -95,7 +95,7 @@ focusImageView focus { w, h, radius, textures } =
         background =
             case Maybe.map .owner focus of
                 Just owner ->
-                    [ Primitives.fullCircle
+                    [ Render.Primitives.fullCircle
                         { rotation = makeRotate 0 (vec3 0 0 1)
                         , scale = makeScale3 (0.52 * radius) (0.52 * radius) 1
                         , color = Colour.focusBackground owner
@@ -112,7 +112,7 @@ focusImageView focus { w, h, radius, textures } =
         case Maybe.join <| Maybe.map (cardTexture textures << .card) focus of
             Just texture ->
                 background
-                    ++ [ Primitives.quad Clock.Shaders.fragment
+                    ++ [ Render.Primitives.quad Render.Shaders.fragment
                             { rotation = makeRotate pi (vec3 0 0 1)
                             , scale = makeScale3 (0.2 * radius) (0.2 * radius) 1
                             , color = Colour.white
@@ -137,7 +137,7 @@ lifeOrbView { w, h, radius, model } =
         otherLifePercentage =
             toFloat model.otherLife / 50
     in
-        [ Primitives.fullCircle
+        [ Render.Primitives.fullCircle
             { rotation = makeRotate 0 (vec3 0 0 1)
             , scale =
                 makeScale3
@@ -150,7 +150,7 @@ lifeOrbView { w, h, radius, model } =
             , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
             , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
             }
-        , Primitives.circle
+        , Render.Primitives.circle
             { rotation = makeRotate 0 (vec3 0 0 1)
             , scale =
                 makeScale3 (0.15 * radius) (0.15 * radius) 1
@@ -160,7 +160,7 @@ lifeOrbView { w, h, radius, model } =
             , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
             , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
             }
-        , Primitives.fullCircle
+        , Render.Primitives.fullCircle
             { rotation = makeRotate 0 (vec3 0 0 1)
             , scale =
                 makeScale3
@@ -173,7 +173,7 @@ lifeOrbView { w, h, radius, model } =
             , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
             , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
             }
-        , Primitives.circle
+        , Render.Primitives.circle
             { rotation = makeRotate 0 (vec3 0 0 1)
             , scale = makeScale3 (0.15 * radius) (0.15 * radius) 1
             , color = Colour.white
