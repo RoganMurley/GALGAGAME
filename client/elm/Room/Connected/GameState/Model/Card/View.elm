@@ -1,34 +1,33 @@
-module Clock.Card exposing (..)
+module Card.View exposing (..)
 
-import Card.Types exposing (Card)
+import Card.State exposing (cardTexture)
+import Card.Types as Card
+import Clock.Entity exposing (GameEntity)
 import Clock.Primitives
 import Clock.Shaders
-import Clock.Types exposing (Context, GameEntity)
+import Clock.Types exposing (Context)
 import Colour
 import Math.Matrix4 exposing (makeLookAt, makeOrtho, makeRotate, makeScale3)
 import Math.Vector3 exposing (vec3)
 import Stack.Types exposing (StackCard)
 import Texture.State as Texture
-import Texture.Types as Texture
-import WebGL
-import WebGL.Texture exposing (Texture)
-import WhichPlayer.Types exposing (WhichPlayer(..))
 import Util exposing (to3d)
+import WebGL
+import WhichPlayer.Types exposing (WhichPlayer(..))
 
 
-type alias CardEntity a =
-    GameEntity
-        { a
-            | card : Card
-            , owner : WhichPlayer
-        }
+baseDimensions : Float -> { width : Float, height : Float }
+baseDimensions radius =
+    { width = 0.1 * radius
+    , height = 0.1 * radius
+    }
 
 
-cardEntity : Context -> CardEntity a -> List WebGL.Entity
-cardEntity { w, h, radius, textures } { position, rotation, scale, card, owner } =
+view : Context -> Card.Entity a -> List WebGL.Entity
+view { w, h, radius, textures } { position, rotation, scale, card, owner } =
     let
-        ( width, height ) =
-            ( 0.1 * radius, 0.1 * radius )
+        { width, height } =
+            baseDimensions radius
 
         rot =
             makeRotate rotation <| vec3 0 0 1
@@ -66,11 +65,11 @@ cardEntity { w, h, radius, textures } { position, rotation, scale, card, owner }
                 []
 
 
-cardBackEntity : Context -> GameEntity {} -> WebGL.Entity
-cardBackEntity { w, h, radius } { position, rotation, scale } =
+backView : Context -> GameEntity {} -> WebGL.Entity
+backView { w, h, radius } { position, rotation, scale } =
     let
-        ( width, height ) =
-            ( 0.1 * radius, 0.1 * radius )
+        { width, height } =
+            baseDimensions radius
     in
         Clock.Primitives.roundedBox <|
             { rotation = makeRotate rotation <| vec3 0 0 1
@@ -83,14 +82,14 @@ cardBackEntity { w, h, radius } { position, rotation, scale } =
             }
 
 
-dissolvingCardEntity : Context -> CardEntity a -> List WebGL.Entity
-dissolvingCardEntity ctx { position, rotation, scale, card, owner } =
+dissolvingView : Context -> Card.Entity a -> List WebGL.Entity
+dissolvingView ctx { position, rotation, scale, card, owner } =
     let
         { w, h, radius, progress, textures } =
             ctx
 
-        ( width, height ) =
-            ( 0.1 * radius, 0.1 * radius )
+        { width, height } =
+            baseDimensions radius
 
         rot =
             makeRotate rotation <| vec3 0 0 1
@@ -138,14 +137,14 @@ dissolvingCardEntity ctx { position, rotation, scale, card, owner } =
                 []
 
 
-transmutingCardEntity : Context -> StackCard -> StackCard -> CardEntity a -> List WebGL.Entity
-transmutingCardEntity ctx stackCard finalStackCard { position, rotation, scale } =
+transmutingView : Context -> StackCard -> StackCard -> Card.Entity a -> List WebGL.Entity
+transmutingView ctx stackCard finalStackCard { position, rotation, scale } =
     let
         { w, h, radius, progress, textures } =
             ctx
 
-        ( width, height ) =
-            ( 0.1 * radius, 0.1 * radius )
+        { width, height } =
+            baseDimensions radius
 
         rot =
             makeRotate rotation <| vec3 0 0 1
@@ -191,8 +190,3 @@ transmutingCardEntity ctx stackCard finalStackCard { position, rotation, scale }
 
             _ ->
                 []
-
-
-cardTexture : Texture.Model -> Card -> Maybe Texture
-cardTexture textures { imgURL } =
-    Texture.load textures imgURL

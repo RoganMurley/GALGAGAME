@@ -2,9 +2,9 @@ module Clock.State exposing (..)
 
 import Animation.State as Animation
 import Animation.Types exposing (Anim(..))
-import Card.Types exposing (Card)
-import Clock.Card exposing (CardEntity)
-import Clock.Types exposing (Context, GameEntity, Model)
+import Card.Types as Card exposing (Card)
+import Clock.Entity exposing (GameEntity)
+import Clock.Types exposing (Context, Entities, Model)
 import List.Extra as List
 import Main.Types exposing (Flags)
 import Math.Vector2 exposing (Vec2, vec2)
@@ -57,6 +57,14 @@ contextInit ( width, height ) res textures =
         }
 
 
+entitiesInit : Entities
+entitiesInit =
+    { stack = []
+    , hand = []
+    , otherHand = []
+    }
+
+
 tick : Flags -> Model -> Float -> Model
 tick { dimensions } model dt =
     let
@@ -97,7 +105,7 @@ getFocus { stackCard } { entities, mouse } =
         Maybe.or stackCard hoverCard
 
 
-calcStackEntities : Context -> List (CardEntity {})
+calcStackEntities : Context -> List (Card.Entity {})
 calcStackEntities ctx =
     let
         { w, h, radius, anim, model, progress, stackCard } =
@@ -236,7 +244,7 @@ handCardPosition ({ radius } as ctx) which index count =
                 vec2 0 y
 
 
-calcHandEntities : Context -> List (CardEntity { index : Int })
+calcHandEntities : Context -> List (Card.Entity { index : Int })
 calcHandEntities ({ w, h, radius, anim, model, progress } as ctx) =
     let
         finalHand =
@@ -271,7 +279,7 @@ calcHandEntities ({ w, h, radius, anim, model, progress } as ctx) =
         finalN =
             List.length finalHand
 
-        entity : ( Int, Card ) -> CardEntity { index : Int }
+        entity : ( Int, Card ) -> Card.Entity { index : Int }
         entity ( finalI, card ) =
             let
                 i =
@@ -295,11 +303,11 @@ calcHandEntities ({ w, h, radius, anim, model, progress } as ctx) =
                 , index = finalI
                 }
 
-        mainEntities : List (CardEntity { index : Int })
+        mainEntities : List (Card.Entity { index : Int })
         mainEntities =
             List.map entity <| List.indexedMap (,) hand
 
-        extraEntities : List (CardEntity { index : Int })
+        extraEntities : List (Card.Entity { index : Int })
         extraEntities =
             case anim of
                 Draw PlayerA ->
@@ -434,7 +442,7 @@ calcOtherHandEntities ({ w, h, radius, anim, model, progress } as ctx) =
         mainEntities ++ extraEntities
 
 
-clockFace : Stack -> Vec2 -> Float -> Float -> List (CardEntity {})
+clockFace : Stack -> Vec2 -> Float -> Float -> List (Card.Entity {})
 clockFace stack origin radius progress =
     let
         segments : Int
