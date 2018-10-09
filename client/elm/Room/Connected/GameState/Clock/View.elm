@@ -2,7 +2,7 @@ module Clock.View exposing (view)
 
 import Animation.Types exposing (Anim(..))
 import Card.State exposing (cardTexture)
-import Clock.Hand exposing (handView, otherHandView)
+import Clock.Hand exposing (handView, otherHandView, millView)
 import Clock.Primitives as Primitives
 import Clock.Shaders
 import Clock.Stack
@@ -50,6 +50,7 @@ view { w, h } { res, focus, entities } textures =
                         , otherHandView entities.otherHand
                         , Clock.Wave.view
                         , lifeOrbView
+                        , millView
                         ]
                 )
             , div [ class "text-focus" ] [ focusTextView ctx focus ]
@@ -231,7 +232,7 @@ turnView { anim, model } focus =
             List.length model.hand == maxHandLength
     in
         case ( anim, focus ) of
-            ( Overdraw _ _, _ ) ->
+            ( Mill _ _, _ ) ->
                 div [] []
 
             ( NullAnim, Nothing ) ->

@@ -94,41 +94,19 @@ position ctx which index count =
 
 handView : List (Card.Entity { index : Int }) -> Context -> List WebGL.Entity
 handView handEntities ctx =
-    let
-        mainView : List WebGL.Entity
-        mainView =
-            List.concat <|
-                List.map (Card.view ctx) handEntities
-
-        extraView : List WebGL.Entity
-        extraView =
-            overdrawView ctx
-
-        -- Overdraw view duplicated?
-    in
-        mainView ++ extraView
+    List.concat <|
+        List.map (Card.view ctx) handEntities
 
 
 otherHandView : List (GameEntity {}) -> Context -> List WebGL.Entity
 otherHandView otherHandEntities ctx =
-    let
-        mainView : List WebGL.Entity
-        mainView =
-            List.map (Card.backView ctx) otherHandEntities
-
-        extraView : List WebGL.Entity
-        extraView =
-            overdrawView ctx
-
-        -- Overdraw view duplicated?
-    in
-        mainView ++ extraView
+    List.map (Card.backView ctx) otherHandEntities
 
 
-overdrawView : Context -> List WebGL.Entity
-overdrawView ({ w, h, progress, tick, anim } as ctx) =
+millView : Context -> List WebGL.Entity
+millView ({ w, h, progress, tick, anim } as ctx) =
     case anim of
-        Overdraw owner card ->
+        Mill owner card ->
             let
                 sign =
                     case owner of

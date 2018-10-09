@@ -19,7 +19,7 @@ decoder =
         , obliterateDecoder
         , playDecoder
         , transmuteDecoder
-        , overdrawDecoder
+        , millDecoder
         , gameEndDecoder
         , rotateDecoder
         , windupDecoder
@@ -109,11 +109,11 @@ transmuteDecoder =
         (field "anim" <| index 2 <| Stack.stackCardDecoder)
 
 
-overdrawDecoder : Decoder Anim
-overdrawDecoder =
-    Json.map3 (\w _ c -> Overdraw w c)
+millDecoder : Decoder Anim
+millDecoder =
+    Json.map3 (\w _ c -> Mill w c)
         (field "player" WhichPlayer.decoder)
-        (field "anim" <| index 0 <| constDecoder "overdraw")
+        (field "anim" <| index 0 <| constDecoder "mill")
         (field "anim" <| index 1 <| Card.decoder)
 
 
