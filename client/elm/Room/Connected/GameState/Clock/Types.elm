@@ -1,13 +1,15 @@
 module Clock.Types exposing (..)
 
 import Animation.Types exposing (Anim)
-import Clock.Entity exposing (Entities)
+import Card.Types exposing (Card)
+import Clock.Entity exposing (GameEntity)
 import Math.Vector2 exposing (Vec2)
 import Math.Vector3 exposing (Vec3)
 import Model.Types as Model
 import Resolvable.Types as Resolvable
 import Stack.Types exposing (StackCard)
 import Texture.Types as Texture
+import WhichPlayer.Types exposing (WhichPlayer)
 
 
 type alias Model =
@@ -37,9 +39,21 @@ type alias Context =
     }
 
 
-type alias GameEntity a =
-    { a
-        | position : Vec2
-        , rotation : Float
-        , scale : Float
+type alias Entities =
+    { stack :
+        List
+            (GameEntity
+                { card : Card
+                , owner : WhichPlayer
+                }
+            )
+    , hand :
+        List
+            (GameEntity
+                { card : Card
+                , index : Int
+                , owner : WhichPlayer
+                }
+            )
+    , otherHand : List (GameEntity {})
     }

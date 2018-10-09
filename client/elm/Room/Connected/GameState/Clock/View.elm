@@ -1,7 +1,7 @@
 module Clock.View exposing (view)
 
 import Animation.Types exposing (Anim(..))
-import Clock.Card exposing (cardTexture)
+import Card.State exposing (cardTexture)
 import Clock.Hand exposing (handView, otherHandView)
 import Clock.Primitives as Primitives
 import Clock.Shaders

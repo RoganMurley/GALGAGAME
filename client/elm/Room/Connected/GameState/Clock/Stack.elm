@@ -1,13 +1,14 @@
 module Clock.Stack exposing (..)
 
 import Animation.Types exposing (Anim(..))
-import Clock.Card exposing (CardEntity, cardEntity, dissolvingCardEntity, transmutingCardEntity)
+import Card.Types as Card
+import Card.View as Card
 import Clock.Types exposing (Context)
 import WebGL
 import WhichPlayer.State exposing (other)
 
 
-view : List (CardEntity {}) -> Context -> List WebGL.Entity
+view : List (Card.Entity {}) -> Context -> List WebGL.Entity
 view entities ctx =
     let
         n =
@@ -17,13 +18,13 @@ view entities ctx =
             case ctx.anim of
                 Obliterate _ ->
                     if i == n then
-                        cardEntity ctx
+                        Card.view ctx
                     else
-                        dissolvingCardEntity ctx
+                        Card.dissolvingView ctx
 
                 Reflect _ ->
                     if i == n then
-                        cardEntity ctx
+                        Card.view ctx
                     else
                         \entity ->
                             let
@@ -37,19 +38,15 @@ view entities ctx =
                                     , card = entity.card
                                     }
                             in
-                                transmutingCardEntity
-                                    ctx
-                                    ca
-                                    cb
-                                    entity
+                                Card.transmutingView ctx ca cb entity
 
                 Transmute _ ca cb ->
                     if i == 0 then
-                        transmutingCardEntity ctx ca cb
+                        Card.transmutingView ctx ca cb
                     else
-                        cardEntity ctx
+                        Card.view ctx
 
                 _ ->
-                    cardEntity ctx
+                    Card.view ctx
     in
         List.concat <| List.indexedMap makeEntity entities

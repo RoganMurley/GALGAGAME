@@ -2,8 +2,10 @@ module Clock.Hand exposing (..)
 
 import Animation.State as Animation
 import Animation.Types exposing (Anim(..))
-import Clock.Card exposing (CardEntity, cardEntity, cardBackEntity, dissolvingCardEntity)
-import Clock.Types exposing (Context, GameEntity)
+import Card.Types as Card
+import Card.View as Card
+import Clock.Entity exposing (GameEntity)
+import Clock.Types exposing (Context)
 import Ease
 import Math.Vector2 exposing (vec2)
 import Math.Vector3 exposing (Vec3, vec3)
@@ -90,13 +92,13 @@ position ctx which index count =
                 vec3 0 y 0
 
 
-handView : List (CardEntity { index : Int }) -> Context -> List WebGL.Entity
+handView : List (Card.Entity { index : Int }) -> Context -> List WebGL.Entity
 handView handEntities ctx =
     let
         mainView : List WebGL.Entity
         mainView =
             List.concat <|
-                List.map (cardEntity ctx) handEntities
+                List.map (Card.view ctx) handEntities
 
         extraView : List WebGL.Entity
         extraView =
@@ -112,7 +114,7 @@ otherHandView otherHandEntities ctx =
     let
         mainView : List WebGL.Entity
         mainView =
-            List.map (cardBackEntity ctx) otherHandEntities
+            List.map (Card.backView ctx) otherHandEntities
 
         extraView : List WebGL.Entity
         extraView =
@@ -148,7 +150,7 @@ overdrawView ({ w, h, progress, tick, anim } as ctx) =
                     , scale = interpFloat progress 1 4
                     }
             in
-                dissolvingCardEntity
+                Card.dissolvingView
                     { ctx
                         | progress =
                             Ease.inQuint (tick / Animation.animMaxTick anim)
