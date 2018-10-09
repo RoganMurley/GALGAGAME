@@ -1,4 +1,4 @@
-module Clock.Entity exposing (GameEntity)
+module Model.Entity exposing (GameEntity)
 
 import Math.Vector2 exposing (Vec2)
 

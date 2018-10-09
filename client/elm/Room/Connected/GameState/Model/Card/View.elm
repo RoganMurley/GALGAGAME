@@ -2,11 +2,11 @@ module Card.View exposing (..)
 
 import Card.State exposing (cardTexture)
 import Card.Types as Card
-import Clock.Entity exposing (GameEntity)
-import Clock.Types exposing (Context)
 import Colour
+import Game.Types exposing (Context)
 import Math.Matrix4 exposing (makeLookAt, makeOrtho, makeRotate, makeScale3)
 import Math.Vector3 exposing (vec3)
+import Model.Entity exposing (GameEntity)
 import Render.Primitives
 import Render.Shaders
 import Stack.Types exposing (StackCard)

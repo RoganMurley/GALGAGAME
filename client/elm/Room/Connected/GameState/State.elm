@@ -2,7 +2,7 @@ module GameState.State exposing (playstateTick, update, tick, tickEnd, resolvabl
 
 import Audio exposing (playSound)
 import CharacterSelect.State as CharacterSelect
-import Clock.State as Clock
+import Game.State as Game
 import GameState.Decoders exposing (playStateDecoder, stateDecoder)
 import GameState.Encoders exposing (encodeHoverIndex)
 import GameState.Messages exposing (Msg(..), PlayingOnly(..), TurnOnly(..))
@@ -33,7 +33,7 @@ update msg state mode flags =
 
         HoverSelf i ->
             case state of
-                Started (Playing ({ res } as clock)) ->
+                Started (Playing ({ res } as game)) ->
                     let
                         { vm } =
                             res
@@ -42,7 +42,7 @@ update msg state mode flags =
                         newVm =
                             { vm | hover = i }
                     in
-                        ( Started <| Playing { clock | res = { res | vm = newVm } }
+                        ( Started <| Playing { game | res = { res | vm = newVm } }
                         , Cmd.none
                         )
 
@@ -51,7 +51,7 @@ update msg state mode flags =
 
         HoverOutcome i ->
             case state of
-                Started (Playing ({ res } as clock)) ->
+                Started (Playing ({ res } as game)) ->
                     let
                         { final } =
                             res
@@ -60,7 +60,7 @@ update msg state mode flags =
                         newFinal =
                             { final | otherHover = i }
                     in
-                        ( Started <| Playing { clock | res = { res | final = newFinal } }
+                        ( Started <| Playing { game | res = { res | final = newFinal } }
                         , Cmd.none
                         )
 
@@ -165,11 +165,11 @@ update msg state mode flags =
 
                 newState =
                     case state of
-                        Started (Playing clock) ->
-                            Started (Playing { clock | mouse = pos })
+                        Started (Playing game) ->
+                            Started (Playing { game | mouse = pos })
 
-                        Started (Ended w clock r) ->
-                            Started (Ended w { clock | mouse = pos } r)
+                        Started (Ended w game r) ->
+                            Started (Ended w { game | mouse = pos } r)
 
                         _ ->
                             state
@@ -186,7 +186,7 @@ update msg state mode flags =
                         let
                             mIndex =
                                 Maybe.map .index <|
-                                    List.find (Clock.hitTest pos 28) entities.hand
+                                    List.find (Game.hitTest pos 28) entities.hand
                         in
                             case mIndex of
                                 Just index ->
@@ -345,11 +345,11 @@ resMapPlay f started =
 resolvableSet : PlayState -> Resolvable.Model -> PlayState
 resolvableSet s r =
     case s of
-        Playing clock ->
-            Playing { clock | res = r }
+        Playing game ->
+            Playing { game | res = r }
 
-        Ended w clock replay ->
-            Ended w { clock | res = r } replay
+        Ended w game replay ->
+            Ended w { game | res = r } replay
 
 
 tick : Flags -> GameState -> Float -> GameState
@@ -365,11 +365,11 @@ tick flags state dt =
 playstateTick : Flags -> PlayState -> Float -> PlayState
 playstateTick flags state dt =
     case state of
-        Playing clock ->
-            Playing <| Clock.tick flags clock dt
+        Playing game ->
+            Playing <| Game.tick flags game dt
 
-        Ended w clock replay ->
-            Ended w (Clock.tick flags clock dt) replay
+        Ended w game replay ->
+            Ended w (Game.tick flags game dt) replay
 
 
 tickEnd : PlayState -> Bool

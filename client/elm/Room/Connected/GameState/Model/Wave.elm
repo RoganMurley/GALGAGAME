@@ -1,8 +1,8 @@
-module Clock.Wave exposing (..)
+module Model.Wave exposing (..)
 
 import Animation.Types exposing (Anim(..))
-import Clock.Types exposing (Context)
 import Colour
+import Game.Types exposing (Context)
 import Math.Matrix4 exposing (makeLookAt, makeOrtho, makeRotate, makeScale3)
 import Math.Vector3 exposing (vec3)
 import Util exposing (interpFloat)

@@ -1,12 +1,11 @@
-module Clock.View exposing (view)
+module Model.View exposing (view)
 
 import Animation.Types exposing (Anim(..))
 import Card.State exposing (cardTexture)
-import Clock.State exposing (contextInit)
-import Clock.Types exposing (Model, Context)
-import Clock.Wave
 import Colour
 import Connected.Messages as Connected
+import Game.State exposing (contextInit)
+import Game.Types exposing (Model, Context)
 import GameState.Messages as GameState
 import Hand.State exposing (maxHandLength)
 import Hand.View as Hand
@@ -17,6 +16,7 @@ import Main.Messages as Main
 import Math.Matrix4 exposing (makeLookAt, makeOrtho, makeRotate, makeScale3)
 import Math.Vector3 exposing (vec3)
 import Maybe.Extra as Maybe
+import Model.Wave as Wave
 import Render.Primitives
 import Render.Shaders
 import Render.Types exposing (Params)
@@ -48,8 +48,8 @@ view { w, h } { res, focus, entities } textures =
                         , circlesView
                         , Hand.view entities.hand
                         , Hand.otherView entities.otherHand
-                        , Clock.Wave.view
                         , lifeOrbView
+                        , Wave.view
                         , Hand.millView
                         ]
                 )

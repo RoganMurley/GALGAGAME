@@ -4,11 +4,11 @@ import Animation.State as Animation
 import Animation.Types exposing (Anim(..))
 import Card.Types as Card
 import Card.View as Card
-import Clock.Entity exposing (GameEntity)
-import Clock.Types exposing (Context)
+import Game.Types exposing (Context)
 import Ease
 import Math.Vector2 exposing (vec2)
 import Math.Vector3 exposing (Vec3, vec3)
+import Model.Entity exposing (GameEntity)
 import WebGL
 import WhichPlayer.Types exposing (WhichPlayer(..))
 import Util exposing (interpFloat, interp2D)

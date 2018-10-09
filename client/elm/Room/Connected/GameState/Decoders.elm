@@ -4,7 +4,7 @@ import Json.Decode as Json exposing (Decoder, fail, field, list, maybe, string, 
 import CharacterSelect.Decoders
 import CharacterSelect.State as CharacterSelect
 import CharacterSelect.Types exposing (Character)
-import Clock.State exposing (clockInit)
+import Game.State exposing (gameInit)
 import GameState.Types exposing (GameState(..), PlayState(..), WaitType(..), Winner)
 import Model.Decoders as Model
 import Model.Types exposing (Model)
@@ -77,7 +77,7 @@ endedDecoder =
     let
         endedInit : Winner -> Model -> PlayState
         endedInit w m =
-            Ended w (clockInit <| Resolvable.init m []) Nothing
+            Ended w (gameInit <| Resolvable.init m []) Nothing
     in
         Json.map2 endedInit
             (field "winner" <| maybe WhichPlayer.decoder)
@@ -89,7 +89,7 @@ playingDecoder =
     let
         playingInit : Model -> PlayState
         playingInit m =
-            Playing <| clockInit <| Resolvable.init m []
+            Playing <| gameInit <| Resolvable.init m []
     in
         Json.map playingInit <|
             field "playing" <|
