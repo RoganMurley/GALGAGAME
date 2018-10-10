@@ -64,13 +64,16 @@ view { w, h } { res, focus, entities } textures =
 circlesView : Context -> List WebGL.Entity
 circlesView ({ w, h, radius } as ctx) =
     let
-        pos =
+        centre =
             vec2 (w / 2) (h / 2)
+
+        active =
+            vec2 (w / 2) ((h / 2) - (0.617 * radius))
     in
         List.map (Render.Primitives.circle << uni ctx)
-            [ { scale = 0.8 * radius, position = pos, rotation = 0 }
-            , { scale = 0.52 * radius, position = pos, rotation = 0 }
-            , { scale = 0.13 * radius, position = pos, rotation = 0 }
+            [ { scale = 0.8 * radius, position = centre, rotation = 0 }
+            , { scale = 0.52 * radius, position = centre, rotation = 0 }
+            , { scale = 0.13 * radius, position = active, rotation = 0 }
             ]
 
 
@@ -142,7 +145,7 @@ lifeOrbView ({ w, h, radius, model } as ctx) =
                 }
         , Render.Primitives.circle <|
             uni ctx
-                { scale = otherLifePercentage * 0.15 * radius
+                { scale = 0.15 * radius
                 , position = vec2 (w * 0.5 + 0.6 * radius) (h * 0.5 - 0.75 * radius)
                 , rotation = 0
                 }
