@@ -14,22 +14,22 @@ import WhichPlayer.Types exposing (WhichPlayer(..))
 view : Float -> Anim -> Maybe String -> Html Main.Msg
 view progress anim mReplayId =
     let
-        ( endGameText, endGameClass ) =
+        ( show, endGameText, endGameClass ) =
             case anim of
                 GameEnd (Just PlayerA) ->
-                    ( "VICTORY", "victory" )
+                    ( True, "VICTORY", "victory" )
 
                 GameEnd (Just PlayerB) ->
-                    ( "DEFEAT", "defeat" )
+                    ( True, "DEFEAT", "defeat" )
 
                 GameEnd Nothing ->
-                    ( "DRAW", "draw" )
+                    ( True, "DRAW", "draw" )
 
                 _ ->
-                    ( "", "no-win" )
+                    ( False, "", "no-win" )
 
         isDisabled =
-            progress < 0.8
+            not show && (progress < 0.8)
 
         watchReplayButton =
             case mReplayId of
@@ -55,7 +55,12 @@ view progress anim mReplayId =
                 [ ( "endgame-layer", True )
                 , ( endGameClass, True )
                 ]
-            , style [ ( "opacity", toString progress ) ]
+            , style
+                [ if show then
+                    ( "opacity", toString progress )
+                  else
+                    ( "", "" )
+                ]
             ]
             [ div [ class "endgame-container" ]
                 [ div
