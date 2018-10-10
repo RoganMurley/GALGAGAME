@@ -59,6 +59,7 @@ view { w, h } { res, focus, entities } textures =
                 )
             , div [ class "text-focus" ] [ focusTextView ctx focus ]
             , div [ class "clock-life-container" ] (lifeTextView ctx)
+            , div [ class "clock-damage-container" ] (damageTextView ctx)
             , div [ class "clock-go" ] [ turnView ctx focus ]
             ]
 
@@ -218,6 +219,54 @@ lifeTextView { radius, model } =
         ]
         [ text <| toString model.otherLife ]
     ]
+
+
+damageTextView : Context -> List (Html a)
+damageTextView { radius, anim } =
+    let
+        ( damage, otherDamage ) =
+            Animation.lifeChange anim
+    in
+        List.concat
+            [ if damage /= 0 then
+                [ div
+                    [ class "clock-damage"
+                    , style
+                        [ ( "right", 0.49 * radius |> px )
+                        , ( "top", 0.1 * radius |> px )
+                        , ( "font-size", 0.4 * radius |> px )
+                        , ( "color"
+                          , if damage > 0 then
+                                "lime"
+                            else
+                                "red"
+                          )
+                        ]
+                    ]
+                    [ text <| toString damage ]
+                ]
+              else
+                []
+            , if otherDamage /= 0 then
+                [ div
+                    [ class "clock-damage"
+                    , style
+                        [ ( "left", 0.49 * radius |> px )
+                        , ( "bottom", 0.1 * radius |> px )
+                        , ( "font-size", 0.4 * radius |> px )
+                        , ( "color"
+                          , if damage > 0 then
+                                "lime"
+                            else
+                                "red"
+                          )
+                        ]
+                    ]
+                    [ text <| toString otherDamage ]
+                ]
+              else
+                []
+            ]
 
 
 turnView : Context -> Maybe StackCard -> Html Main.Msg
