@@ -1,9 +1,11 @@
 module Model.View exposing (view)
 
+import Animation.State exposing (animMaxTick)
 import Animation.Types exposing (Anim(..))
 import Card.State exposing (cardTexture)
 import Colour
 import Connected.Messages as Connected
+import Ease
 import Game.State exposing (contextInit)
 import Game.Types exposing (Model, Context)
 import GameState.Messages as GameState
@@ -26,7 +28,7 @@ import Room.Messages as Room
 import Stack.Types exposing (StackCard)
 import Stack.View as Stack
 import Texture.Types as Texture
-import Util exposing (px)
+import Util exposing (interpFloat, px)
 import WebGL
 import WhichPlayer.Types exposing (WhichPlayer(..))
 
@@ -116,13 +118,62 @@ focusImageView focus ({ w, h, radius, textures } as ctx) =
 
 
 lifeOrbView : Context -> List WebGL.Entity
-lifeOrbView ({ w, h, radius, model } as ctx) =
+lifeOrbView ({ w, h, radius, model, anim, tick } as ctx) =
     let
-        lifePercentage =
+        progress =
+            Ease.outQuint (tick / animMaxTick anim)
+
+        finalLifePercentage =
             toFloat model.life / 50
 
-        otherLifePercentage =
+        finalOtherLifePercentage =
             toFloat model.otherLife / 50
+
+        lifePercentage =
+            case anim of
+                Slash PlayerA d ->
+                    interpFloat
+                        progress
+                        (finalLifePercentage + (toFloat d / 50) * finalLifePercentage)
+                        finalLifePercentage
+
+                Bite PlayerA d ->
+                    interpFloat
+                        progress
+                        (finalLifePercentage + (toFloat d / 50) * finalLifePercentage)
+                        finalLifePercentage
+
+                Heal PlayerA ->
+                    interpFloat
+                        progress
+                        (finalLifePercentage - 0.2 * finalLifePercentage)
+                        finalLifePercentage
+
+                _ ->
+                    finalLifePercentage
+
+        otherLifePercentage =
+            case anim of
+                Slash PlayerB d ->
+                    interpFloat
+                        progress
+                        (finalOtherLifePercentage + (toFloat d / 50) * finalOtherLifePercentage)
+                        finalOtherLifePercentage
+
+                Bite PlayerB d ->
+                    interpFloat
+                        progress
+                        (finalOtherLifePercentage + (toFloat d / 50) * finalOtherLifePercentage)
+                        finalOtherLifePercentage
+
+                Heal PlayerB ->
+                    interpFloat
+                        progress
+                        (finalOtherLifePercentage - 0.2 * finalOtherLifePercentage)
+                        finalOtherLifePercentage
+
+                _ ->
+                    finalOtherLifePercentage
     in
         [ Render.Primitives.fullCircle <|
             uniColourMag ctx
