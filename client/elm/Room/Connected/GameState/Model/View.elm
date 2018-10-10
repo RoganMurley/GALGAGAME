@@ -21,7 +21,7 @@ import Model.Wave as Wave
 import Render.Primitives
 import Render.Shaders
 import Render.Types exposing (Params)
-import Render.Uniforms exposing (uni, uniColour)
+import Render.Uniforms exposing (uni, uniColourMag)
 import Room.Messages as Room
 import Stack.Types exposing (StackCard)
 import Stack.View as Stack
@@ -84,8 +84,9 @@ focusImageView focus ({ w, h, radius, textures } as ctx) =
             case Maybe.map .owner focus of
                 Just owner ->
                     [ Render.Primitives.fullCircle <|
-                        uniColour ctx
+                        uniColourMag ctx
                             (Colour.focusBackground owner)
+                            1.0
                             { scale = 0.52 * radius
                             , position = vec2 (w * 0.5) (h * 0.5)
                             , rotation = 0
@@ -124,9 +125,10 @@ lifeOrbView ({ w, h, radius, model } as ctx) =
             toFloat model.otherLife / 50
     in
         [ Render.Primitives.fullCircle <|
-            uniColour ctx
+            uniColourMag ctx
                 (Colour.card PlayerA)
-                { scale = lifePercentage * 0.15 * radius
+                lifePercentage
+                { scale = 0.15 * radius
                 , position = vec2 (w * 0.5 - 0.6 * radius) (h * 0.5 + 0.75 * radius)
                 , rotation = 0
                 }
@@ -137,9 +139,10 @@ lifeOrbView ({ w, h, radius, model } as ctx) =
                 , rotation = 0
                 }
         , Render.Primitives.fullCircle <|
-            uniColour ctx
+            uniColourMag ctx
                 (Colour.card PlayerB)
-                { scale = otherLifePercentage * 0.15 * radius
+                otherLifePercentage
+                { scale = 0.15 * radius
                 , position = vec2 (w * 0.5 + 0.6 * radius) (h * 0.5 - 0.75 * radius)
                 , rotation = 0
                 }

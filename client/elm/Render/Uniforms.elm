@@ -54,3 +54,16 @@ uniColour ctx colour entity =
             uni ctx entity
     in
         { u | color = colour }
+
+
+uniColourMag : Context -> Colour -> Float -> Game.Entity a -> Uniforms { mag : Float }
+uniColourMag ctx colour mag { position, rotation, scale } =
+    { rotation = makeRotate rotation <| vec3 0 0 1
+    , scale = makeScale3 scale scale 1
+    , color = colour
+    , pos = to3d position
+    , worldRot = makeRotate 0 <| vec3 0 0 1
+    , perspective = perspective ctx
+    , camera = camera
+    , mag = mag
+    }
