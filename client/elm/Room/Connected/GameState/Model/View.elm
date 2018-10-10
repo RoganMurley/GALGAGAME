@@ -14,12 +14,14 @@ import Html.Attributes exposing (class, disabled, height, width, style)
 import Html.Events exposing (onClick)
 import Main.Messages as Main
 import Math.Matrix4 exposing (makeLookAt, makeOrtho, makeRotate, makeScale3)
+import Math.Vector2 exposing (vec2)
 import Math.Vector3 exposing (vec3)
 import Maybe.Extra as Maybe
 import Model.Wave as Wave
 import Render.Primitives
 import Render.Shaders
 import Render.Types exposing (Params)
+import Render.Uniforms exposing (uni, uniColour)
 import Room.Messages as Room
 import Stack.Types exposing (StackCard)
 import Stack.View as Stack
@@ -60,50 +62,31 @@ view { w, h } { res, focus, entities } textures =
 
 
 circlesView : Context -> List WebGL.Entity
-circlesView { w, h, radius } =
-    List.map Render.Primitives.circle
-        [ { rotation = makeRotate 0 <| vec3 0 0 1
-          , scale = makeScale3 (0.8 * radius) (0.8 * radius) 1
-          , color = Colour.white
-          , worldPos = vec3 (w / 2) (h / 2) 0
-          , worldRot = makeRotate 0 <| vec3 0 0 1
-          , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
-          , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
-          }
-        , { rotation = makeRotate 0 <| vec3 0 0 1
-          , scale = makeScale3 (0.52 * radius) (0.52 * radius) 1
-          , color = Colour.white
-          , worldPos = vec3 (w / 2) (h / 2) 0
-          , worldRot = makeRotate 0 <| vec3 0 0 1
-          , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
-          , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
-          }
-        , { rotation = makeRotate 0 <| vec3 0 0 1
-          , scale = makeScale3 (0.13 * radius) (0.13 * radius) 1
-          , color = Colour.white
-          , worldPos = vec3 (w / 2) ((h / 2) - (0.617 * radius)) 0
-          , worldRot = makeRotate 0 <| vec3 0 0 1
-          , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
-          , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
-          }
-        ]
+circlesView ({ w, h, radius } as ctx) =
+    let
+        pos =
+            vec2 (w / 2) (h / 2)
+    in
+        List.map (Render.Primitives.circle << uni ctx)
+            [ { scale = 0.8 * radius, position = pos, rotation = 0 }
+            , { scale = 0.52 * radius, position = pos, rotation = 0 }
+            , { scale = 0.13 * radius, position = pos, rotation = 0 }
+            ]
 
 
 focusImageView : Maybe StackCard -> Context -> List WebGL.Entity
-focusImageView focus { w, h, radius, textures } =
+focusImageView focus ({ w, h, radius, textures } as ctx) =
     let
         background =
             case Maybe.map .owner focus of
                 Just owner ->
-                    [ Render.Primitives.fullCircle
-                        { rotation = makeRotate 0 (vec3 0 0 1)
-                        , scale = makeScale3 (0.52 * radius) (0.52 * radius) 1
-                        , color = Colour.focusBackground owner
-                        , worldPos = vec3 (w * 0.5) (h * 0.5) 0
-                        , worldRot = makeRotate 0 (vec3 0 0 1)
-                        , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
-                        , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
-                        }
+                    [ Render.Primitives.fullCircle <|
+                        uniColour ctx
+                            (Colour.focusBackground owner)
+                            { scale = 0.52 * radius
+                            , position = vec2 (w * 0.5) (h * 0.5)
+                            , rotation = 0
+                            }
                     ]
 
                 Nothing ->
@@ -116,7 +99,7 @@ focusImageView focus { w, h, radius, textures } =
                             { rotation = makeRotate pi (vec3 0 0 1)
                             , scale = makeScale3 (0.2 * radius) (0.2 * radius) 1
                             , color = Colour.white
-                            , worldPos = vec3 (w * 0.5) (h * 0.45) 0
+                            , pos = vec3 (w * 0.5) (h * 0.45) 0
                             , worldRot = makeRotate 0 (vec3 0 0 1)
                             , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
                             , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
@@ -129,7 +112,7 @@ focusImageView focus { w, h, radius, textures } =
 
 
 lifeOrbView : Context -> List WebGL.Entity
-lifeOrbView { w, h, radius, model } =
+lifeOrbView ({ w, h, radius, model } as ctx) =
     let
         lifePercentage =
             toFloat model.life / 50
@@ -137,51 +120,32 @@ lifeOrbView { w, h, radius, model } =
         otherLifePercentage =
             toFloat model.otherLife / 50
     in
-        [ Render.Primitives.fullCircle
-            { rotation = makeRotate 0 (vec3 0 0 1)
-            , scale =
-                makeScale3
-                    (lifePercentage * 0.15 * radius)
-                    (lifePercentage * 0.15 * radius)
-                    1
-            , color = Colour.card PlayerA
-            , worldPos = vec3 (w * 0.5 - 0.6 * radius) (h * 0.5 + 0.75 * radius) 0
-            , worldRot = makeRotate 0 (vec3 0 0 1)
-            , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
-            , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
-            }
-        , Render.Primitives.circle
-            { rotation = makeRotate 0 (vec3 0 0 1)
-            , scale =
-                makeScale3 (0.15 * radius) (0.15 * radius) 1
-            , color = Colour.white
-            , worldPos = vec3 (w * 0.5 - 0.6 * radius) (h * 0.5 + 0.75 * radius) 0
-            , worldRot = makeRotate 0 (vec3 0 0 1)
-            , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
-            , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
-            }
-        , Render.Primitives.fullCircle
-            { rotation = makeRotate 0 (vec3 0 0 1)
-            , scale =
-                makeScale3
-                    (otherLifePercentage * 0.15 * radius)
-                    (otherLifePercentage * 0.15 * radius)
-                    1
-            , color = Colour.card PlayerB
-            , worldPos = vec3 (w * 0.5 + 0.6 * radius) (h * 0.5 - 0.75 * radius) 0
-            , worldRot = makeRotate 0 (vec3 0 0 1)
-            , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
-            , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
-            }
-        , Render.Primitives.circle
-            { rotation = makeRotate 0 (vec3 0 0 1)
-            , scale = makeScale3 (0.15 * radius) (0.15 * radius) 1
-            , color = Colour.white
-            , worldPos = vec3 (w * 0.5 + 0.6 * radius) (h * 0.5 - 0.75 * radius) 0
-            , worldRot = makeRotate 0 (vec3 0 0 1)
-            , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
-            , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
-            }
+        [ Render.Primitives.fullCircle <|
+            uniColour ctx
+                (Colour.card PlayerA)
+                { scale = lifePercentage * 0.15 * radius
+                , position = vec2 (w * 0.5 - 0.6 * radius) (h * 0.5 + 0.75 * radius)
+                , rotation = 0
+                }
+        , Render.Primitives.circle <|
+            uni ctx
+                { scale = 0.15 * radius
+                , position = vec2 (w * 0.5 - 0.6 * radius) (h * 0.5 + 0.75 * radius)
+                , rotation = 0
+                }
+        , Render.Primitives.fullCircle <|
+            uniColour ctx
+                (Colour.card PlayerB)
+                { scale = otherLifePercentage * 0.15 * radius
+                , position = vec2 (w * 0.5 + 0.6 * radius) (h * 0.5 - 0.75 * radius)
+                , rotation = 0
+                }
+        , Render.Primitives.circle <|
+            uni ctx
+                { scale = otherLifePercentage * 0.15 * radius
+                , position = vec2 (w * 0.5 + 0.6 * radius) (h * 0.5 - 0.75 * radius)
+                , rotation = 0
+                }
         ]
 
 

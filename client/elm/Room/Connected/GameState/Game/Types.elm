@@ -3,7 +3,7 @@ module Game.Types exposing (..)
 import Animation.Types exposing (Anim)
 import Card.Types exposing (Card)
 import Math.Vector2 exposing (Vec2)
-import Model.Entity exposing (GameEntity)
+import Game.Entity as Game
 import Model.Types as Model
 import Resolvable.Types as Resolvable
 import Stack.Types exposing (StackCard)
@@ -35,18 +35,18 @@ type alias Context =
 type alias Entities =
     { stack :
         List
-            (GameEntity
+            (Game.Entity
                 { card : Card
                 , owner : WhichPlayer
                 }
             )
     , hand :
         List
-            (GameEntity
+            (Game.Entity
                 { card : Card
                 , index : Int
                 , owner : WhichPlayer
                 }
             )
-    , otherHand : List (GameEntity {})
+    , otherHand : List (Game.Entity {})
     }

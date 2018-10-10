@@ -4,7 +4,7 @@ import Animation.Types exposing (Anim(..))
 import Card.Types as Card exposing (Card)
 import Game.Types exposing (Context)
 import Math.Vector2 exposing (Vec2, vec2)
-import Model.Entity exposing (GameEntity)
+import Game.Entity as Game
 import WhichPlayer.Types exposing (WhichPlayer(..))
 import Util exposing (interpFloat, interp2D)
 
@@ -127,7 +127,7 @@ entities ({ w, h, radius, anim, model, progress } as ctx) =
         mainEntities ++ extraEntities
 
 
-otherEntities : Context -> List (GameEntity {})
+otherEntities : Context -> List (Game.Entity {})
 otherEntities ({ w, h, radius, anim, model, progress } as ctx) =
     let
         finalN =
@@ -154,7 +154,7 @@ otherEntities ({ w, h, radius, anim, model, progress } as ctx) =
                 _ ->
                     identity
 
-        entity : Int -> GameEntity {}
+        entity : Int -> Game.Entity {}
         entity finalI =
             let
                 i =
@@ -171,11 +171,11 @@ otherEntities ({ w, h, radius, anim, model, progress } as ctx) =
                 , scale = 1
                 }
 
-        mainEntities : List (GameEntity {})
+        mainEntities : List (Game.Entity {})
         mainEntities =
             List.map entity (List.range 0 (n - 1))
 
-        extraEntities : List (GameEntity {})
+        extraEntities : List (Game.Entity {})
         extraEntities =
             case anim of
                 Draw PlayerB ->

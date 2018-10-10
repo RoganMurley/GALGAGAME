@@ -1,9 +1,9 @@
-module Model.Entity exposing (GameEntity)
+module Game.Entity exposing (Entity)
 
 import Math.Vector2 exposing (Vec2)
 
 
-type alias GameEntity a =
+type alias Entity a =
     { a
         | position : Vec2
         , rotation : Float

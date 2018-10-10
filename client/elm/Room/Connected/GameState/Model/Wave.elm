@@ -1,12 +1,13 @@
 module Model.Wave exposing (..)
 
 import Animation.Types exposing (Anim(..))
-import Colour
+import Colour exposing (Colour)
+import Game.Entity as Game
 import Game.Types exposing (Context)
-import Math.Matrix4 exposing (makeLookAt, makeOrtho, makeRotate, makeScale3)
-import Math.Vector3 exposing (vec3)
+import Math.Vector2 exposing (vec2)
 import Util exposing (interpFloat)
 import Render.Primitives
+import Render.Uniforms exposing (uniColour)
 import WebGL
 
 
@@ -23,41 +24,33 @@ view ({ w, h, radius, anim } as ctx) =
 
         scale =
             interpFloat progress 0 (3 * radius)
+
+        render : Colour -> Game.Entity {} -> WebGL.Entity
+        render =
+            \c e -> Render.Primitives.circle <| uniColour ctx c e
     in
         case anim of
             Slash _ _ ->
-                [ Render.Primitives.circle
-                    { rotation = makeRotate 0 (vec3 0 0 1)
-                    , scale = makeScale3 scale scale 1
-                    , color = Colour.red
-                    , worldPos = vec3 (w / 2) (h / 2) 0
-                    , worldRot = makeRotate 0 (vec3 0 0 1)
-                    , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
-                    , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
+                [ render Colour.red
+                    { scale = scale
+                    , position = vec2 (w / 2) (h / 2)
+                    , rotation = 0
                     }
                 ]
 
             Bite _ _ ->
-                [ Render.Primitives.circle
-                    { rotation = makeRotate 0 (vec3 0 0 1)
-                    , scale = makeScale3 scale scale 1
-                    , color = Colour.red
-                    , worldPos = vec3 (w / 2) (h / 2) 0
-                    , worldRot = makeRotate 0 (vec3 0 0 1)
-                    , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
-                    , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
+                [ render Colour.red
+                    { scale = scale
+                    , position = vec2 (w / 2) (h / 2)
+                    , rotation = 0
                     }
                 ]
 
             Heal _ ->
-                [ Render.Primitives.circle
-                    { rotation = makeRotate 0 (vec3 0 0 1)
-                    , scale = makeScale3 scale scale 1
-                    , color = Colour.green
-                    , worldPos = vec3 (w / 2) (h / 2) 0
-                    , worldRot = makeRotate 0 (vec3 0 0 1)
-                    , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
-                    , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
+                [ render Colour.green
+                    { scale = scale
+                    , position = vec2 (w / 2) (h / 2)
+                    , rotation = 0
                     }
                 ]
 

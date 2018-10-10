@@ -53,13 +53,13 @@ vertex =
         uniform mat4 camera;
         uniform mat4 scale;
         uniform mat4 rotation;
-        uniform vec3 worldPos;
+        uniform vec3 pos;
         uniform mat4 worldRot;
 
         varying vec2 vcoord;
 
         void main () {
-            gl_Position = perspective * camera * worldRot * (vec4(worldPos, 1.0) + rotation * scale * vec4(position, 1.0));
+            gl_Position = perspective * camera * worldRot * (vec4(pos, 1.0) + rotation * scale * vec4(position, 1.0));
             vcoord = coord.xy;
         }
 
