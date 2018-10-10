@@ -8,7 +8,7 @@ import Game.Types exposing (Context)
 import Ease
 import Math.Vector2 exposing (vec2)
 import Math.Vector3 exposing (Vec3, vec3)
-import Model.Entity exposing (GameEntity)
+import Game.Entity as Game
 import WebGL
 import WhichPlayer.Types exposing (WhichPlayer(..))
 import Util exposing (interpFloat, interp2D)
@@ -98,7 +98,7 @@ view handEntities ctx =
         List.map (Card.view ctx) handEntities
 
 
-otherView : List (GameEntity {}) -> Context -> List WebGL.Entity
+otherView : List (Game.Entity {}) -> Context -> List WebGL.Entity
 otherView otherHandEntities ctx =
     List.map (Card.backView ctx) otherHandEntities
 

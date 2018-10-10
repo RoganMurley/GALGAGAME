@@ -4,7 +4,7 @@ import Animation.Types exposing (Anim(..))
 import Card.Types as Card exposing (Card)
 import Game.Types exposing (Context)
 import Math.Vector2 exposing (Vec2, vec2)
-import Model.Entity exposing (GameEntity)
+import Game.Entity as Game
 import Stack.Types exposing (Stack, StackCard)
 import WhichPlayer.Types exposing (WhichPlayer(..))
 
@@ -85,7 +85,7 @@ clockFace stack origin radius progress =
         segments =
             12
 
-        genPoint : Int -> StackCard -> GameEntity { card : Card, owner : WhichPlayer }
+        genPoint : Int -> StackCard -> Game.Entity { card : Card, owner : WhichPlayer }
         genPoint index { card, owner } =
             let
                 i =

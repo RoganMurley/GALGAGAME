@@ -1,6 +1,6 @@
 module Card.Types exposing (Card, Entity)
 
-import Model.Entity exposing (GameEntity)
+import Game.Entity as Game
 import WhichPlayer.Types exposing (WhichPlayer)
 
 
@@ -12,7 +12,7 @@ type alias Card =
 
 
 type alias Entity a =
-    GameEntity
+    Game.Entity
         { a
             | card : Card
             , owner : WhichPlayer

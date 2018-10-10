@@ -6,7 +6,7 @@ import Colour
 import Game.Types exposing (Context)
 import Math.Matrix4 exposing (makeLookAt, makeOrtho, makeRotate, makeScale3)
 import Math.Vector3 exposing (vec3)
-import Model.Entity exposing (GameEntity)
+import Game.Entity as Game
 import Render.Primitives
 import Render.Shaders
 import Stack.Types exposing (StackCard)
@@ -24,8 +24,14 @@ baseDimensions radius =
 
 
 view : Context -> Card.Entity a -> List WebGL.Entity
-view { w, h, radius, textures } { position, rotation, scale, card, owner } =
+view ctx entity =
     let
+        { w, h, radius, textures } =
+            ctx
+
+        { position, rotation, scale, card, owner } =
+            entity
+
         { width, height } =
             baseDimensions radius
 
@@ -44,7 +50,7 @@ view { w, h, radius, textures } { position, rotation, scale, card, owner } =
                     { rotation = rot
                     , scale = makeScale3 (scale * 0.7 * width) (scale * height) 1
                     , color = col
-                    , worldPos = pos
+                    , pos = pos
                     , worldRot = makeRotate 0 <| vec3 0 0 1
                     , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
                     , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
@@ -53,7 +59,7 @@ view { w, h, radius, textures } { position, rotation, scale, card, owner } =
                     { rotation = rot
                     , scale = makeScale3 (scale * 0.6 * width) (scale * 0.6 * height) 1
                     , color = col
-                    , worldPos = pos
+                    , pos = pos
                     , worldRot = makeRotate 0 <| vec3 0 0 1
                     , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
                     , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
@@ -65,7 +71,7 @@ view { w, h, radius, textures } { position, rotation, scale, card, owner } =
                 []
 
 
-backView : Context -> GameEntity {} -> WebGL.Entity
+backView : Context -> Game.Entity {} -> WebGL.Entity
 backView { w, h, radius } { position, rotation, scale } =
     let
         { width, height } =
@@ -75,7 +81,7 @@ backView { w, h, radius } { position, rotation, scale } =
             { rotation = makeRotate rotation <| vec3 0 0 1
             , scale = makeScale3 (scale * 0.7 * width) (scale * height) 1
             , color = Colour.card PlayerB
-            , worldPos = to3d position
+            , pos = to3d position
             , worldRot = makeRotate 0 <| vec3 0 0 1
             , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
             , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
@@ -113,7 +119,7 @@ dissolvingView ctx { position, rotation, scale, card, owner } =
                     , rotation = rot
                     , scale = makeScale3 (scale * 0.7 * width) (scale * height) 1
                     , color = col
-                    , worldPos = pos
+                    , pos = pos
                     , worldRot = makeRotate 0 (vec3 0 0 1)
                     , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
                     , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
@@ -125,7 +131,7 @@ dissolvingView ctx { position, rotation, scale, card, owner } =
                     , rotation = rot
                     , scale = makeScale3 (scale * 0.6 * width) (scale * 0.6 * height) 1
                     , color = vec3 1 1 1
-                    , worldPos = pos
+                    , pos = pos
                     , worldRot = makeRotate 0 (vec3 0 0 1)
                     , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
                     , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
@@ -168,7 +174,7 @@ transmutingView ctx stackCard finalStackCard { position, rotation, scale } =
                     , scale = makeScale3 (scale * 0.7 * width) (scale * height) 1
                     , color = col
                     , finalColor = Colour.card finalStackCard.owner
-                    , worldPos = pos
+                    , pos = pos
                     , worldRot = makeRotate 0 (vec3 0 0 1)
                     , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
                     , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
@@ -180,7 +186,7 @@ transmutingView ctx stackCard finalStackCard { position, rotation, scale } =
                     , rotation = rot
                     , scale = makeScale3 (scale * 0.6 * width) (scale * 0.6 * height) 1
                     , color = col
-                    , worldPos = pos
+                    , pos = pos
                     , worldRot = makeRotate 0 (vec3 0 0 1)
                     , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
                     , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
