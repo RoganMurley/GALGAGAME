@@ -2,6 +2,7 @@ module Animation.State exposing (..)
 
 import Animation.Types exposing (Anim(..))
 import Ease
+import WhichPlayer.Types exposing (WhichPlayer(..))
 
 
 animShake : Anim -> Float -> Float
@@ -83,6 +84,9 @@ progress anim tick =
                 Slash _ _ ->
                     Ease.outQuad
 
+                Bite _ _ ->
+                    Ease.outQuad
+
                 Windup _ ->
                     Ease.inQuad
 
@@ -90,3 +94,29 @@ progress anim tick =
                     Ease.outQuint
     in
         easingFunction (tick / maxTick)
+
+
+lifeChange : Anim -> ( Float, Float )
+lifeChange anim =
+    let
+        wrap : WhichPlayer -> Int -> ( Float, Float )
+        wrap w d =
+            case w of
+                PlayerA ->
+                    ( toFloat d, 0 )
+
+                PlayerB ->
+                    ( 0, toFloat d )
+    in
+        case anim of
+            Heal w ->
+                wrap w 10
+
+            Slash w d ->
+                wrap w -d
+
+            Bite w d ->
+                wrap w -d
+
+            _ ->
+                ( 0, 0 )

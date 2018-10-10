@@ -1,6 +1,6 @@
 module Model.View exposing (view)
 
-import Animation.State exposing (animMaxTick)
+import Animation.State as Animation exposing (animMaxTick)
 import Animation.Types exposing (Anim(..))
 import Card.State exposing (cardTexture)
 import Colour
@@ -121,7 +121,7 @@ lifeOrbView : Context -> List WebGL.Entity
 lifeOrbView ({ w, h, radius, model, anim, tick } as ctx) =
     let
         progress =
-            Ease.outQuint (tick / animMaxTick anim)
+            Ease.outQuad (tick / animMaxTick anim)
 
         finalLifePercentage =
             toFloat model.life / 50
@@ -129,51 +129,20 @@ lifeOrbView ({ w, h, radius, model, anim, tick } as ctx) =
         finalOtherLifePercentage =
             toFloat model.otherLife / 50
 
+        ( lifeChange, otherLifeChange ) =
+            Animation.lifeChange anim
+
         lifePercentage =
-            case anim of
-                Slash PlayerA d ->
-                    interpFloat
-                        progress
-                        (finalLifePercentage + (toFloat d / 50) * finalLifePercentage)
-                        finalLifePercentage
-
-                Bite PlayerA d ->
-                    interpFloat
-                        progress
-                        (finalLifePercentage + (toFloat d / 50) * finalLifePercentage)
-                        finalLifePercentage
-
-                Heal PlayerA ->
-                    interpFloat
-                        progress
-                        (finalLifePercentage - 0.2 * finalLifePercentage)
-                        finalLifePercentage
-
-                _ ->
-                    finalLifePercentage
+            interpFloat
+                progress
+                (finalLifePercentage - (lifeChange / 50) * finalLifePercentage)
+                finalLifePercentage
 
         otherLifePercentage =
-            case anim of
-                Slash PlayerB d ->
-                    interpFloat
-                        progress
-                        (finalOtherLifePercentage + (toFloat d / 50) * finalOtherLifePercentage)
-                        finalOtherLifePercentage
-
-                Bite PlayerB d ->
-                    interpFloat
-                        progress
-                        (finalOtherLifePercentage + (toFloat d / 50) * finalOtherLifePercentage)
-                        finalOtherLifePercentage
-
-                Heal PlayerB ->
-                    interpFloat
-                        progress
-                        (finalOtherLifePercentage - 0.2 * finalOtherLifePercentage)
-                        finalOtherLifePercentage
-
-                _ ->
-                    finalOtherLifePercentage
+            interpFloat
+                progress
+                (finalOtherLifePercentage - (otherLifeChange / 50) * finalOtherLifePercentage)
+                finalOtherLifePercentage
     in
         [ Render.Primitives.fullCircle <|
             uniColourMag ctx
@@ -207,20 +176,25 @@ lifeOrbView ({ w, h, radius, model, anim, tick } as ctx) =
 
 
 focusTextView : Context -> Maybe StackCard -> Html a
-focusTextView { radius } focus =
-    case focus of
-        Nothing ->
+focusTextView { anim, radius } focus =
+    case anim of
+        Mill _ _ ->
             text ""
 
-        Just { card } ->
-            div
-                [ style
-                    [ ( "width", 0.7 * radius |> px )
-                    ]
-                ]
-                [ div [ class "title" ] [ text card.name ]
-                , div [ class "desc" ] [ text card.desc ]
-                ]
+        _ ->
+            case focus of
+                Nothing ->
+                    text ""
+
+                Just { card } ->
+                    div
+                        [ style
+                            [ ( "width", 0.7 * radius |> px )
+                            ]
+                        ]
+                        [ div [ class "title" ] [ text card.name ]
+                        , div [ class "desc" ] [ text card.desc ]
+                        ]
 
 
 lifeTextView : Context -> List (Html a)
