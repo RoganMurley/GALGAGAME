@@ -1,4 +1,4 @@
-name:                hubris
+name:                ringofworlds
 version:             0.1.0.0
 synopsis:            Initial project template from stack
 description:         Please see README.md
@@ -91,7 +91,7 @@ library
                      , ExistentialQuantification
                      , TypeOperators
 
-executable hubris
+executable ringofworlds
   hs-source-dirs:      app
   main-is:             Main.hs
   ghc-options:         -threaded -rtsopts -with-rtsopts=-N -Wall -Wcompat -Wincomplete-record-updates -Wincomplete-uni-patterns -Wredundant-constraints -O2
@@ -104,12 +104,12 @@ executable hubris
                      , http-types
                      , lifted-base
                      , random
+                     , ringofworlds
                      , safe
                      , string-conversions
                      , text
                      , transformers
                      , stm
-                     , hubris
                      , wai
                      , wai-websockets
                      , warp
@@ -119,14 +119,14 @@ executable hubris
                      , RecordWildCards
                      , NamedFieldPuns
 
-test-suite hubris-test
+test-suite ringofworlds-test
   type:                exitcode-stdio-1.0
   hs-source-dirs:      test
   main-is:             Spec.hs
   build-depends:       base
                      , quickcheck-instances
                      , random
-                     , hubris
+                     , ringofworlds
                      , tasty
                      , tasty-hunit
                      , tasty-quickcheck
@@ -139,4 +139,4 @@ test-suite hubris-test
 
 source-repository head
   type:     git
-  location: https://github.com/githubuser/hubris
+  location: https://github.com/RoganMurley/hubris

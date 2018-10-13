@@ -20,4 +20,4 @@ image:
     name: game
     base: fpco/haskell-scratch:integer-gmp
     entrypoints:
-      - hubris
+      - ringofworlds
