@@ -5,7 +5,7 @@ Try it out at https://www.ringofworlds.com.
 
 Join the community at https://discord.gg/SVXXej4.
 
-[![CircleCI](https://circleci.com/gh/RoganMurley/hubris.svg?style=shield)](https://circleci.com/gh/RoganMurley/hubris)
+[![CircleCI](https://circleci.com/gh/RoganMurley/Ring-of-Worlds.svg?style=shield)](https://circleci.com/gh/RoganMurley/Ring-of-Worlds)
 
 
 ## Dependencies:
