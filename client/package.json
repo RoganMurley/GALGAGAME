@@ -1,5 +1,5 @@
 {
-  "name": "hubris",
+  "name": "Ring of Worlds",
   "version": "1.0.0",
   "description": "",
   "main": "gulpfile.js",
@@ -29,5 +29,5 @@
   },
   "author": "",
   "license": "",
-  "homepage": "https://playhubris.com"
+  "homepage": "https://ringofworlds.com"
 }

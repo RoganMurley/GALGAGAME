@@ -12,8 +12,8 @@ view : Html Msg
 view =
     div []
         [ div [ class "main-menu" ]
-            [ h1 [] [ text "HUBRIS" ]
-            , h2 [] [ text "A card game of risk & reward" ]
+            [ h1 [] [ text "Ring of Worlds" ]
+            , h2 [] [ text "Digital Card Game" ]
             , div [ class "main-menu-buttons" ] <|
                 List.map menuButton
                     [ QuickplayGame, CustomGame, ComputerGame ]

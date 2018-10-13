@@ -16,7 +16,7 @@ services:
       context: "redis"
     restart: always
   game:
-    image: "game-hubris"
+    image: "game-ringofworlds"
     links:
       - redis
     restart: always
