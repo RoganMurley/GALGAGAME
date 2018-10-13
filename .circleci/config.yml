@@ -17,8 +17,7 @@ jobs:
       - run:
           name: Setup Client
           command: cd client &&
-                   npm install -g gulp elm@0.18.0 &&
-                   npm install -g gulp elm-analyse@0.15.0 &&
+                   npm install -g gulp elm@0.18.0 elm-analyse@0.15.0 &&
                    npm install &&
                    elm-package install --yes &&
                    gulp build &&
