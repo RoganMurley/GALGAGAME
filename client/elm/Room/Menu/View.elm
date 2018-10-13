@@ -13,7 +13,7 @@ view =
     div []
         [ div [ class "main-menu" ]
             [ h1 [] [ text "Ring of Worlds" ]
-            , h2 [] [ text "Digital Card Game" ]
+            , h2 [] [ text "The world ends; the game begins." ]
             , div [ class "main-menu-buttons" ] <|
                 List.map menuButton
                     [ QuickplayGame, CustomGame, ComputerGame ]
