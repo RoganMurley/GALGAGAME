@@ -16,7 +16,7 @@ animShake anim tick =
                 Bite _ d ->
                     5.0 * Ease.outQuad (toFloat d / 50.0)
 
-                Obliterate _ ->
+                Hubris _ _ ->
                     20.0
 
                 Play _ _ _ ->
@@ -46,7 +46,7 @@ animMaxTick anim =
         Mill _ _ ->
             1000.0
 
-        Obliterate _ ->
+        Hubris _ _ ->
             1000.0
 
         GameEnd _ ->

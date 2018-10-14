@@ -123,14 +123,28 @@ allCards (Character _ a, Character _ b, Character _ c) =
 -- CHARACTERS
 allCharacters :: [Character]
 allCharacters =
-  [ shielder
-  , watcher
-  , drinker
-  , collector
-  , striker
-  , breaker
-  , balancer
+  concat
+    [
+      [ shielder
+      , watcher
+      , drinker
+      , collector
+      , striker
+      , breaker
+      , balancer
+      ],
+      testCharacters
   ]
+
+
+testCharacters :: [Character]
+testCharacters =
+  let
+    testCard = Cards.hubris
+  in
+    map
+      (\n -> Character n (testCard, testCard, testCard, testCard))
+      ["A", "B", "C"]
 
 
 striker :: Character

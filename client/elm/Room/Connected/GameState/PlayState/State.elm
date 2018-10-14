@@ -216,10 +216,6 @@ carryVm old new =
         newRes : Resolvable.Model
         newRes =
             get .res new
-
-        oldEntities : Game.Entities
-        oldEntities =
-            get .entities old
     in
         map
             (\game ->
@@ -228,7 +224,9 @@ carryVm old new =
                         { newRes
                             | vm = oldVm
                         }
-                    , entities = oldEntities
+                    , entities = get .entities old
+                    , mouse = get .mouse old
+                    , focus = get .focus old
                 }
             )
             new

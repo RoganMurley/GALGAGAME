@@ -32,7 +32,7 @@ alphaI (Free (Heal h w n))       = Alpha.heal h w                >>  alphaI n
 alphaI (Free (Draw w n))         = Alpha.draw w                  >>  alphaI n
 alphaI (Free (Bite d w n))       = Alpha.hurt d w                >>  alphaI n
 alphaI (Free (AddToHand w c n))  = Alpha.addToHand w c           >>  alphaI n
-alphaI (Free (Obliterate n))     = Alpha.setStack []             >>  alphaI n
+alphaI (Free (Hubris n))         = Alpha.setStack []             >>  alphaI n
 alphaI (Free (Reflect n))        = Alpha.modStackAll changeOwner >>  alphaI n
 alphaI (Free (Reverse n))        = Alpha.modStack reverse        >>  alphaI n
 alphaI (Free (Play w c i n))     = Alpha.play w c i              >>  alphaI n
@@ -62,16 +62,25 @@ animI (Reflect _)        = basicAnim $ Anim.Reflect ()
 animI (Reverse _)        = basicAnim $ Anim.Reverse ()
 animI (Rotate _)         = basicAnim $ Anim.Rotate ()
 animI (RawAnim r _)      = basicAnim $ Anim.Raw r ()
+animI (Hubris _)         = hubrisAnim
 animI (AddToHand w _ _)  = drawAnim w
 animI (Draw w _)         = drawAnim w
-animI (Obliterate _)     = obliterateAnim
 animI (Play w c i _)     = playAnim w c i
 animI (Transmute c _)    = transmuteAnim c
 animI (SetHeadOwner w _) = setHeadOwnerAnim w
 animI _                  = toLeft
 
 
-drawAnim :: WhichPlayer -> (Alpha.Program a -> AlphaAnimProgram a)
+hubrisAnim :: Alpha.Program a -> AlphaAnimProgram a
+hubrisAnim alpha =
+  do
+    stack <- toLeft $ Alpha.getStack
+    final <- toLeft alpha
+    toRight . liftF $ Anim.Hubris stack ()
+    return final
+
+
+drawAnim :: WhichPlayer -> Alpha.Program a -> AlphaAnimProgram a
 drawAnim w alpha =
   do
     nextCard <- headMay <$> toLeft (Alpha.getDeck w)
@@ -83,16 +92,7 @@ drawAnim w alpha =
     return final
 
 
-obliterateAnim :: Alpha.Program a -> AlphaAnimProgram a
-obliterateAnim alpha =
-  do
-    toRight . liftF $ Anim.Obliterate ()
-    final <- toLeft alpha
-    toRight . liftF $ Anim.Null ()
-    return final
-
-
-playAnim :: WhichPlayer -> Card -> Int -> (Alpha.Program a -> AlphaAnimProgram a)
+playAnim :: WhichPlayer -> Card -> Int -> Alpha.Program a -> AlphaAnimProgram a
 playAnim w c i alpha =
   do
     final <- toLeft alpha
@@ -101,7 +101,7 @@ playAnim w c i alpha =
     return final
 
 
-transmuteAnim :: Card -> (Alpha.Program a -> AlphaAnimProgram a)
+transmuteAnim :: Card -> Alpha.Program a -> AlphaAnimProgram a
 transmuteAnim cb alpha =
   do
     stackHead <- headMay <$> toLeft Alpha.getStack
@@ -115,7 +115,7 @@ transmuteAnim cb alpha =
     return final
 
 
-setHeadOwnerAnim :: WhichPlayer -> ((Alpha.Program a) -> AlphaAnimProgram a)
+setHeadOwnerAnim :: WhichPlayer -> Alpha.Program a -> AlphaAnimProgram a
 setHeadOwnerAnim w alpha =
   do
     stackHead <- headMay <$> toLeft Alpha.getStack
@@ -145,18 +145,22 @@ execute :: Model -> AlphaLogAnimProgram () -> (Model, String, [(ModelDiff, Maybe
 execute = execute' "" [] mempty
   where
     execute' :: String -> [(ModelDiff, Maybe CardAnim)] -> ModelDiff -> Model -> AlphaLogAnimProgram () -> (Model, String, [(ModelDiff, Maybe CardAnim)])
+
     execute' s a _ m (Pure _) =
       (m, s, a)
+
     execute' s a d m (Free (InR anim)) =
       let
         next = if gameover m then Pure () else Anim.next anim
       in
         execute' s (a ++ [(d, Anim.animate anim)]) mempty m next
+
     execute' s a d m (Free (InL (InL p))) =
       let
          (newDiff, n) = Alpha.alphaEffI m p
          newModel = ModelDiff.update m newDiff
       in
         execute' s a (d <> newDiff) newModel n
+
     execute' s a d m (Free (InL (InR (Log.Log l n)))) =
       execute' (s ++ l ++ "\n") a d m n

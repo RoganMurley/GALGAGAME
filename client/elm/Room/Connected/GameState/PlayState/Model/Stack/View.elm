@@ -12,11 +12,12 @@ view : List (Card.Entity {}) -> Context -> List WebGL.Entity
 view entities ctx =
     let
         n =
-            List.length entities - 1
+            List.length entities
+                - 1
 
         makeEntity i =
             case ctx.anim of
-                Obliterate _ ->
+                Hubris _ _ ->
                     if i == n then
                         Card.view ctx
                     else

@@ -4,6 +4,7 @@ import Card (Card(..))
 import Data.Aeson (ToJSON(..), (.=), object)
 import Data.Text (Text)
 import Life (Life)
+import Model (Stack)
 import Mirror (Mirror(..))
 import Player (WhichPlayer(..), other)
 import StackCard (StackCard)
@@ -16,7 +17,7 @@ data CardAnim
   | Bite WhichPlayer Life
   | Reflect
   | Reverse
-  | Obliterate
+  | Hubris Stack
   | Play WhichPlayer Card Int
   | Transmute StackCard StackCard
   | Mill WhichPlayer Card
@@ -61,10 +62,10 @@ instance ToJSON CardAnim where
     [ "player" .= PlayerA
     , "anim"  .= ("reverse" :: Text)
     ]
-  toJSON Obliterate =
+  toJSON (Hubris s) =
     object
     [ "player" .= PlayerA
-    , "anim"  .= ("obliterate" :: Text)
+    , "anim"  .= ("hubris" :: Text, s)
     ]
   toJSON (Play w c i) =
     object
@@ -105,10 +106,10 @@ instance Mirror CardAnim where
   mirror (Bite w d)        = Bite (other w) d
   mirror Reflect           = Reflect
   mirror Reverse           = Reverse
-  mirror Obliterate        = Obliterate
+  mirror (Hubris s)        = Hubris (mirror <$> s)
   mirror (Play w c i)      = Play (other w) c i
   mirror (Transmute ca cb) = Transmute (mirror ca) (mirror cb)
   mirror (GameEnd w)       = GameEnd (other <$> w)
-  mirror (Mill w c)    = Mill (other w) c
+  mirror (Mill w c)        = Mill (other w) c
   mirror Rotate            = Rotate
   mirror Windup            = Windup

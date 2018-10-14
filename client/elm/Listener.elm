@@ -67,7 +67,7 @@ animSfx anim =
         Transmute _ _ _ ->
             Just "transmute.mp3"
 
-        Obliterate _ ->
+        Hubris _ _ ->
             Just "obliterate.mp3"
 
         Mill _ _ ->

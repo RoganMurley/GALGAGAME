@@ -32,6 +32,9 @@ entities ctx =
         stack : Stack
         stack =
             case anim of
+                Hubris animStack _ ->
+                    animStack
+
                 Play _ _ _ ->
                     List.drop 1 finalStack
 
