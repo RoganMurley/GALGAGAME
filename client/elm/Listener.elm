@@ -2,9 +2,9 @@ module Listener exposing (..)
 
 import Animation.Types exposing (Anim(..))
 import Audio exposing (SoundOption(..), playSoundWith)
-import GameState.State exposing (resolvable)
 import GameState.Types exposing (GameState(..))
 import Main.Messages exposing (Msg)
+import PlayState.State as PlayState
 import Resolvable.State exposing (activeAnim, tickStart)
 import Resolvable.Types as Resolvable
 import WhichPlayer.Types exposing (WhichPlayer(..))
@@ -31,8 +31,8 @@ listen state =
             Selecting _ ->
                 playSoundWith "/music/slowsadjazz.mp3" [ Loop, Once ]
 
-            Started started ->
-                modelListen <| resolvable started
+            Started playstate ->
+                modelListen <| PlayState.get .res playstate
 
             _ ->
                 Cmd.none

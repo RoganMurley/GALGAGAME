@@ -1,15 +1,11 @@
 module GameState.Decoders exposing (..)
 
-import Json.Decode as Json exposing (Decoder, fail, field, list, maybe, string, succeed)
+import Json.Decode as Json exposing (Decoder, fail, field, list, string, succeed)
 import CharacterSelect.Decoders
 import CharacterSelect.State as CharacterSelect
 import CharacterSelect.Types exposing (Character)
-import Game.State exposing (gameInit)
-import GameState.Types exposing (GameState(..), PlayState(..), WaitType(..), Winner)
-import Model.Decoders as Model
-import Model.Types exposing (Model)
-import Resolvable.State as Resolvable
-import WhichPlayer.Decoders as WhichPlayer
+import GameState.Types exposing (GameState(..), WaitType(..))
+import PlayState.Decoders as PlayState
 
 
 stateDecoder : Decoder GameState
@@ -17,15 +13,7 @@ stateDecoder =
     Json.oneOf
         [ waitingDecoder
         , selectingDecoder
-        , Json.map Started playStateDecoder
-        ]
-
-
-playStateDecoder : Decoder PlayState
-playStateDecoder =
-    Json.oneOf
-        [ playingDecoder
-        , endedDecoder
+        , Json.map Started PlayState.decoder
         ]
 
 
@@ -70,30 +58,6 @@ selectingDecoder =
             Json.map2 makeSelectState
                 (field "selecting" <| list CharacterSelect.Decoders.character)
                 (field "selected" <| list CharacterSelect.Decoders.character)
-
-
-endedDecoder : Decoder PlayState
-endedDecoder =
-    let
-        endedInit : Winner -> Model -> PlayState
-        endedInit w m =
-            Ended w (gameInit <| Resolvable.init m []) Nothing
-    in
-        Json.map2 endedInit
-            (field "winner" <| maybe WhichPlayer.decoder)
-            (field "final" <| Model.decoder)
-
-
-playingDecoder : Decoder PlayState
-playingDecoder =
-    let
-        playingInit : Model -> PlayState
-        playingInit m =
-            Playing <| gameInit <| Resolvable.init m []
-    in
-        Json.map playingInit <|
-            field "playing" <|
-                Model.decoder
 
 
 collapseResults : Decoder (Result String a) -> Decoder a

@@ -2,7 +2,8 @@ module Endgame.View exposing (view)
 
 import Animation.Types exposing (Anim(GameEnd))
 import Connected.Messages as Connected
-import GameState.Messages exposing (Msg(GotoReplay, PlayingOnly), PlayingOnly(Rematch))
+import GameState.Messages as GameState
+import PlayState.Messages exposing (Msg(GotoReplay, PlayingOnly), PlayingOnly(Rematch))
 import Html exposing (Html, button, div, text)
 import Html.Attributes exposing (class, classList, disabled, style)
 import Html.Events exposing (onClick)
@@ -40,7 +41,8 @@ view progress anim mReplayId =
                             Main.RoomMsg <|
                                 Room.ConnectedMsg <|
                                     Connected.GameStateMsg <|
-                                        GotoReplay replayId
+                                        GameState.PlayStateMsg <|
+                                            GotoReplay replayId
                         , disabled isDisabled
                         ]
                         [ text "Replay" ]
@@ -72,7 +74,8 @@ view progress anim mReplayId =
                         Main.RoomMsg <|
                             Room.ConnectedMsg <|
                                 Connected.GameStateMsg <|
-                                    PlayingOnly Rematch
+                                    GameState.PlayStateMsg <|
+                                        PlayingOnly Rematch
                     , disabled isDisabled
                     ]
                     [ text "Rematch" ]
