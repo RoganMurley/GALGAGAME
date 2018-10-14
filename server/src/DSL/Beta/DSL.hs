@@ -18,7 +18,7 @@ data DSL n
   | Draw WhichPlayer n
   | Bite Life WhichPlayer n
   | AddToHand WhichPlayer Card n
-  | Obliterate n
+  | Hubris n
   | Reflect n
   | Reverse n
   | Play WhichPlayer Card Int n

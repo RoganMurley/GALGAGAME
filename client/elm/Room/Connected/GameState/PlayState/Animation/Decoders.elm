@@ -2,7 +2,7 @@ module Animation.Decoders exposing (decoder)
 
 import Animation.Types exposing (Anim(..))
 import Card.Decoders as Card
-import Json.Decode as Json exposing (Decoder, fail, field, index, int, oneOf, string, succeed)
+import Json.Decode as Json exposing (Decoder, fail, field, index, int, list, oneOf, string, succeed)
 import Stack.Decoders as Stack
 import WhichPlayer.Decoders as WhichPlayer
 
@@ -16,7 +16,7 @@ decoder =
         , biteDecoder
         , reflectDecoder
         , reverseDecoder
-        , obliterateDecoder
+        , hubrisDecoder
         , playDecoder
         , transmuteDecoder
         , millDecoder
@@ -84,11 +84,12 @@ reverseDecoder =
         (field "anim" <| constDecoder "reverse")
 
 
-obliterateDecoder : Decoder Anim
-obliterateDecoder =
-    Json.map2 (\w _ -> Obliterate w)
+hubrisDecoder : Decoder Anim
+hubrisDecoder =
+    Json.map3 (\w _ s -> Hubris s w)
         (field "player" WhichPlayer.decoder)
-        (field "anim" <| constDecoder "obliterate")
+        (field "anim" <| index 0 <| constDecoder "hubris")
+        (field "anim" <| index 1 <| list Stack.stackCardDecoder)
 
 
 playDecoder : Decoder Anim

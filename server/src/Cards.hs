@@ -10,7 +10,7 @@ import Util (shuffle)
 
 import qualified DSL.Alpha as Alpha
 import qualified DSL.Beta as Beta
-import DSL.Beta hiding (reflect)
+import DSL.Beta hiding (hubris, reflect)
 
 
 -- Striker
@@ -86,7 +86,7 @@ hubris =
     "Remove all cards clockwise"
     "breaker/hubris.svg"
     $ \_ -> do
-      obliterate
+      Beta.hubris
 
 
 -- Balancer
