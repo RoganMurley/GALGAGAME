@@ -1,17 +1,17 @@
 module Replay.State exposing (..)
 
-import GameState.Decoders exposing (playStateDecoder)
-import GameState.State exposing (playstateTick, resolvable, resMapPlay)
-import GameState.Types exposing (PlayState(..))
 import Json.Decode as Json
+import PlayState.Decoders as PlayState
 import Main.Messages as Main
 import Main.Types exposing (Flags)
 import Model.Decoders as Model
 import Model.Types exposing (Model)
 import Model.ViewModel
+import PlayState.State as PlayState
+import PlayState.Types exposing (PlayState(..))
 import Replay.Messages exposing (Msg(..))
 import Replay.Types as Replay exposing (Replay)
-import Resolvable.Decoders exposing (resolveDiffDataDecoder)
+import Resolvable.Decoders
 import Resolvable.State as Resolvable
 import Resolvable.Types as Resolvable
 import Room.Messages as Room
@@ -42,7 +42,9 @@ receive msg =
                     resDiffList : List Resolvable.ResolveDiffData
                     resDiffList =
                         unsafeForceDecode
-                            (Json.field "list" (Json.list resolveDiffDataDecoder))
+                            (Json.field "list" <|
+                                Json.list Resolvable.Decoders.resolveDiffData
+                            )
                             content
 
                     resList : List Resolvable.ResolveData
@@ -52,12 +54,12 @@ receive msg =
                     finalState : PlayState
                     finalState =
                         unsafeForceDecode
-                            (Json.field "final" playStateDecoder)
+                            (Json.field "final" PlayState.decoder)
                             content
 
                     model : Model
                     model =
-                        .final <| resolvable finalState
+                        PlayState.get (.final << .res) finalState
 
                     res : Resolvable.Model
                     res =
@@ -69,7 +71,7 @@ receive msg =
 
                     state : PlayState
                     state =
-                        resMapPlay (\_ -> res) finalState
+                        PlayState.map (\game -> { game | res = res }) finalState
 
                     usernamePa : String
                     usernamePa =
@@ -119,7 +121,7 @@ tick flags model dt =
     let
         newReplay =
             Maybe.map
-                (\r -> { r | state = playstateTick flags r.state dt })
+                (\r -> { r | state = PlayState.tick flags r.state dt })
                 model.replay
     in
         { model | replay = newReplay }

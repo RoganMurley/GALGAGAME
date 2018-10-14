@@ -1,28 +1,14 @@
 module GameState.Messages exposing (..)
 
-import Mouse exposing (Position)
 import CharacterSelect.Messages as CharacterSelect
+import Mouse exposing (Position)
+import PlayState.Messages as PlayState
 
 
 type Msg
-    = HoverSelf (Maybe Int)
-    | HoverOutcome (Maybe Int)
+    = Mouse Position
+    | MouseClick Position
+    | PlayStateMsg PlayState.Msg
     | ResolveOutcome String
     | SelectingMsg CharacterSelect.Msg
     | Sync String
-    | PlayingOnly PlayingOnly
-    | ReplaySaved String
-    | GotoReplay String
-    | Mouse Position
-    | MouseClick Position
-
-
-type PlayingOnly
-    = Rematch
-    | TurnOnly TurnOnly
-    | HoverCard (Maybe Int)
-
-
-type TurnOnly
-    = EndTurn
-    | PlayCard Int

@@ -8,7 +8,8 @@
         "elm/Room",
         "elm/Room/Connected",
         "elm/Room/Connected/GameState",
-        "elm/Room/Connected/GameState/Model"
+        "elm/Room/Connected/GameState/PlayState",
+        "elm/Room/Connected/GameState/PlayState/Model"
     ],
     "exposed-modules": [],
     "dependencies": {

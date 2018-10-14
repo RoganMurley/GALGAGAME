@@ -69,7 +69,7 @@ instance Mirror PlayState where
 instance Mirror GameState where
   mirror (Waiting wait gen)  = Waiting wait gen
   mirror (Selecting m t gen) = Selecting (mirror m) t gen
-  mirror (Started started)   = Started $ mirror started
+  mirror (Started playState) = Started $ mirror playState
 
 
 initState :: WaitType -> Gen -> GameState

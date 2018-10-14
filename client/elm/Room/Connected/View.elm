@@ -5,10 +5,11 @@ import Html.Attributes exposing (class, classList)
 import Html.Events exposing (onClick)
 import Connected.Messages as Connected
 import Connected.Types exposing (Model)
-import GameState.Types exposing (GameState(..), PlayState(..))
+import GameState.Types exposing (GameState(..))
 import GameState.View as GameState
 import Main.Messages exposing (Msg(..))
 import Main.Types exposing (Flags)
+import PlayState.Types exposing (PlayState(..))
 import Texture.Types as Texture
 
 

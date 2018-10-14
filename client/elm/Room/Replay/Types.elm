@@ -1,6 +1,6 @@
 module Replay.Types exposing (..)
 
-import GameState.Types exposing (PlayState)
+import PlayState.Types exposing (PlayState)
 
 
 type alias Model =

@@ -20,6 +20,7 @@ import Math.Vector2 exposing (vec2)
 import Math.Vector3 exposing (vec3)
 import Maybe.Extra as Maybe
 import Model.Wave as Wave
+import PlayState.Messages as PlayState
 import Render.Primitives
 import Render.Shaders
 import Render.Types exposing (Params)
@@ -289,9 +290,10 @@ turnView { anim, model } focus =
                                 Main.RoomMsg <|
                                     Room.ConnectedMsg <|
                                         Connected.GameStateMsg <|
-                                            GameState.PlayingOnly <|
-                                                GameState.TurnOnly <|
-                                                    GameState.EndTurn
+                                            GameState.PlayStateMsg <|
+                                                PlayState.PlayingOnly <|
+                                                    PlayState.TurnOnly <|
+                                                        PlayState.EndTurn
                             ]
                             [ text "Go" ]
 

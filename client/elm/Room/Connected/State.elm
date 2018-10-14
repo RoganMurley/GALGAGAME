@@ -1,16 +1,17 @@
 module Connected.State exposing (init, update, receive, tick)
 
 import Audio exposing (playSound)
-import Connected.Types exposing (Model)
 import Connected.Decoders exposing (decodeHoverOutcome, decodePlayers)
 import Connected.Messages exposing (Msg(..))
+import Connected.Types exposing (Model)
 import GameState.Messages as GameState
 import GameState.State as GameState
 import GameState.Types exposing (GameState(..), WaitType(..))
-import Settings.Messages as Settings
 import Main.Messages as Main
 import Main.Types exposing (Flags)
 import Mode exposing (Mode(..))
+import PlayState.Messages as PlayState
+import Settings.Messages as Settings
 import Util exposing (message, send, splitOnColon)
 
 
@@ -71,7 +72,9 @@ receive ({ mode } as model) msg flags =
                         let
                             ( newGame, cmd ) =
                                 GameState.update
-                                    (GameState.HoverOutcome hoverOutcome)
+                                    (GameState.PlayStateMsg <|
+                                        PlayState.HoverOutcome hoverOutcome
+                                    )
                                     model.game
                                     mode
                                     flags
@@ -116,7 +119,9 @@ receive ({ mode } as model) msg flags =
                 let
                     ( newGame, cmd ) =
                         GameState.update
-                            (GameState.ReplaySaved content)
+                            (GameState.PlayStateMsg <|
+                                PlayState.ReplaySaved content
+                            )
                             model.game
                             mode
                             flags

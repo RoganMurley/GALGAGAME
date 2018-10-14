@@ -51,8 +51,8 @@ update cmd which state usernames =
           select which name (selectModel, turn, gen) usernames
         _ ->
           Left ("Unknown command " <> (cs $ show cmd) <> " on a selecting GameState")
-    Started started ->
-      case started of
+    Started playState ->
+      case playState of
         Playing model replay ->
           case cmd of
             EndTurn ->

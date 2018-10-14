@@ -1,4 +1,4 @@
-module Resolvable.Decoders exposing (resolveDiffDataDecoder)
+module Resolvable.Decoders exposing (resolveDiffData)
 
 import Json.Decode as Json exposing (Decoder, index, maybe)
 import Animation.Decoders as Animation
@@ -7,8 +7,8 @@ import Resolvable.Types exposing (ResolveDiffData)
 import Stack.Decoders as Stack
 
 
-resolveDiffDataDecoder : Decoder ResolveDiffData
-resolveDiffDataDecoder =
+resolveDiffData : Decoder ResolveDiffData
+resolveDiffData =
     Json.map3 (\d a s -> { diff = d, anim = a, stackCard = s })
         (index 0 Model.Diff.decoder)
         (index 1 Animation.decoder)

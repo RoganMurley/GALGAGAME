@@ -1,12 +1,13 @@
 module Game.State exposing (..)
 
 import Animation.State as Animation
-import Game.Types exposing (Context, Entities, Model)
+import Game.Types as Game exposing (Context, Entities)
 import Hand.Entities as Hand
 import List.Extra as List
 import Main.Types exposing (Flags)
 import Math.Vector2 exposing (Vec2, vec2)
 import Maybe.Extra as Maybe
+import Model.Types exposing (Model)
 import Resolvable.State as Resolvable exposing (activeAnim, activeModel, activeStackCard)
 import Resolvable.Types as Resolvable
 import Stack.Entities as Stack
@@ -16,12 +17,12 @@ import Texture.Types as Texture
 import WhichPlayer.Types exposing (WhichPlayer(..))
 
 
-gameInit : Resolvable.Model -> Model
-gameInit res =
+gameInit : Model -> Game.Model
+gameInit model =
     { focus = Nothing
     , mouse = vec2 0 0
     , entities = { hand = [], otherHand = [], stack = [] }
-    , res = res
+    , res = Resolvable.init model []
     }
 
 
@@ -63,8 +64,8 @@ entitiesInit =
     }
 
 
-tick : Flags -> Model -> Float -> Model
-tick { dimensions } model dt =
+tick : Flags -> Float -> Game.Model -> Game.Model
+tick { dimensions } dt model =
     let
         ctx =
             contextInit dimensions model.res Texture.init
@@ -85,7 +86,7 @@ hitTest pos dist { position } =
     Math.Vector2.distance position pos < dist
 
 
-getFocus : Context -> Model -> Maybe StackCard
+getFocus : Context -> Game.Model -> Maybe StackCard
 getFocus { stackCard } { entities, mouse } =
     let
         hoverCard =

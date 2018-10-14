@@ -164,7 +164,10 @@ update msg ({ room, settings, textures, flags } as model) =
                 ( newRoom, newCmd ) =
                     Room.update
                         room
-                        (Room.ConnectedMsg <| Connected.GameStateMsg <| GameState.Mouse mouse)
+                        (Room.ConnectedMsg <|
+                            Connected.GameStateMsg <|
+                                GameState.Mouse mouse
+                        )
                         flags
             in
                 ( { model | room = newRoom }
@@ -176,7 +179,10 @@ update msg ({ room, settings, textures, flags } as model) =
                 ( newRoom, newCmd ) =
                     Room.update
                         room
-                        (Room.ConnectedMsg <| Connected.GameStateMsg <| GameState.MouseClick mouse)
+                        (Room.ConnectedMsg <|
+                            Connected.GameStateMsg <|
+                                GameState.MouseClick mouse
+                        )
                         flags
             in
                 ( { model | room = newRoom }
