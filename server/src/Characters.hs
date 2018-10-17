@@ -138,13 +138,13 @@ allCharacters =
 
 
 testCharacters :: [Character]
-testCharacters =
-  let
-    testCard = Cards.hubris
-  in
-    map
-      (\n -> Character n (testCard, testCard, testCard, testCard))
-      ["A", "B", "C"]
+testCharacters = []
+  -- let
+  --   testCard = Cards.hubris
+  -- in
+  --   map
+  --     (\n -> Character n (testCard, testCard, testCard, testCard))
+  --     ["A", "B", "C"]
 
 
 striker :: Character
