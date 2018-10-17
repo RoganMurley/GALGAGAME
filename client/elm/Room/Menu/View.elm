@@ -1,6 +1,6 @@
 module Menu.View exposing (view)
 
-import Html exposing (Html, button, div, h1, h2, text)
+import Html exposing (Html, button, div, h1, text)
 import Html.Attributes exposing (class)
 import Html.Events exposing (onClick)
 import Lobby.State exposing (gameTypeToString)
