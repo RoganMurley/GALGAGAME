@@ -60,7 +60,7 @@ tick dt model =
 
 tickEnd : Float -> Anim -> Bool
 tickEnd tick anim =
-    tick > Animation.animMaxTick anim
+    tick >= Animation.animMaxTick anim
 
 
 resolveStep : Resolvable.Model -> Resolvable.Model
