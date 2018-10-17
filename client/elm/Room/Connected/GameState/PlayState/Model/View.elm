@@ -256,7 +256,7 @@ damageTextView { radius, anim } =
                         , ( "bottom", 0.1 * radius |> px )
                         , ( "font-size", 0.4 * radius |> px )
                         , ( "color"
-                          , if damage > 0 then
+                          , if otherDamage > 0 then
                                 "lime"
                             else
                                 "red"
