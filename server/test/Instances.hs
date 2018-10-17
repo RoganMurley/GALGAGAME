@@ -122,12 +122,12 @@ instance Arbitrary PlayerModelDiff where
 instance Arbitrary CardAnim where
   arbitrary = oneof
     [ Slash <$> arbitrary <*> arbitrary
-    , Heal <$> arbitrary
+    , Heal <$> arbitrary <*> arbitrary
     , Draw <$> arbitrary
     , Bite <$> arbitrary <*> arbitrary
     , pure Reflect
     , pure Reverse
-    , Hubris
+    , pure Hubris
     , Play <$> arbitrary <*> arbitrary <*> arbitrary
     , Transmute <$> arbitrary <*> arbitrary
     , GameEnd <$> arbitrary
