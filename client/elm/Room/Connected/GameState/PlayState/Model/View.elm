@@ -227,6 +227,20 @@ damageTextView { radius, anim } =
     let
         ( damage, otherDamage ) =
             Animation.lifeChange anim
+
+        damageToString : Float -> String
+        damageToString d =
+            if d > 0 then
+                "+" ++ toString d
+            else
+                toString d
+
+        damageToCssColour : Float -> String
+        damageToCssColour d =
+            if d > 0 then
+                "lime"
+            else
+                "red"
     in
         List.concat
             [ if damage /= 0 then
@@ -236,15 +250,10 @@ damageTextView { radius, anim } =
                         [ ( "right", 0.49 * radius |> px )
                         , ( "top", 0.1 * radius |> px )
                         , ( "font-size", 0.4 * radius |> px )
-                        , ( "color"
-                          , if damage > 0 then
-                                "lime"
-                            else
-                                "red"
-                          )
+                        , ( "color", damageToCssColour damage )
                         ]
                     ]
-                    [ text <| toString damage ]
+                    [ text <| damageToString damage ]
                 ]
               else
                 []
@@ -255,15 +264,10 @@ damageTextView { radius, anim } =
                         [ ( "left", 0.49 * radius |> px )
                         , ( "bottom", 0.1 * radius |> px )
                         , ( "font-size", 0.4 * radius |> px )
-                        , ( "color"
-                          , if otherDamage > 0 then
-                                "lime"
-                            else
-                                "red"
-                          )
+                        , ( "color", damageToCssColour otherDamage )
                         ]
                     ]
-                    [ text <| toString otherDamage ]
+                    [ text <| damageToString otherDamage ]
                 ]
               else
                 []
