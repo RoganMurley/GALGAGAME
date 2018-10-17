@@ -67,11 +67,14 @@ entitiesInit =
 tick : Flags -> Float -> Game.Model -> Game.Model
 tick { dimensions } dt model =
     let
+        res =
+            Resolvable.tick dt model.res
+
         ctx =
-            contextInit dimensions model.res Texture.init
+            contextInit dimensions res Texture.init
     in
         { model
-            | res = Resolvable.tick dt model.res
+            | res = res
             , entities =
                 { stack = Stack.entities ctx
                 , hand = Hand.entities ctx
