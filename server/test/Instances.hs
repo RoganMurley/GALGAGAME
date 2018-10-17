@@ -127,7 +127,7 @@ instance Arbitrary CardAnim where
     , Bite <$> arbitrary <*> arbitrary
     , pure Reflect
     , pure Reverse
-    , Hubris <$> arbitrary
+    , Hubris
     , Play <$> arbitrary <*> arbitrary <*> arbitrary
     , Transmute <$> arbitrary <*> arbitrary
     , GameEnd <$> arbitrary
