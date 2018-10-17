@@ -16,7 +16,7 @@ animShake anim tick =
                 Bite _ d ->
                     5.0 * Ease.outQuad (toFloat d / 50.0)
 
-                Hubris _ _ ->
+                Hubris _ ->
                     20.0
 
                 Play _ _ _ ->
@@ -46,7 +46,7 @@ animMaxTick anim =
         Mill _ _ ->
             1000.0
 
-        Hubris _ _ ->
+        Hubris _ ->
             1000.0
 
         GameEnd _ ->
@@ -72,7 +72,7 @@ progress anim tick =
         easingFunction : Float -> Float
         easingFunction =
             case anim of
-                Heal _ ->
+                Heal _ _ ->
                     Ease.outQuad
 
                 Mill _ _ ->
@@ -109,8 +109,8 @@ lifeChange anim =
                     ( 0, toFloat d )
     in
         case anim of
-            Heal w ->
-                wrap w 10
+            Heal w h ->
+                wrap w h
 
             Slash w d ->
                 wrap w -d

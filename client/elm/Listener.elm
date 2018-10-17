@@ -49,7 +49,7 @@ animSfx anim =
                 _ ->
                     Just "damage.mp3"
 
-        Heal _ ->
+        Heal _ _ ->
             Just "heal.mp3"
 
         Draw _ ->
@@ -67,7 +67,7 @@ animSfx anim =
         Transmute _ _ _ ->
             Just "transmute.mp3"
 
-        Hubris _ _ ->
+        Hubris _ ->
             Just "obliterate.mp3"
 
         Mill _ _ ->

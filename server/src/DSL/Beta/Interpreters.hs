@@ -56,13 +56,13 @@ basicAnim anim alphaProgram = toLeft alphaProgram <* (toRight . liftF $ anim)
 animI :: DSL a -> (Alpha.Program a -> AlphaAnimProgram a)
 animI (Null _)           = basicAnim $ Anim.Null ()
 animI (Slash d w _)      = basicAnim $ Anim.Slash w d ()
-animI (Heal _ w _)       = basicAnim $ Anim.Heal w ()
+animI (Heal h w _)       = basicAnim $ Anim.Heal w h ()
 animI (Bite d w _)       = basicAnim $ Anim.Bite w d ()
 animI (Reflect _)        = basicAnim $ Anim.Reflect ()
 animI (Reverse _)        = basicAnim $ Anim.Reverse ()
 animI (Rotate _)         = basicAnim $ Anim.Rotate ()
-animI (RawAnim r _)      = basicAnim $ Anim.Raw r ()
 animI (Hubris _)         = hubrisAnim
+animI (RawAnim r _)      = basicAnim $ Anim.Raw r ()
 animI (AddToHand w _ _)  = drawAnim w
 animI (Draw w _)         = drawAnim w
 animI (Play w c i _)     = playAnim w c i
@@ -72,12 +72,11 @@ animI _                  = toLeft
 
 
 hubrisAnim :: Alpha.Program a -> AlphaAnimProgram a
-hubrisAnim alpha =
-  do
-    stack <- toLeft $ Alpha.getStack
-    final <- toLeft alpha
-    toRight . liftF $ Anim.Hubris stack ()
-    return final
+hubrisAnim alpha = do
+  toRight . liftF $ Anim.Hubris ()
+  final <- toLeft alpha
+  toRight . liftF $ Anim.Null ()
+  return final
 
 
 drawAnim :: WhichPlayer -> Alpha.Program a -> AlphaAnimProgram a

@@ -1,19 +1,19 @@
 module Animation.Types exposing (..)
 
 import Card.Types exposing (Card)
-import Stack.Types exposing (Stack, StackCard)
+import Stack.Types exposing (StackCard)
 import WhichPlayer.Types exposing (WhichPlayer)
 
 
 type Anim
     = NullAnim
     | Slash WhichPlayer Int
-    | Heal WhichPlayer
+    | Heal WhichPlayer Int
     | Draw WhichPlayer
     | Bite WhichPlayer Int
     | Reflect WhichPlayer
     | Reverse WhichPlayer
-    | Hubris Stack WhichPlayer
+    | Hubris WhichPlayer
     | Play WhichPlayer Card Int
     | Transmute WhichPlayer StackCard StackCard
     | Mill WhichPlayer Card

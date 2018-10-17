@@ -50,9 +50,10 @@ slashDecoder =
 
 healDecoder : Decoder Anim
 healDecoder =
-    Json.map2 (\w _ -> Heal w)
+    Json.map3 (\w _ h -> Heal w h)
         (field "player" WhichPlayer.decoder)
-        (field "anim" <| constDecoder "heal")
+        (field "anim" <| index 0 <| constDecoder "heal")
+        (field "anim" <| index 1 int)
 
 
 drawDecoder : Decoder Anim
@@ -86,10 +87,9 @@ reverseDecoder =
 
 hubrisDecoder : Decoder Anim
 hubrisDecoder =
-    Json.map3 (\w _ s -> Hubris s w)
+    Json.map2 (\w _ -> Hubris w)
         (field "player" WhichPlayer.decoder)
-        (field "anim" <| index 0 <| constDecoder "hubris")
-        (field "anim" <| index 1 <| list Stack.stackCardDecoder)
+        (field "anim" <| constDecoder "hubris")
 
 
 playDecoder : Decoder Anim

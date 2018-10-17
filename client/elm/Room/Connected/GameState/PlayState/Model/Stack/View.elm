@@ -17,7 +17,7 @@ view entities ctx =
 
         makeEntity i =
             case ctx.anim of
-                Hubris _ _ ->
+                Hubris _ ->
                     if i == n then
                         Card.view ctx
                     else

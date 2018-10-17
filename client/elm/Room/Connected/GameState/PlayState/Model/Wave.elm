@@ -16,7 +16,7 @@ view ({ w, h, radius, anim } as ctx) =
     let
         progress =
             case anim of
-                Heal _ ->
+                Heal _ _ ->
                     1 - ctx.progress
 
                 _ ->
@@ -46,7 +46,7 @@ view ({ w, h, radius, anim } as ctx) =
                     }
                 ]
 
-            Heal _ ->
+            Heal _ _ ->
                 [ render Colour.green
                     { scale = scale
                     , position = vec2 (w / 2) (h / 2)
