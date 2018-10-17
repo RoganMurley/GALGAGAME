@@ -1,5 +1,3 @@
-'use strict';
-
 import gulp from 'gulp';
 import elm from 'gulp-elm';
 import plumber from 'gulp-plumber';
@@ -26,13 +24,15 @@ const dir = {
 // ELM
 gulp.task('init', elm.init);
 
-gulp.task('multi', ['init'], () => {
-  return gulp.src('elm/Main.elm')
-    .pipe(plumber())
-    .pipe(elm.make({filetype: 'js', warn: true}))
-    .pipe(minifyJs())
-    .pipe(gulp.dest(dir.build));
-});
+gulp.task('multi',
+  gulp.series('init', () => {
+    return gulp.src('elm/Main.elm')
+      .pipe(plumber())
+      .pipe(elm.make({filetype: 'js', warn: true}))
+      .pipe(minifyJs())
+      .pipe(gulp.dest(dir.build));
+  })
+);
 
 
 // SASS
@@ -63,20 +63,20 @@ gulp.task('copy', () => {
 
 // COPYDEPS
 gulp.task('copyDeps', () => {
-  return gulp.src("node_modules/howler/dist/howler.min.js")
+  return gulp.src('node_modules/howler/dist/howler.min.js')
     .pipe(gulp.dest(dir.build));
 });
 
 
 // DEFAULT
-gulp.task('default', ['build', 'watch']);
-
-gulp.task('build', ['multi', 'sass', 'html', 'copy', 'copyDeps']);
+gulp.task('build', gulp.parallel('multi', 'sass', 'html', 'copy', 'copyDeps'));
 
 gulp.task('watch', () => {
-  gulp.watch('elm/**/*.elm', ['multi']);
-  gulp.watch('sass/**/*.scss', ['sass']);
-  gulp.watch(`${dir.dev}/**`, ['copy']);
-  gulp.watch("node_modules/**", ['copyDeps']);
-  gulp.watch(`${dir.dev}/html/*`, ['html']);
+  gulp.watch('elm/**/*.elm', gulp.series('multi'));
+  gulp.watch('sass/**/*.scss', gulp.series('sass'));
+  gulp.watch(`${dir.dev}/**`, gulp.series('copy'));
+  gulp.watch("node_modules/**", gulp.series('copyDeps'));
+  gulp.watch(`${dir.dev}/html/*`, gulp.series('html'));
 });
+
+gulp.task('default', gulp.series('build', 'watch'));
