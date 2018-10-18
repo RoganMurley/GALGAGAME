@@ -63,7 +63,7 @@ animI (Rotate _)         = basicAnim $ Anim.Rotate ()
 animI (RawAnim r _)      = basicAnim $ Anim.Raw r ()
 animI (Hubris _)         = hubrisAnim
 animI (Heal _ w _)       = healAnim w
-animI (AddToHand w _ _)  = drawAnim w
+animI (AddToHand w c  _) = addToHandAnim w c
 animI (Draw w _)         = drawAnim w
 animI (Play w c i _)     = playAnim w c i
 animI (Transmute c _)    = transmuteAnim c
@@ -99,6 +99,17 @@ drawAnim w alpha =
     if (handLength < maxHandLength)
       then toRight . liftF $ Anim.Draw w ()
       else toRight . liftF $ Anim.Mill w (fromMaybe theEnd nextCard) ()
+    return final
+
+
+addToHandAnim :: WhichPlayer -> Card -> Alpha.Program a -> AlphaAnimProgram a
+addToHandAnim w c alpha =
+  do
+    handLength <- length <$> toLeft (Alpha.getHand w)
+    final <- toLeft alpha
+    if (handLength < maxHandLength)
+      then toRight . liftF $ Anim.Draw w ()
+      else toRight . liftF $ Anim.Mill w c ()
     return final
 
 

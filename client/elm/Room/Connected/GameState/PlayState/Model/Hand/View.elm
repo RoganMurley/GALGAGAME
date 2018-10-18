@@ -116,13 +116,21 @@ millView ({ w, h, progress, tick, anim } as ctx) =
                         PlayerB ->
                             -1
 
+                startPos =
+                    case owner of
+                        PlayerA ->
+                            vec2 w h
+
+                        PlayerB ->
+                            vec2 w 0
+
                 entity =
                     { owner = owner
                     , card = card
                     , position =
                         interp2D
                             progress
-                            (vec2 w h)
+                            startPos
                             (vec2 (w / 2) (h / 2))
                     , rotation = interpFloat progress pi (pi - sign * 0.05 * pi)
                     , scale = interpFloat progress 1 4
