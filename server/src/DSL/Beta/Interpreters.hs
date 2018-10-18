@@ -56,19 +56,30 @@ basicAnim anim alphaProgram = toLeft alphaProgram <* (toRight . liftF $ anim)
 animI :: DSL a -> (Alpha.Program a -> AlphaAnimProgram a)
 animI (Null _)           = basicAnim $ Anim.Null ()
 animI (Slash d w _)      = basicAnim $ Anim.Slash w d ()
-animI (Heal h w _)       = basicAnim $ Anim.Heal w h ()
 animI (Bite d w _)       = basicAnim $ Anim.Bite w d ()
 animI (Reflect _)        = basicAnim $ Anim.Reflect ()
 animI (Reverse _)        = basicAnim $ Anim.Reverse ()
 animI (Rotate _)         = basicAnim $ Anim.Rotate ()
-animI (Hubris _)         = hubrisAnim
 animI (RawAnim r _)      = basicAnim $ Anim.Raw r ()
+animI (Hubris _)         = hubrisAnim
+animI (Heal _ w _)       = healAnim w
 animI (AddToHand w _ _)  = drawAnim w
 animI (Draw w _)         = drawAnim w
 animI (Play w c i _)     = playAnim w c i
 animI (Transmute c _)    = transmuteAnim c
 animI (SetHeadOwner w _) = setHeadOwnerAnim w
 animI _                  = toLeft
+
+
+healAnim :: WhichPlayer -> Alpha.Program a -> AlphaAnimProgram a
+healAnim w alpha =
+  do
+    oldLife <- toLeft $ Alpha.getLife w
+    final <- toLeft alpha
+    newLife <- toLeft $ Alpha.getLife w
+    let lifeChange = newLife - oldLife
+    toRight . liftF $ Anim.Heal w lifeChange ()
+    return final
 
 
 hubrisAnim :: Alpha.Program a -> AlphaAnimProgram a
