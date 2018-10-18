@@ -2,7 +2,7 @@ module Animation.Decoders exposing (decoder)
 
 import Animation.Types exposing (Anim(..))
 import Card.Decoders as Card
-import Json.Decode as Json exposing (Decoder, fail, field, index, int, list, oneOf, string, succeed)
+import Json.Decode as Json exposing (Decoder, fail, field, index, int, oneOf, string, succeed)
 import Stack.Decoders as Stack
 import WhichPlayer.Decoders as WhichPlayer
 
