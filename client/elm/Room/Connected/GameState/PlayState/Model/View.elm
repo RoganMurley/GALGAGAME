@@ -145,19 +145,35 @@ lifeOrbView ({ w, h, radius, model, anim, tick } as ctx) =
                 progress
                 (finalOtherLifePercentage - (otherLifeChange / 50) * finalOtherLifePercentage)
                 finalOtherLifePercentage
+
+        shake =
+            Animation.animShake anim PlayerA tick
+
+        otherShake =
+            Animation.animShake anim PlayerB tick
+
+        pos =
+            Math.Vector2.add
+                (vec2 (w * 0.5 - 0.6 * radius) (h * 0.5 + 0.75 * radius))
+                (vec2 shake shake)
+
+        otherPos =
+            Math.Vector2.add
+                (vec2 (w * 0.5 + 0.6 * radius) (h * 0.5 - 0.75 * radius))
+                (vec2 -otherShake -otherShake)
     in
         [ Render.Primitives.fullCircle <|
             uniColourMag ctx
                 (Colour.card PlayerA)
                 lifePercentage
                 { scale = 0.15 * radius
-                , position = vec2 (w * 0.5 - 0.6 * radius) (h * 0.5 + 0.75 * radius)
+                , position = pos
                 , rotation = 0
                 }
         , Render.Primitives.circle <|
             uni ctx
                 { scale = 0.15 * radius
-                , position = vec2 (w * 0.5 - 0.6 * radius) (h * 0.5 + 0.75 * radius)
+                , position = pos
                 , rotation = 0
                 }
         , Render.Primitives.fullCircle <|
@@ -165,13 +181,13 @@ lifeOrbView ({ w, h, radius, model, anim, tick } as ctx) =
                 (Colour.card PlayerB)
                 otherLifePercentage
                 { scale = 0.15 * radius
-                , position = vec2 (w * 0.5 + 0.6 * radius) (h * 0.5 - 0.75 * radius)
+                , position = otherPos
                 , rotation = 0
                 }
         , Render.Primitives.circle <|
             uni ctx
                 { scale = 0.15 * radius
-                , position = vec2 (w * 0.5 + 0.6 * radius) (h * 0.5 - 0.75 * radius)
+                , position = otherPos
                 , rotation = 0
                 }
         ]
