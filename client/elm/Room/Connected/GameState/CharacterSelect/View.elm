@@ -63,13 +63,7 @@ view { characters, selected, vm } =
                     td [] [ cardView c ]
             in
                 table [ class "card-preview" ]
-                    [ tr [] (List.map eachView [ c1, c2, c3, c4 ])
-                    , tr []
-                        (List.map
-                            (\x -> th [ class "card-type" ] [ text x ])
-                            [ "Weapon", "Magic", "Support", "Control" ]
-                        )
-                    ]
+                    [ tr [] (List.map eachView [ c1, c2, c3, c4 ]) ]
     in
         div []
             [ div

@@ -17,7 +17,7 @@ import DSL.Beta hiding (hubris, reflect)
 dagger :: Card
 dagger =
   Card
-    "Dagger"
+    "Stab"
     "Hurt for 7"
     "striker/dagger.svg"
     $ \w -> slash 7 (other w)
@@ -26,8 +26,8 @@ dagger =
 fireball :: Card
 fireball =
   Card
-    "Fireball"
-    "Hurt for 5 for each card clockwise"
+    "Firebolt"
+    "Hurt for 5 for each other card in play"
     "striker/fireball.svg"
     $ \w -> do
       len <- length <$> getStack
@@ -37,7 +37,7 @@ fireball =
 offering :: Card
 offering =
   Card
-    "Offering"
+    "Offer"
     "Pay 4 life to draw 2"
     "striker/offering.svg"
     $ \w -> do
@@ -50,7 +50,7 @@ confound :: Card
 confound =
   Card
     "Confound"
-    "Shuffle the order of cards clockwise"
+    "Shuffle the order of all cards in play"
     "striker/confound.svg"
     $ \_ -> do
       gen <- getGen
@@ -71,8 +71,8 @@ hammer =
 lightning :: Card
 lightning =
   Card
-    "Lightning"
-    "Hurt for 4 for each card clockwise"
+    "Thunderbolt"
+    "Hurt for 4 for each other card in play"
     "breaker/lightning.svg"
     $ \w -> do
       len <- length <$> getStack
@@ -82,8 +82,8 @@ lightning =
 hubris :: Card
 hubris =
   Card
-    "Hubris"
-    "Remove all cards clockwise"
+    "Collapse"
+    "Discard all cards in play"
     "breaker/hubris.svg"
     $ \_ -> do
       Beta.hubris
@@ -93,7 +93,7 @@ hubris =
 katana :: Card
 katana =
   Card
-    "Katana"
+    "Cut"
     "Hurt for 9"
     "balancer/katana.svg"
     $ \w -> slash 9 (other w)
@@ -131,7 +131,7 @@ balance :: Card
 balance =
   Card
     "Balance"
-    "Change next card clockwise's owner to weakest player"
+    "Change next card's owner to weakest player"
     "balancer/balance.svg"
     $ \w -> do
       paLife <- getLife w
@@ -145,7 +145,7 @@ balance =
 scythe :: Card
 scythe =
   Card
-    "Scythe"
+    "Harvest"
     "Lifesteal for 5"
     "drinker/scythe.svg"
     $ \w -> lifesteal 5 (other w)
@@ -154,8 +154,8 @@ scythe =
 bloodsucker :: Card
 bloodsucker =
   Card
-    "Bloodsucker"
-    "Lifesteal for 3 for each card clockwise"
+    "Feast"
+    "Lifesteal for 3 for each other card in play"
     "drinker/bloodsucker.svg"
     $ \w -> do
       len <- length <$> getStack
@@ -165,7 +165,7 @@ bloodsucker =
 serpent :: Card
 serpent =
   Card
-    "Serpent"
+    "Beguile"
     ("Add 2 " <> description badApple <> " to their hand")
     "drinker/serpent.svg"
     $ \w -> do
@@ -176,7 +176,7 @@ serpent =
 badApple :: Card
 badApple =
   Card
-    "Bad Apple"
+    "Ingest"
     "Hurt yourself for 4"
     "drinker/bad-apple.svg"
     $ \w -> do
@@ -186,8 +186,8 @@ badApple =
 reversal :: Card
 reversal =
   Card
-    "Reversal"
-    "Reverse the order of cards clockwise"
+    "Reverse"
+    "Reverse the order of all cards in play"
     "drinker/reversal.svg"
     $ const Beta.reverse
 
@@ -196,7 +196,7 @@ reversal =
 staff :: Card
 staff =
   Card
-    "Staff"
+    "Smack"
     "Hurt for 4, then draw 1"
     "watcher/staff.svg"
     $ \w -> do
@@ -208,7 +208,7 @@ surge :: Card
 surge =
   Card
     "Surge"
-    "Hurt for 6 for each of your cards clockwise"
+    "Hurt for 6 for each of your other cards in play"
     "watcher/surge.svg"
     $ \w -> do
       len <- length . (filter (isOwner w)) <$> getStack
@@ -237,8 +237,8 @@ mimic =
 prophecy :: Card
 prophecy =
   Card
-    "Prophecy"
-    "Return all cards clockwise to hand"
+    "Foresee"
+    "Return all cards in play to hand"
     "watcher/prophecy.svg"
     $ \w -> do
       raw $ do
@@ -251,7 +251,7 @@ prophecy =
 sword :: Card
 sword =
   Card
-    "Sword"
+    "Slash"
     "Hurt for 10"
     "shielder/sword.svg"
     $ \w -> slash 10 (other w)
@@ -260,7 +260,7 @@ sword =
 potion :: Card
 potion =
   Card
-    "Potion"
+    "Remedy"
     "Heal for 10"
     "shielder/potion.svg"
     $ heal 10
@@ -270,7 +270,7 @@ reflect :: Card
 reflect =
   Card
     "Reflect"
-    "All cards clockwise change owner"
+    "All cards in play change owner"
     "shielder/reflect.svg"
     $ const Beta.reflect
 
@@ -301,8 +301,8 @@ overwhelm =
 echo :: Card
 echo =
   Card
-    "Echo"
-    "When the card clockwise activates, it does so twice"
+    "Double"
+    "When the next card activates it does so twice"
     "bouncer/echo.svg"
     $ \_ -> do
       raw $ do
@@ -316,7 +316,7 @@ feint :: Card
 feint =
   Card
     "Feint"
-    "Return all of your cards clockwise to hand"
+    "Return all of your cards in play to hand"
     "bouncer/feint.svg"
     $ \w -> do
       raw $ Alpha.bounceAll w
@@ -327,7 +327,7 @@ feint =
 relicblade :: Card
 relicblade =
   Card
-    "Relicblade"
+    "Slice"
     "Hurt for 6"
     "collector/relicblade.svg"
     $ \w -> slash 6 (other w)
@@ -336,7 +336,7 @@ relicblade =
 greed :: Card
 greed =
   Card
-    "Greed"
+    "Crave"
     "Hurt for 3 for each card in their hand"
     "collector/greed.svg"
     $ \w -> do
@@ -347,8 +347,8 @@ greed =
 alchemy :: Card
 alchemy =
   Card
-    "Alchemy"
-    ("Change next card clockwise to " <> description gold)
+    "Alchemize"
+    ("Change next card to " <> description gold)
     "collector/alchemy.svg"
     $ \_ -> transmute gold
 
@@ -356,7 +356,7 @@ alchemy =
 gold :: Card
 gold =
   Card
-    "Gold"
+    "Gild"
     "Draw 2"
     "collector/gold.svg"
     $ \w -> do
@@ -367,7 +367,7 @@ gold =
 theEnd :: Card
 theEnd =
   Card
-    "The End"
+    "End"
     "You're out of cards, hurt yourself for 10"
     "the_end.svg"
     $ slash 10
