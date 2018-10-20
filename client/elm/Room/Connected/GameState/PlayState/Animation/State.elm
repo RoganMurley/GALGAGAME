@@ -5,22 +5,22 @@ import Ease
 import WhichPlayer.Types exposing (WhichPlayer(..))
 
 
-animShake : Anim -> Float -> Float
-animShake anim tick =
+animShake : Anim -> WhichPlayer -> Float -> Float
+animShake anim which tick =
     let
         baseMag =
             case anim of
-                Slash _ d ->
-                    5.0 * Ease.outQuad (toFloat d / 50.0)
+                Slash w d ->
+                    if which /= w then
+                        0
+                    else
+                        1.0 * Ease.outQuad (toFloat d / 50.0)
 
-                Bite _ d ->
-                    5.0 * Ease.outQuad (toFloat d / 50.0)
-
-                Hubris _ ->
-                    20.0
-
-                Play _ _ _ ->
-                    1.0
+                Bite w d ->
+                    if which /= w then
+                        0
+                    else
+                        1.0 * Ease.outQuad (toFloat d / 50.0)
 
                 _ ->
                     0.0
@@ -28,7 +28,7 @@ animShake anim tick =
         mag =
             baseMag * (1.0 - Ease.outQuad (tick / animMaxTick anim))
     in
-        mag * 0.03 * (toFloat <| (ceiling tick * 1247823748932 + 142131) % 20) - 10
+        mag * (toFloat <| (ceiling tick * 1247823748932 + 142131) % 20) - 10
 
 
 animMaxTick : Anim -> Float
