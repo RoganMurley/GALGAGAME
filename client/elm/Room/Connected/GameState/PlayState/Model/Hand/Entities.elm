@@ -1,5 +1,6 @@
 module Hand.Entities exposing (..)
 
+import Animation.State as Animation
 import Animation.Types exposing (Anim(..))
 import Card.Types as Card exposing (Card)
 import Game.Types exposing (Context)
@@ -208,21 +209,24 @@ otherEntities ({ w, h, radius, anim, model, progress } as ctx) =
 
 
 handOrigin : Context -> WhichPlayer -> Int -> Vec2
-handOrigin { w, h, radius } which count =
+handOrigin { w, h, radius, anim, tick } which count =
     let
         ( width, height, spacing ) =
             ( 0.1 * radius, 0.1 * radius, 35.0 )
 
+        shake =
+            Animation.animShake anim which tick
+
         x =
-            w / 2 - 0.5 * (width + spacing) * (toFloat <| count - 1)
+            w / 2 - 0.5 * (width + spacing) * (toFloat <| count - 1) + shake
 
         y =
             case which of
                 PlayerA ->
-                    h - height
+                    h - height - shake
 
                 PlayerB ->
-                    height
+                    height + shake
     in
         vec2 x y
 
