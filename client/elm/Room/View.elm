@@ -52,11 +52,12 @@ settingsView model flags =
             Login.logoutView flags
     in
         case model of
-            Connected { game } ->
+            Connected connected ->
                 List.concat
                     [ baseViews
                     , List.map (Html.map (Main.RoomMsg << ConnectedMsg)) <|
-                        Connected.concedeView game
+                        Connected.concedeView connected.game
+                    , Connected.specMenuView flags connected
                     ]
 
             _ ->

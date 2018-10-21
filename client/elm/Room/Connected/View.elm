@@ -1,7 +1,7 @@
-module Connected.View exposing (concedeView, playersView, view)
+module Connected.View exposing (concedeView, playersView, specMenuView, view)
 
-import Html exposing (Html, button, div, text)
-import Html.Attributes exposing (class, classList)
+import Html exposing (Html, button, div, input, h1, text)
+import Html.Attributes exposing (class, classList, id, readonly, type_, value)
 import Html.Events exposing (onClick)
 import Connected.Messages as Connected
 import Connected.Types exposing (Model)
@@ -60,3 +60,30 @@ concedeView state =
 
         _ ->
             []
+
+
+specMenuView : Flags -> Model -> List (Html Msg)
+specMenuView { hostname, httpPort } { roomID } =
+    let
+        myID =
+            "spec-link"
+
+        portProtocol =
+            if httpPort /= "" then
+                ":" ++ httpPort
+            else
+                ""
+
+        specLink =
+            "https://" ++ hostname ++ portProtocol ++ "/spec/" ++ roomID
+    in
+        [ input
+            [ value specLink
+            , type_ "text"
+            , readonly True
+            , id myID
+            , class "settings-input"
+            , onClick <| SelectAllInput myID
+            ]
+            []
+        ]
