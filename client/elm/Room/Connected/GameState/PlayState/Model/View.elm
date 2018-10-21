@@ -223,7 +223,7 @@ lifeTextView { radius, model } =
             [ ( "right", 0.49 * radius |> px )
             , ( "top", 0.62 * radius |> px )
             , ( "font-size", 0.18 * radius |> px )
-            , ( "transform", "translate(-28%, -11%)" )
+            , ( "transform", "translate(-20%, -11%)" )
             ]
         ]
         [ text <| toString model.life ]
@@ -233,7 +233,7 @@ lifeTextView { radius, model } =
             [ ( "left", 0.49 * radius |> px )
             , ( "bottom", 0.62 * radius |> px )
             , ( "font-size", 0.18 * radius |> px )
-            , ( "transform", "translate(17%, 10%)" )
+            , ( "transform", "translate(20%, 10%)" )
             ]
         ]
         [ text <| toString model.otherLife ]
