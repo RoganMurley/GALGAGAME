@@ -356,7 +356,7 @@ alchemy =
 gold :: Card
 gold =
   Card
-    "Gild"
+    "Enrich"
     "Draw 2"
     "collector/gold.svg"
     $ \w -> do
