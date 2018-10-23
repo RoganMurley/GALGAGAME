@@ -47,3 +47,16 @@
     flex-direction: row;
   }
 }
+
+
+.title-ring {
+  display: inline-block;
+  border: #e8e8e8 solid 6px;
+  border-radius: 50%;
+  width: 70px;
+  height: 70px;
+  line-height: 70px;
+  font-size: 3rem;
+  text-align: center;
+  vertical-align: middle;
+}
