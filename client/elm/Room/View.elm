@@ -38,10 +38,10 @@ view model settings flags textures =
                     Html.map (Main.RoomMsg << LoginMsg) <|
                         Login.view login
     in
-        div []
-            [ Settings.view settings (settingsView model flags)
-            , roomView
-            ]
+    div []
+        [ Settings.view settings (settingsView model flags)
+        , roomView
+        ]
 
 
 settingsView : Model -> Flags -> List (Html Main.Msg)
@@ -51,14 +51,14 @@ settingsView model flags =
         baseViews =
             Login.logoutView flags
     in
-        case model of
-            Connected connected ->
-                List.concat
-                    [ baseViews
-                    , List.map (Html.map (Main.RoomMsg << ConnectedMsg)) <|
-                        Connected.concedeView connected.game
-                    , Connected.specMenuView flags connected
-                    ]
+    case model of
+        Connected connected ->
+            List.concat
+                [ baseViews
+                , List.map (Html.map (Main.RoomMsg << ConnectedMsg)) <|
+                    Connected.concedeView connected.game
+                , Connected.specMenuView flags connected
+                ]
 
-            _ ->
-                baseViews
+        _ ->
+            baseViews

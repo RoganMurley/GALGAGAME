@@ -3,11 +3,11 @@ module Endgame.View exposing (view)
 import Animation.Types exposing (Anim(GameEnd))
 import Connected.Messages as Connected
 import GameState.Messages as GameState
-import PlayState.Messages exposing (Msg(GotoReplay, PlayingOnly), PlayingOnly(Rematch))
 import Html exposing (Html, button, div, text)
 import Html.Attributes exposing (class, classList, disabled, style)
 import Html.Events exposing (onClick)
 import Main.Messages as Main
+import PlayState.Messages exposing (Msg(GotoReplay, PlayingOnly), PlayingOnly(Rematch))
 import Room.Messages as Room
 import WhichPlayer.Types exposing (WhichPlayer(..))
 
@@ -52,33 +52,34 @@ view progress anim mReplayId =
                         [ class "replay", disabled True ]
                         [ text "Replay" ]
     in
-        div
-            [ classList
-                [ ( "endgame-layer", True )
-                , ( endGameClass, True )
-                ]
-            , style
-                [ if show then
-                    ( "opacity", toString progress )
-                  else
-                    ( "", "" )
-                ]
+    div
+        [ classList
+            [ ( "endgame-layer", True )
+            , ( endGameClass, True )
             ]
-            [ div [ class "endgame-container" ]
-                [ div
-                    [ class endGameClass ]
-                    [ text endGameText ]
-                , button
-                    [ class "rematch"
-                    , onClick <|
-                        Main.RoomMsg <|
-                            Room.ConnectedMsg <|
-                                Connected.GameStateMsg <|
-                                    GameState.PlayStateMsg <|
-                                        PlayingOnly Rematch
-                    , disabled isDisabled
-                    ]
-                    [ text "Rematch" ]
-                , watchReplayButton
-                ]
+        , style
+            [ if show then
+                ( "opacity", toString progress )
+
+              else
+                ( "", "" )
             ]
+        ]
+        [ div [ class "endgame-container" ]
+            [ div
+                [ class endGameClass ]
+                [ text endGameText ]
+            , button
+                [ class "rematch"
+                , onClick <|
+                    Main.RoomMsg <|
+                        Room.ConnectedMsg <|
+                            Connected.GameStateMsg <|
+                                GameState.PlayStateMsg <|
+                                    PlayingOnly Rematch
+                , disabled isDisabled
+                ]
+                [ text "Rematch" ]
+            , watchReplayButton
+            ]
+        ]

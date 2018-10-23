@@ -1,4 +1,4 @@
-module GameState.Messages exposing (..)
+module GameState.Messages exposing (Msg(..))
 
 import CharacterSelect.Messages as CharacterSelect
 import Mouse exposing (Position)

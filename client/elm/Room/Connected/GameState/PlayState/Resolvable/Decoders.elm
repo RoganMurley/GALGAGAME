@@ -1,7 +1,7 @@
 module Resolvable.Decoders exposing (resolveDiffData)
 
-import Json.Decode as Json exposing (Decoder, index, maybe)
 import Animation.Decoders as Animation
+import Json.Decode as Json exposing (Decoder, index, maybe)
 import Model.Diff
 import Resolvable.Types exposing (ResolveDiffData)
 import Stack.Decoders as Stack

@@ -1,12 +1,12 @@
 module Connected.View exposing (concedeView, playersView, specMenuView, view)
 
-import Html exposing (Html, button, div, input, text)
-import Html.Attributes exposing (class, classList, id, readonly, type_, value)
-import Html.Events exposing (onClick)
 import Connected.Messages as Connected
 import Connected.Types exposing (Model)
 import GameState.Types exposing (GameState(..))
 import GameState.View as GameState
+import Html exposing (Html, button, div, input, text)
+import Html.Attributes exposing (class, classList, id, readonly, type_, value)
+import Html.Events exposing (onClick)
 import Main.Messages exposing (Msg(..))
 import Main.Types exposing (Flags)
 import PlayState.Types exposing (PlayState(..))
@@ -31,17 +31,18 @@ playersView ( pa, pb ) =
                 meClass =
                     if me then
                         "me"
+
                     else
                         ""
             in
-                div
-                    [ class <| "player-name " ++ meClass ]
-                    [ text <| Maybe.withDefault "" mName ]
+            div
+                [ class <| "player-name " ++ meClass ]
+                [ text <| Maybe.withDefault "" mName ]
     in
-        div [ class "player-layer" ]
-            [ playerView pb True
-            , playerView pa False
-            ]
+    div [ class "player-layer" ]
+        [ playerView pb True
+        , playerView pa False
+        ]
 
 
 concedeView : GameState -> List (Html Connected.Msg)
@@ -71,19 +72,20 @@ specMenuView { hostname, httpPort } { roomID } =
         portProtocol =
             if httpPort /= "" then
                 ":" ++ httpPort
+
             else
                 ""
 
         specLink =
             "https://" ++ hostname ++ portProtocol ++ "/spec/" ++ roomID
     in
-        [ input
-            [ value specLink
-            , type_ "text"
-            , readonly True
-            , id myID
-            , class "settings-input"
-            , onClick <| SelectAllInput myID
-            ]
-            []
+    [ input
+        [ value specLink
+        , type_ "text"
+        , readonly True
+        , id myID
+        , class "settings-input"
+        , onClick <| SelectAllInput myID
         ]
+        []
+    ]

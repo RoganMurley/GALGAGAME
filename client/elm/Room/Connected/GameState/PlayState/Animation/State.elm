@@ -1,4 +1,4 @@
-module Animation.State exposing (..)
+module Animation.State exposing (animMaxTick, animShake, lifeChange, progress)
 
 import Animation.Types exposing (Anim(..))
 import Ease
@@ -13,12 +13,14 @@ animShake anim which tick =
                 Slash w d ->
                     if which /= w then
                         0
+
                     else
                         1.0 * Ease.outQuad (toFloat d / 50.0)
 
                 Bite w d ->
                     if which /= w then
                         0
+
                     else
                         1.0 * Ease.outQuad (toFloat d / 50.0)
 
@@ -28,7 +30,7 @@ animShake anim which tick =
         mag =
             baseMag * (1.0 - Ease.outQuad (tick / animMaxTick anim))
     in
-        mag * (toFloat <| (ceiling tick * 1247823748932 + 142131) % 20) - 10
+    mag * (toFloat <| (ceiling tick * 1247823748932 + 142131) % 20) - 10
 
 
 animMaxTick : Anim -> Float
@@ -93,7 +95,7 @@ progress anim tick =
                 _ ->
                     Ease.outQuint
     in
-        easingFunction (tick / maxTick)
+    easingFunction (tick / maxTick)
 
 
 lifeChange : Anim -> ( Float, Float )
@@ -108,15 +110,15 @@ lifeChange anim =
                 PlayerB ->
                     ( 0, toFloat d )
     in
-        case anim of
-            Heal w h ->
-                wrap w h
+    case anim of
+        Heal w h ->
+            wrap w h
 
-            Slash w d ->
-                wrap w -d
+        Slash w d ->
+            wrap w -d
 
-            Bite w d ->
-                wrap w -d
+        Bite w d ->
+            wrap w -d
 
-            _ ->
-                ( 0, 0 )
+        _ ->
+            ( 0, 0 )

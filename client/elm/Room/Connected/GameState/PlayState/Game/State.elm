@@ -1,4 +1,4 @@
-module Game.State exposing (..)
+module Game.State exposing (contextInit, entitiesInit, gameInit, getFocus, hitTest, tick)
 
 import Animation.State as Animation
 import Game.Types as Game exposing (Context, Entities)
@@ -38,22 +38,23 @@ contextInit ( width, height ) res textures =
         radius =
             if h < w then
                 0.8 * h * 0.5
+
             else
                 1.2 * w * 0.5
 
         anim =
             activeAnim res
     in
-        { w = w
-        , h = h
-        , radius = radius
-        , anim = anim
-        , model = activeModel res
-        , stackCard = activeStackCard res
-        , tick = res.tick
-        , progress = Animation.progress anim res.tick
-        , textures = textures
-        }
+    { w = w
+    , h = h
+    , radius = radius
+    , anim = anim
+    , model = activeModel res
+    , stackCard = activeStackCard res
+    , tick = res.tick
+    , progress = Animation.progress anim res.tick
+    , textures = textures
+    }
 
 
 entitiesInit : Entities
@@ -73,15 +74,15 @@ tick { dimensions } dt model =
         ctx =
             contextInit dimensions res Texture.init
     in
-        { model
-            | res = res
-            , entities =
-                { stack = Stack.entities ctx
-                , hand = Hand.entities ctx
-                , otherHand = Hand.otherEntities ctx
-                }
-            , focus = getFocus ctx model
-        }
+    { model
+        | res = res
+        , entities =
+            { stack = Stack.entities ctx
+            , hand = Hand.entities ctx
+            , otherHand = Hand.otherEntities ctx
+            }
+        , focus = getFocus ctx model
+    }
 
 
 hitTest : Vec2 -> Float -> { a | position : Vec2 } -> Bool
@@ -101,4 +102,4 @@ getFocus { stackCard } { entities, mouse } =
                     List.find (hitTest mouse 28) entities.hand
                 )
     in
-        Maybe.or stackCard hoverCard
+    Maybe.or stackCard hoverCard

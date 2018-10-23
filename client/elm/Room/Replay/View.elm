@@ -7,8 +7,8 @@ import GameState.Types exposing (GameState(Started))
 import GameState.View as GameState
 import Html exposing (Html, div)
 import Html.Attributes exposing (class)
-import Main.Types exposing (Flags)
 import Main.Messages as Main
+import Main.Types exposing (Flags)
 import Replay.Types exposing (Model)
 import Texture.Types as Texture
 

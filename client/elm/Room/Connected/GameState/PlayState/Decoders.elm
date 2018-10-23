@@ -1,7 +1,7 @@
-module PlayState.Decoders exposing (..)
+module PlayState.Decoders exposing (decoder, endedDecoder, playingDecoder)
 
-import Json.Decode as Json exposing (Decoder, field, maybe)
 import Game.State exposing (gameInit)
+import Json.Decode as Json exposing (Decoder, field, maybe)
 import Model.Decoders as Model
 import Model.Types exposing (Model)
 import PlayState.Types exposing (PlayState(..))
@@ -24,9 +24,9 @@ playingDecoder =
         playingInit model =
             Playing { game = gameInit model }
     in
-        Json.map playingInit <|
-            field "playing" <|
-                Model.decoder
+    Json.map playingInit <|
+        field "playing" <|
+            Model.decoder
 
 
 endedDecoder : Decoder PlayState
@@ -40,6 +40,6 @@ endedDecoder =
                 , replayId = Nothing
                 }
     in
-        Json.map2 endedInit
-            (field "winner" <| maybe WhichPlayer.decoder)
-            (field "final" <| Model.decoder)
+    Json.map2 endedInit
+        (field "winner" <| maybe WhichPlayer.decoder)
+        (field "final" <| Model.decoder)

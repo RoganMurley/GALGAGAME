@@ -1,7 +1,7 @@
 module Settings.State exposing (init, update)
 
 import Settings.Messages exposing (Msg(..))
-import Settings.Types exposing (Model, ModalState(..), VolumeType(..))
+import Settings.Types exposing (ModalState(..), Model, VolumeType(..))
 
 
 init : Model

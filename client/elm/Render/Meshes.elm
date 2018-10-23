@@ -1,4 +1,4 @@
-module Render.Meshes exposing (..)
+module Render.Meshes exposing (quad)
 
 import Math.Vector2 exposing (vec2)
 import Math.Vector3 exposing (vec3)
@@ -21,7 +21,7 @@ quad =
         topLeft =
             { position = vec3 -1 1 0, coord = vec2 1 1 }
     in
-        WebGL.triangles
-            [ ( topLeft, topRight, bottomLeft )
-            , ( bottomLeft, topRight, bottomRight )
-            ]
+    WebGL.triangles
+        [ ( topLeft, topRight, bottomLeft )
+        , ( bottomLeft, topRight, bottomRight )
+        ]

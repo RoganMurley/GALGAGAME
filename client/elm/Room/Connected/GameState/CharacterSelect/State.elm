@@ -1,7 +1,7 @@
-module CharacterSelect.State exposing (..)
+module CharacterSelect.State exposing (update, viewModelInit)
 
-import CharacterSelect.Types exposing (Character, Model, ViewModel)
 import CharacterSelect.Messages exposing (Msg(..))
+import CharacterSelect.Types exposing (Character, Model, ViewModel)
 import Main.Messages as Main
 import Util
 
@@ -20,7 +20,7 @@ update msg ({ vm } as m) =
                             "selectCharacter:"
                                 ++ name
             in
-                ( m, cmd )
+            ( m, cmd )
 
 
 viewModelInit : Character -> ViewModel

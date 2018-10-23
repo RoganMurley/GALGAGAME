@@ -1,4 +1,4 @@
-module Room.State exposing (init, tick, receive, update)
+module Room.State exposing (init, receive, tick, update)
 
 import Connected.State as Connected
 import Lobby.State as Lobby
@@ -8,9 +8,9 @@ import Main.Messages as Main
 import Main.Types exposing (Flags)
 import Menu.State as Menu
 import Navigation exposing (newUrl)
-import Room.Types exposing (Model(..))
-import Room.Messages exposing (Msg(..))
 import Replay.State as Replay
+import Room.Messages exposing (Msg(..))
+import Room.Types exposing (Model(..))
 
 
 init : Model
@@ -36,7 +36,7 @@ update model msg flags =
                         ( newLobby, newMsg ) =
                             Lobby.update lobby lobbyMsg
                     in
-                        ( Lobby newLobby, newMsg )
+                    ( Lobby newLobby, newMsg )
 
                 _ ->
                     ( model, Cmd.none )
@@ -48,7 +48,7 @@ update model msg flags =
                         ( newConnected, cmd ) =
                             Connected.update flags connectedMsg connected
                     in
-                        ( Connected newConnected, cmd )
+                    ( Connected newConnected, cmd )
 
                 _ ->
                     ( model, Cmd.none )
@@ -60,7 +60,7 @@ update model msg flags =
                         ( newLogin, cmd ) =
                             Login.update login loginMsg flags
                     in
-                        ( Login newLogin, cmd )
+                    ( Login newLogin, cmd )
 
                 _ ->
                     ( model, Cmd.none )
@@ -106,7 +106,7 @@ receive str model flags =
                 ( newConnected, cmd ) =
                     Connected.receive connected str flags
             in
-                ( Connected newConnected, cmd )
+            ( Connected newConnected, cmd )
 
         Replay replay ->
             ( Replay replay, Replay.receive str )

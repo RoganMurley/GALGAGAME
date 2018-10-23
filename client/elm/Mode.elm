@@ -1,4 +1,4 @@
-module Mode exposing (..)
+module Mode exposing (Mode(..))
 
 
 type Mode

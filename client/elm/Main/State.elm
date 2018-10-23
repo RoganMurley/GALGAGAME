@@ -1,37 +1,37 @@
-module Main.State exposing (..)
+module Main.State exposing (init, locationUpdate, subscriptions, update)
 
+import AnimationFrame
 import Audio exposing (setVolume)
-import Json.Decode as Json
-import Http
-import Routing.State as Routing
-import Routing.Types as Routing
-import WebSocket
+import Connected.Messages as Connected
 import GameState.Messages as GameState
 import GameState.Types exposing (GameState(Started))
-import Connected.Messages as Connected
+import Http
+import Json.Decode as Json
+import Listener exposing (listen)
 import Lobby.State as Lobby
 import Lobby.Types as Lobby
 import Login.Decoders as Login
 import Login.State as Login
 import Main.Messages exposing (Msg(..))
+import Main.Types as Main exposing (Flags)
 import Mode exposing (Mode(..))
 import Mouse
 import Navigation
+import Ports exposing (analytics, copyInput, reload, selectAllInput)
 import Replay.State as Replay
+import Room.Generators exposing (generate)
 import Room.Messages as Room
 import Room.State as Room
 import Room.Types as Room
-import Room.Generators exposing (generate)
-import Util exposing (authLocation, send, websocketAddress)
-import Ports exposing (analytics, copyInput, reload, selectAllInput)
-import AnimationFrame
-import Window
-import Listener exposing (listen)
-import Main.Types as Main exposing (Flags)
-import UrlParser exposing (parsePath)
+import Routing.State as Routing
+import Routing.Types as Routing
 import Settings.State as Settings
 import Settings.Types as Settings
 import Texture.State as Texture
+import UrlParser exposing (parsePath)
+import Util exposing (authLocation, send, websocketAddress)
+import WebSocket
+import Window
 
 
 init : Flags -> Navigation.Location -> ( Main.Model, Cmd Msg )
@@ -50,7 +50,7 @@ init flags location =
                 }
                 location
     in
-        model ! [ fetchTextures, cmd ]
+    model ! [ fetchTextures, cmd ]
 
 
 update : Msg -> Main.Model -> ( Main.Model, Cmd Msg )
@@ -64,10 +64,10 @@ update msg ({ room, settings, textures, flags } as model) =
                 newFlags =
                     { flags | time = flags.time + dt }
               in
-                { model
-                    | flags = newFlags
-                    , room = Room.tick newFlags room dt
-                }
+              { model
+                | flags = newFlags
+                , room = Room.tick newFlags room dt
+              }
             , case room of
                 Room.Connected connected ->
                     listen connected.game
@@ -108,21 +108,21 @@ update msg ({ room, settings, textures, flags } as model) =
                 ( newRoom, cmd ) =
                     Room.receive str room flags
             in
-                ( { model | room = newRoom }, cmd )
+            ( { model | room = newRoom }, cmd )
 
         RoomMsg roomMsg ->
             let
                 ( newRoom, cmd ) =
                     Room.update room roomMsg flags
             in
-                ( { model | room = newRoom }, cmd )
+            ( { model | room = newRoom }, cmd )
 
         UrlChange location ->
             let
                 ( newModel, cmd ) =
                     locationUpdate model location
             in
-                newModel ! [ cmd, analytics () ]
+            newModel ! [ cmd, analytics () ]
 
         SetVolume volumeType volume ->
             let
@@ -140,9 +140,9 @@ update msg ({ room, settings, textures, flags } as model) =
                         Settings.Sfx ->
                             { settings | sfxVolume = newVolume }
             in
-                ( { model | settings = newSettings }
-                , setVolume newVolume
-                )
+            ( { model | settings = newSettings }
+            , setVolume newVolume
+            )
 
         Logout ->
             ( model
@@ -170,9 +170,9 @@ update msg ({ room, settings, textures, flags } as model) =
                         )
                         flags
             in
-                ( { model | room = newRoom }
-                , newCmd
-                )
+            ( { model | room = newRoom }
+            , newCmd
+            )
 
         MouseClick mouse ->
             let
@@ -185,9 +185,9 @@ update msg ({ room, settings, textures, flags } as model) =
                         )
                         flags
             in
-                ( { model | room = newRoom }
-                , newCmd
-                )
+            ( { model | room = newRoom }
+            , newCmd
+            )
 
         GetAuth ->
             ( model
@@ -203,9 +203,9 @@ update msg ({ room, settings, textures, flags } as model) =
                 newFlags =
                     { flags | username = username }
             in
-                ( { model | flags = newFlags }
-                , Lobby.skipLobbyCmd username
-                )
+            ( { model | flags = newFlags }
+            , Lobby.skipLobbyCmd username
+            )
 
         GetAuthCallback (Err _) ->
             ( model, Cmd.none )
@@ -215,9 +215,9 @@ update msg ({ room, settings, textures, flags } as model) =
                 ( newTextures, cmd ) =
                     Texture.update textureMsg textures
             in
-                ( { model | textures = newTextures }
-                , Cmd.map TextureMsg cmd
-                )
+            ( { model | textures = newTextures }
+            , Cmd.map TextureMsg cmd
+            )
 
 
 locationUpdate : Main.Model -> Navigation.Location -> ( Main.Model, Cmd Msg )
@@ -240,61 +240,61 @@ locationUpdate model location =
                         randomRoomID =
                             generate Room.Generators.roomID model.flags.seed
                     in
-                        case playRoute of
-                            Routing.ComputerPlay ->
-                                ( { model
-                                    | room =
-                                        Room.Lobby <|
-                                            Lobby.init
-                                                randomRoomID
-                                                Lobby.ComputerGame
-                                                Playing
-                                  }
-                                , Lobby.skipLobbyCmd username
-                                )
+                    case playRoute of
+                        Routing.ComputerPlay ->
+                            ( { model
+                                | room =
+                                    Room.Lobby <|
+                                        Lobby.init
+                                            randomRoomID
+                                            Lobby.ComputerGame
+                                            Playing
+                              }
+                            , Lobby.skipLobbyCmd username
+                            )
 
-                            Routing.CustomPlay mRoomID ->
-                                let
-                                    roomID : String
-                                    roomID =
-                                        case mRoomID of
-                                            Just r ->
-                                                r
+                        Routing.CustomPlay mRoomID ->
+                            let
+                                roomID : String
+                                roomID =
+                                    case mRoomID of
+                                        Just r ->
+                                            r
 
-                                            Nothing ->
-                                                randomRoomID
+                                        Nothing ->
+                                            randomRoomID
 
-                                    lobbyModel : Main.Model
-                                    lobbyModel =
-                                        { model
-                                            | room =
-                                                Room.Lobby <|
-                                                    Lobby.init
-                                                        roomID
-                                                        Lobby.CustomGame
-                                                        Playing
-                                        }
-                                in
-                                    case model.room of
-                                        -- Annoying stateful bit, fix me.
-                                        -- WILL cause bugs.
-                                        Room.Connected _ ->
-                                            ( model, Lobby.skipLobbyCmd username )
+                                lobbyModel : Main.Model
+                                lobbyModel =
+                                    { model
+                                        | room =
+                                            Room.Lobby <|
+                                                Lobby.init
+                                                    roomID
+                                                    Lobby.CustomGame
+                                                    Playing
+                                    }
+                            in
+                            case model.room of
+                                -- Annoying stateful bit, fix me.
+                                -- WILL cause bugs.
+                                Room.Connected _ ->
+                                    ( model, Lobby.skipLobbyCmd username )
 
-                                        _ ->
-                                            ( lobbyModel, Lobby.skipLobbyCmd username )
+                                _ ->
+                                    ( lobbyModel, Lobby.skipLobbyCmd username )
 
-                            Routing.QuickPlay ->
-                                ( { model
-                                    | room =
-                                        Room.Lobby <|
-                                            Lobby.init
-                                                randomRoomID
-                                                Lobby.QuickplayGame
-                                                Playing
-                                  }
-                                , Lobby.skipLobbyCmd username
-                                )
+                        Routing.QuickPlay ->
+                            ( { model
+                                | room =
+                                    Room.Lobby <|
+                                        Lobby.init
+                                            randomRoomID
+                                            Lobby.QuickplayGame
+                                            Playing
+                              }
+                            , Lobby.skipLobbyCmd username
+                            )
 
                 Routing.Spec roomID ->
                     ( { model
@@ -337,13 +337,13 @@ locationUpdate model location =
                                 _ ->
                                     Nothing
                     in
-                        ( { model
-                            | room =
-                                Room.Login <|
-                                    Login.init nextPath
-                          }
-                        , Cmd.none
-                        )
+                    ( { model
+                        | room =
+                            Room.Login <|
+                                Login.init nextPath
+                      }
+                    , Cmd.none
+                    )
 
         Nothing ->
             ( { model | room = Room.init }

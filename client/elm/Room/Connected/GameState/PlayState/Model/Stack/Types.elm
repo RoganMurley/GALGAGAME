@@ -1,4 +1,4 @@
-module Stack.Types exposing (..)
+module Stack.Types exposing (Stack, StackCard)
 
 import Card.Types exposing (Card)
 import WhichPlayer.Types exposing (WhichPlayer)

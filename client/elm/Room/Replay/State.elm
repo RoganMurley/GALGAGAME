@@ -1,12 +1,12 @@
-module Replay.State exposing (..)
+module Replay.State exposing (getReplay, init, receive, tick, update)
 
 import Json.Decode as Json
-import PlayState.Decoders as PlayState
 import Main.Messages as Main
 import Main.Types exposing (Flags)
 import Model.Decoders as Model
 import Model.Types exposing (Model)
 import Model.ViewModel
+import PlayState.Decoders as PlayState
 import PlayState.State as PlayState
 import PlayState.Types exposing (PlayState(..))
 import Replay.Messages exposing (Msg(..))
@@ -30,75 +30,75 @@ receive msg =
         ( command, content ) =
             splitOnColon msg
     in
-        case command of
-            "replay" ->
-                let
-                    initial : Model
-                    initial =
-                        unsafeForceDecode
-                            (Json.field "initial" Model.decoder)
-                            content
+    case command of
+        "replay" ->
+            let
+                initial : Model
+                initial =
+                    unsafeForceDecode
+                        (Json.field "initial" Model.decoder)
+                        content
 
-                    resDiffList : List Resolvable.ResolveDiffData
-                    resDiffList =
-                        unsafeForceDecode
-                            (Json.field "list" <|
-                                Json.list Resolvable.Decoders.resolveDiffData
-                            )
-                            content
+                resDiffList : List Resolvable.ResolveDiffData
+                resDiffList =
+                    unsafeForceDecode
+                        (Json.field "list" <|
+                            Json.list Resolvable.Decoders.resolveDiffData
+                        )
+                        content
 
-                    resList : List Resolvable.ResolveData
-                    resList =
-                        Resolvable.resDiffToData initial resDiffList
+                resList : List Resolvable.ResolveData
+                resList =
+                    Resolvable.resDiffToData initial resDiffList
 
-                    finalState : PlayState
-                    finalState =
-                        unsafeForceDecode
-                            (Json.field "final" PlayState.decoder)
-                            content
+                finalState : PlayState
+                finalState =
+                    unsafeForceDecode
+                        (Json.field "final" PlayState.decoder)
+                        content
 
-                    model : Model
-                    model =
-                        PlayState.get (.final << .res) finalState
+                model : Model
+                model =
+                    PlayState.get (.final << .res) finalState
 
-                    res : Resolvable.Model
-                    res =
-                        { vm = Model.ViewModel.init
-                        , tick = 0
-                        , final = model
-                        , resList = resList
-                        }
+                res : Resolvable.Model
+                res =
+                    { vm = Model.ViewModel.init
+                    , tick = 0
+                    , final = model
+                    , resList = resList
+                    }
 
-                    state : PlayState
-                    state =
-                        PlayState.map (\game -> { game | res = res }) finalState
+                state : PlayState
+                state =
+                    PlayState.map (\game -> { game | res = res }) finalState
 
-                    usernamePa : String
-                    usernamePa =
-                        unsafeForceDecode
-                            (Json.field "pa" Json.string)
-                            content
+                usernamePa : String
+                usernamePa =
+                    unsafeForceDecode
+                        (Json.field "pa" Json.string)
+                        content
 
-                    usernamePb : String
-                    usernamePb =
-                        unsafeForceDecode
-                            (Json.field "pb" Json.string)
-                            content
+                usernamePb : String
+                usernamePb =
+                    unsafeForceDecode
+                        (Json.field "pb" Json.string)
+                        content
 
-                    replay : Replay
-                    replay =
-                        { state = state
-                        , usernamePa = usernamePa
-                        , usernamePb = usernamePb
-                        }
-                in
-                    message <|
-                        Main.RoomMsg <|
-                            Room.ReplayMsg <|
-                                SetReplay replay
+                replay : Replay
+                replay =
+                    { state = state
+                    , usernamePa = usernamePa
+                    , usernamePb = usernamePb
+                    }
+            in
+            message <|
+                Main.RoomMsg <|
+                    Room.ReplayMsg <|
+                        SetReplay replay
 
-            _ ->
-                Cmd.none
+        _ ->
+            Cmd.none
 
 
 update : Replay.Model -> Msg -> Replay.Model
@@ -124,4 +124,4 @@ tick flags model dt =
                 (\r -> { r | state = PlayState.tick flags r.state dt })
                 model.replay
     in
-        { model | replay = newReplay }
+    { model | replay = newReplay }

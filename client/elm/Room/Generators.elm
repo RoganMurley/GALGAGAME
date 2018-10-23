@@ -1,4 +1,4 @@
-module Room.Generators exposing (..)
+module Room.Generators exposing (generate, roomID, usernameNumber)
 
 import Main.Types exposing (Seed)
 import Random

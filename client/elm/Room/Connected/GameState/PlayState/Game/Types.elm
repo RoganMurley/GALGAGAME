@@ -1,9 +1,9 @@
-module Game.Types exposing (..)
+module Game.Types exposing (Context, Entities, Model)
 
 import Animation.Types exposing (Anim)
 import Card.Types exposing (Card)
-import Math.Vector2 exposing (Vec2)
 import Game.Entity as Game
+import Math.Vector2 exposing (Vec2)
 import Model.Types as Model
 import Resolvable.Types as Resolvable
 import Stack.Types exposing (StackCard)

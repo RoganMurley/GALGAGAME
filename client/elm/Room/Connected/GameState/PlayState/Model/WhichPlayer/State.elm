@@ -1,4 +1,4 @@
-module WhichPlayer.State exposing (..)
+module WhichPlayer.State exposing (other)
 
 import WhichPlayer.Types exposing (WhichPlayer(..))
 

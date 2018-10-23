@@ -1,4 +1,4 @@
-module Login.Decoders exposing (..)
+module Login.Decoders exposing (authDecoder, loginErrorDecoder)
 
 import Json.Decode as Json exposing (Decoder, field, string)
 import Login.Types exposing (LoginError)

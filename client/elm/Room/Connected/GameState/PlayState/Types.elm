@@ -1,4 +1,4 @@
-module PlayState.Types exposing (..)
+module PlayState.Types exposing (PlayState(..))
 
 import Game.Types as Game
 import WhichPlayer.Types exposing (WhichPlayer)

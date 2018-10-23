@@ -1,4 +1,4 @@
-module PlayState.State exposing (..)
+module PlayState.State exposing (carryVm, get, map, mouseClick, mouseMove, resolveOutcome, tick, update, updatePlayingOnly, updateTurnOnly)
 
 import Audio exposing (playSound)
 import Game.State as Game
@@ -47,16 +47,16 @@ update msg state mode flags =
                         newVm =
                             { vm | hover = i }
                     in
-                        ( Playing
-                            { playing
-                                | game =
-                                    { game
-                                        | res =
-                                            { res | vm = newVm }
-                                    }
-                            }
-                        , Cmd.none
-                        )
+                    ( Playing
+                        { playing
+                            | game =
+                                { game
+                                    | res =
+                                        { res | vm = newVm }
+                                }
+                        }
+                    , Cmd.none
+                    )
 
                 s ->
                     ( s, Cmd.none )
@@ -75,18 +75,18 @@ update msg state mode flags =
                         newFinal =
                             { final | otherHover = i }
                     in
-                        ( Playing
-                            { playing
-                                | game =
-                                    { game
-                                        | res =
-                                            { res
-                                                | final = newFinal
-                                            }
-                                    }
-                            }
-                        , Cmd.none
-                        )
+                    ( Playing
+                        { playing
+                            | game =
+                                { game
+                                    | res =
+                                        { res
+                                            | final = newFinal
+                                        }
+                                }
+                        }
+                    , Cmd.none
+                    )
 
                 _ ->
                     ( state, Cmd.none )
@@ -135,14 +135,14 @@ updatePlayingOnly msg state mode flags =
                                 _ ->
                                     playSound "/sfx/hover.wav"
                     in
-                        newState
-                            ! [ cmd
-                              , message <|
-                                    Main.Send <|
-                                        "hover:"
-                                            ++ PlayState.Encoders.hoverIndex mIndex
-                              , sound
-                              ]
+                    newState
+                        ! [ cmd
+                          , message <|
+                                Main.Send <|
+                                    "hover:"
+                                        ++ PlayState.Encoders.hoverIndex mIndex
+                          , sound
+                          ]
 
                 TurnOnly turnOnly ->
                     updateTurnOnly turnOnly state mode flags
@@ -159,26 +159,27 @@ updateTurnOnly msg state mode flags =
                 _ ->
                     False
     in
-        if not legal then
-            ( state, Cmd.none )
-        else
-            case msg of
-                EndTurn ->
-                    state
-                        ! [ send flags "end:"
-                          , playSound "/sfx/endTurn.wav"
-                          ]
+    if not legal then
+        ( state, Cmd.none )
 
-                PlayCard index ->
-                    let
-                        ( newState, cmd ) =
-                            update (HoverSelf Nothing) state mode flags
-                    in
-                        newState
-                            ! [ send flags <| "play:" ++ toString index
-                              , playSound "/sfx/playCard.wav"
-                              , cmd
-                              ]
+    else
+        case msg of
+            EndTurn ->
+                state
+                    ! [ send flags "end:"
+                      , playSound "/sfx/endTurn.wav"
+                      ]
+
+            PlayCard index ->
+                let
+                    ( newState, cmd ) =
+                        update (HoverSelf Nothing) state mode flags
+                in
+                newState
+                    ! [ send flags <| "play:" ++ toString index
+                      , playSound "/sfx/playCard.wav"
+                      , cmd
+                      ]
 
 
 tick : Flags -> PlayState -> Float -> PlayState
@@ -217,19 +218,19 @@ carryVm old new =
         newRes =
             get .res new
     in
-        map
-            (\game ->
-                { game
-                    | res =
-                        { newRes
-                            | vm = oldVm
-                        }
-                    , entities = get .entities old
-                    , mouse = get .mouse old
-                    , focus = get .focus old
-                }
-            )
-            new
+    map
+        (\game ->
+            { game
+                | res =
+                    { newRes
+                        | vm = oldVm
+                    }
+                , entities = get .entities old
+                , mouse = get .mouse old
+                , focus = get .focus old
+            }
+        )
+        new
 
 
 resolveOutcome : String -> Maybe PlayState -> PlayState
@@ -290,7 +291,7 @@ resolveOutcome str mState =
         newState =
             map (\game -> { game | res = res }) finalState
     in
-        carryVm state newState
+    carryVm state newState
 
 
 mouseMove : Position -> PlayState -> PlayState
@@ -299,7 +300,7 @@ mouseMove { x, y } state =
         pos =
             vec2 (toFloat x) (toFloat y)
     in
-        map (\game -> { game | mouse = pos }) state
+    map (\game -> { game | mouse = pos }) state
 
 
 mouseClick : Mode -> Flags -> Position -> PlayState -> ( PlayState, Cmd Main.Msg )
@@ -308,25 +309,25 @@ mouseClick mode flags { x, y } state =
         pos =
             vec2 (toFloat x) (toFloat y)
     in
-        case state of
-            Playing { game } ->
-                let
-                    mIndex =
-                        Maybe.map .index <|
-                            List.find
-                                (Game.hitTest pos 28)
-                                game.entities.hand
-                in
-                    case mIndex of
-                        Just index ->
-                            update
-                                (PlayingOnly <| TurnOnly <| PlayCard index)
-                                state
-                                mode
-                                flags
+    case state of
+        Playing { game } ->
+            let
+                mIndex =
+                    Maybe.map .index <|
+                        List.find
+                            (Game.hitTest pos 28)
+                            game.entities.hand
+            in
+            case mIndex of
+                Just index ->
+                    update
+                        (PlayingOnly <| TurnOnly <| PlayCard index)
+                        state
+                        mode
+                        flags
 
-                        Nothing ->
-                            ( state, Cmd.none )
+                Nothing ->
+                    ( state, Cmd.none )
 
-            _ ->
-                ( state, Cmd.none )
+        _ ->
+            ( state, Cmd.none )

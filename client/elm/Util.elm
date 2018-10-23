@@ -1,4 +1,4 @@
-module Util exposing (..)
+module Util exposing (authLocation, interp, interp2D, interpFloat, message, portProtocol, px, send, splitOnColon, to3d, unsafeForceDecode, websocketAddress, zip)
 
 import Json.Decode as Json
 import Main.Types exposing (Flags)

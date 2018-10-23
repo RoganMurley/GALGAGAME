@@ -1,4 +1,4 @@
-module PlayState.Messages exposing (..)
+module PlayState.Messages exposing (Msg(..), PlayingOnly(..), TurnOnly(..))
 
 
 type Msg

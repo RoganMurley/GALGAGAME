@@ -1,4 +1,4 @@
-module Hand.State exposing (..)
+module Hand.State exposing (maxHandLength)
 
 
 maxHandLength : Int

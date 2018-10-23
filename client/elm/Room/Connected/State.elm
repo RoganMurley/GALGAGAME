@@ -1,4 +1,4 @@
-module Connected.State exposing (init, update, receive, tick)
+module Connected.State exposing (init, receive, tick, update)
 
 import Audio exposing (playSound)
 import Connected.Decoders exposing (decodeHoverOutcome, decodePlayers)
@@ -32,7 +32,7 @@ update flags msg ({ game, mode } as model) =
                 ( newGame, cmd ) =
                     GameState.update gameMsg game mode flags
             in
-                ( { model | game = newGame }, cmd )
+            ( { model | game = newGame }, cmd )
 
         Concede ->
             model
@@ -54,81 +54,81 @@ receive ({ mode } as model) msg flags =
         ( command, content ) =
             splitOnColon msg
     in
-        case command of
-            "sync" ->
-                let
-                    ( newGame, cmd ) =
-                        GameState.update
-                            (GameState.Sync content)
-                            model.game
-                            mode
-                            flags
-                in
-                    ( { model | game = newGame }, cmd )
+    case command of
+        "sync" ->
+            let
+                ( newGame, cmd ) =
+                    GameState.update
+                        (GameState.Sync content)
+                        model.game
+                        mode
+                        flags
+            in
+            ( { model | game = newGame }, cmd )
 
-            "hover" ->
-                case decodeHoverOutcome content of
-                    Ok hoverOutcome ->
-                        let
-                            ( newGame, cmd ) =
-                                GameState.update
-                                    (GameState.PlayStateMsg <|
-                                        PlayState.HoverOutcome hoverOutcome
-                                    )
-                                    model.game
-                                    mode
-                                    flags
-                        in
-                            { model | game = newGame }
-                                ! [ cmd
-                                  , playSound "/sfx/hover.wav"
-                                  ]
+        "hover" ->
+            case decodeHoverOutcome content of
+                Ok hoverOutcome ->
+                    let
+                        ( newGame, cmd ) =
+                            GameState.update
+                                (GameState.PlayStateMsg <|
+                                    PlayState.HoverOutcome hoverOutcome
+                                )
+                                model.game
+                                mode
+                                flags
+                    in
+                    { model | game = newGame }
+                        ! [ cmd
+                          , playSound "/sfx/hover.wav"
+                          ]
 
-                    Err err ->
-                        Debug.log
-                            err
-                            ( model, Cmd.none )
+                Err err ->
+                    Debug.log
+                        err
+                        ( model, Cmd.none )
 
-            "res" ->
-                let
-                    ( newGame, cmd ) =
-                        GameState.update
-                            (GameState.ResolveOutcome content)
-                            model.game
-                            mode
-                            flags
-                in
-                    ( { model | game = newGame }, cmd )
+        "res" ->
+            let
+                ( newGame, cmd ) =
+                    GameState.update
+                        (GameState.ResolveOutcome content)
+                        model.game
+                        mode
+                        flags
+            in
+            ( { model | game = newGame }, cmd )
 
-            "syncPlayers" ->
-                let
-                    newPlayers : Result String ( Maybe String, Maybe String )
-                    newPlayers =
-                        decodePlayers content
-                in
-                    case newPlayers of
-                        Ok p ->
-                            ( { model | players = p }, Cmd.none )
+        "syncPlayers" ->
+            let
+                newPlayers : Result String ( Maybe String, Maybe String )
+                newPlayers =
+                    decodePlayers content
+            in
+            case newPlayers of
+                Ok p ->
+                    ( { model | players = p }, Cmd.none )
 
-                        Err err ->
-                            Debug.log
-                                err
-                                ( model, Cmd.none )
+                Err err ->
+                    Debug.log
+                        err
+                        ( model, Cmd.none )
 
-            "replaySaved" ->
-                let
-                    ( newGame, cmd ) =
-                        GameState.update
-                            (GameState.PlayStateMsg <|
-                                PlayState.ReplaySaved content
-                            )
-                            model.game
-                            mode
-                            flags
-                in
-                    ( { model | game = newGame }, cmd )
+        "replaySaved" ->
+            let
+                ( newGame, cmd ) =
+                    GameState.update
+                        (GameState.PlayStateMsg <|
+                            PlayState.ReplaySaved content
+                        )
+                        model.game
+                        mode
+                        flags
+            in
+            ( { model | game = newGame }, cmd )
 
-            _ ->
-                Debug.log
-                    ("Error decoding message from server: " ++ msg)
-                    ( model, Cmd.none )
+        _ ->
+            Debug.log
+                ("Error decoding message from server: " ++ msg)
+                ( model, Cmd.none )

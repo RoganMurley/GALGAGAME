@@ -1,4 +1,4 @@
-module WhichPlayer.Decoders exposing (..)
+module WhichPlayer.Decoders exposing (decoder)
 
 import Json.Decode as Json exposing (Decoder, fail, string, succeed)
 import WhichPlayer.Types exposing (WhichPlayer(..))
@@ -19,4 +19,4 @@ decoder =
                 _ ->
                     fail <| "Invalid WhichPlayer " ++ s
     in
-        string |> Json.andThen decode
+    string |> Json.andThen decode

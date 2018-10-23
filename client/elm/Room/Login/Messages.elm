@@ -1,4 +1,4 @@
-module Login.Messages exposing (..)
+module Login.Messages exposing (Input(..), Msg(..))
 
 import Http
 import Login.Types exposing (LoginError)

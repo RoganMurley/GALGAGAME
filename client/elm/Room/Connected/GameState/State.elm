@@ -1,4 +1,4 @@
-module GameState.State exposing (update, tick)
+module GameState.State exposing (tick, update)
 
 import CharacterSelect.State as CharacterSelect
 import GameState.Decoders exposing (stateDecoder)
@@ -32,7 +32,7 @@ update msg state mode flags =
                         ( newPlayState, cmd ) =
                             PlayState.mouseClick mode flags pos playState
                     in
-                        ( Started newPlayState, cmd )
+                    ( Started newPlayState, cmd )
 
                 _ ->
                     ( state, Cmd.none )
@@ -44,7 +44,7 @@ update msg state mode flags =
                         ( newPlayState, cmd ) =
                             PlayState.update playStateMsg playState mode flags
                     in
-                        ( Started newPlayState, cmd )
+                    ( Started newPlayState, cmd )
 
                 _ ->
                     Debug.log
@@ -62,9 +62,9 @@ update msg state mode flags =
                         _ ->
                             Nothing
             in
-                ( Started <| PlayState.resolveOutcome str oldPlayState
-                , Cmd.none
-                )
+            ( Started <| PlayState.resolveOutcome str oldPlayState
+            , Cmd.none
+            )
 
         Sync str ->
             ( syncState state str, Cmd.none )
@@ -76,7 +76,7 @@ update msg state mode flags =
                         ( newModel, cmd ) =
                             CharacterSelect.update selectMsg m
                     in
-                        ( Selecting newModel, cmd )
+                    ( Selecting newModel, cmd )
 
                 _ ->
                     Debug.log

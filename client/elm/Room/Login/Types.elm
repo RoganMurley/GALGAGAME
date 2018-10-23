@@ -1,4 +1,4 @@
-module Login.Types exposing (..)
+module Login.Types exposing (LoginError, Model)
 
 
 type alias Model =

@@ -1,4 +1,4 @@
-module Listener exposing (..)
+module Listener exposing (animSfx, listen)
 
 import Animation.Types exposing (Anim(..))
 import Audio exposing (SoundOption(..), playSoundWith)
@@ -24,18 +24,19 @@ listen state =
 
                     Nothing ->
                         Cmd.none
+
             else
                 Cmd.none
     in
-        case state of
-            Selecting _ ->
-                playSoundWith "/music/slowsadjazz.mp3" [ Loop, Once ]
+    case state of
+        Selecting _ ->
+            playSoundWith "/music/slowsadjazz.mp3" [ Loop, Once ]
 
-            Started playstate ->
-                modelListen <| PlayState.get .res playstate
+        Started playstate ->
+            modelListen <| PlayState.get .res playstate
 
-            _ ->
-                Cmd.none
+        _ ->
+            Cmd.none
 
 
 animSfx : Anim -> Maybe String

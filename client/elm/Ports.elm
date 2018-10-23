@@ -1,4 +1,4 @@
-port module Ports exposing (..)
+port module Ports exposing (analytics, copyInput, playAudio, reload, selectAllInput, volume)
 
 
 port selectAllInput : String -> Cmd msg

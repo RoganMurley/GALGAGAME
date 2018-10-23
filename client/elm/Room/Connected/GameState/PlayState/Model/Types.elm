@@ -1,4 +1,4 @@
-module Model.Types exposing (..)
+module Model.Types exposing (Life, Model)
 
 import Hand.Types exposing (Hand)
 import Stack.Types exposing (Stack)
