@@ -33,6 +33,7 @@ library
                      , DSL.Util
                      , GameCommand
                      , GameState
+                     , GodMode
                      , Life
                      , Mirror
                      , Model

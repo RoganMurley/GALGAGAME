@@ -81,6 +81,7 @@ actPlay cmd which roomVar = do
     trans ConcedeCommand             = Just Concede
     trans (ChatCommand name content) = Just (Chat name content)
     trans (SelectCharacterCommand n) = Just (SelectCharacter n)
+    trans (GodModeCommand msg)       = Just (God msg)
     trans _                          = Nothing
 
 

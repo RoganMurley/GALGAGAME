@@ -11,6 +11,7 @@ import Data.Monoid ((<>))
 import Data.String.Conversions (cs)
 import Data.Text (Text)
 import GameState (GameState(..), PlayState(..), initHandLength, initModel)
+import GodMode
 import Model (Hand, Passes(..), Model, Turn)
 import ModelDiff (ModelDiff)
 import Outcome (Outcome)
@@ -36,6 +37,7 @@ data GameCommand =
   | Concede
   | SelectCharacter Text
   | Chat Username Text
+  | God Text
   deriving (Show)
 
 
@@ -63,6 +65,8 @@ update cmd which state usernames =
               hoverCard index which model
             Concede ->
               concede which state
+            God str ->
+              godMode str which model replay
             _ ->
               Left ("Unknown command " <> (cs $ show cmd) <> " on a Playing GameState")
         Ended winner _ _ gen ->
@@ -314,3 +318,21 @@ hoverCard (Just i) which model
     Right (Nothing, [ Outcome.Encodable $ Outcome.Hover which (Just i) ])
 hoverCard Nothing which _ =
   Right (Nothing, [ Outcome.Encodable $ Outcome.Hover which Nothing ])
+
+
+godMode :: Text -> WhichPlayer -> Model -> Active.Replay -> Either Err (Maybe GameState, [Outcome])
+godMode str which model replay =
+  case GodMode.parse which str of
+    Right betaProgram ->
+      let
+        program = foldFree Beta.betaI $ betaProgram :: Beta.AlphaLogAnimProgram ()
+        (m, _, anims) = Beta.execute model program :: (Model, String, [(ModelDiff, Maybe CardAnim)])
+        res = (\(x, y) -> (x, y, Nothing)) <$> anims :: [(ModelDiff, Maybe CardAnim, Maybe StackCard)]
+        newPlayState = Playing m (Active.add replay res) :: PlayState
+      in
+        Right (
+          Just . Started $ newPlayState
+        , [Outcome.Encodable $ Outcome.Resolve res model newPlayState]
+        )
+    Left err ->
+      Left err
