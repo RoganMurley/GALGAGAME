@@ -17,7 +17,7 @@ import Main.Types as Main exposing (Flags)
 import Mode exposing (Mode(..))
 import Mouse
 import Navigation
-import Ports exposing (analytics, copyInput, reload, selectAllInput)
+import Ports exposing (analytics, copyInput, godModeCommand, reload, selectAllInput)
 import Replay.State as Replay
 import Room.Generators exposing (generate)
 import Room.Messages as Room
@@ -219,6 +219,9 @@ update msg ({ room, settings, textures, flags } as model) =
             , Cmd.map TextureMsg cmd
             )
 
+        GodCommand str ->
+            ( model, send flags <| "god:" ++ str )
+
 
 locationUpdate : Main.Model -> Navigation.Location -> ( Main.Model, Cmd Msg )
 locationUpdate model location =
@@ -359,4 +362,5 @@ subscriptions model =
         , Window.resizes (\{ width, height } -> Resize width height)
         , Mouse.moves MousePosition
         , Mouse.clicks MouseClick
+        , godModeCommand GodCommand
         ]

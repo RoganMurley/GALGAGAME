@@ -55,3 +55,5 @@ app.ports.analytics.subscribe(function () {
     ga('send', 'pageview');
   }
 });
+
+window.god = app.ports.godModeCommand.send;

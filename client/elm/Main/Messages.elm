@@ -27,3 +27,4 @@ type Msg
     | SetVolume VolumeType Int
     | TextureMsg Texture.Msg
     | UrlChange Location
+    | GodCommand String
