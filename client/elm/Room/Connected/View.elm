@@ -1,6 +1,6 @@
 module Connected.View exposing (concedeView, playersView, specMenuView, view)
 
-import Html exposing (Html, button, div, input, h1, text)
+import Html exposing (Html, button, div, input, text)
 import Html.Attributes exposing (class, classList, id, readonly, type_, value)
 import Html.Events exposing (onClick)
 import Connected.Messages as Connected
