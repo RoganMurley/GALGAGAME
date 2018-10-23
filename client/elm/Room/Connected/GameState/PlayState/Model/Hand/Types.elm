@@ -1,4 +1,4 @@
-module Hand.Types exposing (..)
+module Hand.Types exposing (Hand, HandIndex)
 
 import Card.Types exposing (Card)
 

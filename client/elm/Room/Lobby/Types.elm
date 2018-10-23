@@ -1,4 +1,4 @@
-module Lobby.Types exposing (..)
+module Lobby.Types exposing (GameType(..), LoginState(..), Model)
 
 import Mode exposing (Mode(..))
 

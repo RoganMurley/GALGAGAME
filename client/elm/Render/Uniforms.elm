@@ -1,10 +1,10 @@
-module Render.Uniforms exposing (..)
+module Render.Uniforms exposing (Uniforms, camera, perspective, uni, uniColour, uniColourMag, worldRot)
 
 import Colour exposing (Colour)
+import Game.Entity as Game
 import Game.Types exposing (Context)
 import Math.Matrix4 exposing (Mat4, makeLookAt, makeOrtho, makeRotate, makeScale3)
 import Math.Vector3 exposing (Vec3, vec3)
-import Game.Entity as Game
 import Util exposing (to3d)
 
 
@@ -53,7 +53,7 @@ uniColour ctx colour entity =
         u =
             uni ctx entity
     in
-        { u | color = colour }
+    { u | color = colour }
 
 
 uniColourMag : Context -> Colour -> Float -> Game.Entity a -> Uniforms { mag : Float }

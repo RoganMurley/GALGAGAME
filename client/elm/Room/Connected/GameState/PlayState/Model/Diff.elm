@@ -1,9 +1,9 @@
-module Model.Diff exposing (..)
+module Model.Diff exposing (Diff, decoder, initDiff, merge)
 
 import Card.Decoders as Card
+import Hand.Types exposing (Hand)
 import Json.Decode as Json exposing (Decoder, field, int, list, maybe)
 import Model.Types exposing (Life, Model)
-import Hand.Types exposing (Hand)
 import Stack.Decoders as Stack
 import Stack.Types exposing (Stack)
 import WhichPlayer.Decoders as WhichPlayer

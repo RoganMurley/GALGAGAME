@@ -1,4 +1,4 @@
-module Model.State exposing (..)
+module Model.State exposing (init)
 
 import Model.Types exposing (Model)
 import WhichPlayer.Types exposing (WhichPlayer(..))

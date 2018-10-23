@@ -1,4 +1,4 @@
-module Audio exposing (..)
+module Audio exposing (SoundOption(..), playSound, playSoundWith, setVolume)
 
 import Ports
 
@@ -37,14 +37,14 @@ playSoundWith name options =
                         _ ->
                             False
             in
-                case List.filter isVolOption options of
-                    [ Volume v ] ->
-                        v
+            case List.filter isVolOption options of
+                [ Volume v ] ->
+                    v
 
-                    _ ->
-                        1.0
+                _ ->
+                    1.0
     in
-        Ports.playAudio ( name, once, loop, vol )
+    Ports.playAudio ( name, once, loop, vol )
 
 
 setVolume : Int -> Cmd msg

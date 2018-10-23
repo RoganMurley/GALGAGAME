@@ -7,12 +7,12 @@ import Colour
 import Connected.Messages as Connected
 import Ease
 import Game.State exposing (contextInit)
-import Game.Types exposing (Model, Context)
+import Game.Types exposing (Context, Model)
 import GameState.Messages as GameState
 import Hand.State exposing (maxHandLength)
 import Hand.View as Hand
 import Html exposing (Html, button, div, text)
-import Html.Attributes exposing (class, disabled, height, width, style)
+import Html.Attributes exposing (class, disabled, height, style, width)
 import Html.Events exposing (onClick)
 import Main.Messages as Main
 import Math.Matrix4 exposing (makeLookAt, makeOrtho, makeRotate, makeScale3)
@@ -40,29 +40,29 @@ view { w, h } { res, focus, entities } textures =
         ctx =
             contextInit ( w, h ) res textures
     in
-        div [ class "clock" ]
-            [ WebGL.toHtml
-                [ width w
-                , height h
-                , class "webgl-canvas"
-                ]
-                (List.concat <|
-                    List.map ((|>) ctx)
-                        [ Stack.view entities.stack
-                        , focusImageView focus
-                        , circlesView
-                        , Hand.view entities.hand
-                        , Hand.otherView entities.otherHand
-                        , lifeOrbView
-                        , Wave.view
-                        , Hand.millView
-                        ]
-                )
-            , div [ class "text-focus" ] [ focusTextView ctx focus ]
-            , div [ class "clock-life-container" ] (lifeTextView ctx)
-            , div [ class "clock-damage-container" ] (damageTextView ctx)
-            , div [ class "clock-go" ] [ turnView ctx focus ]
+    div [ class "clock" ]
+        [ WebGL.toHtml
+            [ width w
+            , height h
+            , class "webgl-canvas"
             ]
+            (List.concat <|
+                List.map ((|>) ctx)
+                    [ Stack.view entities.stack
+                    , focusImageView focus
+                    , circlesView
+                    , Hand.view entities.hand
+                    , Hand.otherView entities.otherHand
+                    , lifeOrbView
+                    , Wave.view
+                    , Hand.millView
+                    ]
+            )
+        , div [ class "text-focus" ] [ focusTextView ctx focus ]
+        , div [ class "clock-life-container" ] (lifeTextView ctx)
+        , div [ class "clock-damage-container" ] (damageTextView ctx)
+        , div [ class "clock-go" ] [ turnView ctx focus ]
+        ]
 
 
 circlesView : Context -> List WebGL.Entity
@@ -74,11 +74,11 @@ circlesView ({ w, h, radius } as ctx) =
         active =
             vec2 (w / 2) ((h / 2) - (0.617 * radius))
     in
-        List.map (Render.Primitives.circle << uni ctx)
-            [ { scale = 0.8 * radius, position = centre, rotation = 0 }
-            , { scale = 0.52 * radius, position = centre, rotation = 0 }
-            , { scale = 0.13 * radius, position = active, rotation = 0 }
-            ]
+    List.map (Render.Primitives.circle << uni ctx)
+        [ { scale = 0.8 * radius, position = centre, rotation = 0 }
+        , { scale = 0.52 * radius, position = centre, rotation = 0 }
+        , { scale = 0.13 * radius, position = active, rotation = 0 }
+        ]
 
 
 focusImageView : Maybe StackCard -> Context -> List WebGL.Entity
@@ -100,23 +100,23 @@ focusImageView focus ({ w, h, radius, textures } as ctx) =
                 Nothing ->
                     []
     in
-        case Maybe.join <| Maybe.map (cardTexture textures << .card) focus of
-            Just texture ->
-                background
-                    ++ [ Render.Primitives.quad Render.Shaders.fragment
-                            { rotation = makeRotate pi (vec3 0 0 1)
-                            , scale = makeScale3 (0.2 * radius) (0.2 * radius) 1
-                            , color = Colour.white
-                            , pos = vec3 (w * 0.5) (h * 0.45) 0
-                            , worldRot = makeRotate 0 (vec3 0 0 1)
-                            , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
-                            , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
-                            , texture = texture
-                            }
-                       ]
+    case Maybe.join <| Maybe.map (cardTexture textures << .card) focus of
+        Just texture ->
+            background
+                ++ [ Render.Primitives.quad Render.Shaders.fragment
+                        { rotation = makeRotate pi (vec3 0 0 1)
+                        , scale = makeScale3 (0.2 * radius) (0.2 * radius) 1
+                        , color = Colour.white
+                        , pos = vec3 (w * 0.5) (h * 0.45) 0
+                        , worldRot = makeRotate 0 (vec3 0 0 1)
+                        , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
+                        , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
+                        , texture = texture
+                        }
+                   ]
 
-            Nothing ->
-                []
+        Nothing ->
+            []
 
 
 lifeOrbView : Context -> List WebGL.Entity
@@ -162,35 +162,35 @@ lifeOrbView ({ w, h, radius, model, anim, tick } as ctx) =
                 (vec2 (w * 0.5 + 0.6 * radius) (h * 0.5 - 0.75 * radius))
                 (vec2 -otherShake -otherShake)
     in
-        [ Render.Primitives.fullCircle <|
-            uniColourMag ctx
-                (Colour.card PlayerA)
-                lifePercentage
-                { scale = 0.15 * radius
-                , position = pos
-                , rotation = 0
-                }
-        , Render.Primitives.circle <|
-            uni ctx
-                { scale = 0.15 * radius
-                , position = pos
-                , rotation = 0
-                }
-        , Render.Primitives.fullCircle <|
-            uniColourMag ctx
-                (Colour.card PlayerB)
-                otherLifePercentage
-                { scale = 0.15 * radius
-                , position = otherPos
-                , rotation = 0
-                }
-        , Render.Primitives.circle <|
-            uni ctx
-                { scale = 0.15 * radius
-                , position = otherPos
-                , rotation = 0
-                }
-        ]
+    [ Render.Primitives.fullCircle <|
+        uniColourMag ctx
+            (Colour.card PlayerA)
+            lifePercentage
+            { scale = 0.15 * radius
+            , position = pos
+            , rotation = 0
+            }
+    , Render.Primitives.circle <|
+        uni ctx
+            { scale = 0.15 * radius
+            , position = pos
+            , rotation = 0
+            }
+    , Render.Primitives.fullCircle <|
+        uniColourMag ctx
+            (Colour.card PlayerB)
+            otherLifePercentage
+            { scale = 0.15 * radius
+            , position = otherPos
+            , rotation = 0
+            }
+    , Render.Primitives.circle <|
+        uni ctx
+            { scale = 0.15 * radius
+            , position = otherPos
+            , rotation = 0
+            }
+    ]
 
 
 focusTextView : Context -> Maybe StackCard -> Html a
@@ -250,6 +250,7 @@ damageTextView { radius, anim } =
         damageToString d =
             if d > 0 then
                 "+" ++ toString d
+
             else
                 toString d
 
@@ -257,39 +258,42 @@ damageTextView { radius, anim } =
         damageToCssColour d =
             if d > 0 then
                 "lime"
+
             else
                 "red"
     in
-        List.concat
-            [ if damage /= 0 then
-                [ div
-                    [ class "clock-damage"
-                    , style
-                        [ ( "right", 0.49 * radius |> px )
-                        , ( "top", 0.1 * radius |> px )
-                        , ( "font-size", 0.4 * radius |> px )
-                        , ( "color", damageToCssColour damage )
-                        ]
+    List.concat
+        [ if damage /= 0 then
+            [ div
+                [ class "clock-damage"
+                , style
+                    [ ( "right", 0.49 * radius |> px )
+                    , ( "top", 0.1 * radius |> px )
+                    , ( "font-size", 0.4 * radius |> px )
+                    , ( "color", damageToCssColour damage )
                     ]
-                    [ text <| damageToString damage ]
                 ]
-              else
-                []
-            , if otherDamage /= 0 then
-                [ div
-                    [ class "clock-damage"
-                    , style
-                        [ ( "left", 0.49 * radius |> px )
-                        , ( "bottom", 0.1 * radius |> px )
-                        , ( "font-size", 0.4 * radius |> px )
-                        , ( "color", damageToCssColour otherDamage )
-                        ]
-                    ]
-                    [ text <| damageToString otherDamage ]
-                ]
-              else
-                []
+                [ text <| damageToString damage ]
             ]
+
+          else
+            []
+        , if otherDamage /= 0 then
+            [ div
+                [ class "clock-damage"
+                , style
+                    [ ( "left", 0.49 * radius |> px )
+                    , ( "bottom", 0.1 * radius |> px )
+                    , ( "font-size", 0.4 * radius |> px )
+                    , ( "color", damageToCssColour otherDamage )
+                    ]
+                ]
+                [ text <| damageToString otherDamage ]
+            ]
+
+          else
+            []
+        ]
 
 
 turnView : Context -> Maybe StackCard -> Html Main.Msg
@@ -298,29 +302,29 @@ turnView { anim, model } focus =
         handFull =
             List.length model.hand == maxHandLength
     in
-        case ( anim, focus ) of
-            ( Mill _ _, _ ) ->
-                div [] []
+    case ( anim, focus ) of
+        ( Mill _ _, _ ) ->
+            div [] []
 
-            ( NullAnim, Nothing ) ->
-                case model.turn of
-                    PlayerA ->
-                        button
-                            [ class "clock-turn"
-                            , disabled handFull
-                            , onClick <|
-                                Main.RoomMsg <|
-                                    Room.ConnectedMsg <|
-                                        Connected.GameStateMsg <|
-                                            GameState.PlayStateMsg <|
-                                                PlayState.PlayingOnly <|
-                                                    PlayState.TurnOnly <|
-                                                        PlayState.EndTurn
-                            ]
-                            [ text "Go" ]
+        ( NullAnim, Nothing ) ->
+            case model.turn of
+                PlayerA ->
+                    button
+                        [ class "clock-turn"
+                        , disabled handFull
+                        , onClick <|
+                            Main.RoomMsg <|
+                                Room.ConnectedMsg <|
+                                    Connected.GameStateMsg <|
+                                        GameState.PlayStateMsg <|
+                                            PlayState.PlayingOnly <|
+                                                PlayState.TurnOnly <|
+                                                    PlayState.EndTurn
+                        ]
+                        [ text "Go" ]
 
-                    PlayerB ->
-                        div [ class "turn-status" ] [ text "Opponent's turn" ]
+                PlayerB ->
+                    div [ class "turn-status" ] [ text "Opponent's turn" ]
 
-            _ ->
-                div [] []
+        _ ->
+            div [] []

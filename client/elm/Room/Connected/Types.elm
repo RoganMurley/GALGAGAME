@@ -1,4 +1,4 @@
-module Connected.Types exposing (..)
+module Connected.Types exposing (Model)
 
 import GameState.Types exposing (GameState)
 import Mode exposing (Mode)

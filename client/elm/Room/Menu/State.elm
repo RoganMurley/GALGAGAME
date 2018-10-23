@@ -1,4 +1,4 @@
-module Menu.State exposing (..)
+module Menu.State exposing (update)
 
 import Lobby.Types as Lobby
 import Main.Messages as Main
@@ -23,4 +23,4 @@ update msg =
                         Lobby.QuickplayGame ->
                             "quickplay"
             in
-                Navigation.newUrl <| "/play/" ++ url
+            Navigation.newUrl <| "/play/" ++ url

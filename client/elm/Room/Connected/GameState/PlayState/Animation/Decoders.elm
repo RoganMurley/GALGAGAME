@@ -34,10 +34,11 @@ constDecoder x =
         decode s =
             if s == x then
                 succeed ()
+
             else
                 fail <| s ++ " does not match " ++ x
     in
-        string |> Json.andThen decode
+    string |> Json.andThen decode
 
 
 slashDecoder : Decoder Anim

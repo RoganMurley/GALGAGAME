@@ -1,4 +1,4 @@
-module Stack.View exposing (..)
+module Stack.View exposing (view)
 
 import Animation.Types exposing (Anim(..))
 import Card.Types as Card
@@ -20,12 +20,14 @@ view entities ctx =
                 Hubris _ ->
                     if i == n then
                         Card.view ctx
+
                     else
                         Card.dissolvingView ctx
 
                 Reflect _ ->
                     if i == n then
                         Card.view ctx
+
                     else
                         \entity ->
                             let
@@ -39,15 +41,16 @@ view entities ctx =
                                     , card = entity.card
                                     }
                             in
-                                Card.transmutingView ctx ca cb entity
+                            Card.transmutingView ctx ca cb entity
 
                 Transmute _ ca cb ->
                     if i == 0 then
                         Card.transmutingView ctx ca cb
+
                     else
                         Card.view ctx
 
                 _ ->
                     Card.view ctx
     in
-        List.concat <| List.indexedMap makeEntity entities
+    List.concat <| List.indexedMap makeEntity entities

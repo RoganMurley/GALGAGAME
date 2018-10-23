@@ -1,16 +1,16 @@
-module Hand.View exposing (..)
+module Hand.View exposing (millView, otherView, view)
 
 import Animation.State as Animation
 import Animation.Types exposing (Anim(..))
 import Card.Types as Card
 import Card.View as Card
-import Game.Types exposing (Context)
 import Ease
-import Math.Vector2 exposing (vec2)
 import Game.Entity as Game
+import Game.Types exposing (Context)
+import Math.Vector2 exposing (vec2)
+import Util exposing (interp2D, interpFloat)
 import WebGL
 import WhichPlayer.Types exposing (WhichPlayer(..))
-import Util exposing (interpFloat, interp2D)
 
 
 view : List (Card.Entity { index : Int }) -> Context -> List WebGL.Entity
@@ -57,12 +57,12 @@ millView ({ w, h, progress, tick, anim } as ctx) =
                     , scale = interpFloat progress 1 4
                     }
             in
-                Card.dissolvingView
-                    { ctx
-                        | progress =
-                            Ease.inQuint (tick / Animation.animMaxTick anim)
-                    }
-                    entity
+            Card.dissolvingView
+                { ctx
+                    | progress =
+                        Ease.inQuint (tick / Animation.animMaxTick anim)
+                }
+                entity
 
         _ ->
             []

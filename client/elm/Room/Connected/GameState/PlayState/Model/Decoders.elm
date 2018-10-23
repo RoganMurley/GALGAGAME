@@ -1,7 +1,7 @@
-module Model.Decoders exposing (..)
+module Model.Decoders exposing (decoder)
 
-import Json.Decode as Json exposing (Decoder, field, int, list)
 import Card.Decoders as Card
+import Json.Decode as Json exposing (Decoder, field, int, list)
 import Model.Types exposing (Model)
 import Stack.Decoders as Stack
 import WhichPlayer.Decoders as WhichPlayer

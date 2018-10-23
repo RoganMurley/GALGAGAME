@@ -1,4 +1,4 @@
-module Main.View exposing (..)
+module Main.View exposing (view)
 
 import Html exposing (Html)
 import Main.Messages exposing (Msg)

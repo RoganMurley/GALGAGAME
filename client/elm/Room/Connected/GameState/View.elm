@@ -1,12 +1,12 @@
 module GameState.View exposing (view)
 
-import Html exposing (Html, button, div, input, text)
-import Html.Attributes exposing (class, id, readonly, type_, value)
-import Html.Events exposing (onClick)
 import CharacterSelect.View as CharacterSelect
 import Connected.Messages as Connected
 import GameState.Messages exposing (Msg(..))
 import GameState.Types exposing (GameState(..), WaitType(..))
+import Html exposing (Html, button, div, input, text)
+import Html.Attributes exposing (class, id, readonly, type_, value)
+import Html.Events exposing (onClick)
 import Main.Messages as Main
 import Main.Types exposing (Flags)
 import PlayState.View as PlayState
@@ -40,6 +40,7 @@ waitingView waitType httpPort hostname roomID =
         portProtocol =
             if httpPort /= "" then
                 ":" ++ httpPort
+
             else
                 ""
 
@@ -84,8 +85,8 @@ waitingView waitType httpPort hostname roomID =
                             ]
                         ]
     in
-        div [ class "waiting" ]
-            [ div [ class "waiting-prompt" ]
-                [ text waitingPrompt ]
-            , waitingInfo
-            ]
+    div [ class "waiting" ]
+        [ div [ class "waiting-prompt" ]
+            [ text waitingPrompt ]
+        , waitingInfo
+        ]

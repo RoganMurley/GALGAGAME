@@ -1,13 +1,13 @@
-module Hand.Entities exposing (..)
+module Hand.Entities exposing (entities, handCardPosition, handCardRotation, handOrigin, otherEntities)
 
 import Animation.State as Animation
 import Animation.Types exposing (Anim(..))
 import Card.Types as Card exposing (Card)
+import Game.Entity as Game
 import Game.Types exposing (Context)
 import Math.Vector2 exposing (Vec2, vec2)
-import Game.Entity as Game
+import Util exposing (interp2D, interpFloat)
 import WhichPlayer.Types exposing (WhichPlayer(..))
-import Util exposing (interpFloat, interp2D)
 
 
 entities : Context -> List (Card.Entity { index : Int })
@@ -33,6 +33,7 @@ entities ({ w, h, radius, anim, model, progress } as ctx) =
                     \i ->
                         if i >= index then
                             i + 1
+
                         else
                             i
 
@@ -61,13 +62,13 @@ entities ({ w, h, radius, anim, model, progress } as ctx) =
                         (handCardRotation PlayerA i n)
                         (handCardRotation PlayerA finalI finalN)
             in
-                { position = pos
-                , rotation = rot
-                , scale = 1
-                , card = card
-                , owner = PlayerA
-                , index = finalI
-                }
+            { position = pos
+            , rotation = rot
+            , scale = 1
+            , card = card
+            , owner = PlayerA
+            , index = finalI
+            }
 
         mainEntities : List (Card.Entity { index : Int })
         mainEntities =
@@ -88,14 +89,14 @@ entities ({ w, h, radius, anim, model, progress } as ctx) =
                                 rot =
                                     interpFloat progress 0 (handCardRotation PlayerA n (n + 1))
                             in
-                                [ { position = pos
-                                  , rotation = rot
-                                  , scale = 1
-                                  , card = card
-                                  , owner = PlayerA
-                                  , index = n
-                                  }
-                                ]
+                            [ { position = pos
+                              , rotation = rot
+                              , scale = 1
+                              , card = card
+                              , owner = PlayerA
+                              , index = n
+                              }
+                            ]
 
                         Nothing ->
                             []
@@ -113,19 +114,19 @@ entities ({ w, h, radius, anim, model, progress } as ctx) =
                         scale =
                             interpFloat progress 1 1.3
                     in
-                        [ { position = pos
-                          , rotation = rot
-                          , scale = scale
-                          , card = card
-                          , owner = PlayerA
-                          , index = i
-                          }
-                        ]
+                    [ { position = pos
+                      , rotation = rot
+                      , scale = scale
+                      , card = card
+                      , owner = PlayerA
+                      , index = i
+                      }
+                    ]
 
                 _ ->
                     []
     in
-        mainEntities ++ extraEntities
+    mainEntities ++ extraEntities
 
 
 otherEntities : Context -> List (Game.Entity {})
@@ -149,6 +150,7 @@ otherEntities ({ w, h, radius, anim, model, progress } as ctx) =
                     \i ->
                         if i >= index then
                             i + 1
+
                         else
                             i
 
@@ -161,16 +163,16 @@ otherEntities ({ w, h, radius, anim, model, progress } as ctx) =
                 i =
                     indexModifier finalI
             in
-                { position =
-                    interp2D progress
-                        (handCardPosition ctx PlayerB i n)
-                        (handCardPosition ctx PlayerB finalI finalN)
-                , rotation =
-                    interpFloat progress
-                        (handCardRotation PlayerB i n)
-                        (handCardRotation PlayerB finalI finalN)
-                , scale = 1
-                }
+            { position =
+                interp2D progress
+                    (handCardPosition ctx PlayerB i n)
+                    (handCardPosition ctx PlayerB finalI finalN)
+            , rotation =
+                interpFloat progress
+                    (handCardRotation PlayerB i n)
+                    (handCardRotation PlayerB finalI finalN)
+            , scale = 1
+            }
 
         mainEntities : List (Game.Entity {})
         mainEntities =
@@ -205,7 +207,7 @@ otherEntities ({ w, h, radius, anim, model, progress } as ctx) =
                 _ ->
                     []
     in
-        mainEntities ++ extraEntities
+    mainEntities ++ extraEntities
 
 
 handOrigin : Context -> WhichPlayer -> Int -> Vec2
@@ -228,7 +230,7 @@ handOrigin { w, h, radius, anim, tick } which count =
                 PlayerB ->
                     height + shake
     in
-        vec2 x y
+    vec2 x y
 
 
 handCardRotation : WhichPlayer -> Int -> Int -> Float
@@ -237,12 +239,12 @@ handCardRotation which i count =
         magnitude =
             0.05 * (toFloat i - (toFloat count * 0.5))
     in
-        case which of
-            PlayerA ->
-                pi + magnitude
+    case which of
+        PlayerA ->
+            pi + magnitude
 
-            PlayerB ->
-                -magnitude
+        PlayerB ->
+            -magnitude
 
 
 handCardPosition : Context -> WhichPlayer -> Int -> Int -> Vec2
@@ -264,18 +266,19 @@ handCardPosition ({ radius } as ctx) which index count =
                 i =
                     if count % 2 == 0 && index < count // 2 then
                         toFloat <| index + 1
+
                     else
                         toFloat index
 
                 c =
                     toFloat count
             in
-                sign * (abs <| 4 * (toFloat <| ceiling (i - (c * 0.5))))
+            sign * (abs <| 4 * (toFloat <| ceiling (i - (c * 0.5))))
     in
+    Math.Vector2.add
+        (handOrigin ctx which count)
+    <|
         Math.Vector2.add
-            (handOrigin ctx which count)
+            (vec2 (toFloat index * (width + spacing)) 0)
         <|
-            Math.Vector2.add
-                (vec2 (toFloat index * (width + spacing)) 0)
-            <|
-                vec2 0 y
+            vec2 0 y

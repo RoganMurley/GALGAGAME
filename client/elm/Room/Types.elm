@@ -1,4 +1,4 @@
-module Room.Types exposing (..)
+module Room.Types exposing (Model(..))
 
 import Connected.Types as Connected
 import Lobby.Types as Lobby

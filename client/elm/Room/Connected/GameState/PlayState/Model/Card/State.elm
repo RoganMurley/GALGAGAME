@@ -1,4 +1,4 @@
-module Card.State exposing (..)
+module Card.State exposing (cardTexture)
 
 import Card.Types exposing (Card)
 import Texture.State as Texture

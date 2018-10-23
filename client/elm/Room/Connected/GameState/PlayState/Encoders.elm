@@ -1,4 +1,4 @@
-module PlayState.Encoders exposing (..)
+module PlayState.Encoders exposing (hoverIndex)
 
 import Json.Encode exposing (encode, int)
 import Json.Encode.Extra exposing (maybe)

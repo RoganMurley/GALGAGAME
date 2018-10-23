@@ -1,4 +1,4 @@
-module Animation.Types exposing (..)
+module Animation.Types exposing (Anim(..))
 
 import Card.Types exposing (Card)
 import Stack.Types exposing (StackCard)

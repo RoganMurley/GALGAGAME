@@ -1,4 +1,4 @@
-module Texture.State exposing (..)
+module Texture.State exposing (defaultOptions, fetchTextures, init, load, null, save, saveList, texturePaths, update)
 
 import Dict
 import Task
@@ -23,7 +23,7 @@ update msg m =
                 _ =
                     Debug.log "Error loading textures: " error
             in
-                ( m, Cmd.none )
+            ( m, Cmd.none )
 
 
 save : Model -> ( String, Texture ) -> Model
@@ -64,22 +64,22 @@ fetchTextures =
                         }
                         texturePath
             in
-                Task.map
-                    (\texture -> ( name, texture ))
-                    task
+            Task.map
+                (\texture -> ( name, texture ))
+                task
     in
-        texturePaths
-            |> List.map loader
-            |> Task.sequence
-            |> Task.attempt
-                (\result ->
-                    case result of
-                        Err error ->
-                            TexturesError error
+    texturePaths
+        |> List.map loader
+        |> Task.sequence
+        |> Task.attempt
+            (\result ->
+                case result of
+                    Err error ->
+                        TexturesError error
 
-                        Ok textures ->
-                            TexturesLoaded textures
-                )
+                    Ok textures ->
+                        TexturesLoaded textures
+            )
 
 
 texturePaths : List ( String, String )

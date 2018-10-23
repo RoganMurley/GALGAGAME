@@ -1,4 +1,4 @@
-module Model.ViewModel exposing (..)
+module Model.ViewModel exposing (ViewModel, init)
 
 
 type alias ViewModel =

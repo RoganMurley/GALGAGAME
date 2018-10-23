@@ -1,9 +1,9 @@
-module CharacterSelect.View exposing (..)
+module CharacterSelect.View exposing (cardView, view)
 
 import Card.Types exposing (Card)
 import CharacterSelect.Messages exposing (Msg(..))
 import CharacterSelect.Types exposing (Character, Model)
-import Html exposing (Html, div, img, text, table, td, tr)
+import Html exposing (Html, div, img, table, td, text, tr)
 import Html.Attributes exposing (class, src, style)
 import Html.Events exposing (onClick, onMouseEnter)
 
@@ -19,6 +19,7 @@ view { characters, selected, vm } =
                 , onClick <| Select character
                 , if List.member character selected then
                     class "invisible"
+
                   else
                     class ""
                 ]
@@ -42,18 +43,19 @@ view { characters, selected, vm } =
                         (3 - List.length selected)
                         (div [ class "character-unchosen" ] [])
             in
-                div []
-                    [ div
-                        [ class "characters-all-chosen" ]
-                        (List.map chosenView selected ++ unchosen)
-                    , div
-                        [ class "ready-up" ]
-                        [ if List.length selected >= 3 then
-                            text "Waiting for opponent"
-                          else
-                            text ""
-                        ]
+            div []
+                [ div
+                    [ class "characters-all-chosen" ]
+                    (List.map chosenView selected ++ unchosen)
+                , div
+                    [ class "ready-up" ]
+                    [ if List.length selected >= 3 then
+                        text "Waiting for opponent"
+
+                      else
+                        text ""
                     ]
+                ]
 
         cardPreviewView : ( Card, Card, Card, Card ) -> Html Msg
         cardPreviewView ( c1, c2, c3, c4 ) =
@@ -62,18 +64,18 @@ view { characters, selected, vm } =
                 eachView c =
                     td [] [ cardView c ]
             in
-                table [ class "card-preview" ]
-                    [ tr [] (List.map eachView [ c1, c2, c3, c4 ]) ]
+            table [ class "card-preview" ]
+                [ tr [] (List.map eachView [ c1, c2, c3, c4 ]) ]
     in
-        div []
-            [ div
-                [ class "character-select" ]
-                [ text "Choose your Characters"
-                , div [ class "characters" ] <| List.map characterView characters
-                , cardPreviewView (.cards vm.hover)
-                , selectedView
-                ]
+    div []
+        [ div
+            [ class "character-select" ]
+            [ text "Choose your Characters"
+            , div [ class "characters" ] <| List.map characterView characters
+            , cardPreviewView (.cards vm.hover)
+            , selectedView
             ]
+        ]
 
 
 cardView : Card -> Html msg

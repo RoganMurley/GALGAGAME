@@ -1,4 +1,4 @@
-module Main.Types exposing (..)
+module Main.Types exposing (Flags, Model, Seed)
 
 import Room.Types as Room
 import Settings.Types as Settings

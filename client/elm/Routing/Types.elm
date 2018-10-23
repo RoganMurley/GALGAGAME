@@ -1,4 +1,4 @@
-module Routing.Types exposing (..)
+module Routing.Types exposing (PlayRoute(..), Route(..))
 
 
 type Route

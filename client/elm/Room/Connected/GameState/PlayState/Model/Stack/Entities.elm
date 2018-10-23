@@ -1,10 +1,10 @@
-module Stack.Entities exposing (..)
+module Stack.Entities exposing (clockFace, entities)
 
 import Animation.Types exposing (Anim(..))
 import Card.Types as Card exposing (Card)
+import Game.Entity as Game
 import Game.Types exposing (Context)
 import Math.Vector2 exposing (Vec2, vec2)
-import Game.Entity as Game
 import Stack.Types exposing (Stack, StackCard)
 import WhichPlayer.Types exposing (WhichPlayer(..))
 
@@ -75,7 +75,7 @@ entities ctx =
                         Nothing ->
                             []
     in
-        mainEntities ++ extraEntities
+    mainEntities ++ extraEntities
 
 
 clockFace : Stack -> Vec2 -> Float -> Float -> List (Card.Entity {})
@@ -91,12 +91,12 @@ clockFace stack origin radius progress =
                 i =
                     index + 1
             in
-                { owner = owner
-                , card = card
-                , position = Math.Vector2.add origin <| offset i
-                , rotation = rotation i
-                , scale = 1.3
-                }
+            { owner = owner
+            , card = card
+            , position = Math.Vector2.add origin <| offset i
+            , rotation = rotation i
+            , scale = 1.3
+            }
 
         segmentAngle : Float
         segmentAngle =
@@ -116,4 +116,4 @@ clockFace stack origin radius progress =
         rotation i =
             pi - rot i
     in
-        List.indexedMap genPoint stack
+    List.indexedMap genPoint stack

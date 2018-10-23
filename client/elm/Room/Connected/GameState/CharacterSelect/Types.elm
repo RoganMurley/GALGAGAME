@@ -1,4 +1,4 @@
-module CharacterSelect.Types exposing (..)
+module CharacterSelect.Types exposing (Character, CharacterCards, Model, ViewModel)
 
 import Card.Types exposing (Card)
 

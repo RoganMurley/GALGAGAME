@@ -1,4 +1,4 @@
-module Settings.Types exposing (..)
+module Settings.Types exposing (ModalState(..), Model, VolumeType(..))
 
 
 type alias Model =

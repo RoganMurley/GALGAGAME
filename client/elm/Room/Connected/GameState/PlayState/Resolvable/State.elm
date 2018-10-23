@@ -1,11 +1,11 @@
-module Resolvable.State exposing (..)
+module Resolvable.State exposing (activeAnim, activeModel, activeStackCard, init, merge, resDiffToData, resolveStep, resolving, tick, tickEnd, tickStart)
 
 import Animation.State as Animation
 import Animation.Types exposing (Anim(NullAnim))
 import Model.Diff as Model
 import Model.Types as Model
-import Resolvable.Types as Resolvable
 import Model.ViewModel
+import Resolvable.Types as Resolvable
 import Stack.Types exposing (StackCard)
 import Util exposing (zip)
 
@@ -52,6 +52,7 @@ tick : Float -> Resolvable.Model -> Resolvable.Model
 tick dt model =
     if tickEnd model.tick (activeAnim model) then
         resolveStep model
+
     else
         { model
             | tick = model.tick + dt
@@ -108,5 +109,5 @@ resDiffToData model resDiffs =
             , stackCard = stackCard
             }
     in
-        List.map combine <|
-            zip models resDiffs
+    List.map combine <|
+        zip models resDiffs

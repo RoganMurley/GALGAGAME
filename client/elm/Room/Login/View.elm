@@ -4,8 +4,8 @@ import Html exposing (Html, button, div, input, text)
 import Html.Attributes exposing (class, disabled, placeholder, type_)
 import Html.Events exposing (onClick, onInput)
 import Login.Messages exposing (Input(..), Msg(..))
-import Login.Types exposing (Model)
 import Login.State exposing (passwordInvalid, usernameInvalid)
+import Login.Types exposing (Model)
 import Main.Messages as Main
 import Main.Types exposing (Flags)
 
@@ -19,29 +19,29 @@ view { username, password, error, submitting } =
                 || passwordInvalid password
                 || submitting
     in
-        div []
-            [ div [ class "login-box" ]
-                [ text "Username"
-                , input
-                    [ placeholder "Username"
-                    , onInput <| Input Username
-                    ]
-                    []
-                , text "Password"
-                , input
-                    [ placeholder "Password"
-                    , onInput <| Input Password
-                    , type_ "password"
-                    ]
-                    []
-                , button
-                    [ onClick Submit
-                    , disabled submitDisabled
-                    ]
-                    [ text "Login" ]
-                , div [ class "error" ] [ text error ]
+    div []
+        [ div [ class "login-box" ]
+            [ text "Username"
+            , input
+                [ placeholder "Username"
+                , onInput <| Input Username
                 ]
+                []
+            , text "Password"
+            , input
+                [ placeholder "Password"
+                , onInput <| Input Password
+                , type_ "password"
+                ]
+                []
+            , button
+                [ onClick Submit
+                , disabled submitDisabled
+                ]
+                [ text "Login" ]
+            , div [ class "error" ] [ text error ]
             ]
+        ]
 
 
 logoutView : Flags -> List (Html Main.Msg)

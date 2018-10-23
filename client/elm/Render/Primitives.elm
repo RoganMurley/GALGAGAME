@@ -1,4 +1,4 @@
-module Render.Primitives exposing (..)
+module Render.Primitives exposing (circle, entity, fullCircle, quad, roundedBox, roundedBoxDisintegrate, roundedBoxTransmute)
 
 import Math.Vector2 exposing (Vec2)
 import Math.Vector3 exposing (Vec3)

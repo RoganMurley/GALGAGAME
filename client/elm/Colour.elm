@@ -1,4 +1,4 @@
-module Colour exposing (..)
+module Colour exposing (Colour, black, blue, card, focusBackground, green, red, white)
 
 import Math.Vector3 exposing (Vec3, vec3)
 import WhichPlayer.Types exposing (WhichPlayer(..))

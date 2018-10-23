@@ -1,4 +1,4 @@
-module Lobby.State exposing (..)
+module Lobby.State exposing (gameTypeToString, init, receive, skipLobbyCmd, update)
 
 import Lobby.Messages exposing (Msg(..))
 import Lobby.Types exposing (GameType(..), LoginState(..), Model)
@@ -41,10 +41,10 @@ update ({ gameType, mode } as model) msg =
                         Spectating ->
                             "spectate:"
             in
-                model
-                    ! [ message <| Main.Send <| prefix
-                      , message <| Main.Send <| "room:" ++ model.roomID
-                      ]
+            model
+                ! [ message <| Main.Send <| prefix
+                  , message <| Main.Send <| "room:" ++ model.roomID
+                  ]
 
         JoinRoomErr error ->
             ( { model | error = error }, Cmd.none )
@@ -61,29 +61,29 @@ receive msg =
         ( command, content ) =
             splitOnColon msg
     in
-        case command of
-            "acceptPlay" ->
-                message <|
-                    Main.RoomMsg <|
-                        Room.StartGame Playing
+    case command of
+        "acceptPlay" ->
+            message <|
+                Main.RoomMsg <|
+                    Room.StartGame Playing
 
-            "acceptSpec" ->
-                message <|
-                    Main.RoomMsg <|
-                        Room.StartGame Spectating
+        "acceptSpec" ->
+            message <|
+                Main.RoomMsg <|
+                    Room.StartGame Spectating
 
-            "error" ->
-                message <|
-                    Main.RoomMsg <|
-                        Room.LobbyMsg <|
-                            JoinRoomErr <|
-                                content
+        "error" ->
+            message <|
+                Main.RoomMsg <|
+                    Room.LobbyMsg <|
+                        JoinRoomErr <|
+                            content
 
-            _ ->
-                -- Defer other messages.
-                message <|
-                    Main.Receive <|
-                        msg
+        _ ->
+            -- Defer other messages.
+            message <|
+                Main.Receive <|
+                    msg
 
 
 gameTypeToString : GameType -> String

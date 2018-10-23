@@ -1,8 +1,8 @@
-module Resolvable.Types exposing (..)
+module Resolvable.Types exposing (Model, ResolveData, ResolveDiffData)
 
 import Animation.Types exposing (Anim)
-import Model.Types as Model
 import Model.Diff as Model
+import Model.Types as Model
 import Model.ViewModel exposing (ViewModel)
 import Stack.Types exposing (StackCard)
 

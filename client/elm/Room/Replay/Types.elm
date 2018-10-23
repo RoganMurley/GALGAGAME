@@ -1,4 +1,4 @@
-module Replay.Types exposing (..)
+module Replay.Types exposing (Model, Replay)
 
 import PlayState.Types exposing (PlayState)
 
