@@ -20,7 +20,7 @@ data Command =
   | RematchCommand
   | ConcedeCommand
   | SelectCharacterCommand Text
-  | GodModeCommand Text
+  | GodModeCommand Username Text
   | ErrorCommand Text
   deriving (Show)
 
@@ -58,7 +58,7 @@ parse name msg =
       "selectCharacter" ->
         SelectCharacterCommand content
       "god" ->
-        GodModeCommand content
+        GodModeCommand name content
       _ ->
         ErrorCommand $ "Unknown Command " <> (cs $ show command)
 

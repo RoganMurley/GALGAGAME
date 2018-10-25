@@ -18,7 +18,7 @@ import Outcome (Outcome)
 import Player (WhichPlayer(..), other)
 import Safe (atMay, headMay)
 import StackCard(StackCard(..))
-import Username (Username)
+import Username (Username(..))
 import Util (Err, Gen, split)
 
 
@@ -37,7 +37,7 @@ data GameCommand =
   | Concede
   | SelectCharacter Text
   | Chat Username Text
-  | God Text
+  | God Username Text
   deriving (Show)
 
 
@@ -65,8 +65,8 @@ update cmd which state usernames =
               hoverCard index which model
             Concede ->
               concede which state
-            God str ->
-              godMode str which model replay
+            God username str ->
+              godMode username str which model replay
             _ ->
               Left ("Unknown command " <> (cs $ show cmd) <> " on a Playing GameState")
         Ended winner _ _ gen ->
@@ -320,19 +320,25 @@ hoverCard Nothing which _ =
   Right (Nothing, [ Outcome.Encodable $ Outcome.Hover which Nothing ])
 
 
-godMode :: Text -> WhichPlayer -> Model -> Active.Replay -> Either Err (Maybe GameState, [Outcome])
-godMode str which model replay =
-  case GodMode.parse which str of
-    Right betaProgram ->
-      let
-        program = foldFree Beta.betaI $ betaProgram :: Beta.AlphaLogAnimProgram ()
-        (m, _, anims) = Beta.execute model program :: (Model, String, [(ModelDiff, Maybe CardAnim)])
-        res = (\(x, y) -> (x, y, Nothing)) <$> anims :: [(ModelDiff, Maybe CardAnim, Maybe StackCard)]
-        newPlayState = Playing m (Active.add replay res) :: PlayState
-      in
-        Right (
-          Just . Started $ newPlayState
-        , [Outcome.Encodable $ Outcome.Resolve res model newPlayState]
-        )
-    Left err ->
-      Left err
+godMode :: Username -> Text -> WhichPlayer -> Model -> Active.Replay -> Either Err (Maybe GameState, [Outcome])
+godMode username str which model replay =
+  if GodMode.isSuperuser username then
+    case GodMode.parse which str of
+      Right betaProgram ->
+        let
+          program = foldFree Beta.betaI $ betaProgram :: Beta.AlphaLogAnimProgram ()
+          (m, _, anims) = Beta.execute model program :: (Model, String, [(ModelDiff, Maybe CardAnim)])
+          res = (\(x, y) -> (x, y, Nothing)) <$> anims :: [(ModelDiff, Maybe CardAnim, Maybe StackCard)]
+          newPlayState = Playing m (Active.add replay res) :: PlayState
+        in
+          Right (
+            Just . Started $ newPlayState
+          , [Outcome.Encodable $ Outcome.Resolve res model newPlayState]
+          )
+      Left err ->
+        Left err
+  else
+    let
+      Username u = username
+    in
+      Left $ u <> " is not a superuser"

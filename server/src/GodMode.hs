@@ -9,6 +9,7 @@ import Safe (readMay)
 import Card (Card(..))
 import Cards (allCards)
 import Player (WhichPlayer(..), other)
+import Username (Username(..))
 import Util (Err, breakAt)
 
 import qualified DSL.Beta as Beta
@@ -42,3 +43,7 @@ parse which msg =
             Left ("Unknown card: " <> content :: Err)
       _ ->
         Left ("Unknown commandment: " <> command :: Err)
+
+
+isSuperuser :: Username -> Bool
+isSuperuser = (==) (Username ("schmolt" :: Text))
