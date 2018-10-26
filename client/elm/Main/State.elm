@@ -17,7 +17,7 @@ import Main.Types as Main exposing (Flags)
 import Mode exposing (Mode(..))
 import Mouse
 import Navigation
-import Ports exposing (analytics, copyInput, godModeCommand, reload, selectAllInput)
+import Ports exposing (analytics, copyInput, godModeCommand, reload, selectAllInput, touch)
 import Replay.State as Replay
 import Room.Generators exposing (generate)
 import Room.Messages as Room
@@ -219,6 +219,21 @@ update msg ({ room, settings, textures, flags } as model) =
             , Cmd.map TextureMsg cmd
             )
 
+        TouchPosition pos ->
+            let
+                ( newRoom, newCmd ) =
+                    Room.update
+                        room
+                        (Room.ConnectedMsg <|
+                            Connected.GameStateMsg <|
+                                GameState.Touch pos
+                        )
+                        flags
+            in
+            ( { model | room = newRoom }
+            , newCmd
+            )
+
         GodCommand str ->
             ( model, send flags <| "god:" ++ str )
 
@@ -362,5 +377,6 @@ subscriptions model =
         , Window.resizes (\{ width, height } -> Resize width height)
         , Mouse.moves MousePosition
         , Mouse.clicks MouseClick
+        , touch TouchPosition
         , godModeCommand GodCommand
         ]

@@ -83,6 +83,16 @@ update msg state mode flags =
                         "Expected a Selecting state"
                         ( state, Cmd.none )
 
+        Touch pos ->
+            case state of
+                Started playState ->
+                    ( Started <| PlayState.mouseMove pos playState
+                    , Cmd.none
+                    )
+
+                _ ->
+                    ( state, Cmd.none )
+
 
 syncState : GameState -> String -> GameState
 syncState oldState msg =

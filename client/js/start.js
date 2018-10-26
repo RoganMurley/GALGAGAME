@@ -56,4 +56,15 @@ app.ports.analytics.subscribe(function () {
   }
 });
 
+function handleTouch (e) {
+  var touch = e.touches[0];
+  app.ports.touch.send({
+    x: Math.floor(touch.clientX),
+    y: Math.floor(touch.clientY),
+  });
+};
+
+document.body.addEventListener('touchstart', handleTouch, false);
+document.body.addEventListener('touchmove', handleTouch, false);
+
 window.god = app.ports.godModeCommand.send;
