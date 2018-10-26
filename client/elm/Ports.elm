@@ -1,4 +1,4 @@
-port module Ports exposing (analytics, copyInput, godModeCommand, playAudio, reload, selectAllInput, volume)
+port module Ports exposing (analytics, copyInput, godModeCommand, playAudio, reload, selectAllInput, touch, volume)
 
 
 port selectAllInput : String -> Cmd msg
@@ -17,6 +17,9 @@ port reload : () -> Cmd msg
 
 
 port analytics : () -> Cmd msg
+
+
+port touch : ({ x : Int, y : Int } -> msg) -> Sub msg
 
 
 port godModeCommand : (String -> msg) -> Sub msg
