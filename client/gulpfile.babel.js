@@ -1,6 +1,5 @@
 import gulp from 'gulp';
 import elm from 'gulp-elm';
-import plumber from 'gulp-plumber';
 import sass from 'gulp-sass';
 import uglify from 'gulp-uglify';
 import minify from 'gulp-minify-css';
@@ -27,7 +26,6 @@ gulp.task('init', elm.init);
 gulp.task('multi',
   gulp.series('init', () => {
     return gulp.src('elm/Main.elm')
-      .pipe(plumber())
       .pipe(elm.make({filetype: 'js', warn: true}))
       .pipe(minifyJs())
       .pipe(gulp.dest(dir.build));
@@ -38,7 +36,6 @@ gulp.task('multi',
 // SASS
 gulp.task('sass', () => {
   return gulp.src('sass/**/*.scss')
-    .pipe(plumber())
     .pipe(sass().on('error', sass.logError))
     .pipe(minifyCss())
     .pipe(gulp.dest(dir.build));
