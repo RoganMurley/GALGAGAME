@@ -1,7 +1,7 @@
 module Settings.View exposing (view)
 
-import Html exposing (Html, div, h1, img, input, label, text)
-import Html.Attributes as H exposing (class, src, style, type_, value)
+import Html exposing (Html, button, div, h1, img, input, label, text)
+import Html.Attributes as H exposing (attribute, class, src, style, type_, value)
 import Html.Events exposing (onClick, onInput)
 import Main.Messages as Main
 import Settings.Messages as Settings
@@ -85,7 +85,15 @@ view { modalState, masterVolume, musicVolume, sfxVolume } nestedViews =
                             ]
                             []
                         ]
-                    , div [] nestedViews
+                    , div [] <|
+                        -- onclick hack here as fullscreen requires user interaction.
+                        List.concat
+                            [ [ button
+                                    [ class "settings-button", attribute "onclick" "window.requestFullscreen()" ]
+                                    [ text "Fullscreen" ]
+                              ]
+                            , nestedViews
+                            ]
                     ]
                 ]
             ]
