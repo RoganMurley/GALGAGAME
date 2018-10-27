@@ -10,8 +10,9 @@ import identity from 'gulp-identity';
 import yargs from 'yargs';
 
 
-const minifyJs = yargs.argv.production ? uglify : identity;
-const minifyCss = yargs.argv.production ? minify : identity;
+const { production } = yargs.argv;
+const minifyJs = production ? uglify : identity;
+const minifyCss = production ? minify : identity;
 
 
 const dir = {
@@ -45,7 +46,7 @@ gulp.task('sass', () => {
 // HTML
 gulp.task('html', () => {
   return gulp.src('html/**/*.html')
-    .pipe(inline())
+    .pipe(inline({ compress: production }))
     .pipe(replace('{{git}}', git.long().substring(0, 7)))
     .pipe(gulp.dest(dir.build));
 });
