@@ -18,7 +18,7 @@ update msg state mode flags =
         Mouse pos ->
             case state of
                 Started playState ->
-                    ( Started <| PlayState.mouseMove pos playState
+                    ( Started <| PlayState.mouseMove (Just pos) playState
                     , Cmd.none
                     )
 

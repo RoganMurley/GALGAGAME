@@ -64,7 +64,12 @@ function handleTouch (e) {
   });
 };
 
+function handleTouchEnd (e) {
+  app.ports.touch.send(null);
+};
+
 document.body.addEventListener('touchstart', handleTouch, false);
 document.body.addEventListener('touchmove', handleTouch, false);
+document.body.addEventListener('touchend', handleTouchEnd, false);
 
 window.god = app.ports.godModeCommand.send;

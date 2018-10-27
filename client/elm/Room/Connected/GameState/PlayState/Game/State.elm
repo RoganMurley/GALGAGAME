@@ -5,7 +5,7 @@ import Game.Types as Game exposing (Context, Entities)
 import Hand.Entities as Hand
 import List.Extra as List
 import Main.Types exposing (Flags)
-import Math.Vector2 exposing (Vec2, vec2)
+import Math.Vector2 exposing (Vec2)
 import Maybe.Extra as Maybe
 import Model.Types exposing (Model)
 import Resolvable.State as Resolvable exposing (activeAnim, activeModel, activeStackCard)
@@ -20,7 +20,7 @@ import WhichPlayer.Types exposing (WhichPlayer(..))
 gameInit : Model -> Game.Model
 gameInit model =
     { focus = Nothing
-    , mouse = vec2 0 0
+    , mouse = Nothing
     , entities = { hand = [], otherHand = [], stack = [] }
     , res = Resolvable.init model []
     }
@@ -92,14 +92,18 @@ hitTest pos dist { position } =
 
 getFocus : Context -> Game.Model -> Maybe StackCard
 getFocus { stackCard } { entities, mouse } =
-    let
-        hoverCard =
-            Maybe.or
-                (Maybe.map (\{ card, owner } -> { owner = owner, card = card }) <|
-                    List.find (hitTest mouse 64) entities.stack
-                )
-                (Maybe.map (\{ card } -> { owner = PlayerA, card = card }) <|
-                    List.find (hitTest mouse 28) entities.hand
-                )
-    in
-    Maybe.or stackCard hoverCard
+    Maybe.map
+        mouse
+        (\pos ->
+            let
+                hoverCard =
+                    Maybe.or
+                        (Maybe.map (\{ card, owner } -> { owner = owner, card = card }) <|
+                            List.find (hitTest pos 64) entities.stack
+                        )
+                        (Maybe.map (\{ card } -> { owner = PlayerA, card = card }) <|
+                            List.find (hitTest pos 28) entities.hand
+                        )
+            in
+            Maybe.or stackCard hoverCard
+        )

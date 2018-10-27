@@ -26,6 +26,6 @@ type Msg
     | SettingsMsg Settings.Msg
     | SetVolume VolumeType Int
     | TextureMsg Texture.Msg
-    | TouchPosition Mouse.Position
+    | TouchPosition (Maybe Mouse.Position)
     | UrlChange Location
     | GodCommand String
