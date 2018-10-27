@@ -1,0 +1,9 @@
+#!/bin/sh
+pushd client
+if elm-analyse
+then
+  :
+else
+  exit 1
+fi
+popd client
