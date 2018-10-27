@@ -217,25 +217,38 @@ focusTextView { anim, radius } focus =
 
 lifeTextView : Context -> List (Html a)
 lifeTextView { radius, model } =
+    let
+        horizontalOffset =
+            0.49 * radius
+
+        verticalOffset =
+            0.62 * radius
+
+        textWidth =
+            0.2 * radius
+
+        fontSize =
+            0.18 * radius
+    in
     [ div
         [ class "clock-life"
         , style
-            [ ( "right", 0.49 * radius |> px )
-            , ( "top", 0.62 * radius |> px )
-            , ( "font-size", 0.18 * radius |> px )
+            [ ( "right", horizontalOffset |> px )
+            , ( "top", verticalOffset |> px )
+            , ( "font-size", fontSize |> px )
             , ( "transform", "translate(-20%, -10%)" )
-            , ( "width", 0.2 * radius |> px )
+            , ( "width", textWidth |> px )
             ]
         ]
         [ text <| toString model.life ]
     , div
         [ class "clock-life other"
         , style
-            [ ( "left", 0.49 * radius |> px )
-            , ( "bottom", 0.62 * radius |> px )
-            , ( "font-size", 0.18 * radius |> px )
+            [ ( "left", horizontalOffset |> px )
+            , ( "bottom", verticalOffset |> px )
+            , ( "font-size", fontSize |> px )
             , ( "transform", "translate(20%, 10%)" )
-            , ( "width", 0.2 * radius |> px )
+            , ( "width", textWidth |> px )
             ]
         ]
         [ text <| toString model.otherLife ]
