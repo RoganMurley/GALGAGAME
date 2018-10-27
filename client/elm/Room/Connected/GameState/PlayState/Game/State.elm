@@ -92,8 +92,7 @@ hitTest pos dist { position } =
 
 getFocus : Context -> Game.Model -> Maybe StackCard
 getFocus { stackCard } { entities, mouse } =
-    Maybe.map
-        mouse
+    Maybe.andThen
         (\pos ->
             let
                 hoverCard =
@@ -107,3 +106,4 @@ getFocus { stackCard } { entities, mouse } =
             in
             Maybe.or stackCard hoverCard
         )
+        mouse
