@@ -72,7 +72,7 @@ circlesView ({ w, h, radius } as ctx) =
             vec2 (w / 2) (h / 2)
 
         active =
-            vec2 (w / 2) ((h / 2) - (0.617 * radius))
+            vec2 (w / 2) ((h / 2) - (0.625 * radius))
     in
     List.map (Render.Primitives.circle << uni ctx)
         [ { scale = 0.8 * radius, position = centre, rotation = 0 }
