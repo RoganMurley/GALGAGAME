@@ -73,3 +73,16 @@ document.body.addEventListener('touchmove', handleTouch, false);
 document.body.addEventListener('touchend', handleTouchEnd, false);
 
 window.god = app.ports.godModeCommand.send;
+
+window.requestFullscreen = function () {
+  var element = document.body;
+  if (element.requestFullscreen) {
+    element.requestFullscreen();
+  } else if (element.webkitRequestFullscreen) {
+    element.webkitRequestFullscreen();
+  } else if (element.mozRequestFullScreen) {
+    element.mozRequestFullScreen();
+  } else if (element.msRequestFullscreen) {
+    element.msRequestFullscreen();
+  }
+}
