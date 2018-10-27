@@ -14,7 +14,7 @@ import WhichPlayer.Types exposing (WhichPlayer)
 type alias Model =
     { res : Resolvable.Model
     , focus : Maybe StackCard
-    , mouse : Vec2
+    , mouse : Maybe Vec2
     , entities : Entities
     }
 

@@ -294,13 +294,15 @@ resolveOutcome str mState =
     carryVm state newState
 
 
-mouseMove : Position -> PlayState -> PlayState
-mouseMove { x, y } state =
+mouseMove : Maybe Position -> PlayState -> PlayState
+mouseMove pos state =
     let
-        pos =
+        posToVec { x, y } =
             vec2 (toFloat x) (toFloat y)
     in
-    map (\game -> { game | mouse = pos }) state
+    map
+        (\game -> { game | mouse = Maybe.map posToVec pos })
+        state
 
 
 mouseClick : Mode -> Flags -> Position -> PlayState -> ( PlayState, Cmd Main.Msg )

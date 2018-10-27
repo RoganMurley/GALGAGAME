@@ -12,4 +12,4 @@ type Msg
     | ResolveOutcome String
     | SelectingMsg CharacterSelect.Msg
     | Sync String
-    | Touch Position
+    | Touch (Maybe Position)
