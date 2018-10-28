@@ -7,6 +7,7 @@ type Route
     | Spec String
     | Replay String
     | Login
+    | Signup
 
 
 type PlayRoute

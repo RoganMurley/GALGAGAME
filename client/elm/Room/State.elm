@@ -11,6 +11,7 @@ import Navigation exposing (newUrl)
 import Replay.State as Replay
 import Room.Messages exposing (Msg(..))
 import Room.Types exposing (Model(..))
+import Signup.State as Signup
 
 
 init : Model
@@ -73,6 +74,18 @@ update model msg flags =
                 _ ->
                     ( model, Cmd.none )
 
+        SignupMsg signupMsg ->
+            case model of
+                Signup signup ->
+                    let
+                        ( newSignup, cmd ) =
+                            Signup.update signup signupMsg flags
+                    in
+                    ( Signup newSignup, cmd )
+
+                _ ->
+                    ( model, Cmd.none )
+
         StartGame mode ->
             case model of
                 Lobby { gameType, roomID } ->
@@ -114,6 +127,9 @@ receive str model flags =
         Login login ->
             ( Login login, Login.receive str )
 
+        Signup signup ->
+            ( Signup signup, Signup.receive str )
+
 
 tick : Flags -> Model -> Float -> Model
 tick flags room dt =
@@ -132,3 +148,6 @@ tick flags room dt =
 
         Replay replay ->
             Replay <| Replay.tick flags replay dt
+
+        Signup signup ->
+            Signup signup

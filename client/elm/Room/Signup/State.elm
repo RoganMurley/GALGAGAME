@@ -1,21 +1,22 @@
-module Login.State exposing (init, passwordInvalid, receive, update, usernameInvalid)
+module Signup.State exposing (confirmPasswordInvalid, init, receive, update)
 
 import Http
 import Json.Decode exposing (maybe)
-import Login.Decoders exposing (loginErrorDecoder)
-import Login.Messages exposing (Input(..), Msg(..))
-import Login.Types exposing (Model)
+import Lobby.Messages as Lobby
 import Main.Messages as Main
 import Main.Types exposing (Flags)
-import Navigation
 import Room.Messages as Room
-import Util exposing (authLocation, message, send)
+import Signup.Decoders exposing (signupErrorDecoder)
+import Signup.Messages exposing (Input(..), Msg(..))
+import Signup.Types exposing (Model)
+import Util exposing (authLocation, message)
 
 
 init : Maybe String -> Model
 init nextUrl =
     { username = ""
     , password = ""
+    , confirmPassword = ""
     , error = ""
     , submitting = False
     , nextUrl = Maybe.withDefault "/" nextUrl
@@ -31,40 +32,37 @@ update model msg flags =
         Input Password password ->
             ( { model | password = password }, Cmd.none )
 
+        Input ConfirmPassword password ->
+            ( { model | confirmPassword = password }, Cmd.none )
+
         Submit ->
             ( { model | submitting = True, error = "" }
             , Http.send
-                (Main.RoomMsg << Room.LoginMsg << SubmitCallback)
+                (Main.RoomMsg << Room.SignupMsg << SubmitCallback)
               <|
                 Http.post
-                    (authLocation flags ++ "/login")
+                    (authLocation flags ++ "/register")
                     (Http.multipartBody
                         [ Http.stringPart "username" model.username
                         , Http.stringPart "password" model.password
                         ]
                     )
-                    (maybe loginErrorDecoder)
+                    (maybe signupErrorDecoder)
             )
 
         SubmitCallback (Ok (Just { error })) ->
             ( { model | error = error }, Cmd.none )
 
         SubmitCallback (Ok Nothing) ->
-            model
-                ! [ Navigation.newUrl model.nextUrl
-                  , message Main.GetAuth
-
-                  -- Reconnect so that the ws connection has our login cookie
-                  , send flags "reconnect:"
-                  ]
+            model ! [ message <| Main.RoomMsg <| Room.LobbyMsg Lobby.GotoLogin ]
 
         SubmitCallback (Err httpError) ->
             case httpError of
                 Http.BadStatus { status } ->
                     case status.code of
-                        401 ->
+                        409 ->
                             ( { model
-                                | error = "Bad username/password"
+                                | error = "Username already exists"
                                 , submitting = False
                               }
                             , Cmd.none
@@ -92,11 +90,6 @@ receive _ =
     Cmd.none
 
 
-usernameInvalid : { a | username : String } -> Bool
-usernameInvalid { username } =
-    (String.length username < 3) || (String.length username > 12)
-
-
-passwordInvalid : { a | password : String } -> Bool
-passwordInvalid { password } =
-    (String.length password < 3) || (String.length password > 12)
+confirmPasswordInvalid : { a | confirmPassword : String, password : String } -> Bool
+confirmPasswordInvalid { confirmPassword, password } =
+    confirmPassword /= password

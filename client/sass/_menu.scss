@@ -48,6 +48,10 @@
   }
 }
 
+.login-buttons {
+  display: flex;
+  flex-direction: column;
+}
 
 .title-ring {
   display: inline-block;

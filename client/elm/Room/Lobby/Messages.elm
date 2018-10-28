@@ -5,3 +5,4 @@ type Msg
     = JoinRoom
     | JoinRoomErr String
     | GotoLogin
+    | GotoSignup

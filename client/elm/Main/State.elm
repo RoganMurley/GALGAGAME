@@ -27,6 +27,7 @@ import Routing.State as Routing
 import Routing.Types as Routing
 import Settings.State as Settings
 import Settings.Types as Settings
+import Signup.State as Signup
 import Texture.State as Texture
 import UrlParser exposing (parsePath)
 import Util exposing (authLocation, send, websocketAddress)
@@ -336,8 +337,6 @@ locationUpdate model location =
 
                 Routing.Login ->
                     let
-                        -- Annoying stateful bit, fix me.
-                        -- WILL cause bugs.
                         nextPath : Maybe String
                         nextPath =
                             case model.room of
@@ -359,6 +358,33 @@ locationUpdate model location =
                         | room =
                             Room.Login <|
                                 Login.init nextPath
+                      }
+                    , Cmd.none
+                    )
+
+                Routing.Signup ->
+                    let
+                        nextPath : Maybe String
+                        nextPath =
+                            case model.room of
+                                Room.Lobby { gameType, roomID } ->
+                                    case gameType of
+                                        Lobby.CustomGame ->
+                                            Just <| "/play/custom/" ++ roomID
+
+                                        Lobby.ComputerGame ->
+                                            Just "/play/computer/"
+
+                                        Lobby.QuickplayGame ->
+                                            Just "/play/quickplay/"
+
+                                _ ->
+                                    Nothing
+                    in
+                    ( { model
+                        | room =
+                            Room.Signup <|
+                                Signup.init nextPath
                       }
                     , Cmd.none
                     )
