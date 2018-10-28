@@ -12,6 +12,7 @@ import Room.Messages exposing (Msg(..))
 import Room.Types exposing (Model(..))
 import Settings.Types as Settings
 import Settings.View as Settings
+import Signup.View as Signup
 import Texture.Types as Texture
 
 
@@ -37,6 +38,10 @@ view model settings flags textures =
                 Login login ->
                     Html.map (Main.RoomMsg << LoginMsg) <|
                         Login.view login
+
+                Signup signup ->
+                    Html.map (Main.RoomMsg << SignupMsg) <|
+                        Signup.view signup
     in
     div []
         [ Settings.view settings (settingsView model flags)

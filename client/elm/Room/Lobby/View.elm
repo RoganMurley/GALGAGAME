@@ -16,7 +16,14 @@ view { error, gameType } =
             , div
                 []
                 [ div [ class "input-group" ]
-                    [ button [ onClick <| GotoLogin ] [ text "Login & Play" ]
+                    [ div [ class "login-buttons" ]
+                        [ button
+                            [ onClick <| GotoSignup ]
+                            [ text "Signup & Play" ]
+                        , button
+                            [ onClick <| GotoLogin ]
+                            [ text "Login & Play" ]
+                        ]
                     , div [ class "vertical-rule" ] []
                     , button [ onClick <| JoinRoom ] [ text "Play as Guest" ]
                     ]

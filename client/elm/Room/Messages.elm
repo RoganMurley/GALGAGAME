@@ -6,6 +6,7 @@ import Login.Messages as Login
 import Menu.Messages as Menu
 import Mode exposing (Mode)
 import Replay.Messages as Replay
+import Signup.Messages as Signup
 
 
 type Msg
@@ -14,4 +15,5 @@ type Msg
     | LoginMsg Login.Msg
     | MenuMsg Menu.Msg
     | ReplayMsg Replay.Msg
+    | SignupMsg Signup.Msg
     | StartGame Mode

@@ -1,13 +1,12 @@
-module Login.View exposing (logoutView, view)
+module Signup.View exposing (view)
 
 import Html exposing (Html, button, div, input, text)
 import Html.Attributes exposing (autofocus, class, disabled, placeholder, type_)
 import Html.Events exposing (onClick, onInput)
-import Login.Messages exposing (Input(..), Msg(..))
 import Login.State exposing (passwordInvalid, usernameInvalid)
-import Login.Types exposing (Model)
-import Main.Messages as Main
-import Main.Types exposing (Flags)
+import Signup.Messages exposing (Input(..), Msg(..))
+import Signup.State exposing (confirmPasswordInvalid)
+import Signup.Types exposing (Model)
 
 
 view : Model -> Html Msg
@@ -17,6 +16,7 @@ view model =
         submitDisabled =
             usernameInvalid model
                 || passwordInvalid model
+                || confirmPasswordInvalid model
                 || model.submitting
     in
     div []
@@ -35,24 +35,18 @@ view model =
                 , type_ "password"
                 ]
                 []
+            , text "Confirm Password"
+            , input
+                [ placeholder "Confirm Password"
+                , onInput <| Input ConfirmPassword
+                , type_ "password"
+                ]
+                []
             , button
                 [ onClick Submit
                 , disabled submitDisabled
                 ]
-                [ text "Login" ]
+                [ text "Signup" ]
             , div [ class "error" ] [ text model.error ]
             ]
         ]
-
-
-logoutView : Flags -> List (Html Main.Msg)
-logoutView { username } =
-    case username of
-        Just _ ->
-            [ button
-                [ class "settings-button", onClick Main.Logout ]
-                [ text "Logout" ]
-            ]
-
-        Nothing ->
-            []

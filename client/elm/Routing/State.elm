@@ -11,6 +11,7 @@ route =
         , map Spec specRoute
         , map Replay replayRoute
         , map Login loginRoute
+        , map Signup signupRoute
         , map Home top
         ]
 
@@ -34,6 +35,11 @@ specRoute =
 loginRoute : Parser a a
 loginRoute =
     s "login"
+
+
+signupRoute : Parser a a
+signupRoute =
+    s "signup"
 
 
 replayRoute : Parser (String -> a) a

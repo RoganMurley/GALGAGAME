@@ -54,6 +54,11 @@ update ({ gameType, mode } as model) msg =
             , Navigation.newUrl "/login/"
             )
 
+        GotoSignup ->
+            ( model
+            , Navigation.newUrl "/signup/"
+            )
+
 
 receive : String -> Cmd Main.Msg
 receive msg =
