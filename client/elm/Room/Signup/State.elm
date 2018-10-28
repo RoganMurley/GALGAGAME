@@ -2,14 +2,14 @@ module Signup.State exposing (confirmPasswordInvalid, init, receive, update)
 
 import Http
 import Json.Decode exposing (maybe)
-import Lobby.Messages as Lobby
 import Main.Messages as Main
 import Main.Types exposing (Flags)
+import Navigation
 import Room.Messages as Room
 import Signup.Decoders exposing (signupErrorDecoder)
 import Signup.Messages exposing (Input(..), Msg(..))
 import Signup.Types exposing (Model)
-import Util exposing (authLocation, message)
+import Util exposing (authLocation, message, send)
 
 
 init : Maybe String -> Model
@@ -54,7 +54,13 @@ update model msg flags =
             ( { model | error = error }, Cmd.none )
 
         SubmitCallback (Ok Nothing) ->
-            model ! [ message <| Main.RoomMsg <| Room.LobbyMsg Lobby.GotoLogin ]
+            model
+                ! [ Navigation.newUrl model.nextUrl
+                  , message Main.GetAuth
+
+                  -- Reconnect so that the ws connection has our login cookie
+                  , send flags "reconnect:"
+                  ]
 
         SubmitCallback (Err httpError) ->
             case httpError of

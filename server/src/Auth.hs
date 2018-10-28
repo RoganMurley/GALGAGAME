@@ -34,14 +34,14 @@ app = do
   liftIO $ updateGlobalLogger "auth" $ setLevel DEBUG
   config <- getConfig
   liftIO $ scottyApp $ do
-    get  "/auth/me"       $ me       config
-    post "/auth/login"    $ login    config
-    post "/auth/logout"   $ logout   config
-    post "/auth/register" $ register config
+    get  "/auth/me"       $ meView       config
+    post "/auth/login"    $ loginView    config
+    post "/auth/logout"   $ logoutView   config
+    post "/auth/register" $ registerView config
 
 
-me :: Config -> ActionM ()
-me config = do
+meView :: Config -> ActionM ()
+meView config = do
   token     <- getCookie loginCookieName
   usernameM <- lift . runApp config $ checkAuth token
   case usernameM of
@@ -53,10 +53,9 @@ me config = do
       status ok200
 
 
-login :: Config -> ActionM ()
-login config = do
+loginView :: Config -> ActionM ()
+loginView config = do
   let userConn = Config.userConn config
-  let tokenConn = Config.tokenConn config
   usernameRaw <- param "username"
   password <- param "password"
   let username = (cs . T.toLower $ usernameRaw) :: ByteString
@@ -67,18 +66,7 @@ login config = do
         Just hashedPassword ->
           case validatePassword hashedPassword password of
             True -> do
-              token <- lift GUID.genText
-              let cookie = (makeSimpleCookie loginCookieName token) {
-                  setCookieMaxAge = Just (secondsToDiffTime loginTimeout),
-                  setCookieSecure = True,
-                  setCookieHttpOnly = True,
-                  setCookiePath = Just "/",
-                  setCookieSameSite = Just sameSiteStrict
-                }
-              setCookie cookie
-              _ <- lift . (R.runRedis tokenConn) $ do
-                _ <- R.set (cs token) username
-                R.expire (cs token) loginTimeout
+              createSession config username
               json $ object [ ]
               status ok200
             False -> do
@@ -93,8 +81,8 @@ login config = do
       status internalServerError500
 
 
-logout :: Config -> ActionM ()
-logout config = do
+logoutView :: Config -> ActionM ()
+logoutView config = do
   let tokenConn = Config.tokenConn config
   token <- getCookie loginCookieName
   case token of
@@ -108,8 +96,8 @@ logout config = do
       status ok200
 
 
-register :: Config -> ActionM ()
-register config = do
+registerView :: Config -> ActionM ()
+registerView config = do
   let conn = userConn config
   usernameRaw <- param "username"
   password <- param "password"
@@ -133,6 +121,7 @@ register config = do
               case p of
                 Just hashedPassword -> do
                   _ <- lift . (R.runRedis conn) $ R.set username hashedPassword
+                  createSession config username
                   json $ object [ ]
                   status created201
                 Nothing ->
@@ -145,6 +134,24 @@ register config = do
       lift $ errorM "auth" "Database connection error"
       json $ object [ "error" .= ("Database connection error" :: Text) ]
       status internalServerError500
+
+
+createSession :: Config -> ByteString -> ActionM ()
+createSession config username = do
+  let tokenConn = Config.tokenConn config
+  token <- lift GUID.genText
+  let cookie = (makeSimpleCookie loginCookieName token) {
+      setCookieMaxAge = Just (secondsToDiffTime loginTimeout),
+      setCookieSecure = True,
+      setCookieHttpOnly = True,
+      setCookiePath = Just "/",
+      setCookieSameSite = Just sameSiteStrict
+    }
+  setCookie cookie
+  _ <- lift . (R.runRedis tokenConn) $ do
+    _ <- R.set (cs token) username
+    R.expire (cs token) loginTimeout
+  return ()
 
 
 checkAuth :: Maybe Token -> App (Maybe Username)
