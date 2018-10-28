@@ -301,7 +301,7 @@ overwhelm =
 echo :: Card
 echo =
   Card
-    "Double"
+    "Repeat"
     "When the next card activates it does so twice"
     "bouncer/echo.svg"
     $ \_ -> do
