@@ -74,7 +74,7 @@ backgroundRingView ({ w, h, radius } as ctx) =
     in
     [ Render.Primitives.fullCircle <|
         uniColourMag ctx
-            (vec3 0.2 0.2 0.2)
+            (vec3 0.12 0.12 0.12)
             1.0
             { scale = 0.8 * radius
             , position = centre
