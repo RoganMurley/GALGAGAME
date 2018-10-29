@@ -10,7 +10,7 @@ type alias Colour =
 
 white : Colour
 white =
-    vec3 1 1 1
+    vec3 0.91 0.95 0.87
 
 
 black : Colour
@@ -37,17 +37,17 @@ card : WhichPlayer -> Colour
 card which =
     case which of
         PlayerA ->
-            vec3 0.52 0.1 0.2
+            vec3 0.95 0.27 0.29
 
         PlayerB ->
-            vec3 0.18 0.49 0.62
+            vec3 0.1 0.5 0.6
 
 
 focusBackground : WhichPlayer -> Colour
 focusBackground which =
     case which of
         PlayerA ->
-            vec3 0.26 0.05 0.1
+            vec3 0.7 0.2 0.2
 
         PlayerB ->
             vec3 0.09 0.24 0.31
