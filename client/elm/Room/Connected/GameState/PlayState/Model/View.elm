@@ -48,7 +48,8 @@ view { w, h } { res, focus, entities } textures =
             ]
             (List.concat <|
                 List.map ((|>) ctx)
-                    [ Stack.view entities.stack
+                    [ backgroundRingView
+                    , Stack.view entities.stack
                     , focusImageView focus
                     , circlesView
                     , Hand.view entities.hand
@@ -63,6 +64,31 @@ view { w, h } { res, focus, entities } textures =
         , div [ class "clock-damage-container" ] (damageTextView ctx)
         , div [ class "clock-go" ] [ turnView ctx focus ]
         ]
+
+
+backgroundRingView : Context -> List WebGL.Entity
+backgroundRingView ({ w, h, radius } as ctx) =
+    let
+        centre =
+            vec2 (w / 2) (h / 2)
+    in
+    [ Render.Primitives.fullCircle <|
+        uniColourMag ctx
+            (vec3 0.2 0.2 0.2)
+            1.0
+            { scale = 0.8 * radius
+            , position = centre
+            , rotation = 0
+            }
+    , Render.Primitives.fullCircle <|
+        uniColourMag ctx
+            (vec3 0.08 0.08 0.08)
+            1.0
+            { scale = 0.52 * radius
+            , position = centre
+            , rotation = 0
+            }
+    ]
 
 
 circlesView : Context -> List WebGL.Entity
