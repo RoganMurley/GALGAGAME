@@ -7,6 +7,7 @@ import GameState.Messages as GameState
 import GameState.Types exposing (GameState(Started))
 import Http
 import Json.Decode as Json
+import Keyboard
 import Listener exposing (listen)
 import Lobby.State as Lobby
 import Lobby.Types as Lobby
@@ -84,6 +85,21 @@ update msg ({ room, settings, textures, flags } as model) =
                 _ ->
                     Cmd.none
             )
+
+        KeyPress keyCode ->
+            let
+                ( newModel, cmd ) =
+                    case model.room of
+                        Room.Login _ ->
+                            ( model, Login.keyPress keyCode )
+
+                        Room.Signup _ ->
+                            ( model, Signup.keyPress keyCode )
+
+                        _ ->
+                            ( model, Cmd.none )
+            in
+            ( newModel, cmd )
 
         Resize w h ->
             ( { model
@@ -404,5 +420,6 @@ subscriptions model =
         , Mouse.moves MousePosition
         , Mouse.clicks MouseClick
         , touch TouchPosition
+        , Keyboard.presses KeyPress
         , godModeCommand GodCommand
         ]
