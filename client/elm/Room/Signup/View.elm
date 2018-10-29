@@ -3,22 +3,13 @@ module Signup.View exposing (view)
 import Html exposing (Html, button, div, input, text)
 import Html.Attributes exposing (autofocus, class, disabled, placeholder, type_)
 import Html.Events exposing (onClick, onInput)
-import Login.State exposing (passwordInvalid, usernameInvalid)
 import Signup.Messages exposing (Input(..), Msg(..))
-import Signup.State exposing (confirmPasswordInvalid)
+import Signup.State exposing (submitDisabled)
 import Signup.Types exposing (Model)
 
 
 view : Model -> Html Msg
 view model =
-    let
-        submitDisabled : Bool
-        submitDisabled =
-            usernameInvalid model
-                || passwordInvalid model
-                || confirmPasswordInvalid model
-                || model.submitting
-    in
     div []
         [ div [ class "login-box" ]
             [ text "Username"
@@ -44,7 +35,7 @@ view model =
                 []
             , button
                 [ onClick Submit
-                , disabled submitDisabled
+                , disabled <| submitDisabled model
                 ]
                 [ text "Signup" ]
             , div [ class "error" ] [ text model.error ]

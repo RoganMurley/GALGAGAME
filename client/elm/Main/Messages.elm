@@ -1,5 +1,6 @@
 module Main.Messages exposing (Msg(..))
 
+import Char exposing (KeyCode)
 import Http
 import Mouse
 import Navigation exposing (Location)
@@ -14,6 +15,7 @@ type Msg
     | Frame Float
     | GetAuth
     | GetAuthCallback (Result Http.Error (Maybe String))
+    | KeyPress KeyCode
     | Logout
     | LogoutCallback (Result Http.Error ())
     | MousePosition Mouse.Position

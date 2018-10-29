@@ -1,7 +1,8 @@
-module Login.State exposing (init, passwordInvalid, receive, update, usernameInvalid)
+module Login.State exposing (init, keyPress, passwordInvalid, receive, submitDisabled, update, usernameInvalid)
 
 import Http
 import Json.Decode exposing (maybe)
+import Keyboard exposing (KeyCode)
 import Login.Decoders exposing (loginErrorDecoder)
 import Login.Messages exposing (Input(..), Msg(..))
 import Login.Types exposing (Model)
@@ -87,6 +88,17 @@ update model msg flags =
                     )
 
 
+keyPress : KeyCode -> Cmd Main.Msg
+keyPress code =
+    case code of
+        -- Enter key
+        13 ->
+            message <| Main.RoomMsg <| Room.LoginMsg <| Submit
+
+        _ ->
+            Cmd.none
+
+
 receive : String -> Cmd Main.Msg
 receive _ =
     Cmd.none
@@ -99,4 +111,11 @@ usernameInvalid { username } =
 
 passwordInvalid : { a | password : String } -> Bool
 passwordInvalid { password } =
-    (String.length password < 3) || (String.length password > 12)
+    String.length password < 8
+
+
+submitDisabled : Model -> Bool
+submitDisabled model =
+    usernameInvalid model
+        || passwordInvalid model
+        || model.submitting

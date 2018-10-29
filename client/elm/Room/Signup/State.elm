@@ -1,7 +1,9 @@
-module Signup.State exposing (confirmPasswordInvalid, init, receive, update)
+module Signup.State exposing (confirmPasswordInvalid, init, keyPress, receive, submitDisabled, update)
 
 import Http
 import Json.Decode exposing (maybe)
+import Keyboard exposing (KeyCode)
+import Login.State exposing (passwordInvalid, usernameInvalid)
 import Main.Messages as Main
 import Main.Types exposing (Flags)
 import Navigation
@@ -36,19 +38,23 @@ update model msg flags =
             ( { model | confirmPassword = password }, Cmd.none )
 
         Submit ->
-            ( { model | submitting = True, error = "" }
-            , Http.send
-                (Main.RoomMsg << Room.SignupMsg << SubmitCallback)
-              <|
-                Http.post
-                    (authLocation flags ++ "/register")
-                    (Http.multipartBody
-                        [ Http.stringPart "username" model.username
-                        , Http.stringPart "password" model.password
-                        ]
-                    )
-                    (maybe signupErrorDecoder)
-            )
+            if submitDisabled model then
+                ( model, Cmd.none )
+
+            else
+                ( { model | submitting = True, error = "" }
+                , Http.send
+                    (Main.RoomMsg << Room.SignupMsg << SubmitCallback)
+                  <|
+                    Http.post
+                        (authLocation flags ++ "/register")
+                        (Http.multipartBody
+                            [ Http.stringPart "username" model.username
+                            , Http.stringPart "password" model.password
+                            ]
+                        )
+                        (maybe signupErrorDecoder)
+                )
 
         SubmitCallback (Ok (Just { error })) ->
             ( { model | error = error }, Cmd.none )
@@ -96,6 +102,25 @@ receive _ =
     Cmd.none
 
 
+keyPress : KeyCode -> Cmd Main.Msg
+keyPress code =
+    case code of
+        -- Enter key
+        13 ->
+            message <| Main.RoomMsg <| Room.SignupMsg <| Submit
+
+        _ ->
+            Cmd.none
+
+
 confirmPasswordInvalid : { a | confirmPassword : String, password : String } -> Bool
 confirmPasswordInvalid { confirmPassword, password } =
     confirmPassword /= password
+
+
+submitDisabled : Model -> Bool
+submitDisabled model =
+    usernameInvalid model
+        || passwordInvalid model
+        || confirmPasswordInvalid model
+        || model.submitting
