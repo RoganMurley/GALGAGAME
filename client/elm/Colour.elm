@@ -20,7 +20,7 @@ black =
 
 red : Colour
 red =
-    vec3 0.9 0.2 0.0
+    vec3 1.0 0.2 0.2
 
 
 green : Colour

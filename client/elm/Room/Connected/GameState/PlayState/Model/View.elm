@@ -301,7 +301,7 @@ damageTextView { radius, anim } =
                 "#0dff80"
 
             else
-                "#e63300"
+                "#ff3232"
     in
     List.concat
         [ if damage /= 0 then
@@ -365,7 +365,7 @@ turnView { anim, model } focus =
                         [ text "GO" ]
 
                 PlayerB ->
-                    div [ class "turn-status" ] [ text "Opponent's Turn" ]
+                    div [ class "turn-status" ] [ text "OPPONENT'S TURN" ]
 
         _ ->
             div [] []
