@@ -271,7 +271,7 @@ lifeTextView { radius, model } =
         [ class "clock-life other"
         , style
             [ ( "left", horizontalOffset |> px )
-            , ( "bottom", verticalOffset |> px )
+            , ( "bottom", verticalOffset + 0.02 * radius |> px )
             , ( "font-size", fontSize |> px )
             , ( "transform", "translate(20%, 10%)" )
             , ( "width", textWidth |> px )
@@ -362,10 +362,10 @@ turnView { anim, model } focus =
                                                 PlayState.TurnOnly <|
                                                     PlayState.EndTurn
                         ]
-                        [ text "Go" ]
+                        [ text "GO" ]
 
                 PlayerB ->
-                    div [ class "turn-status" ] [ text "Opponent's turn" ]
+                    div [ class "turn-status" ] [ text "Opponent's Turn" ]
 
         _ ->
             div [] []
