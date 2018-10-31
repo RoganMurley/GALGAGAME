@@ -1,4 +1,9 @@
 # Ring of Worlds
+
+| 
+<img src="https://i.imgur.com/4KpxkcI.gif" height="200"> | <img src="https://i.imgur.com/0jajker.gif" height="200"> |
+|----|----|
+
 Ring of Worlds is a browser-based multiplayer digital card game written in the purely functional programming languages Haskell and Elm. It is a WIP under active development.
 
 Try it out at https://www.ringofworlds.com.
@@ -6,7 +11,6 @@ Try it out at https://www.ringofworlds.com.
 Join the community at https://discord.gg/SVXXej4.
 
 [![CircleCI](https://circleci.com/gh/RoganMurley/Ring-of-Worlds.svg?style=shield)](https://circleci.com/gh/RoganMurley/Ring-of-Worlds)
-
 
 ## Dependencies:
 * [npm](https://www.npmjs.com/get-npm)
