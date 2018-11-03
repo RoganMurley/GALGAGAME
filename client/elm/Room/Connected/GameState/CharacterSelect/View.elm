@@ -1,16 +1,27 @@
-module CharacterSelect.View exposing (cardView, view)
+module CharacterSelect.View exposing (view)
 
-import Card.Types exposing (Card)
 import CharacterSelect.Messages exposing (Msg(..))
 import CharacterSelect.Types exposing (Character, Model)
-import Html exposing (Html, div, img, table, td, text, tr)
-import Html.Attributes exposing (class, src, style)
+import Game.State exposing (bareContextInit)
+import Game.Types exposing (Context)
+import Html exposing (Html, div, img, text)
+import Html.Attributes exposing (class, height, src, width)
 import Html.Events exposing (onClick, onMouseEnter)
+import Math.Vector2 exposing (vec2)
+import Math.Vector3 exposing (vec3)
+import Render.Primitives
+import Render.Types as Render
+import Render.Uniforms exposing (uni, uniColourMag)
+import Texture.Types as Texture
+import WebGL
 
 
-view : Model -> Html Msg
-view { characters, selected, vm } =
+view : Render.Params -> Model -> Texture.Model -> Html Msg
+view { w, h } { characters, selected } textures =
     let
+        ctx =
+            bareContextInit ( w, h ) textures
+
         characterView : Character -> Html Msg
         characterView character =
             div
@@ -56,38 +67,59 @@ view { characters, selected, vm } =
                         text ""
                     ]
                 ]
-
-        cardPreviewView : ( Card, Card, Card, Card ) -> Html Msg
-        cardPreviewView ( c1, c2, c3, c4 ) =
-            let
-                eachView : Card -> Html Msg
-                eachView c =
-                    td [] [ cardView c ]
-            in
-            table [ class "card-preview" ]
-                [ tr [] (List.map eachView [ c1, c2, c3, c4 ]) ]
     in
-    div []
-        [ div
-            [ class "character-select" ]
-            [ text "Choose your Characters"
+    div [ class "character-select" ]
+        [ WebGL.toHtml
+            [ width w
+            , height h
+            , class "webgl-canvas"
+            ]
+          <|
+            List.concat <|
+                List.map ((|>) ctx)
+                    [ backgroundRingView
+                    , circlesView
+                    ]
+        , div []
+            [ text "Select your Species"
             , div [ class "characters" ] <| List.map characterView characters
-            , cardPreviewView (.cards vm.hover)
             , selectedView
             ]
         ]
 
 
-cardView : Card -> Html msg
-cardView { name, desc, imgURL } =
-    div
-        [ class "card"
-        ]
-        [ div [ class "card-title" ] [ text name ]
-        , div
-            [ class "card-picture"
-            , style [ ( "background-image", "url(\"/img/" ++ imgURL ++ "\")" ) ]
-            ]
-            []
-        , div [ class "card-desc" ] [ text desc ]
+backgroundRingView : Context -> List WebGL.Entity
+backgroundRingView ({ w, h, radius } as ctx) =
+    let
+        centre =
+            vec2 (w / 2) (h / 2)
+    in
+    [ Render.Primitives.fullCircle <|
+        uniColourMag ctx
+            (vec3 0.12 0.12 0.12)
+            1.0
+            { scale = 0.8 * radius
+            , position = centre
+            , rotation = 0
+            }
+    , Render.Primitives.fullCircle <|
+        uniColourMag ctx
+            (vec3 0.08 0.08 0.08)
+            1.0
+            { scale = 0.52 * radius
+            , position = centre
+            , rotation = 0
+            }
+    ]
+
+
+circlesView : Context -> List WebGL.Entity
+circlesView ({ w, h, radius } as ctx) =
+    let
+        centre =
+            vec2 (w / 2) (h / 2)
+    in
+    List.map (Render.Primitives.circle << uni ctx)
+        [ { scale = 0.8 * radius, position = centre, rotation = 0 }
+        , { scale = 0.52 * radius, position = centre, rotation = 0 }
         ]

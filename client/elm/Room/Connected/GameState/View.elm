@@ -21,6 +21,16 @@ view state roomID ({ hostname, httpPort } as flags) textures =
             div [] [ waitingView waitType httpPort hostname roomID ]
 
         Selecting model ->
+            let
+                ( w, h ) =
+                    flags.dimensions
+
+                params =
+                    { w = w
+                    , h = h
+                    , time = flags.time
+                    }
+            in
             Html.map
                 (Main.RoomMsg
                     << Room.ConnectedMsg
@@ -28,7 +38,7 @@ view state roomID ({ hostname, httpPort } as flags) textures =
                     << SelectingMsg
                 )
             <|
-                CharacterSelect.view model
+                CharacterSelect.view params model textures
 
         Started playState ->
             PlayState.view playState flags textures
