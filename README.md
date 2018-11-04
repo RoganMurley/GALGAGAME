@@ -8,7 +8,9 @@ Ring of Worlds is a browser-based multiplayer digital card game written in the p
 
 Try it out at https://www.ringofworlds.com.
 
-Join the community at https://discord.gg/SVXXej4.
+Join the [discord](https://discord.gg/SVXXej4).
+
+Read the [devlog](https://forums.tigsource.com/index.php?topic=66122.0).
 
 [![CircleCI](https://circleci.com/gh/RoganMurley/Ring-of-Worlds.svg?style=shield)](https://circleci.com/gh/RoganMurley/Ring-of-Worlds)
 
