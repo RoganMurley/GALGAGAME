@@ -4,7 +4,7 @@ import CharacterSelect.Messages exposing (Msg(..))
 import CharacterSelect.Types exposing (Character, Model)
 import Game.State exposing (bareContextInit)
 import Game.Types exposing (Context)
-import Html exposing (Html, div, img, text)
+import Html exposing (Html, div, h1, img, text)
 import Html.Attributes exposing (class, height, src, width)
 import Html.Events exposing (onClick, onMouseEnter)
 import Math.Vector2 exposing (vec2)
@@ -61,7 +61,7 @@ view { w, h } { characters, selected } textures =
                 , div
                     [ class "ready-up" ]
                     [ if List.length selected >= 3 then
-                        text "Waiting for opponent"
+                        text "Waiting for Opponent"
 
                       else
                         text ""
@@ -80,11 +80,9 @@ view { w, h } { characters, selected } textures =
                     [ backgroundRingView
                     , circlesView
                     ]
-        , div []
-            [ text "Select your Species"
-            , div [ class "characters" ] <| List.map characterView characters
-            , selectedView
-            ]
+        , h1 [] [ text "SELECT SPECIES" ]
+        , div [ class "characters" ] <| List.map characterView characters
+        , selectedView
         ]
 
 
