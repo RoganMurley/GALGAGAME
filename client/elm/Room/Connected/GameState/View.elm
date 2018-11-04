@@ -66,7 +66,7 @@ waitingView waitType httpPort hostname roomID =
                     "Give this link to your opponent:"
 
                 WaitQuickplay ->
-                    "Searching for opponent"
+                    "Searching for Opponent"
 
         waitingInfo : Html Main.Msg
         waitingInfo =

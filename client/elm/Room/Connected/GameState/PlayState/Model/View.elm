@@ -298,7 +298,7 @@ damageTextView { radius, anim } =
         damageToCssColour : Float -> String
         damageToCssColour d =
             if d > 0 then
-                "#0dff80"
+                "#45f273"
 
             else
                 "#ff3232"

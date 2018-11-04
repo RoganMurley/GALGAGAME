@@ -1,26 +1,28 @@
 .character-select {
-  color: #fff;
-  font-size: 52px;
-  font-family: 'Raleway', sans-serif;
-  font-weight: bold;
-
-  height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  flex-direction: column;
+  h1 {
+    position: absolute;
+    width: 100vw;
+    color: #f4f15e;;
+    font-size: 52px;
+    font-family: 'Raleway', sans-serif;
+    font-weight: 300;
+    text-align: center;
+  }
 }
 
 .characters {
+  position: absolute;
+  bottom: 0;
   margin-top: 10px;
   display: flex;
   flex-direction: row;
+  width: 100vw;
+  justify-content: center;
+  align-items: center;
 }
 
 .character-button {
-  display: inline;
-  margin: 15px;
-  background: none;
+  margin: 10px;
   padding: 10px;
   font-size: 36px;
 
@@ -127,6 +129,7 @@
 }
 
 .ready-up {
+  color: #fff;
   font-size: 23px;
   text-align: center;
   height: 30px;
