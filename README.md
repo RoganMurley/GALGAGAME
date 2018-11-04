@@ -1,7 +1,7 @@
 # Ring of Worlds
 
 | 
-<img src="https://i.imgur.com/4KpxkcI.gif" height="200"> | <img src="https://i.imgur.com/0jajker.gif" height="200"> |
+<img src="https://i.imgur.com/AHQspU5.gif" height="200"> | <img src="https://i.imgur.com/1ShIxQR.gif" height="200"> |
 |----|----|
 
 Ring of Worlds is a browser-based multiplayer digital card game written in the purely functional programming languages Haskell and Elm. It is a WIP under active development.
