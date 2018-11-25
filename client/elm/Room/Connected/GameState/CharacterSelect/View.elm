@@ -1,16 +1,33 @@
-module CharacterSelect.View exposing (cardView, view)
+module CharacterSelect.View exposing (view)
 
-import Card.Types exposing (Card)
 import CharacterSelect.Messages exposing (Msg(..))
 import CharacterSelect.Types exposing (Character, Model)
-import Html exposing (Html, div, img, table, td, text, tr)
-import Html.Attributes exposing (class, src, style)
+import Colour
+import Game.State exposing (bareContextInit)
+import Game.Types exposing (Context)
+import Html exposing (Html, div, h1, img, text)
+import Html.Attributes exposing (class, height, src, style, width)
 import Html.Events exposing (onClick, onMouseEnter)
+import Math.Matrix4 exposing (makeLookAt, makeOrtho, makeRotate, makeScale3)
+import Math.Vector2 exposing (vec2)
+import Math.Vector3 exposing (vec3)
+import Maybe.Extra as Maybe
+import Render.Primitives
+import Render.Shaders
+import Render.Types as Render
+import Render.Uniforms exposing (uni, uniColourMag)
+import Texture.State as Texture
+import Texture.Types as Texture
+import Util exposing (px, to3d)
+import WebGL
 
 
-view : Model -> Html Msg
-view { characters, selected, vm } =
+view : Render.Params -> Model -> Texture.Model -> Html Msg
+view { w, h } ({ characters, selected, vm } as model) textures =
     let
+        ctx =
+            bareContextInit ( w, h ) textures
+
         characterView : Character -> Html Msg
         characterView character =
             div
@@ -26,68 +43,183 @@ view { characters, selected, vm } =
                 [ img [ src ("/img/" ++ character.imgURL), class "character-icon" ] []
                 ]
 
-        selectedView : Html Msg
-        selectedView =
-            let
-                chosenView : Character -> Html Msg
-                chosenView character =
-                    div
-                        [ class "character-chosen"
-                        , onMouseEnter <| Hover character
-                        ]
-                        [ img [ src ("/img/" ++ character.imgURL), class "character-icon" ] [] ]
-
-                unchosen : List (Html Msg)
-                unchosen =
-                    List.repeat
-                        (3 - List.length selected)
-                        (div [ class "character-unchosen" ] [])
-            in
-            div []
+        hoverCharacterNameView : Html msg
+        hoverCharacterNameView =
+            div
+                [ class "hover-character-container" ]
                 [ div
-                    [ class "characters-all-chosen" ]
-                    (List.map chosenView selected ++ unchosen)
-                , div
-                    [ class "ready-up" ]
-                    [ if List.length selected >= 3 then
-                        text "Waiting for opponent"
-
-                      else
-                        text ""
+                    [ class "hover-character-name"
+                    , style [ ( "top", ctx.radius * 0.6 |> px ) ]
                     ]
+                    [ text vm.hover.name ]
+                ]
+    in
+    div [ class "character-select" ]
+        [ WebGL.toHtml
+            [ width w
+            , height h
+            , class "webgl-canvas"
+            ]
+          <|
+            List.concat <|
+                List.map ((|>) ctx)
+                    [ backgroundRingView
+                    , circlesView
+                    , characterSelectCirclesView model
+                    ]
+        , h1 [] [ text "SELECT SPECIES" ]
+        , hoverCharacterNameView
+        , div [ class "characters" ] <| List.map characterView characters
+        ]
+
+
+backgroundRingView : Context -> List WebGL.Entity
+backgroundRingView ({ w, h, radius } as ctx) =
+    let
+        centre =
+            vec2 (w / 2) (h / 2)
+    in
+    [ Render.Primitives.fullCircle <|
+        uniColourMag ctx
+            (vec3 0.12 0.12 0.12)
+            1.0
+            { scale = 0.8 * radius
+            , position = centre
+            , rotation = 0
+            }
+    , Render.Primitives.fullCircle <|
+        uniColourMag ctx
+            (vec3 0.08 0.08 0.08)
+            1.0
+            { scale = 0.52 * radius
+            , position = centre
+            , rotation = 0
+            }
+    ]
+
+
+characterSelectCirclesView : Model -> Context -> List WebGL.Entity
+characterSelectCirclesView { selected } ({ w, h, radius, textures } as ctx) =
+    let
+        centre =
+            vec2 (w / 2) (h / 2)
+
+        mTextureA : Maybe WebGL.Texture
+        mTextureA =
+            Maybe.join <|
+                Maybe.map (.imgURL >> Texture.load textures) <|
+                    List.head selected
+
+        mTextureB : Maybe WebGL.Texture
+        mTextureB =
+            Maybe.join <|
+                Maybe.map (.imgURL >> Texture.load textures) <|
+                    List.head <|
+                        List.drop 1 <|
+                            selected
+
+        mTextureC : Maybe WebGL.Texture
+        mTextureC =
+            Maybe.join <|
+                Maybe.map (.imgURL >> Texture.load textures) <|
+                    List.head <|
+                        List.drop 2 <|
+                            selected
+    in
+    List.concat
+        [ List.map (Render.Primitives.circle << uni ctx)
+            [ { scale = 0.24 * radius
+              , position =
+                    Math.Vector2.add
+                        centre
+                        (vec2 0 (-radius * 0.26))
+              , rotation = 0
+              }
+            , { scale = 0.24 * radius
+              , position =
+                    Math.Vector2.add
+                        centre
+                        (vec2 (-radius * 0.23) (radius * 0.14))
+              , rotation = 0
+              }
+            , { scale = 0.24 * radius
+              , position =
+                    Math.Vector2.add
+                        centre
+                        (vec2 (radius * 0.23) (radius * 0.14))
+              , rotation = 0
+              }
+            ]
+        , case mTextureA of
+            Just texture ->
+                [ Render.Primitives.quad Render.Shaders.fragment
+                    { rotation = makeRotate pi (vec3 0 0 1)
+                    , scale = makeScale3 (0.15 * radius) (0.15 * radius) 1
+                    , color = Colour.white
+                    , pos =
+                        to3d <|
+                            Math.Vector2.add
+                                centre
+                                (vec2 0 (-radius * 0.26))
+                    , worldRot = makeRotate 0 (vec3 0 0 1)
+                    , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
+                    , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
+                    , texture = texture
+                    }
                 ]
 
-        cardPreviewView : ( Card, Card, Card, Card ) -> Html Msg
-        cardPreviewView ( c1, c2, c3, c4 ) =
-            let
-                eachView : Card -> Html Msg
-                eachView c =
-                    td [] [ cardView c ]
-            in
-            table [ class "card-preview" ]
-                [ tr [] (List.map eachView [ c1, c2, c3, c4 ]) ]
+            Nothing ->
+                []
+        , case mTextureB of
+            Just texture ->
+                [ Render.Primitives.quad Render.Shaders.fragment
+                    { rotation = makeRotate pi (vec3 0 0 1)
+                    , scale = makeScale3 (0.15 * radius) (0.15 * radius) 1
+                    , color = Colour.white
+                    , pos =
+                        to3d <|
+                            Math.Vector2.add
+                                centre
+                                (vec2 (-radius * 0.23) (radius * 0.14))
+                    , worldRot = makeRotate 0 (vec3 0 0 1)
+                    , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
+                    , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
+                    , texture = texture
+                    }
+                ]
+
+            Nothing ->
+                []
+        , case mTextureC of
+            Just texture ->
+                [ Render.Primitives.quad Render.Shaders.fragment
+                    { rotation = makeRotate pi (vec3 0 0 1)
+                    , scale = makeScale3 (0.15 * radius) (0.15 * radius) 1
+                    , color = Colour.white
+                    , pos =
+                        to3d <|
+                            Math.Vector2.add
+                                centre
+                                (vec2 (radius * 0.23) (radius * 0.14))
+                    , worldRot = makeRotate 0 (vec3 0 0 1)
+                    , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
+                    , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
+                    , texture = texture
+                    }
+                ]
+
+            Nothing ->
+                []
+        ]
+
+
+circlesView : Context -> List WebGL.Entity
+circlesView ({ w, h, radius } as ctx) =
+    let
+        centre =
+            vec2 (w / 2) (h / 2)
     in
-    div []
-        [ div
-            [ class "character-select" ]
-            [ text "Choose your Characters"
-            , div [ class "characters" ] <| List.map characterView characters
-            , cardPreviewView (.cards vm.hover)
-            , selectedView
-            ]
-        ]
-
-
-cardView : Card -> Html msg
-cardView { name, desc, imgURL } =
-    div
-        [ class "card"
-        ]
-        [ div [ class "card-title" ] [ text name ]
-        , div
-            [ class "card-picture"
-            , style [ ( "background-image", "url(\"/img/" ++ imgURL ++ "\")" ) ]
-            ]
-            []
-        , div [ class "card-desc" ] [ text desc ]
+    List.map (Render.Primitives.circle << uni ctx)
+        [ { scale = 0.8 * radius, position = centre, rotation = 0 }
+        , { scale = 0.52 * radius, position = centre, rotation = 0 }
         ]

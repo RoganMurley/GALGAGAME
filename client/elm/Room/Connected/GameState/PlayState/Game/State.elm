@@ -1,4 +1,4 @@
-module Game.State exposing (contextInit, entitiesInit, gameInit, getFocus, hitTest, tick)
+module Game.State exposing (bareContextInit, contextInit, entitiesInit, gameInit, getFocus, hitTest, tick)
 
 import Animation.State as Animation
 import Game.Types as Game exposing (Context, Entities)
@@ -7,6 +7,7 @@ import List.Extra as List
 import Main.Types exposing (Flags)
 import Math.Vector2 exposing (Vec2)
 import Maybe.Extra as Maybe
+import Model.State as Model
 import Model.Types exposing (Model)
 import Resolvable.State as Resolvable exposing (activeAnim, activeModel, activeStackCard)
 import Resolvable.Types as Resolvable
@@ -55,6 +56,15 @@ contextInit ( width, height ) res textures =
     , progress = Animation.progress anim res.tick
     , textures = textures
     }
+
+
+bareContextInit : ( Int, Int ) -> Texture.Model -> Context
+bareContextInit dimensions textures =
+    let
+        res =
+            Resolvable.init Model.init []
+    in
+    contextInit dimensions res textures
 
 
 entitiesInit : Entities

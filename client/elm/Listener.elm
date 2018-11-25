@@ -30,7 +30,7 @@ listen state =
     in
     case state of
         Selecting _ ->
-            playSoundWith "/music/slowsadjazz.mp3" [ Loop, Once ]
+            playSoundWith "/music/bebopboi.mp3" [ Loop, Once ]
 
         Started playstate ->
             modelListen <| PlayState.get .res playstate
