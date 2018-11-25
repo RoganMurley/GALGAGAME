@@ -23,7 +23,7 @@ import Model.Wave as Wave
 import PlayState.Messages as PlayState
 import Render.Primitives
 import Render.Shaders
-import Render.Types exposing (Params)
+import Render.Types as Render
 import Render.Uniforms exposing (uni, uniColourMag)
 import Room.Messages as Room
 import Stack.Types exposing (StackCard)
@@ -34,7 +34,7 @@ import WebGL
 import WhichPlayer.Types exposing (WhichPlayer(..))
 
 
-view : Params -> Model -> Texture.Model -> Html Main.Msg
+view : Render.Params -> Model -> Texture.Model -> Html Main.Msg
 view { w, h } { res, focus, entities } textures =
     let
         ctx =
@@ -298,7 +298,7 @@ damageTextView { radius, anim } =
         damageToCssColour : Float -> String
         damageToCssColour d =
             if d > 0 then
-                "#0dff80"
+                "#45f273"
 
             else
                 "#ff3232"
