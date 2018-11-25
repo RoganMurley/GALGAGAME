@@ -5,7 +5,7 @@ import CharacterSelect.Types exposing (Character, Model)
 import Game.State exposing (bareContextInit)
 import Game.Types exposing (Context)
 import Html exposing (Html, div, h1, img, text)
-import Html.Attributes exposing (class, height, src, width)
+import Html.Attributes exposing (class, height, src, style, width)
 import Html.Events exposing (onClick, onMouseEnter)
 import Math.Vector2 exposing (vec2)
 import Math.Vector3 exposing (vec3)
@@ -13,11 +13,12 @@ import Render.Primitives
 import Render.Types as Render
 import Render.Uniforms exposing (uni, uniColourMag)
 import Texture.Types as Texture
+import Util exposing (px)
 import WebGL
 
 
 view : Render.Params -> Model -> Texture.Model -> Html Msg
-view { w, h } { characters, selected } textures =
+view { w, h } { characters, selected, vm } textures =
     let
         ctx =
             bareContextInit ( w, h ) textures
@@ -67,6 +68,17 @@ view { w, h } { characters, selected } textures =
                         text ""
                     ]
                 ]
+
+        hoverCharacterNameView : Html msg
+        hoverCharacterNameView =
+            div
+                [ class "hover-character-container" ]
+                [ div
+                    [ class "hover-character-name"
+                    , style [ ( "top", ctx.radius * 0.6 |> px ) ]
+                    ]
+                    [ text vm.hover.name ]
+                ]
     in
     div [ class "character-select" ]
         [ WebGL.toHtml
@@ -81,6 +93,7 @@ view { w, h } { characters, selected } textures =
                     , circlesView
                     ]
         , h1 [] [ text "SELECT SPECIES" ]
+        , hoverCharacterNameView
         , div [ class "characters" ] <| List.map characterView characters
         , selectedView
         ]

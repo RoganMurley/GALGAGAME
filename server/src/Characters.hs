@@ -123,74 +123,60 @@ allCards (Character _ a, Character _ b, Character _ c) =
 -- CHARACTERS
 allCharacters :: [Character]
 allCharacters =
-  concat
-    [
-      [ shielder
-      , watcher
-      , drinker
-      , collector
-      , striker
-      , breaker
-      , balancer
-      ],
-      testCharacters
+  [ shielder
+  , watcher
+  , drinker
+  , collector
+  , striker
+  , breaker
+  , balancer
   ]
-
-
-testCharacters :: [Character]
-testCharacters = []
-  -- let
-  --   testCard = Cards.hubris
-  -- in
-  --   map
-  --     (\n -> Character n (testCard, testCard, testCard, testCard))
-  --     ["A", "B", "C"]
 
 
 striker :: Character
 striker =
   Character
-    "Striker"
+    "Ulong"
     (Cards.dagger, Cards.fireball, Cards.offering, Cards.confound)
 
 
 breaker :: Character
 breaker =
   Character
-    "Breaker"
+    "Balalian"
     (Cards.hammer, Cards.lightning, Cards.feint, Cards.hubris)
 
 
 drinker :: Character
 drinker =
   Character
-    "Drinker"
+    "Upyr"
     (Cards.scythe, Cards.bloodsucker, Cards.serpent, Cards.reversal)
 
 
 watcher :: Character
 watcher =
   Character
-    "Watcher"
+    "Respira"
     (Cards.staff, Cards.surge, Cards.echo, Cards.prophecy)
 
 
 shielder :: Character
 shielder =
   Character
-    "Shielder"
+    "Baloop"
     (Cards.boomerang, Cards.overwhelm, Cards.potion, Cards.reflect)
 
 
 balancer :: Character
 balancer =
   Character
-    "Balancer"
+    "Wextana"
     (Cards.katana, Cards.curse, Cards.bless, Cards.balance)
 
 
 collector :: Character
 collector =
   Character
-    "Collecter"
+    "Honeymaker"
     (Cards.relicblade, Cards.greed, Cards.mimic, Cards.alchemy)

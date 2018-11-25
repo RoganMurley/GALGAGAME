@@ -138,3 +138,23 @@
 .invisible {
   display: none;
 }
+
+.hover-character-container {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+}
+
+.hover-character-name {
+  position: absolute;
+  height: 80px;
+  line-height: 80px;
+  width: 400px;
+  transform: translateX(-50%);
+
+  color: #f4f15e;
+  background-color: #f2454a;
+  font-family: 'Raleway', sans-serif;
+  font-size: 3rem;
+  text-align: center;
+}
