@@ -136,14 +136,14 @@ allCharacters =
 striker :: Character
 striker =
   Character
-    "Ulong"
+    "U-long"
     (Cards.dagger, Cards.fireball, Cards.offering, Cards.confound)
 
 
 breaker :: Character
 breaker =
   Character
-    "Balalian"
+    "Human"
     (Cards.hammer, Cards.lightning, Cards.feint, Cards.hubris)
 
 
