@@ -47,7 +47,7 @@ view state roomID flags textures =
 
 
 waitingView : WaitType -> Flags -> Texture.Model -> String -> Html Main.Msg
-waitingView waitType { dimensions, httpPort, hostname } textures roomID =
+waitingView waitType ({ httpPort, hostname } as flags) textures roomID =
     let
         portProtocol =
             if httpPort /= "" then
@@ -74,44 +74,52 @@ waitingView waitType { dimensions, httpPort, hostname } textures roomID =
         waitingInfo =
             case waitType of
                 WaitCustom ->
-                    div [ class "input-group" ]
-                        [ input
-                            [ value challengeLink
-                            , type_ "text"
-                            , readonly True
-                            , id myID
-                            , onClick <| Main.SelectAllInput myID
+                    div []
+                        [ ringView flags textures
+                        , div [ class "input-group" ]
+                            [ input
+                                [ value challengeLink
+                                , type_ "text"
+                                , readonly True
+                                , id myID
+                                , onClick <| Main.SelectAllInput myID
+                                ]
+                                []
+                            , button
+                                [ onClick <| Main.CopyInput myID ]
+                                [ text "copy" ]
                             ]
-                            []
-                        , button
-                            [ onClick <| Main.CopyInput myID ]
-                            [ text "copy" ]
                         ]
 
                 WaitQuickplay ->
-                    let
-                        ( w, h ) =
-                            dimensions
-
-                        ctx =
-                            bareContextInit ( w, h ) textures
-                    in
-                    div []
-                        [ WebGL.toHtml
-                            [ width w
-                            , height h
-                            , class "webgl-canvas"
-                            ]
-                          <|
-                            List.concat <|
-                                List.map ((|>) ctx)
-                                    [ CharacterSelect.backgroundRingView
-                                    , CharacterSelect.circlesView
-                                    ]
-                        ]
+                    ringView flags textures
     in
     div [ class "waiting" ]
         [ div [ class "waiting-prompt" ]
             [ text waitingPrompt ]
         , waitingInfo
+        ]
+
+
+ringView : Flags -> Texture.Model -> Html msg
+ringView { dimensions } textures =
+    let
+        ( w, h ) =
+            dimensions
+
+        ctx =
+            bareContextInit ( w, h ) textures
+    in
+    div []
+        [ WebGL.toHtml
+            [ width w
+            , height h
+            , class "webgl-canvas"
+            ]
+          <|
+            List.concat <|
+                List.map ((|>) ctx)
+                    [ CharacterSelect.backgroundRingView
+                    , CharacterSelect.circlesView
+                    ]
         ]
