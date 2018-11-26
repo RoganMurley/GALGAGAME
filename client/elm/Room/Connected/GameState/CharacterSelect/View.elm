@@ -1,4 +1,4 @@
-module CharacterSelect.View exposing (view)
+module CharacterSelect.View exposing (backgroundRingView, circlesView, view)
 
 import CharacterSelect.Messages exposing (Msg(..))
 import CharacterSelect.Types exposing (Character, Model)
