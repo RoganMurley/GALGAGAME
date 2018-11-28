@@ -65,10 +65,10 @@ waitingView waitType ({ httpPort, hostname } as flags) textures roomID =
         waitingPrompt =
             case waitType of
                 WaitCustom ->
-                    "Give this link to your opponent:"
+                    "Give this link to your Opponent"
 
                 WaitQuickplay ->
-                    "Searching for Opponent"
+                    "Searching for Opponent..."
 
         waitingInfo : Html Main.Msg
         waitingInfo =
