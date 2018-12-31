@@ -119,6 +119,10 @@ texturePaths =
     , ( "balancer/bless.svg", "/img/textures/bless.png" )
     , ( "balancer/balance.svg", "/img/textures/balance.png" )
     , ( "the_end.svg", "/img/textures/the-end.png" )
+    , ( "honeymaker/sting.svg", "/img/textures/sting.png" )
+    , ( "honeymaker/waxworks.svg", "/img/textures/waxworks.png" )
+    , ( "honeymaker/sting.svg", "/img/textures/sting.png" )
+    , ( "honeymaker/honey.svg", "/img/textures/honey.png" )
     ]
 
 

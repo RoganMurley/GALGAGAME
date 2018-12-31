@@ -136,7 +136,7 @@ allCharacters =
 striker :: Character
 striker =
   Character
-    "U-long"
+    "Barbz"
     (Cards.dagger, Cards.fireball, Cards.offering, Cards.confound)
 
 
