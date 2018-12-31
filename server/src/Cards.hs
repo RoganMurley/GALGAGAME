@@ -26,7 +26,7 @@ dagger =
 fireball :: Card
 fireball =
   Card
-    "Firebolt"
+    "Fireball"
     "Hurt for 5 for each other card in play"
     "striker/fireball.svg"
     $ \w -> do
@@ -37,7 +37,7 @@ fireball =
 offering :: Card
 offering =
   Card
-    "Offer"
+    "Offering"
     "Pay 4 life to draw 2"
     "striker/offering.svg"
     $ \w -> do
@@ -71,7 +71,7 @@ hammer =
 lightning :: Card
 lightning =
   Card
-    "Thunderbolt"
+    "Lightning"
     "Hurt for 4 for each other card in play"
     "breaker/lightning.svg"
     $ \w -> do
@@ -82,7 +82,7 @@ lightning =
 hubris :: Card
 hubris =
   Card
-    "Collapse"
+    "Hubris"
     "Discard all cards in play"
     "breaker/hubris.svg"
     $ \_ -> do
@@ -176,7 +176,7 @@ serpent =
 badApple :: Card
 badApple =
   Card
-    "Ingest"
+    "Bad Apple"
     "Hurt yourself for 4"
     "drinker/bad-apple.svg"
     $ \w -> do
@@ -218,9 +218,9 @@ surge =
 mimic :: Card
 mimic =
   Card
-    "Mimic"
+    "Waxworks"
     "Play a copy of a random card in your hand"
-    "watcher/imitate.svg"
+    "honeymaker/waxworks.svg"
     $ \w -> do
       raw $ do
         gen <- Alpha.getGen
@@ -237,7 +237,7 @@ mimic =
 prophecy :: Card
 prophecy =
   Card
-    "Foresee"
+    "Prophecy"
     "Return all cards in play to hand"
     "watcher/prophecy.svg"
     $ \w -> do
@@ -260,7 +260,7 @@ sword =
 potion :: Card
 potion =
   Card
-    "Remedy"
+    "Potion"
     "Heal for 10"
     "shielder/potion.svg"
     $ heal 10
@@ -301,7 +301,7 @@ overwhelm =
 echo :: Card
 echo =
   Card
-    "Repeat"
+    "Echo"
     "When the next card activates it does so twice"
     "bouncer/echo.svg"
     $ \_ -> do
@@ -327,16 +327,16 @@ feint =
 relicblade :: Card
 relicblade =
   Card
-    "Slice"
+    "Sting"
     "Hurt for 6"
-    "collector/relicblade.svg"
+    "honeymaker/sting.svg"
     $ \w -> slash 6 (other w)
 
 
 greed :: Card
 greed =
   Card
-    "Crave"
+    "Greed"
     "Hurt for 3 for each card in their hand"
     "collector/greed.svg"
     $ \w -> do
@@ -347,7 +347,7 @@ greed =
 alchemy :: Card
 alchemy =
   Card
-    "Alchemize"
+    "Alchemy"
     ("Change next card to " <> description gold)
     "collector/alchemy.svg"
     $ \_ -> transmute gold
@@ -356,9 +356,9 @@ alchemy =
 gold :: Card
 gold =
   Card
-    "Enrich"
+    "Honey"
     "Draw 2"
-    "collector/gold.svg"
+    "honeymaker/honey.svg"
     $ \w -> do
       draw w
       draw w
@@ -367,7 +367,7 @@ gold =
 theEnd :: Card
 theEnd =
   Card
-    "End"
+    "The End"
     "You're out of cards, hurt yourself for 10"
     "the_end.svg"
     $ slash 10
