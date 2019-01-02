@@ -38,6 +38,7 @@ alphaI (Free (Reverse n))        = Alpha.modStack reverse        >>  alphaI n
 alphaI (Free (Play w c i n))     = Alpha.play w c i              >>  alphaI n
 alphaI (Free (Transmute c n))    = Alpha.transmute c             >>  alphaI n
 alphaI (Free (Rotate n))         = Alpha.modStack tailSafe       >>  alphaI n
+alphaI (Free (Fabricate c n))    = Alpha.modStack ((:) c)        >>  alphaI n
 alphaI (Free (SetHeadOwner w n)) = Alpha.setHeadOwner w          >>  alphaI n
 alphaI (Free (GetGen f))         = Alpha.getGen                  >>= alphaI . f
 alphaI (Free (GetLife w f))      = Alpha.getLife w               >>= alphaI . f
@@ -60,6 +61,7 @@ animI (Bite d w _)       = basicAnim $ Anim.Bite w d ()
 animI (Reflect _)        = basicAnim $ Anim.Reflect ()
 animI (Reverse _)        = basicAnim $ Anim.Reverse ()
 animI (Rotate _)         = basicAnim $ Anim.Rotate ()
+animI (Fabricate c _)    = basicAnim $ Anim.Fabricate c ()
 animI (RawAnim r _)      = basicAnim $ Anim.Raw r ()
 animI (Hubris _)         = hubrisAnim
 animI (Heal _ w _)       = healAnim w
@@ -72,14 +74,13 @@ animI _                  = toLeft
 
 
 healAnim :: WhichPlayer -> Alpha.Program a -> AlphaAnimProgram a
-healAnim w alpha =
-  do
-    oldLife <- toLeft $ Alpha.getLife w
-    final <- toLeft alpha
-    newLife <- toLeft $ Alpha.getLife w
-    let lifeChange = newLife - oldLife
-    toRight . liftF $ Anim.Heal w lifeChange ()
-    return final
+healAnim w alpha = do
+  oldLife <- toLeft $ Alpha.getLife w
+  final <- toLeft alpha
+  newLife <- toLeft $ Alpha.getLife w
+  let lifeChange = newLife - oldLife
+  toRight . liftF $ Anim.Heal w lifeChange ()
+  return final
 
 
 hubrisAnim :: Alpha.Program a -> AlphaAnimProgram a
@@ -91,62 +92,57 @@ hubrisAnim alpha = do
 
 
 drawAnim :: WhichPlayer -> Alpha.Program a -> AlphaAnimProgram a
-drawAnim w alpha =
-  do
-    nextCard <- headMay <$> toLeft (Alpha.getDeck w)
-    handLength <- length <$> toLeft (Alpha.getHand w)
-    final <- toLeft alpha
-    if (handLength < maxHandLength)
-      then toRight . liftF $ Anim.Draw w ()
-      else toRight . liftF $ Anim.Mill w (fromMaybe theEnd nextCard) ()
-    return final
+drawAnim w alpha = do
+  nextCard <- headMay <$> toLeft (Alpha.getDeck w)
+  handLength <- length <$> toLeft (Alpha.getHand w)
+  final <- toLeft alpha
+  if (handLength < maxHandLength)
+    then toRight . liftF $ Anim.Draw w ()
+    else toRight . liftF $ Anim.Mill w (fromMaybe theEnd nextCard) ()
+  return final
 
 
 addToHandAnim :: WhichPlayer -> Card -> Alpha.Program a -> AlphaAnimProgram a
-addToHandAnim w c alpha =
-  do
-    handLength <- length <$> toLeft (Alpha.getHand w)
-    final <- toLeft alpha
-    if (handLength < maxHandLength)
-      then toRight . liftF $ Anim.Draw w ()
-      else toRight . liftF $ Anim.Mill w c ()
-    return final
+addToHandAnim w c alpha = do
+  handLength <- length <$> toLeft (Alpha.getHand w)
+  final <- toLeft alpha
+  if (handLength < maxHandLength)
+    then toRight . liftF $ Anim.Draw w ()
+    else toRight . liftF $ Anim.Mill w c ()
+  return final
 
 
 playAnim :: WhichPlayer -> Card -> Int -> Alpha.Program a -> AlphaAnimProgram a
-playAnim w c i alpha =
-  do
-    final <- toLeft alpha
-    toRight . liftF $ Anim.Play w c i ()
-    toRight . liftF $ Anim.Windup ()
-    return final
+playAnim w c i alpha = do
+  final <- toLeft alpha
+  toRight . liftF $ Anim.Play w c i ()
+  toRight . liftF $ Anim.Windup ()
+  return final
 
 
 transmuteAnim :: Card -> Alpha.Program a -> AlphaAnimProgram a
-transmuteAnim cb alpha =
-  do
-    stackHead <- headMay <$> toLeft Alpha.getStack
-    final <- toLeft alpha
-    case stackHead of
-      (Just ca) ->
-        let o = stackcard_owner ca in
-        toRight . liftF $ Anim.Transmute ca (StackCard o cb) ()
-      Nothing ->
-        toRight . liftF $ Anim.Null ()
-    return final
+transmuteAnim cb alpha = do
+  stackHead <- headMay <$> toLeft Alpha.getStack
+  final <- toLeft alpha
+  case stackHead of
+    (Just ca) ->
+      let o = stackcard_owner ca in
+      toRight . liftF $ Anim.Transmute ca (StackCard o cb) ()
+    Nothing ->
+      toRight . liftF $ Anim.Null ()
+  return final
 
 
 setHeadOwnerAnim :: WhichPlayer -> Alpha.Program a -> AlphaAnimProgram a
-setHeadOwnerAnim w alpha =
-  do
-    stackHead <- headMay <$> toLeft Alpha.getStack
-    final <- toLeft alpha
-    case stackHead of
-      Just (StackCard o c) ->
-        toRight . liftF $ Anim.Transmute (StackCard o c) (StackCard w c) ()
-      Nothing ->
-        toRight . liftF $ Anim.Null ()
-    return final
+setHeadOwnerAnim w alpha = do
+  stackHead <- headMay <$> toLeft Alpha.getStack
+  final <- toLeft alpha
+  case stackHead of
+    Just (StackCard o c) ->
+      toRight . liftF $ Anim.Transmute (StackCard o c) (StackCard w c) ()
+    Nothing ->
+      toRight . liftF $ Anim.Null ()
+  return final
 
 
 type AlphaAnimProgram = Free (Sum Alpha.DSL Anim.DSL)

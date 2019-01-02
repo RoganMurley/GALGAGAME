@@ -22,6 +22,7 @@ next (Mill _ _ n)      = n
 next (GameEnd _ n)     = n
 next (Rotate n)        = n
 next (Windup n)        = n
+next (Fabricate _ n)   = n
 
 
 animate :: DSL a -> Maybe CardAnim
@@ -40,3 +41,4 @@ animate (Mill w c _)        = Just $ CardAnim.Mill w c
 animate (GameEnd w _)       = Just $ CardAnim.GameEnd w
 animate (Rotate _)          = Just CardAnim.Rotate
 animate (Windup _)          = Just CardAnim.Windup
+animate (Fabricate c _)     = Just $ CardAnim.Fabricate c
