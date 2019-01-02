@@ -5,6 +5,7 @@ import Card.Types as Card
 import Game.Types exposing (Context)
 import Math.Vector2 exposing (Vec2, vec2)
 import Stack.Types exposing (Stack, StackCard)
+import Util exposing (interpFloat)
 import WhichPlayer.Types exposing (WhichPlayer(..))
 
 
@@ -47,7 +48,7 @@ entities ctx =
 
         mainEntities =
             List.indexedMap
-                (clockEntity ctx rotationProgress)
+                (clockEntity ctx rotationProgress (List.length stack))
                 stack
 
         extraEntities =
@@ -75,14 +76,29 @@ entities ctx =
     mainEntities ++ extraEntities
 
 
-clockEntity : Context -> Float -> Int -> StackCard -> Card.Entity {}
-clockEntity { w, h, radius } progress index { card, owner } =
+clockEntity : Context -> Float -> Int -> Int -> StackCard -> Card.Entity {}
+clockEntity { w, h, radius, anim, progress } rotateProgress stackLen finalIndex { card, owner } =
     let
+        origin : Vec2
         origin =
             vec2 (w / 2) (h / 2)
 
+        finalI : Float
+        finalI =
+            toFloat finalIndex + 1.0
+
+        i : Float
         i =
-            toFloat index + 1.0
+            case anim of
+                Reverse _ ->
+                    if finalI == 0 then
+                        0
+
+                    else
+                        1.0 + toFloat stackLen - finalI
+
+                _ ->
+                    finalI
 
         segmentAngle : Float
         segmentAngle =
@@ -90,7 +106,9 @@ clockEntity { w, h, radius } progress index { card, owner } =
 
         rotation : Float
         rotation =
-            i * segmentAngle - progress * segmentAngle
+            interpFloat progress
+                (i * segmentAngle - rotateProgress * segmentAngle)
+                (finalI * segmentAngle - rotateProgress * segmentAngle)
 
         position : Vec2
         position =
