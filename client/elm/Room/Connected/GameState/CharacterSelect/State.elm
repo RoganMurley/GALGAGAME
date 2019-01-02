@@ -1,7 +1,7 @@
-module CharacterSelect.State exposing (update, viewModelInit)
+module CharacterSelect.State exposing (getHoverSlot, update, viewModelInit)
 
 import CharacterSelect.Messages exposing (Msg(..))
-import CharacterSelect.Types exposing (Character, Model, ViewModel)
+import CharacterSelect.Types exposing (Character, Model, Slot(..), ViewModel)
 import Main.Messages as Main
 import Util
 
@@ -26,3 +26,19 @@ update msg ({ vm } as m) =
 viewModelInit : Character -> ViewModel
 viewModelInit character =
     { hover = character }
+
+
+getHoverSlot : Model -> Maybe Slot
+getHoverSlot { selected } =
+    case List.length selected of
+        0 ->
+            Just SlotA
+
+        1 ->
+            Just SlotB
+
+        2 ->
+            Just SlotC
+
+        _ ->
+            Nothing

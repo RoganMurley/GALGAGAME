@@ -1,8 +1,7 @@
-module Stack.Entities exposing (clockFace, entities)
+module Stack.Entities exposing (entities)
 
 import Animation.Types exposing (Anim(..))
-import Card.Types as Card exposing (Card)
-import Game.Entity as Game
+import Card.Types as Card
 import Game.Types exposing (Context)
 import Math.Vector2 exposing (Vec2, vec2)
 import Stack.Types exposing (Stack, StackCard)
@@ -47,11 +46,9 @@ entities ctx =
                     finalStack
 
         mainEntities =
-            clockFace
+            List.indexedMap
+                (clockEntity ctx rotationProgress)
                 stack
-                (vec2 (w / 2) (h / 2))
-                (0.615 * radius)
-                rotationProgress
 
         extraEntities =
             case anim of
@@ -78,42 +75,32 @@ entities ctx =
     mainEntities ++ extraEntities
 
 
-clockFace : Stack -> Vec2 -> Float -> Float -> List (Card.Entity {})
-clockFace stack origin radius progress =
+clockEntity : Context -> Float -> Int -> StackCard -> Card.Entity {}
+clockEntity { w, h, radius } progress index { card, owner } =
     let
-        segments : Int
-        segments =
-            12
+        origin =
+            vec2 (w / 2) (h / 2)
 
-        genPoint : Int -> StackCard -> Game.Entity { card : Card, owner : WhichPlayer }
-        genPoint index { card, owner } =
-            let
-                i =
-                    index + 1
-            in
-            { owner = owner
-            , card = card
-            , position = Math.Vector2.add origin <| offset i
-            , rotation = rotation i
-            , scale = 1.3
-            }
+        i =
+            toFloat index + 1.0
 
         segmentAngle : Float
         segmentAngle =
-            -2.0 * pi / toFloat segments
+            -2.0 * pi / 12.0
 
-        rot : Int -> Float
-        rot i =
-            (toFloat i * segmentAngle)
-                - (progress * segmentAngle)
+        rotation : Float
+        rotation =
+            i * segmentAngle - progress * segmentAngle
 
-        offset : Int -> Vec2
-        offset i =
-            Math.Vector2.scale -radius <|
-                vec2 (sin <| rot i) (cos <| rot i)
-
-        rotation : Int -> Float
-        rotation i =
-            pi - rot i
+        position : Vec2
+        position =
+            Math.Vector2.add origin <|
+                Math.Vector2.scale (-0.615 * radius) <|
+                    vec2 (sin rotation) (cos rotation)
     in
-    List.indexedMap genPoint stack
+    { owner = owner
+    , card = card
+    , position = position
+    , rotation = pi - rotation
+    , scale = 1.3
+    }

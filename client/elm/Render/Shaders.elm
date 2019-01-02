@@ -1,4 +1,4 @@
-module Render.Shaders exposing (circleFragment, disintegrate, fragment, fragmentTransmute, fullCircleFragment, matte, roundedBoxDisintegrate, roundedBoxFragment, roundedBoxTransmute, vertex)
+module Render.Shaders exposing (circleFragment, disintegrate, fragment, fragmentAlpha, fragmentTransmute, fullCircleFragment, matte, roundedBoxDisintegrate, roundedBoxFragment, roundedBoxTransmute, vertex)
 
 import Math.Vector2 exposing (Vec2)
 import Math.Vector3 exposing (Vec3)
@@ -19,6 +19,26 @@ fragment =
         void main ()
         {
             gl_FragColor = texture2D(texture, vcoord);
+        }
+
+    |]
+
+
+fragmentAlpha : Shader {} (Uniforms { texture : Texture, alpha : Float }) { vcoord : Vec2 }
+fragmentAlpha =
+    [glsl|
+        precision mediump float;
+
+        uniform sampler2D texture;
+        uniform float alpha;
+
+        varying vec2 vcoord;
+
+        void main ()
+        {
+            vec4 color = texture2D(texture, vcoord);
+            color.a *= alpha;
+            gl_FragColor = color;
         }
 
     |]
