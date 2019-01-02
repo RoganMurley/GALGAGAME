@@ -21,3 +21,4 @@ type Anim
     | GameEnd (Maybe WhichPlayer)
     | Rotate WhichPlayer
     | Windup WhichPlayer
+    | Fabricate StackCard

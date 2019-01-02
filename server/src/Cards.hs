@@ -222,16 +222,14 @@ mimic =
     "Play a copy of a random card in your hand"
     "honeymaker/waxworks.svg"
     $ \w -> do
-      raw $ do
-        gen <- Alpha.getGen
-        hand <- Alpha.getHand w
-        mCard <- return . headMay . (filter (/= mimic)) . (shuffle gen) $ hand
-        case mCard of
-          Just c ->
-            Alpha.modStack ((:) (StackCard w c))
-          Nothing ->
-            return ()
-      Beta.null
+      gen <- getGen
+      hand <- getHand w
+      let mCard = headMay . (filter (/= mimic)) . (shuffle gen) $ hand
+      case mCard of
+        Just c ->
+          fabricate $ StackCard w c
+        Nothing ->
+          Beta.null
 
 
 prophecy :: Card

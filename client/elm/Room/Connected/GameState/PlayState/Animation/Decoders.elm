@@ -23,6 +23,7 @@ decoder =
         , gameEndDecoder
         , rotateDecoder
         , windupDecoder
+        , fabricateDecoder
         , nullDecoder
         ]
 
@@ -138,6 +139,14 @@ windupDecoder =
     Json.map2 (\w _ -> Windup w)
         (field "player" WhichPlayer.decoder)
         (field "anim" <| constDecoder "windup")
+
+
+fabricateDecoder : Decoder Anim
+fabricateDecoder =
+    Json.map3 (\_ _ c -> Fabricate c)
+        (field "player" WhichPlayer.decoder)
+        (field "anim" <| index 0 <| constDecoder "fabricate")
+        (field "anim" <| index 1 <| Stack.stackCardDecoder)
 
 
 nullDecoder : Decoder Anim

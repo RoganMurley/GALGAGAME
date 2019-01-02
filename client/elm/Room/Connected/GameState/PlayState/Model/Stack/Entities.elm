@@ -6,7 +6,6 @@ import Game.Types exposing (Context)
 import Math.Vector2 exposing (Vec2, vec2)
 import Stack.Types exposing (Stack, StackCard)
 import Util exposing (interpFloat)
-import WhichPlayer.Types exposing (WhichPlayer(..))
 
 
 entities : Context -> List (Card.Entity {})
@@ -43,6 +42,9 @@ entities ctx =
                         Nothing ->
                             finalStack
 
+                Fabricate _ ->
+                    List.drop 1 finalStack
+
                 _ ->
                     finalStack
 
@@ -77,7 +79,7 @@ entities ctx =
 
 
 clockEntity : Context -> Float -> Int -> Int -> StackCard -> Card.Entity {}
-clockEntity { w, h, radius, anim, progress } rotateProgress stackLen finalIndex { card, owner } =
+clockEntity { w, h, radius, anim, progress } baseRotateProgress stackLen finalIndex { card, owner } =
     let
         origin : Vec2
         origin =
@@ -103,6 +105,23 @@ clockEntity { w, h, radius, anim, progress } rotateProgress stackLen finalIndex 
         segmentAngle : Float
         segmentAngle =
             -2.0 * pi / 12.0
+
+        animRotateProgress : Float
+        animRotateProgress =
+            case anim of
+                Fabricate _ ->
+                    if finalI == 0 then
+                        0
+
+                    else
+                        -progress
+
+                _ ->
+                    0
+
+        rotateProgress : Float
+        rotateProgress =
+            baseRotateProgress + animRotateProgress
 
         rotation : Float
         rotation =

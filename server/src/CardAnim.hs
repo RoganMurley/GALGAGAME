@@ -23,6 +23,7 @@ data CardAnim
   | GameEnd (Maybe WhichPlayer)
   | Rotate
   | Windup
+  | Fabricate StackCard
   deriving (Show, Eq)
 
 
@@ -96,6 +97,11 @@ instance ToJSON CardAnim where
     [ "player" .= PlayerA
     , "anim"  .= ("windup" :: Text)
     ]
+  toJSON (Fabricate stackCard) =
+    object
+    [ "player" .= PlayerA
+    , "anim"  .= ("fabricate" :: Text, stackCard)
+    ]
 
 
 instance Mirror CardAnim where
@@ -112,3 +118,4 @@ instance Mirror CardAnim where
   mirror (Mill w c)        = Mill (other w) c
   mirror Rotate            = Rotate
   mirror Windup            = Windup
+  mirror (Fabricate c)     = Fabricate (mirror c)

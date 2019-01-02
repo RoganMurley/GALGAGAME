@@ -24,6 +24,7 @@ data DSL a
   | GameEnd (Maybe WhichPlayer) a
   | Rotate a
   | Windup a
+  | Fabricate StackCard a
   deriving (Functor)
 
 
