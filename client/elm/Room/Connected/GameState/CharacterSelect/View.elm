@@ -1,7 +1,8 @@
 module CharacterSelect.View exposing (backgroundRingView, circlesView, view)
 
 import CharacterSelect.Messages exposing (Msg(..))
-import CharacterSelect.Types exposing (Character, Model)
+import CharacterSelect.State exposing (getHoverSlot)
+import CharacterSelect.Types exposing (Character, Model, Slot(..))
 import Colour
 import Game.State exposing (bareContextInit)
 import Game.Types exposing (Context)
@@ -9,7 +10,7 @@ import Html exposing (Html, div, h1, img, text)
 import Html.Attributes exposing (class, height, src, style, width)
 import Html.Events exposing (onClick, onMouseEnter)
 import Math.Matrix4 exposing (makeLookAt, makeOrtho, makeRotate, makeScale3)
-import Math.Vector2 exposing (vec2)
+import Math.Vector2 exposing (Vec2, vec2)
 import Math.Vector3 exposing (vec3)
 import Maybe.Extra as Maybe
 import Render.Primitives
@@ -99,7 +100,7 @@ backgroundRingView ({ w, h, radius } as ctx) =
 
 
 characterSelectCirclesView : Model -> Context -> List WebGL.Entity
-characterSelectCirclesView { selected } ({ w, h, radius, textures } as ctx) =
+characterSelectCirclesView ({ selected, vm } as model) ({ w, h, radius, textures } as ctx) =
     let
         centre =
             vec2 (w / 2) (h / 2)
@@ -125,6 +126,14 @@ characterSelectCirclesView { selected } ({ w, h, radius, textures } as ctx) =
                     List.head <|
                         List.drop 2 <|
                             selected
+
+        mTextureHover : Maybe WebGL.Texture
+        mTextureHover =
+            Texture.load textures vm.hover.imgURL
+
+        hoverSlot : Maybe Slot
+        hoverSlot =
+            getHoverSlot model
     in
     List.concat
         [ List.map (Render.Primitives.circle << uni ctx)
@@ -156,11 +165,7 @@ characterSelectCirclesView { selected } ({ w, h, radius, textures } as ctx) =
                     { rotation = makeRotate pi (vec3 0 0 1)
                     , scale = makeScale3 (0.15 * radius) (0.15 * radius) 1
                     , color = Colour.white
-                    , pos =
-                        to3d <|
-                            Math.Vector2.add
-                                centre
-                                (vec2 0 (-radius * 0.26))
+                    , pos = to3d <| slotView ctx SlotA
                     , worldRot = makeRotate 0 (vec3 0 0 1)
                     , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
                     , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
@@ -176,11 +181,7 @@ characterSelectCirclesView { selected } ({ w, h, radius, textures } as ctx) =
                     { rotation = makeRotate pi (vec3 0 0 1)
                     , scale = makeScale3 (0.15 * radius) (0.15 * radius) 1
                     , color = Colour.white
-                    , pos =
-                        to3d <|
-                            Math.Vector2.add
-                                centre
-                                (vec2 (-radius * 0.23) (radius * 0.14))
+                    , pos = to3d <| slotView ctx SlotB
                     , worldRot = makeRotate 0 (vec3 0 0 1)
                     , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
                     , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
@@ -196,11 +197,7 @@ characterSelectCirclesView { selected } ({ w, h, radius, textures } as ctx) =
                     { rotation = makeRotate pi (vec3 0 0 1)
                     , scale = makeScale3 (0.15 * radius) (0.15 * radius) 1
                     , color = Colour.white
-                    , pos =
-                        to3d <|
-                            Math.Vector2.add
-                                centre
-                                (vec2 (radius * 0.23) (radius * 0.14))
+                    , pos = to3d <| slotView ctx SlotC
                     , worldRot = makeRotate 0 (vec3 0 0 1)
                     , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
                     , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
@@ -210,7 +207,52 @@ characterSelectCirclesView { selected } ({ w, h, radius, textures } as ctx) =
 
             Nothing ->
                 []
+        , case mTextureHover of
+            Just texture ->
+                case hoverSlot of
+                    Just slot ->
+                        [ Render.Primitives.quad Render.Shaders.fragmentAlpha
+                            { rotation = makeRotate pi (vec3 0 0 1)
+                            , scale = makeScale3 (0.15 * radius) (0.15 * radius) 1
+                            , alpha = 0.3
+                            , color = Colour.white
+                            , pos = to3d <| slotView ctx slot
+                            , worldRot = makeRotate 0 (vec3 0 0 1)
+                            , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
+                            , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
+                            , texture = texture
+                            }
+                        ]
+
+                    _ ->
+                        []
+
+            Nothing ->
+                []
         ]
+
+
+slotView : Context -> Slot -> Vec2
+slotView { w, h, radius } slot =
+    let
+        centre =
+            vec2 (w / 2) (h / 2)
+
+        offsetNormalised =
+            case slot of
+                SlotA ->
+                    vec2 0 -0.26
+
+                SlotB ->
+                    vec2 -0.23 0.14
+
+                SlotC ->
+                    vec2 0.23 0.14
+
+        offset =
+            Math.Vector2.scale radius offsetNormalised
+    in
+    Math.Vector2.add centre offset
 
 
 circlesView : Context -> List WebGL.Entity

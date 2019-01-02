@@ -1,4 +1,4 @@
-module CharacterSelect.Types exposing (Character, CharacterCards, Model, ViewModel)
+module CharacterSelect.Types exposing (Character, CharacterCards, Model, Slot(..), ViewModel)
 
 import Card.Types exposing (Card)
 
@@ -23,3 +23,9 @@ type alias Model =
 
 type alias ViewModel =
     { hover : Character }
+
+
+type Slot
+    = SlotA
+    | SlotB
+    | SlotC
