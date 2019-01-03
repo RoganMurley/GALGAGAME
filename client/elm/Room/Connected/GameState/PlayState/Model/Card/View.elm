@@ -1,4 +1,4 @@
-module Card.View exposing (backView, baseDimensions, dissolvingView, transmutingView, view)
+module Card.View exposing (backView, baseDimensions, dissolvingView, fabricatingView, transmutingView, view)
 
 import Card.State exposing (cardTexture)
 import Card.Types as Card
@@ -136,6 +136,61 @@ dissolvingView ctx { position, rotation, scale, card, owner } =
                 , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
                 , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
                 , time = progress
+                }
+            ]
+
+        _ ->
+            []
+
+
+fabricatingView : Context -> Card.Entity a -> List WebGL.Entity
+fabricatingView ctx { position, rotation, scale, card, owner } =
+    let
+        { w, h, radius, progress, textures } =
+            ctx
+
+        { width, height } =
+            baseDimensions radius
+
+        rot =
+            makeRotate rotation <| vec3 0 0 1
+
+        pos =
+            to3d position
+
+        col =
+            Colour.card owner
+
+        mTexture =
+            cardTexture textures card
+
+        mNoise =
+            Texture.load textures "noise"
+    in
+    case ( mTexture, mNoise ) of
+        ( Just texture, Just noise ) ->
+            [ Render.Primitives.roundedBoxDisintegrate <|
+                { texture = noise
+                , rotation = rot
+                , scale = makeScale3 (scale * 0.7 * width) (scale * height) 1
+                , color = col
+                , pos = pos
+                , worldRot = makeRotate 0 (vec3 0 0 1)
+                , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
+                , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
+                , time = 1 - progress
+                }
+            , Render.Primitives.quad Render.Shaders.disintegrate <|
+                { texture = texture
+                , noise = noise
+                , rotation = rot
+                , scale = makeScale3 (scale * 0.6 * width) (scale * 0.6 * height) 1
+                , color = vec3 1 1 1
+                , pos = pos
+                , worldRot = makeRotate 0 (vec3 0 0 1)
+                , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
+                , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
+                , time = 1 - progress
                 }
             ]
 
