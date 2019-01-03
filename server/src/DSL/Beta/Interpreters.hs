@@ -39,6 +39,7 @@ alphaI (Free (Play w c i n))     = Alpha.play w c i              >>  alphaI n
 alphaI (Free (Transmute c n))    = Alpha.transmute c             >>  alphaI n
 alphaI (Free (Rotate n))         = Alpha.modStack tailSafe       >>  alphaI n
 alphaI (Free (Fabricate c n))    = Alpha.modStack ((:) c)        >>  alphaI n
+alphaI (Free (Bounce f n))       = Alpha.bounce f                >>  alphaI n
 alphaI (Free (SetHeadOwner w n)) = Alpha.setHeadOwner w          >>  alphaI n
 alphaI (Free (GetGen f))         = Alpha.getGen                  >>= alphaI . f
 alphaI (Free (GetLife w f))      = Alpha.getLife w               >>= alphaI . f
@@ -69,6 +70,7 @@ animI (AddToHand w c  _) = addToHandAnim w c
 animI (Draw w _)         = drawAnim w
 animI (Play w c i _)     = playAnim w c i
 animI (Transmute c _)    = transmuteAnim c
+animI (Bounce f _)       = bounceAnim f
 animI (SetHeadOwner w _) = setHeadOwnerAnim w
 animI _                  = toLeft
 
@@ -130,6 +132,15 @@ transmuteAnim cb alpha = do
       toRight . liftF $ Anim.Transmute ca (StackCard o cb) ()
     Nothing ->
       toRight . liftF $ Anim.Null ()
+  return final
+
+
+bounceAnim :: (StackCard -> Bool) -> Alpha.Program a -> AlphaAnimProgram a
+bounceAnim f alpha = do
+  stack <- toLeft Alpha.getStack
+  toRight . liftF $ Anim.Bounce (f <$> stack) ()
+  final <- toLeft alpha
+  toRight . liftF $ Anim.Null ()
   return final
 
 

@@ -26,6 +26,7 @@ data DSL n
   | Transmute Card n
   | Rotate n
   | Fabricate StackCard n
+  | Bounce (StackCard -> Bool) n
   | SetHeadOwner WhichPlayer n
   | GetDeck WhichPlayer (Deck -> n)
   | GetHand WhichPlayer (Hand -> n)
