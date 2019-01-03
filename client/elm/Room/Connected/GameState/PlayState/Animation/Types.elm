@@ -22,3 +22,4 @@ type Anim
     | Rotate WhichPlayer
     | Windup WhichPlayer
     | Fabricate StackCard
+    | Bounce (List Bool)

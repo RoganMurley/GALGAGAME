@@ -238,11 +238,7 @@ prophecy =
     "Prophecy"
     "Return all cards in play to hand"
     "watcher/prophecy.svg"
-    $ \w -> do
-      raw $ do
-        Alpha.bounceAll w
-        Alpha.bounceAll (other w)
-      Beta.null
+    $ \_ -> bounce (const True)
 
 
 -- Shielder
@@ -316,9 +312,7 @@ feint =
     "Feint"
     "Return all of your cards in play to hand"
     "bouncer/feint.svg"
-    $ \w -> do
-      raw $ Alpha.bounceAll w
-      Beta.null
+    $ \w -> bounce (\(StackCard o _) -> w == o)
 
 
 -- Collector

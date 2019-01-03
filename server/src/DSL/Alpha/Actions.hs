@@ -10,7 +10,7 @@ import Player (WhichPlayer(..), other)
 import Life (Life)
 import Model (Deck, Hand, Passes(..), Stack, Turn, maxHandLength)
 import Safe (headMay, tailSafe)
-import StackCard(StackCard(StackCard), isOwner)
+import StackCard(StackCard(StackCard, stackcard_card), isOwner)
 import Util (deleteIndex)
 
 import {-# SOURCE #-} Cards (theEnd)
@@ -85,14 +85,6 @@ play w c i = do
   modStack $ (:) (StackCard w c)
 
 
-bounceAll :: WhichPlayer -> Program ()
-bounceAll w = do
-  (ours, theirs) <- partition (isOwner w) <$> getStack
-  setStack theirs
-  let oursCards = (\(StackCard _ c) -> c) <$> ours
-  modHand w $ \h -> h ++ oursCards
-
-
 incPasses :: Passes -> Passes
 incPasses NoPass  = OnePass
 incPasses OnePass = NoPass
@@ -137,3 +129,13 @@ transmute c = do
 setHeadOwner :: WhichPlayer -> Program ()
 setHeadOwner w = do
   modStackHead (\(StackCard _ c) -> StackCard w c)
+
+
+bounce :: (StackCard -> Bool) -> Program ()
+bounce f = do
+  stack <- getStack
+  let (bouncing, staying) = partition f stack
+  setStack staying
+  let (paBouncing, pbBouncing) = partition (isOwner PlayerA) bouncing
+  modHand PlayerA $ \h -> h ++ (stackcard_card <$> paBouncing)
+  modHand PlayerB $ \h -> h ++ (stackcard_card <$> pbBouncing)
