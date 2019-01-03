@@ -42,9 +42,6 @@ entities ctx =
                         Nothing ->
                             finalStack
 
-                Fabricate _ ->
-                    List.drop 1 finalStack
-
                 _ ->
                     finalStack
 
@@ -79,7 +76,7 @@ entities ctx =
 
 
 clockEntity : Context -> Float -> Int -> Int -> StackCard -> Card.Entity {}
-clockEntity { w, h, radius, anim, progress } baseRotateProgress stackLen finalIndex { card, owner } =
+clockEntity { w, h, radius, anim, progress } baseRotateProgress finalStackLen finalIndex { card, owner } =
     let
         origin : Vec2
         origin =
@@ -99,8 +96,24 @@ clockEntity { w, h, radius, anim, progress } baseRotateProgress stackLen finalIn
                     else
                         1.0 + toFloat stackLen - finalI
 
+                Fabricate _ ->
+                    if finalI > 1 then
+                        finalI - 1
+
+                    else
+                        finalI
+
                 _ ->
                     finalI
+
+        stackLen : Int
+        stackLen =
+            case anim of
+                Fabricate _ ->
+                    finalStackLen - 1
+
+                _ ->
+                    finalStackLen
 
         segmentAngle : Float
         segmentAngle =
@@ -110,11 +123,11 @@ clockEntity { w, h, radius, anim, progress } baseRotateProgress stackLen finalIn
         animRotateProgress =
             case anim of
                 Fabricate _ ->
-                    if finalI == 0 then
+                    if finalI < 2 then
                         0
 
                     else
-                        -progress
+                        0
 
                 _ ->
                     0

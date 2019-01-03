@@ -50,6 +50,13 @@ view entities ctx =
                     else
                         Card.view ctx
 
+                Fabricate _ ->
+                    if i == 0 then
+                        Card.fabricatingView ctx
+
+                    else
+                        Card.view ctx
+
                 _ ->
                     Card.view ctx
     in
