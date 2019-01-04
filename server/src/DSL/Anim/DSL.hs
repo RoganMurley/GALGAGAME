@@ -25,7 +25,7 @@ data DSL a
   | Rotate a
   | Windup a
   | Fabricate StackCard a
-  | Bounce [Bool] a
+  | Bounce [(Int, Int, Card)] [(Int, Int, Card)] [Bool] a
   deriving (Functor)
 
 

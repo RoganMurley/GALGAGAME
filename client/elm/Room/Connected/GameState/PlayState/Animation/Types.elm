@@ -22,4 +22,4 @@ type Anim
     | Rotate WhichPlayer
     | Windup WhichPlayer
     | Fabricate StackCard
-    | Bounce (List Bool)
+    | Bounce (List ( ( Int, Int ), Card )) (List ( ( Int, Int ), Card )) (List Bool)

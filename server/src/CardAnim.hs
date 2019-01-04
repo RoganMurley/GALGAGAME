@@ -24,7 +24,7 @@ data CardAnim
   | Rotate
   | Windup
   | Fabricate StackCard
-  | Bounce [Bool]
+  | Bounce [(Int, Int, Card)] [(Int, Int, Card)] [Bool]
   deriving (Show, Eq)
 
 
@@ -103,10 +103,10 @@ instance ToJSON CardAnim where
     [ "player" .= PlayerA
     , "anim"  .= ("fabricate" :: Text, stackCard)
     ]
-  toJSON (Bounce l) =
+  toJSON (Bounce a b z) =
     object
     [ "player" .= PlayerA
-    , "anim"  .= ("bounce" :: Text, l)
+    , "anim"  .= ("bounce" :: Text, a, b, z)
     ]
 
 
@@ -125,4 +125,4 @@ instance Mirror CardAnim where
   mirror Rotate            = Rotate
   mirror Windup            = Windup
   mirror (Fabricate c)     = Fabricate (mirror c)
-  mirror (Bounce l)        = Bounce l
+  mirror (Bounce a b z)    = Bounce b a z

@@ -60,6 +60,9 @@ animMaxTick anim =
         Windup _ ->
             300.0
 
+        Bounce _ _ _ ->
+            1500.0
+
         _ ->
             800.0
 
