@@ -2,6 +2,7 @@ module Animation.Decoders exposing (decoder)
 
 import Animation.Types exposing (Anim(..))
 import Card.Decoders as Card
+import Card.Types exposing (Card)
 import Json.Decode as Json exposing (Decoder, bool, fail, field, index, int, list, oneOf, string, succeed)
 import Stack.Decoders as Stack
 import WhichPlayer.Decoders as WhichPlayer
@@ -152,10 +153,20 @@ fabricateDecoder =
 
 bounceDecoder : Decoder Anim
 bounceDecoder =
-    Json.map3 (\_ _ l -> Bounce l)
+    let
+        bounceIndexDecoder : Decoder ( ( Int, Int ), Card )
+        bounceIndexDecoder =
+            Json.map3 (\x y z -> ( ( x, y ), z ))
+                (index 0 <| int)
+                (index 1 <| int)
+                (index 2 <| Card.decoder)
+    in
+    Json.map5 (\_ _ x y z -> Bounce x y z)
         (field "player" WhichPlayer.decoder)
         (field "anim" <| index 0 <| constDecoder "bounce")
-        (field "anim" <| index 1 <| list bool)
+        (field "anim" <| index 1 <| list bounceIndexDecoder)
+        (field "anim" <| index 2 <| list bounceIndexDecoder)
+        (field "anim" <| index 3 <| list bool)
 
 
 nullDecoder : Decoder Anim

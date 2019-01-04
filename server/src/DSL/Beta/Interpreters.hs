@@ -15,7 +15,7 @@ import Player (WhichPlayer(..))
 import Model (Model, gameover, maxHandLength)
 import ModelDiff (ModelDiff)
 import Safe (headMay, tailSafe)
-import StackCard (StackCard(..), changeOwner)
+import StackCard (StackCard(..), changeOwner, isOwner, stackcard_card)
 
 import qualified DSL.Alpha as Alpha
 import qualified DSL.Anim as Anim
@@ -136,12 +136,25 @@ transmuteAnim cb alpha = do
 
 
 bounceAnim :: (StackCard -> Bool) -> Alpha.Program a -> AlphaAnimProgram a
-bounceAnim f alpha = do
-  stack <- toLeft Alpha.getStack
-  toRight . liftF $ Anim.Bounce (f <$> stack) ()
-  final <- toLeft alpha
-  toRight . liftF $ Anim.Null ()
-  return final
+bounceAnim f alpha =
+  let
+    getBounces :: WhichPlayer -> Alpha.Program [(Int, Int, Card)]
+    getBounces w = do
+      stack <- Alpha.getStack
+      handSize <- length <$> Alpha.getHand w
+      let indexed = filter (f . snd) $ zip [0..] stack :: [(Int, StackCard)]
+      let cards = (\(x, y) -> (x, stackcard_card y)) <$> filter (isOwner w . snd) indexed :: [(Int, Card)]
+      let result = (\(x, (y, z)) -> (x + handSize, y, z)) <$> zip [0..] cards :: [(Int, Int, Card)]
+      return result
+  in
+    do
+      stack <- toLeft $ Alpha.getStack
+      bouncesA <- toLeft $ getBounces PlayerA
+      bouncesB <- toLeft $ getBounces PlayerB
+      toRight . liftF $ Anim.Bounce bouncesA bouncesB (f <$> stack) ()
+      final <- toLeft alpha
+      toRight . liftF $ Anim.Null ()
+      return final
 
 
 setHeadOwnerAnim :: WhichPlayer -> Alpha.Program a -> AlphaAnimProgram a

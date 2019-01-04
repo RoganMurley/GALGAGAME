@@ -1,5 +1,6 @@
 {
   "checks": {
+    "CoreArrayUsage": false,
     "DebugCrash": false,
     "DebugLog": false,
     "NonStaticRegex": false,

@@ -1,7 +1,8 @@
-module Stack.Entities exposing (entities)
+module Stack.Entities exposing (entities, stackEntity)
 
 import Animation.Types exposing (Anim(..))
 import Card.Types as Card
+import Game.Entity as Game
 import Game.Types exposing (Context)
 import Math.Vector2 exposing (Vec2, vec2)
 import Stack.Types exposing (Stack, StackCard)
@@ -47,7 +48,7 @@ entities ctx =
 
         mainEntities =
             List.indexedMap
-                (clockEntity ctx rotationProgress (List.length stack))
+                (stackCardEntity ctx rotationProgress (List.length stack))
                 stack
 
         extraEntities =
@@ -75,8 +76,23 @@ entities ctx =
     mainEntities ++ extraEntities
 
 
-clockEntity : Context -> Float -> Int -> Int -> StackCard -> Card.Entity {}
-clockEntity { w, h, radius, anim, progress } baseRotateProgress finalStackLen finalIndex { card, owner } =
+stackCardEntity : Context -> Float -> Int -> Int -> StackCard -> Card.Entity {}
+stackCardEntity ctx baseRotateProgress finalStackLen finalIndex { card, owner } =
+    let
+        entity : Game.Entity {}
+        entity =
+            stackEntity ctx baseRotateProgress finalStackLen finalIndex
+    in
+    { owner = owner
+    , card = card
+    , position = entity.position
+    , rotation = entity.rotation
+    , scale = entity.scale
+    }
+
+
+stackEntity : Context -> Float -> Int -> Int -> Game.Entity {}
+stackEntity { w, h, radius, anim, progress } baseRotateProgress finalStackLen finalIndex =
     let
         origin : Vec2
         origin =
@@ -148,9 +164,7 @@ clockEntity { w, h, radius, anim, progress } baseRotateProgress finalStackLen fi
                 Math.Vector2.scale (-0.615 * radius) <|
                     vec2 (sin rotation) (cos rotation)
     in
-    { owner = owner
-    , card = card
-    , position = position
+    { position = position
     , rotation = pi - rotation
     , scale = 1.3
     }

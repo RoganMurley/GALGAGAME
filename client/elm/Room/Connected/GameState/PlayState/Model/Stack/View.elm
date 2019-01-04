@@ -1,6 +1,7 @@
 module Stack.View exposing (view)
 
 import Animation.Types exposing (Anim(..))
+import Array
 import Card.Types as Card
 import Card.View as Card
 import Game.Types exposing (Context)
@@ -53,6 +54,19 @@ view entities ctx =
                 Fabricate _ ->
                     if i == 0 then
                         Card.fabricatingView ctx
+
+                    else
+                        Card.view ctx
+
+                Bounce _ _ z ->
+                    let
+                        bouncing =
+                            Maybe.withDefault False <|
+                                Array.get i <|
+                                    Array.fromList z
+                    in
+                    if bouncing then
+                        \_ -> []
 
                     else
                         Card.view ctx
