@@ -1,7 +1,9 @@
-module Animation.State exposing (animMaxTick, animShake, lifeChange, progress)
+module Animation.State exposing (animMaxTick, animShake, getPlayerBounceCards, lifeChange, progress)
 
-import Animation.Types exposing (Anim(..))
+import Animation.Types exposing (Anim(..), Bounce(..), HandBounce)
 import Ease
+import Stack.Types exposing (Stack, StackCard)
+import Util exposing (zip)
 import WhichPlayer.Types exposing (WhichPlayer(..))
 
 
@@ -60,7 +62,7 @@ animMaxTick anim =
         Windup _ ->
             300.0
 
-        Bounce _ _ _ ->
+        Bounce _ ->
             1500.0
 
         _ ->
@@ -125,3 +127,31 @@ lifeChange anim =
 
         _ ->
             ( 0, 0 )
+
+
+getPlayerBounceCards : WhichPlayer -> List Bounce -> Stack -> List HandBounce
+getPlayerBounceCards w bounces stack =
+    let
+        makeBounce : ( Bounce, StackCard ) -> Maybe HandBounce
+        makeBounce ( bounce, { owner, card } ) =
+            if owner == w then
+                case bounce of
+                    BounceIndex stackIndex handIndex ->
+                        Just
+                            { stackIndex = stackIndex
+                            , handIndex = handIndex
+                            , card = card
+                            }
+
+                    NoBounce _ ->
+                        Nothing
+
+                    BounceDiscard ->
+                        Nothing
+
+            else
+                Nothing
+    in
+    List.filterMap identity <|
+        List.map makeBounce <|
+            zip bounces stack

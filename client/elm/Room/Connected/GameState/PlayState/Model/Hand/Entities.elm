@@ -1,13 +1,12 @@
 module Hand.Entities exposing (entities, handCardPosition, handCardRotation, handOrigin, otherEntities)
 
 import Animation.State as Animation
-import Animation.Types exposing (Anim(..))
+import Animation.Types exposing (Anim(..), Bounce, HandBounce)
 import Card.Types as Card exposing (Card)
 import Game.Entity as Game
 import Game.Types exposing (Context)
 import Math.Vector2 exposing (Vec2, vec2)
 import Stack.Entities
-import Tuple
 import Util exposing (interp2D, interpFloat)
 import WhichPlayer.Types exposing (WhichPlayer(..))
 
@@ -17,8 +16,13 @@ entities ({ w, h, radius, anim, model, progress } as ctx) =
     let
         finalHand =
             case anim of
-                Bounce bounces _ _ ->
-                    model.hand ++ List.map Tuple.second bounces
+                Bounce bounces ->
+                    let
+                        playerBounces : List HandBounce
+                        playerBounces =
+                            Animation.getPlayerBounceCards PlayerA bounces model.stack
+                    in
+                    model.hand ++ List.map .card playerBounces
 
                 _ ->
                     model.hand
@@ -30,8 +34,13 @@ entities ({ w, h, radius, anim, model, progress } as ctx) =
                     , List.head <| List.reverse finalHand
                     )
 
-                Bounce bounces _ _ ->
-                    ( List.take (List.length finalHand - List.length bounces) finalHand
+                Bounce bounces ->
+                    let
+                        playerBounces : List HandBounce
+                        playerBounces =
+                            Animation.getPlayerBounceCards PlayerA bounces model.stack
+                    in
+                    ( List.take (List.length finalHand - List.length playerBounces) finalHand
                     , Nothing
                     )
 
@@ -135,10 +144,14 @@ entities ({ w, h, radius, anim, model, progress } as ctx) =
                       }
                     ]
 
-                Bounce bounces _ _ ->
+                Bounce bounces ->
                     let
-                        makeBounceEntity : ( ( Int, Int ), Card ) -> Card.Entity { index : Int }
-                        makeBounceEntity ( ( handIndex, stackIndex ), card ) =
+                        playerBounces : List HandBounce
+                        playerBounces =
+                            Animation.getPlayerBounceCards PlayerA bounces model.stack
+
+                        makeBounceEntity : HandBounce -> Card.Entity { index : Int }
+                        makeBounceEntity { handIndex, stackIndex, card } =
                             let
                                 stackEntity =
                                     Stack.Entities.stackEntity ctx 0 (List.length model.stack) stackIndex
@@ -158,7 +171,7 @@ entities ({ w, h, radius, anim, model, progress } as ctx) =
                                 interpFloat progress stackEntity.scale 1
                             }
                     in
-                    List.map makeBounceEntity bounces
+                    List.map makeBounceEntity playerBounces
 
                 _ ->
                     []
@@ -171,8 +184,13 @@ otherEntities ({ w, h, radius, anim, model, progress } as ctx) =
     let
         finalN =
             case anim of
-                Bounce _ bounces _ ->
-                    model.otherHand + List.length bounces
+                Bounce bounces ->
+                    let
+                        playerBounces : List HandBounce
+                        playerBounces =
+                            Animation.getPlayerBounceCards PlayerB bounces model.stack
+                    in
+                    model.otherHand + List.length playerBounces
 
                 _ ->
                     model.otherHand
@@ -182,7 +200,7 @@ otherEntities ({ w, h, radius, anim, model, progress } as ctx) =
                 Draw PlayerB ->
                     finalN - 1
 
-                Bounce _ _ _ ->
+                Bounce _ ->
                     model.otherHand
 
                 _ ->
@@ -249,10 +267,14 @@ otherEntities ({ w, h, radius, anim, model, progress } as ctx) =
                       }
                     ]
 
-                Bounce _ bounces _ ->
+                Bounce bounces ->
                     let
-                        makeBounceEntity : ( ( Int, Int ), Card ) -> Game.Entity {}
-                        makeBounceEntity ( ( handIndex, stackIndex ), _ ) =
+                        playerBounces : List HandBounce
+                        playerBounces =
+                            Animation.getPlayerBounceCards PlayerB bounces model.stack
+
+                        makeBounceEntity : HandBounce -> Game.Entity {}
+                        makeBounceEntity { stackIndex, handIndex } =
                             let
                                 stackEntity =
                                     Stack.Entities.stackEntity ctx 0 (List.length model.stack) stackIndex
@@ -269,7 +291,7 @@ otherEntities ({ w, h, radius, anim, model, progress } as ctx) =
                                 interpFloat progress stackEntity.scale 1
                             }
                     in
-                    List.map makeBounceEntity bounces
+                    List.map makeBounceEntity playerBounces
 
                 _ ->
                     []

@@ -1,4 +1,4 @@
-module Animation.Types exposing (Anim(..))
+module Animation.Types exposing (Anim(..), Bounce(..), HandBounce)
 
 import Card.Types exposing (Card)
 import Stack.Types exposing (StackCard)
@@ -22,4 +22,17 @@ type Anim
     | Rotate WhichPlayer
     | Windup WhichPlayer
     | Fabricate StackCard
-    | Bounce (List ( ( Int, Int ), Card )) (List ( ( Int, Int ), Card )) (List Bool)
+    | Bounce (List Bounce)
+
+
+type Bounce
+    = NoBounce Int
+    | BounceDiscard
+    | BounceIndex Int Int
+
+
+type alias HandBounce =
+    { handIndex : Int
+    , stackIndex : Int
+    , card : Card
+    }
