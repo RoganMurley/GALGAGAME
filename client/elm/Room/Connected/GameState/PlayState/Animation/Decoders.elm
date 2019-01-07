@@ -1,9 +1,8 @@
 module Animation.Decoders exposing (decoder)
 
-import Animation.Types exposing (Anim(..))
+import Animation.Types exposing (Anim(..), Bounce(..))
 import Card.Decoders as Card
-import Card.Types exposing (Card)
-import Json.Decode as Json exposing (Decoder, bool, fail, field, index, int, list, oneOf, string, succeed)
+import Json.Decode as Json exposing (Decoder, fail, field, index, int, list, oneOf, string, succeed)
 import Stack.Decoders as Stack
 import WhichPlayer.Decoders as WhichPlayer
 
@@ -154,19 +153,28 @@ fabricateDecoder =
 bounceDecoder : Decoder Anim
 bounceDecoder =
     let
-        bounceIndexDecoder : Decoder ( ( Int, Int ), Card )
+        noBounceDecoder : Decoder Bounce
+        noBounceDecoder =
+            Json.map NoBounce <| field "finalStackIndex" int
+
+        bounceDiscardDecoder : Decoder Bounce
+        bounceDiscardDecoder =
+            Json.map (always BounceDiscard) <| constDecoder "bounceDiscard"
+
+        bounceIndexDecoder : Decoder Bounce
         bounceIndexDecoder =
-            Json.map3 (\x y z -> ( ( x, y ), z ))
-                (index 0 <| int)
-                (index 1 <| int)
-                (index 2 <| Card.decoder)
+            Json.map2 BounceIndex
+                (field "stackIndex" int)
+                (field "handIndex" int)
     in
-    Json.map5 (\_ _ x y z -> Bounce x y z)
+    Json.map3 (\_ _ b -> Bounce b)
         (field "player" WhichPlayer.decoder)
         (field "anim" <| index 0 <| constDecoder "bounce")
-        (field "anim" <| index 1 <| list bounceIndexDecoder)
-        (field "anim" <| index 2 <| list bounceIndexDecoder)
-        (field "anim" <| index 3 <| list bool)
+        (field "anim" <|
+            index 1 <|
+                list <|
+                    oneOf [ noBounceDecoder, bounceDiscardDecoder, bounceIndexDecoder ]
+        )
 
 
 nullDecoder : Decoder Anim

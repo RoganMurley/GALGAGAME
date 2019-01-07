@@ -1,5 +1,6 @@
 module CardAnim where
 
+import Bounce (CardBounce)
 import Card (Card(..))
 import Data.Aeson (ToJSON(..), (.=), object)
 import Data.Text (Text)
@@ -24,7 +25,7 @@ data CardAnim
   | Rotate
   | Windup
   | Fabricate StackCard
-  | Bounce [(Int, Int, Card)] [(Int, Int, Card)] [Bool]
+  | Bounce [CardBounce]
   deriving (Show, Eq)
 
 
@@ -103,10 +104,10 @@ instance ToJSON CardAnim where
     [ "player" .= PlayerA
     , "anim"  .= ("fabricate" :: Text, stackCard)
     ]
-  toJSON (Bounce a b z) =
+  toJSON (Bounce b) =
     object
     [ "player" .= PlayerA
-    , "anim"  .= ("bounce" :: Text, a, b, z)
+    , "anim"  .= ("bounce" :: Text, b)
     ]
 
 
@@ -125,4 +126,4 @@ instance Mirror CardAnim where
   mirror Rotate            = Rotate
   mirror Windup            = Windup
   mirror (Fabricate c)     = Fabricate (mirror c)
-  mirror (Bounce a b z)    = Bounce b a z
+  mirror (Bounce b)        = Bounce b

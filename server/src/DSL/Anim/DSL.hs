@@ -1,5 +1,6 @@
 module DSL.Anim.DSL where
 
+import Bounce (CardBounce)
 import Control.Monad.Free (Free(..))
 import Card (Card)
 import CardAnim (CardAnim)
@@ -25,8 +26,7 @@ data DSL a
   | Rotate a
   | Windup a
   | Fabricate StackCard a
-  | Bounce [(Int, Int, Card)] [(Int, Int, Card)] [Bool] a
+  | Bounce [CardBounce] a
   deriving (Functor)
-
 
 type Program a = Free DSL a

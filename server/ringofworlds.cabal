@@ -18,6 +18,7 @@ library
   exposed-modules:     Act
                      , ArtificalIntelligence
                      , Auth
+                     , Bounce
                      , Card
                      , CardAnim
                      , Cards

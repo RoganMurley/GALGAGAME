@@ -1,6 +1,6 @@
 module Stack.View exposing (view)
 
-import Animation.Types exposing (Anim(..))
+import Animation.Types exposing (Anim(..), Bounce(..))
 import Array
 import Card.Types as Card
 import Card.View as Card
@@ -58,18 +58,16 @@ view entities ctx =
                     else
                         Card.view ctx
 
-                Bounce _ _ z ->
-                    let
-                        bouncing =
-                            Maybe.withDefault False <|
-                                Array.get i <|
-                                    Array.fromList z
-                    in
-                    if bouncing then
-                        \_ -> []
+                Bounce bounces ->
+                    case Array.get i <| Array.fromList bounces of
+                        Just (BounceIndex _ _) ->
+                            \_ -> []
 
-                    else
-                        Card.view ctx
+                        Just BounceDiscard ->
+                            Card.dissolvingView ctx
+
+                        _ ->
+                            Card.view ctx
 
                 _ ->
                     Card.view ctx
