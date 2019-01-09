@@ -5,7 +5,7 @@ import Card (Card(Card), description)
 import Data.Monoid ((<>))
 import Player (other)
 import Safe (headMay)
-import StackCard (StackCard(StackCard), isOwner)
+import StackCard (StackCard(StackCard))
 import Util (shuffle)
 
 import qualified DSL.Alpha as Alpha
@@ -207,12 +207,13 @@ staff =
 surge :: Card
 surge =
   Card
-    "Surge"
-    "Hurt for 6 for each of your other cards in play"
+    "Brainbomb"
+    "Hurt for 8 for each 'Brainbomb' in play"
     "watcher/surge.svg"
     $ \w -> do
-      len <- length . (filter (isOwner w)) <$> getStack
-      slash (len * 6) (other w)
+      stack <- getStack
+      let count = length . filter (\(StackCard _ (Card name _ _ _)) -> name == "Brainbomb") $ stack
+      slash ((count + 1) * 8) (other w)
 
 
 mimic :: Card
