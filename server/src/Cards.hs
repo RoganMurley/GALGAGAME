@@ -208,12 +208,12 @@ surge :: Card
 surge =
   Card
     "Brainbomb"
-    "Hurt for 8 for each 'Brainbomb' in play"
+    "Hurt for 10 for each 'Brainbomb' in play"
     "watcher/surge.svg"
     $ \w -> do
       stack <- getStack
       let count = length . filter (\(StackCard _ (Card name _ _ _)) -> name == "Brainbomb") $ stack
-      slash ((count + 1) * 8) (other w)
+      slash ((count + 1) * 10) (other w)
 
 
 mimic :: Card
