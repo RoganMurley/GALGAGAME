@@ -18,9 +18,7 @@ update msg state mode flags =
         Mouse pos ->
             case state of
                 Started playState ->
-                    ( Started <| PlayState.mouseMove (Just pos) playState
-                    , Cmd.none
-                    )
+                    ( Started <| PlayState.mouseMove (Just pos) playState, Cmd.none )
 
                 _ ->
                     ( state, Cmd.none )
@@ -86,9 +84,7 @@ update msg state mode flags =
         Touch pos ->
             case state of
                 Started playState ->
-                    ( Started <| PlayState.mouseMove pos playState
-                    , Cmd.none
-                    )
+                    ( Started <| PlayState.mouseMove pos playState, Cmd.none )
 
                 _ ->
                     ( state, Cmd.none )
@@ -98,14 +94,14 @@ syncState : GameState -> String -> GameState
 syncState oldState msg =
     case Json.decodeString stateDecoder msg of
         Ok newState ->
-            carryVm oldState newState
+            carry oldState newState
 
         Err err ->
             Debug.log err oldState
 
 
-carryVm : GameState -> GameState -> GameState
-carryVm old new =
+carry : GameState -> GameState -> GameState
+carry old new =
     case old of
         Selecting { vm } ->
             case new of
@@ -119,7 +115,7 @@ carryVm old new =
             case new of
                 Started newStarted ->
                     Started <|
-                        PlayState.carryVm oldStarted newStarted
+                        PlayState.carry oldStarted newStarted
 
                 _ ->
                     new
@@ -128,11 +124,15 @@ carryVm old new =
             new
 
 
-tick : Flags -> GameState -> Float -> GameState
+tick : Flags -> GameState -> Float -> ( GameState, Cmd Msg )
 tick flags state dt =
     case state of
         Started playState ->
-            Started <| PlayState.tick flags playState dt
+            let
+                ( newState, cmd ) =
+                    PlayState.tick flags playState dt
+            in
+            ( Started newState, Cmd.map PlayStateMsg cmd )
 
         _ ->
-            state
+            ( state, Cmd.none )

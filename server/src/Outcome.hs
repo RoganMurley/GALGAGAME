@@ -13,9 +13,6 @@ import Username (Username)
 import qualified Replay.Final as Final
 
 
-type ExcludePlayer = WhichPlayer
-
-
 data Outcome =
     Sync
   | SaveReplay Final.Replay
@@ -25,9 +22,12 @@ data Outcome =
 
 data Encodable =
     Chat Username Text
-  | Hover ExcludePlayer (Maybe Int)
+  | Hover WhichPlayer (Maybe HandIndex) Damage
   | Resolve [(ModelDiff, Maybe CardAnim, Maybe StackCard)] Model PlayState
   deriving (Eq, Show)
+
+type HandIndex = Int
+type Damage = Int
 
 
 instance ToJSON Encodable where
@@ -36,7 +36,7 @@ instance ToJSON Encodable where
       [ "name" .= name
       , "msg"  .= msg
       ]
-  toJSON (Hover _ index) =
+  toJSON (Hover _ index _) =
     toJSON index
   toJSON (Resolve res initial state) =
     object

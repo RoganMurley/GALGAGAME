@@ -5,7 +5,6 @@ import Main.Messages as Main
 import Main.Types exposing (Flags)
 import Model.Decoders as Model
 import Model.Types exposing (Model)
-import Model.ViewModel
 import PlayState.Decoders as PlayState
 import PlayState.State as PlayState
 import PlayState.Types exposing (PlayState(..))
@@ -15,6 +14,7 @@ import Resolvable.Decoders
 import Resolvable.State as Resolvable
 import Resolvable.Types as Resolvable
 import Room.Messages as Room
+import Tuple
 import Util exposing (message, splitOnColon, unsafeForceDecode)
 
 
@@ -63,8 +63,7 @@ receive msg =
 
                 res : Resolvable.Model
                 res =
-                    { vm = Model.ViewModel.init
-                    , tick = 0
+                    { tick = 0
                     , final = model
                     , resList = resList
                     }
@@ -121,7 +120,12 @@ tick flags model dt =
     let
         newReplay =
             Maybe.map
-                (\r -> { r | state = PlayState.tick flags r.state dt })
+                (\r ->
+                    { r
+                        | state =
+                            Tuple.first <| PlayState.tick flags r.state dt
+                    }
+                )
                 model.replay
     in
     { model | replay = newReplay }

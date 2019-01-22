@@ -4,7 +4,6 @@ import Animation.State as Animation
 import Animation.Types exposing (Anim(NullAnim))
 import Model.Diff as Model
 import Model.Types as Model
-import Model.ViewModel
 import Resolvable.Types as Resolvable
 import Stack.Types exposing (StackCard)
 import Util exposing (zip)
@@ -12,8 +11,7 @@ import Util exposing (zip)
 
 init : Model.Model -> List Resolvable.ResolveData -> Resolvable.Model
 init model resList =
-    { vm = Model.ViewModel.init
-    , tick = 0
+    { tick = 0
     , final = model
     , resList = resList
     }

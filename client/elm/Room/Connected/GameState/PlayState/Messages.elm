@@ -2,8 +2,7 @@ module PlayState.Messages exposing (Msg(..), PlayingOnly(..), TurnOnly(..))
 
 
 type Msg
-    = HoverSelf (Maybe Int)
-    | HoverOutcome (Maybe Int)
+    = HoverOutcome (Maybe Int)
     | PlayingOnly PlayingOnly
     | ReplaySaved String
     | GotoReplay String

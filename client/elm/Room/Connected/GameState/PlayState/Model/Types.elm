@@ -12,7 +12,6 @@ type alias Model =
     , turn : WhichPlayer
     , life : Life
     , otherLife : Life
-    , otherHover : Maybe Int
     }
 
 
