@@ -11,7 +11,7 @@ import Util exposing (interp2D, interpFloat)
 import WhichPlayer.Types exposing (WhichPlayer(..))
 
 
-entities : Hover -> Context -> List (Card.Entity { index : Int })
+entities : Hover { dmg : Int } -> Context -> List (Card.Entity { index : Int })
 entities hover ({ w, h, radius, anim, model, progress } as ctx) =
     let
         finalHand =
@@ -179,7 +179,7 @@ entities hover ({ w, h, radius, anim, model, progress } as ctx) =
     mainEntities ++ extraEntities
 
 
-otherEntities : Hover -> Context -> List (Game.Entity {})
+otherEntities : Hover {} -> Context -> List (Game.Entity {})
 otherEntities hover ({ w, h, radius, anim, model, progress } as ctx) =
     let
         finalN =
@@ -336,7 +336,7 @@ handCardRotation which i count =
             -magnitude
 
 
-handCardPosition : Context -> WhichPlayer -> Int -> Int -> Hover -> Vec2
+handCardPosition : Context -> WhichPlayer -> Int -> Int -> Hover a -> Vec2
 handCardPosition ({ radius } as ctx) which index count hover =
     let
         ( width, _, spacing ) =

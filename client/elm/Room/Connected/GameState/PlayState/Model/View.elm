@@ -7,7 +7,7 @@ import Colour
 import Connected.Messages as Connected
 import Ease
 import Game.State exposing (contextInit)
-import Game.Types exposing (Context, Model)
+import Game.Types exposing (Context, Hover, Model)
 import GameState.Messages as GameState
 import Hand.State exposing (maxHandLength)
 import Hand.View as Hand
@@ -25,6 +25,7 @@ import Render.Primitives
 import Render.Shaders
 import Render.Types as Render
 import Render.Uniforms exposing (uni, uniColourMag)
+import Resolvable.State exposing (resolving)
 import Room.Messages as Room
 import Stack.Types exposing (StackCard)
 import Stack.View as Stack
@@ -35,7 +36,7 @@ import WhichPlayer.Types exposing (WhichPlayer(..))
 
 
 view : Render.Params -> Model -> Texture.Model -> Html Main.Msg
-view { w, h } { res, focus, entities } textures =
+view { w, h } { res, hover, focus, entities } textures =
     let
         ctx =
             contextInit ( w, h ) res textures
@@ -61,7 +62,7 @@ view { w, h } { res, focus, entities } textures =
             )
         , div [ class "text-focus" ] [ focusTextView ctx focus ]
         , div [ class "clock-life-container" ] (lifeTextView ctx)
-        , div [ class "clock-damage-container" ] (damageTextView ctx)
+        , div [ class "clock-damage-container" ] (damageTextView hover (resolving res) ctx)
         , div [ class "clock-go" ] [ turnView ctx focus ]
         ]
 
@@ -281,11 +282,20 @@ lifeTextView { radius, model } =
     ]
 
 
-damageTextView : Context -> List (Html a)
-damageTextView { radius, anim } =
+damageTextView : Hover { dmg : Int } -> Bool -> Context -> List (Html a)
+damageTextView hover isResolving { radius, anim } =
     let
         ( damage, otherDamage ) =
-            Animation.lifeChange anim
+            case hover of
+                Just { dmg } ->
+                    if isResolving then
+                        Animation.lifeChange anim
+
+                    else
+                        ( 0, toFloat -dmg )
+
+                Nothing ->
+                    Animation.lifeChange anim
 
         damageToString : Float -> String
         damageToString d =
