@@ -15,7 +15,7 @@ type alias Model =
     { res : Resolvable.Model
     , focus : Maybe StackCard
     , mouse : Maybe Vec2
-    , hover : Hover { dmg : Model.Life }
+    , hover : Hover { dmg : ( Model.Life, Model.Life ) }
     , otherHover : Hover {}
     , entities : Entities
     }

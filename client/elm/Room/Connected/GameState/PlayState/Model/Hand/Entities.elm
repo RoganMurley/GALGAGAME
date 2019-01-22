@@ -11,7 +11,7 @@ import Util exposing (interp2D, interpFloat)
 import WhichPlayer.Types exposing (WhichPlayer(..))
 
 
-entities : Hover { dmg : Int } -> Context -> List (Card.Entity { index : Int })
+entities : Hover { dmg : (Int, Int) } -> Context -> List (Card.Entity { index : Int })
 entities hover ({ w, h, radius, anim, model, progress } as ctx) =
     let
         finalHand =
