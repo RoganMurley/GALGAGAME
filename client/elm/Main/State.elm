@@ -62,29 +62,31 @@ update msg ({ room, settings, textures, flags } as model) =
             ( model, copyInput elementId )
 
         Frame dt ->
-            ( let
+            let
                 newFlags =
                     { flags | time = flags.time + dt }
-              in
-              { model
-                | flags = newFlags
-                , room = Room.tick newFlags room dt
-              }
-            , case room of
-                Room.Connected connected ->
-                    listen connected.game
 
-                Room.Replay { replay } ->
-                    case replay of
-                        Nothing ->
+                ( newRoom, tickMsg ) =
+                    Room.tick newFlags room dt
+
+                newMsg =
+                    case room of
+                        Room.Connected connected ->
+                            listen connected.game
+
+                        Room.Replay { replay } ->
+                            case replay of
+                                Nothing ->
+                                    Cmd.none
+
+                                Just { state } ->
+                                    listen (Started state)
+
+                        _ ->
                             Cmd.none
-
-                        Just { state } ->
-                            listen (Started state)
-
-                _ ->
-                    Cmd.none
-            )
+            in
+            { model | flags = newFlags, room = newRoom }
+                ! [ newMsg, Cmd.map RoomMsg tickMsg ]
 
         KeyPress keyCode ->
             let

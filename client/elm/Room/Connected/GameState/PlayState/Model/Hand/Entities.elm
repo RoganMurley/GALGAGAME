@@ -4,15 +4,15 @@ import Animation.State as Animation
 import Animation.Types exposing (Anim(..), Bounce, HandBounce)
 import Card.Types as Card exposing (Card)
 import Game.Entity as Game
-import Game.Types exposing (Context)
+import Game.Types exposing (Context, Hover)
 import Math.Vector2 exposing (Vec2, vec2)
 import Stack.Entities
 import Util exposing (interp2D, interpFloat)
 import WhichPlayer.Types exposing (WhichPlayer(..))
 
 
-entities : Context -> List (Card.Entity { index : Int })
-entities ({ w, h, radius, anim, model, progress } as ctx) =
+entities : Hover -> Context -> List (Card.Entity { index : Int })
+entities hover ({ w, h, radius, anim, model, progress } as ctx) =
     let
         finalHand =
             case anim of
@@ -75,8 +75,8 @@ entities ({ w, h, radius, anim, model, progress } as ctx) =
 
                 pos =
                     interp2D progress
-                        (handCardPosition ctx PlayerA i n)
-                        (handCardPosition ctx PlayerA finalI finalN)
+                        (handCardPosition ctx PlayerA i n hover)
+                        (handCardPosition ctx PlayerA finalI finalN hover)
 
                 rot =
                     interpFloat progress
@@ -105,7 +105,7 @@ entities ({ w, h, radius, anim, model, progress } as ctx) =
                                 pos =
                                     interp2D progress
                                         (vec2 w h)
-                                        (handCardPosition ctx PlayerA n (n + 1))
+                                        (handCardPosition ctx PlayerA n (n + 1) hover)
 
                                 rot =
                                     interpFloat progress 0 (handCardRotation PlayerA n (n + 1))
@@ -126,7 +126,7 @@ entities ({ w, h, radius, anim, model, progress } as ctx) =
                     let
                         pos =
                             interp2D progress
-                                (handCardPosition ctx PlayerA i n)
+                                (handCardPosition ctx PlayerA i n hover)
                                 (vec2 (w / 2) (h / 2 - radius * 0.62))
 
                         rot =
@@ -162,7 +162,7 @@ entities ({ w, h, radius, anim, model, progress } as ctx) =
                             , position =
                                 interp2D progress
                                     stackEntity.position
-                                    (handCardPosition ctx PlayerA handIndex finalN)
+                                    (handCardPosition ctx PlayerA handIndex finalN hover)
                             , rotation =
                                 interpFloat progress
                                     stackEntity.rotation
@@ -179,8 +179,8 @@ entities ({ w, h, radius, anim, model, progress } as ctx) =
     mainEntities ++ extraEntities
 
 
-otherEntities : Context -> List (Game.Entity {})
-otherEntities ({ w, h, radius, anim, model, progress } as ctx) =
+otherEntities : Hover -> Context -> List (Game.Entity {})
+otherEntities hover ({ w, h, radius, anim, model, progress } as ctx) =
     let
         finalN =
             case anim of
@@ -228,8 +228,8 @@ otherEntities ({ w, h, radius, anim, model, progress } as ctx) =
             in
             { position =
                 interp2D progress
-                    (handCardPosition ctx PlayerB i n)
-                    (handCardPosition ctx PlayerB finalI finalN)
+                    (handCardPosition ctx PlayerB i n hover)
+                    (handCardPosition ctx PlayerB finalI finalN hover)
             , rotation =
                 interpFloat progress
                     (handCardRotation PlayerB i n)
@@ -248,7 +248,7 @@ otherEntities ({ w, h, radius, anim, model, progress } as ctx) =
                     [ { position =
                             interp2D progress
                                 (vec2 w 0)
-                                (handCardPosition ctx PlayerB n (n + 1))
+                                (handCardPosition ctx PlayerB n (n + 1) hover)
                       , rotation =
                             interpFloat progress 0 (handCardRotation PlayerB n (n + 1))
                       , scale = 1
@@ -258,7 +258,7 @@ otherEntities ({ w, h, radius, anim, model, progress } as ctx) =
                 Play PlayerB _ i ->
                     [ { position =
                             interp2D progress
-                                (handCardPosition ctx PlayerB i n)
+                                (handCardPosition ctx PlayerB i n hover)
                                 (vec2 (w / 2) (h / 2 - radius * 0.62))
                       , rotation =
                             interpFloat progress (handCardRotation PlayerB i n) 0
@@ -282,7 +282,7 @@ otherEntities ({ w, h, radius, anim, model, progress } as ctx) =
                             { position =
                                 interp2D progress
                                     stackEntity.position
-                                    (handCardPosition ctx PlayerB handIndex finalN)
+                                    (handCardPosition ctx PlayerB handIndex finalN hover)
                             , rotation =
                                 interpFloat progress
                                     stackEntity.rotation
@@ -336,8 +336,8 @@ handCardRotation which i count =
             -magnitude
 
 
-handCardPosition : Context -> WhichPlayer -> Int -> Int -> Vec2
-handCardPosition ({ radius } as ctx) which index count =
+handCardPosition : Context -> WhichPlayer -> Int -> Int -> Hover -> Vec2
+handCardPosition ({ radius } as ctx) which index count hover =
     let
         ( width, _, spacing ) =
             ( 0.1 * radius, 0.1 * radius, 35.0 )
@@ -361,8 +361,23 @@ handCardPosition ({ radius } as ctx) which index count =
 
                 c =
                     toFloat count
+
+                hoverY =
+                    case hover of
+                        Just h ->
+                            if index == h.index then
+                                interpFloat (h.tick / 70) 0 -10
+
+                            else
+                                0
+
+                        Nothing ->
+                            0
+
+                baseY =
+                    abs <| 4 * (toFloat <| ceiling (i - (c * 0.5)))
             in
-            sign * (abs <| 4 * (toFloat <| ceiling (i - (c * 0.5))))
+            sign * (baseY + hoverY)
     in
     Math.Vector2.add
         (handOrigin ctx which count)

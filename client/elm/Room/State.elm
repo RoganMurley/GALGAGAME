@@ -131,23 +131,27 @@ receive str model flags =
             ( Signup signup, Signup.receive str )
 
 
-tick : Flags -> Model -> Float -> Model
+tick : Flags -> Model -> Float -> ( Model, Cmd Msg )
 tick flags room dt =
     case room of
         MainMenu ->
-            MainMenu
+            ( MainMenu, Cmd.none )
 
         Lobby lobby ->
-            Lobby lobby
+            ( Lobby lobby, Cmd.none )
 
         Login login ->
-            Login login
+            ( Login login, Cmd.none )
 
         Connected connected ->
-            Connected <| Connected.tick flags connected dt
+            let
+                ( newConnected, msg ) =
+                    Connected.tick flags connected dt
+            in
+            ( Connected newConnected, Cmd.map ConnectedMsg msg )
 
         Replay replay ->
-            Replay <| Replay.tick flags replay dt
+            ( Replay <| Replay.tick flags replay dt, Cmd.none )
 
         Signup signup ->
-            Signup signup
+            ( Signup signup, Cmd.none )

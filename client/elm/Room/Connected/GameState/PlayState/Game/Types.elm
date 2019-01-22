@@ -1,4 +1,4 @@
-module Game.Types exposing (Context, Entities, Model)
+module Game.Types exposing (Context, Entities, HandEntity, Hover, Model, StackEntity)
 
 import Animation.Types exposing (Anim)
 import Card.Types exposing (Card)
@@ -15,6 +15,8 @@ type alias Model =
     { res : Resolvable.Model
     , focus : Maybe StackCard
     , mouse : Maybe Vec2
+    , hover : Hover
+    , otherHover : Hover
     , entities : Entities
     }
 
@@ -32,21 +34,30 @@ type alias Context =
     }
 
 
+type alias StackEntity =
+    Game.Entity
+        { card : Card
+        , owner : WhichPlayer
+        }
+
+
+type alias HandEntity =
+    Game.Entity
+        { card : Card
+        , index : Int
+        , owner : WhichPlayer
+        }
+
+
 type alias Entities =
-    { stack :
-        List
-            (Game.Entity
-                { card : Card
-                , owner : WhichPlayer
-                }
-            )
-    , hand :
-        List
-            (Game.Entity
-                { card : Card
-                , index : Int
-                , owner : WhichPlayer
-                }
-            )
+    { stack : List StackEntity
+    , hand : List HandEntity
     , otherHand : List (Game.Entity {})
     }
+
+
+type alias Hover =
+    Maybe
+        { index : Int
+        , tick : Float
+        }

@@ -1,4 +1,4 @@
-module PlayState.State exposing (carryVm, get, map, mouseClick, mouseMove, resolveOutcome, tick, update, updatePlayingOnly, updateTurnOnly)
+module PlayState.State exposing (carry, get, map, mouseClick, mouseMove, resolveOutcome, tick, update, updatePlayingOnly, updateTurnOnly)
 
 import Audio exposing (playSound)
 import Game.State as Game
@@ -12,7 +12,6 @@ import Mode exposing (Mode)
 import Model.Decoders as Model
 import Model.State as Model
 import Model.Types exposing (Model)
-import Model.ViewModel
 import Mouse exposing (Position)
 import Navigation
 import PlayState.Decoders as PlayState
@@ -33,58 +32,14 @@ update msg state mode flags =
         PlayingOnly playingOnly ->
             updatePlayingOnly playingOnly state mode flags
 
-        HoverSelf i ->
-            case state of
-                Playing ({ game } as playing) ->
-                    let
-                        { res } =
-                            playing.game
-
-                        { vm } =
-                            res
-
-                        newVm : Model.ViewModel.ViewModel
-                        newVm =
-                            { vm | hover = i }
-                    in
-                    ( Playing
-                        { playing
-                            | game =
-                                { game
-                                    | res =
-                                        { res | vm = newVm }
-                                }
-                        }
-                    , Cmd.none
-                    )
-
-                s ->
-                    ( s, Cmd.none )
-
         HoverOutcome i ->
             case state of
                 Playing ({ game } as playing) ->
                     let
-                        { res } =
-                            game
-
-                        { final } =
-                            res
-
-                        newFinal : Model
-                        newFinal =
-                            { final | otherHover = i }
+                        otherHover =
+                            Game.hoverInit i
                     in
-                    ( Playing
-                        { playing
-                            | game =
-                                { game
-                                    | res =
-                                        { res
-                                            | final = newFinal
-                                        }
-                                }
-                        }
+                    ( Playing { playing | game = { game | otherHover = otherHover } }
                     , Cmd.none
                     )
 
@@ -124,20 +79,16 @@ updatePlayingOnly msg state mode flags =
 
                 HoverCard mIndex ->
                     let
-                        ( newState, cmd ) =
-                            update (HoverSelf mIndex) state mode flags
-
                         sound =
                             case mIndex of
+                                Just _ ->
+                                    playSound "/sfx/hover.wav"
+
                                 Nothing ->
                                     Cmd.none
-
-                                _ ->
-                                    playSound "/sfx/hover.wav"
                     in
-                    newState
-                        ! [ cmd
-                          , message <|
+                    state
+                        ! [ message <|
                                 Main.Send <|
                                     "hover:"
                                         ++ PlayState.Encoders.hoverIndex mIndex
@@ -145,11 +96,11 @@ updatePlayingOnly msg state mode flags =
                           ]
 
                 TurnOnly turnOnly ->
-                    updateTurnOnly turnOnly state mode flags
+                    updateTurnOnly turnOnly state flags
 
 
-updateTurnOnly : TurnOnly -> PlayState -> Mode.Mode -> Flags -> ( PlayState, Cmd Main.Msg )
-updateTurnOnly msg state mode flags =
+updateTurnOnly : TurnOnly -> PlayState -> Flags -> ( PlayState, Cmd Main.Msg )
+updateTurnOnly msg state flags =
     let
         legal =
             case state of
@@ -171,30 +122,27 @@ updateTurnOnly msg state mode flags =
                       ]
 
             PlayCard index ->
-                let
-                    ( newState, cmd ) =
-                        update (HoverSelf Nothing) state mode flags
-                in
-                newState
+                state
                     ! [ send flags <| "play:" ++ toString index
                       , playSound "/sfx/playCard.wav"
-                      , cmd
                       ]
 
 
-tick : Flags -> PlayState -> Float -> PlayState
+tick : Flags -> PlayState -> Float -> ( PlayState, Cmd Msg )
 tick flags state dt =
-    map (Game.tick flags dt) state
+    let
+        game =
+            get identity state
+
+        ( newGame, msg ) =
+            Game.tick flags dt game
+    in
+    ( set newGame state, msg )
 
 
 map : (Game.Model -> Game.Model) -> PlayState -> PlayState
 map f state =
-    case state of
-        Playing playing ->
-            Playing { playing | game = f playing.game }
-
-        Ended ended ->
-            Ended { ended | game = f ended.game }
+    set (f <| get identity state) state
 
 
 get : (Game.Model -> a) -> PlayState -> a
@@ -207,24 +155,22 @@ get g state =
             g game
 
 
-carryVm : PlayState -> PlayState -> PlayState
-carryVm old new =
-    let
-        oldVm : Model.ViewModel.ViewModel
-        oldVm =
-            .vm <| get .res old
+set : Game.Model -> PlayState -> PlayState
+set game state =
+    case state of
+        Playing playing ->
+            Playing { playing | game = game }
 
-        newRes : Resolvable.Model
-        newRes =
-            get .res new
-    in
+        Ended ended ->
+            Ended { ended | game = game }
+
+
+carry : PlayState -> PlayState -> PlayState
+carry old new =
     map
         (\game ->
             { game
-                | res =
-                    { newRes
-                        | vm = oldVm
-                    }
+                | res = get .res new
                 , entities = get .entities old
                 , mouse = get .mouse old
                 , focus = get .focus old
@@ -281,8 +227,7 @@ resolveOutcome str mState =
 
         res : Resolvable.Model
         res =
-            { vm = Model.ViewModel.init
-            , tick = oldTick
+            { tick = oldTick
             , final = model
             , resList = oldResList ++ resList
             }
@@ -291,7 +236,7 @@ resolveOutcome str mState =
         newState =
             map (\game -> { game | res = res }) finalState
     in
-    carryVm state newState
+    carry state newState
 
 
 mouseMove : Maybe Position -> PlayState -> PlayState

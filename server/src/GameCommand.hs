@@ -12,6 +12,7 @@ import Data.String.Conversions (cs)
 import Data.Text (Text)
 import GameState (GameState(..), PlayState(..), initHandLength, initModel)
 import GodMode
+import Life (Life)
 import Model (Hand, Passes(..), Model, Turn)
 import ModelDiff (ModelDiff)
 import Outcome (Outcome)
@@ -311,13 +312,22 @@ checkWin m r
 
 
 hoverCard :: Maybe Int -> WhichPlayer -> Model -> Either Err (Maybe GameState, [Outcome])
-hoverCard (Just i) which model
-  | i >= (length (Alpha.evalI model $ Alpha.getHand which :: Hand) :: Int) =
-    Left ("Hover index out of bounds (" <> (cs . show $ i ) <> ")" :: Err)
-  | otherwise =
-    Right (Nothing, [ Outcome.Encodable $ Outcome.Hover which (Just i) ])
+hoverCard (Just i) which model =
+  let
+    hand = Alpha.evalI model $ Alpha.getHand which :: Hand
+  in
+    case atMay hand i of
+      Just card ->
+        Right (Nothing, [ Outcome.Encodable $ Outcome.Hover which (Just i) dmg ])
+        where
+          newModel = Alpha.modI model $ Beta.alphaI $ card_eff card which :: Model
+          initialLife = Alpha.evalI model $ Alpha.getLife $ other which :: Life
+          finalLife = Alpha.evalI newModel $ Alpha.getLife $ other which :: Life
+          dmg = initialLife - finalLife :: Life
+      Nothing ->
+        Left ("Hover index out of bounds (" <> (cs . show $ i ) <> ")" :: Err)
 hoverCard Nothing which _ =
-  Right (Nothing, [ Outcome.Encodable $ Outcome.Hover which Nothing ])
+  Right (Nothing, [ Outcome.Encodable $ Outcome.Hover which Nothing 0 ])
 
 
 godMode :: Username -> Text -> WhichPlayer -> Model -> Active.Replay -> Either Err (Maybe GameState, [Outcome])

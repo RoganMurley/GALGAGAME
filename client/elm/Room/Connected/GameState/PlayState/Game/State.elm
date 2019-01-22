@@ -1,7 +1,7 @@
-module Game.State exposing (bareContextInit, contextInit, entitiesInit, gameInit, getFocus, hitTest, tick)
+module Game.State exposing (bareContextInit, contextInit, entitiesInit, gameInit, getFocus, hitTest, hoverInit, tick)
 
 import Animation.State as Animation
-import Game.Types as Game exposing (Context, Entities)
+import Game.Types as Game exposing (Context, Entities, HandEntity, Hover, StackEntity)
 import Hand.Entities as Hand
 import List.Extra as List
 import Main.Types exposing (Flags)
@@ -9,21 +9,25 @@ import Math.Vector2 exposing (Vec2)
 import Maybe.Extra as Maybe
 import Model.State as Model
 import Model.Types exposing (Model)
+import PlayState.Messages as PlayState
 import Resolvable.State as Resolvable exposing (activeAnim, activeModel, activeStackCard)
 import Resolvable.Types as Resolvable
 import Stack.Entities as Stack
 import Stack.Types exposing (StackCard)
 import Texture.State as Texture
 import Texture.Types as Texture
+import Util exposing (message)
 import WhichPlayer.Types exposing (WhichPlayer(..))
 
 
 gameInit : Model -> Game.Model
 gameInit model =
-    { focus = Nothing
+    { res = Resolvable.init model []
+    , focus = Nothing
     , mouse = Nothing
+    , hover = Nothing
+    , otherHover = Nothing
     , entities = { hand = [], otherHand = [], stack = [] }
-    , res = Resolvable.init model []
     }
 
 
@@ -75,7 +79,12 @@ entitiesInit =
     }
 
 
-tick : Flags -> Float -> Game.Model -> Game.Model
+hoverInit : Maybe Int -> Hover
+hoverInit mIndex =
+    Maybe.map (\index -> { index = index, tick = 0 }) mIndex
+
+
+tick : Flags -> Float -> Game.Model -> ( Game.Model, Cmd PlayState.Msg )
 tick { dimensions } dt model =
     let
         res =
@@ -83,16 +92,70 @@ tick { dimensions } dt model =
 
         ctx =
             contextInit dimensions res Texture.init
-    in
-    { model
-        | res = res
-        , entities =
-            { stack = Stack.entities ctx
-            , hand = Hand.entities ctx
-            , otherHand = Hand.otherEntities ctx
+
+        hoverHand =
+            getHoverHand model
+
+        ( hover, hoverMsg ) =
+            hoverUpdate model.hover hoverHand dt
+
+        otherHover =
+            hoverTick model.otherHover dt
+
+        focus =
+            getFocus ctx model hoverHand
+
+        newModel =
+            { model
+                | res = res
+                , hover = hover
+                , otherHover = otherHover
+                , entities =
+                    { stack = Stack.entities ctx
+                    , hand = Hand.entities model.hover ctx
+                    , otherHand = Hand.otherEntities model.otherHover ctx
+                    }
+                , focus = focus
             }
-        , focus = getFocus ctx model
-    }
+    in
+    ( newModel, hoverMsg )
+
+
+hoverTick : Hover -> Float -> Hover
+hoverTick hover dt =
+    Maybe.map
+        (\h ->
+            if h.tick < 70 then
+                { h | tick = h.tick + dt }
+
+            else
+                { h | tick = 70 }
+        )
+        hover
+
+
+hoverUpdate : Hover -> Maybe HandEntity -> Float -> ( Hover, Cmd PlayState.Msg )
+hoverUpdate oldHover hoverHand dt =
+    let
+        hoverIndex =
+            Maybe.map .index hoverHand
+
+        oldHoverIndex =
+            Maybe.map .index oldHover
+
+        newHover =
+            hoverTick oldHover dt
+    in
+    if hoverIndex == oldHoverIndex then
+        ( newHover, Cmd.none )
+
+    else
+        ( hoverInit hoverIndex
+        , message <|
+            PlayState.PlayingOnly <|
+                PlayState.HoverCard
+                    hoverIndex
+        )
 
 
 hitTest : Vec2 -> Float -> { a | position : Vec2 } -> Bool
@@ -100,20 +163,30 @@ hitTest pos dist { position } =
     Math.Vector2.distance position pos < dist
 
 
-getFocus : Context -> Game.Model -> Maybe StackCard
-getFocus { stackCard } { entities, mouse } =
+getHoverHand : Game.Model -> Maybe HandEntity
+getHoverHand { entities, mouse } =
     Maybe.andThen
-        (\pos ->
-            let
-                hoverCard =
-                    Maybe.or
-                        (Maybe.map (\{ card, owner } -> { owner = owner, card = card }) <|
-                            List.find (hitTest pos 64) entities.stack
-                        )
-                        (Maybe.map (\{ card } -> { owner = PlayerA, card = card }) <|
-                            List.find (hitTest pos 28) entities.hand
-                        )
-            in
-            Maybe.or stackCard hoverCard
-        )
+        (\pos -> List.find (hitTest pos 28) entities.hand)
         mouse
+
+
+getHoverStack : Game.Model -> Maybe StackEntity
+getHoverStack { entities, mouse } =
+    Maybe.andThen
+        (\pos -> List.find (hitTest pos 64) entities.stack)
+        mouse
+
+
+getFocus : Context -> Game.Model -> Maybe HandEntity -> Maybe StackCard
+getFocus { stackCard } game hoverHand =
+    let
+        hoverCard =
+            Maybe.or
+                (Maybe.map (\{ card, owner } -> { owner = owner, card = card }) <|
+                    getHoverStack game
+                )
+                (Maybe.map (\{ card } -> { owner = PlayerA, card = card }) <|
+                    hoverHand
+                )
+    in
+    Maybe.or stackCard hoverCard
