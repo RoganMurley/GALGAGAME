@@ -282,7 +282,7 @@ lifeTextView { radius, model } =
     ]
 
 
-damageTextView : Hover { dmg : Int } -> Bool -> Context -> List (Html a)
+damageTextView : Hover { dmg : ( Int, Int ) } -> Bool -> Context -> List (Html a)
 damageTextView hover isResolving { radius, anim } =
     let
         ( damage, otherDamage ) =
@@ -292,7 +292,11 @@ damageTextView hover isResolving { radius, anim } =
                         Animation.lifeChange anim
 
                     else
-                        ( 0, toFloat -dmg )
+                        let
+                            ( dmgA, dmgB ) =
+                                dmg
+                        in
+                        ( toFloat dmgB, toFloat dmgA )
 
                 Nothing ->
                     Animation.lifeChange anim

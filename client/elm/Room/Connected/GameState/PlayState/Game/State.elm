@@ -134,7 +134,7 @@ hoverTick hover dt =
         hover
 
 
-hoverUpdate : Hover { dmg : Int } -> Maybe HandEntity -> Float -> ( Hover { dmg : Int }, Cmd PlayState.Msg )
+hoverUpdate : Hover { dmg : ( Int, Int ) } -> Maybe HandEntity -> Float -> ( Hover { dmg : ( Int, Int ) }, Cmd PlayState.Msg )
 hoverUpdate oldHover hoverHand dt =
     let
         hoverIndex =
@@ -150,7 +150,7 @@ hoverUpdate oldHover hoverHand dt =
         ( newHover, Cmd.none )
 
     else
-        ( hoverInit hoverIndex { index = 0, tick = 0, dmg = 0 }
+        ( hoverInit hoverIndex { index = 0, tick = 0, dmg = ( 0, 0 ) }
         , message <|
             PlayState.PlayingOnly <|
                 PlayState.HoverCard
@@ -158,9 +158,9 @@ hoverUpdate oldHover hoverHand dt =
         )
 
 
-hoverDamage : Hover { dmg : Int } -> Int -> Hover { dmg : Int }
-hoverDamage hover dmg =
-    Maybe.map (\h -> { h | dmg = dmg }) hover
+hoverDamage : Hover { dmg : ( Int, Int ) } -> ( Int, Int ) -> Hover { dmg : ( Int, Int ) }
+hoverDamage hover ( dmgA, dmgB ) =
+    Maybe.map (\h -> { h | dmg = ( dmgA, dmgB ) }) hover
 
 
 hitTest : Vec2 -> Float -> { a | position : Vec2 } -> Bool

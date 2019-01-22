@@ -20,6 +20,13 @@ decodeHoverOutcome msg =
     Json.decodeString (maybe int) msg
 
 
-decodeDamageOutcome : String -> Result String Int
+decodeDamageOutcome : String -> Result String ( Int, Int )
 decodeDamageOutcome msg =
-    Json.decodeString int msg
+    let
+        decoder : Decoder ( Int, Int )
+        decoder =
+            Json.map2 (,)
+                (index 0 int)
+                (index 1 int)
+    in
+    Json.decodeString decoder msg

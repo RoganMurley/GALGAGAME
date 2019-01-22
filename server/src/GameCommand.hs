@@ -315,19 +315,25 @@ hoverCard :: Maybe Int -> WhichPlayer -> Model -> Either Err (Maybe GameState, [
 hoverCard (Just i) which model =
   let
     hand = Alpha.evalI model $ Alpha.getHand which :: Hand
+    lifeChange :: Model -> Model -> WhichPlayer -> Life
+    lifeChange initial final w =
+      let
+        initialLife = Alpha.evalI initial $ Alpha.getLife w :: Life
+        finalLife = Alpha.evalI final $ Alpha.getLife w :: Life
+      in
+        finalLife - initialLife
   in
     case atMay hand i of
       Just card ->
-        Right (Nothing, [ Outcome.Encodable $ Outcome.Hover which (Just i) dmg ])
+        Right (Nothing, [ Outcome.Encodable $ Outcome.Hover which (Just i) (dmgA, dmgB) ])
         where
           newModel = Alpha.modI model $ Beta.alphaI $ card_eff card which :: Model
-          initialLife = Alpha.evalI model $ Alpha.getLife $ other which :: Life
-          finalLife = Alpha.evalI newModel $ Alpha.getLife $ other which :: Life
-          dmg = initialLife - finalLife :: Life
+          dmgA = lifeChange model newModel PlayerA :: Life
+          dmgB = lifeChange model newModel PlayerB :: Life
       Nothing ->
         Left ("Hover index out of bounds (" <> (cs . show $ i ) <> ")" :: Err)
 hoverCard Nothing which _ =
-  Right (Nothing, [ Outcome.Encodable $ Outcome.Hover which Nothing 0 ])
+  Right (Nothing, [ Outcome.Encodable $ Outcome.Hover which Nothing (0, 0) ])
 
 
 godMode :: Username -> Text -> WhichPlayer -> Model -> Active.Replay -> Either Err (Maybe GameState, [Outcome])

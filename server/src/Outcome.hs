@@ -22,7 +22,7 @@ data Outcome =
 
 data Encodable =
     Chat Username Text
-  | Hover WhichPlayer (Maybe HandIndex) Damage
+  | Hover WhichPlayer (Maybe HandIndex) (Damage, Damage)
   | Resolve [(ModelDiff, Maybe CardAnim, Maybe StackCard)] Model PlayState
   deriving (Eq, Show)
 
