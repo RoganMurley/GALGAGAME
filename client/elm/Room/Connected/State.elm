@@ -1,7 +1,7 @@
 module Connected.State exposing (init, receive, tick, update)
 
 import Audio exposing (playSound)
-import Connected.Decoders exposing (decodeHoverOutcome, decodePlayers)
+import Connected.Decoders exposing (decodeDamageOutcome, decodeHoverOutcome, decodePlayers)
 import Connected.Messages exposing (Msg(..))
 import Connected.Types exposing (Model)
 import GameState.Messages as GameState
@@ -87,6 +87,26 @@ receive ({ mode } as model) msg flags =
                         ! [ cmd
                           , playSound "/sfx/hover.wav"
                           ]
+
+                Err err ->
+                    Debug.log
+                        err
+                        ( model, Cmd.none )
+
+        "damage" ->
+            case decodeDamageOutcome content of
+                Ok damageOutcome ->
+                    let
+                        ( newGame, cmd ) =
+                            GameState.update
+                                (GameState.PlayStateMsg <|
+                                    PlayState.DamageOutcome damageOutcome
+                                )
+                                model.game
+                                mode
+                                flags
+                    in
+                    ( { model | game = newGame }, cmd )
 
                 Err err ->
                     Debug.log

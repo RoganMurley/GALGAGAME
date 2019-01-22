@@ -37,9 +37,23 @@ update msg state mode flags =
                 Playing ({ game } as playing) ->
                     let
                         otherHover =
-                            Game.hoverInit i
+                            Game.hoverInit i { index = 0, tick = 0 }
                     in
                     ( Playing { playing | game = { game | otherHover = otherHover } }
+                    , Cmd.none
+                    )
+
+                _ ->
+                    ( state, Cmd.none )
+
+        DamageOutcome dmg ->
+            case state of
+                Playing ({ game } as playing) ->
+                    let
+                        hover =
+                            Game.hoverDamage game.hover dmg
+                    in
+                    ( Playing { playing | game = { game | hover = hover } }
                     , Cmd.none
                     )
 

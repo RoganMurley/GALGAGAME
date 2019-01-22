@@ -1,4 +1,4 @@
-module Game.State exposing (bareContextInit, contextInit, entitiesInit, gameInit, getFocus, hitTest, hoverInit, tick)
+module Game.State exposing (bareContextInit, contextInit, entitiesInit, gameInit, getFocus, hitTest, hoverDamage, hoverInit, tick)
 
 import Animation.State as Animation
 import Game.Types as Game exposing (Context, Entities, HandEntity, Hover, StackEntity)
@@ -79,9 +79,9 @@ entitiesInit =
     }
 
 
-hoverInit : Maybe Int -> Hover
-hoverInit mIndex =
-    Maybe.map (\index -> { index = index, tick = 0 }) mIndex
+hoverInit : Maybe Int -> { a | index : Int, tick : Float } -> Hover a
+hoverInit mIndex base =
+    Maybe.map (\index -> { base | index = index }) mIndex
 
 
 tick : Flags -> Float -> Game.Model -> ( Game.Model, Cmd PlayState.Msg )
@@ -121,7 +121,7 @@ tick { dimensions } dt model =
     ( newModel, hoverMsg )
 
 
-hoverTick : Hover -> Float -> Hover
+hoverTick : Hover a -> Float -> Hover a
 hoverTick hover dt =
     Maybe.map
         (\h ->
@@ -134,7 +134,7 @@ hoverTick hover dt =
         hover
 
 
-hoverUpdate : Hover -> Maybe HandEntity -> Float -> ( Hover, Cmd PlayState.Msg )
+hoverUpdate : Hover { dmg : Int } -> Maybe HandEntity -> Float -> ( Hover { dmg : Int }, Cmd PlayState.Msg )
 hoverUpdate oldHover hoverHand dt =
     let
         hoverIndex =
@@ -150,12 +150,17 @@ hoverUpdate oldHover hoverHand dt =
         ( newHover, Cmd.none )
 
     else
-        ( hoverInit hoverIndex
+        ( hoverInit hoverIndex { index = 0, tick = 0, dmg = 0 }
         , message <|
             PlayState.PlayingOnly <|
                 PlayState.HoverCard
                     hoverIndex
         )
+
+
+hoverDamage : Hover { dmg : Int } -> Int -> Hover { dmg : Int }
+hoverDamage hover dmg =
+    Maybe.map (\h -> { h | dmg = dmg }) hover
 
 
 hitTest : Vec2 -> Float -> { a | position : Vec2 } -> Bool

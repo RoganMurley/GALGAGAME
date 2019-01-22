@@ -15,8 +15,8 @@ type alias Model =
     { res : Resolvable.Model
     , focus : Maybe StackCard
     , mouse : Maybe Vec2
-    , hover : Hover
-    , otherHover : Hover
+    , hover : Hover { dmg : Model.Life }
+    , otherHover : Hover {}
     , entities : Entities
     }
 
@@ -56,8 +56,9 @@ type alias Entities =
     }
 
 
-type alias Hover =
+type alias Hover a =
     Maybe
-        { index : Int
-        , tick : Float
+        { a
+            | index : Int
+            , tick : Float
         }
