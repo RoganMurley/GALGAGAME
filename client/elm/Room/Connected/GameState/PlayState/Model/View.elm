@@ -296,7 +296,7 @@ damageTextView hover isResolving { radius, anim } =
                             ( dmgA, dmgB ) =
                                 dmg
                         in
-                        ( toFloat dmgB, toFloat dmgA )
+                        ( toFloat dmgA, toFloat dmgB )
 
                 Nothing ->
                     Animation.lifeChange anim
