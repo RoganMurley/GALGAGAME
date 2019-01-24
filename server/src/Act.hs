@@ -140,8 +140,9 @@ resolveRoomClients (resList, initial, final) room = do
 actOutcome :: Room -> Outcome -> App ()
 actOutcome room Outcome.Sync =
   syncRoomClients room
-actOutcome room (Outcome.Encodable o@(Outcome.Hover which _ dmg)) = do
+actOutcome room (Outcome.Encodable o@(Outcome.Hover which _ rawDmg)) = do
   Room.sendExcluding which (("hover:" <>) . cs . encode $ o) room
+  let dmg = if which == PlayerA then rawDmg else mirror rawDmg
   Room.sendToPlayer which (("damage:" <>) . cs . encode $ dmg) room
 actOutcome room (Outcome.Encodable (Outcome.Chat (Username username) msg)) =
   Room.broadcast ("chat:" <> username <> ": " <> msg) room
