@@ -4,14 +4,14 @@ import Animation.State as Animation
 import Animation.Types exposing (Anim(..), Bounce, HandBounce)
 import Card.Types as Card exposing (Card)
 import Game.Entity as Game
-import Game.Types exposing (Context, Hover)
+import Game.Types exposing (Context, Hover(..))
 import Math.Vector2 exposing (Vec2, vec2)
 import Stack.Entities
 import Util exposing (interp2D, interpFloat)
 import WhichPlayer.Types exposing (WhichPlayer(..))
 
 
-entities : Hover { dmg : (Int, Int) } -> Context -> List (Card.Entity { index : Int })
+entities : Hover { dmg : ( Int, Int ) } -> Context -> List (Card.Entity { index : Int })
 entities hover ({ w, h, radius, anim, model, progress } as ctx) =
     let
         finalHand =
@@ -364,14 +364,14 @@ handCardPosition ({ radius } as ctx) which index count hover =
 
                 hoverY =
                     case hover of
-                        Just h ->
-                            if index == h.index then
-                                interpFloat (h.tick / 70) 0 -10
+                        HoverHand hoverHand ->
+                            if index == hoverHand.index then
+                                interpFloat (hoverHand.tick / 70) 0 -10
 
                             else
                                 0
 
-                        Nothing ->
+                        _ ->
                             0
 
                 baseY =

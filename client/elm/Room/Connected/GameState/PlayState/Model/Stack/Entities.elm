@@ -2,15 +2,14 @@ module Stack.Entities exposing (entities, stackEntity)
 
 import Animation.Types exposing (Anim(..), Bounce(..))
 import Array
-import Card.Types as Card
 import Game.Entity as Game
-import Game.Types exposing (Context)
+import Game.Types exposing (Context, StackEntity)
 import Math.Vector2 exposing (Vec2, vec2)
 import Stack.Types exposing (Stack, StackCard)
 import Util exposing (interpFloat)
 
 
-entities : Context -> List (Card.Entity {})
+entities : Context -> List StackEntity
 entities ctx =
     let
         { w, h, radius, anim, model, progress, stackCard } =
@@ -62,6 +61,7 @@ entities ctx =
                         Just { owner, card } ->
                             [ { owner = owner
                               , card = card
+                              , index = 0
                               , position =
                                     Math.Vector2.add
                                         (vec2 (w / 2) (h / 2))
@@ -77,7 +77,7 @@ entities ctx =
     mainEntities ++ extraEntities
 
 
-stackCardEntity : Context -> Float -> Int -> Int -> StackCard -> Card.Entity {}
+stackCardEntity : Context -> Float -> Int -> Int -> StackCard -> StackEntity
 stackCardEntity ctx baseRotateProgress finalStackLen finalIndex { card, owner } =
     let
         entity : Game.Entity {}
@@ -86,6 +86,7 @@ stackCardEntity ctx baseRotateProgress finalStackLen finalIndex { card, owner } 
     in
     { owner = owner
     , card = card
+    , index = finalIndex
     , position = entity.position
     , rotation = entity.rotation
     , scale = entity.scale

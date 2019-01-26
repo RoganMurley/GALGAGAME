@@ -1,7 +1,8 @@
 module Outcome where
 
 import CardAnim (CardAnim)
-import Data.Aeson (ToJSON(..), (.=), object)
+import Control.Applicative ((<|>))
+import Data.Aeson (FromJSON(..), ToJSON(..), Value(..), (.=), (.:), object)
 import Data.Text (Text)
 import GameState (PlayState)
 import Model (Model)
@@ -22,11 +23,14 @@ data Outcome =
 
 data Encodable =
     Chat Username Text
-  | Hover WhichPlayer (Maybe HandIndex) (Damage, Damage)
+  | Hover WhichPlayer HoverState (Damage, Damage)
   | Resolve [(ModelDiff, Maybe CardAnim, Maybe StackCard)] Model PlayState
   deriving (Eq, Show)
 
-type HandIndex = Int
+data HoverState = HoverHand Index | HoverStack Index | NoHover
+  deriving (Eq, Show)
+
+type Index = Int
 type Damage = Int
 
 
@@ -36,11 +40,27 @@ instance ToJSON Encodable where
       [ "name" .= name
       , "msg"  .= msg
       ]
-  toJSON (Hover _ index _) =
-    toJSON index
+  toJSON (Hover _ hoverState _) =
+    toJSON hoverState
   toJSON (Resolve res initial state) =
     object
       [ "list"    .= res
       , "initial" .= initial
       , "final"   .= state
       ]
+
+
+instance ToJSON HoverState where
+  toJSON (HoverHand index) =
+    object [ "hand" .= index ]
+  toJSON (HoverStack index) =
+    object [ "stack" .= index ]
+  toJSON NoHover =
+    Null
+
+
+instance FromJSON HoverState where
+  parseJSON (Object v) =
+    (HoverHand <$> v .: "hand") <|> (HoverStack <$> v .: "stack")
+  parseJSON Null = pure NoHover
+  parseJSON _ = fail "Not a valid HoverState"
