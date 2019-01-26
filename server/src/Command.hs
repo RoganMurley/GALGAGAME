@@ -1,8 +1,10 @@
 module Command where
 
+import Data.Aeson (eitherDecode)
 import Data.Monoid ((<>))
 import Data.String.Conversions (cs)
 import Data.Text (Text)
+import Outcome (HoverState)
 import Safe (readMay)
 
 import Username (Username(..))
@@ -16,7 +18,7 @@ data Command =
   | LeaveCommand Username
   | EndTurnCommand
   | PlayCardCommand Int
-  | HoverCardCommand (Maybe Int)
+  | HoverCardCommand HoverState
   | RematchCommand
   | ConcedeCommand
   | SelectCharacterCommand Text
@@ -40,15 +42,11 @@ parse name msg =
           Nothing ->
             ErrorCommand (content <> " not a hand card index")
       "hover" ->
-        case content of
-          "null" ->
-            HoverCardCommand Nothing
-          _ ->
-            case readMay . cs $ content of
-              Just index ->
-                HoverCardCommand (Just index)
-              Nothing ->
-                ErrorCommand (content <> " not a hand card index")
+        case eitherDecode $ cs content of
+          Left err ->
+            ErrorCommand $ cs err
+          Right hover ->
+            HoverCardCommand hover
       "chat" ->
         ChatCommand name content
       "rematch" ->

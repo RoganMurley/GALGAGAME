@@ -2,14 +2,13 @@ module Stack.View exposing (view)
 
 import Animation.Types exposing (Anim(..), Bounce(..))
 import Array
-import Card.Types as Card
 import Card.View as Card
-import Game.Types exposing (Context)
+import Game.Types exposing (Context, StackEntity)
 import WebGL
 import WhichPlayer.State exposing (other)
 
 
-view : List (Card.Entity {}) -> Context -> List WebGL.Entity
+view : List StackEntity -> Context -> List WebGL.Entity
 view entities ctx =
     let
         n =

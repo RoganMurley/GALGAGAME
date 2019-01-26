@@ -1,9 +1,10 @@
 module Connected.State exposing (init, receive, tick, update)
 
 import Audio exposing (playSound)
-import Connected.Decoders exposing (decodeDamageOutcome, decodeHoverOutcome, decodePlayers)
+import Connected.Decoders exposing (decodeDamageOutcome, decodePlayers)
 import Connected.Messages exposing (Msg(..))
 import Connected.Types exposing (Model)
+import Game.Decoders exposing (decodeHoverOther)
 import GameState.Messages as GameState
 import GameState.State as GameState
 import GameState.Types exposing (GameState(..), WaitType(..))
@@ -71,13 +72,13 @@ receive ({ mode } as model) msg flags =
             ( { model | game = newGame }, cmd )
 
         "hover" ->
-            case decodeHoverOutcome content of
-                Ok hoverOutcome ->
+            case decodeHoverOther content of
+                Ok hoverOther ->
                     let
                         ( newGame, cmd ) =
                             GameState.update
                                 (GameState.PlayStateMsg <|
-                                    PlayState.HoverOutcome hoverOutcome
+                                    PlayState.HoverOtherOutcome hoverOther
                                 )
                                 model.game
                                 mode

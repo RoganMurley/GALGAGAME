@@ -7,7 +7,7 @@ import Colour
 import Connected.Messages as Connected
 import Ease
 import Game.State exposing (contextInit)
-import Game.Types exposing (Context, Hover, Model)
+import Game.Types exposing (Context, Hover(..), HoverSelf, Model)
 import GameState.Messages as GameState
 import Hand.State exposing (maxHandLength)
 import Hand.View as Hand
@@ -282,12 +282,23 @@ lifeTextView { radius, model } =
     ]
 
 
-damageTextView : Hover { dmg : ( Int, Int ) } -> Bool -> Context -> List (Html a)
+damageTextView : HoverSelf -> Bool -> Context -> List (Html a)
 damageTextView hover isResolving { radius, anim } =
     let
-        ( damage, otherDamage ) =
+        hoverDmg =
             case hover of
-                Just { dmg } ->
+                HoverHand { dmg } ->
+                    Just dmg
+
+                HoverStack { dmg } ->
+                    Just dmg
+
+                NoHover ->
+                    Nothing
+
+        ( damage, otherDamage ) =
+            case hoverDmg of
+                Just dmg ->
                     if isResolving then
                         Animation.lifeChange anim
 

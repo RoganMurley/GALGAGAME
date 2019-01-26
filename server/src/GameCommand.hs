@@ -13,9 +13,9 @@ import Data.Text (Text)
 import GameState (GameState(..), PlayState(..), initHandLength, initModel)
 import GodMode
 import Life (Life)
-import Model (Hand, Passes(..), Model, Turn)
+import Model (Hand, Passes(..), Model, Stack, Turn)
 import ModelDiff (ModelDiff)
-import Outcome (Outcome)
+import Outcome (HoverState(..), Outcome)
 import Player (WhichPlayer(..), other)
 import Safe (atMay, headMay)
 import StackCard(StackCard(..))
@@ -33,7 +33,7 @@ import qualified Replay.Final as Final
 data GameCommand =
     EndTurn
   | PlayCard Int
-  | HoverCard (Maybe Int)
+  | HoverCard HoverState
   | Rematch
   | Concede
   | SelectCharacter Text
@@ -62,8 +62,8 @@ update cmd which state usernames =
               endTurn which model replay
             PlayCard index ->
               playCard index which model replay
-            HoverCard index ->
-              hoverCard index which model
+            HoverCard hover ->
+              hoverCard hover which model
             Concede ->
               concede which state
             God username str ->
@@ -291,7 +291,6 @@ resolveAll model replay =
     (m, _, anims) = Beta.execute model program :: (Model, String, [(ModelDiff, Maybe CardAnim)])
 
 
-
 checkWin :: Model -> Active.Replay -> PlayState
 checkWin m r
   | lifePA <= 0 && lifePB <= 0 =
@@ -311,29 +310,46 @@ checkWin m r
         return (g, la, lb)
 
 
-hoverCard :: Maybe Int -> WhichPlayer -> Model -> Either Err (Maybe GameState, [Outcome])
-hoverCard (Just i) which model =
+lifeChange :: Model -> Model -> WhichPlayer -> Life
+lifeChange initial final w =
+  let
+    initialLife = Alpha.evalI initial $ Alpha.getLife w :: Life
+    finalLife = Alpha.evalI final $ Alpha.getLife w :: Life
+  in
+    finalLife - initialLife
+
+
+hoverCard :: HoverState -> WhichPlayer -> Model -> Either Err (Maybe GameState, [Outcome])
+hoverCard (HoverHand i) which model =
   let
     hand = Alpha.evalI model $ Alpha.getHand which :: Hand
-    lifeChange :: Model -> Model -> WhichPlayer -> Life
-    lifeChange initial final w =
-      let
-        initialLife = Alpha.evalI initial $ Alpha.getLife w :: Life
-        finalLife = Alpha.evalI final $ Alpha.getLife w :: Life
-      in
-        finalLife - initialLife
   in
     case atMay hand i of
       Just card ->
-        Right (Nothing, [ Outcome.Encodable $ Outcome.Hover which (Just i) (dmgA, dmgB) ])
+        Right (Nothing, [ Outcome.Encodable $ Outcome.Hover which (HoverHand i) (dmgA, dmgB) ])
         where
           newModel = Alpha.modI model $ Beta.alphaI $ card_eff card which :: Model
           dmgA = lifeChange model newModel PlayerA :: Life
           dmgB = lifeChange model newModel PlayerB :: Life
       Nothing ->
         Left ("Hover index out of bounds (" <> (cs . show $ i ) <> ")" :: Err)
-hoverCard Nothing which _ =
-  Right (Nothing, [ Outcome.Encodable $ Outcome.Hover which Nothing (0, 0) ])
+hoverCard (HoverStack i) which model =
+  let
+    stack = Alpha.evalI model $ Alpha.getStack :: Stack
+  in
+    case atMay stack i of
+      Just (StackCard owner card) ->
+        Right (Nothing, [ Outcome.Encodable $ Outcome.Hover which (HoverStack i) (dmgA, dmgB) ])
+        where
+          newModel = Alpha.modI model $ Beta.alphaI $ do
+            Beta.raw $ Alpha.modStack (drop (i + 1)) -- plus one to account for stackCard
+            card_eff card owner
+          dmgA = lifeChange model newModel PlayerA :: Life
+          dmgB = lifeChange model newModel PlayerB :: Life
+      Nothing ->
+        Left ("Hover index out of bounds (" <> (cs . show $ i ) <> ")" :: Err)
+hoverCard NoHover which _ =
+  Right (Nothing, [ Outcome.Encodable $ Outcome.Hover which NoHover (0, 0) ])
 
 
 godMode :: Username -> Text -> WhichPlayer -> Model -> Active.Replay -> Either Err (Maybe GameState, [Outcome])

@@ -1,4 +1,4 @@
-module Game.Types exposing (Context, Entities, HandEntity, Hover, Model, StackEntity)
+module Game.Types exposing (Context, Entities, HandEntity, Hover(..), HoverBase, HoverOther, HoverSelf, HoverStack, Model, StackEntity)
 
 import Animation.Types exposing (Anim)
 import Card.Types exposing (Card)
@@ -15,8 +15,8 @@ type alias Model =
     { res : Resolvable.Model
     , focus : Maybe StackCard
     , mouse : Maybe Vec2
-    , hover : Hover { dmg : ( Model.Life, Model.Life ) }
-    , otherHover : Hover {}
+    , hover : HoverSelf
+    , otherHover : HoverOther
     , entities : Entities
     }
 
@@ -37,6 +37,7 @@ type alias Context =
 type alias StackEntity =
     Game.Entity
         { card : Card
+        , index : Int
         , owner : WhichPlayer
         }
 
@@ -56,9 +57,30 @@ type alias Entities =
     }
 
 
-type alias Hover a =
-    Maybe
-        { a
-            | index : Int
-            , tick : Float
-        }
+
+-- Hover
+
+
+type alias HoverSelf =
+    Hover { dmg : ( Model.Life, Model.Life ) }
+
+
+type alias HoverOther =
+    Hover {}
+
+
+type alias HoverStack =
+    Hover { dmg : ( Model.Life, Model.Life ) }
+
+
+type alias HoverBase a =
+    { a
+        | index : Int
+        , tick : Float
+    }
+
+
+type Hover a
+    = HoverHand (HoverBase a)
+    | HoverStack (HoverBase a)
+    | NoHover

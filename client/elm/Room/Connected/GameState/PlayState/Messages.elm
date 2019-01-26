@@ -1,8 +1,10 @@
 module PlayState.Messages exposing (Msg(..), PlayingOnly(..), TurnOnly(..))
 
+import Game.Types exposing (HoverOther, HoverSelf)
+
 
 type Msg
-    = HoverOutcome (Maybe Int)
+    = HoverOtherOutcome HoverOther
     | DamageOutcome ( Int, Int )
     | PlayingOnly PlayingOnly
     | ReplaySaved String
@@ -12,7 +14,7 @@ type Msg
 type PlayingOnly
     = Rematch
     | TurnOnly TurnOnly
-    | HoverCard (Maybe Int)
+    | HoverCard HoverSelf
 
 
 type TurnOnly

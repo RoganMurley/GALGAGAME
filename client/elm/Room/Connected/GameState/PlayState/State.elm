@@ -1,6 +1,7 @@
 module PlayState.State exposing (carry, get, map, mouseClick, mouseMove, resolveOutcome, tick, update, updatePlayingOnly, updateTurnOnly)
 
 import Audio exposing (playSound)
+import Game.Encoders
 import Game.State as Game
 import Game.Types as Game
 import Json.Decode as Json
@@ -15,7 +16,6 @@ import Model.Types exposing (Model)
 import Mouse exposing (Position)
 import Navigation
 import PlayState.Decoders as PlayState
-import PlayState.Encoders
 import PlayState.Messages exposing (Msg(..), PlayingOnly(..), TurnOnly(..))
 import PlayState.Types as PlayState exposing (PlayState(..))
 import Ports exposing (reload)
@@ -32,13 +32,9 @@ update msg state mode flags =
         PlayingOnly playingOnly ->
             updatePlayingOnly playingOnly state mode flags
 
-        HoverOutcome i ->
+        HoverOtherOutcome otherHover ->
             case state of
                 Playing ({ game } as playing) ->
-                    let
-                        otherHover =
-                            Game.hoverInit i { index = 0, tick = 0 }
-                    in
                     ( Playing { playing | game = { game | otherHover = otherHover } }
                     , Cmd.none
                     )
@@ -91,10 +87,10 @@ updatePlayingOnly msg state mode flags =
                         _ ->
                             ( state, Cmd.none )
 
-                HoverCard mIndex ->
+                HoverCard hover ->
                     let
                         sound =
-                            case mIndex of
+                            case Game.getHoverIndex hover of
                                 Just _ ->
                                     playSound "/sfx/hover.wav"
 
@@ -105,7 +101,7 @@ updatePlayingOnly msg state mode flags =
                         ! [ message <|
                                 Main.Send <|
                                     "hover:"
-                                        ++ PlayState.Encoders.hoverIndex mIndex
+                                        ++ Game.Encoders.encodeHoverSelf hover
                           , sound
                           ]
 

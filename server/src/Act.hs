@@ -76,7 +76,7 @@ actPlay cmd which roomVar = do
     trans :: Command -> Maybe GameCommand
     trans EndTurnCommand             = Just EndTurn
     trans (PlayCardCommand index)    = Just (PlayCard index)
-    trans (HoverCardCommand index)   = Just (HoverCard index)
+    trans (HoverCardCommand hover)   = Just (HoverCard hover)
     trans RematchCommand             = Just Rematch
     trans ConcedeCommand             = Just Concede
     trans (ChatCommand name content) = Just (Chat name content)
