@@ -99,6 +99,9 @@ update model msg flags =
 
                         Lobby.QuickplayGame ->
                             Cmd.none
+
+                        Lobby.TutorialGame ->
+                            Cmd.none
                     )
 
                 _ ->

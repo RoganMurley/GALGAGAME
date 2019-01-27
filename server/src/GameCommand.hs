@@ -18,6 +18,7 @@ import ModelDiff (ModelDiff)
 import Outcome (HoverState(..), Outcome)
 import Player (WhichPlayer(..), other)
 import Safe (atMay, headMay)
+import Scenario (Scenario(..))
 import StackCard(StackCard(..))
 import Username (Username(..))
 import Util (Err, Gen, deleteIndex, split)
@@ -42,16 +43,16 @@ data GameCommand =
   deriving (Show)
 
 
-update :: GameCommand -> WhichPlayer -> GameState -> (Username, Username) -> Either Err (Maybe GameState, [Outcome])
-update (Chat username msg) _ _ _ = chat username msg
-update cmd which state usernames =
+update :: GameCommand -> WhichPlayer -> GameState -> Scenario -> (Username, Username) -> Either Err (Maybe GameState, [Outcome])
+update (Chat username msg) _ _ _ _        = chat username msg
+update cmd which state scenario usernames =
   case state of
     Waiting _ _ ->
       Left ("Unknown command " <> (cs $ show cmd) <> " on a waiting GameState")
     Selecting selectModel turn gen ->
       case cmd of
         SelectCharacter name ->
-          select which name (selectModel, turn, gen) usernames
+          select which name selectModel turn gen usernames
         _ ->
           Left ("Unknown command " <> (cs $ show cmd) <> " on a selecting GameState")
     Started playState ->
@@ -73,7 +74,7 @@ update cmd which state usernames =
         Ended winner _ _ gen ->
           case cmd of
             Rematch ->
-              rematch (winner, gen)
+              rematch (winner, gen) usernames scenario
             HoverCard _ ->
               ignore
             _ ->
@@ -84,12 +85,13 @@ ignore :: Either Err (Maybe GameState, [Outcome])
 ignore = Right (Nothing, [])
 
 
-rematch :: (Maybe WhichPlayer, Gen) -> Either Err (Maybe GameState, [Outcome])
-rematch (winner, gen) =
-  Right (
-    Just $ Selecting initCharModel (fromMaybe PlayerA winner) (fst $ split gen)
-  , [ Outcome.Sync ]
-  )
+rematch :: (Maybe WhichPlayer, Gen) -> (Username, Username) -> Scenario -> Either Err (Maybe GameState, [Outcome])
+rematch (winner, gen) usernames scenario =
+  let
+    charModel = initCharModel (scenario_charactersPa scenario) (scenario_charactersPb scenario)
+    turn = fromMaybe PlayerA winner
+  in
+    nextSelectState charModel turn (fst $ split gen) usernames
 
 
 chat :: Username -> Text -> Either Err (Maybe GameState, [Outcome])
@@ -120,14 +122,21 @@ concede _ _ =
   Left "Cannot concede when not playing"
 
 
-select :: WhichPlayer -> Text -> (CharModel, Turn, Gen) -> (Username, Username) -> Either Err (Maybe GameState, [Outcome])
-select which name (charModel, turn, gen) (usernamePa, usernamePb) =
+select :: WhichPlayer -> Text -> CharModel -> Turn -> Gen -> (Username, Username) -> Either Err (Maybe GameState, [Outcome])
+select which name charModel turn gen usernames =
   let
     newCharModel :: CharModel
     newCharModel = selectChar charModel which name
+  in
+    nextSelectState newCharModel turn gen usernames
+
+
+nextSelectState :: CharModel -> Turn -> Gen -> (Username, Username) -> Either Err (Maybe GameState, [Outcome])
+nextSelectState charModel turn gen (usernamePa, usernamePb) =
+  let
     result :: Maybe ([(ModelDiff, Maybe CardAnim, Maybe StackCard)], Model, PlayState)
     result =
-      case newCharModel of
+      case charModel of
         (CharModel (ThreeSelected c1 c2 c3) (ThreeSelected ca cb cc) _) ->
           let
             model = initModel turn (c1, c2, c3) (ca, cb, cc) gen :: Model
@@ -149,7 +158,7 @@ select which name (charModel, turn, gen) (usernamePa, usernamePb) =
     state =
       case result of
         Nothing ->
-          Selecting newCharModel turn gen
+          Selecting charModel turn gen
         Just (_, _, playstate) ->
           Started playstate
     outcomes :: [Outcome]

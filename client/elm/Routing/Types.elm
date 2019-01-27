@@ -14,3 +14,4 @@ type PlayRoute
     = CustomPlay (Maybe String)
     | ComputerPlay
     | QuickPlay
+    | TutorialPlay

@@ -24,18 +24,21 @@ import System.Log.Logger (Priority(DEBUG), infoM, warningM, setLevel, updateGlob
 
 import Act (actPlay, actSpec, syncClient, syncPlayersRoom, syncRoomClients)
 import ArtificalIntelligence (Action(..), chooseAction)
-import Characters (CharModel(..), allSelected, character_name, toList)
 import Config (App, Config(..), runApp)
 import Database (Database(..), connectInfo)
 import GameState (GameState(..), PlayState(..), WaitType(..))
 import Negotiation (Prefix(..), RoomRequest(..), parseRoomReq, parsePrefix)
 import Player (WhichPlayer(..), other)
+import Scenario (Scenario(..))
 import Username (Username(Username))
 import Util (Gen, getGen, shuffle)
 
 
 import qualified Server
 import Server (addComputerClient, addPlayerClient, addSpecClient)
+
+import qualified Characters
+import Characters (CharModel(..), allSelected, character_name, toList)
 
 import qualified Client
 import Client (Client(..), ClientConnection(..))
@@ -92,7 +95,7 @@ wsApp state config pending =
   runApp config $ do
     connection <- liftIO $ WS.acceptRequest pending
     msg        <- liftIO $ WS.receiveData connection
-    usernameM  <- A.checkAuth (A.getToken pending)
+    usernameM  <- A.checkAuth $ A.getToken pending
     liftIO $ WS.forkPingThread connection 30
     begin connection msg (Username <$> usernameM) state
 
@@ -117,7 +120,8 @@ begin conn roomReq usernameM state = do
         Just prefix -> do
           gen <- liftIO getGen
           guid <- liftIO GUID.genText
-          roomVar <- liftIO . atomically $ Server.getOrCreateRoom roomName (prefixWaitType prefix) gen state
+          let scenario = makeScenario prefix
+          roomVar <- liftIO . atomically $ Server.getOrCreateRoom roomName (prefixWaitType prefix) gen scenario state
           beginPrefix
             prefix
             state
@@ -137,17 +141,35 @@ begin conn roomReq usernameM state = do
 
 
 beginPrefix :: Prefix -> TVar Server.State -> Client -> TVar Room -> App ()
-beginPrefix PrefixPlay  = beginPlay
-beginPrefix PrefixSpec  = beginSpec
-beginPrefix PrefixCpu   = beginComputer
-beginPrefix PrefixQueue = beginQueue
+beginPrefix PrefixPlay     = beginPlay
+beginPrefix PrefixSpec     = beginSpec
+beginPrefix PrefixCpu      = beginComputer
+beginPrefix PrefixTutorial = beginComputer
+beginPrefix PrefixQueue    = beginQueue
 
 
 prefixWaitType :: Prefix -> WaitType
-prefixWaitType PrefixPlay  = WaitCustom
-prefixWaitType PrefixSpec  = WaitCustom
-prefixWaitType PrefixCpu   = WaitCustom
-prefixWaitType PrefixQueue = WaitQuickplay
+prefixWaitType PrefixPlay     = WaitCustom
+prefixWaitType PrefixSpec     = WaitCustom
+prefixWaitType PrefixCpu      = WaitCustom
+prefixWaitType PrefixTutorial = WaitCustom
+prefixWaitType PrefixQueue    = WaitQuickplay
+
+
+makeScenario :: Prefix -> Scenario
+makeScenario prefix =
+  Scenario
+  { scenario_charactersPa = characters
+  , scenario_charactersPb = characters
+  }
+  where
+    characters :: Maybe Characters.FinalSelection
+    characters =
+      case prefix of
+        PrefixTutorial ->
+          Just (Characters.breaker, Characters.shielder, Characters.striker)
+        _ ->
+          Nothing
 
 
 beginPlay :: TVar Server.State -> Client -> TVar Room -> App ()
@@ -274,7 +296,7 @@ chooseComputerCommand which room gen = do
           else
             return . Just . SelectCharacterCommand $ randomChar charModel
     Started (Playing m _) ->
-      return $ trans <$> chooseAction gen which m
+      return $ trans <$> chooseAction gen which m (Room.getScenario r)
     _ ->
       return Nothing
   where

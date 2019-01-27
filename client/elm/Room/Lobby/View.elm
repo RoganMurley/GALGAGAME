@@ -12,7 +12,7 @@ view : Model -> Html Msg
 view { error, gameType } =
     div []
         [ div [ class "connecting-box" ]
-            [ h1 [] [ text <| gameTypeToString gameType ++ " Game" ]
+            [ h1 [] [ text <| gameTypeToString gameType ]
             , div
                 []
                 [ div [ class "input-group" ]

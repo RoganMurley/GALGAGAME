@@ -22,5 +22,8 @@ update msg =
 
                         Lobby.QuickplayGame ->
                             "quickplay"
+
+                        Lobby.TutorialGame ->
+                            "tutorial"
             in
             Navigation.newUrl <| "/play/" ++ url
