@@ -4,7 +4,7 @@ module DSL.Beta.Interpreters where
 
 import Bounce (CardBounce(..))
 import Card (Card)
-import CardAnim (CardAnim)
+import CardAnim (CardAnim, cardAnimDamage)
 import Control.Monad.Free (Free(..), foldFree, liftF)
 import Data.Functor.Sum (Sum(..))
 import Data.Maybe (fromMaybe)
@@ -13,6 +13,7 @@ import DSL.Beta.DSL
 import DSL.Util (toLeft, toRight)
 import Player (WhichPlayer(..))
 
+import Life (Life)
 import Model (Model, gameover, maxHandLength)
 import ModelDiff (ModelDiff)
 import Safe (headMay, tailSafe)
@@ -224,3 +225,16 @@ execute = execute' "" [] mempty
 
     execute' s a d m (Free (InL (InR (Log.Log l n)))) =
       execute' (s ++ l ++ "\n") a d m n
+
+
+damageNumbersI :: Model -> Program () -> (Life, Life)
+damageNumbersI model program =
+  let
+    (_, _, anims) = execute model $ foldFree betaI program
+    cardAnims = snd <$> anims :: [Maybe CardAnim]
+    maybeDamage = (fmap cardAnimDamage) <$> cardAnims :: [Maybe (Life, Life)]
+    damage = fromMaybe (0, 0) <$> maybeDamage :: [(Int, Int)]
+    damagePa = sum $ fst <$> damage :: Int
+    damagePb = sum $ snd <$> damage :: Int
+  in
+    (damagePa, damagePb)

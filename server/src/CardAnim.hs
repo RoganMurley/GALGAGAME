@@ -127,3 +127,29 @@ instance Mirror CardAnim where
   mirror Windup            = Windup
   mirror (Fabricate c)     = Fabricate (mirror c)
   mirror (Bounce b)        = Bounce b
+
+
+cardAnimDamage :: CardAnim -> (Life, Life)
+cardAnimDamage anim =
+  let
+      wrap :: WhichPlayer -> Life -> ( Life, Life )
+      wrap w d =
+          case w of
+              PlayerA ->
+                  ( d, 0 )
+
+              PlayerB ->
+                  ( 0, d )
+  in
+  case anim of
+      Heal w h ->
+          wrap w h
+
+      Slash w d ->
+          wrap w (-d)
+
+      Bite w d ->
+          wrap w (-d)
+
+      _ ->
+          ( 0, 0 )
