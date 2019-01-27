@@ -12,7 +12,6 @@ import Data.String.Conversions (cs)
 import Data.Text (Text)
 import GameState (GameState(..), PlayState(..), initHandLength, initModel)
 import GodMode
-import Life (Life)
 import Model (Hand, Passes(..), Model, Stack, Turn)
 import ModelDiff (ModelDiff)
 import Outcome (HoverState(..), Outcome)
@@ -319,15 +318,6 @@ checkWin m r
         return (g, la, lb)
 
 
-lifeChange :: Model -> Model -> WhichPlayer -> Life
-lifeChange initial final w =
-  let
-    initialLife = Alpha.evalI initial $ Alpha.getLife w :: Life
-    finalLife = Alpha.evalI final $ Alpha.getLife w :: Life
-  in
-    finalLife - initialLife
-
-
 hoverCard :: HoverState -> WhichPlayer -> Model -> Either Err (Maybe GameState, [Outcome])
 hoverCard (HoverHand i) which model =
   let
@@ -335,13 +325,10 @@ hoverCard (HoverHand i) which model =
   in
     case atMay hand i of
       Just card ->
-        Right (Nothing, [ Outcome.Encodable $ Outcome.Hover which (HoverHand i) (dmgA, dmgB) ])
+        Right (Nothing, [ Outcome.Encodable $ Outcome.Hover which (HoverHand i) damage ])
         where
-          newModel = Alpha.modI model $ Beta.alphaI $ do
-            Beta.raw $ Alpha.modHand which $ deleteIndex i
-            card_eff card which
-          dmgA = lifeChange model newModel PlayerA :: Life
-          dmgB = lifeChange model newModel PlayerB :: Life
+          newModel = Alpha.modI model $ Alpha.modHand which $ deleteIndex i
+          damage = Beta.damageNumbersI newModel $ card_eff card which
       Nothing ->
         Left ("Hover index out of bounds (" <> (cs . show $ i ) <> ")" :: Err)
 hoverCard (HoverStack i) which model =
@@ -350,13 +337,10 @@ hoverCard (HoverStack i) which model =
   in
     case atMay stack i of
       Just (StackCard owner card) ->
-        Right (Nothing, [ Outcome.Encodable $ Outcome.Hover which (HoverStack i) (dmgA, dmgB) ])
+        Right (Nothing, [ Outcome.Encodable $ Outcome.Hover which (HoverStack i) damage ])
         where
-          newModel = Alpha.modI model $ Beta.alphaI $ do
-            Beta.raw $ Alpha.modStack (drop (i + 1)) -- plus one to account for stackCard
-            card_eff card owner
-          dmgA = lifeChange model newModel PlayerA :: Life
-          dmgB = lifeChange model newModel PlayerB :: Life
+          newModel = Alpha.modI model $ Alpha.modStack (drop (i + 1)) -- plus one to account for stackCard
+          damage = Beta.damageNumbersI newModel $ card_eff card owner
       Nothing ->
         Left ("Hover index out of bounds (" <> (cs . show $ i ) <> ")" :: Err)
 hoverCard NoHover which _ =
