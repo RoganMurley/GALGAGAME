@@ -23,7 +23,7 @@ shuffle (Gen g) xs = shuffle' xs (length xs) g
 
 deleteIndex :: Int -> [a] -> [a]
 deleteIndex n xs =
-  ys ++ (tail zs)
+  ys ++ tail zs
     where
       (ys, zs) = splitAt n xs
 

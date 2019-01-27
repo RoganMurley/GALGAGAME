@@ -20,7 +20,7 @@ import Player (WhichPlayer(..), other)
 import Safe (atMay, headMay)
 import StackCard(StackCard(..))
 import Username (Username(..))
-import Util (Err, Gen, split)
+import Util (Err, Gen, deleteIndex, split)
 
 
 import qualified DSL.Alpha as Alpha
@@ -328,7 +328,9 @@ hoverCard (HoverHand i) which model =
       Just card ->
         Right (Nothing, [ Outcome.Encodable $ Outcome.Hover which (HoverHand i) (dmgA, dmgB) ])
         where
-          newModel = Alpha.modI model $ Beta.alphaI $ card_eff card which :: Model
+          newModel = Alpha.modI model $ Beta.alphaI $ do
+            Beta.raw $ Alpha.modHand which $ deleteIndex i
+            card_eff card which
           dmgA = lifeChange model newModel PlayerA :: Life
           dmgB = lifeChange model newModel PlayerB :: Life
       Nothing ->
