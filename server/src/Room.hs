@@ -9,6 +9,7 @@ import Data.Text (Text, intercalate)
 import Characters (initCharModel)
 import GameState (GameState(..), WaitType(..), initState)
 import Player (WhichPlayer(..), other)
+import Scenario (Scenario(..))
 import Username (Username(Username))
 import Util (Gen)
 
@@ -22,22 +23,25 @@ type Spectators = [Client]
 
 
 data Room = Room
-  { room_pa    :: Player
-  , room_pb    :: Player
-  , room_specs :: Spectators
-  , room_name  :: Name
-  , room_state :: GameState
+  { room_pa       :: Player
+  , room_pb       :: Player
+  , room_specs    :: Spectators
+  , room_name     :: Name
+  , room_state    :: GameState
+  , room_scenario :: Scenario
   } deriving (Show)
 
 
-new :: WaitType -> Gen -> Name -> Room
-new wait gen name = Room
-  { room_pa    = Nothing
-  , room_pb    = Nothing
-  , room_specs = []
-  , room_name  = name
-  , room_state = initState wait gen
-  }
+new :: WaitType -> Gen -> Name -> Scenario -> Room
+new wait gen name scenario =
+  Room
+    { room_pa    = Nothing
+    , room_pb    = Nothing
+    , room_specs = []
+    , room_name  = name
+    , room_state = initState wait gen
+    , room_scenario = scenario
+    }
 
 
 getName :: Room -> Name
@@ -66,6 +70,10 @@ getPlayerClient PlayerB = room_pb
 
 getSpecs :: Room -> [Client]
 getSpecs = room_specs
+
+
+getScenario :: Room -> Scenario
+getScenario = room_scenario
 
 
 clientExists :: Client -> Room -> Bool
@@ -102,7 +110,11 @@ ifFullInit room =
   if full room then
     case getState room of
       Waiting _ gen ->
-        room { room_state = Selecting initCharModel PlayerA gen }
+        let
+          scenario = getScenario room
+          charModel = initCharModel (scenario_charactersPa scenario) (scenario_charactersPb scenario)
+        in
+          room { room_state = Selecting charModel PlayerA gen }
       _ ->
         room
   else

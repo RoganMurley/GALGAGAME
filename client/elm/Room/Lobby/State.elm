@@ -38,6 +38,9 @@ update ({ gameType, mode } as model) msg =
                                 QuickplayGame ->
                                     "queue:"
 
+                                TutorialGame ->
+                                    "playTutorial:"
+
                         Spectating ->
                             "spectate:"
             in
@@ -95,13 +98,16 @@ gameTypeToString : GameType -> String
 gameTypeToString gameType =
     case gameType of
         CustomGame ->
-            "Custom"
+            "Custom Game"
 
         ComputerGame ->
-            "Computer"
+            "CPU Game"
 
         QuickplayGame ->
-            "Quickplay"
+            "Quickplay Game"
+
+        TutorialGame ->
+            "Tutorial"
 
 
 skipLobbyCmd : Maybe String -> Cmd Main.Msg

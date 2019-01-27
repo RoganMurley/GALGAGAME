@@ -70,8 +70,18 @@ allSelected _                                                         _       = 
 type FinalSelection = (Character, Character, Character)
 
 
-initCharModel :: CharModel
-initCharModel = CharModel NoneSelected NoneSelected allCharacters
+initCharModel :: Maybe FinalSelection -> Maybe FinalSelection -> CharModel
+initCharModel charactersPa charactersPb =
+  let
+    makeSelected :: Maybe FinalSelection -> SelectedCharacters
+    makeSelected characters =
+      case characters of
+        Just (a, b, c) ->
+          ThreeSelected a b c
+        Nothing ->
+          NoneSelected
+  in
+    CharModel (makeSelected charactersPa) (makeSelected charactersPb) allCharacters
 
 
 selectChar :: CharModel -> WhichPlayer -> Text -> CharModel

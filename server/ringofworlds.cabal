@@ -45,6 +45,7 @@ library
                      , Replay.Active
                      , Replay.Final
                      , Room
+                     , Scenario
                      , Server
                      , StackCard
                      , Username

@@ -259,6 +259,27 @@ update msg ({ room, settings, textures, flags } as model) =
 
 locationUpdate : Main.Model -> Navigation.Location -> ( Main.Model, Cmd Msg )
 locationUpdate model location =
+    let
+        nextPath : Maybe String
+        nextPath =
+            case model.room of
+                Room.Lobby { gameType, roomID } ->
+                    case gameType of
+                        Lobby.CustomGame ->
+                            Just <| "/play/custom/" ++ roomID
+
+                        Lobby.ComputerGame ->
+                            Just "/play/computer/"
+
+                        Lobby.QuickplayGame ->
+                            Just "/play/quickplay/"
+
+                        Lobby.TutorialGame ->
+                            Just "/play/tutorial/"
+
+                _ ->
+                    Nothing
+    in
     case parsePath Routing.route location of
         Just route ->
             case route of
@@ -333,6 +354,18 @@ locationUpdate model location =
                             , Lobby.skipLobbyCmd username
                             )
 
+                        Routing.TutorialPlay ->
+                            ( { model
+                                | room =
+                                    Room.Lobby <|
+                                        Lobby.init
+                                            randomRoomID
+                                            Lobby.TutorialGame
+                                            Playing
+                              }
+                            , Lobby.skipLobbyCmd username
+                            )
+
                 Routing.Spec roomID ->
                     ( { model
                         | room =
@@ -354,24 +387,6 @@ locationUpdate model location =
                     )
 
                 Routing.Login ->
-                    let
-                        nextPath : Maybe String
-                        nextPath =
-                            case model.room of
-                                Room.Lobby { gameType, roomID } ->
-                                    case gameType of
-                                        Lobby.CustomGame ->
-                                            Just <| "/play/custom/" ++ roomID
-
-                                        Lobby.ComputerGame ->
-                                            Just "/play/computer/"
-
-                                        Lobby.QuickplayGame ->
-                                            Just "/play/quickplay/"
-
-                                _ ->
-                                    Nothing
-                    in
                     ( { model
                         | room =
                             Room.Login <|
@@ -381,24 +396,6 @@ locationUpdate model location =
                     )
 
                 Routing.Signup ->
-                    let
-                        nextPath : Maybe String
-                        nextPath =
-                            case model.room of
-                                Room.Lobby { gameType, roomID } ->
-                                    case gameType of
-                                        Lobby.CustomGame ->
-                                            Just <| "/play/custom/" ++ roomID
-
-                                        Lobby.ComputerGame ->
-                                            Just "/play/computer/"
-
-                                        Lobby.QuickplayGame ->
-                                            Just "/play/quickplay/"
-
-                                _ ->
-                                    Nothing
-                    in
                     ( { model
                         | room =
                             Room.Signup <|

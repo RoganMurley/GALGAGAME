@@ -16,6 +16,7 @@ type GameType
     = CustomGame
     | ComputerGame
     | QuickplayGame
+    | TutorialGame
 
 
 type LoginState

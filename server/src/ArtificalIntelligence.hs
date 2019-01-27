@@ -12,6 +12,7 @@ import GameCommand (GameCommand(..), resolveAll, update)
 import GameState
 import Model
 import Player (WhichPlayer(..))
+import Scenario (Scenario(..))
 import Username (Username(Username))
 import Util (Gen, fromRight)
 
@@ -62,23 +63,23 @@ possibleActions m = endAction ++ (PlayAction <$> xs)
       | otherwise = [ EndAction ]
 
 
-postulateAction :: Model -> Gen -> Action -> PlayState
-postulateAction model gen action =
+postulateAction :: Model -> Gen -> Scenario -> Action -> PlayState
+postulateAction model gen scenario action =
   -- DANGEROUS, WE NEED TO SPLIT UP THE COMMAND STUFF IN GAMESTATE
-  (\(Started p) -> p) . fromJust . fst . fromRight $ update command PlayerA state (Username "", Username "")
+  (\(Started p) -> p) . fromJust . fst . fromRight $ update command PlayerA state scenario (Username "", Username "")
   where
     command = toCommand action :: GameCommand
     state = Started $ Playing (modI model $ setGen gen) (Replay.Active.null) :: GameState
 
 
-chooseAction :: Gen -> Turn -> Model -> Maybe Action
-chooseAction gen turn model
+chooseAction :: Gen -> Turn -> Model -> Scenario -> Maybe Action
+chooseAction gen turn model scenario
   | modelTurn /= turn = Nothing
   | winningEnd model  = Just EndAction
   | otherwise         = Just $ maximumBy comparison $ possibleActions model
   where
     comparison :: Action -> Action -> Ordering
-    comparison = comparing $ evalState . (postulateAction model gen)
+    comparison = comparing $ evalState . (postulateAction model gen scenario)
     modelTurn :: Turn
     modelTurn = evalI model getTurn
 
