@@ -265,7 +265,7 @@ reflect :: Card
 reflect =
   Card
     "Reflect"
-    "All cards in play change owner"
+    "Change the owner of all cards in play"
     "shielder/reflect.svg"
     $ const Beta.reflect
 
