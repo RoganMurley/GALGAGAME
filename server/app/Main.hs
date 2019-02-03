@@ -149,11 +149,8 @@ beginPrefix PrefixQueue    = beginQueue
 
 
 prefixWaitType :: Prefix -> WaitType
-prefixWaitType PrefixPlay     = WaitCustom
-prefixWaitType PrefixSpec     = WaitCustom
-prefixWaitType PrefixCpu      = WaitCustom
-prefixWaitType PrefixTutorial = WaitCustom
-prefixWaitType PrefixQueue    = WaitQuickplay
+prefixWaitType PrefixQueue = WaitQuickplay
+prefixWaitType _           = WaitCustom
 
 
 makeScenario :: Prefix -> Scenario

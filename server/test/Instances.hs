@@ -15,6 +15,7 @@ import GameState (GameState(..), PlayState(..), WaitType(..))
 import Model (Model(..), PlayerModel(..), Passes(..))
 import ModelDiff (ModelDiff(..), PlayerModelDiff(..))
 import Player (WhichPlayer(..))
+import ResolveData (ResolveData(..))
 import StackCard (StackCard(..))
 import Username (Username(Username))
 
@@ -132,3 +133,7 @@ instance Arbitrary CardAnim where
     , Transmute <$> arbitrary <*> arbitrary
     , GameEnd <$> arbitrary
     ]
+
+
+instance Arbitrary ResolveData where
+  arbitrary = ResolveData <$> arbitrary <*> arbitrary <*> arbitrary <*> arbitrary
