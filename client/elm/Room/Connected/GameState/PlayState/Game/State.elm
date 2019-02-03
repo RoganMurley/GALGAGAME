@@ -10,7 +10,7 @@ import Maybe.Extra as Maybe
 import Model.State as Model
 import Model.Types as Model exposing (Model)
 import PlayState.Messages as PlayState
-import Resolvable.State as Resolvable exposing (activeAnim, activeModel, activeStackCard)
+import Resolvable.State as Resolvable exposing (activeAnim, activeAnimDamage, activeModel, activeStackCard)
 import Resolvable.Types as Resolvable
 import Stack.Entities as Stack
 import Stack.Types exposing (StackCard)
@@ -49,11 +49,15 @@ contextInit ( width, height ) res textures =
 
         anim =
             activeAnim res
+
+        animDamage =
+            activeAnimDamage res
     in
     { w = w
     , h = h
     , radius = radius
     , anim = anim
+    , animDamage = animDamage
     , model = activeModel res
     , stackCard = activeStackCard res
     , tick = res.tick

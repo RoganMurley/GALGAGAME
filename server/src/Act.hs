@@ -1,6 +1,5 @@
 module Act where
 
-import CardAnim (CardAnim)
 import Config (App)
 import Control.Concurrent.STM.TVar (TVar, readTVar)
 import Control.Monad (forM_)
@@ -14,9 +13,8 @@ import GameCommand (GameCommand(..), update)
 import GameState (GameState(..), PlayState)
 import Mirror (mirror)
 import Model (Model)
-import ModelDiff (ModelDiff)
 import Player (WhichPlayer(..))
-import StackCard (StackCard)
+import ResolveData (ResolveData(..))
 import System.Log.Logger (infoM, warningM)
 import Text.Printf (printf)
 import Username (Username(Username))
@@ -118,8 +116,8 @@ syncPlayersRoom room = do
         (cs . encode . (if rev then mirror else id) $ Room.connected room)
 
 
-resolveRoomClients :: ([(ModelDiff, Maybe CardAnim, Maybe StackCard)], Model, PlayState) -> Room -> App ()
-resolveRoomClients (resList, initial, final) room = do
+resolveRoomClients :: ([ResolveData], Model, PlayState) -> Room -> App ()
+resolveRoomClients (res, initial, final) room = do
   Room.sendToPlayer PlayerA msgPa room
   Room.sendToPlayer PlayerB msgPb room
   Room.sendToSpecs msgPa room
@@ -127,14 +125,9 @@ resolveRoomClients (resList, initial, final) room = do
     msgPa = ("res:" <>) . cs . encode $ outcome :: Text
     msgPb = ("res:" <>) . cs . encode $ mirrorOutcome :: Text
     outcome :: Outcome.Encodable
-    outcome =
-      Outcome.Resolve resList initial final
+    outcome = Outcome.Resolve res initial final
     mirrorOutcome :: Outcome.Encodable
-    mirrorOutcome =
-      Outcome.Resolve
-        ((\(x, y, z) -> (mirror x, mirror y, mirror z)) <$> resList)
-        (mirror initial)
-        (mirror final)
+    mirrorOutcome = Outcome.Resolve (mirror <$> res) (mirror initial) (mirror final)
 
 
 actOutcome :: Room -> Outcome -> App ()

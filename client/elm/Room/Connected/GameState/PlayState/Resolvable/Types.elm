@@ -16,6 +16,7 @@ type alias Model =
 type alias ResolveData =
     { model : Model.Model
     , anim : Anim
+    , animDamage : ( Float, Float )
     , stackCard : Maybe StackCard
     }
 
@@ -23,5 +24,6 @@ type alias ResolveData =
 type alias ResolveDiffData =
     { diff : Model.Diff
     , anim : Anim
+    , animDamage : ( Float, Float )
     , stackCard : Maybe StackCard
     }

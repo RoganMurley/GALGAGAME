@@ -28,6 +28,7 @@ type alias Context =
     , tick : Float
     , progress : Float
     , anim : Anim
+    , animDamage : ( Float, Float )
     , model : Model.Model
     , stackCard : Maybe StackCard
     , textures : Texture.Model

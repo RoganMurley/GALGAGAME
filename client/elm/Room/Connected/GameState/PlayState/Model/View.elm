@@ -147,7 +147,7 @@ focusImageView focus ({ w, h, radius, textures } as ctx) =
 
 
 lifeOrbView : Context -> List WebGL.Entity
-lifeOrbView ({ w, h, radius, model, anim, tick } as ctx) =
+lifeOrbView ({ w, h, radius, model, anim, animDamage, tick } as ctx) =
     let
         progress =
             Ease.outQuad (tick / animMaxTick anim)
@@ -159,7 +159,7 @@ lifeOrbView ({ w, h, radius, model, anim, tick } as ctx) =
             toFloat model.otherLife / 50
 
         ( lifeChange, otherLifeChange ) =
-            Animation.lifeChange anim
+            animDamage
 
         lifePercentage =
             interpFloat
@@ -283,7 +283,7 @@ lifeTextView { radius, model } =
 
 
 damageTextView : HoverSelf -> Bool -> Context -> List (Html a)
-damageTextView hover isResolving { radius, anim } =
+damageTextView hover isResolving { radius, animDamage } =
     let
         hoverDmg =
             case hover of
@@ -300,7 +300,7 @@ damageTextView hover isResolving { radius, anim } =
             case hoverDmg of
                 Just dmg ->
                     if isResolving then
-                        Animation.lifeChange anim
+                        animDamage
 
                     else
                         let
@@ -310,7 +310,7 @@ damageTextView hover isResolving { radius, anim } =
                         ( toFloat dmgA, toFloat dmgB )
 
                 Nothing ->
-                    Animation.lifeChange anim
+                    animDamage
 
         damageToString : Float -> String
         damageToString d =

@@ -1,4 +1,4 @@
-module Animation.State exposing (animMaxTick, animShake, getPlayerBounceCards, lifeChange, progress)
+module Animation.State exposing (animMaxTick, animShake, getPlayerBounceCards, progress)
 
 import Animation.Types exposing (Anim(..), Bounce(..), HandBounce)
 import Ease
@@ -101,32 +101,6 @@ progress anim tick =
                     Ease.outQuint
     in
     easingFunction (tick / maxTick)
-
-
-lifeChange : Anim -> ( Float, Float )
-lifeChange anim =
-    let
-        wrap : WhichPlayer -> Int -> ( Float, Float )
-        wrap w d =
-            case w of
-                PlayerA ->
-                    ( toFloat d, 0 )
-
-                PlayerB ->
-                    ( 0, toFloat d )
-    in
-    case anim of
-        Heal w h ->
-            wrap w h
-
-        Slash w d ->
-            wrap w -d
-
-        Bite w d ->
-            wrap w -d
-
-        _ ->
-            ( 0, 0 )
 
 
 getPlayerBounceCards : WhichPlayer -> List Bounce -> Stack -> List HandBounce

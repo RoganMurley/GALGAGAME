@@ -44,6 +44,7 @@ library
                      , Player
                      , Replay.Active
                      , Replay.Final
+                     , ResolveData
                      , Room
                      , Scenario
                      , Server

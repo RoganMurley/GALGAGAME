@@ -4,7 +4,7 @@ module DSL.Beta.Interpreters where
 
 import Bounce (CardBounce(..))
 import Card (Card)
-import CardAnim (CardAnim, cardAnimDamage)
+import CardAnim (cardAnimDamage)
 import Control.Monad.Free (Free(..), foldFree, liftF)
 import Data.Functor.Sum (Sum(..))
 import Data.Maybe (fromMaybe)
@@ -16,6 +16,7 @@ import Player (WhichPlayer(..))
 import Life (Life)
 import Model (Model, gameover, maxHandLength)
 import ModelDiff (ModelDiff)
+import ResolveData (ResolveData(..))
 import Safe (headMay, tailSafe)
 import StackCard (StackCard(..), changeOwner)
 
@@ -202,39 +203,40 @@ betaI :: ∀ a . DSL a -> AlphaLogAnimProgram a
 betaI x = (foldFree liftAlphaAnim) . (animI x) . alphaI $ liftF x
 
 
-execute :: Model -> AlphaLogAnimProgram () -> (Model, String, [(ModelDiff, Maybe CardAnim)])
+execute :: Model -> Maybe StackCard -> AlphaLogAnimProgram () -> (Model, String, [ResolveData])
 execute = execute' "" [] mempty
   where
-    execute' :: String -> [(ModelDiff, Maybe CardAnim)] -> ModelDiff -> Model -> AlphaLogAnimProgram () -> (Model, String, [(ModelDiff, Maybe CardAnim)])
+    execute' :: String -> [ResolveData] -> ModelDiff -> Model -> Maybe StackCard -> AlphaLogAnimProgram () -> (Model, String, [ResolveData])
 
-    execute' s a _ m (Pure _) =
-      (m, s, a)
+    execute' l a _ m _ (Pure _) =
+      (m, l, a)
 
-    execute' s a d m (Free (InR anim)) =
+    execute' l a d m s (Free (InR anim)) =
       let
         next = if gameover m then Pure () else Anim.next anim
+        cardAnim = Anim.animate anim
+        damage = fromMaybe (0, 0) $ cardAnimDamage <$> cardAnim
+        resolveData = ResolveData d cardAnim damage s
       in
-        execute' s (a ++ [(d, Anim.animate anim)]) mempty m next
+        execute' l (a ++ [resolveData]) mempty m s next
 
-    execute' s a d m (Free (InL (InL p))) =
+    execute' l a d m s (Free (InL (InL p))) =
       let
          (newDiff, n) = Alpha.alphaEffI m p
          newModel = ModelDiff.update m newDiff
       in
-        execute' s a (d <> newDiff) newModel n
+        execute' l a (d <> newDiff) newModel s n
 
-    execute' s a d m (Free (InL (InR (Log.Log l n)))) =
-      execute' (s ++ l ++ "\n") a d m n
+    execute' l a d m s (Free (InL (InR (Log.Log l' n)))) =
+      execute' (l ++ l' ++ "\n") a d m s n
 
 
 damageNumbersI :: Model -> Program () -> (Life, Life)
 damageNumbersI model program =
   let
-    (_, _, anims) = execute model $ foldFree betaI program
-    cardAnims = snd <$> anims :: [Maybe CardAnim]
-    maybeDamage = (fmap cardAnimDamage) <$> cardAnims :: [Maybe (Life, Life)]
-    damage = fromMaybe (0, 0) <$> maybeDamage :: [(Int, Int)]
-    damagePa = sum $ fst <$> damage :: Int
-    damagePb = sum $ snd <$> damage :: Int
+    (_, _, resolveData) = execute model Nothing $ foldFree betaI program
+    damage = resolveData_animDamage <$> resolveData :: [(Life, Life)]
+    damagePa = sum $ fst <$> damage :: Life
+    damagePb = sum $ snd <$> damage :: Life
   in
     (damagePa, damagePb)
