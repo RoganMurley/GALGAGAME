@@ -1,4 +1,4 @@
-module Resolvable.State exposing (activeAnim, activeModel, activeStackCard, init, merge, resDiffToData, resolveStep, resolving, tick, tickEnd, tickStart)
+module Resolvable.State exposing (activeAnim, activeAnimDamage, activeModel, activeStackCard, init, merge, resDiffToData, resolveStep, resolving, tick, tickEnd, tickStart)
 
 import Animation.State as Animation
 import Animation.Types exposing (Anim(NullAnim))
@@ -34,6 +34,16 @@ activeAnim { resList } =
 
         Nothing ->
             NullAnim
+
+
+activeAnimDamage : Resolvable.Model -> ( Float, Float )
+activeAnimDamage { resList } =
+    case List.head resList of
+        Just res ->
+            res.animDamage
+
+        Nothing ->
+            ( 0, 0 )
 
 
 activeStackCard : Resolvable.Model -> Maybe StackCard
@@ -84,6 +94,7 @@ merge : Model.Model -> Resolvable.ResolveDiffData -> Resolvable.ResolveData
 merge model diffData =
     { model = Model.merge diffData.diff model
     , anim = diffData.anim
+    , animDamage = diffData.animDamage
     , stackCard = diffData.stackCard
     }
 
@@ -101,9 +112,10 @@ resDiffToData model resDiffs =
                 List.scanl Model.merge model diffs
 
         combine : ( Model.Model, Resolvable.ResolveDiffData ) -> Resolvable.ResolveData
-        combine ( m, { anim, stackCard } ) =
+        combine ( m, { anim, animDamage, stackCard } ) =
             { model = m
             , anim = anim
+            , animDamage = animDamage
             , stackCard = stackCard
             }
     in

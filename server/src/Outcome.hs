@@ -1,14 +1,12 @@
 module Outcome where
 
-import CardAnim (CardAnim)
 import Control.Applicative ((<|>))
 import Data.Aeson (FromJSON(..), ToJSON(..), Value(..), (.=), (.:), object)
 import Data.Text (Text)
 import GameState (PlayState)
 import Model (Model)
-import ModelDiff (ModelDiff)
 import Player (WhichPlayer)
-import StackCard (StackCard)
+import ResolveData (ResolveData)
 import Username (Username)
 
 import qualified Replay.Final as Final
@@ -24,7 +22,7 @@ data Outcome =
 data Encodable =
     Chat Username Text
   | Hover WhichPlayer HoverState (Damage, Damage)
-  | Resolve [(ModelDiff, Maybe CardAnim, Maybe StackCard)] Model PlayState
+  | Resolve [ResolveData] Model PlayState
   deriving (Eq, Show)
 
 data HoverState = HoverHand Index | HoverStack Index | NoHover

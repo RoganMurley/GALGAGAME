@@ -13,9 +13,9 @@ import Data.Text (Text)
 import GameState (GameState(..), PlayState(..), initHandLength, initModel)
 import GodMode
 import Model (Hand, Passes(..), Model, Stack, Turn)
-import ModelDiff (ModelDiff)
 import Outcome (HoverState(..), Outcome)
 import Player (WhichPlayer(..), other)
+import ResolveData (ResolveData(..), resolveAnim)
 import Safe (atMay, headMay)
 import Scenario (Scenario(..))
 import StackCard(StackCard(..))
@@ -105,15 +105,15 @@ concede :: WhichPlayer -> GameState -> Either Err (Maybe GameState, [Outcome])
 concede which (Started (Playing model replay)) =
   let
     gen = Alpha.evalI model Alpha.getGen :: Gen
-    anims = [(mempty, Just (GameEnd (Just (other which))), Nothing)]
-    newReplay = Active.add replay anims :: Active.Replay
+    res = [resolveAnim $ GameEnd . Just $ other which] :: [ResolveData]
+    newReplay = Active.add replay res :: Active.Replay
     newPlayState = Ended (Just (other which)) model newReplay gen :: PlayState
     finalReplay = Final.finalise newReplay newPlayState :: Final.Replay
   in
     Right (
       Just . Started $ newPlayState
     , [
-        Outcome.Encodable $ Outcome.Resolve anims model newPlayState
+        Outcome.Encodable $ Outcome.Resolve res model newPlayState
       , Outcome.SaveReplay finalReplay
       ]
     )
@@ -133,7 +133,7 @@ select which name charModel turn gen usernames =
 nextSelectState :: CharModel -> Turn -> Gen -> (Username, Username) -> Either Err (Maybe GameState, [Outcome])
 nextSelectState charModel turn gen (usernamePa, usernamePb) =
   let
-    result :: Maybe ([(ModelDiff, Maybe CardAnim, Maybe StackCard)], Model, PlayState)
+    result :: Maybe ([ResolveData], Model, PlayState)
     result =
       case charModel of
         (CharModel (ThreeSelected c1 c2 c3) (ThreeSelected ca cb cc) _) ->
@@ -144,9 +144,7 @@ nextSelectState charModel turn gen (usernamePa, usernamePb) =
             startProgram = do
                 replicateM_ (initHandLength PlayerA turn) (Beta.draw PlayerA)
                 replicateM_ (initHandLength PlayerB turn) (Beta.draw PlayerB)
-            (newModel, _, anims) = Beta.execute model $ foldFree Beta.betaI startProgram
-            res :: [(ModelDiff, Maybe CardAnim, Maybe StackCard)]
-            res = (\(x, y) -> (x, y, Nothing)) <$> anims
+            (newModel, _, res) = Beta.execute model Nothing $ foldFree Beta.betaI startProgram
             playstate :: PlayState
             playstate = Playing newModel (Active.add replay res)
           in
@@ -182,9 +180,7 @@ playCard index which m replay
         let
           program :: Beta.Program ()
           program = Beta.play which c index
-          (newModel, _, anims) = Beta.execute m $ foldFree Beta.betaI program
-          res :: [(ModelDiff, Maybe CardAnim, Maybe StackCard)]
-          res = (\(x, y) -> (x, y, Nothing)) <$> anims
+          (newModel, _, res) = Beta.execute m Nothing $ foldFree Beta.betaI program
           newPlayState = Playing newModel (Active.add replay res) :: PlayState
         in
           Right (
@@ -217,9 +213,7 @@ endTurn which model replay
                   Beta.raw Alpha.swapTurn
                   Beta.raw Alpha.resetPasses
                   drawCards
-              (newModel, _, endAnims) = Beta.execute m $ foldFree Beta.betaI endProgram
-              endRes :: [(ModelDiff, Maybe CardAnim, Maybe StackCard)]
-              endRes = (\(x, y) -> (x, y, Nothing)) <$> endAnims
+              (newModel, _, endRes) = Beta.execute m Nothing $ foldFree Beta.betaI endProgram
               newPlayState :: PlayState
               newPlayState = Playing newModel (Active.add newReplay endRes)
               newState = Started newPlayState :: GameState
@@ -268,19 +262,19 @@ endTurn which model replay
       Beta.draw PlayerB
 
 
-resolveAll :: Model -> Active.Replay -> Writer [(ModelDiff, Maybe CardAnim, Maybe StackCard)] PlayState
+resolveAll :: Model -> Active.Replay -> Writer [ResolveData] PlayState
 resolveAll model replay =
   case stackCard of
     Just c -> do
-      let animsWithCard = (\(x, y) -> (x, y, Just c)) <$> anims
-      tell animsWithCard
-      case checkWin m (Active.add replay animsWithCard) of
+      let (m, _, res) = Beta.execute model (Just c) program :: (Model, String, [ResolveData])
+      tell res
+      case checkWin m (Active.add replay res) of
         Playing m' newReplay ->
           resolveAll m' newReplay
         Ended w m' newReplay gen -> do
-          let endAnim = [(mempty, Just (GameEnd w), Nothing)]
-          tell endAnim
-          return (Ended w m' (Active.add newReplay endAnim) gen)
+          let endRes = [resolveAnim $ GameEnd w]
+          tell endRes
+          return (Ended w m' (Active.add newReplay endRes) gen)
     Nothing ->
       return (Playing model replay)
   where
@@ -296,7 +290,6 @@ resolveAll model replay =
           p
       Nothing ->
         return ()
-    (m, _, anims) = Beta.execute model program :: (Model, String, [(ModelDiff, Maybe CardAnim)])
 
 
 checkWin :: Model -> Active.Replay -> PlayState
@@ -354,8 +347,7 @@ godMode username str which model replay =
       Right betaProgram ->
         let
           program = foldFree Beta.betaI $ betaProgram :: Beta.AlphaLogAnimProgram ()
-          (m, _, anims) = Beta.execute model program :: (Model, String, [(ModelDiff, Maybe CardAnim)])
-          res = (\(x, y) -> (x, y, Nothing)) <$> anims :: [(ModelDiff, Maybe CardAnim, Maybe StackCard)]
+          (m, _, res) = Beta.execute model Nothing program :: (Model, String, [ResolveData])
           newPlayState = Playing m (Active.add replay res) :: PlayState
         in
           Right (

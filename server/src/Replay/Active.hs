@@ -1,29 +1,22 @@
 module Replay.Active where
 
-import CardAnim (CardAnim)
 import Mirror (Mirror(..))
 import Model (Model(Model), Passes(NoPass), PlayerModel(PlayerModel))
-import ModelDiff (ModelDiff)
 import Player (WhichPlayer(PlayerA))
-import StackCard (StackCard)
+import ResolveData (ResolveData(..))
 import Username (Username(Username))
 import Util (mkGen)
 
 
-data Replay = Replay Model [(ModelDiff, Maybe CardAnim, Maybe StackCard)] Username Username
+data Replay = Replay Model [ResolveData] Username Username
   deriving (Show, Eq)
 
 
 instance Mirror Replay where
-  mirror (Replay m ms pa pb) =
-    Replay
-      (mirror m)
-      ((\(x, y, z) -> (mirror x, mirror y, mirror z)) <$> ms)
-      pb
-      pa
+  mirror (Replay m ms pa pb) = Replay (mirror m) (mirror <$> ms) pb pa
 
 
-add :: Replay -> [(ModelDiff, Maybe CardAnim, Maybe StackCard)] -> Replay
+add :: Replay -> [ResolveData] -> Replay
 add (Replay m xs pa pb) ys = Replay m (xs ++ ys) pa pb
 
 
