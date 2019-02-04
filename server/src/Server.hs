@@ -9,6 +9,7 @@ import Data.Text (Text)
 import Safe (headMay)
 
 import GameState (WaitType(..))
+import Outcome (Outcome)
 import Player (WhichPlayer(..))
 import Scenario (Scenario(..))
 import Util (Gen, modReadTVar, modReturnTVar, modTVar)
@@ -89,12 +90,12 @@ addSpecClient client roomVar =
   modReadTVar roomVar $ Room.addSpec client
 
 
-addPlayerClient :: Client -> TVar Room -> STM (Maybe WhichPlayer)
+addPlayerClient :: Client -> TVar Room -> STM (Maybe (WhichPlayer, [Outcome]))
 addPlayerClient client roomVar =
   modReturnTVar roomVar $ \room ->
     case Room.addPlayer client room of
-      Just (room', which) ->
-        (room', Just (which))
+      Just (room', outcomes, which) ->
+        (room', Just (which, outcomes))
       Nothing ->
         (room, Nothing)
 
@@ -103,7 +104,7 @@ addComputerClient :: Text -> TVar Room -> STM (Maybe Client)
 addComputerClient guid room =
   modReturnTVar room $ \r ->
     case Room.addPlayer client r of
-      Just (r', _) ->
+      Just (r', _, _) ->
         (r', Just client)
       Nothing ->
         (r, Nothing)

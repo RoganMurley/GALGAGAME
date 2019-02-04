@@ -1,6 +1,7 @@
 module Main where
 
 import Control.Concurrent.Lifted (fork, threadDelay)
+import Control.Monad (forM_)
 import Control.Monad.STM (atomically)
 import Control.Concurrent.STM.TVar (TVar, newTVar, readTVar, readTVarIO)
 import Control.Monad.Trans.Maybe (MaybeT)
@@ -22,12 +23,13 @@ import System.Environment (lookupEnv)
 import System.IO (BufferMode(LineBuffering), hSetBuffering, stdout)
 import System.Log.Logger (Priority(DEBUG), infoM, warningM, setLevel, updateGlobalLogger)
 
-import Act (actPlay, actSpec, syncClient, syncPlayersRoom, syncRoomClients)
+import Act (actOutcome, actPlay, actSpec, syncClient, syncPlayersRoom)
 import ArtificalIntelligence (Action(..), chooseAction)
 import Config (App, Config(..), runApp)
 import Database (Database(..), connectInfo)
 import GameState (GameState(..), PlayState(..), WaitType(..))
 import Negotiation (Prefix(..), RoomRequest(..), parseRoomReq, parsePrefix)
+import Outcome (Outcome)
 import Player (WhichPlayer(..), other)
 import Scenario (Scenario(..))
 import Username (Username(Username))
@@ -177,9 +179,9 @@ beginPlay state client roomVar = do
     Nothing -> do
       liftIO $ infoM "app" $ printf "<%s>: Room is full" (show $ Client.name client)
       Client.send (Command.toChat $ ErrorCommand "room is full") client
-    Just which ->
+    Just (which, outcomes) ->
       finally
-        (play which client roomVar)
+        (play which client roomVar outcomes)
         (disconnect client roomVar state)
 
 
@@ -203,11 +205,11 @@ beginComputer state client roomVar = do
     Nothing -> do
       liftIO $ infoM "app" $ printf "<%s>: Room is full" (show $ Client.name client)
       Client.send (Command.toChat $ ErrorCommand "Room is full") client
-    Just (computerClient, which) ->
+    Just (computerClient, (which, outcomes)) ->
       finally
         (do
           _ <- fork (computerPlay (other which) roomVar)
-          (play which client roomVar))
+          (play which client roomVar outcomes))
         (do
           _ <- disconnect computerClient roomVar state
           (disconnect client roomVar state))
@@ -244,12 +246,12 @@ spectate client roomVar = do
   return ()
 
 
-play :: WhichPlayer -> Client -> TVar Room -> App ()
-play which client roomVar = do
+play :: WhichPlayer -> Client -> TVar Room -> [Outcome] -> App ()
+play which client roomVar outcomes = do
   Client.send ("acceptPlay:" :: Text) client
   room <- liftIO . atomically $ readTVar roomVar
   syncPlayersRoom room
-  syncRoomClients room
+  forM_ outcomes (actOutcome room)
   _ <- runMaybeT . forever $ do
     msg <- lift $ Client.receive client
     case msg of
