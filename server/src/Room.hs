@@ -7,7 +7,9 @@ import Data.Monoid ((<>))
 import Data.Text (Text, intercalate)
 
 import Characters (initCharModel)
+import GameCommand (nextSelectState)
 import GameState (GameState(..), WaitType(..), initState)
+import Outcome (Outcome(..))
 import Player (WhichPlayer(..), other)
 import Scenario (Scenario(..))
 import Username (Username(Username))
@@ -81,7 +83,7 @@ clientExists client room =
   let
     name = Client.name client :: Username
   in
-    any (== name) (Client.name <$> (getClients room))
+    any (== name) $ Client.name <$> getClients room
 
 
 addSpec :: Client -> Room -> Room
@@ -90,10 +92,16 @@ addSpec client room = room { room_specs = specs }
     specs = client : getSpecs room :: Spectators
 
 
-addPlayer :: Client -> Room -> Maybe (Room, WhichPlayer)
+addPlayer :: Client -> Room -> Maybe (Room, [Outcome],  WhichPlayer)
 addPlayer client room =
-  (\which -> (ifFullInit . (setClient which client) $ room, which)) <$> (freeSlot room)
+  setup client room <$> freeSlot room
   where
+    setup :: Client -> Room -> WhichPlayer -> (Room, [Outcome], WhichPlayer)
+    setup c r w =
+      let
+        (newRoom, outcomes) = roomSetup $ setClient w c r
+      in
+        (newRoom, outcomes, w)
     freeSlot :: Room -> Maybe WhichPlayer
     freeSlot Room{ room_pa = Nothing } = Just PlayerA
     freeSlot Room{ room_pb = Nothing } = Just PlayerB
@@ -105,20 +113,26 @@ setClient PlayerA client room = room { room_pa = Just client }
 setClient PlayerB client room = room { room_pb = Just client }
 
 
-ifFullInit :: Room -> Room
-ifFullInit room =
-  if full room then
-    case getState room of
-      Waiting _ gen ->
-        let
-          scenario = getScenario room
-          charModel = initCharModel (scenario_charactersPa scenario) (scenario_charactersPb scenario)
-        in
-          room { room_state = Selecting charModel PlayerA gen }
-      _ ->
-        room
-  else
-    room
+roomSetup :: Room -> (Room, [Outcome])
+roomSetup room =
+  let
+    (newRoom, outcomes) =
+      case getState room of
+        Waiting _ gen ->
+          let
+            scenario = getScenario room
+            charModel = initCharModel (scenario_charactersPa scenario) (scenario_charactersPb scenario)
+            usernames = Room.getUsernames room
+            (state, newOutcomes) = nextSelectState charModel PlayerA gen usernames
+          in
+            (room { room_state = state }, newOutcomes)
+        _ ->
+          (room, [])
+  in
+    if full room then
+      (newRoom, outcomes)
+    else
+      (room, [])
 
 
 full :: Room -> Bool

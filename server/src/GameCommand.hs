@@ -89,8 +89,9 @@ rematch (winner, gen) usernames scenario =
   let
     charModel = initCharModel (scenario_charactersPa scenario) (scenario_charactersPb scenario)
     turn = fromMaybe PlayerA winner
+    (newState, outcomes) = nextSelectState charModel turn (fst $ split gen) usernames
   in
-    nextSelectState charModel turn (fst $ split gen) usernames
+    Right (Just newState, outcomes)
 
 
 chat :: Username -> Text -> Either Err (Maybe GameState, [Outcome])
@@ -126,11 +127,12 @@ select which name charModel turn gen usernames =
   let
     newCharModel :: CharModel
     newCharModel = selectChar charModel which name
+    (newState, outcomes) = nextSelectState newCharModel turn gen usernames
   in
-    nextSelectState newCharModel turn gen usernames
+    Right (Just newState, outcomes)
 
 
-nextSelectState :: CharModel -> Turn -> Gen -> (Username, Username) -> Either Err (Maybe GameState, [Outcome])
+nextSelectState :: CharModel -> Turn -> Gen -> (Username, Username) -> (GameState, [Outcome])
 nextSelectState charModel turn gen (usernamePa, usernamePb) =
   let
     result :: Maybe ([ResolveData], Model, PlayState)
@@ -166,7 +168,7 @@ nextSelectState charModel turn gen (usernamePa, usernamePb) =
         Just (res, model, playstate) ->
           [ Outcome.Encodable $ Outcome.Resolve res model playstate ]
   in
-    Right (Just state, outcomes)
+    (state, outcomes)
 
 
 playCard :: Int -> WhichPlayer -> Model -> Active.Replay -> Either Err (Maybe GameState, [Outcome])
