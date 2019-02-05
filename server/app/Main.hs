@@ -28,14 +28,13 @@ import ArtificalIntelligence (Action(..), chooseAction)
 import Config (App, Config(..), runApp)
 import Database (Database(..), connectInfo)
 import GameState (GameState(..), PlayState(..), WaitType(..))
-import ModelDiff (ModelDiff(..))
+import Model (Turn)
 import Negotiation (Prefix(..), RoomRequest(..), parseRoomReq, parsePrefix)
 import Outcome (Outcome)
 import Player (WhichPlayer(..), other)
 import Scenario (Scenario(..))
 import Username (Username(Username))
 import Util (Gen, getGen, shuffle)
-
 
 import qualified Server
 import Server (addComputerClient, addPlayerClient, addSpecClient)
@@ -158,10 +157,10 @@ prefixWaitType _           = WaitCustom
 
 makeScenario :: Prefix -> Scenario
 makeScenario prefix =
-  Scenario
-  { scenario_charactersPa = characters
+  Scenario {
+    scenario_turn = turn
+  , scenario_charactersPa = characters
   , scenario_charactersPb = characters
-  , scenario_modelDiff    = modelDiff
   }
   where
     characters :: Maybe Characters.FinalSelection
@@ -171,13 +170,15 @@ makeScenario prefix =
           Just (Characters.breaker, Characters.shielder, Characters.striker)
         _ ->
           Nothing
-    modelDiff :: ModelDiff
-    modelDiff =
+    turn :: Turn
+    turn =
       case prefix of
+        PrefixCpu ->
+          PlayerB
         PrefixTutorial ->
-          mempty { modeldiff_turn = Just PlayerB }
+          PlayerB
         _ ->
-          mempty
+          PlayerA
 
 
 beginPlay :: TVar Server.State -> Client -> TVar Room -> App ()

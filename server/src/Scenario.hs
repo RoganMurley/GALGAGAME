@@ -1,10 +1,10 @@
 module Scenario where
 
 import Characters (Character)
-import ModelDiff (ModelDiff)
+import Model (Turn)
 
 data Scenario = Scenario
   { scenario_charactersPa :: Maybe (Character, Character, Character)
   , scenario_charactersPb :: Maybe (Character, Character, Character)
-  , scenario_modelDiff    :: ModelDiff
+  , scenario_turn         :: Turn
   } deriving (Show)
