@@ -9,6 +9,7 @@ import Data.Text (Text, intercalate)
 import Characters (initCharModel)
 import GameCommand (nextSelectState)
 import GameState (GameState(..), WaitType(..), initState)
+import ModelDiff (ModelDiff(..))
 import Outcome (Outcome(..))
 import Player (WhichPlayer(..), other)
 import Scenario (Scenario(..))
@@ -122,8 +123,9 @@ roomSetup room =
           let
             scenario = getScenario room
             charModel = initCharModel (scenario_charactersPa scenario) (scenario_charactersPb scenario)
+            turn = fromMaybe PlayerA $ modeldiff_turn . scenario_modelDiff $ scenario
             usernames = Room.getUsernames room
-            (state, newOutcomes) = nextSelectState charModel PlayerA gen usernames
+            (state, newOutcomes) = nextSelectState charModel turn gen usernames
           in
             (room { room_state = state }, newOutcomes)
         _ ->

@@ -28,6 +28,7 @@ import ArtificalIntelligence (Action(..), chooseAction)
 import Config (App, Config(..), runApp)
 import Database (Database(..), connectInfo)
 import GameState (GameState(..), PlayState(..), WaitType(..))
+import ModelDiff (ModelDiff(..))
 import Negotiation (Prefix(..), RoomRequest(..), parseRoomReq, parsePrefix)
 import Outcome (Outcome)
 import Player (WhichPlayer(..), other)
@@ -160,6 +161,7 @@ makeScenario prefix =
   Scenario
   { scenario_charactersPa = characters
   , scenario_charactersPb = characters
+  , scenario_modelDiff    = modelDiff
   }
   where
     characters :: Maybe Characters.FinalSelection
@@ -169,6 +171,13 @@ makeScenario prefix =
           Just (Characters.breaker, Characters.shielder, Characters.striker)
         _ ->
           Nothing
+    modelDiff :: ModelDiff
+    modelDiff =
+      case prefix of
+        PrefixTutorial ->
+          mempty { modeldiff_turn = Just PlayerB }
+        _ ->
+          mempty
 
 
 beginPlay :: TVar Server.State -> Client -> TVar Room -> App ()
