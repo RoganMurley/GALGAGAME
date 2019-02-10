@@ -131,10 +131,7 @@ roomSetup room =
         _ ->
           (room, [])
   in
-    if full room then
-      (newRoom, outcomes)
-    else
-      (room, [])
+    (if full room then newRoom else room, outcomes)
 
 
 full :: Room -> Bool
