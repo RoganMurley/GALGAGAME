@@ -5,7 +5,7 @@ import Data.Aeson (ToJSON(..), (.=), object)
 import Characters (CharModel, FinalSelection, allCards)
 import Life (maxLife)
 import Mirror (Mirror(..))
-import Model (Deck, PlayerModel(..), Model(..), Passes(..), Turn, maxHandLength)
+import Model (Deck, PlayerModel(..), Model(..), Passes(..), Turn)
 import Player (WhichPlayer(..), other)
 import Util (Gen, shuffle, split)
 
@@ -87,12 +87,6 @@ initModel turn ca cb gen =
     -- PlayerB
     deckPB = shuffle genPB (buildDeck cb) :: Deck
     pm_b = PlayerModel [] deckPB maxLife :: PlayerModel
-
-
-initHandLength :: WhichPlayer -> Turn -> Int
-initHandLength which first
-  | which == first = maxHandLength
-  | otherwise      = maxHandLength - 1
 
 
 buildDeck :: FinalSelection -> Deck

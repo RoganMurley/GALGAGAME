@@ -49,6 +49,7 @@ library
                      , Scenario
                      , Server
                      , StackCard
+                     , Start
                      , Username
                      , Util
   other-modules:       DSL.Alpha.Actions

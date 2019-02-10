@@ -33,8 +33,11 @@ import Negotiation (Prefix(..), RoomRequest(..), parseRoomReq, parsePrefix)
 import Outcome (Outcome)
 import Player (WhichPlayer(..), other)
 import Scenario (Scenario(..))
+import Start (startProgram, tutorialStartProgram)
 import Username (Username(Username))
 import Util (Gen, getGen, shuffle)
+
+import qualified DSL.Beta as Beta
 
 import qualified Server
 import Server (addComputerClient, addPlayerClient, addSpecClient)
@@ -161,6 +164,7 @@ makeScenario prefix =
     scenario_turn = turn
   , scenario_charactersPa = characters
   , scenario_charactersPb = characters
+  , scenario_prog = prog
   }
   where
     characters :: Maybe Characters.FinalSelection
@@ -179,6 +183,13 @@ makeScenario prefix =
           PlayerB
         _ ->
           PlayerA
+    prog :: Beta.Program ()
+    prog =
+      case prefix of
+        PrefixTutorial -> do
+          tutorialStartProgram turn
+        _ ->
+          startProgram turn
 
 
 beginPlay :: TVar Server.State -> Client -> TVar Room -> App ()

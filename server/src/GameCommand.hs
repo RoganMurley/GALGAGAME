@@ -3,14 +3,13 @@ module GameCommand where
 import Card (Card(..))
 import CardAnim (CardAnim(..))
 import Characters (CharModel(..), SelectedCharacters(..), selectChar, initCharModel)
-import Control.Monad (replicateM_)
 import Control.Monad.Free (foldFree)
 import Control.Monad.Trans.Writer (Writer, runWriter, tell)
 import Data.Maybe (fromMaybe)
 import Data.Monoid ((<>))
 import Data.String.Conversions (cs)
 import Data.Text (Text)
-import GameState (GameState(..), PlayState(..), initHandLength, initModel)
+import GameState (GameState(..), PlayState(..), initModel)
 import GodMode
 import Model (Hand, Passes(..), Model, Stack, Turn)
 import Outcome (HoverState(..), Outcome)
@@ -51,7 +50,7 @@ update cmd which state scenario usernames =
     Selecting selectModel turn gen ->
       case cmd of
         SelectCharacter name ->
-          select which name selectModel turn gen usernames
+          select which name selectModel turn scenario gen usernames
         _ ->
           Left ("Unknown command " <> (cs $ show cmd) <> " on a selecting GameState")
     Started playState ->
@@ -89,7 +88,8 @@ rematch (winner, gen) usernames scenario =
   let
     charModel = initCharModel (scenario_charactersPa scenario) (scenario_charactersPb scenario)
     turn = fromMaybe PlayerA winner
-    (newState, outcomes) = nextSelectState charModel turn (fst $ split gen) usernames
+    startProgram = scenario_prog scenario
+    (newState, outcomes) = nextSelectState charModel turn startProgram (fst $ split gen) usernames
   in
     Right (Just newState, outcomes)
 
@@ -122,18 +122,19 @@ concede _ _ =
   Left "Cannot concede when not playing"
 
 
-select :: WhichPlayer -> Text -> CharModel -> Turn -> Gen -> (Username, Username) -> Either Err (Maybe GameState, [Outcome])
-select which name charModel turn gen usernames =
+select :: WhichPlayer -> Text -> CharModel -> Turn -> Scenario -> Gen -> (Username, Username) -> Either Err (Maybe GameState, [Outcome])
+select which name charModel turn scenario gen usernames =
   let
     newCharModel :: CharModel
     newCharModel = selectChar charModel which name
-    (newState, outcomes) = nextSelectState newCharModel turn gen usernames
+    startProgram = scenario_prog scenario
+    (newState, outcomes) = nextSelectState newCharModel turn startProgram gen usernames
   in
     Right (Just newState, outcomes)
 
 
-nextSelectState :: CharModel -> Turn -> Gen -> (Username, Username) -> (GameState, [Outcome])
-nextSelectState charModel turn gen (usernamePa, usernamePb) =
+nextSelectState :: CharModel -> Turn -> Beta.Program () -> Gen -> (Username, Username) -> (GameState, [Outcome])
+nextSelectState charModel turn startProgram gen (usernamePa, usernamePb) =
   let
     result :: Maybe ([ResolveData], Model, PlayState)
     result =
@@ -142,10 +143,6 @@ nextSelectState charModel turn gen (usernamePa, usernamePb) =
           let
             model = initModel turn (c1, c2, c3) (ca, cb, cc) gen :: Model
             replay = Active.init model usernamePa usernamePb :: Active.Replay
-            startProgram :: Beta.Program ()
-            startProgram = do
-                replicateM_ (initHandLength PlayerA turn) (Beta.draw PlayerA)
-                replicateM_ (initHandLength PlayerB turn) (Beta.draw PlayerB)
             (newModel, _, res) = Beta.execute model Nothing $ foldFree Beta.betaI startProgram
             playstate :: PlayState
             playstate = Playing newModel (Active.add replay res)

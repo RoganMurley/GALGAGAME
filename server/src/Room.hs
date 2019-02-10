@@ -123,8 +123,9 @@ roomSetup room =
             scenario = getScenario room
             charModel = initCharModel (scenario_charactersPa scenario) (scenario_charactersPb scenario)
             turn = scenario_turn scenario
+            startProgram = scenario_prog scenario
             usernames = Room.getUsernames room
-            (state, newOutcomes) = nextSelectState charModel turn gen usernames
+            (state, newOutcomes) = nextSelectState charModel turn startProgram gen usernames
           in
             (room { room_state = state }, newOutcomes)
         _ ->
