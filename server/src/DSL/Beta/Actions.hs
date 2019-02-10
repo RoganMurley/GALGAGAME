@@ -7,7 +7,6 @@ import DSL.Beta.DSL (DSL(..), Program)
 import Life (Life)
 import Player (WhichPlayer(..), other)
 
-
 makeFree ''DSL
 
 
