@@ -15,7 +15,7 @@ view =
             [ h1 [] [ text "RING ", div [ class "title-ring" ] [ text "OF" ], text " WORLDS" ]
             , div [ class "main-menu-buttons" ] <|
                 List.map menuButton
-                    [ QuickplayGame, CustomGame, ComputerGame ]
+                    [ TutorialGame, QuickplayGame, CustomGame, ComputerGame ]
             ]
         ]
 
