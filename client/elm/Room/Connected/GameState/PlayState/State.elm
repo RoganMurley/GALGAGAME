@@ -1,5 +1,6 @@
-module PlayState.State exposing (carry, get, map, mouseClick, mouseMove, resolveOutcome, tick, update, updatePlayingOnly, updateTurnOnly)
+module PlayState.State exposing (carry, get, map, mouseClick, mouseMove, resolveOutcomeStr, tick, update, updatePlayingOnly, updateTurnOnly)
 
+import Animation.Types exposing (Anim(Play, Windup))
 import Audio exposing (playSound)
 import Game.Encoders
 import Game.State as Game
@@ -11,6 +12,7 @@ import Main.Types exposing (Flags)
 import Math.Vector2 exposing (vec2)
 import Mode exposing (Mode)
 import Model.Decoders as Model
+import Model.Diff exposing (Diff, initDiff)
 import Model.State as Model
 import Model.Types exposing (Model)
 import Mouse exposing (Position)
@@ -111,31 +113,67 @@ updatePlayingOnly msg state mode flags =
 
 updateTurnOnly : TurnOnly -> PlayState -> Flags -> ( PlayState, Cmd Main.Msg )
 updateTurnOnly msg state flags =
-    let
-        legal =
-            case state of
-                Playing { game } ->
-                    game.res.final.turn == PlayerA
+    case state of
+        Playing { game } ->
+            if game.res.final.turn == PlayerA then
+                case msg of
+                    EndTurn ->
+                        state
+                            ! [ send flags "end:"
+                              , playSound "/sfx/endTurn.wav"
+                              ]
 
-                _ ->
-                    False
-    in
-    if not legal then
-        ( state, Cmd.none )
+                    PlayCard card index ->
+                        let
+                            -- Construct the ResolveData clientside to avoid latency.
+                            newState : PlayState
+                            newState =
+                                resolveOutcome initial resDiffList finalState (Just state)
 
-    else
-        case msg of
-            EndTurn ->
-                state
-                    ! [ send flags "end:"
-                      , playSound "/sfx/endTurn.wav"
-                      ]
+                            initial : Model
+                            initial =
+                                game.res.final
 
-            PlayCard index ->
-                state
-                    ! [ send flags <| "play:" ++ toString index
-                      , playSound "/sfx/playCard.wav"
-                      ]
+                            playDiff : Diff
+                            playDiff =
+                                { initDiff
+                                    | turn = Just PlayerB
+                                    , stack = Just <| { owner = PlayerA, card = card } :: initial.stack
+                                    , hand = Just <| List.removeAt index initial.hand
+                                }
+
+                            resDiffList : List Resolvable.ResolveDiffData
+                            resDiffList =
+                                [ { diff = playDiff
+                                  , anim = Play PlayerA card index
+                                  , animDamage = ( 0, 0 )
+                                  , stackCard = Nothing
+                                  }
+                                , { diff = initDiff
+                                  , anim = Windup PlayerA
+                                  , animDamage = ( 0, 0 )
+                                  , stackCard = Nothing
+                                  }
+                                ]
+
+                            final : Model
+                            final =
+                                Model.Diff.merge playDiff initial
+
+                            finalState : PlayState
+                            finalState =
+                                Playing { game = Game.gameInit final }
+                        in
+                        newState
+                            ! [ send flags <| "play:" ++ toString index
+                              , playSound "/sfx/playCard.wav"
+                              ]
+
+            else
+                ( state, Cmd.none )
+
+        _ ->
+            ( state, Cmd.none )
 
 
 tick : Flags -> PlayState -> Float -> ( PlayState, Cmd Msg )
@@ -189,8 +227,30 @@ carry old new =
         new
 
 
-resolveOutcome : String -> Maybe PlayState -> PlayState
-resolveOutcome str mState =
+resolveOutcomeStr : String -> Maybe PlayState -> PlayState
+resolveOutcomeStr str mState =
+    let
+        resDiffList : List Resolvable.ResolveDiffData
+        resDiffList =
+            unsafeForceDecode
+                (Json.field "list" <|
+                    Json.list Resolvable.Decoders.resolveDiffData
+                )
+                str
+
+        initial : Model
+        initial =
+            unsafeForceDecode (Json.field "initial" Model.decoder) str
+
+        finalState : PlayState
+        finalState =
+            unsafeForceDecode (Json.field "final" PlayState.decoder) str
+    in
+    resolveOutcome initial resDiffList finalState mState
+
+
+resolveOutcome : Model -> List Resolvable.ResolveDiffData -> PlayState -> Maybe PlayState -> PlayState
+resolveOutcome initial resDiffList finalState mState =
     let
         state : PlayState
         state =
@@ -211,25 +271,9 @@ resolveOutcome str mState =
                 _ ->
                     get (.res >> .tick) state
 
-        initial : Model
-        initial =
-            unsafeForceDecode (Json.field "initial" Model.decoder) str
-
-        resDiffList : List Resolvable.ResolveDiffData
-        resDiffList =
-            unsafeForceDecode
-                (Json.field "list" <|
-                    Json.list Resolvable.Decoders.resolveDiffData
-                )
-                str
-
         resList : List Resolvable.ResolveData
         resList =
             Resolvable.resDiffToData initial resDiffList
-
-        finalState : PlayState
-        finalState =
-            unsafeForceDecode (Json.field "final" PlayState.decoder) str
 
         model : Model
         model =
@@ -269,16 +313,15 @@ mouseClick mode flags { x, y } state =
     case state of
         Playing { game } ->
             let
-                mIndex =
-                    Maybe.map .index <|
-                        List.find
-                            (Game.hitTest pos 28)
-                            game.entities.hand
+                mEntity =
+                    List.find
+                        (Game.hitTest pos 28)
+                        game.entities.hand
             in
-            case mIndex of
-                Just index ->
+            case mEntity of
+                Just { card, index } ->
                     update
-                        (PlayingOnly <| TurnOnly <| PlayCard index)
+                        (PlayingOnly <| TurnOnly <| PlayCard card index)
                         state
                         mode
                         flags

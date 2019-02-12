@@ -60,7 +60,7 @@ update msg state mode flags =
                         _ ->
                             Nothing
             in
-            ( Started <| PlayState.resolveOutcome str oldPlayState
+            ( Started <| PlayState.resolveOutcomeStr str oldPlayState
             , Cmd.none
             )
 

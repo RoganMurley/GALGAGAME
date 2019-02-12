@@ -2,7 +2,7 @@ module Act where
 
 import Config (App)
 import Control.Concurrent.STM.TVar (TVar, readTVar)
-import Control.Monad (forM_)
+import Control.Monad (forM_, when)
 import Control.Monad.IO.Class (liftIO)
 import Control.Monad.STM (STM, atomically)
 import Data.Aeson (encode)
@@ -13,7 +13,7 @@ import GameCommand (GameCommand(..), update)
 import GameState (GameState(..), PlayState)
 import Mirror (mirror)
 import Model (Model)
-import Player (WhichPlayer(..))
+import Player (WhichPlayer(..), other)
 import ResolveData (ResolveData(..))
 import System.Log.Logger (infoM, warningM)
 import Text.Printf (printf)
@@ -116,18 +116,18 @@ syncPlayersRoom room = do
         (cs . encode . (if rev then mirror else id) $ Room.connected room)
 
 
-resolveRoomClients :: ([ResolveData], Model, PlayState) -> Room -> App ()
-resolveRoomClients (res, initial, final) room = do
-  Room.sendToPlayer PlayerA msgPa room
-  Room.sendToPlayer PlayerB msgPb room
+resolveRoomClients :: [ResolveData] -> Model -> PlayState -> Maybe WhichPlayer -> Room -> App ()
+resolveRoomClients res initial final exclude room = do
+  when (exclude /= Just PlayerA) $ Room.sendToPlayer PlayerA msgPa room
+  when (exclude /= Just PlayerB) $ Room.sendToPlayer PlayerB msgPb room
   Room.sendToSpecs msgPa room
   where
     msgPa = ("res:" <>) . cs . encode $ outcome :: Text
     msgPb = ("res:" <>) . cs . encode $ mirrorOutcome :: Text
     outcome :: Outcome.Encodable
-    outcome = Outcome.Resolve res initial final
+    outcome = Outcome.Resolve res initial final exclude
     mirrorOutcome :: Outcome.Encodable
-    mirrorOutcome = Outcome.Resolve (mirror <$> res) (mirror initial) (mirror final)
+    mirrorOutcome = Outcome.Resolve (mirror <$> res) (mirror initial) (mirror final) (other <$> exclude)
 
 
 actOutcome :: Room -> Outcome -> App ()
@@ -139,8 +139,8 @@ actOutcome room (Outcome.Encodable o@(Outcome.Hover which _ rawDmg)) = do
   Room.sendToPlayer which (("damage:" <>) . cs . encode $ dmg) room
 actOutcome room (Outcome.Encodable (Outcome.Chat (Username username) msg)) =
   Room.broadcast ("chat:" <> username <> ": " <> msg) room
-actOutcome room (Outcome.Encodable (Outcome.Resolve models initial final)) =
-  resolveRoomClients (models, initial, final) room
+actOutcome room (Outcome.Encodable (Outcome.Resolve models initial final exclude)) =
+  resolveRoomClients models initial final exclude room
 actOutcome room (Outcome.SaveReplay replay) = do
   liftIO $ infoM "app" "Saving replay..."
   result <- Replay.Final.save replay
