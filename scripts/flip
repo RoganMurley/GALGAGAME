@@ -15,7 +15,7 @@ def get_droplets(token):
 
 def flip_ip(token, droplet_id):
     req = requests.post(
-        'https://api.digitalocean.com/v2/floating_ips/138.68.116.26/actions',
+        'https://api.digitalocean.com/v2/floating_ips/157.230.72.108/actions',
         headers={'Authorization': 'Bearer {}'.format(token)},
         json={
             'type': 'assign',
