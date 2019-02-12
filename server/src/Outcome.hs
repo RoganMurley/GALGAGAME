@@ -22,7 +22,7 @@ data Outcome =
 data Encodable =
     Chat Username Text
   | Hover WhichPlayer HoverState (Damage, Damage)
-  | Resolve [ResolveData] Model PlayState
+  | Resolve [ResolveData] Model PlayState (Maybe WhichPlayer)
   deriving (Eq, Show)
 
 data HoverState = HoverHand Index | HoverStack Index | NoHover
@@ -40,7 +40,7 @@ instance ToJSON Encodable where
       ]
   toJSON (Hover _ hoverState _) =
     toJSON hoverState
-  toJSON (Resolve res initial state) =
+  toJSON (Resolve res initial state _) =
     object
       [ "list"    .= res
       , "initial" .= initial

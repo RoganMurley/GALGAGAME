@@ -114,7 +114,7 @@ concede which (Started (Playing model replay)) =
     Right (
       Just . Started $ newPlayState
     , [
-        Outcome.Encodable $ Outcome.Resolve res model newPlayState
+        Outcome.Encodable $ Outcome.Resolve res model newPlayState Nothing
       , Outcome.SaveReplay finalReplay
       ]
     )
@@ -163,7 +163,7 @@ nextSelectState charModel turn startProgram gen (usernamePa, usernamePb) =
         Nothing ->
           [ Outcome.Sync ]
         Just (res, model, playstate) ->
-          [ Outcome.Encodable $ Outcome.Resolve res model playstate ]
+          [ Outcome.Encodable $ Outcome.Resolve res model playstate Nothing ]
   in
     (state, outcomes)
 
@@ -185,7 +185,7 @@ playCard index which m replay
           Right (
             Just . Started $ newPlayState,
             [
-              Outcome.Encodable $ Outcome.Resolve res m newPlayState
+              Outcome.Encodable $ Outcome.Resolve res m newPlayState (Just which)
             ]
           )
   where
@@ -220,7 +220,7 @@ endTurn which model replay
               Right (
                 Just newState,
                 [
-                  Outcome.Encodable $ Outcome.Resolve (res ++ endRes) model newPlayState
+                  Outcome.Encodable $ Outcome.Resolve (res ++ endRes) model newPlayState Nothing
                 ]
               )
           (Ended w m newReplay g, res) ->
@@ -232,7 +232,7 @@ endTurn which model replay
               Right (
                 Just newState,
                 [
-                  Outcome.Encodable $ Outcome.Resolve res model newPlayState
+                  Outcome.Encodable $ Outcome.Resolve res model newPlayState Nothing
                 , Outcome.SaveReplay finalReplay
                 ]
               )
@@ -244,7 +244,7 @@ endTurn which model replay
           Right (
             Just . Started $ newPlayState,
             [
-              Outcome.Encodable $ Outcome.Resolve [] model newPlayState
+              Outcome.Encodable $ Outcome.Resolve [] model newPlayState Nothing
             ]
           )
   where
@@ -351,7 +351,7 @@ godMode username str which model replay =
         in
           Right (
             Just . Started $ newPlayState
-          , [Outcome.Encodable $ Outcome.Resolve res model newPlayState]
+          , [Outcome.Encodable $ Outcome.Resolve res model newPlayState Nothing]
           )
       Left err ->
         Left err

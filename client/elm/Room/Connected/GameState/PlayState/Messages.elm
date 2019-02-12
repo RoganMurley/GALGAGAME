@@ -1,5 +1,6 @@
 module PlayState.Messages exposing (Msg(..), PlayingOnly(..), TurnOnly(..))
 
+import Card.Types exposing (Card)
 import Game.Types exposing (HoverOther, HoverSelf)
 
 
@@ -19,4 +20,4 @@ type PlayingOnly
 
 type TurnOnly
     = EndTurn
-    | PlayCard Int
+    | PlayCard Card Int
