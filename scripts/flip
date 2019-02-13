@@ -4,6 +4,9 @@ import sys
 
 import requests
 
+FLOATING_IP = '157.230.72.108'
+API_URL = 'https://api.digitalocean.com/v2/floating_ips/{}/actions'.format(FLOATING_IP)
+
 
 def get_droplets(token):
     req = requests.get(
@@ -15,7 +18,7 @@ def get_droplets(token):
 
 def flip_ip(token, droplet_id):
     req = requests.post(
-        'https://api.digitalocean.com/v2/floating_ips/157.230.72.108/actions',
+        API_URL,
         headers={'Authorization': 'Bearer {}'.format(token)},
         json={
             'type': 'assign',
@@ -39,12 +42,12 @@ def main():
     droplet = get_droplet_by_name(droplets, name)
 
     if droplet is None:
-        print("Droplet '{}' not found".format(name))
+        print('Droplet {} not found'.format(name))
     else:
         droplet_id = droplet['id']
         response = flip_ip(token, droplet_id)
         print(response.text)
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()
