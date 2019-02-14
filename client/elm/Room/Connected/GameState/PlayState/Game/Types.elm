@@ -18,6 +18,7 @@ type alias Model =
     , hover : HoverSelf
     , otherHover : HoverOther
     , entities : Entities
+    , passed : Bool
     }
 
 

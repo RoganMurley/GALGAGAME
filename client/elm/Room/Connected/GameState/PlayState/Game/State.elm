@@ -28,6 +28,7 @@ gameInit model =
     , hover = NoHover
     , otherHover = NoHover
     , entities = { hand = [], otherHand = [], stack = [] }
+    , passed = False
     }
 
 

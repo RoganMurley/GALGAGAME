@@ -7,7 +7,7 @@ import Colour
 import Connected.Messages as Connected
 import Ease
 import Game.State exposing (contextInit)
-import Game.Types exposing (Context, Hover(..), HoverSelf, Model)
+import Game.Types as Game exposing (Context, Hover(..), HoverSelf)
 import GameState.Messages as GameState
 import Hand.State exposing (maxHandLength)
 import Hand.View as Hand
@@ -35,8 +35,8 @@ import WebGL
 import WhichPlayer.Types exposing (WhichPlayer(..))
 
 
-view : Render.Params -> Model -> Texture.Model -> Html Main.Msg
-view { w, h } { res, hover, focus, entities } textures =
+view : Render.Params -> Game.Model -> Texture.Model -> Html Main.Msg
+view { w, h } { res, hover, focus, entities, passed } textures =
     let
         ctx =
             contextInit ( w, h ) res textures
@@ -63,7 +63,7 @@ view { w, h } { res, hover, focus, entities } textures =
         , div [ class "text-focus" ] [ focusTextView ctx focus ]
         , div [ class "clock-life-container" ] (lifeTextView ctx)
         , div [ class "clock-damage-container" ] (damageTextView hover (resolving res) ctx)
-        , div [ class "clock-go" ] [ turnView ctx focus ]
+        , div [ class "clock-go" ] [ turnView ctx focus passed ]
         ]
 
 
@@ -362,17 +362,17 @@ damageTextView hover isResolving { radius, animDamage } =
         ]
 
 
-turnView : Context -> Maybe StackCard -> Html Main.Msg
-turnView { anim, model } focus =
+turnView : Context -> Maybe StackCard -> Bool -> Html Main.Msg
+turnView { anim, model } focus passed =
     let
         handFull =
             List.length model.hand == maxHandLength
     in
-    case ( anim, focus ) of
-        ( Mill _ _, _ ) ->
+    case ( anim, focus, passed ) of
+        ( Mill _ _, _, _ ) ->
             div [] []
 
-        ( NullAnim, Nothing ) ->
+        ( NullAnim, Nothing, False ) ->
             case model.turn of
                 PlayerA ->
                     button
