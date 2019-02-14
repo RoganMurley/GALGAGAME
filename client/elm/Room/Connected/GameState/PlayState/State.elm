@@ -118,7 +118,13 @@ updateTurnOnly msg state flags =
             if game.res.final.turn == PlayerA then
                 case msg of
                     EndTurn ->
-                        state
+                        let
+                            -- Set passed to True to avoid latency.
+                            newState : PlayState
+                            newState =
+                                Playing { game = { game | passed = True } }
+                        in
+                        newState
                             ! [ send flags "end:"
                               , playSound "/sfx/endTurn.wav"
                               ]
