@@ -78,7 +78,7 @@ main = do
 
   postgresHost     <- lookupEnv "POSTGRES_HOST"
   postgresPort     <- lookupEnv "POSTGRES_PORT"
-  postgresUser <- lookupEnv "POSTGRES_USER"
+  postgresUser     <- lookupEnv "POSTGRES_USER"
   postgresPassword <- lookupEnv "POSTGRES_PASSWORD"
   postgresDatabase <- lookupEnv "POSTGRES_DATABASE"
 
