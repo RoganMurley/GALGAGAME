@@ -43,5 +43,5 @@ jobs:
           name: Cache Dependencies
           key: server-{{ checksum "server/ringofworlds.cabal" }}-{{ checksum "server/stack.yaml" }}
           paths:
-            - "server/.stack"
+            - ".stack"
             - "server/.stack-work"
