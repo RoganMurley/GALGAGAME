@@ -5,6 +5,10 @@ jobs:
       image: circleci/classic:edge
     steps:
       - checkout
+      - restore_cache:
+          name: Restore Cached Server Dependencies
+          keys:
+            - server-{{ checksum "server/ringofworlds.cabal" }}-{{ checksum "server/stack.yaml" }}
       - run:
           name: Server
           command: cd server &&
@@ -35,3 +39,9 @@ jobs:
       - run:
           name: Deploy
           command: if [ $CIRCLE_BRANCH == 'master' ]; then ./scripts/decryptSecrets && ./scripts/deploy; fi
+      - save_cache:
+          name: Cache Dependencies
+          key: server-{{ checksum "server/ringofworlds.cabal" }}-{{ checksum "server/stack.yaml" }}
+          paths:
+            - "server/.stack"
+            - "server/.stack-work"
