@@ -15,8 +15,20 @@ services:
     build:
       context: "redis"
     restart: always
+  database:
+    build:
+      context: "database"
+    restart: always
   game:
     image: "game-ringofworlds"
     links:
+      - database
       - redis
     restart: always
+  adminer:
+    image: adminer
+    links:
+      - database
+    restart: always
+    ports:
+      - 8080:8080

@@ -11,5 +11,5 @@ services:
     restart: always
   game:
     image: "game-ringofworlds"
-    env_file: "redis/redis.prod.env"
+    env_file: "prod.env"
     restart: always

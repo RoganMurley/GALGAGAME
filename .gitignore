@@ -7,7 +7,7 @@ client/ssl/www.playhubris.com.key
 client/ssl/www.playhubris.com.ca-bundle
 client/ssl/www.ringofworlds.com.ca-bundle
 client/ssl/www.ringofworlds.com.key
-redis/redis.prod.env
+prod.env
 .DS_Store
 .images/game-hubris
 .images/game-ringofworlds

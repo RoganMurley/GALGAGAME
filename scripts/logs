@@ -1,0 +1,3 @@
+#!/bin/bash
+CONTAINER_NAME=`docker ps | grep game-ringofworlds | awk '{print $1}'`
+docker logs -f $CONTAINER_NAME
