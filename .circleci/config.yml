@@ -10,7 +10,7 @@ jobs:
           keys:
             - server-{{ checksum "server/ringofworlds.cabal" }}-{{ checksum "server/stack.yaml" }}
       - run:
-          name: Server
+          name: Setup Server
           command: cd server &&
                    sudo curl -sSL https://get.haskellstack.org/ | sh &&
                    stack docker pull &&
