@@ -6,9 +6,17 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          name: Restore Cached Server Dependencies
+          name: Restore Cached Stack Dependencies
           keys:
             - server-{{ checksum "server/ringofworlds.cabal" }}-{{ checksum "server/stack.yaml" }}
+      - restore_cache:
+          name: Restore Cached NPM Dependencies
+          keys:
+            - npm-{{ checksum "client/package.json" }}
+      - restore_cache:
+          name: Restore Cached Elm Dependencies
+          keys:
+            - elm-{{ checksum "client/elm-package.json" }}
       - run:
           name: Setup Server
           command: cd server &&
@@ -40,8 +48,18 @@ jobs:
           name: Deploy
           command: if [ $CIRCLE_BRANCH == 'master' ]; then ./scripts/decryptSecrets && ./scripts/deploy; fi
       - save_cache:
-          name: Cache Dependencies
+          name: Cache Stack Dependencies
           key: server-{{ checksum "server/ringofworlds.cabal" }}-{{ checksum "server/stack.yaml" }}
           paths:
-            - ".stack"
-            - "server/.stack-work"
+            - "~/.stack"
+            - "./server/.stack-work"
+      - save_cache:
+          name: Cache NPM Dependencies
+          key: npm-{{ checksum "client/package.json" }}
+          paths:
+            - "./client/node-modules"
+      - save_cache:
+          name: Cache ELM Dependencies
+          key: elm-{{ checksum "client/elm-package.json" }}
+          paths:
+            - "./client/elm-stuff"
