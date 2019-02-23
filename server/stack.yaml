@@ -18,6 +18,6 @@ docker:
 image:
   container:
     name: game
-    base: fpco/haskell-scratch:integer-gmp
+    base: schmolt/ringofworlds-base:1
     entrypoints:
       - ringofworlds

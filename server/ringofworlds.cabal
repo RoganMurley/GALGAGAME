@@ -72,6 +72,7 @@ library
                      , hedis
                      , hslogger
                      , http-types
+                     , postgresql-simple
                      , random
                      , random-shuffle
                      , safe
@@ -108,6 +109,7 @@ executable ringofworlds
                      , hslogger
                      , http-types
                      , lifted-base
+                     , postgresql-simple
                      , random
                      , ringofworlds
                      , safe

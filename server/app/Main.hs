@@ -26,7 +26,7 @@ import System.Log.Logger (Priority(DEBUG), infoM, warningM, setLevel, updateGlob
 import Act (actOutcome, actPlay, actSpec, syncClient, syncPlayersRoom)
 import ArtificalIntelligence (Action(..), chooseAction)
 import Config (App, Config(..), runApp)
-import Database (Database(..), connectInfo)
+import Database (RedisDatabase(..), postgresConnectInfo, redisConnectInfo)
 import GameState (GameState(..), PlayState(..), WaitType(..))
 import Model (Turn)
 import Negotiation (Prefix(..), RoomRequest(..), parseRoomReq, parsePrefix)
@@ -54,6 +54,8 @@ import Command (Command(..))
 import qualified Room
 import Room (Room)
 
+import Database.PostgreSQL.Simple (connectPostgreSQL, postgreSQLConnectionString)
+
 import qualified Replay.Final
 
 import qualified Network.WebSockets as WS
@@ -69,15 +71,22 @@ main = do
   hSetBuffering stdout LineBuffering
 
   -- If we're on production, these env vars will be present.
-  -- Defined in `redis.prod.env` secret.
+  -- Defined in `prod.env` secret.
   redisHost     <- lookupEnv "REDIS_HOST"
   redisPort     <- lookupEnv "REDIS_PORT"
   redisPassword <- lookupEnv "REDIS_PASSWORD"
 
-  let connect = R.connect . (connectInfo (redisHost, redisPort, redisPassword))
-  userConn   <- connect UserDatabase
-  tokenConn  <- connect TokenDatabase
-  replayConn <- connect ReplayDatabase
+  postgresHost     <- lookupEnv "POSTGRES_HOST"
+  postgresPort     <- lookupEnv "POSTGRES_PORT"
+  postgresUser <- lookupEnv "POSTGRES_USER"
+  postgresPassword <- lookupEnv "POSTGRES_PASSWORD"
+  postgresDatabase <- lookupEnv "POSTGRES_DATABASE"
+
+  let connectRedis = R.connect . (redisConnectInfo (redisHost, redisPort, redisPassword))
+  userConn   <- connectRedis UserDatabase
+  tokenConn  <- connectRedis TokenDatabase
+
+  replayConn <- connectPostgreSQL . postgreSQLConnectionString $ postgresConnectInfo (postgresHost, postgresPort, postgresUser, postgresPassword, postgresDatabase)
 
   let config = Config userConn tokenConn replayConn
 

@@ -143,9 +143,5 @@ actOutcome room (Outcome.Encodable (Outcome.Resolve models initial final exclude
   resolveRoomClients models initial final exclude room
 actOutcome room (Outcome.SaveReplay replay) = do
   liftIO $ infoM "app" "Saving replay..."
-  result <- Replay.Final.save replay
-  case result of
-    Just replayId ->
-      Room.broadcast ("replaySaved:" <> replayId) room
-    Nothing ->
-      liftIO $ warningM "app" "Failed to save replay"
+  replayId <- Replay.Final.save replay
+  Room.broadcast ("replaySaved:" <> replayId) room
