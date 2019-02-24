@@ -7,6 +7,8 @@ import Data.Text (Text)
 import GameState (PlayState)
 import Mirror (Mirror(..))
 import Safe (headMay)
+import System.Log.Logger (debugM)
+import Text.Printf (printf)
 
 import qualified Data.GUID as GUID
 import qualified Database.PostgreSQL.Simple as Postgres
@@ -42,7 +44,8 @@ save replay = do
   conn <- getReplayConn
   replayId <- liftIO GUID.genText
   let value = encode replay
-  _ <- liftIO $ Postgres.execute conn "INSERT INTO replays (id, replay) VALUES (?, ?)" (replayId, value)
+  result <- liftIO $ Postgres.execute conn "INSERT INTO replays (id, replay) VALUES (?, ?)" (replayId, value)
+  liftIO $ debugM "app" $ printf "Replay result: %s" $ show result
   return replayId
 
 load :: Text -> App (Maybe Text)
