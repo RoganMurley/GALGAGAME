@@ -7,7 +7,7 @@ import requests
 
 def get_droplets(token):
     req = requests.get(
-        'https://api.digitalocean.com/v2/droplets',
+        'https://api.digitalocean.com/v2/droplets?tag_name=ring-of-worlds',
         headers={'Authorization': 'Bearer {}'.format(token)},
     )
     return req.json()['droplets']
