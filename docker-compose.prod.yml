@@ -9,7 +9,23 @@ services:
     links:
       - game
     restart: always
+    labels:
+      com.datadoghq.ad.logs: '[{"source": "nginx", "service": "webapp"}]'
   game:
     image: "game-ringofworlds"
     env_file: "prod.env"
     restart: always
+    labels:
+      com.datadoghq.ad.logs: '[{"source": "game", "service": "webapp"}]'
+  datadog:
+    image: "datadog/agent:latest"
+    env_file: "prod.env"
+    links:
+      - game
+      - static
+    restart: always
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /proc/:/host/proc/:ro
+      - /opt/datadog-agent/run:/opt/datadog-agent/run:rw
+      - /sys/fs/cgroup/:/host/sys/fs/cgroup:ro
