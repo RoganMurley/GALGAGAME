@@ -25,7 +25,7 @@ import System.Log.Logger (Priority(DEBUG), infoM, warningM, setLevel, updateGlob
 
 import Act (actOutcome, actPlay, actSpec, syncClient, syncPlayersRoom)
 import ArtificalIntelligence (Action(..), chooseAction)
-import Config (App, Config(..), runApp)
+import Config (App, ConnectInfoConfig(..), runApp)
 import Database (RedisDatabase(..), postgresConnectInfo, redisConnectInfo)
 import GameState (GameState(..), PlayState(..), WaitType(..))
 import Model (Turn)
@@ -54,14 +54,11 @@ import Command (Command(..))
 import qualified Room
 import Room (Room)
 
-import Database.PostgreSQL.Simple (connectPostgreSQL, postgreSQLConnectionString)
-
 import qualified Replay.Final
 
 import qualified Network.WebSockets as WS
 
 import qualified Auth as A
-import qualified Database.Redis as R
 import qualified Data.GUID as GUID
 
 
@@ -75,38 +72,34 @@ main = do
   redisHost     <- lookupEnv "REDIS_HOST"
   redisPort     <- lookupEnv "REDIS_PORT"
   redisPassword <- lookupEnv "REDIS_PASSWORD"
+  let redisVars = (redisHost, redisPort, redisPassword)
 
   postgresHost     <- lookupEnv "POSTGRES_HOST"
   postgresPort     <- lookupEnv "POSTGRES_PORT"
   postgresUser     <- lookupEnv "POSTGRES_USER"
   postgresPassword <- lookupEnv "POSTGRES_PASSWORD"
   postgresDatabase <- lookupEnv "POSTGRES_DATABASE"
+  let postgresVars = (postgresHost, postgresPort, postgresUser, postgresPassword, postgresDatabase)
 
-  let connectRedis = R.connect . (redisConnectInfo (redisHost, redisPort, redisPassword))
-  userConn   <- connectRedis UserDatabase
-  tokenConn  <- connectRedis TokenDatabase
+  let connectInfoConfig = ConnectInfoConfig (redisConnectInfo redisVars UserDatabase) (redisConnectInfo redisVars TokenDatabase) (postgresConnectInfo postgresVars)
 
-  replayConn <- connectPostgreSQL . postgreSQLConnectionString $ postgresConnectInfo (postgresHost, postgresPort, postgresUser, postgresPassword, postgresDatabase)
-
-  let config = Config userConn tokenConn replayConn
-
-  authApp   <- runApp config A.app
+  authApp   <- runApp connectInfoConfig $ A.app connectInfoConfig
   state     <- atomically $ newTVar Server.initState
 
-  run 9160 $ waiApp state config authApp
+  run 9160 $ waiApp state connectInfoConfig authApp
 
 
-waiApp :: TVar Server.State -> Config -> Application -> Application
-waiApp state config backupApp =
+waiApp :: TVar Server.State -> ConnectInfoConfig -> Application -> Application
+waiApp state connectInfoConfig backupApp =
   websocketsOr
     WS.defaultConnectionOptions
-      (wsApp state config)
+      (wsApp state connectInfoConfig)
       backupApp
 
 
-wsApp :: TVar Server.State -> Config -> WS.ServerApp
-wsApp state config pending =
-  runApp config $ do
+wsApp :: TVar Server.State -> ConnectInfoConfig -> WS.ServerApp
+wsApp state connectInfoConfig pending =
+  runApp connectInfoConfig $ do
     connection <- liftIO $ WS.acceptRequest pending
     msg        <- liftIO $ WS.receiveData connection
     usernameM  <- A.checkAuth $ A.getToken pending
