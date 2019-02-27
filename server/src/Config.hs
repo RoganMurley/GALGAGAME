@@ -8,6 +8,13 @@ import qualified Database.PostgreSQL.Simple as Postgres
 type App = ReaderT Config IO
 
 
+data ConnectInfoConfig = ConnectInfoConfig
+  { connectInfoConfig_user   :: Redis.ConnectInfo
+  , connectInfoConfig_token  :: Redis.ConnectInfo
+  , connectInfoConfig_replay :: Postgres.ConnectInfo
+  }
+
+
 data Config = Config
   { userConn   :: Redis.Connection
   , tokenConn  :: Redis.Connection
@@ -15,8 +22,14 @@ data Config = Config
   }
 
 
-runApp :: Config -> App a -> IO a
-runApp = flip runReaderT
+runApp :: ConnectInfoConfig -> App a -> IO a
+runApp (ConnectInfoConfig user token replay) app =
+  do
+    userConn <- Redis.connect user
+    tokenConn <- Redis.connect token
+    replayConn <- Postgres.connectPostgreSQL . Postgres.postgreSQLConnectionString $ replay
+    let config = Config userConn tokenConn replayConn
+    runReaderT app config
 
 
 getConfig :: App Config

@@ -2,7 +2,7 @@ module Auth where
 
 import Prelude hiding (length)
 
-import Config (App, Config(..), getConfig, getTokenConn, runApp)
+import Config (App, ConnectInfoConfig(..), Config(..), getConfig, getTokenConn, runApp)
 import Control.Monad.IO.Class (liftIO)
 import Control.Monad.Trans.Class (lift)
 import Crypto.BCrypt (validatePassword, hashPasswordUsingPolicy, slowerBcryptHashingPolicy)
@@ -29,21 +29,21 @@ import qualified Data.Text as T
 import qualified Data.Text.Encoding as T
 
 
-app :: App Application
-app = do
+app :: ConnectInfoConfig -> App Application
+app connectInfoConfig = do
   liftIO $ updateGlobalLogger "auth" $ setLevel DEBUG
   config <- getConfig
   liftIO $ scottyApp $ do
-    get  "/auth/me"       $ meView       config
+    get  "/auth/me"       $ meView       connectInfoConfig
     post "/auth/login"    $ loginView    config
     post "/auth/logout"   $ logoutView   config
     post "/auth/register" $ registerView config
 
 
-meView :: Config -> ActionM ()
-meView config = do
+meView :: ConnectInfoConfig -> ActionM ()
+meView connectInfoConfig = do
   token     <- getCookie loginCookieName
-  usernameM <- lift . runApp config $ checkAuth token
+  usernameM <- lift . runApp connectInfoConfig $ checkAuth token
   case usernameM of
     Just username -> do
       json $ object [ "username" .= username ]
