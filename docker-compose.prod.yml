@@ -16,7 +16,7 @@ services:
     env_file: "prod.env"
     restart: always
     labels:
-      com.datadoghq.ad.logs: '[{"source": "game", "service": "webapp"}]'
+      com.datadoghq.ad.logs: '[{"source": "game", "service": "game"}]'
   datadog:
     image: "datadog/agent:latest"
     env_file: "prod.env"
