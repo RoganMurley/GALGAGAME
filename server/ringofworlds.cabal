@@ -17,7 +17,8 @@ library
   hs-source-dirs:      src
   exposed-modules:     Act
                      , ArtificalIntelligence
-                     , Auth
+                     , Auth.Views
+                     , Auth.Apps
                      , Bounce
                      , Card
                      , CardAnim
