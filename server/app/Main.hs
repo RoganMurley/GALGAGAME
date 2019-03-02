@@ -58,7 +58,8 @@ import qualified Replay.Final
 
 import qualified Network.WebSockets as WS
 
-import qualified Auth as A
+import qualified Auth.Apps as Auth
+import qualified Auth.Views as Auth
 import qualified Data.GUID as GUID
 
 
@@ -83,7 +84,7 @@ main = do
 
   let connectInfoConfig = ConnectInfoConfig (redisConnectInfo redisVars UserDatabase) (redisConnectInfo redisVars TokenDatabase) (postgresConnectInfo postgresVars)
 
-  authApp   <- runApp connectInfoConfig $ A.app connectInfoConfig
+  authApp   <- runApp connectInfoConfig $ Auth.app connectInfoConfig
   state     <- atomically $ newTVar Server.initState
 
   run 9160 $ waiApp state connectInfoConfig authApp
@@ -102,7 +103,7 @@ wsApp state connectInfoConfig pending =
   runApp connectInfoConfig $ do
     connection <- liftIO $ WS.acceptRequest pending
     msg        <- liftIO $ WS.receiveData connection
-    usernameM  <- A.checkAuth $ A.getToken pending
+    usernameM  <- Auth.checkAuth $ Auth.getToken pending
     liftIO $ WS.forkPingThread connection 30
     begin connection msg (Username <$> usernameM) state
 
