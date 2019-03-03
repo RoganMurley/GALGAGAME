@@ -1,13 +1,15 @@
 module Negotiation where
 
+import Data.String.Conversions (cs)
 import Data.Text (Text)
+import Safe (readMay)
 import Util (breakAt)
 
 
 data RoomRequest =
     RoomRequest Text
   | ReconnectRequest
-  | PlayReplayRequest Text
+  | PlayReplayRequest Int
 
 
 parseRoomReq :: Text -> Maybe RoomRequest
@@ -17,8 +19,12 @@ parseRoomReq msg =
       Just ReconnectRequest
     ("room", name) ->
       Just . RoomRequest $ name
-    ("playReplay", replayId) ->
-      Just . PlayReplayRequest $ replayId
+    ("playReplay", replayIdText) ->
+      case readMay $ cs replayIdText of
+        Just replayId ->
+          Just . PlayReplayRequest $ replayId
+        Nothing ->
+          Nothing
     _ ->
       Nothing
 

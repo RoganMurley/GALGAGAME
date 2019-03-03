@@ -1,3 +1,12 @@
-CREATE TABLE users (username text, passhash text);
+CREATE TABLE users (
+  email TEXT PRIMARY KEY,
+  username TEXT,
+  passhash TEXT,
+  created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
 
-CREATE TABLE replays (id text, replay text);
+CREATE TABLE replays (
+  id SERIAL PRIMARY KEY,
+  replay TEXT,
+  created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
