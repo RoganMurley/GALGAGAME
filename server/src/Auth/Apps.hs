@@ -9,6 +9,8 @@ import Data.ByteString (ByteString, length)
 import Data.List (find)
 import Data.String.Conversions (cs)
 import Web.Cookie (parseCookiesText)
+import System.Log.Logger (errorM)
+import Text.Printf (printf)
 
 import qualified Network.WebSockets as WS
 import qualified Database.Redis as R
@@ -30,13 +32,14 @@ saveSession username token = do
 checkAuth :: Maybe Token -> App (Maybe Username)
 checkAuth Nothing      = return Nothing
 checkAuth (Just token) = do
-  conn <- getTokenConn
-  gotten <- lift $ R.runRedis conn $ R.get $ T.encodeUtf8 token
-  case gotten of
+  conn   <- getTokenConn
+  result <- lift $ R.runRedis conn $ R.get $ T.encodeUtf8 token
+  case result of
     Right username ->
-      lift $ return $ T.decodeUtf8 <$> username
-    Left _ -> do
-      lift $ return Nothing
+      return $ T.decodeUtf8 <$> username
+    Left err -> do
+      lift $ errorM "auth" $ printf "Database connection error %s" (show err)
+      return $ Nothing
 
 
 deleteToken :: Token -> App ()
