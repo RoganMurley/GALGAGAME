@@ -43,7 +43,7 @@ meView config = do
     Just username -> do
       json $ object [ "username" .= username ]
     Nothing -> do
-      json $ object [ ]
+      json $ object []
   status ok200
 
 
@@ -55,7 +55,7 @@ loginView config = do
   case result of
     Found -> do
       createSession config username
-      json $ object [ ]
+      json $ object []
       status ok200
     NotFound -> do
       lift $ infoM "auth" $ printf "Username not found: %s" (show username)
@@ -76,7 +76,7 @@ logoutView config = do
       deleteCookie loginCookieName
     Nothing ->
       return ()
-  json $ object [ ]
+  json $ object []
   status ok200
 
 
@@ -84,7 +84,7 @@ registerView :: ConnectInfoConfig -> ActionM ()
 registerView config =
   do
     usernameRaw <- param "username"
-    password <- param "password"
+    password    <- param "password"
     let username = cs . T.toLower $ usernameRaw :: ByteString
     result <- lift $ runApp config $ usernameExists username
     case result of
@@ -113,7 +113,7 @@ createUser config username password =
         Just hashedPassword -> do
           lift $ runApp config $ saveUser username hashedPassword
           createSession config username
-          json $ object [ ]
+          json $ object []
           status created201
         Nothing -> do
           lift $ debugM "auth" "Password hashing error"
