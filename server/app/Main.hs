@@ -26,7 +26,7 @@ import System.Log.Logger (Priority(DEBUG), infoM, warningM, setLevel, updateGlob
 import Act (actOutcome, actPlay, actSpec, syncClient, syncPlayersRoom)
 import ArtificalIntelligence (Action(..), chooseAction)
 import Config (App, ConnectInfoConfig(..), runApp)
-import Database (RedisDatabase(..), postgresConnectInfo, redisConnectInfo)
+import Database (postgresConnectInfo, redisConnectInfo)
 import GameState (GameState(..), PlayState(..), WaitType(..))
 import Model (Turn)
 import Negotiation (Prefix(..), RoomRequest(..), parseRoomReq, parsePrefix)
@@ -82,7 +82,7 @@ main = do
   postgresDatabase <- lookupEnv "POSTGRES_DATABASE"
   let postgresVars = (postgresHost, postgresPort, postgresUser, postgresPassword, postgresDatabase)
 
-  let connectInfoConfig = ConnectInfoConfig (redisConnectInfo redisVars UserDatabase) (redisConnectInfo redisVars TokenDatabase) (postgresConnectInfo postgresVars)
+  let connectInfoConfig = ConnectInfoConfig (redisConnectInfo redisVars) (postgresConnectInfo postgresVars)
 
   authApp   <- runApp connectInfoConfig $ Auth.app connectInfoConfig
   state     <- atomically $ newTVar Server.initState

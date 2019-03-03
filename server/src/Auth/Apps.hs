@@ -9,11 +9,14 @@ import Data.ByteString (ByteString, length)
 import Data.List (find)
 import Data.String.Conversions (cs)
 import Web.Cookie (parseCookiesText)
+import Safe (headMay)
 import System.Log.Logger (errorM)
 import Text.Printf (printf)
 
 import qualified Network.WebSockets as WS
+import qualified Database.PostgreSQL.Simple as Postgres
 import qualified Database.Redis as R
+import qualified Prelude
 
 import Data.Text (Text)
 import qualified Data.Text.Encoding as T
@@ -49,48 +52,42 @@ deleteToken token = do
   return ()
 
 
-usernameExists :: ByteString -> App DatabaseResult
+usernameExists :: ByteString -> App Bool
 usernameExists username = do
   conn <- getUserConn
-  result <- lift $ R.runRedis conn $ R.exists username
-  return $
-    case result of
-      Right True ->
-        Found
-      Right False ->
-        NotFound
-      Left err ->
-        DatabaseError err
+  result <- lift $
+    Postgres.query conn
+      "SELECT user FROM users WHERE username=? LIMIT 1"
+      (Postgres.Only username) :: App [Postgres.Only Text]
+  return $ Prelude.length result > 0
 
 
 saveUser :: ByteString -> ByteString -> App ()
 saveUser username hashedPassword = do
   conn <- getUserConn
-  _ <- lift $ R.runRedis conn $ R.set username hashedPassword
+  _ <- lift $
+    Postgres.execute conn
+      "INSERT INTO users (username, passhash) VALUES (?, ?)"
+      (username, hashedPassword)
   return ()
 
 
-checkPassword :: ByteString -> ByteString -> App DatabaseResult
+checkPassword :: ByteString -> ByteString -> App Bool
 checkPassword username password = do
-  userConn <- getUserConn
-  result <- lift $ R.runRedis userConn $ R.get username
+  conn <- getUserConn
+  result <- lift $
+    Postgres.query conn
+      "SELECT passhash FROM users WHERE username=? LIMIT 1"
+      (Postgres.Only $ username) :: App [Postgres.Only Text]
   return $
-    case result of
-      Right (Just hashedPassword) ->
-        if validatePassword hashedPassword password then
-          Found
+    case Postgres.fromOnly <$> headMay result of
+      Just hashedPassword ->
+        if validatePassword (cs hashedPassword) password then
+          True
         else
-          NotFound
-      Right Nothing ->
-        NotFound
-      Left err ->
-        DatabaseError err
-
-
-data DatabaseResult =
-    Found
-  | NotFound
-  | DatabaseError R.Reply
+          False
+      Nothing ->
+        False
 
 
 type Token    = Text

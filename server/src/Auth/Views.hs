@@ -14,7 +14,7 @@ import Network.Wai (Application)
 import Web.Cookie (sameSiteStrict, setCookieHttpOnly, setCookieMaxAge, setCookiePath, setCookieSameSite, setCookieSecure)
 import Web.Scotty
 import Web.Scotty.Cookie (deleteCookie, getCookie, makeSimpleCookie, setCookie)
-import System.Log.Logger (Priority(DEBUG), debugM, errorM, infoM, setLevel, updateGlobalLogger)
+import System.Log.Logger (Priority(DEBUG), debugM, infoM, setLevel, updateGlobalLogger)
 import Text.Printf (printf)
 
 import qualified Data.GUID as GUID
@@ -22,7 +22,7 @@ import qualified Data.GUID as GUID
 import Data.Text (Text)
 import qualified Data.Text as T
 
-import Auth.Apps (DatabaseResult(..), checkAuth, checkPassword, deleteToken, legalName, legalPassword, loginCookieName, loginTimeout, saveSession, saveUser, usernameExists)
+import Auth.Apps (checkAuth, checkPassword, deleteToken, legalName, legalPassword, loginCookieName, loginTimeout, saveSession, saveUser, usernameExists)
 
 
 app :: ConnectInfoConfig -> App Application
@@ -53,18 +53,14 @@ loginView config = do
   password <- param "password"
   result <- lift $ runApp config $ checkPassword username password
   case result of
-    Found -> do
+    True -> do
       createSession config username
       json $ object []
       status ok200
-    NotFound -> do
+    False -> do
       lift $ infoM "auth" $ printf "Username not found: %s" (show username)
       json $ object [ "error" .= ("Wrong username or password" :: Text) ]
       status unauthorized401
-    DatabaseError err -> do
-      lift $ errorM "auth" $ printf "Database connection error %s" (show err)
-      json $ object [ "error" .= ("Database connection error" :: Text) ]
-      status internalServerError500
 
 
 logoutView :: ConnectInfoConfig -> ActionM ()
@@ -86,18 +82,14 @@ registerView config =
     usernameRaw <- param "username"
     password    <- param "password"
     let username = cs . T.toLower $ usernameRaw :: ByteString
-    result <- lift $ runApp config $ usernameExists username
-    case result of
-      NotFound ->
+    exists <- lift $ runApp config $ usernameExists username
+    case exists of
+      False ->
         createUser config username password
-      Found -> do
+      True -> do
         lift $ debugM "auth" ("Registration: user " <> (cs username) <> " already exists")
         json $ object [ "error" .= ("Username already exists" :: Text) ]
         status conflict409
-      DatabaseError err -> do
-        lift $ errorM "auth" $ printf "Database connection error %s" (show err)
-        json $ object [ "error" .= ("Database connection error" :: Text) ]
-        status internalServerError500
 
 
 createUser :: ConnectInfoConfig -> ByteString -> ByteString -> ActionM ()
