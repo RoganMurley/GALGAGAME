@@ -2,8 +2,9 @@ module Auth.Apps where
 
 import Prelude hiding (length)
 
-import Config (App, getTokenConn)
+import Config (App, getTokenConn, getUserConn)
 import Control.Monad.Trans.Class (lift)
+import Crypto.BCrypt (validatePassword)
 import Data.ByteString (ByteString, length)
 import Data.List (find)
 import Data.String.Conversions (cs)
@@ -16,13 +17,13 @@ import Data.Text (Text)
 import qualified Data.Text.Encoding as T
 
 
-saveSession :: ByteString -> Text -> App ()
-saveSession username tokenText = do
+saveSession :: ByteString -> Token -> App ()
+saveSession username token = do
   conn <- getTokenConn
-  let token = cs tokenText :: ByteString
+  let tokenBytestring = cs token :: ByteString
   lift $ R.runRedis conn $ do
-    _ <- R.set token username
-    _ <- R.expire token loginTimeout
+    _ <- R.set tokenBytestring username
+    _ <- R.expire tokenBytestring loginTimeout
     return ()
 
 
@@ -36,6 +37,57 @@ checkAuth (Just token) = do
       lift $ return (T.decodeUtf8 <$> username)
     Left _ -> do
       lift $ return Nothing
+
+
+deleteToken :: Token -> App ()
+deleteToken token = do
+  conn <- getTokenConn
+  _ <- lift $ R.runRedis conn $ R.del [T.encodeUtf8 token]
+  return ()
+
+
+usernameExists :: ByteString -> App DatabaseResult
+usernameExists username = do
+  conn <- getUserConn
+  result <- lift $ R.runRedis conn $ R.exists username
+  return $
+    case result of
+      Right True ->
+        Found
+      Right False ->
+        NotFound
+      Left err ->
+        DatabaseError err
+
+
+saveUser :: ByteString -> ByteString -> App ()
+saveUser username hashedPassword = do
+  conn <- getUserConn
+  _ <- lift $ R.runRedis conn $ R.set username hashedPassword
+  return ()
+
+
+checkPassword :: ByteString -> ByteString -> App DatabaseResult
+checkPassword username password = do
+  userConn <- getUserConn
+  result <- lift $ R.runRedis userConn $ R.get username
+  return $
+    case result of
+      Right (Just hashedPassword) ->
+        if validatePassword hashedPassword password then
+          Found
+        else
+          NotFound
+      Right Nothing ->
+        NotFound
+      Left err ->
+        DatabaseError err
+
+
+data DatabaseResult =
+    Found
+  | NotFound
+  | DatabaseError R.Reply
 
 
 type Token    = Text
