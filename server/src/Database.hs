@@ -9,23 +9,15 @@ import qualified Database.Redis as Redis
 import qualified Database.PostgreSQL.Simple as Postgres
 
 
-data RedisDatabase =
-    UserDatabase
-  | TokenDatabase
-
-
-redisConnectInfo :: (Maybe String, Maybe String, Maybe String) -> RedisDatabase -> Redis.ConnectInfo
-redisConnectInfo (host, portString, password) database =
+redisConnectInfo :: (Maybe String, Maybe String, Maybe String) -> Redis.ConnectInfo
+redisConnectInfo (host, portString, password) =
   Redis.defaultConnectInfo
     { Redis.connectAuth     = cs <$> password
     , Redis.connectHost     = fromMaybe defaultHost host
     , Redis.connectPort     = fromMaybe defaultPort port
-    , Redis.connectDatabase = asId database
+    , Redis.connectDatabase = 0
     }
   where
-    asId :: RedisDatabase -> Integer
-    asId UserDatabase  = 0
-    asId TokenDatabase = 1
     defaultHost :: Redis.HostName
     defaultHost = "redis"
     defaultPort :: Redis.PortID

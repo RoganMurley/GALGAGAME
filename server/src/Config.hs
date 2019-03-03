@@ -9,26 +9,24 @@ type App = ReaderT Config IO
 
 
 data ConnectInfoConfig = ConnectInfoConfig
-  { connectInfoConfig_user   :: Redis.ConnectInfo
-  , connectInfoConfig_token  :: Redis.ConnectInfo
-  , connectInfoConfig_replay :: Postgres.ConnectInfo
+  { connectInfoConfig_token  :: Redis.ConnectInfo
+  , connectInfoConfig_postgres :: Postgres.ConnectInfo
   }
 
 
 data Config = Config
-  { userConn   :: Redis.Connection
+  { userConn   :: Postgres.Connection
   , tokenConn  :: Redis.Connection
   , replayConn :: Postgres.Connection
   }
 
 
 runApp :: ConnectInfoConfig -> App a -> IO a
-runApp (ConnectInfoConfig user token replay) app =
+runApp (ConnectInfoConfig token replay) app =
   do
-    userConn <- Redis.connect user
     tokenConn <- Redis.connect token
-    replayConn <- Postgres.connectPostgreSQL . Postgres.postgreSQLConnectionString $ replay
-    let config = Config userConn tokenConn replayConn
+    postgresConn <- Postgres.connectPostgreSQL . Postgres.postgreSQLConnectionString $ replay
+    let config = Config postgresConn tokenConn postgresConn
     runReaderT app config
 
 
@@ -36,7 +34,7 @@ getConfig :: App Config
 getConfig = ask
 
 
-getUserConn :: App Redis.Connection
+getUserConn :: App Postgres.Connection
 getUserConn = asks userConn
 
 

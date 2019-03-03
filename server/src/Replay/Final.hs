@@ -45,6 +45,7 @@ save replay = do
   liftIO $ debugM "app" $ printf "Replay result: %s" $ show result
   return $ Postgres.fromOnly $ head result
 
+
 load :: Int -> App (Maybe Text)
 load replayId = do
   conn <- getReplayConn
