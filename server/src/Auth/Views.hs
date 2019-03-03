@@ -42,10 +42,9 @@ meView config = do
   case usernameM of
     Just username -> do
       json $ object [ "username" .= username ]
-      status ok200
     Nothing -> do
       json $ object [ ]
-      status ok200
+  status ok200
 
 
 loginView :: ConnectInfoConfig -> ActionM ()
@@ -75,11 +74,10 @@ logoutView config = do
     Just t -> do
       lift $ runApp config $ deleteToken t
       deleteCookie loginCookieName
-      json $ object [ ]
-      status ok200
-    Nothing -> do
-      json $ object [ ]
-      status ok200
+    Nothing ->
+      return ()
+  json $ object [ ]
+  status ok200
 
 
 registerView :: ConnectInfoConfig -> ActionM ()
@@ -87,7 +85,7 @@ registerView config =
   do
     usernameRaw <- param "username"
     password <- param "password"
-    let username = (cs . T.toLower $ usernameRaw) :: ByteString
+    let username = cs . T.toLower $ usernameRaw :: ByteString
     result <- lift $ runApp config $ usernameExists username
     case result of
       NotFound ->

@@ -31,10 +31,10 @@ checkAuth :: Maybe Token -> App (Maybe Username)
 checkAuth Nothing      = return Nothing
 checkAuth (Just token) = do
   conn <- getTokenConn
-  gotten <- lift $ (R.runRedis conn) . R.get $ T.encodeUtf8 token
+  gotten <- lift $ R.runRedis conn $ R.get $ T.encodeUtf8 token
   case gotten of
     Right username ->
-      lift $ return (T.decodeUtf8 <$> username)
+      lift $ return $ T.decodeUtf8 <$> username
     Left _ -> do
       lift $ return Nothing
 
