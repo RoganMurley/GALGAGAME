@@ -10,7 +10,6 @@ import Safe (headMay)
 import System.Log.Logger (debugM)
 import Text.Printf (printf)
 
-import qualified Data.GUID as GUID
 import qualified Database.PostgreSQL.Simple as Postgres
 import qualified Replay.Active as Active
 
@@ -39,16 +38,14 @@ finalise :: Active.Replay -> PlayState -> Replay
 finalise = Replay
 
 
-save :: Replay -> App Text
+save :: Replay -> App Int
 save replay = do
   conn <- getReplayConn
-  replayId <- liftIO GUID.genText
-  let value = encode replay
-  result <- liftIO $ Postgres.execute conn "INSERT INTO replays (id, replay) VALUES (?, ?)" (replayId, value)
+  result <- liftIO $ Postgres.query conn "INSERT INTO replays (replay) VALUES (?) RETURNING id" (Postgres.Only $ encode replay)
   liftIO $ debugM "app" $ printf "Replay result: %s" $ show result
-  return replayId
+  return $ Postgres.fromOnly $ head result
 
-load :: Text -> App (Maybe Text)
+load :: Int -> App (Maybe Text)
 load replayId = do
   conn <- getReplayConn
   result <- liftIO (Postgres.query conn "SELECT replay FROM replays WHERE id=? LIMIT 1" (Postgres.Only replayId) :: IO [Postgres.Only Text])

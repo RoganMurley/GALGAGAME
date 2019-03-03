@@ -144,4 +144,4 @@ actOutcome room (Outcome.Encodable (Outcome.Resolve models initial final exclude
 actOutcome room (Outcome.SaveReplay replay) = do
   liftIO $ infoM "app" "Saving replay..."
   replayId <- Replay.Final.save replay
-  Room.broadcast ("replaySaved:" <> replayId) room
+  Room.broadcast ("replaySaved:" <> (cs . show $ replayId)) room
