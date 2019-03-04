@@ -1,4 +1,5 @@
 CREATE TABLE users (
+  email TEXT,
   username TEXT PRIMARY KEY,
   passhash TEXT,
   created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP

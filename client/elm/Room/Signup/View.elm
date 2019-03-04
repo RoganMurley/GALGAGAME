@@ -12,10 +12,18 @@ view : Model -> Html Msg
 view model =
     div []
         [ div [ class "login-box" ]
-            [ text "Username"
+            [ text "Email"
+            , input
+                [ placeholder "Email"
+                , autofocus True
+                , onInput <| Input Email
+                , type_ "email"
+                ]
+                []
+            , text
+                "Username"
             , input
                 [ placeholder "Username"
-                , autofocus True
                 , onInput <| Input Username
                 ]
                 []

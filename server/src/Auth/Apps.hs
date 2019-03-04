@@ -62,13 +62,13 @@ usernameExists username = do
   return $ Prelude.length result > 0
 
 
-saveUser :: ByteString -> ByteString -> App ()
-saveUser username hashedPassword = do
+saveUser :: ByteString -> ByteString -> ByteString -> App ()
+saveUser email username hashedPassword = do
   conn <- getUserConn
   _ <- lift $
     Postgres.execute conn
-      "INSERT INTO users (username, passhash) VALUES (?, ?)"
-      (username, hashedPassword)
+      "INSERT INTO users (email, username, passhash) VALUES (?, ?, ?)"
+      (email, username, hashedPassword)
   return ()
 
 
