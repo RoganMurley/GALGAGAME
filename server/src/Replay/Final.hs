@@ -3,15 +3,17 @@ module Replay.Final where
 import Config (App, getReplayConn)
 import Control.Monad.IO.Class (liftIO)
 import Data.Aeson (ToJSON(..), (.=), encode, object)
+import Data.String.Conversions (cs)
 import Data.Text (Text)
+import Database.Beam ((==.), all_, default_, filter_, insertExpressions, runSelectReturningOne, select, val_)
+import Database.Beam.Backend.SQL.BeamExtensions (runInsertReturningList)
+import Database.Beam.Postgres (runBeamPostgres)
 import GameState (PlayState)
 import Mirror (Mirror(..))
-import Safe (headMay)
-import System.Log.Logger (debugM)
-import Text.Printf (printf)
+import Schema (RingOfWorldsDb(..), ringOfWorldsDb)
 
-import qualified Database.PostgreSQL.Simple as Postgres
 import qualified Replay.Active as Active
+import qualified Replay.Schema
 
 
 data Replay = Replay Active.Replay PlayState
@@ -41,13 +43,17 @@ finalise = Replay
 save :: Replay -> App Int
 save replay = do
   conn <- getReplayConn
-  result <- liftIO $ Postgres.query conn "INSERT INTO replays (replay) VALUES (?) RETURNING id" (Postgres.Only $ encode replay)
-  liftIO $ debugM "app" $ printf "Replay result: %s" $ show result
-  return $ Postgres.fromOnly $ head result
+  result <- liftIO $ runBeamPostgres conn $
+    runInsertReturningList (replays ringOfWorldsDb) $
+      insertExpressions [ Replay.Schema.Replay default_ (val_ $ cs $ encode replay) ]
+  return $ head $ Replay.Schema.replayId <$> result
 
 
 load :: Int -> App (Maybe Text)
 load replayId = do
   conn <- getReplayConn
-  result <- liftIO (Postgres.query conn "SELECT replay FROM replays WHERE id=? LIMIT 1" (Postgres.Only replayId) :: IO [Postgres.Only Text])
-  return $ Postgres.fromOnly <$> headMay result
+  result <- liftIO $ runBeamPostgres conn $
+    runSelectReturningOne $
+      select $ filter_ (\row -> Replay.Schema.replayId row ==. val_ replayId) $
+        all_ $ replays ringOfWorldsDb
+  return $ Replay.Schema.replayReplay <$> result
