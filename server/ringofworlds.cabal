@@ -45,9 +45,11 @@ library
                      , Player
                      , Replay.Active
                      , Replay.Final
+                     , Replay.Schema
                      , ResolveData
                      , Room
                      , Scenario
+                     , Schema
                      , Server
                      , StackCard
                      , Start
@@ -65,6 +67,8 @@ library
   build-depends:       base >= 4.7 && < 5
                      , aeson
                      , bcrypt
+                     , beam-core
+                     , beam-postgres
                      , bytestring
                      , containers
                      , cookie
