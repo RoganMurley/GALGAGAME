@@ -11,6 +11,7 @@ type Msg
 
 
 type Input
-    = Username
+    = Email
+    | Username
     | Password
     | ConfirmPassword

@@ -79,21 +79,22 @@ logoutView config = do
 registerView :: ConnectInfoConfig -> ActionM ()
 registerView config =
   do
+    email       <- param "email"
     usernameRaw <- param "username"
     password    <- param "password"
     let username = cs . T.toLower $ usernameRaw :: ByteString
     exists <- lift $ runApp config $ usernameExists username
     case exists of
       False ->
-        createUser config username password
+        createUser config email username password
       True -> do
         lift $ debugM "auth" ("Registration: user " <> (cs username) <> " already exists")
         json $ object [ "error" .= ("Username already exists" :: Text) ]
         status conflict409
 
 
-createUser :: ConnectInfoConfig -> ByteString -> ByteString -> ActionM ()
-createUser config username password =
+createUser :: ConnectInfoConfig -> ByteString -> ByteString -> ByteString -> ActionM ()
+createUser config email username password =
   case legalName username *> legalPassword password of
     Just err -> do
       lift $ debugM "auth" $ "Creating user " <> cs username <> "error: " <> cs err
@@ -103,7 +104,7 @@ createUser config username password =
       p <- lift $ hashPasswordUsingPolicy slowerBcryptHashingPolicy password
       case p of
         Just hashedPassword -> do
-          lift $ runApp config $ saveUser username hashedPassword
+          lift $ runApp config $ saveUser email username hashedPassword
           createSession config username
           json $ object []
           status created201

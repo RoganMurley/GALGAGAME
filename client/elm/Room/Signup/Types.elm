@@ -2,7 +2,8 @@ module Signup.Types exposing (Model, SignupError)
 
 
 type alias Model =
-    { username : String
+    { email : String
+    , username : String
     , password : String
     , confirmPassword : String
     , error : String

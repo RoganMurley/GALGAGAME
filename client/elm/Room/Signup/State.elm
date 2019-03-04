@@ -16,7 +16,8 @@ import Util exposing (authLocation, message, send)
 
 init : Maybe String -> Model
 init nextUrl =
-    { username = ""
+    { email = ""
+    , username = ""
     , password = ""
     , confirmPassword = ""
     , error = ""
@@ -28,6 +29,9 @@ init nextUrl =
 update : Model -> Msg -> Flags -> ( Model, Cmd Main.Msg )
 update model msg flags =
     case msg of
+        Input Email email ->
+            ( { model | email = email }, Cmd.none )
+
         Input Username username ->
             ( { model | username = username }, Cmd.none )
 
@@ -49,7 +53,8 @@ update model msg flags =
                     Http.post
                         (authLocation flags ++ "/register")
                         (Http.multipartBody
-                            [ Http.stringPart "username" model.username
+                            [ Http.stringPart "email" model.email
+                            , Http.stringPart "username" model.username
                             , Http.stringPart "password" model.password
                             ]
                         )
@@ -74,7 +79,7 @@ update model msg flags =
                     case status.code of
                         409 ->
                             ( { model
-                                | error = "Username already exists"
+                                | error = "Account with that username already exists"
                                 , submitting = False
                               }
                             , Cmd.none
