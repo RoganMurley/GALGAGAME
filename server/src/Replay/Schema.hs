@@ -8,19 +8,20 @@
 module Replay.Schema where
 
 import Data.Text (Text)
-import Database.Beam (Beamable, Columnar, Generic, Identity, PrimaryKey(..), Table)
+import Database.Beam (Beamable, Columnar, Generic, Identity, Nullable, PrimaryKey(..), Table)
+
+import Auth.Schema (UserT)
 
 
 data ReplayT f = Replay
-  { replayId     :: Columnar f Int
-  , replayReplay :: Columnar f Text
+  { replayId      :: Columnar f Int
+  , replayReplay  :: Columnar f Text
+  , replayPlayerA :: PrimaryKey UserT (Nullable f)
+  , replayPlayerB :: PrimaryKey UserT (Nullable f)
   } deriving (Generic)
 
 type Replay = ReplayT Identity
 type ReplayId = PrimaryKey ReplayT Identity
-
-deriving instance Show Replay
-deriving instance Eq Replay
 
 instance Beamable ReplayT
 instance Beamable (PrimaryKey ReplayT)
