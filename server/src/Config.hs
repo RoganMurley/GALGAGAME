@@ -1,6 +1,9 @@
 module Config where
 
-import Control.Monad.Trans.Reader (ReaderT, ask, asks, runReaderT)
+import Control.Monad.IO.Class (liftIO)
+import Control.Monad.Trans.Reader (ReaderT, asks, runReaderT)
+import Database.Beam.Postgres (Pg, runBeamPostgres)
+
 import qualified Database.Redis as Redis
 import qualified Database.PostgreSQL.Simple as Postgres
 
@@ -9,38 +12,37 @@ type App = ReaderT Config IO
 
 
 data ConnectInfoConfig = ConnectInfoConfig
-  { connectInfoConfig_token  :: Redis.ConnectInfo
+  { connectInfoConfig_redis    :: Redis.ConnectInfo
   , connectInfoConfig_postgres :: Postgres.ConnectInfo
   }
 
 
 data Config = Config
-  { userConn   :: Postgres.Connection
-  , tokenConn  :: Redis.Connection
-  , replayConn :: Postgres.Connection
+  { redisConn  :: Redis.Connection
+  , postgresConn :: Postgres.Connection
   }
 
 
 runApp :: ConnectInfoConfig -> App a -> IO a
-runApp (ConnectInfoConfig token replay) app =
+runApp (ConnectInfoConfig redisInfo postgresInfo) app =
   do
-    tokenConn <- Redis.connect token
-    postgresConn <- Postgres.connectPostgreSQL . Postgres.postgreSQLConnectionString $ replay
-    let config = Config postgresConn tokenConn postgresConn
+    redisConn <- Redis.connect redisInfo
+    postgresConn <- Postgres.connectPostgreSQL . Postgres.postgreSQLConnectionString $ postgresInfo
+    let config = Config redisConn postgresConn
     runReaderT app config
 
 
-getConfig :: App Config
-getConfig = ask
+runBeam :: Pg a -> App a
+runBeam beam = do
+  conn <- asks postgresConn
+  liftIO $ runBeamPostgres conn $ beam
 
 
-getUserConn :: App Postgres.Connection
-getUserConn = asks userConn
+runRedis :: Redis.Redis a -> App a
+runRedis redis = do
+  conn <- asks redisConn
+  liftIO $ Redis.runRedis conn redis
 
 
 getTokenConn :: App Redis.Connection
-getTokenConn = asks tokenConn
-
-
-getReplayConn :: App Postgres.Connection
-getReplayConn = asks replayConn
+getTokenConn = asks redisConn

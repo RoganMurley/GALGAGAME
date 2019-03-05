@@ -2,21 +2,23 @@ module Auth.Apps where
 
 import Prelude hiding (length)
 
-import Config (App, getTokenConn, getUserConn)
-import Control.Monad.Trans.Class (lift)
+import Config (App, runBeam, runRedis)
+import Control.Monad.IO.Class (liftIO)
 import Crypto.BCrypt (validatePassword)
 import Data.ByteString (ByteString, length)
 import Data.List (find)
+import Data.Maybe (isJust)
 import Data.String.Conversions (cs)
+import Database.Beam ((==.), all_, filter_, insert, insertValues, runInsert, runSelectReturningOne, select, val_)
 import Web.Cookie (parseCookiesText)
-import Safe (headMay)
+import Schema (RingOfWorldsDb(..), ringOfWorldsDb)
 import System.Log.Logger (errorM)
 import Text.Printf (printf)
 
+import Auth.Schema as Schema
+
 import qualified Network.WebSockets as WS
-import qualified Database.PostgreSQL.Simple as Postgres
 import qualified Database.Redis as R
-import qualified Prelude
 
 import Data.Text (Text)
 import qualified Data.Text.Encoding as T
@@ -24,9 +26,8 @@ import qualified Data.Text.Encoding as T
 
 saveSession :: ByteString -> Token -> App ()
 saveSession username token = do
-  conn <- getTokenConn
   let tokenBytestring = cs token :: ByteString
-  lift $ R.runRedis conn $ do
+  runRedis $ do
     _ <- R.set tokenBytestring username
     _ <- R.expire tokenBytestring loginTimeout
     return ()
@@ -35,52 +36,43 @@ saveSession username token = do
 checkAuth :: Maybe Token -> App (Maybe Username)
 checkAuth Nothing      = return Nothing
 checkAuth (Just token) = do
-  conn   <- getTokenConn
-  result <- lift $ R.runRedis conn $ R.get $ T.encodeUtf8 token
+  result <- runRedis $ R.get $ T.encodeUtf8 token
   case result of
     Right username ->
       return $ T.decodeUtf8 <$> username
     Left err -> do
-      lift $ errorM "auth" $ printf "Database connection error %s" (show err)
+      liftIO $ errorM "auth" $ printf "Database connection error %s" (show err)
       return $ Nothing
 
 
 deleteToken :: Token -> App ()
 deleteToken token = do
-  conn <- getTokenConn
-  _ <- lift $ R.runRedis conn $ R.del [T.encodeUtf8 token]
+  _ <- runRedis $ R.del [T.encodeUtf8 token]
   return ()
 
 
 usernameExists :: ByteString -> App Bool
 usernameExists username = do
-  conn <- getUserConn
-  result <- lift $
-    Postgres.query conn
-      "SELECT user FROM users WHERE username=? LIMIT 1"
-      (Postgres.Only username) :: App [Postgres.Only Text]
-  return $ Prelude.length result > 0
+  user <- runBeam $ runSelectReturningOne $
+    select $ filter_ (\row -> Schema.userUsername row ==. val_ (cs username)) $
+      all_ $ users ringOfWorldsDb
+  return $ isJust user
 
 
 saveUser :: ByteString -> ByteString -> ByteString -> App ()
 saveUser email username hashedPassword = do
-  conn <- getUserConn
-  _ <- lift $
-    Postgres.execute conn
-      "INSERT INTO users (email, username, passhash) VALUES (?, ?, ?)"
-      (email, username, hashedPassword)
+  let user = Schema.User (cs email) (cs username) (cs hashedPassword)
+  _ <- runBeam $ runInsert $ insert (users ringOfWorldsDb) $ insertValues [ user ]
   return ()
 
 
 checkPassword :: ByteString -> ByteString -> App Bool
 checkPassword username password = do
-  conn <- getUserConn
-  result <- lift $
-    Postgres.query conn
-      "SELECT passhash FROM users WHERE username=? LIMIT 1"
-      (Postgres.Only $ username) :: App [Postgres.Only Text]
+  user <- runBeam $ runSelectReturningOne $
+    select $ filter_ (\row -> Schema.userUsername row ==. val_ (cs username)) $
+      all_ $ users ringOfWorldsDb
   return $
-    case Postgres.fromOnly <$> headMay result of
+    case Schema.userPasshash <$> user of
       Just hashedPassword ->
         if validatePassword (cs hashedPassword) password then
           True
