@@ -8,7 +8,7 @@ CREATE TABLE users (
 CREATE TABLE replays (
   id SERIAL PRIMARY KEY,
   replay TEXT,
-  player_a TEXT REFERENCES users,
-  player_b TEXT REFERENCES users,
+  player_a__username TEXT REFERENCES users,
+  player_b__username TEXT REFERENCES users,
   created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
