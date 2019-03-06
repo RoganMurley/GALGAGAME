@@ -22,7 +22,7 @@ import qualified Data.GUID as GUID
 import Data.Text (Text)
 import qualified Data.Text as T
 
-import Auth.Apps (checkAuth, checkPassword, deleteToken, legalName, legalPassword, loginCookieName, loginTimeout, saveSession, saveUser, usernameExists)
+import Auth.Apps (checkAuth, checkPassword, deleteToken, legalName, legalPassword, loginCookieName, loginTimeout, saveSession, saveUser)
 
 
 app :: ConnectInfoConfig -> App Application
@@ -83,33 +83,32 @@ registerView config =
     usernameRaw <- param "username"
     password    <- param "password"
     let username = cs . T.toLower $ usernameRaw :: ByteString
-    exists <- lift $ runApp config $ usernameExists username
-    case exists of
-      False ->
-        createUser config email username password
-      True -> do
-        lift $ debugM "auth" ("Registration: user " <> (cs username) <> " already exists")
-        json $ object [ "error" .= ("Username already exists" :: Text) ]
-        status conflict409
+    createUser config email username password
 
 
 createUser :: ConnectInfoConfig -> ByteString -> ByteString -> ByteString -> ActionM ()
 createUser config email username password =
   case legalName username *> legalPassword password of
     Just err -> do
-      lift $ debugM "auth" $ "Creating user " <> cs username <> "error: " <> cs err
+      liftIO $ debugM "auth" $ "Creating user " <> cs username <> "error: " <> cs err
       json $ object [ "error" .= err ]
       status badRequest400
     Nothing -> do
-      p <- lift $ hashPasswordUsingPolicy slowerBcryptHashingPolicy password
+      p <- liftIO $ hashPasswordUsingPolicy slowerBcryptHashingPolicy password
       case p of
         Just hashedPassword -> do
-          lift $ runApp config $ saveUser email username hashedPassword
-          createSession config username
-          json $ object []
-          status created201
+          success <- liftIO $ runApp config $ saveUser email username hashedPassword
+          case success of
+            True -> do
+              createSession config username
+              json $ object []
+              status created201
+            False -> do
+              lift $ debugM "auth" ("Registration: user " <> (cs username) <> " already exists")
+              json $ object [ "error" .= ("Username already exists" :: Text) ]
+              status conflict409
         Nothing -> do
-          lift $ debugM "auth" "Password hashing error"
+          liftIO $ debugM "auth" "Password hashing error"
           status internalServerError500
 
 

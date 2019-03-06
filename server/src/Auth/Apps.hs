@@ -2,12 +2,13 @@ module Auth.Apps where
 
 import Prelude hiding (length)
 
-import Config (App, runBeam, runRedis)
+import Config (App, runBeam, runBeamIntegrity, runRedis)
+import Control.Exception (throw)
 import Control.Monad.IO.Class (liftIO)
 import Crypto.BCrypt (validatePassword)
 import Data.ByteString (ByteString, length)
 import Data.List (find)
-import Data.Maybe (isJust)
+import Database.PostgreSQL.Simple.Errors (ConstraintViolation(..))
 import Data.String.Conversions (cs)
 import Database.Beam ((==.), all_, filter_, insert, insertValues, runInsert, runSelectReturningOne, select, val_)
 import Web.Cookie (parseCookiesText)
@@ -51,19 +52,17 @@ deleteToken token = do
   return ()
 
 
-usernameExists :: ByteString -> App Bool
-usernameExists username = do
-  user <- runBeam $ runSelectReturningOne $
-    select $ filter_ (\row -> Schema.userUsername row ==. val_ (cs username)) $
-      all_ $ users ringOfWorldsDb
-  return $ isJust user
-
-
-saveUser :: ByteString -> ByteString -> ByteString -> App ()
+saveUser :: ByteString -> ByteString -> ByteString -> App Bool
 saveUser email username hashedPassword = do
   let user = Schema.User (cs email) (cs username) (cs hashedPassword)
-  _ <- runBeam $ runInsert $ insert (users ringOfWorldsDb) $ insertValues [ user ]
-  return ()
+  result <- runBeamIntegrity $ runInsert $ insert (users ringOfWorldsDb) $ insertValues [ user ]
+  case result of
+    Right _ ->
+      return True
+    Left (UniqueViolation "users_pkey") ->
+      return False
+    Left err ->
+      throw err
 
 
 checkPassword :: ByteString -> ByteString -> App Bool

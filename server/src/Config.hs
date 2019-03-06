@@ -1,11 +1,13 @@
 module Config where
 
+import Control.Exception (catchJust)
 import Control.Monad.IO.Class (liftIO)
 import Control.Monad.Trans.Reader (ReaderT, asks, runReaderT)
 import Database.Beam.Postgres (Pg, runBeamPostgres)
 
 import qualified Database.Redis as Redis
 import qualified Database.PostgreSQL.Simple as Postgres
+import qualified Database.PostgreSQL.Simple.Errors as Postgres
 
 
 type App = ReaderT Config IO
@@ -35,7 +37,15 @@ runApp (ConnectInfoConfig redisInfo postgresInfo) app =
 runBeam :: Pg a -> App a
 runBeam beam = do
   conn <- asks postgresConn
-  liftIO $ runBeamPostgres conn $ beam
+  liftIO $ runBeamPostgres conn beam
+
+
+runBeamIntegrity :: Pg a -> App (Either Postgres.ConstraintViolation a)
+runBeamIntegrity beam = do
+  conn <- asks postgresConn
+  liftIO $ catchJust Postgres.constraintViolation
+    (runBeamPostgres conn beam >>= return . Right)
+    (return . Left)
 
 
 runRedis :: Redis.Redis a -> App a
