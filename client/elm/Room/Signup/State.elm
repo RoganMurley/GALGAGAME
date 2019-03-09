@@ -1,16 +1,17 @@
-module Signup.State exposing (confirmPasswordInvalid, init, keyPress, receive, submitDisabled, update)
+module Signup.State exposing (init, keyPress, receive, update, validator)
 
+import Error exposing (Error(..))
 import Http
 import Json.Decode exposing (maybe)
 import Keyboard exposing (KeyCode)
-import Login.State exposing (passwordInvalid, usernameInvalid)
 import Main.Messages as Main
 import Main.Types exposing (Flags)
+import Maybe.Extra as Maybe
 import Navigation
 import Room.Messages as Room
 import Signup.Decoders exposing (signupErrorDecoder)
 import Signup.Messages exposing (Input(..), Msg(..))
-import Signup.Types exposing (Model)
+import Signup.Types exposing (Field(..), Model)
 import Util exposing (authLocation, message, send)
 
 
@@ -42,24 +43,20 @@ update model msg flags =
             ( { model | confirmPassword = password }, Cmd.none )
 
         Submit ->
-            if submitDisabled model then
-                ( model, Cmd.none )
-
-            else
-                ( { model | submitting = True, error = "" }
-                , Http.send
-                    (Main.RoomMsg << Room.SignupMsg << SubmitCallback)
-                  <|
-                    Http.post
-                        (authLocation flags ++ "/register")
-                        (Http.multipartBody
-                            [ Http.stringPart "email" model.email
-                            , Http.stringPart "username" model.username
-                            , Http.stringPart "password" model.password
-                            ]
-                        )
-                        (maybe signupErrorDecoder)
-                )
+            ( { model | submitting = True, error = "" }
+            , Http.send
+                (Main.RoomMsg << Room.SignupMsg << SubmitCallback)
+              <|
+                Http.post
+                    (authLocation flags ++ "/register")
+                    (Http.multipartBody
+                        [ Http.stringPart "email" model.email
+                        , Http.stringPart "username" model.username
+                        , Http.stringPart "password" model.password
+                        ]
+                    )
+                    (maybe signupErrorDecoder)
+            )
 
         SubmitCallback (Ok (Just { error })) ->
             ( { model | error = error }, Cmd.none )
@@ -118,14 +115,50 @@ keyPress code =
             Cmd.none
 
 
-confirmPasswordInvalid : { a | confirmPassword : String, password : String } -> Bool
-confirmPasswordInvalid { confirmPassword, password } =
-    confirmPassword /= password
+usernameValidator : { a | username : String } -> Maybe ( Field, Error )
+usernameValidator { username } =
+    let
+        tooShort : Maybe ( Field, Error )
+        tooShort =
+            if String.length username < 3 then
+                Just ( UsernameField, Error "Username must be at least 3 characters long" )
+
+            else
+                Nothing
+
+        tooLong : Maybe ( Field, Error )
+        tooLong =
+            if String.length username > 12 then
+                Just ( UsernameField, Error "Username must not be longer than 12 characters" )
+
+            else
+                Nothing
+    in
+    Maybe.next tooShort tooLong
 
 
-submitDisabled : Model -> Bool
-submitDisabled model =
-    usernameInvalid model
-        || passwordInvalid model
-        || confirmPasswordInvalid model
-        || model.submitting
+passwordValidator : { a | password : String } -> Maybe ( Field, Error )
+passwordValidator { password } =
+    if String.length password < 8 then
+        Just ( PasswordField, Error "Password must be at least 8 characters" )
+
+    else
+        Nothing
+
+
+confirmPasswordValidator : { a | confirmPassword : String, password : String } -> Maybe ( Field, Error )
+confirmPasswordValidator { confirmPassword, password } =
+    if confirmPassword /= password then
+        Just ( ConfirmPasswordField, Error "Passwords do not match" )
+
+    else
+        Nothing
+
+
+validator : Model -> Maybe ( Field, Error )
+validator model =
+    List.foldl Maybe.or
+        Nothing
+    <|
+        List.map (\v -> v model)
+            [ usernameValidator, passwordValidator, confirmPasswordValidator ]

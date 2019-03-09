@@ -1,13 +1,15 @@
-module Login.State exposing (init, keyPress, passwordInvalid, receive, submitDisabled, update, usernameInvalid)
+module Login.State exposing (init, keyPress, receive, update, validator)
 
+import Error exposing (Error(..))
 import Http
 import Json.Decode exposing (maybe)
 import Keyboard exposing (KeyCode)
 import Login.Decoders exposing (loginErrorDecoder)
 import Login.Messages exposing (Input(..), Msg(..))
-import Login.Types exposing (Model)
+import Login.Types exposing (Field(..), Model)
 import Main.Messages as Main
 import Main.Types exposing (Flags)
+import Maybe.Extra as Maybe
 import Navigation
 import Room.Messages as Room
 import Util exposing (authLocation, message, send)
@@ -104,18 +106,28 @@ receive _ =
     Cmd.none
 
 
-usernameInvalid : { a | username : String } -> Bool
-usernameInvalid { username } =
-    (String.length username < 3) || (String.length username > 12)
+usernameValidator : { a | username : String } -> Maybe ( Field, Error )
+usernameValidator { username } =
+    if String.length username == 0 then
+        Just ( PasswordField, Error "Enter a username" )
+
+    else
+        Nothing
 
 
-passwordInvalid : { a | password : String } -> Bool
-passwordInvalid { password } =
-    String.length password < 8
+passwordValidator : { a | password : String } -> Maybe ( Field, Error )
+passwordValidator { password } =
+    if String.length password == 0 then
+        Just ( PasswordField, Error "Enter a password" )
+
+    else
+        Nothing
 
 
-submitDisabled : Model -> Bool
-submitDisabled model =
-    usernameInvalid model
-        || passwordInvalid model
-        || model.submitting
+validator : Model -> Maybe ( Field, Error )
+validator model =
+    List.foldl Maybe.or
+        Nothing
+    <|
+        List.map (\v -> v model)
+            [ usernameValidator, passwordValidator ]

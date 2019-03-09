@@ -1,4 +1,4 @@
-module Signup.Types exposing (Model, SignupError)
+module Signup.Types exposing (Field(..), Model, SignupError)
 
 
 type alias Model =
@@ -15,3 +15,9 @@ type alias Model =
 type alias SignupError =
     { error : String
     }
+
+
+type Field
+    = UsernameField
+    | PasswordField
+    | ConfirmPasswordField

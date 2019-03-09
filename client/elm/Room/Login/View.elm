@@ -1,23 +1,27 @@
 module Login.View exposing (logoutView, view)
 
+import Error exposing (Error)
 import Html exposing (Html, button, div, input, text)
 import Html.Attributes exposing (autofocus, class, disabled, placeholder, type_)
 import Html.Events exposing (onClick, onInput)
 import Login.Messages exposing (Input(..), Msg(..))
-import Login.State exposing (passwordInvalid, usernameInvalid)
-import Login.Types exposing (Model)
+import Login.State exposing (validator)
+import Login.Types exposing (Field, Model)
 import Main.Messages as Main
 import Main.Types exposing (Flags)
+import Maybe.Extra as Maybe
 
 
 view : Model -> Html Msg
 view model =
     let
+        validation : Maybe ( Field, Error )
+        validation =
+            validator model
+
         submitDisabled : Bool
         submitDisabled =
-            usernameInvalid model
-                || passwordInvalid model
-                || model.submitting
+            Maybe.isJust validation || model.submitting
     in
     div []
         [ div [ class "login-box" ]
