@@ -2,6 +2,7 @@ CREATE TABLE users (
   email TEXT,
   username TEXT PRIMARY KEY,
   passhash TEXT,
+  superuser BOOLEAN NOT NULL DEFAULT FALSE,
   created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 

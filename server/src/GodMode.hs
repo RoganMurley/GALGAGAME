@@ -9,9 +9,10 @@ import Safe (readMay)
 import Card (Card(..))
 import Cards (allCards)
 import Player (WhichPlayer(..), other)
-import Username (Username(..))
 import Util (Err, breakAt)
+import User (User(..))
 
+import qualified Auth.Schema as Auth
 import qualified DSL.Beta as Beta
 
 
@@ -45,5 +46,7 @@ parse which msg =
         Left ("Unknown commandment: " <> command :: Err)
 
 
-isSuperuser :: Username -> Bool
-isSuperuser = (==) (Username ("schmolt" :: Text))
+isSuperuser :: User -> Bool
+isSuperuser (User user) = Auth.userSuperuser user
+isSuperuser CpuUser     = False
+isSuperuser GuestUser   = False

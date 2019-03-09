@@ -17,8 +17,8 @@ import Player (WhichPlayer(..), other)
 import ResolveData (ResolveData(..), resolveAnim)
 import Safe (atMay, headMay)
 import Scenario (Scenario(..))
-import StackCard(StackCard(..))
-import Username (Username(..))
+import StackCard (StackCard(..))
+import User (User(..), getUsername)
 import Util (Err, Gen, deleteIndex, split)
 
 
@@ -36,21 +36,21 @@ data GameCommand =
   | Rematch
   | Concede
   | SelectCharacter Text
-  | Chat Username Text
-  | God Username Text
+  | Chat Text Text
+  | God Text
   deriving (Show)
 
 
-update :: GameCommand -> WhichPlayer -> GameState -> Scenario -> (Username, Username) -> Either Err (Maybe GameState, [Outcome])
+update :: GameCommand -> WhichPlayer -> GameState -> Scenario -> (Maybe User, Maybe User) -> Either Err (Maybe GameState, [Outcome])
 update (Chat username msg) _ _ _ _        = chat username msg
-update cmd which state scenario usernames =
+update cmd which state scenario users =
   case state of
     Waiting _ _ ->
       Left ("Unknown command " <> (cs $ show cmd) <> " on a waiting GameState")
     Selecting selectModel turn gen ->
       case cmd of
         SelectCharacter name ->
-          select which name selectModel turn scenario gen usernames
+          select which name selectModel turn scenario gen users
         _ ->
           Left ("Unknown command " <> (cs $ show cmd) <> " on a selecting GameState")
     Started playState ->
@@ -65,14 +65,14 @@ update cmd which state scenario usernames =
               hoverCard hover which model
             Concede ->
               concede which state
-            God username str ->
-              godMode username str which model replay
+            God str ->
+              godMode (getUser which users) str which model replay
             _ ->
               Left ("Unknown command " <> (cs $ show cmd) <> " on a Playing GameState")
         Ended winner _ _ gen ->
           case cmd of
             Rematch ->
-              rematch (winner, gen) usernames scenario
+              rematch (winner, gen) users scenario
             HoverCard _ ->
               ignore
             _ ->
@@ -83,18 +83,18 @@ ignore :: Either Err (Maybe GameState, [Outcome])
 ignore = Right (Nothing, [])
 
 
-rematch :: (Maybe WhichPlayer, Gen) -> (Username, Username) -> Scenario -> Either Err (Maybe GameState, [Outcome])
-rematch (winner, gen) usernames scenario =
+rematch :: (Maybe WhichPlayer, Gen) -> (Maybe User, Maybe User) -> Scenario -> Either Err (Maybe GameState, [Outcome])
+rematch (winner, gen) users scenario =
   let
     charModel = initCharModel (scenario_charactersPa scenario) (scenario_charactersPb scenario)
     turn = fromMaybe PlayerA winner
     startProgram = scenario_prog scenario
-    (newState, outcomes) = nextSelectState charModel turn startProgram (fst $ split gen) usernames
+    (newState, outcomes) = nextSelectState charModel turn startProgram (fst $ split gen) users
   in
     Right (Just newState, outcomes)
 
 
-chat :: Username -> Text -> Either Err (Maybe GameState, [Outcome])
+chat :: Text -> Text -> Either Err (Maybe GameState, [Outcome])
 chat username msg =
   Right (
     Nothing
@@ -122,19 +122,19 @@ concede _ _ =
   Left "Cannot concede when not playing"
 
 
-select :: WhichPlayer -> Text -> CharModel -> Turn -> Scenario -> Gen -> (Username, Username) -> Either Err (Maybe GameState, [Outcome])
-select which name charModel turn scenario gen usernames =
+select :: WhichPlayer -> Text -> CharModel -> Turn -> Scenario -> Gen -> (Maybe User, Maybe User) -> Either Err (Maybe GameState, [Outcome])
+select which name charModel turn scenario gen users =
   let
     newCharModel :: CharModel
     newCharModel = selectChar charModel which name
     startProgram = scenario_prog scenario
-    (newState, outcomes) = nextSelectState newCharModel turn startProgram gen usernames
+    (newState, outcomes) = nextSelectState newCharModel turn startProgram gen users
   in
     Right (Just newState, outcomes)
 
 
-nextSelectState :: CharModel -> Turn -> Beta.Program () -> Gen -> (Username, Username) -> (GameState, [Outcome])
-nextSelectState charModel turn startProgram gen (usernamePa, usernamePb) =
+nextSelectState :: CharModel -> Turn -> Beta.Program () -> Gen -> (Maybe User, Maybe User) -> (GameState, [Outcome])
+nextSelectState charModel turn startProgram gen (mUserPa, mUserPb) =
   let
     result :: Maybe ([ResolveData], Model, PlayState)
     result =
@@ -142,6 +142,8 @@ nextSelectState charModel turn startProgram gen (usernamePa, usernamePb) =
         (CharModel (ThreeSelected c1 c2 c3) (ThreeSelected ca cb cc) _) ->
           let
             model = initModel turn (c1, c2, c3) (ca, cb, cc) gen :: Model
+            usernamePa = fromMaybe "" $ getUsername <$> mUserPa :: Text
+            usernamePb = fromMaybe "" $ getUsername <$> mUserPb :: Text
             replay = Active.init model usernamePa usernamePb :: Active.Replay
             (newModel, _, res) = Beta.execute model Nothing $ foldFree Beta.betaI startProgram
             playstate :: PlayState
@@ -339,9 +341,9 @@ hoverCard NoHover which _ =
   Right (Nothing, [ Outcome.Encodable $ Outcome.Hover which NoHover (0, 0) ])
 
 
-godMode :: Username -> Text -> WhichPlayer -> Model -> Active.Replay -> Either Err (Maybe GameState, [Outcome])
-godMode username str which model replay =
-  if GodMode.isSuperuser username then
+godMode :: Maybe User -> Text -> WhichPlayer -> Model -> Active.Replay -> Either Err (Maybe GameState, [Outcome])
+godMode mUser str which model replay =
+  if fromMaybe False $ GodMode.isSuperuser <$> mUser then
     case GodMode.parse which str of
       Right betaProgram ->
         let
@@ -356,7 +358,9 @@ godMode username str which model replay =
       Left err ->
         Left err
   else
-    let
-      Username u = username
-    in
-      Left $ u <> " is not a superuser"
+    Left $ "Not a superuser"
+
+
+getUser :: WhichPlayer -> (Maybe User, Maybe User) -> Maybe User
+getUser PlayerA (ua, _) = ua
+getUser PlayerB (_, ub) = ub

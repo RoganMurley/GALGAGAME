@@ -7,7 +7,6 @@ import GameState (PlayState)
 import Model (Model)
 import Player (WhichPlayer)
 import ResolveData (ResolveData)
-import Username (Username)
 
 import qualified Replay.Final as Final
 
@@ -20,7 +19,7 @@ data Outcome =
 
 
 data Encodable =
-    Chat Username Text
+    Chat Text Text
   | Hover WhichPlayer HoverState (Damage, Damage)
   | Resolve [ResolveData] Model PlayState (Maybe WhichPlayer)
   deriving (Eq, Show)

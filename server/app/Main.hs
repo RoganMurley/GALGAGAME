@@ -10,7 +10,6 @@ import Control.Monad (forever, mzero, when)
 import Control.Monad.IO.Class (liftIO)
 import Control.Monad.Trans.Class (lift)
 import Control.Monad.Trans.Maybe (runMaybeT)
-import Data.Maybe (fromMaybe)
 import Data.Monoid ((<>))
 import Data.String.Conversions (cs)
 import Data.Text (Text)
@@ -34,7 +33,7 @@ import Outcome (Outcome)
 import Player (WhichPlayer(..), other)
 import Scenario (Scenario(..))
 import Start (startProgram, tutorialStartProgram)
-import Username (Username(Username))
+import User (User(..), getUsername, getUserFromToken)
 import Util (Gen, getGen, shuffle)
 
 import qualified DSL.Beta as Beta
@@ -103,9 +102,9 @@ wsApp state connectInfoConfig pending =
   runApp connectInfoConfig $ do
     connection <- liftIO $ WS.acceptRequest pending
     msg        <- liftIO $ WS.receiveData connection
-    usernameM  <- Auth.checkAuth $ Auth.getToken pending
+    user       <- getUserFromToken $ Auth.getToken pending
     liftIO $ WS.forkPingThread connection 30
-    begin connection msg (Username <$> usernameM) state
+    begin connection msg user state
 
 
 connectionFail :: WS.Connection -> String -> App ()
@@ -115,10 +114,10 @@ connectionFail conn str =
     (WS.sendTextData conn) . Command.toChat . ErrorCommand $ cs str
 
 
-begin :: WS.Connection -> Text -> Maybe Username -> TVar Server.State -> App ()
-begin conn roomReq usernameM state = do
-  let username = fromMaybe (Username "Guest") usernameM :: Username
-  liftIO $ infoM "app" $ printf "<%s>: New connection" (show username)
+begin :: WS.Connection -> Text -> User -> TVar Server.State -> App ()
+begin conn roomReq user state = do
+  let username = getUsername user :: Text
+  liftIO $ infoM "app" $ printf "<%s>: New connection" username
   case parseRoomReq roomReq of
     Just (RoomRequest roomName) -> do
       msg <- liftIO $ WS.receiveData conn
@@ -133,7 +132,7 @@ begin conn roomReq usernameM state = do
           beginPrefix
             prefix
             state
-            (Client username (PlayerConnection conn) guid)
+            (Client user (PlayerConnection conn) guid)
             roomVar
     Just ReconnectRequest ->
       return ()

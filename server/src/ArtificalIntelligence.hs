@@ -1,19 +1,18 @@
 {-# OPTIONS_GHC -fno-warn-incomplete-uni-patterns #-}
 module ArtificalIntelligence where
 
-
-import Card (Card)
 import Control.Monad.Trans.Writer (runWriter)
 import Data.List (maximumBy)
 import Data.Maybe (fromJust)
 import Data.Ord (comparing)
 import DSL.Alpha
+
+import Card (Card)
 import GameCommand (GameCommand(..), resolveAll, update)
 import GameState
 import Model
 import Player (WhichPlayer(..))
 import Scenario (Scenario(..))
-import Username (Username(Username))
 import Util (Gen, fromRight)
 
 import qualified Replay.Active
@@ -66,7 +65,7 @@ possibleActions m = endAction ++ (PlayAction <$> xs)
 postulateAction :: Model -> Gen -> Scenario -> Action -> PlayState
 postulateAction model gen scenario action =
   -- DANGEROUS, WE NEED TO SPLIT UP THE COMMAND STUFF IN GAMESTATE
-  (\(Started p) -> p) . fromJust . fst . fromRight $ update command PlayerA state scenario (Username "", Username "")
+  (\(Started p) -> p) . fromJust . fst . fromRight $ update command PlayerA state scenario (Nothing, Nothing)
   where
     command = toCommand action :: GameCommand
     state = Started $ Playing (modI model $ setGen gen) (Replay.Active.null) :: GameState

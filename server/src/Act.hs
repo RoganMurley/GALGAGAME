@@ -17,7 +17,6 @@ import Player (WhichPlayer(..), other)
 import ResolveData (ResolveData(..))
 import System.Log.Logger (infoM, warningM)
 import Text.Printf (printf)
-import Username (Username(Username))
 import Util (Err, modReturnTVar)
 
 
@@ -49,7 +48,7 @@ roomUpdate cmd which roomVar =
   where
     updateRoom :: Room -> Either Err (Maybe Room, [Outcome])
     updateRoom room =
-      case update cmd which (Room.getState room) (Room.getScenario room) (Room.getUsernames room) of
+      case update cmd which (Room.getState room) (Room.getScenario room) (Room.getUsers room) of
         Left err ->
           Left err
         Right (newState, outcomes) ->
@@ -79,7 +78,7 @@ actPlay cmd which roomVar = do
     trans ConcedeCommand             = Just Concede
     trans (ChatCommand name content) = Just (Chat name content)
     trans (SelectCharacterCommand n) = Just (SelectCharacter n)
-    trans (GodModeCommand name msg)  = Just (God name msg)
+    trans (GodModeCommand msg)       = Just (God msg)
     trans _                          = Nothing
 
 
@@ -137,7 +136,7 @@ actOutcome room (Outcome.Encodable o@(Outcome.Hover which _ rawDmg)) = do
   Room.sendExcluding which (("hover:" <>) . cs . encode $ o) room
   let dmg = if which == PlayerA then rawDmg else mirror rawDmg
   Room.sendToPlayer which (("damage:" <>) . cs . encode $ dmg) room
-actOutcome room (Outcome.Encodable (Outcome.Chat (Username username) msg)) =
+actOutcome room (Outcome.Encodable (Outcome.Chat username msg)) =
   Room.broadcast ("chat:" <> username <> ": " <> msg) room
 actOutcome room (Outcome.Encodable (Outcome.Resolve models initial final exclude)) =
   resolveRoomClients models initial final exclude room
