@@ -54,7 +54,7 @@ library
                      , Server
                      , StackCard
                      , Start
-                     , Username
+                     , User
                      , Util
   other-modules:       DSL.Alpha.Actions
                      , DSL.Alpha.DSL

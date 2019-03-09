@@ -2,18 +2,16 @@ module Room where
 
 import Config (App)
 import Control.Monad (forM_)
-import Data.Maybe (fromMaybe, maybeToList)
-import Data.Monoid ((<>))
-import Data.Text (Text, intercalate)
-
+import Data.Maybe (maybeToList)
+import Data.Text (Text)
 import Characters (initCharModel)
 import GameCommand (nextSelectState)
 import GameState (GameState(..), WaitType(..), initState)
 import Outcome (Outcome(..))
 import Player (WhichPlayer(..), other)
 import Scenario (Scenario(..))
-import Username (Username(Username))
 import Util (Gen)
+import User (User)
 
 import qualified Client
 import Client (Client)
@@ -78,14 +76,6 @@ getScenario :: Room -> Scenario
 getScenario = room_scenario
 
 
-clientExists :: Client -> Room -> Bool
-clientExists client room =
-  let
-    name = Client.name client :: Username
-  in
-    any (== name) $ Client.name <$> getClients room
-
-
 addSpec :: Client -> Room -> Room
 addSpec client room = room { room_specs = specs }
   where
@@ -124,8 +114,8 @@ roomSetup room =
             charModel = initCharModel (scenario_charactersPa scenario) (scenario_charactersPb scenario)
             turn = scenario_turn scenario
             startProgram = scenario_prog scenario
-            usernames = Room.getUsernames room
-            (state, newOutcomes) = nextSelectState charModel turn startProgram gen usernames
+            users = Room.getUsers room
+            (state, newOutcomes) = nextSelectState charModel turn startProgram gen users
           in
             (room { room_state = state }, newOutcomes)
         _ ->
@@ -153,7 +143,7 @@ removeClient client room@Room{ room_pa = pa, room_pb = pb, room_specs = specs } 
   }
   where
     newSpecs :: Spectators
-    newSpecs = filter ((/= Client.name client) . Client.name) specs
+    newSpecs = filter (/= client) specs
     newPlayer :: Player -> Player
     newPlayer Nothing = Nothing
     newPlayer (Just c) =
@@ -162,25 +152,13 @@ removeClient client room@Room{ room_pa = pa, room_pb = pb, room_specs = specs } 
         else Just c
 
 
-userList :: Room -> Text
-userList room
-  | users == "" = "You're the only one here..."
-  | otherwise   = "Users: " <> users
+getUsers :: Room -> (Maybe User, Maybe User)
+getUsers room = (userPa, userPb)
   where
-    users :: Text
-    users =
-        (intercalate ", ")
-      . (fmap ((\(Username u) -> u) . Client.name))
-      $ Room.getClients room
-
-
-getUsernames :: Room -> (Username, Username)
-getUsernames room = (fromMaybe (Username "") usernamePa, fromMaybe (Username "") usernamePb)
-  where
-    clientA    = getPlayerClient PlayerA room :: Maybe Client
-    clientB    = getPlayerClient PlayerB room :: Maybe Client
-    usernamePa = Client.name <$> clientA      :: Maybe Username
-    usernamePb = Client.name <$> clientB      :: Maybe Username
+    clientA = getPlayerClient PlayerA room :: Maybe Client
+    clientB = getPlayerClient PlayerB room :: Maybe Client
+    userPa = Client.user <$> clientA :: Maybe User
+    userPb = Client.user <$> clientB :: Maybe User
 
 
 connected :: Room -> (Player, Player)

@@ -17,7 +17,6 @@ import ModelDiff (ModelDiff(..), PlayerModelDiff(..))
 import Player (WhichPlayer(..))
 import ResolveData (ResolveData(..))
 import StackCard (StackCard(..))
-import Username (Username(Username))
 
 import qualified Replay.Active as Active
 import qualified Replay.Final as Final
@@ -106,10 +105,6 @@ instance Arbitrary Active.Replay where
 
 instance Arbitrary Final.Replay where
     arbitrary = Final.Replay <$> arbitrary <*> arbitrary
-
-
-instance Arbitrary Username where
-    arbitrary = Username <$> arbitrary
 
 
 instance Arbitrary ModelDiff where

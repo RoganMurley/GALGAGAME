@@ -5,8 +5,7 @@ import Control.Monad.IO.Class (liftIO)
 import Data.Aeson (ToJSON(..))
 import Data.Text (Text)
 import Network.WebSockets (Connection, receiveData, sendTextData)
-
-import Username (Username(Username))
+import User (User(..), getUsername)
 
 
 data ClientConnection =
@@ -20,7 +19,7 @@ instance Show ClientConnection where
 
 
 data Client = Client
-  { client_name       :: Username
+  { client_user       :: User
   , client_connection :: ClientConnection
   , client_guid       :: Text
   } deriving (Show)
@@ -31,11 +30,15 @@ instance Eq Client where
 
 
 instance ToJSON Client where
-  toJSON Client{ client_name } = toJSON client_name
+  toJSON client = toJSON . getUsername $ user client
 
 
-name :: Client -> Username
-name = client_name
+user :: Client -> User
+user = client_user
+
+
+name :: Client -> Text
+name = getUsername . client_user
 
 
 connection :: Client -> ClientConnection
@@ -57,4 +60,4 @@ receive  _                                   = return ("")
 
 
 cpuClient :: Text -> Client
-cpuClient = Client (Username "CPU") ComputerConnection
+cpuClient = Client CpuUser ComputerConnection

@@ -7,27 +7,26 @@ import Data.Text (Text)
 import Outcome (HoverState)
 import Safe (readMay)
 
-import Username (Username(..))
 import Util (breakAt)
 
 
 data Command =
-    ChatCommand Username Text
-  | PlayCommand Username
-  | SpectateCommand Username
-  | LeaveCommand Username
+    ChatCommand Text Text
+  | PlayCommand Text
+  | SpectateCommand Text
+  | LeaveCommand Text
   | EndTurnCommand
   | PlayCardCommand Int
   | HoverCardCommand HoverState
   | RematchCommand
   | ConcedeCommand
   | SelectCharacterCommand Text
-  | GodModeCommand Username Text
+  | GodModeCommand Text
   | ErrorCommand Text
   deriving (Show)
 
 
-parse :: Username -> Text -> Command
+parse :: Text -> Text -> Command
 parse name msg =
   let
     (command, content) = breakAt ":" msg :: (Text, Text)
@@ -56,19 +55,19 @@ parse name msg =
       "selectCharacter" ->
         SelectCharacterCommand content
       "god" ->
-        GodModeCommand name content
+        GodModeCommand content
       _ ->
         ErrorCommand $ "Unknown Command " <> (cs $ show command)
 
 
 toChat :: Command -> Text
-toChat (SpectateCommand (Username name)) =
+toChat (SpectateCommand name) =
   "chat:" <> name <> " started spectating"
-toChat (PlayCommand (Username name)) =
+toChat (PlayCommand name) =
   "chat:" <> name <> " started playing"
-toChat (LeaveCommand (Username name)) =
+toChat (LeaveCommand name) =
   "chat:" <> name <> " disconnected"
-toChat (ChatCommand (Username name) message) =
+toChat (ChatCommand name message) =
   "chat:" <> name <> ": " <> message
 toChat (ErrorCommand err) =
   "error:" <> err

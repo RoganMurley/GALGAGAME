@@ -12,9 +12,10 @@ import Database.Beam (Beamable, Columnar, Generic, Identity, PrimaryKey(..), Tab
 
 
 data UserT f = User
-  { userEmail    :: Columnar f Text
-  , userUsername :: Columnar f Text
-  , userPasshash :: Columnar f Text
+  { userEmail     :: Columnar f Text
+  , userUsername  :: Columnar f Text
+  , userPasshash  :: Columnar f Text
+  , userSuperuser :: Columnar f Bool
   } deriving (Generic)
 
 type User = UserT Identity

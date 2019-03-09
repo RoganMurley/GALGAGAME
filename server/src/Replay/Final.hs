@@ -10,7 +10,6 @@ import GameState (PlayState)
 import Mirror (Mirror(..))
 import Player (WhichPlayer(..))
 import Schema (RingOfWorldsDb(..), ringOfWorldsDb)
-import Username (Username(..))
 
 import qualified Auth.Schema
 
@@ -44,7 +43,7 @@ finalise = Replay
 
 -- This is hacky, change replay usernames to be a sum type for CPU and Guest.
 getUsername :: WhichPlayer -> Replay -> Maybe Text
-getUsername which (Replay (Active.Replay _ _ (Username ua) (Username ub)) _) =
+getUsername which (Replay (Active.Replay _ _ ua ub) _) =
   let
     username :: Text
     username =
