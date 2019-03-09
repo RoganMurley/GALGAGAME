@@ -5,7 +5,7 @@ import Http
 import Json.Decode exposing (maybe)
 import Keyboard exposing (KeyCode)
 import Login.Decoders exposing (loginErrorDecoder)
-import Login.Messages exposing (Input(..), Msg(..))
+import Login.Messages exposing (Msg(..))
 import Login.Types exposing (Field(..), Model)
 import Main.Messages as Main
 import Main.Types exposing (Flags)
@@ -108,7 +108,7 @@ receive _ =
 usernameValidator : { a | username : String } -> Maybe ( Field, Error )
 usernameValidator { username } =
     if String.length username == 0 then
-        Just ( PasswordField, Error "Enter a username" )
+        Just ( Username, Error "Enter a username" )
 
     else
         Nothing
@@ -117,7 +117,7 @@ usernameValidator { username } =
 passwordValidator : { a | password : String } -> Maybe ( Field, Error )
 passwordValidator { password } =
     if String.length password == 0 then
-        Just ( PasswordField, Error "Enter a password" )
+        Just ( Password, Error "Enter a password" )
 
     else
         Nothing
@@ -125,4 +125,4 @@ passwordValidator { password } =
 
 validator : Model -> Maybe ( Field, Error )
 validator =
-    validate [ usernameValidator, passwordValidator ]
+    validate [ passwordValidator, usernameValidator ]

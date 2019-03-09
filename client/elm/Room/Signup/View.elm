@@ -1,11 +1,11 @@
 module Signup.View exposing (view)
 
 import Form exposing (Error(..))
-import Html exposing (Html, button, div, input, text)
+import Html exposing (Attribute, Html, button, div, input, text)
 import Html.Attributes exposing (autofocus, class, disabled, placeholder, type_)
 import Html.Events exposing (onClick, onInput)
 import Maybe.Extra as Maybe
-import Signup.Messages exposing (Input(..), Msg(..))
+import Signup.Messages exposing (Msg(..))
 import Signup.State exposing (validator)
 import Signup.Types exposing (Field(..), Model)
 
@@ -23,34 +23,9 @@ view model =
     in
     div []
         [ div [ class "login-box" ]
-            [ div [ class "login-label" ] [ text "Email" ]
-            , input
-                [ placeholder "Email"
-                , autofocus True
-                , onInput <| Input Email
-                , type_ "email"
-                ]
-                []
-            , div [ class "login-label" ] [ text "Username" ]
-            , input
-                [ placeholder "Username"
-                , onInput <| Input Username
-                ]
-                []
-            , div [ class "login-label" ] [ text "Password" ]
-            , input
-                [ placeholder "Password"
-                , onInput <| Input Password
-                , type_ "password"
-                ]
-                []
-            , div [ class "login-label" ] [ text "Confirm Password" ]
-            , input
-                [ placeholder "Confirm Password"
-                , onInput <| Input ConfirmPassword
-                , type_ "password"
-                ]
-                []
+            [ inputView Email validation
+            , inputView Username validation
+            , inputView Password validation
             , button
                 [ onClick Submit
                 , disabled submitDisabled
@@ -59,3 +34,50 @@ view model =
             , div [ class "error" ] [ text model.error ]
             ]
         ]
+
+
+inputView : Field -> Maybe ( Field, Error ) -> Html Msg
+inputView field validation =
+    let
+        fieldLabel : String
+        fieldLabel =
+            case field of
+                Email ->
+                    "Email"
+
+                Username ->
+                    "Username"
+
+                Password ->
+                    "Password"
+
+        extraAttrs : List (Attribute Msg)
+        extraAttrs =
+            case field of
+                Email ->
+                    [ autofocus True, type_ "email" ]
+
+                Username ->
+                    []
+
+                Password ->
+                    [ type_ "password" ]
+
+        errorClass : List (Attribute Msg)
+        errorClass =
+            case validation of
+                Just ( errField, _ ) ->
+                    if field == errField then
+                        [ class "login-error" ]
+
+                    else
+                        []
+
+                Nothing ->
+                    []
+
+        attrs : List (Attribute Msg)
+        attrs =
+            [ onInput <| Input field, placeholder fieldLabel ] ++ errorClass ++ extraAttrs
+    in
+    input attrs []

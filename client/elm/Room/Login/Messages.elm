@@ -1,15 +1,10 @@
-module Login.Messages exposing (Input(..), Msg(..))
+module Login.Messages exposing (Msg(..))
 
 import Http
-import Login.Types exposing (LoginError)
+import Login.Types exposing (Field, LoginError)
 
 
 type Msg
-    = Input Input String
+    = Input Field String
     | Submit
     | SubmitCallback (Result Http.Error (Maybe LoginError))
-
-
-type Input
-    = Username
-    | Password

@@ -16,5 +16,5 @@ type alias LoginError =
 
 
 type Field
-    = UsernameField
-    | PasswordField
+    = Username
+    | Password
