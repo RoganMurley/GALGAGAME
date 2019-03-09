@@ -37,24 +37,18 @@
     }
   }
 
-  .login-label {
-    font-size: 14px;
-    font-family: 'Raleway', sans-serif;
-    color: #f4f15e;
-    width: 30vw;
-
-    margin-bottom: 4px;
+  .login-error {
+    color: #ff3232;
+    border-color: #ff3232;
   }
 
   input {
-    font-family: monospace;
-
-    text-align: center;
     border-radius: 5px;
-    width: 30vw;
+    width: 190px;
     height: 26px;
 
     margin-bottom: 8px;
+    padding-left: 10px;
   }
 }
 

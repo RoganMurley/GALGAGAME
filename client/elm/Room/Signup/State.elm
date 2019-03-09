@@ -10,7 +10,7 @@ import Maybe.Extra as Maybe
 import Navigation
 import Room.Messages as Room
 import Signup.Decoders exposing (signupErrorDecoder)
-import Signup.Messages exposing (Input(..), Msg(..))
+import Signup.Messages exposing (Msg(..))
 import Signup.Types exposing (Field(..), Model)
 import Util exposing (authLocation, message, send)
 
@@ -20,7 +20,6 @@ init nextUrl =
     { email = ""
     , username = ""
     , password = ""
-    , confirmPassword = ""
     , error = ""
     , submitting = False
     , nextUrl = Maybe.withDefault "/" nextUrl
@@ -38,9 +37,6 @@ update model msg flags =
 
         Input Password password ->
             ( { model | password = password }, Cmd.none )
-
-        Input ConfirmPassword password ->
-            ( { model | confirmPassword = password }, Cmd.none )
 
         Submit ->
             ( { model | submitting = True, error = "" }
@@ -118,7 +114,7 @@ keyPress code =
 emailValidator : { a | email : String } -> Maybe ( Field, Error )
 emailValidator { email } =
     if String.length email == 0 then
-        Just ( EmailField, Error "Enter an email address" )
+        Just ( Email, Error "Enter an email address" )
 
     else
         Nothing
@@ -130,7 +126,7 @@ usernameValidator { username } =
         tooShort : Maybe ( Field, Error )
         tooShort =
             if String.length username < 3 then
-                Just ( UsernameField, Error "Username must be at least 3 characters long" )
+                Just ( Username, Error "Username must be at least 3 characters long" )
 
             else
                 Nothing
@@ -138,27 +134,18 @@ usernameValidator { username } =
         tooLong : Maybe ( Field, Error )
         tooLong =
             if String.length username > 12 then
-                Just ( UsernameField, Error "Username must not be longer than 12 characters" )
+                Just ( Username, Error "Username must not be longer than 12 characters" )
 
             else
                 Nothing
     in
-    Maybe.next tooShort tooLong
+    Maybe.or tooShort tooLong
 
 
 passwordValidator : { a | password : String } -> Maybe ( Field, Error )
 passwordValidator { password } =
     if String.length password < 8 then
-        Just ( PasswordField, Error "Password must be at least 8 characters" )
-
-    else
-        Nothing
-
-
-confirmPasswordValidator : { a | confirmPassword : String, password : String } -> Maybe ( Field, Error )
-confirmPasswordValidator { confirmPassword, password } =
-    if confirmPassword /= password then
-        Just ( ConfirmPasswordField, Error "Passwords do not match" )
+        Just ( Password, Error "Password must be at least 8 characters" )
 
     else
         Nothing
@@ -166,4 +153,4 @@ confirmPasswordValidator { confirmPassword, password } =
 
 validator : Model -> Maybe ( Field, Error )
 validator =
-    validate [ emailValidator, usernameValidator, passwordValidator, confirmPasswordValidator ]
+    validate [ passwordValidator, usernameValidator, emailValidator ]

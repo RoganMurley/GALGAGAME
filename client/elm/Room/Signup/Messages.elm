@@ -1,17 +1,11 @@
-module Signup.Messages exposing (Input(..), Msg(..))
+module Signup.Messages exposing (Msg(..))
 
 import Http
 import Login.Types exposing (LoginError)
+import Signup.Types exposing (Field)
 
 
 type Msg
-    = Input Input String
+    = Input Field String
     | Submit
     | SubmitCallback (Result Http.Error (Maybe LoginError))
-
-
-type Input
-    = Email
-    | Username
-    | Password
-    | ConfirmPassword

@@ -111,7 +111,7 @@ connectionFail :: WS.Connection -> String -> App ()
 connectionFail conn str =
   liftIO $ do
     warningM "app" str
-    (WS.sendTextData conn) . Command.toChat . ErrorCommand $ cs str
+    WS.sendTextData conn . Command.toChat . ErrorCommand $ cs str
 
 
 begin :: WS.Connection -> Text -> User -> TVar Server.State -> App ()
