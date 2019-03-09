@@ -18,6 +18,7 @@ type alias SignupError =
 
 
 type Field
-    = UsernameField
+    = EmailField
+    | UsernameField
     | PasswordField
     | ConfirmPasswordField

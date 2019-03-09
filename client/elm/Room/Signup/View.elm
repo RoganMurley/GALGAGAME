@@ -1,6 +1,6 @@
 module Signup.View exposing (view)
 
-import Error exposing (Error(..))
+import Form exposing (Error(..))
 import Html exposing (Html, button, div, input, text)
 import Html.Attributes exposing (autofocus, class, disabled, placeholder, type_)
 import Html.Events exposing (onClick, onInput)
@@ -23,7 +23,7 @@ view model =
     in
     div []
         [ div [ class "login-box" ]
-            [ text "Email"
+            [ div [ class "login-label" ] [ text "Email" ]
             , input
                 [ placeholder "Email"
                 , autofocus True
@@ -31,21 +31,20 @@ view model =
                 , type_ "email"
                 ]
                 []
-            , text
-                "Username"
+            , div [ class "login-label" ] [ text "Username" ]
             , input
                 [ placeholder "Username"
                 , onInput <| Input Username
                 ]
                 []
-            , text "Password"
+            , div [ class "login-label" ] [ text "Password" ]
             , input
                 [ placeholder "Password"
                 , onInput <| Input Password
                 , type_ "password"
                 ]
                 []
-            , text "Confirm Password"
+            , div [ class "login-label" ] [ text "Confirm Password" ]
             , input
                 [ placeholder "Confirm Password"
                 , onInput <| Input ConfirmPassword
