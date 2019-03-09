@@ -1,4 +1,4 @@
-module Login.Types exposing (LoginError, Model)
+module Login.Types exposing (Field(..), LoginError, Model)
 
 
 type alias Model =
@@ -13,3 +13,8 @@ type alias Model =
 type alias LoginError =
     { error : String
     }
+
+
+type Field
+    = UsernameField
+    | PasswordField
