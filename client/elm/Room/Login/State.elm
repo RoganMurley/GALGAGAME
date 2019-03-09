@@ -1,6 +1,6 @@
 module Login.State exposing (init, keyPress, receive, update, validator)
 
-import Error exposing (Error(..))
+import Form exposing (Error(..), validate)
 import Http
 import Json.Decode exposing (maybe)
 import Keyboard exposing (KeyCode)
@@ -9,7 +9,6 @@ import Login.Messages exposing (Input(..), Msg(..))
 import Login.Types exposing (Field(..), Model)
 import Main.Messages as Main
 import Main.Types exposing (Flags)
-import Maybe.Extra as Maybe
 import Navigation
 import Room.Messages as Room
 import Util exposing (authLocation, message, send)
@@ -67,7 +66,7 @@ update model msg flags =
                     case status.code of
                         401 ->
                             ( { model
-                                | error = "Bad username/password"
+                                | error = "Bad username or password"
                                 , submitting = False
                               }
                             , Cmd.none
@@ -125,9 +124,5 @@ passwordValidator { password } =
 
 
 validator : Model -> Maybe ( Field, Error )
-validator model =
-    List.foldl Maybe.or
-        Nothing
-    <|
-        List.map (\v -> v model)
-            [ usernameValidator, passwordValidator ]
+validator =
+    validate [ usernameValidator, passwordValidator ]

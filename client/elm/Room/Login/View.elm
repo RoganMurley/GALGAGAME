@@ -1,6 +1,6 @@
 module Login.View exposing (logoutView, view)
 
-import Error exposing (Error)
+import Form exposing (Error)
 import Html exposing (Html, button, div, input, text)
 import Html.Attributes exposing (autofocus, class, disabled, placeholder, type_)
 import Html.Events exposing (onClick, onInput)
@@ -25,14 +25,14 @@ view model =
     in
     div []
         [ div [ class "login-box" ]
-            [ text "Username"
+            [ div [ class "login-label" ] [ text "Username" ]
             , input
                 [ placeholder "Username"
                 , autofocus True
                 , onInput <| Input Username
                 ]
                 []
-            , text "Password"
+            , div [ class "login-label" ] [ text "Password" ]
             , input
                 [ placeholder "Password"
                 , onInput <| Input Password

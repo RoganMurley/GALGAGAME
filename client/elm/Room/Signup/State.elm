@@ -1,6 +1,6 @@
 module Signup.State exposing (init, keyPress, receive, update, validator)
 
-import Error exposing (Error(..))
+import Form exposing (Error(..), validate)
 import Http
 import Json.Decode exposing (maybe)
 import Keyboard exposing (KeyCode)
@@ -115,6 +115,15 @@ keyPress code =
             Cmd.none
 
 
+emailValidator : { a | email : String } -> Maybe ( Field, Error )
+emailValidator { email } =
+    if String.length email == 0 then
+        Just ( EmailField, Error "Enter an email address" )
+
+    else
+        Nothing
+
+
 usernameValidator : { a | username : String } -> Maybe ( Field, Error )
 usernameValidator { username } =
     let
@@ -156,9 +165,5 @@ confirmPasswordValidator { confirmPassword, password } =
 
 
 validator : Model -> Maybe ( Field, Error )
-validator model =
-    List.foldl Maybe.or
-        Nothing
-    <|
-        List.map (\v -> v model)
-            [ usernameValidator, passwordValidator, confirmPasswordValidator ]
+validator =
+    validate [ emailValidator, usernameValidator, passwordValidator, confirmPasswordValidator ]

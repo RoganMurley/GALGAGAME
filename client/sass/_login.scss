@@ -37,12 +37,13 @@
     }
   }
 
-  label {
+  .login-label {
     font-size: 14px;
     font-family: 'Raleway', sans-serif;
     color: #f4f15e;
+    width: 30vw;
 
-    margin-right: 38px;
+    margin-bottom: 4px;
   }
 
   input {
@@ -50,7 +51,10 @@
 
     text-align: center;
     border-radius: 5px;
+    width: 30vw;
     height: 26px;
+
+    margin-bottom: 8px;
   }
 }
 
@@ -62,4 +66,5 @@
   font-weight: 600;
   text-align: center;
   margin-top: 20px;
+  height: 40px;
 }
