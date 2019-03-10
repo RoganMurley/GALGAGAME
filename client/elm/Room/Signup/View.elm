@@ -32,7 +32,7 @@ view model =
             formInputView formFieldClass validations
     in
     div []
-        [ div [ class "login-box" ]
+        [ div [ class "signup-box" ]
             [ inputView Email
             , inputView Username
             , inputView Password
