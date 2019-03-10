@@ -1,6 +1,6 @@
-module Login.Types exposing (Field(..), FormField, LoginError, Model, ValidationResult)
+module Login.Types exposing (Field(..), LoginError, Model)
 
-import Form exposing (Error(..))
+import Form exposing (FormField)
 
 
 type alias Model =
@@ -14,19 +14,6 @@ type alias Model =
 
 type alias LoginError =
     { error : String
-    }
-
-
-type alias FormField =
-    { value : String
-    , touched : Bool
-    }
-
-
-type alias ValidationResult =
-    { field : Field
-    , error : Error
-    , touched : Bool
     }
 
 

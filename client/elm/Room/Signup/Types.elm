@@ -1,10 +1,12 @@
 module Signup.Types exposing (Field(..), Model, SignupError)
 
+import Form exposing (FormField)
+
 
 type alias Model =
-    { email : String
-    , username : String
-    , password : String
+    { email : FormField
+    , username : FormField
+    , password : FormField
     , error : String
     , submitting : Bool
     , nextUrl : String
