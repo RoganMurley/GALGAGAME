@@ -4,9 +4,10 @@ import Form exposing (Error)
 import Html exposing (Attribute, Html, button, div, input, text)
 import Html.Attributes exposing (autofocus, class, disabled, placeholder, type_)
 import Html.Events exposing (onClick, onInput)
+import List.Extra as List
 import Login.Messages exposing (Msg(..))
 import Login.State exposing (validator)
-import Login.Types exposing (Field(..), Model)
+import Login.Types exposing (Field(..), Model, ValidationResult)
 import Main.Messages as Main
 import Main.Types exposing (Flags)
 import Maybe.Extra as Maybe
@@ -15,18 +16,18 @@ import Maybe.Extra as Maybe
 view : Model -> Html Msg
 view model =
     let
-        validation : Maybe ( Field, Error )
-        validation =
+        validations : List ValidationResult
+        validations =
             validator model
 
         submitDisabled : Bool
         submitDisabled =
-            Maybe.isJust validation || model.submitting
+            List.length validations > 0 || model.submitting
     in
     div []
         [ div [ class "login-box" ]
-            [ inputView Username validation
-            , inputView Password validation
+            [ inputView Username validations
+            , inputView Password validations
             , button
                 [ onClick Submit
                 , disabled submitDisabled
@@ -50,9 +51,22 @@ logoutView { username } =
             []
 
 
-inputView : Field -> Maybe ( Field, Error ) -> Html Msg
-inputView field validation =
+inputView : Field -> List ValidationResult -> Html Msg
+inputView field validations =
     let
+        validation : Maybe ValidationResult
+        validation =
+            List.find (.field >> (==) field) validations
+
+        error : Maybe Error
+        error =
+            Maybe.map .error validation
+
+        touched : Bool
+        touched =
+            Maybe.withDefault True <|
+                Maybe.map .touched validation
+
         fieldLabel : String
         fieldLabel =
             case field of
@@ -73,19 +87,16 @@ inputView field validation =
 
         errorClass : List (Attribute Msg)
         errorClass =
-            case validation of
-                Just ( errField, _ ) ->
-                    if field == errField then
-                        [ class "login-error" ]
+            if Maybe.isJust error && touched then
+                [ class "login-error" ]
 
-                    else
-                        []
-
-                Nothing ->
-                    []
+            else
+                []
 
         attrs : List (Attribute Msg)
         attrs =
-            [ onInput <| Input field, placeholder fieldLabel ] ++ errorClass ++ extraAttrs
+            [ onInput <| Input field, placeholder fieldLabel ]
+                ++ errorClass
+                ++ extraAttrs
     in
     input attrs []
