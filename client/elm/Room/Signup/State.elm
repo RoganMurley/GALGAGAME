@@ -1,12 +1,11 @@
 module Signup.State exposing (init, keyPress, receive, update, validator)
 
-import Form exposing (Error(..), validate)
+import Form exposing (Error(..), ValidationResult, Validator, batchValidators, initFormField, updateFormField)
 import Http
 import Json.Decode exposing (maybe)
 import Keyboard exposing (KeyCode)
 import Main.Messages as Main
 import Main.Types exposing (Flags)
-import Maybe.Extra as Maybe
 import Navigation
 import Room.Messages as Room
 import Signup.Decoders exposing (signupErrorDecoder)
@@ -17,9 +16,9 @@ import Util exposing (authLocation, message, send)
 
 init : Maybe String -> Model
 init nextUrl =
-    { email = ""
-    , username = ""
-    , password = ""
+    { email = initFormField
+    , username = initFormField
+    , password = initFormField
     , error = ""
     , submitting = False
     , nextUrl = Maybe.withDefault "/" nextUrl
@@ -30,13 +29,13 @@ update : Model -> Msg -> Flags -> ( Model, Cmd Main.Msg )
 update model msg flags =
     case msg of
         Input Email email ->
-            ( { model | email = email }, Cmd.none )
+            ( { model | email = updateFormField email model.email }, Cmd.none )
 
         Input Username username ->
-            ( { model | username = username }, Cmd.none )
+            ( { model | username = updateFormField username model.username }, Cmd.none )
 
         Input Password password ->
-            ( { model | password = password }, Cmd.none )
+            ( { model | password = updateFormField password model.password }, Cmd.none )
 
         Submit ->
             ( { model | submitting = True, error = "" }
@@ -46,9 +45,9 @@ update model msg flags =
                 Http.post
                     (authLocation flags ++ "/register")
                     (Http.multipartBody
-                        [ Http.stringPart "email" model.email
-                        , Http.stringPart "username" model.username
-                        , Http.stringPart "password" model.password
+                        [ Http.stringPart "email" model.email.value
+                        , Http.stringPart "username" model.username.value
+                        , Http.stringPart "password" model.password.value
                         ]
                     )
                     (maybe signupErrorDecoder)
@@ -111,46 +110,62 @@ keyPress code =
             Cmd.none
 
 
-emailValidator : { a | email : String } -> Maybe ( Field, Error )
+emailValidator : Validator Model Field
 emailValidator { email } =
-    if String.length email == 0 then
-        Just ( Email, Error "Enter an email address" )
+    if String.length email.value == 0 then
+        [ { field = Email
+          , error = Error "Enter an email address"
+          , touched = email.touched
+          }
+        ]
 
     else
-        Nothing
+        []
 
 
-usernameValidator : { a | username : String } -> Maybe ( Field, Error )
-usernameValidator { username } =
+usernameValidator : Validator Model Field
+usernameValidator =
     let
-        tooShort : Maybe ( Field, Error )
-        tooShort =
-            if String.length username < 3 then
-                Just ( Username, Error "Username must be at least 3 characters long" )
+        tooShort : Validator Model Field
+        tooShort { username } =
+            if String.length username.value < 3 then
+                [ { field = Username
+                  , error = Error "Username must be at least 3 characters long"
+                  , touched = username.touched
+                  }
+                ]
 
             else
-                Nothing
+                []
 
-        tooLong : Maybe ( Field, Error )
-        tooLong =
-            if String.length username > 12 then
-                Just ( Username, Error "Username must not be longer than 12 characters" )
+        tooLong : Validator Model Field
+        tooLong { username } =
+            if String.length username.value > 12 then
+                [ { field = Username
+                  , error = Error "Username must not be longer than 12 characters"
+                  , touched = username.touched
+                  }
+                ]
 
             else
-                Nothing
+                []
     in
-    Maybe.or tooShort tooLong
+    batchValidators [ tooShort, tooLong ]
 
 
-passwordValidator : { a | password : String } -> Maybe ( Field, Error )
+passwordValidator : Validator Model Field
 passwordValidator { password } =
-    if String.length password < 8 then
-        Just ( Password, Error "Password must be at least 8 characters" )
+    if String.length password.value < 8 then
+        [ { field = Password
+          , error = Error "Password must be at least 8 characters"
+          , touched = password.touched
+          }
+        ]
 
     else
-        Nothing
+        []
 
 
-validator : Model -> Maybe ( Field, Error )
+validator : Model -> List (ValidationResult Field)
 validator =
-    validate [ passwordValidator, usernameValidator, emailValidator ]
+    batchValidators [ emailValidator, usernameValidator, passwordValidator ]

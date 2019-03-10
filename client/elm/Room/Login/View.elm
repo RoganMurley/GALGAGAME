@@ -1,33 +1,42 @@
 module Login.View exposing (logoutView, view)
 
-import Form exposing (Error)
-import Html exposing (Attribute, Html, button, div, input, text)
-import Html.Attributes exposing (autofocus, class, disabled, placeholder, type_)
-import Html.Events exposing (onClick, onInput)
-import List.Extra as List
+import Form exposing (FormFieldClass, ValidationResult, formInputView)
+import Html exposing (Attribute, Html, button, div, text)
+import Html.Attributes exposing (autofocus, class, disabled, type_)
+import Html.Events exposing (onClick)
 import Login.Messages exposing (Msg(..))
 import Login.State exposing (validator)
-import Login.Types exposing (Field(..), Model, ValidationResult)
+import Login.Types exposing (Field(..), Model)
 import Main.Messages as Main
 import Main.Types exposing (Flags)
-import Maybe.Extra as Maybe
 
 
 view : Model -> Html Msg
 view model =
     let
-        validations : List ValidationResult
+        validations : List (ValidationResult Field)
         validations =
             validator model
 
         submitDisabled : Bool
         submitDisabled =
             List.length validations > 0 || model.submitting
+
+        formFieldClass : FormFieldClass Field Msg
+        formFieldClass =
+            { getFieldLabel = getFieldLabel
+            , getExtraAttrs = getExtraAttrs
+            , getInputMsg = Input
+            }
+
+        inputView : Field -> Html Msg
+        inputView =
+            formInputView formFieldClass validations
     in
     div []
         [ div [ class "login-box" ]
-            [ inputView Username validations
-            , inputView Password validations
+            [ inputView Username
+            , inputView Password
             , button
                 [ onClick Submit
                 , disabled submitDisabled
@@ -51,52 +60,73 @@ logoutView { username } =
             []
 
 
-inputView : Field -> List ValidationResult -> Html Msg
-inputView field validations =
-    let
-        validation : Maybe ValidationResult
-        validation =
-            List.find (.field >> (==) field) validations
+getFieldLabel : Field -> String
+getFieldLabel field =
+    case field of
+        Username ->
+            "Username"
 
-        error : Maybe Error
-        error =
-            Maybe.map .error validation
+        Password ->
+            "Password"
 
-        touched : Bool
-        touched =
-            Maybe.withDefault True <|
-                Maybe.map .touched validation
 
-        fieldLabel : String
-        fieldLabel =
-            case field of
-                Username ->
-                    "Username"
+getExtraAttrs : Field -> List (Attribute Msg)
+getExtraAttrs field =
+    case field of
+        Username ->
+            [ autofocus True ]
 
-                Password ->
-                    "Password"
+        Password ->
+            [ type_ "password" ]
 
-        extraAttrs : List (Attribute Msg)
-        extraAttrs =
-            case field of
-                Username ->
-                    [ autofocus True ]
 
-                Password ->
-                    [ type_ "password" ]
 
-        errorClass : List (Attribute Msg)
-        errorClass =
-            if Maybe.isJust error && touched then
-                [ class "login-error" ]
-
-            else
-                []
-
-        attrs : List (Attribute Msg)
-        attrs =
-            [ onInput <| Input field, placeholder fieldLabel ]
-                ++ errorClass
-                ++ extraAttrs
-    in
-    input attrs []
+-- inputView : Field -> List (ValidationResult Field) -> Html Msg
+-- inputView field validations =
+--     let
+--         validation : Maybe (ValidationResult Field)
+--         validation =
+--             List.find (.field >> (==) field) validations
+--
+--         error : Maybe Error
+--         error =
+--             Maybe.map .error validation
+--
+--         touched : Bool
+--         touched =
+--             Maybe.withDefault True <|
+--                 Maybe.map .touched validation
+--
+--         fieldLabel : String
+--         fieldLabel =
+--             case field of
+--                 Username ->
+--                     "Username"
+--
+--                 Password ->
+--                     "Password"
+--
+--         extraAttrs : List (Attribute Msg)
+--         extraAttrs =
+--             case field of
+--                 Username ->
+--                     [ autofocus True ]
+--
+--                 Password ->
+--                     [ type_ "password" ]
+--
+--         errorClass : List (Attribute Msg)
+--         errorClass =
+--             if Maybe.isJust error && touched then
+--                 [ class "login-error" ]
+--
+--             else
+--                 []
+--
+--         attrs : List (Attribute Msg)
+--         attrs =
+--             [ onInput <| Input field, placeholder fieldLabel ]
+--                 ++ errorClass
+--                 ++ extraAttrs
+--     in
+--     input attrs []

@@ -1,12 +1,12 @@
 module Login.State exposing (init, keyPress, receive, update, validator)
 
-import Form exposing (Error(..))
+import Form exposing (Error(..), ValidationResult, Validator, batchValidators, initFormField, updateFormField)
 import Http
 import Json.Decode exposing (maybe)
 import Keyboard exposing (KeyCode)
 import Login.Decoders exposing (loginErrorDecoder)
 import Login.Messages exposing (Msg(..))
-import Login.Types exposing (Field(..), FormField, Model, ValidationResult)
+import Login.Types exposing (Field(..), Model)
 import Main.Messages as Main
 import Main.Types exposing (Flags)
 import Navigation
@@ -14,20 +14,10 @@ import Room.Messages as Room
 import Util exposing (authLocation, message, send)
 
 
-formFieldInit : FormField
-formFieldInit =
-    { value = "", touched = False }
-
-
-updateField : String -> FormField -> FormField
-updateField newValue field =
-    { field | value = newValue, touched = True }
-
-
 init : Maybe String -> Model
 init nextUrl =
-    { username = formFieldInit
-    , password = formFieldInit
+    { username = initFormField
+    , password = initFormField
     , error = ""
     , submitting = False
     , nextUrl = Maybe.withDefault "/" nextUrl
@@ -38,10 +28,10 @@ update : Model -> Msg -> Flags -> ( Model, Cmd Main.Msg )
 update model msg flags =
     case msg of
         Input Username username ->
-            ( { model | username = updateField username model.username }, Cmd.none )
+            ( { model | username = updateFormField username model.username }, Cmd.none )
 
         Input Password password ->
-            ( { model | password = updateField password model.password }, Cmd.none )
+            ( { model | password = updateFormField password model.password }, Cmd.none )
 
         Submit ->
             ( { model | submitting = True, error = "" }
@@ -115,25 +105,32 @@ receive _ =
     Cmd.none
 
 
-usernameValidator : { a | username : FormField } -> Maybe ValidationResult
+usernameValidator : Validator Model Field
 usernameValidator { username } =
     if String.length username.value == 0 then
-        Just { field = Username, error = Error "Enter a password", touched = username.touched }
+        [ { field = Username
+          , error = Error "Enter a password"
+          , touched = username.touched
+          }
+        ]
 
     else
-        Nothing
+        []
 
 
-passwordValidator : { a | password : FormField } -> Maybe ValidationResult
+passwordValidator : Validator Model Field
 passwordValidator { password } =
     if String.length password.value == 0 then
-        Just { field = Password, error = Error "Enter a password", touched = password.touched }
+        [ { field = Password
+          , error = Error "Enter a password"
+          , touched = password.touched
+          }
+        ]
 
     else
-        Nothing
+        []
 
 
-validator : Model -> List ValidationResult
-validator model =
-    List.filterMap identity <|
-        List.map ((|>) model) [ passwordValidator, usernameValidator ]
+validator : Model -> List (ValidationResult Field)
+validator =
+    batchValidators [ usernameValidator, passwordValidator ]
