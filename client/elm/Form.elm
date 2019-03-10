@@ -76,8 +76,12 @@ formInputView { getExtraAttrs, getFieldLabel, getInputMsg } validations field =
 
         errorClass : List (Attribute msg)
         errorClass =
-            if Maybe.isJust error && touched then
-                [ class "form-error" ]
+            if touched then
+                if Maybe.isJust error then
+                    [ class "form-error" ]
+
+                else
+                    [ class "form-good" ]
 
             else
                 []

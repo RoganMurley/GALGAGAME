@@ -1,4 +1,4 @@
-.login-box {
+.signup-box {
   height: 100vh;
   display: flex;
   justify-content: center;
@@ -43,9 +43,8 @@
   }
 
   .form-good {
-    // No validation :)
-    // color: #5cb85c;
-    // border-color: #5cb85c;
+    color: #5cb85c;
+    border-color: #5cb85c;
   }
 
   input {
