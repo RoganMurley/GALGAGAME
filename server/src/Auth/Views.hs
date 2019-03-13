@@ -79,15 +79,21 @@ logoutView config = do
 registerView :: ConnectInfoConfig -> ActionM ()
 registerView config =
   do
-    email       <- param "email"
-    usernameRaw <- param "username"
-    password    <- param "password"
-    let username = cs . T.toLower $ usernameRaw :: ByteString
-    createUser config email username password
+    email          <- param "email"
+    usernameRaw    <- param "username"
+    password       <- param "password"
+    contactableRaw <- param "contactable"
+    let username    = cs . T.toLower $ usernameRaw :: ByteString
+    let contactable = parseContactable contactableRaw :: Bool
+    createUser config email username password contactable
+  where
+    parseContactable :: ByteString -> Bool
+    parseContactable "on" = True
+    parseContactable _    = False
 
 
-createUser :: ConnectInfoConfig -> ByteString -> ByteString -> ByteString -> ActionM ()
-createUser config email username password =
+createUser :: ConnectInfoConfig -> ByteString -> ByteString -> ByteString  -> Bool -> ActionM ()
+createUser config email username password contactable =
   case legalName username *> legalPassword password of
     Just err -> do
       liftIO $ debugM "auth" $ "Creating user " <> cs username <> "error: " <> cs err
@@ -97,7 +103,7 @@ createUser config email username password =
       p <- liftIO $ hashPasswordUsingPolicy slowerBcryptHashingPolicy password
       case p of
         Just hashedPassword -> do
-          success <- liftIO $ runApp config $ saveUser email username hashedPassword
+          success <- liftIO $ runApp config $ saveUser email username hashedPassword contactable
           case success of
             True -> do
               createSession config username

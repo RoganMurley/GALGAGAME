@@ -7,6 +7,7 @@ type alias Model =
     { email : FormField
     , username : FormField
     , password : FormField
+    , contactable : FormField
     , error : String
     , submitting : Bool
     , nextUrl : String
@@ -22,3 +23,4 @@ type Field
     = Email
     | Username
     | Password
+    | Contactable

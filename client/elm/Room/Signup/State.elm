@@ -20,6 +20,7 @@ init nextUrl =
     { email = initFormField
     , username = initFormField
     , password = initFormField
+    , contactable = initFormField
     , error = ""
     , submitting = False
     , nextUrl = Maybe.withDefault "/" nextUrl
@@ -38,6 +39,9 @@ update model msg flags =
         Input Password password ->
             ( { model | password = updateFormField password model.password }, Cmd.none )
 
+        Input Contactable contactable ->
+            ( { model | contactable = updateFormField contactable model.contactable }, Cmd.none )
+
         Submit ->
             ( { model | submitting = True, error = "" }
             , Http.send
@@ -49,6 +53,7 @@ update model msg flags =
                         [ Http.stringPart "email" model.email.value
                         , Http.stringPart "username" model.username.value
                         , Http.stringPart "password" model.password.value
+                        , Http.stringPart "contactable" model.contactable.value
                         ]
                     )
                     (maybe signupErrorDecoder)

@@ -1,7 +1,7 @@
-module Form exposing (Error(..), FormField, FormFieldClass, ValidationResult, Validator, batchValidators, formInputView, initFormField, updateFormField)
+module Form exposing (Error(..), FormField, FormFieldClass, FormFieldType(..), ValidationResult, Validator, batchValidators, formInputView, initFormField, updateFormField)
 
-import Html exposing (Attribute, Html, div, input, text)
-import Html.Attributes exposing (class, placeholder)
+import Html exposing (Attribute, Html, div, input, label, text)
+import Html.Attributes exposing (class, for, id, placeholder, type_)
 import Html.Events exposing (onInput)
 import List.Extra as List
 import Maybe.Extra as Maybe
@@ -38,10 +38,20 @@ type Error
     = Error String
 
 
+type FormFieldType
+    = TextType
+    | EmailType
+    | CheckboxType
+    | PasswordType
+
+
 type alias FormFieldClass field msg =
-    { getFieldLabel : field -> String
+    { getFieldPlaceholder : field -> String
+    , getFieldLabel : field -> Maybe String
+    , getFormFieldType : field -> FormFieldType
     , getExtraAttrs : field -> List (Attribute msg)
     , getInputMsg : field -> (String -> msg)
+    , getIdentifier : field -> String
     }
 
 
@@ -50,9 +60,28 @@ batchValidators validators =
     \model -> List.concat <| List.map ((|>) model) validators
 
 
+inputType : FormFieldType -> Attribute msg
+inputType fieldType =
+    case fieldType of
+        TextType ->
+            type_ "text"
+
+        EmailType ->
+            type_ "email"
+
+        CheckboxType ->
+            type_ "checkbox"
+
+        PasswordType ->
+            type_ "password"
+
+
 formInputView : FormFieldClass field msg -> List (ValidationResult field) -> field -> Html msg
-formInputView { getExtraAttrs, getFieldLabel, getInputMsg } validations field =
+formInputView formFieldClass validations field =
     let
+        { getExtraAttrs, getFormFieldType, getFieldLabel, getFieldPlaceholder, getInputMsg, getIdentifier } =
+            formFieldClass
+
         validation : Maybe (ValidationResult field)
         validation =
             List.find (.field >> (==) field) validations
@@ -66,9 +95,18 @@ formInputView { getExtraAttrs, getFieldLabel, getInputMsg } validations field =
             Maybe.withDefault True <|
                 Maybe.map .touched validation
 
-        fieldLabel : String
+        fieldPlaceholder : String
+        fieldPlaceholder =
+            getFieldPlaceholder field
+
+        fieldLabel : Html msg
         fieldLabel =
-            getFieldLabel field
+            case getFieldLabel field of
+                Just myLabel ->
+                    label [ for identifier ] [ text myLabel ]
+
+                Nothing ->
+                    text ""
 
         extraAttrs : List (Attribute msg)
         extraAttrs =
@@ -97,11 +135,17 @@ formInputView { getExtraAttrs, getFieldLabel, getInputMsg } validations field =
 
         attrs : List (Attribute msg)
         attrs =
-            [ onInput <| getInputMsg field, placeholder fieldLabel ]
+            [ id identifier, onInput <| getInputMsg field, placeholder fieldPlaceholder ]
                 ++ errorClass
                 ++ extraAttrs
+                ++ [ inputType <| getFormFieldType field ]
+
+        identifier : String
+        identifier =
+            getIdentifier field
     in
     div [ class "form-input" ]
         [ input attrs []
+        , fieldLabel
         , div [ class "form-error-message" ] [ text errorMessage ]
         ]

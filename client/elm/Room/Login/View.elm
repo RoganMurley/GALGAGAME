@@ -1,8 +1,8 @@
 module Login.View exposing (logoutView, view)
 
-import Form exposing (FormFieldClass, ValidationResult, formInputView)
+import Form exposing (FormFieldClass, FormFieldType(..), ValidationResult, formInputView)
 import Html exposing (Attribute, Html, button, div, text)
-import Html.Attributes exposing (autofocus, class, disabled, type_)
+import Html.Attributes exposing (autofocus, class, disabled)
 import Html.Events exposing (onClick)
 import Login.Messages exposing (Msg(..))
 import Login.State exposing (validator)
@@ -24,9 +24,12 @@ view model =
 
         formFieldClass : FormFieldClass Field Msg
         formFieldClass =
-            { getFieldLabel = getFieldLabel
+            { getFieldPlaceholder = getFieldPlaceholder
+            , getFieldLabel = \_ -> Nothing
+            , getFormFieldType = getFormFieldType
             , getExtraAttrs = getExtraAttrs
             , getInputMsg = Input
+            , getIdentifier = getIdentifier
             }
 
         inputView : Field -> Html Msg
@@ -60,14 +63,24 @@ logoutView { username } =
             []
 
 
-getFieldLabel : Field -> String
-getFieldLabel field =
+getFieldPlaceholder : Field -> String
+getFieldPlaceholder field =
     case field of
         Username ->
             "Username"
 
         Password ->
             "Password"
+
+
+getFormFieldType : Field -> FormFieldType
+getFormFieldType field =
+    case field of
+        Username ->
+            TextType
+
+        Password ->
+            PasswordType
 
 
 getExtraAttrs : Field -> List (Attribute Msg)
@@ -77,4 +90,14 @@ getExtraAttrs field =
             [ autofocus True ]
 
         Password ->
-            [ type_ "password" ]
+            []
+
+
+getIdentifier : Field -> String
+getIdentifier field =
+    case field of
+        Username ->
+            "username"
+
+        Password ->
+            "password"
