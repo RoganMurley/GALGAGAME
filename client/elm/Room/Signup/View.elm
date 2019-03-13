@@ -70,7 +70,7 @@ getFieldLabel : Field -> Maybe String
 getFieldLabel field =
     case field of
         Contactable ->
-            Just "Contact me with updates"
+            Just "Let us contact you with sweet, sweet updates"
 
         _ ->
             Nothing
