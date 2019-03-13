@@ -7,6 +7,7 @@ import Keyboard exposing (KeyCode)
 import Main.Messages as Main
 import Main.Types exposing (Flags)
 import Navigation
+import Regex exposing (Regex)
 import Room.Messages as Room
 import Signup.Decoders exposing (signupErrorDecoder)
 import Signup.Messages exposing (Msg(..))
@@ -111,16 +112,38 @@ keyPress code =
 
 
 emailValidator : Validator Model Field
-emailValidator { email } =
-    if String.length email.value == 0 then
-        [ { field = Email
-          , error = Error "Required"
-          , touched = email.touched
-          }
-        ]
+emailValidator =
+    let
+        required : Validator Model Field
+        required { email } =
+            if String.length email.value == 0 then
+                [ { field = Email
+                  , error = Error "Required"
+                  , touched = email.touched
+                  }
+                ]
 
-    else
-        []
+            else
+                []
+
+        valid : Validator Model Field
+        valid { email } =
+            if not (Regex.contains validEmail email.value) then
+                [ { field = Email
+                  , error = Error "Invalid email"
+                  , touched = email.touched
+                  }
+                ]
+
+            else
+                []
+
+        validEmail : Regex
+        validEmail =
+            Regex.caseInsensitive <|
+                Regex.regex "^[a-zA-Z0-9.!#$%&'*+\\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$"
+    in
+    batchValidators [ required, valid ]
 
 
 usernameValidator : Validator Model Field
