@@ -66,7 +66,7 @@ update model msg flags =
                     case status.code of
                         401 ->
                             ( { model
-                                | error = "Bad username or password"
+                                | error = "Incorrect username/password"
                                 , submitting = False
                               }
                             , Cmd.none
@@ -82,7 +82,7 @@ update model msg flags =
 
                 _ ->
                     ( { model
-                        | error = "Error connecting to authentication service"
+                        | error = "Could not connect to authentication service"
                         , submitting = False
                       }
                     , Cmd.none
@@ -109,7 +109,7 @@ usernameValidator : Validator Model Field
 usernameValidator { username } =
     if String.length username.value == 0 then
         [ { field = Username
-          , error = Error "Enter a password"
+          , error = Error "Required"
           , touched = username.touched
           }
         ]
@@ -122,7 +122,7 @@ passwordValidator : Validator Model Field
 passwordValidator { password } =
     if String.length password.value == 0 then
         [ { field = Password
-          , error = Error "Enter a password"
+          , error = Error "Required"
           , touched = password.touched
           }
         ]
