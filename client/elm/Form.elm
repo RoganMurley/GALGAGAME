@@ -1,6 +1,6 @@
 module Form exposing (Error(..), FormField, FormFieldClass, ValidationResult, Validator, batchValidators, formInputView, initFormField, updateFormField)
 
-import Html exposing (Attribute, Html, input)
+import Html exposing (Attribute, Html, div, input, text)
 import Html.Attributes exposing (class, placeholder)
 import Html.Events exposing (onInput)
 import List.Extra as List
@@ -86,10 +86,22 @@ formInputView { getExtraAttrs, getFieldLabel, getInputMsg } validations field =
             else
                 []
 
+        errorMessage : String
+        errorMessage =
+            case ( error, touched ) of
+                ( Just (Error msg), True ) ->
+                    msg
+
+                _ ->
+                    ""
+
         attrs : List (Attribute msg)
         attrs =
             [ onInput <| getInputMsg field, placeholder fieldLabel ]
                 ++ errorClass
                 ++ extraAttrs
     in
-    input attrs []
+    div [ class "form-input" ]
+        [ input attrs []
+        , div [ class "form-error-message" ] [ text errorMessage ]
+        ]

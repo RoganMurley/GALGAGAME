@@ -37,16 +37,6 @@
     }
   }
 
-  .form-error {
-    color: #ff3232;
-    border-color: #ff3232;
-  }
-
-  .form-good {
-    color: #5cb85c;
-    border-color: #5cb85c;
-  }
-
   input {
     font-weight: 600;
 
@@ -58,7 +48,6 @@
     padding-left: 10px;
   }
 
-
   .error {
     font-family: 'Raleway', sans-serif;
     display: block;
@@ -69,5 +58,4 @@
     margin-top: 20px;
     height: 40px;
   }
-
 }

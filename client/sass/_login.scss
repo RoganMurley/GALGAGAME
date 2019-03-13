@@ -37,15 +37,9 @@
     }
   }
 
-  .form-error {
-    color: #ff3232;
-    border-color: #ff3232;
-  }
-
   .form-good {
-    // No validation :)
-    // color: #5cb85c;
-    // border-color: #5cb85c;
+    color: inherit;
+    border-color: inherit;
   }
 
   input {
