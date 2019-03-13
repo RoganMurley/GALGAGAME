@@ -52,9 +52,9 @@ deleteToken token = do
   return ()
 
 
-saveUser :: ByteString -> ByteString -> ByteString -> App Bool
-saveUser email username hashedPassword = do
-  let user = Schema.User (cs email) (cs username) (cs hashedPassword) False
+saveUser :: ByteString -> ByteString -> ByteString -> Bool -> App Bool
+saveUser email username hashedPassword contactable = do
+  let user = Schema.User (cs email) (cs username) (cs hashedPassword) contactable False
   result <- runBeamIntegrity $ runInsert $ insert (users ringOfWorldsDb) $ insertValues [ user ]
   case result of
     Right _ ->

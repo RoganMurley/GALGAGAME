@@ -15,6 +15,7 @@ data UserT f = User
   { userEmail     :: Columnar f Text
   , userUsername  :: Columnar f Text
   , userPasshash  :: Columnar f Text
+  , userContactable :: Columnar f Bool
   , userSuperuser :: Columnar f Bool
   } deriving (Generic)
 
