@@ -114,7 +114,7 @@ emailValidator : Validator Model Field
 emailValidator { email } =
     if String.length email.value == 0 then
         [ { field = Email
-          , error = Error "Enter an email address"
+          , error = Error "Required"
           , touched = email.touched
           }
         ]
@@ -126,11 +126,23 @@ emailValidator { email } =
 usernameValidator : Validator Model Field
 usernameValidator =
     let
+        required : Validator Model Field
+        required { username } =
+            if String.length username.value == 0 then
+                [ { field = Username
+                  , error = Error "Required"
+                  , touched = username.touched
+                  }
+                ]
+
+            else
+                []
+
         tooShort : Validator Model Field
         tooShort { username } =
             if String.length username.value < 3 then
                 [ { field = Username
-                  , error = Error "Username must be at least 3 characters long"
+                  , error = Error "Too short"
                   , touched = username.touched
                   }
                 ]
@@ -142,7 +154,7 @@ usernameValidator =
         tooLong { username } =
             if String.length username.value > 12 then
                 [ { field = Username
-                  , error = Error "Username must not be longer than 12 characters"
+                  , error = Error "Too long"
                   , touched = username.touched
                   }
                 ]
@@ -150,20 +162,37 @@ usernameValidator =
             else
                 []
     in
-    batchValidators [ tooShort, tooLong ]
+    batchValidators [ required, tooShort, tooLong ]
 
 
 passwordValidator : Validator Model Field
-passwordValidator { password } =
-    if String.length password.value < 8 then
-        [ { field = Password
-          , error = Error "Password must be at least 8 characters"
-          , touched = password.touched
-          }
-        ]
+passwordValidator =
+    let
+        required : Validator Model Field
+        required { password } =
+            if String.length password.value == 0 then
+                [ { field = Password
+                  , error = Error "Required"
+                  , touched = password.touched
+                  }
+                ]
 
-    else
-        []
+            else
+                []
+
+        tooShort : Validator Model Field
+        tooShort { password } =
+            if String.length password.value < 8 then
+                [ { field = Password
+                  , error = Error "Too short"
+                  , touched = password.touched
+                  }
+                ]
+
+            else
+                []
+    in
+    batchValidators [ required, tooShort ]
 
 
 validator : Model -> List (ValidationResult Field)

@@ -1,0 +1,23 @@
+.form-input {
+  position: relative;
+}
+
+.form-error {
+  color: #ff3232;
+  border-color: #ff3232;
+}
+
+.form-good {
+  color: #5cb85c;
+  border-color: #5cb85c;
+}
+
+.form-error-message {
+  position: absolute;
+  top: 0;
+  left: 216px;
+  width: 100%;
+  height: 32px;
+  line-height: 32px;
+  color: #ff3232;
+}
