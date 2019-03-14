@@ -12,4 +12,5 @@ type alias Replay =
     { state : PlayState
     , usernamePa : String
     , usernamePb : String
+    , tick : Float
     }
