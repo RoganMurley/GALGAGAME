@@ -22,6 +22,7 @@ init mode roomID =
     , mode = mode
     , roomID = roomID
     , players = ( Nothing, Nothing )
+    , tick = 0
     }
 
 
@@ -49,8 +50,11 @@ tick flags model dt =
     let
         ( game, msg ) =
             GameState.tick flags model.game dt
+
+        newTick =
+            model.tick + dt
     in
-    ( { model | game = game }, Cmd.map GameStateMsg msg )
+    ( { model | game = game, tick = newTick }, Cmd.map GameStateMsg msg )
 
 
 receive : Model -> String -> Flags -> ( Model, Cmd Main.Msg )

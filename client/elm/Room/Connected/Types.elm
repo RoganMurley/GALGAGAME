@@ -9,4 +9,5 @@ type alias Model =
     , mode : Mode
     , roomID : String
     , players : ( Maybe String, Maybe String )
+    , tick : Float
     }

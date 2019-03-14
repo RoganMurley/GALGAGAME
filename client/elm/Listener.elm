@@ -10,8 +10,8 @@ import Resolvable.Types as Resolvable
 import WhichPlayer.Types exposing (WhichPlayer(..))
 
 
-listen : GameState -> Cmd Msg
-listen state =
+listen : GameState -> Float -> Cmd Msg
+listen state tick =
     let
         modelListen : Resolvable.Model -> Cmd Msg
         modelListen res =
@@ -28,15 +28,16 @@ listen state =
             else
                 Cmd.none
     in
-    case state of
-        Selecting _ ->
-            playSoundWith "/music/bebopboi.mp3" [ Loop, Once ]
+    if tick == 0 then
+        playSoundWith "/music/bebopboi.mp3" [ Loop, Once ]
 
-        Started playstate ->
-            modelListen <| PlayState.get .res playstate
+    else
+        case state of
+            Started playstate ->
+                modelListen <| PlayState.get .res playstate
 
-        _ ->
-            Cmd.none
+            _ ->
+                Cmd.none
 
 
 animSfx : Anim -> Maybe String

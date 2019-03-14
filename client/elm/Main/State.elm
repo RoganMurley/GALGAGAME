@@ -71,16 +71,16 @@ update msg ({ room, settings, textures, flags } as model) =
 
                 newMsg =
                     case room of
-                        Room.Connected connected ->
-                            listen connected.game
+                        Room.Connected { game, tick } ->
+                            listen game tick
 
                         Room.Replay { replay } ->
                             case replay of
                                 Nothing ->
                                     Cmd.none
 
-                                Just { state } ->
-                                    listen (Started state)
+                                Just { state, tick } ->
+                                    listen (Started state) tick
 
                         _ ->
                             Cmd.none

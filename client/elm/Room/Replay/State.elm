@@ -89,6 +89,7 @@ receive msg =
                     { state = state
                     , usernamePa = usernamePa
                     , usernamePb = usernamePb
+                    , tick = 0
                     }
             in
             message <|
@@ -118,14 +119,15 @@ getReplay replayId =
 tick : Flags -> Replay.Model -> Float -> Replay.Model
 tick flags model dt =
     let
-        newReplay =
+        replay =
             Maybe.map
                 (\r ->
                     { r
                         | state =
                             Tuple.first <| PlayState.tick flags r.state dt
+                        , tick = r.tick + dt
                     }
                 )
                 model.replay
     in
-    { model | replay = newReplay }
+    { model | replay = replay }
