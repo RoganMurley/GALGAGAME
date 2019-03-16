@@ -26,6 +26,8 @@ data CardAnim
   | Windup
   | Fabricate StackCard
   | Bounce [CardBounce]
+  | NewRound
+  | EndTurnAnim WhichPlayer
   deriving (Show, Eq)
 
 
@@ -37,77 +39,87 @@ instance ToJSON CardAnim where
   toJSON (Slash w d) =
     object
     [ "player" .= w
-    , "anim"  .= ("slash" :: Text, d)
+    , "anim"   .= ("slash" :: Text, d)
     ]
   toJSON (Heal w h) =
     object
     [ "player" .= w
-    , "anim"  .= ("heal" :: Text, h)
+    , "anim"   .= ("heal" :: Text, h)
     ]
   toJSON (Draw w) =
     object
     [ "player" .= w
-    , "anim"  .= ("draw" :: Text)
+    , "anim"   .= ("draw" :: Text)
     ]
   toJSON (Bite w d) =
     object
     [ "player" .= w
-    , "anim"  .= ("bite" :: Text, d)
+    , "anim"   .= ("bite" :: Text, d)
     ]
   toJSON Reflect =
     object
     [ "player" .= PlayerA
-    , "anim"  .= ("reflect" :: Text)
+    , "anim"   .= ("reflect" :: Text)
     ]
   toJSON Reverse =
     object
     [ "player" .= PlayerA
-    , "anim"  .= ("reverse" :: Text)
+    , "anim"   .= ("reverse" :: Text)
     ]
   toJSON Hubris =
     object
     [ "player" .= PlayerA
-    , "anim"  .= ("hubris" :: Text)
+    , "anim"   .= ("hubris" :: Text)
     ]
   toJSON (Play w c i) =
     object
     [ "player" .= w
-    , "anim"  .= ("play" :: Text, c, i)
+    , "anim"   .= ("play" :: Text, c, i)
     ]
   toJSON (Transmute ca cb) =
     object
     [ "player" .= PlayerA
-    , "anim"  .= ("transmute" :: Text, ca, cb)
+    , "anim"   .= ("transmute" :: Text, ca, cb)
     ]
   toJSON (Mill w c) =
     object
     [ "player" .= w
-    , "anim"  .= ("mill" :: Text, c)
+    , "anim"   .= ("mill" :: Text, c)
     ]
   toJSON (GameEnd w) =
     object
     [ "player" .= PlayerA
-    , "anim"  .= ("gameEnd" :: Text, w)
+    , "anim"   .= ("gameEnd" :: Text, w)
     ]
   toJSON Rotate =
     object
     [ "player" .= PlayerA
-    , "anim"  .= ("rotate" :: Text)
+    , "anim"   .= ("rotate" :: Text)
     ]
   toJSON Windup =
     object
     [ "player" .= PlayerA
-    , "anim"  .= ("windup" :: Text)
+    , "anim"   .= ("windup" :: Text)
     ]
   toJSON (Fabricate stackCard) =
     object
     [ "player" .= PlayerA
-    , "anim"  .= ("fabricate" :: Text, stackCard)
+    , "anim"   .= ("fabricate" :: Text, stackCard)
     ]
   toJSON (Bounce b) =
     object
     [ "player" .= PlayerA
-    , "anim"  .= ("bounce" :: Text, b)
+    , "anim"   .= ("bounce" :: Text, b)
+    ]
+  toJSON NewRound =
+    object
+    [ "player" .= PlayerA
+    , "anim"   .= ("newRound" :: Text)
+    ]
+  toJSON (EndTurnAnim w) =
+    object
+    [ "player" .= w
+    , "anim"   .= ("endTurn" :: Text)
     ]
 
 
@@ -127,6 +139,8 @@ instance Mirror CardAnim where
   mirror Windup            = Windup
   mirror (Fabricate c)     = Fabricate (mirror c)
   mirror (Bounce b)        = Bounce b
+  mirror NewRound          = NewRound
+  mirror (EndTurnAnim w)   = EndTurnAnim (other w)
 
 
 cardAnimDamage :: CardAnim -> (Life, Life)

@@ -23,6 +23,8 @@ type Anim
     | Windup WhichPlayer
     | Fabricate StackCard
     | Bounce (List Bounce)
+    | NewRound WhichPlayer
+    | EndTurn WhichPlayer
 
 
 type Bounce
