@@ -404,7 +404,15 @@ bigTextView { anim, progress, radius } =
             0.21 * radius
 
         opacity =
-            toString <| 1 - progress
+            case anim of
+                NewRound _ ->
+                    toString <| 1 - progress
+
+                EndTurn PlayerB ->
+                    toString <| 1 - progress
+
+                _ ->
+                    toString 0
     in
     div
         [ class "new-round-text"
