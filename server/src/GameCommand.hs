@@ -180,7 +180,9 @@ playCard index which m replay
       Just c ->
         let
           program :: Beta.Program ()
-          program = Beta.play which c index
+          program = do
+            Beta.play which c index
+            Beta.rawAnim $ EndTurnAnim which
           (newModel, _, res) = Beta.execute m Nothing $ foldFree Beta.betaI program
           newPlayState = Playing newModel (Active.add replay res) :: PlayState
         in
@@ -209,14 +211,15 @@ endTurn which model replay
         case runWriter $ resolveAll model replay of
           (Playing m newReplay, res) ->
             let
-              endProgram :: Beta.Program ()
-              endProgram = do
-                  Beta.raw Alpha.swapTurn
-                  Beta.raw Alpha.resetPasses
-                  drawCards
-              (newModel, _, endRes) = Beta.execute m Nothing $ foldFree Beta.betaI endProgram
-              newPlayState :: PlayState
-              newPlayState = Playing newModel (Active.add newReplay endRes)
+              roundEndProgram :: Beta.Program ()
+              roundEndProgram = do
+                Beta.raw Alpha.swapTurn
+                Beta.raw Alpha.resetPasses
+                Beta.rawAnim NewRound
+                Beta.draw PlayerA
+                Beta.draw PlayerB
+              (newModel, _, endRes) = Beta.execute m Nothing $ foldFree Beta.betaI roundEndProgram
+              newPlayState = Playing newModel (Active.add newReplay endRes) :: PlayState
               newState = Started newPlayState :: GameState
             in
               Right (
@@ -240,13 +243,17 @@ endTurn which model replay
               )
       NoPass ->
         let
-          newModel = Alpha.modI model Alpha.swapTurn :: Model
+          endTurnProgram :: Beta.Program ()
+          endTurnProgram = do
+            Beta.raw Alpha.swapTurn
+            Beta.rawAnim $ EndTurnAnim which
+          (newModel, _, res) = Beta.execute model Nothing $ foldFree Beta.betaI endTurnProgram
           newPlayState = Playing newModel replay :: PlayState
         in
           Right (
             Just . Started $ newPlayState,
             [
-              Outcome.Encodable $ Outcome.Resolve [] model newPlayState Nothing
+              Outcome.Encodable $ Outcome.Resolve res model newPlayState Nothing
             ]
           )
   where
@@ -257,10 +264,6 @@ endTurn which model replay
         return (t, p)
     full :: Bool
     full = Alpha.evalI model $ Alpha.handFull which
-    drawCards :: Beta.Program ()
-    drawCards = do
-      Beta.draw PlayerA
-      Beta.draw PlayerB
 
 
 resolveAll :: Model -> Active.Replay -> Writer [ResolveData] PlayState

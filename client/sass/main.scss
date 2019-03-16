@@ -1,18 +1,19 @@
+@import "big-text";
 @import "canvas";
 @import "character-select";
 @import "clock";
 @import "connecting";
 @import "endgame";
+@import "form";
 @import "input-group";
+@import "login";
 @import "menu";
 @import "names";
 @import "settings";
 @import "version-warning";
 @import "waiting";
 @import "spinner";
-@import "login";
 @import "signup";
-@import "form";
 
 html {
   height: 100%;

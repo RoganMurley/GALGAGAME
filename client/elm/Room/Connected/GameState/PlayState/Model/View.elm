@@ -64,6 +64,7 @@ view { w, h } { res, hover, focus, entities, passed } textures =
         , div [ class "clock-life-container" ] (lifeTextView ctx)
         , div [ class "clock-damage-container" ] (damageTextView hover (resolving res) ctx)
         , div [ class "clock-go" ] [ turnView ctx focus passed ]
+        , bigTextView ctx
         ]
 
 
@@ -394,3 +395,31 @@ turnView { anim, model } focus passed =
 
         _ ->
             div [] []
+
+
+bigTextView : Context -> Html Main.Msg
+bigTextView { anim, progress, radius } =
+    let
+        fontSize =
+            0.21 * radius
+
+        opacity =
+            toString <| 1 - progress
+    in
+    div
+        [ class "new-round-text"
+        , style
+            [ ( "font-size", fontSize |> px ), ( "opacity", opacity ) ]
+        ]
+        [ text
+            (case anim of
+                NewRound _ ->
+                    "Round start"
+
+                EndTurn PlayerB ->
+                    "Your turn"
+
+                _ ->
+                    ""
+            )
+        ]

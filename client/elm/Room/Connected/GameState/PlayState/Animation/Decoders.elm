@@ -25,6 +25,8 @@ decoder =
         , windupDecoder
         , fabricateDecoder
         , bounceDecoder
+        , newRoundDecoder
+        , endTurnDecoder
         , nullDecoder
         ]
 
@@ -175,6 +177,20 @@ bounceDecoder =
                 list <|
                     oneOf [ noBounceDecoder, bounceDiscardDecoder, bounceIndexDecoder ]
         )
+
+
+newRoundDecoder : Decoder Anim
+newRoundDecoder =
+    Json.map2 (\w _ -> NewRound w)
+        (field "player" WhichPlayer.decoder)
+        (field "anim" <| constDecoder "newRound")
+
+
+endTurnDecoder : Decoder Anim
+endTurnDecoder =
+    Json.map2 (\w _ -> EndTurn w)
+        (field "player" WhichPlayer.decoder)
+        (field "anim" <| constDecoder "endTurn")
 
 
 nullDecoder : Decoder Anim
