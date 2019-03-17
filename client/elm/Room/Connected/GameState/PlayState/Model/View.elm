@@ -52,6 +52,7 @@ view { w, h } { res, hover, focus, entities, passed } textures =
                     [ backgroundRingView
                     , Stack.view entities.stack
                     , focusImageView focus
+                    , passView
                     , circlesView
                     , Hand.view entities.hand
                     , Hand.otherView entities.otherHand
@@ -64,7 +65,6 @@ view { w, h } { res, hover, focus, entities, passed } textures =
         , div [ class "clock-life-container" ] (lifeTextView ctx)
         , div [ class "clock-damage-container" ] (damageTextView hover (resolving res) ctx)
         , turnView ctx focus passed
-        , bigTextView ctx
         , goButtonView ctx passed
         ]
 
@@ -418,41 +418,26 @@ turnView { anim, model } focus passed =
                 PlayerB ->
                     div [ class "turn-status" ] [ text "OPPONENT'S TURN" ]
 
+        ( Pass _, Nothing, False ) ->
+            div [ class "pass-status" ] [ text "PASS" ]
+
         _ ->
             div [] []
 
 
-bigTextView : Context -> Html Main.Msg
-bigTextView { anim, progress, radius } =
-    let
-        fontSize =
-            0.21 * radius
+passView : Context -> List WebGL.Entity
+passView ({ anim, w, h, radius } as ctx) =
+    case anim of
+        Pass which ->
+            [ Render.Primitives.fullCircle <|
+                uniColourMag ctx
+                    (Colour.focusBackground which)
+                    1.0
+                    { scale = 0.52 * radius
+                    , position = vec2 (w * 0.5) (h * 0.5)
+                    , rotation = 0
+                    }
+            ]
 
-        opacity =
-            case anim of
-                NewRound _ ->
-                    toString <| 1 - progress
-
-                EndTurn PlayerB ->
-                    toString <| 1 - progress
-
-                _ ->
-                    toString 0
-    in
-    div
-        [ class "big-text"
-        , style
-            [ ( "font-size", fontSize |> px ), ( "opacity", opacity ) ]
-        ]
-        [ text
-            (case anim of
-                NewRound _ ->
-                    "Round start"
-
-                EndTurn PlayerB ->
-                    "Your turn"
-
-                _ ->
-                    ""
-            )
-        ]
+        _ ->
+            []

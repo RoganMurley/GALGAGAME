@@ -26,8 +26,7 @@ data CardAnim
   | Windup
   | Fabricate StackCard
   | Bounce [CardBounce]
-  | NewRound
-  | EndTurnAnim WhichPlayer
+  | Pass WhichPlayer
   deriving (Show, Eq)
 
 
@@ -122,14 +121,9 @@ instance ToJSON CardAnim where
     , "player" .= PlayerA
     , "bounce" .= b
     ]
-  toJSON NewRound =
+  toJSON (Pass w) =
     object
-    [ "name"   .= ("newRound" :: Text)
-    , "player" .= PlayerA
-    ]
-  toJSON (EndTurnAnim w) =
-    object
-    [ "name"   .= ("endTurn" :: Text)
+    [ "name"   .= ("pass" :: Text)
     , "player" .= w
     ]
 
@@ -150,8 +144,7 @@ instance Mirror CardAnim where
   mirror Windup            = Windup
   mirror (Fabricate c)     = Fabricate (mirror c)
   mirror (Bounce b)        = Bounce b
-  mirror NewRound          = NewRound
-  mirror (EndTurnAnim w)   = EndTurnAnim (other w)
+  mirror (Pass w)   = Pass (other w)
 
 
 cardAnimDamage :: CardAnim -> (Life, Life)

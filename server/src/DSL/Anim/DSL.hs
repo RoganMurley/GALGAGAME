@@ -27,8 +27,7 @@ data DSL a
   | Windup a
   | Fabricate StackCard a
   | Bounce [CardBounce] a
-  | NewRound a
-  | EndTurn WhichPlayer a
+  | Pass WhichPlayer a
   deriving (Functor)
 
 type Program a = Free DSL a
