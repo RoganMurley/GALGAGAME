@@ -415,7 +415,7 @@ bigTextView { anim, progress, radius } =
                     toString 0
     in
     div
-        [ class "new-round-text"
+        [ class "big-text"
         , style
             [ ( "font-size", fontSize |> px ), ( "opacity", opacity ) ]
         ]
