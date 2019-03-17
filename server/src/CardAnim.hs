@@ -38,88 +38,99 @@ type ShaderName = Text
 instance ToJSON CardAnim where
   toJSON (Slash w d) =
     object
-    [ "player" .= w
-    , "anim"   .= ("slash" :: Text, d)
+    [ "name"   .= ("slash" :: Text)
+    , "player" .= w
+    , "damage" .= d
     ]
   toJSON (Heal w h) =
     object
-    [ "player" .= w
-    , "anim"   .= ("heal" :: Text, h)
+    [ "name"   .= ("heal" :: Text)
+    , "player" .= w
+    , "heal"   .= h
     ]
   toJSON (Draw w) =
     object
-    [ "player" .= w
-    , "anim"   .= ("draw" :: Text)
+    [ "name"   .= ("draw" :: Text)
+    , "player" .= w
     ]
   toJSON (Bite w d) =
     object
-    [ "player" .= w
-    , "anim"   .= ("bite" :: Text, d)
+    [ "name"   .= ("bite" :: Text)
+    , "player" .= w
+    , "damage" .= d
     ]
   toJSON Reflect =
     object
-    [ "player" .= PlayerA
-    , "anim"   .= ("reflect" :: Text)
+    [ "name"   .= ("reflect" :: Text)
+    , "player" .= PlayerA
     ]
   toJSON Reverse =
     object
-    [ "player" .= PlayerA
-    , "anim"   .= ("reverse" :: Text)
+    [ "name"   .= ("reverse" :: Text)
+    , "player" .= PlayerA
     ]
   toJSON Hubris =
     object
-    [ "player" .= PlayerA
-    , "anim"   .= ("hubris" :: Text)
+    [ "name"   .= ("hubris" :: Text)
+    , "player" .= PlayerA
     ]
   toJSON (Play w c i) =
     object
-    [ "player" .= w
-    , "anim"   .= ("play" :: Text, c, i)
+    [ "name"   .= ("play" :: Text)
+    , "player" .= w
+    , "card"   .= c
+    , "index"  .= i
     ]
   toJSON (Transmute ca cb) =
     object
-    [ "player" .= PlayerA
-    , "anim"   .= ("transmute" :: Text, ca, cb)
+    [ "name"   .= ("transmute" :: Text)
+    , "player" .= PlayerA
+    , "cardA"  .= ca
+    , "cardB"  .= cb
     ]
   toJSON (Mill w c) =
     object
-    [ "player" .= w
-    , "anim"   .= ("mill" :: Text, c)
+    [ "name"   .= ("mill" :: Text)
+    , "player" .= w
+    , "card"   .= c
     ]
   toJSON (GameEnd w) =
     object
-    [ "player" .= PlayerA
-    , "anim"   .= ("gameEnd" :: Text, w)
+    [ "name"   .= ("gameEnd" :: Text)
+    , "player" .= PlayerA
+    , "winner" .= w
     ]
   toJSON Rotate =
     object
-    [ "player" .= PlayerA
-    , "anim"   .= ("rotate" :: Text)
+    [ "name"   .= ("rotate" :: Text)
+    , "player" .= PlayerA
     ]
   toJSON Windup =
     object
-    [ "player" .= PlayerA
-    , "anim"   .= ("windup" :: Text)
+    [ "name"   .= ("windup" :: Text)
+    , "player" .= PlayerA
     ]
   toJSON (Fabricate stackCard) =
     object
-    [ "player" .= PlayerA
-    , "anim"   .= ("fabricate" :: Text, stackCard)
+    [ "name"      .= ("fabricate" :: Text)
+    , "player"    .= PlayerA
+    , "stackCard" .= stackCard
     ]
   toJSON (Bounce b) =
     object
-    [ "player" .= PlayerA
-    , "anim"   .= ("bounce" :: Text, b)
+    [ "name"   .= ("bounce" :: Text)
+    , "player" .= PlayerA
+    , "bounce" .= b
     ]
   toJSON NewRound =
     object
-    [ "player" .= PlayerA
-    , "anim"   .= ("newRound" :: Text)
+    [ "name"   .= ("newRound" :: Text)
+    , "player" .= PlayerA
     ]
   toJSON (EndTurnAnim w) =
     object
-    [ "player" .= w
-    , "anim"   .= ("endTurn" :: Text)
+    [ "name"   .= ("endTurn" :: Text)
+    , "player" .= w
     ]
 
 

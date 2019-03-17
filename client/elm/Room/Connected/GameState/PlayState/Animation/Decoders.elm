@@ -2,32 +2,78 @@ module Animation.Decoders exposing (decoder)
 
 import Animation.Types exposing (Anim(..), Bounce(..))
 import Card.Decoders as Card
-import Json.Decode as Json exposing (Decoder, fail, field, index, int, list, oneOf, string, succeed)
+import Json.Decode as Json exposing (Decoder, fail, field, int, list, null, oneOf, string, succeed)
 import Stack.Decoders as Stack
 import WhichPlayer.Decoders as WhichPlayer
 
 
 decoder : Decoder Anim
 decoder =
+    let
+        animNameDecoder : Decoder String
+        animNameDecoder =
+            field "name" string
+
+        getDecoder : String -> Decoder Anim
+        getDecoder animName =
+            case animName of
+                "slash" ->
+                    slashDecoder
+
+                "heal" ->
+                    healDecoder
+
+                "draw" ->
+                    drawDecoder
+
+                "bite" ->
+                    biteDecoder
+
+                "reflect" ->
+                    reflectDecoder
+
+                "reverse" ->
+                    reverseDecoder
+
+                "hubris" ->
+                    hubrisDecoder
+
+                "play" ->
+                    playDecoder
+
+                "transmute" ->
+                    transmuteDecoder
+
+                "mill" ->
+                    millDecoder
+
+                "gameEnd" ->
+                    gameEndDecoder
+
+                "rotate" ->
+                    rotateDecoder
+
+                "windup" ->
+                    windupDecoder
+
+                "fabricate" ->
+                    fabricateDecoder
+
+                "bounce" ->
+                    bounceDecoder
+
+                "newRound" ->
+                    newRoundDecoder
+
+                "endTurn" ->
+                    endTurnDecoder
+
+                _ ->
+                    Debug.crash ("Unknown anim name " ++ animName)
+    in
     oneOf
-        [ slashDecoder
-        , healDecoder
-        , drawDecoder
-        , biteDecoder
-        , reflectDecoder
-        , reverseDecoder
-        , hubrisDecoder
-        , playDecoder
-        , transmuteDecoder
-        , millDecoder
-        , gameEndDecoder
-        , rotateDecoder
-        , windupDecoder
-        , fabricateDecoder
-        , bounceDecoder
-        , newRoundDecoder
-        , endTurnDecoder
-        , nullDecoder
+        [ animNameDecoder |> Json.andThen getDecoder
+        , null NullAnim
         ]
 
 
@@ -47,109 +93,94 @@ constDecoder x =
 
 slashDecoder : Decoder Anim
 slashDecoder =
-    Json.map3 (\w _ d -> Slash w d)
+    Json.map2 Slash
         (field "player" WhichPlayer.decoder)
-        (field "anim" <| index 0 <| constDecoder "slash")
-        (field "anim" <| index 1 int)
+        (field "damage" int)
 
 
 healDecoder : Decoder Anim
 healDecoder =
-    Json.map3 (\w _ h -> Heal w h)
+    Json.map2 Heal
         (field "player" WhichPlayer.decoder)
-        (field "anim" <| index 0 <| constDecoder "heal")
-        (field "anim" <| index 1 int)
+        (field "heal" int)
 
 
 drawDecoder : Decoder Anim
 drawDecoder =
-    Json.map2 (\w _ -> Draw w)
+    Json.map Draw
         (field "player" WhichPlayer.decoder)
-        (field "anim" <| constDecoder "draw")
 
 
 biteDecoder : Decoder Anim
 biteDecoder =
-    Json.map3 (\w _ d -> Bite w d)
+    Json.map2 Bite
         (field "player" WhichPlayer.decoder)
-        (field "anim" <| index 0 <| constDecoder "bite")
-        (field "anim" <| index 1 int)
+        (field "damage" int)
 
 
 reflectDecoder : Decoder Anim
 reflectDecoder =
-    Json.map2 (\w _ -> Reflect w)
+    Json.map Reflect
         (field "player" WhichPlayer.decoder)
-        (field "anim" <| constDecoder "reflect")
 
 
 reverseDecoder : Decoder Anim
 reverseDecoder =
-    Json.map2 (\w _ -> Reverse w)
+    Json.map Reverse
         (field "player" WhichPlayer.decoder)
-        (field "anim" <| constDecoder "reverse")
 
 
 hubrisDecoder : Decoder Anim
 hubrisDecoder =
-    Json.map2 (\w _ -> Hubris w)
+    Json.map Hubris
         (field "player" WhichPlayer.decoder)
-        (field "anim" <| constDecoder "hubris")
 
 
 playDecoder : Decoder Anim
 playDecoder =
-    Json.map4 (\w _ c i -> Play w c i)
+    Json.map3 Play
         (field "player" WhichPlayer.decoder)
-        (field "anim" <| index 0 <| constDecoder "play")
-        (field "anim" <| index 1 <| Card.decoder)
-        (field "anim" <| index 2 <| int)
+        (field "card" Card.decoder)
+        (field "index" int)
 
 
 transmuteDecoder : Decoder Anim
 transmuteDecoder =
-    Json.map4 (\w _ ca cb -> Transmute w ca cb)
+    Json.map3 Transmute
         (field "player" WhichPlayer.decoder)
-        (field "anim" <| index 0 <| constDecoder "transmute")
-        (field "anim" <| index 1 <| Stack.stackCardDecoder)
-        (field "anim" <| index 2 <| Stack.stackCardDecoder)
+        (field "cardA" Stack.stackCardDecoder)
+        (field "cardB" Stack.stackCardDecoder)
 
 
 millDecoder : Decoder Anim
 millDecoder =
-    Json.map3 (\w _ c -> Mill w c)
+    Json.map2 Mill
         (field "player" WhichPlayer.decoder)
-        (field "anim" <| index 0 <| constDecoder "mill")
-        (field "anim" <| index 1 <| Card.decoder)
+        (field "card" Card.decoder)
 
 
 gameEndDecoder : Decoder Anim
 gameEndDecoder =
-    Json.map2 (\_ -> GameEnd)
-        (field "anim" <| index 0 <| constDecoder "gameEnd")
-        (field "anim" <| index 1 <| Json.maybe WhichPlayer.decoder)
+    Json.map GameEnd
+        (field "winner" <| Json.maybe WhichPlayer.decoder)
 
 
 rotateDecoder : Decoder Anim
 rotateDecoder =
-    Json.map2 (\w _ -> Rotate w)
+    Json.map Rotate
         (field "player" WhichPlayer.decoder)
-        (field "anim" <| constDecoder "rotate")
 
 
 windupDecoder : Decoder Anim
 windupDecoder =
-    Json.map2 (\w _ -> Windup w)
+    Json.map Windup
         (field "player" WhichPlayer.decoder)
-        (field "anim" <| constDecoder "windup")
 
 
 fabricateDecoder : Decoder Anim
 fabricateDecoder =
-    Json.map3 (\_ _ c -> Fabricate c)
-        (field "player" WhichPlayer.decoder)
-        (field "anim" <| index 0 <| constDecoder "fabricate")
-        (field "anim" <| index 1 <| Stack.stackCardDecoder)
+    Json.map Fabricate
+        (field "stackCard" Stack.stackCardDecoder)
 
 
 bounceDecoder : Decoder Anim
@@ -169,30 +200,20 @@ bounceDecoder =
                 (field "stackIndex" int)
                 (field "handIndex" int)
     in
-    Json.map3 (\_ _ b -> Bounce b)
-        (field "player" WhichPlayer.decoder)
-        (field "anim" <| index 0 <| constDecoder "bounce")
-        (field "anim" <|
-            index 1 <|
-                list <|
-                    oneOf [ noBounceDecoder, bounceDiscardDecoder, bounceIndexDecoder ]
+    Json.map Bounce
+        (field "bounce" <|
+            list <|
+                oneOf [ noBounceDecoder, bounceDiscardDecoder, bounceIndexDecoder ]
         )
 
 
 newRoundDecoder : Decoder Anim
 newRoundDecoder =
-    Json.map2 (\w _ -> NewRound w)
+    Json.map NewRound
         (field "player" WhichPlayer.decoder)
-        (field "anim" <| constDecoder "newRound")
 
 
 endTurnDecoder : Decoder Anim
 endTurnDecoder =
-    Json.map2 (\w _ -> EndTurn w)
+    Json.map EndTurn
         (field "player" WhichPlayer.decoder)
-        (field "anim" <| constDecoder "endTurn")
-
-
-nullDecoder : Decoder Anim
-nullDecoder =
-    Json.succeed NullAnim
