@@ -1,4 +1,4 @@
-.new-round-text {
+.big-text {
   position: absolute;
   top: 50%;
   left: 50%;
@@ -11,4 +11,6 @@
 
   background-color: #f2454a;
   padding: 6px;
+
+  pointer-events: none;
 }
