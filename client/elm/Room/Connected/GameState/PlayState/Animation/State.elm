@@ -101,10 +101,10 @@ progress anim tick =
                     Ease.inQuad
 
                 EndTurn _ ->
-                    Ease.inQuint
+                    Ease.inQuad
 
                 NewRound _ ->
-                    Ease.inQuint
+                    Ease.inQuad
 
                 _ ->
                     Ease.outQuint
