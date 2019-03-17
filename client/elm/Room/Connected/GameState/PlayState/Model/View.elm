@@ -25,7 +25,6 @@ import Render.Primitives
 import Render.Shaders
 import Render.Types as Render
 import Render.Uniforms exposing (uni, uniColourMag)
-import Resolvable.State exposing (resolving)
 import Room.Messages as Room
 import Stack.Types exposing (StackCard)
 import Stack.View as Stack
@@ -63,7 +62,7 @@ view { w, h } { res, hover, focus, entities, passed } textures =
             )
         , div [ class "text-focus" ] [ focusTextView ctx focus ]
         , div [ class "clock-life-container" ] (lifeTextView ctx)
-        , div [ class "clock-damage-container" ] (damageTextView hover (resolving res) ctx)
+        , div [ class "clock-damage-container" ] (damageTextView hover ctx)
         , turnView ctx focus passed
         , goButtonView ctx passed
         ]
@@ -284,8 +283,8 @@ lifeTextView { radius, model } =
     ]
 
 
-damageTextView : HoverSelf -> Bool -> Context -> List (Html a)
-damageTextView hover isResolving { radius, animDamage } =
+damageTextView : HoverSelf -> Context -> List (Html a)
+damageTextView hover { radius, resolving, animDamage } =
     let
         hoverDmg =
             case hover of
@@ -301,7 +300,7 @@ damageTextView hover isResolving { radius, animDamage } =
         ( damage, otherDamage ) =
             case hoverDmg of
                 Just dmg ->
-                    if isResolving then
+                    if resolving then
                         animDamage
 
                     else
@@ -365,7 +364,7 @@ damageTextView hover isResolving { radius, animDamage } =
 
 
 goButtonView : Context -> Bool -> Html Main.Msg
-goButtonView { anim, model, radius } passed =
+goButtonView { model, radius, resolving } passed =
     let
         handFull =
             List.length model.hand == maxHandLength
@@ -373,11 +372,8 @@ goButtonView { anim, model, radius } passed =
         yourTurn =
             model.turn == PlayerA
 
-        noAnimation =
-            anim /= NullAnim
-
         isDisabled =
-            handFull || not yourTurn || passed || noAnimation
+            handFull || not yourTurn || passed || resolving
 
         horizontalOffset =
             0.65 * radius
