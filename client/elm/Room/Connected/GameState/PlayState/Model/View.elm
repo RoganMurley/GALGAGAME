@@ -365,7 +365,7 @@ damageTextView hover isResolving { radius, animDamage } =
 
 
 goButtonView : Context -> Bool -> Html Main.Msg
-goButtonView { model, radius } passed =
+goButtonView { anim, model, radius } passed =
     let
         handFull =
             List.length model.hand == maxHandLength
@@ -373,8 +373,11 @@ goButtonView { model, radius } passed =
         yourTurn =
             model.turn == PlayerA
 
+        noAnimation =
+            anim /= NullAnim
+
         isDisabled =
-            handFull || not yourTurn || passed
+            handFull || not yourTurn || passed || noAnimation
 
         horizontalOffset =
             0.65 * radius
