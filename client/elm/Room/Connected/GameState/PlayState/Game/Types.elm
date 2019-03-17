@@ -33,6 +33,7 @@ type alias Context =
     , model : Model.Model
     , stackCard : Maybe StackCard
     , textures : Texture.Model
+    , resolving : Bool
     }
 
 

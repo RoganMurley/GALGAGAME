@@ -10,7 +10,7 @@ import Maybe.Extra as Maybe
 import Model.State as Model
 import Model.Types as Model exposing (Model)
 import PlayState.Messages as PlayState
-import Resolvable.State as Resolvable exposing (activeAnim, activeAnimDamage, activeModel, activeStackCard)
+import Resolvable.State as Resolvable exposing (activeAnim, activeAnimDamage, activeModel, activeStackCard, resolving)
 import Resolvable.Types as Resolvable
 import Stack.Entities as Stack
 import Stack.Types exposing (StackCard)
@@ -64,6 +64,7 @@ contextInit ( width, height ) res textures =
     , tick = res.tick
     , progress = Animation.progress anim res.tick
     , textures = textures
+    , resolving = resolving res
     }
 
 
