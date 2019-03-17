@@ -63,8 +63,9 @@ view { w, h } { res, hover, focus, entities, passed } textures =
         , div [ class "text-focus" ] [ focusTextView ctx focus ]
         , div [ class "clock-life-container" ] (lifeTextView ctx)
         , div [ class "clock-damage-container" ] (damageTextView hover (resolving res) ctx)
-        , div [ class "clock-go" ] [ turnView ctx focus passed ]
+        , turnView ctx focus passed
         , bigTextView ctx
+        , goButtonView ctx passed
         ]
 
 
@@ -363,12 +364,45 @@ damageTextView hover isResolving { radius, animDamage } =
         ]
 
 
-turnView : Context -> Maybe StackCard -> Bool -> Html Main.Msg
-turnView { anim, model } focus passed =
+goButtonView : Context -> Bool -> Html Main.Msg
+goButtonView { model, radius } passed =
     let
         handFull =
             List.length model.hand == maxHandLength
+
+        yourTurn =
+            model.turn == PlayerA
+
+        isDisabled =
+            handFull || not yourTurn || passed
+
+        horizontalOffset =
+            0.65 * radius
+
+        verticalOffset =
+            0.65 * radius
     in
+    button
+        [ class "clock-go"
+        , disabled isDisabled
+        , onClick <|
+            Main.RoomMsg <|
+                Room.ConnectedMsg <|
+                    Connected.GameStateMsg <|
+                        GameState.PlayStateMsg <|
+                            PlayState.PlayingOnly <|
+                                PlayState.TurnOnly <|
+                                    PlayState.EndTurn
+        , style
+            [ ( "left", "calc(50% + " ++ (horizontalOffset |> px) ++ ")" )
+            , ( "top", "calc(50% + " ++ (verticalOffset |> px) ++ ")" )
+            ]
+        ]
+        [ text "GO" ]
+
+
+turnView : Context -> Maybe StackCard -> Bool -> Html Main.Msg
+turnView { anim, model } focus passed =
     case ( anim, focus, passed ) of
         ( Mill _ _, _, _ ) ->
             div [] []
@@ -376,19 +410,7 @@ turnView { anim, model } focus passed =
         ( NullAnim, Nothing, False ) ->
             case model.turn of
                 PlayerA ->
-                    button
-                        [ class "clock-turn"
-                        , disabled handFull
-                        , onClick <|
-                            Main.RoomMsg <|
-                                Room.ConnectedMsg <|
-                                    Connected.GameStateMsg <|
-                                        GameState.PlayStateMsg <|
-                                            PlayState.PlayingOnly <|
-                                                PlayState.TurnOnly <|
-                                                    PlayState.EndTurn
-                        ]
-                        [ text "GO" ]
+                    div [ class "turn-status" ] [ text "YOUR TURN" ]
 
                 PlayerB ->
                     div [ class "turn-status" ] [ text "OPPONENT'S TURN" ]

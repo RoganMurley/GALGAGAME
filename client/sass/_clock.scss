@@ -51,6 +51,16 @@
 
 .clock-turn {
   position: absolute;
+  transform: translate(-50%, -50%);
+
+  font-size: 1.6rem;
+  font-family: 'Raleway', sans-serif;
+  font-weight: 900;
+}
+
+
+.clock-go {
+  position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
