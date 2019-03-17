@@ -62,11 +62,8 @@ decoder =
                 "bounce" ->
                     bounceDecoder
 
-                "newRound" ->
-                    newRoundDecoder
-
-                "endTurn" ->
-                    endTurnDecoder
+                "pass" ->
+                    passDecoder
 
                 _ ->
                     Debug.crash ("Unknown anim name " ++ animName)
@@ -207,13 +204,7 @@ bounceDecoder =
         )
 
 
-newRoundDecoder : Decoder Anim
-newRoundDecoder =
-    Json.map NewRound
-        (field "player" WhichPlayer.decoder)
-
-
-endTurnDecoder : Decoder Anim
-endTurnDecoder =
-    Json.map EndTurn
+passDecoder : Decoder Anim
+passDecoder =
+    Json.map Pass
         (field "player" WhichPlayer.decoder)

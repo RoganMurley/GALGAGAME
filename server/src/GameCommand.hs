@@ -180,9 +180,7 @@ playCard index which m replay
       Just c ->
         let
           program :: Beta.Program ()
-          program = do
-            Beta.play which c index
-            Beta.rawAnim $ EndTurnAnim which
+          program = Beta.play which c index
           (newModel, _, res) = Beta.execute m Nothing $ foldFree Beta.betaI program
           newPlayState = Playing newModel (Active.add replay res) :: PlayState
         in
@@ -215,7 +213,6 @@ endTurn which model replay
               roundEndProgram = do
                 Beta.raw Alpha.swapTurn
                 Beta.raw Alpha.resetPasses
-                Beta.rawAnim NewRound
                 Beta.draw PlayerA
                 Beta.draw PlayerB
               (newModel, _, endRes) = Beta.execute m Nothing $ foldFree Beta.betaI roundEndProgram
@@ -246,7 +243,7 @@ endTurn which model replay
           endTurnProgram :: Beta.Program ()
           endTurnProgram = do
             Beta.raw Alpha.swapTurn
-            Beta.rawAnim $ EndTurnAnim which
+            Beta.rawAnim $ Pass which
           (newModel, _, res) = Beta.execute model Nothing $ foldFree Beta.betaI endTurnProgram
           newPlayState = Playing newModel replay :: PlayState
         in

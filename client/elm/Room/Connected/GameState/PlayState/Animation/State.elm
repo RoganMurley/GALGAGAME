@@ -65,9 +65,6 @@ animMaxTick anim =
         Bounce _ ->
             1500.0
 
-        EndTurn PlayerA ->
-            0
-
         _ ->
             800.0
 
@@ -98,12 +95,6 @@ progress anim tick =
                     Ease.outQuad
 
                 Windup _ ->
-                    Ease.inQuad
-
-                EndTurn _ ->
-                    Ease.inQuad
-
-                NewRound _ ->
                     Ease.inQuad
 
                 _ ->
