@@ -123,6 +123,9 @@ texturePaths =
     , ( "honeymaker/waxworks.svg", "/img/textures/waxworks.png" )
     , ( "honeymaker/sting.svg", "/img/textures/sting.png" )
     , ( "honeymaker/honey.svg", "/img/textures/honey.png" )
+    , ( "symbol.png", "/img/textures/experiments/symbol.png" )
+    , ( "reflect-symbol.png", "/img/textures/experiments/reflect.png" )
+    , ( "triforce.png", "/img/textures/experiments/triforce.png" )
     ]
 
 
