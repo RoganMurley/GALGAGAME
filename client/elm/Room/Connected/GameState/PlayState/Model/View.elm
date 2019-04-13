@@ -28,6 +28,7 @@ import Render.Uniforms exposing (uni, uniColourMag)
 import Room.Messages as Room
 import Stack.Types exposing (StackCard)
 import Stack.View as Stack
+import Texture.State as Texture
 import Texture.Types as Texture
 import Util exposing (interpFloat, px)
 import WebGL
@@ -69,10 +70,28 @@ view { w, h } { res, hover, focus, entities, passed } textures =
 
 
 backgroundRingView : Context -> List WebGL.Entity
-backgroundRingView ({ w, h, radius } as ctx) =
+backgroundRingView ({ w, h, radius, textures } as ctx) =
     let
         centre =
             vec2 (w / 2) (h / 2)
+
+        symbols =
+            case Texture.load textures "triforce.png" of
+                Just texture ->
+                    [ Render.Primitives.quad Render.Shaders.fragment
+                        { rotation = makeRotate pi (vec3 0 0 1)
+                        , scale = makeScale3 (0.09 * radius) (0.09 * radius) 1
+                        , color = Colour.white
+                        , pos = vec3 (w * 0.5) (h * 0.25) 0
+                        , worldRot = makeRotate 0 (vec3 0 0 1)
+                        , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
+                        , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
+                        , texture = texture
+                        }
+                    ]
+
+                Nothing ->
+                    []
     in
     [ Render.Primitives.fullCircle <|
         uniColourMag ctx
@@ -91,6 +110,7 @@ backgroundRingView ({ w, h, radius } as ctx) =
             , rotation = 0
             }
     ]
+        ++ symbols
 
 
 circlesView : Context -> List WebGL.Entity
