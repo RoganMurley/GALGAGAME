@@ -14,12 +14,12 @@ import DSL.Beta hiding (hubris, reflect)
 
 
 -- Striker
-dagger :: Card
-dagger =
+missile :: Card
+missile =
   Card
-    "Stab"
+    "missile"
     "Hurt for 7"
-    "striker/dagger.svg"
+    "missile.png"
     $ \w -> slash 7 (other w)
 
 
@@ -130,7 +130,7 @@ bless =
 balance :: Card
 balance =
   Card
-    "Balance"
+    "Rebalance"
     "Change next card's owner to weakest player"
     "balancer/balance.svg"
     $ \w -> do
@@ -165,18 +165,18 @@ bloodsucker =
 serpent :: Card
 serpent =
   Card
-    "Beguile"
-    ("Add 2 " <> description badApple <> " to their hand")
+    "Infect"
+    ("Add 2 " <> description parasite <> " to their hand")
     "drinker/serpent.svg"
     $ \w -> do
-      addToHand (other w) badApple
-      addToHand (other w) badApple
+      addToHand (other w) parasite
+      addToHand (other w) parasite
 
 
-badApple :: Card
-badApple =
+parasite :: Card
+parasite =
   Card
-    "Bad Apple"
+    "Parasite"
     "Hurt yourself for 4"
     "drinker/bad-apple.svg"
     $ \w -> do
@@ -219,7 +219,7 @@ surge =
 mimic :: Card
 mimic =
   Card
-    "Waxworks"
+    "Mimic"
     "Play a copy of a random card in your hand"
     "honeymaker/waxworks.svg"
     $ \w -> do
@@ -271,21 +271,21 @@ reflect =
 
 
 -- Bouncer
-boomerang :: Card
-boomerang =
+grudge :: Card
+grudge =
   Card
-    "Boomerang"
+    "Grudge"
     "Hurt for 3, return this card to hand"
-    "bouncer/boomerang.svg"
+    "grudge.png"
     $ \w -> do
       slash 3 (other w)
-      addToHand w boomerang
+      addToHand w grudge
 
 
 overwhelm :: Card
 overwhelm =
   Card
-    "Overwhelm"
+    "Envy"
     "Hurt for 3 for each card in your hand"
     "bouncer/overwhelm.svg"
     $ \w -> do
@@ -349,9 +349,9 @@ alchemy =
 gold :: Card
 gold =
   Card
-    "Honey"
+    "Gold"
     "Draw 2"
-    "honeymaker/honey.svg"
+    "honeymaker/gold.svg"
     $ \w -> do
       draw w
       draw w
@@ -368,7 +368,7 @@ theEnd =
 
 allCards :: [Card]
 allCards =
-  [ dagger
+  [ missile
   , fireball
   , offering
   , confound
@@ -382,7 +382,7 @@ allCards =
   , scythe
   , bloodsucker
   , serpent
-  , badApple
+  , parasite
   , reversal
   , staff
   , surge
@@ -391,7 +391,7 @@ allCards =
   , sword
   , potion
   , reflect
-  , boomerang
+  , grudge
   , overwhelm
   , echo
   , feint

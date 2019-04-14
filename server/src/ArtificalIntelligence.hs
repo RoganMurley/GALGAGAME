@@ -98,5 +98,5 @@ winningEnd model
 -- We manually set biases for these cards.
 biasHand :: Card -> Weight
 biasHand c
-  | c == Cards.badApple = -9
+  | c == Cards.parasite = -9
   | otherwise           = 0
