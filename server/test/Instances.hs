@@ -86,7 +86,7 @@ instance Arbitrary CharModel where
 
 
 instance Arbitrary Character where
-  arbitrary = Character <$> arbitrary <*> arbitrary
+  arbitrary = Character <$> arbitrary <*> arbitrary <*> arbitrary
 
 
 instance Arbitrary SelectedCharacters where
