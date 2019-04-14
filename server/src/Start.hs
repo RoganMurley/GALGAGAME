@@ -23,6 +23,6 @@ startProgram turn = do
 
 tutorialStartProgram :: Turn -> Beta.Program ()
 tutorialStartProgram turn = do
-  Beta.raw $ Alpha.setDeck PlayerA $ cycle [ Cards.hammer, Cards.dagger, Cards.potion, Cards.lightning, Cards.boomerang ]
-  Beta.raw $ Alpha.setDeck PlayerB $ cycle [ Cards.dagger, Cards.hammer, Cards.potion, Cards.reflect, Cards.fireball ]
+  Beta.raw $ Alpha.setDeck PlayerA $ cycle [ Cards.hammer, Cards.missile, Cards.potion, Cards.lightning, Cards.grudge ]
+  Beta.raw $ Alpha.setDeck PlayerB $ cycle [ Cards.missile, Cards.hammer, Cards.potion, Cards.reflect, Cards.fireball ]
   startProgram turn

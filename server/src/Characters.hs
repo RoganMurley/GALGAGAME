@@ -28,15 +28,16 @@ instance ToJSON SelectedCharacters where
 
 data Character = Character
   { character_name  :: Text
+  , character_img  :: Text
   , character_cards :: CharacterCards
   } deriving (Eq, Show)
 
 
 instance ToJSON Character where
-  toJSON Character{ character_name, character_cards } =
+  toJSON Character{ character_name, character_img, character_cards } =
       object
         [ "name"    .= character_name
-        , "img_url" .= (card_img . (\(c, _, _, _) -> c) $ character_cards :: Text)
+        , "img_url" .= character_img
         , "cards"   .= character_cards
         ]
 
@@ -126,7 +127,7 @@ toList (ThreeSelected a b c) = [ a, b, c ]
 
 
 allCards :: FinalSelection -> [Card]
-allCards (Character _ a, Character _ b, Character _ c) =
+allCards (Character _ _ a, Character _ _ b, Character _ _ c) =
   concat $ (\(p, q, r, s) -> [p, q, r, s]) <$> [a, b, c]
 
 
@@ -146,47 +147,54 @@ allCharacters =
 striker :: Character
 striker =
   Character
-    "Barbz"
-    (Cards.dagger, Cards.fireball, Cards.offering, Cards.confound)
+    "Fire"
+    "textures/experiments/confound.png"
+    (Cards.missile, Cards.fireball, Cards.offering, Cards.confound)
 
 
 breaker :: Character
 breaker =
   Character
-    "Human"
+    "Air"
+    "textures/experiments/hubris.png"
     (Cards.hammer, Cards.lightning, Cards.feint, Cards.hubris)
 
 
 drinker :: Character
 drinker =
   Character
-    "Upyr"
+    "Life"
+    "textures/experiments/reverse.png"
     (Cards.scythe, Cards.bloodsucker, Cards.serpent, Cards.reversal)
 
 
 watcher :: Character
 watcher =
   Character
-    "Respira"
+    "Future"
+    "textures/experiments/prophecy.png"
     (Cards.staff, Cards.surge, Cards.echo, Cards.prophecy)
 
 
 shielder :: Character
 shielder =
   Character
-    "Baloop"
-    (Cards.boomerang, Cards.overwhelm, Cards.potion, Cards.reflect)
+    "Self"
+    "textures/experiments/reflect.png"
+    (Cards.grudge, Cards.overwhelm, Cards.potion, Cards.reflect)
 
 
 balancer :: Character
 balancer =
   Character
-    "Wextana"
+    "Balance"
+    "textures/experiments/balance.png"
     (Cards.katana, Cards.curse, Cards.bless, Cards.balance)
 
 
 collector :: Character
 collector =
   Character
-    "Honeymaker"
+    "Alchemy"
+    "textures/experiments/alchemy.png"
     (Cards.relicblade, Cards.greed, Cards.mimic, Cards.alchemy)
