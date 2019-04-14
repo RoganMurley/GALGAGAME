@@ -121,6 +121,15 @@ texturePaths =
     , ( "triforce.png", "/img/textures/experiments/triforce.png" )
     , ( "missile.png", "/img/textures/experiments/missile.png" )
     , ( "grudge.png", "/img/textures/experiments/grudge.png" )
+
+    -- Charselect stuff
+    , ( "textures/experiments/hubris.png", "/img/textures/experiments/hubris.png" )
+    , ( "textures/experiments/confound.png", "/img/textures/experiments/confound.png" )
+    , ( "textures/experiments/reverse.png", "/img/textures/experiments/reverse.png" )
+    , ( "textures/experiments/prophecy.png", "/img/textures/experiments/prophecy.png" )
+    , ( "textures/experiments/reflect.png", "/img/textures/experiments/reflect.png" )
+    , ( "textures/experiments/balance.png", "/img/textures/experiments/balance.png" )
+    , ( "textures/experiments/alchemy.png", "/img/textures/experiments/alchemy.png" )
     ]
 
 
