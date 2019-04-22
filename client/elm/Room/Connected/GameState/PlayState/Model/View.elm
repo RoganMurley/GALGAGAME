@@ -247,6 +247,9 @@ focusTextView { anim, radius } focus =
         Mill _ _ ->
             text ""
 
+        Pass _ ->
+            text ""
+
         _ ->
             case focus of
                 Nothing ->
@@ -434,7 +437,7 @@ turnView { anim, model } focus passed =
                 PlayerB ->
                     div [ class "turn-status" ] [ text "OPPONENT'S TURN" ]
 
-        ( Pass _, Nothing, False ) ->
+        ( Pass _, _, _ ) ->
             div [ class "pass-status" ] [ text "PASS" ]
 
         _ ->
