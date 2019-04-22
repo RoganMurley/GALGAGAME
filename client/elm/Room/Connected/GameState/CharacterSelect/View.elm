@@ -68,7 +68,7 @@ view { w, h } ({ characters, selected, vm } as model) textures =
                     , circlesView
                     , characterSelectCirclesView model
                     ]
-        , h1 [] [ text "SELECT SPECIES" ]
+        , h1 [] [ text "RUNE SELECT" ]
         , hoverCharacterNameView
         , div [ class "characters" ] <| List.map characterView characters
         ]
