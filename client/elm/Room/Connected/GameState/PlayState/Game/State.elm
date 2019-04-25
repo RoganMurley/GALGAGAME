@@ -228,7 +228,7 @@ hitTest pos dist { position } =
 getHoverHand : Game.Model -> Maybe HandEntity
 getHoverHand { entities, mouse } =
     Maybe.andThen
-        (\pos -> List.find (hitTest pos 28) entities.hand)
+        (\pos -> List.find (hitTest pos 32) entities.hand)
         mouse
 
 
