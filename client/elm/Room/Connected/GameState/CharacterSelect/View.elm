@@ -105,26 +105,15 @@ characterSelectCirclesView ({ selected, vm } as model) ({ w, h, radius, textures
         centre =
             vec2 (w / 2) (h / 2)
 
-        mTextureA : Maybe WebGL.Texture
-        mTextureA =
-            Maybe.join <|
-                Maybe.map (.imgURL >> Texture.load textures) <|
-                    List.head selected
+        ( mTextureA, mTextureB, mTextureC ) =
+            ( textureAt 0, textureAt 1, textureAt 2 )
 
-        mTextureB : Maybe WebGL.Texture
-        mTextureB =
+        textureAt : Int -> Maybe WebGL.Texture
+        textureAt i =
             Maybe.join <|
                 Maybe.map (.imgURL >> Texture.load textures) <|
                     List.head <|
-                        List.drop 1 <|
-                            selected
-
-        mTextureC : Maybe WebGL.Texture
-        mTextureC =
-            Maybe.join <|
-                Maybe.map (.imgURL >> Texture.load textures) <|
-                    List.head <|
-                        List.drop 2 <|
+                        List.drop i <|
                             selected
 
         mTextureHover : Maybe WebGL.Texture
