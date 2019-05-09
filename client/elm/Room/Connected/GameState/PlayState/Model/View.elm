@@ -49,13 +49,13 @@ view { w, h } { res, hover, focus, entities, passed } textures =
             ]
             (List.concat <|
                 List.map ((|>) ctx)
-                    [ backgroundRingView
+                    [ lifeOrbView
+                    , backgroundRingView
                     , Stack.view entities.stack
                     , focusImageView focus
                     , passView
                     , Hand.view entities.hand
                     , Hand.otherView entities.otherHand
-                    , lifeOrbView
                     , Wave.view
                     , Hand.millView
                     ]
@@ -84,23 +84,54 @@ backgroundRingView { w, h, anim, progress, radius, textures } =
 
         rotation =
             rotationProgress * -2.0 * pi / 12.0
-    in
-    case Texture.load textures "ring.png" of
-        Nothing ->
-            []
 
-        Just texture ->
-            [ Render.Primitives.quad Render.Shaders.fragment
-                { rotation = makeRotate rotation (vec3 0 0 1)
-                , scale = makeScale3 (0.77 * radius) (0.77 * radius) 1
-                , color = Colour.white
-                , pos = vec3 (w * 0.5) (h * 0.5) 0
-                , worldRot = makeRotate 0 (vec3 0 0 1)
-                , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
-                , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
-                , texture = texture
-                }
-            ]
+        ringEntity =
+            case Texture.load textures "ring.png" of
+                Nothing ->
+                    []
+
+                Just texture ->
+                    [ Render.Primitives.quad Render.Shaders.fragment
+                        { rotation = makeRotate rotation (vec3 0 0 1)
+                        , scale = makeScale3 (0.77 * radius) (0.77 * radius) 1
+                        , color = Colour.white
+                        , pos = vec3 (w * 0.5) (h * 0.5) 0
+                        , worldRot = makeRotate 0 (vec3 0 0 1)
+                        , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
+                        , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
+                        , texture = texture
+                        }
+                    ]
+
+        lifeclawEntities =
+            case Texture.load textures "lifeclaw.png" of
+                Nothing ->
+                    []
+
+                Just texture ->
+                    [ Render.Primitives.quad Render.Shaders.fragment
+                        { rotation = makeRotate pi (vec3 0 0 1)
+                        , scale = makeScale3 (0.21 * radius) (0.21 * radius) 1
+                        , color = Colour.white
+                        , pos = vec3 (w * 0.5 + 0.65 * radius) (h * 0.5 - 0.67 * radius) 0
+                        , worldRot = makeRotate 0 (vec3 0 0 1)
+                        , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
+                        , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
+                        , texture = texture
+                        }
+                    , Render.Primitives.quad Render.Shaders.fragment
+                        { rotation = makeRotate 0 (vec3 0 0 1)
+                        , scale = makeScale3 (0.21 * radius) (0.21 * radius) 1
+                        , color = Colour.white
+                        , pos = vec3 (w * 0.5 - 0.65 * radius) (h * 0.5 + 0.67 * radius) 0
+                        , worldRot = makeRotate 0 (vec3 0 0 1)
+                        , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
+                        , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
+                        , texture = texture
+                        }
+                    ]
+    in
+    lifeclawEntities ++ ringEntity
 
 
 focusImageView : Maybe StackCard -> Context -> List WebGL.Entity
