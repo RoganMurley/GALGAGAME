@@ -130,6 +130,9 @@ texturePaths =
     , ( "textures/experiments/reflect.png", "/img/textures/experiments/reflect.png" )
     , ( "textures/experiments/balance.png", "/img/textures/experiments/balance.png" )
     , ( "textures/experiments/alchemy.png", "/img/textures/experiments/alchemy.png" )
+
+    -- Ring
+    , ( "ring.png", "/img/textures/experiments/ring.png" )
     ]
 
 

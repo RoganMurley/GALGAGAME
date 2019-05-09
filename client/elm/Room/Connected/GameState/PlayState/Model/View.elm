@@ -53,7 +53,6 @@ view { w, h } { res, hover, focus, entities, passed } textures =
                     , Stack.view entities.stack
                     , focusImageView focus
                     , passView
-                    , circlesView
                     , Hand.view entities.hand
                     , Hand.otherView entities.otherHand
                     , lifeOrbView
@@ -70,63 +69,38 @@ view { w, h } { res, hover, focus, entities, passed } textures =
 
 
 backgroundRingView : Context -> List WebGL.Entity
-backgroundRingView ({ w, h, radius, textures } as ctx) =
+backgroundRingView { w, h, anim, progress, radius, textures } =
     let
-        centre =
-            vec2 (w / 2) (h / 2)
+        rotationProgress =
+            case anim of
+                Rotate _ ->
+                    progress
 
-        symbols =
-            case Texture.load textures "triforce.png" of
-                Just texture ->
-                    [ Render.Primitives.quad Render.Shaders.fragment
-                        { rotation = makeRotate pi (vec3 0 0 1)
-                        , scale = makeScale3 (0.09 * radius) (0.09 * radius) 1
-                        , color = Colour.white
-                        , pos = vec3 (w * 0.5) (h * 0.25) 0
-                        , worldRot = makeRotate 0 (vec3 0 0 1)
-                        , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
-                        , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
-                        , texture = texture
-                        }
-                    ]
+                Windup _ ->
+                    1 - progress
 
-                Nothing ->
-                    []
+                _ ->
+                    0
+
+        rotation =
+            rotationProgress * -2.0 * pi / 12.0
     in
-    [ Render.Primitives.fullCircle <|
-        uniColourMag ctx
-            (vec3 0.12 0.12 0.12)
-            1.0
-            { scale = 0.8 * radius
-            , position = centre
-            , rotation = 0
-            }
-    , Render.Primitives.fullCircle <|
-        uniColourMag ctx
-            (vec3 0.08 0.08 0.08)
-            1.0
-            { scale = 0.52 * radius
-            , position = centre
-            , rotation = 0
-            }
-    ]
-        ++ symbols
+    case Texture.load textures "ring.png" of
+        Nothing ->
+            []
 
-
-circlesView : Context -> List WebGL.Entity
-circlesView ({ w, h, radius } as ctx) =
-    let
-        centre =
-            vec2 (w / 2) (h / 2)
-
-        active =
-            vec2 (w / 2) ((h / 2) - (0.625 * radius))
-    in
-    List.map (Render.Primitives.circle << uni ctx)
-        [ { scale = 0.8 * radius, position = centre, rotation = 0 }
-        , { scale = 0.52 * radius, position = centre, rotation = 0 }
-        , { scale = 0.13 * radius, position = active, rotation = 0 }
-        ]
+        Just texture ->
+            [ Render.Primitives.quad Render.Shaders.fragment
+                { rotation = makeRotate rotation (vec3 0 0 1)
+                , scale = makeScale3 (0.77 * radius) (0.77 * radius) 1
+                , color = Colour.white
+                , pos = vec3 (w * 0.5) (h * 0.5) 0
+                , worldRot = makeRotate 0 (vec3 0 0 1)
+                , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
+                , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
+                , texture = texture
+                }
+            ]
 
 
 focusImageView : Maybe StackCard -> Context -> List WebGL.Entity
@@ -139,7 +113,7 @@ focusImageView focus ({ w, h, radius, textures } as ctx) =
                         uniColourMag ctx
                             (Colour.focusBackground owner)
                             1.0
-                            { scale = 0.52 * radius
+                            { scale = 0.48 * radius
                             , position = vec2 (w * 0.5) (h * 0.5)
                             , rotation = 0
                             }
@@ -452,7 +426,7 @@ passView ({ anim, w, h, radius } as ctx) =
                 uniColourMag ctx
                     (Colour.focusBackground which)
                     1.0
-                    { scale = 0.52 * radius
+                    { scale = 0.48 * radius
                     , position = vec2 (w * 0.5) (h * 0.5)
                     , rotation = 0
                     }
