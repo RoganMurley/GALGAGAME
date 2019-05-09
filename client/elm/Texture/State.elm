@@ -84,9 +84,7 @@ fetchTextures =
 
 texturePaths : List ( String, String )
 texturePaths =
-    [ ( "cross", "/img/textures/cross.png" )
-    , ( "feint", "/img/textures/feint.png" )
-    , ( "noise", "/img/textures/noise.png" )
+    [ ( "noise", "/img/textures/noise.png" )
     , ( "striker/fireball.svg", "/img/textures/experiments/fireball.png" )
     , ( "striker/offering.svg", "/img/textures/experiments/offering.png" )
     , ( "striker/confound.svg", "/img/textures/experiments/confound.png" )
@@ -133,6 +131,7 @@ texturePaths =
 
     -- Ring
     , ( "ring.png", "/img/textures/experiments/ring.png" )
+    , ( "lifeclaw.png", "/img/textures/experiments/lifeclaw.png" )
     ]
 
 
