@@ -24,7 +24,7 @@ import PlayState.Messages as PlayState
 import Render.Primitives
 import Render.Shaders
 import Render.Types as Render
-import Render.Uniforms exposing (uni, uniColourMag)
+import Render.Uniforms exposing (uniColourMag)
 import Room.Messages as Room
 import Stack.Types exposing (StackCard)
 import Stack.View as Stack
@@ -217,28 +217,32 @@ lifeOrbView ({ w, h, radius, model, anim, animDamage, tick } as ctx) =
     in
     [ Render.Primitives.fullCircle <|
         uniColourMag ctx
-            (Colour.card PlayerA)
-            lifePercentage
-            { scale = 0.15 * radius
-            , position = pos
-            , rotation = 0
-            }
-    , Render.Primitives.circle <|
-        uni ctx
+            (Colour.background PlayerA)
+            1.0
             { scale = 0.15 * radius
             , position = pos
             , rotation = 0
             }
     , Render.Primitives.fullCircle <|
         uniColourMag ctx
-            (Colour.card PlayerB)
-            otherLifePercentage
+            (Colour.card PlayerA)
+            lifePercentage
+            { scale = 0.15 * radius
+            , position = pos
+            , rotation = 0
+            }
+    , Render.Primitives.fullCircle <|
+        uniColourMag ctx
+            (Colour.background PlayerB)
+            1.0
             { scale = 0.15 * radius
             , position = otherPos
             , rotation = 0
             }
-    , Render.Primitives.circle <|
-        uni ctx
+    , Render.Primitives.fullCircle <|
+        uniColourMag ctx
+            (Colour.card PlayerB)
+            otherLifePercentage
             { scale = 0.15 * radius
             , position = otherPos
             , rotation = 0

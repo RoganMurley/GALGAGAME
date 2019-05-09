@@ -1,4 +1,4 @@
-module Colour exposing (Colour, black, blue, card, focusBackground, green, red, white, yellow)
+module Colour exposing (Colour, background, black, blue, card, focusBackground, green, red, white, yellow)
 
 import Math.Vector3 exposing (Vec3, vec3)
 import WhichPlayer.Types exposing (WhichPlayer(..))
@@ -46,6 +46,16 @@ card which =
 
         PlayerB ->
             vec3 0.14 0.52 0.75
+
+
+background : WhichPlayer -> Colour
+background which =
+    case which of
+        PlayerA ->
+            vec3 0.75 0.07 0.09
+
+        PlayerB ->
+            vec3 0.0 0.32 0.55
 
 
 focusBackground : WhichPlayer -> Colour
