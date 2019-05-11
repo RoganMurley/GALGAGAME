@@ -380,9 +380,9 @@ damageTextView hover { radius, resolving, animDamage } =
             [ div
                 [ class "clock-damage"
                 , style
-                    [ ( "right", 0.49 * radius |> px )
-                    , ( "top", 0.1 * radius |> px )
-                    , ( "font-size", 0.4 * radius |> px )
+                    [ ( "right", 0.28 * radius |> px )
+                    , ( "top", 0.75 * radius |> px )
+                    , ( "font-size", 0.2 * radius |> px )
                     , ( "color", damageToCssColour damage )
                     ]
                 ]
@@ -395,9 +395,9 @@ damageTextView hover { radius, resolving, animDamage } =
             [ div
                 [ class "clock-damage"
                 , style
-                    [ ( "left", 0.49 * radius |> px )
-                    , ( "bottom", 0.1 * radius |> px )
-                    , ( "font-size", 0.4 * radius |> px )
+                    [ ( "left", 0.22 * radius |> px )
+                    , ( "bottom", 0.75 * radius |> px )
+                    , ( "font-size", 0.2 * radius |> px )
                     , ( "color", damageToCssColour otherDamage )
                     ]
                 ]
