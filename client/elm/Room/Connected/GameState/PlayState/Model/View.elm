@@ -486,31 +486,47 @@ passView ({ anim, w, h, radius } as ctx) =
 
 
 ornateView : Context -> List WebGL.Entity
-ornateView ({ w, h } as ctx) =
-    [ Render.Primitives.quad Render.Shaders.ornate
-        { rotation = makeRotate 0 <| vec3 0 0 1
-        , scale = makeScale3 w h 1
-        , color = vec3 0.28 0.28 0.28
-        , pos = vec3 (w * 0.5) (h * 0.5) 0
-        , worldRot = makeRotate 0 <| vec3 0 0 1
-        , perspective = Render.Uniforms.perspective ctx
-        , camera = Render.Uniforms.camera
-        , shift = 0
-        , frequency = 2
-        , amplitude = 0.2
-        , thickness = 0.02
-        }
-    , Render.Primitives.quad Render.Shaders.ornate
-        { rotation = makeRotate 0 <| vec3 0 0 1
-        , scale = makeScale3 w (-1 * h) 1
-        , color = vec3 0.28 0.28 0.28
-        , pos = vec3 (w * 0.5) (h * 0.5) 0
-        , worldRot = makeRotate 0 <| vec3 0 0 1
-        , perspective = Render.Uniforms.perspective ctx
-        , camera = Render.Uniforms.camera
-        , shift = 0
-        , frequency = 2
-        , amplitude = 0.2
-        , thickness = 0.02
-        }
-    ]
+ornateView ({ w, h, anim, tick } as ctx) =
+    let
+        color =
+            vec3 0.1 0.1 0.1
+
+        scale =
+            0.75
+
+        shake =
+            0.005 * max (Animation.animShake anim PlayerA tick) (Animation.animShake anim PlayerB tick)
+
+        render rotation =
+            [ Render.Primitives.quad Render.Shaders.ornate
+                { rotation = makeRotate (rotation + shake) <| vec3 0 0 1
+                , scale = makeScale3 (scale * w) (scale * h) 1
+                , color = color
+                , pos = vec3 (w * 0.5) (h * 0.5) 0
+                , worldRot = makeRotate 0 <| vec3 0 0 1
+                , perspective = Render.Uniforms.perspective ctx
+                , camera = Render.Uniforms.camera
+                , shift = 0
+                , frequency = 2
+                , amplitude = 0.2
+                , thickness = 0.02
+                }
+            , Render.Primitives.quad Render.Shaders.ornate
+                { rotation = makeRotate (rotation + shake) <| vec3 0 0 1
+                , scale = makeScale3 (scale * w) (-scale * h) 1
+                , color = color
+                , pos = vec3 (w * 0.5) (h * 0.5) 0
+                , worldRot = makeRotate 0 <| vec3 0 0 1
+                , perspective = Render.Uniforms.perspective ctx
+                , camera = Render.Uniforms.camera
+                , shift = 0
+                , frequency = 2
+                , amplitude = 0.2
+                , thickness = 0.02
+                }
+            ]
+    in
+    List.concat <|
+        List.map render <|
+            List.map ((*) pi) <|
+                [ 0, 0.25, 0.5, 0.75, 1.0 ]
