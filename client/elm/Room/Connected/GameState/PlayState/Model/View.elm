@@ -130,8 +130,21 @@ backgroundRingView { w, h, anim, progress, radius, textures } =
                         , texture = texture
                         }
                     ]
+
+        bgEntity =
+            [ Render.Primitives.quad Render.Shaders.fullCircleFragment
+                { rotation = makeRotate rotation (vec3 0 0 1)
+                , scale = makeScale3 (0.87 * radius) (0.87 * radius) 1
+                , color = vec3 0.38 0.38 0.38
+                , pos = vec3 (w * 0.5) (h * 0.5) 0
+                , worldRot = makeRotate 0 (vec3 0 0 1)
+                , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
+                , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
+                , mag = 1.0
+                }
+            ]
     in
-    lifeclawEntities ++ ringEntity
+    bgEntity ++ lifeclawEntities ++ ringEntity
 
 
 focusImageView : Maybe StackCard -> Context -> List WebGL.Entity
