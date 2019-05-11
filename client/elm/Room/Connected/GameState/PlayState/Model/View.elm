@@ -49,7 +49,8 @@ view { w, h } { res, hover, focus, entities, passed } textures =
             ]
             (List.concat <|
                 List.map ((|>) ctx)
-                    [ lifeOrbView
+                    [ ornateView
+                    , lifeOrbView
                     , backgroundRingView
                     , Stack.view entities.stack
                     , focusImageView focus
@@ -482,3 +483,34 @@ passView ({ anim, w, h, radius } as ctx) =
 
         _ ->
             []
+
+
+ornateView : Context -> List WebGL.Entity
+ornateView ({ w, h } as ctx) =
+    [ Render.Primitives.quad Render.Shaders.ornate
+        { rotation = makeRotate 0 <| vec3 0 0 1
+        , scale = makeScale3 w h 1
+        , color = vec3 0.28 0.28 0.28
+        , pos = vec3 (w * 0.5) (h * 0.5) 0
+        , worldRot = makeRotate 0 <| vec3 0 0 1
+        , perspective = Render.Uniforms.perspective ctx
+        , camera = Render.Uniforms.camera
+        , shift = 0
+        , frequency = 2
+        , amplitude = 0.2
+        , thickness = 0.02
+        }
+    , Render.Primitives.quad Render.Shaders.ornate
+        { rotation = makeRotate 0 <| vec3 0 0 1
+        , scale = makeScale3 w (-1 * h) 1
+        , color = vec3 0.28 0.28 0.28
+        , pos = vec3 (w * 0.5) (h * 0.5) 0
+        , worldRot = makeRotate 0 <| vec3 0 0 1
+        , perspective = Render.Uniforms.perspective ctx
+        , camera = Render.Uniforms.camera
+        , shift = 0
+        , frequency = 2
+        , amplitude = 0.2
+        , thickness = 0.02
+        }
+    ]

@@ -1,4 +1,4 @@
-module Render.Shaders exposing (circleFragment, disintegrate, fragment, fragmentAlpha, fragmentTransmute, fullCircleFragment, matte, roundedBoxDisintegrate, roundedBoxFragment, roundedBoxTransmute, vertex)
+module Render.Shaders exposing (circleFragment, disintegrate, fragment, fragmentAlpha, fragmentTransmute, fullCircleFragment, matte, ornate, roundedBoxDisintegrate, roundedBoxFragment, roundedBoxTransmute, vertex)
 
 import Math.Vector2 exposing (Vec2)
 import Math.Vector3 exposing (Vec3)
@@ -252,6 +252,31 @@ roundedBoxFragment =
 
             float a = smoothstep(d * 0.9, d * 1.1, .5 - b);
             gl_FragColor = vec4(color, a);
+        }
+
+    |]
+
+
+ornate : Shader {} (Uniforms { amplitude : Float, frequency : Float, shift : Float, thickness : Float }) { vcoord : Vec2 }
+ornate =
+    [glsl|
+        precision mediump float;
+
+        uniform vec3 color;
+        uniform float shift;
+        uniform float frequency;
+        uniform float amplitude;
+        uniform float thickness;
+
+        varying vec2 vcoord;
+
+        void main ()
+        {
+            float x = amplitude * sin(frequency * 2. * 3.14 * vcoord.x + shift);
+            float y =  2. * vcoord.y -1.;
+            if (abs(y - x) < thickness) {
+                gl_FragColor = vec4(color, 1.);
+            }
         }
 
     |]
