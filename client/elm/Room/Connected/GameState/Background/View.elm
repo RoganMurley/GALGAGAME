@@ -85,7 +85,7 @@ ornateView ({ w, h, anim, tick } as ctx) =
     List.concat <|
         List.map render <|
             List.map ((*) pi) <|
-                [ 0, 0.25, 0.5, 0.75, 1.0 ]
+                [ 0, 1.0 ]
 
 
 ringView : Context -> List WebGL.Entity
