@@ -43,8 +43,8 @@ view { w, h } { res, hover, focus, entities, passed } textures =
     in
     div [ class "clock" ]
         [ WebGL.toHtml
-            [ width <| w * 2
-            , height <| h * 2
+            [ width <| w
+            , height <| h
             , class "webgl-canvas"
             ]
             (List.concat <|
