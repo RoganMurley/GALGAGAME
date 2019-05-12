@@ -1,6 +1,7 @@
 module Replay.View exposing (view)
 
-import Animation.Types exposing (Anim(NullAnim))
+import Animation.Types exposing (Anim(..))
+import Background.View as Background
 import Connected.View exposing (playersView)
 import Endgame.View as Endgame
 import GameState.Types exposing (GameState(Started))
@@ -23,10 +24,6 @@ view { replay } flags textures =
                 ]
 
             Nothing ->
-                [ div [ class "lds-facebook" ]
-                    [ div [] []
-                    , div [] []
-                    , div [] []
-                    ]
+                [ Background.view flags textures Finding
                 , Endgame.view 0.0 NullAnim Nothing
                 ]
