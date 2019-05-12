@@ -132,6 +132,7 @@ texturePaths =
     -- Ring
     , ( "ring.png", "/img/textures/experiments/ring.png" )
     , ( "lifeclaw.png", "/img/textures/experiments/lifeclaw.png" )
+    , ( "cursor.png", "/img/textures/experiments/cursor.png" )
     ]
 
 
