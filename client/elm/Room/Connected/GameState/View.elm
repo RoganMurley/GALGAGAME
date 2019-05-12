@@ -112,8 +112,8 @@ ringView { dimensions } textures =
     in
     div []
         [ WebGL.toHtml
-            [ width <| w * 2
-            , height <| h * 2
+            [ width <| w
+            , height <| h
             , class "webgl-canvas"
             ]
           <|

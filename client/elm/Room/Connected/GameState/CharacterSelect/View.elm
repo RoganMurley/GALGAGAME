@@ -57,8 +57,8 @@ view { w, h } ({ characters, selected, vm } as model) textures =
     in
     div [ class "character-select" ]
         [ WebGL.toHtml
-            [ width <| w * 2
-            , height <| h * 2
+            [ width <| w
+            , height <| h
             , class "webgl-canvas"
             ]
           <|
