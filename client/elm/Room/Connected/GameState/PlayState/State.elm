@@ -20,7 +20,6 @@ import Navigation
 import PlayState.Decoders as PlayState
 import PlayState.Messages exposing (Msg(..), PlayingOnly(..), TurnOnly(..))
 import PlayState.Types as PlayState exposing (PlayState(..))
-import Ports exposing (reload)
 import Resolvable.Decoders
 import Resolvable.State as Resolvable
 import Resolvable.Types as Resolvable
@@ -59,10 +58,7 @@ update msg state mode flags =
                     ( state, Cmd.none )
 
         GotoReplay replayId ->
-            state
-                ! [ Navigation.newUrl <| "/replay/" ++ replayId
-                  , reload ()
-                  ]
+            ( state, Navigation.load <| "/replay/" ++ replayId )
 
         ReplaySaved replayId ->
             case state of
