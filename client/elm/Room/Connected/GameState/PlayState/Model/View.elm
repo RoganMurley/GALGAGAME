@@ -59,6 +59,7 @@ view { w, h } { res, hover, focus, entities, passed } textures =
                     , Hand.otherView entities.otherHand
                     , Wave.view
                     , Hand.millView
+                    , Background.cursorView
                     ]
             )
         , div [ class "text-focus" ] [ focusTextView ctx focus ]

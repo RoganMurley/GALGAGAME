@@ -1,4 +1,4 @@
-module Background.View exposing (backgroundView, ornateView, ringView, view)
+module Background.View exposing (backgroundView, cursorView, ornateView, ringView, view)
 
 import Animation.State as Animation
 import Animation.Types exposing (Anim(..))
@@ -41,7 +41,7 @@ backgroundView : Context -> List WebGL.Entity
 backgroundView ctx =
     List.concat <|
         List.map ((|>) ctx)
-            [ ornateView, ringView ]
+            [ ornateView, ringView, cursorView ]
 
 
 ornateView : Context -> List WebGL.Entity
@@ -171,3 +171,23 @@ ringView { w, h, anim, progress, radius, textures } =
             ]
     in
     bgEntity ++ lifeclawEntities ++ ringEntity
+
+
+cursorView : Context -> List WebGL.Entity
+cursorView { w, h, radius, textures } =
+    case Texture.load textures "cursor.png" of
+        Nothing ->
+            []
+
+        Just texture ->
+            [ Render.Primitives.quad Render.Shaders.fragment
+                { rotation = makeRotate pi (vec3 0 0 1)
+                , scale = makeScale3 (0.18 * radius) (-0.18 * radius) 1
+                , color = Colour.white
+                , pos = vec3 (w * 0.5) (h * 0.5 - 0.62 * radius) 0
+                , worldRot = makeRotate 0 (vec3 0 0 1)
+                , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
+                , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
+                , texture = texture
+                }
+            ]
