@@ -1,9 +1,11 @@
-module CharacterSelect.View exposing (backgroundRingView, circlesView, view)
+module CharacterSelect.View exposing (view)
 
+import Background.View as Background
 import CharacterSelect.Messages exposing (Msg(..))
 import CharacterSelect.State exposing (getHoverSlot)
 import CharacterSelect.Types exposing (Character, Model, Slot(..))
 import Colour
+import Game.Entity as Game
 import Game.State exposing (bareContextInit)
 import Game.Types exposing (Context)
 import Html exposing (Html, div, h1, img, text)
@@ -57,46 +59,17 @@ view { w, h } ({ characters, selected, vm } as model) textures =
     in
     div [ class "character-select" ]
         [ WebGL.toHtml
-            [ width <| w
-            , height <| h
-            , class "webgl-canvas"
-            ]
+            [ width w, height h, class "webgl-canvas" ]
           <|
             List.concat <|
                 List.map ((|>) ctx)
-                    [ backgroundRingView
-                    , circlesView
+                    [ Background.backgroundView
                     , characterSelectCirclesView model
                     ]
         , h1 [] [ text "RUNE SELECT" ]
         , hoverCharacterNameView
         , div [ class "characters" ] <| List.map characterView characters
         ]
-
-
-backgroundRingView : Context -> List WebGL.Entity
-backgroundRingView ({ w, h, radius } as ctx) =
-    let
-        centre =
-            vec2 (w / 2) (h / 2)
-    in
-    [ Render.Primitives.fullCircle <|
-        uniColourMag ctx
-            (vec3 0.12 0.12 0.12)
-            1.0
-            { scale = 0.8 * radius
-            , position = centre
-            , rotation = 0
-            }
-    , Render.Primitives.fullCircle <|
-        uniColourMag ctx
-            (vec3 0.08 0.08 0.08)
-            1.0
-            { scale = 0.52 * radius
-            , position = centre
-            , rotation = 0
-            }
-    ]
 
 
 characterSelectCirclesView : Model -> Context -> List WebGL.Entity
@@ -123,9 +96,9 @@ characterSelectCirclesView ({ selected, vm } as model) ({ w, h, radius, textures
         hoverSlot : Maybe Slot
         hoverSlot =
             getHoverSlot model
-    in
-    List.concat
-        [ List.map (Render.Primitives.circle << uni ctx)
+
+        circleEntities : List (Game.Entity {})
+        circleEntities =
             [ { scale = 0.24 * radius
               , position =
                     Math.Vector2.add
@@ -148,6 +121,14 @@ characterSelectCirclesView ({ selected, vm } as model) ({ w, h, radius, textures
               , rotation = 0
               }
             ]
+    in
+    List.concat
+        [ List.map
+            (Render.Primitives.fullCircle << uniColourMag ctx Colour.darkGray 1)
+            circleEntities
+        , List.map
+            (Render.Primitives.circle << uni ctx)
+            circleEntities
         , case mTextureA of
             Just texture ->
                 [ Render.Primitives.quad Render.Shaders.fragment
@@ -242,15 +223,3 @@ slotView { w, h, radius } slot =
             Math.Vector2.scale radius offsetNormalised
     in
     Math.Vector2.add centre offset
-
-
-circlesView : Context -> List WebGL.Entity
-circlesView ({ w, h, radius } as ctx) =
-    let
-        centre =
-            vec2 (w / 2) (h / 2)
-    in
-    List.map (Render.Primitives.circle << uni ctx)
-        [ { scale = 0.8 * radius, position = centre, rotation = 0 }
-        , { scale = 0.52 * radius, position = centre, rotation = 0 }
-        ]

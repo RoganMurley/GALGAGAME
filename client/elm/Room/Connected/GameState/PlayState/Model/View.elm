@@ -2,6 +2,7 @@ module Model.View exposing (view)
 
 import Animation.State as Animation exposing (animMaxTick)
 import Animation.Types exposing (Anim(..))
+import Background.View as Background
 import Card.State exposing (cardTexture)
 import Colour
 import Connected.Messages as Connected
@@ -28,7 +29,6 @@ import Render.Uniforms exposing (uniColourMag)
 import Room.Messages as Room
 import Stack.Types exposing (StackCard)
 import Stack.View as Stack
-import Texture.State as Texture
 import Texture.Types as Texture
 import Util exposing (interpFloat, px)
 import WebGL
@@ -43,15 +43,15 @@ view { w, h } { res, hover, focus, entities, passed } textures =
     in
     div [ class "clock" ]
         [ WebGL.toHtml
-            [ width <| w
-            , height <| h
+            [ width w
+            , height h
             , class "webgl-canvas"
             ]
             (List.concat <|
                 List.map ((|>) ctx)
-                    [ ornateView
+                    [ Background.ornateView
                     , lifeOrbView
-                    , backgroundRingView
+                    , Background.ringView
                     , Stack.view entities.stack
                     , focusImageView focus
                     , passView
@@ -67,85 +67,6 @@ view { w, h } { res, hover, focus, entities, passed } textures =
         , turnView ctx focus passed
         , goButtonView ctx passed
         ]
-
-
-backgroundRingView : Context -> List WebGL.Entity
-backgroundRingView { w, h, anim, progress, radius, textures } =
-    let
-        rotationProgress =
-            case anim of
-                Rotate _ ->
-                    progress
-
-                Windup _ ->
-                    1 - progress
-
-                _ ->
-                    0
-
-        rotation =
-            rotationProgress * -2.0 * pi / 12.0
-
-        ringEntity =
-            case Texture.load textures "ring.png" of
-                Nothing ->
-                    []
-
-                Just texture ->
-                    [ Render.Primitives.quad Render.Shaders.fragment
-                        { rotation = makeRotate rotation (vec3 0 0 1)
-                        , scale = makeScale3 (0.77 * radius) (0.77 * radius) 1
-                        , color = Colour.white
-                        , pos = vec3 (w * 0.5) (h * 0.5) 0
-                        , worldRot = makeRotate 0 (vec3 0 0 1)
-                        , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
-                        , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
-                        , texture = texture
-                        }
-                    ]
-
-        lifeclawEntities =
-            case Texture.load textures "lifeclaw.png" of
-                Nothing ->
-                    []
-
-                Just texture ->
-                    [ Render.Primitives.quad Render.Shaders.fragment
-                        { rotation = makeRotate pi (vec3 0 0 1)
-                        , scale = makeScale3 (0.21 * radius) (0.21 * radius) 1
-                        , color = Colour.white
-                        , pos = vec3 (w * 0.5 + 0.65 * radius) (h * 0.5 - 0.65 * radius) 0
-                        , worldRot = makeRotate 0 (vec3 0 0 1)
-                        , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
-                        , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
-                        , texture = texture
-                        }
-                    , Render.Primitives.quad Render.Shaders.fragment
-                        { rotation = makeRotate 0 (vec3 0 0 1)
-                        , scale = makeScale3 (0.21 * radius) (0.21 * radius) 1
-                        , color = Colour.white
-                        , pos = vec3 (w * 0.5 - 0.65 * radius) (h * 0.5 + 0.65 * radius) 0
-                        , worldRot = makeRotate 0 (vec3 0 0 1)
-                        , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
-                        , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
-                        , texture = texture
-                        }
-                    ]
-
-        bgEntity =
-            [ Render.Primitives.quad Render.Shaders.fullCircleFragment
-                { rotation = makeRotate rotation (vec3 0 0 1)
-                , scale = makeScale3 (0.86 * radius) (0.86 * radius) 1
-                , color = vec3 0.38 0.38 0.38
-                , pos = vec3 (w * 0.5) (h * 0.5) 0
-                , worldRot = makeRotate 0 (vec3 0 0 1)
-                , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
-                , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
-                , mag = 1.0
-                }
-            ]
-    in
-    bgEntity ++ lifeclawEntities ++ ringEntity
 
 
 focusImageView : Maybe StackCard -> Context -> List WebGL.Entity
@@ -483,50 +404,3 @@ passView ({ anim, w, h, radius } as ctx) =
 
         _ ->
             []
-
-
-ornateView : Context -> List WebGL.Entity
-ornateView ({ w, h, anim, tick } as ctx) =
-    let
-        color =
-            vec3 0.1 0.1 0.1
-
-        scale =
-            0.75
-
-        shake =
-            0.005 * max (Animation.animShake anim PlayerA tick) (Animation.animShake anim PlayerB tick)
-
-        render rotation =
-            [ Render.Primitives.quad Render.Shaders.ornate
-                { rotation = makeRotate (rotation + shake) <| vec3 0 0 1
-                , scale = makeScale3 (scale * w) (scale * h) 1
-                , color = color
-                , pos = vec3 (w * 0.5) (h * 0.5) 0
-                , worldRot = makeRotate 0 <| vec3 0 0 1
-                , perspective = Render.Uniforms.perspective ctx
-                , camera = Render.Uniforms.camera
-                , shift = 0
-                , frequency = 2
-                , amplitude = 0.2
-                , thickness = 0.02
-                }
-            , Render.Primitives.quad Render.Shaders.ornate
-                { rotation = makeRotate (rotation + shake) <| vec3 0 0 1
-                , scale = makeScale3 (scale * w) (-scale * h) 1
-                , color = color
-                , pos = vec3 (w * 0.5) (h * 0.5) 0
-                , worldRot = makeRotate 0 <| vec3 0 0 1
-                , perspective = Render.Uniforms.perspective ctx
-                , camera = Render.Uniforms.camera
-                , shift = 0
-                , frequency = 2
-                , amplitude = 0.2
-                , thickness = 0.02
-                }
-            ]
-    in
-    List.concat <|
-        List.map render <|
-            List.map ((*) pi) <|
-                [ 0, 0.25, 0.5, 0.75, 1.0 ]
