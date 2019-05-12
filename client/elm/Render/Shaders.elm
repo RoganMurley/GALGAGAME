@@ -274,9 +274,8 @@ ornate =
         {
             float x = amplitude * sin(frequency * 2. * 3.14 * vcoord.x + shift);
             float y =  2. * vcoord.y -1.;
-            if (abs(y - x) < thickness) {
-                gl_FragColor = vec4(color, 1.);
-            }
+            float realThickness = 10. * thickness * pow(1. - vcoord.x, 5.);
+            gl_FragColor = vec4(color, abs(y - x) < realThickness);
         }
 
     |]

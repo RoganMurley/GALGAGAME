@@ -54,7 +54,7 @@ ornateView ({ w, h, anim, tick } as ctx) =
             0.75
 
         shake =
-            0.005 * max (Animation.animShake anim PlayerA tick) (Animation.animShake anim PlayerB tick)
+            0.005 * (Animation.animShake anim PlayerB tick - Animation.animShake anim PlayerA tick)
 
         render rotation =
             [ Render.Primitives.quad Render.Shaders.ornate
