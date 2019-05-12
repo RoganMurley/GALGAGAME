@@ -1,5 +1,6 @@
 module GameState.View exposing (view)
 
+import Animation.Types exposing (Anim(..))
 import Background.View as Background
 import CharacterSelect.View as CharacterSelect
 import Connected.Messages as Connected
@@ -67,14 +68,14 @@ waitingView waitType ({ httpPort, hostname } as flags) textures roomID =
                     "Give this link to your Opponent"
 
                 WaitQuickplay ->
-                    "Searching for Opponent..."
+                    "Finding Opponent"
 
         waitingInfo : Html Main.Msg
         waitingInfo =
             case waitType of
                 WaitCustom ->
                     div []
-                        [ Background.view flags textures
+                        [ Background.view flags textures Finding
                         , div [ class "input-group" ]
                             [ input
                                 [ value challengeLink
@@ -91,7 +92,7 @@ waitingView waitType ({ httpPort, hostname } as flags) textures roomID =
                         ]
 
                 WaitQuickplay ->
-                    Background.view flags textures
+                    Background.view flags textures Finding
     in
     div [ class "waiting" ]
         [ div [ class "waiting-prompt" ]

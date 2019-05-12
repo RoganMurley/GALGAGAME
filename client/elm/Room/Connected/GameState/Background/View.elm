@@ -19,14 +19,17 @@ import WebGL
 import WhichPlayer.Types exposing (WhichPlayer(..))
 
 
-view : Flags -> Texture.Model -> Html msg
-view { dimensions } textures =
+view : Flags -> Texture.Model -> Anim -> Html msg
+view { dimensions, time } textures anim =
     let
         ( w, h ) =
             dimensions
 
-        ctx =
+        baseCtx =
             bareContextInit dimensions textures
+
+        ctx =
+            { baseCtx | anim = anim, progress = time / 4000 }
     in
     div []
         [ WebGL.toHtml [ width w, height h, class "webgl-canvas" ] <|
@@ -98,6 +101,9 @@ ringView { w, h, anim, progress, radius, textures } =
 
                 Windup _ ->
                     1 - progress
+
+                Finding ->
+                    -12 * progress
 
                 _ ->
                     0

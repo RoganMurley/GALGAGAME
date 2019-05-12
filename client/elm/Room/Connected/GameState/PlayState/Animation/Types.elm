@@ -24,6 +24,7 @@ type Anim
     | Fabricate StackCard
     | Bounce (List Bounce)
     | Pass WhichPlayer
+    | Finding
 
 
 type Bounce
