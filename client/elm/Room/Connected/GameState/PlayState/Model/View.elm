@@ -344,10 +344,10 @@ goButtonView { model, radius, resolving } passed =
             handFull || not yourTurn || passed || resolving
 
         horizontalOffset =
-            0.65 * radius
+            0.64 * radius
 
         verticalOffset =
-            0.65 * radius
+            0.67 * radius
     in
     button
         [ class "clock-go"
