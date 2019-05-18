@@ -56,7 +56,7 @@ app.ports.analytics.subscribe(function () {
   }
 });
 
-let touched = false;
+var touched = false;
 
 function handleMouseMove (e) {
   if (touched) {
