@@ -18,7 +18,7 @@ import Main.Types as Main exposing (Flags)
 import Mode exposing (Mode(..))
 import Mouse
 import Navigation
-import Ports exposing (analytics, copyInput, godModeCommand, reload, selectAllInput, touch)
+import Ports exposing (analytics, copyInput, godModeCommand, mouseMove, reload, selectAllInput, touch)
 import Replay.State as Replay
 import Room.Generators exposing (generate)
 import Room.Messages as Room
@@ -416,7 +416,7 @@ subscriptions model =
         [ WebSocket.listen (websocketAddress model.flags) Receive
         , AnimationFrame.diffs Frame
         , Window.resizes (\{ width, height } -> Resize width height)
-        , Mouse.moves MousePosition
+        , mouseMove MousePosition
         , Mouse.clicks MouseClick
         , touch TouchPosition
         , Keyboard.presses KeyPress

@@ -56,7 +56,20 @@ app.ports.analytics.subscribe(function () {
   }
 });
 
+let touched = false;
+
+function handleMouseMove (e) {
+  if (touched) {
+    return;
+  }
+  app.ports.touch.send({
+    x: Math.floor(e.clientX),
+    y: Math.floor(e.clientY),
+  });
+}
+
 function handleTouch (e) {
+  touched = true;
   var touch = e.touches[0];
   app.ports.touch.send({
     x: Math.floor(touch.clientX),
@@ -65,9 +78,11 @@ function handleTouch (e) {
 };
 
 function handleTouchEnd (e) {
+  touched = true;
   app.ports.touch.send(null);
 };
 
+document.body.addEventListener('mousemove', handleMouseMove, false);
 document.body.addEventListener('touchstart', handleTouch, false);
 document.body.addEventListener('touchmove', handleTouch, false);
 document.body.addEventListener('touchend', handleTouchEnd, false);
