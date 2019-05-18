@@ -143,7 +143,7 @@ lifeOrbView ({ w, h, radius, model, anim, animDamage, tick } as ctx) =
 
         pos =
             Math.Vector2.add
-                (vec2 (w * 0.5 - 0.6 * radius) (h * 0.5 + 0.75 * radius))
+                (vec2 (w * 0.5 - 0.6 * radius) (h * 0.5 - 0.675 * radius))
                 (vec2 shake shake)
 
         otherPos =
@@ -230,7 +230,7 @@ lifeTextView { radius, model } =
         [ class "clock-life"
         , style
             [ ( "right", horizontalOffset |> px )
-            , ( "top", verticalOffset |> px )
+            , ( "bottom", verticalOffset - 0.02 * radius |> px )
             , ( "font-size", fontSize |> px )
             , ( "transform", "translate(-20%, -10%)" )
             , ( "width", textWidth |> px )
@@ -303,7 +303,7 @@ damageTextView hover { radius, resolving, animDamage } =
                 [ class "clock-damage"
                 , style
                     [ ( "right", 0.28 * radius |> px )
-                    , ( "top", 0.75 * radius |> px )
+                    , ( "bottom", 0.75 * radius |> px )
                     , ( "font-size", 0.2 * radius |> px )
                     , ( "color", damageToCssColour damage )
                     ]

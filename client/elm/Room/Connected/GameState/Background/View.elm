@@ -146,10 +146,10 @@ ringView { w, h, anim, progress, radius, textures } =
                         , texture = texture
                         }
                     , Render.Primitives.quad Render.Shaders.fragment
-                        { rotation = makeRotate 0 (vec3 0 0 1)
-                        , scale = makeScale3 (0.21 * radius) (0.21 * radius) 1
+                        { rotation = makeRotate pi (vec3 0 0 1)
+                        , scale = makeScale3 (-0.21 * radius) (0.21 * radius) 1
                         , color = Colour.white
-                        , pos = vec3 (w * 0.5 - 0.65 * radius) (h * 0.5 + 0.65 * radius) 0
+                        , pos = vec3 (w * 0.5 - 0.65 * radius) (h * 0.5 - 0.65 * radius) 0
                         , worldRot = makeRotate 0 (vec3 0 0 1)
                         , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
                         , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
@@ -166,10 +166,10 @@ ringView { w, h, anim, progress, radius, textures } =
                         , texture = texture
                         }
                     , Render.Primitives.quad Render.Shaders.fragment
-                        { rotation = makeRotate pi (vec3 0 0 1)
-                        , scale = makeScale3 (-0.17 * radius) (0.17 * radius) 1
+                        { rotation = makeRotate 0 (vec3 0 0 1)
+                        , scale = makeScale3 (0.17 * radius) (0.17 * radius) 1
                         , color = Colour.white
-                        , pos = vec3 (w * 0.5 - 0.65 * radius) (h * 0.5 - 0.62 * radius) 0
+                        , pos = vec3 (w * 0.5 - 0.65 * radius) (h * 0.5 + 0.62 * radius) 0
                         , worldRot = makeRotate 0 (vec3 0 0 1)
                         , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
                         , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
