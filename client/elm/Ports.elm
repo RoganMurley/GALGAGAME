@@ -1,4 +1,4 @@
-port module Ports exposing (analytics, copyInput, godModeCommand, mouseMove, playAudio, reload, selectAllInput, touch, volume)
+port module Ports exposing (analytics, click, copyInput, godModeCommand, mouseMove, playAudio, reload, selectAllInput, touch, volume)
 
 import Mouse
 
@@ -19,6 +19,9 @@ port reload : () -> Cmd msg
 
 
 port analytics : () -> Cmd msg
+
+
+port click : (Mouse.Position -> msg) -> Sub msg
 
 
 port mouseMove : (Mouse.Position -> msg) -> Sub msg

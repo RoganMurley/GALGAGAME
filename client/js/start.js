@@ -1,7 +1,8 @@
 'use strict';
 
 var params = new URLSearchParams(window.location.search);
-var app = Elm.Main.fullscreen({
+var embedElement = document.getElementById('elm');
+var app = Elm.Main.embed(embedElement, {
   hostname: window.location.hostname,
   httpPort: window.location.port,
   seed: new Date().getTime(),
@@ -56,6 +57,13 @@ app.ports.analytics.subscribe(function () {
   }
 });
 
+function handleClick (e) {
+  app.ports.click.send({
+    x: Math.floor(e.clientX),
+    y: Math.floor(e.clientY),
+  });
+};
+
 var touched = false;
 
 function handleMouseMove (e) {
@@ -82,6 +90,7 @@ function handleTouchEnd (e) {
   app.ports.touch.send(null);
 };
 
+embedElement.addEventListener('click', handleClick, false);
 document.body.addEventListener('mousemove', handleMouseMove, false);
 document.body.addEventListener('touchstart', handleTouch, false);
 document.body.addEventListener('touchmove', handleTouch, false);
