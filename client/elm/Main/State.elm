@@ -16,9 +16,8 @@ import Login.State as Login
 import Main.Messages exposing (Msg(..))
 import Main.Types as Main exposing (Flags)
 import Mode exposing (Mode(..))
-import Mouse
 import Navigation
-import Ports exposing (analytics, copyInput, godModeCommand, mouseMove, reload, selectAllInput, touch)
+import Ports exposing (analytics, click, copyInput, godModeCommand, mouseMove, reload, selectAllInput, touch)
 import Replay.State as Replay
 import Room.Generators exposing (generate)
 import Room.Messages as Room
@@ -417,7 +416,7 @@ subscriptions model =
         , AnimationFrame.diffs Frame
         , Window.resizes (\{ width, height } -> Resize width height)
         , mouseMove MousePosition
-        , Mouse.clicks MouseClick
+        , click MouseClick
         , touch TouchPosition
         , Keyboard.presses KeyPress
         , godModeCommand GodCommand
