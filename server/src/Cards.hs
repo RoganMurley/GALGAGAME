@@ -62,7 +62,7 @@ confound =
 hammer :: Card
 hammer =
   Card
-    "Hammer"
+    "Shot"
     "Hurt for 8"
     "breaker/hammer.svg"
     $ \w -> slash 8 (other w)
@@ -93,7 +93,7 @@ hubris =
 katana :: Card
 katana =
   Card
-    "Cut"
+    "Arrow"
     "Hurt for 9"
     "balancer/katana.svg"
     $ \w -> slash 9 (other w)
@@ -130,7 +130,7 @@ bless =
 balance :: Card
 balance =
   Card
-    "Rebalance"
+    "Balance"
     "Change next card's owner to weakest player"
     "balancer/balance.svg"
     $ \w -> do
@@ -196,7 +196,7 @@ reversal =
 staff :: Card
 staff =
   Card
-    "Smack"
+    "Dart"
     "Hurt for 4, then draw 1"
     "watcher/staff.svg"
     $ \w -> do
@@ -246,7 +246,7 @@ prophecy =
 sword :: Card
 sword =
   Card
-    "Slash"
+    "Projectile"
     "Hurt for 10"
     "shielder/sword.svg"
     $ \w -> slash 10 (other w)
