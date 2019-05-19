@@ -40,6 +40,8 @@ body {
   font-family: Arial, sans-serif;
 
   margin: 0;
+
+  cursor: pointer; // Stupid ioS click events hack.
 }
 
 .no-select {
