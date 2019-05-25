@@ -324,7 +324,7 @@ hoverCard (HoverHand i) which model =
           newModel = Alpha.modI model $ Alpha.modHand which $ deleteIndex i
           damage = Beta.damageNumbersI newModel $ card_eff card which
       Nothing ->
-        Left ("Hover index out of bounds (" <> (cs . show $ i ) <> ")" :: Err)
+        Right (Nothing, [])
 hoverCard (HoverStack i) which model =
   let
     stack = Alpha.evalI model $ Alpha.getStack :: Stack
@@ -336,7 +336,7 @@ hoverCard (HoverStack i) which model =
           newModel = Alpha.modI model $ Alpha.modStack (drop (i + 1)) -- plus one to account for stackCard
           damage = Beta.damageNumbersI newModel $ card_eff card owner
       Nothing ->
-        Left ("Hover index out of bounds (" <> (cs . show $ i ) <> ")" :: Err)
+        Right (Nothing, [])
 hoverCard NoHover which _ =
   Right (Nothing, [ Outcome.Encodable $ Outcome.Hover which NoHover (0, 0) ])
 
