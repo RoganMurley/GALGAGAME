@@ -1,0 +1,34 @@
+version: "2"
+services:
+  static:
+    build:
+      context: "client"
+    ports:
+      - "8000:80"
+      - "4430:443"
+    volumes:
+      - ./client/static/build:/usr/share/nginx/html
+    links:
+      - game
+    restart: always
+  redis:
+    build:
+      context: "redis"
+    restart: always
+  database:
+    build:
+      context: "database"
+    restart: always
+  game:
+    image: "game-ringofworlds"
+    links:
+      - database
+      - redis
+    restart: always
+  adminer:
+    image: adminer
+    links:
+      - database
+    restart: always
+    ports:
+      - 8080:8080

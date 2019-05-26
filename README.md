@@ -1,6 +1,6 @@
 # Ring of Worlds
 
-| 
+|
 <img src="https://i.imgur.com/AHQspU5.gif" height="200"> | <img src="https://i.imgur.com/1ShIxQR.gif" height="200"> |
 |----|----|
 
@@ -34,6 +34,6 @@ Read the [devlog](https://forums.tigsource.com/index.php?topic=66122.0).
 * `gulp build`
 
 ### Run locally
-* `docker-compose -f docker-compose.dev.yml up`
+* `docker-compose up`
 
 App will be served at https://localhost:4430.
