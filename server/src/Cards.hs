@@ -28,7 +28,7 @@ fireball =
   Card
     "Fireball"
     "Hurt for 5 for each other card in play"
-    "striker/fireball.svg"
+    "striker/fireball.png"
     $ \w -> do
       len <- length <$> getStack
       slash (len * 5) (other w)
@@ -39,7 +39,7 @@ offering =
   Card
     "Offering"
     "Pay 4 life to draw 2"
-    "striker/offering.svg"
+    "striker/offering.png"
     $ \w -> do
       slash 4 w
       draw w
@@ -51,7 +51,7 @@ confound =
   Card
     "Confound"
     "Shuffle the order of all cards in play"
-    "striker/confound.svg"
+    "striker/confound.png"
     $ \_ -> do
       gen <- getGen
       raw $ Alpha.modStack $ shuffle gen
@@ -64,7 +64,7 @@ hammer =
   Card
     "Shot"
     "Hurt for 8"
-    "breaker/hammer.svg"
+    "breaker/hammer.png"
     $ \w -> slash 8 (other w)
 
 
@@ -73,7 +73,7 @@ lightning =
   Card
     "Lightning"
     "Hurt for 4 for each other card in play"
-    "breaker/lightning.svg"
+    "breaker/lightning.png"
     $ \w -> do
       len <- length <$> getStack
       slash (len * 4) (other w)
@@ -84,7 +84,7 @@ hubris =
   Card
     "Hubris"
     "Discard all cards in play"
-    "breaker/hubris.svg"
+    "breaker/hubris.png"
     $ \_ -> do
       Beta.hubris
 
@@ -95,7 +95,7 @@ katana =
   Card
     "Arrow"
     "Hurt for 9"
-    "balancer/katana.svg"
+    "balancer/katana.png"
     $ \w -> slash 9 (other w)
 
 
@@ -104,7 +104,7 @@ curse =
   Card
     "Curse"
     "Hurt weakest player for 15"
-    "balancer/curse.svg"
+    "balancer/curse.png"
     $ \w -> do
       let dmg = 15
       paLife <- getLife w
@@ -118,7 +118,7 @@ bless =
   Card
     "Bless"
     "Heal weakest player for 15"
-    "balancer/bless.svg"
+    "balancer/bless.png"
     $ \w -> do
       let mag = 15
       paLife <- getLife w
@@ -132,7 +132,7 @@ balance =
   Card
     "Balance"
     "Change next card's owner to weakest player"
-    "balancer/balance.svg"
+    "balancer/balance.png"
     $ \w -> do
       paLife <- getLife w
       pbLife <- getLife (other w)
@@ -147,7 +147,7 @@ scythe =
   Card
     "Harvest"
     "Lifesteal for 5"
-    "drinker/scythe.svg"
+    "drinker/scythe.png"
     $ \w -> lifesteal 5 (other w)
 
 
@@ -156,7 +156,7 @@ bloodsucker =
   Card
     "Feast"
     "Lifesteal for 3 for each other card in play"
-    "drinker/bloodsucker.svg"
+    "drinker/bloodsucker.png"
     $ \w -> do
       len <- length <$> getStack
       lifesteal (len * 3) (other w)
@@ -167,7 +167,7 @@ serpent =
   Card
     "Infect"
     ("Add 2 " <> description parasite <> " to their hand")
-    "drinker/serpent.svg"
+    "drinker/serpent.png"
     $ \w -> do
       addToHand (other w) parasite
       addToHand (other w) parasite
@@ -178,7 +178,7 @@ parasite =
   Card
     "Parasite"
     "Hurt yourself for 4"
-    "drinker/bad-apple.svg"
+    "drinker/bad-apple.png"
     $ \w -> do
       bite 4 w
 
@@ -188,7 +188,7 @@ reversal =
   Card
     "Reverse"
     "Reverse the order of all cards in play"
-    "drinker/reversal.svg"
+    "drinker/reversal.png"
     $ const Beta.reverse
 
 
@@ -198,7 +198,7 @@ staff =
   Card
     "Dart"
     "Hurt for 4, then draw 1"
-    "watcher/staff.svg"
+    "watcher/staff.png"
     $ \w -> do
       slash 4 (other w)
       draw w
@@ -209,7 +209,7 @@ surge =
   Card
     "Brainbomb"
     "Hurt for 10 for each 'Brainbomb' in play"
-    "watcher/surge.svg"
+    "watcher/surge.png"
     $ \w -> do
       stack <- getStack
       let count = length . filter (\(StackCard _ (Card name _ _ _)) -> name == "Brainbomb") $ stack
@@ -221,7 +221,7 @@ mimic =
   Card
     "Mimic"
     "Play a copy of a random card in your hand"
-    "honeymaker/waxworks.svg"
+    "honeymaker/waxworks.png"
     $ \w -> do
       gen <- getGen
       hand <- getHand w
@@ -238,7 +238,7 @@ prophecy =
   Card
     "Prophecy"
     "Return all cards in play to hand"
-    "watcher/prophecy.svg"
+    "watcher/prophecy.png"
     $ \_ -> bounce (const True)
 
 
@@ -248,7 +248,7 @@ sword =
   Card
     "Projectile"
     "Hurt for 10"
-    "shielder/sword.svg"
+    "shielder/sword.png"
     $ \w -> slash 10 (other w)
 
 
@@ -257,7 +257,7 @@ potion =
   Card
     "Potion"
     "Heal for 10"
-    "shielder/potion.svg"
+    "shielder/potion.png"
     $ heal 10
 
 
@@ -266,7 +266,7 @@ reflect =
   Card
     "Reflect"
     "Change the owner of all cards in play"
-    "shielder/reflect.svg"
+    "shielder/reflect.png"
     $ const Beta.reflect
 
 
@@ -275,7 +275,7 @@ grudge :: Card
 grudge =
   Card
     "Grudge"
-    "Hurt for 3, return this card to hand"
+    "Hurt for 3, add a copy of this card to hand"
     "grudge.png"
     $ \w -> do
       slash 3 (other w)
@@ -287,7 +287,7 @@ overwhelm =
   Card
     "Envy"
     "Hurt for 3 for each card in your hand"
-    "bouncer/overwhelm.svg"
+    "bouncer/overwhelm.png"
     $ \w -> do
       len <- length <$> getHand w
       slash (len * 3) (other w)
@@ -298,7 +298,7 @@ echo =
   Card
     "Echo"
     "When the next card activates it does so twice"
-    "bouncer/echo.svg"
+    "bouncer/echo.png"
     $ \_ -> do
       raw $ do
         Alpha.modStackHead $
@@ -312,7 +312,7 @@ feint =
   Card
     "Feint"
     "Return all of your cards in play to hand"
-    "bouncer/feint.svg"
+    "bouncer/feint.png"
     $ \w -> bounce (\(StackCard o _) -> w == o)
 
 
@@ -322,7 +322,7 @@ relicblade =
   Card
     "Sting"
     "Hurt for 6"
-    "honeymaker/sting.svg"
+    "honeymaker/sting.png"
     $ \w -> slash 6 (other w)
 
 
@@ -331,7 +331,7 @@ greed =
   Card
     "Greed"
     "Hurt for 3 for each card in their hand"
-    "collector/greed.svg"
+    "collector/greed.png"
     $ \w -> do
       len <- length <$> getHand (other w)
       slash (len * 3) (other w)
@@ -342,7 +342,7 @@ alchemy =
   Card
     "Alchemy"
     ("Change next card to " <> description gold)
-    "collector/alchemy.svg"
+    "collector/alchemy.png"
     $ \_ -> transmute gold
 
 
@@ -351,7 +351,7 @@ gold =
   Card
     "Gold"
     "Draw 2"
-    "honeymaker/gold.svg"
+    "honeymaker/gold.png"
     $ \w -> do
       draw w
       draw w
@@ -362,7 +362,7 @@ theEnd =
   Card
     "The End"
     "You're out of cards, hurt yourself for 10"
-    "the_end.svg"
+    "the_end.png"
     $ slash 10
 
 
