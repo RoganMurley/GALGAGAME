@@ -22,7 +22,7 @@ import System.Environment (lookupEnv)
 import System.IO (BufferMode(LineBuffering), hSetBuffering, stdout)
 import System.Log.Logger (Priority(DEBUG), infoM, warningM, setLevel, updateGlobalLogger)
 
-import Act (actOutcome, actPlay, actSpec, syncClient, syncPlayersRoom)
+import Act (actOutcome, actPlay, actSpec, syncClient, syncPlayersRoom, syncClient)
 import ArtificalIntelligence (Action(..), chooseAction)
 import Config (App, ConnectInfoConfig(..), runApp)
 import Database (postgresConnectInfo, redisConnectInfo)
@@ -274,6 +274,7 @@ play which client roomVar outcomes = do
   Client.send ("acceptPlay:" :: Text) client
   room <- liftIO . atomically $ readTVar roomVar
   syncPlayersRoom room
+  syncClient client (Room.getState room)
   forM_ outcomes (actOutcome room)
   _ <- runMaybeT . forever $ do
     msg <- lift $ Client.receive client
