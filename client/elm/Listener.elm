@@ -29,7 +29,7 @@ listen state tick =
                 Cmd.none
     in
     if tick == 0 then
-        playSoundWith "/music/bebopboi.mp3" [ Loop, Once ]
+        playSoundWith "/music/background.mp3" [ Loop, Once ]
 
     else
         case state of
