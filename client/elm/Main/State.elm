@@ -38,9 +38,9 @@ import Window
 init : Flags -> Navigation.Location -> ( Main.Model, Cmd Msg )
 init flags location =
     let
-        fetchTextures : Cmd Msg
+        fetchTextures : List (Cmd Msg)
         fetchTextures =
-            Cmd.map TextureMsg Texture.fetchTextures
+            List.map (Cmd.map TextureMsg) Texture.fetchTextures
 
         ( model, cmd ) =
             locationUpdate
@@ -51,7 +51,7 @@ init flags location =
                 }
                 location
     in
-    model ! [ fetchTextures, cmd ]
+    model ! (cmd :: fetchTextures)
 
 
 update : Msg -> Main.Model -> ( Main.Model, Cmd Msg )

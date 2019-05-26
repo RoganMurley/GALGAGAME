@@ -1,4 +1,4 @@
-module Texture.State exposing (defaultOptions, fetchTextures, init, load, null, save, saveList, texturePaths, update)
+module Texture.State exposing (defaultOptions, fetchTextures, init, load, null, save, texturePaths, update)
 
 import Dict
 import Task
@@ -16,7 +16,7 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg m =
     case msg of
         TexturesLoaded textures ->
-            ( saveList m textures, Cmd.none )
+            ( save m textures, Cmd.none )
 
         TexturesError error ->
             let
@@ -31,14 +31,6 @@ save model ( name, tex ) =
     { model | textures = Dict.insert name tex model.textures }
 
 
-saveList : Model -> List ( String, Texture ) -> Model
-saveList model textures =
-    { model
-        | textures =
-            Dict.union (Dict.fromList textures) model.textures
-    }
-
-
 load : Model -> String -> Maybe Texture
 load { textures } name =
     Dict.get name textures
@@ -49,7 +41,7 @@ defaultOptions =
     WebGL.Texture.defaultOptions
 
 
-fetchTextures : Cmd Msg
+fetchTextures : List (Cmd Msg)
 fetchTextures =
     let
         loader : ( String, String ) -> Task.Task WebGL.Texture.Error ( String, Texture )
@@ -67,19 +59,19 @@ fetchTextures =
             Task.map
                 (\texture -> ( name, texture ))
                 task
-    in
-    texturePaths
-        |> List.map loader
-        |> Task.sequence
-        |> Task.attempt
-            (\result ->
-                case result of
-                    Err error ->
-                        TexturesError error
 
-                    Ok textures ->
-                        TexturesLoaded textures
-            )
+        handler =
+            Task.attempt
+                (\result ->
+                    case result of
+                        Err error ->
+                            TexturesError error
+
+                        Ok textures ->
+                            TexturesLoaded textures
+                )
+    in
+    List.map (loader >> handler) texturePaths
 
 
 texturePaths : List ( String, String )

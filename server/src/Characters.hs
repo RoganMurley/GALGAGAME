@@ -179,7 +179,7 @@ watcher =
 shielder :: Character
 shielder =
   Character
-    "Self"
+    "Ego"
     "textures/reflect.png"
     (Cards.grudge, Cards.overwhelm, Cards.potion, Cards.reflect)
 

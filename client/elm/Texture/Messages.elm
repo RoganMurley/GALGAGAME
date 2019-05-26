@@ -4,5 +4,5 @@ import WebGL.Texture exposing (Error, Texture)
 
 
 type Msg
-    = TexturesLoaded (List ( String, Texture ))
+    = TexturesLoaded ( String, Texture )
     | TexturesError Error
