@@ -3,6 +3,7 @@ module Config where
 import Control.Exception (catchJust)
 import Control.Monad.IO.Class (liftIO)
 import Control.Monad.Trans.Reader (ReaderT, asks, runReaderT)
+import Data.Pool (Pool, createPool, withResource)
 import Database.Beam.Postgres (Pg, runBeamPostgres)
 
 import qualified Database.Redis as Redis
@@ -21,7 +22,7 @@ data ConnectInfoConfig = ConnectInfoConfig
 
 data Config = Config
   { redisConn  :: Redis.Connection
-  , postgresConn :: Postgres.Connection
+  , postgresPool :: Pool Postgres.Connection
   }
 
 
@@ -29,23 +30,28 @@ runApp :: ConnectInfoConfig -> App a -> IO a
 runApp (ConnectInfoConfig redisInfo postgresInfo) app =
   do
     redisConn <- Redis.connect redisInfo
-    postgresConn <- Postgres.connectPostgreSQL . Postgres.postgreSQLConnectionString $ postgresInfo
-    let config = Config redisConn postgresConn
+    postgresPool <- createPool (connectPostgres postgresInfo) Postgres.close 1 0.5 10
+    let config = Config redisConn postgresPool
     runReaderT app config
+
+
+connectPostgres :: Postgres.ConnectInfo -> IO Postgres.Connection
+connectPostgres = Postgres.connectPostgreSQL . Postgres.postgreSQLConnectionString
 
 
 runBeam :: Pg a -> App a
 runBeam beam = do
-  conn <- asks postgresConn
-  liftIO $ runBeamPostgres conn beam
+  pool <- asks postgresPool
+  withResource pool $ \conn -> liftIO $ runBeamPostgres conn beam
 
 
 runBeamIntegrity :: Pg a -> App (Either Postgres.ConstraintViolation a)
 runBeamIntegrity beam = do
-  conn <- asks postgresConn
-  liftIO $ catchJust Postgres.constraintViolation
-    (runBeamPostgres conn beam >>= return . Right)
-    (return . Left)
+  pool <- asks postgresPool
+  withResource pool $ \conn ->
+    liftIO $ catchJust Postgres.constraintViolation
+      (runBeamPostgres conn beam >>= return . Right)
+      (return . Left)
 
 
 runRedis :: Redis.Redis a -> App a
