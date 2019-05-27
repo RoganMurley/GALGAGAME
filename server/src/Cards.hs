@@ -239,7 +239,7 @@ prophecy =
     "Prophecy"
     "Return all cards in play to hand"
     "prophecy.png"
-    $ \_ ->  (const True)
+    $ \_ -> bounce (const True)
 
 
 -- Shielder
