@@ -43,7 +43,7 @@ view { w, h } ({ characters, selected, vm } as model) textures =
                   else
                     class ""
                 ]
-                [ img [ src ("/img/" ++ character.imgURL), class "character-icon" ] []
+                [ img [ src ("/img/textures/" ++ character.imgURL), class "character-icon" ] []
                 ]
 
         hoverCharacterNameView : Html msg

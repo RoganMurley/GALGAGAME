@@ -1,4 +1,4 @@
-module Texture.State exposing (defaultOptions, fetchTextures, init, load, null, save, texturePaths, update)
+module Texture.State exposing (defaultOptions, fetchTextures, init, load, save, texturePaths, update)
 
 import Dict
 import Task
@@ -60,18 +60,16 @@ fetchTextures =
                 (\texture -> ( name, texture ))
                 task
 
-        handler =
-            Task.attempt
-                (\result ->
-                    case result of
-                        Err error ->
-                            TexturesError error
+        handler : Result WebGL.Texture.Error ( String, Texture ) -> Msg
+        handler result =
+            case result of
+                Err error ->
+                    TexturesError error
 
-                        Ok textures ->
-                            TexturesLoaded textures
-                )
+                Ok textures ->
+                    TexturesLoaded textures
     in
-    List.map (loader >> handler) texturePaths
+    List.map (loader >> Task.attempt handler) texturePaths
 
 
 texturePaths : List ( String, String )
@@ -81,50 +79,39 @@ texturePaths =
     , ( "lifeclaw.png", "/img/textures/lifeclaw.png" )
     , ( "cursor.png", "/img/textures/cursor.png" )
 
+    -- VFX
+    , ( "noise.png", "/img/textures/noise.png" )
+
     -- Cards
-    , ( "noise", "/img/textures/noise.png" )
-    , ( "striker/fireball.png", "/img/textures/fireball.png" )
-    , ( "striker/offering.png", "/img/textures/offering.png" )
-    , ( "striker/confound.png", "/img/textures/confound.png" )
-    , ( "bouncer/overwhelm.png", "/img/textures/envy.png" )
-    , ( "bouncer/echo.png", "/img/textures/echo.png" )
-    , ( "bouncer/feint.png", "/img/textures/feint.png" )
-    , ( "shielder/potion.png", "/img/textures/potion.png" )
-    , ( "shielder/reflect.png", "/img/textures/reflect.png" )
-    , ( "watcher/staff.png", "/img/textures/staff.png" )
-    , ( "watcher/surge.png", "/img/textures/brainbomb.png" )
-    , ( "watcher/prophecy.png", "/img/textures/prophecy.png" )
-    , ( "drinker/scythe.png", "/img/textures/harvest.png" )
-    , ( "drinker/bloodsucker.png", "/img/textures/feast.png" )
-    , ( "drinker/serpent.png", "/img/textures/beguile.png" )
-    , ( "drinker/reversal.png", "/img/textures/reverse.png" )
-    , ( "drinker/bad-apple.png", "/img/textures/badapple.png" )
-    , ( "collector/greed.png", "/img/textures/greed.png" )
-    , ( "collector/alchemy.png", "/img/textures/alchemy.png" )
-    , ( "breaker/hammer.png", "/img/textures/strike.png" )
-    , ( "breaker/lightning.png", "/img/textures/lightning.png" )
-    , ( "breaker/hubris.png", "/img/textures/hubris.png" )
-    , ( "balancer/katana.png", "/img/textures/katana.png" )
-    , ( "balancer/curse.png", "/img/textures/curse.png" )
-    , ( "balancer/bless.png", "/img/textures/bless.png" )
-    , ( "balancer/balance.png", "/img/textures/balance.png" )
-    , ( "the_end.png", "/img/textures/end.png" )
-    , ( "honeymaker/sting.png", "/img/textures/sting.png" )
-    , ( "honeymaker/gold.png", "/img/textures/gold.png" )
-    , ( "honeymaker/waxworks.png", "/img/textures/mimic.png" )
-    , ( "symbol.png", "/img/textures/symbol.png" )
-    , ( "reflect-symbol.png", "/img/textures/reflect.png" )
-    , ( "triforce.png", "/img/textures/triforce.png" )
+    , ( "fireball.png", "/img/textures/fireball.png" )
+    , ( "offering.png", "/img/textures/offering.png" )
+    , ( "confound.png", "/img/textures/confound.png" )
+    , ( "overwhelm.png", "/img/textures/envy.png" )
+    , ( "echo.png", "/img/textures/echo.png" )
+    , ( "feint.png", "/img/textures/feint.png" )
+    , ( "potion.png", "/img/textures/potion.png" )
+    , ( "reflect.png", "/img/textures/reflect.png" )
+    , ( "staff.png", "/img/textures/staff.png" )
+    , ( "surge.png", "/img/textures/brainbomb.png" )
+    , ( "prophecy.png", "/img/textures/prophecy.png" )
+    , ( "scythe.png", "/img/textures/harvest.png" )
+    , ( "bloodsucker.png", "/img/textures/feast.png" )
+    , ( "serpent.png", "/img/textures/beguile.png" )
+    , ( "reverse.png", "/img/textures/reverse.png" )
+    , ( "bad-apple.png", "/img/textures/badapple.png" )
+    , ( "greed.png", "/img/textures/greed.png" )
+    , ( "alchemy.png", "/img/textures/alchemy.png" )
+    , ( "hammer.png", "/img/textures/strike.png" )
+    , ( "lightning.png", "/img/textures/lightning.png" )
+    , ( "hubris.png", "/img/textures/hubris.png" )
+    , ( "katana.png", "/img/textures/katana.png" )
+    , ( "curse.png", "/img/textures/curse.png" )
+    , ( "bless.png", "/img/textures/bless.png" )
+    , ( "balance.png", "/img/textures/balance.png" )
+    , ( "end.png", "/img/textures/end.png" )
+    , ( "sting.png", "/img/textures/sting.png" )
+    , ( "gold.png", "/img/textures/gold.png" )
+    , ( "waxworks.png", "/img/textures/mimic.png" )
     , ( "missile.png", "/img/textures/missile.png" )
     , ( "grudge.png", "/img/textures/grudge.png" )
     ]
-
-
-null : Model -> WebGL.Texture.Texture
-null m =
-    case load m "null" of
-        Just t ->
-            t
-
-        Nothing ->
-            Debug.crash "Failed to load null texture"
