@@ -28,7 +28,7 @@ fireball =
   Card
     "Fireball"
     "Hurt for 5 for each other card in play"
-    "striker/fireball.png"
+    "fireball.png"
     $ \w -> do
       len <- length <$> getStack
       slash (len * 5) (other w)
@@ -39,7 +39,7 @@ offering =
   Card
     "Offering"
     "Pay 4 life to draw 2"
-    "striker/offering.png"
+    "offering.png"
     $ \w -> do
       slash 4 w
       draw w
@@ -51,7 +51,7 @@ confound =
   Card
     "Confound"
     "Shuffle the order of all cards in play"
-    "striker/confound.png"
+    "confound.png"
     $ \_ -> do
       gen <- getGen
       raw $ Alpha.modStack $ shuffle gen
@@ -64,7 +64,7 @@ hammer =
   Card
     "Shot"
     "Hurt for 8"
-    "breaker/hammer.png"
+    "hammer.png"
     $ \w -> slash 8 (other w)
 
 
@@ -73,7 +73,7 @@ lightning =
   Card
     "Lightning"
     "Hurt for 4 for each other card in play"
-    "breaker/lightning.png"
+    "lightning.png"
     $ \w -> do
       len <- length <$> getStack
       slash (len * 4) (other w)
@@ -84,7 +84,7 @@ hubris =
   Card
     "Hubris"
     "Discard all cards in play"
-    "breaker/hubris.png"
+    "hubris.png"
     $ \_ -> do
       Beta.hubris
 
@@ -95,7 +95,7 @@ katana =
   Card
     "Arrow"
     "Hurt for 9"
-    "balancer/katana.png"
+    "katana.png"
     $ \w -> slash 9 (other w)
 
 
@@ -104,7 +104,7 @@ curse =
   Card
     "Curse"
     "Hurt weakest player for 15"
-    "balancer/curse.png"
+    "curse.png"
     $ \w -> do
       let dmg = 15
       paLife <- getLife w
@@ -118,7 +118,7 @@ bless =
   Card
     "Bless"
     "Heal weakest player for 15"
-    "balancer/bless.png"
+    "bless.png"
     $ \w -> do
       let mag = 15
       paLife <- getLife w
@@ -132,7 +132,7 @@ balance =
   Card
     "Balance"
     "Change next card's owner to weakest player"
-    "balancer/balance.png"
+    "balance.png"
     $ \w -> do
       paLife <- getLife w
       pbLife <- getLife (other w)
@@ -147,7 +147,7 @@ scythe =
   Card
     "Harvest"
     "Lifesteal for 5"
-    "drinker/scythe.png"
+    "scythe.png"
     $ \w -> lifesteal 5 (other w)
 
 
@@ -156,7 +156,7 @@ bloodsucker =
   Card
     "Feast"
     "Lifesteal for 3 for each other card in play"
-    "drinker/bloodsucker.png"
+    "bloodsucker.png"
     $ \w -> do
       len <- length <$> getStack
       lifesteal (len * 3) (other w)
@@ -167,7 +167,7 @@ serpent =
   Card
     "Infect"
     ("Add 2 " <> description parasite <> " to their hand")
-    "drinker/serpent.png"
+    "serpent.png"
     $ \w -> do
       addToHand (other w) parasite
       addToHand (other w) parasite
@@ -178,7 +178,7 @@ parasite =
   Card
     "Parasite"
     "Hurt yourself for 4"
-    "drinker/bad-apple.png"
+    "bad-apple.png"
     $ \w -> do
       bite 4 w
 
@@ -186,9 +186,9 @@ parasite =
 reversal :: Card
 reversal =
   Card
-    "Reverse"
+    "Reversal"
     "Reverse the order of all cards in play"
-    "drinker/reversal.png"
+    "reverse.png"
     $ const Beta.reverse
 
 
@@ -198,7 +198,7 @@ staff =
   Card
     "Dart"
     "Hurt for 4, then draw 1"
-    "watcher/staff.png"
+    "staff.png"
     $ \w -> do
       slash 4 (other w)
       draw w
@@ -209,7 +209,7 @@ surge =
   Card
     "Brainbomb"
     "Hurt for 10 for each 'Brainbomb' in play"
-    "watcher/surge.png"
+    "surge.png"
     $ \w -> do
       stack <- getStack
       let count = length . filter (\(StackCard _ (Card name _ _ _)) -> name == "Brainbomb") $ stack
@@ -221,7 +221,7 @@ mimic =
   Card
     "Mimic"
     "Play a copy of a random card in your hand"
-    "honeymaker/waxworks.png"
+    "waxworks.png"
     $ \w -> do
       gen <- getGen
       hand <- getHand w
@@ -238,8 +238,8 @@ prophecy =
   Card
     "Prophecy"
     "Return all cards in play to hand"
-    "watcher/prophecy.png"
-    $ \_ -> bounce (const True)
+    "prophecy.png"
+    $ \_ ->  (const True)
 
 
 -- Shielder
@@ -248,7 +248,7 @@ sword =
   Card
     "Projectile"
     "Hurt for 10"
-    "shielder/sword.png"
+    "sword.png"
     $ \w -> slash 10 (other w)
 
 
@@ -257,7 +257,7 @@ potion =
   Card
     "Potion"
     "Heal for 10"
-    "shielder/potion.png"
+    "potion.png"
     $ heal 10
 
 
@@ -266,7 +266,7 @@ reflect =
   Card
     "Reflect"
     "Change the owner of all cards in play"
-    "shielder/reflect.png"
+    "reflect.png"
     $ const Beta.reflect
 
 
@@ -287,7 +287,7 @@ overwhelm =
   Card
     "Envy"
     "Hurt for 3 for each card in your hand"
-    "bouncer/overwhelm.png"
+    "overwhelm.png"
     $ \w -> do
       len <- length <$> getHand w
       slash (len * 3) (other w)
@@ -298,7 +298,7 @@ echo =
   Card
     "Echo"
     "When the next card activates it does so twice"
-    "bouncer/echo.png"
+    "echo.png"
     $ \_ -> do
       raw $ do
         Alpha.modStackHead $
@@ -312,7 +312,7 @@ feint =
   Card
     "Feint"
     "Return all of your cards in play to hand"
-    "bouncer/feint.png"
+    "feint.png"
     $ \w -> bounce (\(StackCard o _) -> w == o)
 
 
@@ -322,7 +322,7 @@ relicblade =
   Card
     "Sting"
     "Hurt for 6"
-    "honeymaker/sting.png"
+    "sting.png"
     $ \w -> slash 6 (other w)
 
 
@@ -331,7 +331,7 @@ greed =
   Card
     "Greed"
     "Hurt for 3 for each card in their hand"
-    "collector/greed.png"
+    "greed.png"
     $ \w -> do
       len <- length <$> getHand (other w)
       slash (len * 3) (other w)
@@ -342,7 +342,7 @@ alchemy =
   Card
     "Alchemy"
     ("Change next card to " <> description gold)
-    "collector/alchemy.png"
+    "alchemy.png"
     $ \_ -> transmute gold
 
 
@@ -351,7 +351,7 @@ gold =
   Card
     "Gold"
     "Draw 2"
-    "honeymaker/gold.png"
+    "gold.png"
     $ \w -> do
       draw w
       draw w
@@ -362,7 +362,7 @@ theEnd =
   Card
     "The End"
     "You're out of cards, hurt yourself for 10"
-    "the_end.png"
+    "end.png"
     $ slash 10
 
 

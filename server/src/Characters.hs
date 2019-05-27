@@ -148,7 +148,7 @@ striker :: Character
 striker =
   Character
     "Fire"
-    "textures/confound.png"
+    "confound.png"
     (Cards.missile, Cards.fireball, Cards.offering, Cards.confound)
 
 
@@ -156,7 +156,7 @@ breaker :: Character
 breaker =
   Character
     "Air"
-    "textures/hubris.png"
+    "hubris.png"
     (Cards.hammer, Cards.lightning, Cards.feint, Cards.hubris)
 
 
@@ -164,7 +164,7 @@ drinker :: Character
 drinker =
   Character
     "Life"
-    "textures/reverse.png"
+    "reverse.png"
     (Cards.scythe, Cards.bloodsucker, Cards.serpent, Cards.reversal)
 
 
@@ -172,7 +172,7 @@ watcher :: Character
 watcher =
   Character
     "Future"
-    "textures/prophecy.png"
+    "prophecy.png"
     (Cards.staff, Cards.surge, Cards.echo, Cards.prophecy)
 
 
@@ -180,7 +180,7 @@ shielder :: Character
 shielder =
   Character
     "Ego"
-    "textures/reflect.png"
+    "reflect.png"
     (Cards.grudge, Cards.overwhelm, Cards.potion, Cards.reflect)
 
 
@@ -188,7 +188,7 @@ balancer :: Character
 balancer =
   Character
     "Balance"
-    "textures/balance.png"
+    "balance.png"
     (Cards.katana, Cards.curse, Cards.bless, Cards.balance)
 
 
@@ -196,5 +196,5 @@ collector :: Character
 collector =
   Character
     "Alchemy"
-    "textures/alchemy.png"
+    "alchemy.png"
     (Cards.relicblade, Cards.greed, Cards.mimic, Cards.alchemy)

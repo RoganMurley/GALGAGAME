@@ -110,7 +110,7 @@ dissolvingView ctx { position, rotation, scale, card, owner } =
             cardTexture textures card
 
         mNoise =
-            Texture.load textures "noise"
+            Texture.load textures "noise.png"
     in
     case ( mTexture, mNoise ) of
         ( Just texture, Just noise ) ->
@@ -165,7 +165,7 @@ fabricatingView ctx { position, rotation, scale, card, owner } =
             cardTexture textures card
 
         mNoise =
-            Texture.load textures "noise"
+            Texture.load textures "noise.png"
     in
     case ( mTexture, mNoise ) of
         ( Just texture, Just noise ) ->
