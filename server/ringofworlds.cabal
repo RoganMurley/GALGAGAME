@@ -81,6 +81,7 @@ library
                      , postgresql-simple
                      , random
                      , random-shuffle
+                     , resource-pool
                      , safe
                      , scotty
                      , scotty-cookie
@@ -117,6 +118,7 @@ executable ringofworlds
                      , lifted-base
                      , postgresql-simple
                      , random
+                     , resource-pool
                      , ringofworlds
                      , safe
                      , string-conversions
