@@ -40,6 +40,9 @@ app.ports.playAudio.subscribe(function (input) {
   });
   sound.play();
 });
+app.ports.loadAudio.subscribe(function (src) {
+  new Howl({src: [src]});
+});
 
 app.ports.volume.subscribe(function (input) {
   var v = input / 100;
