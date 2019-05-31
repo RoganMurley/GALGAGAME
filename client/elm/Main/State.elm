@@ -1,7 +1,7 @@
 module Main.State exposing (init, locationUpdate, subscriptions, update)
 
 import AnimationFrame
-import Audio exposing (setVolume)
+import Audio exposing (fetchSounds, setVolume)
 import Connected.Messages as Connected
 import GameState.Messages as GameState
 import GameState.Types exposing (GameState(Started))
@@ -51,7 +51,7 @@ init flags location =
                 }
                 location
     in
-    model ! (cmd :: fetchTextures)
+    model ! (cmd :: fetchTextures ++ fetchSounds)
 
 
 update : Msg -> Main.Model -> ( Main.Model, Cmd Msg )

@@ -1,4 +1,4 @@
-module Audio exposing (SoundOption(..), playSound, playSoundWith, setVolume)
+module Audio exposing (SoundOption(..), fetchSounds, playSound, playSoundWith, setVolume)
 
 import Ports
 
@@ -50,3 +50,29 @@ playSoundWith name options =
 setVolume : Int -> Cmd msg
 setVolume =
     Ports.volume
+
+
+fetchSounds : List (Cmd msg)
+fetchSounds =
+    let
+        loader : String -> Cmd msg
+        loader soundPath =
+            Ports.loadAudio <| "/sfx/" ++ soundPath
+    in
+    List.map loader sounds
+
+
+sounds : List String
+sounds =
+    [ "draw.wav"
+    , "damage.mp3"
+    , "heal.mp3"
+    , "bite.wav"
+    , "reverse.mp3"
+    , "playCard.wav"
+    , "transmute.mp3"
+    , "obliterate.mp3"
+    , "burn.mp3"
+    , "victory.wav"
+    , "defeat.mp3"
+    ]
