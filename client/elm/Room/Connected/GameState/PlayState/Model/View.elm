@@ -358,26 +358,20 @@ goButtonView { model, radius, resolving } passed =
         fontSize =
             0.08 * radius
 
+        playMsg =
+            Main.RoomMsg
+                << Room.ConnectedMsg
+                << Connected.GameStateMsg
+                << GameState.PlayStateMsg
+                << PlayState.PlayingOnly
+
         clickHandler =
             if not isDisabled then
-                [ onClick <|
-                    Main.RoomMsg <|
-                        Room.ConnectedMsg <|
-                            Connected.GameStateMsg <|
-                                GameState.PlayStateMsg <|
-                                    PlayState.PlayingOnly <|
-                                        PlayState.TurnOnly <|
-                                            PlayState.EndTurn
+                [ onClick <| playMsg <| PlayState.TurnOnly PlayState.EndTurn
                 ]
 
-            else if handFull then
-                [ onClick <|
-                    Main.RoomMsg <|
-                        Room.ConnectedMsg <|
-                            Connected.GameStateMsg <|
-                                GameState.PlayStateMsg <|
-                                    PlayState.PlayingOnly <|
-                                        PlayState.IllegalPass
+            else if handFull && not resolving then
+                [ onClick <| playMsg PlayState.IllegalPass
                 ]
 
             else
