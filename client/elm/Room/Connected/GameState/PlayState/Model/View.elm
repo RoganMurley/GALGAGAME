@@ -348,6 +348,12 @@ goButtonView { model, radius, resolving } passed =
 
         verticalOffset =
             0.67 * radius
+
+        buttonSize =
+            0.23 * radius
+
+        fontSize =
+            0.08 * radius
     in
     button
         [ class "clock-go"
@@ -363,6 +369,9 @@ goButtonView { model, radius, resolving } passed =
         , style
             [ ( "left", "calc(50% + " ++ (horizontalOffset |> px) ++ ")" )
             , ( "top", "calc(50% + " ++ (verticalOffset |> px) ++ ")" )
+            , ( "width", buttonSize |> px )
+            , ( "height", buttonSize |> px )
+            , ( "font-size", fontSize |> px )
             ]
         ]
         [ text "GO" ]
