@@ -13,7 +13,7 @@ import GameState.Messages as GameState
 import Hand.State exposing (maxHandLength)
 import Hand.View as Hand
 import Html exposing (Html, button, div, text)
-import Html.Attributes exposing (class, disabled, height, style, width)
+import Html.Attributes exposing (class, classList, height, style, width)
 import Html.Events exposing (onClick)
 import Main.Messages as Main
 import Math.Matrix4 exposing (makeLookAt, makeOrtho, makeRotate, makeScale3)
@@ -195,6 +195,9 @@ focusTextView { anim, radius } focus =
         Pass _ ->
             text ""
 
+        HandFullPass ->
+            text ""
+
         _ ->
             case focus of
                 Nothing ->
@@ -354,26 +357,44 @@ goButtonView { model, radius, resolving } passed =
 
         fontSize =
             0.08 * radius
+
+        clickHandler =
+            if not isDisabled then
+                [ onClick <|
+                    Main.RoomMsg <|
+                        Room.ConnectedMsg <|
+                            Connected.GameStateMsg <|
+                                GameState.PlayStateMsg <|
+                                    PlayState.PlayingOnly <|
+                                        PlayState.TurnOnly <|
+                                            PlayState.EndTurn
+                ]
+
+            else if handFull then
+                [ onClick <|
+                    Main.RoomMsg <|
+                        Room.ConnectedMsg <|
+                            Connected.GameStateMsg <|
+                                GameState.PlayStateMsg <|
+                                    PlayState.PlayingOnly <|
+                                        PlayState.IllegalPass
+                ]
+
+            else
+                []
     in
     button
-        [ class "clock-go"
-        , disabled isDisabled
-        , onClick <|
-            Main.RoomMsg <|
-                Room.ConnectedMsg <|
-                    Connected.GameStateMsg <|
-                        GameState.PlayStateMsg <|
-                            PlayState.PlayingOnly <|
-                                PlayState.TurnOnly <|
-                                    PlayState.EndTurn
-        , style
+        ([ classList [ ( "clock-go", True ), ( "clock-go--disabled", isDisabled ) ]
+         , style
             [ ( "left", "calc(50% + " ++ (horizontalOffset |> px) ++ ")" )
             , ( "top", "calc(50% + " ++ (verticalOffset |> px) ++ ")" )
             , ( "width", buttonSize |> px )
             , ( "height", buttonSize |> px )
             , ( "font-size", fontSize |> px )
             ]
-        ]
+         ]
+            ++ clickHandler
+        )
         [ text "GO" ]
 
 
@@ -394,6 +415,9 @@ turnView { anim, model } focus passed =
         ( Pass _, _, _ ) ->
             div [ class "pass-status" ] [ text "PASS" ]
 
+        ( HandFullPass, _, _ ) ->
+            div [ class "pass-status" ] [ text "HAND FULL" ]
+
         _ ->
             div [] []
 
@@ -405,6 +429,17 @@ passView ({ anim, w, h, radius } as ctx) =
             [ Render.Primitives.fullCircle <|
                 uniColourMag ctx
                     (Colour.focusBackground which)
+                    1.0
+                    { scale = 0.48 * radius
+                    , position = vec2 (w * 0.5) (h * 0.5)
+                    , rotation = 0
+                    }
+            ]
+
+        HandFullPass ->
+            [ Render.Primitives.fullCircle <|
+                uniColourMag ctx
+                    (Colour.focusBackground PlayerA)
                     1.0
                     { scale = 0.48 * radius
                     , position = vec2 (w * 0.5) (h * 0.5)
