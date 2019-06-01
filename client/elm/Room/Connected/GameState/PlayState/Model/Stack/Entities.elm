@@ -5,6 +5,8 @@ import Array
 import Game.Entity as Game
 import Game.Types exposing (Context, StackEntity)
 import Math.Vector2 exposing (Vec2, vec2)
+import Random
+import Random.List
 import Stack.Types exposing (Stack, StackCard)
 import Util exposing (interpFloat)
 
@@ -42,6 +44,23 @@ entities ctx =
 
                         Nothing ->
                             finalStack
+
+                Confound _ ->
+                    let
+                        generator : Random.Generator Stack
+                        generator =
+                            Random.List.shuffle finalStack
+
+                        -- We get a new seed each 20% of the animation's progress.
+                        -- So we shuffle the list 5 times.
+                        seed : Random.Seed
+                        seed =
+                            Random.initialSeed <| floor <| progress / 0.2
+
+                        ( shuffledStack, _ ) =
+                            Random.step generator seed
+                    in
+                    shuffledStack
 
                 _ ->
                     finalStack

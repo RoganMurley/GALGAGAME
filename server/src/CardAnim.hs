@@ -18,6 +18,7 @@ data CardAnim
   | Reflect
   | Reverse
   | Hubris
+  | Confound
   | Play WhichPlayer Card Int
   | Transmute StackCard StackCard
   | Mill WhichPlayer Card
@@ -61,6 +62,11 @@ instance ToJSON CardAnim where
   toJSON Reflect =
     object
     [ "name"   .= ("reflect" :: Text)
+    , "player" .= PlayerA
+    ]
+  toJSON Confound =
+    object
+    [ "name"   .= ("confound" :: Text)
     , "player" .= PlayerA
     ]
   toJSON Reverse =
@@ -134,6 +140,7 @@ instance Mirror CardAnim where
   mirror (Draw w)          = Draw  (other w)
   mirror (Bite w d)        = Bite (other w) d
   mirror Reflect           = Reflect
+  mirror Confound          = Confound
   mirror Reverse           = Reverse
   mirror Hubris            = Hubris
   mirror (Play w c i)      = Play (other w) c i

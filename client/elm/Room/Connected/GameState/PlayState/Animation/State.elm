@@ -44,6 +44,9 @@ animMaxTick anim =
         Reverse _ ->
             1500.0
 
+        Confound _ ->
+            1500.0
+
         Play _ _ _ ->
             500.0
 
@@ -87,6 +90,9 @@ progress anim tick =
 
                 Rotate _ ->
                     Ease.inQuad
+
+                Confound _ ->
+                    Ease.linear
 
                 Slash _ _ ->
                     Ease.outQuad
