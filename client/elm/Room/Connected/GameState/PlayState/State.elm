@@ -1,6 +1,6 @@
 module PlayState.State exposing (carry, get, map, mouseClick, mouseMove, resolveOutcomeStr, tick, update, updatePlayingOnly, updateTurnOnly)
 
-import Animation.Types exposing (Anim(Play, Windup))
+import Animation.Types exposing (Anim(HandFullPass, Play, Windup))
 import Audio exposing (playSound)
 import Game.Encoders
 import Game.State as Game
@@ -102,6 +102,33 @@ updatePlayingOnly msg state mode flags =
                                         ++ Game.Encoders.encodeHoverSelf hover
                           , sound
                           ]
+
+                IllegalPass ->
+                    case state of
+                        Playing { game } ->
+                            let
+                                -- Construct the ResolveData clientside to avoid latency.
+                                newState : PlayState
+                                newState =
+                                    resolveOutcome initial resDiffList state (Just state)
+
+                                initial : Model
+                                initial =
+                                    game.res.final
+
+                                resDiffList : List Resolvable.ResolveDiffData
+                                resDiffList =
+                                    [ { diff = initDiff
+                                      , anim = HandFullPass
+                                      , animDamage = ( 0, 0 )
+                                      , stackCard = Nothing
+                                      }
+                                    ]
+                            in
+                            newState ! []
+
+                        _ ->
+                            state ! []
 
                 TurnOnly turnOnly ->
                     updateTurnOnly turnOnly state flags

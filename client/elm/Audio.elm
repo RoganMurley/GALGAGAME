@@ -73,6 +73,7 @@ sounds =
     , "transmute.mp3"
     , "obliterate.mp3"
     , "burn.mp3"
+    , "evil_tick.mp3"
     , "victory.wav"
     , "defeat.mp3"
     ]

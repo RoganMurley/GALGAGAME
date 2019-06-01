@@ -16,6 +16,7 @@ type PlayingOnly
     = Rematch
     | TurnOnly TurnOnly
     | HoverCard HoverSelf
+    | IllegalPass
 
 
 type TurnOnly

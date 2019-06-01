@@ -86,5 +86,8 @@ animSfx anim =
                 Nothing ->
                     Just "draw.wav"
 
+        HandFullPass ->
+            Just "evil_tick.mp3"
+
         _ ->
             Nothing
