@@ -35,6 +35,9 @@ decoder =
                 "reverse" ->
                     reverseDecoder
 
+                "confound" ->
+                    confoundDecoder
+
                 "hubris" ->
                     hubrisDecoder
 
@@ -118,6 +121,12 @@ biteDecoder =
 reflectDecoder : Decoder Anim
 reflectDecoder =
     Json.map Reflect
+        (field "player" WhichPlayer.decoder)
+
+
+confoundDecoder : Decoder Anim
+confoundDecoder =
+    Json.map Confound
         (field "player" WhichPlayer.decoder)
 
 

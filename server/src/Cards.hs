@@ -10,7 +10,7 @@ import Util (shuffle)
 
 import qualified DSL.Alpha as Alpha
 import qualified DSL.Beta as Beta
-import DSL.Beta hiding (hubris, reflect)
+import DSL.Beta hiding (confound, hubris, reflect)
 
 
 -- Striker
@@ -53,8 +53,7 @@ confound =
     "Shuffle the order of all cards in play"
     "confound.png"
     $ \_ -> do
-      gen <- getGen
-      raw $ Alpha.modStack $ shuffle gen
+      Beta.confound
       Beta.null
 
 

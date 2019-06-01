@@ -14,6 +14,7 @@ type Anim
     | Reflect WhichPlayer
     | Reverse WhichPlayer
     | Hubris WhichPlayer
+    | Confound WhichPlayer
     | Play WhichPlayer Card Int
     | Transmute WhichPlayer StackCard StackCard
     | Mill WhichPlayer Card

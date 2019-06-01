@@ -21,6 +21,7 @@ data DSL n
   | AddToHand WhichPlayer Card n
   | Hubris n
   | Reflect n
+  | Confound n
   | Reverse n
   | Play WhichPlayer Card Int n
   | Transmute Card n

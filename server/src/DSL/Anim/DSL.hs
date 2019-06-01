@@ -18,6 +18,7 @@ data DSL a
   | Bite WhichPlayer Life a
   | Hubris a
   | Reflect a
+  | Confound a
   | Reverse a
   | Play WhichPlayer Card Int a
   | Transmute StackCard StackCard a

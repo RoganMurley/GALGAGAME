@@ -11,7 +11,7 @@ import Life (Life)
 import Model (Deck, Hand, Passes(..), Stack, Turn, maxHandLength)
 import Safe (headMay, tailSafe)
 import StackCard(StackCard(StackCard, stackcard_card), isOwner)
-import Util (deleteIndex)
+import Util (deleteIndex, shuffle)
 
 import {-# SOURCE #-} Cards (theEnd)
 
@@ -139,3 +139,9 @@ bounce f = do
   let (paBouncing, pbBouncing) = partition (isOwner PlayerA) bouncing
   modHand PlayerA $ \h -> h ++ (stackcard_card <$> paBouncing)
   modHand PlayerB $ \h -> h ++ (stackcard_card <$> pbBouncing)
+
+
+confound :: Program ()
+confound = do
+  gen <- getGen
+  modStack $ shuffle gen
