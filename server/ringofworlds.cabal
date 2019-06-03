@@ -55,6 +55,7 @@ library
                      , StackCard
                      , Start
                      , Stats.Schema
+                     , Stats.Stats
                      , User
                      , Util
   other-modules:       DSL.Alpha.Actions
