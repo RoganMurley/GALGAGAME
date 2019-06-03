@@ -159,12 +159,12 @@ receive ({ mode } as model) msg flags =
 
         "xp" ->
             case decodeExperience content of
-                Ok xp ->
+                Ok experienceChange ->
                     let
                         ( newGame, cmd ) =
                             GameState.update
                                 (GameState.PlayStateMsg <|
-                                    PlayState.ExperienceChange xp
+                                    PlayState.ExperienceChange experienceChange
                                 )
                                 model.game
                                 mode

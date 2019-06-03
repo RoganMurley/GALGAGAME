@@ -12,7 +12,7 @@ import Room.Messages as Room
 import WhichPlayer.Types exposing (WhichPlayer(..))
 
 
-view : Float -> Anim -> Maybe String -> Maybe Int -> Html Main.Msg
+view : Float -> Anim -> Maybe String -> Maybe ( Int, Int, Int, Int ) -> Html Main.Msg
 view progress anim mReplayId mXp =
     let
         ( show, endGameText, endGameClass ) =
@@ -54,8 +54,14 @@ view progress anim mReplayId mXp =
 
         experienceDisplay =
             case mXp of
-                Just xp ->
-                    div [ class "experience" ] [ text <| toString xp ++ "xp" ]
+                Just ( initialXp, finalXp, initialLevel, finalLevel ) ->
+                    div [ class "experience" ]
+                        [ div []
+                            [ text <| toString initialXp ++ "xp -> " ++ toString finalXp ++ "xp" ]
+                        , div []
+                            [ text <| "lvl" ++ toString initialLevel ++ " -> lvl" ++ toString finalLevel
+                            ]
+                        ]
 
                 Nothing ->
                     div [] []

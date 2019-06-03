@@ -10,7 +10,7 @@ type Msg
     | PlayingOnly PlayingOnly
     | ReplaySaved String
     | GotoReplay String
-    | ExperienceChange Int
+    | ExperienceChange ( Int, Int, Int, Int )
 
 
 type PlayingOnly

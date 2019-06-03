@@ -138,10 +138,13 @@ handleExperience which room = do
   let mUsername = Client.name <$> Room.getPlayerClient which room :: Maybe Text
   case mUsername of
     Just username -> do
-      xp <- Stats.load username
-      liftIO $ infoM "app" $ printf "%s has %d xp" username xp
-      Room.sendToPlayer which (("xp:" <>) . cs . encode $ xp) room
-      -- saveExperience username newExperience
+      initialXp <- Stats.load username
+      Stats.increase username 25
+      finalXp <- Stats.load username
+      let initialLevel = Stats.levelFromExperience initialXp
+      let finalLevel = Stats.levelFromExperience finalXp
+      liftIO $ infoM "app" $ printf "%s (lvl%d, %dxp) -> (lvl%d, %dxp)" username initialLevel initialXp finalLevel finalXp
+      Room.sendToPlayer which (("xp:" <>) . cs . encode $ (initialXp, finalXp, initialLevel, finalLevel)) room
     Nothing -> do
       liftIO $ infoM "app" "There's nobody here to gain that sweet xp :("
       return ()

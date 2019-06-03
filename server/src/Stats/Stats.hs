@@ -1,7 +1,7 @@
 module Stats.Stats where
 
 import Config (App, runBeam)
-import Database.Beam ((==.), all_, filter_, runSelectReturningOne, select, val_)
+import Database.Beam ((==.), (<-.), all_, current_, filter_, runSelectReturningOne, runUpdate, select, update, val_)
 import Data.Int (Int64)
 import Data.Maybe (fromMaybe)
 import Data.Text (Text)
@@ -28,9 +28,19 @@ nextLevelAt xp = levelToExperience nextLevel
     currentLevel = levelFromExperience xp :: Level
     nextLevel = currentLevel + 1 :: Level
 
+experienceThisLevel :: Experience -> Experience
+experienceThisLevel xp = xp - (levelToExperience . levelFromExperience $ xp)
+
 load :: Text -> App Experience
 load username = do
   result <- runBeam $ runSelectReturningOne $
     select $ filter_ (\row -> Stats.Schema.statsUser row ==. val_ (Auth.Schema.UserId username)) $
       all_ $ stats ringOfWorldsDb
   return $ fromMaybe 0 $ Stats.Schema.statsExperience <$> result
+
+increase :: Text -> Experience -> App ()
+increase username xp = do
+  _ <- runBeam $ runUpdate $ update (stats ringOfWorldsDb)
+    (\row -> [Stats.Schema.statsExperience row <-. current_ (Stats.Schema.statsExperience row) + val_ xp])
+    (\row -> Stats.Schema.statsUser row ==. val_ (Auth.Schema.UserId username))
+  return ()
