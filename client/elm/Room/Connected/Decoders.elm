@@ -1,4 +1,4 @@
-module Connected.Decoders exposing (decodeDamageOutcome, decodePlayers)
+module Connected.Decoders exposing (decodeDamageOutcome, decodeExperience, decodePlayers)
 
 import Json.Decode as Json exposing (Decoder, index, int, maybe, string)
 
@@ -25,3 +25,8 @@ decodeDamageOutcome msg =
                 (index 1 int)
     in
     Json.decodeString decoder msg
+
+
+decodeExperience : String -> Result String Int
+decodeExperience msg =
+    Json.decodeString int msg

@@ -1,7 +1,7 @@
 module Connected.State exposing (init, receive, tick, update)
 
 import Audio exposing (playSound)
-import Connected.Decoders exposing (decodeDamageOutcome, decodePlayers)
+import Connected.Decoders exposing (decodeDamageOutcome, decodeExperience, decodePlayers)
 import Connected.Messages exposing (Msg(..))
 import Connected.Types exposing (Model)
 import Game.Decoders exposing (decodeHoverOther)
@@ -156,6 +156,26 @@ receive ({ mode } as model) msg flags =
                         flags
             in
             ( { model | game = newGame }, cmd )
+
+        "xp" ->
+            case decodeExperience content of
+                Ok xp ->
+                    let
+                        ( newGame, cmd ) =
+                            GameState.update
+                                (GameState.PlayStateMsg <|
+                                    PlayState.ExperienceChange xp
+                                )
+                                model.game
+                                mode
+                                flags
+                    in
+                    ( { model | game = newGame }, cmd )
+
+                Err err ->
+                    Debug.log
+                        err
+                        ( model, Cmd.none )
 
         _ ->
             Debug.log
