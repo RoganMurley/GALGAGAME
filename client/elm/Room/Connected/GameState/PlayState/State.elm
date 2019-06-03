@@ -68,10 +68,10 @@ update msg state mode flags =
                 _ ->
                     ( state, Cmd.none )
 
-        ExperienceChange xp ->
+        ExperienceChange experienceChange ->
             case state of
                 Ended ended ->
-                    ( Ended { ended | xp = Just xp }, Cmd.none )
+                    ( Ended { ended | xp = Just experienceChange }, Cmd.none )
 
                 _ ->
                     ( state, Cmd.none )

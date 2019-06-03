@@ -10,5 +10,5 @@ type PlayState
         { game : Game.Model
         , winner : Maybe WhichPlayer
         , replayId : Maybe String
-        , xp : Maybe Int
+        , xp : Maybe ( Int, Int, Int, Int )
         }

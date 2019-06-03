@@ -27,6 +27,15 @@ decodeDamageOutcome msg =
     Json.decodeString decoder msg
 
 
-decodeExperience : String -> Result String Int
+decodeExperience : String -> Result String ( Int, Int, Int, Int )
 decodeExperience msg =
-    Json.decodeString int msg
+    let
+        decoder : Decoder ( Int, Int, Int, Int )
+        decoder =
+            Json.map4 (,,,)
+                (index 0 int)
+                (index 1 int)
+                (index 2 int)
+                (index 3 int)
+    in
+    Json.decodeString decoder msg
