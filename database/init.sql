@@ -7,6 +7,11 @@ CREATE TABLE users (
   created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE TABLE stats (
+  user__username TEXT REFERENCES users UNIQUE,
+  experience BIGINT DEFAULT 0
+);
+
 CREATE TABLE replays (
   id SERIAL PRIMARY KEY,
   replay TEXT,

@@ -17,6 +17,7 @@ import System.Log.Logger (errorM)
 import Text.Printf (printf)
 
 import Auth.Schema as Schema
+import Stats.Schema as Schema
 
 import qualified Network.WebSockets as WS
 import qualified Database.Redis as R
@@ -55,8 +56,10 @@ deleteToken token = do
 saveUser :: ByteString -> ByteString -> ByteString -> Bool -> App Bool
 saveUser email username hashedPassword contactable = do
   let user = Schema.User (cs email) (cs username) (cs hashedPassword) contactable False
-  result <- runBeamIntegrity $ runInsert $ insert (users ringOfWorldsDb) $ insertValues [ user ]
-  case result of
+  let stat = Schema.Stats (Schema.UserId $ cs username) 0
+  userResult <- runBeamIntegrity $ runInsert $ insert (users ringOfWorldsDb) $ insertValues [ user ]
+  statsResult <- runBeamIntegrity $ runInsert $ insert (stats ringOfWorldsDb) $ insertValues [ stat ]
+  case userResult <* statsResult of
     Right _ ->
       return True
     Left (UniqueViolation "users_pkey") ->
