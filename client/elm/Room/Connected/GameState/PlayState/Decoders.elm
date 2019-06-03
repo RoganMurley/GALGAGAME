@@ -38,6 +38,7 @@ endedDecoder =
                 { winner = winner
                 , game = gameInit model
                 , replayId = Nothing
+                , xp = Nothing
                 }
     in
     Json.map2 endedInit

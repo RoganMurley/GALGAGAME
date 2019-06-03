@@ -34,6 +34,8 @@ import qualified Replay.Final
 import qualified Room
 import Room (Room)
 
+import qualified Stats.Stats as Stats
+
 
 roomUpdate :: GameCommand -> WhichPlayer -> TVar Room -> STM (Room, Either Err [Outcome])
 roomUpdate cmd which roomVar =
@@ -129,6 +131,21 @@ resolveRoomClients res initial final exclude room = do
     mirrorOutcome = Outcome.Resolve (mirror <$> res) (mirror initial) (mirror final) (other <$> exclude)
 
 
+handleExperience :: WhichPlayer -> Room -> App ()
+handleExperience which room = do
+  -- Change this to be a transaction!
+  -- Save usernames all game.
+  let mUsername = Client.name <$> Room.getPlayerClient which room :: Maybe Text
+  case mUsername of
+    Just username -> do
+      xp <- Stats.load username
+      liftIO $ infoM "app" $ printf "%s has %d xp" username xp
+      Room.sendToPlayer which (("xp:" <>) . cs . encode $ xp) room
+      -- saveExperience username newExperience
+    Nothing -> do
+      liftIO $ infoM "app" "There's nobody here to gain that sweet xp :("
+      return ()
+
 actOutcome :: Room -> Outcome -> App ()
 actOutcome room Outcome.Sync =
   syncRoomClients room
@@ -144,3 +161,6 @@ actOutcome room (Outcome.SaveReplay replay) = do
   liftIO $ infoM "app" "Saving replay..."
   replayId <- Replay.Final.save replay
   Room.broadcast ("replaySaved:" <> (cs . show $ replayId)) room
+actOutcome room Outcome.HandleExperience = do
+  handleExperience PlayerA room
+  handleExperience PlayerB room

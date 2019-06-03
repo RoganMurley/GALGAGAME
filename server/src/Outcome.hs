@@ -14,6 +14,7 @@ import qualified Replay.Final as Final
 data Outcome =
     Sync
   | SaveReplay Final.Replay
+  | HandleExperience
   | Encodable Encodable
   deriving (Eq, Show)
 

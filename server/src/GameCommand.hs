@@ -115,6 +115,7 @@ concede which (Started (Playing model replay)) =
       Just . Started $ newPlayState
     , [
         Outcome.Encodable $ Outcome.Resolve res model newPlayState Nothing
+      , Outcome.HandleExperience
       , Outcome.SaveReplay finalReplay
       ]
     )
@@ -235,6 +236,7 @@ endTurn which model replay
                 Just newState,
                 [
                   Outcome.Encodable $ Outcome.Resolve res model newPlayState Nothing
+                , Outcome.HandleExperience
                 , Outcome.SaveReplay finalReplay
                 ]
               )

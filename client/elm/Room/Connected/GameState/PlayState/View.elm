@@ -25,10 +25,10 @@ view playState { time, dimensions } textures =
         Playing { game } ->
             div []
                 [ Model.view params game textures
-                , Endgame.view 0 NullAnim Nothing
+                , Endgame.view 0 NullAnim Nothing Nothing
                 ]
 
-        Ended { winner, game, replayId } ->
+        Ended { winner, game, replayId, xp } ->
             let
                 anim =
                     activeAnim game.res
@@ -48,5 +48,5 @@ view playState { time, dimensions } textures =
             in
             div []
                 [ Model.view params game textures
-                , Endgame.view progress endAnim replayId
+                , Endgame.view progress endAnim replayId xp
                 ]

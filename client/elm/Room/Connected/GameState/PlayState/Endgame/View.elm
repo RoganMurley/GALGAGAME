@@ -12,8 +12,8 @@ import Room.Messages as Room
 import WhichPlayer.Types exposing (WhichPlayer(..))
 
 
-view : Float -> Anim -> Maybe String -> Html Main.Msg
-view progress anim mReplayId =
+view : Float -> Anim -> Maybe String -> Maybe Int -> Html Main.Msg
+view progress anim mReplayId mXp =
     let
         ( show, endGameText, endGameClass ) =
             case anim of
@@ -51,6 +51,14 @@ view progress anim mReplayId =
                     button
                         [ class "replay", disabled True ]
                         [ text "Replay" ]
+
+        experienceDisplay =
+            case mXp of
+                Just xp ->
+                    div [ class "experience" ] [ text <| toString xp ++ "xp" ]
+
+                Nothing ->
+                    div [] []
     in
     div
         [ classList
@@ -69,17 +77,20 @@ view progress anim mReplayId =
             [ div
                 [ class endGameClass ]
                 [ text endGameText ]
-            , button
-                [ class "rematch"
-                , onClick <|
-                    Main.RoomMsg <|
-                        Room.ConnectedMsg <|
-                            Connected.GameStateMsg <|
-                                GameState.PlayStateMsg <|
-                                    PlayingOnly Rematch
-                , disabled isDisabled
+            , div [ class "endgame-buttons" ]
+                [ button
+                    [ class "rematch"
+                    , onClick <|
+                        Main.RoomMsg <|
+                            Room.ConnectedMsg <|
+                                Connected.GameStateMsg <|
+                                    GameState.PlayStateMsg <|
+                                        PlayingOnly Rematch
+                    , disabled isDisabled
+                    ]
+                    [ text "Rematch" ]
+                , watchReplayButton
                 ]
-                [ text "Rematch" ]
-            , watchReplayButton
+            , experienceDisplay
             ]
         ]

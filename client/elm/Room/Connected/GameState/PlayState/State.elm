@@ -68,6 +68,14 @@ update msg state mode flags =
                 _ ->
                     ( state, Cmd.none )
 
+        ExperienceChange xp ->
+            case state of
+                Ended ended ->
+                    ( Ended { ended | xp = Just xp }, Cmd.none )
+
+                _ ->
+                    ( state, Cmd.none )
+
 
 updatePlayingOnly : PlayingOnly -> PlayState -> Mode.Mode -> Flags -> ( PlayState, Cmd Main.Msg )
 updatePlayingOnly msg state mode flags =
