@@ -1,6 +1,7 @@
 module PlayState.Types exposing (PlayState(..))
 
 import Game.Types as Game
+import Stats exposing (StatChange)
 import WhichPlayer.Types exposing (WhichPlayer)
 
 
@@ -10,5 +11,5 @@ type PlayState
         { game : Game.Model
         , winner : Maybe WhichPlayer
         , replayId : Maybe String
-        , xp : Maybe ( Int, Int, Int, Int )
+        , xp : Maybe StatChange
         }

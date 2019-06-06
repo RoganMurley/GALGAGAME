@@ -9,10 +9,11 @@ import Html.Events exposing (onClick)
 import Main.Messages as Main
 import PlayState.Messages exposing (Msg(GotoReplay, PlayingOnly), PlayingOnly(Rematch))
 import Room.Messages as Room
+import Stats exposing (Experience, Level, StatChange)
 import WhichPlayer.Types exposing (WhichPlayer(..))
 
 
-view : Float -> Anim -> Maybe String -> Maybe ( Int, Int, Int, Int ) -> Html Main.Msg
+view : Float -> Anim -> Maybe String -> Maybe StatChange -> Html Main.Msg
 view progress anim mReplayId mXp =
     let
         ( show, endGameText, endGameClass ) =
@@ -50,16 +51,36 @@ view progress anim mReplayId mXp =
                 Nothing ->
                     button
                         [ class "replay", disabled True ]
-                        [ text "Replay" ]
+                        [ text "Watch Replay" ]
 
         experienceDisplay =
             case mXp of
-                Just ( initialXp, finalXp, initialLevel, finalLevel ) ->
+                Just { initialExperience, finalExperience, initialLevel, finalLevel, nextLevelAt } ->
+                    let
+                        levelUp : Maybe Level
+                        levelUp =
+                            if initialLevel /= finalLevel then
+                                Just finalLevel
+
+                            else
+                                Nothing
+
+                        experienceChange : Experience
+                        experienceChange =
+                            finalExperience - initialExperience
+                    in
                     div [ class "experience" ]
                         [ div []
-                            [ text <| toString initialXp ++ "xp -> " ++ toString finalXp ++ "xp" ]
+                            [ text <| "+" ++ toString experienceChange ++ "xp" ]
+                        , div [] <|
+                            case levelUp of
+                                Just _ ->
+                                    [ text <| "LEVEL UP!" ]
+
+                                Nothing ->
+                                    []
                         , div []
-                            [ text <| "lvl" ++ toString initialLevel ++ " -> lvl" ++ toString finalLevel
+                            [ text <| "Level " ++ toString finalLevel ++ " (" ++ toString finalExperience ++ "xp / " ++ toString nextLevelAt ++ "xp)"
                             ]
                         ]
 
@@ -94,7 +115,7 @@ view progress anim mReplayId mXp =
                                         PlayingOnly Rematch
                     , disabled isDisabled
                     ]
-                    [ text "Rematch" ]
+                    [ text "Play Again" ]
                 , watchReplayButton
                 ]
             , experienceDisplay
