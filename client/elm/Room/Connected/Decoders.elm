@@ -1,4 +1,4 @@
-module Connected.Decoders exposing (decodeDamageOutcome, decodeExperience, decodePlayers)
+module Connected.Decoders exposing (decodeDamageOutcome, decodePlayers)
 
 import Json.Decode as Json exposing (Decoder, index, int, maybe, string)
 
@@ -23,19 +23,5 @@ decodeDamageOutcome msg =
             Json.map2 (,)
                 (index 0 int)
                 (index 1 int)
-    in
-    Json.decodeString decoder msg
-
-
-decodeExperience : String -> Result String ( Int, Int, Int, Int )
-decodeExperience msg =
-    let
-        decoder : Decoder ( Int, Int, Int, Int )
-        decoder =
-            Json.map4 (,,,)
-                (index 0 int)
-                (index 1 int)
-                (index 2 int)
-                (index 3 int)
     in
     Json.decodeString decoder msg

@@ -2,6 +2,7 @@ module PlayState.Messages exposing (Msg(..), PlayingOnly(..), TurnOnly(..))
 
 import Card.Types exposing (Card)
 import Game.Types exposing (HoverOther, HoverSelf)
+import Stats exposing (StatChange)
 
 
 type Msg
@@ -10,7 +11,7 @@ type Msg
     | PlayingOnly PlayingOnly
     | ReplaySaved String
     | GotoReplay String
-    | ExperienceChange ( Int, Int, Int, Int )
+    | StatChange StatChange
 
 
 type PlayingOnly
