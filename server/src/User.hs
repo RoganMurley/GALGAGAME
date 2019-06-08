@@ -15,8 +15,8 @@ data User = User Auth.User | CpuUser | GuestUser
 
 getUsername :: User -> Text
 getUsername (User user) = Auth.userUsername user
-getUsername CpuUser     = "CPU"
-getUsername GuestUser   = "Guest"
+getUsername CpuUser     = "cpu"
+getUsername GuestUser   = "guest"
 
 
 getUserFromToken :: Maybe Auth.Token -> App User
