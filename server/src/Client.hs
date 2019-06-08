@@ -5,7 +5,7 @@ import Control.Monad.IO.Class (liftIO)
 import Data.Aeson (ToJSON(..))
 import Data.Text (Text)
 import Network.WebSockets (Connection, receiveData, sendTextData)
-import User (User(..), getUsername)
+import User (User(..), getQueryUsername, getUsername)
 
 
 data ClientConnection =
@@ -47,6 +47,10 @@ connection = client_connection
 
 guid :: Client -> Text
 guid = client_guid
+
+
+queryUsername :: Client -> Maybe Text
+queryUsername = getQueryUsername . client_user
 
 
 send :: Text -> Client -> App ()

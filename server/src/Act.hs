@@ -135,7 +135,7 @@ handleExperience :: WhichPlayer -> Room -> App ()
 handleExperience which room = do
   -- Change this to be a transaction!
   -- Save usernames all game.
-  let mUsername = Client.name <$> Room.getPlayerClient which room :: Maybe Text
+  let mUsername = Room.getPlayerClient which room >>= Client.queryUsername :: Maybe Text
   case mUsername of
     Just username -> do
       initialXp <- Stats.load username
