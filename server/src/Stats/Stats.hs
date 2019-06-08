@@ -79,3 +79,19 @@ statChange xp delta = StatChange
   }
   where
     finalXp = xp + delta :: Experience
+
+legalCharacters :: Level -> [String]
+legalCharacters 0     = []
+legalCharacters level =
+  case characterUnlockedAtLevel level of
+    Just character ->
+      character : otherCharacters
+    Nothing ->
+      otherCharacters
+  where
+    otherCharacters :: [String]
+    otherCharacters = legalCharacters (level - 1)
+    characterUnlockedAtLevel :: Level -> Maybe String
+    characterUnlockedAtLevel 1 = Just "Catherine"
+    characterUnlockedAtLevel 2 = Just "Ophanim"
+    characterUnlockedAtLevel _ = Nothing
