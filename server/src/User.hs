@@ -19,6 +19,12 @@ getUsername CpuUser     = "cpu"
 getUsername GuestUser   = "guest"
 
 
+getQueryUsername :: User -> Maybe Text
+getQueryUsername (User user) = Just . getUsername $ User user
+getQueryUsername CpuUser     = Nothing
+getQueryUsername GuestUser   = Nothing
+
+
 getUserFromToken :: Maybe Auth.Token -> App User
 getUserFromToken mToken = do
   mUsername <- Auth.checkAuth mToken
