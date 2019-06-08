@@ -139,9 +139,10 @@ handleExperience which room = do
   case mUsername of
     Just username -> do
       initialXp <- Stats.load username
-      let xpDelta = 25
+      let xpDelta = 100
       Stats.increase username xpDelta
       let statChange = Stats.statChange initialXp xpDelta
+      liftIO $ infoM "app" $ printf "Xp change for %s: %s" username (show statChange)
       Room.sendToPlayer which (("xp:" <>) . cs . encode $ statChange) room
     Nothing -> do
       liftIO $ infoM "app" "There's nobody here to gain that sweet xp :("
