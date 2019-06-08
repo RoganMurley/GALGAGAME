@@ -54,9 +54,9 @@ getUsername which (Replay (Active.Replay _ _ ua ub) _) =
           ub
   in
     case username of
-      "CPU" ->
+      "cpu" ->
         Nothing
-      "Guest" ->
+      "guest" ->
         Nothing
       _ ->
         Just username
