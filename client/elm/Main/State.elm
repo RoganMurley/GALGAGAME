@@ -5,12 +5,12 @@ import Audio exposing (fetchSounds, setVolume)
 import Connected.Messages as Connected
 import GameState.Messages as GameState
 import GameState.Types exposing (GameState(Started))
+import GameType
 import Http
 import Json.Decode as Json
 import Keyboard
 import Listener exposing (listen)
 import Lobby.State as Lobby
-import Lobby.Types as Lobby
 import Login.Decoders as Login
 import Login.State as Login
 import Main.Messages exposing (Msg(..))
@@ -264,16 +264,16 @@ locationUpdate model location =
             case model.room of
                 Room.Lobby { gameType, roomID } ->
                     case gameType of
-                        Lobby.CustomGame ->
+                        GameType.CustomGame ->
                             Just <| "/play/custom/" ++ roomID
 
-                        Lobby.ComputerGame ->
+                        GameType.ComputerGame ->
                             Just "/play/computer/"
 
-                        Lobby.QuickplayGame ->
+                        GameType.QuickplayGame ->
                             Just "/play/quickplay/"
 
-                        Lobby.TutorialGame ->
+                        GameType.TutorialGame ->
                             Just "/play/tutorial/"
 
                 _ ->
@@ -304,7 +304,7 @@ locationUpdate model location =
                                     Room.Lobby <|
                                         Lobby.init
                                             randomRoomID
-                                            Lobby.ComputerGame
+                                            GameType.ComputerGame
                                             Playing
                               }
                             , Lobby.skipLobbyCmd username
@@ -328,7 +328,7 @@ locationUpdate model location =
                                             Room.Lobby <|
                                                 Lobby.init
                                                     roomID
-                                                    Lobby.CustomGame
+                                                    GameType.CustomGame
                                                     Playing
                                     }
                             in
@@ -347,7 +347,7 @@ locationUpdate model location =
                                     Room.Lobby <|
                                         Lobby.init
                                             randomRoomID
-                                            Lobby.QuickplayGame
+                                            GameType.QuickplayGame
                                             Playing
                               }
                             , Lobby.skipLobbyCmd username
@@ -359,7 +359,7 @@ locationUpdate model location =
                                     Room.Lobby <|
                                         Lobby.init
                                             randomRoomID
-                                            Lobby.TutorialGame
+                                            GameType.TutorialGame
                                             Playing
                               }
                             , Lobby.skipLobbyCmd username
@@ -371,7 +371,7 @@ locationUpdate model location =
                             Room.Lobby <|
                                 Lobby.init
                                     roomID
-                                    Lobby.ComputerGame
+                                    GameType.ComputerGame
                                     Spectating
                       }
                     , Cmd.none

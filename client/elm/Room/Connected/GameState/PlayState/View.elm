@@ -3,6 +3,7 @@ module PlayState.View exposing (view)
 import Animation.State as Animation
 import Animation.Types exposing (Anim(GameEnd, NullAnim))
 import Endgame.View as Endgame
+import GameType exposing (GameType)
 import Html exposing (Html, div)
 import Main.Messages as Main
 import Main.Types exposing (Flags)
@@ -12,8 +13,8 @@ import Resolvable.State exposing (activeAnim)
 import Texture.Types as Texture
 
 
-view : PlayState -> Flags -> Texture.Model -> Html Main.Msg
-view playState { time, dimensions } textures =
+view : PlayState -> Flags -> Maybe GameType -> Texture.Model -> Html Main.Msg
+view playState { time, dimensions } gameType textures =
     let
         ( w, h ) =
             dimensions
@@ -25,7 +26,7 @@ view playState { time, dimensions } textures =
         Playing { game } ->
             div []
                 [ Model.view params game textures
-                , Endgame.view 0 NullAnim Nothing Nothing
+                , Endgame.view 0 NullAnim Nothing Nothing gameType
                 ]
 
         Ended { winner, game, replayId, xp } ->
@@ -48,5 +49,5 @@ view playState { time, dimensions } textures =
             in
             div []
                 [ Model.view params game textures
-                , Endgame.view progress endAnim replayId xp
+                , Endgame.view progress endAnim replayId xp gameType
                 ]

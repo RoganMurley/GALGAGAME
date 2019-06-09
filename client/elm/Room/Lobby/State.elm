@@ -1,7 +1,8 @@
 module Lobby.State exposing (gameTypeToString, init, receive, skipLobbyCmd, update)
 
+import GameType exposing (GameType(..))
 import Lobby.Messages exposing (Msg(..))
-import Lobby.Types exposing (GameType(..), LoginState(..), Model)
+import Lobby.Types exposing (LoginState(..), Model)
 import Main.Messages as Main
 import Mode exposing (Mode(..))
 import Navigation

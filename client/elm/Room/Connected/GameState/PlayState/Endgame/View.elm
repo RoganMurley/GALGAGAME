@@ -3,18 +3,19 @@ module Endgame.View exposing (view)
 import Animation.Types exposing (Anim(GameEnd))
 import Connected.Messages as Connected
 import GameState.Messages as GameState
+import GameType exposing (GameType(..))
 import Html exposing (Html, button, div, text)
 import Html.Attributes exposing (class, classList, disabled, style)
 import Html.Events exposing (onClick)
 import Main.Messages as Main
-import PlayState.Messages exposing (Msg(GotoReplay, PlayingOnly), PlayingOnly(Rematch))
+import PlayState.Messages exposing (Msg(GotoComputerGame, GotoReplay, PlayingOnly), PlayingOnly(Rematch))
 import Room.Messages as Room
 import Stats exposing (Experience, Level, StatChange)
 import WhichPlayer.Types exposing (WhichPlayer(..))
 
 
-view : Float -> Anim -> Maybe String -> Maybe StatChange -> Html Main.Msg
-view progress anim mReplayId mXp =
+view : Float -> Anim -> Maybe String -> Maybe StatChange -> Maybe GameType -> Html Main.Msg
+view progress anim mReplayId mXp gameType =
     let
         ( show, endGameText, endGameClass ) =
             case anim of
@@ -33,6 +34,34 @@ view progress anim mReplayId mXp =
         isDisabled =
             not show && (progress < 0.8)
 
+        rematchButton =
+            case ( gameType, anim ) of
+                ( Just TutorialGame, GameEnd (Just PlayerA) ) ->
+                    button
+                        [ class "rematch"
+                        , onClick <|
+                            Main.RoomMsg <|
+                                Room.ConnectedMsg <|
+                                    Connected.GameStateMsg <|
+                                        GameState.PlayStateMsg <|
+                                            GotoComputerGame
+                        , disabled isDisabled
+                        ]
+                        [ text "Play Again" ]
+
+                _ ->
+                    button
+                        [ class "rematch"
+                        , onClick <|
+                            Main.RoomMsg <|
+                                Room.ConnectedMsg <|
+                                    Connected.GameStateMsg <|
+                                        GameState.PlayStateMsg <|
+                                            PlayingOnly Rematch
+                        , disabled isDisabled
+                        ]
+                        [ text "Play Again" ]
+
         watchReplayButton =
             case mReplayId of
                 Just replayId ->
@@ -46,7 +75,7 @@ view progress anim mReplayId mXp =
                                             GotoReplay replayId
                         , disabled isDisabled
                         ]
-                        [ text "Replay" ]
+                        [ text "Watch Replay" ]
 
                 Nothing ->
                     button
@@ -105,17 +134,7 @@ view progress anim mReplayId mXp =
                 [ class endGameClass ]
                 [ text endGameText ]
             , div [ class "endgame-buttons" ]
-                [ button
-                    [ class "rematch"
-                    , onClick <|
-                        Main.RoomMsg <|
-                            Room.ConnectedMsg <|
-                                Connected.GameStateMsg <|
-                                    GameState.PlayStateMsg <|
-                                        PlayingOnly Rematch
-                    , disabled isDisabled
-                    ]
-                    [ text "Play Again" ]
+                [ rematchButton
                 , watchReplayButton
                 ]
             , experienceDisplay

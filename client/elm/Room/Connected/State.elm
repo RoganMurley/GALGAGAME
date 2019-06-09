@@ -8,6 +8,7 @@ import Game.Decoders exposing (decodeHoverOther)
 import GameState.Messages as GameState
 import GameState.State as GameState
 import GameState.Types exposing (GameState(..), WaitType(..))
+import GameType exposing (GameType)
 import Main.Messages as Main
 import Main.Types exposing (Flags)
 import Mode exposing (Mode(..))
@@ -17,9 +18,10 @@ import Stats exposing (decodeStatChange)
 import Util exposing (message, send, splitOnColon)
 
 
-init : Mode -> String -> Model
-init mode roomID =
+init : Mode -> GameType -> String -> Model
+init mode gameType roomID =
     { game = Waiting WaitQuickplay
+    , gameType = gameType
     , mode = mode
     , roomID = roomID
     , players = ( Nothing, Nothing )

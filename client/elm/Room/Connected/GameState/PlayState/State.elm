@@ -57,6 +57,9 @@ update msg state mode flags =
                 _ ->
                     ( state, Cmd.none )
 
+        GotoComputerGame ->
+            ( state, Navigation.load <| "/play/computer" )
+
         GotoReplay replayId ->
             ( state, Navigation.load <| "/replay/" ++ replayId )
 
