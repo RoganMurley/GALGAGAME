@@ -120,11 +120,13 @@ begin conn roomReq user state = do
   liftIO $ infoM "app" $ printf "<%s>: New connection" username
   case parseRoomReq roomReq of
     Just (RoomRequest roomName) -> do
+      liftIO $ infoM "app" $ printf "<%s>: Requesting room [%s]" username roomName
       msg <- liftIO $ WS.receiveData conn
       case parsePrefix msg of
         Nothing ->
           connectionFail conn $ printf "<%s>: Connection protocol failure" msg
         Just prefix -> do
+          liftIO $ infoM "app" $ printf "<%s>: %s" username (show prefix)
           gen <- liftIO getGen
           guid <- liftIO GUID.genText
           let scenario = makeScenario prefix
@@ -134,7 +136,8 @@ begin conn roomReq user state = do
             state
             (Client user (PlayerConnection conn) guid)
             roomVar
-    Just ReconnectRequest ->
+    Just ReconnectRequest -> do
+      liftIO $ infoM "app" $ printf "<%s>: Reconnecting" username
       return ()
     Just (PlayReplayRequest replayId) -> do
       mReplay <- Replay.Final.load replayId
@@ -282,8 +285,10 @@ play which client roomVar outcomes = do
       "reconnect:" ->
         mzero
       _ ->
-        lift $ actPlay (Command.parse (Client.name client) msg) which roomVar
+        lift $ actPlay (Command.parse (Client.name client) msg) which roomVar username
   return ()
+  where
+    username = Client.name client
 
 
 computerPlay :: WhichPlayer -> TVar Room -> App ()
@@ -300,7 +305,7 @@ computerPlay which roomVar = do
         command <- lift $ chooseComputerCommand which roomVar gen
         case command of
           Just c -> do
-            lift $ actPlay c which roomVar
+            lift $ actPlay c which roomVar "CPU"
             lift $ threadDelay 10000
           Nothing ->
             return ()
