@@ -14,8 +14,8 @@ import Stats exposing (Experience, Level, StatChange)
 import WhichPlayer.Types exposing (WhichPlayer(..))
 
 
-view : Float -> Anim -> Maybe String -> Maybe StatChange -> Maybe GameType -> Html Main.Msg
-view progress anim mReplayId mXp gameType =
+view : Float -> Anim -> Maybe String -> Maybe StatChange -> Maybe GameType -> Maybe String -> Html Main.Msg
+view progress anim mReplayId mXp gameType mUsername =
     let
         ( show, endGameText, endGameClass ) =
             case anim of
@@ -116,8 +116,15 @@ view progress anim mReplayId mXp gameType =
                 Nothing ->
                     div [] []
 
-        socialLinks =
-            div [ class "endgame-social" ] [ a [ href "https://discord.gg/SVXXej4" ] [ text "Join the community on Discord" ] ]
+        conversionLink =
+            div [ class "endgame-conversion" ]
+                [ case mUsername of
+                    Just _ ->
+                        a [ href "https://discord.gg/SVXXej4" ] [ text "Join the community on Discord" ]
+
+                    Nothing ->
+                        a [ href "/signup" ] [ text "Sign up to gain experience" ]
+                ]
     in
     div
         [ classList
@@ -141,6 +148,6 @@ view progress anim mReplayId mXp gameType =
                 , watchReplayButton
                 ]
             , experienceDisplay
-            , socialLinks
+            , conversionLink
             ]
         ]
