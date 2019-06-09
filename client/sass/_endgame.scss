@@ -40,7 +40,7 @@
     background-color: #f0f8ff;
 
     border-radius: 5px;
-    width: 180px;
+    width: 200px;
     margin: 5px;
 
     &:hover {
@@ -52,6 +52,20 @@
 
 .endgame-buttons {
   display: flex;
+}
+
+.endgame-social {
+  font-size: 16px;
+  font-weight: 900;
+  margin-top: 10px;
+
+  a:link {
+    color: cyan;
+  }
+
+  a:visited {
+    color: cyan;
+  }
 }
 
 .experience {

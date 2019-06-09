@@ -4,8 +4,8 @@ import Animation.Types exposing (Anim(GameEnd))
 import Connected.Messages as Connected
 import GameState.Messages as GameState
 import GameType exposing (GameType(..))
-import Html exposing (Html, button, div, text)
-import Html.Attributes exposing (class, classList, disabled, style)
+import Html exposing (Html, a, button, div, text)
+import Html.Attributes exposing (class, classList, disabled, href, style)
 import Html.Events exposing (onClick)
 import Main.Messages as Main
 import PlayState.Messages exposing (Msg(GotoComputerGame, GotoReplay, PlayingOnly), PlayingOnly(Rematch))
@@ -115,6 +115,9 @@ view progress anim mReplayId mXp gameType =
 
                 Nothing ->
                     div [] []
+
+        socialLinks =
+            div [ class "endgame-social" ] [ a [ href "https://discord.gg/SVXXej4" ] [ text "Join the community on Discord" ] ]
     in
     div
         [ classList
@@ -138,5 +141,6 @@ view progress anim mReplayId mXp gameType =
                 , watchReplayButton
                 ]
             , experienceDisplay
+            , socialLinks
             ]
         ]
