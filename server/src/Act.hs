@@ -57,9 +57,9 @@ roomUpdate cmd which roomVar =
           Right ((Room.setState room) <$> newState, outcomes)
 
 
-actPlay :: Command -> WhichPlayer -> TVar Room -> App ()
-actPlay cmd which roomVar = do
-  liftIO $ infoM "app" $ printf "Command: %s" (show cmd)
+actPlay :: Command -> WhichPlayer -> TVar Room -> Text -> App ()
+actPlay cmd which roomVar username = do
+  liftIO $ infoM "app" $ printf "<%s>: %s" username (show cmd)
   case trans cmd of
     Just command -> do
       (room, updated) <- liftIO $ atomically $ roomUpdate command which roomVar

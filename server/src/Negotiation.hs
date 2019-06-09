@@ -46,3 +46,4 @@ data Prefix =
   | PrefixCpu
   | PrefixTutorial
   | PrefixQueue
+  deriving Show
