@@ -131,15 +131,15 @@ resolveRoomClients res initial final exclude room = do
     mirrorOutcome = Outcome.Resolve (mirror <$> res) (mirror initial) (mirror final) (other <$> exclude)
 
 
-handleExperience :: WhichPlayer -> Room -> App ()
-handleExperience which room = do
+handleExperience :: WhichPlayer -> Maybe WhichPlayer -> Room -> App ()
+handleExperience which winner room = do
   -- Change this to be a transaction!
   -- Save usernames all game.
   let mUsername = Room.getPlayerClient which room >>= Client.queryUsername :: Maybe Text
   case mUsername of
     Just username -> do
       initialXp <- Stats.load username
-      let xpDelta = 100
+      let xpDelta = if Just which == winner then 100 else 70
       Stats.increase username xpDelta
       let statChange = Stats.statChange initialXp xpDelta
       liftIO $ infoM "app" $ printf "Xp change for %s: %s" username (show statChange)
@@ -163,6 +163,6 @@ actOutcome room (Outcome.SaveReplay replay) = do
   liftIO $ infoM "app" "Saving replay..."
   replayId <- Replay.Final.save replay
   Room.broadcast ("replaySaved:" <> (cs . show $ replayId)) room
-actOutcome room Outcome.HandleExperience = do
-  handleExperience PlayerA room
-  handleExperience PlayerB room
+actOutcome room (Outcome.HandleExperience winner) = do
+  handleExperience PlayerA winner room
+  handleExperience PlayerB winner room

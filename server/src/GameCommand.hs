@@ -106,16 +106,17 @@ concede :: WhichPlayer -> GameState -> Either Err (Maybe GameState, [Outcome])
 concede which (Started (Playing model replay)) =
   let
     gen = Alpha.evalI model Alpha.getGen :: Gen
-    res = [resolveAnim $ GameEnd . Just $ other which] :: [ResolveData]
+    winner = Just $ other which :: Maybe WhichPlayer
+    res = [resolveAnim $ GameEnd winner] :: [ResolveData]
     newReplay = Active.add replay res :: Active.Replay
-    newPlayState = Ended (Just (other which)) model newReplay gen :: PlayState
+    newPlayState = Ended winner model newReplay gen :: PlayState
     finalReplay = Final.finalise newReplay newPlayState :: Final.Replay
   in
     Right (
       Just . Started $ newPlayState
     , [
         Outcome.Encodable $ Outcome.Resolve res model newPlayState Nothing
-      , Outcome.HandleExperience
+      , Outcome.HandleExperience winner
       , Outcome.SaveReplay finalReplay
       ]
     )
@@ -236,7 +237,7 @@ endTurn which model replay
                 Just newState,
                 [
                   Outcome.Encodable $ Outcome.Resolve res model newPlayState Nothing
-                , Outcome.HandleExperience
+                , Outcome.HandleExperience w
                 , Outcome.SaveReplay finalReplay
                 ]
               )
