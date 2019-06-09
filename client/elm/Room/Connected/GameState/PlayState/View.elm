@@ -14,7 +14,7 @@ import Texture.Types as Texture
 
 
 view : PlayState -> Flags -> Maybe GameType -> Texture.Model -> Html Main.Msg
-view playState { time, dimensions } gameType textures =
+view playState { time, dimensions, username } gameType textures =
     let
         ( w, h ) =
             dimensions
@@ -26,7 +26,7 @@ view playState { time, dimensions } gameType textures =
         Playing { game } ->
             div []
                 [ Model.view params game textures
-                , Endgame.view 0 NullAnim Nothing Nothing gameType
+                , Endgame.view 0 NullAnim Nothing Nothing gameType username
                 ]
 
         Ended { winner, game, replayId, xp } ->
@@ -49,5 +49,5 @@ view playState { time, dimensions } gameType textures =
             in
             div []
                 [ Model.view params game textures
-                , Endgame.view progress endAnim replayId xp gameType
+                , Endgame.view progress endAnim replayId xp gameType username
                 ]
