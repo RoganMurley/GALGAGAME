@@ -1,5 +1,6 @@
-module Lobby.Types exposing (GameType(..), LoginState(..), Model)
+module Lobby.Types exposing (LoginState(..), Model)
 
+import GameType exposing (GameType)
 import Mode exposing (Mode(..))
 
 
@@ -10,13 +11,6 @@ type alias Model =
     , mode : Mode
     , login : LoginState
     }
-
-
-type GameType
-    = CustomGame
-    | ComputerGame
-    | QuickplayGame
-    | TutorialGame
 
 
 type LoginState

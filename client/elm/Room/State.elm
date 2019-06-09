@@ -1,8 +1,8 @@
 module Room.State exposing (init, receive, tick, update)
 
 import Connected.State as Connected
+import GameType
 import Lobby.State as Lobby
-import Lobby.Types as Lobby
 import Login.State as Login
 import Main.Messages as Main
 import Main.Types exposing (Flags)
@@ -89,18 +89,18 @@ update model msg flags =
         StartGame mode ->
             case model of
                 Lobby { gameType, roomID } ->
-                    ( Connected <| Connected.init mode roomID
+                    ( Connected <| Connected.init mode gameType roomID
                     , case gameType of
-                        Lobby.ComputerGame ->
+                        GameType.ComputerGame ->
                             Cmd.none
 
-                        Lobby.CustomGame ->
+                        GameType.CustomGame ->
                             newUrl <| "/play/custom/" ++ roomID
 
-                        Lobby.QuickplayGame ->
+                        GameType.QuickplayGame ->
                             Cmd.none
 
-                        Lobby.TutorialGame ->
+                        GameType.TutorialGame ->
                             Cmd.none
                     )
 

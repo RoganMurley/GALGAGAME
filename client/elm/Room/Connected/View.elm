@@ -14,10 +14,10 @@ import Texture.Types as Texture
 
 
 view : Model -> Flags -> Texture.Model -> Html Msg
-view { game, roomID, players } flags textures =
+view { game, gameType, roomID, players } flags textures =
     div []
         [ playersView players
-        , GameState.view game roomID flags textures
+        , GameState.view game roomID flags (Just gameType) textures
         ]
 
 

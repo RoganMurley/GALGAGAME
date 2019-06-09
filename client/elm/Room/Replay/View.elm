@@ -20,10 +20,10 @@ view { replay } flags textures =
         case replay of
             Just { state, usernamePa, usernamePb } ->
                 [ playersView ( Just usernamePa, Just usernamePb )
-                , GameState.view (Started state) "" flags textures
+                , GameState.view (Started state) "" flags Nothing textures
                 ]
 
             Nothing ->
                 [ Background.view flags textures Finding
-                , Endgame.view 0.0 NullAnim Nothing Nothing
+                , Endgame.view 0.0 NullAnim Nothing Nothing Nothing
                 ]

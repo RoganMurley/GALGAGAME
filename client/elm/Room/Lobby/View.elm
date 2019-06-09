@@ -5,7 +5,7 @@ import Html.Attributes exposing (class)
 import Html.Events exposing (onClick)
 import Lobby.Messages exposing (Msg(..))
 import Lobby.State exposing (gameTypeToString)
-import Lobby.Types exposing (GameType(..), Model)
+import Lobby.Types exposing (Model)
 
 
 view : Model -> Html Msg

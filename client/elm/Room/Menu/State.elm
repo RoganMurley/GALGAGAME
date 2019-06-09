@@ -1,6 +1,6 @@
 module Menu.State exposing (update)
 
-import Lobby.Types as Lobby
+import GameType
 import Main.Messages as Main
 import Menu.Messages exposing (Msg(..))
 import Navigation
@@ -14,16 +14,16 @@ update msg =
                 url : String
                 url =
                     case gameType of
-                        Lobby.ComputerGame ->
+                        GameType.ComputerGame ->
                             "computer"
 
-                        Lobby.CustomGame ->
+                        GameType.CustomGame ->
                             "custom"
 
-                        Lobby.QuickplayGame ->
+                        GameType.QuickplayGame ->
                             "quickplay"
 
-                        Lobby.TutorialGame ->
+                        GameType.TutorialGame ->
                             "tutorial"
             in
             Navigation.newUrl <| "/play/" ++ url

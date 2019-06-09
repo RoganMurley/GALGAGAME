@@ -6,6 +6,7 @@ import CharacterSelect.View as CharacterSelect
 import Connected.Messages as Connected
 import GameState.Messages exposing (Msg(..))
 import GameState.Types exposing (GameState(..), WaitType(..))
+import GameType exposing (GameType)
 import Html exposing (Html, button, div, input, text)
 import Html.Attributes exposing (class, id, readonly, type_, value)
 import Html.Events exposing (onClick)
@@ -16,8 +17,8 @@ import Room.Messages as Room
 import Texture.Types as Texture
 
 
-view : GameState -> String -> Flags -> Texture.Model -> Html Main.Msg
-view state roomID flags textures =
+view : GameState -> String -> Flags -> Maybe GameType -> Texture.Model -> Html Main.Msg
+view state roomID flags gameType textures =
     case state of
         Waiting waitType ->
             div [] [ waitingView waitType flags textures roomID ]
@@ -43,7 +44,7 @@ view state roomID flags textures =
                 CharacterSelect.view params model textures
 
         Started playState ->
-            PlayState.view playState flags textures
+            PlayState.view playState flags gameType textures
 
 
 waitingView : WaitType -> Flags -> Texture.Model -> String -> Html Main.Msg

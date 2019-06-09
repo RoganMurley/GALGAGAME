@@ -11,6 +11,7 @@ type Msg
     | PlayingOnly PlayingOnly
     | ReplaySaved String
     | GotoReplay String
+    | GotoComputerGame
     | StatChange StatChange
 
 

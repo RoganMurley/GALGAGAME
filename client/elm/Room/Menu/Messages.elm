@@ -1,7 +1,7 @@
 module Menu.Messages exposing (Msg(..))
 
-import Lobby.Types as Lobby
+import GameType exposing (GameType)
 
 
 type Msg
-    = Start Lobby.GameType
+    = Start GameType
