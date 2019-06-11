@@ -25,6 +25,7 @@ playRoute =
                 , map (CustomPlay Nothing) <| s "custom"
                 , map QuickPlay <| s "quickplay"
                 , map TutorialPlay <| s "tutorial"
+                , map DailyPlay <| s "daily"
                 ]
 
 

@@ -15,3 +15,4 @@ type PlayRoute
     | ComputerPlay
     | QuickPlay
     | TutorialPlay
+    | DailyPlay

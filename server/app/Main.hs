@@ -33,6 +33,7 @@ import Outcome (Outcome)
 import Player (WhichPlayer(..), other)
 import Scenario (Scenario(..))
 import Start (startProgram, tutorialStartProgram)
+import Stats.Stats (Experience)
 import User (User(..), getUsername, getUserFromToken)
 import Util (Gen, getGen, shuffle)
 
@@ -155,6 +156,7 @@ beginPrefix PrefixPlay     = beginPlay
 beginPrefix PrefixSpec     = beginSpec
 beginPrefix PrefixCpu      = beginComputer
 beginPrefix PrefixTutorial = beginComputer
+beginPrefix PrefixDaily    = beginComputer
 beginPrefix PrefixQueue    = beginQueue
 
 
@@ -170,6 +172,8 @@ makeScenario prefix =
   , scenario_charactersPa = characters
   , scenario_charactersPb = characters
   , scenario_prog = prog
+  , scenario_xpWin = xpWin
+  , scenario_xpLoss = xpLoss
   }
   where
     characters :: Maybe Characters.FinalSelection
@@ -177,6 +181,8 @@ makeScenario prefix =
       case prefix of
         PrefixTutorial ->
           Just (Characters.breaker, Characters.shielder, Characters.striker)
+        PrefixDaily ->
+          Just (Characters.shielder, Characters.balancer, Characters.balancer)
         _ ->
           Nothing
     turn :: Turn
@@ -185,6 +191,8 @@ makeScenario prefix =
         PrefixCpu ->
           PlayerB
         PrefixTutorial ->
+          PlayerB
+        PrefixDaily ->
           PlayerB
         _ ->
           PlayerA
@@ -195,6 +203,15 @@ makeScenario prefix =
           tutorialStartProgram turn
         _ ->
           startProgram turn
+    xpWin :: Experience
+    xpWin =
+      case prefix of
+        PrefixDaily ->
+          200
+        _ ->
+          100
+    xpLoss :: Experience
+    xpLoss = 70
 
 
 beginPlay :: TVar Server.State -> Client -> TVar Room -> App ()
@@ -217,7 +234,6 @@ beginSpec state client roomVar = do
   finally
     (spectate client roomVar)
     (disconnect client roomVar state)
-
 
 beginComputer :: TVar Server.State -> Client -> TVar Room -> App ()
 beginComputer state client roomVar = do
