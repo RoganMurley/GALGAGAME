@@ -25,5 +25,8 @@ update msg =
 
                         GameType.TutorialGame ->
                             "tutorial"
+
+                        GameType.DailyGame ->
+                            "daily"
             in
             Navigation.newUrl <| "/play/" ++ url

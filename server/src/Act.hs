@@ -15,6 +15,7 @@ import Mirror (mirror)
 import Model (Model)
 import Player (WhichPlayer(..), other)
 import ResolveData (ResolveData(..))
+import Scenario (Scenario(..))
 import System.Log.Logger (infoM, warningM)
 import Text.Printf (printf)
 import Util (Err, modReturnTVar)
@@ -135,11 +136,12 @@ handleExperience :: WhichPlayer -> Maybe WhichPlayer -> Room -> App ()
 handleExperience which winner room = do
   -- Change this to be a transaction!
   -- Save usernames all game.
+  let scenario = Room.getScenario room
   let mUsername = Room.getPlayerClient which room >>= Client.queryUsername :: Maybe Text
   case mUsername of
     Just username -> do
       initialXp <- Stats.load username
-      let xpDelta = if Just which == winner then 100 else 70
+      let xpDelta = if Just which == winner then scenario_xpWin scenario else scenario_xpLoss scenario
       Stats.increase username xpDelta
       let statChange = Stats.statChange initialXp xpDelta
       liftIO $ infoM "app" $ printf "Xp change for %s: %s" username (show statChange)

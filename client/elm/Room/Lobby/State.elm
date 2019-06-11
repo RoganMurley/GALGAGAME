@@ -42,6 +42,9 @@ update ({ gameType, mode } as model) msg =
                                 TutorialGame ->
                                     "playTutorial:"
 
+                                DailyGame ->
+                                    "playDaily:"
+
                         Spectating ->
                             "spectate:"
             in
@@ -109,6 +112,9 @@ gameTypeToString gameType =
 
         TutorialGame ->
             "Tutorial"
+
+        DailyGame ->
+            "Daily Challenge"
 
 
 skipLobbyCmd : Maybe String -> Cmd Main.Msg

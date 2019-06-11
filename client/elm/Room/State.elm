@@ -102,6 +102,9 @@ update model msg flags =
 
                         GameType.TutorialGame ->
                             Cmd.none
+
+                        GameType.DailyGame ->
+                            Cmd.none
                     )
 
                 _ ->
