@@ -20,7 +20,7 @@ jobs:
       - run:
           name: Setup Server
           command: cd server &&
-                   sudo curl -sSL https://get.haskellstack.org/ | sh &&
+                   sudo curl -sSL https://raw.githubusercontent.com/commercialhaskell/stack/40cf7b37526b86d1676da82167ea8758a854953b/etc/scripts/get-stack.sh | sh &&
                    stack docker pull &&
                    stack setup &&
                    stack install &&
