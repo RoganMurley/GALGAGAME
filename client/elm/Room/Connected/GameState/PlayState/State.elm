@@ -101,7 +101,7 @@ updatePlayingOnly msg state mode flags =
                         sound =
                             case Game.getHoverIndex hover of
                                 Just _ ->
-                                    playSound "/sfx/hover.wav"
+                                    playSound "/sfx/hover.mp3"
 
                                 Nothing ->
                                     Cmd.none
@@ -160,7 +160,7 @@ updateTurnOnly msg state flags =
                         in
                         newState
                             ! [ send flags "end:"
-                              , playSound "/sfx/endTurn.wav"
+                              , playSound "/sfx/endTurn.mp3"
                               ]
 
                     PlayCard card index ->
