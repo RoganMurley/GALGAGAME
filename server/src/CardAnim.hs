@@ -15,6 +15,7 @@ data CardAnim
   | Heal WhichPlayer Life
   | Draw WhichPlayer
   | Bite WhichPlayer Life
+  | Curse WhichPlayer Life
   | Reflect
   | Reverse
   | Hubris
@@ -56,6 +57,12 @@ instance ToJSON CardAnim where
   toJSON (Bite w d) =
     object
     [ "name"   .= ("bite" :: Text)
+    , "player" .= w
+    , "damage" .= d
+    ]
+  toJSON (Curse w d) =
+    object
+    [ "name"   .= ("curse" :: Text)
     , "player" .= w
     , "damage" .= d
     ]
@@ -139,6 +146,7 @@ instance Mirror CardAnim where
   mirror (Heal w h)        = Heal (other w) h
   mirror (Draw w)          = Draw  (other w)
   mirror (Bite w d)        = Bite (other w) d
+  mirror (Curse w d)       = Curse (other w) d
   mirror Reflect           = Reflect
   mirror Confound          = Confound
   mirror Reverse           = Reverse
@@ -174,6 +182,9 @@ cardAnimDamage anim =
           wrap w (-d)
 
       Bite w d ->
+          wrap w (-d)
+
+      Curse w d ->
           wrap w (-d)
 
       _ ->

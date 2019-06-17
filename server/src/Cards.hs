@@ -10,7 +10,7 @@ import Util (shuffle)
 
 import qualified DSL.Alpha as Alpha
 import qualified DSL.Beta as Beta
-import DSL.Beta hiding (confound, hubris, reflect)
+import DSL.Beta hiding (confound, curse, hubris, reflect)
 
 
 -- Striker
@@ -108,8 +108,8 @@ curse =
       let dmg = 15
       paLife <- getLife w
       pbLife <- getLife (other w)
-      when (paLife <= pbLife) (slash dmg w)
-      when (paLife >= pbLife) (slash dmg (other w))
+      when (paLife <= pbLife) (Beta.curse dmg w)
+      when (paLife >= pbLife) (Beta.curse dmg (other w))
 
 
 bless :: Card
