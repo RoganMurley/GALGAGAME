@@ -23,6 +23,9 @@ decoder =
                 "heal" ->
                     healDecoder
 
+                "curse" ->
+                    curseDecoder
+
                 "draw" ->
                     drawDecoder
 
@@ -114,6 +117,13 @@ drawDecoder =
 biteDecoder : Decoder Anim
 biteDecoder =
     Json.map2 Bite
+        (field "player" WhichPlayer.decoder)
+        (field "damage" int)
+
+
+curseDecoder : Decoder Anim
+curseDecoder =
+    Json.map2 Curse
         (field "player" WhichPlayer.decoder)
         (field "damage" int)
 

@@ -69,6 +69,7 @@ sounds =
     , "heal.mp3"
     , "bounce.mp3"
     , "bite.mp3"
+    , "curse.mp3"
     , "reverse.mp3"
     , "playCard.mp3"
     , "transmute.mp3"

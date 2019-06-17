@@ -60,6 +60,9 @@ animSfx anim =
         Bite _ _ ->
             Just "bite.mp3"
 
+        Curse _ _ ->
+            Just "curse.mp3"
+
         Reverse _ ->
             Just "reverse.mp3"
 

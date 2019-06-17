@@ -11,6 +11,7 @@ type Anim
     | Heal WhichPlayer Int
     | Draw WhichPlayer
     | Bite WhichPlayer Int
+    | Curse WhichPlayer Int
     | Reflect WhichPlayer
     | Reverse WhichPlayer
     | Hubris WhichPlayer

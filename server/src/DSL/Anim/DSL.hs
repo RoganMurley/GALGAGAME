@@ -16,6 +16,7 @@ data DSL a
   | Heal WhichPlayer Life a
   | Draw WhichPlayer a
   | Bite WhichPlayer Life a
+  | Curse WhichPlayer Life a
   | Hubris a
   | Reflect a
   | Confound a
