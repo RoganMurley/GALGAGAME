@@ -55,16 +55,16 @@ animSfx anim =
             Just "heal.mp3"
 
         Draw _ ->
-            Just "draw.wav"
+            Just "draw.mp3"
 
         Bite _ _ ->
-            Just "bite.wav"
+            Just "bite.mp3"
 
         Reverse _ ->
             Just "reverse.mp3"
 
         Play _ _ _ ->
-            Just "playCard.wav"
+            Just "playCard.mp3"
 
         Transmute _ _ _ ->
             Just "transmute.mp3"
@@ -78,16 +78,19 @@ animSfx anim =
         GameEnd winner ->
             case winner of
                 Just PlayerA ->
-                    Just "victory.wav"
+                    Just "victory.mp3"
 
                 Just PlayerB ->
                     Just "defeat.mp3"
 
                 Nothing ->
-                    Just "draw.wav"
+                    Just "draw.mp3"
 
         HandFullPass ->
-            Just "evil_tick.mp3"
+            Just "evilTick.mp3"
+
+        Bounce _ ->
+            Just "bounce.mp3"
 
         _ ->
             Nothing

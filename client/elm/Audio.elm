@@ -64,16 +64,19 @@ fetchSounds =
 
 sounds : List String
 sounds =
-    [ "draw.wav"
+    [ "draw.mp3"
     , "damage.mp3"
     , "heal.mp3"
-    , "bite.wav"
+    , "bounce.mp3"
+    , "bite.mp3"
     , "reverse.mp3"
-    , "playCard.wav"
+    , "playCard.mp3"
     , "transmute.mp3"
     , "obliterate.mp3"
     , "burn.mp3"
-    , "evil_tick.mp3"
-    , "victory.wav"
+    , "evilTick.mp3"
+    , "victory.mp3"
     , "defeat.mp3"
+    , "endTurn.mp3"
+    , "hover.mp3"
     ]

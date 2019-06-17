@@ -93,7 +93,7 @@ receive ({ mode } as model) msg flags =
                     in
                     { model | game = newGame }
                         ! [ cmd
-                          , playSound "/sfx/hover.wav"
+                          , playSound "/sfx/hover.mp3"
                           ]
 
                 Err err ->
