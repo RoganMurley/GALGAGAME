@@ -13,9 +13,10 @@ import Main.Messages as Main
 import Main.Types exposing (Flags)
 import Mode exposing (Mode(..))
 import PlayState.Messages as PlayState
+import Ports exposing (websocketSend)
 import Settings.Messages as Settings
 import Stats exposing (decodeStatChange)
-import Util exposing (message, send, splitOnColon)
+import Util exposing (message, splitOnColon)
 
 
 init : Mode -> GameType -> String -> Model
@@ -29,13 +30,13 @@ init mode gameType roomID =
     }
 
 
-update : Flags -> Msg -> Model -> ( Model, Cmd Main.Msg )
-update flags msg ({ game, mode } as model) =
+update : Msg -> Model -> ( Model, Cmd Main.Msg )
+update msg ({ game, mode } as model) =
     case msg of
         GameStateMsg gameMsg ->
             let
                 ( newGame, cmd ) =
-                    GameState.update gameMsg game mode flags
+                    GameState.update gameMsg game mode
             in
             ( { model | game = newGame }, cmd )
 
@@ -44,7 +45,7 @@ update flags msg ({ game, mode } as model) =
                 ! [ message <|
                         Main.SettingsMsg <|
                             Settings.CloseSettings
-                  , send flags "concede:"
+                  , websocketSend "concede:"
                   ]
 
 
@@ -60,8 +61,8 @@ tick flags model dt =
     ( { model | game = game, tick = newTick }, Cmd.map GameStateMsg msg )
 
 
-receive : Model -> String -> Flags -> ( Model, Cmd Main.Msg )
-receive ({ mode } as model) msg flags =
+receive : Model -> String -> ( Model, Cmd Main.Msg )
+receive ({ mode } as model) msg =
     let
         ( command, content ) =
             splitOnColon msg
@@ -74,7 +75,6 @@ receive ({ mode } as model) msg flags =
                         (GameState.Sync content)
                         model.game
                         mode
-                        flags
             in
             ( { model | game = newGame }, cmd )
 
@@ -89,7 +89,6 @@ receive ({ mode } as model) msg flags =
                                 )
                                 model.game
                                 mode
-                                flags
                     in
                     { model | game = newGame }
                         ! [ cmd
@@ -112,7 +111,6 @@ receive ({ mode } as model) msg flags =
                                 )
                                 model.game
                                 mode
-                                flags
                     in
                     ( { model | game = newGame }, cmd )
 
@@ -128,7 +126,6 @@ receive ({ mode } as model) msg flags =
                         (GameState.ResolveOutcome content)
                         model.game
                         mode
-                        flags
             in
             ( { model | game = newGame }, cmd )
 
@@ -156,7 +153,6 @@ receive ({ mode } as model) msg flags =
                         )
                         model.game
                         mode
-                        flags
             in
             ( { model | game = newGame }, cmd )
 
@@ -171,7 +167,6 @@ receive ({ mode } as model) msg flags =
                                 )
                                 model.game
                                 mode
-                                flags
                     in
                     ( { model | game = newGame }, cmd )
 

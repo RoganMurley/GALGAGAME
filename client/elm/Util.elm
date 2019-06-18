@@ -1,4 +1,4 @@
-module Util exposing (authLocation, interp, interp2D, interpFloat, message, portProtocol, px, send, splitOnColon, to3d, unsafeForceDecode, websocketAddress, zip)
+module Util exposing (authLocation, interp, interp2D, interpFloat, message, portProtocol, px, splitOnColon, to3d, unsafeForceDecode, zip)
 
 import Json.Decode as Json
 import Main.Types exposing (Flags)
@@ -6,7 +6,6 @@ import Math.Vector2 exposing (Vec2)
 import Math.Vector3 exposing (Vec3, vec3)
 import Regex exposing (HowMany(AtMost), regex, split)
 import Task
-import WebSocket
 
 
 px : n -> String
@@ -29,19 +28,9 @@ portProtocol httpPort =
             ":" ++ httpPort
 
 
-websocketAddress : Flags -> String
-websocketAddress { hostname, httpPort } =
-    "wss://" ++ hostname ++ portProtocol httpPort ++ "/game/"
-
-
 authLocation : Flags -> String
 authLocation { hostname, httpPort } =
     "https://" ++ hostname ++ portProtocol httpPort ++ "/auth"
-
-
-send : Flags -> String -> Cmd msg
-send flags =
-    WebSocket.send <| websocketAddress flags
 
 
 splitOnColon : String -> ( String, String )

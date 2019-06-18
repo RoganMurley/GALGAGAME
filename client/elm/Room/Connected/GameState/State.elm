@@ -12,8 +12,8 @@ import PlayState.State as PlayState
 import PlayState.Types exposing (PlayState)
 
 
-update : Msg -> GameState -> Mode -> Flags -> ( GameState, Cmd Main.Msg )
-update msg state mode flags =
+update : Msg -> GameState -> Mode -> ( GameState, Cmd Main.Msg )
+update msg state mode =
     case msg of
         Mouse pos ->
             case state of
@@ -28,7 +28,7 @@ update msg state mode flags =
                 Started playState ->
                     let
                         ( newPlayState, cmd ) =
-                            PlayState.mouseClick mode flags pos playState
+                            PlayState.mouseClick mode pos playState
                     in
                     ( Started newPlayState, cmd )
 
@@ -40,7 +40,7 @@ update msg state mode flags =
                 Started playState ->
                     let
                         ( newPlayState, cmd ) =
-                            PlayState.update playStateMsg playState mode flags
+                            PlayState.update playStateMsg playState mode
                     in
                     ( Started newPlayState, cmd )
 

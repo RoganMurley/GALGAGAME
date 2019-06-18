@@ -2,9 +2,12 @@
 
 var params = new URLSearchParams(window.location.search);
 var embedElement = document.getElementById('elm');
+var hostname = window.location.hostname;
+var httpPort = window.location.port;
+var portProtocol = httpPort ?  ":" + httpPort : "";
 var app = Elm.Main.embed(embedElement, {
-  hostname: window.location.hostname,
-  httpPort: window.location.port,
+  hostname: hostname,
+  httpPort: httpPort,
   seed: new Date().getTime(),
   dimensions: [ window.innerWidth, window.innerHeight ],
   time: 0,
@@ -113,3 +116,15 @@ window.requestFullscreen = function () {
     element.msRequestFullscreen();
   }
 }
+
+// Websockets
+var websocketAddress = "wss://" + hostname + portProtocol + "/game/";
+var socket = new WebSocket(websocketAddress);
+
+app.ports.websocketSend.subscribe(function (input) {
+  socket.send(input);
+});
+
+socket.addEventListener('message', function (event) {
+  app.ports.websocketListen.send(event.data);
+});

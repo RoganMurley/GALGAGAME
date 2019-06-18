@@ -1,4 +1,4 @@
-module PlayState.State exposing (carry, get, map, mouseClick, mouseMove, resolveOutcomeStr, tick, update, updatePlayingOnly, updateTurnOnly)
+module PlayState.State exposing (carry, get, map, mouseClick, mouseMove, resolveOutcomeStr, tick, update)
 
 import Animation.Types exposing (Anim(HandFullPass, Play, Windup))
 import Audio exposing (playSound)
@@ -20,18 +20,19 @@ import Navigation
 import PlayState.Decoders as PlayState
 import PlayState.Messages exposing (Msg(..), PlayingOnly(..), TurnOnly(..))
 import PlayState.Types as PlayState exposing (PlayState(..))
+import Ports exposing (websocketSend)
 import Resolvable.Decoders
 import Resolvable.State as Resolvable
 import Resolvable.Types as Resolvable
-import Util exposing (message, send, unsafeForceDecode)
+import Util exposing (message, unsafeForceDecode)
 import WhichPlayer.Types exposing (WhichPlayer(..))
 
 
-update : Msg -> PlayState -> Mode -> Flags -> ( PlayState, Cmd Main.Msg )
-update msg state mode flags =
+update : Msg -> PlayState -> Mode -> ( PlayState, Cmd Main.Msg )
+update msg state mode =
     case msg of
         PlayingOnly playingOnly ->
-            updatePlayingOnly playingOnly state mode flags
+            updatePlayingOnly playingOnly state mode
 
         HoverOtherOutcome otherHover ->
             case state of
@@ -80,8 +81,8 @@ update msg state mode flags =
                     ( state, Cmd.none )
 
 
-updatePlayingOnly : PlayingOnly -> PlayState -> Mode.Mode -> Flags -> ( PlayState, Cmd Main.Msg )
-updatePlayingOnly msg state mode flags =
+updatePlayingOnly : PlayingOnly -> PlayState -> Mode.Mode -> ( PlayState, Cmd Main.Msg )
+updatePlayingOnly msg state mode =
     case mode of
         Mode.Spectating ->
             ( state, Cmd.none )
@@ -91,7 +92,7 @@ updatePlayingOnly msg state mode flags =
                 Rematch ->
                     case state of
                         Ended _ ->
-                            ( state, send flags "rematch:" )
+                            ( state, websocketSend "rematch:" )
 
                         _ ->
                             ( state, Cmd.none )
@@ -142,11 +143,11 @@ updatePlayingOnly msg state mode flags =
                             state ! []
 
                 TurnOnly turnOnly ->
-                    updateTurnOnly turnOnly state flags
+                    updateTurnOnly turnOnly state
 
 
-updateTurnOnly : TurnOnly -> PlayState -> Flags -> ( PlayState, Cmd Main.Msg )
-updateTurnOnly msg state flags =
+updateTurnOnly : TurnOnly -> PlayState -> ( PlayState, Cmd Main.Msg )
+updateTurnOnly msg state =
     case state of
         Playing { game } ->
             if game.res.final.turn == PlayerA then
@@ -159,7 +160,7 @@ updateTurnOnly msg state flags =
                                 Playing { game = { game | passed = True } }
                         in
                         newState
-                            ! [ send flags "end:"
+                            ! [ websocketSend "end:"
                               , playSound "/sfx/endTurn.mp3"
                               ]
 
@@ -205,7 +206,7 @@ updateTurnOnly msg state flags =
                                 Playing { game = Game.gameInit final }
                         in
                         newState
-                            ! [ send flags <| "play:" ++ toString index
+                            ! [ websocketSend <| "play:" ++ toString index
                               , playSound "/sfx/playCard.wav"
                               ]
 
@@ -344,8 +345,8 @@ mouseMove pos state =
         state
 
 
-mouseClick : Mode -> Flags -> Position -> PlayState -> ( PlayState, Cmd Main.Msg )
-mouseClick mode flags { x, y } state =
+mouseClick : Mode -> Position -> PlayState -> ( PlayState, Cmd Main.Msg )
+mouseClick mode { x, y } state =
     let
         pos =
             vec2 (toFloat x) (toFloat y)
@@ -364,7 +365,6 @@ mouseClick mode flags { x, y } state =
                         (PlayingOnly <| TurnOnly <| PlayCard card index)
                         state
                         mode
-                        flags
 
                 Nothing ->
                     ( state, Cmd.none )

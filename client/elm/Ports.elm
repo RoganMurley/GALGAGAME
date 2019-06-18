@@ -1,4 +1,4 @@
-port module Ports exposing (analytics, click, copyInput, godModeCommand, loadAudio, mouseMove, playAudio, reload, selectAllInput, touch, volume)
+port module Ports exposing (analytics, click, copyInput, godModeCommand, loadAudio, mouseMove, playAudio, reload, selectAllInput, touch, volume, websocketListen, websocketSend)
 
 import Mouse
 
@@ -24,6 +24,9 @@ port reload : () -> Cmd msg
 port analytics : () -> Cmd msg
 
 
+port websocketSend : String -> Cmd msg
+
+
 port click : (Mouse.Position -> msg) -> Sub msg
 
 
@@ -34,3 +37,6 @@ port touch : (Maybe Mouse.Position -> msg) -> Sub msg
 
 
 port godModeCommand : (String -> msg) -> Sub msg
+
+
+port websocketListen : (String -> msg) -> Sub msg
