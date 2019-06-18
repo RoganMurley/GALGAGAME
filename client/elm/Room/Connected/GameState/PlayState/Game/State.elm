@@ -155,9 +155,9 @@ hoverTick : Hover a -> Float -> Hover a
 hoverTick hover dt =
     let
         baseTick : HoverBase a -> HoverBase a
-        baseTick ({ tick } as base) =
-            if tick < 70 then
-                { base | tick = tick + dt }
+        baseTick base =
+            if base.tick < 70 then
+                { base | tick = base.tick + dt }
 
             else
                 { base | tick = 70 }

@@ -1,7 +1,8 @@
-module PlayState.State exposing (carry, get, map, mouseClick, mouseMove, resolveOutcomeStr, tick, update, updatePlayingOnly, updateTurnOnly)
+module PlayState.State exposing (carry, get, map, mouseClick, mouseMove, resolveOutcomeStr, tick, update)
 
-import Animation.Types exposing (Anim(HandFullPass, Play, Windup))
-import Audio exposing (playSound)
+import Animation.Types exposing (Anim(..))
+import Audio.State exposing (playSound)
+import Browser.Navigation
 import Game.Encoders
 import Game.State as Game
 import Game.Types as Game
@@ -16,22 +17,22 @@ import Model.Diff exposing (Diff, initDiff)
 import Model.State as Model
 import Model.Types exposing (Model)
 import Mouse exposing (Position)
-import Navigation
 import PlayState.Decoders as PlayState
 import PlayState.Messages exposing (Msg(..), PlayingOnly(..), TurnOnly(..))
-import PlayState.Types as PlayState exposing (PlayState(..))
-import Resolvable.Decoders
+import PlayState.Types as PlayState exposing (PlayState(..), ResolveOutcomeInput)
+import Ports exposing (websocketSend)
 import Resolvable.State as Resolvable
 import Resolvable.Types as Resolvable
-import Util exposing (message, send, unsafeForceDecode)
+import Result
+import Util exposing (message)
 import WhichPlayer.Types exposing (WhichPlayer(..))
 
 
-update : Msg -> PlayState -> Mode -> Flags -> ( PlayState, Cmd Main.Msg )
-update msg state mode flags =
+update : Msg -> PlayState -> Mode -> ( PlayState, Cmd Main.Msg )
+update msg state mode =
     case msg of
         PlayingOnly playingOnly ->
-            updatePlayingOnly playingOnly state mode flags
+            updatePlayingOnly playingOnly state mode
 
         HoverOtherOutcome otherHover ->
             case state of
@@ -58,10 +59,10 @@ update msg state mode flags =
                     ( state, Cmd.none )
 
         GotoComputerGame ->
-            ( state, Navigation.load <| "/play/computer" )
+            ( state, Browser.Navigation.load <| "/play/computer" )
 
         GotoReplay replayId ->
-            ( state, Navigation.load <| "/replay/" ++ replayId )
+            ( state, Browser.Navigation.load <| "/replay/" ++ replayId )
 
         ReplaySaved replayId ->
             case state of
@@ -80,8 +81,8 @@ update msg state mode flags =
                     ( state, Cmd.none )
 
 
-updatePlayingOnly : PlayingOnly -> PlayState -> Mode.Mode -> Flags -> ( PlayState, Cmd Main.Msg )
-updatePlayingOnly msg state mode flags =
+updatePlayingOnly : PlayingOnly -> PlayState -> Mode.Mode -> ( PlayState, Cmd Main.Msg )
+updatePlayingOnly msg state mode =
     case mode of
         Mode.Spectating ->
             ( state, Cmd.none )
@@ -91,7 +92,7 @@ updatePlayingOnly msg state mode flags =
                 Rematch ->
                     case state of
                         Ended _ ->
-                            ( state, send flags "rematch:" )
+                            ( state, websocketSend "rematch:" )
 
                         _ ->
                             ( state, Cmd.none )
@@ -106,13 +107,15 @@ updatePlayingOnly msg state mode flags =
                                 Nothing ->
                                     Cmd.none
                     in
-                    state
-                        ! [ message <|
-                                Main.Send <|
-                                    "hover:"
-                                        ++ Game.Encoders.encodeHoverSelf hover
-                          , sound
-                          ]
+                    ( state
+                    , Cmd.batch
+                        [ message <|
+                            Main.Send <|
+                                "hover:"
+                                    ++ Game.Encoders.encodeHoverSelf hover
+                        , sound
+                        ]
+                    )
 
                 IllegalPass ->
                     case state of
@@ -121,7 +124,9 @@ updatePlayingOnly msg state mode flags =
                                 -- Construct the ResolveData clientside to avoid latency.
                                 newState : PlayState
                                 newState =
-                                    resolveOutcome initial resDiffList state (Just state)
+                                    resolveOutcome
+                                        (Just state)
+                                        { initial = initial, resDiffList = resDiffList, finalState = state }
 
                                 initial : Model
                                 initial =
@@ -136,17 +141,21 @@ updatePlayingOnly msg state mode flags =
                                       }
                                     ]
                             in
-                            newState ! []
+                            ( newState
+                            , Cmd.none
+                            )
 
                         _ ->
-                            state ! []
+                            ( state
+                            , Cmd.none
+                            )
 
                 TurnOnly turnOnly ->
-                    updateTurnOnly turnOnly state flags
+                    updateTurnOnly turnOnly state
 
 
-updateTurnOnly : TurnOnly -> PlayState -> Flags -> ( PlayState, Cmd Main.Msg )
-updateTurnOnly msg state flags =
+updateTurnOnly : TurnOnly -> PlayState -> ( PlayState, Cmd Main.Msg )
+updateTurnOnly msg state =
     case state of
         Playing { game } ->
             if game.res.final.turn == PlayerA then
@@ -158,17 +167,21 @@ updateTurnOnly msg state flags =
                             newState =
                                 Playing { game = { game | passed = True } }
                         in
-                        newState
-                            ! [ send flags "end:"
-                              , playSound "/sfx/endTurn.mp3"
-                              ]
+                        ( newState
+                        , Cmd.batch
+                            [ websocketSend "end:"
+                            , playSound "/sfx/endTurn.mp3"
+                            ]
+                        )
 
                     PlayCard card index ->
                         let
                             -- Construct the ResolveData clientside to avoid latency.
                             newState : PlayState
                             newState =
-                                resolveOutcome initial resDiffList finalState (Just state)
+                                resolveOutcome
+                                    (Just state)
+                                    { initial = initial, resDiffList = resDiffList, finalState = finalState }
 
                             initial : Model
                             initial =
@@ -204,10 +217,12 @@ updateTurnOnly msg state flags =
                             finalState =
                                 Playing { game = Game.gameInit final }
                         in
-                        newState
-                            ! [ send flags <| "play:" ++ toString index
-                              , playSound "/sfx/playCard.wav"
-                              ]
+                        ( newState
+                        , Cmd.batch
+                            [ websocketSend <| "play:" ++ String.fromInt index
+                            , playSound "/sfx/playCard.wav"
+                            ]
+                        )
 
             else
                 ( state, Cmd.none )
@@ -267,30 +282,14 @@ carry old new =
         new
 
 
-resolveOutcomeStr : String -> Maybe PlayState -> PlayState
+resolveOutcomeStr : String -> Maybe PlayState -> Result Json.Error PlayState
 resolveOutcomeStr str mState =
-    let
-        resDiffList : List Resolvable.ResolveDiffData
-        resDiffList =
-            unsafeForceDecode
-                (Json.field "list" <|
-                    Json.list Resolvable.Decoders.resolveDiffData
-                )
-                str
-
-        initial : Model
-        initial =
-            unsafeForceDecode (Json.field "initial" Model.decoder) str
-
-        finalState : PlayState
-        finalState =
-            unsafeForceDecode (Json.field "final" PlayState.decoder) str
-    in
-    resolveOutcome initial resDiffList finalState mState
+    Result.map (resolveOutcome mState) <|
+        Json.decodeString PlayState.resolveOutcomeInputDecoder str
 
 
-resolveOutcome : Model -> List Resolvable.ResolveDiffData -> PlayState -> Maybe PlayState -> PlayState
-resolveOutcome initial resDiffList finalState mState =
+resolveOutcome : Maybe PlayState -> ResolveOutcomeInput -> PlayState
+resolveOutcome mState { initial, resDiffList, finalState } =
     let
         state : PlayState
         state =
@@ -344,8 +343,8 @@ mouseMove pos state =
         state
 
 
-mouseClick : Mode -> Flags -> Position -> PlayState -> ( PlayState, Cmd Main.Msg )
-mouseClick mode flags { x, y } state =
+mouseClick : Mode -> Position -> PlayState -> ( PlayState, Cmd Main.Msg )
+mouseClick mode { x, y } state =
     let
         pos =
             vec2 (toFloat x) (toFloat y)
@@ -364,7 +363,6 @@ mouseClick mode flags { x, y } state =
                         (PlayingOnly <| TurnOnly <| PlayCard card index)
                         state
                         mode
-                        flags
 
                 Nothing ->
                     ( state, Cmd.none )

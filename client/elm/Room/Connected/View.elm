@@ -1,7 +1,7 @@
 module Connected.View exposing (concedeView, playersView, specMenuView, view)
 
 import Connected.Messages as Connected
-import Connected.Types exposing (Model)
+import Connected.Types exposing (Model, Players)
 import GameState.Types exposing (GameState(..))
 import GameState.View as GameState
 import Html exposing (Html, button, div, input, text)
@@ -21,8 +21,8 @@ view { game, gameType, roomID, players } flags textures =
         ]
 
 
-playersView : ( Maybe String, Maybe String ) -> Html Msg
-playersView ( pa, pb ) =
+playersView : Players -> Html Msg
+playersView { pa, pb } =
     let
         playerView : Maybe String -> Bool -> Html msg
         playerView mName me =

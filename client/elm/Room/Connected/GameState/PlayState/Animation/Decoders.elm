@@ -72,7 +72,7 @@ decoder =
                     passDecoder
 
                 _ ->
-                    Debug.crash ("Unknown anim name " ++ animName)
+                    Json.fail <| "Unknown anim name " ++ animName
     in
     oneOf
         [ animNameDecoder |> Json.andThen getDecoder

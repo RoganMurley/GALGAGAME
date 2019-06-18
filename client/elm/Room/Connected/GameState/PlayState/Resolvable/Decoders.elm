@@ -12,5 +12,5 @@ resolveDiffData =
     Json.map4 ResolveDiffData
         (field "diff" Model.Diff.decoder)
         (field "anim" Animation.decoder)
-        (field "damage" <| Json.map2 (,) (index 0 float) (index 1 float))
+        (field "damage" <| Json.map2 (\a b -> ( a, b )) (index 0 float) (index 1 float))
         (field "stackCard" <| maybe Stack.stackCardDecoder)

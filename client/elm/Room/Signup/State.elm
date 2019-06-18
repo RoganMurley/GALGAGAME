@@ -1,18 +1,19 @@
 module Signup.State exposing (init, keyPress, receive, update, validator)
 
+import Browser.Navigation
 import Form exposing (Error(..), ValidationResult, Validator, batchValidators, initFormField, updateFormField)
 import Http
 import Json.Decode exposing (maybe)
-import Keyboard exposing (KeyCode)
+import Keyboard exposing (Key(..))
 import Main.Messages as Main
 import Main.Types exposing (Flags)
-import Navigation
+import Ports exposing (websocketReconnect)
 import Regex exposing (Regex)
 import Room.Messages as Room
 import Signup.Decoders exposing (signupErrorDecoder)
 import Signup.Messages exposing (Msg(..))
 import Signup.Types exposing (Field(..), Model)
-import Util exposing (authLocation, message, send)
+import Util exposing (authLocation, message)
 
 
 init : Maybe String -> Model
@@ -63,13 +64,14 @@ update model msg flags =
             ( { model | error = error }, Cmd.none )
 
         SubmitCallback (Ok Nothing) ->
-            model
-                ! [ Navigation.newUrl model.nextUrl
-                  , message Main.GetAuth
-
-                  -- Reconnect so that the ws connection has our login cookie
-                  , send flags "reconnect:"
-                  ]
+            ( model
+            , Cmd.batch
+                [ Browser.Navigation.pushUrl flags.key model.nextUrl
+                , message Main.GetAuth
+                , -- Reconnect so that the ws connection has our login cookie
+                  websocketReconnect ()
+                ]
+            )
 
         SubmitCallback (Err httpError) ->
             case httpError of
@@ -105,15 +107,11 @@ receive _ =
     Cmd.none
 
 
-keyPress : KeyCode -> Cmd Main.Msg
+keyPress : Key -> Cmd Main.Msg
 keyPress code =
     case code of
-        -- Enter key
-        13 ->
+        EnterKey ->
             message <| Main.RoomMsg <| Room.SignupMsg <| Submit
-
-        _ ->
-            Cmd.none
 
 
 emailValidator : Validator Model Field
@@ -145,8 +143,10 @@ emailValidator =
 
         validEmail : Regex
         validEmail =
-            Regex.caseInsensitive <|
-                Regex.regex "^[a-zA-Z0-9.!#$%&'*+\\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$"
+            Maybe.withDefault Regex.never <|
+                Regex.fromStringWith
+                    { caseInsensitive = False, multiline = False }
+                    "^[a-zA-Z0-9.!#$%&'*+\\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$"
     in
     batchValidators [ required, valid ]
 

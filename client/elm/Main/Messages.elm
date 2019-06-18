@@ -1,13 +1,14 @@
 module Main.Messages exposing (Msg(..))
 
-import Char exposing (KeyCode)
+import Browser exposing (UrlRequest)
 import Http
+import Keyboard exposing (Key)
 import Mouse
-import Navigation exposing (Location)
 import Room.Messages as Room
 import Settings.Messages as Settings
 import Settings.Types exposing (VolumeType)
 import Texture.Messages as Texture
+import Url exposing (Url)
 
 
 type Msg
@@ -15,7 +16,7 @@ type Msg
     | Frame Float
     | GetAuth
     | GetAuthCallback (Result Http.Error (Maybe String))
-    | KeyPress KeyCode
+    | KeyPress Key
     | Logout
     | LogoutCallback (Result Http.Error ())
     | MousePosition Mouse.Position
@@ -29,5 +30,6 @@ type Msg
     | SetVolume VolumeType Int
     | TextureMsg Texture.Msg
     | TouchPosition (Maybe Mouse.Position)
-    | UrlChange Location
+    | UrlChange Url
+    | UrlRequest UrlRequest
     | GodCommand String

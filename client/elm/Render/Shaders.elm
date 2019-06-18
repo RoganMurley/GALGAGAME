@@ -4,7 +4,8 @@ import Math.Vector2 exposing (Vec2)
 import Math.Vector3 exposing (Vec3)
 import Render.Types exposing (Vertex)
 import Render.Uniforms exposing (Uniforms)
-import WebGL exposing (Shader, Texture)
+import WebGL exposing (Shader)
+import WebGL.Texture exposing (Texture)
 
 
 fragment : Shader {} (Uniforms { texture : Texture }) { vcoord : Vec2 }

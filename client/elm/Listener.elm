@@ -1,7 +1,8 @@
 module Listener exposing (animSfx, listen)
 
 import Animation.Types exposing (Anim(..))
-import Audio exposing (SoundOption(..), playSoundWith)
+import Audio.State exposing (playSoundWith)
+import Audio.Types exposing (SoundOption(..))
 import GameState.Types exposing (GameState(..))
 import Main.Messages exposing (Msg)
 import PlayState.State as PlayState

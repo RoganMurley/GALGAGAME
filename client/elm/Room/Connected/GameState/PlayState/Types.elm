@@ -1,6 +1,8 @@
-module PlayState.Types exposing (PlayState(..))
+module PlayState.Types exposing (PlayState(..), ResolveOutcomeInput)
 
 import Game.Types as Game
+import Model.Types exposing (Model)
+import Resolvable.Types as Resolvable
 import Stats exposing (StatChange)
 import WhichPlayer.Types exposing (WhichPlayer)
 
@@ -13,3 +15,10 @@ type PlayState
         , replayId : Maybe String
         , xp : Maybe StatChange
         }
+
+
+type alias ResolveOutcomeInput =
+    { resDiffList : List Resolvable.ResolveDiffData
+    , initial : Model
+    , finalState : PlayState
+    }

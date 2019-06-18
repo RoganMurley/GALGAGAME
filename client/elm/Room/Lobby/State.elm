@@ -1,11 +1,12 @@
 module Lobby.State exposing (gameTypeToString, init, receive, skipLobbyCmd, update)
 
+import Browser.Navigation
 import GameType exposing (GameType(..))
 import Lobby.Messages exposing (Msg(..))
 import Lobby.Types exposing (LoginState(..), Model)
 import Main.Messages as Main
+import Main.Types exposing (Flags)
 import Mode exposing (Mode(..))
-import Navigation
 import Room.Messages as Room
 import Util exposing (message, splitOnColon)
 
@@ -20,8 +21,8 @@ init roomID gameType mode =
     }
 
 
-update : Model -> Msg -> ( Model, Cmd Main.Msg )
-update ({ gameType, mode } as model) msg =
+update : Model -> Msg -> Flags -> ( Model, Cmd Main.Msg )
+update ({ gameType, mode } as model) msg flags =
     case msg of
         JoinRoom ->
             let
@@ -48,22 +49,24 @@ update ({ gameType, mode } as model) msg =
                         Spectating ->
                             "spectate:"
             in
-            model
-                ! [ message <| Main.Send <| prefix
-                  , message <| Main.Send <| "room:" ++ model.roomID
-                  ]
+            ( model
+            , Cmd.batch
+                [ message <| Main.Send <| prefix
+                , message <| Main.Send <| "room:" ++ model.roomID
+                ]
+            )
 
         JoinRoomErr error ->
             ( { model | error = error }, Cmd.none )
 
         GotoLogin ->
             ( model
-            , Navigation.newUrl "/login/"
+            , Browser.Navigation.pushUrl flags.key "/login/"
             )
 
         GotoSignup ->
             ( model
-            , Navigation.newUrl "/signup/"
+            , Browser.Navigation.pushUrl flags.key "/signup/"
             )
 
 

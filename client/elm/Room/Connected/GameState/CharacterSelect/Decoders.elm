@@ -1,7 +1,7 @@
 module CharacterSelect.Decoders exposing (character)
 
 import Card.Decoders as Card
-import CharacterSelect.Types exposing (Character, CharacterCards)
+import CharacterSelect.Types exposing (Character, CharacterCards(..))
 import Json.Decode as Json exposing (Decoder, field, index, string)
 
 
@@ -15,7 +15,7 @@ character =
 
 characterCards : Decoder CharacterCards
 characterCards =
-    Json.map4 (,,,)
+    Json.map4 CharacterCards
         (index 0 Card.decoder)
         (index 1 Card.decoder)
         (index 2 Card.decoder)

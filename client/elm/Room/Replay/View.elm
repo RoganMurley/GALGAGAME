@@ -4,7 +4,7 @@ import Animation.Types exposing (Anim(..))
 import Background.View as Background
 import Connected.View exposing (playersView)
 import Endgame.View as Endgame
-import GameState.Types exposing (GameState(Started))
+import GameState.Types exposing (GameState(..))
 import GameState.View as GameState
 import Html exposing (Html, div)
 import Html.Attributes exposing (class)
@@ -19,7 +19,7 @@ view { replay } flags textures =
     div [ class "replay" ] <|
         case replay of
             Just { state, usernamePa, usernamePb } ->
-                [ playersView ( Just usernamePa, Just usernamePb )
+                [ playersView { pa = Just usernamePa, pb = Just usernamePb }
                 , GameState.view (Started state) "" flags Nothing textures
                 ]
 

@@ -22,16 +22,12 @@ const dir = {
 
 
 // ELM
-gulp.task('init', elm.init);
-
-gulp.task('multi',
-  gulp.series('init', () => {
-    return gulp.src('elm/Main.elm')
-      .pipe(elm.make({filetype: 'js', warn: true}))
-      .pipe(minifyJs())
-      .pipe(gulp.dest(dir.build));
-  })
-);
+gulp.task('elm', () => {
+  return gulp.src('elm/Main.elm')
+    .pipe(elm.make({filetype: 'js', optimize: true}))
+    .pipe(minifyJs())
+    .pipe(gulp.dest(dir.build));
+});
 
 
 // SASS
@@ -67,14 +63,15 @@ gulp.task('copyDeps', () => {
 
 
 // DEFAULT
-gulp.task('build', gulp.parallel('multi', 'sass', 'html', 'copy', 'copyDeps'));
+gulp.task('build', gulp.parallel('elm', 'sass', 'html', 'copy', 'copyDeps'));
 
 gulp.task('watch', () => {
-  gulp.watch('elm/**/*.elm', gulp.series('multi'));
+  gulp.watch('elm/**/*.elm', gulp.series('elm'));
   gulp.watch('sass/**/*.scss', gulp.series('sass'));
   gulp.watch(`${dir.dev}/**`, gulp.series('copy'));
   gulp.watch("node_modules/**", gulp.series('copyDeps'));
-  gulp.watch(`${dir.dev}/html/*`, gulp.series('html'));
+  gulp.watch(`html/index.html`, gulp.series('html'));
+  gulp.watch(`js/start.js`, gulp.series('html'));
 });
 
 gulp.task('default', gulp.series('build', 'watch'));

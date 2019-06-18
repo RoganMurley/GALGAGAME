@@ -23,6 +23,7 @@ import Texture.State as Texture
 import Texture.Types as Texture
 import Util exposing (px, to3d)
 import WebGL
+import WebGL.Texture as WebGL
 
 
 view : Render.Params -> Model -> Texture.Model -> Html Msg
@@ -52,7 +53,7 @@ view { w, h } ({ characters, selected, vm } as model) textures =
                 [ class "hover-character-container" ]
                 [ div
                     [ class "hover-character-name"
-                    , style [ ( "top", ctx.radius * 0.6 |> px ) ]
+                    , style "top" (ctx.radius * 0.6 |> px)
                     ]
                     [ text vm.hover.name ]
                 ]

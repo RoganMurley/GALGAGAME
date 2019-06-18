@@ -1,6 +1,6 @@
 module Endgame.View exposing (view)
 
-import Animation.Types exposing (Anim(GameEnd))
+import Animation.Types exposing (Anim(..))
 import Connected.Messages as Connected
 import GameState.Messages as GameState
 import GameType exposing (GameType(..))
@@ -8,7 +8,7 @@ import Html exposing (Html, a, button, div, text)
 import Html.Attributes exposing (class, classList, disabled, href, style)
 import Html.Events exposing (onClick)
 import Main.Messages as Main
-import PlayState.Messages exposing (Msg(GotoComputerGame, GotoReplay, PlayingOnly), PlayingOnly(Rematch))
+import PlayState.Messages exposing (Msg(..), PlayingOnly(..))
 import Room.Messages as Room
 import Stats exposing (Experience, Level, StatChange)
 import WhichPlayer.Types exposing (WhichPlayer(..))
@@ -113,7 +113,7 @@ view progress anim mReplayId mXp gameType mUsername =
                     in
                     div [ class "experience" ]
                         [ div []
-                            [ text <| "+" ++ toString experienceChange ++ "xp" ]
+                            [ text <| "+" ++ String.fromInt experienceChange ++ "xp" ]
                         , div [] <|
                             case levelUp of
                                 Just _ ->
@@ -122,7 +122,7 @@ view progress anim mReplayId mXp gameType mUsername =
                                 Nothing ->
                                     []
                         , div []
-                            [ text <| "Level " ++ toString finalLevel ++ " (" ++ toString finalExperience ++ "xp / " ++ toString nextLevelAt ++ "xp)"
+                            [ text <| "Level " ++ String.fromInt finalLevel ++ " (" ++ String.fromInt finalExperience ++ "xp / " ++ String.fromInt nextLevelAt ++ "xp)"
                             ]
                         ]
 
@@ -144,13 +144,13 @@ view progress anim mReplayId mXp gameType mUsername =
             [ ( "endgame-layer", True )
             , ( endGameClass, True )
             ]
-        , style
-            [ if show then
-                ( "opacity", toString progress )
+        , (\( a, b ) -> style a b)
+            (if show then
+                ( "opacity", String.fromFloat progress )
 
-              else
+             else
                 ( "", "" )
-            ]
+            )
         ]
         [ div [ class "endgame-container" ]
             [ div

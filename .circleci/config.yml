@@ -16,7 +16,7 @@ jobs:
       - restore_cache:
           name: Restore Cached Elm Dependencies
           keys:
-            - elm-{{ checksum "client/elm-package.json" }}
+            - elm-{{ checksum "client/elm.json" }}
       - run:
           name: Setup Server
           command: cd server &&
@@ -29,9 +29,8 @@ jobs:
       - run:
           name: Setup Client
           command: cd client &&
-                   npm install -g gulp@4.0.0 gulp-cli@2.0.1 elm@0.18.0 elm-analyse@0.15.0 &&
+                   npm install -g gulp@4.0.0 gulp-cli@2.0.1 elm@0.19.0 elm-analyse@0.16.4 &&
                    npm install &&
-                   elm-package install --yes &&
                    gulp build &&
                    elm-analyse
       - run:

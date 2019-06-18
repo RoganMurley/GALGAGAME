@@ -205,9 +205,7 @@ focusTextView { anim, radius } focus =
 
                 Just { card } ->
                     div
-                        [ style
-                            [ ( "width", 0.7 * radius |> px )
-                            ]
+                        [ style "width" (0.7 * radius |> px)
                         ]
                         [ div [ class "title" ] [ text card.name ]
                         , div [ class "desc" ] [ text card.desc ]
@@ -231,26 +229,22 @@ lifeTextView { radius, model } =
     in
     [ div
         [ class "clock-life"
-        , style
-            [ ( "right", horizontalOffset |> px )
-            , ( "bottom", verticalOffset - 0.02 * radius |> px )
-            , ( "font-size", fontSize |> px )
-            , ( "transform", "translate(-20%, -10%)" )
-            , ( "width", textWidth |> px )
-            ]
+        , style "right" (horizontalOffset |> px)
+        , style "bottom" (verticalOffset - 0.02 * radius |> px)
+        , style "font-size" (fontSize |> px)
+        , style "transform" "translate(-20%, -10%)"
+        , style "width" (textWidth |> px)
         ]
-        [ text <| toString model.life ]
+        [ text <| String.fromInt model.life ]
     , div
         [ class "clock-life other"
-        , style
-            [ ( "left", horizontalOffset |> px )
-            , ( "bottom", verticalOffset + 0.02 * radius |> px )
-            , ( "font-size", fontSize |> px )
-            , ( "transform", "translate(20%, 10%)" )
-            , ( "width", textWidth |> px )
-            ]
+        , style "left" (horizontalOffset |> px)
+        , style "bottom" (verticalOffset + 0.02 * radius |> px)
+        , style "font-size" (fontSize |> px)
+        , style "transform" "translate(20%, 10%)"
+        , style "width" (textWidth |> px)
         ]
-        [ text <| toString model.otherLife ]
+        [ text <| String.fromInt model.otherLife ]
     ]
 
 
@@ -287,10 +281,10 @@ damageTextView hover { radius, resolving, animDamage } =
         damageToString : Float -> String
         damageToString d =
             if d > 0 then
-                "+" ++ toString d
+                "+" ++ String.fromFloat d
 
             else
-                toString d
+                String.fromFloat d
 
         damageToCssColour : Float -> String
         damageToCssColour d =
@@ -304,12 +298,10 @@ damageTextView hover { radius, resolving, animDamage } =
         [ if damage /= 0 then
             [ div
                 [ class "clock-damage"
-                , style
-                    [ ( "right", 0.28 * radius |> px )
-                    , ( "bottom", 0.75 * radius |> px )
-                    , ( "font-size", 0.2 * radius |> px )
-                    , ( "color", damageToCssColour damage )
-                    ]
+                , style "right" (0.28 * radius |> px)
+                , style "bottom" (0.75 * radius |> px)
+                , style "font-size" (0.2 * radius |> px)
+                , style "color" (damageToCssColour damage)
                 ]
                 [ text <| damageToString damage ]
             ]
@@ -319,12 +311,10 @@ damageTextView hover { radius, resolving, animDamage } =
         , if otherDamage /= 0 then
             [ div
                 [ class "clock-damage"
-                , style
-                    [ ( "left", 0.22 * radius |> px )
-                    , ( "bottom", 0.75 * radius |> px )
-                    , ( "font-size", 0.2 * radius |> px )
-                    , ( "color", damageToCssColour otherDamage )
-                    ]
+                , style "left" (0.22 * radius |> px)
+                , style "bottom" (0.75 * radius |> px)
+                , style "font-size" (0.2 * radius |> px)
+                , style "color" (damageToCssColour otherDamage)
                 ]
                 [ text <| damageToString otherDamage ]
             ]
@@ -379,13 +369,11 @@ goButtonView { model, radius, resolving } passed =
     in
     button
         ([ classList [ ( "clock-go", True ), ( "clock-go--disabled", isDisabled ) ]
-         , style
-            [ ( "left", "calc(50% + " ++ (horizontalOffset |> px) ++ ")" )
-            , ( "top", "calc(50% + " ++ (verticalOffset |> px) ++ ")" )
-            , ( "width", buttonSize |> px )
-            , ( "height", buttonSize |> px )
-            , ( "font-size", fontSize |> px )
-            ]
+         , style "left" ("calc(50% + " ++ (horizontalOffset |> px) ++ ")")
+         , style "top" ("calc(50% + " ++ (verticalOffset |> px) ++ ")")
+         , style "width" (buttonSize |> px)
+         , style "height" (buttonSize |> px)
+         , style "font-size" (fontSize |> px)
          ]
             ++ clickHandler
         )

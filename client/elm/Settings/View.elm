@@ -14,10 +14,10 @@ view { modalState, masterVolume, musicVolume, sfxVolume } nestedViews =
         settingsStyle =
             case modalState of
                 Closed ->
-                    style [ ( "display", "none" ) ]
+                    style "display" "none"
 
                 Open ->
-                    style []
+                    style "" ""
     in
     div [ class "settings-layer" ]
         [ img
@@ -44,12 +44,9 @@ view { modalState, masterVolume, musicVolume, sfxVolume } nestedViews =
                             , type_ "range"
                             , H.min "0"
                             , H.max "100"
-                            , value <| toString masterVolume
+                            , value <| String.fromInt masterVolume
                             , onInput
-                                (\v ->
-                                    Main.SetVolume Master <|
-                                        Result.withDefault 0 (String.toInt v)
-                                )
+                                (\v -> Main.SetVolume Master <| Maybe.withDefault 0 (String.toInt v))
                             ]
                             []
                         ]
@@ -60,12 +57,9 @@ view { modalState, masterVolume, musicVolume, sfxVolume } nestedViews =
                             , type_ "range"
                             , H.min "0"
                             , H.max "100"
-                            , value <| toString musicVolume
+                            , value <| String.fromInt musicVolume
                             , onInput
-                                (\v ->
-                                    Main.SetVolume Music <|
-                                        Result.withDefault 0 (String.toInt v)
-                                )
+                                (\v -> Main.SetVolume Music <| Maybe.withDefault 0 (String.toInt v))
                             ]
                             []
                         ]
@@ -76,12 +70,9 @@ view { modalState, masterVolume, musicVolume, sfxVolume } nestedViews =
                             , type_ "range"
                             , H.min "0"
                             , H.max "100"
-                            , value <| toString sfxVolume
+                            , value <| String.fromInt sfxVolume
                             , onInput
-                                (\v ->
-                                    Main.SetVolume Sfx <|
-                                        Result.withDefault 0 (String.toInt v)
-                                )
+                                (\v -> Main.SetVolume Sfx <| Maybe.withDefault 0 (String.toInt v))
                             ]
                             []
                         ]

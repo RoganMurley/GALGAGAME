@@ -20,7 +20,7 @@ type alias StatChange =
     }
 
 
-decodeStatChange : String -> Result String StatChange
+decodeStatChange : String -> Result Json.Error StatChange
 decodeStatChange msg =
     let
         decoder : Decoder StatChange

@@ -1,10 +1,11 @@
 module Texture.State exposing (defaultOptions, fetchTextures, init, load, save, texturePaths, update)
 
 import Dict
+import Ports exposing (log)
 import Task
 import Texture.Messages exposing (Msg(..))
 import Texture.Types exposing (Model)
-import WebGL.Texture exposing (Texture)
+import WebGL.Texture exposing (Error(..), Texture)
 
 
 init : Model
@@ -20,10 +21,16 @@ update msg m =
 
         TexturesError error ->
             let
-                _ =
-                    Debug.log "Error loading textures: " error
+                errorStr : String
+                errorStr =
+                    case error of
+                        LoadError ->
+                            "Load error"
+
+                        SizeError w h ->
+                            "Size error " ++ String.fromInt w ++ ", " ++ String.fromInt h
             in
-            ( m, Cmd.none )
+            ( m, log <| "Error loading textures: " ++ errorStr )
 
 
 save : Model -> ( String, Texture ) -> Model

@@ -1,17 +1,18 @@
 module Login.State exposing (init, keyPress, receive, update, validator)
 
+import Browser.Navigation
 import Form exposing (Error(..), ValidationResult, Validator, batchValidators, initFormField, updateFormField)
 import Http
 import Json.Decode exposing (maybe)
-import Keyboard exposing (KeyCode)
+import Keyboard exposing (Key(..))
 import Login.Decoders exposing (loginErrorDecoder)
 import Login.Messages exposing (Msg(..))
 import Login.Types exposing (Field(..), Model)
 import Main.Messages as Main
 import Main.Types exposing (Flags)
-import Navigation
+import Ports exposing (websocketReconnect)
 import Room.Messages as Room
-import Util exposing (authLocation, message, send)
+import Util exposing (authLocation, message)
 
 
 init : Maybe String -> Model
@@ -52,13 +53,14 @@ update model msg flags =
             ( { model | error = error }, Cmd.none )
 
         SubmitCallback (Ok Nothing) ->
-            model
-                ! [ Navigation.newUrl model.nextUrl
-                  , message Main.GetAuth
-
-                  -- Reconnect so that the ws connection has our login cookie
-                  , send flags "reconnect:"
-                  ]
+            ( model
+            , Cmd.batch
+                [ Browser.Navigation.pushUrl flags.key model.nextUrl
+                , message Main.GetAuth
+                , -- Reconnect so that the ws connection has our login cookie
+                  websocketReconnect ()
+                ]
+            )
 
         SubmitCallback (Err httpError) ->
             case httpError of
@@ -89,15 +91,11 @@ update model msg flags =
                     )
 
 
-keyPress : KeyCode -> Cmd Main.Msg
+keyPress : Key -> Cmd Main.Msg
 keyPress code =
     case code of
-        -- Enter key
-        13 ->
+        EnterKey ->
             message <| Main.RoomMsg <| Room.LoginMsg <| Submit
-
-        _ ->
-            Cmd.none
 
 
 receive : String -> Cmd Main.Msg

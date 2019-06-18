@@ -4,7 +4,7 @@ import Game.Types exposing (Hover(..), HoverOther)
 import Json.Decode as Json exposing (Decoder, field, int, null, oneOf)
 
 
-decodeHoverOther : String -> Result String HoverOther
+decodeHoverOther : String -> Result Json.Error HoverOther
 decodeHoverOther msg =
     let
         hoverDecoder : Decoder HoverOther

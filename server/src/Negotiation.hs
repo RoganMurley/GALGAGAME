@@ -8,15 +8,12 @@ import Util (breakAt)
 
 data RoomRequest =
     RoomRequest Text
-  | ReconnectRequest
   | PlayReplayRequest Int
 
 
 parseRoomReq :: Text -> Maybe RoomRequest
 parseRoomReq msg =
   case breakAt ":" msg of
-    ("reconnect", "") ->
-      Just ReconnectRequest
     ("room", name) ->
       Just . RoomRequest $ name
     ("playReplay", replayIdText) ->

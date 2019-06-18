@@ -1,17 +1,15 @@
-module Util exposing (authLocation, interp, interp2D, interpFloat, message, portProtocol, px, send, splitOnColon, to3d, unsafeForceDecode, websocketAddress, zip)
+module Util exposing (authLocation, interp, interp2D, interpFloat, message, portProtocol, px, splitOnColon, to3d, zip)
 
-import Json.Decode as Json
 import Main.Types exposing (Flags)
 import Math.Vector2 exposing (Vec2)
 import Math.Vector3 exposing (Vec3, vec3)
-import Regex exposing (HowMany(AtMost), regex, split)
+import Regex
 import Task
-import WebSocket
 
 
-px : n -> String
+px : Float -> String
 px number =
-    toString number ++ "px"
+    String.fromFloat number ++ "px"
 
 
 message : msg -> Cmd msg
@@ -29,44 +27,29 @@ portProtocol httpPort =
             ":" ++ httpPort
 
 
-websocketAddress : Flags -> String
-websocketAddress { hostname, httpPort } =
-    "wss://" ++ hostname ++ portProtocol httpPort ++ "/game/"
-
-
 authLocation : Flags -> String
 authLocation { hostname, httpPort } =
     "https://" ++ hostname ++ portProtocol httpPort ++ "/auth"
 
 
-send : Flags -> String -> Cmd msg
-send flags =
-    WebSocket.send <| websocketAddress flags
-
-
 splitOnColon : String -> ( String, String )
 splitOnColon str =
-    case split (AtMost 1) (regex ":") str of
-        [ x, xs ] ->
-            ( x, xs )
+    case Regex.fromString ":" of
+        Just regex ->
+            case Regex.splitAtMost 1 regex str of
+                [ x, xs ] ->
+                    ( x, xs )
 
-        _ ->
+                _ ->
+                    ( "", str )
+
+        Nothing ->
             ( "", str )
-
-
-unsafeForceDecode : Json.Decoder a -> String -> a
-unsafeForceDecode decoder str =
-    case Json.decodeString decoder str of
-        Ok result ->
-            result
-
-        Err err ->
-            Debug.crash err
 
 
 zip : List a -> List b -> List ( a, b )
 zip =
-    List.map2 (,)
+    List.map2 (\a b -> ( a, b ))
 
 
 interp : Float -> Vec3 -> Vec3 -> Vec3
