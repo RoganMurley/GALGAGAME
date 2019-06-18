@@ -93,7 +93,7 @@ entities hover ({ w, h, radius, anim, model, progress } as ctx) =
 
         mainEntities : List (Card.Entity { index : Int })
         mainEntities =
-            List.map entity <| List.indexedMap (,) hand
+            List.map entity <| List.indexedMap (\a b -> ( a, b )) hand
 
         extraEntities : List (Card.Entity { index : Int })
         extraEntities =
@@ -353,7 +353,7 @@ handCardPosition ({ radius } as ctx) which index count hover =
         y =
             let
                 i =
-                    if count % 2 == 0 && index < count // 2 then
+                    if modBy 2 count == 0 && index < count // 2 then
                         toFloat <| index + 1
 
                     else

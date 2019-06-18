@@ -1,7 +1,8 @@
 module Resolvable.State exposing (activeAnim, activeAnimDamage, activeModel, activeStackCard, init, merge, resDiffToData, resolveStep, resolving, tick, tickEnd, tickStart)
 
 import Animation.State as Animation
-import Animation.Types exposing (Anim(NullAnim))
+import Animation.Types exposing (Anim(..))
+import List.Extra as List
 import Model.Diff as Model
 import Model.Types as Model
 import Resolvable.Types as Resolvable
@@ -52,8 +53,8 @@ activeStackCard { resList } =
 
 
 tickStart : Resolvable.Model -> Bool
-tickStart { tick } =
-    tick == 0.0
+tickStart model =
+    model.tick == 0.0
 
 
 tick : Float -> Resolvable.Model -> Resolvable.Model
@@ -68,8 +69,8 @@ tick dt model =
 
 
 tickEnd : Float -> Anim -> Bool
-tickEnd tick anim =
-    tick >= Animation.animMaxTick anim
+tickEnd tickValue anim =
+    tickValue >= Animation.animMaxTick anim
 
 
 resolveStep : Resolvable.Model -> Resolvable.Model

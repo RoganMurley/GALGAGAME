@@ -1,21 +1,23 @@
 module Connected.State exposing (init, receive, tick, update)
 
-import Audio exposing (playSound)
+import Audio.State exposing (playSound)
 import Connected.Decoders exposing (decodeDamageOutcome, decodePlayers)
 import Connected.Messages exposing (Msg(..))
-import Connected.Types exposing (Model)
+import Connected.Types exposing (Model, Players)
 import Game.Decoders exposing (decodeHoverOther)
 import GameState.Messages as GameState
 import GameState.State as GameState
 import GameState.Types exposing (GameState(..), WaitType(..))
 import GameType exposing (GameType)
+import Json.Decode as Json
 import Main.Messages as Main
 import Main.Types exposing (Flags)
 import Mode exposing (Mode(..))
 import PlayState.Messages as PlayState
+import Ports exposing (log, websocketSend)
 import Settings.Messages as Settings
 import Stats exposing (decodeStatChange)
-import Util exposing (message, send, splitOnColon)
+import Util exposing (message, splitOnColon)
 
 
 init : Mode -> GameType -> String -> Model
@@ -24,28 +26,30 @@ init mode gameType roomID =
     , gameType = gameType
     , mode = mode
     , roomID = roomID
-    , players = ( Nothing, Nothing )
+    , players = { pa = Nothing, pb = Nothing }
     , tick = 0
     }
 
 
-update : Flags -> Msg -> Model -> ( Model, Cmd Main.Msg )
-update flags msg ({ game, mode } as model) =
+update : Msg -> Model -> ( Model, Cmd Main.Msg )
+update msg ({ game, mode } as model) =
     case msg of
         GameStateMsg gameMsg ->
             let
                 ( newGame, cmd ) =
-                    GameState.update gameMsg game mode flags
+                    GameState.update gameMsg game mode
             in
             ( { model | game = newGame }, cmd )
 
         Concede ->
-            model
-                ! [ message <|
-                        Main.SettingsMsg <|
-                            Settings.CloseSettings
-                  , send flags "concede:"
-                  ]
+            ( model
+            , Cmd.batch
+                [ message <|
+                    Main.SettingsMsg <|
+                        Settings.CloseSettings
+                , websocketSend "concede:"
+                ]
+            )
 
 
 tick : Flags -> Model -> Float -> ( Model, Cmd Msg )
@@ -60,8 +64,8 @@ tick flags model dt =
     ( { model | game = game, tick = newTick }, Cmd.map GameStateMsg msg )
 
 
-receive : Model -> String -> Flags -> ( Model, Cmd Main.Msg )
-receive ({ mode } as model) msg flags =
+receive : Model -> String -> ( Model, Cmd Main.Msg )
+receive ({ mode } as model) msg =
     let
         ( command, content ) =
             splitOnColon msg
@@ -74,7 +78,6 @@ receive ({ mode } as model) msg flags =
                         (GameState.Sync content)
                         model.game
                         mode
-                        flags
             in
             ( { model | game = newGame }, cmd )
 
@@ -89,17 +92,16 @@ receive ({ mode } as model) msg flags =
                                 )
                                 model.game
                                 mode
-                                flags
                     in
-                    { model | game = newGame }
-                        ! [ cmd
-                          , playSound "/sfx/hover.mp3"
-                          ]
+                    ( { model | game = newGame }
+                    , Cmd.batch
+                        [ cmd
+                        , playSound "/sfx/hover.mp3"
+                        ]
+                    )
 
                 Err err ->
-                    Debug.log
-                        err
-                        ( model, Cmd.none )
+                    ( model, log <| Json.errorToString err )
 
         "damage" ->
             case decodeDamageOutcome content of
@@ -112,14 +114,11 @@ receive ({ mode } as model) msg flags =
                                 )
                                 model.game
                                 mode
-                                flags
                     in
                     ( { model | game = newGame }, cmd )
 
                 Err err ->
-                    Debug.log
-                        err
-                        ( model, Cmd.none )
+                    ( model, log <| Json.errorToString err )
 
         "res" ->
             let
@@ -128,13 +127,12 @@ receive ({ mode } as model) msg flags =
                         (GameState.ResolveOutcome content)
                         model.game
                         mode
-                        flags
             in
             ( { model | game = newGame }, cmd )
 
         "syncPlayers" ->
             let
-                newPlayers : Result String ( Maybe String, Maybe String )
+                newPlayers : Result Json.Error Players
                 newPlayers =
                     decodePlayers content
             in
@@ -143,9 +141,7 @@ receive ({ mode } as model) msg flags =
                     ( { model | players = p }, Cmd.none )
 
                 Err err ->
-                    Debug.log
-                        err
-                        ( model, Cmd.none )
+                    ( model, log <| Json.errorToString err )
 
         "replaySaved" ->
             let
@@ -156,7 +152,6 @@ receive ({ mode } as model) msg flags =
                         )
                         model.game
                         mode
-                        flags
             in
             ( { model | game = newGame }, cmd )
 
@@ -171,16 +166,11 @@ receive ({ mode } as model) msg flags =
                                 )
                                 model.game
                                 mode
-                                flags
                     in
                     ( { model | game = newGame }, cmd )
 
                 Err err ->
-                    Debug.log
-                        err
-                        ( model, Cmd.none )
+                    ( model, log <| Json.errorToString err )
 
         _ ->
-            Debug.log
-                ("Error decoding message from server: " ++ msg)
-                ( model, Cmd.none )
+            ( model, log <| "Error decoding message from server: " ++ msg )

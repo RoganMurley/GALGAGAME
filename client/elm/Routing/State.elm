@@ -1,7 +1,7 @@
 module Routing.State exposing (loginRoute, playRoute, replayRoute, route, specRoute)
 
 import Routing.Types exposing (PlayRoute(..), Route(..))
-import UrlParser exposing ((</>), Parser, map, oneOf, s, string, top)
+import Url.Parser exposing ((</>), Parser, map, oneOf, s, string, top)
 
 
 route : Parser (Route -> a) a

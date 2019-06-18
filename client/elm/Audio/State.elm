@@ -1,12 +1,7 @@
-module Audio exposing (SoundOption(..), fetchSounds, playSound, playSoundWith, setVolume)
+module Audio.State exposing (fetchSounds, playSound, playSoundWith, setVolume)
 
+import Audio.Types exposing (SoundOption(..))
 import Ports
-
-
-type SoundOption
-    = Once
-    | Loop
-    | Volume Float
 
 
 playSound : String -> Cmd msg
@@ -44,7 +39,7 @@ playSoundWith name options =
                 _ ->
                     1.0
     in
-    Ports.playAudio ( name, once, loop, vol )
+    Ports.playAudio { name = name, once = once, loop = loop, vol = vol }
 
 
 setVolume : Int -> Cmd msg

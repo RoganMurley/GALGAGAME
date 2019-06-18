@@ -1,7 +1,7 @@
 module PlayState.View exposing (view)
 
 import Animation.State as Animation
-import Animation.Types exposing (Anim(GameEnd, NullAnim))
+import Animation.Types exposing (Anim(..))
 import Endgame.View as Endgame
 import GameType exposing (GameType)
 import Html exposing (Html, div)

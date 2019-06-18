@@ -32,7 +32,7 @@ animShake anim which tick =
         mag =
             baseMag * (1.0 - Ease.outQuad (tick / animMaxTick anim))
     in
-    mag * (toFloat <| (ceiling tick * 1247823748932 + 142131) % 20) - 10
+    mag * (toFloat <| modBy 20 (ceiling tick * 1247823748932 + 142131)) - 10
 
 
 animMaxTick : Anim -> Float

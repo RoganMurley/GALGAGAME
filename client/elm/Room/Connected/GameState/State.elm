@@ -10,10 +10,11 @@ import Main.Types exposing (Flags)
 import Mode exposing (Mode)
 import PlayState.State as PlayState
 import PlayState.Types exposing (PlayState)
+import Ports exposing (log)
 
 
-update : Msg -> GameState -> Mode -> Flags -> ( GameState, Cmd Main.Msg )
-update msg state mode flags =
+update : Msg -> GameState -> Mode -> ( GameState, Cmd Main.Msg )
+update msg state mode =
     case msg of
         Mouse pos ->
             case state of
@@ -28,7 +29,7 @@ update msg state mode flags =
                 Started playState ->
                     let
                         ( newPlayState, cmd ) =
-                            PlayState.mouseClick mode flags pos playState
+                            PlayState.mouseClick mode pos playState
                     in
                     ( Started newPlayState, cmd )
 
@@ -40,14 +41,12 @@ update msg state mode flags =
                 Started playState ->
                     let
                         ( newPlayState, cmd ) =
-                            PlayState.update playStateMsg playState mode flags
+                            PlayState.update playStateMsg playState mode
                     in
                     ( Started newPlayState, cmd )
 
                 _ ->
-                    Debug.log
-                        "Expected a Started state"
-                        ( state, Cmd.none )
+                    ( state, log "Expected a Started state" )
 
         ResolveOutcome str ->
             let
@@ -59,13 +58,30 @@ update msg state mode flags =
 
                         _ ->
                             Nothing
+
+                result : Result Json.Error PlayState
+                result =
+                    PlayState.resolveOutcomeStr str oldPlayState
             in
-            ( Started <| PlayState.resolveOutcomeStr str oldPlayState
-            , Cmd.none
-            )
+            case result of
+                Ok playState ->
+                    ( Started playState, Cmd.none )
+
+                Err err ->
+                    ( state, log <| Json.errorToString err )
 
         Sync str ->
-            ( syncState state str, Cmd.none )
+            let
+                result : Result Json.Error GameState
+                result =
+                    Json.decodeString stateDecoder str
+            in
+            case result of
+                Ok newState ->
+                    ( carry state newState, Cmd.none )
+
+                Err err ->
+                    ( state, log <| Json.errorToString err )
 
         SelectingMsg selectMsg ->
             case state of
@@ -77,9 +93,7 @@ update msg state mode flags =
                     ( Selecting newModel, cmd )
 
                 _ ->
-                    Debug.log
-                        "Expected a Selecting state"
-                        ( state, Cmd.none )
+                    ( state, log "Expected a Selecting state" )
 
         Touch pos ->
             case state of
@@ -88,16 +102,6 @@ update msg state mode flags =
 
                 _ ->
                     ( state, Cmd.none )
-
-
-syncState : GameState -> String -> GameState
-syncState oldState msg =
-    case Json.decodeString stateDecoder msg of
-        Ok newState ->
-            carry oldState newState
-
-        Err err ->
-            Debug.log err oldState
 
 
 carry : GameState -> GameState -> GameState

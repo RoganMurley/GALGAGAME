@@ -137,9 +137,6 @@ begin conn roomReq user state = do
             state
             (Client user (PlayerConnection conn) guid)
             roomVar
-    Just ReconnectRequest -> do
-      liftIO $ infoM "app" $ printf "<%s>: Reconnecting" username
-      return ()
     Just (PlayReplayRequest replayId) -> do
       mReplay <- Replay.Final.load replayId
       case mReplay of
@@ -280,11 +277,7 @@ spectate client roomVar = do
   syncClient client (Room.getState room)
   _ <- runMaybeT . forever $ do
     msg <- lift $ Client.receive client
-    case msg of
-      "reconnect:" ->
-        mzero
-      _ ->
-        lift $ actSpec (Command.parse (Client.name client) msg) roomVar
+    lift $ actSpec (Command.parse (Client.name client) msg) roomVar
   return ()
 
 
@@ -297,11 +290,7 @@ play which client roomVar outcomes = do
   forM_ outcomes (actOutcome room)
   _ <- runMaybeT . forever $ do
     msg <- lift $ Client.receive client
-    case msg of
-      "reconnect:" ->
-        mzero
-      _ ->
-        lift $ actPlay (Command.parse (Client.name client) msg) which roomVar username
+    lift $ actPlay (Command.parse (Client.name client) msg) which roomVar username
   return ()
   where
     username = Client.name client

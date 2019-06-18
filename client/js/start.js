@@ -2,14 +2,17 @@
 
 var params = new URLSearchParams(window.location.search);
 var embedElement = document.getElementById('elm');
-var app = Elm.Main.embed(embedElement, {
-  hostname: window.location.hostname,
-  httpPort: window.location.port,
+var hostname = window.location.hostname;
+var httpPort = window.location.port;
+var portProtocol = httpPort ?  ":" + httpPort : "";
+var app = Elm.Main.init({node: embedElement, flags: {
+  hostname: hostname,
+  httpPort: httpPort,
   seed: new Date().getTime(),
   dimensions: [ window.innerWidth, window.innerHeight ],
   time: 0,
   username: null,
-});
+}});
 
 app.ports.selectAllInput.subscribe(function (elementId) {
   document.getElementById(elementId).select();
@@ -40,6 +43,7 @@ app.ports.playAudio.subscribe(function (input) {
   });
   sound.play();
 });
+
 app.ports.loadAudio.subscribe(function (src) {
   new Howl({src: [src]});
 });
@@ -47,6 +51,10 @@ app.ports.loadAudio.subscribe(function (src) {
 app.ports.volume.subscribe(function (input) {
   var v = input / 100;
   Howler.volume(Math.pow(v, 4));
+});
+
+app.ports.log.subscribe(function (input) {
+  console.log(input);
 });
 
 app.ports.reload.subscribe(function () {
@@ -93,7 +101,7 @@ function handleTouchEnd (e) {
   app.ports.touch.send(null);
 };
 
-embedElement.addEventListener('click', handleClick, false);
+document.body.addEventListener('click', handleClick, false);
 document.body.addEventListener('mousemove', handleMouseMove, false);
 document.body.addEventListener('touchstart', handleTouch, false);
 document.body.addEventListener('touchmove', handleTouch, false);
@@ -113,3 +121,38 @@ window.requestFullscreen = function () {
     element.msRequestFullscreen();
   }
 }
+
+// Websockets
+var websocketMessageQueue = [];
+
+function createSocket() {
+  var socket = new WebSocket("wss://" + hostname + portProtocol + "/game/");
+
+  socket.addEventListener('open', function (event) {
+    websocketMessageQueue.forEach(function (input) {socket.send(input)});
+    websocketMessageQueue = [];
+  });
+
+  socket.addEventListener('message', function (event) {
+    app.ports.websocketListen.send(event.data);
+  });
+
+  return socket
+}
+
+var socket = createSocket();
+
+app.ports.websocketSend.subscribe(function (input) {
+  if (socket.readyState === WebSocket.OPEN) {
+    socket.send(input);
+  } else {
+    websocketMessageQueue.push(input);
+  }
+  if (socket.readyState === WebSocket.CLOSED) {
+    socket = createSocket();
+  }
+});
+
+app.ports.websocketReconnect.subscribe(function () {
+  socket.close(1000, "Reconnecting");
+});

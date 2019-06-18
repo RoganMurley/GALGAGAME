@@ -1,4 +1,4 @@
-module Connected.Types exposing (Model)
+module Connected.Types exposing (Model, Players)
 
 import GameState.Types exposing (GameState)
 import GameType exposing (GameType)
@@ -10,6 +10,12 @@ type alias Model =
     , mode : Mode
     , gameType : GameType
     , roomID : String
-    , players : ( Maybe String, Maybe String )
+    , players : Players
     , tick : Float
+    }
+
+
+type alias Players =
+    { pa : Maybe String
+    , pb : Maybe String
     }

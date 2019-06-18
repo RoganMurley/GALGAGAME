@@ -1,0 +1,39 @@
+{
+    "type": "application",
+    "source-directories": [
+        "elm",
+        "elm/Room",
+        "elm/Room/Connected",
+        "elm/Room/Connected/GameState",
+        "elm/Room/Connected/GameState/PlayState",
+        "elm/Room/Connected/GameState/PlayState/Model"
+    ],
+    "elm-version": "0.19.0",
+    "dependencies": {
+        "direct": {
+            "elm/browser": "1.0.1",
+            "elm/core": "1.0.0",
+            "elm/html": "1.0.0",
+            "elm/http": "1.0.0",
+            "elm/json": "1.1.3",
+            "elm/random": "1.0.0",
+            "elm/regex": "1.0.0",
+            "elm/url": "1.0.0",
+            "elm-community/easing-functions": "2.0.0",
+            "elm-community/list-extra": "8.2.0",
+            "elm-community/maybe-extra": "5.0.0",
+            "elm-community/random-extra": "3.1.0",
+            "elm-explorations/linear-algebra": "1.0.3",
+            "elm-explorations/webgl": "1.1.0"
+        },
+        "indirect": {
+            "elm/time": "1.0.0",
+            "elm/virtual-dom": "1.0.2",
+            "owanturist/elm-union-find": "1.0.0"
+        }
+    },
+    "test-dependencies": {
+        "direct": {},
+        "indirect": {}
+    }
+}

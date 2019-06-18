@@ -1,10 +1,12 @@
 module Main.State exposing (init, locationUpdate, subscriptions, update)
 
-import AnimationFrame
-import Audio exposing (fetchSounds, setVolume)
+import Audio.State exposing (fetchSounds, setVolume)
+import Browser
+import Browser.Events
+import Browser.Navigation
 import Connected.Messages as Connected
 import GameState.Messages as GameState
-import GameState.Types exposing (GameState(Started))
+import GameState.Types exposing (GameState(..))
 import GameType
 import Http
 import Json.Decode as Json
@@ -16,8 +18,7 @@ import Login.State as Login
 import Main.Messages exposing (Msg(..))
 import Main.Types as Main exposing (Flags)
 import Mode exposing (Mode(..))
-import Navigation
-import Ports exposing (analytics, click, copyInput, godModeCommand, mouseMove, reload, selectAllInput, touch)
+import Ports exposing (analytics, click, copyInput, godModeCommand, mouseMove, reload, selectAllInput, touch, websocketListen, websocketSend)
 import Replay.State as Replay
 import Room.Generators exposing (generate)
 import Room.Messages as Room
@@ -29,14 +30,13 @@ import Settings.State as Settings
 import Settings.Types as Settings
 import Signup.State as Signup
 import Texture.State as Texture
-import UrlParser exposing (parsePath)
-import Util exposing (authLocation, send, websocketAddress)
-import WebSocket
-import Window
+import Url exposing (Url)
+import Url.Parser exposing (parse)
+import Util exposing (authLocation)
 
 
-init : Flags -> Navigation.Location -> ( Main.Model, Cmd Msg )
-init flags location =
+init : Flags -> Url -> ( Main.Model, Cmd Msg )
+init flags url =
     let
         fetchTextures : List (Cmd Msg)
         fetchTextures =
@@ -49,9 +49,11 @@ init flags location =
                 , settings = Settings.init
                 , textures = Texture.init
                 }
-                location
+                url
     in
-    model ! (cmd :: fetchTextures ++ fetchSounds)
+    ( model
+    , Cmd.batch (cmd :: fetchTextures ++ fetchSounds)
+    )
 
 
 update : Msg -> Main.Model -> ( Main.Model, Cmd Msg )
@@ -84,8 +86,9 @@ update msg ({ room, settings, textures, flags } as model) =
                         _ ->
                             Cmd.none
             in
-            { model | flags = newFlags, room = newRoom }
-                ! [ newMsg, Cmd.map RoomMsg tickMsg ]
+            ( { model | flags = newFlags, room = newRoom }
+            , Cmd.batch [ newMsg, Cmd.map RoomMsg tickMsg ]
+            )
 
         KeyPress keyCode ->
             let
@@ -114,7 +117,7 @@ update msg ({ room, settings, textures, flags } as model) =
             ( model, selectAllInput elementId )
 
         Send str ->
-            ( model, send flags str )
+            ( model, websocketSend str )
 
         SettingsMsg settingsMsg ->
             ( { model | settings = Settings.update settingsMsg settings }
@@ -124,7 +127,7 @@ update msg ({ room, settings, textures, flags } as model) =
         Receive str ->
             let
                 ( newRoom, cmd ) =
-                    Room.receive str room flags
+                    Room.receive str room
             in
             ( { model | room = newRoom }, cmd )
 
@@ -135,12 +138,22 @@ update msg ({ room, settings, textures, flags } as model) =
             in
             ( { model | room = newRoom }, cmd )
 
+        UrlRequest urlRequest ->
+            case urlRequest of
+                Browser.Internal url ->
+                    update (UrlChange url) model
+
+                Browser.External url ->
+                    ( model, Browser.Navigation.load url )
+
         UrlChange location ->
             let
                 ( newModel, cmd ) =
                     locationUpdate model location
             in
-            newModel ! [ cmd, analytics () ]
+            ( newModel
+            , Cmd.batch [ cmd, analytics () ]
+            )
 
         SetVolume volumeType volume ->
             let
@@ -253,11 +266,11 @@ update msg ({ room, settings, textures, flags } as model) =
             )
 
         GodCommand str ->
-            ( model, send flags <| "god:" ++ str )
+            ( model, websocketSend <| "god:" ++ str )
 
 
-locationUpdate : Main.Model -> Navigation.Location -> ( Main.Model, Cmd Msg )
-locationUpdate model location =
+locationUpdate : Main.Model -> Url -> ( Main.Model, Cmd Msg )
+locationUpdate model url =
     let
         nextPath : Maybe String
         nextPath =
@@ -282,7 +295,7 @@ locationUpdate model location =
                 _ ->
                     Nothing
     in
-    case parsePath Routing.route location of
+    case parse Routing.route url of
         Just route ->
             case route of
                 Routing.Home ->
@@ -425,14 +438,14 @@ locationUpdate model location =
 
 
 subscriptions : Main.Model -> Sub Msg
-subscriptions model =
+subscriptions _ =
     Sub.batch
-        [ WebSocket.listen (websocketAddress model.flags) Receive
-        , AnimationFrame.diffs Frame
-        , Window.resizes (\{ width, height } -> Resize width height)
+        [ websocketListen Receive
+        , Browser.Events.onAnimationFrameDelta Frame
+        , Browser.Events.onResize Resize
         , mouseMove MousePosition
         , click MouseClick
         , touch TouchPosition
-        , Keyboard.presses KeyPress
+        , Browser.Events.onKeyPress (Json.map KeyPress Keyboard.keyDecoder)
         , godModeCommand GodCommand
         ]

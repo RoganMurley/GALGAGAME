@@ -1,4 +1,4 @@
-module CharacterSelect.Types exposing (Character, CharacterCards, Model, Slot(..), ViewModel)
+module CharacterSelect.Types exposing (Character, CharacterCards(..), Model, Slot(..), ViewModel)
 
 import Card.Types exposing (Card)
 
@@ -10,8 +10,8 @@ type alias Character =
     }
 
 
-type alias CharacterCards =
-    ( Card, Card, Card, Card )
+type CharacterCards
+    = CharacterCards Card Card Card Card
 
 
 type alias Model =

@@ -6,8 +6,9 @@ import Render.Meshes
 import Render.Shaders
 import Render.Types exposing (Vertex)
 import Render.Uniforms exposing (Uniforms)
-import WebGL exposing (Entity, Mesh, Shader, Texture)
+import WebGL exposing (Entity, Mesh, Shader)
 import WebGL.Settings.Blend as WebGL
+import WebGL.Texture exposing (Texture)
 
 
 entity : Shader {} (Uniforms u) { vcoord : Vec2 } -> Mesh Vertex -> Uniforms u -> Entity

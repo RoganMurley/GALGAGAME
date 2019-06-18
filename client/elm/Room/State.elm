@@ -1,5 +1,6 @@
 module Room.State exposing (init, receive, tick, update)
 
+import Browser.Navigation
 import Connected.State as Connected
 import GameType
 import Lobby.State as Lobby
@@ -7,7 +8,6 @@ import Login.State as Login
 import Main.Messages as Main
 import Main.Types exposing (Flags)
 import Menu.State as Menu
-import Navigation exposing (newUrl)
 import Replay.State as Replay
 import Room.Messages exposing (Msg(..))
 import Room.Types exposing (Model(..))
@@ -25,7 +25,7 @@ update model msg flags =
         MenuMsg menuMsg ->
             case model of
                 MainMenu ->
-                    ( model, Menu.update menuMsg )
+                    ( model, Menu.update menuMsg flags )
 
                 _ ->
                     ( model, Cmd.none )
@@ -35,7 +35,7 @@ update model msg flags =
                 Lobby lobby ->
                     let
                         ( newLobby, newMsg ) =
-                            Lobby.update lobby lobbyMsg
+                            Lobby.update lobby lobbyMsg flags
                     in
                     ( Lobby newLobby, newMsg )
 
@@ -47,7 +47,7 @@ update model msg flags =
                 Connected connected ->
                     let
                         ( newConnected, cmd ) =
-                            Connected.update flags connectedMsg connected
+                            Connected.update connectedMsg connected
                     in
                     ( Connected newConnected, cmd )
 
@@ -95,7 +95,9 @@ update model msg flags =
                             Cmd.none
 
                         GameType.CustomGame ->
-                            newUrl <| "/play/custom/" ++ roomID
+                            Browser.Navigation.pushUrl flags.key <|
+                                "/play/custom/"
+                                    ++ roomID
 
                         GameType.QuickplayGame ->
                             Cmd.none
@@ -111,8 +113,8 @@ update model msg flags =
                     ( model, Cmd.none )
 
 
-receive : String -> Model -> Flags -> ( Model, Cmd Main.Msg )
-receive str model flags =
+receive : String -> Model -> ( Model, Cmd Main.Msg )
+receive str model =
     case model of
         MainMenu ->
             ( MainMenu, Cmd.none )
@@ -123,7 +125,7 @@ receive str model flags =
         Connected connected ->
             let
                 ( newConnected, cmd ) =
-                    Connected.receive connected str flags
+                    Connected.receive connected str
             in
             ( Connected newConnected, cmd )
 
