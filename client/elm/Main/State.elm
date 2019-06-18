@@ -17,7 +17,7 @@ import Main.Messages exposing (Msg(..))
 import Main.Types as Main exposing (Flags)
 import Mode exposing (Mode(..))
 import Navigation
-import Ports exposing (analytics, click, copyInput, godModeCommand, mouseMove, reload, selectAllInput, touch)
+import Ports exposing (analytics, click, copyInput, godModeCommand, mouseMove, reload, selectAllInput, touch, websocketListen, websocketSend)
 import Replay.State as Replay
 import Room.Generators exposing (generate)
 import Room.Messages as Room
@@ -30,8 +30,7 @@ import Settings.Types as Settings
 import Signup.State as Signup
 import Texture.State as Texture
 import UrlParser exposing (parsePath)
-import Util exposing (authLocation, send, websocketAddress)
-import WebSocket
+import Util exposing (authLocation)
 import Window
 
 
@@ -114,7 +113,7 @@ update msg ({ room, settings, textures, flags } as model) =
             ( model, selectAllInput elementId )
 
         Send str ->
-            ( model, send flags str )
+            ( model, websocketSend str )
 
         SettingsMsg settingsMsg ->
             ( { model | settings = Settings.update settingsMsg settings }
@@ -124,7 +123,7 @@ update msg ({ room, settings, textures, flags } as model) =
         Receive str ->
             let
                 ( newRoom, cmd ) =
-                    Room.receive str room flags
+                    Room.receive str room
             in
             ( { model | room = newRoom }, cmd )
 
@@ -253,7 +252,7 @@ update msg ({ room, settings, textures, flags } as model) =
             )
 
         GodCommand str ->
-            ( model, send flags <| "god:" ++ str )
+            ( model, websocketSend <| "god:" ++ str )
 
 
 locationUpdate : Main.Model -> Navigation.Location -> ( Main.Model, Cmd Msg )
@@ -425,9 +424,9 @@ locationUpdate model location =
 
 
 subscriptions : Main.Model -> Sub Msg
-subscriptions model =
+subscriptions _ =
     Sub.batch
-        [ WebSocket.listen (websocketAddress model.flags) Receive
+        [ websocketListen Receive
         , AnimationFrame.diffs Frame
         , Window.resizes (\{ width, height } -> Resize width height)
         , mouseMove MousePosition

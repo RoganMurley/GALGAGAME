@@ -7,12 +7,13 @@ import Keyboard exposing (KeyCode)
 import Main.Messages as Main
 import Main.Types exposing (Flags)
 import Navigation
+import Ports exposing (websocketSend)
 import Regex exposing (Regex)
 import Room.Messages as Room
 import Signup.Decoders exposing (signupErrorDecoder)
 import Signup.Messages exposing (Msg(..))
 import Signup.Types exposing (Field(..), Model)
-import Util exposing (authLocation, message, send)
+import Util exposing (authLocation, message)
 
 
 init : Maybe String -> Model
@@ -66,9 +67,8 @@ update model msg flags =
             model
                 ! [ Navigation.newUrl model.nextUrl
                   , message Main.GetAuth
-
-                  -- Reconnect so that the ws connection has our login cookie
-                  , send flags "reconnect:"
+                  , -- Reconnect so that the ws connection has our login cookie
+                    websocketSend "reconnect:"
                   ]
 
         SubmitCallback (Err httpError) ->
