@@ -59,6 +59,6 @@ jobs:
             - "./client/node-modules"
       - save_cache:
           name: Cache ELM Dependencies
-          key: elm-{{ checksum "client/elm-package.json" }}
+          key: elm-{{ checksum "client/elm.json" }}
           paths:
             - "./client/elm-stuff"
