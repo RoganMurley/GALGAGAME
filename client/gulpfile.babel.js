@@ -4,8 +4,6 @@ import sass from 'gulp-sass';
 import uglify from 'gulp-uglify';
 import minify from 'gulp-minify-css';
 import inline from 'gulp-inline-source';
-import replace from 'gulp-replace';
-import git from 'git-rev-sync';
 import identity from 'gulp-identity';
 import yargs from 'yargs';
 
@@ -43,7 +41,6 @@ gulp.task('sass', () => {
 gulp.task('html', () => {
   return gulp.src('html/**/*.html')
     .pipe(inline({ compress: production }))
-    .pipe(replace('{{git}}', git.long().substring(0, 7)))
     .pipe(gulp.dest(dir.build));
 });
 

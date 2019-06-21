@@ -1,18 +1,19 @@
 'use strict';
 
 var params = new URLSearchParams(window.location.search);
-var embedElement = document.getElementById('elm');
 var hostname = window.location.hostname;
 var httpPort = window.location.port;
 var portProtocol = httpPort ?  ":" + httpPort : "";
-var app = Elm.Main.init({node: embedElement, flags: {
-  hostname: hostname,
-  httpPort: httpPort,
-  seed: new Date().getTime(),
-  dimensions: [ window.innerWidth, window.innerHeight ],
-  time: 0,
-  username: null,
-}});
+var app = Elm.Main.init({
+  flags: {
+    hostname: hostname,
+    httpPort: httpPort,
+    seed: new Date().getTime(),
+    dimensions: [ window.innerWidth, window.innerHeight ],
+    time: 0,
+    username: null,
+  },
+});
 
 app.ports.selectAllInput.subscribe(function (elementId) {
   document.getElementById(elementId).select();
@@ -25,10 +26,10 @@ app.ports.copyInput.subscribe(function (elementId) {
 
 var playedSounds = {};
 app.ports.playAudio.subscribe(function (input) {
-  var src = input[0];
-  var loop = input[1];
-  var once = input[2];
-  var volume = input[3];
+  var src = input.name;
+  var loop = input.loop;
+  var once = input.once;
+  var volume = input.vol;
 
   if (once) {
     if (playedSounds[input]) {
