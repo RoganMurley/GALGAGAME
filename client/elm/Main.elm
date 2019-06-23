@@ -6,7 +6,7 @@ import Html exposing (Html)
 import Main.Messages exposing (Msg(..))
 import Main.State exposing (init, subscriptions, update)
 import Main.Types exposing (Flags, InputFlags, Model)
-import Main.View exposing (view)
+import Main.View exposing (titleView, view)
 import Url exposing (Url)
 import Util exposing (message)
 
@@ -25,7 +25,7 @@ main =
 
 documentView : (Model -> Html Msg) -> (Model -> Browser.Document Msg)
 documentView viewFunc =
-    \model -> { title = "Ring of Worlds", body = [ viewFunc model ] }
+    \model -> { title = titleView model, body = [ viewFunc model ] }
 
 
 initFull : InputFlags -> Url -> Browser.Navigation.Key -> ( Model, Cmd Msg )
