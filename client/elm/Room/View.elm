@@ -1,4 +1,4 @@
-module Room.View exposing (view)
+module Room.View exposing (titleView, view)
 
 import Connected.View as Connected
 import Html as Html exposing (Html, div)
@@ -67,3 +67,22 @@ settingsView model flags =
 
         _ ->
             baseViews
+
+
+titleView : Model -> String
+titleView model =
+    case model of
+        Connected connected ->
+            Connected.titleView connected ++ " | Ring of Worlds"
+
+        Replay _ ->
+            "Replay | Ring of Worlds"
+
+        Login _ ->
+            "Login | Ring of Worlds"
+
+        Signup _ ->
+            "Signup | Ring of Worlds"
+
+        _ ->
+            "Ring of Worlds"

@@ -1,4 +1,4 @@
-module Connected.View exposing (concedeView, playersView, specMenuView, view)
+module Connected.View exposing (concedeView, playersView, specMenuView, titleView, view)
 
 import Connected.Messages as Connected
 import Connected.Types exposing (Model, Players)
@@ -89,3 +89,13 @@ specMenuView { hostname, httpPort } { roomID } =
         ]
         []
     ]
+
+
+titleView : Model -> String
+titleView { players } =
+    let
+        name : Maybe String -> String
+        name mName =
+            String.toUpper <| Maybe.withDefault "???" mName
+    in
+    name players.pb ++ " vs " ++ name players.pa
