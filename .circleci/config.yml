@@ -16,7 +16,7 @@ jobs:
       - restore_cache:
           name: Restore Cached Elm Dependencies
           keys:
-            - elm-{{ checksum "client/elm.json" }}
+            - elm-0.19-{{ checksum "client/elm.json" }}
       - run:
           name: Setup Server
           command: cd server &&
@@ -58,8 +58,8 @@ jobs:
           paths:
             - "./client/node-modules"
       - save_cache:
-          name: Cache ELM Dependencies
-          key: elm-{{ checksum "client/elm.json" }}
+          name: Cache Elm Dependencies
+          key: elm-0.19-{{ checksum "client/elm.json" }}
           paths:
             - "~/.elm"
             - "./client/elm-stuff"
