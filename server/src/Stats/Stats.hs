@@ -23,15 +23,6 @@ levelFromExperience xp = 1 + (floor $ levellingConstant * sqrt (fromIntegral xp)
 levelToExperience :: Level -> Experience
 levelToExperience level = floor $ (fromIntegral (level - 1) / levellingConstant) ** 2
 
-nextLevelAt :: Experience -> Experience
-nextLevelAt xp = levelToExperience nextLevel
-  where
-    currentLevel = levelFromExperience xp :: Level
-    nextLevel = currentLevel + 1 :: Level
-
-experienceThisLevel :: Experience -> Experience
-experienceThisLevel xp = xp - (levelToExperience . levelFromExperience $ xp)
-
 load :: Text -> App Experience
 load username = do
   result <- runBeam $ runSelectReturningOne $
@@ -46,44 +37,25 @@ increase username xp = do
     (\row -> Stats.Schema.statsUser row ==. val_ (Auth.Schema.UserId username))
 
 data StatChange = StatChange
-  { statChange_initialLevel      :: Level
-  , statChange_initialExperience :: Experience
-  , statChange_finalLevel        :: Level
+  { statChange_initialExperience :: Experience
   , statChange_finalExperience   :: Experience
-  , statChange_initialLevelAt    :: Experience
-  , statChange_nextLevelAt       :: Experience
   } deriving (Show, Eq)
 
 instance ToJSON StatChange where
   toJSON (StatChange
-    { statChange_initialLevel
-    , statChange_initialExperience
-    , statChange_finalLevel
+    { statChange_initialExperience
     , statChange_finalExperience
-    , statChange_initialLevelAt
-    , statChange_nextLevelAt
     }) =
     object
-      [ "initialLevel"      .= statChange_initialLevel
-      , "initialExperience" .= statChange_initialExperience
-      , "finalLevel"        .= statChange_finalLevel
+      [ "initialExperience" .= statChange_initialExperience
       , "finalExperience"   .= statChange_finalExperience
-      , "initialLevelAt"    .= statChange_initialLevelAt
-      , "nextLevelAt"       .= statChange_nextLevelAt
       ]
 
 statChange :: Experience -> Experience -> StatChange
 statChange xp delta = StatChange
-  { statChange_initialLevel      = initialLevel
-  , statChange_initialExperience = xp
-  , statChange_finalLevel        = levelFromExperience finalXp
-  , statChange_finalExperience   = finalXp
-  , statChange_initialLevelAt    = levelToExperience initialLevel
-  , statChange_nextLevelAt       = nextLevelAt finalXp
+  { statChange_initialExperience = xp
+  , statChange_finalExperience   = xp + delta
   }
-  where
-    initialLevel = levelFromExperience xp :: Level
-    finalXp = xp + delta :: Experience
 
 legalCharacters :: Level -> [String]
 legalCharacters 0     = []

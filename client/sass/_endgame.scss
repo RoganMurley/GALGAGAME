@@ -88,15 +88,7 @@
   max-width: 80vw;
 }
 
-.experience-bar-initial {
-  position: absolute;
-  top: 0;
-  left: 0;
-  background-color: #f4f15e;
-  height: 100%;
-}
-
-.experience-bar-final {
+.experience-bar {
   position: absolute;
   top: 0;
   left: 0;
@@ -117,5 +109,5 @@
   line-height: 32px;
   font-size: 22px;
   z-index: 1;
-  transform: translate(-50%, -25%);
+  transform: translate(-50%, -50%);
 }
