@@ -10,7 +10,7 @@ import Html.Events exposing (onClick)
 import Main.Messages as Main
 import PlayState.Messages exposing (Msg(..), PlayingOnly(..))
 import Room.Messages as Room
-import Stats exposing (Experience, Level, StatChange)
+import Stats exposing (Experience, StatChange, levelAt, levelFromExperience, nextLevelAt)
 import WhichPlayer.Types exposing (WhichPlayer(..))
 
 
@@ -97,49 +97,22 @@ view progress anim mReplayId mXp gameType mUsername =
 
         experienceDisplay =
             case mXp of
-                Just { initialExperience, finalExperience, initialLevel, finalLevel, initialLevelAt, nextLevelAt } ->
+                Just { initialXp, finalXp } ->
                     let
-                        levelUp : Maybe Level
-                        levelUp =
-                            if initialLevel /= finalLevel then
-                                Just finalLevel
-
-                            else
-                                Nothing
-
-                        experienceChange : Experience
-                        experienceChange =
-                            finalExperience - initialExperience
-
-                        totalLevelXp : Experience
-                        totalLevelXp =
-                            nextLevelAt - initialLevelAt
+                        xp : Experience
+                        xp =
+                            initialXp + progress * (finalXp - initialXp)
                     in
                     div [ class "experience" ]
-                        [ -- [ div []
-                          --     [ text <| "+" ++ String.fromInt experienceChange ++ "xp" ]
-                          -- , div [] <|
-                          --     case levelUp of
-                          --         Just _ ->
-                          --             [ text <| "LEVEL UP!" ]
-                          --
-                          --         Nothing ->
-                          --             []
-                          div [ class "experience-level-badge" ] [ text <| String.fromInt finalLevel ]
-                        , div [ class "experience-progress" ]
+                        [ div [ class "experience-progress" ]
                             [ div
-                                [ class "experience-bar-final"
-                                , style "width" <|
-                                    String.fromFloat
-                                        (100 * toFloat (finalExperience - initialLevelAt) / toFloat totalLevelXp)
-                                        ++ "%"
-                                ]
-                                []
+                                [ class "experience-level-badge" ]
+                                [ text <| String.fromInt <| levelFromExperience xp ]
                             , div
-                                [ class "experience-bar-initial"
+                                [ class "experience-bar"
                                 , style "width" <|
                                     String.fromFloat
-                                        (100 * toFloat (initialExperience - initialLevelAt) / toFloat totalLevelXp)
+                                        (100 * (xp - levelAt xp) / (nextLevelAt xp - levelAt xp))
                                         ++ "%"
                                 ]
                                 []

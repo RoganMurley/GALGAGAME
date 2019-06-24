@@ -1,6 +1,6 @@
-module Stats exposing (Experience, Level, StatChange, decodeStatChange)
+module Stats exposing (Experience, Level, StatChange, decodeStatChange, levelAt, levelFromExperience, levelToExperience, nextLevelAt)
 
-import Json.Decode as Json exposing (Decoder, field, int)
+import Json.Decode as Json exposing (Decoder, field, float)
 
 
 type alias Level =
@@ -8,17 +8,38 @@ type alias Level =
 
 
 type alias Experience =
-    Int
+    Float
 
 
 type alias StatChange =
-    { initialLevel : Level
-    , initialExperience : Experience
-    , finalLevel : Level
-    , finalExperience : Experience
-    , initialLevelAt : Experience
-    , nextLevelAt : Experience
+    { initialXp : Experience
+    , finalXp : Experience
     }
+
+
+levellingConstant : Float
+levellingConstant =
+    0.1
+
+
+levelFromExperience : Experience -> Level
+levelFromExperience xp =
+    1 + (floor <| levellingConstant * sqrt xp)
+
+
+levelToExperience : Level -> Experience
+levelToExperience level =
+    ((toFloat level - 1) / levellingConstant) ^ 2
+
+
+nextLevelAt : Experience -> Experience
+nextLevelAt =
+    levelFromExperience >> (+) 1 >> levelToExperience
+
+
+levelAt : Experience -> Experience
+levelAt =
+    levelFromExperience >> levelToExperience
 
 
 decodeStatChange : String -> Result Json.Error StatChange
@@ -26,12 +47,8 @@ decodeStatChange msg =
     let
         decoder : Decoder StatChange
         decoder =
-            Json.map6 StatChange
-                (field "initialLevel" int)
-                (field "initialExperience" int)
-                (field "finalLevel" int)
-                (field "finalExperience" int)
-                (field "initialLevelAt" int)
-                (field "nextLevelAt" int)
+            Json.map2 StatChange
+                (field "initialExperience" float)
+                (field "finalExperience" float)
     in
     Json.decodeString decoder msg
