@@ -97,7 +97,7 @@ view progress anim mReplayId mXp gameType mUsername =
 
         experienceDisplay =
             case mXp of
-                Just { initialExperience, finalExperience, initialLevel, finalLevel, nextLevelAt } ->
+                Just { initialExperience, finalExperience, initialLevel, finalLevel, initialLevelAt, nextLevelAt } ->
                     let
                         levelUp : Maybe Level
                         levelUp =
@@ -110,19 +110,39 @@ view progress anim mReplayId mXp gameType mUsername =
                         experienceChange : Experience
                         experienceChange =
                             finalExperience - initialExperience
+
+                        totalLevelXp : Experience
+                        totalLevelXp =
+                            nextLevelAt - initialLevelAt
                     in
                     div [ class "experience" ]
-                        [ div []
-                            [ text <| "+" ++ String.fromInt experienceChange ++ "xp" ]
-                        , div [] <|
-                            case levelUp of
-                                Just _ ->
-                                    [ text <| "LEVEL UP!" ]
-
-                                Nothing ->
-                                    []
-                        , div []
-                            [ text <| "Level " ++ String.fromInt finalLevel ++ " (" ++ String.fromInt finalExperience ++ "xp / " ++ String.fromInt nextLevelAt ++ "xp)"
+                        [ -- [ div []
+                          --     [ text <| "+" ++ String.fromInt experienceChange ++ "xp" ]
+                          -- , div [] <|
+                          --     case levelUp of
+                          --         Just _ ->
+                          --             [ text <| "LEVEL UP!" ]
+                          --
+                          --         Nothing ->
+                          --             []
+                          div [ class "experience-level-badge" ] [ text <| String.fromInt finalLevel ]
+                        , div [ class "experience-progress" ]
+                            [ div
+                                [ class "experience-bar-final"
+                                , style "width" <|
+                                    String.fromFloat
+                                        (100 * toFloat (finalExperience - initialLevelAt) / toFloat totalLevelXp)
+                                        ++ "%"
+                                ]
+                                []
+                            , div
+                                [ class "experience-bar-initial"
+                                , style "width" <|
+                                    String.fromFloat
+                                        (100 * toFloat (initialExperience - initialLevelAt) / toFloat totalLevelXp)
+                                        ++ "%"
+                                ]
+                                []
                             ]
                         ]
 
@@ -138,29 +158,30 @@ view progress anim mReplayId mXp gameType mUsername =
                     Nothing ->
                         a [ href "/signup" ] [ text "Sign up to gain experience" ]
                 ]
-    in
-    div
-        [ classList
-            [ ( "endgame-layer", True )
-            , ( endGameClass, True )
-            ]
-        , (\( a, b ) -> style a b)
-            (if show then
-                ( "opacity", String.fromFloat progress )
 
-             else
-                ( "", "" )
-            )
-        ]
+        styles =
+            if show then
+                style "opacity" <| String.fromFloat progress
+
+            else
+                style "" ""
+
+        classes =
+            classList
+                [ ( "endgame-layer", True )
+                , ( endGameClass, True )
+                ]
+    in
+    div [ classes, styles ]
         [ div [ class "endgame-container" ]
             [ div
                 [ class endGameClass ]
                 [ text endGameText ]
+            , experienceDisplay
             , div [ class "endgame-buttons" ]
                 [ rematchButton
                 , watchReplayButton
                 ]
-            , experienceDisplay
             , conversionLink
             ]
         ]
