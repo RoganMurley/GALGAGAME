@@ -61,4 +61,5 @@ jobs:
           name: Cache ELM Dependencies
           key: elm-{{ checksum "client/elm.json" }}
           paths:
+            - "~/.elm"
             - "./client/elm-stuff"
