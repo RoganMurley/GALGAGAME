@@ -16,6 +16,7 @@ type alias StatChange =
     , initialExperience : Experience
     , finalLevel : Level
     , finalExperience : Experience
+    , initialLevelAt : Experience
     , nextLevelAt : Experience
     }
 
@@ -25,11 +26,12 @@ decodeStatChange msg =
     let
         decoder : Decoder StatChange
         decoder =
-            Json.map5 StatChange
+            Json.map6 StatChange
                 (field "initialLevel" int)
                 (field "initialExperience" int)
                 (field "finalLevel" int)
                 (field "finalExperience" int)
+                (field "initialLevelAt" int)
                 (field "nextLevelAt" int)
     in
     Json.decodeString decoder msg

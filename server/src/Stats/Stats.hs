@@ -50,6 +50,7 @@ data StatChange = StatChange
   , statChange_initialExperience :: Experience
   , statChange_finalLevel        :: Level
   , statChange_finalExperience   :: Experience
+  , statChange_initialLevelAt    :: Experience
   , statChange_nextLevelAt       :: Experience
   } deriving (Show, Eq)
 
@@ -59,6 +60,7 @@ instance ToJSON StatChange where
     , statChange_initialExperience
     , statChange_finalLevel
     , statChange_finalExperience
+    , statChange_initialLevelAt
     , statChange_nextLevelAt
     }) =
     object
@@ -66,18 +68,21 @@ instance ToJSON StatChange where
       , "initialExperience" .= statChange_initialExperience
       , "finalLevel"        .= statChange_finalLevel
       , "finalExperience"   .= statChange_finalExperience
+      , "initialLevelAt"    .= statChange_initialLevelAt
       , "nextLevelAt"       .= statChange_nextLevelAt
       ]
 
 statChange :: Experience -> Experience -> StatChange
 statChange xp delta = StatChange
-  { statChange_initialLevel      = levelFromExperience xp
+  { statChange_initialLevel      = initialLevel
   , statChange_initialExperience = xp
   , statChange_finalLevel        = levelFromExperience finalXp
   , statChange_finalExperience   = finalXp
+  , statChange_initialLevelAt    = levelToExperience initialLevel
   , statChange_nextLevelAt       = nextLevelAt finalXp
   }
   where
+    initialLevel = levelFromExperience xp :: Level
     finalXp = xp + delta :: Experience
 
 legalCharacters :: Level -> [String]

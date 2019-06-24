@@ -74,4 +74,48 @@
   font-size: 32px;
   font-style: italic;
   text-align: center;
+  margin-top: 8px;
+  margin-bottom: 16px;
+}
+
+.experience-progress {
+  position: relative;
+  background-color: #191900;
+  padding: 4px;
+  border: #f4f15e 2px solid;
+  border-radius: 5px;
+  width: 300px;
+  max-width: 80vw;
+}
+
+.experience-bar-initial {
+  position: absolute;
+  top: 0;
+  left: 0;
+  background-color: #f4f15e;
+  height: 100%;
+}
+
+.experience-bar-final {
+  position: absolute;
+  top: 0;
+  left: 0;
+  background-color: #f2454a;
+  height: 100%;
+}
+
+.experience-level-badge {
+  position: absolute;
+  font-family: Arial;
+  color: #f4f15e;
+  background: #f2454a;
+  border: #f4f15e 2px solid;
+  border-radius: 100%;
+  font-weight: 900;
+  width: 32px;
+  height: 32px;
+  line-height: 32px;
+  font-size: 22px;
+  z-index: 1;
+  transform: translate(-50%, -25%);
 }
