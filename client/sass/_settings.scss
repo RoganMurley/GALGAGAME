@@ -22,6 +22,10 @@
 }
 
 .settings-open {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
   z-index: 10000;
   position: absolute;
 
@@ -32,31 +36,20 @@
 }
 
 .settings-body {
-  width: 600px;
-  height: 400px;
+  display: flex;
+  flex-direction: column;
 
-  margin-left: -300px;
-  margin-top: -225px;
-
-  position: absolute;
-  top: 50%;
-  left: 50%;
+  width: 80%;
+  height: 50%;
 
   background: rgba(0, 0, 0, 0.5);
   border: 5px solid #fff;
   border-radius: 6px;
-}
 
-.settings-inner {
   color: #fff;
   font-family: 'Raleway', sans-serif;
   font-size: 21px;
   padding: 36px;
-
-  h1 {
-    margin: 0;
-    margin-bottom: 32px;
-  }
 }
 
 .settings-button {
@@ -80,7 +73,7 @@
 .settings-input {
   font-family: monospace;
   text-align: center;
-  width: 400px;
+  width: 80%;
 
   border-color: antiquewhite;
   border-radius: 5px;
@@ -115,6 +108,7 @@
 }
 
 .settings-volume {
+  flex: 1;
   font-family: monospace;
   font-size: 1.2rem;
 }
