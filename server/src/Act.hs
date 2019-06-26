@@ -109,13 +109,13 @@ syncRoomClients room = do
 
 syncPlayersRoom :: Room -> App ()
 syncPlayersRoom room = do
-  Room.sendExcluding PlayerB (syncMsg True) room
-  Room.sendToPlayer PlayerB (syncMsg False) room
+  Room.sendExcluding PlayerB syncMsgPa room
+  Room.sendToPlayer  PlayerB syncMsgPb room
   where
-    syncMsg :: Bool -> Text
-    syncMsg rev =
-      "syncPlayers:" <>
-        (cs . encode . (if rev then mirror else id) $ Room.connected room)
+    syncMsgPa :: Text
+    syncMsgPa = ("syncPlayers:" <>) . cs . encode $ Room.players room
+    syncMsgPb :: Text
+    syncMsgPb = ("syncPlayers:" <>) . cs . encode . mirror $ Room.players room
 
 
 resolveRoomClients :: [ResolveData] -> Model -> PlayState -> Maybe WhichPlayer -> Room -> App ()
