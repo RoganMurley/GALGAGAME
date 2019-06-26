@@ -25,23 +25,14 @@ playersView : Players -> Html Msg
 playersView { pa, pb } =
     let
         playerView : Maybe String -> Bool -> Html msg
-        playerView mName me =
-            let
-                meClass : String
-                meClass =
-                    if me then
-                        "me"
-
-                    else
-                        ""
-            in
+        playerView mName isMe =
             div
-                [ class <| "player-name " ++ meClass ]
+                [ classList [ ( "player-name ", True ), ( "me", isMe ) ] ]
                 [ text <| Maybe.withDefault "" mName ]
     in
     div [ class "player-layer" ]
-        [ playerView pb True
-        , playerView pa False
+        [ playerView pa True
+        , playerView pb False
         ]
 
 

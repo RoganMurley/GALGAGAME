@@ -161,8 +161,8 @@ getUsers room = (userPa, userPb)
     userPb = Client.user <$> clientB :: Maybe User
 
 
-connected :: Room -> (Player, Player)
-connected Room{ room_pa, room_pb } = (room_pa, room_pb)
+players :: Room -> (Player, Player)
+players Room{ room_pa, room_pb } = (room_pa, room_pb)
 
 
 -- Sending messages.
