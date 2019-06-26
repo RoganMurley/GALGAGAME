@@ -18,7 +18,7 @@ import Login.State as Login
 import Main.Messages exposing (Msg(..))
 import Main.Types as Main exposing (Flags)
 import Mode exposing (Mode(..))
-import Ports exposing (analytics, click, copyInput, godModeCommand, mouseMove, reload, selectAllInput, touch, websocketListen, websocketSend)
+import Ports exposing (analytics, click, copyInput, godModeCommand, mouseMove, reload, selectAllInput, touch, websocketListen, websocketReconnect, websocketSend)
 import Replay.State as Replay
 import Room.Generators exposing (generate)
 import Room.Messages as Room
@@ -300,7 +300,7 @@ locationUpdate model url =
             case route of
                 Routing.Home ->
                     ( { model | room = Room.init }
-                    , Cmd.none
+                    , websocketReconnect ()
                     )
 
                 Routing.Play playRoute ->
