@@ -19,6 +19,13 @@ animShake anim which tick =
                     else
                         1.0 * Ease.outQuad (toFloat d / 50.0)
 
+                Curse w d ->
+                    if which /= w then
+                        0
+
+                    else
+                        1.0 * Ease.outQuad (toFloat d / 50.0)
+
                 Bite w d ->
                     if which /= w then
                         0
@@ -95,6 +102,9 @@ progress anim tick =
                     Ease.linear
 
                 Slash _ _ ->
+                    Ease.outQuad
+
+                Curse _ _ ->
                     Ease.outQuad
 
                 Bite _ _ ->
