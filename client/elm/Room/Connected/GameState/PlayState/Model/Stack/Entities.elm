@@ -151,7 +151,7 @@ stackEntity { w, h, radius, anim, progress } baseRotateProgress finalStackLen fi
                         finalI
 
                 Bounce _ ->
-                    toFloat finalIndex
+                    toFloat finalIndex + 1.0
 
                 _ ->
                     finalI
