@@ -275,6 +275,7 @@ spectate client roomVar = do
   Client.send ("acceptSpec:" :: Text) client
   Room.broadcast (Command.toChat (SpectateCommand (Client.name client))) room
   syncClient client (Room.getState room)
+  syncPlayersRoom room
   _ <- runMaybeT . forever $ do
     msg <- lift $ Client.receive client
     lift $ actSpec (Command.parse (Client.name client) msg) roomVar
