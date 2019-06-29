@@ -1,6 +1,7 @@
 module Cards where
 
 import Control.Monad (when)
+import CardAnim (Hurt(..))
 import Card (Card(Card), description)
 import Data.Monoid ((<>))
 import Player (other)
@@ -10,7 +11,7 @@ import Util (shuffle)
 
 import qualified DSL.Alpha as Alpha
 import qualified DSL.Beta as Beta
-import DSL.Beta hiding (confound, curse, hubris, reflect)
+import DSL.Beta hiding (confound, hubris, reflect)
 
 
 -- Striker
@@ -20,7 +21,7 @@ missile =
     "missile"
     "Hurt for 7"
     "missile.png"
-    $ \w -> slash 7 (other w)
+    $ \w -> hurt 7 (other w) Slash
 
 
 fireball :: Card
@@ -31,7 +32,7 @@ fireball =
     "fireball.png"
     $ \w -> do
       len <- length <$> getStack
-      slash (len * 5) (other w)
+      hurt (len * 5) (other w) Slash
 
 
 offering :: Card
@@ -41,7 +42,7 @@ offering =
     "Pay 4 life to draw 2"
     "offering.png"
     $ \w -> do
-      slash 4 w
+      hurt 4 w Slash
       draw w
       draw w
 
@@ -64,7 +65,7 @@ hammer =
     "Shot"
     "Hurt for 8"
     "hammer.png"
-    $ \w -> slash 8 (other w)
+    $ \w -> hurt 8 (other w) Slash
 
 
 lightning :: Card
@@ -75,7 +76,7 @@ lightning =
     "lightning.png"
     $ \w -> do
       len <- length <$> getStack
-      slash (len * 4) (other w)
+      hurt (len * 4) (other w) Slash
 
 
 hubris :: Card
@@ -95,7 +96,7 @@ katana =
     "Arrow"
     "Hurt for 9"
     "katana.png"
-    $ \w -> slash 9 (other w)
+    $ \w -> hurt 9 (other w) Slash
 
 
 curse :: Card
@@ -108,8 +109,8 @@ curse =
       let dmg = 15
       paLife <- getLife w
       pbLife <- getLife (other w)
-      when (paLife <= pbLife) (Beta.curse dmg w)
-      when (paLife >= pbLife) (Beta.curse dmg (other w))
+      when (paLife <= pbLife) (hurt dmg w Curse)
+      when (paLife >= pbLife) (hurt dmg (other w) Curse)
 
 
 bless :: Card
@@ -179,7 +180,7 @@ parasite =
     "Hurt yourself for 4"
     "bad-apple.png"
     $ \w -> do
-      bite 4 w
+      hurt 4 w Bite
 
 
 reversal :: Card
@@ -199,7 +200,7 @@ staff =
     "Hurt for 4, then draw 1"
     "staff.png"
     $ \w -> do
-      slash 4 (other w)
+      hurt 4 (other w) Slash
       draw w
 
 
@@ -212,7 +213,7 @@ surge =
     $ \w -> do
       stack <- getStack
       let count = length . filter (\(StackCard _ (Card name _ _ _)) -> name == "Brainbomb") $ stack
-      slash ((count + 1) * 10) (other w)
+      hurt ((count + 1) * 10) (other w) Slash
 
 
 mimic :: Card
@@ -248,7 +249,7 @@ sword =
     "Projectile"
     "Hurt for 10"
     "sword.png"
-    $ \w -> slash 10 (other w)
+    $ \w -> hurt 10 (other w) Slash
 
 
 potion :: Card
@@ -277,7 +278,7 @@ grudge =
     "Hurt for 3, add a copy of this card to hand"
     "grudge.png"
     $ \w -> do
-      slash 3 (other w)
+      hurt 3 (other w) Slash
       addToHand w grudge
 
 
@@ -289,7 +290,7 @@ overwhelm =
     "overwhelm.png"
     $ \w -> do
       len <- length <$> getHand w
-      slash (len * 3) (other w)
+      hurt (len * 3) (other w) Slash
 
 
 echo :: Card
@@ -322,7 +323,7 @@ relicblade =
     "Sting"
     "Hurt for 6"
     "sting.png"
-    $ \w -> slash 6 (other w)
+    $ \w -> hurt 6 (other w) Slash
 
 
 greed :: Card
@@ -333,7 +334,7 @@ greed =
     "greed.png"
     $ \w -> do
       len <- length <$> getHand (other w)
-      slash (len * 3) (other w)
+      hurt (len * 3) (other w) Slash
 
 
 alchemy :: Card
@@ -362,7 +363,7 @@ theEnd =
     "The End"
     "You're out of cards, hurt yourself for 10"
     "end.png"
-    $ slash 10
+    $ \w -> hurt 10 w Slash
 
 
 allCards :: [Card]

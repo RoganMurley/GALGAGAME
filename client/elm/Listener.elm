@@ -1,6 +1,6 @@
 module Listener exposing (animSfx, listen)
 
-import Animation.Types exposing (Anim(..))
+import Animation.Types exposing (Anim(..), Hurt(..))
 import Audio.State exposing (playSoundWith)
 import Audio.Types exposing (SoundOption(..))
 import GameState.Types exposing (GameState(..))
@@ -44,25 +44,27 @@ listen state tick =
 animSfx : Anim -> Maybe String
 animSfx anim =
     case anim of
-        Slash _ d ->
+        Hurt _ d hurt ->
             case d of
                 0 ->
                     Nothing
 
                 _ ->
-                    Just "damage.mp3"
+                    case hurt of
+                        Slash ->
+                            Just "damage.mp3"
+
+                        Bite ->
+                            Just "bite.mp3"
+
+                        Curse ->
+                            Just "curse.mp3"
 
         Heal _ _ ->
             Just "heal.mp3"
 
         Draw _ ->
             Just "draw.mp3"
-
-        Bite _ _ ->
-            Just "bite.mp3"
-
-        Curse _ _ ->
-            Just "curse.mp3"
 
         Reverse _ ->
             Just "reverse.mp3"

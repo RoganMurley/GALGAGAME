@@ -7,6 +7,7 @@ import Data.Text (Text)
 import Safe (readMay)
 
 import Card (Card(..))
+import CardAnim (Hurt(..))
 import Cards (allCards)
 import Player (WhichPlayer(..), other)
 import Util (Err, breakAt)
@@ -25,7 +26,7 @@ parse which msg =
       "slash" ->
         case readMay $ cs content of
           Just d ->
-            Right $ Beta.slash d (other which)
+            Right $ Beta.hurt d (other which) Slash
           Nothing ->
             Left ("Cannot parse " <> content <> " to int" :: Err)
       "heal" ->

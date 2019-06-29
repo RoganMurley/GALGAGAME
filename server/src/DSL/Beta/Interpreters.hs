@@ -30,11 +30,9 @@ import {-# SOURCE #-} Cards (theEnd)
 
 alphaI :: Program a -> Alpha.Program a
 alphaI (Free (Raw p n))          = p                             >>  alphaI n
-alphaI (Free (Slash d w n))      = Alpha.hurt d w                >>  alphaI n
+alphaI (Free (Hurt d w _ n))     = Alpha.hurt d w                >>  alphaI n
 alphaI (Free (Heal h w n))       = Alpha.heal h w                >>  alphaI n
 alphaI (Free (Draw w n))         = Alpha.draw w                  >>  alphaI n
-alphaI (Free (Bite d w n))       = Alpha.hurt d w                >>  alphaI n
-alphaI (Free (Curse d w n))      = Alpha.hurt d w                >>  alphaI n
 alphaI (Free (AddToHand w c n))  = Alpha.addToHand w c           >>  alphaI n
 alphaI (Free (Hubris n))         = Alpha.setStack []             >>  alphaI n
 alphaI (Free (Reflect n))        = Alpha.modStackAll changeOwner >>  alphaI n
@@ -62,9 +60,7 @@ basicAnim anim alphaProgram = toLeft alphaProgram <* (toRight . liftF $ anim)
 
 animI :: DSL a -> (Alpha.Program a -> AlphaAnimProgram a)
 animI (Null _)           = basicAnim $ Anim.Null ()
-animI (Slash d w _)      = basicAnim $ Anim.Slash w d ()
-animI (Bite d w _)       = basicAnim $ Anim.Bite w d ()
-animI (Curse d w _)      = basicAnim $ Anim.Curse w d ()
+animI (Hurt d w h _)     = basicAnim $ Anim.Hurt w d h ()
 animI (Reflect _)        = basicAnim $ Anim.Reflect ()
 animI (Confound _)       = basicAnim $ Anim.Confound ()
 animI (Reverse _)        = basicAnim $ Anim.Reverse ()
