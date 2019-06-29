@@ -218,10 +218,7 @@ updateTurnOnly msg state =
                                 Playing { game = Game.gameInit final }
                         in
                         ( newState
-                        , Cmd.batch
-                            [ websocketSend <| "play:" ++ String.fromInt index
-                            , playSound "/sfx/playCard.wav"
-                            ]
+                        , websocketSend <| "play:" ++ String.fromInt index
                         )
 
             else

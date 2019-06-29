@@ -7,9 +7,10 @@ import Test.Tasty.QuickCheck (Arbitrary, CoArbitrary, arbitrary, coarbitrary, el
 
 import System.Random (mkStdGen)
 
+import Bounce (CardBounce(..))
 import Card (Card(..))
 import Cards (allCards)
-import CardAnim (CardAnim(..))
+import CardAnim (CardAnim(..), Hurt(..))
 import Characters (Character(..), CharModel(..), SelectedCharacters(..))
 import GameState (GameState(..), PlayState(..), WaitType(..))
 import Model (Model(..), PlayerModel(..), Passes(..))
@@ -117,16 +118,37 @@ instance Arbitrary PlayerModelDiff where
 
 instance Arbitrary CardAnim where
   arbitrary = oneof
-    [ Slash <$> arbitrary <*> arbitrary
-    , Heal <$> arbitrary <*> arbitrary
+    [ Heal <$> arbitrary <*> arbitrary
     , Draw <$> arbitrary
-    , Bite <$> arbitrary <*> arbitrary
+    , Hurt <$> arbitrary <*> arbitrary <*> arbitrary
     , pure Reflect
     , pure Reverse
     , pure Hubris
+    , pure Confound
     , Play <$> arbitrary <*> arbitrary <*> arbitrary
     , Transmute <$> arbitrary <*> arbitrary
     , GameEnd <$> arbitrary
+    , pure Rotate
+    , pure Windup
+    , Fabricate <$> arbitrary
+    , Bounce <$> arbitrary
+    , Pass <$> arbitrary
+    ]
+
+
+instance Arbitrary CardBounce where
+  arbitrary = oneof
+    [ NoBounce <$> arbitrary
+    , pure BounceDiscard
+    , BounceIndex <$> arbitrary <*> arbitrary
+    ]
+
+
+instance Arbitrary Hurt where
+  arbitrary = oneof
+    [ pure Slash
+    , pure Bite
+    , pure Curse
     ]
 
 
