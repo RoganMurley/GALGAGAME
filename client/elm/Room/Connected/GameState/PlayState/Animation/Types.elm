@@ -1,4 +1,4 @@
-module Animation.Types exposing (Anim(..), Bounce(..), HandBounce)
+module Animation.Types exposing (Anim(..), Bounce(..), HandBounce, Hurt(..))
 
 import Card.Types exposing (Card)
 import Stack.Types exposing (StackCard)
@@ -7,11 +7,9 @@ import WhichPlayer.Types exposing (WhichPlayer)
 
 type Anim
     = NullAnim
-    | Slash WhichPlayer Int
+    | Hurt WhichPlayer Int Hurt
     | Heal WhichPlayer Int
     | Draw WhichPlayer
-    | Bite WhichPlayer Int
-    | Curse WhichPlayer Int
     | Reflect WhichPlayer
     | Reverse WhichPlayer
     | Hubris WhichPlayer
@@ -34,6 +32,12 @@ type Bounce
     = NoBounce Int
     | BounceDiscard
     | BounceIndex Int Int
+
+
+type Hurt
+    = Slash
+    | Bite
+    | Curse
 
 
 type alias HandBounce =

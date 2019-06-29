@@ -11,11 +11,9 @@ import StackCard (StackCard)
 
 
 data CardAnim
-  = Slash WhichPlayer Life
-  | Heal WhichPlayer Life
+  = Heal WhichPlayer Life
   | Draw WhichPlayer
-  | Bite WhichPlayer Life
-  | Curse WhichPlayer Life
+  | Hurt WhichPlayer Life Hurt
   | Reflect
   | Reverse
   | Hubris
@@ -32,16 +30,13 @@ data CardAnim
   deriving (Show, Eq)
 
 
-type SfxUrl = Text
-type ShaderName = Text
-
-
 instance ToJSON CardAnim where
-  toJSON (Slash w d) =
+  toJSON (Hurt w d h) =
     object
-    [ "name"   .= ("slash" :: Text)
+    [ "name"   .= ("hurt" :: Text)
     , "player" .= w
     , "damage" .= d
+    , "hurt"   .= h
     ]
   toJSON (Heal w h) =
     object
@@ -53,18 +48,6 @@ instance ToJSON CardAnim where
     object
     [ "name"   .= ("draw" :: Text)
     , "player" .= w
-    ]
-  toJSON (Bite w d) =
-    object
-    [ "name"   .= ("bite" :: Text)
-    , "player" .= w
-    , "damage" .= d
-    ]
-  toJSON (Curse w d) =
-    object
-    [ "name"   .= ("curse" :: Text)
-    , "player" .= w
-    , "damage" .= d
     ]
   toJSON Reflect =
     object
@@ -142,11 +125,9 @@ instance ToJSON CardAnim where
 
 
 instance Mirror CardAnim where
-  mirror (Slash w d)       = Slash (other w) d
+  mirror (Hurt w d h)      = Hurt (other w) d h
   mirror (Heal w h)        = Heal (other w) h
   mirror (Draw w)          = Draw  (other w)
-  mirror (Bite w d)        = Bite (other w) d
-  mirror (Curse w d)       = Curse (other w) d
   mirror Reflect           = Reflect
   mirror Confound          = Confound
   mirror Reverse           = Reverse
@@ -159,7 +140,24 @@ instance Mirror CardAnim where
   mirror Windup            = Windup
   mirror (Fabricate c)     = Fabricate (mirror c)
   mirror (Bounce b)        = Bounce b
-  mirror (Pass w)   = Pass (other w)
+  mirror (Pass w)          = Pass (other w)
+
+
+data Hurt
+  = Slash
+  | Bite
+  | Curse
+  deriving (Show, Eq)
+
+
+instance ToJSON Hurt where
+  toJSON (Slash) = "slash"
+  toJSON (Bite)  = "bite"
+  toJSON (Curse) = "curse"
+
+
+type SfxUrl = Text
+type ShaderName = Text
 
 
 cardAnimDamage :: CardAnim -> (Life, Life)
@@ -178,13 +176,7 @@ cardAnimDamage anim =
       Heal w h ->
           wrap w h
 
-      Slash w d ->
-          wrap w (-d)
-
-      Bite w d ->
-          wrap w (-d)
-
-      Curse w d ->
+      Hurt w d _ ->
           wrap w (-d)
 
       _ ->

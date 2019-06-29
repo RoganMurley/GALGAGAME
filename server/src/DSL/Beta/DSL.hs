@@ -1,7 +1,7 @@
 module DSL.Beta.DSL where
 
 import Card (Card)
-import CardAnim (CardAnim)
+import CardAnim (CardAnim, Hurt)
 import Control.Monad.Free (Free(..))
 import Life (Life)
 import Model (Deck, Hand, Stack)
@@ -14,11 +14,9 @@ import qualified DSL.Alpha.DSL as Alpha
 
 data DSL n
   = Raw (Alpha.Program ()) n
-  | Slash Life WhichPlayer n
+  | Hurt Life WhichPlayer Hurt n
   | Heal Life WhichPlayer n
   | Draw WhichPlayer n
-  | Bite Life WhichPlayer n
-  | Curse Life WhichPlayer n
   | AddToHand WhichPlayer Card n
   | Hubris n
   | Reflect n

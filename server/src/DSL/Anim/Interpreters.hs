@@ -9,11 +9,9 @@ import qualified CardAnim as CardAnim
 next :: DSL a -> a
 next (Null n)          = n
 next (Raw _ n)         = n
-next (Slash _ _ n)     = n
+next (Hurt _ _ _ n)    = n
 next (Heal _ _ n)      = n
 next (Draw _ n)        = n
-next (Bite _ _ n)      = n
-next (Curse _ _ n)     = n
 next (Hubris n)        = n
 next (Reverse n)       = n
 next (Reflect n)       = n
@@ -32,11 +30,9 @@ next (Pass _ n)        = n
 animate :: DSL a -> Maybe CardAnim
 animate (Null _)            = Nothing
 animate (Raw a _)           = Just a
-animate (Slash w d _)       = Just $ CardAnim.Slash w d
+animate (Hurt w d h _)      = Just $ CardAnim.Hurt w d h
 animate (Heal w h _)        = Just $ CardAnim.Heal w h
 animate (Draw w _)          = Just . CardAnim.Draw $ w
-animate (Bite w d _)        = Just $ CardAnim.Bite w d
-animate (Curse w d _)       = Just $ CardAnim.Curse w d
 animate (Reflect _)         = Just CardAnim.Reflect
 animate (Confound _)        = Just CardAnim.Confound
 animate (Reverse _)         = Just CardAnim.Reverse

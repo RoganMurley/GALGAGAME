@@ -1,6 +1,6 @@
 module Model.Wave exposing (view)
 
-import Animation.Types exposing (Anim(..))
+import Animation.Types exposing (Anim(..), Hurt(..))
 import Colour exposing (Colour)
 import Game.Entity as Game
 import Game.Types exposing (Context)
@@ -30,15 +30,7 @@ view ({ w, h, radius, anim } as ctx) =
             \c e -> Render.Primitives.circle <| uniColour ctx c e
     in
     case anim of
-        Slash _ _ ->
-            [ render Colour.red
-                { scale = scale
-                , position = vec2 (w / 2) (h / 2)
-                , rotation = 0
-                }
-            ]
-
-        Bite _ _ ->
+        Hurt _ _ _ ->
             [ render Colour.red
                 { scale = scale
                 , position = vec2 (w / 2) (h / 2)

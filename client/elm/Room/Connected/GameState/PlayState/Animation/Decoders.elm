@@ -1,6 +1,6 @@
 module Animation.Decoders exposing (decoder)
 
-import Animation.Types exposing (Anim(..), Bounce(..))
+import Animation.Types exposing (Anim(..), Bounce(..), Hurt(..))
 import Card.Decoders as Card
 import Json.Decode as Json exposing (Decoder, fail, field, int, list, null, oneOf, string, succeed)
 import Stack.Decoders as Stack
@@ -17,20 +17,14 @@ decoder =
         getDecoder : String -> Decoder Anim
         getDecoder animName =
             case animName of
-                "slash" ->
-                    slashDecoder
+                "hurt" ->
+                    hurtDecoder
 
                 "heal" ->
                     healDecoder
 
-                "curse" ->
-                    curseDecoder
-
                 "draw" ->
                     drawDecoder
-
-                "bite" ->
-                    biteDecoder
 
                 "reflect" ->
                     reflectDecoder
@@ -94,11 +88,28 @@ constDecoder x =
     string |> Json.andThen decode
 
 
-slashDecoder : Decoder Anim
-slashDecoder =
-    Json.map2 Slash
+hurtDecoder : Decoder Anim
+hurtDecoder =
+    let
+        getDecoder : String -> Decoder Hurt
+        getDecoder s =
+            case s of
+                "slash" ->
+                    succeed Slash
+
+                "bite" ->
+                    succeed Bite
+
+                "curse" ->
+                    succeed Curse
+
+                _ ->
+                    fail <| s ++ " is not a valid hurt type"
+    in
+    Json.map3 Hurt
         (field "player" WhichPlayer.decoder)
         (field "damage" int)
+        (field "hurt" string |> Json.andThen getDecoder)
 
 
 healDecoder : Decoder Anim
@@ -112,20 +123,6 @@ drawDecoder : Decoder Anim
 drawDecoder =
     Json.map Draw
         (field "player" WhichPlayer.decoder)
-
-
-biteDecoder : Decoder Anim
-biteDecoder =
-    Json.map2 Bite
-        (field "player" WhichPlayer.decoder)
-        (field "damage" int)
-
-
-curseDecoder : Decoder Anim
-curseDecoder =
-    Json.map2 Curse
-        (field "player" WhichPlayer.decoder)
-        (field "damage" int)
 
 
 reflectDecoder : Decoder Anim

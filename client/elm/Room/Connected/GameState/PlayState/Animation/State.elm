@@ -12,21 +12,7 @@ animShake anim which tick =
     let
         baseMag =
             case anim of
-                Slash w d ->
-                    if which /= w then
-                        0
-
-                    else
-                        1.0 * Ease.outQuad (toFloat d / 50.0)
-
-                Curse w d ->
-                    if which /= w then
-                        0
-
-                    else
-                        1.0 * Ease.outQuad (toFloat d / 50.0)
-
-                Bite w d ->
+                Hurt w d _ ->
                     if which /= w then
                         0
 
@@ -101,13 +87,7 @@ progress anim tick =
                 Confound _ ->
                     Ease.linear
 
-                Slash _ _ ->
-                    Ease.outQuad
-
-                Curse _ _ ->
-                    Ease.outQuad
-
-                Bite _ _ ->
+                Hurt _ _ _ ->
                     Ease.outQuad
 
                 Windup _ ->

@@ -1,6 +1,7 @@
 {-# LANGUAGE TemplateHaskell, FlexibleContexts #-}
 module DSL.Beta.Actions where
 
+import CardAnim (Hurt(..))
 import Control.Monad.Free (MonadFree, liftF)
 import Control.Monad.Free.TH (makeFree)
 import DSL.Beta.DSL (DSL(..), Program)
@@ -12,5 +13,5 @@ makeFree ''DSL
 
 lifesteal :: Life -> WhichPlayer -> Program ()
 lifesteal d w = do
-  slash d w
+  hurt d w Slash
   heal d (other w)
