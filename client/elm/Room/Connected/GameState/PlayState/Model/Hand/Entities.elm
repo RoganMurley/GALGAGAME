@@ -2,16 +2,16 @@ module Hand.Entities exposing (entities, handCardPosition, handCardRotation, han
 
 import Animation.State as Animation
 import Animation.Types exposing (Anim(..), Bounce, HandBounce)
-import Card.Types as Card exposing (Card)
+import Card.Types exposing (Card)
 import Game.Entity as Game
-import Game.Types exposing (Context, Hover(..))
+import Game.Types exposing (Context, HandEntity, Hover(..), HoverOther, HoverSelf, OtherHandEntity)
 import Math.Vector2 exposing (Vec2, vec2)
 import Stack.Entities
 import Util exposing (interp2D, interpFloat)
 import WhichPlayer.Types exposing (WhichPlayer(..))
 
 
-entities : Hover { dmg : ( Int, Int ) } -> Context -> List (Card.Entity { index : Int })
+entities : HoverSelf -> Context -> List HandEntity
 entities hover ({ w, h, radius, anim, model, progress } as ctx) =
     let
         finalHand =
@@ -67,7 +67,7 @@ entities hover ({ w, h, radius, anim, model, progress } as ctx) =
         finalN =
             List.length finalHand
 
-        entity : ( Int, Card ) -> Card.Entity { index : Int }
+        entity : ( Int, Card ) -> HandEntity
         entity ( finalI, card ) =
             let
                 i =
@@ -91,11 +91,11 @@ entities hover ({ w, h, radius, anim, model, progress } as ctx) =
             , index = finalI
             }
 
-        mainEntities : List (Card.Entity { index : Int })
+        mainEntities : List HandEntity
         mainEntities =
             List.map entity <| List.indexedMap (\a b -> ( a, b )) hand
 
-        extraEntities : List (Card.Entity { index : Int })
+        extraEntities : List HandEntity
         extraEntities =
             case anim of
                 Draw PlayerA ->
@@ -150,7 +150,7 @@ entities hover ({ w, h, radius, anim, model, progress } as ctx) =
                         playerBounces =
                             Animation.getPlayerBounceCards PlayerA bounces model.stack
 
-                        makeBounceEntity : HandBounce -> Card.Entity { index : Int }
+                        makeBounceEntity : HandBounce -> HandEntity
                         makeBounceEntity { handIndex, stackIndex, card } =
                             let
                                 stackEntity =
@@ -179,7 +179,7 @@ entities hover ({ w, h, radius, anim, model, progress } as ctx) =
     mainEntities ++ extraEntities
 
 
-otherEntities : Hover {} -> Context -> List (Game.Entity {})
+otherEntities : HoverOther -> Context -> List (Game.Entity {})
 otherEntities hover ({ w, h, radius, anim, model, progress } as ctx) =
     let
         finalN =
@@ -220,7 +220,7 @@ otherEntities hover ({ w, h, radius, anim, model, progress } as ctx) =
                 _ ->
                     identity
 
-        entity : Int -> Game.Entity {}
+        entity : Int -> OtherHandEntity
         entity finalI =
             let
                 i =
@@ -237,11 +237,11 @@ otherEntities hover ({ w, h, radius, anim, model, progress } as ctx) =
             , scale = 1
             }
 
-        mainEntities : List (Game.Entity {})
+        mainEntities : List OtherHandEntity
         mainEntities =
             List.map entity (List.range 0 (n - 1))
 
-        extraEntities : List (Game.Entity {})
+        extraEntities : List OtherHandEntity
         extraEntities =
             case anim of
                 Draw PlayerB ->
