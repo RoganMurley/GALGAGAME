@@ -1,4 +1,4 @@
-module Game.Types exposing (Context, Entities, HandEntity, Hover(..), HoverBase, HoverOther, HoverSelf, HoverStack, Model, StackEntity)
+module Game.Types exposing (Context, Entities, HandEntity, Hover(..), HoverBase, HoverOther, HoverSelf, HoverStack, Model, OtherHandEntity, StackEntity)
 
 import Animation.Types exposing (Anim)
 import Card.Types exposing (Card)
@@ -53,10 +53,14 @@ type alias HandEntity =
         }
 
 
+type alias OtherHandEntity =
+    Game.Entity {}
+
+
 type alias Entities =
     { stack : List StackEntity
     , hand : List HandEntity
-    , otherHand : List (Game.Entity {})
+    , otherHand : List OtherHandEntity
     }
 
 
