@@ -10,7 +10,7 @@ import System.Random (mkStdGen)
 import Bounce (CardBounce(..))
 import Card (Card(..))
 import Cards (allCards)
-import CardAnim (CardAnim(..), Hurt(..))
+import CardAnim (CardAnim(..), Hurt(..), Transmute(..))
 import Characters (Character(..), CharModel(..), SelectedCharacters(..))
 import GameState (GameState(..), PlayState(..), WaitType(..))
 import Model (Model(..), PlayerModel(..), Passes(..))
@@ -126,7 +126,7 @@ instance Arbitrary CardAnim where
     , pure Hubris
     , pure Confound
     , Play <$> arbitrary <*> arbitrary <*> arbitrary
-    , Transmute <$> arbitrary <*> arbitrary
+    , Transmute <$> arbitrary <*> arbitrary <*> arbitrary
     , GameEnd <$> arbitrary
     , pure Rotate
     , pure Windup
@@ -136,19 +136,26 @@ instance Arbitrary CardAnim where
     ]
 
 
-instance Arbitrary CardBounce where
-  arbitrary = oneof
-    [ NoBounce <$> arbitrary
-    , pure BounceDiscard
-    , BounceIndex <$> arbitrary <*> arbitrary
-    ]
-
-
 instance Arbitrary Hurt where
   arbitrary = oneof
     [ pure Slash
     , pure Bite
     , pure Curse
+    ]
+
+
+instance Arbitrary Transmute where
+  arbitrary = oneof
+    [ pure TransmuteCard
+    , pure TransmuteOwner
+    ]
+
+
+instance Arbitrary CardBounce where
+  arbitrary = oneof
+    [ NoBounce <$> arbitrary
+    , pure BounceDiscard
+    , BounceIndex <$> arbitrary <*> arbitrary
     ]
 
 

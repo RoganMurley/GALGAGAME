@@ -1,7 +1,7 @@
 module DSL.Beta.DSL where
 
 import Card (Card)
-import CardAnim (CardAnim, Hurt)
+import CardAnim (CardAnim, Hurt, Transmute)
 import Control.Monad.Free (Free(..))
 import Life (Life)
 import Model (Deck, Hand, Stack)
@@ -23,7 +23,7 @@ data DSL n
   | Confound n
   | Reverse n
   | Play WhichPlayer Card Int n
-  | Transmute Card n
+  | Transmute Card Transmute n
   | Rotate n
   | Fabricate StackCard n
   | Bounce (StackCard -> Bool) n

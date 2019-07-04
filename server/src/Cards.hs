@@ -1,7 +1,7 @@
 module Cards where
 
 import Control.Monad (when)
-import CardAnim (Hurt(..))
+import CardAnim (Hurt(..), Transmute(..))
 import Card (Card(Card), description)
 import Data.Monoid ((<>))
 import Player (other)
@@ -343,7 +343,7 @@ alchemy =
     "Alchemy"
     ("Change next card to " <> description gold)
     "alchemy.png"
-    $ \_ -> transmute gold
+    $ \_ -> transmute gold TransmuteCard
 
 
 gold :: Card

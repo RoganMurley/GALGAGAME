@@ -4,7 +4,7 @@ module DSL.Beta.Interpreters where
 
 import Bounce (CardBounce(..))
 import Card (Card)
-import CardAnim (cardAnimDamage)
+import CardAnim (Transmute(..), cardAnimDamage)
 import Control.Monad.Free (Free(..), foldFree, liftF)
 import Data.Functor.Sum (Sum(..))
 import Data.Maybe (fromMaybe)
@@ -39,7 +39,7 @@ alphaI (Free (Reflect n))        = Alpha.modStackAll changeOwner >>  alphaI n
 alphaI (Free (Confound n))       = Alpha.confound                >>  alphaI n
 alphaI (Free (Reverse n))        = Alpha.modStack reverse        >>  alphaI n
 alphaI (Free (Play w c i n))     = Alpha.play w c i              >>  alphaI n
-alphaI (Free (Transmute c n))    = Alpha.transmute c             >>  alphaI n
+alphaI (Free (Transmute c _ n))  = Alpha.transmute c             >>  alphaI n
 alphaI (Free (Rotate n))         = Alpha.modStack tailSafe       >>  alphaI n
 alphaI (Free (Fabricate c n))    = Alpha.modStack ((:) c)        >>  alphaI n
 alphaI (Free (Bounce f n))       = Alpha.bounce f                >>  alphaI n
@@ -72,7 +72,7 @@ animI (Heal _ w _)       = healAnim w
 animI (AddToHand w c  _) = addToHandAnim w c
 animI (Draw w _)         = drawAnim w
 animI (Play w c i _)     = playAnim w c i
-animI (Transmute c _)    = transmuteAnim c
+animI (Transmute c t _)  = transmuteAnim c t
 animI (Bounce f _)       = bounceAnim f
 animI (SetHeadOwner w _) = setHeadOwnerAnim w
 animI _                  = toLeft
@@ -125,14 +125,14 @@ playAnim w c i alpha = do
   return final
 
 
-transmuteAnim :: Card -> Alpha.Program a -> AlphaAnimProgram a
-transmuteAnim cb alpha = do
+transmuteAnim :: Card -> Transmute -> Alpha.Program a -> AlphaAnimProgram a
+transmuteAnim cb t alpha = do
   stackHead <- headMay <$> toLeft Alpha.getStack
   final <- toLeft alpha
   case stackHead of
     (Just ca) ->
       let o = stackcard_owner ca in
-      toRight . liftF $ Anim.Transmute ca (StackCard o cb) ()
+      toRight . liftF $ Anim.Transmute ca (StackCard o cb) t ()
     Nothing ->
       toRight . liftF $ Anim.Null ()
   return final
@@ -184,7 +184,7 @@ setHeadOwnerAnim w alpha = do
   final <- toLeft alpha
   case stackHead of
     Just (StackCard o c) ->
-      toRight . liftF $ Anim.Transmute (StackCard o c) (StackCard w c) ()
+      toRight . liftF $ Anim.Transmute (StackCard o c) (StackCard w c) TransmuteOwner ()
     Nothing ->
       toRight . liftF $ Anim.Null ()
   return final

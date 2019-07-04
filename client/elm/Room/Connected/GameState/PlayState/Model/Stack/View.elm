@@ -43,7 +43,7 @@ view entities ctx =
                             in
                             Card.transmutingView ctx ca cb entity
 
-                Transmute _ ca cb ->
+                Transmute _ ca cb _ ->
                     if i == 0 then
                         Card.transmutingView ctx ca cb
 
