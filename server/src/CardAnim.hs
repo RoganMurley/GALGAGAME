@@ -19,7 +19,7 @@ data CardAnim
   | Hubris
   | Confound
   | Play WhichPlayer Card Int
-  | Transmute StackCard StackCard
+  | Transmute StackCard StackCard Transmute
   | Mill WhichPlayer Card
   | GameEnd (Maybe WhichPlayer)
   | Rotate
@@ -76,12 +76,13 @@ instance ToJSON CardAnim where
     , "card"   .= c
     , "index"  .= i
     ]
-  toJSON (Transmute ca cb) =
+  toJSON (Transmute ca cb t) =
     object
-    [ "name"   .= ("transmute" :: Text)
-    , "player" .= PlayerA
-    , "cardA"  .= ca
-    , "cardB"  .= cb
+    [ "name"      .= ("transmute" :: Text)
+    , "player"    .= PlayerA
+    , "cardA"     .= ca
+    , "cardB"     .= cb
+    , "transmute" .= t
     ]
   toJSON (Mill w c) =
     object
@@ -125,22 +126,22 @@ instance ToJSON CardAnim where
 
 
 instance Mirror CardAnim where
-  mirror (Hurt w d h)      = Hurt (other w) d h
-  mirror (Heal w h)        = Heal (other w) h
-  mirror (Draw w)          = Draw  (other w)
-  mirror Reflect           = Reflect
-  mirror Confound          = Confound
-  mirror Reverse           = Reverse
-  mirror Hubris            = Hubris
-  mirror (Play w c i)      = Play (other w) c i
-  mirror (Transmute ca cb) = Transmute (mirror ca) (mirror cb)
-  mirror (GameEnd w)       = GameEnd (other <$> w)
-  mirror (Mill w c)        = Mill (other w) c
-  mirror Rotate            = Rotate
-  mirror Windup            = Windup
-  mirror (Fabricate c)     = Fabricate (mirror c)
-  mirror (Bounce b)        = Bounce b
-  mirror (Pass w)          = Pass (other w)
+  mirror (Hurt w d h)        = Hurt (other w) d h
+  mirror (Heal w h)          = Heal (other w) h
+  mirror (Draw w)            = Draw  (other w)
+  mirror Reflect             = Reflect
+  mirror Confound            = Confound
+  mirror Reverse             = Reverse
+  mirror Hubris              = Hubris
+  mirror (Play w c i)        = Play (other w) c i
+  mirror (Transmute ca cb t) = Transmute (mirror ca) (mirror cb) t
+  mirror (GameEnd w)         = GameEnd (other <$> w)
+  mirror (Mill w c)          = Mill (other w) c
+  mirror Rotate              = Rotate
+  mirror Windup              = Windup
+  mirror (Fabricate c)       = Fabricate (mirror c)
+  mirror (Bounce b)          = Bounce b
+  mirror (Pass w)            = Pass (other w)
 
 
 data Hurt
@@ -149,11 +150,19 @@ data Hurt
   | Curse
   deriving (Show, Eq)
 
-
 instance ToJSON Hurt where
-  toJSON (Slash) = "slash"
-  toJSON (Bite)  = "bite"
-  toJSON (Curse) = "curse"
+  toJSON Slash = "slash"
+  toJSON Bite  = "bite"
+  toJSON Curse = "curse"
+
+data Transmute
+  = TransmuteCard
+  | TransmuteOwner
+  deriving (Show, Eq)
+
+instance ToJSON Transmute where
+  toJSON TransmuteCard  = "transmuteCard"
+  toJSON TransmuteOwner = "transmuteOwner"
 
 
 type SfxUrl = Text

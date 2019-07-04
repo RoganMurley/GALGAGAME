@@ -1,4 +1,4 @@
-module Animation.Types exposing (Anim(..), Bounce(..), HandBounce, Hurt(..))
+module Animation.Types exposing (Anim(..), Bounce(..), HandBounce, Hurt(..), Transmute(..))
 
 import Card.Types exposing (Card)
 import Stack.Types exposing (StackCard)
@@ -15,7 +15,7 @@ type Anim
     | Hubris WhichPlayer
     | Confound WhichPlayer
     | Play WhichPlayer Card Int
-    | Transmute WhichPlayer StackCard StackCard
+    | Transmute WhichPlayer StackCard StackCard Transmute
     | Mill WhichPlayer Card
     | GameStart WhichPlayer
     | GameEnd (Maybe WhichPlayer)
@@ -28,16 +28,21 @@ type Anim
     | Finding
 
 
-type Bounce
-    = NoBounce Int
-    | BounceDiscard
-    | BounceIndex Int Int
-
-
 type Hurt
     = Slash
     | Bite
     | Curse
+
+
+type Transmute
+    = TransmuteCard
+    | TransmuteOwner
+
+
+type Bounce
+    = NoBounce Int
+    | BounceDiscard
+    | BounceIndex Int Int
 
 
 type alias HandBounce =

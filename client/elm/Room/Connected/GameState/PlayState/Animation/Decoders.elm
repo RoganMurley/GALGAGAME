@@ -1,6 +1,6 @@
 module Animation.Decoders exposing (decoder)
 
-import Animation.Types exposing (Anim(..), Bounce(..), Hurt(..))
+import Animation.Types exposing (Anim(..), Bounce(..), Hurt(..), Transmute(..))
 import Card.Decoders as Card
 import Json.Decode as Json exposing (Decoder, fail, field, int, list, null, oneOf, string, succeed)
 import Stack.Decoders as Stack
@@ -159,10 +159,24 @@ playDecoder =
 
 transmuteDecoder : Decoder Anim
 transmuteDecoder =
-    Json.map3 Transmute
+    let
+        getDecoder : String -> Decoder Transmute
+        getDecoder s =
+            case s of
+                "transmuteCard" ->
+                    succeed TransmuteCard
+
+                "transmuteOwner" ->
+                    succeed TransmuteOwner
+
+                _ ->
+                    fail <| s ++ " is not a valid transmute type"
+    in
+    Json.map4 Transmute
         (field "player" WhichPlayer.decoder)
         (field "cardA" Stack.stackCardDecoder)
         (field "cardB" Stack.stackCardDecoder)
+        (field "transmute" string |> Json.andThen getDecoder)
 
 
 millDecoder : Decoder Anim

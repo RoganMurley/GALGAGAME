@@ -1,6 +1,6 @@
 module Listener exposing (animSfx, listen)
 
-import Animation.Types exposing (Anim(..), Hurt(..))
+import Animation.Types exposing (Anim(..), Hurt(..), Transmute(..))
 import Audio.State exposing (playSoundWith)
 import Audio.Types exposing (SoundOption(..))
 import GameState.Types exposing (GameState(..))
@@ -72,8 +72,13 @@ animSfx anim =
         Play _ _ _ ->
             Just "playCard.mp3"
 
-        Transmute _ _ _ ->
-            Just "transmute.mp3"
+        Transmute _ _ _ transmute ->
+            case transmute of
+                TransmuteCard ->
+                    Just "transmuteCard.mp3"
+
+                TransmuteOwner ->
+                    Just "transmuteOwner.mp3"
 
         Hubris _ ->
             Just "obliterate.mp3"
