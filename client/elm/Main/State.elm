@@ -5,6 +5,7 @@ import Browser
 import Browser.Events
 import Browser.Navigation
 import Connected.Messages as Connected
+import Feedback.State as Feedback
 import GameState.Messages as GameState
 import GameState.Types exposing (GameState(..))
 import GameType
@@ -427,6 +428,15 @@ locationUpdate model url =
                         | room =
                             Room.Signup <|
                                 Signup.init nextPath
+                      }
+                    , Cmd.none
+                    )
+
+                Routing.Feedback ->
+                    ( { model
+                        | room =
+                            Room.Feedback <|
+                                Feedback.init nextPath
                       }
                     , Cmd.none
                     )
