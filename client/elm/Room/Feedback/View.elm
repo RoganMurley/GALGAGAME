@@ -13,7 +13,7 @@ view model =
     let
         formFieldClass : FormFieldClass Field Msg
         formFieldClass =
-            { getFieldPlaceholder = always "Here be feedback..."
+            { getFieldPlaceholder = always "Humans will read this..."
             , getFieldLabel = always Nothing
             , getFormFieldType = always TextAreaType
             , getExtraAttrs = always [ autofocus True ]
@@ -26,7 +26,8 @@ view model =
             (case model.submitState of
                 Submitted ->
                     [ h1 [] [ text "Thank you for your feedback!" ]
-                    , button [ onClick Continue ] [ text "Continue" ]
+
+                    --, button [ onClick Continue ] [ text "Continue" ]
                     ]
 
                 _ ->
@@ -35,7 +36,7 @@ view model =
                         [ onClick Submit
                         , disabled <| model.submitState == Submitting
                         ]
-                        [ text "Submit Feedback" ]
+                        [ text "Submit feedback" ]
                     , div [ class "error" ] [ text model.error ]
                     ]
             )

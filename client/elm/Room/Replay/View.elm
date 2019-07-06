@@ -25,5 +25,5 @@ view { replay } flags textures =
 
             Nothing ->
                 [ Background.view flags textures Finding
-                , Endgame.view 0.0 NullAnim Nothing Nothing Nothing Nothing
+                , Endgame.view 0.0 NullAnim Nothing Nothing Nothing Nothing flags.seed
                 ]

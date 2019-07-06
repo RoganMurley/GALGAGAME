@@ -2,20 +2,23 @@ module Endgame.View exposing (view)
 
 import Animation.Types exposing (Anim(..))
 import Connected.Messages as Connected
+import Endgame.Types exposing (Conversion(..))
 import GameState.Messages as GameState
 import GameType exposing (GameType(..))
 import Html exposing (Html, a, button, div, text)
-import Html.Attributes exposing (class, classList, disabled, href, style)
+import Html.Attributes exposing (class, classList, disabled, href, style, target)
 import Html.Events exposing (onClick)
 import Main.Messages as Main
+import Main.Types exposing (Seed)
 import PlayState.Messages exposing (Msg(..), PlayingOnly(..))
+import Random
 import Room.Messages as Room
 import Stats exposing (Experience, StatChange, levelAt, levelFromExperience, nextLevelAt)
 import WhichPlayer.Types exposing (WhichPlayer(..))
 
 
-view : Float -> Anim -> Maybe String -> Maybe StatChange -> Maybe GameType -> Maybe String -> Html Main.Msg
-view progress anim mReplayId mXp gameType mUsername =
+view : Float -> Anim -> Maybe String -> Maybe StatChange -> Maybe GameType -> Maybe String -> Seed -> Html Main.Msg
+view progress anim mReplayId mXp gameType mUsername seed =
     let
         ( show, endGameText, endGameClass ) =
             case anim of
@@ -124,11 +127,14 @@ view progress anim mReplayId mXp gameType mUsername =
 
         conversionLink =
             div [ class "endgame-conversion" ]
-                [ case mUsername of
-                    Just _ ->
-                        a [ href "https://discord.gg/SVXXej4" ] [ text "Join the community on Discord" ]
+                [ case conversion of
+                    Discord ->
+                        a [ href "https://discord.gg/SVXXej4", target "_blank" ] [ text "Join the community on Discord" ]
 
-                    Nothing ->
+                    Feedback ->
+                        a [ href "/feedback", target "_blank" ] [ text "Submit feedback to the developers" ]
+
+                    Signup ->
                         a [ href "/signup" ] [ text "Sign up to gain experience" ]
                 ]
 
@@ -144,6 +150,17 @@ view progress anim mReplayId mXp gameType mUsername =
                 [ ( "endgame-layer", True )
                 , ( endGameClass, True )
                 ]
+
+        conversion =
+            case mUsername of
+                Just _ ->
+                    Tuple.first <|
+                        Random.step
+                            (Random.uniform Discord [ Feedback ])
+                            (Random.initialSeed seed)
+
+                Nothing ->
+                    Signup
     in
     div [ classes, styles ]
         [ div [ class "endgame-container" ]
