@@ -25,6 +25,7 @@ next (Windup n)          = n
 next (Fabricate _ n)     = n
 next (Bounce _ n)        = n
 next (Pass _ n)          = n
+next (Infinity n)        = n
 
 
 animate :: DSL a -> Maybe CardAnim
@@ -46,3 +47,4 @@ animate (Windup _)            = Just CardAnim.Windup
 animate (Fabricate c _)       = Just $ CardAnim.Fabricate c
 animate (Bounce b _)          = Just $ CardAnim.Bounce b
 animate (Pass w _)            = Just $ CardAnim.Pass w
+animate (Infinity _)          = Just CardAnim.Infinity

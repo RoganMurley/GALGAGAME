@@ -61,6 +61,9 @@ animMaxTick anim =
         Bounce _ ->
             1500.0
 
+        Infinity _ ->
+            2000.0
+
         _ ->
             800.0
 
