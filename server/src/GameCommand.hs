@@ -293,6 +293,7 @@ resolveAll model replay resolutionCount =
           Just p ->
             foldFree Beta.betaI $ do
               Beta.rotate
+              Beta.refreshGen
               p
           Nothing ->
             return ()
