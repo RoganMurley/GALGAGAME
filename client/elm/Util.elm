@@ -27,9 +27,14 @@ portProtocol httpPort =
             ":" ++ httpPort
 
 
+baseLocation : Flags -> String
+baseLocation { hostname, httpPort } =
+    "https://" ++ hostname ++ portProtocol httpPort
+
+
 authLocation : Flags -> String
-authLocation { hostname, httpPort } =
-    "https://" ++ hostname ++ portProtocol httpPort ++ "/auth"
+authLocation flags =
+    baseLocation flags ++ "/auth"
 
 
 splitOnColon : String -> ( String, String )

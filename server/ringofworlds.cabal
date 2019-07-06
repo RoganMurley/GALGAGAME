@@ -34,6 +34,9 @@ library
                      , DSL.Beta
                      , DSL.Log
                      , DSL.Util
+                     , Feedback.Apps
+                     , Feedback.Schema
+                     , Feedback.Views
                      , GameCommand
                      , GameState
                      , GodMode

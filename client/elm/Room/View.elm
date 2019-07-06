@@ -1,6 +1,7 @@
 module Room.View exposing (titleView, view)
 
 import Connected.View as Connected
+import Feedback.View as Feedback
 import Html as Html exposing (Html, div)
 import Lobby.View as Lobby
 import Login.View as Login
@@ -42,6 +43,10 @@ view model settings flags textures =
                 Signup signup ->
                     Html.map (Main.RoomMsg << SignupMsg) <|
                         Signup.view signup
+
+                Feedback feedback ->
+                    Html.map (Main.RoomMsg << FeedbackMsg) <|
+                        Feedback.view feedback
     in
     div []
         [ Settings.view settings (settingsView model flags)

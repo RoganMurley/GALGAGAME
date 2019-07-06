@@ -23,16 +23,18 @@ import Data.Text (Text)
 import qualified Data.Text as T
 
 import Auth.Apps (checkAuth, checkPassword, deleteToken, legalName, legalPassword, loginCookieName, loginTimeout, saveSession, saveUser)
+import Feedback.Views (feedbackView)
 
 
 app :: ConnectInfoConfig -> App Application
 app config = do
-  liftIO $ updateGlobalLogger "auth" $ setLevel DEBUG
+  liftIO $ updateGlobalLogger "scotty" $ setLevel DEBUG
   liftIO $ scottyApp $ do
     get  "/auth/me"       $ meView       config
     post "/auth/login"    $ loginView    config
     post "/auth/logout"   $ logoutView   config
     post "/auth/register" $ registerView config
+    post "/auth/feedback" $ feedbackView config
 
 
 meView :: ConnectInfoConfig -> ActionM ()

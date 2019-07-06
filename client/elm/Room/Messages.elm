@@ -1,6 +1,7 @@
 module Room.Messages exposing (Msg(..))
 
 import Connected.Messages as Connected
+import Feedback.Messages as Feedback
 import Lobby.Messages as Lobby
 import Login.Messages as Login
 import Menu.Messages as Menu
@@ -16,4 +17,5 @@ type Msg
     | MenuMsg Menu.Msg
     | ReplayMsg Replay.Msg
     | SignupMsg Signup.Msg
+    | FeedbackMsg Feedback.Msg
     | StartGame Mode

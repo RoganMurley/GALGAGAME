@@ -2,6 +2,7 @@ module Room.State exposing (init, receive, tick, update)
 
 import Browser.Navigation
 import Connected.State as Connected
+import Feedback.State as Feedback
 import GameType
 import Lobby.State as Lobby
 import Login.State as Login
@@ -86,6 +87,18 @@ update model msg flags =
                 _ ->
                     ( model, Cmd.none )
 
+        FeedbackMsg feedbackMsg ->
+            case model of
+                Feedback feedback ->
+                    let
+                        ( newFeedback, cmd ) =
+                            Feedback.update feedback feedbackMsg flags
+                    in
+                    ( Feedback newFeedback, cmd )
+
+                _ ->
+                    ( model, Cmd.none )
+
         StartGame mode ->
             case model of
                 Lobby { gameType, roomID } ->
@@ -138,6 +151,9 @@ receive str model =
         Signup signup ->
             ( Signup signup, Signup.receive str )
 
+        Feedback feedback ->
+            ( Feedback feedback, Feedback.receive str )
+
 
 tick : Flags -> Model -> Float -> ( Model, Cmd Msg )
 tick flags room dt =
@@ -163,3 +179,6 @@ tick flags room dt =
 
         Signup signup ->
             ( Signup signup, Cmd.none )
+
+        Feedback feedback ->
+            ( Feedback feedback, Cmd.none )

@@ -1,7 +1,7 @@
 module Form exposing (Error(..), FormField, FormFieldClass, FormFieldType(..), ValidationResult, Validator, batchValidators, formInputView, initFormField, updateFormField)
 
-import Html exposing (Attribute, Html, div, input, label, text)
-import Html.Attributes exposing (class, for, id, placeholder, type_)
+import Html exposing (Attribute, Html, div, input, label, text, textarea)
+import Html.Attributes exposing (attribute, class, for, id, placeholder, type_)
 import Html.Events exposing (onInput)
 import List.Extra as List
 import Maybe.Extra as Maybe
@@ -43,6 +43,7 @@ type FormFieldType
     | EmailType
     | CheckboxType
     | PasswordType
+    | TextAreaType
 
 
 type alias FormFieldClass field msg =
@@ -74,6 +75,9 @@ inputType fieldType =
 
         PasswordType ->
             type_ "password"
+
+        TextAreaType ->
+            attribute "data-useless" ""
 
 
 formInputView : FormFieldClass field msg -> List (ValidationResult field) -> field -> Html msg
@@ -133,19 +137,32 @@ formInputView formFieldClass validations field =
                 _ ->
                     ""
 
+        formFieldType : FormFieldType
+        formFieldType =
+            getFormFieldType field
+
         attrs : List (Attribute msg)
         attrs =
             [ id identifier, onInput <| getInputMsg field, placeholder fieldPlaceholder ]
                 ++ errorClass
                 ++ extraAttrs
-                ++ [ inputType <| getFormFieldType field ]
+                ++ [ inputType formFieldType ]
 
         identifier : String
         identifier =
             getIdentifier field
+
+        element : List (Attribute msg) -> List (Html msg) -> Html msg
+        element =
+            case formFieldType of
+                TextAreaType ->
+                    textarea
+
+                _ ->
+                    input
     in
     div [ class "form-input" ]
-        [ input attrs []
+        [ element attrs []
         , fieldLabel
         , div [ class "form-error-message" ] [ text errorMessage ]
         ]

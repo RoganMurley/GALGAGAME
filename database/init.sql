@@ -19,3 +19,10 @@ CREATE TABLE replays (
   player_b__username TEXT REFERENCES users,
   created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
+
+CREATE TABLE feedback (
+  id SERIAL PRIMARY KEY,
+  body TEXT,
+  user__username TEXT REFERENCES users,
+  created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);

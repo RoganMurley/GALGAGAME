@@ -12,6 +12,7 @@ route =
         , map Replay replayRoute
         , map Login loginRoute
         , map Signup signupRoute
+        , map Feedback feedbackRoute
         , map Home top
         ]
 
@@ -47,3 +48,8 @@ signupRoute =
 replayRoute : Parser (String -> a) a
 replayRoute =
     s "replay" </> string
+
+
+feedbackRoute : Parser a a
+feedbackRoute =
+    s "feedback"

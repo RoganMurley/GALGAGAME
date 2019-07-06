@@ -8,6 +8,7 @@ type Route
     | Replay String
     | Login
     | Signup
+    | Feedback
 
 
 type PlayRoute

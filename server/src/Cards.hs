@@ -18,7 +18,7 @@ import DSL.Beta hiding (confound, hubris, reflect)
 missile :: Card
 missile =
   Card
-    "missile"
+    "Missile"
     "Hurt for 7"
     "missile.png"
     $ \w -> hurt 7 (other w) Slash
