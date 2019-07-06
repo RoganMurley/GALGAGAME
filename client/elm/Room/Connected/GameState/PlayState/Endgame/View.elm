@@ -131,8 +131,11 @@ view progress anim mReplayId mXp gameType mUsername seed =
                     Discord ->
                         a [ href "https://discord.gg/SVXXej4", target "_blank" ] [ text "Join the community on Discord" ]
 
+                    Twitter ->
+                        a [ href "https://twitter.com/RoganMurley", target "_blank" ] [ text "Follow the devs on Twitter" ]
+
                     Feedback ->
-                        a [ href "/feedback", target "_blank" ] [ text "Submit feedback to the developers" ]
+                        a [ href "/feedback", target "_blank" ] [ text "Submit feedback to the devs" ]
 
                     Signup ->
                         a [ href "/signup" ] [ text "Sign up to gain experience" ]
@@ -156,7 +159,7 @@ view progress anim mReplayId mXp gameType mUsername seed =
                 Just _ ->
                     Tuple.first <|
                         Random.step
-                            (Random.uniform Discord [ Feedback ])
+                            (Random.uniform Discord [ Feedback, Twitter ])
                             (Random.initialSeed seed)
 
                 Nothing ->
