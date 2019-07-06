@@ -208,7 +208,7 @@ endTurn which model replay
   | otherwise     =
     case passes of
       OnePass ->
-        case runWriter $ resolveAll model replay of
+        case runWriter $ resolveAll model replay 0 of
           (Playing m newReplay, res) ->
             let
               roundEndProgram :: Beta.Program ()
@@ -266,15 +266,15 @@ endTurn which model replay
     full = Alpha.evalI model $ Alpha.handFull which
 
 
-resolveAll :: Model -> Active.Replay -> Writer [ResolveData] PlayState
-resolveAll model replay =
+resolveAll :: Model -> Active.Replay -> Int -> Writer [ResolveData] PlayState
+resolveAll model replay resolutionCount =
   case stackCard of
     Just c -> do
       let (m, _, res) = Beta.execute model (Just c) program :: (Model, String, [ResolveData])
       tell res
       case checkWin m (Active.add replay res) of
         Playing m' newReplay ->
-          resolveAll m' newReplay
+          resolveAll m' newReplay (resolutionCount + 1)
         Ended w m' newReplay gen -> do
           let endRes = [resolveAnim $ GameEnd w]
           tell endRes
@@ -287,13 +287,17 @@ resolveAll model replay =
     card :: Maybe (Beta.Program ())
     card = (\(StackCard o c) -> (card_eff c) o) <$> stackCard
     program :: Beta.AlphaLogAnimProgram ()
-    program = case card of
-      Just p ->
-        foldFree Beta.betaI $ do
-          Beta.rotate
-          p
-      Nothing ->
-        return ()
+    program =
+      if resolutionCount < 20 then
+        case card of
+          Just p ->
+            foldFree Beta.betaI $ do
+              Beta.rotate
+              p
+          Nothing ->
+            return ()
+      else
+        foldFree Beta.betaI $ Beta.infinity
 
 
 checkWin :: Model -> Active.Replay -> PlayState

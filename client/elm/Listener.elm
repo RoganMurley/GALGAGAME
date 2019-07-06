@@ -103,5 +103,8 @@ animSfx anim =
         Bounce _ ->
             Just "bounce.mp3"
 
+        Infinity _ ->
+            Just "obliterate.mp3"
+
         _ ->
             Nothing

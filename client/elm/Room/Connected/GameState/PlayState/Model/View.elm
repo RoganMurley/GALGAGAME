@@ -198,6 +198,9 @@ focusTextView { anim, radius } focus =
         HandFullPass ->
             text ""
 
+        Infinity _ ->
+            text ""
+
         _ ->
             case focus of
                 Nothing ->
@@ -400,6 +403,9 @@ turnView { anim, model } focus passed =
         ( HandFullPass, _, _ ) ->
             div [ class "pass-status" ] [ text "HAND FULL" ]
 
+        ( Infinity _, _, _ ) ->
+            div [ class "pass-status" ] [ text "INFINITY" ]
+
         _ ->
             div [] []
 
@@ -419,6 +425,17 @@ passView ({ anim, w, h, radius } as ctx) =
             ]
 
         HandFullPass ->
+            [ Render.Primitives.fullCircle <|
+                uniColourMag ctx
+                    (Colour.focusBackground PlayerA)
+                    1.0
+                    { scale = 0.48 * radius
+                    , position = vec2 (w * 0.5) (h * 0.5)
+                    , rotation = 0
+                    }
+            ]
+
+        Infinity _ ->
             [ Render.Primitives.fullCircle <|
                 uniColourMag ctx
                     (Colour.focusBackground PlayerA)

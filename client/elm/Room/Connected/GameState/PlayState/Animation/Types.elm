@@ -25,6 +25,7 @@ type Anim
     | Bounce (List Bounce)
     | Pass WhichPlayer
     | HandFullPass
+    | Infinity WhichPlayer
     | Finding
 
 

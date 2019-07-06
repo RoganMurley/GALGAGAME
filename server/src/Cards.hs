@@ -225,7 +225,7 @@ mimic =
     $ \w -> do
       gen <- getGen
       hand <- getHand w
-      let mCard = headMay . (filter (/= mimic)) . (shuffle gen) $ hand
+      let mCard = headMay . (shuffle gen) $ hand
       case mCard of
         Just c ->
           fabricate $ StackCard w c
