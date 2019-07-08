@@ -27,7 +27,6 @@ data CardAnim
   | Fabricate StackCard
   | Bounce [CardBounce]
   | Pass WhichPlayer
-  | Infinity
   deriving (Show, Eq)
 
 
@@ -124,11 +123,6 @@ instance ToJSON CardAnim where
     [ "name"   .= ("pass" :: Text)
     , "player" .= w
     ]
-  toJSON Infinity =
-    object
-    [ "name"   .= ("infinity" :: Text)
-    , "player" .= PlayerA
-    ]
 
 
 instance Mirror CardAnim where
@@ -148,7 +142,6 @@ instance Mirror CardAnim where
   mirror (Fabricate c)       = Fabricate (mirror c)
   mirror (Bounce b)          = Bounce b
   mirror (Pass w)            = Pass (other w)
-  mirror Infinity            = Infinity
 
 
 data Hurt

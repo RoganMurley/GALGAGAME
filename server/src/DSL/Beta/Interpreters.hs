@@ -44,7 +44,6 @@ alphaI (Free (Rotate n))         = Alpha.modStack tailSafe       >>  alphaI n
 alphaI (Free (Fabricate c n))    = Alpha.modStack ((:) c)        >>  alphaI n
 alphaI (Free (Bounce f n))       = Alpha.bounce f                >>  alphaI n
 alphaI (Free (SetHeadOwner w n)) = Alpha.setHeadOwner w          >>  alphaI n
-alphaI (Free (Infinity n))       = Alpha.setStack []             >>  alphaI n
 alphaI (Free (GetGen f))         = Alpha.getGen                  >>= alphaI . f
 alphaI (Free (GetLife w f))      = Alpha.getLife w               >>= alphaI . f
 alphaI (Free (GetHand w f))      = Alpha.getHand w               >>= alphaI . f
@@ -68,7 +67,6 @@ animI (Reverse _)        = basicAnim $ Anim.Reverse ()
 animI (Rotate _)         = basicAnim $ Anim.Rotate ()
 animI (Fabricate c _)    = basicAnim $ Anim.Fabricate c ()
 animI (RawAnim r _)      = basicAnim $ Anim.Raw r ()
-animI (Infinity _)       = basicAnim $ Anim.Infinity ()
 animI (Hubris _)         = hubrisAnim
 animI (Heal _ w _)       = healAnim w
 animI (AddToHand w c  _) = addToHandAnim w c

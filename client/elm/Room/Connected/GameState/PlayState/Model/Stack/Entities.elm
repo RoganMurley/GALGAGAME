@@ -80,7 +80,7 @@ entities ctx =
                         Just { owner, card } ->
                             [ { owner = owner
                               , card = card
-                              , index = 0
+                              , index = -1
                               , position =
                                     Math.Vector2.add
                                         (vec2 (w / 2) (h / 2))

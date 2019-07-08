@@ -28,7 +28,6 @@ data DSL a
   | Fabricate StackCard a
   | Bounce [CardBounce] a
   | Pass WhichPlayer a
-  | Infinity a
   deriving (Functor)
 
 type Program a = Free DSL a

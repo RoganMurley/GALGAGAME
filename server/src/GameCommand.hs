@@ -3,6 +3,7 @@ module GameCommand where
 import Card (Card(..))
 import CardAnim (CardAnim(..))
 import Characters (CharModel(..), SelectedCharacters(..), selectChar, initCharModel)
+import Control.Monad (when)
 import Control.Monad.Free (foldFree)
 import Control.Monad.Trans.Writer (Writer, runWriter, tell)
 import Data.Maybe (fromMaybe)
@@ -274,7 +275,7 @@ resolveAll model replay resolutionCount =
       tell res
       case checkWin m (Active.add replay res) of
         Playing m' newReplay ->
-          resolveAll m' newReplay (resolutionCount + 1)
+          resolveAll m' newReplay nextResolutionCount
         Ended w m' newReplay gen -> do
           let endRes = [resolveAnim $ GameEnd w]
           tell endRes
@@ -286,19 +287,20 @@ resolveAll model replay resolutionCount =
     stackCard = Alpha.evalI model (headMay <$> Alpha.getStack)
     card :: Maybe (Beta.Program ())
     card = (\(StackCard o c) -> (card_eff c) o) <$> stackCard
+    isFinite :: Bool
+    isFinite = resolutionCount < 20
+    nextResolutionCount :: Int
+    nextResolutionCount = if isFinite then resolutionCount + 1 else 0
     program :: Beta.AlphaLogAnimProgram ()
     program =
-      if resolutionCount < 20 then
-        case card of
-          Just p ->
-            foldFree Beta.betaI $ do
-              Beta.rotate
-              Beta.refreshGen
-              p
-          Nothing ->
-            return ()
-      else
-        foldFree Beta.betaI $ Beta.infinity
+      case card of
+        Just p ->
+          foldFree Beta.betaI $ do
+            Beta.rotate
+            Beta.refreshGen
+            when isFinite p
+        Nothing ->
+          return ()
 
 
 checkWin :: Model -> Active.Replay -> PlayState
