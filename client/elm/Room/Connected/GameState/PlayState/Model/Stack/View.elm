@@ -68,13 +68,6 @@ view entities ctx =
                         _ ->
                             Card.view ctx
 
-                Infinity _ ->
-                    if i == n then
-                        Card.view ctx
-
-                    else
-                        Card.dissolvingView ctx
-
                 _ ->
                     Card.view ctx
     in

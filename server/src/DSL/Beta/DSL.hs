@@ -28,7 +28,6 @@ data DSL n
   | Fabricate StackCard n
   | Bounce (StackCard -> Bool) n
   | SetHeadOwner WhichPlayer n
-  | Infinity n
   | GetDeck WhichPlayer (Deck -> n)
   | GetHand WhichPlayer (Hand -> n)
   | GetLife WhichPlayer (Life -> n)

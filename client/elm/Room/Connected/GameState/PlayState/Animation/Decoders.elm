@@ -65,9 +65,6 @@ decoder =
                 "pass" ->
                     passDecoder
 
-                "infinity" ->
-                    infinityDecoder
-
                 _ ->
                     Json.fail <| "Unknown anim name " ++ animName
     in
@@ -240,10 +237,4 @@ bounceDecoder =
 passDecoder : Decoder Anim
 passDecoder =
     Json.map Pass
-        (field "player" WhichPlayer.decoder)
-
-
-infinityDecoder : Decoder Anim
-infinityDecoder =
-    Json.map Infinity
         (field "player" WhichPlayer.decoder)
