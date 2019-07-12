@@ -11,7 +11,7 @@ import Util (shuffle)
 
 import qualified DSL.Alpha as Alpha
 import qualified DSL.Beta as Beta
-import DSL.Beta hiding (confound, hubris, reflect)
+import DSL.Beta hiding (confound, reflect)
 
 
 -- Striker
@@ -43,8 +43,8 @@ offering =
     "offering.png"
     $ \w -> do
       hurt 4 w Slash
-      draw w
-      draw w
+      draw w w
+      draw w w
 
 
 confound :: Card
@@ -85,8 +85,7 @@ hubris =
     "Hubris"
     "Discard all cards in play"
     "hubris.png"
-    $ \_ -> do
-      Beta.hubris
+    $ \_ -> discard (const True)
 
 
 -- Balancer
@@ -201,7 +200,7 @@ staff =
     "staff.png"
     $ \w -> do
       hurt 4 (other w) Slash
-      draw w
+      draw w w
 
 
 surge :: Card
@@ -353,8 +352,8 @@ gold =
     "Draw 2"
     "gold.png"
     $ \w -> do
-      draw w
-      draw w
+      draw w w
+      draw w w
 
 
 theEnd :: Card
@@ -364,6 +363,29 @@ theEnd =
     "You're out of cards, hurt yourself for 10"
     "end.png"
     $ \w -> hurt 10 w Slash
+
+
+-- Daily
+harbinger :: Card
+harbinger =
+  Card
+    "Harbinger"
+    "Discard from play all cards you hold copies of"
+    "harbinger.png"
+    $ \w -> do
+      hand <- getHand w
+      discard $ \(StackCard _ c) -> elem c hand
+
+
+telepathy :: Card
+telepathy =
+  Card
+    "Telepathy"
+    "Draw 2 from their deck"
+    "telepathy.png"
+    $ \w -> do
+      draw w (other w)
+      draw w (other w)
 
 
 allCards :: [Card]
@@ -400,4 +422,7 @@ allCards =
   , alchemy
   , gold
   , theEnd
+  -- Dailies
+  , harbinger
+  , telepathy
   ]

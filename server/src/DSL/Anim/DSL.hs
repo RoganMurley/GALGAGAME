@@ -4,6 +4,7 @@ import Bounce (CardBounce)
 import Control.Monad.Free (Free(..))
 import Card (Card)
 import CardAnim (CardAnim, Hurt, Transmute)
+import Discard (CardDiscard)
 import Life (Life)
 import Player (WhichPlayer)
 import StackCard (StackCard)
@@ -15,7 +16,6 @@ data DSL a
   | Hurt WhichPlayer Life Hurt a
   | Heal WhichPlayer Life a
   | Draw WhichPlayer a
-  | Hubris a
   | Reflect a
   | Confound a
   | Reverse a
@@ -27,6 +27,7 @@ data DSL a
   | Windup a
   | Fabricate StackCard a
   | Bounce [CardBounce] a
+  | Discard [CardDiscard] a
   | Pass WhichPlayer a
   deriving (Functor)
 

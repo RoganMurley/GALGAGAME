@@ -1,6 +1,6 @@
 module Stack.Entities exposing (entities, stackEntity)
 
-import Animation.Types exposing (Anim(..), Bounce(..))
+import Animation.Types exposing (Anim(..), Bounce(..), CardDiscard(..))
 import Array
 import Game.Entity as Game
 import Game.Types exposing (Context, StackEntity)
@@ -130,6 +130,14 @@ stackEntity { w, h, radius, anim, progress } baseRotateProgress finalStackLen fi
                         _ ->
                             toFloat finalIndex + 1.0
 
+                Discard discards ->
+                    case Array.get finalIndex <| Array.fromList discards of
+                        Just (NoDiscard discardIndex) ->
+                            toFloat discardIndex + 1.0
+
+                        _ ->
+                            toFloat finalIndex + 1.0
+
                 _ ->
                     toFloat finalIndex + 1.0
 
@@ -151,6 +159,9 @@ stackEntity { w, h, radius, anim, progress } baseRotateProgress finalStackLen fi
                         finalI
 
                 Bounce _ ->
+                    toFloat finalIndex + 1.0
+
+                Discard _ ->
                     toFloat finalIndex + 1.0
 
                 _ ->

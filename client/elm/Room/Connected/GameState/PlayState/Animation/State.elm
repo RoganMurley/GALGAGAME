@@ -46,9 +46,6 @@ animMaxTick anim =
         Mill _ _ ->
             1000.0
 
-        Hubris _ ->
-            1000.0
-
         GameEnd _ ->
             2500.0
 
@@ -59,6 +56,9 @@ animMaxTick anim =
             300.0
 
         Bounce _ ->
+            1500.0
+
+        Discard _ ->
             1500.0
 
         _ ->

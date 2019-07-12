@@ -80,7 +80,7 @@ animSfx anim =
                 TransmuteOwner ->
                     Just "transmuteOwner.mp3"
 
-        Hubris _ ->
+        Discard _ ->
             Just "obliterate.mp3"
 
         Mill _ _ ->

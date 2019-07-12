@@ -9,6 +9,7 @@ import Control.Monad.Free (Free(..), foldFree, liftF)
 import Data.Functor.Sum (Sum(..))
 import Data.Maybe (fromMaybe)
 import Data.Monoid ((<>))
+import Discard (CardDiscard(..))
 import DSL.Beta.DSL
 import DSL.Util (toLeft, toRight)
 import Player (WhichPlayer(..))
@@ -32,9 +33,8 @@ alphaI :: Program a -> Alpha.Program a
 alphaI (Free (Raw p n))          = p                             >>  alphaI n
 alphaI (Free (Hurt d w _ n))     = Alpha.hurt d w                >>  alphaI n
 alphaI (Free (Heal h w n))       = Alpha.heal h w                >>  alphaI n
-alphaI (Free (Draw w n))         = Alpha.draw w                  >>  alphaI n
+alphaI (Free (Draw w d n))       = Alpha.draw w d                >>  alphaI n
 alphaI (Free (AddToHand w c n))  = Alpha.addToHand w c           >>  alphaI n
-alphaI (Free (Hubris n))         = Alpha.setStack []             >>  alphaI n
 alphaI (Free (Reflect n))        = Alpha.modStackAll changeOwner >>  alphaI n
 alphaI (Free (Confound n))       = Alpha.confound                >>  alphaI n
 alphaI (Free (Reverse n))        = Alpha.modStack reverse        >>  alphaI n
@@ -43,6 +43,7 @@ alphaI (Free (Transmute c _ n))  = Alpha.transmute c             >>  alphaI n
 alphaI (Free (Rotate n))         = Alpha.modStack tailSafe       >>  alphaI n
 alphaI (Free (Fabricate c n))    = Alpha.modStack ((:) c)        >>  alphaI n
 alphaI (Free (Bounce f n))       = Alpha.bounce f                >>  alphaI n
+alphaI (Free (Discard f n))      = Alpha.discard f               >>  alphaI n
 alphaI (Free (SetHeadOwner w n)) = Alpha.setHeadOwner w          >>  alphaI n
 alphaI (Free (GetGen f))         = Alpha.getGen                  >>= alphaI . f
 alphaI (Free (GetLife w f))      = Alpha.getLife w               >>= alphaI . f
@@ -67,13 +68,13 @@ animI (Reverse _)        = basicAnim $ Anim.Reverse ()
 animI (Rotate _)         = basicAnim $ Anim.Rotate ()
 animI (Fabricate c _)    = basicAnim $ Anim.Fabricate c ()
 animI (RawAnim r _)      = basicAnim $ Anim.Raw r ()
-animI (Hubris _)         = hubrisAnim
 animI (Heal _ w _)       = healAnim w
 animI (AddToHand w c  _) = addToHandAnim w c
-animI (Draw w _)         = drawAnim w
+animI (Draw w d _)       = drawAnim w d
 animI (Play w c i _)     = playAnim w c i
 animI (Transmute c t _)  = transmuteAnim c t
 animI (Bounce f _)       = bounceAnim f
+animI (Discard f _)      = discardAnim f
 animI (SetHeadOwner w _) = setHeadOwnerAnim w
 animI _                  = toLeft
 
@@ -88,17 +89,9 @@ healAnim w alpha = do
   return final
 
 
-hubrisAnim :: Alpha.Program a -> AlphaAnimProgram a
-hubrisAnim alpha = do
-  toRight . liftF $ Anim.Hubris ()
-  final <- toLeft alpha
-  toRight . liftF $ Anim.Null ()
-  return final
-
-
-drawAnim :: WhichPlayer -> Alpha.Program a -> AlphaAnimProgram a
-drawAnim w alpha = do
-  nextCard <- headMay <$> toLeft (Alpha.getDeck w)
+drawAnim :: WhichPlayer -> WhichPlayer -> Alpha.Program a -> AlphaAnimProgram a
+drawAnim w d alpha = do
+  nextCard <- headMay <$> toLeft (Alpha.getDeck d)
   handLength <- length <$> toLeft (Alpha.getHand w)
   final <- toLeft alpha
   if (handLength < maxHandLength)
@@ -176,6 +169,29 @@ getBounces f = do
         NoBounce finalStackIndex :
           getBounces' (stackIndex + 1) (finalStackIndex + 1) handAIndex handBIndex rest
     getBounces' _ _ _ _ [] = []
+
+
+discardAnim :: (StackCard -> Bool) -> Alpha.Program a -> AlphaAnimProgram a
+discardAnim f alpha = do
+  discards <- toLeft $ getDiscards f
+  toRight . liftF $ Anim.Discard discards ()
+  final <- toLeft alpha
+  toRight . liftF $ Anim.Null ()
+  return final
+
+
+getDiscards :: (StackCard -> Bool) -> Alpha.Program [CardDiscard]
+getDiscards f = do
+  stack <- Alpha.getStack
+  return $ getDiscards' 0 0 $ f <$> stack
+    where
+      getDiscards' :: Int -> Int -> [Bool] -> [CardDiscard]
+      getDiscards' stackIndex finalStackIndex (doDiscard:rest) =
+        if doDiscard then
+          CardDiscard : getDiscards' (stackIndex + 1) finalStackIndex rest
+        else
+          NoDiscard finalStackIndex : getDiscards' (stackIndex + 1) (finalStackIndex + 1) rest
+      getDiscards' _ _ [] = []
 
 
 setHeadOwnerAnim :: WhichPlayer -> Alpha.Program a -> AlphaAnimProgram a

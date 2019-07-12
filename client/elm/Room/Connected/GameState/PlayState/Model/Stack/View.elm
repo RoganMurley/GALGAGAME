@@ -1,6 +1,6 @@
 module Stack.View exposing (view)
 
-import Animation.Types exposing (Anim(..), Bounce(..))
+import Animation.Types exposing (Anim(..), Bounce(..), CardDiscard(..))
 import Array
 import Card.View as Card
 import Game.Types exposing (Context, StackEntity)
@@ -17,13 +17,6 @@ view entities ctx =
 
         makeEntity i =
             case ctx.anim of
-                Hubris _ ->
-                    if i == n then
-                        Card.view ctx
-
-                    else
-                        Card.dissolvingView ctx
-
                 Reflect _ ->
                     if i == n then
                         Card.view ctx
@@ -63,6 +56,14 @@ view entities ctx =
                             \_ -> []
 
                         Just BounceDiscard ->
+                            Card.dissolvingView ctx
+
+                        _ ->
+                            Card.view ctx
+
+                Discard discards ->
+                    case Array.get i <| Array.fromList discards of
+                        Just CardDiscard ->
                             Card.dissolvingView ctx
 
                         _ ->

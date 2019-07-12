@@ -179,7 +179,7 @@ makeScenario prefix =
         PrefixTutorial ->
           Just (Characters.breaker, Characters.shielder, Characters.striker)
         PrefixDaily ->
-          Just (Characters.shielder, Characters.balancer, Characters.balancer)
+          Just (Characters.telepath, Characters.telepath, Characters.telepath)
         _ ->
           Nothing
     turn :: Turn
