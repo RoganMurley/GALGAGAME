@@ -121,4 +121,8 @@ texturePaths =
     , ( "waxworks.png", "/img/textures/mimic.png" )
     , ( "missile.png", "/img/textures/missile.png" )
     , ( "grudge.png", "/img/textures/grudge.png" )
+
+    -- Dailies
+    , ( "harbinger.png", "/img/textures/harbinger.png" )
+    , ( "telepathy.png", "/img/textures/telepathy.png" )
     ]

@@ -12,6 +12,7 @@ import Card (Card(..))
 import Cards (allCards)
 import CardAnim (CardAnim(..), Hurt(..), Transmute(..))
 import Characters (Character(..), CharModel(..), SelectedCharacters(..))
+import Discard (CardDiscard(..))
 import GameState (GameState(..), PlayState(..), WaitType(..))
 import Model (Model(..), PlayerModel(..), Passes(..))
 import ModelDiff (ModelDiff(..), PlayerModelDiff(..))
@@ -123,7 +124,6 @@ instance Arbitrary CardAnim where
     , Hurt <$> arbitrary <*> arbitrary <*> arbitrary
     , pure Reflect
     , pure Reverse
-    , pure Hubris
     , pure Confound
     , Play <$> arbitrary <*> arbitrary <*> arbitrary
     , Transmute <$> arbitrary <*> arbitrary <*> arbitrary
@@ -132,6 +132,7 @@ instance Arbitrary CardAnim where
     , pure Windup
     , Fabricate <$> arbitrary
     , Bounce <$> arbitrary
+    , Discard <$> arbitrary
     , Pass <$> arbitrary
     ]
 
@@ -156,6 +157,13 @@ instance Arbitrary CardBounce where
     [ NoBounce <$> arbitrary
     , pure BounceDiscard
     , BounceIndex <$> arbitrary <*> arbitrary
+    ]
+
+
+instance Arbitrary CardDiscard where
+  arbitrary = oneof
+    [ pure CardDiscard
+    , NoDiscard <$> arbitrary
     ]
 
 

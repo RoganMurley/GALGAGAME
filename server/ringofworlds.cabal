@@ -29,6 +29,7 @@ library
                      , Command
                      , Config
                      , Database
+                     , Discard
                      , DSL.Alpha
                      , DSL.Anim
                      , DSL.Beta

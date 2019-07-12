@@ -198,3 +198,11 @@ collector =
     "Alchemy"
     "alchemy.png"
     (Cards.relicblade, Cards.greed, Cards.mimic, Cards.alchemy)
+
+
+telepath :: Character
+telepath =
+  Character
+    "Mind"
+    "harbinger.png"
+    (Cards.hammer, Cards.lightning, Cards.telepathy, Cards.harbinger)

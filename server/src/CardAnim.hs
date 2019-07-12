@@ -4,6 +4,7 @@ import Bounce (CardBounce)
 import Card (Card(..))
 import Data.Aeson (ToJSON(..), (.=), object)
 import Data.Text (Text)
+import Discard (CardDiscard)
 import Life (Life)
 import Mirror (Mirror(..))
 import Player (WhichPlayer(..), other)
@@ -16,7 +17,6 @@ data CardAnim
   | Hurt WhichPlayer Life Hurt
   | Reflect
   | Reverse
-  | Hubris
   | Confound
   | Play WhichPlayer Card Int
   | Transmute StackCard StackCard Transmute
@@ -26,6 +26,7 @@ data CardAnim
   | Windup
   | Fabricate StackCard
   | Bounce [CardBounce]
+  | Discard [CardDiscard]
   | Pass WhichPlayer
   deriving (Show, Eq)
 
@@ -62,11 +63,6 @@ instance ToJSON CardAnim where
   toJSON Reverse =
     object
     [ "name"   .= ("reverse" :: Text)
-    , "player" .= PlayerA
-    ]
-  toJSON Hubris =
-    object
-    [ "name"   .= ("hubris" :: Text)
     , "player" .= PlayerA
     ]
   toJSON (Play w c i) =
@@ -118,6 +114,12 @@ instance ToJSON CardAnim where
     , "player" .= PlayerA
     , "bounce" .= b
     ]
+  toJSON (Discard d) =
+    object
+    [ "name"    .= ("discard" :: Text)
+    , "player"  .= PlayerA
+    , "discard" .= d
+    ]
   toJSON (Pass w) =
     object
     [ "name"   .= ("pass" :: Text)
@@ -132,7 +134,7 @@ instance Mirror CardAnim where
   mirror Reflect             = Reflect
   mirror Confound            = Confound
   mirror Reverse             = Reverse
-  mirror Hubris              = Hubris
+
   mirror (Play w c i)        = Play (other w) c i
   mirror (Transmute ca cb t) = Transmute (mirror ca) (mirror cb) t
   mirror (GameEnd w)         = GameEnd (other <$> w)
@@ -141,6 +143,7 @@ instance Mirror CardAnim where
   mirror Windup              = Windup
   mirror (Fabricate c)       = Fabricate (mirror c)
   mirror (Bounce b)          = Bounce b
+  mirror (Discard d)         = Discard d
   mirror (Pass w)            = Pass (other w)
 
 

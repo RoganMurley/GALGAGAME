@@ -109,13 +109,13 @@ handFull w = do
   return $ handLength >= maxHandLength
 
 
-draw :: WhichPlayer -> Program ()
-draw w =
+draw :: WhichPlayer -> WhichPlayer -> Program ()
+draw w d =
   do
-    deck <- getDeck w
+    deck <- getDeck d
     case headMay deck of
       Just card -> do
-        modDeck w tailSafe
+        modDeck d tailSafe
         addToHand w card
       Nothing ->
         addToHand w theEnd
@@ -139,6 +139,10 @@ bounce f = do
   let (paBouncing, pbBouncing) = partition (isOwner PlayerA) bouncing
   modHand PlayerA $ \h -> h ++ (stackcard_card <$> paBouncing)
   modHand PlayerB $ \h -> h ++ (stackcard_card <$> pbBouncing)
+
+
+discard :: (StackCard -> Bool) -> Program ()
+discard f = modStack $ filter (not . f)
 
 
 confound :: Program ()

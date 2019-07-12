@@ -16,9 +16,8 @@ data DSL n
   = Raw (Alpha.Program ()) n
   | Hurt Life WhichPlayer Hurt n
   | Heal Life WhichPlayer n
-  | Draw WhichPlayer n
+  | Draw WhichPlayer WhichPlayer n
   | AddToHand WhichPlayer Card n
-  | Hubris n
   | Reflect n
   | Confound n
   | Reverse n
@@ -27,6 +26,7 @@ data DSL n
   | Rotate n
   | Fabricate StackCard n
   | Bounce (StackCard -> Bool) n
+  | Discard (StackCard -> Bool) n
   | SetHeadOwner WhichPlayer n
   | GetDeck WhichPlayer (Deck -> n)
   | GetHand WhichPlayer (Hand -> n)

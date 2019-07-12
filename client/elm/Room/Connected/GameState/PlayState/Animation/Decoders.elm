@@ -1,6 +1,6 @@
 module Animation.Decoders exposing (decoder)
 
-import Animation.Types exposing (Anim(..), Bounce(..), Hurt(..), Transmute(..))
+import Animation.Types exposing (Anim(..), Bounce(..), CardDiscard(..), Hurt(..), Transmute(..))
 import Card.Decoders as Card
 import Json.Decode as Json exposing (Decoder, fail, field, int, list, null, oneOf, string, succeed)
 import Stack.Decoders as Stack
@@ -35,9 +35,6 @@ decoder =
                 "confound" ->
                     confoundDecoder
 
-                "hubris" ->
-                    hubrisDecoder
-
                 "play" ->
                     playDecoder
 
@@ -61,6 +58,9 @@ decoder =
 
                 "bounce" ->
                     bounceDecoder
+
+                "discard" ->
+                    discardDecoder
 
                 "pass" ->
                     passDecoder
@@ -143,12 +143,6 @@ reverseDecoder =
         (field "player" WhichPlayer.decoder)
 
 
-hubrisDecoder : Decoder Anim
-hubrisDecoder =
-    Json.map Hubris
-        (field "player" WhichPlayer.decoder)
-
-
 playDecoder : Decoder Anim
 playDecoder =
     Json.map3 Play
@@ -227,11 +221,27 @@ bounceDecoder =
                 (field "stackIndex" int)
                 (field "handIndex" int)
     in
-    Json.map Bounce
-        (field "bounce" <|
+    Json.map Bounce <|
+        field "bounce" <|
             list <|
                 oneOf [ noBounceDecoder, bounceDiscardDecoder, bounceIndexDecoder ]
-        )
+
+
+discardDecoder : Decoder Anim
+discardDecoder =
+    let
+        noDiscardDecoder : Decoder CardDiscard
+        noDiscardDecoder =
+            Json.map NoDiscard <| field "finalStackIndex" int
+
+        cardDiscardDecoder : Decoder CardDiscard
+        cardDiscardDecoder =
+            Json.map (always CardDiscard) <| constDecoder "discard"
+    in
+    Json.map Discard <|
+        field "discard" <|
+            list <|
+                oneOf [ noDiscardDecoder, cardDiscardDecoder ]
 
 
 passDecoder : Decoder Anim

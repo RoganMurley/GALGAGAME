@@ -36,7 +36,7 @@ parse which msg =
           Nothing ->
             Left ("Cannot parse " <> content <> " to int" :: Err)
       "draw" ->
-        Right $ Beta.draw which
+        Right $ Beta.draw which which
       "card" ->
         case find (\c -> card_name c == content) allCards of
           Just card ->
