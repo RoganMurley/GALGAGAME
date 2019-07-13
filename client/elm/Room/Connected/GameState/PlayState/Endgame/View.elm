@@ -138,6 +138,9 @@ view progress anim mReplayId mXp gameType mUsername seed =
 
                     Signup ->
                         a [ href "/signup" ] [ text "Sign up to gain experience" ]
+
+                    Daily ->
+                        a [ href "/play/daily", target "_blank" ] [ text "Try the daily challenge" ]
                 ]
 
         styles =
@@ -158,7 +161,7 @@ view progress anim mReplayId mXp gameType mUsername seed =
                 Just _ ->
                     Tuple.first <|
                         Random.step
-                            (Random.uniform Discord [ Feedback, Twitter ])
+                            (Random.uniform Discord [ Feedback, Twitter, Daily ])
                             (Random.initialSeed seed)
 
                 Nothing ->
