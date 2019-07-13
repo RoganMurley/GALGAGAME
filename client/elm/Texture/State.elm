@@ -123,6 +123,6 @@ texturePaths =
     , ( "grudge.png", "/img/textures/grudge.png" )
 
     -- Dailies
-    , ( "harbinger.png", "/img/textures/harbinger.png" )
+    , ( "subjugate.png", "/img/textures/subjugate.png" )
     , ( "telepathy.png", "/img/textures/telepathy.png" )
     ]

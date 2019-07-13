@@ -166,20 +166,29 @@ makeScenario :: Prefix -> Scenario
 makeScenario prefix =
   Scenario {
     scenario_turn = turn
-  , scenario_charactersPa = characters
-  , scenario_charactersPb = characters
+  , scenario_charactersPa = charactersPa
+  , scenario_charactersPb = charactersPb
   , scenario_prog = prog
   , scenario_xpWin = xpWin
   , scenario_xpLoss = xpLoss
   }
   where
-    characters :: Maybe Characters.FinalSelection
-    characters =
+    charactersPa :: Maybe Characters.FinalSelection
+    charactersPa =
       case prefix of
         PrefixTutorial ->
           Just (Characters.breaker, Characters.shielder, Characters.striker)
         PrefixDaily ->
-          Just (Characters.telepath, Characters.telepath, Characters.telepath)
+          Just (Characters.collector, Characters.balancer, Characters.drinker)
+        _ ->
+          Nothing
+    charactersPb :: Maybe Characters.FinalSelection
+    charactersPb =
+      case prefix of
+        PrefixTutorial ->
+          Just (Characters.breaker, Characters.shielder, Characters.striker)
+        PrefixDaily ->
+          Just (Characters.telepath, Characters.striker, Characters.collector)
         _ ->
           Nothing
     turn :: Turn
@@ -201,12 +210,7 @@ makeScenario prefix =
         _ ->
           startProgram turn
     xpWin :: Experience
-    xpWin =
-      case prefix of
-        PrefixDaily ->
-          200
-        _ ->
-          100
+    xpWin = 100
     xpLoss :: Experience
     xpLoss = 70
 
