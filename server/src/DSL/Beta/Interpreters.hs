@@ -171,7 +171,7 @@ getBounces f = do
     getBounces' _ _ _ _ [] = []
 
 
-discardAnim :: (StackCard -> Bool) -> Alpha.Program a -> AlphaAnimProgram a
+discardAnim :: ((Int, StackCard) -> Bool) -> Alpha.Program a -> AlphaAnimProgram a
 discardAnim f alpha = do
   discards <- toLeft $ getDiscards f
   toRight . liftF $ Anim.Discard discards ()
@@ -180,10 +180,10 @@ discardAnim f alpha = do
   return final
 
 
-getDiscards :: (StackCard -> Bool) -> Alpha.Program [CardDiscard]
+getDiscards :: ((Int, StackCard) -> Bool) -> Alpha.Program [CardDiscard]
 getDiscards f = do
   stack <- Alpha.getStack
-  return $ getDiscards' 0 0 $ f <$> stack
+  return $ getDiscards' 0 0 $ f <$> zip [0..] stack
     where
       getDiscards' :: Int -> Int -> [Bool] -> [CardDiscard]
       getDiscards' stackIndex finalStackIndex (doDiscard:rest) =

@@ -94,3 +94,7 @@ breakAt b t =
     (x, y) = T.breakOn b t :: (Text, Text)
   in
     (x, T.drop (T.length b) y)
+
+
+indexedFilter :: ((Int, a) -> Bool) -> [a] -> [a]
+indexedFilter f xs = fmap snd $ filter f (zip [0..] xs)

@@ -11,7 +11,7 @@ import Life (Life)
 import Model (Deck, Hand, Passes(..), Stack, Turn, maxHandLength)
 import Safe (headMay, tailSafe)
 import StackCard(StackCard(StackCard, stackcard_card), isOwner)
-import Util (deleteIndex, shuffle)
+import Util (deleteIndex, indexedFilter, shuffle)
 
 import {-# SOURCE #-} Cards (theEnd)
 
@@ -141,8 +141,8 @@ bounce f = do
   modHand PlayerB $ \h -> h ++ (stackcard_card <$> pbBouncing)
 
 
-discard :: (StackCard -> Bool) -> Program ()
-discard f = modStack $ filter (not . f)
+discard :: ((Int, StackCard) -> Bool) -> Program ()
+discard f = modStack $ indexedFilter (not . f)
 
 
 confound :: Program ()

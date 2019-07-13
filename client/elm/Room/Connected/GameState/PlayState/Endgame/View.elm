@@ -52,19 +52,18 @@ view progress anim mReplayId mXp gameType mUsername seed =
                         ]
                         [ text "Play Again" ]
 
-                ( Just DailyGame, GameEnd (Just PlayerA) ) ->
-                    button
-                        [ class "rematch"
-                        , onClick <|
-                            Main.RoomMsg <|
-                                Room.ConnectedMsg <|
-                                    Connected.GameStateMsg <|
-                                        GameState.PlayStateMsg <|
-                                            GotoComputerGame
-                        , disabled isDisabled
-                        ]
-                        [ text "Play again" ]
-
+                -- ( Just DailyGame, GameEnd (Just PlayerA) ) ->
+                --     button
+                --         [ class "rematch"
+                --         , onClick <|
+                --             Main.RoomMsg <|
+                --                 Room.ConnectedMsg <|
+                --                     Connected.GameStateMsg <|
+                --                         GameState.PlayStateMsg <|
+                --                             GotoComputerGame
+                --         , disabled isDisabled
+                --         ]
+                --         [ text "Play again" ]
                 _ ->
                     button
                         [ class "rematch"

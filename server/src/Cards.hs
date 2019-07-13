@@ -366,15 +366,15 @@ theEnd =
 
 
 -- Daily
-harbinger :: Card
-harbinger =
+subjugate :: Card
+subjugate =
   Card
-    "Harbinger"
-    "Discard from play all cards you hold copies of"
-    "harbinger.png"
+    "Subjugate"
+    "Discard next card for each card in your hand"
+    "subjugate.png"
     $ \w -> do
-      hand <- getHand w
-      discard $ \(StackCard _ c) -> elem c hand
+      handLen <- length <$> getHand w
+      discard $ \(i, _) -> i < handLen
 
 
 telepathy :: Card
@@ -423,6 +423,6 @@ allCards =
   , gold
   , theEnd
   -- Dailies
-  , harbinger
+  , subjugate
   , telepathy
   ]

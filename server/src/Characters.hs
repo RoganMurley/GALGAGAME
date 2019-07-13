@@ -204,5 +204,5 @@ telepath :: Character
 telepath =
   Character
     "Mind"
-    "harbinger.png"
-    (Cards.hammer, Cards.lightning, Cards.telepathy, Cards.harbinger)
+    "subjugate.png"
+    (Cards.hammer, Cards.lightning, Cards.telepathy, Cards.subjugate)
