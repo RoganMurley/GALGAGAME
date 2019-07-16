@@ -186,9 +186,9 @@ makeScenario prefix =
     charactersPb =
       case prefix of
         PrefixTutorial ->
-          Just (Characters.breaker, Characters.shielder, Characters.striker)
+          Just (Characters.breaker, Characters.balancer, Characters.striker)
         PrefixDaily ->
-          Just (Characters.telepath, Characters.striker, Characters.collector)
+          Just (Characters.telepath, Characters.shielder, Characters.watcher)
         _ ->
           Nothing
     turn :: Turn

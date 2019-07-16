@@ -388,6 +388,19 @@ telepathy =
       draw w (other w)
 
 
+goldrush :: Card
+goldrush =
+  Card
+    "Goldrush"
+    "Both players draw 2"
+    "goldrush.png"
+    $ \w -> do
+      draw w w
+      draw (other w) (other w)
+      draw w w
+      draw (other w) (other w)
+
+
 allCards :: [Card]
 allCards =
   [ missile
@@ -425,4 +438,5 @@ allCards =
   -- Dailies
   , subjugate
   , telepathy
+  , goldrush
   ]
