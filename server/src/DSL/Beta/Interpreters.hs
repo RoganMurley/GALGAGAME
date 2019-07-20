@@ -47,6 +47,7 @@ alphaI (Free (Bounce f n))       = Alpha.bounce f                >>  alphaI n
 alphaI (Free (Discard f n))      = Alpha.discard f               >>  alphaI n
 alphaI (Free (SetHeadOwner w n)) = Alpha.setHeadOwner w          >>  alphaI n
 alphaI (Free (GetGen f))         = Alpha.getGen                  >>= alphaI . f
+alphaI (Free (GetRot f))         = Alpha.getRot                  >>= alphaI . f
 alphaI (Free (GetLife w f))      = Alpha.getLife w               >>= alphaI . f
 alphaI (Free (GetHand w f))      = Alpha.getHand w               >>= alphaI . f
 alphaI (Free (GetDeck w f))      = Alpha.getDeck w               >>= alphaI . f

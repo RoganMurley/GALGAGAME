@@ -126,4 +126,5 @@ texturePaths =
     , ( "subjugate.png", "/img/textures/subjugate.png" )
     , ( "telepathy.png", "/img/textures/telepathy.png" )
     , ( "goldrush.png", "/img/textures/goldrush.png" )
+    , ( "ritual.png", "/img/textures/ritual.png" )
     ]

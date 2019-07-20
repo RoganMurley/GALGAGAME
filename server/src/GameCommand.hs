@@ -345,7 +345,10 @@ hoverCard (HoverStack i) which model =
       Just (StackCard owner card) ->
         Right (Nothing, [ Outcome.Encodable $ Outcome.Hover which (HoverStack i) damage ])
         where
-          newModel = Alpha.modI model $ Alpha.modStack (drop (i + 1)) -- plus one to account for stackCard
+          newModel = Alpha.modI model $ do
+            let index = i + 1 -- plus one to account for stackCard
+            Alpha.modStack (drop index)
+            Alpha.modRot ((-) index)
           damage = Beta.damageNumbersI newModel $ card_eff card owner
       Nothing ->
         Right (Nothing, [])
