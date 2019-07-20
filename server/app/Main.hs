@@ -179,7 +179,7 @@ makeScenario prefix =
         PrefixTutorial ->
           Just (Characters.breaker, Characters.shielder, Characters.striker)
         PrefixDaily ->
-          Just (Characters.telepath, Characters.shielder, Characters.watcher)
+          Just (Characters.telepath, Characters.drinker, Characters.striker)
         _ ->
           Nothing
     charactersPb :: Maybe Characters.FinalSelection
@@ -188,7 +188,7 @@ makeScenario prefix =
         PrefixTutorial ->
           Just (Characters.breaker, Characters.shielder, Characters.striker)
         PrefixDaily ->
-          Just (Characters.telepath, Characters.shielder, Characters.watcher)
+          Just (Characters.telepath, Characters.collector, Characters.breaker)
         _ ->
           Nothing
     turn :: Turn
