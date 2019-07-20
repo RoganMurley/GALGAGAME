@@ -18,7 +18,7 @@ import Life (Life)
 import Model (Model, gameover, maxHandLength)
 import ModelDiff (ModelDiff)
 import ResolveData (ResolveData(..))
-import Safe (headMay, tailSafe)
+import Safe (headMay)
 import StackCard (StackCard(..), changeOwner)
 
 import qualified DSL.Alpha as Alpha
@@ -40,7 +40,8 @@ alphaI (Free (Confound n))       = Alpha.confound                >>  alphaI n
 alphaI (Free (Reverse n))        = Alpha.modStack reverse        >>  alphaI n
 alphaI (Free (Play w c i n))     = Alpha.play w c i              >>  alphaI n
 alphaI (Free (Transmute c _ n))  = Alpha.transmute c             >>  alphaI n
-alphaI (Free (Rotate n))         = Alpha.modStack tailSafe       >>  alphaI n
+alphaI (Free (Rotate n))         = Alpha.rotate                  >>  alphaI n
+alphaI (Free (Windup n))         = Alpha.windup                  >>  alphaI n
 alphaI (Free (Fabricate c n))    = Alpha.modStack ((:) c)        >>  alphaI n
 alphaI (Free (Bounce f n))       = Alpha.bounce f                >>  alphaI n
 alphaI (Free (Discard f n))      = Alpha.discard f               >>  alphaI n
@@ -66,6 +67,7 @@ animI (Reflect _)        = basicAnim $ Anim.Reflect ()
 animI (Confound _)       = basicAnim $ Anim.Confound ()
 animI (Reverse _)        = basicAnim $ Anim.Reverse ()
 animI (Rotate _)         = basicAnim $ Anim.Rotate ()
+animI (Windup _)         = basicAnim $ Anim.Windup ()
 animI (Fabricate c _)    = basicAnim $ Anim.Fabricate c ()
 animI (RawAnim r _)      = basicAnim $ Anim.Raw r ()
 animI (Heal _ w _)       = healAnim w
@@ -114,7 +116,6 @@ playAnim :: WhichPlayer -> Card -> Int -> Alpha.Program a -> AlphaAnimProgram a
 playAnim w c i alpha = do
   final <- toLeft alpha
   toRight . liftF $ Anim.Play w c i ()
-  toRight . liftF $ Anim.Windup ()
   return final
 
 

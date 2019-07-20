@@ -24,6 +24,7 @@ data DSL n
   | Play WhichPlayer Card Int n
   | Transmute Card Transmute n
   | Rotate n
+  | Windup n
   | Fabricate StackCard n
   | Bounce (StackCard -> Bool) n
   | Discard ((Int, StackCard) -> Bool) n

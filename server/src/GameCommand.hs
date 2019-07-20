@@ -183,7 +183,9 @@ playCard index which m replay
       Just c ->
         let
           program :: Beta.Program ()
-          program = Beta.play which c index
+          program = do
+            Beta.play which c index
+            Beta.windup
           (newModel, _, res) = Beta.execute m Nothing $ foldFree Beta.betaI program
           newPlayState = Playing newModel (Active.add replay res) :: PlayState
         in

@@ -33,6 +33,7 @@ alphaEffI m (GetGen f)          = (mempty, f $ model_gen m)
 alphaEffI m (GetPasses f)       = (mempty, f $ model_passes m)
 alphaEffI m (GetStack f)        = (mempty, f $ model_stack m)
 alphaEffI m (GetTurn f)         = (mempty, f $ model_turn m)
+alphaEffI m (GetRot f)          = (mempty, f $ model_rot m)
 alphaEffI m (GetDeck w f)       = (mempty, f . pmodel_deck $ getPmodel w m)
 alphaEffI m (GetHand w f)       = (mempty, f . pmodel_hand $ getPmodel w m )
 alphaEffI m (GetLife w f)       = (mempty, f . pmodel_life $ getPmodel w m)
@@ -43,6 +44,7 @@ alphaEffI _ dsl@(SetLife _ _ n) = (diffI dsl mempty, n)
 alphaEffI _ dsl@(SetPasses _ n) = (diffI dsl mempty, n)
 alphaEffI _ dsl@(SetStack _ n)  = (diffI dsl mempty, n)
 alphaEffI _ dsl@(SetTurn _ n)   = (diffI dsl mempty, n)
+alphaEffI _ dsl@(SetRot _ n)    = (diffI dsl mempty, n)
 
 
 logI :: DSL a -> Log.Program ()
@@ -53,6 +55,7 @@ logI (GetLife w _)   = Log.log $ printf "Get life %s" (show w)
 logI (GetPasses _)   = Log.log $ printf "Get passes"
 logI (GetStack _)    = Log.log $ printf "Get stack"
 logI (GetTurn _)     = Log.log $ printf "Get turn"
+logI (GetRot _)      = Log.log $ printf "Get rot"
 logI (SetGen g _)    = Log.log $ printf "Set gen %s"     (show g)
 logI (SetDeck w d _) = Log.log $ printf "Set deck %s %s" (show w) (show d)
 logI (SetHand w h _) = Log.log $ printf "Set hand %s %s" (show w) (show h)
@@ -60,6 +63,7 @@ logI (SetLife w l _) = Log.log $ printf "Set life %s %s" (show w) (show l)
 logI (SetPasses p _) = Log.log $ printf "Set passes %s"  (show p)
 logI (SetStack s _)  = Log.log $ printf "Set stack %s"   (show s)
 logI (SetTurn t _)   = Log.log $ printf "Set turn %s"    (show t)
+logI (SetRot r _)    = Log.log $ printf "Set rot %s"     (show r)
 
 
 decorateLog :: ∀ a . DSL a -> Free (Sum DSL Log.DSL) a
@@ -89,6 +93,7 @@ diffI (SetLife w l _) diff  =
 diffI (SetPasses p _) diff  = diff { modeldiff_passes = Just p }
 diffI (SetStack s _)  diff  = diff { modeldiff_stack = Just s }
 diffI (SetTurn t _)   diff  = diff { modeldiff_turn = Just t }
+diffI (SetRot r _)    diff  = diff { modeldiff_rot = Just r }
 diffI (GetGen _)      diff  = diff
 diffI (GetDeck _ _)   diff  = diff
 diffI (GetHand _ _)   diff  = diff
@@ -96,3 +101,4 @@ diffI (GetLife _ _)   diff  = diff
 diffI (GetPasses _)   diff  = diff
 diffI (GetStack _)    diff  = diff
 diffI (GetTurn _)     diff  = diff
+diffI (GetRot _)      diff  = diff

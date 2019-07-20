@@ -195,6 +195,10 @@ updateTurnOnly msg state =
                                     , hand = Just <| List.removeAt index initial.hand
                                 }
 
+                            windupDiff : Diff
+                            windupDiff =
+                                { initDiff | rot = Just <| initial.rot + 1 }
+
                             resDiffList : List Resolvable.ResolveDiffData
                             resDiffList =
                                 [ { diff = playDiff
@@ -202,7 +206,7 @@ updateTurnOnly msg state =
                                   , animDamage = ( 0, 0 )
                                   , stackCard = Nothing
                                   }
-                                , { diff = initDiff
+                                , { diff = windupDiff
                                   , anim = Windup PlayerA
                                   , animDamage = ( 0, 0 )
                                   , stackCard = Nothing
@@ -211,7 +215,7 @@ updateTurnOnly msg state =
 
                             final : Model
                             final =
-                                Model.Diff.merge playDiff initial
+                                List.foldl Model.Diff.merge initial [ playDiff, windupDiff ]
 
                             finalState : PlayState
                             finalState =

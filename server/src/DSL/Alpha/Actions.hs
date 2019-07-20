@@ -48,6 +48,10 @@ modTurn :: (Turn -> Turn) -> Program ()
 modTurn f = getTurn >>= (setTurn . f)
 
 
+modRot :: (Int -> Int) -> Program ()
+modRot f = getRot >>= (setRot . f)
+
+
 modPasses :: (Passes -> Passes) -> Program ()
 modPasses f = getPasses >>= (setPasses . f)
 
@@ -149,3 +153,14 @@ confound :: Program ()
 confound = do
   gen <- getGen
   modStack $ shuffle gen
+
+
+rotate :: Program ()
+rotate = do
+  modStack tailSafe
+  modRot ((-) 1)
+
+
+windup :: Program ()
+windup = do
+  modRot ((+) 1)

@@ -16,6 +16,7 @@ data Model = Model
   , model_pb     :: PlayerModel
   , model_passes :: Passes
   , model_gen    :: Gen
+  , model_rot    :: Int
   }
   deriving (Eq, Show)
 
@@ -45,7 +46,7 @@ data Passes = NoPass | OnePass
 
 
 instance ToJSON Model where
-  toJSON Model{ model_turn, model_stack, model_pa, model_pb } =
+  toJSON Model{ model_turn, model_stack, model_pa, model_pb, model_rot } =
     object
       [
         "turn"   .= model_turn
@@ -54,12 +55,13 @@ instance ToJSON Model where
       , "handPB" .= length (pmodel_hand model_pb)
       , "lifePA" .= pmodel_life model_pa
       , "lifePB" .= pmodel_life model_pb
+      , "rot"    .= model_rot
       ]
 
 
 instance Mirror Model where
-  mirror (Model turn stack pa pb passes gen) =
-    Model (other turn) (mirror stack) pb pa passes gen
+  mirror (Model turn stack pa pb passes gen rot) =
+    Model (other turn) (mirror stack) pb pa passes gen rot
 
 
 maxHandLength :: Int
