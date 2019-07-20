@@ -179,16 +179,16 @@ makeScenario prefix =
         PrefixTutorial ->
           Just (Characters.breaker, Characters.shielder, Characters.striker)
         PrefixDaily ->
-          Just (Characters.collector, Characters.balancer, Characters.drinker)
+          Just (Characters.telepath, Characters.shielder, Characters.watcher)
         _ ->
           Nothing
     charactersPb :: Maybe Characters.FinalSelection
     charactersPb =
       case prefix of
         PrefixTutorial ->
-          Just (Characters.telepath, Characters.shielder, Characters.breaker)
+          Just (Characters.breaker, Characters.shielder, Characters.striker)
         PrefixDaily ->
-          Just (Characters.collector, Characters.drinker, Characters.balancer)
+          Just (Characters.telepath, Characters.shielder, Characters.watcher)
         _ ->
           Nothing
     turn :: Turn
