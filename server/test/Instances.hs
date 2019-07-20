@@ -43,7 +43,7 @@ instance Arbitrary Card where
 
 
 instance Arbitrary Model where
-  arbitrary = Model <$> arbitrary <*> arbitrary <*> arbitrary <*> arbitrary <*> arbitrary <*> arbitrary
+  arbitrary = Model <$> arbitrary <*> arbitrary <*> arbitrary <*> arbitrary <*> arbitrary <*> arbitrary <*> arbitrary
 
 
 instance CoArbitrary Model where
@@ -110,7 +110,7 @@ instance Arbitrary Final.Replay where
 
 
 instance Arbitrary ModelDiff where
-  arbitrary = ModelDiff <$> arbitrary <*> arbitrary <*> arbitrary <*> arbitrary <*> arbitrary <*> arbitrary
+  arbitrary = ModelDiff <$> arbitrary <*> arbitrary <*> arbitrary <*> arbitrary <*> arbitrary <*> arbitrary <*> arbitrary
 
 
 instance Arbitrary PlayerModelDiff where
