@@ -17,18 +17,20 @@ type alias Diff =
     , turn : Maybe WhichPlayer
     , life : Maybe Life
     , otherLife : Maybe Life
+    , rot : Maybe Int
     }
 
 
 decoder : Decoder Diff
 decoder =
-    Json.map6 Diff
+    Json.map7 Diff
         (maybe <| field "handPA" <| list Card.decoder)
         (maybe <| field "handPB" int)
         (maybe <| field "stack" <| list Stack.stackCardDecoder)
         (maybe <| field "turn" WhichPlayer.decoder)
         (maybe <| field "lifePA" int)
         (maybe <| field "lifePB" int)
+        (maybe <| field "rot" int)
 
 
 merge : Diff -> Model -> Model
@@ -40,6 +42,7 @@ merge diff model =
         , turn = Maybe.withDefault model.turn diff.turn
         , life = Maybe.withDefault model.life diff.life
         , otherLife = Maybe.withDefault model.otherLife diff.otherLife
+        , rot = Maybe.withDefault model.rot diff.rot
     }
 
 
@@ -51,4 +54,5 @@ initDiff =
     , turn = Nothing
     , life = Nothing
     , otherLife = Nothing
+    , rot = Nothing
     }

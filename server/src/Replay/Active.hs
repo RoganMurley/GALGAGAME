@@ -27,7 +27,7 @@ init model pa pb = Replay model [] pa pb
 null :: Replay
 null =
   Replay
-    (Model PlayerA [] (PlayerModel [] [] 0) (PlayerModel [] [] 0) NoPass (mkGen 0))
+    (Model PlayerA [] (PlayerModel [] [] 0) (PlayerModel [] [] 0) NoPass (mkGen 0) 0)
     []
     ""
     ""

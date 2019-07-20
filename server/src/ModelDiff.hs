@@ -21,6 +21,7 @@ data ModelDiff = ModelDiff
   , modeldiff_pb     :: PlayerModelDiff
   , modeldiff_passes :: Maybe Passes
   , modeldiff_gen    :: Maybe Gen
+  , modeldiff_rot    :: Maybe Int
   }
   deriving (Eq, Show)
 
@@ -38,7 +39,7 @@ omitNull = filter ((/= Null) . snd)
 
 
 instance ToJSON ModelDiff where
-  toJSON ModelDiff{ modeldiff_turn, modeldiff_stack, modeldiff_pa, modeldiff_pb } =
+  toJSON ModelDiff{ modeldiff_turn, modeldiff_stack, modeldiff_pa, modeldiff_pb, modeldiff_rot } =
     object . (omitNull) $
       [ "turn"   .= modeldiff_turn
       , "stack"  .= modeldiff_stack
@@ -46,12 +47,13 @@ instance ToJSON ModelDiff where
       , "handPB" .= (length <$> pmodeldiff_hand modeldiff_pb)
       , "lifePA" .= pmodeldiff_life modeldiff_pa
       , "lifePB" .= pmodeldiff_life modeldiff_pb
+      , "rot"    .= modeldiff_rot
       ]
 
 
 instance Mirror ModelDiff where
-  mirror (ModelDiff turn stack pa pb passes gen) =
-    ModelDiff (other <$> turn) (mirror stack) pb pa passes gen
+  mirror (ModelDiff turn stack pa pb passes gen rot) =
+    ModelDiff (other <$> turn) (mirror stack) pb pa passes gen rot
 
 
 getPmodelDiff :: WhichPlayer -> ModelDiff -> PlayerModelDiff
@@ -75,6 +77,7 @@ update m d =
     , model_stack  = fromMaybe (model_stack m)  (modeldiff_stack d)
     , model_passes = fromMaybe (model_passes m) (modeldiff_passes d)
     , model_gen    = fromMaybe (model_gen m)    (modeldiff_gen d)
+    , model_rot    = fromMaybe (model_rot m)    (modeldiff_rot d)
     , model_pa     = updateP   (model_pa m)     (modeldiff_pa d)
     , model_pb     = updateP   (model_pb m)     (modeldiff_pb d)
     }
@@ -96,6 +99,7 @@ instance Semigroup ModelDiff where
       , modeldiff_stack  = (modeldiff_stack b)  <|> (modeldiff_stack a)
       , modeldiff_passes = (modeldiff_passes b) <|> (modeldiff_passes a)
       , modeldiff_gen    = (modeldiff_gen b)    <|> (modeldiff_gen a)
+      , modeldiff_rot    = (modeldiff_rot b)    <|> (modeldiff_rot a)
       , modeldiff_pa     = (modeldiff_pa b) <> (modeldiff_pa a)
       , modeldiff_pb     = (modeldiff_pb b) <> (modeldiff_pb a)
       }
@@ -109,6 +113,7 @@ instance Monoid ModelDiff where
         , modeldiff_stack  = Nothing
         , modeldiff_passes = Nothing
         , modeldiff_gen    = Nothing
+        , modeldiff_rot    = Nothing
         , modeldiff_pa     = mempty
         , modeldiff_pb     = mempty
         }

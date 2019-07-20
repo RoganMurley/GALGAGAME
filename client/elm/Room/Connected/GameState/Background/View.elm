@@ -92,24 +92,24 @@ ornateView ({ w, h, anim, tick } as ctx) =
 
 
 ringView : Context -> List WebGL.Entity
-ringView { w, h, anim, progress, radius, textures } =
+ringView { w, h, anim, model, progress, radius, textures } =
     let
-        rotationProgress =
+        ringRot =
             case anim of
                 Rotate _ ->
-                    progress
+                    toFloat model.rot - 1 + progress
 
                 Windup _ ->
-                    1 - progress
+                    toFloat model.rot + (1 - progress)
 
                 Finding ->
                     -12 * progress
 
                 _ ->
-                    0
+                    toFloat model.rot
 
         rotation =
-            rotationProgress * -2.0 * pi / 12.0
+            ringRot * -2.0 * pi / 12.0
 
         ringEntity =
             case Texture.load textures "ring.png" of
