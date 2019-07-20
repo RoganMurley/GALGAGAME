@@ -205,4 +205,4 @@ telepath =
   Character
     "Mind"
     "subjugate.png"
-    (Cards.hammer, Cards.lightning, Cards.goldrush, Cards.subjugate)
+    (Cards.ritual, Cards.lightning, Cards.goldrush, Cards.subjugate)

@@ -34,6 +34,7 @@ data DSL n
   | GetLife WhichPlayer (Life -> n)
   | GetGen (Gen -> n)
   | GetStack (Stack -> n)
+  | GetRot (Int -> n)
   | RawAnim CardAnim n
   | Null n
   deriving (Functor)

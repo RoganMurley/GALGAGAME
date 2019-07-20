@@ -401,6 +401,20 @@ goldrush =
       draw (other w) (other w)
 
 
+ritual :: Card
+ritual =
+  Card
+    "Ritual"
+    "If zone is dark, hurt for 8. If zone is light, heal for 8."
+    "ritual.png"
+    $ \w -> do
+      rot <- getRot
+      if even rot then
+        hurt 8 (other w) Curse
+      else
+        heal 8 w
+
+
 allCards :: [Card]
 allCards =
   [ missile
@@ -439,4 +453,5 @@ allCards =
   , subjugate
   , telepathy
   , goldrush
+  , ritual
   ]
