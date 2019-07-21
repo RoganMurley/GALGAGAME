@@ -21,7 +21,8 @@ view handEntities ctx =
 
 otherView : List (Game.Entity {}) -> Context -> List WebGL.Entity
 otherView otherHandEntities ctx =
-    List.map (Card.backView ctx) otherHandEntities
+    List.concat <|
+        List.map (Card.backView ctx) otherHandEntities
 
 
 millView : Context -> List WebGL.Entity
