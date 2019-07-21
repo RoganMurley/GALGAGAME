@@ -36,17 +36,13 @@ import WhichPlayer.Types exposing (WhichPlayer(..))
 
 
 view : Render.Params -> Game.Model -> Texture.Model -> Html Main.Msg
-view { w, h } { res, hover, focus, entities, passed } textures =
+view { w, h, pixelRatio } { res, hover, focus, entities, passed } textures =
     let
         ctx =
             contextInit ( w, h ) res textures
     in
     div [ class "clock" ]
-        [ WebGL.toHtml
-            [ width w
-            , height h
-            , class "webgl-canvas"
-            ]
+        [ WebGL.toHtml [ width <| floor <| toFloat w * pixelRatio, height <| floor <| toFloat h * pixelRatio, class "webgl-canvas" ]
             (List.concat <|
                 List.map ((|>) ctx)
                     [ Background.ornateView

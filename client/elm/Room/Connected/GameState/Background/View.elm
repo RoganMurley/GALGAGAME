@@ -20,7 +20,7 @@ import WhichPlayer.Types exposing (WhichPlayer(..))
 
 
 view : Flags -> Texture.Model -> Anim -> Html msg
-view { dimensions, time } textures anim =
+view { dimensions, pixelRatio, time } textures anim =
     let
         ( w, h ) =
             dimensions
@@ -32,7 +32,7 @@ view { dimensions, time } textures anim =
             { baseCtx | anim = anim, progress = time / 4000 }
     in
     div []
-        [ WebGL.toHtml [ width w, height h, class "webgl-canvas" ] <|
+        [ WebGL.toHtml [ width <| floor <| toFloat w * pixelRatio, height <| floor <| toFloat h * pixelRatio, class "webgl-canvas" ] <|
             backgroundView ctx
         ]
 

@@ -8,6 +8,7 @@ type alias Params =
     { time : Float
     , w : Int
     , h : Int
+    , pixelRatio : Float
     }
 
 

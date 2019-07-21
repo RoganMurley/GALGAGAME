@@ -32,6 +32,7 @@ view state roomID flags gameType textures =
                     { w = w
                     , h = h
                     , time = flags.time
+                    , pixelRatio = flags.pixelRatio
                     }
             in
             Html.map

@@ -27,7 +27,7 @@ import WebGL.Texture as WebGL
 
 
 view : Render.Params -> Model -> Texture.Model -> Html Msg
-view { w, h } ({ characters, selected, vm } as model) textures =
+view { w, h, pixelRatio } ({ characters, selected, vm } as model) textures =
     let
         ctx =
             bareContextInit ( w, h ) textures
@@ -60,7 +60,7 @@ view { w, h } ({ characters, selected, vm } as model) textures =
     in
     div [ class "character-select" ]
         [ WebGL.toHtml
-            [ width w, height h, class "webgl-canvas" ]
+            [ width <| floor <| toFloat w * pixelRatio, height <| floor <| toFloat h * pixelRatio, class "webgl-canvas" ]
           <|
             List.concat <|
                 List.map ((|>) ctx)
