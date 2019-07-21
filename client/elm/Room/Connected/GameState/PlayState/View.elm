@@ -14,13 +14,13 @@ import Texture.Types as Texture
 
 
 view : PlayState -> Flags -> Maybe GameType -> Texture.Model -> Html Main.Msg
-view playState { time, dimensions, seed, username } gameType textures =
+view playState { time, dimensions, seed, username, pixelRatio } gameType textures =
     let
         ( w, h ) =
             dimensions
 
         params =
-            { time = time, w = w, h = h }
+            { time = time, w = w, h = h, pixelRatio = pixelRatio }
     in
     case playState of
         Playing { game } ->

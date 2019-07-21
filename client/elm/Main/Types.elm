@@ -21,6 +21,7 @@ type alias InputFlags =
     , time : Float
     , dimensions : ( Int, Int )
     , username : Maybe String
+    , pixelRatio : Float
     }
 
 
@@ -32,6 +33,7 @@ type alias Flags =
     , dimensions : ( Int, Int )
     , username : Maybe String
     , key : Browser.Navigation.Key
+    , pixelRatio : Float
     }
 
 

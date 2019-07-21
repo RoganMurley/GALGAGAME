@@ -12,6 +12,7 @@ var app = Elm.Main.init({
     dimensions: [ window.innerWidth, window.innerHeight ],
     time: 0,
     username: null,
+    pixelRatio: window.devicePixelRatio,
   },
 });
 

@@ -42,6 +42,7 @@ initFull inputFlags url key =
             , time = inputFlags.time
             , dimensions = inputFlags.dimensions
             , username = inputFlags.username
+            , pixelRatio = inputFlags.pixelRatio
             , key = key
             }
     in

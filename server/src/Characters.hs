@@ -200,9 +200,17 @@ collector =
     (Cards.relicblade, Cards.greed, Cards.mimic, Cards.alchemy)
 
 
-telepath :: Character
-telepath =
+oppresor :: Character
+oppresor =
   Character
-    "Mind"
+    "Oppression"
     "subjugate.png"
     (Cards.ritual, Cards.lightning, Cards.goldrush, Cards.subjugate)
+
+
+candler :: Character
+candler =
+  Character
+    "Candle"
+    "shadowbane.png"
+    (Cards.ritual, Cards.lightning, Cards.goldrush, Cards.shadowbane)

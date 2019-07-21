@@ -415,6 +415,17 @@ ritual =
         heal 8 w
 
 
+shadowbane :: Card
+shadowbane =
+  Card
+    "Shadowbane"
+    "Discard from play all cards in dark zones."
+    "shadowbane.png"
+    $ \_ -> do
+      rot <- getRot
+      discard $ \(i, _) -> even (i + rot + 1)
+
+
 allCards :: [Card]
 allCards =
   [ missile
@@ -454,4 +465,5 @@ allCards =
   , telepathy
   , goldrush
   , ritual
+  , shadowbane
   ]
