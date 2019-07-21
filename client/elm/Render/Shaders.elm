@@ -1,4 +1,4 @@
-module Render.Shaders exposing (circleFragment, disintegrate, fragment, fragmentAlpha, fragmentTransmute, fullCircleFragment, matte, ornate, roundedBoxDisintegrate, roundedBoxFragment, roundedBoxTransmute, vertex)
+module Render.Shaders exposing (circleFragment, disintegrate, fragment, fragmentAlpha, fragmentTransmute, fullCircleFragment, matte, ornate, vertex)
 
 import Math.Vector2 exposing (Vec2)
 import Math.Vector3 exposing (Vec3)
@@ -14,12 +14,13 @@ fragment =
         precision mediump float;
 
         uniform sampler2D texture;
+        uniform vec3 color;
 
         varying vec2 vcoord;
 
         void main ()
         {
-            gl_FragColor = texture2D(texture, vcoord);
+            gl_FragColor = vec4(color, 1.) * texture2D(texture, vcoord);
         }
 
     |]
@@ -95,44 +96,16 @@ disintegrate =
         uniform float time;
         uniform sampler2D texture;
         uniform sampler2D noise;
-
-        varying vec2 vcoord;
-
-        void main ()
-        {
-            vec4 color = texture2D(texture, vcoord);
-            float random = texture2D(noise, vcoord).r;
-            color.a *= floor((1. - time) + min(0.99, random));
-            gl_FragColor = color;
-        }
-
-    |]
-
-
-roundedBoxDisintegrate : Shader {} (Uniforms { time : Float, texture : Texture }) { vcoord : Vec2 }
-roundedBoxDisintegrate =
-    [glsl|
-        precision mediump float;
-
         uniform vec3 color;
-        uniform sampler2D texture;
-        uniform float time;
 
         varying vec2 vcoord;
 
         void main ()
         {
-            vec2 pos = vec2(.5) - vcoord;
-
-            float b = .4;
-            float d = length(max(abs(pos) - b, .0));
-
-            float a = smoothstep(d * 0.9, d * 1.1, .5 - b);
-
-            float random = texture2D(texture, vcoord).r;
-            a *= floor((1. - time) + min(0.99, random));
-
-            gl_FragColor = vec4(color, a);
+            vec4 final = vec4(color, 1.) * texture2D(texture, vcoord);
+            float random = texture2D(noise, vcoord).r;
+            final.a *= floor((1. - time) + min(0.99, random));
+            gl_FragColor = final;
         }
 
     |]
@@ -185,7 +158,7 @@ fullCircleFragment =
     |]
 
 
-fragmentTransmute : Shader {} (Uniforms { time : Float, texture : Texture, finalTexture : Texture }) { vcoord : Vec2 }
+fragmentTransmute : Shader {} (Uniforms { time : Float, texture : Texture, finalTexture : Texture, finalColor : Vec3 }) { vcoord : Vec2 }
 fragmentTransmute =
     [glsl|
         precision mediump float;
@@ -193,66 +166,18 @@ fragmentTransmute =
         uniform float time;
         uniform sampler2D texture;
         uniform sampler2D finalTexture;
+        uniform vec3 color;
+        uniform vec3 finalColor;
 
         varying vec2 vcoord;
 
         void main ()
         {
             if (vcoord.x > time) {
-                gl_FragColor = texture2D(texture, vcoord);
+                gl_FragColor = vec4(color, 1.) * texture2D(texture, vcoord);
             } else {
-                gl_FragColor = texture2D(finalTexture, vcoord);
+                gl_FragColor = vec4(finalColor, 1.) * texture2D(finalTexture, vcoord);
             }
-        }
-
-    |]
-
-
-roundedBoxTransmute : Shader {} (Uniforms { u | time : Float, finalColor : Vec3 }) { vcoord : Vec2 }
-roundedBoxTransmute =
-    [glsl|
-        precision mediump float;
-
-        uniform vec3 color;
-        uniform vec3 finalColor;
-        uniform float time;
-
-        varying vec2 vcoord;
-
-        void main ()
-        {
-            vec2 pos = vec2(.5) - vcoord;
-
-            float b = .4;
-            float d = length(max(abs(pos) - b, .0));
-
-            float a = smoothstep(d * 0.9, d * 1.1, .5 - b);
-
-            vec3 actualColor = vcoord.x > time ? color : finalColor;
-            gl_FragColor = vec4(actualColor, a);
-        }
-
-    |]
-
-
-roundedBoxFragment : Shader {} (Uniforms {}) { vcoord : Vec2 }
-roundedBoxFragment =
-    [glsl|
-        precision mediump float;
-
-        uniform vec3 color;
-
-        varying vec2 vcoord;
-
-        void main ()
-        {
-            vec2 pos = vec2(.5) - vcoord;
-
-            float b = .4;
-            float d = length(max(abs(pos) - b, .0));
-
-            float a = smoothstep(d * 0.9, d * 1.1, .5 - b);
-            gl_FragColor = vec4(color, a);
         }
 
     |]

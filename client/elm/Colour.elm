@@ -10,7 +10,7 @@ type alias Colour =
 
 white : Colour
 white =
-    vec3 0.91 0.95 0.87
+    vec3 1 1 1
 
 
 black : Colour

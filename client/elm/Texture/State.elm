@@ -128,4 +128,7 @@ texturePaths =
     , ( "goldrush.png", "/img/textures/goldrush.png" )
     , ( "ritual.png", "/img/textures/ritual.png" )
     , ( "shadowbane.png", "/img/textures/shadowbane.png" )
+
+    -- Testing
+    , ( "cardBack.png", "/img/textures/cardBack.png" )
     ]

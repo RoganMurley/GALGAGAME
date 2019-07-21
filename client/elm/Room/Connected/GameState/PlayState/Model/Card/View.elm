@@ -40,26 +40,48 @@ view ctx entity =
 
         pos =
             to3d position
-
-        col =
-            Colour.card owner
     in
-    case cardTexture textures card of
-        Just texture ->
-            [ Render.Primitives.roundedBox
+    case ( cardTexture textures card, Texture.load textures "cardBack.png" ) of
+        ( Just texture, Just cardBackTexture ) ->
+            [ Render.Primitives.quad Render.Shaders.fragment <|
                 { rotation = rot
-                , scale = makeScale3 (scale * 0.7 * width) (scale * height) 1
-                , color = col
+                , scale = makeScale3 (scale * width) (scale * height) 1
+                , color = Colour.card owner
                 , pos = pos
                 , worldRot = makeRotate 0 <| vec3 0 0 1
                 , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
                 , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
+                , texture = cardBackTexture
                 }
             , Render.Primitives.quad Render.Shaders.fragment <|
                 { rotation = rot
                 , scale = makeScale3 (scale * 0.6 * width) (scale * 0.6 * height) 1
-                , color = col
+                , color = Colour.white
                 , pos = pos
+                , worldRot = makeRotate 0 <| vec3 0 0 1
+                , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
+                , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
+                , texture = texture
+                }
+            ]
+
+        _ ->
+            []
+
+
+backView : Context -> Game.Entity {} -> List WebGL.Entity
+backView { w, h, radius, textures } { position, rotation, scale } =
+    let
+        { width, height } =
+            baseDimensions radius
+    in
+    case Texture.load textures "cardBack.png" of
+        Just texture ->
+            [ Render.Primitives.quad Render.Shaders.fragment <|
+                { rotation = makeRotate rotation <| vec3 0 0 1
+                , scale = makeScale3 (scale * width) (scale * height) 1
+                , color = Colour.card PlayerB
+                , pos = to3d position
                 , worldRot = makeRotate 0 <| vec3 0 0 1
                 , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
                 , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
@@ -69,23 +91,6 @@ view ctx entity =
 
         Nothing ->
             []
-
-
-backView : Context -> Game.Entity {} -> WebGL.Entity
-backView { w, h, radius } { position, rotation, scale } =
-    let
-        { width, height } =
-            baseDimensions radius
-    in
-    Render.Primitives.roundedBox <|
-        { rotation = makeRotate rotation <| vec3 0 0 1
-        , scale = makeScale3 (scale * 0.7 * width) (scale * height) 1
-        , color = Colour.card PlayerB
-        , pos = to3d position
-        , worldRot = makeRotate 0 <| vec3 0 0 1
-        , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
-        , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
-        }
 
 
 dissolvingView : Context -> Card.Entity a -> List WebGL.Entity
@@ -103,41 +108,47 @@ dissolvingView ctx { position, rotation, scale, card, owner } =
         pos =
             to3d position
 
-        col =
-            Colour.card owner
-
         mTexture =
             cardTexture textures card
+
+        mCardBack =
+            Texture.load textures "cardBack.png"
 
         mNoise =
             Texture.load textures "noise.png"
     in
-    case ( mTexture, mNoise ) of
-        ( Just texture, Just noise ) ->
-            [ Render.Primitives.roundedBoxDisintegrate <|
-                { texture = noise
-                , rotation = rot
-                , scale = makeScale3 (scale * 0.7 * width) (scale * height) 1
-                , color = col
-                , pos = pos
-                , worldRot = makeRotate 0 (vec3 0 0 1)
-                , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
-                , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
-                , time = progress
-                }
-            , Render.Primitives.quad Render.Shaders.disintegrate <|
-                { texture = texture
-                , noise = noise
-                , rotation = rot
-                , scale = makeScale3 (scale * 0.6 * width) (scale * 0.6 * height) 1
-                , color = vec3 1 1 1
-                , pos = pos
-                , worldRot = makeRotate 0 (vec3 0 0 1)
-                , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
-                , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
-                , time = progress
-                }
-            ]
+    case ( mTexture, mCardBack ) of
+        ( Just texture, Just cardBackTexture ) ->
+            case mNoise of
+                Just noise ->
+                    [ Render.Primitives.quad Render.Shaders.disintegrate <|
+                        { texture = cardBackTexture
+                        , noise = noise
+                        , rotation = rot
+                        , scale = makeScale3 (scale * width) (scale * height) 1
+                        , color = Colour.card owner
+                        , pos = pos
+                        , worldRot = makeRotate 0 (vec3 0 0 1)
+                        , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
+                        , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
+                        , time = progress
+                        }
+                    , Render.Primitives.quad Render.Shaders.disintegrate <|
+                        { texture = texture
+                        , noise = noise
+                        , rotation = rot
+                        , scale = makeScale3 (scale * 0.6 * width) (scale * 0.6 * height) 1
+                        , color = Colour.white
+                        , pos = pos
+                        , worldRot = makeRotate 0 (vec3 0 0 1)
+                        , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
+                        , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
+                        , time = progress
+                        }
+                    ]
+
+                _ ->
+                    []
 
         _ ->
             []
@@ -158,41 +169,47 @@ fabricatingView ctx { position, rotation, scale, card, owner } =
         pos =
             to3d position
 
-        col =
-            Colour.card owner
-
         mTexture =
             cardTexture textures card
+
+        mCardBack =
+            Texture.load textures "cardBack.png"
 
         mNoise =
             Texture.load textures "noise.png"
     in
-    case ( mTexture, mNoise ) of
-        ( Just texture, Just noise ) ->
-            [ Render.Primitives.roundedBoxDisintegrate <|
-                { texture = noise
-                , rotation = rot
-                , scale = makeScale3 (scale * 0.7 * width) (scale * height) 1
-                , color = col
-                , pos = pos
-                , worldRot = makeRotate 0 (vec3 0 0 1)
-                , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
-                , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
-                , time = 1 - progress
-                }
-            , Render.Primitives.quad Render.Shaders.disintegrate <|
-                { texture = texture
-                , noise = noise
-                , rotation = rot
-                , scale = makeScale3 (scale * 0.6 * width) (scale * 0.6 * height) 1
-                , color = vec3 1 1 1
-                , pos = pos
-                , worldRot = makeRotate 0 (vec3 0 0 1)
-                , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
-                , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
-                , time = 1 - progress
-                }
-            ]
+    case ( mTexture, mCardBack ) of
+        ( Just texture, Just cardBackTexture ) ->
+            case mNoise of
+                Just noise ->
+                    [ Render.Primitives.quad Render.Shaders.disintegrate <|
+                        { texture = cardBackTexture
+                        , noise = noise
+                        , rotation = rot
+                        , scale = makeScale3 (scale * width) (scale * height) 1
+                        , color = Colour.card owner
+                        , pos = pos
+                        , worldRot = makeRotate 0 (vec3 0 0 1)
+                        , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
+                        , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
+                        , time = 1 - progress
+                        }
+                    , Render.Primitives.quad Render.Shaders.disintegrate <|
+                        { texture = texture
+                        , noise = noise
+                        , rotation = rot
+                        , scale = makeScale3 (scale * 0.6 * width) (scale * 0.6 * height) 1
+                        , color = Colour.white
+                        , pos = pos
+                        , worldRot = makeRotate 0 (vec3 0 0 1)
+                        , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
+                        , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
+                        , time = 1 - progress
+                        }
+                    ]
+
+                _ ->
+                    []
 
         _ ->
             []
@@ -213,41 +230,49 @@ transmutingView ctx stackCard finalStackCard { position, rotation, scale } =
         pos =
             to3d position
 
-        col =
-            Colour.card stackCard.owner
-
         mTexture =
             cardTexture textures stackCard.card
 
         mFinalTexture =
             cardTexture textures finalStackCard.card
+
+        mCardBack =
+            Texture.load textures "cardBack.png"
     in
     case ( mTexture, mFinalTexture ) of
         ( Just texture, Just finalTexture ) ->
-            [ Render.Primitives.roundedBoxTransmute <|
-                { rotation = rot
-                , scale = makeScale3 (scale * 0.7 * width) (scale * height) 1
-                , color = col
-                , finalColor = Colour.card finalStackCard.owner
-                , pos = pos
-                , worldRot = makeRotate 0 (vec3 0 0 1)
-                , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
-                , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
-                , time = progress
-                }
-            , Render.Primitives.quad Render.Shaders.fragmentTransmute <|
-                { texture = texture
-                , finalTexture = finalTexture
-                , rotation = rot
-                , scale = makeScale3 (scale * 0.6 * width) (scale * 0.6 * height) 1
-                , color = col
-                , pos = pos
-                , worldRot = makeRotate 0 (vec3 0 0 1)
-                , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
-                , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
-                , time = progress
-                }
-            ]
+            case mCardBack of
+                Just cardBackTexture ->
+                    [ Render.Primitives.quad Render.Shaders.fragmentTransmute <|
+                        { texture = cardBackTexture
+                        , finalTexture = cardBackTexture
+                        , rotation = rot
+                        , scale = makeScale3 (scale * width) (scale * height) 1
+                        , color = Colour.card stackCard.owner
+                        , finalColor = Colour.card finalStackCard.owner
+                        , pos = pos
+                        , worldRot = makeRotate 0 (vec3 0 0 1)
+                        , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
+                        , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
+                        , time = progress
+                        }
+                    , Render.Primitives.quad Render.Shaders.fragmentTransmute <|
+                        { texture = texture
+                        , finalTexture = finalTexture
+                        , rotation = rot
+                        , scale = makeScale3 (scale * 0.6 * width) (scale * 0.6 * height) 1
+                        , color = Colour.white
+                        , finalColor = Colour.white
+                        , pos = pos
+                        , worldRot = makeRotate 0 (vec3 0 0 1)
+                        , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
+                        , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
+                        , time = progress
+                        }
+                    ]
+
+                Nothing ->
+                    []
 
         _ ->
             []
