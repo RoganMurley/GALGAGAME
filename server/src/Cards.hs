@@ -415,12 +415,12 @@ ritual =
         heal 8 w
 
 
-shadowbane :: Card
-shadowbane =
+unravel :: Card
+unravel =
   Card
-    "Shadowbane"
+    "Unravel"
     "Discard from play all cards in dark zones."
-    "shadowbane.png"
+    "unravel.png"
     $ \_ -> do
       rot <- getRot
       discard $ \(i, _) -> even (i + rot + 1)
@@ -465,5 +465,5 @@ allCards =
   , telepathy
   , goldrush
   , ritual
-  , shadowbane
+  , unravel
   ]
