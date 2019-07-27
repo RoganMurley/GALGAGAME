@@ -212,5 +212,5 @@ candler :: Character
 candler =
   Character
     "Candle"
-    "shadowbane.png"
-    (Cards.ritual, Cards.lightning, Cards.goldrush, Cards.shadowbane)
+    "unravel.png"
+    (Cards.ritual, Cards.lightning, Cards.goldrush, Cards.unravel)
