@@ -19,7 +19,7 @@ popd
 docker save -o .images/game-ringofworlds game-ringofworlds
 
 echo "Provisioning server..."
-docker-machine create --driver=digitalocean --digitalocean-access-token=$DIGITALOCEAN_ACCESS_TOKEN --digitalocean-region=sfo2 --digitalocean-image=ubuntu-10-04-x64 --digitalocean-tags=ring-of-worlds $name
+docker-machine create --driver=digitalocean --digitalocean-access-token=$DIGITALOCEAN_ACCESS_TOKEN --digitalocean-region=sfo2 --digitalocean-image=ubuntu-19-04-x64 --digitalocean-tags=ring-of-worlds $name
 eval "$(docker-machine env $name)"
 
 echo "Copying image to server..."
