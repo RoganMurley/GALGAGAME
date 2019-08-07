@@ -71,6 +71,7 @@ app.ports.analytics.subscribe(function () {
 });
 
 function handleClick (e) {
+  console.log(e);
   app.ports.click.send({
     x: Math.floor(e.clientX),
     y: Math.floor(e.clientY),
@@ -103,7 +104,9 @@ function handleTouchEnd (e) {
   app.ports.touch.send(null);
 };
 
-document.body.addEventListener('click', handleClick, false);
+// iOS doesn't handle click events on the body so get the elm element.
+document.body.firstChild.addEventListener('click', handleClick, false);
+
 document.body.addEventListener('mousemove', handleMouseMove, false);
 document.body.addEventListener('touchstart', handleTouch, false);
 document.body.addEventListener('touchmove', handleTouch, false);
