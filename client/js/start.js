@@ -71,7 +71,6 @@ app.ports.analytics.subscribe(function () {
 });
 
 function handleClick (e) {
-  console.log(e);
   app.ports.click.send({
     x: Math.floor(e.clientX),
     y: Math.floor(e.clientY),

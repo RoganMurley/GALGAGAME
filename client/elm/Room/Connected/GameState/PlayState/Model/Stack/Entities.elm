@@ -206,8 +206,22 @@ stackEntity { w, h, radius, anim, progress } baseRotateProgress finalStackLen fi
         position : Vec2
         position =
             Math.Vector2.add origin <|
-                Math.Vector2.scale (-0.615 * radius) <|
+                Math.Vector2.scale (-distance * radius) <|
                     vec2 (sin rotation) (cos rotation)
+
+        distance : Float
+        distance =
+            case anim of
+                Discard discards ->
+                    case Array.get finalIndex <| Array.fromList discards of
+                        Just CardDiscard ->
+                            0.615 + toFloat (12 - finalIndex) * progress * 0.01
+
+                        _ ->
+                            0.615
+
+                _ ->
+                    0.615
     in
     { position = position
     , rotation = pi - rotation
