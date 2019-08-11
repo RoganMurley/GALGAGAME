@@ -1,11 +1,11 @@
 module Game.State exposing (bareContextInit, contextInit, entitiesInit, gameInit, getFocus, getHoverIndex, hitTest, hoverDamage, hoverInit, tick)
 
 import Animation.State as Animation
-import Game.Types as Game exposing (Context, Entities, HandEntity, Hover(..), HoverBase, HoverSelf, StackEntity)
+import Game.Types as Game exposing (Context, Entities, Feedback, HandEntity, Hover(..), HoverBase, HoverSelf, StackEntity)
 import Hand.Entities as Hand
 import List.Extra as List
 import Main.Types exposing (Flags)
-import Math.Vector2 exposing (Vec2)
+import Math.Vector2 exposing (Vec2, vec2)
 import Maybe.Extra as Maybe
 import Model.State as Model
 import Model.Types as Model exposing (Model)
@@ -29,6 +29,7 @@ gameInit model =
     , otherHover = NoHover
     , entities = { hand = [], otherHand = [], stack = [] }
     , passed = False
+    , feedback = { progress = 0, pos = vec2 0 0 }
     }
 
 
@@ -122,6 +123,9 @@ tick { dimensions } dt model =
         focus =
             getFocus ctx hoverHand hoverStack
 
+        feedback =
+            feedbackTick model.feedback dt
+
         newModel =
             { model
                 | res = res
@@ -133,6 +137,7 @@ tick { dimensions } dt model =
                     , otherHand = Hand.otherEntities model.otherHover ctx
                     }
                 , focus = focus
+                , feedback = feedback
             }
     in
     ( newModel, hoverMsg )
@@ -248,3 +253,8 @@ getFocus { stackCard } hoverHand hoverStack =
                 (Maybe.map (\{ card } -> { owner = PlayerA, card = card }) hoverHand)
     in
     Maybe.or stackCard hoverCard
+
+
+feedbackTick : Feedback -> Float -> Feedback
+feedbackTick feedback dt =
+    { feedback | progress = max (feedback.progress - dt) 0 }

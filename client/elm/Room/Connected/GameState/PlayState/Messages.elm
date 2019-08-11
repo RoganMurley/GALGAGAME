@@ -2,6 +2,7 @@ module PlayState.Messages exposing (Msg(..), PlayingOnly(..), TurnOnly(..))
 
 import Card.Types exposing (Card)
 import Game.Types exposing (HoverOther, HoverSelf)
+import Math.Vector2 exposing (Vec2)
 import Stats exposing (StatChange)
 
 
@@ -13,6 +14,7 @@ type Msg
     | GotoReplay String
     | GotoComputerGame
     | StatChange StatChange
+    | ClickFeedback Vec2
 
 
 type PlayingOnly

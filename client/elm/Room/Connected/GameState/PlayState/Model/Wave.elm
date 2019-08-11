@@ -12,16 +12,8 @@ import WebGL
 
 
 view : Context -> List WebGL.Entity
-view ({ w, h, radius, anim } as ctx) =
+view ({ w, h, radius, anim, progress } as ctx) =
     let
-        progress =
-            case anim of
-                Heal _ _ ->
-                    1 - ctx.progress
-
-                _ ->
-                    ctx.progress
-
         scale =
             interpFloat progress 0 (3 * radius)
 
