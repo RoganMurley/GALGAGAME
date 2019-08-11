@@ -45,7 +45,8 @@ view { w, h, pixelRatio } { res, hover, focus, entities, passed } textures =
         [ WebGL.toHtml [ width <| floor <| toFloat w * pixelRatio, height <| floor <| toFloat h * pixelRatio, class "webgl-canvas" ]
             (List.concat <|
                 List.map ((|>) ctx)
-                    [ Background.ornateView
+                    [ Wave.view
+                    , Background.ornateView
                     , lifeOrbView
                     , Background.ringView
                     , Stack.view entities.stack
@@ -53,7 +54,6 @@ view { w, h, pixelRatio } { res, hover, focus, entities, passed } textures =
                     , passView
                     , Hand.view entities.hand
                     , Hand.otherView entities.otherHand
-                    , Wave.view
                     , Hand.millView
                     , Background.cursorView
                     ]
@@ -427,3 +427,16 @@ passView ({ anim, w, h, radius } as ctx) =
 
         _ ->
             []
+
+
+
+-- feedbackView : Feedback -> Context -> List WebGL.Entity
+-- feedbackView feedback ctx =
+--     [ Render.Primitives.circle <|
+--         uniColour ctx
+--             Colour.yellow
+--             { scale = 1000 - feedback.progress
+--             , position = feedback.pos
+--             , rotation = 0
+--             }
+--     ]

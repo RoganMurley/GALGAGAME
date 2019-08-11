@@ -1,4 +1,4 @@
-module Game.Types exposing (Context, Entities, HandEntity, Hover(..), HoverBase, HoverOther, HoverSelf, HoverStack, Model, OtherHandEntity, StackEntity)
+module Game.Types exposing (Context, Entities, Feedback, HandEntity, Hover(..), HoverBase, HoverOther, HoverSelf, HoverStack, Model, OtherHandEntity, StackEntity)
 
 import Animation.Types exposing (Anim)
 import Card.Types exposing (Card)
@@ -19,6 +19,7 @@ type alias Model =
     , otherHover : HoverOther
     , entities : Entities
     , passed : Bool
+    , feedback : Feedback
     }
 
 
@@ -91,3 +92,13 @@ type Hover a
     = HoverHand (HoverBase a)
     | HoverStack (HoverBase a)
     | NoHover
+
+
+
+-- Feedback
+
+
+type alias Feedback =
+    { progress : Float
+    , pos : Vec2
+    }

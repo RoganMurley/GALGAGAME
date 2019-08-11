@@ -80,6 +80,20 @@ update msg state mode =
                 _ ->
                     ( state, Cmd.none )
 
+        ClickFeedback pos ->
+            case state of
+                Playing ({ game } as playing) ->
+                    let
+                        feedback =
+                            { progress = 1000, pos = pos }
+                    in
+                    ( Playing { playing | game = { game | feedback = feedback } }
+                    , Cmd.none
+                    )
+
+                _ ->
+                    ( state, Cmd.none )
+
 
 updatePlayingOnly : PlayingOnly -> PlayState -> Mode.Mode -> ( PlayState, Cmd Main.Msg )
 updatePlayingOnly msg state mode =
@@ -366,7 +380,10 @@ mouseClick mode { x, y } state =
                         mode
 
                 Nothing ->
-                    ( state, Cmd.none )
+                    update
+                        (ClickFeedback pos)
+                        state
+                        mode
 
         _ ->
             ( state, Cmd.none )
