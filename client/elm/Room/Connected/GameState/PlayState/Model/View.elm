@@ -434,7 +434,7 @@ feedbackView : Feedback -> Context -> List WebGL.Entity
 feedbackView feedback ctx =
     let
         alpha =
-            Ease.outQuint (1 - feedback.progress / 1000)
+            Ease.inQuint (feedback.progress / 1000)
 
         scale =
             0.1 * (1000 - feedback.progress)
