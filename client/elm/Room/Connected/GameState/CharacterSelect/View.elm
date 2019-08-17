@@ -18,7 +18,7 @@ import Maybe.Extra as Maybe
 import Render.Primitives
 import Render.Shaders
 import Render.Types as Render
-import Render.Uniforms exposing (uni, uniColourMag)
+import Render.Uniforms exposing (uniColourMag)
 import Texture.State as Texture
 import Texture.Types as Texture
 import Util exposing (px, to3d)
@@ -128,7 +128,7 @@ characterSelectCirclesView ({ selected, vm } as model) ({ w, h, radius, textures
             (Render.Primitives.fullCircle << uniColourMag ctx Colour.darkGray 1)
             circleEntities
         , List.map
-            (Render.Primitives.circle << uni ctx)
+            (Render.Primitives.circle << uniColourMag ctx Colour.white 1)
             circleEntities
         , case mTextureA of
             Just texture ->
