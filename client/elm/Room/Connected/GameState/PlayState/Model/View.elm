@@ -8,7 +8,7 @@ import Colour
 import Connected.Messages as Connected
 import Ease
 import Game.State exposing (contextInit)
-import Game.Types as Game exposing (Context, Hover(..), HoverSelf)
+import Game.Types as Game exposing (Context, Feedback, Hover(..), HoverSelf)
 import GameState.Messages as GameState
 import Hand.State exposing (maxHandLength)
 import Hand.View as Hand
@@ -36,7 +36,7 @@ import WhichPlayer.Types exposing (WhichPlayer(..))
 
 
 view : Render.Params -> Game.Model -> Texture.Model -> Html Main.Msg
-view { w, h, pixelRatio } { res, hover, focus, entities, passed } textures =
+view { w, h, pixelRatio } { res, hover, focus, entities, passed, feedback } textures =
     let
         ctx =
             contextInit ( w, h ) res textures
@@ -56,6 +56,7 @@ view { w, h, pixelRatio } { res, hover, focus, entities, passed } textures =
                     , Hand.otherView entities.otherHand
                     , Hand.millView
                     , Background.cursorView
+                    , feedbackView feedback
                     ]
             )
         , div [ class "text-focus" ] [ focusTextView ctx focus ]
@@ -429,14 +430,21 @@ passView ({ anim, w, h, radius } as ctx) =
             []
 
 
+feedbackView : Feedback -> Context -> List WebGL.Entity
+feedbackView feedback ctx =
+    let
+        alpha =
+            Ease.outQuint (1 - feedback.progress / 1000)
 
--- feedbackView : Feedback -> Context -> List WebGL.Entity
--- feedbackView feedback ctx =
---     [ Render.Primitives.circle <|
---         uniColour ctx
---             Colour.yellow
---             { scale = 1000 - feedback.progress
---             , position = feedback.pos
---             , rotation = 0
---             }
---     ]
+        scale =
+            0.1 * (1000 - feedback.progress)
+    in
+    [ Render.Primitives.circle <|
+        uniColourMag ctx
+            Colour.white
+            alpha
+            { scale = scale
+            , position = feedback.pos
+            , rotation = 0
+            }
+    ]

@@ -23,7 +23,7 @@ quad fragment =
         Render.Meshes.quad
 
 
-circle : Uniforms {} -> Entity
+circle : Uniforms { mag : Float } -> Entity
 circle =
     entity
         Render.Shaders.circleFragment
