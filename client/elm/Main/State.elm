@@ -36,8 +36,8 @@ import Url.Parser exposing (parse)
 import Util exposing (authLocation)
 
 
-init : Flags -> Url -> ( Main.Model, Cmd Msg )
-init flags url =
+init : Flags -> Url -> Int -> ( Main.Model, Cmd Msg )
+init flags url initialVolume =
     let
         fetchTextures : List (Cmd Msg)
         fetchTextures =
@@ -47,7 +47,7 @@ init flags url =
             locationUpdate
                 { room = Room.init
                 , flags = flags
-                , settings = Settings.init
+                , settings = Settings.init initialVolume
                 , textures = Texture.init
                 }
                 url

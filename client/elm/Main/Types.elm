@@ -22,6 +22,7 @@ type alias InputFlags =
     , dimensions : ( Int, Int )
     , username : Maybe String
     , pixelRatio : Float
+    , initialVolume : Int
     }
 
 

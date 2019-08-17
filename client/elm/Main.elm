@@ -32,7 +32,7 @@ initFull : InputFlags -> Url -> Browser.Navigation.Key -> ( Model, Cmd Msg )
 initFull inputFlags url key =
     let
         ( model, cmd ) =
-            init flags url
+            init flags url inputFlags.initialVolume
 
         flags : Flags
         flags =

@@ -4,6 +4,12 @@ var params = new URLSearchParams(window.location.search);
 var hostname = window.location.hostname;
 var httpPort = window.location.port;
 var portProtocol = httpPort ?  ":" + httpPort : "";
+
+var initialVolume = localStorage.getItem('volume');
+if (initialVolume === null) {
+  initialVolume = 100;
+}
+
 var app = Elm.Main.init({
   flags: {
     hostname: hostname,
@@ -13,6 +19,7 @@ var app = Elm.Main.init({
     time: 0,
     username: null,
     pixelRatio: window.devicePixelRatio,
+    initialVolume: parseFloat(initialVolume, 10),
   },
 });
 
@@ -53,6 +60,7 @@ app.ports.loadAudio.subscribe(function (src) {
 app.ports.volume.subscribe(function (input) {
   var v = input / 100;
   Howler.volume(Math.pow(v, 4));
+  localStorage.setItem('volume', input);
 });
 
 app.ports.log.subscribe(function (input) {
