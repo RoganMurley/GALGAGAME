@@ -4,12 +4,12 @@ import Settings.Messages exposing (Msg(..))
 import Settings.Types exposing (ModalState(..), Model, VolumeType(..))
 
 
-init : Model
-init =
+init : Int -> Model
+init volume =
     { modalState = Closed
-    , masterVolume = 100
-    , musicVolume = 100
-    , sfxVolume = 100
+    , masterVolume = volume
+    , musicVolume = volume
+    , sfxVolume = volume
     }
 
 
