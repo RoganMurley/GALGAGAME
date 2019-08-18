@@ -13,8 +13,8 @@ import Resolvable.State exposing (activeAnim)
 import Texture.Types as Texture
 
 
-view : PlayState -> Flags -> Maybe GameType -> Texture.Model -> Html Main.Msg
-view playState { time, dimensions, seed, username, pixelRatio } gameType textures =
+view : PlayState -> Flags -> Maybe GameType -> Bool -> Texture.Model -> Html Main.Msg
+view playState { time, dimensions, seed, username, pixelRatio } gameType isReplay textures =
     let
         ( w, h ) =
             dimensions
@@ -26,7 +26,7 @@ view playState { time, dimensions, seed, username, pixelRatio } gameType texture
         Playing { game } ->
             div []
                 [ Model.view params game textures
-                , Endgame.view 0 NullAnim Nothing Nothing gameType username seed
+                , Endgame.view 0 NullAnim Nothing Nothing gameType username isReplay seed
                 ]
 
         Ended { winner, game, replayId, xp } ->
@@ -49,5 +49,5 @@ view playState { time, dimensions, seed, username, pixelRatio } gameType texture
             in
             div []
                 [ Model.view params game textures
-                , Endgame.view progress endAnim replayId xp gameType username seed
+                , Endgame.view progress endAnim replayId xp gameType username isReplay seed
                 ]

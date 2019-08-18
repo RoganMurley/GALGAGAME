@@ -17,7 +17,7 @@ view : Model -> Flags -> Texture.Model -> Html Msg
 view { game, gameType, roomID, players } flags textures =
     div []
         [ playersView players
-        , GameState.view game roomID flags (Just gameType) textures
+        , GameState.view game roomID flags (Just gameType) False textures
         ]
 
 
