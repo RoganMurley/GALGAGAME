@@ -23,7 +23,6 @@ extra-package-dbs: []
 
 docker:
   enable: true
-  run-args: ["--net=bridge", "--publish=9161:9160"]
 
 image:
   container:
