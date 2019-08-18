@@ -17,8 +17,8 @@ import Stats exposing (Experience, StatChange, levelAt, levelFromExperience, nex
 import WhichPlayer.Types exposing (WhichPlayer(..))
 
 
-view : Float -> Anim -> Maybe String -> Maybe StatChange -> Maybe GameType -> Maybe String -> Seed -> Html Main.Msg
-view progress anim mReplayId mXp gameType mUsername seed =
+view : Float -> Anim -> Maybe String -> Maybe StatChange -> Maybe GameType -> Maybe String -> Bool -> Seed -> Html Main.Msg
+view progress anim mReplayId mXp gameType mUsername isReplay seed =
     let
         ( show, endGameText, endGameClass ) =
             case anim of
@@ -166,6 +166,15 @@ view progress anim mReplayId mXp gameType mUsername seed =
 
                 Nothing ->
                     Signup
+
+        buttons =
+            if isReplay then
+                []
+
+            else
+                [ rematchButton
+                , watchReplayButton
+                ]
     in
     div [ classes, styles ]
         [ div [ class "endgame-container" ]
@@ -173,10 +182,7 @@ view progress anim mReplayId mXp gameType mUsername seed =
                 [ class endGameClass ]
                 [ text endGameText ]
             , experienceDisplay
-            , div [ class "endgame-buttons" ]
-                [ rematchButton
-                , watchReplayButton
-                ]
+            , div [ class "endgame-buttons" ] buttons
             , conversionLink
             ]
         ]

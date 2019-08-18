@@ -17,8 +17,8 @@ import Room.Messages as Room
 import Texture.Types as Texture
 
 
-view : GameState -> String -> Flags -> Maybe GameType -> Texture.Model -> Html Main.Msg
-view state roomID flags gameType textures =
+view : GameState -> String -> Flags -> Maybe GameType -> Bool -> Texture.Model -> Html Main.Msg
+view state roomID flags gameType isReplay textures =
     case state of
         Waiting waitType ->
             div [] [ waitingView waitType flags textures roomID ]
@@ -45,7 +45,7 @@ view state roomID flags gameType textures =
                 CharacterSelect.view params model textures
 
         Started playState ->
-            PlayState.view playState flags gameType textures
+            PlayState.view playState flags gameType isReplay textures
 
 
 waitingView : WaitType -> Flags -> Texture.Model -> String -> Html Main.Msg
