@@ -5,7 +5,7 @@ import Game.Types as Game exposing (Context, Entities, Feedback, HandEntity, Hov
 import Hand.Entities as Hand
 import List.Extra as List
 import Main.Types exposing (Flags)
-import Math.Vector2 exposing (Vec2, vec2)
+import Math.Vector2 exposing (Vec2)
 import Maybe.Extra as Maybe
 import Model.State as Model
 import Model.Types as Model exposing (Model)
@@ -29,7 +29,7 @@ gameInit model =
     , otherHover = NoHover
     , entities = { hand = [], otherHand = [], stack = [] }
     , passed = False
-    , feedback = { progress = 0, pos = vec2 0 0 }
+    , feedback = []
     }
 
 
@@ -255,6 +255,19 @@ getFocus { stackCard } hoverHand hoverStack =
     Maybe.or stackCard hoverCard
 
 
-feedbackTick : Feedback -> Float -> Feedback
+feedbackTick : List Feedback -> Float -> List Feedback
 feedbackTick feedback dt =
-    { feedback | progress = max (feedback.progress - dt) 0 }
+    Maybe.values <|
+        List.map
+            (\f ->
+                let
+                    progress =
+                        f.progress - dt
+                in
+                if progress < 0 then
+                    Nothing
+
+                else
+                    Just { f | progress = progress }
+            )
+            feedback
