@@ -19,7 +19,7 @@ type alias Model =
     , otherHover : HoverOther
     , entities : Entities
     , passed : Bool
-    , feedback : Feedback
+    , feedback : List Feedback
     }
 
 

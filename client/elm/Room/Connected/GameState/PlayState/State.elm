@@ -84,10 +84,16 @@ update msg state mode =
             case state of
                 Playing ({ game } as playing) ->
                     let
-                        feedback =
+                        f =
                             { progress = 1000, pos = pos }
                     in
-                    ( Playing { playing | game = { game | feedback = feedback } }
+                    ( Playing
+                        { playing
+                            | game =
+                                { game
+                                    | feedback = f :: game.feedback
+                                }
+                        }
                     , Cmd.none
                     )
 

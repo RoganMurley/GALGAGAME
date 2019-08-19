@@ -430,21 +430,24 @@ passView ({ anim, w, h, radius } as ctx) =
             []
 
 
-feedbackView : Feedback -> Context -> List WebGL.Entity
+feedbackView : List Feedback -> Context -> List WebGL.Entity
 feedbackView feedback ctx =
-    let
-        alpha =
-            Ease.inQuint (feedback.progress / 1000)
+    List.map
+        (\f ->
+            let
+                alpha =
+                    Ease.inQuint (f.progress / 1000)
 
-        scale =
-            0.1 * (1000 - feedback.progress)
-    in
-    [ Render.Primitives.circle <|
-        uniColourMag ctx
-            Colour.white
-            alpha
-            { scale = scale
-            , position = feedback.pos
-            , rotation = 0
-            }
-    ]
+                scale =
+                    0.1 * (1000 - f.progress)
+            in
+            Render.Primitives.circle <|
+                uniColourMag ctx
+                    Colour.white
+                    alpha
+                    { scale = scale
+                    , position = f.pos
+                    , rotation = 0
+                    }
+        )
+        feedback
