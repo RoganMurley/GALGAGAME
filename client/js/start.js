@@ -10,6 +10,8 @@ if (initialVolume === null) {
   initialVolume = 100;
 }
 
+setVolume(initialVolume);
+
 var app = Elm.Main.init({
   flags: {
     hostname: hostname,
@@ -57,9 +59,12 @@ app.ports.loadAudio.subscribe(function (src) {
   new Howl({src: [src]});
 });
 
+function setVolume(v) {
+  Howler.volume(Math.pow(v / 100, 4));
+};
+
 app.ports.volume.subscribe(function (input) {
-  var v = input / 100;
-  Howler.volume(Math.pow(v, 4));
+  setVolume(input);
   localStorage.setItem('volume', input);
 });
 
