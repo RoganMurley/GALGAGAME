@@ -20,13 +20,3 @@ extra-deps:
 flags: {}
 
 extra-package-dbs: []
-
-docker:
-  enable: true
-
-image:
-  container:
-    name: game
-    base: schmolt/ringofworlds-base:1
-    entrypoints:
-      - ringofworlds
