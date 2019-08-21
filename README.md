@@ -23,17 +23,14 @@ Read the [devlog](https://forums.tigsource.com/index.php?topic=66122.0).
 
 ## Dev setup
 
-### Build server docker image
-* `cd server`
-* `stack image container`
-
-### Build client code
+### Build client
 * `cd client`
 * `npm install`
 * `elm-package install`
 * `gulp build`
 
-### Run locally
+### Build server and run
+* `docker-compose build`
 * `docker-compose up`
 
 App will be served at https://localhost:4430.
