@@ -7,18 +7,18 @@ if [ $# -eq 0 ]; then
     name=$(git rev-parse HEAD)
 fi
 
-echo "Building client code..."
+echo "Building client..."
 pushd client
 gulp build --production
 popd
 
-echo "Creating server image..."
+echo "Building server..."
 pushd server
-stack image container
+docker build . --tag=game-ringofworlds
 popd
 docker save -o .images/game-ringofworlds game-ringofworlds
 
-echo "Provisioning server..."
+echo "Provisioning instance..."
 docker-machine create --driver=digitalocean --digitalocean-access-token=$DIGITALOCEAN_ACCESS_TOKEN --digitalocean-region=sfo2 --digitalocean-image=ubuntu-19-04-x64 --digitalocean-tags=ring-of-worlds $name
 eval "$(docker-machine env $name)"
 
@@ -26,7 +26,7 @@ echo "Copying image to server..."
 docker-machine scp .images/game-ringofworlds $name:game-ringofworlds
 docker load -i .images/game-ringofworlds
 
-echo "Building compose..."
+echo "Building server..."
 # Need to export COMPOSE_TLS_VERSION=TLSv1_2
 docker-compose -f docker-compose.prod.yml build
 
