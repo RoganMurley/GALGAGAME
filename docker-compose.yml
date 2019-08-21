@@ -20,7 +20,8 @@ services:
       context: "database"
     restart: always
   game:
-    image: "game-ringofworlds"
+    build:
+      context: "server"
     links:
       - database
       - redis
