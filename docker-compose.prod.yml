@@ -12,8 +12,7 @@ services:
     labels:
       com.datadoghq.ad.logs: '[{"source": "nginx", "service": "webapp"}]'
   game:
-    build:
-      context: "server"
+    image: "game-ringofworlds"
     env_file: "prod.env"
     restart: always
     labels:

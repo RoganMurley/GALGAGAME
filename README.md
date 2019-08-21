@@ -29,8 +29,10 @@ Read the [devlog](https://forums.tigsource.com/index.php?topic=66122.0).
 * `elm-package install`
 * `gulp build`
 
-### Build server and run
+## Build server
 * `docker-compose build`
+
+## Run localy
 * `docker-compose up`
 
 App will be served at https://localhost:4430.
