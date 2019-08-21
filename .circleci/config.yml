@@ -6,10 +6,6 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          name: Restore Cached Stack Dependencies
-          keys:
-            - server-{{ checksum "server/ringofworlds.cabal" }}-{{ checksum "server/stack.yaml" }}
-      - restore_cache:
           name: Restore Cached NPM Dependencies
           keys:
             - npm-{{ checksum "client/package.json" }}
@@ -17,15 +13,6 @@ jobs:
           name: Restore Cached Elm Dependencies
           keys:
             - elm-0.19-{{ checksum "client/elm.json" }}
-      - run:
-          name: Setup Server
-          command: cd server &&
-                   sudo curl -sSL https://raw.githubusercontent.com/commercialhaskell/stack/40cf7b37526b86d1676da82167ea8758a854953b/etc/scripts/get-stack.sh | sh &&
-                   stack docker pull &&
-                   stack setup &&
-                   stack install &&
-                   stack test &&
-                   stack image container
       - run:
           name: Setup Client
           command: cd client &&
@@ -46,12 +33,6 @@ jobs:
       - run:
           name: Deploy
           command: if [ $CIRCLE_BRANCH == 'master' ]; then ./scripts/decryptSecrets && ./scripts/deploy; fi
-      - save_cache:
-          name: Cache Stack Dependencies
-          key: server-{{ checksum "server/ringofworlds.cabal" }}-{{ checksum "server/stack.yaml" }}
-          paths:
-            - "~/.stack"
-            - "./server/.stack-work"
       - save_cache:
           name: Cache NPM Dependencies
           key: npm-{{ checksum "client/package.json" }}
