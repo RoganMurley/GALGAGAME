@@ -6,7 +6,7 @@ COPY . /opt/build
 RUN cd /opt/build && stack install --system-ghc
 
 FROM alpine:3.7
-RUN apk update && apk add gmp && apk add postgresql-client && apk add libc6-compat
+RUN apk update && apk add gmp && apk add postgresql-client && apk add libc6-compat && apk add libgcc
 RUN mkdir -p /opt/ringofworlds
 WORKDIR /opt/ringofworlds
 COPY --from=build /root/.local/bin/ringofworlds /opt/ringofworlds/ringofworlds
