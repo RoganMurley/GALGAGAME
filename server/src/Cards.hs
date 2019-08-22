@@ -108,8 +108,9 @@ curse =
       let dmg = 15
       paLife <- getLife w
       pbLife <- getLife (other w)
-      when (paLife <= pbLife) (hurt dmg w Curse)
-      when (paLife >= pbLife) (hurt dmg (other w) Curse)
+      when (paLife < pbLife) (hurt dmg w Curse)
+      when (paLife > pbLife) (hurt dmg (other w) Curse)
+      when (paLife == pbLife) Beta.null
 
 
 bless :: Card
@@ -122,8 +123,9 @@ bless =
       let mag = 15
       paLife <- getLife w
       pbLife <- getLife (other w)
-      when (paLife <= pbLife) (heal mag w)
-      when (paLife >= pbLife) (heal mag (other w))
+      when (paLife < pbLife) (heal mag w)
+      when (paLife > pbLife) (heal mag (other w))
+      when (paLife == pbLife) Beta.null
 
 
 balance :: Card
