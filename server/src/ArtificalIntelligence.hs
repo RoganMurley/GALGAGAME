@@ -50,7 +50,7 @@ toCommand EndAction      = EndTurn
 
 
 possibleActions :: Model -> [Action]
-possibleActions m = (PlayAction <$> xs) ++ endAction
+possibleActions m = endAction ++ (PlayAction <$> xs)
   where
     handLength :: Int
     handLength = length $ evalI m $ getHand PlayerA
