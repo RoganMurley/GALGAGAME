@@ -81,24 +81,7 @@ update msg state mode =
                     ( state, Cmd.none )
 
         ClickFeedback pos ->
-            case state of
-                Playing ({ game } as playing) ->
-                    let
-                        f =
-                            { progress = 1000, pos = pos }
-                    in
-                    ( Playing
-                        { playing
-                            | game =
-                                { game
-                                    | feedback = f :: game.feedback
-                                }
-                        }
-                    , Cmd.none
-                    )
-
-                _ ->
-                    ( state, Cmd.none )
+            ( map (\game -> { game | feedback = { progress = 1000, pos = pos } :: game.feedback }) state, Cmd.none )
 
 
 updatePlayingOnly : PlayingOnly -> PlayState -> Mode.Mode -> ( PlayState, Cmd Main.Msg )
@@ -369,27 +352,24 @@ mouseClick mode { x, y } state =
     let
         pos =
             vec2 (toFloat x) (toFloat y)
+
+        game =
+            get identity state
+
+        mEntity =
+            List.find
+                (Game.hitTest pos 28)
+                game.entities.hand
     in
-    case state of
-        Playing { game } ->
-            let
-                mEntity =
-                    List.find
-                        (Game.hitTest pos 28)
-                        game.entities.hand
-            in
-            case mEntity of
-                Just { card, index } ->
-                    update
-                        (PlayingOnly <| TurnOnly <| PlayCard card index)
-                        state
-                        mode
+    case mEntity of
+        Just { card, index } ->
+            update
+                (PlayingOnly <| TurnOnly <| PlayCard card index)
+                state
+                mode
 
-                Nothing ->
-                    update
-                        (ClickFeedback pos)
-                        state
-                        mode
-
-        _ ->
-            ( state, Cmd.none )
+        Nothing ->
+            update
+                (ClickFeedback pos)
+                state
+                mode
