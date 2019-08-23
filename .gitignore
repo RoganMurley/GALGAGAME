@@ -2,9 +2,6 @@ elm-stuff/
 node_modules/
 .stack-work/
 client/static/build/
-client/ssl/www.playhubris.com.ca-bundle
-client/ssl/www.playhubris.com.key
-client/ssl/www.playhubris.com.ca-bundle
 client/ssl/www.ringofworlds.com.ca-bundle
 client/ssl/www.ringofworlds.com.key
 prod.env
