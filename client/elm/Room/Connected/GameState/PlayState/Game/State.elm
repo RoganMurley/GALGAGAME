@@ -1,6 +1,7 @@
 module Game.State exposing (bareContextInit, contextInit, entitiesInit, gameInit, getFocus, getHoverIndex, hitTest, hoverDamage, hoverInit, tick)
 
 import Animation.State as Animation
+import Animation.Types as Animation
 import Game.Types as Game exposing (Context, Entities, Feedback, HandEntity, Hover(..), HoverBase, HoverSelf, StackEntity)
 import Hand.Entities as Hand
 import List.Extra as List
@@ -245,14 +246,19 @@ getHoverStack { entities, mouse } =
 
 
 getFocus : Context -> Maybe HandEntity -> Maybe StackEntity -> Maybe StackCard
-getFocus { stackCard } hoverHand hoverStack =
+getFocus { anim, stackCard } hoverHand hoverStack =
     let
         hoverCard =
             Maybe.or
                 (Maybe.map (\{ card, owner } -> { owner = owner, card = card }) hoverStack)
                 (Maybe.map (\{ card } -> { owner = PlayerA, card = card }) hoverHand)
     in
-    Maybe.or stackCard hoverCard
+    case anim of
+        Animation.Play _ _ _ ->
+            Nothing
+
+        _ ->
+            Maybe.or stackCard hoverCard
 
 
 feedbackTick : List Feedback -> Float -> List Feedback
