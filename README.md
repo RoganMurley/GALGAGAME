@@ -30,6 +30,7 @@ Read the [devlog](https://forums.tigsource.com/index.php?topic=66122.0).
 * `gulp build`
 
 ## Build server
+* `./scripts/makeFakeCertificates`
 * `docker-compose build`
 
 ## Run localy
