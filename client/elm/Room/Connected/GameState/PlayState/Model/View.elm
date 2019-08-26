@@ -30,6 +30,7 @@ import Room.Messages as Room
 import Stack.Types exposing (StackCard)
 import Stack.View as Stack
 import Texture.Types as Texture
+import Trail
 import Util exposing (interpFloat, px)
 import WebGL
 import WhichPlayer.Types exposing (WhichPlayer(..))
@@ -52,6 +53,7 @@ view { w, h, pixelRatio } { res, hover, focus, entities, passed, feedback } text
                     , Stack.view entities.stack
                     , focusImageView focus
                     , passView
+                    , Trail.view
                     , Hand.view entities.hand
                     , Hand.otherView entities.otherHand
                     , Hand.millView
@@ -439,7 +441,7 @@ feedbackView feedback ctx =
                     Ease.inQuint (f.progress / 1000)
 
                 scale =
-                    0.1 * (1000 - f.progress)
+                    ctx.radius * 0.0005 * (1000 - f.progress)
             in
             Render.Primitives.circle <|
                 uniColourMag ctx

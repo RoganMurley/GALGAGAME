@@ -1,4 +1,4 @@
-module Render.Shaders exposing (circleFragment, disintegrate, fragment, fragmentAlpha, fragmentTransmute, fullCircleFragment, matte, ornate, vertex)
+module Render.Shaders exposing (circleFragment, disintegrate, fragment, fragmentAlpha, fragmentTransmute, fullCircleFragment, matte, ornate, trail, vertex)
 
 import Math.Vector2 exposing (Vec2)
 import Math.Vector3 exposing (Vec3)
@@ -203,6 +203,45 @@ ornate =
             float y =  2. * vcoord.y -1.;
             float realThickness = 10. * thickness * pow(1. - vcoord.x, 5.);
             gl_FragColor = vec4(color, abs(y - x) < realThickness);
+        }
+
+    |]
+
+
+trail : Shader {} (Uniforms { start : Vec2, end : Vec2 }) { vcoord : Vec2 }
+trail =
+    [glsl|
+        precision mediump float;
+
+        uniform vec3 color;
+        uniform vec2 start;
+        uniform vec2 end;
+
+        varying vec2 vcoord;
+
+        void main ()
+        {
+            float x = vcoord.x;
+            float y = vcoord.y;
+
+            float top = abs((end.y - start.y) * x - (end.x - start.x) * y + end.x * start.y - end.y * start.x);
+            float bot = sqrt(pow(end.y - start.y, 2.) + pow(end.x - start.x, 2.));
+            float distance = top / bot;
+
+            float alpha = 0.;
+            if (distance < 0.01) {
+                alpha = .4 - distance * 20.;
+            }
+
+            float upperY = max(end.y, start.y);
+            float lowerY = min(end.y, start.y);
+            float upperX = max(end.x, start.x);
+            float lowerX = min(end.x, start.x);
+            if (!(x >= lowerX && x <= upperX && y >= lowerY && y <= upperY)) {
+                alpha = 0.;
+            }
+
+            gl_FragColor = vec4(color, alpha);
         }
 
     |]
