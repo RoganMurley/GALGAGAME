@@ -379,15 +379,17 @@ subjugate =
       discard $ \(i, _) -> i < handLen
 
 
-telepathy :: Card
-telepathy =
+avarice :: Card
+avarice =
   Card
-    "Telepathy"
-    "Draw 2 from their deck"
-    "telepathy.png"
+    "Avarice"
+    "Hurt for 2 for each card in your and their hand"
+    "avarice.png"
     $ \w -> do
-      draw w (other w)
-      draw w (other w)
+      len      <- length <$> getHand w
+      lenOther <- length <$> getHand (other w)
+      let total = len + lenOther
+      hurt (total * 2) (other w) Slash
 
 
 goldrush :: Card
@@ -402,6 +404,17 @@ goldrush =
       draw w w
       draw (other w) (other w)
 
+
+
+telepathy :: Card
+telepathy =
+  Card
+    "Telepathy"
+    "Draw 2 from their deck"
+    "telepathy.png"
+    $ \w -> do
+      draw w (other w)
+      draw w (other w)
 
 ritual :: Card
 ritual =

@@ -205,7 +205,7 @@ oppresor =
   Character
     "Oppression"
     "subjugate.png"
-    (Cards.ritual, Cards.lightning, Cards.goldrush, Cards.subjugate)
+    (Cards.staff, Cards.avarice, Cards.goldrush, Cards.subjugate)
 
 
 candler :: Character
