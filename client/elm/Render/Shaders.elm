@@ -229,14 +229,15 @@ trail =
             float distance = top / bot;
 
             float alpha = 0.;
-            if (distance < 0.01) {
+            float maxDistance = .01;
+            if (distance < maxDistance) {
                 alpha = .4 - distance * 20.;
             }
 
-            float upperY = max(end.y, start.y);
-            float lowerY = min(end.y, start.y);
-            float upperX = max(end.x, start.x);
-            float lowerX = min(end.x, start.x);
+            float upperY = max(end.y, start.y) + maxDistance;
+            float lowerY = min(end.y, start.y) - maxDistance;
+            float upperX = max(end.x, start.x) + maxDistance;
+            float lowerX = min(end.x, start.x) - maxDistance;
             if (!(x >= lowerX && x <= upperX && y >= lowerY && y <= upperY)) {
                 alpha = 0.;
             }
