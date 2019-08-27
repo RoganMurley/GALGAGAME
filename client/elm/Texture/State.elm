@@ -124,8 +124,9 @@ texturePaths =
 
     -- Dailies
     , ( "subjugate.png", "/img/textures/subjugate.png" )
-    , ( "telepathy.png", "/img/textures/telepathy.png" )
+    , ( "avarice.png", "/img/textures/avarice.png" )
     , ( "goldrush.png", "/img/textures/goldrush.png" )
+    , ( "telepathy.png", "/img/textures/telepathy.png" )
     , ( "ritual.png", "/img/textures/ritual.png" )
     , ( "unravel.png", "/img/textures/unravel.png" )
 
