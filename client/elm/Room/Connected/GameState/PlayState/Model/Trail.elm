@@ -1,7 +1,9 @@
 module Trail exposing (view)
 
+import Animation.State as Animation
 import Animation.Types exposing (Anim(..))
 import Colour
+import Ease
 import Game.Types exposing (Context, Hover(..))
 import Hand.Entities exposing (handCardPosition)
 import Math.Matrix4 exposing (makeLookAt, makeOrtho, makeRotate, makeScale3)
@@ -15,7 +17,7 @@ import WhichPlayer.Types exposing (WhichPlayer(..))
 
 
 view : Context -> List WebGL.Entity
-view ({ anim, model, progress, radius, w, h } as ctx) =
+view ({ anim, model, progress, radius, w, h, tick } as ctx) =
     case anim of
         Play PlayerA _ i ->
             let
@@ -33,13 +35,17 @@ view ({ anim, model, progress, radius, w, h } as ctx) =
 
                 start : Vec2
                 start =
-                    vec2 (baseX / w) 0
+                    interp2D (Ease.inBounce (tick / Animation.animMaxTick anim))
+                        (vec2 (baseX / w) 0)
+                        final
 
                 end : Vec2
                 end =
-                    interp2D progress
-                        start
-                        (vec2 0.5 (0.5 + (1 / h) * radius * 0.62))
+                    interp2D progress start final
+
+                final : Vec2
+                final =
+                    vec2 0.5 (0.5 + (1 / h) * radius * 0.62)
             in
             [ Render.Primitives.quad Render.Shaders.trail
                 { rotation = makeRotate pi (vec3 0 0 1)
@@ -70,13 +76,17 @@ view ({ anim, model, progress, radius, w, h } as ctx) =
 
                 start : Vec2
                 start =
-                    vec2 (baseX / w) 1
+                    interp2D (Ease.inBounce (tick / Animation.animMaxTick anim))
+                        (vec2 (baseX / w) 1)
+                        final
 
                 end : Vec2
                 end =
-                    interp2D progress
-                        start
-                        (vec2 0.5 (0.5 + (1 / h) * radius * 0.62))
+                    interp2D progress start final
+
+                final : Vec2
+                final =
+                    vec2 0.5 (0.5 + (1 / h) * radius * 0.62)
             in
             [ Render.Primitives.quad Render.Shaders.trail
                 { rotation = makeRotate pi (vec3 0 0 1)

@@ -225,13 +225,13 @@ trail =
             float y = vcoord.y;
 
             float top = abs((end.y - start.y) * x - (end.x - start.x) * y + end.x * start.y - end.y * start.x);
-            float bot = sqrt(pow(end.y - start.y, 2.) + pow(end.x - start.x, 2.));
-            float distance = top / bot;
+            float length = sqrt(pow(end.y - start.y, 2.) + pow(end.x - start.x, 2.));
+            float distanceToLine = top / length;
 
             float alpha = 0.;
-            float maxDistance = .01;
-            if (distance < maxDistance) {
-                alpha = .4 - distance * 20.;
+            float maxDistance = .02;
+            if (distanceToLine < maxDistance) {
+                alpha = .4 - distanceToLine * 20.;
             }
 
             float upperY = max(end.y, start.y) + maxDistance;
@@ -241,6 +241,9 @@ trail =
             if (!(x >= lowerX && x <= upperX && y >= lowerY && y <= upperY)) {
                 alpha = 0.;
             }
+
+            float fade = sqrt(pow(end.y - y, 2.) + pow(end.x - x, 2.));
+            alpha *=  1. - fade / length;
 
             gl_FragColor = vec4(color, alpha);
         }
