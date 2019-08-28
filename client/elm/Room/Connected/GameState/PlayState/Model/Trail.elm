@@ -5,7 +5,7 @@ import Animation.Types exposing (Anim(..))
 import Colour
 import Ease
 import Game.Types exposing (Context, Hover(..))
-import Hand.Entities exposing (handCardPosition)
+import Hand.Entities exposing (handCardPosition, playPosition)
 import Math.Matrix4 exposing (makeLookAt, makeOrtho, makeRotate, makeScale3)
 import Math.Vector2 exposing (Vec2, vec2)
 import Math.Vector3 exposing (vec3)
@@ -16,8 +16,22 @@ import WebGL
 import WhichPlayer.Types exposing (WhichPlayer(..))
 
 
+toShaderSpace : Float -> Float -> Vec2 -> Vec2
+toShaderSpace w h screenSpace =
+    let
+        { x, y } =
+            Math.Vector2.toRecord screenSpace
+    in
+    vec2 (x / w) (1 - y / h)
+
+
 view : Context -> List WebGL.Entity
-view ({ anim, model, progress, radius, w, h, tick } as ctx) =
+view ({ anim, model, progress, w, h, tick } as ctx) =
+    let
+        trailProgress : Float
+        trailProgress =
+            Ease.inBounce (tick / Animation.animMaxTick anim)
+    in
     case anim of
         Play PlayerA _ i ->
             let
@@ -25,27 +39,22 @@ view ({ anim, model, progress, radius, w, h, tick } as ctx) =
                 n =
                     List.length model.hand + 1
 
-                base : Vec2
-                base =
-                    handCardPosition ctx PlayerA i n NoHover
+                initial : Vec2
+                initial =
+                    toShaderSpace w h <|
+                        handCardPosition ctx PlayerA i n NoHover
 
-                baseX : Float
-                baseX =
-                    Math.Vector2.getX base
+                final : Vec2
+                final =
+                    toShaderSpace w h <| playPosition ctx
 
                 start : Vec2
                 start =
-                    interp2D (Ease.inBounce (tick / Animation.animMaxTick anim))
-                        (vec2 (baseX / w) 0)
-                        final
+                    interp2D trailProgress initial final
 
                 end : Vec2
                 end =
                     interp2D progress start final
-
-                final : Vec2
-                final =
-                    vec2 0.5 (0.5 + (1 / h) * radius * 0.62)
             in
             [ Render.Primitives.quad Render.Shaders.trail
                 { rotation = makeRotate pi (vec3 0 0 1)
@@ -66,27 +75,22 @@ view ({ anim, model, progress, radius, w, h, tick } as ctx) =
                 n =
                     model.otherHand + 1
 
-                base : Vec2
-                base =
-                    handCardPosition ctx PlayerB i n NoHover
+                initial : Vec2
+                initial =
+                    toShaderSpace w h <|
+                        handCardPosition ctx PlayerB i n NoHover
 
-                baseX : Float
-                baseX =
-                    Math.Vector2.getX base
+                final : Vec2
+                final =
+                    toShaderSpace w h <| playPosition ctx
 
                 start : Vec2
                 start =
-                    interp2D (Ease.inBounce (tick / Animation.animMaxTick anim))
-                        (vec2 (baseX / w) 1)
-                        final
+                    interp2D trailProgress initial final
 
                 end : Vec2
                 end =
                     interp2D progress start final
-
-                final : Vec2
-                final =
-                    vec2 0.5 (0.5 + (1 / h) * radius * 0.62)
             in
             [ Render.Primitives.quad Render.Shaders.trail
                 { rotation = makeRotate pi (vec3 0 0 1)
