@@ -1,7 +1,7 @@
 module Trail exposing (view)
 
 import Animation.State as Animation
-import Animation.Types exposing (Anim(..))
+import Animation.Types exposing (Anim(..), Bounce(..), HandBounce)
 import Colour exposing (Colour)
 import Ease
 import Game.Types exposing (Context, Hover(..))
@@ -11,6 +11,7 @@ import Math.Vector2 exposing (Vec2, vec2)
 import Math.Vector3 exposing (vec3)
 import Render.Primitives
 import Render.Shaders
+import Stack.Entities
 import Util exposing (interp2D)
 import WebGL
 import WhichPlayer.Types exposing (WhichPlayer(..))
@@ -26,7 +27,20 @@ toShaderSpace w h screenSpace =
 
 
 trailQuad : Colour -> Vec2 -> Vec2 -> Context -> WebGL.Entity
-trailQuad colour start end { w, h } =
+trailQuad colour initial final { w, h, progress, anim, tick } =
+    let
+        start : Vec2
+        start =
+            interp2D trailProgress initial final
+
+        end : Vec2
+        end =
+            interp2D progress start final
+
+        trailProgress : Float
+        trailProgress =
+            Ease.inBounce (tick / Animation.animMaxTick anim)
+    in
     Render.Primitives.quad Render.Shaders.trail
         { rotation = makeRotate pi (vec3 0 0 1)
         , scale = makeScale3 (0.5 * w) (0.5 * h) 1
@@ -35,18 +49,13 @@ trailQuad colour start end { w, h } =
         , worldRot = makeRotate 0 (vec3 0 0 1)
         , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
         , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
-        , start = start
-        , end = end
+        , start = toShaderSpace w h start
+        , end = toShaderSpace w h end
         }
 
 
 view : Context -> List WebGL.Entity
-view ({ anim, model, progress, w, h, tick } as ctx) =
-    let
-        trailProgress : Float
-        trailProgress =
-            Ease.inBounce (tick / Animation.animMaxTick anim)
-    in
+view ({ anim, model, w, h } as ctx) =
     case anim of
         Play PlayerA _ i ->
             let
@@ -56,26 +65,17 @@ view ({ anim, model, progress, w, h, tick } as ctx) =
 
                 initial : Vec2
                 initial =
-                    toShaderSpace w h <|
-                        handCardPosition ctx PlayerA i n NoHover
+                    handCardPosition ctx PlayerA i n NoHover
 
                 final : Vec2
                 final =
-                    toShaderSpace w h <| playPosition ctx
-
-                start : Vec2
-                start =
-                    interp2D trailProgress initial final
-
-                end : Vec2
-                end =
-                    interp2D progress start final
+                    playPosition ctx
 
                 colour : Colour
                 colour =
                     Colour.card PlayerA
             in
-            [ trailQuad colour start end ctx ]
+            [ trailQuad colour initial final ctx ]
 
         Play PlayerB _ i ->
             let
@@ -85,26 +85,17 @@ view ({ anim, model, progress, w, h, tick } as ctx) =
 
                 initial : Vec2
                 initial =
-                    toShaderSpace w h <|
-                        handCardPosition ctx PlayerB i n NoHover
+                    handCardPosition ctx PlayerB i n NoHover
 
                 final : Vec2
                 final =
-                    toShaderSpace w h <| playPosition ctx
-
-                start : Vec2
-                start =
-                    interp2D trailProgress initial final
-
-                end : Vec2
-                end =
-                    interp2D progress start final
+                    playPosition ctx
 
                 colour : Colour
                 colour =
                     Colour.card PlayerB
             in
-            [ trailQuad colour start end ctx ]
+            [ trailQuad colour initial final ctx ]
 
         Draw PlayerA ->
             let
@@ -114,26 +105,17 @@ view ({ anim, model, progress, w, h, tick } as ctx) =
 
                 initial : Vec2
                 initial =
-                    toShaderSpace w h <| vec2 w h
+                    vec2 w h
 
                 final : Vec2
                 final =
-                    toShaderSpace w h <|
-                        handCardPosition ctx PlayerA n (n + 1) NoHover
-
-                start : Vec2
-                start =
-                    interp2D trailProgress initial final
-
-                end : Vec2
-                end =
-                    interp2D progress start final
+                    handCardPosition ctx PlayerA n (n + 1) NoHover
 
                 colour : Colour
                 colour =
                     Colour.card PlayerA
             in
-            [ trailQuad colour start end ctx ]
+            [ trailQuad colour initial final ctx ]
 
         Draw PlayerB ->
             let
@@ -143,26 +125,61 @@ view ({ anim, model, progress, w, h, tick } as ctx) =
 
                 initial : Vec2
                 initial =
-                    toShaderSpace w h <| vec2 w 0
+                    vec2 w 0
 
                 final : Vec2
                 final =
-                    toShaderSpace w h <|
-                        handCardPosition ctx PlayerB n (n + 1) NoHover
-
-                start : Vec2
-                start =
-                    interp2D trailProgress initial final
-
-                end : Vec2
-                end =
-                    interp2D progress start final
+                    handCardPosition ctx PlayerB n (n + 1) NoHover
 
                 colour : Colour
                 colour =
                     Colour.card PlayerB
             in
-            [ trailQuad colour start end ctx ]
+            [ trailQuad colour initial final ctx ]
+
+        Bounce bounces ->
+            let
+                paBounces : List HandBounce
+                paBounces =
+                    Animation.getPlayerBounceCards PlayerA bounces model.stack
+
+                pbBounces : List HandBounce
+                pbBounces =
+                    Animation.getPlayerBounceCards PlayerB bounces model.stack
+
+                na =
+                    List.length model.hand + List.length paBounces
+
+                nb =
+                    model.otherHand + List.length pbBounces
+
+                makeTrail : WhichPlayer -> HandBounce -> WebGL.Entity
+                makeTrail which { stackIndex, handIndex } =
+                    let
+                        n =
+                            case which of
+                                PlayerA ->
+                                    na
+
+                                PlayerB ->
+                                    nb
+
+                        colour =
+                            Colour.card which
+
+                        stackEntity =
+                            Stack.Entities.stackEntity ctx 0 (List.length model.stack) stackIndex
+
+                        initial =
+                            stackEntity.position
+
+                        final =
+                            handCardPosition ctx which handIndex n NoHover
+                    in
+                    trailQuad colour initial final ctx
+            in
+            List.map (makeTrail PlayerA) paBounces
+                ++ List.map (makeTrail PlayerB) pbBounces
 
         _ ->
             []
