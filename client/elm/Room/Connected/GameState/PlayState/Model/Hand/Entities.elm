@@ -1,4 +1,4 @@
-module Hand.Entities exposing (entities, handCardPosition, handCardRotation, handOrigin, otherEntities)
+module Hand.Entities exposing (entities, handCardPosition, handCardRotation, handOrigin, otherEntities, playPosition)
 
 import Animation.State as Animation
 import Animation.Types exposing (Anim(..), Bounce, HandBounce)
@@ -12,7 +12,7 @@ import WhichPlayer.Types exposing (WhichPlayer(..))
 
 
 entities : HoverSelf -> Context -> List HandEntity
-entities hover ({ w, h, radius, anim, model, progress } as ctx) =
+entities hover ({ w, h, anim, model, progress } as ctx) =
     let
         finalHand =
             case anim of
@@ -127,7 +127,7 @@ entities hover ({ w, h, radius, anim, model, progress } as ctx) =
                         pos =
                             interp2D progress
                                 (handCardPosition ctx PlayerA i n hover)
-                                (vec2 (w / 2) (h / 2 - radius * 0.62))
+                                (playPosition ctx)
 
                         rot =
                             interpFloat progress (handCardRotation PlayerA i n) pi
@@ -180,7 +180,7 @@ entities hover ({ w, h, radius, anim, model, progress } as ctx) =
 
 
 otherEntities : HoverOther -> Context -> List (Game.Entity {})
-otherEntities hover ({ w, h, radius, anim, model, progress } as ctx) =
+otherEntities hover ({ w, anim, model, progress } as ctx) =
     let
         finalN =
             case anim of
@@ -259,7 +259,7 @@ otherEntities hover ({ w, h, radius, anim, model, progress } as ctx) =
                     [ { position =
                             interp2D progress
                                 (handCardPosition ctx PlayerB i n hover)
-                                (vec2 (w / 2) (h / 2 - radius * 0.62))
+                                (playPosition ctx)
                       , rotation =
                             interpFloat progress (handCardRotation PlayerB i n) 0
                       , scale =
@@ -386,3 +386,8 @@ handCardPosition ({ radius } as ctx) which index count hover =
             (vec2 (toFloat index * (width + spacing)) 0)
         <|
             vec2 0 y
+
+
+playPosition : Context -> Vec2
+playPosition { w, h, radius } =
+    vec2 (w / 2) (h / 2 - radius * 0.62)
