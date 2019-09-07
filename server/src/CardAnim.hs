@@ -6,6 +6,7 @@ import Data.Aeson (ToJSON(..), (.=), object)
 import Data.Text (Text)
 import Discard (CardDiscard)
 import Life (Life)
+import Limbo (CardLimbo)
 import Mirror (Mirror(..))
 import Player (WhichPlayer(..), other)
 import StackCard (StackCard)
@@ -28,6 +29,8 @@ data CardAnim
   | Bounce [CardBounce]
   | Discard [CardDiscard]
   | Pass WhichPlayer
+  | Limbo [CardLimbo]
+  | Unlimbo
   deriving (Show, Eq)
 
 
@@ -125,6 +128,17 @@ instance ToJSON CardAnim where
     [ "name"   .= ("pass" :: Text)
     , "player" .= w
     ]
+  toJSON (Limbo l) =
+    object
+    [ "name"   .= ("limbo" :: Text)
+    , "player" .= PlayerA
+    , "limbo"  .= l
+    ]
+  toJSON Unlimbo =
+    object
+    [ "name"    .= ("unlimbo" :: Text)
+    , "player"  .= PlayerA
+    ]
 
 
 instance Mirror CardAnim where
@@ -145,6 +159,8 @@ instance Mirror CardAnim where
   mirror (Bounce b)          = Bounce b
   mirror (Discard d)         = Discard d
   mirror (Pass w)            = Pass (other w)
+  mirror (Limbo l)           = Limbo l
+  mirror Unlimbo             = Unlimbo
 
 
 data Hurt

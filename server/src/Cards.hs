@@ -420,7 +420,7 @@ ritual :: Card
 ritual =
   Card
     "Ritual"
-    "If zone is dark, hurt for 8. If zone is light, heal for 8."
+    "If zone is dark hurt for 8, or if zone is light heal for 8"
     "ritual.png"
     $ \w -> do
       rot <- getRot
@@ -434,11 +434,21 @@ unravel :: Card
 unravel =
   Card
     "Unravel"
-    "Discard from play all cards in dark zones."
+    "Discard from play all cards in dark zones"
     "unravel.png"
     $ \_ -> do
       rot <- getRot
-      discard $ \(i, _) -> even (i + rot + 1)
+      discard $ \(i, _) -> odd (i + rot)
+
+
+respite :: Card
+respite =
+  Card
+    "Respite"
+    "Limbo the next three cards."
+    "respite.png"
+    $ \_ -> do
+      limbo $ \(i, _) -> i < 3
 
 
 allCards :: [Card]
@@ -481,4 +491,5 @@ allCards =
   , goldrush
   , ritual
   , unravel
+  , respite
   ]

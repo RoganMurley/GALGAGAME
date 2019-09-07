@@ -1,4 +1,4 @@
-module Animation.Types exposing (Anim(..), Bounce(..), CardDiscard(..), HandBounce, Hurt(..), Transmute(..))
+module Animation.Types exposing (Anim(..), Bounce(..), CardDiscard(..), CardLimbo(..), HandBounce, Hurt(..), Transmute(..))
 
 import Card.Types exposing (Card)
 import Stack.Types exposing (StackCard)
@@ -24,6 +24,8 @@ type Anim
     | Bounce (List Bounce)
     | Discard (List CardDiscard)
     | Pass WhichPlayer
+    | Limbo (List CardLimbo)
+    | Unlimbo WhichPlayer
     | HandFullPass
     | Finding
 
@@ -48,6 +50,11 @@ type Bounce
 type CardDiscard
     = NoDiscard Int
     | CardDiscard
+
+
+type CardLimbo
+    = NoLimbo Int
+    | CardLimbo
 
 
 type alias HandBounce =

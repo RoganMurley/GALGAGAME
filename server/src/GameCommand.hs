@@ -216,6 +216,7 @@ endTurn which model replay
             let
               roundEndProgram :: Beta.Program ()
               roundEndProgram = do
+                Beta.unlimbo
                 Beta.raw Alpha.swapTurn
                 Beta.raw Alpha.resetPasses
                 Beta.draw PlayerA PlayerA

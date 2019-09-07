@@ -29,6 +29,8 @@ data DSL n
   | Bounce (StackCard -> Bool) n
   | Discard ((Int, StackCard) -> Bool) n
   | SetHeadOwner WhichPlayer n
+  | Limbo ((Int, StackCard) -> Bool) n
+  | Unlimbo n
   | GetDeck WhichPlayer (Deck -> n)
   | GetHand WhichPlayer (Hand -> n)
   | GetLife WhichPlayer (Life -> n)

@@ -1,0 +1,3 @@
+#!/bin/bash
+docker build --target build -t server server
+docker run -v=/Users/roganmurley/workspace/ringofworlds/server:/opt/build -it server

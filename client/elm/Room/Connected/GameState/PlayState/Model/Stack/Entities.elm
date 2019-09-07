@@ -1,6 +1,6 @@
 module Stack.Entities exposing (entities, stackEntity)
 
-import Animation.Types exposing (Anim(..), Bounce(..), CardDiscard(..))
+import Animation.Types exposing (Anim(..), Bounce(..), CardDiscard(..), CardLimbo(..))
 import Array
 import Game.Entity as Game
 import Game.Types exposing (Context, StackEntity)
@@ -138,6 +138,14 @@ stackEntity { w, h, radius, anim, progress } baseRotateProgress finalStackLen fi
                         _ ->
                             toFloat finalIndex + 1.0
 
+                Limbo limbos ->
+                    case Array.get finalIndex <| Array.fromList limbos of
+                        Just (NoLimbo limboIndex) ->
+                            toFloat limboIndex + 1.0
+
+                        _ ->
+                            toFloat finalIndex + 1.0
+
                 _ ->
                     toFloat finalIndex + 1.0
 
@@ -162,6 +170,9 @@ stackEntity { w, h, radius, anim, progress } baseRotateProgress finalStackLen fi
                     toFloat finalIndex + 1.0
 
                 Discard _ ->
+                    toFloat finalIndex + 1.0
+
+                Limbo _ ->
                     toFloat finalIndex + 1.0
 
                 _ ->
@@ -215,6 +226,14 @@ stackEntity { w, h, radius, anim, progress } baseRotateProgress finalStackLen fi
                 Discard discards ->
                     case Array.get finalIndex <| Array.fromList discards of
                         Just CardDiscard ->
+                            0.615 + toFloat (12 - finalIndex) * progress * 0.01
+
+                        _ ->
+                            0.615
+
+                Limbo limbos ->
+                    case Array.get finalIndex <| Array.fromList limbos of
+                        Just CardLimbo ->
                             0.615 + toFloat (12 - finalIndex) * progress * 0.01
 
                         _ ->

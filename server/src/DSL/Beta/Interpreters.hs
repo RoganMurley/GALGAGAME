@@ -5,6 +5,7 @@ module DSL.Beta.Interpreters where
 import Bounce (CardBounce(..))
 import Card (Card)
 import CardAnim (Transmute(..), cardAnimDamage)
+import Control.Monad (when)
 import Control.Monad.Free (Free(..), foldFree, liftF)
 import Data.Functor.Sum (Sum(..))
 import Data.Maybe (fromMaybe)
@@ -12,6 +13,7 @@ import Data.Monoid ((<>))
 import Discard (CardDiscard(..))
 import DSL.Beta.DSL
 import DSL.Util (toLeft, toRight)
+import Limbo (CardLimbo(..))
 import Player (WhichPlayer(..))
 
 import Life (Life)
@@ -46,6 +48,8 @@ alphaI (Free (Fabricate c n))    = Alpha.modStack ((:) c)        >>  alphaI n
 alphaI (Free (Bounce f n))       = Alpha.bounce f                >>  alphaI n
 alphaI (Free (Discard f n))      = Alpha.discard f               >>  alphaI n
 alphaI (Free (SetHeadOwner w n)) = Alpha.setHeadOwner w          >>  alphaI n
+alphaI (Free (Limbo f n))        = Alpha.limbo f                 >>  alphaI n
+alphaI (Free (Unlimbo n))        = Alpha.unlimbo                 >>  alphaI n
 alphaI (Free (GetGen f))         = Alpha.getGen                  >>= alphaI . f
 alphaI (Free (GetRot f))         = Alpha.getRot                  >>= alphaI . f
 alphaI (Free (GetLife w f))      = Alpha.getLife w               >>= alphaI . f
@@ -79,6 +83,8 @@ animI (Transmute c t _)  = transmuteAnim c t
 animI (Bounce f _)       = bounceAnim f
 animI (Discard f _)      = discardAnim f
 animI (SetHeadOwner w _) = setHeadOwnerAnim w
+animI (Limbo f _)        = limboAnim f
+animI (Unlimbo _)      = unlimboAnim
 animI _                  = toLeft
 
 
@@ -182,6 +188,25 @@ discardAnim f alpha = do
   return final
 
 
+limboAnim :: ((Int, StackCard) -> Bool) -> Alpha.Program a -> AlphaAnimProgram a
+limboAnim f alpha = do
+  limbos <- toLeft $ getLimbos f
+  toRight . liftF $ Anim.Limbo limbos ()
+  final <- toLeft alpha
+  toRight . liftF $ Anim.Null ()
+  return final
+
+
+unlimboAnim :: Alpha.Program a -> AlphaAnimProgram a
+unlimboAnim alpha = do
+  l <- toLeft $ Alpha.getLimbo
+  final <- toLeft alpha
+  when (not . null $ l) $
+    toRight . liftF $ Anim.Unlimbo ()
+  return final
+
+
+-- Merge with getLimbos / getBounces?
 getDiscards :: ((Int, StackCard) -> Bool) -> Alpha.Program [CardDiscard]
 getDiscards f = do
   stack <- Alpha.getStack
@@ -194,6 +219,20 @@ getDiscards f = do
         else
           NoDiscard finalStackIndex : getDiscards' (stackIndex + 1) (finalStackIndex + 1) rest
       getDiscards' _ _ [] = []
+
+
+getLimbos :: ((Int, StackCard) -> Bool) -> Alpha.Program [CardLimbo]
+getLimbos f = do
+  stack <- Alpha.getStack
+  return $ getLimbos' 0 0 $ f <$> zip [0..] stack
+    where
+      getLimbos' :: Int -> Int -> [Bool] -> [CardLimbo]
+      getLimbos' stackIndex finalStackIndex (doLimbo:rest) =
+        if doLimbo then
+          CardLimbo : getLimbos' (stackIndex + 1) finalStackIndex rest
+        else
+          NoLimbo finalStackIndex : getLimbos' (stackIndex + 1) (finalStackIndex + 1) rest
+      getLimbos' _ _ [] = []
 
 
 setHeadOwnerAnim :: WhichPlayer -> Alpha.Program a -> AlphaAnimProgram a

@@ -2,13 +2,14 @@
 module DSL.Alpha.Actions where
 
 import Card (Card)
+import Control.Monad (forM_)
 import Control.Monad.Free (MonadFree, liftF)
 import Control.Monad.Free.TH (makeFree)
 import Data.List (partition)
 import DSL.Alpha.DSL (DSL(..), Program)
 import Player (WhichPlayer(..), other)
 import Life (Life)
-import Model (Deck, Hand, Passes(..), Stack, Turn, maxHandLength)
+import Model (Deck, Hand, Limbo, Passes(..), Stack, Turn, maxHandLength)
 import Safe (headMay, tailSafe)
 import StackCard(StackCard(StackCard, stackcard_card), isOwner)
 import Util (deleteIndex, indexedFilter, shuffle)
@@ -38,6 +39,10 @@ modDeck = modifier getDeck setDeck
 
 modStack :: (Stack -> Stack) -> Program ()
 modStack f = getStack >>= (setStack . f)
+
+
+modLimbo :: (Limbo -> Limbo) -> Program ()
+modLimbo f = getLimbo >>= (setLimbo . f)
 
 
 modStackAll :: (StackCard -> StackCard) -> Program ()
@@ -164,3 +169,19 @@ rotate = do
 windup :: Program ()
 windup = do
   modRot ((+) 1)
+
+
+limbo :: ((Int, StackCard) -> Bool) -> Program ()
+limbo f = do
+  stack <- getStack
+  let limboed = indexedFilter f stack
+  modLimbo $ (++) [limboed]
+  modStack $ indexedFilter (not . f)
+
+
+unlimbo :: Program ()
+unlimbo = do
+  limbos <- getLimbo
+  forM_ limbos $
+    \l -> modStack ((++) l)
+  setLimbo []

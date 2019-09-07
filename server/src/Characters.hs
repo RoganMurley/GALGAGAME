@@ -213,4 +213,4 @@ candler =
   Character
     "Candle"
     "unravel.png"
-    (Cards.ritual, Cards.lightning, Cards.goldrush, Cards.unravel)
+    (Cards.ritual, Cards.lightning, Cards.goldrush, Cards.respite)
