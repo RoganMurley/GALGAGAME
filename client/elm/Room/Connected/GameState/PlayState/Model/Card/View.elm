@@ -1,5 +1,6 @@
-module Card.View exposing (backView, baseDimensions, dissolvingView, fabricatingView, transmutingView, view)
+module Card.View exposing (backView, baseDimensions, dissolvingView, fabricatingView, limboingView, transmutingView, view)
 
+import Animation.Types exposing (Anim(..))
 import Card.State exposing (cardTexture)
 import Card.Types as Card
 import Colour
@@ -90,6 +91,68 @@ backView { w, h, radius, textures } { position, rotation, scale } =
             ]
 
         Nothing ->
+            []
+
+
+limboingView : Context -> Card.Entity a -> List WebGL.Entity
+limboingView ctx { position, rotation, scale, card, owner } =
+    let
+        { w, h, anim, radius, textures } =
+            ctx
+
+        { width, height } =
+            baseDimensions radius
+
+        rot =
+            makeRotate rotation <| vec3 0 0 1
+
+        pos =
+            to3d position
+
+        mTexture =
+            cardTexture textures card
+
+        mCardBack =
+            Texture.load textures "cardBack.png"
+
+        progress =
+            case anim of
+                Limbo _ ->
+                    1 - ctx.progress
+
+                Unlimbo _ ->
+                    ctx.progress
+
+                _ ->
+                    0
+    in
+    case ( mTexture, mCardBack ) of
+        ( Just texture, Just cardBackTexture ) ->
+            [ Render.Primitives.quad Render.Shaders.fragmentAlpha <|
+                { texture = cardBackTexture
+                , rotation = rot
+                , scale = makeScale3 (scale * width) (scale * height) 1
+                , color = Colour.card owner
+                , alpha = progress
+                , pos = pos
+                , worldRot = makeRotate 0 (vec3 0 0 1)
+                , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
+                , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
+                }
+            , Render.Primitives.quad Render.Shaders.fragmentAlpha <|
+                { texture = texture
+                , rotation = rot
+                , scale = makeScale3 (scale * 0.6 * width) (scale * 0.6 * height) 1
+                , color = Colour.white
+                , alpha = progress
+                , pos = pos
+                , worldRot = makeRotate 0 (vec3 0 0 1)
+                , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
+                , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
+                }
+            ]
+
+        _ ->
             []
 
 

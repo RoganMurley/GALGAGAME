@@ -72,13 +72,13 @@ view entities ctx =
                 Limbo limbos ->
                     case Array.get i <| Array.fromList limbos of
                         Just CardLimbo ->
-                            Card.dissolvingView ctx
+                            Card.limboingView ctx
 
                         _ ->
                             Card.view ctx
 
                 Unlimbo _ ->
-                    Card.fabricatingView ctx
+                    Card.limboingView ctx
 
                 _ ->
                     Card.view ctx

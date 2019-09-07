@@ -32,15 +32,14 @@ fragmentAlpha =
         precision mediump float;
 
         uniform sampler2D texture;
+        uniform vec3 color;
         uniform float alpha;
 
         varying vec2 vcoord;
 
         void main ()
         {
-            vec4 color = texture2D(texture, vcoord);
-            color.a *= alpha;
-            gl_FragColor = color;
+            gl_FragColor = gl_FragColor = vec4(color, alpha) * texture2D(texture, vcoord);
         }
 
     |]
