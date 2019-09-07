@@ -78,7 +78,7 @@ initState = Waiting
 
 initModel :: Turn -> FinalSelection -> FinalSelection -> Gen -> Model
 initModel turn ca cb gen =
-  Model turn [] pm_a pm_b NoPass gen 0
+  Model turn [] [] pm_a pm_b NoPass gen 0
   where
     (genPA, genPB) = split gen :: (Gen, Gen)
     -- PlayerA

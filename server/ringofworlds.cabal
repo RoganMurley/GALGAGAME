@@ -42,6 +42,7 @@ library
                      , GameState
                      , GodMode
                      , Life
+                     , Limbo
                      , Mirror
                      , Model
                      , ModelDiff

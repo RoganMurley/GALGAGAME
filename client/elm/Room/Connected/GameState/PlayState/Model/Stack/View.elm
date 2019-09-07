@@ -1,6 +1,6 @@
 module Stack.View exposing (view)
 
-import Animation.Types exposing (Anim(..), Bounce(..), CardDiscard(..))
+import Animation.Types exposing (Anim(..), Bounce(..), CardDiscard(..), CardLimbo(..))
 import Array
 import Card.View as Card
 import Game.Types exposing (Context, StackEntity)
@@ -68,6 +68,17 @@ view entities ctx =
 
                         _ ->
                             Card.view ctx
+
+                Limbo limbos ->
+                    case Array.get i <| Array.fromList limbos of
+                        Just CardLimbo ->
+                            Card.dissolvingView ctx
+
+                        _ ->
+                            Card.view ctx
+
+                Unlimbo _ ->
+                    Card.fabricatingView ctx
 
                 _ ->
                     Card.view ctx

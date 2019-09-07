@@ -1,6 +1,6 @@
 module Animation.Decoders exposing (decoder)
 
-import Animation.Types exposing (Anim(..), Bounce(..), CardDiscard(..), Hurt(..), Transmute(..))
+import Animation.Types exposing (Anim(..), Bounce(..), CardDiscard(..), CardLimbo(..), Hurt(..), Transmute(..))
 import Card.Decoders as Card
 import Json.Decode as Json exposing (Decoder, fail, field, int, list, null, oneOf, string, succeed)
 import Stack.Decoders as Stack
@@ -64,6 +64,12 @@ decoder =
 
                 "pass" ->
                     passDecoder
+
+                "limbo" ->
+                    limboDecoder
+
+                "unlimbo" ->
+                    unlimboDecoder
 
                 _ ->
                     Json.fail <| "Unknown anim name " ++ animName
@@ -247,4 +253,27 @@ discardDecoder =
 passDecoder : Decoder Anim
 passDecoder =
     Json.map Pass
+        (field "player" WhichPlayer.decoder)
+
+
+limboDecoder : Decoder Anim
+limboDecoder =
+    let
+        noLimboDecoder : Decoder CardLimbo
+        noLimboDecoder =
+            Json.map NoLimbo <| field "finalStackIndex" int
+
+        cardLimboDecoder : Decoder CardLimbo
+        cardLimboDecoder =
+            Json.map (always CardLimbo) <| constDecoder "limbo"
+    in
+    Json.map Limbo <|
+        field "limbo" <|
+            list <|
+                oneOf [ noLimboDecoder, cardLimboDecoder ]
+
+
+unlimboDecoder : Decoder Anim
+unlimboDecoder =
+    Json.map Unlimbo
         (field "player" WhichPlayer.decoder)

@@ -6,6 +6,7 @@ import Card (Card)
 import CardAnim (CardAnim, Hurt, Transmute)
 import Discard (CardDiscard)
 import Life (Life)
+import Limbo (CardLimbo)
 import Player (WhichPlayer)
 import StackCard (StackCard)
 
@@ -29,6 +30,8 @@ data DSL a
   | Bounce [CardBounce] a
   | Discard [CardDiscard] a
   | Pass WhichPlayer a
+  | Limbo [CardLimbo] a
+  | Unlimbo a
   deriving (Functor)
 
 type Program a = Free DSL a
