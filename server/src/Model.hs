@@ -39,7 +39,7 @@ type Deck = [Card]
 type Stack = [StackCard]
 
 
-type Limbo = [Stack]
+type Limbo = [StackCard]
 
 
 type Turn = WhichPlayer
