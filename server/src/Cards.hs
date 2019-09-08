@@ -445,10 +445,46 @@ respite :: Card
 respite =
   Card
     "Respite"
-    "Limbo the next three cards."
+    "Limbo the next 3 cards"
     "respite.png"
     $ \_ -> do
       limbo $ \(i, _) -> i < 3
+
+
+voidbeam :: Card
+voidbeam =
+  Card
+    "Voidbeam"
+    "Hurt for 10 for each card in limbo"
+    "voidbeam.png"
+    $ \w -> do
+      l <- getLimbo
+      let dmg = 10 * length l
+      hurt dmg (other w) Slash
+
+
+feud :: Card
+feud =
+  Card
+    "Feud"
+    "Hurt for 2, limbo a copy of this card"
+    "feud.png"
+    $ \w -> do
+      hurt 2 (other w) Slash
+      fabricate $ StackCard w feud
+      limbo $ \(i, _) -> i == 0
+
+
+inevitable :: Card
+inevitable =
+  Card
+    "Inevitable"
+    "Hurt for 1, limbo a copy of this card with double damage"
+    "inevitable.png"
+    $ \w -> do
+      hurt 1 (other w) Slash
+      fabricate $ StackCard (other w) inevitable
+      limbo $ \(i, _) -> i == 0
 
 
 allCards :: [Card]
@@ -492,4 +528,7 @@ allCards =
   , ritual
   , unravel
   , respite
+  , voidbeam
+  , feud
+  , inevitable
   ]

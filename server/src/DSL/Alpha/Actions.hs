@@ -2,7 +2,6 @@
 module DSL.Alpha.Actions where
 
 import Card (Card)
-import Control.Monad (forM_)
 import Control.Monad.Free (MonadFree, liftF)
 import Control.Monad.Free.TH (makeFree)
 import Data.List (partition)
@@ -175,13 +174,12 @@ limbo :: ((Int, StackCard) -> Bool) -> Program ()
 limbo f = do
   stack <- getStack
   let limboed = indexedFilter f stack
-  modLimbo $ (++) [limboed]
+  modLimbo $ (++) limboed
   modStack $ indexedFilter (not . f)
 
 
 unlimbo :: Program ()
 unlimbo = do
   limbos <- getLimbo
-  forM_ limbos $
-    \l -> modStack ((++) l)
+  modStack ((++) limbos)
   setLimbo []

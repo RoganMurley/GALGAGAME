@@ -4,7 +4,7 @@ import Card (Card)
 import CardAnim (CardAnim, Hurt, Transmute)
 import Control.Monad.Free (Free(..))
 import Life (Life)
-import Model (Deck, Hand, Stack)
+import Model (Deck, Hand, Limbo, Stack)
 import Player (WhichPlayer(..))
 import StackCard (StackCard)
 import Util (Gen)
@@ -36,6 +36,7 @@ data DSL n
   | GetLife WhichPlayer (Life -> n)
   | GetGen (Gen -> n)
   | GetStack (Stack -> n)
+  | GetLimbo (Limbo -> n)
   | GetRot (Int -> n)
   | RawAnim CardAnim n
   | Null n

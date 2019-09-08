@@ -213,4 +213,12 @@ candler =
   Character
     "Candle"
     "unravel.png"
-    (Cards.ritual, Cards.lightning, Cards.goldrush, Cards.respite)
+    (Cards.ritual, Cards.lightning, Cards.goldrush, Cards.unravel)
+
+
+voider :: Character
+voider =
+  Character
+    "Void"
+    "respite.png"
+    (Cards.feud, Cards.voidbeam, Cards.inevitable, Cards.respite)

@@ -130,6 +130,9 @@ texturePaths =
     , ( "ritual.png", "/img/textures/ritual.png" )
     , ( "unravel.png", "/img/textures/unravel.png" )
     , ( "respite.png", "/img/textures/respite.png" )
+    , ( "voidbeam.png", "/img/textures/voidbeam.png" )
+    , ( "feud.png", "/img/textures/feud.png" )
+    , ( "inevitable.png", "/img/textures/inevitable.png" )
 
     -- Testing
     , ( "cardBack.png", "/img/textures/cardBack.png" )
