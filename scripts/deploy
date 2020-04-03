@@ -14,7 +14,7 @@ popd
 
 echo "Building server..."
 pushd server
-docker build . --tag=game-ringofworlds
+docker build . -f=prod.Dockerfile --tag=game-ringofworlds
 popd
 docker save -o .images/game-ringofworlds game-ringofworlds
 

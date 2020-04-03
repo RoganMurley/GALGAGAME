@@ -25,6 +25,8 @@ services:
     links:
       - database
       - redis
+    volumes:
+      - ./server:/opt/build
     restart: always
   adminer:
     image: adminer
