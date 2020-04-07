@@ -487,48 +487,70 @@ inevitable =
       limbo $ \(i, _) -> i == 0
 
 
-allCards :: [Card]
-allCards =
+basicCards :: [Card]
+basicCards =
   [ missile
-  , fireball
-  , offering
-  , confound
   , hammer
-  , lightning
-  , hubris
   , katana
-  , curse
-  , bless
-  , balance
   , scythe
-  , bloodsucker
-  , serpent
-  , parasite
-  , reversal
   , staff
-  , surge
-  , mimic
-  , prophecy
-  , sword
-  , potion
-  , reflect
   , grudge
-  , overwhelm
-  , echo
-  , feint
   , relicblade
+  , ritual
+  ]
+
+
+specialCards :: [Card]
+specialCards =
+  [ fireball
+  , bloodsucker
+  , surge
+  , overwhelm
+  , curse
   , greed
-  , alchemy
-  , gold
-  , theEnd
-  -- Dailies
-  , subjugate
+  , lightning
+  ]
+
+
+supportCards :: [Card]
+supportCards =
+  [ offering
+  , feint
+  , serpent
+  , echo
+  , potion
+  , bless
+  , mimic
   , telepathy
   , goldrush
-  , ritual
+  ]
+
+
+controlCards :: [Card]
+controlCards =
+  [ confound
+  , hubris
+  , reversal
+  , prophecy
+  , reflect
+  , balance
+  , alchemy
   , unravel
+  , subjugate
+  ]
+
+
+otherCards :: [Card]
+otherCards =
+  [ parasite
+  , gold
+  , theEnd
   , respite
   , voidbeam
   , feud
   , inevitable
   ]
+
+
+allCards :: [Card]
+allCards = basicCards ++ specialCards ++ supportCards ++ controlCards ++ otherCards
