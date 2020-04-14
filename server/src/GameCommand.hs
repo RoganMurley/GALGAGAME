@@ -2,7 +2,6 @@ module GameCommand where
 
 import Card (Card(..))
 import CardAnim (CardAnim(..))
-import Characters (CharModel(..), SelectedCharacters(..), selectChar, initCharModel)
 import Control.Monad (when)
 import Control.Monad.Free (foldFree)
 import Control.Monad.Trans.Writer (Writer, runWriter, tell)
@@ -10,6 +9,7 @@ import Data.Maybe (fromMaybe)
 import Data.Monoid ((<>))
 import Data.String.Conversions (cs)
 import Data.Text (Text)
+import DeckBuilding (Character, DeckBuilding(..), initDeckBuilding, selectCharacter)
 import GameState (GameState(..), PlayState(..), initModel)
 import GodMode
 import Model (Hand, Passes(..), Model, Stack, Turn)
@@ -36,7 +36,7 @@ data GameCommand =
   | HoverCard HoverState
   | Rematch
   | Concede
-  | SelectCharacter Text
+  | SelectCharacter Character
   | Chat Text Text
   | God Text
   deriving (Show)
@@ -50,8 +50,8 @@ update cmd which state scenario users =
       Left ("Unknown command " <> (cs $ show cmd) <> " on a waiting GameState")
     Selecting selectModel turn gen ->
       case cmd of
-        SelectCharacter name ->
-          select which name selectModel turn scenario gen users
+        SelectCharacter character ->
+          select which character selectModel turn scenario gen users
         _ ->
           Left ("Unknown command " <> (cs $ show cmd) <> " on a selecting GameState")
     Started playState ->
@@ -87,10 +87,10 @@ ignore = Right (Nothing, [])
 rematch :: (Maybe WhichPlayer, Gen) -> (Maybe User, Maybe User) -> Scenario -> Either Err (Maybe GameState, [Outcome])
 rematch (winner, gen) users scenario =
   let
-    charModel = initCharModel (scenario_charactersPa scenario) (scenario_charactersPb scenario)
+    deckModel = initDeckBuilding (scenario_characterPa scenario) (scenario_characterPb scenario)
     turn = fromMaybe PlayerA winner
     startProgram = scenario_prog scenario
-    (newState, outcomes) = nextSelectState charModel turn startProgram (fst $ split gen) users
+    (newState, outcomes) = nextSelectState deckModel turn startProgram (fst $ split gen) users
   in
     Right (Just newState, outcomes)
 
@@ -125,26 +125,26 @@ concede _ _ =
   Left "Cannot concede when not playing"
 
 
-select :: WhichPlayer -> Text -> CharModel -> Turn -> Scenario -> Gen -> (Maybe User, Maybe User) -> Either Err (Maybe GameState, [Outcome])
-select which name charModel turn scenario gen users =
+select :: WhichPlayer -> Character -> DeckBuilding -> Turn -> Scenario -> Gen -> (Maybe User, Maybe User) -> Either Err (Maybe GameState, [Outcome])
+select which character deckModel turn scenario gen users =
   let
-    newCharModel :: CharModel
-    newCharModel = selectChar charModel which name
+    newDeckModel :: DeckBuilding
+    newDeckModel = selectCharacter deckModel which character
     startProgram = scenario_prog scenario
-    (newState, outcomes) = nextSelectState newCharModel turn startProgram gen users
+    (newState, outcomes) = nextSelectState newDeckModel turn startProgram gen users
   in
     Right (Just newState, outcomes)
 
 
-nextSelectState :: CharModel -> Turn -> Beta.Program () -> Gen -> (Maybe User, Maybe User) -> (GameState, [Outcome])
-nextSelectState charModel turn startProgram gen (mUserPa, mUserPb) =
+nextSelectState :: DeckBuilding -> Turn -> Beta.Program () -> Gen -> (Maybe User, Maybe User) -> (GameState, [Outcome])
+nextSelectState deckModel turn startProgram gen (mUserPa, mUserPb) =
   let
     result :: Maybe ([ResolveData], Model, PlayState)
     result =
-      case charModel of
-        (CharModel (ThreeSelected c1 c2 c3) (ThreeSelected ca cb cc) _) ->
+      case deckModel of
+        (DeckBuilding (Just ca) (Just cb)) ->
           let
-            model = initModel turn (c1, c2, c3) (ca, cb, cc) gen :: Model
+            model = initModel turn ca cb gen :: Model
             usernamePa = fromMaybe "" $ getUsername <$> mUserPa :: Text
             usernamePb = fromMaybe "" $ getUsername <$> mUserPb :: Text
             replay = Active.init model usernamePa usernamePb :: Active.Replay
@@ -159,7 +159,7 @@ nextSelectState charModel turn startProgram gen (mUserPa, mUserPb) =
     state =
       case result of
         Nothing ->
-          Selecting charModel turn gen
+          Selecting deckModel turn gen
         Just (_, _, playstate) ->
           Started playstate
     outcomes :: [Outcome]

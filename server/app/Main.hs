@@ -42,8 +42,7 @@ import qualified DSL.Beta as Beta
 import qualified Server
 import Server (addComputerClient, addPlayerClient, addSpecClient)
 
-import qualified Characters
-import Characters (CharModel(..), allSelected, character_name, toList)
+import qualified DeckBuilding
 
 import qualified Client
 import Client (Client(..), ClientConnection(..))
@@ -166,29 +165,29 @@ makeScenario :: Prefix -> Scenario
 makeScenario prefix =
   Scenario {
     scenario_turn = turn
-  , scenario_charactersPa = charactersPa
-  , scenario_charactersPb = charactersPb
+  , scenario_characterPa = characterPa
+  , scenario_characterPb = characterPb
   , scenario_prog = prog
   , scenario_xpWin = xpWin
   , scenario_xpLoss = xpLoss
   }
   where
-    charactersPa :: Maybe Characters.FinalSelection
-    charactersPa =
+    characterPa :: Maybe DeckBuilding.Character
+    characterPa =
       case prefix of
         PrefixTutorial ->
-          Just (Characters.breaker, Characters.shielder, Characters.striker)
+          Just DeckBuilding.catherine
         PrefixDaily ->
-          Just (Characters.oppresor, Characters.drinker, Characters.candler)
+          Just DeckBuilding.miguel
         _ ->
           Nothing
-    charactersPb :: Maybe Characters.FinalSelection
-    charactersPb =
+    characterPb :: Maybe DeckBuilding.Character
+    characterPb =
       case prefix of
         PrefixTutorial ->
-          Just (Characters.breaker, Characters.shielder, Characters.voider)
+          Just DeckBuilding.miguel
         PrefixDaily ->
-          Just (Characters.voider, Characters.breaker, Characters.drinker)
+          Just DeckBuilding.catherine
         _ ->
           Nothing
     turn :: Turn
@@ -328,11 +327,11 @@ chooseComputerCommand :: WhichPlayer -> TVar Room -> Gen -> App (Maybe Command)
 chooseComputerCommand which room gen = do
   r <- liftIO . atomically $ readTVar room
   case Room.getState r of
-    Selecting charModel _ _ ->
-      if allSelected charModel which then
+    Selecting deckModel _ _ ->
+      if DeckBuilding.isReady deckModel which then
         return Nothing
           else
-            return . Just . SelectCharacterCommand $ randomChar charModel
+            return . Just . SelectCharacterCommand $ randomCharacter
     Started (Playing m _) ->
       return $ trans <$> chooseAction gen which m (Room.getScenario r)
     _ ->
@@ -341,10 +340,8 @@ chooseComputerCommand which room gen = do
     trans :: Action -> Command
     trans EndAction          = EndTurnCommand
     trans (PlayAction index) = PlayCardCommand index
-    randomChar :: CharModel -> Text
-    randomChar (CharModel selected _ allChars) =
-      character_name . head . (drop (length . Characters.toList $ selected))
-        $ shuffle gen allChars
+    randomCharacter :: DeckBuilding.Character
+    randomCharacter = head $ shuffle gen DeckBuilding.allCharacters
 
 
 disconnect :: Client -> TVar Room -> TVar Server.State -> App (Server.State)

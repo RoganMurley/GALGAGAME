@@ -2,7 +2,7 @@ module GameState where
 
 import Data.Aeson (ToJSON(..), (.=), object)
 
-import Characters (CharModel, FinalSelection, allCards)
+import DeckBuilding (Character, DeckBuilding, characterCards)
 import Life (maxLife)
 import Mirror (Mirror(..))
 import Model (Deck, PlayerModel(..), Model(..), Passes(..), Turn)
@@ -14,7 +14,7 @@ import qualified Replay.Active as Active
 
 data GameState =
     Waiting WaitType Gen
-  | Selecting CharModel Turn Gen
+  | Selecting DeckBuilding Turn Gen
   | Started PlayState
   deriving (Eq, Show)
 
@@ -76,7 +76,7 @@ initState :: WaitType -> Gen -> GameState
 initState = Waiting
 
 
-initModel :: Turn -> FinalSelection -> FinalSelection -> Gen -> Model
+initModel :: Turn -> Character -> Character -> Gen -> Model
 initModel turn ca cb gen =
   Model turn [] [] pm_a pm_b NoPass gen 0
   where
@@ -89,6 +89,6 @@ initModel turn ca cb gen =
     pm_b = PlayerModel [] deckPB maxLife :: PlayerModel
 
 
-buildDeck :: FinalSelection -> Deck
+buildDeck :: Character -> Deck
 buildDeck selection =
-  allCards selection >>= replicate 3
+  characterCards selection >>= replicate 3
