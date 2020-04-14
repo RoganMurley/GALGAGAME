@@ -4,7 +4,7 @@ import Config (App)
 import Control.Monad (forM_)
 import Data.Maybe (maybeToList)
 import Data.Text (Text)
-import Characters (initCharModel)
+import DeckBuilding (initDeckBuilding)
 import GameCommand (nextSelectState)
 import GameState (GameState(..), WaitType(..), initState)
 import Outcome (Outcome(..))
@@ -111,11 +111,11 @@ roomSetup room =
         Waiting _ gen ->
           let
             scenario = getScenario room
-            charModel = initCharModel (scenario_charactersPa scenario) (scenario_charactersPb scenario)
+            deckBuildingModel = initDeckBuilding (scenario_characterPa scenario) (scenario_characterPb scenario)
             turn = scenario_turn scenario
             startProgram = scenario_prog scenario
             users = Room.getUsers room
-            (state, newOutcomes) = nextSelectState charModel turn startProgram gen users
+            (state, newOutcomes) = nextSelectState deckBuildingModel turn startProgram gen users
           in
             (room { room_state = state }, newOutcomes)
         _ ->

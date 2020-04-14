@@ -24,11 +24,11 @@ library
                      , Card
                      , CardAnim
                      , Cards
-                     , Characters
                      , Client
                      , Command
                      , Config
                      , Database
+                     , DeckBuilding
                      , Discard
                      , DSL.Alpha
                      , DSL.Anim

@@ -80,7 +80,7 @@ actPlay cmd which roomVar username = do
     trans RematchCommand             = Just Rematch
     trans ConcedeCommand             = Just Concede
     trans (ChatCommand name content) = Just (Chat name content)
-    trans (SelectCharacterCommand n) = Just (SelectCharacter n)
+    trans (SelectCharacterCommand c) = Just (SelectCharacter c)
     trans (GodModeCommand msg)       = Just (God msg)
     trans _                          = Nothing
 
