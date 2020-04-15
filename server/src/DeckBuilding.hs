@@ -66,19 +66,24 @@ instance ToJSON Character where
 
 instance FromJSON Character where
   parseJSON =
-    withObject "Character" $
-      \v -> Character
-        <$> v .: "name"
-        <*> v .: "rune_a"
-        <*> v .: "rune_b"
-        <*> v .: "rune_c"
+    withObject "Character" $ \obj ->
+      do
+        name <- obj .: "character_name"
+        runeA <- obj .: "rune_a"
+        runeB <- obj .: "rune_b"
+        runeC <- obj .: "rune_c"
+        case find (\Character{character_name} -> character_name == name) allCharacters of
+          Just _ ->
+            return (Character name runeA runeB runeC)
+          Nothing ->
+            fail "Invalid character"
 
 
 -- DeckBuilding
 data DeckBuilding =
   DeckBuilding {
-    deckbuilding_pa         :: Maybe Character
-  , deckbuilding_pb         :: Maybe Character
+    deckbuilding_pa :: Maybe Character
+  , deckbuilding_pb :: Maybe Character
   } deriving (Eq, Show)
 
 

@@ -2,8 +2,8 @@ module GameState.View exposing (view)
 
 import Animation.Types exposing (Anim(..))
 import Background.View as Background
-import CharacterSelect.View as CharacterSelect
 import Connected.Messages as Connected
+import DeckBuilding.View as DeckBuilding
 import GameState.Messages exposing (Msg(..))
 import GameState.Types exposing (GameState(..), WaitType(..))
 import GameType exposing (GameType)
@@ -42,7 +42,7 @@ view state roomID flags gameType isReplay textures =
                     << SelectingMsg
                 )
             <|
-                CharacterSelect.view params model textures
+                DeckBuilding.view params model textures
 
         Started playState ->
             PlayState.view playState flags gameType isReplay textures

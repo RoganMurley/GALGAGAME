@@ -1,6 +1,6 @@
 module GameState.State exposing (tick, update)
 
-import CharacterSelect.State as CharacterSelect
+import DeckBuilding.State as DeckBuilding
 import GameState.Decoders exposing (stateDecoder)
 import GameState.Messages exposing (Msg(..))
 import GameState.Types exposing (GameState(..))
@@ -88,7 +88,7 @@ update msg state mode =
                 Selecting m ->
                     let
                         ( newModel, cmd ) =
-                            CharacterSelect.update selectMsg m
+                            DeckBuilding.update selectMsg m
                     in
                     ( Selecting newModel, cmd )
 
@@ -107,10 +107,10 @@ update msg state mode =
 carry : GameState -> GameState -> GameState
 carry old new =
     case old of
-        Selecting { vm } ->
+        Selecting { index } ->
             case new of
                 Selecting selecting ->
-                    Selecting { selecting | vm = vm }
+                    Selecting { selecting | index = index }
 
                 _ ->
                     new
