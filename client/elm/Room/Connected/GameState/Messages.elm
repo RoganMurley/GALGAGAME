@@ -1,6 +1,6 @@
 module GameState.Messages exposing (Msg(..))
 
-import CharacterSelect.Messages as CharacterSelect
+import DeckBuilding.Messages as DeckBuilding
 import Mouse exposing (Position)
 import PlayState.Messages as PlayState
 
@@ -10,6 +10,6 @@ type Msg
     | MouseClick Position
     | PlayStateMsg PlayState.Msg
     | ResolveOutcome String
-    | SelectingMsg CharacterSelect.Msg
+    | SelectingMsg DeckBuilding.Msg
     | Sync String
     | Touch (Maybe Position)

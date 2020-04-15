@@ -337,7 +337,7 @@ hoverCard (HoverHand i) which model =
           newModel = Alpha.modI model $ Alpha.modHand which $ deleteIndex i
           damage = Beta.damageNumbersI newModel $ card_eff card which
       Nothing ->
-        Right (Nothing, [])
+        ignore
 hoverCard (HoverStack i) which model =
   let
     stack = Alpha.evalI model $ Alpha.getStack :: Stack
@@ -352,7 +352,7 @@ hoverCard (HoverStack i) which model =
             Alpha.modRot ((-) index)
           damage = Beta.damageNumbersI newModel $ card_eff card owner
       Nothing ->
-        Right (Nothing, [])
+        ignore
 hoverCard NoHover which _ =
   Right (Nothing, [ Outcome.Encodable $ Outcome.Hover which NoHover (0, 0) ])
 

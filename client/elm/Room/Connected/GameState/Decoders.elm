@@ -1,8 +1,8 @@
 module GameState.Decoders exposing (collapseResults, selectingDecoder, stateDecoder, waitingDecoder)
 
-import CharacterSelect.Decoders
-import CharacterSelect.State as CharacterSelect
-import CharacterSelect.Types exposing (Character)
+import DeckBuilding.Decoders
+import DeckBuilding.State
+import DeckBuilding.Types exposing (Character)
 import GameState.Types exposing (GameState(..), WaitType(..))
 import Json.Decode as Json exposing (Decoder, fail, field, list, string, succeed)
 import PlayState.Decoders as PlayState
@@ -39,25 +39,18 @@ waitingDecoder =
 selectingDecoder : Decoder GameState
 selectingDecoder =
     let
-        makeSelectState : List Character -> List Character -> Result String GameState
-        makeSelectState characters selected =
-            case List.head characters of
-                Nothing ->
-                    Err "No characters in list"
-
-                Just initialHover ->
-                    Ok <|
-                        Selecting
-                            { characters = characters
-                            , selected = selected
-                            , vm =
-                                CharacterSelect.viewModelInit initialHover
-                            }
+        makeSelectState : List Character -> Result String GameState
+        makeSelectState characters =
+            Ok <|
+                Selecting
+                    { characters = characters
+                    , index = 0
+                    , ready = False
+                    }
     in
     collapseResults <|
-        Json.map2 makeSelectState
-            (field "selecting" <| list CharacterSelect.Decoders.character)
-            (field "selected" <| list CharacterSelect.Decoders.character)
+        Json.map makeSelectState
+            (field "all_characters" <| list DeckBuilding.Decoders.character)
 
 
 collapseResults : Decoder (Result String a) -> Decoder a
