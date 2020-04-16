@@ -1,5 +1,4 @@
 @import "canvas";
-@import "character-select";
 @import "clock";
 @import "connecting";
 @import "endgame";
@@ -12,6 +11,7 @@
 @import "waiting";
 @import "signup";
 @import "feedback";
+@import "deckbuilding";
 
 html {
   height: 100%;

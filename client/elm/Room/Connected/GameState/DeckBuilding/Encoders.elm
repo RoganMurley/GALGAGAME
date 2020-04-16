@@ -5,15 +5,15 @@ import Json.Encode as Encode
 
 
 encodeCharacter : Character -> String
-encodeCharacter { name, rune_a, rune_b, rune_c } =
+encodeCharacter { name, runeA, runeB, runeC } =
     let
         value : Encode.Value
         value =
             Encode.object
-                [ ( "name", Encode.string name )
-                , ( "rune_a", Encode.string rune_a.name )
-                , ( "rune_b", Encode.string rune_b.name )
-                , ( "rune_c", Encode.string rune_c.name )
+                [ ( "character_name", Encode.string name )
+                , ( "rune_a", Encode.string runeA.name )
+                , ( "rune_b", Encode.string runeB.name )
+                , ( "rune_c", Encode.string runeC.name )
                 ]
     in
     Encode.encode 0 value
