@@ -40,5 +40,20 @@ view { w, h, pixelRatio } ({ characters } as model) textures =
                     []
         , h1 [] [ text "CHARACTER SELECT" ]
         , div [ class "characters" ] <|
-            List.map (\{ name } -> text name) characters
+            List.map characterView characters
+        ]
+
+
+characterView : Character -> Html Msg
+characterView character =
+    div
+        [ onClick <| Select character, class "character" ]
+        [ text <|
+            character.name
+                ++ ": "
+                ++ character.runeA.name
+                ++ " / "
+                ++ character.runeB.name
+                ++ " / "
+                ++ character.runeC.name
         ]

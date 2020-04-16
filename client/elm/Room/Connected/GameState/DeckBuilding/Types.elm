@@ -12,9 +12,9 @@ type alias Model =
 
 type alias Character =
     { name : String
-    , rune_a : Rune
-    , rune_b : Rune
-    , rune_c : Rune
+    , runeA : Rune
+    , runeB : Rune
+    , runeC : Rune
     }
 
 
