@@ -35,7 +35,7 @@ import Scenario (Scenario(..))
 import Start (startProgram, tutorialStartProgram)
 import Stats.Stats (Experience)
 import User (User(..), getUsername, getUserFromToken)
-import Util (Gen, getGen, shuffle)
+import Util (Gen, getGen, shuffle, split)
 
 import qualified DSL.Beta as Beta
 
@@ -178,14 +178,14 @@ makeScenario prefix =
         PrefixTutorial ->
           Just DeckBuilding.catherine
         PrefixDaily ->
-          Just DeckBuilding.miguel
+          Just DeckBuilding.ix
         _ ->
           Nothing
     characterPb :: Maybe DeckBuilding.Character
     characterPb =
       case prefix of
         PrefixTutorial ->
-          Just DeckBuilding.miguel
+          Just DeckBuilding.ix
         PrefixDaily ->
           Just DeckBuilding.catherine
         _ ->
@@ -331,7 +331,7 @@ chooseComputerCommand which room gen = do
       if DeckBuilding.isReady deckModel which then
         return Nothing
           else
-            return . Just . SelectCharacterCommand $ randomCharacter
+            return . Just . SelectCharacterCommand $ randomChoice
     Started (Playing m _) ->
       return $ trans <$> chooseAction gen which m (Room.getScenario r)
     _ ->
@@ -340,8 +340,19 @@ chooseComputerCommand which room gen = do
     trans :: Action -> Command
     trans EndAction          = EndTurnCommand
     trans (PlayAction index) = PlayCardCommand index
-    randomCharacter :: DeckBuilding.Character
-    randomCharacter = head $ shuffle gen DeckBuilding.allCharacters
+    randomChoice :: DeckBuilding.CharacterChoice
+    randomChoice =
+      DeckBuilding.CharacterChoice
+        (DeckBuilding.character_name (randomCharacter genA))
+        (DeckBuilding.rune_name (randomRune genB))
+        (DeckBuilding.rune_name (randomRune genC))
+        (DeckBuilding.rune_name (randomRune genD))
+    (genA, genB) = split gen
+    (genC, genD) = split genA
+    randomCharacter :: Gen -> DeckBuilding.Character
+    randomCharacter g = head $ shuffle g DeckBuilding.allCharacters
+    randomRune :: Gen -> DeckBuilding.Rune
+    randomRune g = head $ shuffle g DeckBuilding.allRunes
 
 
 disconnect :: Client -> TVar Room -> TVar Server.State -> App (Server.State)

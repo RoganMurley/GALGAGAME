@@ -4,7 +4,7 @@ import Data.Aeson (eitherDecode)
 import Data.Monoid ((<>))
 import Data.String.Conversions (cs)
 import Data.Text (Text)
-import DeckBuilding (Character)
+import DeckBuilding (CharacterChoice)
 import Outcome (HoverState)
 import Safe (readMay)
 
@@ -21,7 +21,7 @@ data Command =
   | HoverCardCommand HoverState
   | RematchCommand
   | ConcedeCommand
-  | SelectCharacterCommand Character
+  | SelectCharacterCommand CharacterChoice
   | GodModeCommand Text
   | ErrorCommand Text
   deriving (Show)
@@ -57,8 +57,8 @@ parse name msg =
         case eitherDecode $ cs content of
           Left err ->
             ErrorCommand $ cs err
-          Right char ->
-            SelectCharacterCommand char
+          Right choice ->
+            SelectCharacterCommand choice
       "god" ->
         GodModeCommand content
       _ ->

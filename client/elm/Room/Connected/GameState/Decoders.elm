@@ -1,7 +1,6 @@
 module GameState.Decoders exposing (collapseResults, selectingDecoder, stateDecoder, waitingDecoder)
 
 import DeckBuilding.Decoders
-import DeckBuilding.State
 import DeckBuilding.Types exposing (Character)
 import GameState.Types exposing (GameState(..), WaitType(..))
 import Json.Decode as Json exposing (Decoder, fail, field, list, string, succeed)
