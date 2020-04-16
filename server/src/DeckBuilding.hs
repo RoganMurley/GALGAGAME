@@ -1,7 +1,7 @@
 module DeckBuilding where
 
 import Card (Card(..))
-import Data.Aeson (FromJSON(..), ToJSON(..), (.:), (.=), object, withObject, withText)
+import Data.Aeson (FromJSON(..), ToJSON(..), (.:), (.=), object, withObject)
 import Data.List (find)
 import Data.Maybe (isJust)
 import Data.Text (Text)
@@ -29,18 +29,6 @@ instance ToJSON Rune where
       ]
 
 
-instance FromJSON Rune where
-  parseJSON =
-    withText "Rune" $
-    \v ->
-      case find (\Rune{rune_name} -> rune_name == v) allRunes of
-        Just rune ->
-          return rune
-        Nothing ->
-          fail "Invalid rune"
-
-
-
 type RuneCards = (Card, Card, Card, Card)
 
 
@@ -62,21 +50,6 @@ instance ToJSON Character where
       , "rune_b" .= runeB
       , "rune_c" .= runeC
       ]
-
-
-instance FromJSON Character where
-  parseJSON =
-    withObject "Character" $ \obj ->
-      do
-        name <- obj .: "character_name"
-        runeA <- obj .: "rune_a"
-        runeB <- obj .: "rune_b"
-        runeC <- obj .: "rune_c"
-        case find (\Character{character_name} -> character_name == name) allCharacters of
-          Just _ ->
-            return (Character name runeA runeB runeC)
-          Nothing ->
-            fail "Invalid character"
 
 
 -- DeckBuilding
@@ -125,6 +98,53 @@ isReady deckModel which =
       isJust $ deckbuilding_pa deckModel
     PlayerB ->
       isJust $ deckbuilding_pa deckModel
+
+
+-- CharacterChoice
+data CharacterChoice = CharacterChoice
+  { choice_name :: Text
+  , choice_ra   :: Text
+  , choice_rb   :: Text
+  , choice_rc   :: Text
+  } deriving (Eq, Show)
+
+
+instance FromJSON CharacterChoice where
+  parseJSON =
+    withObject "CharacterChoice" $
+    \o ->
+      CharacterChoice
+        <$> o .: "character_name"
+        <*> o .: "rune_a"
+        <*> o .: "rune_b"
+        <*> o .: "rune_c"
+
+
+choiceToCharacter :: CharacterChoice -> Either Text Character
+choiceToCharacter CharacterChoice{choice_name, choice_ra, choice_rb, choice_rc} =
+  Character
+    <$> (character_name <$> getCharacter choice_name)
+    <*> getRune choice_ra
+    <*> getRune choice_rb
+    <*> getRune choice_rc
+
+
+getCharacter :: Text -> Either Text Character
+getCharacter name =
+  case find (\Character{character_name} -> character_name == name) allCharacters of
+    Just character ->
+      Right character
+    Nothing ->
+      Left "Invalid character name"
+
+
+getRune :: Text -> Either Text Rune
+getRune name =
+  case find (\Rune{rune_name} -> rune_name == name) allRunes of
+    Just rune ->
+      Right rune
+    Nothing ->
+      Left "Invalid rune name"
 
 
 -- RUNES
@@ -200,7 +220,7 @@ greed =
 allCharacters :: [Character]
 allCharacters = [
     catherine
-  , miguel
+  , ix
   ]
 
 
@@ -213,10 +233,10 @@ catherine =
     envy
 
 
-miguel :: Character
-miguel =
+ix :: Character
+ix =
   Character
-    "Miguel"
+    "Ix"
     pride
     gluttony
     sloth

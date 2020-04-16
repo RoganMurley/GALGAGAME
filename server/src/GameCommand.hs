@@ -9,7 +9,7 @@ import Data.Maybe (fromMaybe)
 import Data.Monoid ((<>))
 import Data.String.Conversions (cs)
 import Data.Text (Text)
-import DeckBuilding (Character, DeckBuilding(..), initDeckBuilding, selectCharacter)
+import DeckBuilding (CharacterChoice, DeckBuilding(..), choiceToCharacter, initDeckBuilding, selectCharacter)
 import GameState (GameState(..), PlayState(..), initModel)
 import GodMode
 import Model (Hand, Passes(..), Model, Stack, Turn)
@@ -36,7 +36,7 @@ data GameCommand =
   | HoverCard HoverState
   | Rematch
   | Concede
-  | SelectCharacter Character
+  | SelectCharacter CharacterChoice
   | Chat Text Text
   | God Text
   deriving (Show)
@@ -125,15 +125,19 @@ concede _ _ =
   Left "Cannot concede when not playing"
 
 
-select :: WhichPlayer -> Character -> DeckBuilding -> Turn -> Scenario -> Gen -> (Maybe User, Maybe User) -> Either Err (Maybe GameState, [Outcome])
-select which character deckModel turn scenario gen users =
-  let
-    newDeckModel :: DeckBuilding
-    newDeckModel = selectCharacter deckModel which character
-    startProgram = scenario_prog scenario
-    (newState, outcomes) = nextSelectState newDeckModel turn startProgram gen users
-  in
-    Right (Just newState, outcomes)
+select :: WhichPlayer -> CharacterChoice -> DeckBuilding -> Turn -> Scenario -> Gen -> (Maybe User, Maybe User) -> Either Err (Maybe GameState, [Outcome])
+select which choice deckModel turn scenario gen users =
+  case choiceToCharacter choice of
+    Right character ->
+      let
+        newDeckModel :: DeckBuilding
+        newDeckModel = selectCharacter deckModel which character
+        startProgram = scenario_prog scenario
+        (newState, outcomes) = nextSelectState newDeckModel turn startProgram gen users
+      in
+        Right (Just newState, outcomes)
+    Left err ->
+      Left err
 
 
 nextSelectState :: DeckBuilding -> Turn -> Beta.Program () -> Gen -> (Maybe User, Maybe User) -> (GameState, [Outcome])
