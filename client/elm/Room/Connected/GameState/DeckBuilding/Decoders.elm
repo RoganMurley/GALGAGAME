@@ -7,8 +7,9 @@ import Json.Decode as Json exposing (Decoder, field, index, string)
 
 character : Decoder Character
 character =
-    Json.map4 Character
+    Json.map5 Character
         (field "name" string)
+        (field "img_url" string)
         (field "rune_a" rune)
         (field "rune_b" rune)
         (field "rune_c" rune)

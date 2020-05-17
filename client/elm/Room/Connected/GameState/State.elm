@@ -107,10 +107,10 @@ update msg state mode =
 carry : GameState -> GameState -> GameState
 carry old new =
     case old of
-        Selecting { index } ->
+        Selecting { characters } ->
             case new of
                 Selecting selecting ->
-                    Selecting { selecting | index = index }
+                    Selecting { selecting | characters = characters }
 
                 _ ->
                     new

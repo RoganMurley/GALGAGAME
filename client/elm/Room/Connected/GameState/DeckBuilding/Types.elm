@@ -1,17 +1,24 @@
-module DeckBuilding.Types exposing (Character, Model, Rune, RuneCards)
+module DeckBuilding.Types exposing (Character, Characters, Model, Rune, RuneCards)
 
 import Card.Types exposing (Card)
 
 
 type alias Model =
-    { characters : List Character
-    , index : Int
+    { characters : Characters
     , ready : Bool
+    }
+
+
+type alias Characters =
+    { previous : List Character
+    , selected : Character
+    , remaining : List Character
     }
 
 
 type alias Character =
     { name : String
+    , imgUrl : String
     , runeA : Rune
     , runeB : Rune
     , runeC : Rune

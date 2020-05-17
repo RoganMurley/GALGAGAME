@@ -34,21 +34,23 @@ type RuneCards = (Card, Card, Card, Card)
 
 -- Character
 data Character = Character
-  { character_name   :: Text
-  , character_rune_a :: Rune
-  , character_rune_b :: Rune
-  , character_rune_c :: Rune
+  { character_name    :: Text
+  , character_img_url :: Text
+  , character_rune_a  :: Rune
+  , character_rune_b  :: Rune
+  , character_rune_c  :: Rune
   }
   deriving (Eq, Show)
 
 
 instance ToJSON Character where
-  toJSON (Character name runeA runeB runeC) =
+  toJSON (Character name imgUrl runeA runeB runeC) =
     object
-      [ "name"   .= name
-      , "rune_a" .= runeA
-      , "rune_b" .= runeB
-      , "rune_c" .= runeC
+      [ "name"    .= name
+      , "img_url" .= imgUrl
+      , "rune_a"  .= runeA
+      , "rune_b"  .= runeB
+      , "rune_c"  .= runeC
       ]
 
 
@@ -122,8 +124,13 @@ instance FromJSON CharacterChoice where
 
 choiceToCharacter :: CharacterChoice -> Either Text Character
 choiceToCharacter CharacterChoice{choice_name, choice_ra, choice_rb, choice_rc} =
+  let
+    baseCharacter :: Either Text Character
+    baseCharacter = getCharacter choice_name
+  in
   Character
-    <$> (character_name <$> getCharacter choice_name)
+    <$> (character_name <$> baseCharacter)
+    <*> (character_img_url <$> baseCharacter)
     <*> getRune choice_ra
     <*> getRune choice_rb
     <*> getRune choice_rc
@@ -220,7 +227,7 @@ greed =
 allCharacters :: [Character]
 allCharacters = [
     catherine
-  , ix
+  , ixion
   ]
 
 
@@ -228,15 +235,17 @@ catherine :: Character
 catherine =
   Character
     "Catherine"
+    "/img/textures/confound.png"
     wrath
     lust
     envy
 
 
-ix :: Character
-ix =
+ixion :: Character
+ixion =
   Character
-    "Ix"
+    "Ixion"
+    "/img/textures/hubris.png"
     pride
     gluttony
     sloth
