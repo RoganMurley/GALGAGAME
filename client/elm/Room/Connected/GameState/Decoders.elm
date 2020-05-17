@@ -40,12 +40,20 @@ selectingDecoder =
     let
         makeSelectState : List Character -> Result String GameState
         makeSelectState characters =
-            Ok <|
-                Selecting
-                    { characters = characters
-                    , index = 0
-                    , ready = False
-                    }
+            case characters of
+                character :: remaining ->
+                    Ok <|
+                        Selecting
+                            { characters =
+                                { previous = []
+                                , selected = character
+                                , remaining = remaining
+                                }
+                            , ready = False
+                            }
+
+                _ ->
+                    Err "No characters"
     in
     collapseResults <|
         Json.map makeSelectState

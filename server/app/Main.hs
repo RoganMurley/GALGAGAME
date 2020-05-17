@@ -86,6 +86,8 @@ main = do
   authApp   <- runApp connectInfoConfig $ Auth.app connectInfoConfig
   state     <- atomically $ newTVar Server.initState
 
+
+  infoM "app" "Starting up!"
   run 9160 $ waiApp state connectInfoConfig authApp
 
 
@@ -178,14 +180,14 @@ makeScenario prefix =
         PrefixTutorial ->
           Just DeckBuilding.catherine
         PrefixDaily ->
-          Just DeckBuilding.ix
+          Just DeckBuilding.ixion
         _ ->
           Nothing
     characterPb :: Maybe DeckBuilding.Character
     characterPb =
       case prefix of
         PrefixTutorial ->
-          Just DeckBuilding.ix
+          Just DeckBuilding.ixion
         PrefixDaily ->
           Just DeckBuilding.catherine
         _ ->
