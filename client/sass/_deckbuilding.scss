@@ -45,21 +45,6 @@
       width: 100%;
     }
   }
-  .edit-button {
-    border-radius: 5%;
-    font-weight: 900;
-    background: none;
-    border: solid;
-    border-width: 1px;
-    border-color: #f4f15e;
-    color: #f4f15e;
-    cursor: pointer; cursor: hand;
-    margin: 2px;
-    &:hover {
-      background: #f4f15e;
-      color: #000;
-    }
-  }
   .ready-button {
     border-radius: 5%;
     font-weight: 900;
@@ -74,6 +59,16 @@
       color: #000;
     }
   }
+  .runes {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    .rune {
+      width: 64px;
+      height: 64px;
+      margin: auto;
+    }
+  }
   .selected {
     background: red;
   }
@@ -83,7 +78,6 @@
   padding: 24px;
   margin: 6px;
   width: 18rem;
-  height: 24rem;
 
   border-style: solid;
   border-color: #f4f15e;
