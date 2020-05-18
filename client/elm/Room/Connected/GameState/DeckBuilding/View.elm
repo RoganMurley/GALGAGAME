@@ -51,11 +51,16 @@ nextButton =
 
 
 characterView : Character -> Html Msg
-characterView character =
+characterView ({ runeA, runeB, runeC } as character) =
     div
         [ classList [ ( "character", True ) ] ]
         [ div [ class "name" ] [ text character.name ]
-        , div [ class "portrait" ] [ img [ src character.imgUrl ] [] ]
-        , button [ class "edit-button" ] [ text "EDIT" ]
+
+        -- , div [ class "portrait" ] [ img [ src character.imgUrl ] [] ]
+        , div [ class "runes" ]
+            [ img [ class "rune", src <| "/img/textures/" ++ runeA.imgURL ] []
+            , img [ class "rune", src <| "/img/textures/" ++ runeB.imgURL ] []
+            , img [ class "rune", src <| "/img/textures/" ++ runeC.imgURL ] []
+            ]
         , button [ class "ready-button", onClick <| Select character ] [ text "SELECT" ]
         ]
