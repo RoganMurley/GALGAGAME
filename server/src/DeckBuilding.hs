@@ -68,7 +68,7 @@ instance ToJSON DeckBuilding where
     object
       [ "character"      .= deckbuilding_pa
       , "all_characters" .= allCharacters
-      , "all_runes" .= allRunes
+      , "all_runes"      .= allRunes
       ]
 
 
@@ -234,7 +234,8 @@ greed =
 allCharacters :: [Character]
 allCharacters = [
     catherine
-  , ixion
+  , marcus
+  , freja
   ]
 
 
@@ -248,14 +249,24 @@ catherine =
     envy
 
 
-ixion :: Character
-ixion =
+marcus :: Character
+marcus =
   Character
-    "Ixion"
+    "Marcus"
     "/img/textures/hubris.png"
     pride
     gluttony
     sloth
+
+
+freja :: Character
+freja =
+  Character
+    "Freja"
+    "/img/textures/alchemy.png"
+    greed
+    envy
+    wrath
 
 
 characterCards :: Character -> Deck

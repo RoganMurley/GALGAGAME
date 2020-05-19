@@ -180,14 +180,14 @@ makeScenario prefix =
         PrefixTutorial ->
           Just DeckBuilding.catherine
         PrefixDaily ->
-          Just DeckBuilding.ixion
+          Just DeckBuilding.marcus
         _ ->
           Nothing
     characterPb :: Maybe DeckBuilding.Character
     characterPb =
       case prefix of
         PrefixTutorial ->
-          Just DeckBuilding.ixion
+          Just DeckBuilding.marcus
         PrefixDaily ->
           Just DeckBuilding.catherine
         _ ->
