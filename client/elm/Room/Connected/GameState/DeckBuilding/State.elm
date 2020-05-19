@@ -93,43 +93,33 @@ update msg model =
 
 nextCharacter : Characters -> Characters
 nextCharacter { previous, selected, remaining } =
-    case ( remaining, previous ) of
-        ( next :: leftovers, _ ) ->
-            { previous = selected :: previous
-            , selected = next
-            , remaining = leftovers
-            }
-
-        ( _, next :: leftovers ) ->
+    case remaining of
+        next :: leftovers ->
             { previous = selected :: previous
             , selected = next
             , remaining = leftovers
             }
 
         _ ->
-            { previous = previous
-            , selected = selected
-            , remaining = remaining
-            }
+            nextCharacter
+                { previous = []
+                , selected = selected
+                , remaining = List.reverse previous
+                }
 
 
 previousCharacter : Characters -> Characters
 previousCharacter { previous, selected, remaining } =
-    case ( remaining, previous ) of
-        ( prev :: leftovers, _ ) ->
-            { previous = leftovers
-            , selected = prev
-            , remaining = selected :: remaining
-            }
-
-        ( _, prev :: leftovers ) ->
+    case previous of
+        prev :: leftovers ->
             { previous = leftovers
             , selected = prev
             , remaining = selected :: remaining
             }
 
         _ ->
-            { previous = previous
-            , selected = selected
-            , remaining = remaining
-            }
+            previousCharacter
+                { previous = List.reverse remaining
+                , selected = selected
+                , remaining = []
+                }
