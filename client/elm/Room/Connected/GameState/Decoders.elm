@@ -1,7 +1,8 @@
 module GameState.Decoders exposing (collapseResults, selectingDecoder, stateDecoder, waitingDecoder)
 
 import DeckBuilding.Decoders
-import DeckBuilding.Types exposing (Character)
+import DeckBuilding.State as DeckBuilding
+import DeckBuilding.Types exposing (Character, Rune)
 import GameState.Types exposing (GameState(..), WaitType(..))
 import Json.Decode as Json exposing (Decoder, fail, field, list, string, succeed)
 import PlayState.Decoders as PlayState
@@ -38,26 +39,21 @@ waitingDecoder =
 selectingDecoder : Decoder GameState
 selectingDecoder =
     let
-        makeSelectState : List Character -> Result String GameState
-        makeSelectState characters =
+        makeSelectState : List Character -> List Rune -> Result String GameState
+        makeSelectState characters runes =
             case characters of
                 character :: remaining ->
                     Ok <|
-                        Selecting
-                            { characters =
-                                { previous = []
-                                , selected = character
-                                , remaining = remaining
-                                }
-                            , ready = False
-                            }
+                        Selecting <|
+                            DeckBuilding.init character remaining runes
 
                 _ ->
                     Err "No characters"
     in
     collapseResults <|
-        Json.map makeSelectState
+        Json.map2 makeSelectState
             (field "all_characters" <| list DeckBuilding.Decoders.character)
+            (field "all_runes" <| list DeckBuilding.Decoders.rune)
 
 
 collapseResults : Decoder (Result String a) -> Decoder a

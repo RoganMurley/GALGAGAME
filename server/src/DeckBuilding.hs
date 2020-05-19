@@ -10,6 +10,7 @@ import Model (Deck)
 import Player (WhichPlayer(..))
 
 import qualified Cards
+import Data.Set as Set
 
 
 -- Rune
@@ -67,6 +68,7 @@ instance ToJSON DeckBuilding where
     object
       [ "character"      .= deckbuilding_pa
       , "all_characters" .= allCharacters
+      , "all_runes" .= allRunes
       ]
 
 
@@ -127,13 +129,18 @@ choiceToCharacter CharacterChoice{choice_name, choice_ra, choice_rb, choice_rc} 
   let
     baseCharacter :: Either Text Character
     baseCharacter = getCharacter choice_name
+    uniqueChoices :: Bool
+    uniqueChoices = Set.size (Set.fromList [choice_ra, choice_rb, choice_rc]) == 3
   in
-  Character
-    <$> (character_name <$> baseCharacter)
-    <*> (character_img_url <$> baseCharacter)
-    <*> getRune choice_ra
-    <*> getRune choice_rb
-    <*> getRune choice_rc
+  if uniqueChoices then
+    Character
+      <$> (character_name <$> baseCharacter)
+      <*> (character_img_url <$> baseCharacter)
+      <*> getRune choice_ra
+      <*> getRune choice_rb
+      <*> getRune choice_rc
+  else
+    Left "Rune choices were not unique"
 
 
 getCharacter :: Text -> Either Text Character

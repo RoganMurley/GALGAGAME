@@ -1,10 +1,24 @@
-module DeckBuilding.State exposing (update)
+module DeckBuilding.State exposing (init, update)
 
 import DeckBuilding.Encoders exposing (encodeCharacter)
 import DeckBuilding.Messages exposing (Msg(..))
-import DeckBuilding.Types exposing (Characters, Model)
+import DeckBuilding.Types exposing (Character, Characters, Model, Rune, RuneSelectModel)
 import Main.Messages as Main
+import Ports exposing (log)
 import Util
+
+
+init : Character -> List Character -> List Rune -> Model
+init character remaining runes =
+    { characters =
+        { previous = []
+        , selected = character
+        , remaining = remaining
+        }
+    , runes = runes
+    , runeSelect = Nothing
+    , ready = False
+    }
 
 
 update : Msg -> Model -> ( Model, Cmd Main.Msg )
@@ -33,6 +47,48 @@ update msg model =
 
             else
                 ( model, Cmd.none )
+
+        EnterRuneSelect _ excluded1 excluded2 index ->
+            let
+                runeSelect : RuneSelectModel
+                runeSelect =
+                    { excluded1 = excluded1, excluded2 = excluded2, index = index }
+            in
+            ( { model | runeSelect = Just runeSelect }, Cmd.none )
+
+        UpdateRune rune index ->
+            let
+                { characters } =
+                    model
+
+                { selected } =
+                    characters
+
+                mNewSelected =
+                    case index of
+                        0 ->
+                            Just { selected | runeA = rune }
+
+                        1 ->
+                            Just { selected | runeB = rune }
+
+                        2 ->
+                            Just { selected | runeC = rune }
+
+                        _ ->
+                            Nothing
+            in
+            case mNewSelected of
+                Just newSelected ->
+                    ( { model
+                        | characters = { characters | selected = newSelected }
+                        , runeSelect = Nothing
+                      }
+                    , Cmd.none
+                    )
+
+                Nothing ->
+                    ( model, log <| "rune select error " ++ String.fromInt index )
 
 
 nextCharacter : Characters -> Characters
