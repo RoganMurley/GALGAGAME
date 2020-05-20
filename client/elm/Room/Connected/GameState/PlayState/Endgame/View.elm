@@ -50,7 +50,7 @@ view progress anim mReplayId mXp gameType mUsername isReplay seed =
                                             GotoComputerGame
                         , disabled isDisabled
                         ]
-                        [ text "Play Again" ]
+                        [ text "PLAY AGAIN" ]
 
                 -- ( Just DailyGame, GameEnd (Just PlayerA) ) ->
                 --     button
@@ -75,7 +75,7 @@ view progress anim mReplayId mXp gameType mUsername isReplay seed =
                                             PlayingOnly Rematch
                         , disabled isDisabled
                         ]
-                        [ text "Play Again" ]
+                        [ text "PLAY AGAIN" ]
 
         watchReplayButton =
             case mReplayId of
@@ -90,12 +90,12 @@ view progress anim mReplayId mXp gameType mUsername isReplay seed =
                                             GotoReplay replayId
                         , disabled isDisabled
                         ]
-                        [ text "Watch Replay" ]
+                        [ text "WATCH REPLAY" ]
 
                 Nothing ->
                     button
                         [ class "replay", disabled True ]
-                        [ text "Watch Replay" ]
+                        [ text "WATCH REPLAY" ]
 
         experienceDisplay =
             case mXp of

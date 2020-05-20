@@ -19,13 +19,13 @@ view { error, gameType } =
                     [ div [ class "login-buttons" ]
                         [ button
                             [ onClick <| GotoSignup ]
-                            [ text "Signup & Play" ]
+                            [ text "SIGNUP & PLAY" ]
                         , button
                             [ onClick <| GotoLogin ]
-                            [ text "Login & Play" ]
+                            [ text "LOGIN & PLAY" ]
                         ]
                     , div [ class "vertical-rule" ] []
-                    , button [ onClick <| JoinRoom ] [ text "Play as Guest" ]
+                    , button [ onClick <| JoinRoom ] [ text "PLAY AS GUEST" ]
                     ]
                 , div [ class "error" ] [ text error ]
                 ]
