@@ -22,7 +22,7 @@ init character remaining runes =
 
 
 update : Msg -> Model -> ( Model, Cmd Main.Msg )
-update msg model =
+update msg ({ characters, runeSelect } as model) =
     case msg of
         Select character ->
             let
@@ -36,37 +36,50 @@ update msg model =
 
         NextCharacter ->
             if not model.ready then
-                ( { model | characters = nextCharacter model.characters }, Cmd.none )
+                ( { model | characters = nextCharacter characters }, Cmd.none )
 
             else
                 ( model, Cmd.none )
 
         PreviousCharacter ->
             if not model.ready then
-                ( { model | characters = previousCharacter model.characters }, Cmd.none )
+                ( { model | characters = previousCharacter characters }, Cmd.none )
 
             else
                 ( model, Cmd.none )
 
         EnterRuneSelect cursor ->
             let
-                runeSelect : RuneSelectModel
-                runeSelect =
-                    { cursor = cursor }
+                newRuneSelect : RuneSelectModel
+                newRuneSelect =
+                    { cursor = cursor
+                    , selected = getRuneFromCursor cursor characters.selected
+                    }
             in
-            ( { model | runeSelect = Just runeSelect }, Cmd.none )
+            ( { model | runeSelect = Just newRuneSelect }, Cmd.none )
 
         SelectRune rune ->
-            case model.runeSelect of
-                Just { cursor } ->
+            case runeSelect of
+                Just rs ->
+                    ( { model | runeSelect = Just { rs | selected = rune } }
+                    , Cmd.none
+                    )
+
+                Nothing ->
+                    ( model, log <| "SelectRune not on rune selecting state" )
+
+        ConfirmRune ->
+            case runeSelect of
+                Just { cursor, selected } ->
                     let
-                        { characters } =
-                            model
+                        newCharacter : Character
+                        newCharacter =
+                            setRuneFromCursor cursor selected characters.selected
                     in
                     ( { model
                         | characters =
                             { characters
-                                | selected = setRuneFromCursor cursor rune characters.selected
+                                | selected = newCharacter
                             }
                         , runeSelect = Nothing
                       }
@@ -74,7 +87,7 @@ update msg model =
                     )
 
                 Nothing ->
-                    ( model, log <| "SelectRune not on rune selecting state" )
+                    ( model, log <| "ConfirmRune not on rune selecting state" )
 
 
 getRuneFromCursor : RuneCursor -> Character -> Rune

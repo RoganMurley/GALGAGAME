@@ -13,6 +13,7 @@ type alias Model =
 
 type alias RuneSelectModel =
     { cursor : RuneCursor
+    , selected : Rune
     }
 
 

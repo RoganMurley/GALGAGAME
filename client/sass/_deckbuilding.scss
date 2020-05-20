@@ -18,7 +18,7 @@
 }
 
 .prev-button {
-  margin: auto 21px;
+  margin: auto;
   width: 0;
   height: 0;
   border-top: 30px solid transparent;
@@ -27,7 +27,7 @@
   cursor: pointer; cursor: hand;
 }
 .next-button {
-  margin: auto 21px;
+  margin: auto;
   width: 0;
   height: 0;
   border-top: 30px solid transparent;
@@ -93,9 +93,40 @@
 
 .runes {
   display: flex;
+  flex-direction: column;
+
+  h2 {
+    color: #f4f15e;;
+    font-size: 42px;
+    font-family: 'Raleway', sans-serif;
+    font-weight: 300;
+    text-align: center;
+    margin: 12px;
+  }
+
+  .rune-list {
+    display: flex;
+    justify-content: center;
+  }
+
   .rune {
     width: 64px;
     height: 64px;
     cursor: pointer; cursor: hand;
+  }
+
+  .rune-confirm {
+    border-radius: 5%;
+    font-weight: 900;
+    background: none;
+    border: solid;
+    border-color: #f4f15e;
+    color: #f4f15e;
+    cursor: pointer; cursor: hand;
+    margin: auto;
+    &:hover {
+      background: #f4f15e;
+      color: #000;
+    }
   }
 }
