@@ -70,17 +70,19 @@ spacer =
 
 characterView : Character -> Html Msg
 characterView ({ runeA, runeB, runeC } as character) =
-    div
-        [ class "character" ]
-        [ div [ class "name" ] [ text character.name ]
-
-        -- , div [ class "portrait" ] [ img [ src character.imgUrl ] [] ]
-        , div [ class "character-runes" ]
-            [ img [ class "character-rune", src <| "/img/textures/" ++ runeA.imgURL, onClick <| EnterRuneSelect RuneCursorA ] []
-            , img [ class "character-rune", src <| "/img/textures/" ++ runeB.imgURL, onClick <| EnterRuneSelect RuneCursorB ] []
-            , img [ class "character-rune", src <| "/img/textures/" ++ runeC.imgURL, onClick <| EnterRuneSelect RuneCursorC ] []
+    div [ class "character" ]
+        [ spacer
+        , div
+            [ class "character-circle" ]
+            [ div [ class "name" ] [ text character.name ]
+            , div [ class "character-runes" ]
+                [ img [ class "character-rune", src <| "/img/textures/" ++ runeA.imgURL, onClick <| EnterRuneSelect RuneCursorA ] []
+                , img [ class "character-rune", src <| "/img/textures/" ++ runeB.imgURL, onClick <| EnterRuneSelect RuneCursorB ] []
+                , img [ class "character-rune", src <| "/img/textures/" ++ runeC.imgURL, onClick <| EnterRuneSelect RuneCursorC ] []
+                ]
             ]
         , button [ class "ready-button", onClick <| Select character ] [ text "SELECT" ]
+        , spacer
         ]
 
 

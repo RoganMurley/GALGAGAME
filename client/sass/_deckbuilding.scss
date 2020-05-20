@@ -42,12 +42,7 @@
   .name {
     font-size: 24px;
     text-transform: uppercase;
-  }
-  .portrait {
-    flex: 1;
-    img {
-      width: 100%;
-    }
+    margin-bottom: 12px;
   }
   .ready-button {
     border-radius: 5%;
@@ -63,6 +58,11 @@
       color: #000;
     }
   }
+}
+
+.character-circle {
+  display: flex;
+  flex-direction: column;
   .character-runes {
     display: flex;
     flex-direction: column;
@@ -73,9 +73,6 @@
       margin: auto;
       cursor: pointer; cursor: hand;
     }
-  }
-  .selected {
-    background: red;
   }
   color: #f4f15e;
   text-align: center;
