@@ -1,4 +1,4 @@
-module DeckBuilding.Types exposing (Character, Characters, Model, Rune, RuneCards, RuneSelectModel)
+module DeckBuilding.Types exposing (Character, Characters, Model, Rune, RuneCards, RuneCursor(..), RuneSelectModel)
 
 import Card.Types exposing (Card)
 
@@ -12,10 +12,14 @@ type alias Model =
 
 
 type alias RuneSelectModel =
-    { excluded1 : Rune
-    , excluded2 : Rune
-    , index : Int
+    { cursor : RuneCursor
     }
+
+
+type RuneCursor
+    = RuneCursorA
+    | RuneCursorB
+    | RuneCursorC
 
 
 type alias Characters =

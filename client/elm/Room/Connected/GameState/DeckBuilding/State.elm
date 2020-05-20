@@ -1,8 +1,8 @@
-module DeckBuilding.State exposing (init, update)
+module DeckBuilding.State exposing (getRuneFromCursor, init, nextCursor, update)
 
 import DeckBuilding.Encoders exposing (encodeCharacter)
 import DeckBuilding.Messages exposing (Msg(..))
-import DeckBuilding.Types exposing (Character, Characters, Model, Rune, RuneSelectModel)
+import DeckBuilding.Types exposing (Character, Characters, Model, Rune, RuneCursor(..), RuneSelectModel)
 import Main.Messages as Main
 import Ports exposing (log)
 import Util
@@ -48,47 +48,72 @@ update msg model =
             else
                 ( model, Cmd.none )
 
-        EnterRuneSelect _ excluded1 excluded2 index ->
+        EnterRuneSelect cursor ->
             let
                 runeSelect : RuneSelectModel
                 runeSelect =
-                    { excluded1 = excluded1, excluded2 = excluded2, index = index }
+                    { cursor = cursor }
             in
             ( { model | runeSelect = Just runeSelect }, Cmd.none )
 
-        UpdateRune rune index ->
-            let
-                { characters } =
-                    model
-
-                { selected } =
-                    characters
-
-                mNewSelected =
-                    case index of
-                        0 ->
-                            Just { selected | runeA = rune }
-
-                        1 ->
-                            Just { selected | runeB = rune }
-
-                        2 ->
-                            Just { selected | runeC = rune }
-
-                        _ ->
-                            Nothing
-            in
-            case mNewSelected of
-                Just newSelected ->
+        SelectRune rune ->
+            case model.runeSelect of
+                Just { cursor } ->
+                    let
+                        { characters } =
+                            model
+                    in
                     ( { model
-                        | characters = { characters | selected = newSelected }
+                        | characters =
+                            { characters
+                                | selected = setRuneFromCursor cursor rune characters.selected
+                            }
                         , runeSelect = Nothing
                       }
                     , Cmd.none
                     )
 
                 Nothing ->
-                    ( model, log <| "rune select error " ++ String.fromInt index )
+                    ( model, log <| "SelectRune not on rune selecting state" )
+
+
+getRuneFromCursor : RuneCursor -> Character -> Rune
+getRuneFromCursor cursor =
+    case cursor of
+        RuneCursorA ->
+            .runeA
+
+        RuneCursorB ->
+            .runeB
+
+        RuneCursorC ->
+            .runeC
+
+
+setRuneFromCursor : RuneCursor -> Rune -> Character -> Character
+setRuneFromCursor cursor rune character =
+    case cursor of
+        RuneCursorA ->
+            { character | runeA = rune }
+
+        RuneCursorB ->
+            { character | runeB = rune }
+
+        RuneCursorC ->
+            { character | runeC = rune }
+
+
+nextCursor : RuneCursor -> RuneCursor
+nextCursor cursor =
+    case cursor of
+        RuneCursorA ->
+            RuneCursorB
+
+        RuneCursorB ->
+            RuneCursorC
+
+        RuneCursorC ->
+            RuneCursorA
 
 
 nextCharacter : Characters -> Characters

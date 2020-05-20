@@ -1,7 +1,8 @@
 module DeckBuilding.View exposing (view)
 
 import DeckBuilding.Messages exposing (Msg(..))
-import DeckBuilding.Types exposing (Character, Model, Rune, RuneSelectModel)
+import DeckBuilding.State exposing (getRuneFromCursor, nextCursor)
+import DeckBuilding.Types exposing (Character, Model, Rune, RuneCursor(..), RuneSelectModel)
 import Game.State exposing (bareContextInit)
 import Html exposing (Html, button, div, h1, img, text)
 import Html.Attributes exposing (class, height, src, width)
@@ -36,7 +37,7 @@ view { w, h, pixelRatio } model textures =
             Just runeSelect ->
                 div []
                     [ h1 [] [ text "RUNES" ]
-                    , runesView runeSelect model.runes
+                    , runesView runeSelect model.characters.selected model.runes
                     ]
         ]
 
@@ -75,9 +76,9 @@ characterView ({ runeA, runeB, runeC } as character) =
 
         -- , div [ class "portrait" ] [ img [ src character.imgUrl ] [] ]
         , div [ class "character-runes" ]
-            [ img [ class "character-rune", src <| "/img/textures/" ++ runeA.imgURL, onClick <| EnterRuneSelect runeA runeB runeC 0 ] []
-            , img [ class "character-rune", src <| "/img/textures/" ++ runeB.imgURL, onClick <| EnterRuneSelect runeB runeA runeC 1 ] []
-            , img [ class "character-rune", src <| "/img/textures/" ++ runeC.imgURL, onClick <| EnterRuneSelect runeC runeA runeB 2 ] []
+            [ img [ class "character-rune", src <| "/img/textures/" ++ runeA.imgURL, onClick <| EnterRuneSelect RuneCursorA ] []
+            , img [ class "character-rune", src <| "/img/textures/" ++ runeB.imgURL, onClick <| EnterRuneSelect RuneCursorB ] []
+            , img [ class "character-rune", src <| "/img/textures/" ++ runeC.imgURL, onClick <| EnterRuneSelect RuneCursorC ] []
             ]
         , button [ class "ready-button", onClick <| Select character ] [ text "SELECT" ]
         ]
@@ -87,9 +88,17 @@ characterView ({ runeA, runeB, runeC } as character) =
 -- Rune view
 
 
-runesView : RuneSelectModel -> List Rune -> Html Msg
-runesView { excluded1, excluded2, index } allRunes =
+runesView : RuneSelectModel -> Character -> List Rune -> Html Msg
+runesView { cursor } selected allRunes =
     let
+        excluded1 : Rune
+        excluded1 =
+            getRuneFromCursor (nextCursor cursor) selected
+
+        excluded2 : Rune
+        excluded2 =
+            getRuneFromCursor ((nextCursor >> nextCursor) cursor) selected
+
         runes : List Rune
         runes =
             List.filter
@@ -98,7 +107,7 @@ runesView { excluded1, excluded2, index } allRunes =
 
         runeView : Rune -> Html Msg
         runeView rune =
-            img [ class "rune", src <| "/img/textures/" ++ rune.imgURL, onClick <| UpdateRune rune index ] []
+            img [ class "rune", src <| "/img/textures/" ++ rune.imgURL, onClick <| SelectRune rune ] []
     in
     div [ class "runes" ] <|
         List.concat
