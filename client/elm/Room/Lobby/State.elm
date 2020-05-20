@@ -105,19 +105,19 @@ gameTypeToString : GameType -> String
 gameTypeToString gameType =
     case gameType of
         CustomGame ->
-            "Private Match"
+            "PRIVATE MATCH"
 
         ComputerGame ->
-            "CPU Match"
+            "CPU MATCH"
 
         QuickplayGame ->
-            "Matchmaking"
+            "MATCHMAKING"
 
         TutorialGame ->
-            "Tutorial"
+            "TUTORIAL"
 
         DailyGame ->
-            "Daily Challenge"
+            "DAILY CHALLENGE"
 
 
 skipLobbyCmd : Maybe String -> Cmd Main.Msg

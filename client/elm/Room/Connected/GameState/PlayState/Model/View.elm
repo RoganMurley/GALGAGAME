@@ -218,7 +218,7 @@ lifeTextView { radius, model } =
             0.49 * radius
 
         verticalOffset =
-            0.62 * radius
+            0.57 * radius
 
         textWidth =
             0.2 * radius
@@ -229,7 +229,7 @@ lifeTextView { radius, model } =
     [ div
         [ class "clock-life"
         , style "right" (horizontalOffset |> px)
-        , style "bottom" (verticalOffset - 0.02 * radius |> px)
+        , style "bottom" (verticalOffset - 0.04 * radius |> px)
         , style "font-size" (fontSize |> px)
         , style "transform" "translate(-20%, -10%)"
         , style "width" (textWidth |> px)
@@ -345,7 +345,7 @@ goButtonView { model, radius, resolving } passed =
             0.23 * radius
 
         fontSize =
-            0.08 * radius
+            0.12 * radius
 
         playMsg =
             Main.RoomMsg
