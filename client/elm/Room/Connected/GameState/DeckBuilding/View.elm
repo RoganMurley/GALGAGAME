@@ -4,7 +4,7 @@ import DeckBuilding.Messages exposing (Msg(..))
 import DeckBuilding.State exposing (getRuneFromCursor, nextCursor)
 import DeckBuilding.Types exposing (Character, Model, Rune, RuneCursor(..), RuneSelectModel)
 import Game.State exposing (bareContextInit)
-import Html exposing (Html, button, div, h1, img, text)
+import Html exposing (Html, button, div, h1, h2, img, text)
 import Html.Attributes exposing (class, height, src, width)
 import Html.Events exposing (onClick)
 import Render.Types as Render
@@ -89,15 +89,15 @@ characterView ({ runeA, runeB, runeC } as character) =
 
 
 runesView : RuneSelectModel -> Character -> List Rune -> Html Msg
-runesView { cursor } selected allRunes =
+runesView { cursor, selected } character allRunes =
     let
         excluded1 : Rune
         excluded1 =
-            getRuneFromCursor (nextCursor cursor) selected
+            getRuneFromCursor (nextCursor cursor) character
 
         excluded2 : Rune
         excluded2 =
-            getRuneFromCursor ((nextCursor >> nextCursor) cursor) selected
+            getRuneFromCursor ((nextCursor >> nextCursor) cursor) character
 
         runes : List Rune
         runes =
@@ -109,9 +109,8 @@ runesView { cursor } selected allRunes =
         runeView rune =
             img [ class "rune", src <| "/img/textures/" ++ rune.imgURL, onClick <| SelectRune rune ] []
     in
-    div [ class "runes" ] <|
-        List.concat
-            [ [ spacer ]
-            , List.map runeView runes
-            , [ spacer ]
-            ]
+    div [ class "runes" ]
+        [ div [ class "rune-list" ] (List.map runeView runes)
+        , h2 [] [ text selected.name ]
+        , button [ class "rune-confirm", onClick ConfirmRune ] [ text "CHOOSE" ]
+        ]

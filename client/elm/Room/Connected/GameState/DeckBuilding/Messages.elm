@@ -9,3 +9,4 @@ type Msg
     | PreviousCharacter
     | EnterRuneSelect RuneCursor
     | SelectRune Rune
+    | ConfirmRune
