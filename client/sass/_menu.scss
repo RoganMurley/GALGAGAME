@@ -6,39 +6,29 @@
   flex-direction: column;
 
   h1 {
-    color: #f4f15e;
+    color: #42210b;
     font-size: 6rem;
     font-family: 'Trattatello', sans-serif;
 
     margin: 15px;
   }
 
-  h2 {
-    color: #f4f15e;
-    font-size: 1.8rem;
-
-    margin: 12px;
-    margin-bottom: 24px;
-  }
-
   button {
     font-size: 30px;
     font-family: 'Trattatello', sans-serif;
 
-    background-color: #e8e8e8;
+    background-color: rgba(0, 0, 0, 0);
 
+    border-color: #42210b;
     border-radius: 5px;
+    border-width: 3px;
     width: 250px;
     margin: 5px;
 
     &:hover {
-      background-color: #e0e3e6;
+      color: #fffabb;
+      background-color: #42210b;
       cursor: pointer; cursor: hand;
-    }
-
-    &:disabled {
-      background-color: #f0f8ff;
-      cursor: not-allowed;
     }
   }
 
