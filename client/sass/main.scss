@@ -33,7 +33,9 @@ html {
 }
 
 body {
-  background-color: #151515;
+  background-color: #ffeb3b;
+  background: url(https://localhost:4430/img/background.jpg);
+  background-size: cover;
   overflow: hidden;
 
   height: 100%;
