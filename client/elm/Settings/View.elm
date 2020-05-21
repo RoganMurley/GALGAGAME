@@ -35,7 +35,7 @@ view { modalState, masterVolume } nestedViews =
             [ div
                 [ class "settings-body"
                 ]
-                [ h1 [] [ text "Settings" ]
+                [ h1 [] [ text "SETTINGS" ]
                 , label [ class "settings-volume" ]
                     [ text "Volume"
                     , input

@@ -1,6 +1,6 @@
 .character-select {
   h1 {
-    color: #f4f15e;;
+    color: #42210b;
     font-size: 52px;
     font-family: 'Trattatello', sans-serif;
     font-weight: 300;
@@ -23,7 +23,7 @@
   height: 0;
   border-top: 30px solid transparent;
   border-bottom: 30px solid transparent;
-  border-right: 30px solid #f4f15e;
+  border-right: 30px solid #42210b;
   cursor: pointer; cursor: hand;
 }
 .next-button {
@@ -32,7 +32,7 @@
   height: 0;
   border-top: 30px solid transparent;
   border-bottom: 30px solid transparent;
-  border-left: 30px solid #f4f15e;
+  border-left: 30px solid #42210b;
   cursor: pointer; cursor: hand;
 }
 
@@ -40,22 +40,33 @@
   display: flex;
   flex-direction: column;
   .name {
-    font-size: 24px;
+    font-family: 'Trattatello', sans-serif;
+    font-size: 32px;
     text-transform: uppercase;
-    margin-bottom: 12px;
   }
+
   .ready-button {
-    border-radius: 5%;
-    font-weight: 900;
-    background: none;
-    border: solid;
-    border-color: #f4f15e;
-    color: #f4f15e;
-    cursor: pointer; cursor: hand;
-    margin: auto;
+    margin: 5px auto;
+
+    font-size: 24px;
+    font-family: 'Trattatello', sans-serif;
+
+    background-color: rgba(0, 0, 0, 0);
+
+    border-color: #42210b;
+    border-radius: 5px;
+    border-width: 3px;
+    width: 200px;
+
     &:hover {
-      background: #f4f15e;
-      color: #000;
+      color: #fffabb;
+      background-color: #42210b;
+      cursor: pointer; cursor: hand;
+    }
+
+    &:disabled {
+      background-color: rgba(0, 0, 0, 0);
+      cursor: not-allowed;
     }
   }
 }
@@ -74,16 +85,15 @@
       cursor: pointer; cursor: hand;
     }
   }
-  color: #f4f15e;
+  color: #42210b;
   text-align: center;
-  background: #111;
   padding: 24px;
   margin: 6px;
   width: 18rem;
   height: 18rem;
 
   border-style: solid;
-  border-color: #f4f15e;
+  border-color: #42210b;
   border-width: 2px;
   border-radius: 100%;
 }
@@ -93,7 +103,7 @@
   flex-direction: column;
 
   h2 {
-    color: #f4f15e;;
+    color: #42210b;;
     font-size: 42px;
     font-family: 'Trattatello', sans-serif;
     font-weight: 300;
@@ -117,13 +127,13 @@
     font-weight: 900;
     background: none;
     border: solid;
-    border-color: #f4f15e;
-    color: #f4f15e;
+    border-color: #42210b;
+    color: #42210b;
     cursor: pointer; cursor: hand;
     margin: auto;
     &:hover {
-      background: #f4f15e;
-      color: #000;
+      background: #42210b;
+      color: #fffabb;
     }
   }
 }

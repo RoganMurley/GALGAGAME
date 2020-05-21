@@ -44,7 +44,7 @@ view model =
                 [ onClick Submit
                 , disabled submitDisabled
                 ]
-                [ text "Signup" ]
+                [ text "SIGNUP" ]
             , div [ class "error" ] [ text model.error ]
             ]
         ]

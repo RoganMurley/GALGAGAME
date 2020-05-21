@@ -9,19 +9,22 @@
     font-size: 24px;
     font-family: 'Trattatello', sans-serif;
 
-    background-color: #f0f8ff;
+    background-color: rgba(0, 0, 0, 0);
 
+    border-color: #42210b;
     border-radius: 5px;
+    border-width: 3px;
     width: 200px;
     margin: 5px;
 
     &:hover {
-      background-color: #e0e3e6;
+      color: #fffabb;
+      background-color: #42210b;
       cursor: pointer; cursor: hand;
     }
 
     &:disabled {
-      background-color: #f0f8ff;
+      background-color: rgba(0, 0, 0, 0);
       cursor: not-allowed;
     }
   }
@@ -43,7 +46,7 @@
 
   label {
     display: block;
-    color: #fff;
+    color: #42210b;
     height: 32px;
     line-height: 32px;
     padding-left: 8px;

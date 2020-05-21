@@ -44,7 +44,7 @@ view model =
                 [ onClick Submit
                 , disabled submitDisabled
                 ]
-                [ text "Login" ]
+                [ text "LOGIN" ]
             , div [ class "error" ] [ text model.error ]
             ]
         ]
@@ -56,7 +56,7 @@ logoutView { username } =
         Just _ ->
             [ button
                 [ class "settings-button", onClick Main.Logout ]
-                [ text "Logout" ]
+                [ text "LOGOUT" ]
             ]
 
         Nothing ->
