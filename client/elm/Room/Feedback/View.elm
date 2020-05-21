@@ -36,7 +36,7 @@ view model =
                         [ onClick Submit
                         , disabled <| model.submitState == Submitting
                         ]
-                        [ text "Submit feedback" ]
+                        [ text "SUBMIT FEEDBACK" ]
                     , div [ class "error" ] [ text model.error ]
                     ]
             )

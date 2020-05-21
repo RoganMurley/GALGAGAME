@@ -105,10 +105,10 @@ gameTypeToString : GameType -> String
 gameTypeToString gameType =
     case gameType of
         CustomGame ->
-            "PRIVATE MATCH"
+            "PRIVATE ROOM"
 
         ComputerGame ->
-            "CPU MATCH"
+            "CPU ROOM"
 
         QuickplayGame ->
             "MATCHMAKING"

@@ -33,7 +33,6 @@
     }
 
     &:disabled {
-      background-color: #f0f8ff;
       cursor: not-allowed;
     }
   }
@@ -58,7 +57,7 @@
 }
 
 .vertical-rule {
-  border-left: 1px solid #fff;
+  border-left: 2px solid #42210b;
   height: 100px;
   margin: 0 30px;
 }

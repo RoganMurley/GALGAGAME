@@ -47,7 +47,7 @@ concedeView state =
                     ]
                 , onClick Connected.Concede
                 ]
-                [ text "Concede" ]
+                [ text "CONCEDE" ]
             ]
 
         _ ->
