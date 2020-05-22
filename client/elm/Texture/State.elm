@@ -136,4 +136,5 @@ texturePaths =
 
     -- Testing
     , ( "cardBack.png", "/img/textures/cardBack.png" )
+    , ( "stain.png", "/img/textures/stain.png" )
     ]

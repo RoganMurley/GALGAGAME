@@ -1,4 +1,4 @@
-module Background.View exposing (backgroundView, cursorView, ornateView, ringView, view)
+module Background.View exposing (backgroundView, cursorView, ornateView, ringView, stainView, view)
 
 import Animation.State as Animation
 import Animation.Types exposing (Anim(..))
@@ -89,6 +89,26 @@ ornateView ({ w, h, anim, tick } as ctx) =
         List.map render <|
             List.map ((*) pi) <|
                 [ 0, 1.0 ]
+
+
+stainView : Context -> List WebGL.Entity
+stainView { w, h, radius, textures } =
+    case Texture.load textures "stain.png" of
+        Nothing ->
+            []
+
+        Just texture ->
+            [ Render.Primitives.quad Render.Shaders.fragment
+                { rotation = makeRotate pi (vec3 0 0 1)
+                , scale = makeScale3 (0.8 * radius) (0.8 * radius) 1
+                , color = Colour.white
+                , pos = vec3 (w * 0.5) (h * 0.5) 0
+                , worldRot = makeRotate 0 (vec3 0 0 1)
+                , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
+                , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
+                , texture = texture
+                }
+            ]
 
 
 ringView : Context -> List WebGL.Entity

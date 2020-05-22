@@ -47,9 +47,12 @@ view { w, h, pixelRatio } { res, hover, focus, entities, passed, feedback } text
             (List.concat <|
                 List.map ((|>) ctx)
                     [ Wave.view
-                    , Background.ornateView
+
+                    -- , Background.ornateView
                     , lifeOrbView
-                    , Background.ringView
+                    , Background.stainView
+
+                    -- , Background.ringView
                     , Stack.view entities.stack
                     , focusImageView focus
                     , passView
@@ -57,7 +60,8 @@ view { w, h, pixelRatio } { res, hover, focus, entities, passed, feedback } text
                     , Hand.view entities.hand
                     , Hand.otherView entities.otherHand
                     , Hand.millView
-                    , Background.cursorView
+
+                    -- , Background.cursorView
                     , feedbackView feedback
                     ]
             )
@@ -95,7 +99,7 @@ focusImageView focus ({ w, h, radius, textures } as ctx) =
                         { rotation = makeRotate pi (vec3 0 0 1)
                         , scale = makeScale3 (0.2 * radius) (0.2 * radius) 1
                         , color = Colour.white
-                        , pos = vec3 (w * 0.5) (h * 0.45) 0
+                        , pos = vec3 (w * 0.5) (h * 0.43) 0
                         , worldRot = makeRotate 0 (vec3 0 0 1)
                         , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
                         , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
@@ -391,7 +395,7 @@ turnView { anim, model } focus passed =
                     div [ class "turn-status" ] [ text "YOUR TURN" ]
 
                 PlayerB ->
-                    div [ class "turn-status" ] [ text "OPPONENT'S TURN" ]
+                    div [ class "turn-status" ] [ text "OPPONENT'S \nTURN" ]
 
         ( Pass _, _, _ ) ->
             div [ class "pass-status" ] [ text "PASS" ]

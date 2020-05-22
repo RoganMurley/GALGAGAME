@@ -1,8 +1,10 @@
 .menu-button {
   margin: 5px;
 
+  color: #42210b;
+
   font-size: 24px;
-  font-family: 'Trattatello', sans-serif;
+  font-family: 'Trattatello', serif;
 
   background-color: rgba(0, 0, 0, 0);
 
@@ -18,7 +20,8 @@
   }
 
   &:disabled {
-    background-color: rgba(0, 0, 0, 0);
+    color: #42210b;
+    background-color: #7955484d;
     cursor: not-allowed;
   }
 }

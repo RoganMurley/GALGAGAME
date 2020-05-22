@@ -113,6 +113,6 @@ runesView { cursor, selected } character allRunes =
     in
     div [ class "runes" ]
         [ div [ class "rune-list" ] (List.map runeView runes)
-        , h2 [] [ text selected.name ]
+        , h2 [ class "rune-name" ] [ text selected.name ]
         , button [ class "rune-confirm", class "menu-button", onClick ConfirmRune ] [ text "CHOOSE" ]
         ]
