@@ -43,6 +43,7 @@ view model =
             , button
                 [ onClick Submit
                 , disabled submitDisabled
+                , class "menu-button"
                 ]
                 [ text "SIGNUP" ]
             , div [ class "error" ] [ text model.error ]

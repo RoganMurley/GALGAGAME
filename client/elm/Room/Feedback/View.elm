@@ -22,7 +22,7 @@ view model =
             }
     in
     div []
-        [ div [ class "feedback-box" ]
+        [ div [ class "menu-button", class "feedback-box" ]
             (case model.submitState of
                 Submitted ->
                     [ h1 [] [ text "Thank you for your feedback!" ]
