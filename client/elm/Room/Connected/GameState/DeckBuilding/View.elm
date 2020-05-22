@@ -81,7 +81,7 @@ characterView ({ runeA, runeB, runeC } as character) =
                 , img [ class "character-rune", src <| "/img/textures/" ++ runeC.imgURL, onClick <| EnterRuneSelect RuneCursorC ] []
                 ]
             ]
-        , button [ class "ready-button", onClick <| Select character ] [ text "SELECT" ]
+        , button [ class "menu-button", class "ready-button", onClick <| Select character ] [ text "SELECT" ]
         , spacer
         ]
 
@@ -114,5 +114,5 @@ runesView { cursor, selected } character allRunes =
     div [ class "runes" ]
         [ div [ class "rune-list" ] (List.map runeView runes)
         , h2 [] [ text selected.name ]
-        , button [ class "rune-confirm", onClick ConfirmRune ] [ text "CHOOSE" ]
+        , button [ class "rune-confirm", class "menu-button", onClick ConfirmRune ] [ text "CHOOSE" ]
         ]

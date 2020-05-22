@@ -43,6 +43,7 @@ view model =
             , button
                 [ onClick Submit
                 , disabled submitDisabled
+                , class "menu-button"
                 ]
                 [ text "LOGIN" ]
             , div [ class "error" ] [ text model.error ]
@@ -55,7 +56,7 @@ logoutView { username } =
     case username of
         Just _ ->
             [ button
-                [ class "settings-button", onClick Main.Logout ]
+                [ class "settings-button", class "menu-button", onClick Main.Logout ]
                 [ text "LOGOUT" ]
             ]
 

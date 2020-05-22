@@ -23,5 +23,5 @@ view =
 menuButton : GameType -> Html Msg
 menuButton gameType =
     button
-        [ onClick <| Start gameType ]
+        [ onClick <| Start gameType, class "menu-button" ]
         [ text <| gameTypeToString gameType ]

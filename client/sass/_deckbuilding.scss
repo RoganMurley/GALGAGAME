@@ -47,27 +47,6 @@
 
   .ready-button {
     margin: 5px auto;
-
-    font-size: 24px;
-    font-family: 'Trattatello', sans-serif;
-
-    background-color: rgba(0, 0, 0, 0);
-
-    border-color: #42210b;
-    border-radius: 5px;
-    border-width: 3px;
-    width: 200px;
-
-    &:hover {
-      color: #fffabb;
-      background-color: #42210b;
-      cursor: pointer; cursor: hand;
-    }
-
-    &:disabled {
-      background-color: rgba(0, 0, 0, 0);
-      cursor: not-allowed;
-    }
   }
 }
 
@@ -120,20 +99,5 @@
     width: 64px;
     height: 64px;
     cursor: pointer; cursor: hand;
-  }
-
-  .rune-confirm {
-    border-radius: 5%;
-    font-weight: 900;
-    background: none;
-    border: solid;
-    border-color: #42210b;
-    color: #42210b;
-    cursor: pointer; cursor: hand;
-    margin: auto;
-    &:hover {
-      background: #42210b;
-      color: #fffabb;
-    }
   }
 }

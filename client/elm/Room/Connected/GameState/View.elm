@@ -88,8 +88,8 @@ waitingView waitType ({ httpPort, hostname } as flags) textures roomID =
                                 ]
                                 []
                             , button
-                                [ onClick <| Main.CopyInput myID ]
-                                [ text "copy" ]
+                                [ onClick <| Main.CopyInput myID, class "menu-button" ]
+                                [ text "COPY" ]
                             ]
                         ]
 
