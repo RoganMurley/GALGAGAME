@@ -65,22 +65,33 @@
 
 
 .clock-go {
+  color: #42210b;
+
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
 
   border-radius: 50%;
+  border-color: #42210b;
+  border-width: 3px;
   outline: none;
 
   font-size: 1.6rem;
   font-family: 'Trattatello', sans-serif;
-  font-weight: 900;
+  font-weight: 600;
+
+  background-color: rgba(0, 0, 0, 0);
+
+  &:hover {
+    color: #fffabb;
+    background-color: #42210b;
+    cursor: pointer; cursor: hand;
+  }
 
   &--disabled {
-    color: grey;
-    background-color: dimgrey;
-    border-color: dimgrey;
+    color: #42210b;
+    background-color: #7955484d;
     cursor: not-allowed;
   }
 }
