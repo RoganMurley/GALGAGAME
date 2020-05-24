@@ -74,31 +74,47 @@ view { w, h, pixelRatio } { res, hover, focus, entities, passed, feedback } text
 
 
 focusImageView : Maybe StackCard -> Context -> List WebGL.Entity
-focusImageView focus ({ w, h, radius, textures } as ctx) =
+focusImageView focus { w, h, radius, textures } =
     let
         background =
-            case Maybe.map .owner focus of
-                Just owner ->
-                    [ Render.Primitives.fullCircle <|
-                        uniColourMag ctx
-                            (Colour.focusBackground owner)
-                            1.0
-                            { scale = 0.48 * radius
-                            , position = vec2 (w * 0.5) (h * 0.5)
-                            , rotation = 0
-                            }
-                    ]
+            []
 
-                Nothing ->
-                    []
+        -- case Maybe.map .owner focus of
+        --     Just owner ->
+        --         [ Render.Primitives.fullCircle <|
+        --             uniColourMag ctx
+        --                 (Colour.focusBackground owner)
+        --                 1.0
+        --                 { scale = 0.48 * radius
+        --                 , position = vec2 (w * 0.5) (h * 0.5)
+        --                 , rotation = 0
+        --                 }
+        --         ]
+        --
+        --     Nothing ->
+        --         []
     in
     case Maybe.join <| Maybe.map (cardTexture textures << .card) focus of
         Just texture ->
+            let
+                color =
+                    case focus of
+                        Just f ->
+                            case f.owner of
+                                PlayerA ->
+                                    Colour.tea
+
+                                PlayerB ->
+                                    Colour.teaRed
+
+                        Nothing ->
+                            Colour.tea
+            in
             background
                 ++ [ Render.Primitives.quad Render.Shaders.fragment
                         { rotation = makeRotate pi (vec3 0 0 1)
                         , scale = makeScale3 (0.2 * radius) (0.2 * radius) 1
-                        , color = Colour.white
+                        , color = color
                         , pos = vec3 (w * 0.5) (h * 0.43) 0
                         , worldRot = makeRotate 0 (vec3 0 0 1)
                         , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
@@ -206,9 +222,10 @@ focusTextView { anim, radius } focus =
                 Nothing ->
                     text ""
 
-                Just { card } ->
+                Just { card, owner } ->
                     div
                         [ style "width" (0.7 * radius |> px)
+                        , classList [ ( "opponent", owner == PlayerB ) ]
                         ]
                         [ div [ class "title" ] [ text card.name ]
                         , div [ class "desc" ] [ text card.desc ]

@@ -3,7 +3,7 @@ module Card where
 import Data.Aeson (ToJSON(..), (.=), object)
 import Data.Monoid ((<>))
 import Data.String.Conversions (cs)
-import Data.Text (Text, toUpper)
+import Data.Text (Text)
 import Player (WhichPlayer(..))
 
 import {-# SOURCE #-} qualified DSL.Beta.DSL as Beta
@@ -38,4 +38,4 @@ data Card = Card
 
 description :: Card -> Text
 description Card{ card_name, card_desc } =
-  "(" <> toUpper card_name <> ": " <> card_desc <> ")"
+  "(" <> card_name <> ": " <> card_desc <> ")"
