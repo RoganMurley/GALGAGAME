@@ -92,14 +92,32 @@ ornateView ({ w, h, anim, tick } as ctx) =
 
 
 stainView : Context -> List WebGL.Entity
-stainView { w, h, radius, textures } =
+stainView { w, h, anim, model, progress, radius, textures } =
+    let
+        ringRot =
+            case anim of
+                Rotate _ ->
+                    toFloat model.rot + 1 - progress
+
+                Windup _ ->
+                    toFloat model.rot - (1 - progress)
+
+                Finding ->
+                    -12 * progress
+
+                _ ->
+                    toFloat model.rot
+
+        rotation =
+            pi + ringRot * 2.0 * pi / 12.0
+    in
     case Texture.load textures "stain.png" of
         Nothing ->
             []
 
         Just texture ->
             [ Render.Primitives.quad Render.Shaders.fragment
-                { rotation = makeRotate pi (vec3 0 0 1)
+                { rotation = makeRotate rotation (vec3 0 0 1)
                 , scale = makeScale3 (0.8 * radius) (0.8 * radius) 1
                 , color = Colour.white
                 , pos = vec3 (w * 0.5) (h * 0.5) 0
