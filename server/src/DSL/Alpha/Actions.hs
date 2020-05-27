@@ -162,7 +162,7 @@ confound = do
 rotate :: Program ()
 rotate = do
   modStack tailSafe
-  modRot ((-) 1)
+  modRot (\x -> x - 1)
 
 
 windup :: Program ()
