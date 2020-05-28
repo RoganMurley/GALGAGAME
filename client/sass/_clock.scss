@@ -1,5 +1,5 @@
 .text-focus {
-  color: #42210b;
+  color: #1a7f8a;
   position: absolute;
   top: 58%;
   left: 50%;
@@ -16,12 +16,12 @@
   .desc {
     // font-family: sans-serif;
     // font-family: "Trattatello", serif;
-    font-family: "Homemade Apple", serif;
-    font-size: 1rem;
+    // font-family: "Homemade Apple", serif;
+    font-size: 1.4rem;
   }
 
   .opponent {
-    color: #bf0000;
+    color: #bf310e;
   }
 }
 
@@ -93,6 +93,11 @@
     color: #42210b;
     background-color: #7955484d;
     cursor: not-allowed;
+
+    &:hover {
+      color: #42210b;
+      background-color: #7955484d;
+    }
   }
 }
 

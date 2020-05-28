@@ -102,10 +102,10 @@ focusImageView focus { w, h, radius, textures } =
                         Just f ->
                             case f.owner of
                                 PlayerA ->
-                                    Colour.tea
+                                    Colour.glyph PlayerA
 
                                 PlayerB ->
-                                    Colour.teaRed
+                                    Colour.glyph PlayerB
 
                         Nothing ->
                             Colour.tea

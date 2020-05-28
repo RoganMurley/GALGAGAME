@@ -167,7 +167,7 @@ serpent :: Card
 serpent =
   Card
     "Infect"
-    ("Add 2 " <> description parasite <> " to their hand")
+    ("Add 2 PARASITE cards to their hand")
     "serpent.png"
     $ \w -> do
       addToHand (other w) parasite
