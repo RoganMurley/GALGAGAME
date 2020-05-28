@@ -40,7 +40,7 @@ yellow =
 
 nettle : Colour
 nettle =
-    vec3 0.679 0.755 0.604
+    vec3 (242 / 255) (199 / 255) (61 / 255)
 
 
 card : WhichPlayer -> Colour
@@ -82,10 +82,10 @@ glyph : WhichPlayer -> Colour
 glyph which =
     case which of
         PlayerA ->
-            tea
+            vec3 (26 / 255) (127 / 255) (138 / 255)
 
         PlayerB ->
-            teaRed
+            vec3 (191 / 255) (49 / 255) (14 / 255)
 
 
 tea : Colour

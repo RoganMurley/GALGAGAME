@@ -177,7 +177,7 @@ allRunes =
 wrath :: Rune
 wrath =
   Rune
-    "Wrath"
+    "Ginger"
     "confound.png"
     (Cards.missile, Cards.fireball, Cards.offering, Cards.confound)
 
@@ -185,7 +185,7 @@ wrath =
 pride :: Rune
 pride =
   Rune
-    "Pride"
+    "Thistle"
     "hubris.png"
     (Cards.hammer, Cards.lightning, Cards.feint, Cards.hubris)
 
@@ -193,7 +193,7 @@ pride =
 lust :: Rune
 lust =
   Rune
-    "Lust"
+    "Sencha"
     "reverse.png"
     (Cards.scythe, Cards.bloodsucker, Cards.serpent, Cards.reversal)
 
@@ -201,7 +201,7 @@ lust =
 gluttony :: Rune
 gluttony =
   Rune
-    "Gluttony"
+    "Hibiscus"
     "prophecy.png"
     (Cards.staff, Cards.surge, Cards.mimic, Cards.prophecy)
 
@@ -209,7 +209,7 @@ gluttony =
 envy :: Rune
 envy =
   Rune
-    "Envy"
+    "Nettle"
     "reflect.png"
     (Cards.grudge, Cards.overwhelm, Cards.potion, Cards.reflect)
 
@@ -217,7 +217,7 @@ envy =
 sloth :: Rune
 sloth =
   Rune
-    "Sloth"
+    "Mint"
     "balance.png"
     (Cards.katana, Cards.curse, Cards.bless, Cards.balance)
 
@@ -225,7 +225,7 @@ sloth =
 greed :: Rune
 greed =
   Rune
-    "Greed"
+    "Honey"
     "alchemy.png"
     (Cards.relicblade, Cards.greed, Cards.echo, Cards.alchemy)
 

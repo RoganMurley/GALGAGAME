@@ -30,13 +30,13 @@ view { w, h, pixelRatio } model textures =
         , case model.runeSelect of
             Nothing ->
                 div []
-                    [ h1 [] [ text "HEIR SELECT" ]
+                    [ h1 [] [ text "CHARACTER SELECT" ]
                     , charactersView model
                     ]
 
             Just runeSelect ->
                 div []
-                    [ h1 [] [ text "RUNES" ]
+                    [ h1 [] [ text "BREWING" ]
                     , runesView runeSelect model.characters.selected model.runes
                     ]
         ]
