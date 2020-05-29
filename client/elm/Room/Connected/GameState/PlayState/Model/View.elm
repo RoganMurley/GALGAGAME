@@ -25,7 +25,7 @@ import PlayState.Messages as PlayState
 import Render.Primitives
 import Render.Shaders
 import Render.Types as Render
-import Render.Uniforms exposing (uniColourMag)
+import Render.Uniforms exposing (uniColourMag, uniColourMagAlpha)
 import Room.Messages as Room
 import Stack.Types exposing (StackCard)
 import Stack.View as Stack
@@ -50,7 +50,7 @@ view { w, h, pixelRatio } { res, hover, focus, entities, passed, feedback } text
 
                     -- , Background.ornateView
                     , lifeOrbView
-                    , Background.stainView
+                    , Background.stainView focus
 
                     -- , Background.ringView
                     , Stack.view entities.stack
@@ -98,17 +98,19 @@ focusImageView focus { w, h, radius, textures } =
         Just texture ->
             let
                 color =
-                    case focus of
-                        Just f ->
-                            case f.owner of
-                                PlayerA ->
-                                    Colour.glyph PlayerA
+                    Colour.tea
 
-                                PlayerB ->
-                                    Colour.glyph PlayerB
-
-                        Nothing ->
-                            Colour.tea
+                -- case focus of
+                --     Just f ->
+                --         case f.owner of
+                --             PlayerA ->
+                --                 Colour.glyph PlayerA
+                --
+                --             PlayerB ->
+                --                 Colour.glyph PlayerB
+                --
+                --     Nothing ->
+                --         Colour.tea
             in
             background
                 ++ [ Render.Primitives.quad Render.Shaders.fragment
@@ -171,33 +173,37 @@ lifeOrbView ({ w, h, radius, model, anim, animDamage, tick } as ctx) =
                 (vec2 -otherShake -otherShake)
     in
     [ Render.Primitives.fullCircle <|
-        uniColourMag ctx
+        uniColourMagAlpha ctx
             (Colour.background PlayerA)
+            1.0
             1.0
             { scale = 0.15 * radius
             , position = pos
             , rotation = 0
             }
     , Render.Primitives.fullCircle <|
-        uniColourMag ctx
+        uniColourMagAlpha ctx
             (Colour.card PlayerA)
             lifePercentage
+            1.0
             { scale = 0.15 * radius
             , position = pos
             , rotation = 0
             }
     , Render.Primitives.fullCircle <|
-        uniColourMag ctx
+        uniColourMagAlpha ctx
             (Colour.background PlayerB)
+            1.0
             1.0
             { scale = 0.15 * radius
             , position = otherPos
             , rotation = 0
             }
     , Render.Primitives.fullCircle <|
-        uniColourMag ctx
+        uniColourMagAlpha ctx
             (Colour.card PlayerB)
             otherLifePercentage
+            1.0
             { scale = 0.15 * radius
             , position = otherPos
             , rotation = 0
@@ -429,8 +435,9 @@ passView ({ anim, w, h, radius } as ctx) =
     case anim of
         Pass which ->
             [ Render.Primitives.fullCircle <|
-                uniColourMag ctx
+                uniColourMagAlpha ctx
                     (Colour.focusBackground which)
+                    1.0
                     1.0
                     { scale = 0.48 * radius
                     , position = vec2 (w * 0.5) (h * 0.5)
@@ -440,8 +447,9 @@ passView ({ anim, w, h, radius } as ctx) =
 
         HandFullPass ->
             [ Render.Primitives.fullCircle <|
-                uniColourMag ctx
+                uniColourMagAlpha ctx
                     (Colour.focusBackground PlayerA)
+                    1.0
                     1.0
                     { scale = 0.48 * radius
                     , position = vec2 (w * 0.5) (h * 0.5)

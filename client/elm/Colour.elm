@@ -57,10 +57,10 @@ background : WhichPlayer -> Colour
 background which =
     case which of
         PlayerA ->
-            vec3 0.75 0.07 0.09
+            vec3 0.95 0.27 0.29
 
         PlayerB ->
-            vec3 0.0 0.32 0.55
+            vec3 0.14 0.52 0.75
 
 
 focusBackground : WhichPlayer -> Colour

@@ -13,6 +13,7 @@ import Math.Vector3 exposing (vec3)
 import Render.Primitives
 import Render.Shaders
 import Render.Uniforms
+import Stack.Types exposing (StackCard)
 import Texture.State as Texture
 import Texture.Types as Texture
 import WebGL
@@ -91,8 +92,8 @@ ornateView ({ w, h, anim, tick } as ctx) =
                 [ 0, 1.0 ]
 
 
-stainView : Context -> List WebGL.Entity
-stainView { w, h, anim, model, progress, radius, textures } =
+stainView : Maybe StackCard -> Context -> List WebGL.Entity
+stainView focus { w, h, anim, model, progress, radius, textures } =
     let
         ringRot =
             case anim of
@@ -110,23 +111,45 @@ stainView { w, h, anim, model, progress, radius, textures } =
 
         rotation =
             pi + ringRot * 2.0 * pi / 12.0
+
+        backing : List WebGL.Entity
+        backing =
+            case focus of
+                Just { card, owner } ->
+                    [ Render.Primitives.fullCircle
+                        { rotation = makeRotate 0 (vec3 0 0 1)
+                        , scale = makeScale3 (0.66 * radius) (0.66 * radius) 1
+                        , color = Colour.background owner
+                        , pos = vec3 (w * 0.5) (h * 0.5) 0
+                        , worldRot = makeRotate 0 (vec3 0 0 1)
+                        , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
+                        , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
+                        , mag = 1.0
+                        , alpha = 1.0
+                        }
+                    ]
+
+                Nothing ->
+                    []
     in
     case Texture.load textures "stain.png" of
         Nothing ->
             []
 
         Just texture ->
-            [ Render.Primitives.quad Render.Shaders.fragment
-                { rotation = makeRotate rotation (vec3 0 0 1)
-                , scale = makeScale3 (0.8 * radius) (0.8 * radius) 1
-                , color = Colour.white
-                , pos = vec3 (w * 0.5) (h * 0.5) 0
-                , worldRot = makeRotate 0 (vec3 0 0 1)
-                , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
-                , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
-                , texture = texture
-                }
-            ]
+            List.append
+                backing
+                [ Render.Primitives.quad Render.Shaders.fragment
+                    { rotation = makeRotate rotation (vec3 0 0 1)
+                    , scale = makeScale3 (0.8 * radius) (0.8 * radius) 1
+                    , color = Colour.white
+                    , pos = vec3 (w * 0.5) (h * 0.5) 0
+                    , worldRot = makeRotate 0 (vec3 0 0 1)
+                    , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
+                    , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
+                    , texture = texture
+                    }
+                ]
 
 
 ringView : Context -> List WebGL.Entity
@@ -225,6 +248,7 @@ ringView { w, h, anim, model, progress, radius, textures } =
                 , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
                 , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
                 , mag = 1.0
+                , alpha = 1.0
                 }
             ]
     in
