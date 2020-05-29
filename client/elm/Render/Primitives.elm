@@ -30,7 +30,7 @@ circle =
         Render.Meshes.quad
 
 
-fullCircle : Uniforms { mag : Float } -> Entity
+fullCircle : Uniforms { mag : Float, alpha : Float } -> Entity
 fullCircle =
     entity
         Render.Shaders.fullCircleFragment

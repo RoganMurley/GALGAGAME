@@ -47,7 +47,7 @@ view ctx entity =
             [ Render.Primitives.quad Render.Shaders.fragment <|
                 { rotation = rot
                 , scale = makeScale3 (scale * width) (scale * height) 1
-                , color = Colour.nettle
+                , color = Colour.background owner
                 , pos = pos
                 , worldRot = makeRotate 0 <| vec3 0 0 1
                 , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
@@ -57,7 +57,7 @@ view ctx entity =
             , Render.Primitives.quad Render.Shaders.fragment <|
                 { rotation = rot
                 , scale = makeScale3 (scale * 0.6 * width) (scale * 0.6 * height) 1
-                , color = Colour.glyph owner
+                , color = Colour.tea
                 , pos = pos
                 , worldRot = makeRotate 0 <| vec3 0 0 1
                 , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
