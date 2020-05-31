@@ -98,7 +98,7 @@ focusImageView focus { w, h, radius, textures } =
         Just texture ->
             let
                 color =
-                    Colour.tea
+                    Colour.white
 
                 -- case focus of
                 --     Just f ->
