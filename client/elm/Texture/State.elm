@@ -135,6 +135,7 @@ texturePaths =
     , ( "inevitable.png", "/img/textures/inevitable.png" )
 
     -- Testing
-    , ( "cardBack.png", "/img/textures/cardBack.png" )
+    , ( "cardBack.png", "/img/textures/cardBackNegative.png" )
+    , ( "cardBackRed.png", "/img/textures/cardBackRed.png" )
     , ( "stain.png", "/img/textures/stain.png" )
     ]

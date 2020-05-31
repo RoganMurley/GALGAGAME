@@ -41,13 +41,21 @@ view ctx entity =
 
         pos =
             to3d position
+
+        ( texturePath, glyphColour ) =
+            case owner of
+                PlayerA ->
+                    ( "cardBack.png", Colour.white )
+
+                PlayerB ->
+                    ( "cardBackRed.png", Colour.black )
     in
-    case ( cardTexture textures card, Texture.load textures "cardBack.png" ) of
+    case ( cardTexture textures card, Texture.load textures texturePath ) of
         ( Just texture, Just cardBackTexture ) ->
             [ Render.Primitives.quad Render.Shaders.fragment <|
                 { rotation = rot
                 , scale = makeScale3 (scale * width) (scale * height) 1
-                , color = Colour.background owner
+                , color = Colour.white
                 , pos = pos
                 , worldRot = makeRotate 0 <| vec3 0 0 1
                 , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
@@ -57,7 +65,7 @@ view ctx entity =
             , Render.Primitives.quad Render.Shaders.fragment <|
                 { rotation = rot
                 , scale = makeScale3 (scale * 0.6 * width) (scale * 0.6 * height) 1
-                , color = Colour.white
+                , color = glyphColour
                 , pos = pos
                 , worldRot = makeRotate 0 <| vec3 0 0 1
                 , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
@@ -76,12 +84,12 @@ backView { w, h, radius, textures } { position, rotation, scale } =
         { width, height } =
             baseDimensions radius
     in
-    case Texture.load textures "cardBack.png" of
+    case Texture.load textures "cardBackRed.png" of
         Just texture ->
             [ Render.Primitives.quad Render.Shaders.fragment <|
                 { rotation = makeRotate rotation <| vec3 0 0 1
                 , scale = makeScale3 (scale * width) (scale * height) 1
-                , color = Colour.card PlayerB
+                , color = Colour.white
                 , pos = to3d position
                 , worldRot = makeRotate 0 <| vec3 0 0 1
                 , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
@@ -112,8 +120,16 @@ limboingView ctx { position, rotation, scale, card, owner } =
         mTexture =
             cardTexture textures card
 
+        ( cardBackTexturePath, glyphColour ) =
+            case owner of
+                PlayerA ->
+                    ( "cardBack.png", Colour.white )
+
+                PlayerB ->
+                    ( "cardBackRed.png", Colour.black )
+
         mCardBack =
-            Texture.load textures "cardBack.png"
+            Texture.load textures cardBackTexturePath
 
         progress =
             case anim of
@@ -132,7 +148,7 @@ limboingView ctx { position, rotation, scale, card, owner } =
                 { texture = cardBackTexture
                 , rotation = rot
                 , scale = makeScale3 (scale * width) (scale * height) 1
-                , color = Colour.card owner
+                , color = Colour.white
                 , alpha = progress
                 , pos = pos
                 , worldRot = makeRotate 0 (vec3 0 0 1)
@@ -143,7 +159,7 @@ limboingView ctx { position, rotation, scale, card, owner } =
                 { texture = texture
                 , rotation = rot
                 , scale = makeScale3 (scale * 0.6 * width) (scale * 0.6 * height) 1
-                , color = Colour.white
+                , color = glyphColour
                 , alpha = progress
                 , pos = pos
                 , worldRot = makeRotate 0 (vec3 0 0 1)
@@ -174,8 +190,16 @@ dissolvingView ctx { position, rotation, scale, card, owner } =
         mTexture =
             cardTexture textures card
 
+        ( cardBackTexturePath, glyphColour ) =
+            case owner of
+                PlayerA ->
+                    ( "cardBack.png", Colour.white )
+
+                PlayerB ->
+                    ( "cardBackRed.png", Colour.black )
+
         mCardBack =
-            Texture.load textures "cardBack.png"
+            Texture.load textures cardBackTexturePath
 
         mNoise =
             Texture.load textures "noise.png"
@@ -189,7 +213,7 @@ dissolvingView ctx { position, rotation, scale, card, owner } =
                         , noise = noise
                         , rotation = rot
                         , scale = makeScale3 (scale * width) (scale * height) 1
-                        , color = Colour.card owner
+                        , color = Colour.white
                         , pos = pos
                         , worldRot = makeRotate 0 (vec3 0 0 1)
                         , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
@@ -201,7 +225,7 @@ dissolvingView ctx { position, rotation, scale, card, owner } =
                         , noise = noise
                         , rotation = rot
                         , scale = makeScale3 (scale * 0.6 * width) (scale * 0.6 * height) 1
-                        , color = Colour.white
+                        , color = glyphColour
                         , pos = pos
                         , worldRot = makeRotate 0 (vec3 0 0 1)
                         , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
@@ -235,8 +259,16 @@ fabricatingView ctx { position, rotation, scale, card, owner } =
         mTexture =
             cardTexture textures card
 
+        ( cardBackTexturePath, glyphColour ) =
+            case owner of
+                PlayerA ->
+                    ( "cardBack.png", Colour.white )
+
+                PlayerB ->
+                    ( "cardBackRed.png", Colour.black )
+
         mCardBack =
-            Texture.load textures "cardBack.png"
+            Texture.load textures cardBackTexturePath
 
         mNoise =
             Texture.load textures "noise.png"
@@ -250,7 +282,7 @@ fabricatingView ctx { position, rotation, scale, card, owner } =
                         , noise = noise
                         , rotation = rot
                         , scale = makeScale3 (scale * width) (scale * height) 1
-                        , color = Colour.card owner
+                        , color = Colour.white
                         , pos = pos
                         , worldRot = makeRotate 0 (vec3 0 0 1)
                         , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
@@ -262,7 +294,7 @@ fabricatingView ctx { position, rotation, scale, card, owner } =
                         , noise = noise
                         , rotation = rot
                         , scale = makeScale3 (scale * 0.6 * width) (scale * 0.6 * height) 1
-                        , color = Colour.white
+                        , color = glyphColour
                         , pos = pos
                         , worldRot = makeRotate 0 (vec3 0 0 1)
                         , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
@@ -299,20 +331,33 @@ transmutingView ctx stackCard finalStackCard { position, rotation, scale } =
         mFinalTexture =
             cardTexture textures finalStackCard.card
 
-        mCardBack =
-            Texture.load textures "cardBack.png"
+        ( mCardBack, glyphColour ) =
+            case stackCard.owner of
+                PlayerA ->
+                    ( Texture.load textures "cardBack.png", Colour.white )
+
+                PlayerB ->
+                    ( Texture.load textures "cardBackRed.png", Colour.black )
+
+        ( mFinalCardBack, finalGlyphColour ) =
+            case finalStackCard.owner of
+                PlayerA ->
+                    ( Texture.load textures "cardBack.png", Colour.white )
+
+                PlayerB ->
+                    ( Texture.load textures "cardBackRed.png", Colour.black )
     in
     case ( mTexture, mFinalTexture ) of
         ( Just texture, Just finalTexture ) ->
-            case mCardBack of
-                Just cardBackTexture ->
+            case ( mCardBack, mFinalCardBack ) of
+                ( Just cardBackTexture, Just finalCardBackTexture ) ->
                     [ Render.Primitives.quad Render.Shaders.fragmentTransmute <|
                         { texture = cardBackTexture
-                        , finalTexture = cardBackTexture
+                        , finalTexture = finalCardBackTexture
                         , rotation = rot
                         , scale = makeScale3 (scale * width) (scale * height) 1
-                        , color = Colour.card stackCard.owner
-                        , finalColor = Colour.card finalStackCard.owner
+                        , color = Colour.white
+                        , finalColor = Colour.white
                         , pos = pos
                         , worldRot = makeRotate 0 (vec3 0 0 1)
                         , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
@@ -324,8 +369,8 @@ transmutingView ctx stackCard finalStackCard { position, rotation, scale } =
                         , finalTexture = finalTexture
                         , rotation = rot
                         , scale = makeScale3 (scale * 0.6 * width) (scale * 0.6 * height) 1
-                        , color = Colour.white
-                        , finalColor = Colour.white
+                        , color = glyphColour
+                        , finalColor = finalGlyphColour
                         , pos = pos
                         , worldRot = makeRotate 0 (vec3 0 0 1)
                         , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
@@ -334,7 +379,7 @@ transmutingView ctx stackCard finalStackCard { position, rotation, scale } =
                         }
                     ]
 
-                Nothing ->
+                _ ->
                     []
 
         _ ->
