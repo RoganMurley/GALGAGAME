@@ -50,12 +50,12 @@ view { w, h, pixelRatio } { res, hover, focus, entities, passed, feedback } text
 
                     -- , Background.ornateView
                     , lifeOrbView
+                    , passView
                     , Background.stainView focus
 
                     -- , Background.ringView
                     , Stack.view entities.stack
                     , focusImageView focus
-                    , passView
                     , Trail.view
                     , Hand.view entities.hand
                     , Hand.otherView entities.otherHand
@@ -74,37 +74,42 @@ view { w, h, pixelRatio } { res, hover, focus, entities, passed, feedback } text
 
 
 focusImageView : Maybe StackCard -> Context -> List WebGL.Entity
-focusImageView focus { w, h, radius, textures } =
-    case Maybe.join <| Maybe.map (cardTexture textures << .card) focus of
-        Just texture ->
-            let
-                color =
-                    case focus of
-                        Just { owner } ->
-                            case owner of
-                                PlayerA ->
-                                    Colour.white
-
-                                PlayerB ->
-                                    Colour.black
-
-                        Nothing ->
-                            Colour.tea
-            in
-            [ Render.Primitives.quad Render.Shaders.fragment
-                { rotation = makeRotate pi (vec3 0 0 1)
-                , scale = makeScale3 (0.2 * radius) (0.2 * radius) 1
-                , color = color
-                , pos = vec3 (w * 0.5) (h * 0.43) 0
-                , worldRot = makeRotate 0 (vec3 0 0 1)
-                , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
-                , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
-                , texture = texture
-                }
-            ]
-
-        Nothing ->
+focusImageView focus { w, h, anim, radius, textures } =
+    case anim of
+        Pass _ ->
             []
+
+        _ ->
+            case Maybe.join <| Maybe.map (cardTexture textures << .card) focus of
+                Just texture ->
+                    let
+                        color =
+                            case focus of
+                                Just { owner } ->
+                                    case owner of
+                                        PlayerA ->
+                                            Colour.white
+
+                                        PlayerB ->
+                                            Colour.black
+
+                                Nothing ->
+                                    Colour.tea
+                    in
+                    [ Render.Primitives.quad Render.Shaders.fragment
+                        { rotation = makeRotate pi (vec3 0 0 1)
+                        , scale = makeScale3 (0.2 * radius) (0.2 * radius) 1
+                        , color = color
+                        , pos = vec3 (w * 0.5) (h * 0.43) 0
+                        , worldRot = makeRotate 0 (vec3 0 0 1)
+                        , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
+                        , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
+                        , texture = texture
+                        }
+                    ]
+
+                Nothing ->
+                    []
 
 
 lifeOrbView : Context -> List WebGL.Entity
@@ -400,8 +405,12 @@ turnView { anim, model } focus passed =
                 PlayerB ->
                     div [ class "turn-status" ] [ text "OPPONENT'S \nTURN" ]
 
-        ( Pass _, _, _ ) ->
-            div [ class "pass-status" ] [ text "PASS" ]
+        ( Pass which, _, _ ) ->
+            div
+                [ class "pass-status"
+                , classList [ ( "opponent", which == PlayerB ) ]
+                ]
+                [ text "PASS" ]
 
         ( HandFullPass, _, _ ) ->
             div [ class "pass-status" ] [ text "HAND FULL" ]
@@ -419,7 +428,7 @@ passView ({ anim, w, h, radius } as ctx) =
                     (Colour.focusBackground which)
                     1.0
                     1.0
-                    { scale = 0.48 * radius
+                    { scale = 0.66 * radius
                     , position = vec2 (w * 0.5) (h * 0.5)
                     , rotation = 0
                     }
@@ -431,7 +440,7 @@ passView ({ anim, w, h, radius } as ctx) =
                     (Colour.focusBackground PlayerA)
                     1.0
                     1.0
-                    { scale = 0.48 * radius
+                    { scale = 0.66 * radius
                     , position = vec2 (w * 0.5) (h * 0.5)
                     , rotation = 0
                     }
