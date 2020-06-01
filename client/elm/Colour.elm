@@ -62,10 +62,10 @@ focusBackground : WhichPlayer -> Colour
 focusBackground which =
     case which of
         PlayerA ->
-            vec3 0.14 0.52 0.75
+            black
 
         PlayerB ->
-            vec3 0.95 0.27 0.29
+            white
 
 
 darkGray : Colour
