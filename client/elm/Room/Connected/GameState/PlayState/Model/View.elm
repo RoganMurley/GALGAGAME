@@ -75,55 +75,33 @@ view { w, h, pixelRatio } { res, hover, focus, entities, passed, feedback } text
 
 focusImageView : Maybe StackCard -> Context -> List WebGL.Entity
 focusImageView focus { w, h, radius, textures } =
-    let
-        background =
-            []
-
-        -- case Maybe.map .owner focus of
-        --     Just owner ->
-        --         [ Render.Primitives.fullCircle <|
-        --             uniColourMag ctx
-        --                 (Colour.focusBackground owner)
-        --                 1.0
-        --                 { scale = 0.48 * radius
-        --                 , position = vec2 (w * 0.5) (h * 0.5)
-        --                 , rotation = 0
-        --                 }
-        --         ]
-        --
-        --     Nothing ->
-        --         []
-    in
     case Maybe.join <| Maybe.map (cardTexture textures << .card) focus of
         Just texture ->
             let
                 color =
-                    Colour.white
+                    case focus of
+                        Just { owner } ->
+                            case owner of
+                                PlayerA ->
+                                    Colour.white
 
-                -- case focus of
-                --     Just f ->
-                --         case f.owner of
-                --             PlayerA ->
-                --                 Colour.glyph PlayerA
-                --
-                --             PlayerB ->
-                --                 Colour.glyph PlayerB
-                --
-                --     Nothing ->
-                --         Colour.tea
+                                PlayerB ->
+                                    Colour.black
+
+                        Nothing ->
+                            Colour.tea
             in
-            background
-                ++ [ Render.Primitives.quad Render.Shaders.fragment
-                        { rotation = makeRotate pi (vec3 0 0 1)
-                        , scale = makeScale3 (0.2 * radius) (0.2 * radius) 1
-                        , color = color
-                        , pos = vec3 (w * 0.5) (h * 0.43) 0
-                        , worldRot = makeRotate 0 (vec3 0 0 1)
-                        , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
-                        , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
-                        , texture = texture
-                        }
-                   ]
+            [ Render.Primitives.quad Render.Shaders.fragment
+                { rotation = makeRotate pi (vec3 0 0 1)
+                , scale = makeScale3 (0.2 * radius) (0.2 * radius) 1
+                , color = color
+                , pos = vec3 (w * 0.5) (h * 0.43) 0
+                , worldRot = makeRotate 0 (vec3 0 0 1)
+                , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
+                , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
+                , texture = texture
+                }
+            ]
 
         Nothing ->
             []
@@ -174,7 +152,7 @@ lifeOrbView ({ w, h, radius, model, anim, animDamage, tick } as ctx) =
     in
     [ Render.Primitives.fullCircle <|
         uniColourMagAlpha ctx
-            (Colour.background PlayerA)
+            Colour.white
             1.0
             1.0
             { scale = 0.15 * radius
@@ -183,7 +161,7 @@ lifeOrbView ({ w, h, radius, model, anim, animDamage, tick } as ctx) =
             }
     , Render.Primitives.fullCircle <|
         uniColourMagAlpha ctx
-            (Colour.card PlayerA)
+            Colour.black
             lifePercentage
             1.0
             { scale = 0.15 * radius
@@ -192,7 +170,7 @@ lifeOrbView ({ w, h, radius, model, anim, animDamage, tick } as ctx) =
             }
     , Render.Primitives.fullCircle <|
         uniColourMagAlpha ctx
-            (Colour.background PlayerB)
+            Colour.black
             1.0
             1.0
             { scale = 0.15 * radius
@@ -201,7 +179,7 @@ lifeOrbView ({ w, h, radius, model, anim, animDamage, tick } as ctx) =
             }
     , Render.Primitives.fullCircle <|
         uniColourMagAlpha ctx
-            (Colour.card PlayerB)
+            Colour.white
             otherLifePercentage
             1.0
             { scale = 0.15 * radius
@@ -260,6 +238,7 @@ lifeTextView { radius, model } =
         , style "font-size" (fontSize |> px)
         , style "transform" "translate(-20%, -10%)"
         , style "width" (textWidth |> px)
+        , style "color" "#2d56ca"
         ]
         [ text <| String.fromInt model.life ]
     , div
@@ -269,6 +248,7 @@ lifeTextView { radius, model } =
         , style "font-size" (fontSize |> px)
         , style "transform" "translate(20%, 10%)"
         , style "width" (textWidth |> px)
+        , style "color" "#bb3325"
         ]
         [ text <| String.fromInt model.otherLife ]
     ]
