@@ -107,10 +107,10 @@ update msg state mode =
 carry : GameState -> GameState -> GameState
 carry old new =
     case old of
-        Selecting { characters } ->
+        Selecting { characters, runes, runeSelect, ready } ->
             case new of
                 Selecting selecting ->
-                    Selecting { selecting | characters = characters }
+                    Selecting { selecting | characters = characters, runes = runes, runeSelect = runeSelect, ready = ready }
 
                 _ ->
                     new
