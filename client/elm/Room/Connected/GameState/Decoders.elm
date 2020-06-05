@@ -2,10 +2,12 @@ module GameState.Decoders exposing (collapseResults, selectingDecoder, stateDeco
 
 import DeckBuilding.Decoders
 import DeckBuilding.State as DeckBuilding
-import DeckBuilding.Types exposing (Character, Rune)
+import DeckBuilding.Types exposing (Character)
 import GameState.Types exposing (GameState(..), WaitType(..))
 import Json.Decode as Json exposing (Decoder, fail, field, list, string, succeed)
 import PlayState.Decoders as PlayState
+import RuneSelect.Decoders
+import RuneSelect.Types exposing (Rune)
 
 
 stateDecoder : Decoder GameState
@@ -53,7 +55,7 @@ selectingDecoder =
     collapseResults <|
         Json.map2 makeSelectState
             (field "all_characters" <| list DeckBuilding.Decoders.character)
-            (field "all_runes" <| list DeckBuilding.Decoders.rune)
+            (field "all_runes" <| list RuneSelect.Decoders.rune)
 
 
 collapseResults : Decoder (Result String a) -> Decoder a

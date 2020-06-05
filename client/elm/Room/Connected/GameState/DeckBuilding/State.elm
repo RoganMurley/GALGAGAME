@@ -1,20 +1,19 @@
 module DeckBuilding.State exposing (getRuneFromCursor, init, nextCursor, update)
 
+import Carousel
 import DeckBuilding.Encoders exposing (encodeCharacter)
 import DeckBuilding.Messages exposing (Msg(..))
-import DeckBuilding.Types exposing (Character, Characters, Model, Rune, RuneCursor(..), RuneSelectModel)
+import DeckBuilding.Types exposing (Character, Model)
 import Main.Messages as Main
 import Ports exposing (log)
+import RuneSelect.State as RuneSelect
+import RuneSelect.Types as RuneSelect exposing (Rune, RuneCursor(..))
 import Util
 
 
 init : Character -> List Character -> List Rune -> Model
 init character remaining runes =
-    { characters =
-        { previous = []
-        , selected = character
-        , remaining = remaining
-        }
+    { characters = Carousel.init character remaining
     , runes = runes
     , runeSelect = Nothing
     , ready = False
@@ -22,7 +21,7 @@ init character remaining runes =
 
 
 update : Msg -> Model -> ( Model, Cmd Main.Msg )
-update msg ({ characters, runeSelect } as model) =
+update msg ({ characters } as model) =
     case msg of
         Select character ->
             let
@@ -36,58 +35,65 @@ update msg ({ characters, runeSelect } as model) =
 
         NextCharacter ->
             if not model.ready then
-                ( { model | characters = nextCharacter characters }, Cmd.none )
+                ( { model | characters = Carousel.forward characters }, Cmd.none )
 
             else
                 ( model, Cmd.none )
 
         PreviousCharacter ->
             if not model.ready then
-                ( { model | characters = previousCharacter characters }, Cmd.none )
+                ( { model | characters = Carousel.backward characters }, Cmd.none )
 
             else
                 ( model, Cmd.none )
 
         EnterRuneSelect cursor ->
             let
-                newRuneSelect : RuneSelectModel
-                newRuneSelect =
+                rune : Rune
+                rune =
+                    getRuneFromCursor cursor characters.selected
+
+                excludedRunes : List Rune
+                excludedRunes =
+                    [ rune
+                    , getRuneFromCursor (nextCursor cursor) characters.selected
+                    , getRuneFromCursor (nextCursor (nextCursor cursor)) characters.selected
+                    ]
+
+                runeSelect : RuneSelect.Model
+                runeSelect =
                     { cursor = cursor
-                    , selected = getRuneFromCursor cursor characters.selected
+                    , carousel =
+                        Carousel.init
+                            rune
+                            (List.filter (\r -> not (List.member r excludedRunes)) model.runes)
                     }
             in
-            ( { model | runeSelect = Just newRuneSelect }, Cmd.none )
+            ( { model | runeSelect = Just runeSelect }, Cmd.none )
 
-        SelectRune rune ->
-            case runeSelect of
-                Just rs ->
-                    ( { model | runeSelect = Just { rs | selected = rune } }
-                    , Cmd.none
-                    )
+        ConfirmRune cursor rune ->
+            let
+                newCharacter : Character
+                newCharacter =
+                    setRuneFromCursor cursor rune characters.selected
+            in
+            ( { model
+                | characters =
+                    { characters
+                        | selected = newCharacter
+                    }
+                , runeSelect = Nothing
+              }
+            , Cmd.none
+            )
 
-                Nothing ->
-                    ( model, log <| "SelectRune not on rune selecting state" )
-
-        ConfirmRune ->
-            case runeSelect of
-                Just { cursor, selected } ->
-                    let
-                        newCharacter : Character
-                        newCharacter =
-                            setRuneFromCursor cursor selected characters.selected
-                    in
-                    ( { model
-                        | characters =
-                            { characters
-                                | selected = newCharacter
-                            }
-                        , runeSelect = Nothing
-                      }
-                    , Cmd.none
-                    )
+        RuneSelectMsg runeSelectMsg ->
+            case model.runeSelect of
+                Just runeSelect ->
+                    ( { model | runeSelect = Just <| RuneSelect.update runeSelectMsg runeSelect }, Cmd.none )
 
                 Nothing ->
-                    ( model, log <| "ConfirmRune not on rune selecting state" )
+                    ( model, log "RuneSelect message not on a RuneSelect game state" )
 
 
 getRuneFromCursor : RuneCursor -> Character -> Rune
@@ -127,37 +133,3 @@ nextCursor cursor =
 
         RuneCursorC ->
             RuneCursorA
-
-
-nextCharacter : Characters -> Characters
-nextCharacter { previous, selected, remaining } =
-    case remaining of
-        next :: leftovers ->
-            { previous = selected :: previous
-            , selected = next
-            , remaining = leftovers
-            }
-
-        _ ->
-            nextCharacter
-                { previous = []
-                , selected = selected
-                , remaining = List.reverse previous
-                }
-
-
-previousCharacter : Characters -> Characters
-previousCharacter { previous, selected, remaining } =
-    case previous of
-        prev :: leftovers ->
-            { previous = leftovers
-            , selected = prev
-            , remaining = selected :: remaining
-            }
-
-        _ ->
-            previousCharacter
-                { previous = List.reverse remaining
-                , selected = selected
-                , remaining = []
-                }
