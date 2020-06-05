@@ -1,8 +1,8 @@
-module DeckBuilding.Decoders exposing (character, rune, runeCards)
+module DeckBuilding.Decoders exposing (character)
 
-import Card.Decoders as Card
-import DeckBuilding.Types exposing (Character, Rune, RuneCards)
-import Json.Decode as Json exposing (Decoder, field, index, string)
+import DeckBuilding.Types exposing (Character)
+import Json.Decode as Json exposing (Decoder, field, string)
+import RuneSelect.Decoders
 
 
 character : Decoder Character
@@ -10,23 +10,6 @@ character =
     Json.map5 Character
         (field "name" string)
         (field "img_url" string)
-        (field "rune_a" rune)
-        (field "rune_b" rune)
-        (field "rune_c" rune)
-
-
-rune : Decoder Rune
-rune =
-    Json.map3 Rune
-        (field "name" string)
-        (field "img_url" string)
-        (field "cards" runeCards)
-
-
-runeCards : Decoder RuneCards
-runeCards =
-    Json.map4 RuneCards
-        (index 0 Card.decoder)
-        (index 1 Card.decoder)
-        (index 2 Card.decoder)
-        (index 3 Card.decoder)
+        (field "rune_a" RuneSelect.Decoders.rune)
+        (field "rune_b" RuneSelect.Decoders.rune)
+        (field "rune_c" RuneSelect.Decoders.rune)

@@ -5,6 +5,7 @@
         "elm/Room",
         "elm/Room/Connected",
         "elm/Room/Connected/GameState",
+        "elm/Room/Connected/GameState/DeckBuilding",
         "elm/Room/Connected/GameState/PlayState",
         "elm/Room/Connected/GameState/PlayState/Model"
     ],

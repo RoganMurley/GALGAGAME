@@ -115,7 +115,7 @@ stainView focus { w, h, anim, model, progress, radius, textures } =
         backing : List WebGL.Entity
         backing =
             case focus of
-                Just { card, owner } ->
+                Just { owner } ->
                     [ Render.Primitives.fullCircle
                         { rotation = makeRotate 0 (vec3 0 0 1)
                         , scale = makeScale3 (0.66 * radius) (0.66 * radius) 1

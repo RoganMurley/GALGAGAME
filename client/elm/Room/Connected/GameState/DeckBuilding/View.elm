@@ -1,17 +1,19 @@
 module DeckBuilding.View exposing (view)
 
 import DeckBuilding.Messages exposing (Msg(..))
-import DeckBuilding.State exposing (getRuneFromCursor, nextCursor)
-import DeckBuilding.Types exposing (Character, Model, Rune, RuneCursor(..), RuneSelectModel)
+import DeckBuilding.Types exposing (Character, Model)
 import Game.State exposing (bareContextInit)
-import Html exposing (Html, button, div, h1, h2, img, text)
+import Html exposing (Html, button, div, h1, img, text)
 import Html.Attributes exposing (class, height, src, width)
 import Html.Events exposing (onClick)
 import Render.Types as Render
+import RuneSelect.Types as RuneSelect exposing (RuneCursor(..))
+import RuneSelect.View as RuneSelect
 import Texture.State as Texture
 import Texture.Types as Texture
 import WebGL
 import WebGL.Texture as WebGL
+import WhichPlayer.Types exposing (WhichPlayer(..))
 
 
 view : Render.Params -> Model -> Texture.Model -> Html Msg
@@ -26,7 +28,13 @@ view { w, h, pixelRatio } model textures =
           <|
             List.concat <|
                 List.map ((|>) ctx)
-                    []
+                    (case model.runeSelect of
+                        Just runeSelect ->
+                            [ RuneSelect.webglView runeSelect ]
+
+                        Nothing ->
+                            []
+                    )
         , case model.runeSelect of
             Nothing ->
                 div []
@@ -35,9 +43,9 @@ view { w, h, pixelRatio } model textures =
                     ]
 
             Just runeSelect ->
-                div []
+                div [ class "rune-select" ]
                     [ h1 [] [ text "BREWING" ]
-                    , runesView runeSelect model.characters.selected model.runes
+                    , RuneSelect.view runeSelect
                     ]
         ]
 
@@ -83,36 +91,4 @@ characterView ({ runeA, runeB, runeC } as character) =
             ]
         , button [ class "menu-button", class "ready-button", onClick <| Select character ] [ text "SELECT" ]
         , spacer
-        ]
-
-
-
--- Rune view
-
-
-runesView : RuneSelectModel -> Character -> List Rune -> Html Msg
-runesView { cursor, selected } character allRunes =
-    let
-        excluded1 : Rune
-        excluded1 =
-            getRuneFromCursor (nextCursor cursor) character
-
-        excluded2 : Rune
-        excluded2 =
-            getRuneFromCursor ((nextCursor >> nextCursor) cursor) character
-
-        runes : List Rune
-        runes =
-            List.filter
-                (\rune -> (rune /= excluded1) && (rune /= excluded2))
-                allRunes
-
-        runeView : Rune -> Html Msg
-        runeView rune =
-            img [ class "rune", src <| "/img/textures/" ++ rune.imgURL, onClick <| SelectRune rune ] []
-    in
-    div [ class "runes" ]
-        [ div [ class "rune-list" ] (List.map runeView runes)
-        , h2 [ class "rune-name" ] [ text selected.name ]
-        , button [ class "rune-confirm", class "menu-button", onClick ConfirmRune ] [ text "CHOOSE" ]
         ]

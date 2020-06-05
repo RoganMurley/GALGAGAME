@@ -1,12 +1,14 @@
 module DeckBuilding.Messages exposing (Msg(..))
 
-import DeckBuilding.Types exposing (Character, Rune, RuneCursor)
+import DeckBuilding.Types exposing (Character)
+import RuneSelect.Messages as RuneSelect
+import RuneSelect.Types exposing (Rune, RuneCursor)
 
 
 type Msg
     = Select Character
     | NextCharacter
     | PreviousCharacter
+    | ConfirmRune RuneCursor Rune
     | EnterRuneSelect RuneCursor
-    | SelectRune Rune
-    | ConfirmRune
+    | RuneSelectMsg RuneSelect.Msg

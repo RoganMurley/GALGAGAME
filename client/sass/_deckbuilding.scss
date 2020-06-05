@@ -77,9 +77,17 @@
   border-radius: 100%;
 }
 
+.rune-select {
+  height: 100vh;
+}
+
 .runes {
   display: flex;
   flex-direction: column;
+
+  h1 {
+    margin: 0;
+  }
 
   h2 {
     color: #42210b;;

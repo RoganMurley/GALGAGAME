@@ -1,32 +1,14 @@
-module DeckBuilding.Types exposing (Character, Characters, Model, Rune, RuneCards, RuneCursor(..), RuneSelectModel)
+module DeckBuilding.Types exposing (Character, Model)
 
-import Card.Types exposing (Card)
+import Carousel exposing (Carousel)
+import RuneSelect.Types as RuneSelect exposing (Rune)
 
 
 type alias Model =
-    { characters : Characters
+    { characters : Carousel Character
     , runes : List Rune
-    , runeSelect : Maybe RuneSelectModel
+    , runeSelect : Maybe RuneSelect.Model
     , ready : Bool
-    }
-
-
-type alias RuneSelectModel =
-    { cursor : RuneCursor
-    , selected : Rune
-    }
-
-
-type RuneCursor
-    = RuneCursorA
-    | RuneCursorB
-    | RuneCursorC
-
-
-type alias Characters =
-    { previous : List Character
-    , selected : Character
-    , remaining : List Character
     }
 
 
@@ -36,19 +18,4 @@ type alias Character =
     , runeA : Rune
     , runeB : Rune
     , runeC : Rune
-    }
-
-
-type alias Rune =
-    { name : String
-    , imgURL : String
-    , cards : RuneCards
-    }
-
-
-type alias RuneCards =
-    { a : Card
-    , b : Card
-    , c : Card
-    , d : Card
     }
