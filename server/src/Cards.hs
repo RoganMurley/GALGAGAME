@@ -2,7 +2,7 @@ module Cards where
 
 import Control.Monad (when)
 import CardAnim (Hurt(..), Transmute(..))
-import Card (Card(Card), description)
+import Card (Card(Card), CardCol(..), description)
 import Data.Monoid ((<>))
 import Player (other)
 import Safe (headMay)
@@ -21,6 +21,7 @@ missile =
     "Missile"
     "Hurt for 7"
     "missile.png"
+    Red
     $ \w -> hurt 7 (other w) Slash
 
 
@@ -30,6 +31,7 @@ fireball =
     "Fireball"
     "Hurt for 5 for each other card in play"
     "fireball.png"
+    Red
     $ \w -> do
       len <- length <$> getStack
       hurt (len * 5) (other w) Slash
@@ -41,6 +43,7 @@ offering =
     "Offering"
     "Pay 4 life to draw 2"
     "offering.png"
+    Red
     $ \w -> do
       hurt 4 w Slash
       draw w w
@@ -53,6 +56,7 @@ confound =
     "Confound"
     "Shuffle the order of all cards in play"
     "confound.png"
+    Red
     $ \_ -> do
       Beta.confound
       Beta.null
@@ -65,6 +69,7 @@ hammer =
     "Shot"
     "Hurt for 8"
     "hammer.png"
+    Blue
     $ \w -> hurt 8 (other w) Slash
 
 
@@ -74,9 +79,20 @@ lightning =
     "Lightning"
     "Hurt for 4 for each other card in play"
     "lightning.png"
+    Blue
     $ \w -> do
       len <- length <$> getStack
       hurt (len * 4) (other w) Slash
+
+
+feint :: Card
+feint =
+  Card
+    "Feint"
+    "Return all of your cards in play to hand"
+    "feint.png"
+    Blue
+    $ \w -> bounce (\(StackCard o _) -> w == o)
 
 
 hubris :: Card
@@ -85,6 +101,7 @@ hubris =
     "Hubris"
     "Discard all cards in play"
     "hubris.png"
+    Blue
     $ \_ -> discard (const True)
 
 
@@ -95,6 +112,7 @@ katana =
     "Arrow"
     "Hurt for 9"
     "katana.png"
+    Indigo
     $ \w -> hurt 9 (other w) Slash
 
 
@@ -104,6 +122,7 @@ curse =
     "Curse"
     "Hurt weakest player for 15"
     "curse.png"
+    Indigo
     $ \w -> do
       let dmg = 15
       paLife <- getLife w
@@ -119,6 +138,7 @@ bless =
     "Bless"
     "Heal weakest player for 15"
     "bless.png"
+    Indigo
     $ \w -> do
       let mag = 15
       paLife <- getLife w
@@ -134,6 +154,7 @@ balance =
     "Balance"
     "Change next card's owner to weakest player"
     "balance.png"
+    Indigo
     $ \w -> do
       paLife <- getLife w
       pbLife <- getLife (other w)
@@ -149,6 +170,7 @@ scythe =
     "Harvest"
     "Lifesteal for 5"
     "scythe.png"
+    Green
     $ \w -> lifesteal 5 (other w)
 
 
@@ -158,6 +180,7 @@ bloodsucker =
     "Feast"
     "Lifesteal for 3 for each other card in play"
     "bloodsucker.png"
+    Green
     $ \w -> do
       len <- length <$> getStack
       lifesteal (len * 3) (other w)
@@ -169,6 +192,7 @@ serpent =
     "Infect"
     ("Add 2 PARASITE cards to their hand")
     "serpent.png"
+    Green
     $ \w -> do
       addToHand (other w) parasite
       addToHand (other w) parasite
@@ -180,6 +204,7 @@ parasite =
     "Parasite"
     "Hurt yourself for 4"
     "bad-apple.png"
+    Green
     $ \w -> do
       hurt 4 w Bite
 
@@ -190,6 +215,7 @@ reversal =
     "Reversal"
     "Reverse the order of all cards in play"
     "reverse.png"
+    Green
     $ const Beta.reverse
 
 
@@ -200,6 +226,7 @@ staff =
     "Dart"
     "Hurt for 4, then draw 1"
     "staff.png"
+    Violet
     $ \w -> do
       hurt 4 (other w) Slash
       draw w w
@@ -211,27 +238,11 @@ surge =
     "Brainbomb"
     "Hurt for 10 for each 'Brainbomb' in play"
     "surge.png"
+    Violet
     $ \w -> do
       stack <- getStack
-      let count = length . filter (\(StackCard _ (Card name _ _ _)) -> name == "Brainbomb") $ stack
+      let count = length . filter (\(StackCard _ (Card name _ _ _ _)) -> name == "Brainbomb") $ stack
       hurt ((count + 1) * 10) (other w) Slash
-
-
-mimic :: Card
-mimic =
-  Card
-    "Mimic"
-    "Play a copy of a random card in your hand"
-    "waxworks.png"
-    $ \w -> do
-      gen <- getGen
-      hand <- getHand w
-      let mCard = headMay . (shuffle gen) $ hand
-      case mCard of
-        Just c ->
-          fabricate $ StackCard w c
-        Nothing ->
-          Beta.null
 
 
 prophecy :: Card
@@ -240,44 +251,18 @@ prophecy =
     "Prophecy"
     "Return all cards in play to hand"
     "prophecy.png"
+    Violet
     $ \_ -> bounce (const True)
 
 
 -- Shielder
-sword :: Card
-sword =
-  Card
-    "Projectile"
-    "Hurt for 10"
-    "sword.png"
-    $ \w -> hurt 10 (other w) Slash
-
-
-potion :: Card
-potion =
-  Card
-    "Potion"
-    "Heal for 10"
-    "potion.png"
-    $ heal 10
-
-
-reflect :: Card
-reflect =
-  Card
-    "Reflect"
-    "Change the owner of all cards in play"
-    "reflect.png"
-    $ const Beta.reflect
-
-
--- Bouncer
 grudge :: Card
 grudge =
   Card
     "Grudge"
     "Hurt for 3, add a copy of this card to hand"
     "grudge.png"
+    Orange
     $ \w -> do
       hurt 3 (other w) Slash
       addToHand w grudge
@@ -289,32 +274,30 @@ overwhelm =
     "Envy"
     "Hurt for 3 for each card in your hand"
     "overwhelm.png"
+    Orange
     $ \w -> do
       len <- length <$> getHand w
       hurt (len * 3) (other w) Slash
 
 
-echo :: Card
-echo =
+potion :: Card
+potion =
   Card
-    "Echo"
-    "When the next card activates it does so twice"
-    "echo.png"
-    $ \_ -> do
-      raw $ do
-        Alpha.modStackHead $
-          \(StackCard which (Card name desc pic e)) ->
-            StackCard which (Card name desc pic (\w -> (e w) >> (e w)))
-      Beta.null
+    "Potion"
+    "Heal for 10"
+    "potion.png"
+    Orange
+    $ heal 10
 
 
-feint :: Card
-feint =
+reflect :: Card
+reflect =
   Card
-    "Feint"
-    "Return all of your cards in play to hand"
-    "feint.png"
-    $ \w -> bounce (\(StackCard o _) -> w == o)
+    "Reflect"
+    "Change the owner of all cards in play"
+    "reflect.png"
+    Orange
+    $ const Beta.reflect
 
 
 -- Collector
@@ -324,6 +307,7 @@ relicblade =
     "Sting"
     "Hurt for 6"
     "sting.png"
+    Yellow
     $ \w -> hurt 6 (other w) Slash
 
 
@@ -333,9 +317,28 @@ greed =
     "Greed"
     "Hurt for 3 for each card in their hand"
     "greed.png"
+    Yellow
     $ \w -> do
       len <- length <$> getHand (other w)
       hurt (len * 3) (other w) Slash
+
+
+mimic :: Card
+mimic =
+  Card
+    "Mimic"
+    "Play a copy of a random card in your hand"
+    "waxworks.png"
+    Violet
+    $ \w -> do
+      gen <- getGen
+      hand <- getHand w
+      let mCard = headMay . (shuffle gen) $ hand
+      case mCard of
+        Just c ->
+          fabricate $ StackCard w c
+        Nothing ->
+          Beta.null
 
 
 alchemy :: Card
@@ -344,6 +347,7 @@ alchemy =
     "Alchemy"
     ("Change next card to " <> description gold)
     "alchemy.png"
+    Yellow
     $ \_ -> transmute gold TransmuteCard
 
 
@@ -353,9 +357,25 @@ gold =
     "Gold"
     "Draw 2"
     "gold.png"
+    Yellow
     $ \w -> do
       draw w w
       draw w w
+
+
+echo :: Card
+echo =
+  Card
+    "Echo"
+    "When the next card activates it does so twice"
+    "echo.png"
+    Yellow
+    $ \_ -> do
+      raw $ do
+        Alpha.modStackHead $
+          \(StackCard which (Card name desc pic col e)) ->
+            StackCard which (Card name desc pic col (\w -> (e w) >> (e w)))
+      Beta.null
 
 
 theEnd :: Card
@@ -364,6 +384,7 @@ theEnd =
     "The End"
     "You're out of cards, hurt yourself for 10"
     "end.png"
+    Mystery
     $ \w -> hurt 10 w Slash
 
 
@@ -374,6 +395,7 @@ subjugate =
     "Subjugate"
     "Discard next card for each card in your hand"
     "subjugate.png"
+    Mystery
     $ \w -> do
       handLen <- length <$> getHand w
       discard $ \(i, _) -> i < handLen
@@ -385,6 +407,7 @@ avarice =
     "Avarice"
     "Hurt for 2 for each card in your and their hand"
     "avarice.png"
+    Mystery
     $ \w -> do
       len      <- length <$> getHand w
       lenOther <- length <$> getHand (other w)
@@ -398,12 +421,12 @@ goldrush =
     "Goldrush"
     "Both players draw 2"
     "goldrush.png"
+    Mystery
     $ \w -> do
       draw w w
       draw (other w) (other w)
       draw w w
       draw (other w) (other w)
-
 
 
 telepathy :: Card
@@ -412,9 +435,11 @@ telepathy =
     "Telepathy"
     "Draw 2 from their deck"
     "telepathy.png"
+    Mystery
     $ \w -> do
       draw w (other w)
       draw w (other w)
+
 
 ritual :: Card
 ritual =
@@ -422,6 +447,7 @@ ritual =
     "Ritual"
     "If zone is dark hurt for 8, or if zone is light heal for 8"
     "ritual.png"
+    Mystery
     $ \w -> do
       rot <- getRot
       if even rot then
@@ -436,6 +462,7 @@ unravel =
     "Unravel"
     "Discard from play all cards in dark zones"
     "unravel.png"
+    Mystery
     $ \_ -> do
       rot <- getRot
       discard $ \(i, _) -> odd (i + rot)
@@ -447,6 +474,7 @@ respite =
     "Respite"
     "Limbo the next 3 cards"
     "respite.png"
+    Mystery
     $ \_ -> do
       limbo $ \(i, _) -> i < 3
 
@@ -457,6 +485,7 @@ voidbeam =
     "Voidbeam"
     "Hurt for 10 for each card in limbo"
     "voidbeam.png"
+    Mystery
     $ \w -> do
       l <- getLimbo
       let dmg = 10 * length l
@@ -469,6 +498,7 @@ feud =
     "Feud"
     "Hurt for 2, limbo a copy of this card"
     "feud.png"
+    Mystery
     $ \w -> do
       hurt 2 (other w) Slash
       fabricate $ StackCard w feud
@@ -481,10 +511,21 @@ inevitable =
     "Inevitable"
     "Hurt for 1, limbo a copy of this card with double damage"
     "inevitable.png"
+    Mystery
     $ \w -> do
       hurt 1 (other w) Slash
       fabricate $ StackCard (other w) inevitable
       limbo $ \(i, _) -> i == 0
+
+
+sword :: Card
+sword =
+  Card
+    "Projectile"
+    "Hurt for 10"
+    "sword.png"
+    Mystery
+    $ \w -> hurt 10 (other w) Slash
 
 
 basicCards :: [Card]

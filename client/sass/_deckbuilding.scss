@@ -26,6 +26,7 @@
   border-right: 30px solid #42210b;
   cursor: pointer; cursor: hand;
 }
+
 .next-button {
   margin: auto;
   width: 0;
@@ -75,45 +76,4 @@
   border-color: #42210b;
   border-width: 2px;
   border-radius: 100%;
-}
-
-.rune-select {
-  height: 100vh;
-}
-
-.runes {
-  display: flex;
-  flex-direction: column;
-
-  h1 {
-    margin: 0;
-  }
-
-  h2 {
-    color: #42210b;;
-    font-size: 42px;
-    font-family: 'Trattatello', sans-serif;
-    font-weight: 300;
-    text-align: center;
-    margin: 12px;
-  }
-
-  .rune-list {
-    display: flex;
-    justify-content: center;
-  }
-
-  .rune {
-    width: 64px;
-    height: 64px;
-    cursor: pointer; cursor: hand;
-  }
-
-  .rune-name {
-    text-transform: uppercase;
-  }
-
-  .rune-confirm {
-    margin: auto;
-  }
 }

@@ -137,5 +137,8 @@ texturePaths =
     -- Testing
     , ( "cardBack.png", "/img/textures/cardBackNegative.png" )
     , ( "cardBackRed.png", "/img/textures/cardBackRed.png" )
+    , ( "cardBackBack.png", "/img/textures/cardBackBack.png" )
+    , ( "cardOrb.png", "/img/textures/cardOrb.png" )
+    , ( "cardOrbOther.png", "/img/textures/cardOrbOther.png" )
     , ( "stain.png", "/img/textures/stain.png" )
     ]

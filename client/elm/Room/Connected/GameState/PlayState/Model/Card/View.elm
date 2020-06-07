@@ -42,37 +42,68 @@ view ctx entity =
         pos =
             to3d position
 
-        ( texturePath, glyphColour ) =
+        texturePath =
             case owner of
                 PlayerA ->
-                    ( "cardBack.png", Colour.white )
+                    "cardBackBack.png"
 
                 PlayerB ->
-                    ( "cardBackRed.png", Colour.black )
+                    "cardBackBack.png"
+
+        glyphColour =
+            case owner of
+                PlayerA ->
+                    Colour.white
+
+                PlayerB ->
+                    Colour.black
+
+        orbTexturePath =
+            case owner of
+                PlayerA ->
+                    "cardOrb.png"
+
+                PlayerB ->
+                    "cardOrbOther.png"
     in
     case ( cardTexture textures card, Texture.load textures texturePath ) of
         ( Just texture, Just cardBackTexture ) ->
-            [ Render.Primitives.quad Render.Shaders.fragment <|
-                { rotation = rot
-                , scale = makeScale3 (scale * width) (scale * height) 1
-                , color = Colour.white
-                , pos = pos
-                , worldRot = makeRotate 0 <| vec3 0 0 1
-                , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
-                , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
-                , texture = cardBackTexture
-                }
-            , Render.Primitives.quad Render.Shaders.fragment <|
-                { rotation = rot
-                , scale = makeScale3 (scale * 0.6 * width) (scale * 0.6 * height) 1
-                , color = glyphColour
-                , pos = pos
-                , worldRot = makeRotate 0 <| vec3 0 0 1
-                , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
-                , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
-                , texture = texture
-                }
-            ]
+            case Texture.load textures orbTexturePath of
+                Just cardOrbTexture ->
+                    [ Render.Primitives.quad Render.Shaders.fragment <|
+                        { rotation = rot
+                        , scale = makeScale3 (scale * width) (scale * height) 1
+                        , color = Colour.cardCol card.col
+                        , pos = pos
+                        , worldRot = makeRotate 0 <| vec3 0 0 1
+                        , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
+                        , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
+                        , texture = cardBackTexture
+                        }
+                    , Render.Primitives.quad Render.Shaders.fragment <|
+                        { rotation = rot
+                        , scale = makeScale3 (scale * width) (scale * height) 1
+                        , color = Colour.white
+                        , pos = pos
+                        , worldRot = makeRotate 0 <| vec3 0 0 1
+                        , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
+                        , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
+                        , texture = cardOrbTexture
+                        }
+                    , Render.Primitives.quad Render.Shaders.fragment <|
+                        { rotation = rot
+                        , scale = makeScale3 (scale * 0.6 * width) (scale * 0.6 * height) 1
+                        , color = glyphColour
+                        , pos = pos
+                        , worldRot = makeRotate 0 <| vec3 0 0 1
+                        , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
+                        , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
+                        , texture = texture
+                        }
+                    ]
+
+                _ ->
+                    []
 
         _ ->
             []
