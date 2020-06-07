@@ -1,5 +1,6 @@
-module Colour exposing (Colour, background, black, blue, card, darkGray, focusBackground, glyph, green, red, tea, teaRed, white, yellow)
+module Colour exposing (Colour, background, black, blue, card, cardCol, darkGray, focusBackground, glyph, green, red, tea, teaRed, white, yellow)
 
+import Card.Types exposing (CardCol(..))
 import Math.Vector3 exposing (Vec3, vec3)
 import WhichPlayer.Types exposing (WhichPlayer(..))
 
@@ -91,3 +92,31 @@ tea =
 teaRed : Colour
 teaRed =
     vec3 0.75 0 0
+
+
+cardCol : CardCol -> Colour
+cardCol col =
+    case col of
+        Red ->
+            vec3 (255 / 255) (0 / 255) (0 / 255)
+
+        Orange ->
+            vec3 (255 / 255) (127 / 255) (0 / 255)
+
+        Yellow ->
+            vec3 (255 / 255) (255 / 255) (0 / 255)
+
+        Green ->
+            vec3 (0 / 255) (255 / 255) (0 / 255)
+
+        Blue ->
+            vec3 (0 / 255) (0 / 255) (255 / 255)
+
+        Indigo ->
+            vec3 (46 / 255) (43 / 255) (95 / 255)
+
+        Violet ->
+            vec3 (139 / 255) (0 / 255) (255 / 255)
+
+        Mystery ->
+            vec3 (255 / 255) (255 / 255) (255 / 255)

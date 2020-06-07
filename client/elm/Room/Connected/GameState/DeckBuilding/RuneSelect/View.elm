@@ -22,9 +22,11 @@ view model =
         rune =
             model.carousel.selected
     in
-    div [ class "runes" ]
-        [ h2 [ class "rune-name" ] [ text rune.name ]
-        , button [ class "rune-confirm", class "menu-button", onClick <| DeckBuilding.ConfirmRune model.cursor rune ] [ text "CHOOSE" ]
+    div []
+        [ div [ class "runes" ]
+            [ h2 [ class "rune-name" ] [ text rune.name ]
+            , button [ class "rune-confirm", class "menu-button", onClick <| DeckBuilding.ConfirmRune model.cursor rune ] [ text "CHOOSE" ]
+            ]
         , Html.map DeckBuilding.RuneSelectMsg nextButton
         , Html.map DeckBuilding.RuneSelectMsg prevButton
         ]
@@ -79,9 +81,9 @@ webglView model ({ w, h, radius } as ctx) =
 
 prevButton : Html Msg
 prevButton =
-    div [ class "prev-button", onClick PreviousRune ] []
+    div [ class "rune-prev-button", onClick PreviousRune ] []
 
 
 nextButton : Html Msg
 nextButton =
-    div [ class "next-button", onClick NextRune ] []
+    div [ class "rune-next-button", onClick NextRune ] []

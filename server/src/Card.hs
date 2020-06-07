@@ -10,8 +10,8 @@ import {-# SOURCE #-} qualified DSL.Beta.DSL as Beta
 
 
 instance Eq Card where
-  (Card n1 d1 i1 _) == (Card n2 d2 i2 _) =
-    n1 == n2 && d1 == d2 && i1 == i2
+  (Card n1 d1 i1 c1 _) == (Card n2 d2 i2 c2 _) =
+    n1 == n2 && d1 == d2 && i1 == i2 && c1 == c2
 
 
 instance Show Card where
@@ -19,11 +19,12 @@ instance Show Card where
 
 
 instance ToJSON Card where
-  toJSON (Card name desc imageURL _) =
+  toJSON (Card name desc imageURL col _) =
     object
       [ "name"     .= name
       , "desc"     .= desc
       , "imageURL" .= imageURL
+      , "col"      .= col
       ]
 
 
@@ -31,6 +32,7 @@ data Card = Card
   { card_name :: Text
   , card_desc :: Text
   , card_img  :: Text
+  , card_col  :: CardCol
   , card_eff  :: WhichPlayer -> Beta.Program ()
   }
 
@@ -39,3 +41,18 @@ data Card = Card
 description :: Card -> Text
 description Card{ card_name, card_desc } =
   "(" <> card_name <> ": " <> card_desc <> ")"
+
+
+data CardCol = Red | Orange | Yellow | Green | Blue | Indigo | Violet | Mystery
+  deriving Eq
+
+
+instance ToJSON CardCol where
+  toJSON Red     = "red"
+  toJSON Orange  = "orange"
+  toJSON Yellow  = "yellow"
+  toJSON Green   = "green"
+  toJSON Blue    = "blue"
+  toJSON Indigo  = "indigo"
+  toJSON Violet  = "violet"
+  toJSON Mystery = "mystery"
