@@ -69,6 +69,7 @@ update msg ({ characters } as model) =
                             rune
                             (List.filter (\r -> not (List.member r excludedRunes)) model.runes)
                     , entities = []
+                    , hover = Nothing
                     }
             in
             ( { model | runeSelect = Just runeSelect }, Cmd.none )

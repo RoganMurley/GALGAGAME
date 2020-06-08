@@ -1,6 +1,7 @@
 module Main.Types exposing (Flags, InputFlags, Model, Seed)
 
 import Browser.Navigation
+import Math.Vector2 exposing (Vec2)
 import Room.Types as Room
 import Settings.Types as Settings
 import Texture.Types as Texture
@@ -33,6 +34,7 @@ type alias Flags =
     , time : Float
     , dimensions : ( Int, Int )
     , username : Maybe String
+    , mouse : Maybe Vec2
     , key : Browser.Navigation.Key
     , pixelRatio : Float
     }

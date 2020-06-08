@@ -1,7 +1,9 @@
 module RuneSelect.State exposing (tick, update)
 
 import Carousel
+import Collision exposing (hitTest)
 import Game.Types exposing (Context)
+import List.Extra as List
 import RuneSelect.Entities as RuneSelect
 import RuneSelect.Messages exposing (Msg(..))
 import RuneSelect.Types exposing (Model)
@@ -19,6 +21,16 @@ update msg model =
 
 tick : Context -> Float -> Model -> Model
 tick ctx _ model =
+    let
+        newEntities =
+            RuneSelect.entities ctx model
+
+        newHover =
+            Maybe.andThen
+                (\pos -> List.find (hitTest pos 32) newEntities)
+                ctx.mouse
+    in
     { model
-        | entities = RuneSelect.entities ctx model
+        | entities = newEntities
+        , hover = newHover
     }

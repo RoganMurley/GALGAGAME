@@ -18,14 +18,6 @@ import Texture.State as Texture
 update : Msg -> GameState -> Mode -> ( GameState, Cmd Main.Msg )
 update msg state mode =
     case msg of
-        Mouse pos ->
-            case state of
-                Started playState ->
-                    ( Started <| PlayState.mouseMove (Just pos) playState, Cmd.none )
-
-                _ ->
-                    ( state, Cmd.none )
-
         MouseClick pos ->
             case state of
                 Started playState ->
@@ -97,14 +89,6 @@ update msg state mode =
                 _ ->
                     ( state, log "Expected a Selecting state" )
 
-        Touch pos ->
-            case state of
-                Started playState ->
-                    ( Started <| PlayState.mouseMove pos playState, Cmd.none )
-
-                _ ->
-                    ( state, Cmd.none )
-
 
 carry : GameState -> GameState -> GameState
 carry old new =
@@ -136,10 +120,10 @@ tick flags state dt =
         Selecting selecting ->
             let
                 ctx =
-                    bareContextInit flags.dimensions Texture.init
+                    bareContextInit flags.dimensions Texture.init flags.mouse
 
                 newSelecting =
-                    DeckBuilding.tick ctx   dt selecting
+                    DeckBuilding.tick ctx dt selecting
             in
             ( Selecting newSelecting, Cmd.none )
 

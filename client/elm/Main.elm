@@ -44,6 +44,7 @@ initFull inputFlags url key =
             , username = inputFlags.username
             , pixelRatio = inputFlags.pixelRatio
             , key = key
+            , mouse = Nothing
             }
     in
     ( model

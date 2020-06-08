@@ -18,6 +18,7 @@ import Login.Decoders as Login
 import Login.State as Login
 import Main.Messages exposing (Msg(..))
 import Main.Types as Main exposing (Flags)
+import Math.Vector2 exposing (vec2)
 import Mode exposing (Mode(..))
 import Ports exposing (analytics, click, copyInput, godModeCommand, mouseMove, reload, selectAllInput, touch, websocketListen, websocketReconnect, websocketSend)
 import Replay.State as Replay
@@ -191,18 +192,23 @@ update msg ({ room, settings, textures, flags } as model) =
         LogoutCallback (Err _) ->
             ( model, Cmd.none )
 
-        MousePosition mouse ->
+        MousePosition pos ->
             let
-                ( newRoom, newCmd ) =
-                    Room.update
-                        room
-                        (Room.ConnectedMsg <|
-                            Connected.GameStateMsg <|
-                                GameState.Mouse mouse
-                        )
-                        flags
+                -- ( newRoom, newCmd ) =
+                --     Room.update
+                --         room
+                --         (Room.ConnectedMsg <|
+                --             Connected.GameStateMsg <|
+                --                 GameState.Mouse mouse
+                --         )
+                --         flags
+                newFlags =
+                    { flags | mouse = Just (vec2 (toFloat pos.x) (toFloat pos.y)) }
+
+                newCmd =
+                    Cmd.none
             in
-            ( { model | room = newRoom }
+            ( { model | flags = newFlags }
             , newCmd
             )
 
@@ -253,16 +259,21 @@ update msg ({ room, settings, textures, flags } as model) =
 
         TouchPosition pos ->
             let
-                ( newRoom, newCmd ) =
-                    Room.update
-                        room
-                        (Room.ConnectedMsg <|
-                            Connected.GameStateMsg <|
-                                GameState.Touch pos
-                        )
-                        flags
+                -- ( newRoom, newCmd ) =
+                --     Room.update
+                --         room
+                --         (Room.ConnectedMsg <|
+                --             Connected.GameStateMsg <|
+                --                 GameState.Touch pos
+                --         )
+                --         flags
+                newFlags =
+                    { flags | mouse = Maybe.map (\{ x, y } -> vec2 (toFloat x) (toFloat y)) pos }
+
+                newCmd =
+                    Cmd.none
             in
-            ( { model | room = newRoom }
+            ( { model | flags = newFlags }
             , newCmd
             )
 

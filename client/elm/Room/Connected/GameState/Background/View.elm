@@ -27,7 +27,7 @@ view { dimensions, pixelRatio, time } textures anim =
             dimensions
 
         baseCtx =
-            bareContextInit dimensions textures
+            bareContextInit dimensions textures Nothing
 
         ctx =
             { baseCtx | anim = anim, progress = time / 4000 }

@@ -20,7 +20,7 @@ view : Render.Params -> Model -> Texture.Model -> Html Msg
 view { w, h, pixelRatio } model textures =
     let
         ctx =
-            bareContextInit ( w, h ) textures
+            bareContextInit ( w, h ) textures Nothing
     in
     div [ class "character-select" ]
         [ WebGL.toHtml
@@ -45,7 +45,7 @@ view { w, h, pixelRatio } model textures =
             Just runeSelect ->
                 div [ class "rune-select" ]
                     [ h1 [] [ text "BREWING" ]
-                    , RuneSelect.view runeSelect
+                    , RuneSelect.view ctx runeSelect
                     ]
         ]
 
