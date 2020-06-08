@@ -1,8 +1,9 @@
-module PlayState.State exposing (carry, get, map, mouseClick, mouseMove, resolveOutcomeStr, tick, update)
+module PlayState.State exposing (carry, get, map, mouseClick, resolveOutcomeStr, tick, update)
 
 import Animation.Types exposing (Anim(..))
 import Audio.State exposing (playSound)
 import Browser.Navigation
+import Collision exposing (hitTest)
 import Game.Encoders
 import Game.State as Game
 import Game.Types as Game
@@ -279,7 +280,6 @@ carry old new =
             { game
                 | res = get .res new
                 , entities = get .entities old
-                , mouse = get .mouse old
                 , focus = get .focus old
             }
         )
@@ -336,17 +336,6 @@ resolveOutcome mState { initial, resDiffList, finalState } =
     carry state newState
 
 
-mouseMove : Maybe Position -> PlayState -> PlayState
-mouseMove pos state =
-    let
-        posToVec { x, y } =
-            vec2 (toFloat x) (toFloat y)
-    in
-    map
-        (\game -> { game | mouse = Maybe.map posToVec pos })
-        state
-
-
 mouseClick : Mode -> Position -> PlayState -> ( PlayState, Cmd Main.Msg )
 mouseClick mode { x, y } state =
     let
@@ -358,7 +347,7 @@ mouseClick mode { x, y } state =
 
         mEntity =
             List.find
-                (Game.hitTest pos 28)
+                (hitTest pos 28)
                 game.entities.hand
     in
     case mEntity of

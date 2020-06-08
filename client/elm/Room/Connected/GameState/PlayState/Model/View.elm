@@ -1,4 +1,4 @@
-module Model.View exposing (view)
+module Model.View exposing (focusImageView, focusTextView, view)
 
 import Animation.State as Animation exposing (animMaxTick)
 import Animation.Types exposing (Anim(..))
@@ -40,7 +40,7 @@ view : Render.Params -> Game.Model -> Texture.Model -> Html Main.Msg
 view { w, h, pixelRatio } { res, hover, focus, entities, passed, feedback } textures =
     let
         ctx =
-            contextInit ( w, h ) res textures
+            contextInit ( w, h ) res textures Nothing
     in
     div [ class "clock" ]
         [ WebGL.toHtml [ width <| floor <| toFloat w * pixelRatio, height <| floor <| toFloat h * pixelRatio, class "webgl-canvas" ]

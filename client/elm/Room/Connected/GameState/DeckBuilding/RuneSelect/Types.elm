@@ -8,6 +8,7 @@ type alias Model =
     { cursor : RuneCursor
     , carousel : Carousel Rune
     , entities : List (Card.Entity {})
+    , hover : Maybe (Card.Entity {})
     }
 
 

@@ -1,7 +1,8 @@
-module Game.State exposing (bareContextInit, contextInit, entitiesInit, gameInit, getFocus, getHoverIndex, hitTest, hoverDamage, hoverInit, tick)
+module Game.State exposing (bareContextInit, contextInit, entitiesInit, gameInit, getFocus, getHoverIndex, hoverDamage, hoverInit, tick)
 
 import Animation.State as Animation
 import Animation.Types as Animation
+import Collision exposing (hitTest)
 import Game.Types as Game exposing (Context, Entities, Feedback, HandEntity, Hover(..), HoverBase, HoverSelf, StackEntity)
 import Hand.Entities as Hand
 import List.Extra as List
@@ -25,7 +26,6 @@ gameInit : Model -> Game.Model
 gameInit model =
     { res = Resolvable.init model []
     , focus = Nothing
-    , mouse = Nothing
     , hover = NoHover
     , otherHover = NoHover
     , entities = { hand = [], otherHand = [], stack = [] }
@@ -34,8 +34,8 @@ gameInit model =
     }
 
 
-contextInit : ( Int, Int ) -> Resolvable.Model -> Texture.Model -> Context
-contextInit ( width, height ) res textures =
+contextInit : ( Int, Int ) -> Resolvable.Model -> Texture.Model -> Maybe Vec2 -> Context
+contextInit ( width, height ) res textures mouse =
     let
         w =
             toFloat width
@@ -67,16 +67,17 @@ contextInit ( width, height ) res textures =
     , progress = Animation.progress anim res.tick
     , textures = textures
     , resolving = resolving res
+    , mouse = mouse
     }
 
 
-bareContextInit : ( Int, Int ) -> Texture.Model -> Context
-bareContextInit dimensions textures =
+bareContextInit : ( Int, Int ) -> Texture.Model -> Maybe Vec2 -> Context
+bareContextInit dimensions textures mouse =
     let
         res =
             Resolvable.init Model.init []
     in
-    contextInit dimensions res textures
+    contextInit dimensions res textures mouse
 
 
 entitiesInit : Entities
@@ -101,19 +102,19 @@ hoverInit handIndex stackIndex base =
 
 
 tick : Flags -> Float -> Game.Model -> ( Game.Model, Cmd PlayState.Msg )
-tick { dimensions } dt model =
+tick { dimensions, mouse } dt model =
     let
         res =
             Resolvable.tick dt model.res
 
         ctx =
-            contextInit dimensions res Texture.init
+            contextInit dimensions res Texture.init mouse
 
         hoverHand =
-            getHoverHand model
+            getHoverHand model mouse
 
         hoverStack =
-            getHoverStack model
+            getHoverStack model mouse
 
         ( hover, hoverMsg ) =
             hoverUpdate model.hover hoverHand hoverStack dt
@@ -226,20 +227,15 @@ hoverDamage hover dmg =
             NoHover
 
 
-hitTest : Vec2 -> Float -> { a | position : Vec2 } -> Bool
-hitTest pos dist { position } =
-    Math.Vector2.distance position pos < dist
-
-
-getHoverHand : Game.Model -> Maybe HandEntity
-getHoverHand { entities, mouse } =
+getHoverHand : Game.Model -> Maybe Vec2 -> Maybe HandEntity
+getHoverHand { entities } mouse =
     Maybe.andThen
         (\pos -> List.find (hitTest pos 32) entities.hand)
         mouse
 
 
-getHoverStack : Game.Model -> Maybe StackEntity
-getHoverStack { entities, mouse } =
+getHoverStack : Game.Model -> Maybe Vec2 -> Maybe StackEntity
+getHoverStack { entities } mouse =
     Maybe.andThen
         (\pos -> List.find (hitTest pos 64) entities.stack)
         mouse

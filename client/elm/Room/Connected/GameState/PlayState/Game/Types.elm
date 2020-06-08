@@ -14,7 +14,6 @@ import WhichPlayer.Types exposing (WhichPlayer)
 type alias Model =
     { res : Resolvable.Model
     , focus : Maybe StackCard
-    , mouse : Maybe Vec2
     , hover : HoverSelf
     , otherHover : HoverOther
     , entities : Entities
@@ -35,6 +34,7 @@ type alias Context =
     , stackCard : Maybe StackCard
     , textures : Texture.Model
     , resolving : Bool
+    , mouse : Maybe Vec2
     }
 
 
