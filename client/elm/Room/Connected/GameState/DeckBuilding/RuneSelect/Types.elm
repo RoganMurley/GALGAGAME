@@ -1,12 +1,13 @@
 module RuneSelect.Types exposing (Model, Rune, RuneCards, RuneCursor(..))
 
-import Card.Types exposing (Card)
+import Card.Types as Card exposing (Card)
 import Carousel exposing (Carousel)
 
 
 type alias Model =
     { cursor : RuneCursor
     , carousel : Carousel Rune
+    , entities : List (Card.Entity {})
     }
 
 

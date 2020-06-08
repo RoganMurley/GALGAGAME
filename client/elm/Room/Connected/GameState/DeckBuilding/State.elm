@@ -1,9 +1,10 @@
-module DeckBuilding.State exposing (getRuneFromCursor, init, nextCursor, update)
+module DeckBuilding.State exposing (getRuneFromCursor, init, nextCursor, tick, update)
 
 import Carousel
 import DeckBuilding.Encoders exposing (encodeCharacter)
 import DeckBuilding.Messages exposing (Msg(..))
 import DeckBuilding.Types exposing (Character, Model)
+import Game.Types exposing (Context)
 import Main.Messages as Main
 import Ports exposing (log)
 import RuneSelect.State as RuneSelect
@@ -67,6 +68,7 @@ update msg ({ characters } as model) =
                         Carousel.init
                             rune
                             (List.filter (\r -> not (List.member r excludedRunes)) model.runes)
+                    , entities = []
                     }
             in
             ( { model | runeSelect = Just runeSelect }, Cmd.none )
@@ -94,6 +96,15 @@ update msg ({ characters } as model) =
 
                 Nothing ->
                     ( model, log "RuneSelect message not on a RuneSelect game state" )
+
+
+tick : Context -> Float -> Model -> Model
+tick ctx dt model =
+    let
+        newRuneSelect =
+            Maybe.map (RuneSelect.tick ctx dt) model.runeSelect
+    in
+    { model | runeSelect = newRuneSelect }
 
 
 getRuneFromCursor : RuneCursor -> Character -> Rune
