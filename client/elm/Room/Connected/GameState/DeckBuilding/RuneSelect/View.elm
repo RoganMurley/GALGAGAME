@@ -34,10 +34,6 @@ view model =
 
 webglView : Model -> Context -> List WebGL.Entity
 webglView model ({ w, h, radius } as ctx) =
-    let
-        rune =
-            model.carousel.selected
-    in
     List.concat
         [ [ Render.Primitives.circle <|
                 uniColourMag ctx
@@ -48,34 +44,7 @@ webglView model ({ w, h, radius } as ctx) =
                     , rotation = 0
                     }
           ]
-        , Card.view ctx
-            { position = vec2 (w * 0.5) (h * 0.5 - radius * 0.7)
-            , rotation = pi
-            , scale = 1.4
-            , card = rune.cards.b
-            , owner = PlayerA
-            }
-        , Card.view ctx
-            { position = vec2 (w * 0.5 + radius * 0.7) (h * 0.5)
-            , rotation = pi
-            , scale = 1.4
-            , card = rune.cards.a
-            , owner = PlayerA
-            }
-        , Card.view ctx
-            { position = vec2 (w * 0.5) (h * 0.5 + radius * 0.7)
-            , rotation = pi
-            , scale = 1.4
-            , card = rune.cards.d
-            , owner = PlayerA
-            }
-        , Card.view ctx
-            { position = vec2 (w * 0.5 - radius * 0.7) (h * 0.5)
-            , rotation = pi
-            , scale = 1.4
-            , card = rune.cards.c
-            , owner = PlayerA
-            }
+        , List.concat <| List.map (Card.view ctx) model.entities
         ]
 
 
