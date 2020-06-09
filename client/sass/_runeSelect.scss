@@ -39,36 +39,37 @@
   .rune-name {
     text-transform: uppercase;
   }
+}
+
+.rune-select-bottom {
+  position: absolute;
+  bottom: 8px;
+  left: 50%;
+
+  display: flex;
+  transform: translate(-50%);
+
+  .rune-prev-button {
+    margin-right: 24px;
+    width: 0;
+    height: 0;
+    border-top: 30px solid transparent;
+    border-bottom: 30px solid transparent;
+    border-right: 30px solid #42210b;
+    cursor: pointer; cursor: hand;
+  }
 
   .rune-confirm {
-    margin: auto;
+    margin-bottom: 8px;
   }
-}
 
-.rune-prev-button {
-  position: absolute;
-  top: 50%;
-  left: 25%;
-  transform: translateY(-50%);
-
-  width: 0;
-  height: 0;
-  border-top: 30px solid transparent;
-  border-bottom: 30px solid transparent;
-  border-right: 30px solid #42210b;
-  cursor: pointer; cursor: hand;
-}
-
-.rune-next-button {
-  position: absolute;
-  top: 50%;
-  right: 25%;
-  transform: translateY(-50%);
-
-  width: 0;
-  height: 0;
-  border-top: 30px solid transparent;
-  border-bottom: 30px solid transparent;
-  border-left: 30px solid #42210b;
-  cursor: pointer; cursor: hand;
+  .rune-next-button {
+    margin-left: 24px;
+    width: 0;
+    height: 0;
+    border-top: 30px solid transparent;
+    border-bottom: 30px solid transparent;
+    border-left: 30px solid #42210b;
+    cursor: pointer; cursor: hand;
+  }
 }
