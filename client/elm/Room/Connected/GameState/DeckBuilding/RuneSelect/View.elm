@@ -28,15 +28,15 @@ view ctx model =
             Just { card } ->
                 div [ class "text-focus" ] [ focusTextView ctx (Just { owner = PlayerA, card = card }) ]
 
-            -- [ h2 [ class "rune-name" ] [ text card.name ]
-            -- ]
             Nothing ->
                 div [ class "runes" ]
                     [ h2 [ class "rune-name" ] [ text rune.name ]
-                    , button [ class "rune-confirm", class "menu-button", onClick <| DeckBuilding.ConfirmRune model.cursor rune ] [ text "CHOOSE" ]
                     ]
-        , Html.map DeckBuilding.RuneSelectMsg nextButton
-        , Html.map DeckBuilding.RuneSelectMsg prevButton
+        , div [ class "rune-select-bottom" ]
+            [ Html.map DeckBuilding.RuneSelectMsg prevButton
+            , button [ class "rune-confirm", class "menu-button", onClick <| DeckBuilding.ConfirmRune model.cursor rune ] [ text "CHOOSE" ]
+            , Html.map DeckBuilding.RuneSelectMsg nextButton
+            ]
         ]
 
 
