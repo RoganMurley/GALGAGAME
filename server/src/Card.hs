@@ -43,7 +43,7 @@ description Card{ card_name, card_desc } =
   "(" <> card_name <> ": " <> card_desc <> ")"
 
 
-data CardCol = Red | Orange | Yellow | Green | Blue | Indigo | Violet | Mystery
+data CardCol = Red | Orange | Yellow | Green | Blue | White | Violet | Mystery
   deriving Eq
 
 
@@ -53,6 +53,6 @@ instance ToJSON CardCol where
   toJSON Yellow  = "yellow"
   toJSON Green   = "green"
   toJSON Blue    = "blue"
-  toJSON Indigo  = "indigo"
+  toJSON White   = "white"
   toJSON Violet  = "violet"
   toJSON Mystery = "mystery"

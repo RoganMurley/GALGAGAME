@@ -125,7 +125,6 @@ stainView focus { w, h, anim, model, progress, radius, textures } =
                         , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
                         , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
                         , mag = 1.0
-                        , alpha = 1.0
                         }
                     ]
 
@@ -248,7 +247,6 @@ ringView { w, h, anim, model, progress, radius, textures } =
                 , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
                 , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
                 , mag = 1.0
-                , alpha = 1.0
                 }
             ]
     in

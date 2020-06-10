@@ -18,7 +18,7 @@ type CardCol
     | Yellow
     | Green
     | Blue
-    | Indigo
+    | White
     | Violet
     | Mystery
 

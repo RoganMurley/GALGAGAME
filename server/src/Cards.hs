@@ -112,7 +112,7 @@ katana =
     "Arrow"
     "Hurt for 9"
     "katana.png"
-    Indigo
+    White
     $ \w -> hurt 9 (other w) Slash
 
 
@@ -122,7 +122,7 @@ curse =
     "Curse"
     "Hurt weakest player for 15"
     "curse.png"
-    Indigo
+    White
     $ \w -> do
       let dmg = 15
       paLife <- getLife w
@@ -138,7 +138,7 @@ bless =
     "Bless"
     "Heal weakest player for 15"
     "bless.png"
-    Indigo
+    White
     $ \w -> do
       let mag = 15
       paLife <- getLife w
@@ -154,7 +154,7 @@ balance =
     "Balance"
     "Change next card's owner to weakest player"
     "balance.png"
-    Indigo
+    White
     $ \w -> do
       paLife <- getLife w
       pbLife <- getLife (other w)
