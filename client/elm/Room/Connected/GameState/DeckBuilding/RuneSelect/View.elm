@@ -31,6 +31,7 @@ view ctx model =
             Nothing ->
                 div [ class "runes" ]
                     [ h2 [ class "rune-name" ] [ text rune.name ]
+                    , div [ class "rune-desc" ] [ text rune.desc ]
                     ]
         , div [ class "rune-select-bottom" ]
             [ Html.map DeckBuilding.RuneSelectMsg prevButton
@@ -47,9 +48,9 @@ webglView model ({ w, h, radius } as ctx) =
             Maybe.map (\hover -> { owner = PlayerA, card = hover.card }) model.hover
     in
     List.concat
-        [ [ Render.Primitives.circle <|
+        [ [ Render.Primitives.fullCircle <|
                 uniColourMag ctx
-                    Colour.tea
+                    Colour.darkGray
                     1
                     { scale = radius * 0.73
                     , position = vec2 (w * 0.5) (h * 0.5)

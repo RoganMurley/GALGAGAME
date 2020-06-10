@@ -16,15 +16,17 @@ import Data.Set as Set
 -- Rune
 data Rune = Rune
   { rune_name  :: Text
+  , rune_desc  :: Text
   , rune_img   :: Text
   , rune_cards :: RuneCards
   } deriving (Eq, Show)
 
 
 instance ToJSON Rune where
-  toJSON Rune{ rune_name, rune_img, rune_cards } =
+  toJSON Rune{ rune_name, rune_desc, rune_img, rune_cards } =
     object
       [ "name"    .= rune_name
+      , "desc"    .= rune_desc
       , "img_url" .= rune_img
       , "cards"   .= rune_cards
       ]
@@ -178,6 +180,7 @@ wrath :: Rune
 wrath =
   Rune
     "Ginger"
+    "Tastes like burning."
     "confound.png"
     (Cards.missile, Cards.fireball, Cards.offering, Cards.confound)
 
@@ -185,7 +188,8 @@ wrath =
 pride :: Rune
 pride =
   Rune
-    "Thistle"
+    "Blueberry"
+    "Tastes like the weather."
     "hubris.png"
     (Cards.hammer, Cards.lightning, Cards.feint, Cards.hubris)
 
@@ -193,7 +197,8 @@ pride =
 lust :: Rune
 lust =
   Rune
-    "Sencha"
+    "Grape"
+    "Tastes like the blood of a lover."
     "reverse.png"
     (Cards.scythe, Cards.bloodsucker, Cards.serpent, Cards.reversal)
 
@@ -202,6 +207,7 @@ gluttony :: Rune
 gluttony =
   Rune
     "Hibiscus"
+    "Tastes like tomorrow."
     "prophecy.png"
     (Cards.staff, Cards.surge, Cards.mimic, Cards.prophecy)
 
@@ -210,6 +216,7 @@ envy :: Rune
 envy =
   Rune
     "Nettle"
+    "Tastes like a mirror."
     "reflect.png"
     (Cards.grudge, Cards.overwhelm, Cards.potion, Cards.reflect)
 
@@ -217,7 +224,8 @@ envy =
 sloth :: Rune
 sloth =
   Rune
-    "Mint"
+    "Salt"
+    "Tastes like tears."
     "balance.png"
     (Cards.katana, Cards.curse, Cards.bless, Cards.balance)
 
@@ -226,6 +234,7 @@ greed :: Rune
 greed =
   Rune
     "Honey"
+    "Tastes like an insatiable thirst."
     "alchemy.png"
     (Cards.relicblade, Cards.greed, Cards.echo, Cards.alchemy)
 

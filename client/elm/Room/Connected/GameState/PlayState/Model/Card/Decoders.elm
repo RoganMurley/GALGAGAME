@@ -34,8 +34,8 @@ cardColDecoder =
                 "blue" ->
                     succeed Blue
 
-                "indigo" ->
-                    succeed Indigo
+                "white" ->
+                    succeed White
 
                 "violet" ->
                     succeed Violet

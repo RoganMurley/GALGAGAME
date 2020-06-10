@@ -133,14 +133,13 @@ circleFragment =
     |]
 
 
-fullCircleFragment : Shader {} (Uniforms { mag : Float, alpha : Float }) { vcoord : Vec2 }
+fullCircleFragment : Shader {} (Uniforms { mag : Float }) { vcoord : Vec2 }
 fullCircleFragment =
     [glsl|
         precision mediump float;
 
         uniform vec3 color;
         uniform float mag;
-        uniform float alpha;
 
         varying vec2 vcoord;
 
@@ -150,7 +149,7 @@ fullCircleFragment =
             float dist = dot(2. * vcoord - 1., 2. * vcoord - 1.);
             float intensity = step(dist, radius);
             if (mag > 1. - vcoord.y) {
-                gl_FragColor = vec4(color, alpha * intensity);
+                gl_FragColor = vec4(color, intensity);
             } else {
                 gl_FragColor = vec4(color, .0);
             }

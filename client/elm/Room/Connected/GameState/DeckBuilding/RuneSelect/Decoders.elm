@@ -7,8 +7,9 @@ import RuneSelect.Types exposing (Rune, RuneCards)
 
 rune : Decoder Rune
 rune =
-    Json.map3 Rune
+    Json.map4 Rune
         (field "name" string)
+        (field "desc" string)
         (field "img_url" string)
         (field "cards" runeCards)
 

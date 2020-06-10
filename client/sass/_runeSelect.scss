@@ -12,32 +12,23 @@
   display: flex;
   flex-direction: column;
 
-  h1 {
-    margin: 0;
-  }
-
-  h2 {
-    color: #42210b;;
+  .rune-name {
+    text-transform: uppercase;
+    color: #fff;
     font-size: 42px;
     font-family: 'Trattatello', sans-serif;
     font-weight: 300;
     text-align: center;
     margin: 12px;
   }
-
-  .rune-list {
-    display: flex;
-    justify-content: center;
-  }
-
-  .rune {
-    width: 64px;
-    height: 64px;
-    cursor: pointer; cursor: hand;
-  }
-
-  .rune-name {
+  .rune-desc {
     text-transform: uppercase;
+    color: #fff;
+    font-size: 18px;
+    font-family: 'Trattatello', sans-serif;
+    font-weight: 300;
+    text-align: center;
+    margin: 0;
   }
 }
 
