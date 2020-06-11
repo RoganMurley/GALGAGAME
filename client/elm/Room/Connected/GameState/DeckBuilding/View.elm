@@ -1,12 +1,20 @@
 module DeckBuilding.View exposing (view)
 
+import Colour
 import DeckBuilding.Messages exposing (Msg(..))
-import DeckBuilding.Types exposing (Character, Model)
+import DeckBuilding.Types exposing (Model)
 import Game.State exposing (bareContextInit)
-import Html exposing (Html, button, div, h1, img, text)
-import Html.Attributes exposing (class, height, src, width)
+import Game.Types exposing (Context)
+import Html exposing (Html, button, div, h1, text)
+import Html.Attributes exposing (class, height, width)
 import Html.Events exposing (onClick)
+import Math.Matrix4 exposing (makeLookAt, makeOrtho, makeRotate, makeScale3)
+import Math.Vector2 exposing (vec2)
+import Math.Vector3 exposing (vec3)
+import Render.Primitives
+import Render.Shaders
 import Render.Types as Render
+import Render.Uniforms exposing (uniColourMag)
 import RuneSelect.Types as RuneSelect exposing (RuneCursor(..))
 import RuneSelect.View as RuneSelect
 import Texture.State as Texture
@@ -33,12 +41,12 @@ view { w, h, pixelRatio } model textures =
                             [ RuneSelect.webglView runeSelect ]
 
                         Nothing ->
-                            []
+                            [ webglView model ]
                     )
         , case model.runeSelect of
             Nothing ->
                 div []
-                    [ h1 [] [ text "CHARACTER SELECT" ]
+                    [ h1 [] [ text "WHO ARE YOU?" ]
                     , charactersView model
                     ]
 
@@ -52,43 +60,65 @@ view { w, h, pixelRatio } model textures =
 
 charactersView : Model -> Html Msg
 charactersView { characters } =
-    div [ class "characters" ] <|
-        [ spacer
-        , prevButton
-        , characterView characters.selected
-        , nextButton
-        , spacer
+    let
+        character =
+            characters.selected
+    in
+    div [ class "characters" ]
+        [ div [ class "character-select-bottom" ]
+            [ div [ class "character-name" ] [ text character.name ]
+            , div [ class "character-last-row" ]
+                [ div [ class "character-prev-button", onClick PreviousCharacter ] []
+                , button [ class "character-confirm", class "menu-button", onClick <| Select character ] [ text "READY" ]
+                , div [ class "character-next-button", onClick NextCharacter ] []
+                ]
+            ]
         ]
 
 
-prevButton : Html Msg
-prevButton =
-    div [ class "prev-button", onClick PreviousCharacter ] []
+
+-- characterView : Character -> Html Msg
+-- characterView ({ runeA, runeB, runeC } as character) =
+--     div [ class "character" ]
+--         [ spacer
+--         , div
+--             [ class "character-circle" ]
+--             [ div [ class "name" ] [ text character.name ]
+-- , div [ class "character-runes" ]
+--     [ img [ class "character-rune", src <| "/img/textures/" ++ runeA.imgURL, onClick <| EnterRuneSelect RuneCursorA ] []
+--     , img [ class "character-rune", src <| "/img/textures/" ++ runeB.imgURL, onClick <| EnterRuneSelect RuneCursorB ] []
+--     , img [ class "character-rune", src <| "/img/textures/" ++ runeC.imgURL, onClick <| EnterRuneSelect RuneCursorC ] []
+--     ]
+--     ]
+-- ]
 
 
-nextButton : Html Msg
-nextButton =
-    div [ class "next-button", onClick NextCharacter ] []
-
-
-spacer : Html msg
-spacer =
-    div [ class "spacer" ] []
-
-
-characterView : Character -> Html Msg
-characterView ({ runeA, runeB, runeC } as character) =
-    div [ class "character" ]
-        [ spacer
-        , div
-            [ class "character-circle" ]
-            [ div [ class "name" ] [ text character.name ]
-            , div [ class "character-runes" ]
-                [ img [ class "character-rune", src <| "/img/textures/" ++ runeA.imgURL, onClick <| EnterRuneSelect RuneCursorA ] []
-                , img [ class "character-rune", src <| "/img/textures/" ++ runeB.imgURL, onClick <| EnterRuneSelect RuneCursorB ] []
-                , img [ class "character-rune", src <| "/img/textures/" ++ runeC.imgURL, onClick <| EnterRuneSelect RuneCursorC ] []
+webglView : Model -> Context -> List WebGL.Entity
+webglView _ ({ w, h, radius, textures } as ctx) =
+    List.concat
+        [ [ Render.Primitives.circle <|
+                uniColourMag ctx
+                    Colour.tea
+                    1
+                    { scale = radius * 0.73
+                    , position = vec2 (w * 0.5) (h * 0.5)
+                    , rotation = 0
+                    }
+          ]
+        , case Texture.load textures "tea.png" of
+            Just texture ->
+                [ Render.Primitives.quad Render.Shaders.fragment
+                    { rotation = makeRotate pi (vec3 0 0 1)
+                    , scale = makeScale3 (0.73 * radius) (0.73 * radius) 1
+                    , color = Colour.white
+                    , pos = vec3 (w * 0.5) (h * 0.5) 0
+                    , worldRot = makeRotate 0 (vec3 0 0 1)
+                    , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
+                    , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
+                    , texture = texture
+                    }
                 ]
-            ]
-        , button [ class "menu-button", class "ready-button", onClick <| Select character ] [ text "SELECT" ]
-        , spacer
+
+            Nothing ->
+                []
         ]
