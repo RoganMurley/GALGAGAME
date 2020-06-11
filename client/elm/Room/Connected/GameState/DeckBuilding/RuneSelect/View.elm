@@ -35,7 +35,7 @@ view ctx model =
                     ]
         , div [ class "rune-select-bottom" ]
             [ Html.map DeckBuilding.RuneSelectMsg prevButton
-            , button [ class "rune-confirm", class "menu-button", onClick <| DeckBuilding.ConfirmRune model.cursor rune ] [ text "CHOOSE" ]
+            , button [ class "rune-confirm", class "menu-button", onClick <| DeckBuilding.ConfirmRune model.cursor rune ] [ text "TASTES GOOD" ]
             , Html.map DeckBuilding.RuneSelectMsg nextButton
             ]
         ]

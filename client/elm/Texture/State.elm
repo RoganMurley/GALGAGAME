@@ -81,8 +81,17 @@ fetchTextures =
 
 texturePaths : List ( String, String )
 texturePaths =
-    [ -- Ring
-      ( "ring.png", "/img/textures/ring.png" )
+    [ -- Testing
+      ( "cardBack.png", "/img/textures/cardBackNegative.png" )
+    , ( "cardBackRed.png", "/img/textures/cardBackRed.png" )
+    , ( "cardBackBack.png", "/img/textures/cardBackBack.png" )
+    , ( "cardOrb.png", "/img/textures/cardOrb.png" )
+    , ( "cardOrbOther.png", "/img/textures/cardOrbOther.png" )
+    , ( "stain.png", "/img/textures/stain.png" )
+    , ( "tea.png", "/img/textures/tea.png" )
+
+    -- Ring
+    , ( "ring.png", "/img/textures/ring.png" )
     , ( "lifeclaw.png", "/img/textures/lifeclaw.png" )
     , ( "cursor.png", "/img/textures/cursor.png" )
 
@@ -133,12 +142,4 @@ texturePaths =
     , ( "voidbeam.png", "/img/textures/voidbeam.png" )
     , ( "feud.png", "/img/textures/feud.png" )
     , ( "inevitable.png", "/img/textures/inevitable.png" )
-
-    -- Testing
-    , ( "cardBack.png", "/img/textures/cardBackNegative.png" )
-    , ( "cardBackRed.png", "/img/textures/cardBackRed.png" )
-    , ( "cardBackBack.png", "/img/textures/cardBackBack.png" )
-    , ( "cardOrb.png", "/img/textures/cardOrb.png" )
-    , ( "cardOrbOther.png", "/img/textures/cardOrbOther.png" )
-    , ( "stain.png", "/img/textures/stain.png" )
     ]
