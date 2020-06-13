@@ -18,6 +18,7 @@ init character remaining runes =
     , runes = runes
     , runeSelect = Nothing
     , ready = False
+    , bounceTick = 0
     }
 
 
@@ -36,14 +37,14 @@ update msg ({ characters } as model) =
 
         NextCharacter ->
             if not model.ready then
-                ( { model | characters = Carousel.forward characters }, Cmd.none )
+                ( { model | characters = Carousel.forward characters, bounceTick = 0 }, Cmd.none )
 
             else
                 ( model, Cmd.none )
 
         PreviousCharacter ->
             if not model.ready then
-                ( { model | characters = Carousel.backward characters }, Cmd.none )
+                ( { model | characters = Carousel.backward characters, bounceTick = 0 }, Cmd.none )
 
             else
                 ( model, Cmd.none )
@@ -105,7 +106,7 @@ tick ctx dt model =
         newRuneSelect =
             Maybe.map (RuneSelect.tick ctx dt) model.runeSelect
     in
-    { model | runeSelect = newRuneSelect }
+    { model | runeSelect = newRuneSelect, bounceTick = model.bounceTick + dt }
 
 
 getRuneFromCursor : RuneCursor -> Character -> Rune

@@ -9,6 +9,7 @@ type alias Model =
     , runes : List Rune
     , runeSelect : Maybe RuneSelect.Model
     , ready : Bool
+    , bounceTick : Float
     }
 
 
