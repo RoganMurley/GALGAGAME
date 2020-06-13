@@ -3,6 +3,7 @@ module DeckBuilding.View exposing (view)
 import Colour
 import DeckBuilding.Messages exposing (Msg(..))
 import DeckBuilding.Types exposing (Model)
+import Ease
 import Game.State exposing (bareContextInit)
 import Game.Types exposing (Context)
 import Html exposing (Html, button, div, h1, text)
@@ -94,7 +95,14 @@ charactersView { characters } =
 
 
 webglView : Model -> Context -> List WebGL.Entity
-webglView _ ({ w, h, radius, textures } as ctx) =
+webglView { bounceTick } ({ w, h, radius, textures } as ctx) =
+    let
+        teaProgress =
+            min bounceTick 300 / 300
+
+        teaPop =
+            10 * Ease.outBounce teaProgress
+    in
     List.concat
         [ [ Render.Primitives.circle <|
                 uniColourMag ctx
@@ -109,7 +117,7 @@ webglView _ ({ w, h, radius, textures } as ctx) =
             Just texture ->
                 [ Render.Primitives.quad Render.Shaders.fragment
                     { rotation = makeRotate pi (vec3 0 0 1)
-                    , scale = makeScale3 (0.73 * radius) (0.73 * radius) 1
+                    , scale = makeScale3 (0.73 * radius + teaPop) (0.73 * radius + teaPop) 1
                     , color = Colour.white
                     , pos = vec3 (w * 0.5) (h * 0.5) 0
                     , worldRot = makeRotate 0 (vec3 0 0 1)
