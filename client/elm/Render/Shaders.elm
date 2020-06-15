@@ -1,4 +1,4 @@
-module Render.Shaders exposing (circleFragment, disintegrate, fragment, fragmentAlpha, fragmentTransmute, fullCircleFragment, matte, ornate, trail, vertex)
+module Render.Shaders exposing (circleFragment, disintegrate, fragment, fragmentAlpha, fragmentTransmute, fullCircleFragment, matte, ornate, starfield, trail, vertex)
 
 import Math.Vector2 exposing (Vec2)
 import Math.Vector3 exposing (Vec3)
@@ -245,6 +245,28 @@ trail =
             alpha *=  1. - fade / length;
 
             gl_FragColor = vec4(color, alpha);
+        }
+
+    |]
+
+
+starfield : Shader {} (Uniforms { tick : Float, texture : Texture }) { vcoord : Vec2 }
+starfield =
+    [glsl|
+        precision mediump float;
+
+        uniform vec3 color;
+        uniform float tick;
+        uniform sampler2D texture;
+
+        varying vec2 vcoord;
+
+        void main ()
+        {
+            vec2 uv = vcoord;
+            vec3 random = texture2D(texture, uv).rgb;
+            vec3 finalColor = color * (random + 0.1 * cos(3.14 + 0.05 * tick));
+            gl_FragColor = vec4(finalColor, 1.);
         }
 
     |]

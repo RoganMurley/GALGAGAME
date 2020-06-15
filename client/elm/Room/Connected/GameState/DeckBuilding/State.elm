@@ -1,4 +1,4 @@
-module DeckBuilding.State exposing (getRuneFromCursor, init, nextCursor, tick, update)
+module DeckBuilding.State exposing (getRuneFromCursor, init, mouseClick, nextCursor, tick, update)
 
 import Carousel
 import DeckBuilding.Encoders exposing (encodeCharacter)
@@ -6,6 +6,7 @@ import DeckBuilding.Messages exposing (Msg(..))
 import DeckBuilding.Types exposing (Character, Model)
 import Game.Types exposing (Context)
 import Main.Messages as Main
+import Mouse exposing (Position)
 import Ports exposing (log)
 import RuneSelect.State as RuneSelect
 import RuneSelect.Types as RuneSelect exposing (Rune, RuneCursor(..))
@@ -19,6 +20,7 @@ init character remaining runes =
     , runeSelect = Nothing
     , ready = False
     , bounceTick = 0
+    , starTick = 0
     }
 
 
@@ -106,7 +108,7 @@ tick ctx dt model =
         newRuneSelect =
             Maybe.map (RuneSelect.tick ctx dt) model.runeSelect
     in
-    { model | runeSelect = newRuneSelect, bounceTick = model.bounceTick + dt }
+    { model | runeSelect = newRuneSelect, bounceTick = model.bounceTick + dt, starTick = model.starTick + dt }
 
 
 getRuneFromCursor : RuneCursor -> Character -> Rune
@@ -146,3 +148,10 @@ nextCursor cursor =
 
         RuneCursorC ->
             RuneCursorA
+
+
+mouseClick : Position -> Model -> ( Model, Cmd Main.Msg )
+mouseClick _ model =
+    update
+        (Select model.characters.selected)
+        model

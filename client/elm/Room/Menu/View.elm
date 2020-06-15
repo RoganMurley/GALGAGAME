@@ -12,7 +12,7 @@ view : Html Msg
 view =
     div []
         [ div [ class "main-menu" ]
-            [ h1 [] [ text "FUTURE TEAROOM" ]
+            [ h1 [] [ text "GALGAGAME" ]
             , div [ class "main-menu-buttons" ] <|
                 List.map menuButton
                     [ TutorialGame, QuickplayGame, CustomGame, ComputerGame ]

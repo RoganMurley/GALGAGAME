@@ -82,7 +82,9 @@ fetchTextures =
 texturePaths : List ( String, String )
 texturePaths =
     [ -- Testing
-      ( "cardBack.png", "/img/textures/cardBackNegative.png" )
+      ( "radial.png", "/img/textures/radial.png" )
+    , ( "title.png", "/img/textures/title.png" )
+    , ( "cardBack.png", "/img/textures/cardBackNegative.png" )
     , ( "cardBackRed.png", "/img/textures/cardBackRed.png" )
     , ( "cardBackBack.png", "/img/textures/cardBackBack.png" )
     , ( "cardOrb.png", "/img/textures/cardOrb.png" )

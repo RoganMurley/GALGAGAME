@@ -281,6 +281,7 @@ carry old new =
                 | res = get .res new
                 , entities = get .entities old
                 , focus = get .focus old
+                , starTick = get .starTick old
             }
         )
         new

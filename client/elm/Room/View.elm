@@ -78,16 +78,16 @@ titleView : Model -> String
 titleView model =
     case model of
         Connected connected ->
-            Connected.titleView connected ++ " | Future Tearoom"
+            Connected.titleView connected ++ " | GALGAGAME"
 
         Replay _ ->
-            "Replay | Future Tearoom"
+            "Replay | GALGAGAME"
 
         Login _ ->
-            "Login | Future Tearoom"
+            "Login | GALGAGAME"
 
         Signup _ ->
-            "Signup | Future Tearoom"
+            "Signup | GALGAGAME"
 
         _ ->
-            "Future Tearoom"
+            "GALGAGAME"

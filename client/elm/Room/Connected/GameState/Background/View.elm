@@ -1,4 +1,4 @@
-module Background.View exposing (backgroundView, cursorView, ornateView, ringView, stainView, view)
+module Background.View exposing (backgroundView, cursorView, ornateView, radialView, ringView, stainView, view)
 
 import Animation.State as Animation
 import Animation.Types exposing (Anim(..))
@@ -271,3 +271,28 @@ cursorView { w, h, radius, textures } =
                 , texture = texture
                 }
             ]
+
+
+radialView : Float -> Context -> List WebGL.Entity
+radialView tick { w, h, textures } =
+    let
+        size =
+            1.4 * max w h
+    in
+    case Texture.load textures "radial.png" of
+        Just texture ->
+            [ Render.Primitives.quad Render.Shaders.starfield
+                { rotation = makeRotate (0.0001 * tick) (vec3 0 0 1)
+                , scale = makeScale3 (0.5 * size) (0.5 * size) 1
+                , color = Colour.white
+                , pos = vec3 (w * 0.5) (h * 0.5) 0
+                , worldRot = makeRotate 0 (vec3 0 0 1)
+                , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
+                , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
+                , tick = tick * 0.01
+                , texture = texture
+                }
+            ]
+
+        Nothing ->
+            []
