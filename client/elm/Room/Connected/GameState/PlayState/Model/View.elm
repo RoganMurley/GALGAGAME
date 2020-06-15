@@ -37,7 +37,7 @@ import WhichPlayer.Types exposing (WhichPlayer(..))
 
 
 view : Render.Params -> Game.Model -> Texture.Model -> Html Main.Msg
-view { w, h, pixelRatio } { res, hover, focus, entities, passed, feedback } textures =
+view { w, h, pixelRatio } { res, hover, focus, entities, passed, feedback, starTick } textures =
     let
         ctx =
             contextInit ( w, h ) res textures Nothing
@@ -46,13 +46,14 @@ view { w, h, pixelRatio } { res, hover, focus, entities, passed, feedback } text
         [ WebGL.toHtml [ width <| floor <| toFloat w * pixelRatio, height <| floor <| toFloat h * pixelRatio, class "webgl-canvas" ]
             (List.concat <|
                 List.map ((|>) ctx)
-                    [ Wave.view
+                    [ Background.radialView starTick
+                    , Wave.view
 
                     -- , Background.ornateView
                     , lifeOrbView
                     , passView
-                    , Background.stainView focus
 
+                    -- , Background.stainView focus
                     -- , Background.ringView
                     , Stack.view entities.stack
                     , focusImageView focus

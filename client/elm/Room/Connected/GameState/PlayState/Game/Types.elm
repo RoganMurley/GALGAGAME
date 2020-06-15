@@ -19,6 +19,7 @@ type alias Model =
     , entities : Entities
     , passed : Bool
     , feedback : List Feedback
+    , starTick : Float
     }
 
 

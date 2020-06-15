@@ -31,6 +31,7 @@ gameInit model =
     , entities = { hand = [], otherHand = [], stack = [] }
     , passed = False
     , feedback = []
+    , starTick = 0
     }
 
 
@@ -140,6 +141,7 @@ tick { dimensions, mouse } dt model =
                     }
                 , focus = focus
                 , feedback = feedback
+                , starTick = model.starTick + dt
             }
     in
     ( newModel, hoverMsg )

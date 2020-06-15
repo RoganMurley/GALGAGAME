@@ -20,6 +20,13 @@ update msg state mode =
     case msg of
         MouseClick pos ->
             case state of
+                Selecting selecting ->
+                    let
+                        ( newSelecting, cmd ) =
+                            DeckBuilding.mouseClick pos selecting
+                    in
+                    ( Selecting newSelecting, cmd )
+
                 Started playState ->
                     let
                         ( newPlayState, cmd ) =
@@ -93,10 +100,14 @@ update msg state mode =
 carry : GameState -> GameState -> GameState
 carry old new =
     case old of
-        Selecting { characters, runes, runeSelect, ready } ->
+        Selecting { characters, runes, runeSelect, ready, bounceTick, starTick } ->
             case new of
                 Selecting selecting ->
-                    Selecting { selecting | characters = characters, runes = runes, runeSelect = runeSelect, ready = ready }
+                    Selecting { selecting | characters = characters, runes = runes, runeSelect = runeSelect, ready = ready, bounceTick = bounceTick, starTick = starTick }
+
+                Started started ->
+                    Started <|
+                        PlayState.map (\game -> { game | starTick = starTick }) started
 
                 _ ->
                     new

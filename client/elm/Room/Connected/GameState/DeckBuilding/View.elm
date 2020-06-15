@@ -1,21 +1,17 @@
 module DeckBuilding.View exposing (view)
 
-import Colour
+import Background.View exposing (radialView)
 import DeckBuilding.Messages exposing (Msg(..))
 import DeckBuilding.Types exposing (Model)
-import Ease
 import Game.State exposing (bareContextInit)
 import Game.Types exposing (Context)
-import Html exposing (Html, button, div, h1, text)
+import Html exposing (Html, div)
 import Html.Attributes exposing (class, height, width)
-import Html.Events exposing (onClick)
 import Math.Matrix4 exposing (makeLookAt, makeOrtho, makeRotate, makeScale3)
-import Math.Vector2 exposing (vec2)
 import Math.Vector3 exposing (vec3)
 import Render.Primitives
 import Render.Shaders
 import Render.Types as Render
-import Render.Uniforms exposing (uniColourMag)
 import RuneSelect.Types as RuneSelect exposing (RuneCursor(..))
 import RuneSelect.View as RuneSelect
 import Texture.State as Texture
@@ -44,40 +40,39 @@ view { w, h, pixelRatio } model textures =
                         Nothing ->
                             [ webglView model ]
                     )
-        , case model.runeSelect of
-            Nothing ->
-                div []
-                    [ h1 [] [ text "WHO ARE YOU?" ]
-                    , charactersView model
-                    ]
 
-            Just runeSelect ->
-                div [ class "rune-select" ]
-                    [ h1 [] [ text "BREWING" ]
-                    , RuneSelect.view ctx runeSelect
-                    ]
-        ]
-
-
-charactersView : Model -> Html Msg
-charactersView { characters } =
-    let
-        character =
-            characters.selected
-    in
-    div [ class "characters" ]
-        [ div [ class "character-select-bottom" ]
-            [ div [ class "character-name" ] [ text character.name ]
-            , div [ class "character-last-row" ]
-                [ div [ class "character-prev-button", onClick PreviousCharacter ] []
-                , button [ class "character-confirm", class "menu-button", onClick <| Select character ] [ text "READY" ]
-                , div [ class "character-next-button", onClick NextCharacter ] []
-                ]
-            ]
+        -- , case model.runeSelect of
+        --     Nothing ->
+        --         div []
+        --             [ h1 [] [ text "WHO ARE YOU?" ]
+        --             , charactersView model
+        --             ]
+        --
+        --     Just runeSelect ->
+        --         div [ class "rune-select" ]
+        --             [ h1 [] [ text "BREWING" ]
+        --             , RuneSelect.view ctx runeSelect
+        --             ]
         ]
 
 
 
+-- charactersView : Model -> Html Msg
+-- charactersView { characters } =
+--     let
+--         character =
+--             characters.selected
+--     in
+--     div [ class "characters" ]
+--         [ div [ class "character-select-bottom" ]
+--             [ div [ class "character-name" ] [ text character.name ]
+--             , div [ class "character-last-row" ]
+--                 [ div [ class "character-prev-button", onClick PreviousCharacter ] []
+--                 , button [ class "character-confirm", class "menu-button", onClick <| Select character ] [ text "READY" ]
+--                 , div [ class "character-next-button", onClick NextCharacter ] []
+--                 ]
+--             ]
+--         ]
 -- characterView : Character -> Html Msg
 -- characterView ({ runeA, runeB, runeC } as character) =
 --     div [ class "character" ]
@@ -95,38 +90,74 @@ charactersView { characters } =
 
 
 webglView : Model -> Context -> List WebGL.Entity
-webglView { bounceTick } ({ w, h, radius, textures } as ctx) =
-    let
-        teaProgress =
-            min bounceTick 300 / 300
-
-        teaPop =
-            10 * Ease.outBounce teaProgress
-    in
+webglView { starTick } ctx =
+    -- let
+    -- teaProgress =
+    --     min bounceTick 300 / 300
+    -- teaPop =
+    --     10 * Ease.outBounce teaProgress
+    -- in
     List.concat
-        [ [ Render.Primitives.circle <|
-                uniColourMag ctx
-                    Colour.tea
-                    1
-                    { scale = radius * 0.73
-                    , position = vec2 (w * 0.5) (h * 0.5)
-                    , rotation = 0
-                    }
-          ]
-        , case Texture.load textures "tea.png" of
-            Just texture ->
-                [ Render.Primitives.quad Render.Shaders.fragment
-                    { rotation = makeRotate pi (vec3 0 0 1)
-                    , scale = makeScale3 (0.73 * radius + teaPop) (0.73 * radius + teaPop) 1
-                    , color = Colour.white
-                    , pos = vec3 (w * 0.5) (h * 0.5) 0
-                    , worldRot = makeRotate 0 (vec3 0 0 1)
-                    , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
-                    , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
-                    , texture = texture
-                    }
-                ]
-
-            Nothing ->
-                []
+        -- [ [ Render.Primitives.circle <|
+        --         uniColourMag ctx
+        --             Colour.tea
+        --             1
+        --             { scale = radius * 0.73
+        --             , position = vec2 (w * 0.5) (h * 0.5)
+        --             , rotation = 0
+        --             }
+        --   ]
+        -- , case Texture.load textures "tea.png" of
+        --     Just texture ->
+        --         [ Render.Primitives.quad Render.Shaders.fragment
+        --             { rotation = makeRotate pi (vec3 0 0 1)
+        --             , scale = makeScale3 (0.73 * radius + teaPop) (0.73 * radius + teaPop) 1
+        --             , color = Colour.white
+        --             , pos = vec3 (w * 0.5) (h * 0.5) 0
+        --             , worldRot = makeRotate 0 (vec3 0 0 1)
+        --             , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
+        --             , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
+        --             , texture = texture
+        --             }
+        --         ]
+        --
+        --     Nothing ->
+        --         []
+        -- ,
+        [ radialView starTick ctx
+        , titleView starTick ctx
         ]
+
+
+titleView : Float -> Context -> List WebGL.Entity
+titleView tick { w, h, textures } =
+    let
+        size =
+            1.4 * max w h
+    in
+    case Texture.load textures "title.png" of
+        Just title ->
+            [ Render.Primitives.quad Render.Shaders.fragment
+                { rotation = makeRotate pi (vec3 0 0 1)
+                , scale = makeScale3 (0.15 * size + sin (tick * 0.005)) (0.15 * size + sin (tick * 0.007)) 1
+                , color = vec3 (20 / 255) (20 / 255) (20 / 255)
+                , pos = vec3 (w * 0.5 - 0.003 * size) (h * 0.5) 0
+                , worldRot = makeRotate 0 (vec3 0 0 1)
+                , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
+                , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
+                , texture = title
+                }
+            , Render.Primitives.quad Render.Shaders.fragment
+                { rotation = makeRotate pi (vec3 0 0 1)
+                , scale = makeScale3 (0.15 * size + sin (tick * 0.005)) (0.15 * size + sin (tick * 0.007)) 1
+                , color = vec3 (244 / 255) (241 / 255) (94 / 255)
+                , pos = vec3 (w * 0.5) (h * 0.5) 0
+                , worldRot = makeRotate 0 (vec3 0 0 1)
+                , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
+                , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
+                , texture = title
+                }
+            ]
+
+        _ ->
+            []
