@@ -11,6 +11,7 @@ import Ports exposing (log)
 import RuneSelect.State as RuneSelect
 import RuneSelect.Types as RuneSelect exposing (Rune, RuneCursor(..))
 import Util
+import Vfx.State as Vfx
 
 
 init : Character -> List Character -> List Rune -> Model
@@ -20,7 +21,7 @@ init character remaining runes =
     , runeSelect = Nothing
     , ready = False
     , bounceTick = 0
-    , starTick = 0
+    , vfx = Vfx.init
     }
 
 
@@ -108,7 +109,11 @@ tick ctx dt model =
         newRuneSelect =
             Maybe.map (RuneSelect.tick ctx dt) model.runeSelect
     in
-    { model | runeSelect = newRuneSelect, bounceTick = model.bounceTick + dt, starTick = model.starTick + dt }
+    { model
+        | runeSelect = newRuneSelect
+        , bounceTick = model.bounceTick + dt
+        , vfx = Vfx.tick dt model.vfx ctx
+    }
 
 
 getRuneFromCursor : RuneCursor -> Character -> Rune

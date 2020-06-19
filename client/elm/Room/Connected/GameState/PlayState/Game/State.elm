@@ -19,6 +19,7 @@ import Stack.Types exposing (StackCard)
 import Texture.State as Texture
 import Texture.Types as Texture
 import Util exposing (message)
+import Vfx.State as Vfx
 import WhichPlayer.Types exposing (WhichPlayer(..))
 
 
@@ -31,7 +32,7 @@ gameInit model =
     , entities = { hand = [], otherHand = [], stack = [] }
     , passed = False
     , feedback = []
-    , starTick = 0
+    , vfx = Vfx.init
     }
 
 
@@ -141,7 +142,7 @@ tick { dimensions, mouse } dt model =
                     }
                 , focus = focus
                 , feedback = feedback
-                , starTick = model.starTick + dt
+                , vfx = Vfx.tick dt model.vfx ctx
             }
     in
     ( newModel, hoverMsg )

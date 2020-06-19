@@ -16,6 +16,7 @@ import Render.Uniforms
 import Stack.Types exposing (StackCard)
 import Texture.State as Texture
 import Texture.Types as Texture
+import Vfx.Types as Vfx
 import WebGL
 import WhichPlayer.Types exposing (WhichPlayer(..))
 
@@ -273,8 +274,8 @@ cursorView { w, h, radius, textures } =
             ]
 
 
-radialView : Float -> Context -> List WebGL.Entity
-radialView tick { w, h, textures } =
+radialView : Vfx.Model -> Context -> List WebGL.Entity
+radialView { rotation, brightness } { w, h, textures } =
     let
         size =
             1.4 * max w h
@@ -282,14 +283,14 @@ radialView tick { w, h, textures } =
     case Texture.load textures "radial.png" of
         Just texture ->
             [ Render.Primitives.quad Render.Shaders.starfield
-                { rotation = makeRotate (0.0001 * tick) (vec3 0 0 1)
+                { rotation = makeRotate (0.0001 * rotation) (vec3 0 0 1)
                 , scale = makeScale3 (0.5 * size) (0.5 * size) 1
                 , color = Colour.white
                 , pos = vec3 (w * 0.5) (h * 0.5) 0
                 , worldRot = makeRotate 0 (vec3 0 0 1)
                 , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
                 , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
-                , tick = tick * 0.01
+                , brightness = brightness
                 , texture = texture
                 }
             ]

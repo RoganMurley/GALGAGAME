@@ -100,14 +100,14 @@ update msg state mode =
 carry : GameState -> GameState -> GameState
 carry old new =
     case old of
-        Selecting { characters, runes, runeSelect, ready, bounceTick, starTick } ->
+        Selecting { characters, runes, runeSelect, ready, bounceTick, vfx } ->
             case new of
                 Selecting selecting ->
-                    Selecting { selecting | characters = characters, runes = runes, runeSelect = runeSelect, ready = ready, bounceTick = bounceTick, starTick = starTick }
+                    Selecting { selecting | characters = characters, runes = runes, runeSelect = runeSelect, ready = ready, bounceTick = bounceTick, vfx = vfx }
 
                 Started started ->
                     Started <|
-                        PlayState.map (\game -> { game | starTick = starTick }) started
+                        PlayState.map (\game -> { game | vfx = vfx }) started
 
                 _ ->
                     new

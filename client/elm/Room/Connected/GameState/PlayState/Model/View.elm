@@ -29,6 +29,7 @@ import Render.Uniforms exposing (uniColourMag)
 import Room.Messages as Room
 import Stack.Types exposing (StackCard)
 import Stack.View as Stack
+import Texture.State as Texture
 import Texture.Types as Texture
 import Trail
 import Util exposing (interpFloat, px)
@@ -37,16 +38,19 @@ import WhichPlayer.Types exposing (WhichPlayer(..))
 
 
 view : Render.Params -> Game.Model -> Texture.Model -> Html Main.Msg
-view { w, h, pixelRatio } { res, hover, focus, entities, passed, feedback, starTick } textures =
+view { w, h, pixelRatio } { res, hover, focus, entities, passed, feedback, vfx } textures =
     let
         ctx =
             contextInit ( w, h ) res textures Nothing
+
+        ( turnHtml, turnWebGl ) =
+            turnView ctx focus passed
     in
     div [ class "clock" ]
         [ WebGL.toHtml [ width <| floor <| toFloat w * pixelRatio, height <| floor <| toFloat h * pixelRatio, class "webgl-canvas" ]
             (List.concat <|
                 List.map ((|>) ctx)
-                    [ Background.radialView starTick
+                    [ Background.radialView vfx
                     , Wave.view
 
                     -- , Background.ornateView
@@ -60,6 +64,7 @@ view { w, h, pixelRatio } { res, hover, focus, entities, passed, feedback, starT
                     , Trail.view
                     , Hand.view entities.hand
                     , Hand.otherView entities.otherHand
+                    , \_ -> turnWebGl
                     , Hand.millView
 
                     -- , Background.cursorView
@@ -69,7 +74,7 @@ view { w, h, pixelRatio } { res, hover, focus, entities, passed, feedback, starT
         , div [ class "text-focus" ] [ focusTextView ctx focus ]
         , div [ class "clock-life-container" ] (lifeTextView ctx)
         , div [ class "clock-damage-container" ] (damageTextView hover ctx)
-        , turnView ctx focus passed
+        , turnHtml
         , goButtonView ctx passed
         ]
 
@@ -388,32 +393,65 @@ goButtonView { model, radius, resolving } passed =
         [ text "GO" ]
 
 
-turnView : Context -> Maybe StackCard -> Bool -> Html Main.Msg
-turnView { anim, model } focus passed =
+turnView : Context -> Maybe StackCard -> Bool -> ( Html Main.Msg, List WebGL.Entity )
+turnView { anim, model, tick, w, h, radius, textures } focus passed =
+    let
+        size =
+            radius * 3
+    in
     case ( anim, focus, passed ) of
         ( Mill _ _, _, _ ) ->
-            div [] []
+            ( div [] [], [] )
 
         ( NullAnim, Nothing, False ) ->
             case model.turn of
                 PlayerA ->
-                    div [ class "turn-status" ] [ text "YOUR TURN" ]
+                    ( div [] []
+                    , case Texture.load textures "yourTurn.png" of
+                        Just title ->
+                            [ Render.Primitives.quad Render.Shaders.fragment
+                                { rotation = makeRotate pi (vec3 0 0 1)
+                                , scale = makeScale3 (0.15 * size + sin (tick * 0.005)) (0.15 * size + sin (tick * 0.007)) 1
+                                , color = vec3 (20 / 255) (20 / 255) (20 / 255)
+                                , pos = vec3 (w * 0.5 - 0.003 * size) (h * 0.5) 0
+                                , worldRot = makeRotate 0 (vec3 0 0 1)
+                                , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
+                                , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
+                                , texture = title
+                                }
+                            , Render.Primitives.quad Render.Shaders.fragment
+                                { rotation = makeRotate pi (vec3 0 0 1)
+                                , scale = makeScale3 (0.15 * size + sin (tick * 0.005)) (0.15 * size + sin (tick * 0.007)) 1
+                                , color = vec3 (244 / 255) (241 / 255) (94 / 255)
+                                , pos = vec3 (w * 0.5) (h * 0.5) 0
+                                , worldRot = makeRotate 0 (vec3 0 0 1)
+                                , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
+                                , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
+                                , texture = title
+                                }
+                            ]
+
+                        _ ->
+                            []
+                    )
 
                 PlayerB ->
-                    div [ class "turn-status" ] [ text "OPPONENT'S \nTURN" ]
+                    ( div [ class "turn-status" ] [ text "OPPONENT'S \nTURN" ], [] )
 
         ( Pass which, _, _ ) ->
-            div
+            ( div
                 [ class "pass-status"
                 , classList [ ( "opponent", which == PlayerB ) ]
                 ]
                 [ text "PASS" ]
+            , []
+            )
 
         ( HandFullPass, _, _ ) ->
-            div [ class "pass-status" ] [ text "HAND FULL" ]
+            ( div [ class "pass-status" ] [ text "HAND FULL" ], [] )
 
         _ ->
-            div [] []
+            ( div [] [], [] )
 
 
 passView : Context -> List WebGL.Entity

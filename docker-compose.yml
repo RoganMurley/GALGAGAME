@@ -18,6 +18,9 @@ services:
   database:
     build:
       context: "database"
+    environment:
+      POSTGRES_DB: "db"
+      POSTGRES_HOST_AUTH_METHOD: "trust"
     restart: always
   game:
     build:
