@@ -27,7 +27,7 @@ view { w, h, pixelRatio } model textures =
         ctx =
             bareContextInit ( w, h ) textures Nothing
     in
-    div [ class "character-select" ]
+    div [ class "clock" ]
         [ WebGL.toHtml
             [ width <| floor <| toFloat w * pixelRatio, height <| floor <| toFloat h * pixelRatio, class "webgl-canvas" ]
           <|
@@ -90,7 +90,7 @@ view { w, h, pixelRatio } model textures =
 
 
 webglView : Model -> Context -> List WebGL.Entity
-webglView { starTick } ctx =
+webglView { vfx } ctx =
     -- let
     -- teaProgress =
     --     min bounceTick 300 / 300
@@ -124,8 +124,8 @@ webglView { starTick } ctx =
         --     Nothing ->
         --         []
         -- ,
-        [ radialView starTick ctx
-        , titleView starTick ctx
+        [ radialView vfx ctx
+        , titleView vfx.rotation ctx
         ]
 
 

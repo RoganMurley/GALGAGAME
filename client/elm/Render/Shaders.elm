@@ -250,13 +250,13 @@ trail =
     |]
 
 
-starfield : Shader {} (Uniforms { tick : Float, texture : Texture }) { vcoord : Vec2 }
+starfield : Shader {} (Uniforms { brightness : Float, texture : Texture }) { vcoord : Vec2 }
 starfield =
     [glsl|
         precision mediump float;
 
         uniform vec3 color;
-        uniform float tick;
+        uniform float brightness;
         uniform sampler2D texture;
 
         varying vec2 vcoord;
@@ -265,7 +265,7 @@ starfield =
         {
             vec2 uv = vcoord;
             vec3 random = texture2D(texture, uv).rgb;
-            vec3 finalColor = color * (random + 0.1 * cos(3.14 + 0.05 * tick));
+            vec3 finalColor = color * (random + brightness);
             gl_FragColor = vec4(finalColor, 1.);
         }
 

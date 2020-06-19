@@ -8,6 +8,7 @@ import Model.Types as Model
 import Resolvable.Types as Resolvable
 import Stack.Types exposing (StackCard)
 import Texture.Types as Texture
+import Vfx.Types as Vfx
 import WhichPlayer.Types exposing (WhichPlayer)
 
 
@@ -19,7 +20,7 @@ type alias Model =
     , entities : Entities
     , passed : Bool
     , feedback : List Feedback
-    , starTick : Float
+    , vfx : Vfx.Model
     }
 
 

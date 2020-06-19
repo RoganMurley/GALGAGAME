@@ -2,6 +2,7 @@ module DeckBuilding.Types exposing (Character, Model)
 
 import Carousel exposing (Carousel)
 import RuneSelect.Types as RuneSelect exposing (Rune)
+import Vfx.Types as Vfx
 
 
 type alias Model =
@@ -10,7 +11,7 @@ type alias Model =
     , runeSelect : Maybe RuneSelect.Model
     , ready : Bool
     , bounceTick : Float
-    , starTick : Float
+    , vfx : Vfx.Model
     }
 
 
