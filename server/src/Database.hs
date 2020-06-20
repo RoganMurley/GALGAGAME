@@ -45,6 +45,6 @@ postgresConnectInfo (host, portString, user, password, database) =
     defaultPassword :: String
     defaultPassword = "example"
     defaultDatabase :: String
-    defaultDatabase = "postgres"
+    defaultDatabase = "db"
     port :: Maybe Word16
     port = portString >>= readMay
