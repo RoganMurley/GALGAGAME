@@ -107,8 +107,8 @@ webglView { vfx } ctx =
         --             , rotation = 0
         --             }
         --   ]
-        -- , case Texture.load textures "tea.png" of
-        --     Just texture ->
+        -- , Texture.with textures "tea.png"
+        --     \texture ->
         --         [ Render.Primitives.quad Render.Shaders.fragment
         --             { rotation = makeRotate pi (vec3 0 0 1)
         --             , scale = makeScale3 (0.73 * radius + teaPop) (0.73 * radius + teaPop) 1
@@ -120,9 +120,6 @@ webglView { vfx } ctx =
         --             , texture = texture
         --             }
         --         ]
-        --
-        --     Nothing ->
-        --         []
         -- ,
         [ radialView vfx ctx
         , titleView vfx.rotation ctx
@@ -135,8 +132,8 @@ titleView tick { w, h, textures } =
         size =
             1.4 * max w h
     in
-    case Texture.load textures "title.png" of
-        Just title ->
+    Texture.with textures "title.png" <|
+        \title ->
             [ Render.Primitives.quad Render.Shaders.fragment
                 { rotation = makeRotate pi (vec3 0 0 1)
                 , scale = makeScale3 (0.15 * size + sin (tick * 0.005)) (0.15 * size + sin (tick * 0.007)) 1
@@ -158,6 +155,3 @@ titleView tick { w, h, textures } =
                 , texture = title
                 }
             ]
-
-        _ ->
-            []

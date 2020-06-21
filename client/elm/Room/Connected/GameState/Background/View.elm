@@ -132,11 +132,8 @@ stainView focus { w, h, anim, model, progress, radius, textures } =
                 Nothing ->
                     []
     in
-    case Texture.load textures "stain.png" of
-        Nothing ->
-            []
-
-        Just texture ->
+    Texture.with textures "stain.png" <|
+        \texture ->
             List.append
                 backing
                 [ Render.Primitives.quad Render.Shaders.fragment
@@ -173,11 +170,8 @@ ringView { w, h, anim, model, progress, radius, textures } =
             ringRot * -2.0 * pi / 12.0
 
         ringEntity =
-            case Texture.load textures "ring.png" of
-                Nothing ->
-                    []
-
-                Just texture ->
+            Texture.with textures "ring.png" <|
+                \texture ->
                     [ Render.Primitives.quad Render.Shaders.fragment
                         { rotation = makeRotate rotation (vec3 0 0 1)
                         , scale = makeScale3 (0.77 * radius) (0.77 * radius) 1
@@ -191,11 +185,8 @@ ringView { w, h, anim, model, progress, radius, textures } =
                     ]
 
         lifeclawEntities =
-            case Texture.load textures "lifeclaw.png" of
-                Nothing ->
-                    []
-
-                Just texture ->
+            Texture.with textures "lifeclaw.png" <|
+                \texture ->
                     [ Render.Primitives.quad Render.Shaders.fragment
                         { rotation = makeRotate pi (vec3 0 0 1)
                         , scale = makeScale3 (0.21 * radius) (0.21 * radius) 1
@@ -256,11 +247,8 @@ ringView { w, h, anim, model, progress, radius, textures } =
 
 cursorView : Context -> List WebGL.Entity
 cursorView { w, h, radius, textures } =
-    case Texture.load textures "cursor.png" of
-        Nothing ->
-            []
-
-        Just texture ->
+    Texture.with textures "cursor.png" <|
+        \texture ->
             [ Render.Primitives.quad Render.Shaders.fragment
                 { rotation = makeRotate pi (vec3 0 0 1)
                 , scale = makeScale3 (0.18 * radius) (-0.18 * radius) 1
@@ -280,8 +268,8 @@ radialView { rotation, brightness } { w, h, textures } =
         size =
             1.4 * max w h
     in
-    case Texture.load textures "radial.png" of
-        Just texture ->
+    Texture.with textures "radial.png" <|
+        \texture ->
             [ Render.Primitives.quad Render.Shaders.starfield
                 { rotation = makeRotate (0.0001 * rotation) (vec3 0 0 1)
                 , scale = makeScale3 (0.5 * size) (0.5 * size) 1
@@ -294,6 +282,3 @@ radialView { rotation, brightness } { w, h, textures } =
                 , texture = texture
                 }
             ]
-
-        Nothing ->
-            []
