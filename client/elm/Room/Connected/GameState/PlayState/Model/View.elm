@@ -407,8 +407,8 @@ turnView { anim, model, tick, w, h, radius, textures } focus passed =
             case model.turn of
                 PlayerA ->
                     ( div [] []
-                    , case Texture.load textures "yourTurn.png" of
-                        Just title ->
+                    , Texture.with textures "yourTurn.png" <|
+                        \title ->
                             [ Render.Primitives.quad Render.Shaders.fragment
                                 { rotation = makeRotate pi (vec3 0 0 1)
                                 , scale = makeScale3 (0.15 * size + sin (tick * 0.005)) (0.15 * size + sin (tick * 0.007)) 1
@@ -430,15 +430,12 @@ turnView { anim, model, tick, w, h, radius, textures } focus passed =
                                 , texture = title
                                 }
                             ]
-
-                        _ ->
-                            []
                     )
 
                 PlayerB ->
                     ( div [] []
-                    , case Texture.load textures "theirTurn.png" of
-                        Just title ->
+                    , Texture.with textures "theirTurn.png" <|
+                        \title ->
                             [ Render.Primitives.quad Render.Shaders.fragment
                                 { rotation = makeRotate pi (vec3 0 0 1)
                                 , scale = makeScale3 (0.15 * size + sin (tick * 0.005)) (0.15 * size + sin (tick * 0.007)) 1
@@ -460,18 +457,33 @@ turnView { anim, model, tick, w, h, radius, textures } focus passed =
                                 , texture = title
                                 }
                             ]
-
-                        _ ->
-                            []
                     )
 
-        ( Pass which, _, _ ) ->
-            ( div
-                [ class "pass-status"
-                , classList [ ( "opponent", which == PlayerB ) ]
-                ]
-                [ text "PASS" ]
-            , []
+        ( Pass _, _, _ ) ->
+            ( div [] []
+            , Texture.with textures "pass.png" <|
+                \title ->
+                    [ Render.Primitives.quad Render.Shaders.fragment
+                        { rotation = makeRotate pi (vec3 0 0 1)
+                        , scale = makeScale3 (0.15 * size + sin (tick * 0.005)) (0.15 * size + sin (tick * 0.007)) 1
+                        , color = vec3 (20 / 255) (20 / 255) (20 / 255)
+                        , pos = vec3 (w * 0.5 - 0.003 * size) (h * 0.5) 0
+                        , worldRot = makeRotate 0 (vec3 0 0 1)
+                        , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
+                        , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
+                        , texture = title
+                        }
+                    , Render.Primitives.quad Render.Shaders.fragment
+                        { rotation = makeRotate pi (vec3 0 0 1)
+                        , scale = makeScale3 (0.15 * size + sin (tick * 0.005)) (0.15 * size + sin (tick * 0.007)) 1
+                        , color = vec3 (244 / 255) (241 / 255) (94 / 255)
+                        , pos = vec3 (w * 0.5) (h * 0.5) 0
+                        , worldRot = makeRotate 0 (vec3 0 0 1)
+                        , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
+                        , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
+                        , texture = title
+                        }
+                    ]
             )
 
         ( HandFullPass, _, _ ) ->

@@ -42,14 +42,6 @@ view ctx entity =
         pos =
             to3d position
 
-        texturePath =
-            case owner of
-                PlayerA ->
-                    "cardBackBack.png"
-
-                PlayerB ->
-                    "cardBackBack.png"
-
         glyphColour =
             case owner of
                 PlayerA ->
@@ -66,47 +58,39 @@ view ctx entity =
                 PlayerB ->
                     "cardOrbOther.png"
     in
-    case ( cardTexture textures card, Texture.load textures texturePath ) of
-        ( Just texture, Just cardBackTexture ) ->
-            case Texture.load textures orbTexturePath of
-                Just cardOrbTexture ->
-                    [ Render.Primitives.quad Render.Shaders.fragment <|
-                        { rotation = rot
-                        , scale = makeScale3 (scale * width) (scale * height) 1
-                        , color = Colour.cardCol card.col
-                        , pos = pos
-                        , worldRot = makeRotate 0 <| vec3 0 0 1
-                        , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
-                        , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
-                        , texture = cardBackTexture
-                        }
-                    , Render.Primitives.quad Render.Shaders.fragment <|
-                        { rotation = rot
-                        , scale = makeScale3 (scale * width) (scale * height) 1
-                        , color = Colour.white
-                        , pos = pos
-                        , worldRot = makeRotate 0 <| vec3 0 0 1
-                        , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
-                        , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
-                        , texture = cardOrbTexture
-                        }
-                    , Render.Primitives.quad Render.Shaders.fragment <|
-                        { rotation = rot
-                        , scale = makeScale3 (scale * 0.6 * width) (scale * 0.6 * height) 1
-                        , color = glyphColour
-                        , pos = pos
-                        , worldRot = makeRotate 0 <| vec3 0 0 1
-                        , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
-                        , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
-                        , texture = texture
-                        }
-                    ]
-
-                _ ->
-                    []
-
-        _ ->
-            []
+    Texture.with3 textures card.imgURL "cardBackBack.png" orbTexturePath <|
+        \texture cardBackTexture cardOrbTexture ->
+            [ Render.Primitives.quad Render.Shaders.fragment <|
+                { rotation = rot
+                , scale = makeScale3 (scale * width) (scale * height) 1
+                , color = Colour.cardCol card.col
+                , pos = pos
+                , worldRot = makeRotate 0 <| vec3 0 0 1
+                , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
+                , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
+                , texture = cardBackTexture
+                }
+            , Render.Primitives.quad Render.Shaders.fragment <|
+                { rotation = rot
+                , scale = makeScale3 (scale * width) (scale * height) 1
+                , color = Colour.white
+                , pos = pos
+                , worldRot = makeRotate 0 <| vec3 0 0 1
+                , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
+                , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
+                , texture = cardOrbTexture
+                }
+            , Render.Primitives.quad Render.Shaders.fragment <|
+                { rotation = rot
+                , scale = makeScale3 (scale * 0.6 * width) (scale * 0.6 * height) 1
+                , color = glyphColour
+                , pos = pos
+                , worldRot = makeRotate 0 <| vec3 0 0 1
+                , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
+                , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
+                , texture = texture
+                }
+            ]
 
 
 backView : Context -> Game.Entity {} -> List WebGL.Entity
@@ -148,19 +132,13 @@ limboingView ctx { position, rotation, scale, card, owner } =
         pos =
             to3d position
 
-        mTexture =
-            cardTexture textures card
-
-        ( cardBackTexturePath, glyphColour ) =
+        glyphColour =
             case owner of
                 PlayerA ->
-                    ( "cardBack.png", Colour.white )
+                    Colour.white
 
                 PlayerB ->
-                    ( "cardBackRed.png", Colour.black )
-
-        mCardBack =
-            Texture.load textures cardBackTexturePath
+                    Colour.black
 
         progress =
             case anim of
@@ -173,8 +151,8 @@ limboingView ctx { position, rotation, scale, card, owner } =
                 _ ->
                     0
     in
-    case ( mTexture, mCardBack ) of
-        ( Just texture, Just cardBackTexture ) ->
+    Texture.with2 textures card.imgURL "cardBack.png" <|
+        \texture cardBackTexture ->
             [ Render.Primitives.quad Render.Shaders.fragmentAlpha <|
                 { texture = cardBackTexture
                 , rotation = rot
@@ -198,9 +176,6 @@ limboingView ctx { position, rotation, scale, card, owner } =
                 , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
                 }
             ]
-
-        _ ->
-            []
 
 
 dissolvingView : Context -> Card.Entity a -> List WebGL.Entity
@@ -287,9 +262,6 @@ fabricatingView ctx { position, rotation, scale, card, owner } =
         pos =
             to3d position
 
-        mTexture =
-            cardTexture textures card
-
         ( cardBackTexturePath, glyphColour ) =
             case owner of
                 PlayerA ->
@@ -297,48 +269,34 @@ fabricatingView ctx { position, rotation, scale, card, owner } =
 
                 PlayerB ->
                     ( "cardBackRed.png", Colour.black )
-
-        mCardBack =
-            Texture.load textures cardBackTexturePath
-
-        mNoise =
-            Texture.load textures "noise.png"
     in
-    case ( mTexture, mCardBack ) of
-        ( Just texture, Just cardBackTexture ) ->
-            case mNoise of
-                Just noise ->
-                    [ Render.Primitives.quad Render.Shaders.disintegrate <|
-                        { texture = cardBackTexture
-                        , noise = noise
-                        , rotation = rot
-                        , scale = makeScale3 (scale * width) (scale * height) 1
-                        , color = Colour.white
-                        , pos = pos
-                        , worldRot = makeRotate 0 (vec3 0 0 1)
-                        , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
-                        , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
-                        , time = 1 - progress
-                        }
-                    , Render.Primitives.quad Render.Shaders.disintegrate <|
-                        { texture = texture
-                        , noise = noise
-                        , rotation = rot
-                        , scale = makeScale3 (scale * 0.6 * width) (scale * 0.6 * height) 1
-                        , color = glyphColour
-                        , pos = pos
-                        , worldRot = makeRotate 0 (vec3 0 0 1)
-                        , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
-                        , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
-                        , time = 1 - progress
-                        }
-                    ]
-
-                _ ->
-                    []
-
-        _ ->
-            []
+    Texture.with3 textures card.imgURL cardBackTexturePath "noise.png" <|
+        \texture cardBackTexture noise ->
+            [ Render.Primitives.quad Render.Shaders.disintegrate <|
+                { texture = cardBackTexture
+                , noise = noise
+                , rotation = rot
+                , scale = makeScale3 (scale * width) (scale * height) 1
+                , color = Colour.white
+                , pos = pos
+                , worldRot = makeRotate 0 (vec3 0 0 1)
+                , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
+                , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
+                , time = 1 - progress
+                }
+            , Render.Primitives.quad Render.Shaders.disintegrate <|
+                { texture = texture
+                , noise = noise
+                , rotation = rot
+                , scale = makeScale3 (scale * 0.6 * width) (scale * 0.6 * height) 1
+                , color = glyphColour
+                , pos = pos
+                , worldRot = makeRotate 0 (vec3 0 0 1)
+                , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
+                , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
+                , time = 1 - progress
+                }
+            ]
 
 
 transmutingView : Context -> StackCard -> StackCard -> Card.Entity a -> List WebGL.Entity
