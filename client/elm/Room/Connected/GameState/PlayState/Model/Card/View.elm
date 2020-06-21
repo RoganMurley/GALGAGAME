@@ -147,30 +147,49 @@ limboingView ctx { position, rotation, scale, card, owner } =
 
                 _ ->
                     0
+
+        orbTexturePath =
+            case owner of
+                PlayerA ->
+                    "cardOrb.png"
+
+                PlayerB ->
+                    "cardOrbOther.png"
     in
-    Texture.with2 textures card.imgURL "cardBack.png" <|
-        \texture cardBackTexture ->
+    Texture.with3 textures card.imgURL orbTexturePath "cardBackBack.png" <|
+        \texture cardOrbTexture cardBackTexture ->
             [ Render.Primitives.quad Render.Shaders.fragmentAlpha <|
                 { texture = cardBackTexture
                 , rotation = rot
                 , scale = makeScale3 (scale * width) (scale * height) 1
-                , color = Colour.white
-                , alpha = progress
+                , color = Colour.cardCol card.col
                 , pos = pos
                 , worldRot = makeRotate 0 (vec3 0 0 1)
                 , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
                 , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
+                , alpha = progress
+                }
+            , Render.Primitives.quad Render.Shaders.fragmentAlpha <|
+                { texture = cardOrbTexture
+                , rotation = rot
+                , scale = makeScale3 (scale * width) (scale * height) 1
+                , color = Colour.white
+                , pos = pos
+                , worldRot = makeRotate 0 (vec3 0 0 1)
+                , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
+                , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
+                , alpha = progress
                 }
             , Render.Primitives.quad Render.Shaders.fragmentAlpha <|
                 { texture = texture
                 , rotation = rot
                 , scale = makeScale3 (scale * 0.6 * width) (scale * 0.6 * height) 1
                 , color = glyphColour
-                , alpha = progress
                 , pos = pos
                 , worldRot = makeRotate 0 (vec3 0 0 1)
                 , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
                 , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
+                , alpha = progress
                 }
             ]
 
