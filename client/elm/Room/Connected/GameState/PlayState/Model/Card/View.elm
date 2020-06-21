@@ -99,8 +99,8 @@ backView { w, h, radius, textures } { position, rotation, scale } =
         { width, height } =
             baseDimensions radius
     in
-    case Texture.load textures "cardBackRed.png" of
-        Just texture ->
+    Texture.with textures "cardBackBack.png" <|
+        \texture ->
             [ Render.Primitives.quad Render.Shaders.fragment <|
                 { rotation = makeRotate rotation <| vec3 0 0 1
                 , scale = makeScale3 (scale * width) (scale * height) 1
@@ -112,9 +112,6 @@ backView { w, h, radius, textures } { position, rotation, scale } =
                 , texture = texture
                 }
             ]
-
-        Nothing ->
-            []
 
 
 limboingView : Context -> Card.Entity a -> List WebGL.Entity
@@ -193,58 +190,61 @@ dissolvingView ctx { position, rotation, scale, card, owner } =
         pos =
             to3d position
 
-        mTexture =
-            cardTexture textures card
-
-        ( cardBackTexturePath, glyphColour ) =
+        glyphColour =
             case owner of
                 PlayerA ->
-                    ( "cardBack.png", Colour.white )
+                    Colour.white
 
                 PlayerB ->
-                    ( "cardBackRed.png", Colour.black )
+                    Colour.black
 
-        mCardBack =
-            Texture.load textures cardBackTexturePath
+        orbTexturePath =
+            case owner of
+                PlayerA ->
+                    "cardOrb.png"
 
-        mNoise =
-            Texture.load textures "noise.png"
+                PlayerB ->
+                    "cardOrbOther.png"
     in
-    case ( mTexture, mCardBack ) of
-        ( Just texture, Just cardBackTexture ) ->
-            case mNoise of
-                Just noise ->
-                    [ Render.Primitives.quad Render.Shaders.disintegrate <|
-                        { texture = cardBackTexture
-                        , noise = noise
-                        , rotation = rot
-                        , scale = makeScale3 (scale * width) (scale * height) 1
-                        , color = Colour.white
-                        , pos = pos
-                        , worldRot = makeRotate 0 (vec3 0 0 1)
-                        , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
-                        , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
-                        , time = progress
-                        }
-                    , Render.Primitives.quad Render.Shaders.disintegrate <|
-                        { texture = texture
-                        , noise = noise
-                        , rotation = rot
-                        , scale = makeScale3 (scale * 0.6 * width) (scale * 0.6 * height) 1
-                        , color = glyphColour
-                        , pos = pos
-                        , worldRot = makeRotate 0 (vec3 0 0 1)
-                        , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
-                        , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
-                        , time = progress
-                        }
-                    ]
-
-                _ ->
-                    []
-
-        _ ->
-            []
+    Texture.with4 textures card.imgURL orbTexturePath "cardBackBack.png" "noise.png" <|
+        \texture cardOrbTexture cardBackTexture noise ->
+            [ Render.Primitives.quad Render.Shaders.disintegrate <|
+                { texture = cardBackTexture
+                , noise = noise
+                , rotation = rot
+                , scale = makeScale3 (scale * width) (scale * height) 1
+                , color = Colour.cardCol card.col
+                , pos = pos
+                , worldRot = makeRotate 0 (vec3 0 0 1)
+                , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
+                , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
+                , time = progress
+                }
+            , Render.Primitives.quad Render.Shaders.disintegrate <|
+                { texture = cardOrbTexture
+                , noise = noise
+                , rotation = rot
+                , scale = makeScale3 (scale * width) (scale * height) 1
+                , color = Colour.white
+                , pos = pos
+                , worldRot = makeRotate 0 (vec3 0 0 1)
+                , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
+                , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
+                , time = progress
+                }
+            , Render.Primitives.quad Render.Shaders.disintegrate <|
+                { texture = texture
+                , noise = noise
+                , rotation = rot
+                , scale = makeScale3 (scale * 0.6 * width) (scale * 0.6 * height) 1
+                , color = glyphColour
+                , pos = pos
+                , worldRot = makeRotate 0 (vec3 0 0 1)
+                , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
+                , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
+                , time = progress
+                }
+            ]
 
 
 fabricatingView : Context -> Card.Entity a -> List WebGL.Entity
@@ -262,18 +262,38 @@ fabricatingView ctx { position, rotation, scale, card, owner } =
         pos =
             to3d position
 
-        ( cardBackTexturePath, glyphColour ) =
+        glyphColour =
             case owner of
                 PlayerA ->
-                    ( "cardBack.png", Colour.white )
+                    Colour.white
 
                 PlayerB ->
-                    ( "cardBackRed.png", Colour.black )
+                    Colour.black
+
+        orbTexturePath =
+            case owner of
+                PlayerA ->
+                    "cardOrb.png"
+
+                PlayerB ->
+                    "cardOrbOther.png"
     in
-    Texture.with3 textures card.imgURL cardBackTexturePath "noise.png" <|
-        \texture cardBackTexture noise ->
+    Texture.with4 textures card.imgURL orbTexturePath "cardBackBack.png" "noise.png" <|
+        \texture cardOrbTexture cardBackTexture noise ->
             [ Render.Primitives.quad Render.Shaders.disintegrate <|
                 { texture = cardBackTexture
+                , noise = noise
+                , rotation = rot
+                , scale = makeScale3 (scale * width) (scale * height) 1
+                , color = Colour.cardCol card.col
+                , pos = pos
+                , worldRot = makeRotate 0 (vec3 0 0 1)
+                , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
+                , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
+                , time = 1 - progress
+                }
+            , Render.Primitives.quad Render.Shaders.disintegrate <|
+                { texture = cardOrbTexture
                 , noise = noise
                 , rotation = rot
                 , scale = makeScale3 (scale * width) (scale * height) 1

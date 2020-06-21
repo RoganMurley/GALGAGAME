@@ -1,4 +1,4 @@
-module Texture.State exposing (defaultOptions, fetchTextures, init, load, save, texturePaths, update, with, with2, with3)
+module Texture.State exposing (defaultOptions, fetchTextures, init, load, save, texturePaths, update, with, with2, with3, with4)
 
 import Dict
 import Ports exposing (log)
@@ -175,6 +175,21 @@ with3 model pathA pathB pathC func =
     case ( load model pathA, load model pathB, load model pathC ) of
         ( Just textureA, Just textureB, Just textureC ) ->
             func textureA textureB textureC
+
+        _ ->
+            []
+
+
+with4 : Model -> String -> String -> String -> String -> (Texture -> Texture -> Texture -> Texture -> List a) -> List a
+with4 model pathA pathB pathC pathD func =
+    case ( load model pathA, load model pathB ) of
+        ( Just textureA, Just textureB ) ->
+            case ( load model pathC, load model pathD ) of
+                ( Just textureC, Just textureD ) ->
+                    func textureA textureB textureC textureD
+
+                _ ->
+                    []
 
         _ ->
             []
