@@ -98,18 +98,34 @@ backView { w, h, radius, textures } { position, rotation, scale } =
     let
         { width, height } =
             baseDimensions radius
+
+        pos =
+            to3d position
+
+        rot =
+            makeRotate rotation <| vec3 0 0 1
     in
-    Texture.with textures "cardBackBack.png" <|
-        \texture ->
+    Texture.with2 textures "cardBackBack.png" "cardOrbOther.png" <|
+        \texture cardOrbTexture ->
             [ Render.Primitives.quad Render.Shaders.fragment <|
-                { rotation = makeRotate rotation <| vec3 0 0 1
+                { rotation = rot
                 , scale = makeScale3 (scale * width) (scale * height) 1
-                , color = Colour.white
-                , pos = to3d position
+                , color = vec3 (200 / 255) (200 / 255) (200 / 255)
+                , pos = pos
                 , worldRot = makeRotate 0 <| vec3 0 0 1
                 , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
                 , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
                 , texture = texture
+                }
+            , Render.Primitives.quad Render.Shaders.fragment <|
+                { rotation = rot
+                , scale = makeScale3 (scale * width) (scale * height) 1
+                , color = Colour.white
+                , pos = pos
+                , worldRot = makeRotate 0 <| vec3 0 0 1
+                , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
+                , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
+                , texture = cardOrbTexture
                 }
             ]
 
@@ -353,62 +369,61 @@ transmutingView ctx stackCard finalStackCard { position, rotation, scale } =
         pos =
             to3d position
 
-        mTexture =
-            cardTexture textures stackCard.card
-
-        mFinalTexture =
-            cardTexture textures finalStackCard.card
-
-        ( mCardBack, glyphColour ) =
+        ( glyphColour, orbTexturePath ) =
             case stackCard.owner of
                 PlayerA ->
-                    ( Texture.load textures "cardBack.png", Colour.white )
+                    ( Colour.white, "cardOrb.png" )
 
                 PlayerB ->
-                    ( Texture.load textures "cardBackRed.png", Colour.black )
+                    ( Colour.black, "cardOrbOther.png" )
 
-        ( mFinalCardBack, finalGlyphColour ) =
+        ( finalGlyphColour, finalOrbTexturePath ) =
             case finalStackCard.owner of
                 PlayerA ->
-                    ( Texture.load textures "cardBack.png", Colour.white )
+                    ( Colour.white, "cardOrb.png" )
 
                 PlayerB ->
-                    ( Texture.load textures "cardBackRed.png", Colour.black )
+                    ( Colour.black, "cardOrbOther.png" )
     in
-    case ( mTexture, mFinalTexture ) of
-        ( Just texture, Just finalTexture ) ->
-            case ( mCardBack, mFinalCardBack ) of
-                ( Just cardBackTexture, Just finalCardBackTexture ) ->
-                    [ Render.Primitives.quad Render.Shaders.fragmentTransmute <|
-                        { texture = cardBackTexture
-                        , finalTexture = finalCardBackTexture
-                        , rotation = rot
-                        , scale = makeScale3 (scale * width) (scale * height) 1
-                        , color = Colour.white
-                        , finalColor = Colour.white
-                        , pos = pos
-                        , worldRot = makeRotate 0 (vec3 0 0 1)
-                        , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
-                        , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
-                        , time = progress
-                        }
-                    , Render.Primitives.quad Render.Shaders.fragmentTransmute <|
-                        { texture = texture
-                        , finalTexture = finalTexture
-                        , rotation = rot
-                        , scale = makeScale3 (scale * 0.6 * width) (scale * 0.6 * height) 1
-                        , color = glyphColour
-                        , finalColor = finalGlyphColour
-                        , pos = pos
-                        , worldRot = makeRotate 0 (vec3 0 0 1)
-                        , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
-                        , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
-                        , time = progress
-                        }
-                    ]
-
-                _ ->
-                    []
-
-        _ ->
-            []
+    Texture.with5 textures stackCard.card.imgURL finalStackCard.card.imgURL orbTexturePath finalOrbTexturePath "cardBackBack.png" <|
+        \texture finalTexture cardOrbTexture finalCardOrbTexture cardBackTexture ->
+            [ Render.Primitives.quad Render.Shaders.fragmentTransmute <|
+                { rotation = rot
+                , scale = makeScale3 (scale * width) (scale * height) 1
+                , color = Colour.cardCol stackCard.card.col
+                , finalColor = Colour.cardCol finalStackCard.card.col
+                , pos = pos
+                , worldRot = makeRotate 0 <| vec3 0 0 1
+                , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
+                , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
+                , texture = cardBackTexture
+                , finalTexture = cardBackTexture
+                , time = progress
+                }
+            , Render.Primitives.quad Render.Shaders.fragmentTransmute <|
+                { rotation = rot
+                , scale = makeScale3 (scale * width) (scale * height) 1
+                , color = Colour.white
+                , finalColor = Colour.white
+                , pos = pos
+                , worldRot = makeRotate 0 <| vec3 0 0 1
+                , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
+                , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
+                , texture = cardOrbTexture
+                , finalTexture = finalCardOrbTexture
+                , time = progress
+                }
+            , Render.Primitives.quad Render.Shaders.fragmentTransmute <|
+                { rotation = rot
+                , scale = makeScale3 (scale * 0.6 * width) (scale * 0.6 * height) 1
+                , color = glyphColour
+                , finalColor = finalGlyphColour
+                , pos = pos
+                , worldRot = makeRotate 0 <| vec3 0 0 1
+                , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
+                , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
+                , texture = texture
+                , finalTexture = finalTexture
+                , time = progress
+                }
+            ]
