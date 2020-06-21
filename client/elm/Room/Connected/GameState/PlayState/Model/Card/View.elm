@@ -1,7 +1,6 @@
 module Card.View exposing (backView, baseDimensions, dissolvingView, fabricatingView, limboingView, transmutingView, view)
 
 import Animation.Types exposing (Anim(..))
-import Card.State exposing (cardTexture)
 import Card.Types as Card
 import Colour
 import Game.Entity as Game
