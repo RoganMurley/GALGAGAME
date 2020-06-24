@@ -8,7 +8,7 @@ import Game.Types exposing (Context)
 import Html exposing (Html, div)
 import Html.Attributes exposing (class, height, width)
 import Math.Matrix4 exposing (makeLookAt, makeOrtho, makeRotate, makeScale3)
-import Math.Vector3 exposing (vec3)
+import Math.Vector3 exposing (Vec3, vec3)
 import Render.Primitives
 import Render.Shaders
 import Render.Types as Render
@@ -123,7 +123,44 @@ webglView { vfx } ctx =
         -- ,
         [ radialView vfx ctx
         , titleView vfx.rotation ctx
+        , numView (floor ctx.w) { x = ctx.w * 0.5, y = ctx.h * 0.3, size = ctx.w * 0.01, color = vec3 1 1 1 } ctx
         ]
+
+
+numToDigits : Int -> List Int
+numToDigits num =
+    if num > 0 then
+        modBy 10 num :: numToDigits (num // 10)
+
+    else
+        []
+
+
+numView : Int -> { x : Float, y : Float, size : Float, color : Vec3 } -> Context -> List WebGL.Entity
+numView num { x, y, size, color } { w, h, textures } =
+    let
+        digits =
+            List.reverse <| numToDigits num
+    in
+    List.concat <|
+        List.indexedMap
+            (\index digit ->
+                Texture.with textures "numeroFontMap.png" <|
+                    \texture ->
+                        [ Render.Primitives.quad Render.Shaders.font
+                            { rotation = makeRotate pi (vec3 0 0 1)
+                            , scale = makeScale3 size size 1
+                            , color = color
+                            , pos = vec3 (x + toFloat index * size * 1.5) y 0
+                            , worldRot = makeRotate 0 (vec3 0 0 1)
+                            , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
+                            , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
+                            , texture = texture
+                            , digit = toFloat digit
+                            }
+                        ]
+            )
+            digits
 
 
 titleView : Float -> Context -> List WebGL.Entity
@@ -133,7 +170,7 @@ titleView tick { w, h, textures } =
             1.4 * max w h
     in
     Texture.with textures "title.png" <|
-        \title ->
+        \texture ->
             [ Render.Primitives.quad Render.Shaders.fragment
                 { rotation = makeRotate pi (vec3 0 0 1)
                 , scale = makeScale3 (0.15 * size + sin (tick * 0.005)) (0.15 * size + sin (tick * 0.007)) 1
@@ -142,7 +179,7 @@ titleView tick { w, h, textures } =
                 , worldRot = makeRotate 0 (vec3 0 0 1)
                 , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
                 , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
-                , texture = title
+                , texture = texture
                 }
             , Render.Primitives.quad Render.Shaders.fragment
                 { rotation = makeRotate pi (vec3 0 0 1)
@@ -152,6 +189,6 @@ titleView tick { w, h, textures } =
                 , worldRot = makeRotate 0 (vec3 0 0 1)
                 , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
                 , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
-                , texture = title
+                , texture = texture
                 }
             ]

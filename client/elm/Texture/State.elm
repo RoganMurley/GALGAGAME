@@ -84,6 +84,7 @@ texturePaths =
     [ -- Testing
       ( "radial.png", "/img/textures/radial.png" )
     , ( "title.png", "/img/textures/title.png" )
+    , ( "numeroFontMap.png", "/img/textures/numeroFontMap.png" )
     , ( "yourTurn.png", "/img/textures/yourTurn.png" )
     , ( "theirTurn.png", "/img/textures/theirTurn.png" )
     , ( "pass.png", "/img/textures/pass.png" )
