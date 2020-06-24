@@ -408,7 +408,7 @@ turnView { anim, model, tick, w, h, radius, textures } focus passed =
                 PlayerA ->
                     ( div [] []
                     , Texture.with textures "yourTurn.png" <|
-                        \title ->
+                        \texture ->
                             [ Render.Primitives.quad Render.Shaders.fragment
                                 { rotation = makeRotate pi (vec3 0 0 1)
                                 , scale = makeScale3 (0.15 * size + sin (tick * 0.005)) (0.15 * size + sin (tick * 0.007)) 1
@@ -417,7 +417,7 @@ turnView { anim, model, tick, w, h, radius, textures } focus passed =
                                 , worldRot = makeRotate 0 (vec3 0 0 1)
                                 , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
                                 , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
-                                , texture = title
+                                , texture = texture
                                 }
                             , Render.Primitives.quad Render.Shaders.fragment
                                 { rotation = makeRotate pi (vec3 0 0 1)
@@ -427,7 +427,7 @@ turnView { anim, model, tick, w, h, radius, textures } focus passed =
                                 , worldRot = makeRotate 0 (vec3 0 0 1)
                                 , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
                                 , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
-                                , texture = title
+                                , texture = texture
                                 }
                             ]
                     )
@@ -435,7 +435,7 @@ turnView { anim, model, tick, w, h, radius, textures } focus passed =
                 PlayerB ->
                     ( div [] []
                     , Texture.with textures "theirTurn.png" <|
-                        \title ->
+                        \texture ->
                             [ Render.Primitives.quad Render.Shaders.fragment
                                 { rotation = makeRotate pi (vec3 0 0 1)
                                 , scale = makeScale3 (0.15 * size + sin (tick * 0.005)) (0.15 * size + sin (tick * 0.007)) 1
@@ -444,7 +444,7 @@ turnView { anim, model, tick, w, h, radius, textures } focus passed =
                                 , worldRot = makeRotate 0 (vec3 0 0 1)
                                 , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
                                 , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
-                                , texture = title
+                                , texture = texture
                                 }
                             , Render.Primitives.quad Render.Shaders.fragment
                                 { rotation = makeRotate pi (vec3 0 0 1)
@@ -454,7 +454,7 @@ turnView { anim, model, tick, w, h, radius, textures } focus passed =
                                 , worldRot = makeRotate 0 (vec3 0 0 1)
                                 , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
                                 , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
-                                , texture = title
+                                , texture = texture
                                 }
                             ]
                     )
@@ -462,7 +462,7 @@ turnView { anim, model, tick, w, h, radius, textures } focus passed =
         ( Pass _, _, _ ) ->
             ( div [] []
             , Texture.with textures "pass.png" <|
-                \title ->
+                \texture ->
                     [ Render.Primitives.quad Render.Shaders.fragment
                         { rotation = makeRotate pi (vec3 0 0 1)
                         , scale = makeScale3 (0.15 * size + sin (tick * 0.005)) (0.15 * size + sin (tick * 0.007)) 1
@@ -471,7 +471,7 @@ turnView { anim, model, tick, w, h, radius, textures } focus passed =
                         , worldRot = makeRotate 0 (vec3 0 0 1)
                         , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
                         , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
-                        , texture = title
+                        , texture = texture
                         }
                     , Render.Primitives.quad Render.Shaders.fragment
                         { rotation = makeRotate pi (vec3 0 0 1)
@@ -481,7 +481,7 @@ turnView { anim, model, tick, w, h, radius, textures } focus passed =
                         , worldRot = makeRotate 0 (vec3 0 0 1)
                         , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
                         , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
-                        , texture = title
+                        , texture = texture
                         }
                     ]
             )
