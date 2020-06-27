@@ -18,10 +18,11 @@ import Html.Events exposing (onClick)
 import Main.Messages as Main
 import Math.Matrix4 exposing (makeLookAt, makeOrtho, makeRotate, makeScale3)
 import Math.Vector2 exposing (vec2)
-import Math.Vector3 exposing (vec3)
+import Math.Vector3 exposing (Vec3, vec3)
 import Maybe.Extra as Maybe
 import Model.Wave as Wave
 import PlayState.Messages as PlayState
+import Render.Int
 import Render.Primitives
 import Render.Shaders
 import Render.Types as Render
@@ -68,12 +69,14 @@ view { w, h, pixelRatio } { res, hover, focus, entities, passed, feedback, vfx }
                     , Hand.millView
 
                     -- , Background.cursorView
+                    , damageWebGl hover
                     , feedbackView feedback
                     ]
             )
         , div [ class "text-focus" ] [ focusTextView ctx focus ]
         , div [ class "clock-life-container" ] (lifeTextView ctx)
-        , div [ class "clock-damage-container" ] (damageTextView hover ctx)
+
+        -- , div [ class "clock-damage-container" ] (damageTextView hover ctx)
         , turnHtml
         , goButtonView ctx passed
         ]
@@ -261,8 +264,85 @@ lifeTextView { radius, model } =
     ]
 
 
-damageTextView : HoverSelf -> Context -> List (Html a)
-damageTextView hover { radius, resolving, animDamage } =
+
+-- damageTextView : HoverSelf -> Context -> List (Html a)
+-- damageTextView hover { radius, resolving, animDamage } =
+--     let
+--         hoverDmg =
+--             case hover of
+--                 HoverHand { dmg } ->
+--                     Just dmg
+--
+--                 HoverStack { dmg } ->
+--                     Just dmg
+--
+--                 NoHover ->
+--                     Nothing
+--
+--         ( damage, otherDamage ) =
+--             case hoverDmg of
+--                 Just dmg ->
+--                     if resolving then
+--                         animDamage
+--
+--                     else
+--                         let
+--                             ( dmgA, dmgB ) =
+--                                 dmg
+--                         in
+--                         ( toFloat dmgA, toFloat dmgB )
+--
+--                 Nothing ->
+--                     animDamage
+--
+--         damageToString : Float -> String
+--         damageToString d =
+--             if d > 0 then
+--                 "+" ++ String.fromFloat d
+--
+--             else
+--                 String.fromFloat d
+--
+--         damageToCssColour : Float -> String
+--         damageToCssColour d =
+--             if d > 0 then
+--                 "#45f273"
+--
+--             else
+--                 "#ff3232"
+--     in
+--     List.concat
+--         [ if damage /= 0 then
+--             [ div
+--                 [ class "clock-damage"
+--                 , style "right" (0.28 * radius |> px)
+--                 , style "bottom" (0.75 * radius |> px)
+--                 , style "font-size" (0.2 * radius |> px)
+--                 , style "color" (damageToCssColour damage)
+--                 ]
+--                 [ text <| damageToString damage ]
+--             ]
+--
+--           else
+--             []
+--         , if otherDamage /= 0 then
+--             [ div
+--                 [ class "clock-damage"
+--                 , style "left" (0.22 * radius |> px)
+--                 , style "bottom" (0.75 * radius |> px)
+--                 , style "font-size" (0.2 * radius |> px)
+--                 , style "color" (damageToCssColour otherDamage)
+--                 ]
+--                 [ text <| damageToString otherDamage ]
+--             ]
+--
+--           else
+--             []
+--         ]
+
+
+damageWebGl : HoverSelf -> Context -> List WebGL.Entity
+damageWebGl hover ({ w, h, radius, resolving, animDamage } as ctx) =
     let
         hoverDmg =
             case hover of
@@ -291,46 +371,45 @@ damageTextView hover { radius, resolving, animDamage } =
                 Nothing ->
                     animDamage
 
-        damageToString : Float -> String
-        damageToString d =
+        damageToColour : Float -> Vec3
+        damageToColour d =
             if d > 0 then
-                "+" ++ String.fromFloat d
+                vec3 0 1 0
 
             else
-                String.fromFloat d
+                vec3 1 0 0
 
-        damageToCssColour : Float -> String
-        damageToCssColour d =
-            if d > 0 then
-                "#45f273"
+        scale =
+            w * 0.03
 
-            else
-                "#ff3232"
+        xOffset =
+            0.4 * radius
+
+        yOffset =
+            0.9 * radius
     in
     List.concat
         [ if damage /= 0 then
-            [ div
-                [ class "clock-damage"
-                , style "right" (0.28 * radius |> px)
-                , style "bottom" (0.75 * radius |> px)
-                , style "font-size" (0.2 * radius |> px)
-                , style "color" (damageToCssColour damage)
-                ]
-                [ text <| damageToString damage ]
-            ]
+            Render.Int.view
+                (abs <| floor <| damage)
+                { x = 0.5 * w - xOffset
+                , y = 0.5 * h - yOffset
+                , scale = scale
+                , color = damageToColour damage
+                }
+                ctx
 
           else
             []
         , if otherDamage /= 0 then
-            [ div
-                [ class "clock-damage"
-                , style "left" (0.22 * radius |> px)
-                , style "bottom" (0.75 * radius |> px)
-                , style "font-size" (0.2 * radius |> px)
-                , style "color" (damageToCssColour otherDamage)
-                ]
-                [ text <| damageToString otherDamage ]
-            ]
+            Render.Int.view
+                (abs <| floor <| otherDamage)
+                { x = 0.5 * w + xOffset
+                , y = 0.5 * h - yOffset
+                , scale = scale
+                , color = damageToColour otherDamage
+                }
+                ctx
 
           else
             []
