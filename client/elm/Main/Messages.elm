@@ -1,6 +1,7 @@
 module Main.Messages exposing (Msg(..))
 
 import Browser exposing (UrlRequest)
+import Font.Messages as Font
 import Http
 import Keyboard exposing (Key)
 import Mouse
@@ -29,6 +30,7 @@ type Msg
     | SettingsMsg Settings.Msg
     | SetVolume VolumeType Int
     | TextureMsg Texture.Msg
+    | FontMsg Font.Msg
     | TouchPosition (Maybe Mouse.Position)
     | UrlChange Url
     | UrlRequest UrlRequest
