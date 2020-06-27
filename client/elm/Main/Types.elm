@@ -1,6 +1,7 @@
 module Main.Types exposing (Flags, InputFlags, Model, Seed)
 
 import Browser.Navigation
+import Font.Types as Font
 import Math.Vector2 exposing (Vec2)
 import Room.Types as Room
 import Settings.Types as Settings
@@ -12,6 +13,7 @@ type alias Model =
     , flags : Flags
     , settings : Settings.Model
     , textures : Texture.Model
+    , fonts : Font.Model
     }
 
 

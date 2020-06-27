@@ -6,6 +6,7 @@ import Browser.Events
 import Browser.Navigation
 import Connected.Messages as Connected
 import Feedback.State as Feedback
+import Font.State as Font
 import GameState.Messages as GameState
 import GameState.Types exposing (GameState(..))
 import GameType
@@ -44,22 +45,27 @@ init flags url initialVolume =
         fetchTextures =
             List.map (Cmd.map TextureMsg) Texture.fetchTextures
 
+        fetchFont : List (Cmd Msg)
+        fetchFont =
+            List.map (Cmd.map FontMsg) Font.fetch
+
         ( model, cmd ) =
             locationUpdate
                 { room = Room.init
                 , flags = flags
                 , settings = Settings.init initialVolume
                 , textures = Texture.init
+                , fonts = Font.init
                 }
                 url
     in
     ( model
-    , Cmd.batch (cmd :: fetchTextures ++ fetchSounds)
+    , Cmd.batch (cmd :: fetchFont ++ fetchTextures ++ fetchSounds)
     )
 
 
 update : Msg -> Main.Model -> ( Main.Model, Cmd Msg )
-update msg ({ room, settings, textures, flags } as model) =
+update msg ({ room, settings, textures, flags, fonts } as model) =
     case msg of
         CopyInput elementId ->
             ( model, copyInput elementId )
@@ -255,6 +261,15 @@ update msg ({ room, settings, textures, flags } as model) =
             in
             ( { model | textures = newTextures }
             , Cmd.map TextureMsg cmd
+            )
+
+        FontMsg fontMsg ->
+            let
+                ( newFonts, cmd ) =
+                    Font.update fontMsg fonts
+            in
+            ( { model | fonts = newFonts }
+            , Cmd.map FontMsg cmd
             )
 
         TouchPosition pos ->

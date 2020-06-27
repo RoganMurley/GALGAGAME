@@ -83,6 +83,7 @@ texturePaths : List ( String, String )
 texturePaths =
     [ -- Testing
       ( "radial.png", "/img/textures/radial.png" )
+    , ( "fontmap.png", "/fonts/fontmap.png" )
     , ( "title.png", "/img/textures/title.png" )
     , ( "numeroFontMap.png", "/img/textures/numeroFontMap.png" )
     , ( "yourTurn.png", "/img/textures/yourTurn.png" )
