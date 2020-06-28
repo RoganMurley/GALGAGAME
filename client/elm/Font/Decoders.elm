@@ -2,7 +2,7 @@ module Font.Decoders exposing (decoder)
 
 import Dict
 import Font.Types exposing (Font, FontChar)
-import Json.Decode as Json exposing (Decoder, field, int)
+import Json.Decode as Json exposing (Decoder, field, float)
 import List
 import Result
 import String
@@ -49,10 +49,10 @@ decoder =
 fontCharDecoder : Decoder FontChar
 fontCharDecoder =
     Json.map7 FontChar
-        (field "x" int)
-        (field "y" int)
-        (field "width" int)
-        (field "height" int)
-        (field "originX" int)
-        (field "originY" int)
-        (field "advance" int)
+        (field "x" float)
+        (field "y" float)
+        (field "width" float)
+        (field "height" float)
+        (field "originX" float)
+        (field "originY" float)
+        (field "advance" float)

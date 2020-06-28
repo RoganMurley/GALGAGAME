@@ -3,6 +3,8 @@ module Background.View exposing (backgroundView, cursorView, ornateView, radialV
 import Animation.State as Animation
 import Animation.Types exposing (Anim(..))
 import Colour
+import Font.State as Font
+import Font.Types as Font
 import Game.State exposing (bareContextInit)
 import Game.Types exposing (Context)
 import Html exposing (Html, div)
@@ -21,14 +23,14 @@ import WebGL
 import WhichPlayer.Types exposing (WhichPlayer(..))
 
 
-view : Flags -> Texture.Model -> Anim -> Html msg
-view { dimensions, pixelRatio, time } textures anim =
+view : Flags -> Texture.Model -> Font.Model -> Anim -> Html msg
+view { dimensions, pixelRatio, time } textures fonts anim =
     let
         ( w, h ) =
             dimensions
 
         baseCtx =
-            bareContextInit dimensions textures Nothing
+            bareContextInit dimensions textures fonts Nothing
 
         ctx =
             { baseCtx | anim = anim, progress = time / 4000 }

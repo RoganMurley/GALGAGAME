@@ -12,11 +12,11 @@ type alias Font =
 
 
 type alias FontChar =
-    { x : Int
-    , y : Int
-    , width : Int
-    , height : Int
-    , originX : Int
-    , originY : Int
-    , advance : Int
+    { x : Float
+    , y : Float
+    , width : Float
+    , height : Float
+    , originX : Float
+    , originY : Float
+    , advance : Float
     }

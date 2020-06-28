@@ -4,6 +4,7 @@ import Animation.Types exposing (Anim(..))
 import Background.View as Background
 import Connected.Messages as Connected
 import DeckBuilding.View as DeckBuilding
+import Font.Types as Font
 import GameState.Messages exposing (Msg(..))
 import GameState.Types exposing (GameState(..), WaitType(..))
 import GameType exposing (GameType)
@@ -17,11 +18,11 @@ import Room.Messages as Room
 import Texture.Types as Texture
 
 
-view : GameState -> String -> Flags -> Maybe GameType -> Bool -> Texture.Model -> Html Main.Msg
-view state roomID flags gameType isReplay textures =
+view : GameState -> String -> Flags -> Maybe GameType -> Bool -> Texture.Model -> Font.Model -> Html Main.Msg
+view state roomID flags gameType isReplay textures fonts =
     case state of
         Waiting waitType ->
-            div [] [ waitingView waitType flags textures roomID ]
+            div [] [ waitingView waitType flags textures fonts roomID ]
 
         Selecting model ->
             let
@@ -42,14 +43,14 @@ view state roomID flags gameType isReplay textures =
                     << SelectingMsg
                 )
             <|
-                DeckBuilding.view params model textures
+                DeckBuilding.view params model textures fonts
 
         Started playState ->
-            PlayState.view playState flags gameType isReplay textures
+            PlayState.view playState flags gameType isReplay textures fonts
 
 
-waitingView : WaitType -> Flags -> Texture.Model -> String -> Html Main.Msg
-waitingView waitType ({ httpPort, hostname } as flags) textures roomID =
+waitingView : WaitType -> Flags -> Texture.Model -> Font.Model -> String -> Html Main.Msg
+waitingView waitType ({ httpPort, hostname } as flags) textures fonts roomID =
     let
         portProtocol =
             if httpPort /= "" then
@@ -77,7 +78,7 @@ waitingView waitType ({ httpPort, hostname } as flags) textures roomID =
             case waitType of
                 WaitCustom ->
                     div []
-                        [ Background.view flags textures Finding
+                        [ Background.view flags textures fonts Finding
                         , div [ class "input-group" ]
                             [ input
                                 [ value challengeLink
@@ -94,7 +95,7 @@ waitingView waitType ({ httpPort, hostname } as flags) textures roomID =
                         ]
 
                 WaitQuickplay ->
-                    Background.view flags textures Finding
+                    Background.view flags textures fonts Finding
     in
     div [ class "waiting" ]
         [ div [ class "waiting-prompt" ]

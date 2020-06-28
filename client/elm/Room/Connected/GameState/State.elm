@@ -1,6 +1,7 @@
 module GameState.State exposing (tick, update)
 
 import DeckBuilding.State as DeckBuilding
+import Font.State as Font
 import Game.State exposing (bareContextInit)
 import GameState.Decoders exposing (stateDecoder)
 import GameState.Messages exposing (Msg(..))
@@ -131,7 +132,7 @@ tick flags state dt =
         Selecting selecting ->
             let
                 ctx =
-                    bareContextInit flags.dimensions Texture.init flags.mouse
+                    bareContextInit flags.dimensions Texture.init Font.init flags.mouse
 
                 newSelecting =
                     DeckBuilding.tick ctx dt selecting

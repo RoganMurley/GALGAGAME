@@ -2,6 +2,7 @@ module Connected.View exposing (concedeView, playersView, specMenuView, titleVie
 
 import Connected.Messages as Connected
 import Connected.Types exposing (Model, Players)
+import Font.Types as Font
 import GameState.Types exposing (GameState(..))
 import GameState.View as GameState
 import Html exposing (Html, button, div, input, text)
@@ -13,11 +14,11 @@ import PlayState.Types exposing (PlayState(..))
 import Texture.Types as Texture
 
 
-view : Model -> Flags -> Texture.Model -> Html Msg
-view { game, gameType, roomID, players } flags textures =
+view : Model -> Flags -> Texture.Model -> Font.Model -> Html Msg
+view { game, gameType, roomID, players } flags textures fonts =
     div []
         [ playersView players
-        , GameState.view game roomID flags (Just gameType) False textures
+        , GameState.view game roomID flags (Just gameType) False textures fonts
         ]
 
 
