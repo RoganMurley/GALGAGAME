@@ -2,6 +2,7 @@ module Game.Types exposing (Context, Entities, Feedback, HandEntity, Hover(..), 
 
 import Animation.Types exposing (Anim)
 import Card.Types exposing (Card)
+import Font.Types as Font
 import Game.Entity as Game
 import Math.Vector2 exposing (Vec2)
 import Model.Types as Model
@@ -35,6 +36,7 @@ type alias Context =
     , model : Model.Model
     , stackCard : Maybe StackCard
     , textures : Texture.Model
+    , fonts : Font.Model
     , resolving : Bool
     , mouse : Maybe Vec2
     }

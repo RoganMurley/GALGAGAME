@@ -2,6 +2,7 @@ module Room.View exposing (titleView, view)
 
 import Connected.View as Connected
 import Feedback.View as Feedback
+import Font.Types as Font
 import Html as Html exposing (Html, div)
 import Lobby.View as Lobby
 import Login.View as Login
@@ -17,8 +18,8 @@ import Signup.View as Signup
 import Texture.Types as Texture
 
 
-view : Model -> Settings.Model -> Flags -> Texture.Model -> Html Main.Msg
-view model settings flags textures =
+view : Model -> Settings.Model -> Flags -> Texture.Model -> Font.Model -> Html Main.Msg
+view model settings flags textures fonts =
     let
         roomView =
             case model of
@@ -31,10 +32,10 @@ view model settings flags textures =
                         Lobby.view lobby
 
                 Connected connected ->
-                    Connected.view connected flags textures
+                    Connected.view connected flags textures fonts
 
                 Replay replay ->
-                    Replay.view replay flags textures
+                    Replay.view replay flags textures fonts
 
                 Login login ->
                     Html.map (Main.RoomMsg << LoginMsg) <|

@@ -7,6 +7,9 @@ import Card.State exposing (cardTexture)
 import Colour
 import Connected.Messages as Connected
 import Ease
+import Font.State as Font
+import Font.Types as Font
+import Font.View as Font
 import Game.State exposing (contextInit)
 import Game.Types as Game exposing (Context, Feedback, Hover(..), HoverSelf)
 import GameState.Messages as GameState
@@ -22,7 +25,6 @@ import Math.Vector3 exposing (Vec3, vec3)
 import Maybe.Extra as Maybe
 import Model.Wave as Wave
 import PlayState.Messages as PlayState
-import Render.Int
 import Render.Primitives
 import Render.Shaders
 import Render.Types as Render
@@ -38,11 +40,11 @@ import WebGL
 import WhichPlayer.Types exposing (WhichPlayer(..))
 
 
-view : Render.Params -> Game.Model -> Texture.Model -> Html Main.Msg
-view { w, h, pixelRatio } { res, hover, focus, entities, passed, feedback, vfx } textures =
+view : Render.Params -> Game.Model -> Texture.Model -> Font.Model -> Html Main.Msg
+view { w, h, pixelRatio } { res, hover, focus, entities, passed, feedback, vfx } textures fonts =
     let
         ctx =
-            contextInit ( w, h ) res textures Nothing
+            contextInit ( w, h ) res textures fonts Nothing
 
         ( turnHtml, turnWebGl ) =
             turnView ctx focus passed
@@ -379,8 +381,16 @@ damageWebGl hover ({ w, h, radius, resolving, animDamage } as ctx) =
             else
                 vec3 1 0 0
 
+        damageToString : Float -> String
+        damageToString d =
+            if d > 0 then
+                "+" ++ String.fromFloat d
+
+            else
+                String.fromFloat d
+
         scale =
-            w * 0.03
+            1
 
         xOffset =
             0.4 * radius
@@ -390,8 +400,8 @@ damageWebGl hover ({ w, h, radius, resolving, animDamage } as ctx) =
     in
     List.concat
         [ if damage /= 0 then
-            Render.Int.view
-                (abs <| floor <| damage)
+            Font.view "myfont"
+                (damageToString damage)
                 { x = 0.5 * w - xOffset
                 , y = 0.5 * h - yOffset
                 , scale = scale
@@ -402,8 +412,8 @@ damageWebGl hover ({ w, h, radius, resolving, animDamage } as ctx) =
           else
             []
         , if otherDamage /= 0 then
-            Render.Int.view
-                (abs <| floor <| otherDamage)
+            Font.view "myfont"
+                (damageToString otherDamage)
                 { x = 0.5 * w + xOffset
                 , y = 0.5 * h - yOffset
                 , scale = scale

@@ -3,6 +3,8 @@ module DeckBuilding.View exposing (view)
 import Background.View exposing (radialView)
 import DeckBuilding.Messages exposing (Msg(..))
 import DeckBuilding.Types exposing (Model)
+import Font.Types as Font
+import Font.View as Font
 import Game.State exposing (bareContextInit)
 import Game.Types exposing (Context)
 import Html exposing (Html, div)
@@ -21,11 +23,11 @@ import WebGL.Texture as WebGL
 import WhichPlayer.Types exposing (WhichPlayer(..))
 
 
-view : Render.Params -> Model -> Texture.Model -> Html Msg
-view { w, h, pixelRatio } model textures =
+view : Render.Params -> Model -> Texture.Model -> Font.Model -> Html Msg
+view { w, h, pixelRatio } model textures fonts =
     let
         ctx =
-            bareContextInit ( w, h ) textures Nothing
+            bareContextInit ( w, h ) textures fonts Nothing
     in
     div [ class "clock" ]
         [ WebGL.toHtml
@@ -97,7 +99,7 @@ webglView { vfx } ctx =
     -- teaPop =
     --     10 * Ease.outBounce teaProgress
     -- in
-    List.concat
+    List.concat <|
         -- [ [ Render.Primitives.circle <|
         --         uniColourMag ctx
         --             Colour.tea
@@ -121,9 +123,11 @@ webglView { vfx } ctx =
         --             }
         --         ]
         -- ,
-        [ radialView vfx ctx
-        , titleView vfx.rotation ctx
-        ]
+        List.map ((|>) ctx)
+            [ radialView vfx
+            , titleView vfx.rotation
+            , Font.view "myfont" "Galgagame!" { x = ctx.w * 0.5, y = ctx.h * 0.5, scale = abs (sin (0.001 * vfx.rotation)), color = vec3 1 1 1 }
+            ]
 
 
 titleView : Float -> Context -> List WebGL.Entity

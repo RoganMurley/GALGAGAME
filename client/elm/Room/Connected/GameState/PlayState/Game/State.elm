@@ -3,6 +3,8 @@ module Game.State exposing (bareContextInit, contextInit, entitiesInit, gameInit
 import Animation.State as Animation
 import Animation.Types as Animation
 import Collision exposing (hitTest)
+import Font.State as Font
+import Font.Types as Font
 import Game.Types as Game exposing (Context, Entities, Feedback, HandEntity, Hover(..), HoverBase, HoverSelf, StackEntity)
 import Hand.Entities as Hand
 import List.Extra as List
@@ -36,8 +38,8 @@ gameInit model =
     }
 
 
-contextInit : ( Int, Int ) -> Resolvable.Model -> Texture.Model -> Maybe Vec2 -> Context
-contextInit ( width, height ) res textures mouse =
+contextInit : ( Int, Int ) -> Resolvable.Model -> Texture.Model -> Font.Model -> Maybe Vec2 -> Context
+contextInit ( width, height ) res textures fonts mouse =
     let
         w =
             toFloat width
@@ -68,18 +70,19 @@ contextInit ( width, height ) res textures mouse =
     , tick = res.tick
     , progress = Animation.progress anim res.tick
     , textures = textures
+    , fonts = fonts
     , resolving = resolving res
     , mouse = mouse
     }
 
 
-bareContextInit : ( Int, Int ) -> Texture.Model -> Maybe Vec2 -> Context
-bareContextInit dimensions textures mouse =
+bareContextInit : ( Int, Int ) -> Texture.Model -> Font.Model -> Maybe Vec2 -> Context
+bareContextInit dimensions textures fonts mouse =
     let
         res =
             Resolvable.init Model.init []
     in
-    contextInit dimensions res textures mouse
+    contextInit dimensions res textures fonts mouse
 
 
 entitiesInit : Entities
@@ -110,7 +113,7 @@ tick { dimensions, mouse } dt model =
             Resolvable.tick dt model.res
 
         ctx =
-            contextInit dimensions res Texture.init mouse
+            contextInit dimensions res Texture.init Font.init mouse
 
         hoverHand =
             getHoverHand model mouse
