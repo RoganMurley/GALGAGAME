@@ -43,7 +43,7 @@ init flags url initialVolume =
     let
         fetchTextures : List (Cmd Msg)
         fetchTextures =
-            List.map (Cmd.map TextureMsg) Texture.fetchTextures
+            List.map (Cmd.map TextureMsg) Texture.fetch
 
         fetchFont : List (Cmd Msg)
         fetchFont =
