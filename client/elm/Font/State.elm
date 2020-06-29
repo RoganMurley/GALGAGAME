@@ -1,9 +1,9 @@
-module Font.State exposing (fetch, init, update)
+module Font.State exposing (fetch, fontPaths, init, update)
 
 import Dict
 import Font.Decoders as Font
 import Font.Messages exposing (Msg(..))
-import Font.Types exposing (Font, Model)
+import Font.Types exposing (Font, FontPath, Model)
 import Http
 import Ports exposing (log)
 import Task exposing (Task)
@@ -32,14 +32,14 @@ save model name font =
 fetch : List (Cmd Msg)
 fetch =
     let
-        loader : ( String, String ) -> Task Http.Error ( String, Font )
-        loader ( name, fontPath ) =
+        loader : FontPath -> Task Http.Error ( String, Font )
+        loader { name, jsonPath } =
             let
                 task : Task.Task Http.Error Font
                 task =
                     Http.toTask <|
                         Http.get
-                            fontPath
+                            jsonPath
                             Font.decoder
             in
             Task.map
@@ -58,7 +58,8 @@ fetch =
     List.map (loader >> Task.attempt handler) fontPaths
 
 
-fontPaths : List ( String, String )
+fontPaths : List FontPath
 fontPaths =
-    [ ( "myfont", "/fonts/fontmap.json" )
+    [ { name = "Rock Salt", jsonPath = "/fonts/rock_salt/fontmap.json", texturePath = "/fonts/rock_salt/fontmap.png" }
+    , { name = "Futura", jsonPath = "/fonts/futura/fontmap.json", texturePath = "/fonts/futura/fontmap.png" }
     ]

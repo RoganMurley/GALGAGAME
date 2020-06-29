@@ -13,9 +13,9 @@ import WebGL
 import WebGL.Texture
 
 
-view : String -> String -> { color : Vec3, scale : Float, x : Float, y : Float } -> Context -> List WebGL.Entity
+view : String -> String -> { color : Vec3, scaleX : Float, scaleY : Float, x : Float, y : Float } -> Context -> List WebGL.Entity
 view fontName text entity { fonts, textures, w, h } =
-    Texture.with textures "fontmap.png" <|
+    Texture.with textures fontName <|
         \texture ->
             case Dict.get fontName fonts.fonts of
                 Just font ->
@@ -29,13 +29,9 @@ view fontName text entity { fonts, textures, w, h } =
                         textWidth : Float
                         textWidth =
                             List.foldl
-                                (\char acc -> entity.scale * char.advance + acc)
+                                (\char acc -> entity.scaleX * char.advance + acc)
                                 0
                                 chars
-
-                        xCentring : Float
-                        xCentring =
-                            textWidth
 
                         ( textureWidth, textureHeight ) =
                             WebGL.Texture.size texture
@@ -46,12 +42,12 @@ view fontName text entity { fonts, textures, w, h } =
                                 newEntities =
                                     Render.Primitives.quad Font.Shaders.char
                                         { rotation = makeRotate pi (vec3 0 0 1)
-                                        , scale = makeScale3 (entity.scale * width) (entity.scale * height) 1
+                                        , scale = makeScale3 (entity.scaleX * width) (entity.scaleY * height) 1
                                         , color = entity.color
                                         , pos =
                                             vec3
-                                                (entity.x + offset - xCentring - entity.scale * originX + entity.scale * width)
-                                                (entity.y - entity.scale * originY + entity.scale * height)
+                                                (entity.x + offset - textWidth - entity.scaleX * originX + entity.scaleX * width)
+                                                (entity.y - entity.scaleY * originY + entity.scaleY * height)
                                                 0
                                         , worldRot = makeRotate 0 (vec3 0 0 1)
                                         , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
@@ -66,7 +62,7 @@ view fontName text entity { fonts, textures, w, h } =
                                         }
                                         :: entities
                             in
-                            ( offset + entity.scale * width + entity.scale * advance, newEntities )
+                            ( offset + entity.scaleX * width + entity.scaleX * advance, newEntities )
                     in
                     Tuple.second <|
                         List.foldl charView ( 0, [] ) chars

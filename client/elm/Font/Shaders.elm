@@ -30,7 +30,6 @@ char =
             );
             vec4 sample = texture2D(texture, uv);
             gl_FragColor = vec4(color, step(1. - sample.z, 0.99));
-            //gl_FragColor = vec4(color, step(sample.z, 0.99));
         }
 
     |]

@@ -1,4 +1,4 @@
-module Font.Types exposing (Font, FontChar, Model)
+module Font.Types exposing (Font, FontChar, FontPath, Model)
 
 import Dict exposing (Dict)
 
@@ -19,4 +19,11 @@ type alias FontChar =
     , originX : Float
     , originY : Float
     , advance : Float
+    }
+
+
+type alias FontPath =
+    { name : String
+    , jsonPath : String
+    , texturePath : String
     }

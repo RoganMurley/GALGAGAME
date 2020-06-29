@@ -1,4 +1,4 @@
-module Render.Shaders exposing (circleFragment, disintegrate, font, fragment, fragmentAlpha, fragmentTransmute, fullCircleFragment, matte, ornate, starfield, trail, vertex)
+module Render.Shaders exposing (circleFragment, disintegrate, fragment, fragmentAlpha, fragmentTransmute, fullCircleFragment, matte, ornate, starfield, trail, vertex)
 
 import Math.Vector2 exposing (Vec2)
 import Math.Vector3 exposing (Vec3)
@@ -267,33 +267,6 @@ starfield =
             vec3 random = texture2D(texture, uv).rgb;
             vec3 finalColor = color * (random + brightness);
             gl_FragColor = vec4(finalColor, 1.);
-        }
-
-    |]
-
-
-font : Shader {} (Uniforms { digit : Float, texture : Texture }) { vcoord : Vec2 }
-font =
-    [glsl|
-        precision mediump float;
-
-        uniform vec3 color;
-        uniform sampler2D texture;
-        uniform float digit;
-
-        varying vec2 vcoord;
-
-        void main ()
-        {
-            const float WIDTH_RATIO = .1;
-            const float HEIGHT_RATIO = .156;
-
-            vec2 uv = vec2(
-                vcoord.x * WIDTH_RATIO + digit * WIDTH_RATIO,
-                1. - HEIGHT_RATIO + vcoord.y * HEIGHT_RATIO
-            );
-
-            gl_FragColor = texture2D(texture, uv) * vec4(color, 1.);
         }
 
     |]
