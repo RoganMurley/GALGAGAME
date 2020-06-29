@@ -1,9 +1,9 @@
-module Texture.State exposing (defaultOptions, fetchTextures, init, load, save, texturePaths, update, with, with2, with3, with4, with5)
+module Texture.State exposing (defaultOptions, fetch, init, load, save, texturePaths, update, with, with2, with3, with4, with5)
 
 import Dict
+import Fetcher
 import Font.State exposing (fontPaths)
 import Ports exposing (log)
-import Task
 import Texture.Messages exposing (Msg(..))
 import Texture.Types exposing (Model)
 import WebGL.Texture exposing (Error(..), Texture)
@@ -49,26 +49,19 @@ defaultOptions =
     WebGL.Texture.defaultOptions
 
 
-fetchTextures : List (Cmd Msg)
-fetchTextures =
+fetch : List (Cmd Msg)
+fetch =
     let
-        loader : ( String, String ) -> Task.Task WebGL.Texture.Error ( String, Texture )
-        loader ( name, texturePath ) =
-            let
-                task : Task.Task WebGL.Texture.Error Texture
-                task =
-                    WebGL.Texture.loadWith
-                        { defaultOptions
-                            | magnify = WebGL.Texture.nearest
-                            , minify = WebGL.Texture.nearest
-                        }
-                        texturePath
-            in
-            Task.map
-                (\texture -> ( name, texture ))
-                task
+        loader : Fetcher.Loader Texture WebGL.Texture.Error
+        loader { path } =
+            WebGL.Texture.loadWith
+                { defaultOptions
+                    | magnify = WebGL.Texture.nearest
+                    , minify = WebGL.Texture.nearest
+                }
+                path
 
-        handler : Result WebGL.Texture.Error ( String, Texture ) -> Msg
+        handler : Fetcher.Handler Texture WebGL.Texture.Error Msg
         handler result =
             case result of
                 Err error ->
@@ -77,82 +70,83 @@ fetchTextures =
                 Ok textures ->
                     TexturesLoaded textures
 
-        fontTexturePaths : List ( String, String )
-        fontTexturePaths =
-            List.map (\{ name, texturePath } -> ( name, texturePath )) fontPaths
+        paths : List Fetcher.Path
+        paths =
+            texturePaths
+                ++ List.map
+                    (\{ name, texturePath } -> { name = name, path = texturePath })
+                    fontPaths
     in
-    List.map
-        (loader >> Task.attempt handler)
-        (fontTexturePaths ++ texturePaths)
+    Fetcher.fetch loader handler paths
 
 
-texturePaths : List ( String, String )
+texturePaths : List Fetcher.Path
 texturePaths =
     [ -- Testing
-      ( "radial.png", "/img/textures/radial.png" )
-    , ( "yourTurn.png", "/img/textures/yourTurn.png" )
-    , ( "theirTurn.png", "/img/textures/theirTurn.png" )
-    , ( "pass.png", "/img/textures/pass.png" )
-    , ( "cardBack.png", "/img/textures/cardBackNegative.png" )
-    , ( "cardBackRed.png", "/img/textures/cardBackRed.png" )
-    , ( "cardBackBack.png", "/img/textures/cardBackBack.png" )
-    , ( "cardOrb.png", "/img/textures/cardOrb.png" )
-    , ( "cardOrbOther.png", "/img/textures/cardOrbOther.png" )
-    , ( "stain.png", "/img/textures/stain.png" )
-    , ( "tea.png", "/img/textures/tea.png" )
+      { name = "radial.png", path = "/img/textures/radial.png" }
+    , { name = "yourTurn.png", path = "/img/textures/yourTurn.png" }
+    , { name = "theirTurn.png", path = "/img/textures/theirTurn.png" }
+    , { name = "pass.png", path = "/img/textures/pass.png" }
+    , { name = "cardBack.png", path = "/img/textures/cardBackNegative.png" }
+    , { name = "cardBackRed.png", path = "/img/textures/cardBackRed.png" }
+    , { name = "cardBackBack.png", path = "/img/textures/cardBackBack.png" }
+    , { name = "cardOrb.png", path = "/img/textures/cardOrb.png" }
+    , { name = "cardOrbOther.png", path = "/img/textures/cardOrbOther.png" }
+    , { name = "stain.png", path = "/img/textures/stain.png" }
+    , { name = "tea.png", path = "/img/textures/tea.png" }
 
     -- Ring
-    , ( "ring.png", "/img/textures/ring.png" )
-    , ( "lifeclaw.png", "/img/textures/lifeclaw.png" )
-    , ( "cursor.png", "/img/textures/cursor.png" )
+    , { name = "ring.png", path = "/img/textures/ring.png" }
+    , { name = "lifeclaw.png", path = "/img/textures/lifeclaw.png" }
+    , { name = "cursor.png", path = "/img/textures/cursor.png" }
 
     -- VFX
-    , ( "noise.png", "/img/textures/noise.png" )
+    , { name = "noise.png", path = "/img/textures/noise.png" }
 
     -- Cards
-    , ( "fireball.png", "/img/textures/fireball.png" )
-    , ( "offering.png", "/img/textures/offering.png" )
-    , ( "confound.png", "/img/textures/confound.png" )
-    , ( "overwhelm.png", "/img/textures/envy.png" )
-    , ( "echo.png", "/img/textures/echo.png" )
-    , ( "feint.png", "/img/textures/feint.png" )
-    , ( "potion.png", "/img/textures/potion.png" )
-    , ( "reflect.png", "/img/textures/reflect.png" )
-    , ( "staff.png", "/img/textures/staff.png" )
-    , ( "surge.png", "/img/textures/brainbomb.png" )
-    , ( "prophecy.png", "/img/textures/prophecy.png" )
-    , ( "scythe.png", "/img/textures/harvest.png" )
-    , ( "bloodsucker.png", "/img/textures/feast.png" )
-    , ( "serpent.png", "/img/textures/beguile.png" )
-    , ( "reverse.png", "/img/textures/reverse.png" )
-    , ( "bad-apple.png", "/img/textures/badapple.png" )
-    , ( "greed.png", "/img/textures/greed.png" )
-    , ( "alchemy.png", "/img/textures/alchemy.png" )
-    , ( "hammer.png", "/img/textures/strike.png" )
-    , ( "lightning.png", "/img/textures/lightning.png" )
-    , ( "hubris.png", "/img/textures/hubris.png" )
-    , ( "katana.png", "/img/textures/katana.png" )
-    , ( "curse.png", "/img/textures/curse.png" )
-    , ( "bless.png", "/img/textures/bless.png" )
-    , ( "balance.png", "/img/textures/balance.png" )
-    , ( "end.png", "/img/textures/end.png" )
-    , ( "sting.png", "/img/textures/sting.png" )
-    , ( "gold.png", "/img/textures/gold.png" )
-    , ( "waxworks.png", "/img/textures/mimic.png" )
-    , ( "missile.png", "/img/textures/missile.png" )
-    , ( "grudge.png", "/img/textures/grudge.png" )
+    , { name = "fireball.png", path = "/img/textures/fireball.png" }
+    , { name = "offering.png", path = "/img/textures/offering.png" }
+    , { name = "confound.png", path = "/img/textures/confound.png" }
+    , { name = "overwhelm.png", path = "/img/textures/envy.png" }
+    , { name = "echo.png", path = "/img/textures/echo.png" }
+    , { name = "feint.png", path = "/img/textures/feint.png" }
+    , { name = "potion.png", path = "/img/textures/potion.png" }
+    , { name = "reflect.png", path = "/img/textures/reflect.png" }
+    , { name = "staff.png", path = "/img/textures/staff.png" }
+    , { name = "surge.png", path = "/img/textures/brainbomb.png" }
+    , { name = "prophecy.png", path = "/img/textures/prophecy.png" }
+    , { name = "scythe.png", path = "/img/textures/harvest.png" }
+    , { name = "bloodsucker.png", path = "/img/textures/feast.png" }
+    , { name = "serpent.png", path = "/img/textures/beguile.png" }
+    , { name = "reverse.png", path = "/img/textures/reverse.png" }
+    , { name = "bad-apple.png", path = "/img/textures/badapple.png" }
+    , { name = "greed.png", path = "/img/textures/greed.png" }
+    , { name = "alchemy.png", path = "/img/textures/alchemy.png" }
+    , { name = "hammer.png", path = "/img/textures/strike.png" }
+    , { name = "lightning.png", path = "/img/textures/lightning.png" }
+    , { name = "hubris.png", path = "/img/textures/hubris.png" }
+    , { name = "katana.png", path = "/img/textures/katana.png" }
+    , { name = "curse.png", path = "/img/textures/curse.png" }
+    , { name = "bless.png", path = "/img/textures/bless.png" }
+    , { name = "balance.png", path = "/img/textures/balance.png" }
+    , { name = "end.png", path = "/img/textures/end.png" }
+    , { name = "sting.png", path = "/img/textures/sting.png" }
+    , { name = "gold.png", path = "/img/textures/gold.png" }
+    , { name = "waxworks.png", path = "/img/textures/mimic.png" }
+    , { name = "missile.png", path = "/img/textures/missile.png" }
+    , { name = "grudge.png", path = "/img/textures/grudge.png" }
 
     -- Dailies
-    , ( "subjugate.png", "/img/textures/subjugate.png" )
-    , ( "avarice.png", "/img/textures/avarice.png" )
-    , ( "goldrush.png", "/img/textures/goldrush.png" )
-    , ( "telepathy.png", "/img/textures/telepathy.png" )
-    , ( "ritual.png", "/img/textures/ritual.png" )
-    , ( "unravel.png", "/img/textures/unravel.png" )
-    , ( "respite.png", "/img/textures/respite.png" )
-    , ( "voidbeam.png", "/img/textures/voidbeam.png" )
-    , ( "feud.png", "/img/textures/feud.png" )
-    , ( "inevitable.png", "/img/textures/inevitable.png" )
+    , { name = "subjugate.png", path = "/img/textures/subjugate.png" }
+    , { name = "avarice.png", path = "/img/textures/avarice.png" }
+    , { name = "goldrush.png", path = "/img/textures/goldrush.png" }
+    , { name = "telepathy.png", path = "/img/textures/telepathy.png" }
+    , { name = "ritual.png", path = "/img/textures/ritual.png" }
+    , { name = "unravel.png", path = "/img/textures/unravel.png" }
+    , { name = "respite.png", path = "/img/textures/respite.png" }
+    , { name = "voidbeam.png", path = "/img/textures/voidbeam.png" }
+    , { name = "feud.png", path = "/img/textures/feud.png" }
+    , { name = "inevitable.png", path = "/img/textures/inevitable.png" }
     ]
 
 
