@@ -1,6 +1,7 @@
 module Texture.State exposing (defaultOptions, fetchTextures, init, load, save, texturePaths, update, with, with2, with3, with4, with5)
 
 import Dict
+import Font.State exposing (fontPaths)
 import Ports exposing (log)
 import Task
 import Texture.Messages exposing (Msg(..))
@@ -75,17 +76,20 @@ fetchTextures =
 
                 Ok textures ->
                     TexturesLoaded textures
+
+        fontTexturePaths : List ( String, String )
+        fontTexturePaths =
+            List.map (\{ name, texturePath } -> ( name, texturePath )) fontPaths
     in
-    List.map (loader >> Task.attempt handler) texturePaths
+    List.map
+        (loader >> Task.attempt handler)
+        (fontTexturePaths ++ texturePaths)
 
 
 texturePaths : List ( String, String )
 texturePaths =
     [ -- Testing
       ( "radial.png", "/img/textures/radial.png" )
-    , ( "fontmap.png", "/fonts/fontmap.png" )
-    , ( "title.png", "/img/textures/title.png" )
-    , ( "numeroFontMap.png", "/img/textures/numeroFontMap.png" )
     , ( "yourTurn.png", "/img/textures/yourTurn.png" )
     , ( "theirTurn.png", "/img/textures/theirTurn.png" )
     , ( "pass.png", "/img/textures/pass.png" )

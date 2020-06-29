@@ -390,7 +390,7 @@ damageWebGl hover ({ w, h, radius, resolving, animDamage } as ctx) =
                 String.fromFloat d
 
         scale =
-            1
+            0.07
 
         xOffset =
             0.4 * radius
@@ -400,11 +400,12 @@ damageWebGl hover ({ w, h, radius, resolving, animDamage } as ctx) =
     in
     List.concat
         [ if damage /= 0 then
-            Font.view "myfont"
+            Font.view "Futura"
                 (damageToString damage)
                 { x = 0.5 * w - xOffset
                 , y = 0.5 * h - yOffset
-                , scale = scale
+                , scaleX = scale
+                , scaleY = scale
                 , color = damageToColour damage
                 }
                 ctx
@@ -412,11 +413,12 @@ damageWebGl hover ({ w, h, radius, resolving, animDamage } as ctx) =
           else
             []
         , if otherDamage /= 0 then
-            Font.view "myfont"
+            Font.view "Futura"
                 (damageToString otherDamage)
                 { x = 0.5 * w + xOffset
                 , y = 0.5 * h - yOffset
-                , scale = scale
+                , scaleX = scale
+                , scaleY = scale
                 , color = damageToColour otherDamage
                 }
                 ctx

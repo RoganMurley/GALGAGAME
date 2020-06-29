@@ -9,10 +9,7 @@ import Game.State exposing (bareContextInit)
 import Game.Types exposing (Context)
 import Html exposing (Html, div)
 import Html.Attributes exposing (class, height, width)
-import Math.Matrix4 exposing (makeLookAt, makeOrtho, makeRotate, makeScale3)
 import Math.Vector3 exposing (vec3)
-import Render.Primitives
-import Render.Shaders
 import Render.Types as Render
 import RuneSelect.Types as RuneSelect exposing (RuneCursor(..))
 import RuneSelect.View as RuneSelect
@@ -126,36 +123,60 @@ webglView { vfx } ctx =
         List.map ((|>) ctx)
             [ radialView vfx
             , titleView vfx.rotation
-            , Font.view "myfont" "Galgagame!" { x = ctx.w * 0.5, y = ctx.h * 0.5, scale = abs (sin (0.001 * vfx.rotation)), color = vec3 1 1 1 }
             ]
 
 
 titleView : Float -> Context -> List WebGL.Entity
-titleView tick { w, h, textures } =
+titleView tick ({ w, h } as ctx) =
     let
         size =
             1.4 * max w h
     in
-    Texture.with textures "title.png" <|
-        \texture ->
-            [ Render.Primitives.quad Render.Shaders.fragment
-                { rotation = makeRotate pi (vec3 0 0 1)
-                , scale = makeScale3 (0.15 * size + sin (tick * 0.005)) (0.15 * size + sin (tick * 0.007)) 1
-                , color = vec3 (20 / 255) (20 / 255) (20 / 255)
-                , pos = vec3 (w * 0.5 - 0.003 * size) (h * 0.5) 0
-                , worldRot = makeRotate 0 (vec3 0 0 1)
-                , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
-                , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
-                , texture = texture
-                }
-            , Render.Primitives.quad Render.Shaders.fragment
-                { rotation = makeRotate pi (vec3 0 0 1)
-                , scale = makeScale3 (0.15 * size + sin (tick * 0.005)) (0.15 * size + sin (tick * 0.007)) 1
-                , color = vec3 (244 / 255) (241 / 255) (94 / 255)
-                , pos = vec3 (w * 0.5) (h * 0.5) 0
-                , worldRot = makeRotate 0 (vec3 0 0 1)
-                , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
-                , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
-                , texture = texture
-                }
-            ]
+    List.concat
+        [ Font.view
+            "Rock Salt"
+            "Galgagame"
+            { x = w * 0.5 - 0.003 * size
+            , y = h * 0.5
+            , scaleX = 0.0001 * size + 0.003 * sin (tick * 0.005)
+            , scaleY = 0.0001 * size + 0.003 * sin (tick * 0.007)
+            , color = vec3 (20 / 255) (20 / 255) (20 / 255)
+            }
+            ctx
+        , Font.view
+            "Rock Salt"
+            "Galgagame"
+            { x = w * 0.5
+            , y = h * 0.5
+            , scaleX = 0.0001 * size + 0.003 * sin (tick * 0.005)
+            , scaleY = 0.0001 * size + 0.003 * sin (tick * 0.007)
+            , color = vec3 (244 / 255) (241 / 255) (94 / 255)
+            }
+            ctx
+        ]
+
+
+
+-- Texture.with textures "title.png" <|
+--     \texture ->
+--         [ Render.Primitives.quad Render.Shaders.fragment
+--             { rotation = makeRotate pi (vec3 0 0 1)
+--             , scale = makeScale3 (0.15 * size + sin (tick * 0.005)) (0.15 * size + sin (tick * 0.007)) 1
+--             , color = vec3 (20 / 255) (20 / 255) (20 / 255)
+--             , pos = vec3 (w * 0.5 - 0.003 * size) (h * 0.5) 0
+--             , worldRot = makeRotate 0 (vec3 0 0 1)
+--             , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
+--             , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
+--             , texture = texture
+--             }
+--         , Render.Primitives.quad Render.Shaders.fragment
+--             { rotation = makeRotate pi (vec3 0 0 1)
+--             , scale = makeScale3 (0.15 * size + sin (tick * 0.005)) (0.15 * size + sin (tick * 0.007)) 1
+--             , color = vec3 (244 / 255) (241 / 255) (94 / 255)
+--             , pos = vec3 (w * 0.5) (h * 0.5) 0
+--             , worldRot = makeRotate 0 (vec3 0 0 1)
+--             , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
+--             , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
+--             , texture = texture
+--             }
+--         ]
