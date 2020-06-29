@@ -2,18 +2,18 @@ module Font.View exposing (view)
 
 import Dict
 import Font.Shaders
-import Font.Types exposing (FontChar)
+import Font.Types exposing (Entity, FontChar)
 import Game.Types exposing (Context)
 import List
 import Math.Matrix4 exposing (makeLookAt, makeOrtho, makeRotate, makeScale3)
-import Math.Vector3 exposing (Vec3, vec3)
+import Math.Vector3 exposing (vec3)
 import Render.Primitives
 import Texture.State as Texture
 import WebGL
 import WebGL.Texture
 
 
-view : String -> String -> { color : Vec3, scaleX : Float, scaleY : Float, x : Float, y : Float } -> Context -> List WebGL.Entity
+view : String -> String -> Entity -> Context -> List WebGL.Entity
 view fontName text entity { fonts, textures, w, h } =
     Texture.with textures fontName <|
         \texture ->
