@@ -86,9 +86,6 @@ texturePaths : List Assets.Path
 texturePaths =
     [ -- Testing
       { name = "radial.png", path = "/img/textures/radial.png" }
-    , { name = "yourTurn.png", path = "/img/textures/yourTurn.png" }
-    , { name = "theirTurn.png", path = "/img/textures/theirTurn.png" }
-    , { name = "pass.png", path = "/img/textures/pass.png" }
     , { name = "cardBack.png", path = "/img/textures/cardBackNegative.png" }
     , { name = "cardBackRed.png", path = "/img/textures/cardBackRed.png" }
     , { name = "cardBackBack.png", path = "/img/textures/cardBackBack.png" }

@@ -153,29 +153,3 @@ titleView tick ({ w, h } as ctx) =
             }
             ctx
         ]
-
-
-
--- Texture.with textures "title.png" <|
---     \texture ->
---         [ Render.Primitives.quad Render.Shaders.fragment
---             { rotation = makeRotate pi (vec3 0 0 1)
---             , scale = makeScale3 (0.15 * size + sin (tick * 0.005)) (0.15 * size + sin (tick * 0.007)) 1
---             , color = vec3 (20 / 255) (20 / 255) (20 / 255)
---             , pos = vec3 (w * 0.5 - 0.003 * size) (h * 0.5) 0
---             , worldRot = makeRotate 0 (vec3 0 0 1)
---             , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
---             , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
---             , texture = texture
---             }
---         , Render.Primitives.quad Render.Shaders.fragment
---             { rotation = makeRotate pi (vec3 0 0 1)
---             , scale = makeScale3 (0.15 * size + sin (tick * 0.005)) (0.15 * size + sin (tick * 0.007)) 1
---             , color = vec3 (244 / 255) (241 / 255) (94 / 255)
---             , pos = vec3 (w * 0.5) (h * 0.5) 0
---             , worldRot = makeRotate 0 (vec3 0 0 1)
---             , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
---             , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
---             , texture = texture
---             }
---         ]
