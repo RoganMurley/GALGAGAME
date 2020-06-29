@@ -2,8 +2,8 @@ module PlayState.View exposing (view)
 
 import Animation.State as Animation
 import Animation.Types exposing (Anim(..))
+import Assets.Types as Assets
 import Endgame.View as Endgame
-import Font.Types as Font
 import GameType exposing (GameType)
 import Html exposing (Html, div)
 import Main.Messages as Main
@@ -11,11 +11,10 @@ import Main.Types exposing (Flags)
 import Model.View as Model
 import PlayState.Types exposing (PlayState(..))
 import Resolvable.State exposing (activeAnim)
-import Texture.Types as Texture
 
 
-view : PlayState -> Flags -> Maybe GameType -> Bool -> Texture.Model -> Font.Model -> Html Main.Msg
-view playState { time, dimensions, seed, username, pixelRatio } gameType isReplay textures fonts =
+view : PlayState -> Flags -> Maybe GameType -> Bool -> Assets.Model -> Html Main.Msg
+view playState { time, dimensions, seed, username, pixelRatio } gameType isReplay assets =
     let
         ( w, h ) =
             dimensions
@@ -26,7 +25,7 @@ view playState { time, dimensions, seed, username, pixelRatio } gameType isRepla
     case playState of
         Playing { game } ->
             div []
-                [ Model.view params game textures fonts
+                [ Model.view params game assets
                 , Endgame.view 0 NullAnim Nothing Nothing gameType username isReplay seed
                 ]
 
@@ -49,6 +48,6 @@ view playState { time, dimensions, seed, username, pixelRatio } gameType isRepla
                         ( GameEnd winner, 1.0 )
             in
             div []
-                [ Model.view params game textures fonts
+                [ Model.view params game assets
                 , Endgame.view progress endAnim replayId xp gameType username isReplay seed
                 ]

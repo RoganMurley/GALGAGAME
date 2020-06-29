@@ -1,20 +1,7 @@
-module Fetcher exposing (Handler, Loader, Path, fetch)
+module Assets.Fetch exposing (fetch)
 
-import Task exposing (Task)
-
-
-type alias Path =
-    { name : String
-    , path : String
-    }
-
-
-type alias Loader loadable error =
-    Path -> Task error loadable
-
-
-type alias Handler loadable error msg =
-    Result error ( String, loadable ) -> msg
+import Assets.Types exposing (Handler, Loader, Path)
+import Task
 
 
 fetch : Loader loadable error -> Handler loadable error msg -> List Path -> List (Cmd msg)

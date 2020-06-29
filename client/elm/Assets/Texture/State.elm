@@ -1,8 +1,10 @@
 module Texture.State exposing (defaultOptions, fetch, init, load, save, texturePaths, update, with, with2, with3, with4, with5)
 
+import Assets.Fetch as Assets
+import Assets.Types as Assets
 import Dict
-import Fetcher
 import Font.State exposing (fontPaths)
+import Main.Messages as Main
 import Ports exposing (log)
 import Texture.Messages exposing (Msg(..))
 import Texture.Types exposing (Model)
@@ -14,7 +16,7 @@ init =
     { textures = Dict.empty }
 
 
-update : Msg -> Model -> ( Model, Cmd Msg )
+update : Msg -> Model -> ( Model, Cmd Main.Msg )
 update msg m =
     case msg of
         TexturesLoaded textures ->
@@ -52,7 +54,7 @@ defaultOptions =
 fetch : List (Cmd Msg)
 fetch =
     let
-        loader : Fetcher.Loader Texture WebGL.Texture.Error
+        loader : Assets.Loader Texture WebGL.Texture.Error
         loader { path } =
             WebGL.Texture.loadWith
                 { defaultOptions
@@ -61,7 +63,7 @@ fetch =
                 }
                 path
 
-        handler : Fetcher.Handler Texture WebGL.Texture.Error Msg
+        handler : Assets.Handler Texture WebGL.Texture.Error Msg
         handler result =
             case result of
                 Err error ->
@@ -70,17 +72,17 @@ fetch =
                 Ok textures ->
                     TexturesLoaded textures
 
-        paths : List Fetcher.Path
+        paths : List Assets.Path
         paths =
             texturePaths
                 ++ List.map
                     (\{ name, texturePath } -> { name = name, path = texturePath })
                     fontPaths
     in
-    Fetcher.fetch loader handler paths
+    Assets.fetch loader handler paths
 
 
-texturePaths : List Fetcher.Path
+texturePaths : List Assets.Path
 texturePaths =
     [ -- Testing
       { name = "radial.png", path = "/img/textures/radial.png" }

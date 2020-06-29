@@ -1,5 +1,6 @@
 module DeckBuilding.View exposing (view)
 
+import Assets.Types as Assets
 import Background.View exposing (radialView)
 import DeckBuilding.Messages exposing (Msg(..))
 import DeckBuilding.Types exposing (Model)
@@ -13,18 +14,16 @@ import Math.Vector3 exposing (vec3)
 import Render.Types as Render
 import RuneSelect.Types as RuneSelect exposing (RuneCursor(..))
 import RuneSelect.View as RuneSelect
-import Texture.State as Texture
-import Texture.Types as Texture
 import WebGL
 import WebGL.Texture as WebGL
 import WhichPlayer.Types exposing (WhichPlayer(..))
 
 
-view : Render.Params -> Model -> Texture.Model -> Font.Model -> Html Msg
-view { w, h, pixelRatio } model textures fonts =
+view : Render.Params -> Model -> Assets.Model -> Html Msg
+view { w, h, pixelRatio } model assets =
     let
         ctx =
-            bareContextInit ( w, h ) textures fonts Nothing
+            bareContextInit ( w, h ) assets Nothing
     in
     div [ class "clock" ]
         [ WebGL.toHtml

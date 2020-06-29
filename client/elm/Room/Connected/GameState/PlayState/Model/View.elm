@@ -2,6 +2,7 @@ module Model.View exposing (focusImageView, focusTextView, view)
 
 import Animation.State as Animation exposing (animMaxTick)
 import Animation.Types exposing (Anim(..))
+import Assets.Types as Assets
 import Background.View as Background
 import Card.State exposing (cardTexture)
 import Colour
@@ -40,11 +41,11 @@ import WebGL
 import WhichPlayer.Types exposing (WhichPlayer(..))
 
 
-view : Render.Params -> Game.Model -> Texture.Model -> Font.Model -> Html Main.Msg
-view { w, h, pixelRatio } { res, hover, focus, entities, passed, feedback, vfx } textures fonts =
+view : Render.Params -> Game.Model -> Assets.Model -> Html Main.Msg
+view { w, h, pixelRatio } { res, hover, focus, entities, passed, feedback, vfx } assets =
     let
         ctx =
-            contextInit ( w, h ) res textures fonts Nothing
+            contextInit ( w, h ) res assets Nothing
 
         ( turnHtml, turnWebGl ) =
             turnView ctx focus passed

@@ -1,10 +1,10 @@
 module GameState.View exposing (view)
 
 import Animation.Types exposing (Anim(..))
+import Assets.Types as Assets
 import Background.View as Background
 import Connected.Messages as Connected
 import DeckBuilding.View as DeckBuilding
-import Font.Types as Font
 import GameState.Messages exposing (Msg(..))
 import GameState.Types exposing (GameState(..), WaitType(..))
 import GameType exposing (GameType)
@@ -15,14 +15,13 @@ import Main.Messages as Main
 import Main.Types exposing (Flags)
 import PlayState.View as PlayState
 import Room.Messages as Room
-import Texture.Types as Texture
 
 
-view : GameState -> String -> Flags -> Maybe GameType -> Bool -> Texture.Model -> Font.Model -> Html Main.Msg
-view state roomID flags gameType isReplay textures fonts =
+view : GameState -> String -> Flags -> Maybe GameType -> Bool -> Assets.Model -> Html Main.Msg
+view state roomID flags gameType isReplay assets =
     case state of
         Waiting waitType ->
-            div [] [ waitingView waitType flags textures fonts roomID ]
+            div [] [ waitingView waitType flags assets roomID ]
 
         Selecting model ->
             let
@@ -43,14 +42,14 @@ view state roomID flags gameType isReplay textures fonts =
                     << SelectingMsg
                 )
             <|
-                DeckBuilding.view params model textures fonts
+                DeckBuilding.view params model assets
 
         Started playState ->
-            PlayState.view playState flags gameType isReplay textures fonts
+            PlayState.view playState flags gameType isReplay assets
 
 
-waitingView : WaitType -> Flags -> Texture.Model -> Font.Model -> String -> Html Main.Msg
-waitingView waitType ({ httpPort, hostname } as flags) textures fonts roomID =
+waitingView : WaitType -> Flags -> Assets.Model -> String -> Html Main.Msg
+waitingView waitType ({ httpPort, hostname } as flags) assets roomID =
     let
         portProtocol =
             if httpPort /= "" then
@@ -78,7 +77,7 @@ waitingView waitType ({ httpPort, hostname } as flags) textures fonts roomID =
             case waitType of
                 WaitCustom ->
                     div []
-                        [ Background.view flags textures fonts Finding
+                        [ Background.view flags assets Finding
                         , div [ class "input-group" ]
                             [ input
                                 [ value challengeLink
@@ -95,7 +94,7 @@ waitingView waitType ({ httpPort, hostname } as flags) textures fonts roomID =
                         ]
 
                 WaitQuickplay ->
-                    Background.view flags textures fonts Finding
+                    Background.view flags assets Finding
     in
     div [ class "waiting" ]
         [ div [ class "waiting-prompt" ]

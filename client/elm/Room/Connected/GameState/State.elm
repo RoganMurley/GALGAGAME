@@ -1,7 +1,7 @@
 module GameState.State exposing (tick, update)
 
+import Assets.State as Assets
 import DeckBuilding.State as DeckBuilding
-import Font.State as Font
 import Game.State exposing (bareContextInit)
 import GameState.Decoders exposing (stateDecoder)
 import GameState.Messages exposing (Msg(..))
@@ -13,7 +13,6 @@ import Mode exposing (Mode)
 import PlayState.State as PlayState
 import PlayState.Types exposing (PlayState)
 import Ports exposing (log)
-import Texture.State as Texture
 
 
 update : Msg -> GameState -> Mode -> ( GameState, Cmd Main.Msg )
@@ -132,7 +131,7 @@ tick flags state dt =
         Selecting selecting ->
             let
                 ctx =
-                    bareContextInit flags.dimensions Texture.init Font.init flags.mouse
+                    bareContextInit flags.dimensions Assets.init flags.mouse
 
                 newSelecting =
                     DeckBuilding.tick ctx dt selecting

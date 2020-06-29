@@ -1,8 +1,8 @@
 module Connected.View exposing (concedeView, playersView, specMenuView, titleView, view)
 
+import Assets.Types as Assets
 import Connected.Messages as Connected
 import Connected.Types exposing (Model, Players)
-import Font.Types as Font
 import GameState.Types exposing (GameState(..))
 import GameState.View as GameState
 import Html exposing (Html, button, div, input, text)
@@ -11,14 +11,13 @@ import Html.Events exposing (onClick)
 import Main.Messages exposing (Msg(..))
 import Main.Types exposing (Flags)
 import PlayState.Types exposing (PlayState(..))
-import Texture.Types as Texture
 
 
-view : Model -> Flags -> Texture.Model -> Font.Model -> Html Msg
-view { game, gameType, roomID, players } flags textures fonts =
+view : Model -> Flags -> Assets.Model -> Html Msg
+view { game, gameType, roomID, players } flags assets =
     div []
         [ playersView players
-        , GameState.view game roomID flags (Just gameType) False textures fonts
+        , GameState.view game roomID flags (Just gameType) False assets
         ]
 
 

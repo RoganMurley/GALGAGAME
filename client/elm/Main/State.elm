@@ -1,5 +1,7 @@
 module Main.State exposing (init, locationUpdate, subscriptions, update)
 
+import Assets.Messages as Assets
+import Assets.State as Assets
 import Audio.State exposing (fetchSounds, setVolume)
 import Browser
 import Browser.Events
@@ -43,19 +45,18 @@ init flags url initialVolume =
     let
         fetchTextures : List (Cmd Msg)
         fetchTextures =
-            List.map (Cmd.map TextureMsg) Texture.fetch
+            List.map (Cmd.map (AssetsMsg << Assets.TextureMsg)) Texture.fetch
 
         fetchFont : List (Cmd Msg)
         fetchFont =
-            List.map (Cmd.map FontMsg) Font.fetch
+            List.map (Cmd.map (AssetsMsg << Assets.FontMsg)) Font.fetch
 
         ( model, cmd ) =
             locationUpdate
                 { room = Room.init
                 , flags = flags
                 , settings = Settings.init initialVolume
-                , textures = Texture.init
-                , fonts = Font.init
+                , assets = Assets.init
                 }
                 url
     in
@@ -65,7 +66,7 @@ init flags url initialVolume =
 
 
 update : Msg -> Main.Model -> ( Main.Model, Cmd Msg )
-update msg ({ room, settings, textures, flags, fonts } as model) =
+update msg ({ assets, room, settings, flags } as model) =
     case msg of
         CopyInput elementId ->
             ( model, copyInput elementId )
@@ -254,24 +255,6 @@ update msg ({ room, settings, textures, flags, fonts } as model) =
         GetAuthCallback (Err _) ->
             ( model, Cmd.none )
 
-        TextureMsg textureMsg ->
-            let
-                ( newTextures, cmd ) =
-                    Texture.update textureMsg textures
-            in
-            ( { model | textures = newTextures }
-            , Cmd.map TextureMsg cmd
-            )
-
-        FontMsg fontMsg ->
-            let
-                ( newFonts, cmd ) =
-                    Font.update fontMsg fonts
-            in
-            ( { model | fonts = newFonts }
-            , Cmd.map FontMsg cmd
-            )
-
         TouchPosition pos ->
             let
                 -- ( newRoom, newCmd ) =
@@ -294,6 +277,13 @@ update msg ({ room, settings, textures, flags, fonts } as model) =
 
         GodCommand str ->
             ( model, websocketSend <| "god:" ++ str )
+
+        AssetsMsg assetsMsg ->
+            let
+                ( newAssets, cmd ) =
+                    Assets.update assetsMsg assets
+            in
+            ( { model | assets = newAssets }, cmd )
 
 
 locationUpdate : Main.Model -> Url -> ( Main.Model, Cmd Msg )

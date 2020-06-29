@@ -1,19 +1,17 @@
 module Main.Types exposing (Flags, InputFlags, Model, Seed)
 
+import Assets.Types as Assets
 import Browser.Navigation
-import Font.Types as Font
 import Math.Vector2 exposing (Vec2)
 import Room.Types as Room
 import Settings.Types as Settings
-import Texture.Types as Texture
 
 
 type alias Model =
     { room : Room.Model
     , flags : Flags
     , settings : Settings.Model
-    , textures : Texture.Model
-    , fonts : Font.Model
+    , assets : Assets.Model
     }
 
 
