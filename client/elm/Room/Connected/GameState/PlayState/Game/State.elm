@@ -2,9 +2,9 @@ module Game.State exposing (bareContextInit, contextInit, entitiesInit, gameInit
 
 import Animation.State as Animation
 import Animation.Types as Animation
+import Assets.State as Assets
+import Assets.Types as Assets
 import Collision exposing (hitTest)
-import Font.State as Font
-import Font.Types as Font
 import Game.Types as Game exposing (Context, Entities, Feedback, HandEntity, Hover(..), HoverBase, HoverSelf, StackEntity)
 import Hand.Entities as Hand
 import List.Extra as List
@@ -18,8 +18,6 @@ import Resolvable.State as Resolvable exposing (activeAnim, activeAnimDamage, ac
 import Resolvable.Types as Resolvable
 import Stack.Entities as Stack
 import Stack.Types exposing (StackCard)
-import Texture.State as Texture
-import Texture.Types as Texture
 import Util exposing (message)
 import Vfx.State as Vfx
 import WhichPlayer.Types exposing (WhichPlayer(..))
@@ -38,8 +36,8 @@ gameInit model =
     }
 
 
-contextInit : ( Int, Int ) -> Resolvable.Model -> Texture.Model -> Font.Model -> Maybe Vec2 -> Context
-contextInit ( width, height ) res textures fonts mouse =
+contextInit : ( Int, Int ) -> Resolvable.Model -> Assets.Model -> Maybe Vec2 -> Context
+contextInit ( width, height ) res { textures, fonts } mouse =
     let
         w =
             toFloat width
@@ -76,13 +74,13 @@ contextInit ( width, height ) res textures fonts mouse =
     }
 
 
-bareContextInit : ( Int, Int ) -> Texture.Model -> Font.Model -> Maybe Vec2 -> Context
-bareContextInit dimensions textures fonts mouse =
+bareContextInit : ( Int, Int ) -> Assets.Model -> Maybe Vec2 -> Context
+bareContextInit dimensions assets mouse =
     let
         res =
             Resolvable.init Model.init []
     in
-    contextInit dimensions res textures fonts mouse
+    contextInit dimensions res assets mouse
 
 
 entitiesInit : Entities
@@ -113,7 +111,7 @@ tick { dimensions, mouse } dt model =
             Resolvable.tick dt model.res
 
         ctx =
-            contextInit dimensions res Texture.init Font.init mouse
+            contextInit dimensions res Assets.init mouse
 
         hoverHand =
             getHoverHand model mouse

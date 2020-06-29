@@ -1,11 +1,13 @@
 module Font.State exposing (fetch, fontPaths, init, update)
 
+import Assets.Fetch as Assets
+import Assets.Types as Assets
 import Dict
-import Fetcher
 import Font.Decoders as Font
 import Font.Messages exposing (Msg(..))
 import Font.Types exposing (Font, FontPath, Model)
 import Http
+import Main.Messages as Main
 import Ports exposing (log)
 
 
@@ -14,7 +16,7 @@ init =
     { fonts = Dict.empty }
 
 
-update : Msg -> Model -> ( Model, Cmd Msg )
+update : Msg -> Model -> ( Model, Cmd Main.Msg )
 update msg model =
     case msg of
         FontLoaded ( name, font ) ->
@@ -32,12 +34,12 @@ save model name font =
 fetch : List (Cmd Msg)
 fetch =
     let
-        loader : Fetcher.Loader Font Http.Error
+        loader : Assets.Loader Font Http.Error
         loader { path } =
             Http.toTask <|
                 Http.get path Font.decoder
 
-        handler : Fetcher.Handler Font Http.Error Msg
+        handler : Assets.Handler Font Http.Error Msg
         handler result =
             case result of
                 Err _ ->
@@ -46,13 +48,13 @@ fetch =
                 Ok textures ->
                     FontLoaded textures
 
-        paths : List Fetcher.Path
+        paths : List Assets.Path
         paths =
             List.map
                 (\{ name, jsonPath } -> { name = name, path = jsonPath })
                 fontPaths
     in
-    Fetcher.fetch loader handler paths
+    Assets.fetch loader handler paths
 
 
 fontPaths : List FontPath

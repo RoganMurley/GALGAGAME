@@ -1,19 +1,19 @@
 module Main.Messages exposing (Msg(..))
 
+import Assets.Messages as Assets
 import Browser exposing (UrlRequest)
-import Font.Messages as Font
 import Http
 import Keyboard exposing (Key)
 import Mouse
 import Room.Messages as Room
 import Settings.Messages as Settings
 import Settings.Types exposing (VolumeType)
-import Texture.Messages as Texture
 import Url exposing (Url)
 
 
 type Msg
-    = CopyInput String
+    = AssetsMsg Assets.Msg
+    | CopyInput String
     | Frame Float
     | GetAuth
     | GetAuthCallback (Result Http.Error (Maybe String))
@@ -29,8 +29,6 @@ type Msg
     | Send String
     | SettingsMsg Settings.Msg
     | SetVolume VolumeType Int
-    | TextureMsg Texture.Msg
-    | FontMsg Font.Msg
     | TouchPosition (Maybe Mouse.Position)
     | UrlChange Url
     | UrlRequest UrlRequest
