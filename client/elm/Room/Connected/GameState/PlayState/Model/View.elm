@@ -77,9 +77,6 @@ view { w, h, pixelRatio } { res, hover, focus, entities, passed, feedback, vfx }
                     ]
             )
         , div [ class "text-focus" ] [ focusTextView ctx focus ]
-        , div [ class "clock-life-container" ] (lifeTextView ctx)
-
-        -- , div [ class "clock-damage-container" ] (damageTextView hover ctx)
         , turnHtml
         , goButtonView ctx passed
         ]
@@ -200,6 +197,26 @@ lifeOrbView ({ w, h, radius, model, anim, animDamage, tick } as ctx) =
             , rotation = 0
             }
     ]
+        ++ List.concat
+            [ Font.view "Futura"
+                (String.fromInt model.life)
+                { x = w * 0.5 - 0.6 * radius
+                , y = h * 0.5 - 0.675 * radius
+                , scaleX = 0.07
+                , scaleY = 0.07
+                , color = Colour.blue
+                }
+                ctx
+            , Font.view "Futura"
+                (String.fromInt model.otherLife)
+                { x = w * 0.5 + 0.6 * radius
+                , y = h * 0.5 - 0.675 * radius
+                , scaleX = 0.07
+                , scaleY = 0.07
+                , color = Colour.red
+                }
+                ctx
+            ]
 
 
 focusTextView : Context -> Maybe StackCard -> Html a
@@ -227,121 +244,6 @@ focusTextView { anim, radius } focus =
                         [ div [ class "title" ] [ text card.name ]
                         , div [ class "desc" ] [ text card.desc ]
                         ]
-
-
-lifeTextView : Context -> List (Html a)
-lifeTextView { radius, model } =
-    let
-        horizontalOffset =
-            0.49 * radius
-
-        verticalOffset =
-            0.57 * radius
-
-        textWidth =
-            0.2 * radius
-
-        fontSize =
-            0.18 * radius
-    in
-    [ div
-        [ class "clock-life"
-        , style "right" (horizontalOffset |> px)
-        , style "bottom" (verticalOffset - 0.04 * radius |> px)
-        , style "font-size" (fontSize |> px)
-        , style "transform" "translate(-20%, -10%)"
-        , style "width" (textWidth |> px)
-        , style "color" "#2d56ca"
-        ]
-        [ text <| String.fromInt model.life ]
-    , div
-        [ class "clock-life other"
-        , style "left" (horizontalOffset |> px)
-        , style "bottom" (verticalOffset + 0.02 * radius |> px)
-        , style "font-size" (fontSize |> px)
-        , style "transform" "translate(20%, 10%)"
-        , style "width" (textWidth |> px)
-        , style "color" "#bb3325"
-        ]
-        [ text <| String.fromInt model.otherLife ]
-    ]
-
-
-
--- damageTextView : HoverSelf -> Context -> List (Html a)
--- damageTextView hover { radius, resolving, animDamage } =
---     let
---         hoverDmg =
---             case hover of
---                 HoverHand { dmg } ->
---                     Just dmg
---
---                 HoverStack { dmg } ->
---                     Just dmg
---
---                 NoHover ->
---                     Nothing
---
---         ( damage, otherDamage ) =
---             case hoverDmg of
---                 Just dmg ->
---                     if resolving then
---                         animDamage
---
---                     else
---                         let
---                             ( dmgA, dmgB ) =
---                                 dmg
---                         in
---                         ( toFloat dmgA, toFloat dmgB )
---
---                 Nothing ->
---                     animDamage
---
---         damageToString : Float -> String
---         damageToString d =
---             if d > 0 then
---                 "+" ++ String.fromFloat d
---
---             else
---                 String.fromFloat d
---
---         damageToCssColour : Float -> String
---         damageToCssColour d =
---             if d > 0 then
---                 "#45f273"
---
---             else
---                 "#ff3232"
---     in
---     List.concat
---         [ if damage /= 0 then
---             [ div
---                 [ class "clock-damage"
---                 , style "right" (0.28 * radius |> px)
---                 , style "bottom" (0.75 * radius |> px)
---                 , style "font-size" (0.2 * radius |> px)
---                 , style "color" (damageToCssColour damage)
---                 ]
---                 [ text <| damageToString damage ]
---             ]
---
---           else
---             []
---         , if otherDamage /= 0 then
---             [ div
---                 [ class "clock-damage"
---                 , style "left" (0.22 * radius |> px)
---                 , style "bottom" (0.75 * radius |> px)
---                 , style "font-size" (0.2 * radius |> px)
---                 , style "color" (damageToCssColour otherDamage)
---                 ]
---                 [ text <| damageToString otherDamage ]
---             ]
---
---           else
---             []
---         ]
 
 
 damageWebGl : HoverSelf -> Context -> List WebGL.Entity

@@ -1,6 +1,7 @@
-module Font.Types exposing (Font, FontChar, FontPath, Model)
+module Font.Types exposing (Entity, Font, FontChar, FontPath, Model)
 
 import Dict exposing (Dict)
+import Math.Vector3 exposing (Vec3)
 
 
 type alias Model =
@@ -26,4 +27,13 @@ type alias FontPath =
     { name : String
     , jsonPath : String
     , texturePath : String
+    }
+
+
+type alias Entity =
+    { x : Float
+    , y : Float
+    , scaleX : Float
+    , scaleY : Float
+    , color : Vec3
     }
