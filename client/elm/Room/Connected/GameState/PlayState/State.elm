@@ -4,9 +4,9 @@ import Animation.Types exposing (Anim(..))
 import Audio.State exposing (playSound)
 import Browser.Navigation
 import Collision exposing (hitTest)
-import Game.Encoders
 import Game.State as Game
 import Game.Types as Game
+import Hover exposing (encodeHoverSelf)
 import Json.Decode as Json
 import List.Extra as List
 import Main.Messages as Main
@@ -116,7 +116,7 @@ updatePlayingOnly msg state mode =
                         [ message <|
                             Main.Send <|
                                 "hover:"
-                                    ++ Game.Encoders.encodeHoverSelf hover
+                                    ++ encodeHoverSelf hover
                         , sound
                         ]
                     )
@@ -346,20 +346,41 @@ mouseClick mode { x, y } state =
         game =
             get identity state
 
-        mEntity =
+        mHandEntity =
             List.find
                 (hitTest pos 28)
                 game.entities.hand
-    in
-    case mEntity of
-        Just { card, index } ->
-            update
-                (PlayingOnly <| TurnOnly <| PlayCard card index)
-                state
-                mode
 
-        Nothing ->
+        mButtonEntity =
+            List.find
+                (hitTest pos 28)
+                game.entities.buttons
+
+        msg =
+            case mHandEntity of
+                Just { card, index } ->
+                    PlayingOnly <| TurnOnly <| PlayCard card index
+
+                Nothing ->
+                    ClickFeedback pos
+
+        buttonMsg =
+            case mButtonEntity of
+                Just { onClick } ->
+                    case onClick of
+                        Just clickMsg ->
+                            message clickMsg
+
+                        Nothing ->
+                            Cmd.none
+
+                Nothing ->
+                    Cmd.none
+
+        ( newPlayState, newMsg ) =
             update
-                (ClickFeedback pos)
+                msg
                 state
                 mode
+    in
+    ( newPlayState, Cmd.batch [ newMsg, buttonMsg ] )

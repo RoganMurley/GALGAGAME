@@ -6,35 +6,30 @@ import Assets.Types as Assets
 import Background.View as Background
 import Card.State exposing (cardTexture)
 import Colour
-import Connected.Messages as Connected
 import Ease
 import Font.State as Font
 import Font.Types as Font
 import Font.View as Font
 import Game.State exposing (contextInit)
-import Game.Types as Game exposing (Context, Feedback, Hover(..), HoverSelf)
-import GameState.Messages as GameState
-import Hand.State exposing (maxHandLength)
+import Game.Types as Game exposing (ButtonEntity, Context, Feedback)
 import Hand.View as Hand
-import Html exposing (Html, button, div, text)
-import Html.Attributes exposing (class, classList, height, style, width)
-import Html.Events exposing (onClick)
+import Hover exposing (Hover(..), HoverSelf)
+import Html exposing (Html, div)
+import Html.Attributes exposing (class, height, width)
 import Main.Messages as Main
 import Math.Matrix4 exposing (makeLookAt, makeOrtho, makeRotate, makeScale3)
 import Math.Vector2 exposing (vec2)
 import Math.Vector3 exposing (Vec3, vec3)
 import Maybe.Extra as Maybe
 import Model.Wave as Wave
-import PlayState.Messages as PlayState
 import Render.Primitives
 import Render.Shaders
 import Render.Types as Render
 import Render.Uniforms exposing (uniColourMag)
-import Room.Messages as Room
 import Stack.Types exposing (StackCard)
 import Stack.View as Stack
 import Trail
-import Util exposing (interpFloat, px)
+import Util exposing (interpFloat)
 import WebGL
 import WhichPlayer.Types exposing (WhichPlayer(..))
 
@@ -68,11 +63,11 @@ view { w, h, pixelRatio } { res, hover, focus, entities, passed, feedback, vfx }
                     -- , Background.cursorView
                     , damageWebGl hover
                     , turnView focus passed
+                    , focusTextView focus
+                    , buttonsView entities.buttons
                     , feedbackView feedback
                     ]
             )
-        , div [ class "text-focus" ] [ focusTextView ctx focus ]
-        , goButtonView ctx passed
         ]
 
 
@@ -213,30 +208,43 @@ lifeOrbView ({ w, h, radius, model, anim, animDamage, tick } as ctx) =
             ]
 
 
-focusTextView : Context -> Maybe StackCard -> Html a
-focusTextView { anim, radius } focus =
+focusTextView : Maybe StackCard -> Context -> List WebGL.Entity
+focusTextView focus ({ w, h, anim, radius } as ctx) =
     case anim of
         Mill _ _ ->
-            text ""
+            []
 
         Pass _ ->
-            text ""
+            []
 
         HandFullPass ->
-            text ""
+            []
 
         _ ->
             case focus of
                 Nothing ->
-                    text ""
+                    []
 
-                Just { card, owner } ->
-                    div
-                        [ style "width" (0.7 * radius |> px)
-                        , classList [ ( "opponent", owner == PlayerB ) ]
-                        ]
-                        [ div [ class "title" ] [ text card.name ]
-                        , div [ class "desc" ] [ text card.desc ]
+                Just { card } ->
+                    List.concat
+                        [ Font.view "Futura"
+                            card.name
+                            { x = 0.5 * w
+                            , y = 0.5 * h + radius * 0.1
+                            , scaleX = 0.00025 * radius
+                            , scaleY = 0.00025 * radius
+                            , color = Colour.white
+                            }
+                            ctx
+                        , Font.view "Futura"
+                            card.desc
+                            { x = 0.5 * w
+                            , y = 0.5 * h + radius * 0.3
+                            , scaleX = 0.00012 * radius
+                            , scaleY = 0.00012 * radius
+                            , color = Colour.white
+                            }
+                            ctx
                         ]
 
 
@@ -325,60 +333,32 @@ damageWebGl hover ({ w, h, radius, resolving, animDamage } as ctx) =
         ]
 
 
-goButtonView : Context -> Bool -> Html Main.Msg
-goButtonView { model, radius, resolving } passed =
+buttonsView : List ButtonEntity -> Context -> List WebGL.Entity
+buttonsView buttons ctx =
     let
-        handFull =
-            List.length model.hand == maxHandLength
+        buttonView : ButtonEntity -> List WebGL.Entity
+        buttonView { font, text, position, scale, disabled } =
+            let
+                color =
+                    if disabled then
+                        vec3 (100 / 255) (100 / 255) (50 / 255)
 
-        yourTurn =
-            model.turn == PlayerA
-
-        isDisabled =
-            handFull || not yourTurn || passed || resolving
-
-        horizontalOffset =
-            0.64 * radius
-
-        verticalOffset =
-            0.67 * radius
-
-        buttonSize =
-            0.23 * radius
-
-        fontSize =
-            0.12 * radius
-
-        playMsg =
-            Main.RoomMsg
-                << Room.ConnectedMsg
-                << Connected.GameStateMsg
-                << GameState.PlayStateMsg
-                << PlayState.PlayingOnly
-
-        clickHandler =
-            if not isDisabled then
-                [ onClick <| playMsg <| PlayState.TurnOnly PlayState.EndTurn
-                ]
-
-            else if handFull && not resolving then
-                [ onClick <| playMsg PlayState.IllegalPass
-                ]
-
-            else
-                []
+                    else
+                        vec3 (244 / 255) (241 / 255) (94 / 255)
+            in
+            Font.view
+                font
+                text
+                { x = Math.Vector2.getX position
+                , y = Math.Vector2.getY position
+                , scaleX = scale * 0.002
+                , scaleY = scale * 0.002
+                , color = color
+                }
+                ctx
     in
-    button
-        ([ classList [ ( "clock-go", True ), ( "clock-go--disabled", isDisabled ) ]
-         , style "left" ("calc(50% + " ++ (horizontalOffset |> px) ++ ")")
-         , style "top" ("calc(50% + " ++ (verticalOffset |> px) ++ ")")
-         , style "width" (buttonSize |> px)
-         , style "height" (buttonSize |> px)
-         , style "font-size" (fontSize |> px)
-         ]
-            ++ clickHandler
-        )
-        [ text "GO" ]
+    List.concat <|
+        List.map buttonView buttons
 
 
 turnView : Maybe StackCard -> Bool -> Context -> List WebGL.Entity

@@ -70,7 +70,11 @@ update model msg flags =
         ReplayMsg replayMsg ->
             case model of
                 Replay replay ->
-                    ( Replay <| Replay.update replay replayMsg, Cmd.none )
+                    let
+                        ( newReplay, cmd ) =
+                            Replay.update replay replayMsg
+                    in
+                    ( Replay newReplay, cmd )
 
                 _ ->
                     ( model, Cmd.none )

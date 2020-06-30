@@ -4,8 +4,9 @@ import Animation.State as Animation
 import Animation.Types exposing (Anim(..), Bounce(..), HandBounce)
 import Colour exposing (Colour)
 import Ease
-import Game.Types exposing (Context, Hover(..))
+import Game.Types exposing (Context)
 import Hand.Entities exposing (handCardPosition, playPosition)
+import Hover exposing (Hover(..))
 import Math.Matrix4 exposing (makeLookAt, makeOrtho, makeRotate, makeScale3)
 import Math.Vector2 exposing (Vec2, vec2)
 import Math.Vector3 exposing (vec3)

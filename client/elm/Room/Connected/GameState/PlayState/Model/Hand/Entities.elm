@@ -4,7 +4,8 @@ import Animation.State as Animation
 import Animation.Types exposing (Anim(..), Bounce, HandBounce)
 import Card.Types exposing (Card)
 import Game.Entity as Game
-import Game.Types exposing (Context, HandEntity, Hover(..), HoverOther, HoverSelf, OtherHandEntity)
+import Game.Types exposing (Context, HandEntity, OtherHandEntity)
+import Hover exposing (Hover(..), HoverOther, HoverSelf)
 import Math.Vector2 exposing (Vec2, vec2)
 import Stack.Entities
 import Util exposing (interp2D, interpFloat)

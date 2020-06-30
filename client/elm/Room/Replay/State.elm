@@ -29,25 +29,25 @@ receive msg =
     in
     case command of
         "replay" ->
-            case Json.decodeString replayDecoder content of
-                Ok replay ->
-                    message <|
-                        Main.RoomMsg <|
-                            Room.ReplayMsg <|
-                                SetReplay replay
-
-                Err err ->
-                    log <| Json.errorToString err
+            message <|
+                Main.RoomMsg <|
+                    Room.ReplayMsg <|
+                        SetReplay content
 
         _ ->
             Cmd.none
 
 
-update : Replay.Model -> Msg -> Replay.Model
+update : Replay.Model -> Msg -> ( Replay.Model, Cmd Main.Msg )
 update model msg =
     case msg of
-        SetReplay replay ->
-            { model | replay = Just replay }
+        SetReplay replayStr ->
+            case Json.decodeString replayDecoder replayStr of
+                Ok replay ->
+                    ( { model | replay = Just replay }, Cmd.none )
+
+                Err err ->
+                    ( model, log <| Json.errorToString err )
 
 
 getReplay : String -> Cmd Main.Msg
