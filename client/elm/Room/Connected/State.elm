@@ -4,11 +4,11 @@ import Audio.State exposing (playSound)
 import Connected.Decoders exposing (decodeDamageOutcome, decodePlayers)
 import Connected.Messages exposing (Msg(..))
 import Connected.Types exposing (Model, Players)
-import Game.Decoders exposing (decodeHoverOther)
 import GameState.Messages as GameState
 import GameState.State as GameState
 import GameState.Types exposing (GameState(..), WaitType(..))
 import GameType exposing (GameType)
+import Hover exposing (decodeHoverOther)
 import Json.Decode as Json
 import Main.Messages as Main
 import Main.Types exposing (Flags)

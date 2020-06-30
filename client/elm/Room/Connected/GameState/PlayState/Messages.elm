@@ -1,7 +1,7 @@
 module PlayState.Messages exposing (Msg(..), PlayingOnly(..), TurnOnly(..))
 
 import Card.Types exposing (Card)
-import Game.Types exposing (HoverOther, HoverSelf)
+import Hover exposing (HoverOther, HoverSelf)
 import Math.Vector2 exposing (Vec2)
 import Stats exposing (StatChange)
 

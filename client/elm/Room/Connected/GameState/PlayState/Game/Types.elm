@@ -1,9 +1,11 @@
-module Game.Types exposing (Context, Entities, Feedback, HandEntity, Hover(..), HoverBase, HoverOther, HoverSelf, HoverStack, Model, OtherHandEntity, StackEntity)
+module Game.Types exposing (ButtonEntity, Context, Entities, Feedback, HandEntity, Model, OtherHandEntity, StackEntity)
 
 import Animation.Types exposing (Anim)
 import Card.Types exposing (Card)
 import Font.Types as Font
 import Game.Entity as Game
+import Hover exposing (HoverOther, HoverSelf)
+import Main.Messages as Main
 import Math.Vector2 exposing (Vec2)
 import Model.Types as Model
 import Resolvable.Types as Resolvable
@@ -62,40 +64,21 @@ type alias OtherHandEntity =
     Game.Entity {}
 
 
+type alias ButtonEntity =
+    Game.Entity
+        { font : String
+        , text : String
+        , onClick : Maybe Main.Msg
+        , disabled : Bool
+        }
+
+
 type alias Entities =
     { stack : List StackEntity
     , hand : List HandEntity
     , otherHand : List OtherHandEntity
+    , buttons : List ButtonEntity
     }
-
-
-
--- Hover
-
-
-type alias HoverSelf =
-    Hover { dmg : ( Model.Life, Model.Life ) }
-
-
-type alias HoverOther =
-    Hover {}
-
-
-type alias HoverStack =
-    Hover { dmg : ( Model.Life, Model.Life ) }
-
-
-type alias HoverBase a =
-    { a
-        | index : Int
-        , tick : Float
-    }
-
-
-type Hover a
-    = HoverHand (HoverBase a)
-    | HoverStack (HoverBase a)
-    | NoHover
 
 
 

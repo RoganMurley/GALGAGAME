@@ -5,17 +5,23 @@ import Animation.Types as Animation
 import Assets.State as Assets
 import Assets.Types as Assets
 import Collision exposing (hitTest)
-import Game.Types as Game exposing (Context, Entities, Feedback, HandEntity, Hover(..), HoverBase, HoverSelf, StackEntity)
+import Connected.Messages as Connected
+import Game.Types as Game exposing (ButtonEntity, Context, Entities, Feedback, HandEntity, StackEntity)
+import GameState.Messages as GameState
 import Hand.Entities as Hand
+import Hand.State exposing (maxHandLength)
+import Hover exposing (Hover(..), HoverBase, HoverSelf)
 import List.Extra as List
+import Main.Messages as Main
 import Main.Types exposing (Flags)
-import Math.Vector2 exposing (Vec2)
+import Math.Vector2 exposing (Vec2, vec2)
 import Maybe.Extra as Maybe
 import Model.State as Model
 import Model.Types as Model exposing (Model)
 import PlayState.Messages as PlayState
 import Resolvable.State as Resolvable exposing (activeAnim, activeAnimDamage, activeModel, activeStackCard, resolving)
 import Resolvable.Types as Resolvable
+import Room.Messages as Room
 import Stack.Entities as Stack
 import Stack.Types exposing (StackCard)
 import Util exposing (message)
@@ -29,7 +35,7 @@ gameInit model =
     , focus = Nothing
     , hover = NoHover
     , otherHover = NoHover
-    , entities = { hand = [], otherHand = [], stack = [] }
+    , entities = { hand = [], otherHand = [], stack = [], buttons = [] }
     , passed = False
     , feedback = []
     , vfx = Vfx.init
@@ -88,6 +94,7 @@ entitiesInit =
     { stack = []
     , hand = []
     , otherHand = []
+    , buttons = []
     }
 
 
@@ -140,6 +147,7 @@ tick { dimensions, mouse } dt model =
                     { stack = Stack.entities ctx
                     , hand = Hand.entities model.hover ctx
                     , otherHand = Hand.otherEntities model.otherHover ctx
+                    , buttons = buttonEntities model.passed ctx
                     }
                 , focus = focus
                 , feedback = feedback
@@ -277,3 +285,44 @@ feedbackTick feedback dt =
                     Just { f | progress = progress }
             )
             feedback
+
+
+buttonEntities : Bool -> Context -> List ButtonEntity
+buttonEntities passed { w, h, model, radius, resolving } =
+    let
+        handFull =
+            List.length model.hand == maxHandLength
+
+        yourTurn =
+            model.turn == PlayerA
+
+        isDisabled =
+            handFull || not yourTurn || passed || resolving
+
+        playMsg =
+            Main.RoomMsg
+                << Room.ConnectedMsg
+                << Connected.GameStateMsg
+                << GameState.PlayStateMsg
+                << PlayState.PlayingOnly
+
+        onClick : Maybe Main.Msg
+        onClick =
+            if not isDisabled then
+                Just <| playMsg <| PlayState.TurnOnly PlayState.EndTurn
+
+            else if handFull && not resolving then
+                Just <| playMsg PlayState.IllegalPass
+
+            else
+                Nothing
+    in
+    [ { position = vec2 (w * 0.5 + 0.64 * radius) (h * 0.5 + 0.67 * radius)
+      , scale = 32
+      , rotation = 0
+      , text = "Go"
+      , font = "Futura"
+      , disabled = isDisabled
+      , onClick = onClick
+      }
+    ]

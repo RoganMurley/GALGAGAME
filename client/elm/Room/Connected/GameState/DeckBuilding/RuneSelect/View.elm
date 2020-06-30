@@ -8,7 +8,7 @@ import Html as Html exposing (Html, button, div, h2, text)
 import Html.Attributes exposing (class)
 import Html.Events exposing (onClick)
 import Math.Vector2 exposing (vec2)
-import Model.View exposing (focusImageView, focusTextView)
+import Model.View exposing (focusImageView)
 import Render.Primitives
 import Render.Uniforms exposing (uniColourMag)
 import RuneSelect.Messages exposing (Msg(..))
@@ -18,16 +18,17 @@ import WhichPlayer.Types exposing (WhichPlayer(..))
 
 
 view : Context -> Model -> Html DeckBuilding.Msg
-view ctx model =
+view _ model =
     let
         rune =
             model.carousel.selected
     in
     div []
         [ case model.hover of
-            Just { card } ->
-                div [ class "text-focus" ] [ focusTextView ctx (Just { owner = PlayerA, card = card }) ]
+            Just _ ->
+                div [] []
 
+            -- div [ class "text-focus" ] [ focusTextView ctx (Just { owner = PlayerA, card = card }) ]
             Nothing ->
                 div [ class "runes" ]
                     [ h2 [ class "rune-name" ] [ text rune.name ]
