@@ -70,6 +70,7 @@ type alias ButtonEntity =
         , text : String
         , onClick : Maybe Main.Msg
         , disabled : Bool
+        , hover : Bool
         }
 
 

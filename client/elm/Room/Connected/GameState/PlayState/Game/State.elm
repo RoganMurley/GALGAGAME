@@ -147,7 +147,7 @@ tick { dimensions, mouse } dt model =
                     { stack = Stack.entities ctx
                     , hand = Hand.entities model.hover ctx
                     , otherHand = Hand.otherEntities model.otherHover ctx
-                    , buttons = buttonEntities model.passed ctx
+                    , buttons = buttonEntities model.passed mouse ctx
                     }
                 , focus = focus
                 , feedback = feedback
@@ -287,9 +287,12 @@ feedbackTick feedback dt =
             feedback
 
 
-buttonEntities : Bool -> Context -> List ButtonEntity
-buttonEntities passed { w, h, model, radius, resolving } =
+buttonEntities : Bool -> Maybe Vec2 -> Context -> List ButtonEntity
+buttonEntities passed mouse { w, h, model, radius, resolving } =
     let
+        position =
+            vec2 (w * 0.5 + 0.64 * radius) (h * 0.5 + 0.67 * radius)
+
         handFull =
             List.length model.hand == maxHandLength
 
@@ -298,6 +301,14 @@ buttonEntities passed { w, h, model, radius, resolving } =
 
         isDisabled =
             handFull || not yourTurn || passed || resolving
+
+        isHover =
+            case mouse of
+                Just mousePos ->
+                    hitTest position 32 { position = mousePos }
+
+                Nothing ->
+                    False
 
         playMsg =
             Main.RoomMsg
@@ -317,12 +328,13 @@ buttonEntities passed { w, h, model, radius, resolving } =
             else
                 Nothing
     in
-    [ { position = vec2 (w * 0.5 + 0.64 * radius) (h * 0.5 + 0.67 * radius)
+    [ { position = position
       , scale = 32
       , rotation = 0
       , text = "Go"
       , font = "Futura"
       , disabled = isDisabled
+      , hover = isHover
       , onClick = onClick
       }
     ]

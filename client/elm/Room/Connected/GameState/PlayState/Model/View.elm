@@ -337,25 +337,46 @@ buttonsView : List ButtonEntity -> Context -> List WebGL.Entity
 buttonsView buttons ctx =
     let
         buttonView : ButtonEntity -> List WebGL.Entity
-        buttonView { font, text, position, scale, disabled } =
+        buttonView { font, text, position, scale, disabled, hover } =
             let
-                color =
+                textColor =
                     if disabled then
                         vec3 (100 / 255) (100 / 255) (50 / 255)
 
                     else
                         vec3 (244 / 255) (241 / 255) (94 / 255)
+
+                backgroundColor =
+                    if disabled then
+                        vec3 (62 / 255) (62 / 255) (62 / 255)
+
+                    else if hover then
+                        vec3 (160 / 255) (160 / 255) (160 / 255)
+
+                    else
+                        vec3 (122 / 255) (122 / 255) (122 / 255)
             in
-            Font.view
-                font
-                text
-                { x = Math.Vector2.getX position
-                , y = Math.Vector2.getY position
-                , scaleX = scale * 0.002
-                , scaleY = scale * 0.002
-                , color = color
-                }
-                ctx
+            List.concat
+                [ [ Render.Primitives.fullCircle <|
+                        uniColourMag ctx
+                            backgroundColor
+                            1
+                            { scale = 0.12 * ctx.radius
+                            , position = position
+                            , rotation = 0
+                            }
+                  ]
+                , Font.view
+                    font
+                    text
+                    { x = Math.Vector2.getX position
+                    , y = Math.Vector2.getY position
+                    , scaleX = scale * 0.002
+                    , scaleY = scale * 0.002
+                    , color = textColor
+                    }
+                    ctx
+                ]
     in
     List.concat <|
         List.map buttonView buttons
