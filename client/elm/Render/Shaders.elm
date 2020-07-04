@@ -45,18 +45,18 @@ fragmentAlpha =
     |]
 
 
-matte : Shader {} { u | color : Vec3 } { vcoord : Vec2 }
+matte : Shader {} (Uniforms { alpha : Float }) { vcoord : Vec2 }
 matte =
     [glsl|
         precision mediump float;
 
         uniform vec3 color;
-
+        uniform float alpha;
         varying vec2 vcoord;
 
         void main ()
         {
-            gl_FragColor = vec4(color, 1.0);
+            gl_FragColor = vec4(color, alpha);
         }
 
     |]
