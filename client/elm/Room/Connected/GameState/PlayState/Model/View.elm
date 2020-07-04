@@ -7,6 +7,7 @@ import Background.View as Background
 import Card.State exposing (cardTexture)
 import Colour
 import Ease
+import Endgame.WebGL as Endgame
 import Font.State as Font
 import Font.Types as Font
 import Font.View as Font
@@ -14,9 +15,6 @@ import Game.State exposing (contextInit)
 import Game.Types as Game exposing (ButtonEntity, Context, Feedback)
 import Hand.View as Hand
 import Hover exposing (Hover(..), HoverSelf)
-import Html exposing (Html, div)
-import Html.Attributes exposing (class, height, width)
-import Main.Messages as Main
 import Math.Matrix4 exposing (makeLookAt, makeOrtho, makeRotate, makeScale3)
 import Math.Vector2 exposing (vec2)
 import Math.Vector3 exposing (Vec3, vec3)
@@ -34,41 +32,38 @@ import WebGL
 import WhichPlayer.Types exposing (WhichPlayer(..))
 
 
-view : Render.Params -> Game.Model -> Assets.Model -> Html Main.Msg
-view { w, h, pixelRatio } { res, hover, focus, entities, passed, feedback, vfx } assets =
+view : Render.Params -> Game.Model -> Assets.Model -> List WebGL.Entity
+view { w, h } { res, hover, focus, entities, passed, feedback, vfx } assets =
     let
         ctx =
             contextInit ( w, h ) res assets Nothing
     in
-    div [ class "clock" ]
-        [ WebGL.toHtml [ width <| floor <| toFloat w * pixelRatio, height <| floor <| toFloat h * pixelRatio, class "webgl-canvas" ]
-            (List.concat <|
-                List.map ((|>) ctx)
-                    [ Background.radialView vfx
-                    , Wave.view
+    List.concat <|
+        List.map ((|>) ctx)
+            [ Background.radialView vfx
+            , Wave.view
 
-                    -- , Background.ornateView
-                    , lifeOrbView
-                    , passView
+            -- , Background.ornateView
+            , lifeOrbView
+            , passView
 
-                    -- , Background.stainView focus
-                    -- , Background.ringView
-                    , Stack.view entities.stack
-                    , focusImageView focus
-                    , Trail.view
-                    , Hand.view entities.hand
-                    , Hand.otherView entities.otherHand
-                    , Hand.millView
+            -- , Background.stainView focus
+            -- , Background.ringView
+            , Stack.view entities.stack
+            , focusImageView focus
+            , Trail.view
+            , Hand.view entities.hand
+            , Hand.otherView entities.otherHand
+            , Hand.millView
 
-                    -- , Background.cursorView
-                    , damageWebGl hover
-                    , turnView focus passed
-                    , focusTextView focus
-                    , buttonsView entities.buttons
-                    , feedbackView feedback
-                    ]
-            )
-        ]
+            -- , Background.cursorView
+            , damageWebGl hover
+            , turnView focus passed
+            , focusTextView focus
+            , buttonsView entities.buttons
+            , Endgame.animView
+            , feedbackView feedback
+            ]
 
 
 focusImageView : Maybe StackCard -> Context -> List WebGL.Entity
