@@ -14,6 +14,7 @@ type PlayState
         , winner : Maybe WhichPlayer
         , replayId : Maybe String
         , xp : Maybe StatChange
+        , buttonEntities : List Game.ButtonEntity
         }
 
 

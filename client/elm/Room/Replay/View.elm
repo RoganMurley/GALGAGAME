@@ -20,7 +20,7 @@ view { replay } flags assets =
         case replay of
             Just { state, usernamePa, usernamePb } ->
                 [ playersView { pa = Just usernamePa, pb = Just usernamePb }
-                , GameState.view (Started state) "" flags Nothing True assets
+                , GameState.view (Started state) "" flags assets
                 ]
 
             Nothing ->

@@ -4,8 +4,10 @@ import Animation.Types exposing (Anim(..))
 import Audio.State exposing (playSound)
 import Browser.Navigation
 import Collision exposing (hitTest)
+import Endgame.WebGL as Endgame
 import Game.State as Game
 import Game.Types as Game
+import GameType exposing (GameType(..))
 import Hover exposing (encodeHoverSelf)
 import Json.Decode as Json
 import List.Extra as List
@@ -236,16 +238,46 @@ updateTurnOnly msg state =
             ( state, Cmd.none )
 
 
-tick : Flags -> PlayState -> Float -> ( PlayState, Cmd Msg )
-tick flags state dt =
-    let
-        game =
-            get identity state
+tick : Flags -> Maybe GameType -> PlayState -> Float -> ( PlayState, Cmd Msg )
+tick flags gameType state dt =
+    case state of
+        Playing ({ game } as playing) ->
+            let
+                ( newGame, msg ) =
+                    Game.tick flags dt game
+            in
+            ( Playing
+                { playing
+                    | game = newGame
+                }
+            , msg
+            )
 
-        ( newGame, msg ) =
-            Game.tick flags dt game
-    in
-    ( set newGame state, msg )
+        Ended ({ game, winner } as ended) ->
+            let
+                ( newGame, msg ) =
+                    Game.tick flags dt game
+
+                ( w, h ) =
+                    flags.dimensions
+
+                params =
+                    { time = flags.time
+                    , w = w
+                    , h = h
+                    , pixelRatio = flags.pixelRatio
+                    }
+
+                buttonEntities =
+                    Endgame.buttonEntities params flags.mouse gameType winner
+            in
+            ( Ended
+                { ended
+                    | game = newGame
+                    , buttonEntities = buttonEntities
+                }
+            , msg
+            )
 
 
 map : (Game.Model -> Game.Model) -> PlayState -> PlayState
@@ -351,10 +383,20 @@ mouseClick mode { x, y } state =
                 (hitTest pos 28)
                 game.entities.hand
 
+        allButtons =
+            game.entities.buttons
+                ++ (case state of
+                        Playing _ ->
+                            []
+
+                        Ended { buttonEntities } ->
+                            buttonEntities
+                   )
+
         mButtonEntity =
             List.find
-                (hitTest pos 28)
-                game.entities.buttons
+                .hover
+                allButtons
 
         msg =
             case mHandEntity of

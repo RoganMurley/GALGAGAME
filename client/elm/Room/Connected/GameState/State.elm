@@ -6,6 +6,7 @@ import Game.State exposing (bareContextInit)
 import GameState.Decoders exposing (stateDecoder)
 import GameState.Messages exposing (Msg(..))
 import GameState.Types exposing (GameState(..))
+import GameType exposing (GameType(..))
 import Json.Decode as Json
 import Main.Messages as Main
 import Main.Types exposing (Flags)
@@ -125,8 +126,8 @@ carry old new =
             new
 
 
-tick : Flags -> GameState -> Float -> ( GameState, Cmd Msg )
-tick flags state dt =
+tick : Flags -> GameType -> GameState -> Float -> ( GameState, Cmd Msg )
+tick flags gameType state dt =
     case state of
         Selecting selecting ->
             let
@@ -141,7 +142,7 @@ tick flags state dt =
         Started playState ->
             let
                 ( newState, cmd ) =
-                    PlayState.tick flags playState dt
+                    PlayState.tick flags (Just gameType) playState dt
             in
             ( Started newState, Cmd.map PlayStateMsg cmd )
 

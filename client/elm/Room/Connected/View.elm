@@ -14,10 +14,10 @@ import PlayState.Types exposing (PlayState(..))
 
 
 view : Model -> Flags -> Assets.Model -> Html Msg
-view { game, gameType, roomID, players } flags assets =
+view { game, roomID, players } flags assets =
     div []
         [ playersView players
-        , GameState.view game roomID flags (Just gameType) False assets
+        , GameState.view game roomID flags assets
         ]
 
 
