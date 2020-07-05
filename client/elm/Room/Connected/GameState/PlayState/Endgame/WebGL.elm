@@ -1,16 +1,25 @@
-module Endgame.WebGL exposing (animView, view)
+module Endgame.WebGL exposing (animView, buttonEntities, view)
 
 import Animation.Types exposing (Anim(..))
+import Assets.State as Assets
 import Assets.Types as Assets
+import Collision exposing (hitTest)
+import Connected.Messages as Connected
 import Ease
 import Font.View as Font
 import Game.State exposing (bareContextInit)
-import Game.Types exposing (Context)
+import Game.Types exposing (ButtonEntity, Context)
+import GameState.Messages as GameState
+import GameType exposing (GameType(..))
+import Main.Messages as Main
 import Math.Matrix4 exposing (makeLookAt, makeOrtho, makeRotate, makeScale3)
+import Math.Vector2 exposing (Vec2, vec2)
 import Math.Vector3 exposing (vec3)
+import PlayState.Messages as PlayState
 import Render.Primitives
 import Render.Shaders
 import Render.Types as Render
+import Room.Messages as Room
 import WebGL
 import WhichPlayer.Types exposing (WhichPlayer(..))
 
@@ -42,7 +51,7 @@ animView ({ w, h, radius, anim, progress } as ctx) =
                         { rotation = makeRotate pi (vec3 0 0 1)
                         , scale = makeScale3 w h 1
                         , color = backgroundColor
-                        , alpha = Ease.outCubic progress
+                        , alpha = 0.8 * Ease.outCubic progress
                         , pos = vec3 (w * 0.5) (h * 0.5) 0
                         , worldRot = makeRotate 0 (vec3 0 0 1)
                         , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
@@ -75,8 +84,8 @@ animView ({ w, h, radius, anim, progress } as ctx) =
             []
 
 
-view : Render.Params -> Assets.Model -> Maybe WhichPlayer -> Bool -> List WebGL.Entity
-view { w, h } assets winner resolving =
+view : Render.Params -> Assets.Model -> Maybe WhichPlayer -> Bool -> List ButtonEntity -> List WebGL.Entity
+view { w, h } assets winner resolving buttons =
     let
         ctx =
             bareContextInit ( w, h ) assets Nothing
@@ -85,4 +94,74 @@ view { w, h } assets winner resolving =
         []
 
     else
-        animView { ctx | anim = GameEnd winner, progress = 1 }
+        List.concat
+            [ animView { ctx | anim = GameEnd winner, progress = 1 }
+            , buttonsView ctx buttons
+            ]
+
+
+buttonsView : Context -> List ButtonEntity -> List WebGL.Entity
+buttonsView ctx buttons =
+    let
+        buttonView : ButtonEntity -> List WebGL.Entity
+        buttonView { font, text, position, scale } =
+            Font.view
+                font
+                text
+                { x = Math.Vector2.getX position
+                , y = Math.Vector2.getY position
+                , scaleX = scale * 0.002
+                , scaleY = scale * 0.002
+                , color = vec3 1 1 1
+                }
+                ctx
+    in
+    List.concat <| List.map buttonView buttons
+
+
+buttonEntities : Render.Params -> Maybe Vec2 -> Maybe GameType -> Maybe WhichPlayer -> List ButtonEntity
+buttonEntities { w, h } mouse mGameType winner =
+    case mGameType of
+        Nothing ->
+            []
+
+        Just gameType ->
+            let
+                ctx =
+                    bareContextInit ( w, h ) Assets.init mouse
+
+                position =
+                    vec2 (ctx.w * 0.5) (ctx.h * 0.6)
+
+                isHover =
+                    case mouse of
+                        Just mousePos ->
+                            hitTest position 32 { position = mousePos }
+
+                        Nothing ->
+                            False
+
+                playMsg =
+                    Main.RoomMsg
+                        << Room.ConnectedMsg
+                        << Connected.GameStateMsg
+                        << GameState.PlayStateMsg
+
+                onClick =
+                    case ( gameType, winner ) of
+                        ( TutorialGame, Just PlayerA ) ->
+                            playMsg PlayState.GotoComputerGame
+
+                        _ ->
+                            playMsg <| PlayState.PlayingOnly PlayState.Rematch
+            in
+            [ { position = position
+              , scale = 32
+              , rotation = 0
+              , text = "Play Again"
+              , font = "Futura"
+              , disabled = False
+              , hover = isHover
+              , onClick = Just onClick
+              }
+            ]

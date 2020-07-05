@@ -56,7 +56,7 @@ tick : Flags -> Model -> Float -> ( Model, Cmd Msg )
 tick flags model dt =
     let
         ( game, msg ) =
-            GameState.tick flags model.game dt
+            GameState.tick flags model.gameType model.game dt
 
         newTick =
             model.tick + dt

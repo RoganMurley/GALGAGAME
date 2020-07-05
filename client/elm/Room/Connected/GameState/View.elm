@@ -7,7 +7,6 @@ import Connected.Messages as Connected
 import DeckBuilding.View as DeckBuilding
 import GameState.Messages exposing (Msg(..))
 import GameState.Types exposing (GameState(..), WaitType(..))
-import GameType exposing (GameType)
 import Html exposing (Html, button, div, input, text)
 import Html.Attributes exposing (class, height, id, readonly, type_, value, width)
 import Html.Events exposing (onClick)
@@ -18,8 +17,8 @@ import Room.Messages as Room
 import WebGL
 
 
-view : GameState -> String -> Flags -> Maybe GameType -> Bool -> Assets.Model -> Html Main.Msg
-view state roomID ({ dimensions, pixelRatio } as flags) gameType isReplay assets =
+view : GameState -> String -> Flags -> Assets.Model -> Html Main.Msg
+view state roomID ({ dimensions, pixelRatio } as flags) assets =
     let
         ( w, h ) =
             dimensions
@@ -53,7 +52,7 @@ view state roomID ({ dimensions, pixelRatio } as flags) gameType isReplay assets
                     , class "webgl-canvas"
                     ]
                   <|
-                    PlayState.view playState flags gameType isReplay assets
+                    PlayState.view playState flags assets
                 ]
 
 

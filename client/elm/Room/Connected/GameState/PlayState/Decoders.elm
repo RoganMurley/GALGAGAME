@@ -40,6 +40,7 @@ endedDecoder =
                 , game = gameInit model
                 , replayId = Nothing
                 , xp = Nothing
+                , buttonEntities = []
                 }
     in
     Json.map2 endedInit
