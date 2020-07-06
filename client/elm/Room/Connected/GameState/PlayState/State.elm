@@ -253,7 +253,7 @@ tick flags gameType state dt =
             , msg
             )
 
-        Ended ({ game, winner } as ended) ->
+        Ended ({ game, winner, replayId } as ended) ->
             let
                 ( newGame, msg ) =
                     Game.tick flags dt game
@@ -269,7 +269,7 @@ tick flags gameType state dt =
                     }
 
                 buttonEntities =
-                    Endgame.buttonEntities params flags.mouse gameType winner
+                    Endgame.buttonEntities params flags.mouse gameType winner replayId
             in
             ( Ended
                 { ended

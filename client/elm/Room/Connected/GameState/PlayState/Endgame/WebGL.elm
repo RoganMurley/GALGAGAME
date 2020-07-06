@@ -104,7 +104,19 @@ buttonsView : Context -> List ButtonEntity -> List WebGL.Entity
 buttonsView ctx buttons =
     let
         buttonView : ButtonEntity -> List WebGL.Entity
-        buttonView { font, text, position, scale } =
+        buttonView { font, text, position, scale, disabled, hover } =
+            let
+                color =
+                    case ( disabled, hover ) of
+                        ( True, _ ) ->
+                            vec3 0 0 0
+
+                        ( False, True ) ->
+                            vec3 1 1 1
+
+                        ( False, False ) ->
+                            vec3 0.9 0.9 0.9
+            in
             Font.view
                 font
                 text
@@ -112,15 +124,15 @@ buttonsView ctx buttons =
                 , y = Math.Vector2.getY position
                 , scaleX = scale * 0.002
                 , scaleY = scale * 0.002
-                , color = vec3 1 1 1
+                , color = color
                 }
                 ctx
     in
     List.concat <| List.map buttonView buttons
 
 
-buttonEntities : Render.Params -> Maybe Vec2 -> Maybe GameType -> Maybe WhichPlayer -> List ButtonEntity
-buttonEntities { w, h } mouse mGameType winner =
+buttonEntities : Render.Params -> Maybe Vec2 -> Maybe GameType -> Maybe WhichPlayer -> Maybe String -> List ButtonEntity
+buttonEntities { w, h } mouse mGameType winner mReplayId =
     case mGameType of
         Nothing ->
             []
@@ -130,38 +142,71 @@ buttonEntities { w, h } mouse mGameType winner =
                 ctx =
                     bareContextInit ( w, h ) Assets.init mouse
 
-                position =
-                    vec2 (ctx.w * 0.5) (ctx.h * 0.6)
-
-                isHover =
-                    case mouse of
-                        Just mousePos ->
-                            hitTest position 32 { position = mousePos }
-
-                        Nothing ->
-                            False
-
                 playMsg =
                     Main.RoomMsg
                         << Room.ConnectedMsg
                         << Connected.GameStateMsg
                         << GameState.PlayStateMsg
 
-                onClick =
+                buttonScale =
+                    128
+
+                -- Play Again
+                playAgainPos =
+                    vec2 (ctx.w * 0.3) (ctx.h * 0.6)
+
+                playAgainIsHover =
+                    case mouse of
+                        Just mousePos ->
+                            hitTest playAgainPos buttonScale { position = mousePos }
+
+                        Nothing ->
+                            False
+
+                playAgainOnClick =
                     case ( gameType, winner ) of
                         ( TutorialGame, Just PlayerA ) ->
                             playMsg PlayState.GotoComputerGame
 
                         _ ->
                             playMsg <| PlayState.PlayingOnly PlayState.Rematch
+
+                -- Replay
+                replayPos =
+                    vec2 (ctx.w * 0.7) (ctx.h * 0.6)
+
+                replayIsHover =
+                    case mouse of
+                        Just mousePos ->
+                            hitTest replayPos buttonScale { position = mousePos }
+
+                        Nothing ->
+                            False
+
+                ( replayIsDisabled, replayOnClick ) =
+                    case mReplayId of
+                        Just replayId ->
+                            ( True, Just <| playMsg <| PlayState.GotoReplay replayId )
+
+                        Nothing ->
+                            ( False, Nothing )
             in
-            [ { position = position
+            [ { position = playAgainPos
               , scale = 32
               , rotation = 0
               , text = "Play Again"
               , font = "Futura"
               , disabled = False
-              , hover = isHover
-              , onClick = Just onClick
+              , hover = playAgainIsHover
+              , onClick = Just playAgainOnClick
+              }
+            , { position = replayPos
+              , scale = 32
+              , rotation = 0
+              , text = "Watch Replay"
+              , font = "Futura"
+              , disabled = replayIsDisabled
+              , hover = replayIsHover
+              , onClick = replayOnClick
               }
             ]
