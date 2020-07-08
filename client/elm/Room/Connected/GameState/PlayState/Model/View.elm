@@ -150,7 +150,7 @@ lifeOrbView ({ w, h, radius, model, anim, animDamage, tick } as ctx) =
     in
     [ Render.Primitives.fullCircle <|
         uniColourMag ctx
-            Colour.white
+            Colour.black
             1.0
             { scale = 0.15 * radius
             , position = pos
@@ -158,7 +158,7 @@ lifeOrbView ({ w, h, radius, model, anim, animDamage, tick } as ctx) =
             }
     , Render.Primitives.fullCircle <|
         uniColourMag ctx
-            Colour.black
+            Colour.white
             lifePercentage
             { scale = 0.15 * radius
             , position = pos
@@ -184,8 +184,8 @@ lifeOrbView ({ w, h, radius, model, anim, animDamage, tick } as ctx) =
         ++ List.concat
             [ Font.view "Futura"
                 (String.fromInt model.life)
-                { x = w * 0.5 - 0.6 * radius
-                , y = h * 0.5 - 0.675 * radius
+                { x = Math.Vector2.getX pos
+                , y = Math.Vector2.getY pos
                 , scaleX = 0.07
                 , scaleY = 0.07
                 , color = Colour.blue
@@ -193,8 +193,8 @@ lifeOrbView ({ w, h, radius, model, anim, animDamage, tick } as ctx) =
                 ctx
             , Font.view "Futura"
                 (String.fromInt model.otherLife)
-                { x = w * 0.5 + 0.6 * radius
-                , y = h * 0.5 - 0.675 * radius
+                { x = Math.Vector2.getX otherPos
+                , y = Math.Vector2.getY otherPos
                 , scaleX = 0.07
                 , scaleY = 0.07
                 , color = Colour.red
