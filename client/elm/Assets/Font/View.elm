@@ -29,7 +29,7 @@ view fontName text entity { fonts, textures, w, h } =
                         textWidth : Float
                         textWidth =
                             List.foldl
-                                (\char acc -> entity.scaleX * char.advance + acc)
+                                (\char acc -> entity.scaleX * (char.width + char.advance) + acc)
                                 0
                                 chars
 
@@ -46,8 +46,8 @@ view fontName text entity { fonts, textures, w, h } =
                                         , color = entity.color
                                         , pos =
                                             vec3
-                                                (entity.x + offset - textWidth - entity.scaleX * originX + entity.scaleX * width)
-                                                (entity.y - entity.scaleY * originY + entity.scaleY * height)
+                                                (offset + entity.x - 0.5 * textWidth + entity.scaleX * (width - originX))
+                                                (entity.y + entity.scaleY * (height - originY))
                                                 0
                                         , worldRot = makeRotate 0 (vec3 0 0 1)
                                         , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
@@ -62,7 +62,7 @@ view fontName text entity { fonts, textures, w, h } =
                                         }
                                         :: entities
                             in
-                            ( offset + entity.scaleX * width + entity.scaleX * advance, newEntities )
+                            ( offset + entity.scaleX * (width + advance), newEntities )
                     in
                     Tuple.second <|
                         List.foldl charView ( 0, [] ) chars
