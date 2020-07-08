@@ -145,7 +145,7 @@ lifeOrbView ({ w, h, radius, model, anim, animDamage, tick } as ctx) =
 
         otherPos =
             Math.Vector2.add
-                (vec2 (w * 0.5 + 0.6 * radius) (h * 0.5 - 0.75 * radius))
+                (vec2 (w * 0.5 + 0.6 * radius) (h * 0.5 - 0.675 * radius))
                 (vec2 -otherShake -otherShake)
     in
     [ Render.Primitives.fullCircle <|
