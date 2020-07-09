@@ -51,7 +51,7 @@ view fontName text entity { fonts, textures, w, h } =
                                         , pos =
                                             vec3
                                                 (offset + entity.x - 0.5 * textWidth + entity.scaleX * (width - originX))
-                                                (0.5 * textHeight + entity.y - entity.scaleY * originY)
+                                                (0.75 * textHeight + entity.y - entity.scaleY * originY)
                                                 0
                                         , worldRot = makeRotate 0 (vec3 0 0 1)
                                         , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
