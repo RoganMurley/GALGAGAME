@@ -186,10 +186,10 @@ buttonEntities { w, h } mouse mGameType winner mReplayId =
                 ( replayIsDisabled, replayOnClick ) =
                     case mReplayId of
                         Just replayId ->
-                            ( True, Just <| playMsg <| PlayState.GotoReplay replayId )
+                            ( False, Just <| playMsg <| PlayState.GotoReplay replayId )
 
                         Nothing ->
-                            ( False, Nothing )
+                            ( True, Nothing )
             in
             [ { position = playAgainPos
               , scale = 32
