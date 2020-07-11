@@ -30,45 +30,47 @@ animShake anim which tick =
 
 animMaxTick : Anim -> Float
 animMaxTick anim =
-    case anim of
-        Draw _ ->
-            500.0
+    1.5
+        * (case anim of
+            Draw _ ->
+                250.0
 
-        Reverse _ ->
-            1500.0
+            Reverse _ ->
+                750.0
 
-        Confound _ ->
-            1500.0
+            Confound _ ->
+                750.0
 
-        Play _ _ _ ->
-            500.0
+            Play _ _ _ ->
+                250.0
 
-        Mill _ _ ->
-            1000.0
+            Mill _ _ ->
+                500.0
 
-        GameEnd _ ->
-            2500.0
+            GameEnd _ ->
+                1250.0
 
-        Rotate _ ->
-            1000.0
+            Rotate _ ->
+                500.0
 
-        Windup _ ->
-            300.0
+            Windup _ ->
+                150.0
 
-        Bounce _ ->
-            1500.0
+            Bounce _ ->
+                750.0
 
-        Discard _ ->
-            1500.0
+            Discard _ ->
+                7500.0
 
-        Limbo _ ->
-            1500.0
+            Limbo _ ->
+                7500.0
 
-        Unlimbo _ ->
-            1500.0
+            Unlimbo _ ->
+                750.0
 
-        _ ->
-            800.0
+            _ ->
+                400.0
+          )
 
 
 progress : Anim -> Float -> Float

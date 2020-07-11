@@ -71,8 +71,11 @@ update msg ({ assets, room, settings, flags } as model) =
         CopyInput elementId ->
             ( model, copyInput elementId )
 
-        Frame dt ->
+        Frame rawDt ->
             let
+                dt =
+                    min 30 rawDt
+
                 newFlags =
                     { flags | time = flags.time + dt }
 
