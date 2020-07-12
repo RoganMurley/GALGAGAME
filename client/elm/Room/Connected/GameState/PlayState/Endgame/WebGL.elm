@@ -101,7 +101,7 @@ view { w, h } assets winner resolving buttons =
 
 
 buttonsView : Context -> List ButtonEntity -> List WebGL.Entity
-buttonsView ctx buttons =
+buttonsView ({ w, h } as ctx) buttons =
     let
         buttonView : ButtonEntity -> List WebGL.Entity
         buttonView { font, text, position, scale, disabled, hover } =
@@ -112,21 +112,41 @@ buttonsView ctx buttons =
                             vec3 0 0 0
 
                         ( False, True ) ->
-                            vec3 1 1 1
+                            vec3 1 0 0
 
                         ( False, False ) ->
-                            vec3 0.9 0.9 0.9
+                            vec3 1 1 1
             in
-            Font.view
-                font
-                text
-                { x = Math.Vector2.getX position
-                , y = Math.Vector2.getY position
-                , scaleX = scale * 0.002
-                , scaleY = scale * 0.002
-                , color = color
+            Render.Primitives.quad Render.Shaders.matte
+                { rotation = makeRotate pi (vec3 0 0 1)
+                , scale = makeScale3 (4 * scale) scale 1
+                , color =
+                    if hover then
+                        vec3 1 1 1
+
+                    else
+                        vec3 1 0 0
+                , pos = vec3 (Math.Vector2.getX position) (Math.Vector2.getY position) 0
+                , worldRot = makeRotate 0 (vec3 0 0 1)
+                , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
+                , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
+                , alpha =
+                    if hover then
+                        1
+
+                    else
+                        0.5
                 }
-                ctx
+                :: Font.view
+                    font
+                    text
+                    { x = Math.Vector2.getX position
+                    , y = Math.Vector2.getY position
+                    , scaleX = scale * 0.002
+                    , scaleY = scale * 0.002
+                    , color = color
+                    }
+                    ctx
     in
     List.concat <| List.map buttonView buttons
 
