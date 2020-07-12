@@ -60,10 +60,10 @@ animMaxTick anim =
                 750.0
 
             Discard _ ->
-                7500.0
+                750.0
 
             Limbo _ ->
-                7500.0
+                750.0
 
             Unlimbo _ ->
                 750.0

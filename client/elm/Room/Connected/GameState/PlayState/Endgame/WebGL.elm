@@ -59,7 +59,7 @@ animView ({ w, h, radius, anim, progress } as ctx) =
                         }
                   ]
                 , Font.view
-                    "Rock Salt"
+                    "Futura"
                     text
                     { x = w * 0.5 - 0.003 * size
                     , y = h * 0.4
@@ -69,7 +69,7 @@ animView ({ w, h, radius, anim, progress } as ctx) =
                     }
                     ctx
                 , Font.view
-                    "Rock Salt"
+                    "Futura"
                     text
                     { x = w * 0.5
                     , y = h * 0.4
@@ -115,14 +115,14 @@ buttonsView ({ w, h } as ctx) buttons =
                             vec3 1 0 0
 
                         ( False, False ) ->
-                            vec3 1 1 1
+                            vec3 (244 / 255) (241 / 255) (94 / 255)
             in
             Render.Primitives.quad Render.Shaders.matte
                 { rotation = makeRotate pi (vec3 0 0 1)
                 , scale = makeScale3 (4 * scale) scale 1
                 , color =
                     if hover then
-                        vec3 1 1 1
+                        vec3 (244 / 255) (241 / 255) (94 / 255)
 
                     else
                         vec3 1 0 0

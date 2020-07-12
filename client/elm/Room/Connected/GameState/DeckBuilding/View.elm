@@ -133,8 +133,8 @@ titleView tick ({ w, h } as ctx) =
     in
     List.concat
         [ Font.view
-            "Rock Salt"
-            "Galgagame"
+            "Futura"
+            "GALGAGAME"
             { x = w * 0.5 - 0.003 * size
             , y = h * 0.5
             , scaleX = 0.0001 * size + 0.003 * sin (tick * 0.005)
@@ -143,8 +143,8 @@ titleView tick ({ w, h } as ctx) =
             }
             ctx
         , Font.view
-            "Rock Salt"
-            "Galgagame"
+            "Futura"
+            "GALGAGAME"
             { x = w * 0.5
             , y = h * 0.5
             , scaleX = 0.0001 * size + 0.003 * sin (tick * 0.005)
