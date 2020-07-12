@@ -3,7 +3,7 @@ module Card where
 import Data.Aeson (ToJSON(..), (.=), object)
 import Data.Monoid ((<>))
 import Data.String.Conversions (cs)
-import Data.Text (Text)
+import Data.Text (Text, toUpper)
 import Player (WhichPlayer(..))
 
 import {-# SOURCE #-} qualified DSL.Beta.DSL as Beta
@@ -21,7 +21,7 @@ instance Show Card where
 instance ToJSON Card where
   toJSON (Card name desc imageURL col _) =
     object
-      [ "name"     .= name
+      [ "name"     .= toUpper name
       , "desc"     .= desc
       , "imageURL" .= imageURL
       , "col"      .= col

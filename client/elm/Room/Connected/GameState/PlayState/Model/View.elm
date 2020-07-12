@@ -366,8 +366,8 @@ buttonsView buttons ctx =
                     text
                     { x = Math.Vector2.getX position
                     , y = Math.Vector2.getY position
-                    , scaleX = scale * 0.002
-                    , scaleY = scale * 0.002
+                    , scaleX = scale * 0.0016
+                    , scaleY = scale * 0.0016
                     , color = textColor
                     }
                     ctx
@@ -395,8 +395,8 @@ turnView focus passed ctx =
                 PlayerA ->
                     List.concat
                         [ Font.view
-                            "Rock Salt"
-                            "Your Turn"
+                            "Futura"
+                            "YOUR TURN"
                             { x = w * 0.5 - 0.003 * size
                             , y = h * 0.5
                             , scaleX = 0.0001 * size + 0.003 * sin (tick * 0.005)
@@ -405,8 +405,8 @@ turnView focus passed ctx =
                             }
                             ctx
                         , Font.view
-                            "Rock Salt"
-                            "Your Turn"
+                            "Futura"
+                            "YOUR TURN"
                             { x = w * 0.5
                             , y = h * 0.5
                             , scaleX = 0.0001 * size + 0.003 * sin (tick * 0.005)
@@ -419,8 +419,8 @@ turnView focus passed ctx =
                 PlayerB ->
                     List.concat
                         [ Font.view
-                            "Rock Salt"
-                            "Their Turn"
+                            "Futura"
+                            "THEIR TURN"
                             { x = w * 0.5 - 0.003 * size
                             , y = h * 0.5
                             , scaleX = 0.0001 * size + 0.003 * sin (tick * 0.005)
@@ -429,8 +429,8 @@ turnView focus passed ctx =
                             }
                             ctx
                         , Font.view
-                            "Rock Salt"
-                            "Their Turn"
+                            "Futura"
+                            "THEIR TURN"
                             { x = w * 0.5
                             , y = h * 0.5
                             , scaleX = 0.0001 * size + 0.003 * sin (tick * 0.005)
@@ -443,8 +443,8 @@ turnView focus passed ctx =
         ( Pass _, _, _ ) ->
             List.concat
                 [ Font.view
-                    "Rock Salt"
-                    "Pass"
+                    "Futura"
+                    "PASS"
                     { x = w * 0.5 - 0.003 * size
                     , y = h * 0.5
                     , scaleX = 0.0001 * size + 0.003 * sin (tick * 0.005)
@@ -453,8 +453,8 @@ turnView focus passed ctx =
                     }
                     ctx
                 , Font.view
-                    "Rock Salt"
-                    "Pass"
+                    "Futura"
+                    "PASS"
                     { x = w * 0.5
                     , y = h * 0.5
                     , scaleX = 0.0001 * size + 0.003 * sin (tick * 0.005)
@@ -467,8 +467,8 @@ turnView focus passed ctx =
         ( HandFullPass, _, _ ) ->
             List.concat
                 [ Font.view
-                    "Rock Salt"
-                    "Hand Full"
+                    "Futura"
+                    "HAND FULL"
                     { x = w * 0.5 - 0.003 * size
                     , y = h * 0.5
                     , scaleX = 0.0001 * size + 0.003 * sin (tick * 0.005)
@@ -477,8 +477,8 @@ turnView focus passed ctx =
                     }
                     ctx
                 , Font.view
-                    "Rock Salt"
-                    "Hand Full"
+                    "Futura"
+                    "HAND FULL"
                     { x = w * 0.5
                     , y = h * 0.5
                     , scaleX = 0.0001 * size + 0.003 * sin (tick * 0.005)
