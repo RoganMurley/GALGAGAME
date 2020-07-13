@@ -1,4 +1,4 @@
-module Colour exposing (Colour, background, black, blue, card, cardCol, darkGray, focusBackground, glyph, green, red, tea, teaRed, white, yellow)
+module Colour exposing (Colour, background, black, blue, card, cardCol, darkGray, focusBackground, glyph, green, red, white, yellow)
 
 import Card.Types exposing (CardCol(..))
 import Math.Vector3 exposing (Vec3, vec3)
@@ -43,20 +43,20 @@ card : WhichPlayer -> Colour
 card which =
     case which of
         PlayerA ->
-            vec3 0.14 0.52 0.75
+            vec3 0.95 0.27 0.29
 
         PlayerB ->
-            vec3 0.95 0.27 0.29
+            vec3 0.14 0.52 0.75
 
 
 background : WhichPlayer -> Colour
 background which =
     case which of
         PlayerA ->
-            black
+            vec3 0.75 0.07 0.09
 
         PlayerB ->
-            white
+            vec3 0.0 0.32 0.55
 
 
 focusBackground : WhichPlayer -> Colour
@@ -82,16 +82,6 @@ glyph which =
 
         PlayerB ->
             vec3 (191 / 255) (49 / 255) (14 / 255)
-
-
-tea : Colour
-tea =
-    vec3 0.26 0.13 0.04
-
-
-teaRed : Colour
-teaRed =
-    vec3 0.75 0 0
 
 
 cardCol : CardCol -> Colour

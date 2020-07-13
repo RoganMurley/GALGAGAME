@@ -1,4 +1,4 @@
-module Render.Shaders exposing (circleFragment, disintegrate, fragment, fragmentAlpha, fragmentTransmute, fullCircleFragment, matte, ornate, starfield, trail, vertex)
+module Render.Shaders exposing (circleFragment, disintegrate, fragment, fragmentAlpha, fragmentTransmute, fullCircleFragment, matte, ornate, starfield, trail, tunnel, vertex)
 
 import Math.Vector2 exposing (Vec2)
 import Math.Vector3 exposing (Vec3)
@@ -267,6 +267,47 @@ starfield =
             vec3 random = texture2D(texture, uv).rgb;
             vec3 finalColor = color * (random + brightness);
             gl_FragColor = vec4(finalColor, 1.);
+        }
+
+    |]
+
+
+
+-- With thanks to https://www.shadertoy.com/view/Mt2cRd
+
+
+tunnel : Shader {} (Uniforms { time : Float, texture : Texture }) { vcoord : Vec2 }
+tunnel =
+    [glsl|
+        precision mediump float;
+
+        uniform vec3 color;
+        uniform float time;
+        uniform sampler2D texture;
+
+        varying vec2 vcoord;
+
+        const float tau = 6.283;
+
+        vec2 to_polar(vec2 xy){
+            return vec2(length(xy), atan(xy.y, xy.x) / tau);
+        }
+
+        void main ()
+        {
+            vec2 uv = vcoord;
+            vec2 cartesian = uv - vec2(.5);
+            vec2 polar = to_polar(cartesian);
+
+            float t = .0001 * time;
+
+            vec2 add = vec2(-t, t / 6.);
+            vec2 mul = vec2(1., 6.);
+
+            vec2 fpos = (vec2(-sqrt(1. / polar.x), polar.y) + add) * mul;
+
+            float dist = 1. - dot(2. * vcoord - 1., 2. * vcoord - 1.);
+            gl_FragColor = texture2D(texture, fpos) - 1. * vec4(vec3(dist * dist * dist), .0);
         }
 
     |]
