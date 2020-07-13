@@ -87,7 +87,7 @@ focusImageView focus { w, h, anim, radius, textures } =
                                             Colour.black
 
                                 Nothing ->
-                                    Colour.tea
+                                    Colour.white
                     in
                     [ Render.Primitives.quad Render.Shaders.fragment
                         { rotation = makeRotate pi (vec3 0 0 1)
@@ -141,16 +141,25 @@ lifeOrbView ({ w, h, radius, model, anim, animDamage, tick } as ctx) =
         pos =
             Math.Vector2.add
                 (vec2 (w * 0.5 - 0.6 * radius) (h * 0.5 - 0.675 * radius))
-                (vec2 shake shake)
+                (vec2 -shake shake)
 
         otherPos =
             Math.Vector2.add
                 (vec2 (w * 0.5 + 0.6 * radius) (h * 0.5 - 0.675 * radius))
-                (vec2 -otherShake -otherShake)
+                (vec2 otherShake otherShake)
+
+        textScale =
+            0.085
+
+        life =
+            floor <| 50 * lifePercentage
+
+        otherLife =
+            floor <| 50 * otherLifePercentage
     in
     [ Render.Primitives.fullCircle <|
         uniColourMag ctx
-            Colour.black
+            (Colour.background PlayerA)
             1.0
             { scale = 0.15 * radius
             , position = pos
@@ -158,7 +167,7 @@ lifeOrbView ({ w, h, radius, model, anim, animDamage, tick } as ctx) =
             }
     , Render.Primitives.fullCircle <|
         uniColourMag ctx
-            Colour.white
+            (Colour.card PlayerA)
             lifePercentage
             { scale = 0.15 * radius
             , position = pos
@@ -166,7 +175,7 @@ lifeOrbView ({ w, h, radius, model, anim, animDamage, tick } as ctx) =
             }
     , Render.Primitives.fullCircle <|
         uniColourMag ctx
-            Colour.black
+            (Colour.background PlayerB)
             1.0
             { scale = 0.15 * radius
             , position = otherPos
@@ -174,7 +183,7 @@ lifeOrbView ({ w, h, radius, model, anim, animDamage, tick } as ctx) =
             }
     , Render.Primitives.fullCircle <|
         uniColourMag ctx
-            Colour.white
+            (Colour.card PlayerB)
             otherLifePercentage
             { scale = 0.15 * radius
             , position = otherPos
@@ -183,21 +192,21 @@ lifeOrbView ({ w, h, radius, model, anim, animDamage, tick } as ctx) =
     ]
         ++ List.concat
             [ Font.view "Futura"
-                (String.fromInt model.life)
+                (String.fromInt life)
                 { x = Math.Vector2.getX pos
                 , y = Math.Vector2.getY pos
-                , scaleX = 0.07
-                , scaleY = 0.07
-                , color = Colour.blue
+                , scaleX = textScale
+                , scaleY = textScale
+                , color = Colour.yellow
                 }
                 ctx
             , Font.view "Futura"
-                (String.fromInt model.otherLife)
+                (String.fromInt otherLife)
                 { x = Math.Vector2.getX otherPos
                 , y = Math.Vector2.getY otherPos
-                , scaleX = 0.07
-                , scaleY = 0.07
-                , color = Colour.red
+                , scaleX = textScale
+                , scaleY = textScale
+                , color = Colour.yellow
                 }
                 ctx
             ]

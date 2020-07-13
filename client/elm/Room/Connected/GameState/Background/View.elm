@@ -271,15 +271,15 @@ radialView { rotation, brightness } { w, h, textures } =
     in
     Texture.with textures "radial.png" <|
         \texture ->
-            [ Render.Primitives.quad Render.Shaders.starfield
-                { rotation = makeRotate (0.0001 * rotation) (vec3 0 0 1)
+            [ Render.Primitives.quad Render.Shaders.tunnel
+                { rotation = makeRotate pi (vec3 0 0 1)
                 , scale = makeScale3 (0.5 * size) (0.5 * size) 1
                 , color = Colour.white
                 , pos = vec3 (w * 0.5) (h * 0.5) 0
                 , worldRot = makeRotate 0 (vec3 0 0 1)
                 , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
                 , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
-                , brightness = brightness
+                , time = rotation
                 , texture = texture
                 }
             ]

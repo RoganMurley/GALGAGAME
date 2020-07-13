@@ -32,13 +32,13 @@ animView ({ w, h, radius, anim, progress } as ctx) =
                 ( text, backgroundColor ) =
                     case winner of
                         Just PlayerA ->
-                            ( "Victory", vec3 (30 / 255) (200 / 255) (30 / 255) )
+                            ( "VICTORY", vec3 (30 / 255) (200 / 255) (30 / 255) )
 
                         Just PlayerB ->
-                            ( "Defeat", vec3 (200 / 255) (30 / 255) (30 / 255) )
+                            ( "DEFEAT", vec3 (200 / 255) (30 / 255) (30 / 255) )
 
                         Nothing ->
-                            ( "Draw", vec3 (255 / 255) (255 / 255) (255 / 255) )
+                            ( "DRAW", vec3 (255 / 255) (255 / 255) (255 / 255) )
 
                 color =
                     vec3 (244 / 255) (241 / 255) (94 / 255)
