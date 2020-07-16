@@ -276,13 +276,14 @@ starfield =
 -- With thanks to https://www.shadertoy.com/view/Mt2cRd
 
 
-tunnel : Shader {} (Uniforms { time : Float, texture : Texture }) { vcoord : Vec2 }
+tunnel : Shader {} (Uniforms { depth : Float, spin : Float, texture : Texture }) { vcoord : Vec2 }
 tunnel =
     [glsl|
         precision mediump float;
 
         uniform vec3 color;
-        uniform float time;
+        uniform float depth;
+        uniform float spin;
         uniform sampler2D texture;
 
         varying vec2 vcoord;
@@ -299,10 +300,8 @@ tunnel =
             vec2 cartesian = uv - vec2(.5);
             vec2 polar = to_polar(cartesian);
 
-            float t = .0001 * time;
-
-            vec2 add = vec2(-t, t / 6.);
-            vec2 mul = vec2(1., 6.);
+            vec2 add = vec2(-.0001 * depth, .132641 + spin / tau);
+            vec2 mul = vec2(1., 12.);
 
             vec2 fpos = (vec2(-sqrt(1. / polar.x), polar.y) + add) * mul;
 

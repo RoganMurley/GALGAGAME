@@ -51,10 +51,10 @@ animMaxTick anim =
                 1250.0
 
             Rotate _ ->
-                500.0
+                400.0
 
             Windup _ ->
-                150.0
+                400.0
 
             Bounce _ ->
                 750.0
@@ -90,7 +90,7 @@ progress anim tick =
                     Ease.outQuint
 
                 Rotate _ ->
-                    Ease.inQuad
+                    Ease.outBounce
 
                 Confound _ ->
                     Ease.linear
@@ -99,7 +99,7 @@ progress anim tick =
                     Ease.outQuad
 
                 Windup _ ->
-                    Ease.inQuad
+                    Ease.outBounce
 
                 _ ->
                     Ease.outQuint
