@@ -4,6 +4,7 @@ import Animation.State as Animation
 import Animation.Types exposing (Anim(..))
 import Assets.Types as Assets
 import Colour
+import Font.View as Font
 import Game.State exposing (bareContextInit)
 import Game.Types exposing (Context)
 import Html exposing (Html, div)
@@ -95,24 +96,10 @@ ornateView ({ w, h, anim, tick } as ctx) =
 
 
 stainView : Maybe StackCard -> Context -> List WebGL.Entity
-stainView focus { w, h, anim, model, progress, radius, textures } =
+stainView focus ({ w, h, radius, textures } as ctx) =
     let
-        ringRot =
-            case anim of
-                Rotate _ ->
-                    toFloat model.rot + 1 - progress
-
-                Windup _ ->
-                    toFloat model.rot - (1 - progress)
-
-                Finding ->
-                    -12 * progress
-
-                _ ->
-                    toFloat model.rot
-
         rotation =
-            pi + ringRot * 2.0 * pi / 12.0
+            getRingRotation ctx
 
         backing : List WebGL.Entity
         backing =
@@ -150,10 +137,10 @@ stainView focus { w, h, anim, model, progress, radius, textures } =
                 ]
 
 
-ringView : Context -> List WebGL.Entity
-ringView { w, h, anim, model, progress, radius, textures } =
+getRingRotation : Context -> Float
+getRingRotation { anim, model, progress } =
     let
-        ringRot =
+        rot =
             case anim of
                 Rotate _ ->
                     toFloat model.rot - 1 + progress
@@ -166,9 +153,15 @@ ringView { w, h, anim, model, progress, radius, textures } =
 
                 _ ->
                     toFloat model.rot
+    in
+    rot * -2.0 * pi / 12.0
 
+
+ringView : Context -> List WebGL.Entity
+ringView ({ w, h, radius, textures } as ctx) =
+    let
         rotation =
-            ringRot * -2.0 * pi / 12.0
+            getRingRotation ctx
 
         ringEntity =
             Texture.with textures "ring.png" <|
@@ -264,22 +257,39 @@ cursorView { w, h, radius, textures } =
 
 
 radialView : Vfx.Model -> Context -> List WebGL.Entity
-radialView { rotation, brightness } { w, h, textures } =
+radialView { rotation } ({ w, h, textures } as ctx) =
     let
         size =
             1.4 * max w h
     in
-    Texture.with textures "radial.png" <|
-        \texture ->
-            [ Render.Primitives.quad Render.Shaders.tunnel
-                { rotation = makeRotate pi (vec3 0 0 1)
-                , scale = makeScale3 (0.5 * size) (0.5 * size) 1
-                , color = Colour.white
-                , pos = vec3 (w * 0.5) (h * 0.5) 0
-                , worldRot = makeRotate 0 (vec3 0 0 1)
-                , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
-                , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
-                , time = rotation
-                , texture = texture
-                }
-            ]
+    List.concat
+        [ Texture.with textures "radial.png" <|
+            \texture ->
+                [ Render.Primitives.quad Render.Shaders.tunnel
+                    { rotation = makeRotate pi (vec3 0 0 1)
+                    , scale = makeScale3 (0.5 * size) (0.5 * size) 1
+                    , color = Colour.white
+                    , pos = vec3 (w * 0.5) (h * 0.5) 0
+                    , worldRot = makeRotate 0 (vec3 0 0 1)
+                    , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
+                    , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
+                    , spin = getRingRotation ctx
+                    , depth = rotation
+                    , texture = texture
+                    }
+                ]
+
+        -- , Texture.with textures "cardBack.png" <|
+        --     \texture ->
+        --         [ Render.Primitives.quad Render.Shaders.fragment
+        --             { rotation = makeRotate (rotation * 0.001) (vec3 1 0 0)
+        --             , scale = makeScale3 0.1 0.1 1
+        --             , color = vec3 1 1 1
+        --             , pos = vec3 0 0.5 0
+        --             , worldRot = makeRotate 0 (vec3 0 0 1)
+        --             , perspective = makePerspective 45 1 0.01 100
+        --             , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
+        --             , texture = texture
+        --             }
+        --         ]
+        ]

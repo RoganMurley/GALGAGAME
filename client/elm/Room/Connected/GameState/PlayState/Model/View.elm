@@ -77,17 +77,7 @@ focusImageView focus { w, h, anim, radius, textures } =
                 Just texture ->
                     let
                         color =
-                            case focus of
-                                Just { owner } ->
-                                    case owner of
-                                        PlayerA ->
-                                            Colour.white
-
-                                        PlayerB ->
-                                            Colour.black
-
-                                Nothing ->
-                                    Colour.white
+                            Colour.white
                     in
                     [ Render.Primitives.quad Render.Shaders.fragment
                         { rotation = makeRotate pi (vec3 0 0 1)
