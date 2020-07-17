@@ -115,10 +115,6 @@ stackCardEntity ctx baseRotateProgress finalStackLen finalIndex { card, owner } 
 stackEntity : Context -> Float -> Int -> Int -> Game.Entity {}
 stackEntity { w, h, radius, anim, progress } baseRotateProgress finalStackLen finalIndex =
     let
-        origin : Vec2
-        origin =
-            vec2 (w / 2) (h / 2)
-
         finalI : Float
         finalI =
             case anim of
@@ -210,15 +206,15 @@ stackEntity { w, h, radius, anim, progress } baseRotateProgress finalStackLen fi
 
         rotation : Float
         rotation =
-            interpFloat progress
-                (i * segmentAngle - rotateProgress * segmentAngle)
-                (finalI * segmentAngle - rotateProgress * segmentAngle)
+            -1
+                * interpFloat progress
+                    (i * segmentAngle - rotateProgress * segmentAngle)
+                    (finalI * segmentAngle - rotateProgress * segmentAngle)
 
         position : Vec2
         position =
-            Math.Vector2.add origin <|
-                Math.Vector2.scale (-distance * radius) <|
-                    vec2 (sin rotation) (cos rotation)
+            Math.Vector2.scale distance <|
+                vec2 (sin rotation) (cos rotation)
 
         distance : Float
         distance =
@@ -226,10 +222,10 @@ stackEntity { w, h, radius, anim, progress } baseRotateProgress finalStackLen fi
                 Discard discards ->
                     case Array.get finalIndex <| Array.fromList discards of
                         Just CardDiscard ->
-                            0.615 + toFloat (12 - finalIndex) * progress * 0.01
+                            0.35 + toFloat (12 - finalIndex) * progress * 0.01
 
                         _ ->
-                            0.615
+                            0.35
 
                 Limbo limbos ->
                     case Array.get finalIndex <| Array.fromList limbos of
@@ -237,12 +233,12 @@ stackEntity { w, h, radius, anim, progress } baseRotateProgress finalStackLen fi
                             0.615 + toFloat (12 - finalIndex) * progress * 0.01
 
                         _ ->
-                            0.615
+                            0.35
 
                 _ ->
-                    0.615
+                    0.35
     in
     { position = position
-    , rotation = pi - rotation
-    , scale = 1.3
+    , rotation = -rotation
+    , scale = 0.003
     }

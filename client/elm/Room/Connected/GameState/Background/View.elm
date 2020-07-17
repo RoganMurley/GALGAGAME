@@ -4,7 +4,6 @@ import Animation.State as Animation
 import Animation.Types exposing (Anim(..))
 import Assets.Types as Assets
 import Colour
-import Font.View as Font
 import Game.State exposing (bareContextInit)
 import Game.Types exposing (Context)
 import Html exposing (Html, div)
