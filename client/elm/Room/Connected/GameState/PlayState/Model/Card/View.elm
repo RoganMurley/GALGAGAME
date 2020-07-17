@@ -5,7 +5,7 @@ import Card.Types as Card
 import Colour
 import Game.Entity as Game
 import Game.Types exposing (Context)
-import Math.Matrix4 exposing (makeLookAt, makeOrtho, makePerspective, makeRotate, makeScale3)
+import Math.Matrix4 exposing (makeLookAt, makeOrtho, makePerspective, makeRotate, makeScale3, rotate)
 import Math.Vector3 exposing (vec3)
 import Render.Primitives
 import Render.Shaders
@@ -35,12 +35,6 @@ view ctx entity =
         { width, height } =
             baseDimensions radius
 
-        rot =
-            makeRotate rotation <| vec3 0 0 1
-
-        pos =
-            to3d position
-
         glyphColour =
             case owner of
                 PlayerA ->
@@ -57,8 +51,21 @@ view ctx entity =
                 PlayerB ->
                     "cardOrbOther.png"
 
+        pos =
+            to3d position
+
+        rot =
+            makeRotate rotation (vec3 0 0 1)
+                |> rotate (0.3 * pi) (vec3 1 0 0)
+
+        camera =
+            makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
+
         perspective =
             makePerspective 45 (w / h) 0.01 100
+
+        worldRot =
+            makeRotate 0 <| vec3 0 0 1
     in
     Texture.with3 textures card.imgURL "cardBackBack.png" orbTexturePath <|
         \texture cardBackTexture cardOrbTexture ->
@@ -67,9 +74,9 @@ view ctx entity =
                 , scale = makeScale3 (scale * width) (scale * height) 1
                 , color = Colour.cardCol card.col
                 , pos = pos
-                , worldRot = makeRotate 0 <| vec3 0 0 1
+                , worldRot = worldRot
                 , perspective = perspective
-                , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
+                , camera = camera
                 , texture = cardBackTexture
                 }
             , Render.Primitives.quad Render.Shaders.fragment <|
@@ -77,9 +84,9 @@ view ctx entity =
                 , scale = makeScale3 (scale * width) (scale * height) 1
                 , color = Colour.white
                 , pos = pos
-                , worldRot = makeRotate 0 <| vec3 0 0 1
+                , worldRot = worldRot
                 , perspective = perspective
-                , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
+                , camera = camera
                 , texture = cardOrbTexture
                 }
             , Render.Primitives.quad Render.Shaders.fragment <|
@@ -87,9 +94,9 @@ view ctx entity =
                 , scale = makeScale3 (scale * 0.6 * width) (scale * 0.6 * height) 1
                 , color = glyphColour
                 , pos = pos
-                , worldRot = makeRotate 0 <| vec3 0 0 1
+                , worldRot = worldRot
                 , perspective = perspective
-                , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
+                , camera = camera
                 , texture = texture
                 }
             ]
