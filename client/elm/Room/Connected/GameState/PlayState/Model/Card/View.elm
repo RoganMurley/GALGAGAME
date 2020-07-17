@@ -5,7 +5,7 @@ import Card.Types as Card
 import Colour
 import Game.Entity as Game
 import Game.Types exposing (Context)
-import Math.Matrix4 exposing (makeLookAt, makeOrtho, makeRotate, makeScale3)
+import Math.Matrix4 exposing (makeLookAt, makeOrtho, makePerspective, makeRotate, makeScale3)
 import Math.Vector3 exposing (vec3)
 import Render.Primitives
 import Render.Shaders
@@ -56,6 +56,9 @@ view ctx entity =
 
                 PlayerB ->
                     "cardOrbOther.png"
+
+        perspective =
+            makePerspective 45 (w / h) 0.01 100
     in
     Texture.with3 textures card.imgURL "cardBackBack.png" orbTexturePath <|
         \texture cardBackTexture cardOrbTexture ->
@@ -65,7 +68,7 @@ view ctx entity =
                 , color = Colour.cardCol card.col
                 , pos = pos
                 , worldRot = makeRotate 0 <| vec3 0 0 1
-                , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
+                , perspective = perspective
                 , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
                 , texture = cardBackTexture
                 }
@@ -75,7 +78,7 @@ view ctx entity =
                 , color = Colour.white
                 , pos = pos
                 , worldRot = makeRotate 0 <| vec3 0 0 1
-                , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
+                , perspective = perspective
                 , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
                 , texture = cardOrbTexture
                 }
@@ -85,7 +88,7 @@ view ctx entity =
                 , color = glyphColour
                 , pos = pos
                 , worldRot = makeRotate 0 <| vec3 0 0 1
-                , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
+                , perspective = perspective
                 , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
                 , texture = texture
                 }
