@@ -4,7 +4,9 @@ import Animation.Types exposing (Anim(..), Bounce(..), CardDiscard(..), CardLimb
 import Array
 import Game.Entity as Game
 import Game.Types exposing (Context, StackEntity)
+import Math.Matrix4 exposing (Mat4, makeRotate)
 import Math.Vector2 exposing (Vec2, vec2)
+import Math.Vector3 exposing (vec3)
 import Random
 import Random.List
 import Stack.Types exposing (Stack, StackCard)
@@ -86,6 +88,7 @@ entities ctx =
                                         (vec2 (w / 2) (h / 2))
                                         (vec2 0 (-0.615 * radius))
                               , rotation = pi
+                              , rotate3d = makeRotate 0 (vec3 0 0 1)
                               , scale = 1.3
                               }
                             ]
@@ -99,7 +102,7 @@ entities ctx =
 stackCardEntity : Context -> Float -> Int -> Int -> StackCard -> StackEntity
 stackCardEntity ctx baseRotateProgress finalStackLen finalIndex { card, owner } =
     let
-        entity : Game.Entity {}
+        entity : Game.Entity { rotate3d : Mat4 }
         entity =
             stackEntity ctx baseRotateProgress finalStackLen finalIndex
     in
@@ -108,12 +111,13 @@ stackCardEntity ctx baseRotateProgress finalStackLen finalIndex { card, owner } 
     , index = finalIndex
     , position = entity.position
     , rotation = entity.rotation
+    , rotate3d = entity.rotate3d
     , scale = entity.scale
     }
 
 
-stackEntity : Context -> Float -> Int -> Int -> Game.Entity {}
-stackEntity { w, h, radius, anim, progress } baseRotateProgress finalStackLen finalIndex =
+stackEntity : Context -> Float -> Int -> Int -> Game.Entity { rotate3d : Mat4 }
+stackEntity { anim, progress } baseRotateProgress finalStackLen finalIndex =
     let
         finalI : Float
         finalI =
@@ -216,16 +220,20 @@ stackEntity { w, h, radius, anim, progress } baseRotateProgress finalStackLen fi
             Math.Vector2.scale distance <|
                 vec2 (sin rotation) (cos rotation)
 
+        baseDistance : Float
+        baseDistance =
+            0.5
+
         distance : Float
         distance =
             case anim of
                 Discard discards ->
                     case Array.get finalIndex <| Array.fromList discards of
                         Just CardDiscard ->
-                            0.35 + toFloat (12 - finalIndex) * progress * 0.01
+                            baseDistance + toFloat (12 - finalIndex) * progress * 0.01
 
                         _ ->
-                            0.35
+                            baseDistance
 
                 Limbo limbos ->
                     case Array.get finalIndex <| Array.fromList limbos of
@@ -233,12 +241,13 @@ stackEntity { w, h, radius, anim, progress } baseRotateProgress finalStackLen fi
                             0.615 + toFloat (12 - finalIndex) * progress * 0.01
 
                         _ ->
-                            0.35
+                            baseDistance
 
                 _ ->
-                    0.35
+                    baseDistance
     in
     { position = position
     , rotation = -rotation
     , scale = 0.003
+    , rotate3d = makeRotate 0 (vec3 0 0 1)
     }

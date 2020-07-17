@@ -6,6 +6,7 @@ import Font.Types as Font
 import Game.Entity as Game
 import Hover exposing (HoverOther, HoverSelf)
 import Main.Messages as Main
+import Math.Matrix4 exposing (Mat4)
 import Math.Vector2 exposing (Vec2)
 import Model.Types as Model
 import Resolvable.Types as Resolvable
@@ -49,6 +50,7 @@ type alias StackEntity =
         { card : Card
         , index : Int
         , owner : WhichPlayer
+        , rotate3d : Mat4
         }
 
 
