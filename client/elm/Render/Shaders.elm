@@ -306,7 +306,7 @@ tunnel =
             vec2 fpos = (vec2(-sqrt(1. / polar.x), polar.y) + add) * mul;
 
             float dist = 1. - dot(2. * vcoord - 1., 2. * vcoord - 1.);
-            gl_FragColor = texture2D(texture, fpos) - 1. * vec4(vec3(dist * dist * dist), .0);
+            gl_FragColor = texture2D(texture, fpos) -vec4(vec3(dist * dist), .0);
         }
 
     |]

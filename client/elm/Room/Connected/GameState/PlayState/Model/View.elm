@@ -130,12 +130,12 @@ lifeOrbView ({ w, h, radius, model, anim, animDamage, tick } as ctx) =
 
         pos =
             Math.Vector2.add
-                (vec2 (w * 0.5 - 0.6 * radius) (h * 0.5 - 0.675 * radius))
+                (vec2 (w * 0.5 - 0.8 * radius) (h * 0.5 - 0.675 * radius))
                 (vec2 -shake shake)
 
         otherPos =
             Math.Vector2.add
-                (vec2 (w * 0.5 + 0.6 * radius) (h * 0.5 - 0.675 * radius))
+                (vec2 (w * 0.5 + 0.8 * radius) (h * 0.5 - 0.675 * radius))
                 (vec2 otherShake otherShake)
 
         textScale =

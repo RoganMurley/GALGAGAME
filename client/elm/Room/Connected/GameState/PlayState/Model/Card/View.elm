@@ -18,8 +18,8 @@ import WhichPlayer.Types exposing (WhichPlayer(..))
 
 baseDimensions : Float -> { width : Float, height : Float }
 baseDimensions radius =
-    { width = 0.1 * radius
-    , height = 0.1 * radius
+    { width = 0.16 * radius
+    , height = 0.16 * radius
     }
 
 
@@ -56,7 +56,7 @@ view ctx entity =
 
         rot =
             makeRotate rotation (vec3 0 0 1)
-                |> rotate (0.3 * pi) (vec3 1 0 0)
+                |> rotate (0.35 * pi) (vec3 1 0 0)
 
         camera =
             makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
