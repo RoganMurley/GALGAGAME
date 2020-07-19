@@ -5,7 +5,7 @@ import Font.Shaders
 import Font.Types exposing (Entity, FontChar)
 import Game.Types exposing (Context)
 import List
-import Math.Matrix4 exposing (makeLookAt, makeOrtho, makeRotate, makeScale3)
+import Math.Matrix4 exposing (makeRotate, makeScale3)
 import Math.Vector3 exposing (vec3)
 import Render.Primitives
 import Texture.State as Texture
@@ -14,7 +14,7 @@ import WebGL.Texture
 
 
 view : String -> String -> Entity -> Context -> List WebGL.Entity
-view fontName text entity { fonts, textures, w, h } =
+view fontName text entity { camera, ortho, worldRot, fonts, textures } =
     Texture.with textures fontName <|
         \texture ->
             case Dict.get fontName fonts.fonts of
@@ -53,9 +53,9 @@ view fontName text entity { fonts, textures, w, h } =
                                                 (offset + entity.x - 0.5 * textWidth + entity.scaleX * (width - originX))
                                                 (0.75 * textHeight + entity.y - entity.scaleY * originY)
                                                 0
-                                        , worldRot = makeRotate 0 (vec3 0 0 1)
-                                        , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
-                                        , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
+                                        , worldRot = worldRot
+                                        , perspective = ortho
+                                        , camera = camera
                                         , texture = texture
                                         , x = x
                                         , y = y

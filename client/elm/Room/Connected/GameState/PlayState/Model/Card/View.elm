@@ -5,7 +5,7 @@ import Card.Types as Card
 import Colour
 import Game.Entity as Game
 import Game.Types exposing (Context)
-import Math.Matrix4 exposing (makeLookAt, makeOrtho, makePerspective, makeRotate, makeScale3, rotate)
+import Math.Matrix4 exposing (makeRotate, makeScale3, rotate)
 import Math.Vector3 exposing (vec3)
 import Render.Primitives
 import Render.Shaders
@@ -26,7 +26,7 @@ baseDimensions radius =
 view : Context -> Card.Entity a -> List WebGL.Entity
 view ctx entity =
     let
-        { w, h, radius, textures } =
+        { camera, perspective, worldRot, radius, textures } =
             ctx
 
         { position, rotation, scale, card, owner } =
@@ -57,15 +57,6 @@ view ctx entity =
         rot =
             makeRotate rotation (vec3 0 0 1)
                 |> rotate (0.35 * pi) (vec3 1 0 0)
-
-        camera =
-            makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
-
-        perspective =
-            makePerspective 45 (w / h) 0.01 100
-
-        worldRot =
-            makeRotate 0 <| vec3 0 0 1
     in
     Texture.with3 textures card.imgURL "cardBackBack.png" orbTexturePath <|
         \texture cardBackTexture cardOrbTexture ->
@@ -103,7 +94,7 @@ view ctx entity =
 
 
 backView : Context -> Game.Entity {} -> List WebGL.Entity
-backView { w, h, radius, textures } { position, rotation, scale } =
+backView { camera, ortho, worldRot, radius, textures } { position, rotation, scale } =
     let
         { width, height } =
             baseDimensions radius
@@ -121,9 +112,9 @@ backView { w, h, radius, textures } { position, rotation, scale } =
                 , scale = makeScale3 (scale * width) (scale * height) 1
                 , color = vec3 (200 / 255) (200 / 255) (200 / 255)
                 , pos = pos
-                , worldRot = makeRotate 0 <| vec3 0 0 1
-                , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
-                , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
+                , worldRot = worldRot
+                , perspective = ortho
+                , camera = camera
                 , texture = texture
                 }
             , Render.Primitives.quad Render.Shaders.fragment <|
@@ -131,9 +122,9 @@ backView { w, h, radius, textures } { position, rotation, scale } =
                 , scale = makeScale3 (scale * width) (scale * height) 1
                 , color = Colour.white
                 , pos = pos
-                , worldRot = makeRotate 0 <| vec3 0 0 1
-                , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
-                , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
+                , worldRot = worldRot
+                , perspective = ortho
+                , camera = camera
                 , texture = cardOrbTexture
                 }
             ]
@@ -142,7 +133,7 @@ backView { w, h, radius, textures } { position, rotation, scale } =
 limboingView : Context -> Card.Entity a -> List WebGL.Entity
 limboingView ctx { position, rotation, scale, card, owner } =
     let
-        { w, h, anim, radius, textures } =
+        { worldRot, ortho, camera, anim, radius, textures } =
             ctx
 
         { width, height } =
@@ -189,9 +180,9 @@ limboingView ctx { position, rotation, scale, card, owner } =
                 , scale = makeScale3 (scale * width) (scale * height) 1
                 , color = Colour.cardCol card.col
                 , pos = pos
-                , worldRot = makeRotate 0 (vec3 0 0 1)
-                , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
-                , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
+                , worldRot = worldRot
+                , perspective = ortho
+                , camera = camera
                 , alpha = progress
                 }
             , Render.Primitives.quad Render.Shaders.fragmentAlpha <|
@@ -200,9 +191,9 @@ limboingView ctx { position, rotation, scale, card, owner } =
                 , scale = makeScale3 (scale * width) (scale * height) 1
                 , color = Colour.white
                 , pos = pos
-                , worldRot = makeRotate 0 (vec3 0 0 1)
-                , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
-                , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
+                , worldRot = worldRot
+                , perspective = ortho
+                , camera = camera
                 , alpha = progress
                 }
             , Render.Primitives.quad Render.Shaders.fragmentAlpha <|
@@ -211,9 +202,9 @@ limboingView ctx { position, rotation, scale, card, owner } =
                 , scale = makeScale3 (scale * 0.6 * width) (scale * 0.6 * height) 1
                 , color = glyphColour
                 , pos = pos
-                , worldRot = makeRotate 0 (vec3 0 0 1)
-                , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
-                , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
+                , worldRot = worldRot
+                , perspective = ortho
+                , camera = camera
                 , alpha = progress
                 }
             ]
@@ -222,7 +213,7 @@ limboingView ctx { position, rotation, scale, card, owner } =
 dissolvingView : Context -> Card.Entity a -> List WebGL.Entity
 dissolvingView ctx { position, rotation, scale, card, owner } =
     let
-        { w, h, radius, progress, textures } =
+        { worldRot, ortho, camera, radius, progress, textures } =
             ctx
 
         { width, height } =
@@ -259,9 +250,9 @@ dissolvingView ctx { position, rotation, scale, card, owner } =
                 , scale = makeScale3 (scale * width) (scale * height) 1
                 , color = Colour.cardCol card.col
                 , pos = pos
-                , worldRot = makeRotate 0 (vec3 0 0 1)
-                , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
-                , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
+                , worldRot = worldRot
+                , perspective = ortho
+                , camera = camera
                 , time = progress
                 }
             , Render.Primitives.quad Render.Shaders.disintegrate <|
@@ -271,9 +262,9 @@ dissolvingView ctx { position, rotation, scale, card, owner } =
                 , scale = makeScale3 (scale * width) (scale * height) 1
                 , color = Colour.white
                 , pos = pos
-                , worldRot = makeRotate 0 (vec3 0 0 1)
-                , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
-                , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
+                , worldRot = worldRot
+                , perspective = ortho
+                , camera = camera
                 , time = progress
                 }
             , Render.Primitives.quad Render.Shaders.disintegrate <|
@@ -283,9 +274,9 @@ dissolvingView ctx { position, rotation, scale, card, owner } =
                 , scale = makeScale3 (scale * 0.6 * width) (scale * 0.6 * height) 1
                 , color = glyphColour
                 , pos = pos
-                , worldRot = makeRotate 0 (vec3 0 0 1)
-                , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
-                , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
+                , worldRot = worldRot
+                , perspective = ortho
+                , camera = camera
                 , time = progress
                 }
             ]
@@ -294,7 +285,7 @@ dissolvingView ctx { position, rotation, scale, card, owner } =
 fabricatingView : Context -> Card.Entity a -> List WebGL.Entity
 fabricatingView ctx { position, rotation, scale, card, owner } =
     let
-        { w, h, radius, progress, textures } =
+        { worldRot, ortho, camera, radius, progress, textures } =
             ctx
 
         { width, height } =
@@ -331,9 +322,9 @@ fabricatingView ctx { position, rotation, scale, card, owner } =
                 , scale = makeScale3 (scale * width) (scale * height) 1
                 , color = Colour.cardCol card.col
                 , pos = pos
-                , worldRot = makeRotate 0 (vec3 0 0 1)
-                , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
-                , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
+                , worldRot = worldRot
+                , perspective = ortho
+                , camera = camera
                 , time = 1 - progress
                 }
             , Render.Primitives.quad Render.Shaders.disintegrate <|
@@ -343,9 +334,9 @@ fabricatingView ctx { position, rotation, scale, card, owner } =
                 , scale = makeScale3 (scale * width) (scale * height) 1
                 , color = Colour.white
                 , pos = pos
-                , worldRot = makeRotate 0 (vec3 0 0 1)
-                , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
-                , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
+                , worldRot = worldRot
+                , perspective = ortho
+                , camera = camera
                 , time = 1 - progress
                 }
             , Render.Primitives.quad Render.Shaders.disintegrate <|
@@ -355,9 +346,9 @@ fabricatingView ctx { position, rotation, scale, card, owner } =
                 , scale = makeScale3 (scale * 0.6 * width) (scale * 0.6 * height) 1
                 , color = glyphColour
                 , pos = pos
-                , worldRot = makeRotate 0 (vec3 0 0 1)
-                , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
-                , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
+                , worldRot = worldRot
+                , perspective = ortho
+                , camera = camera
                 , time = 1 - progress
                 }
             ]
@@ -366,7 +357,7 @@ fabricatingView ctx { position, rotation, scale, card, owner } =
 transmutingView : Context -> StackCard -> StackCard -> Card.Entity a -> List WebGL.Entity
 transmutingView ctx stackCard finalStackCard { position, rotation, scale } =
     let
-        { w, h, radius, progress, textures } =
+        { worldRot, ortho, camera, radius, progress, textures } =
             ctx
 
         { width, height } =
@@ -402,9 +393,9 @@ transmutingView ctx stackCard finalStackCard { position, rotation, scale } =
                 , color = Colour.cardCol stackCard.card.col
                 , finalColor = Colour.cardCol finalStackCard.card.col
                 , pos = pos
-                , worldRot = makeRotate 0 <| vec3 0 0 1
-                , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
-                , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
+                , worldRot = worldRot
+                , perspective = ortho
+                , camera = camera
                 , texture = cardBackTexture
                 , finalTexture = cardBackTexture
                 , time = progress
@@ -415,9 +406,9 @@ transmutingView ctx stackCard finalStackCard { position, rotation, scale } =
                 , color = Colour.white
                 , finalColor = Colour.white
                 , pos = pos
-                , worldRot = makeRotate 0 <| vec3 0 0 1
-                , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
-                , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
+                , worldRot = worldRot
+                , perspective = ortho
+                , camera = camera
                 , texture = cardOrbTexture
                 , finalTexture = finalCardOrbTexture
                 , time = progress
@@ -428,9 +419,9 @@ transmutingView ctx stackCard finalStackCard { position, rotation, scale } =
                 , color = glyphColour
                 , finalColor = finalGlyphColour
                 , pos = pos
-                , worldRot = makeRotate 0 <| vec3 0 0 1
-                , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
-                , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
+                , worldRot = worldRot
+                , perspective = ortho
+                , camera = camera
                 , texture = texture
                 , finalTexture = finalTexture
                 , time = progress

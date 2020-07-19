@@ -19,6 +19,7 @@ import Maybe.Extra as Maybe
 import Model.State as Model
 import Model.Types as Model exposing (Model)
 import PlayState.Messages as PlayState
+import Render.Uniforms exposing (camera, ortho, perspective, worldRot)
 import Resolvable.State as Resolvable exposing (activeAnim, activeAnimDamage, activeModel, activeStackCard, resolving)
 import Resolvable.Types as Resolvable
 import Room.Messages as Room
@@ -77,6 +78,10 @@ contextInit ( width, height ) res { textures, fonts } mouse =
     , fonts = fonts
     , resolving = resolving res
     , mouse = mouse
+    , worldRot = worldRot
+    , perspective = perspective { w = w, h = h }
+    , ortho = ortho { w = w, h = h }
+    , camera = camera
     }
 
 
