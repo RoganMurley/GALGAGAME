@@ -90,7 +90,7 @@ progress anim tick =
                     Ease.outQuint
 
                 Rotate _ ->
-                    Ease.outBounce
+                    Ease.inQuad
 
                 Confound _ ->
                     Ease.linear
