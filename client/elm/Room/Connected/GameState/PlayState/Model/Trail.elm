@@ -7,7 +7,7 @@ import Ease
 import Game.Types exposing (Context)
 import Hand.Entities exposing (handCardPosition, playPosition)
 import Hover exposing (Hover(..))
-import Math.Matrix4 exposing (makeLookAt, makeOrtho, makeRotate, makeScale3)
+import Math.Matrix4 exposing (makeRotate, makeScale3)
 import Math.Vector2 exposing (Vec2, vec2)
 import Math.Vector3 exposing (vec3)
 import Render.Primitives
@@ -28,7 +28,7 @@ toShaderSpace w h screenSpace =
 
 
 trailQuad : Colour -> Vec2 -> Vec2 -> Context -> WebGL.Entity
-trailQuad colour initial final { w, h, progress, anim, tick } =
+trailQuad colour initial final { worldRot, ortho, camera, w, h, progress, anim, tick } =
     let
         start : Vec2
         start =
@@ -47,9 +47,9 @@ trailQuad colour initial final { w, h, progress, anim, tick } =
         , scale = makeScale3 (0.5 * w) (0.5 * h) 1
         , color = colour
         , pos = vec3 (w * 0.5) (h * 0.5) 0
-        , worldRot = makeRotate 0 (vec3 0 0 1)
-        , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
-        , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
+        , worldRot = worldRot
+        , perspective = ortho
+        , camera = camera
         , start = toShaderSpace w h start
         , end = toShaderSpace w h end
         }

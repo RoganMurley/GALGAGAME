@@ -112,9 +112,9 @@ webglView { vfx } ctx =
         --             , scale = makeScale3 (0.73 * radius + teaPop) (0.73 * radius + teaPop) 1
         --             , color = Colour.white
         --             , pos = vec3 (w * 0.5) (h * 0.5) 0
-        --             , worldRot = makeRotate 0 (vec3 0 0 1)
-        --             , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
-        --             , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
+        --             , worldRot = ctx.worldRot
+        --             , perspective = ctx.ortho
+        --             , camera = ctx.camera
         --             , texture = texture
         --             }
         --         ]

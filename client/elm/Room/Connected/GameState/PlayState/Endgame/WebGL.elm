@@ -12,7 +12,7 @@ import Game.Types exposing (ButtonEntity, Context)
 import GameState.Messages as GameState
 import GameType exposing (GameType(..))
 import Main.Messages as Main
-import Math.Matrix4 exposing (makeLookAt, makeOrtho, makeRotate, makeScale3)
+import Math.Matrix4 exposing (makeRotate, makeScale3)
 import Math.Vector2 exposing (Vec2, vec2)
 import Math.Vector3 exposing (vec3)
 import PlayState.Messages as PlayState
@@ -25,7 +25,7 @@ import WhichPlayer.Types exposing (WhichPlayer(..))
 
 
 animView : Context -> List WebGL.Entity
-animView ({ w, h, radius, anim, progress } as ctx) =
+animView ({ worldRot, camera, ortho, w, h, radius, anim, progress } as ctx) =
     case anim of
         GameEnd winner ->
             let
@@ -53,9 +53,9 @@ animView ({ w, h, radius, anim, progress } as ctx) =
                         , color = backgroundColor
                         , alpha = 0.8 * Ease.outCubic progress
                         , pos = vec3 (w * 0.5) (h * 0.5) 0
-                        , worldRot = makeRotate 0 (vec3 0 0 1)
-                        , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
-                        , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
+                        , worldRot = worldRot
+                        , perspective = ortho
+                        , camera = camera
                         }
                   ]
                 , Font.view
@@ -101,7 +101,7 @@ view { w, h } assets winner resolving buttons =
 
 
 buttonsView : Context -> List ButtonEntity -> List WebGL.Entity
-buttonsView ({ w, h } as ctx) buttons =
+buttonsView ({ worldRot, camera, ortho } as ctx) buttons =
     let
         buttonView : ButtonEntity -> List WebGL.Entity
         buttonView { font, text, position, scale, disabled, hover } =
@@ -127,9 +127,9 @@ buttonsView ({ w, h } as ctx) buttons =
                     else
                         vec3 1 0 0
                 , pos = vec3 (Math.Vector2.getX position) (Math.Vector2.getY position) 0
-                , worldRot = makeRotate 0 (vec3 0 0 1)
-                , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
-                , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
+                , worldRot = worldRot
+                , perspective = ortho
+                , camera = camera
                 , alpha =
                     if hover then
                         1

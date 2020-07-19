@@ -15,7 +15,7 @@ import Game.State exposing (contextInit)
 import Game.Types as Game exposing (ButtonEntity, Context, Feedback)
 import Hand.View as Hand
 import Hover exposing (Hover(..), HoverSelf)
-import Math.Matrix4 exposing (makeLookAt, makeOrtho, makeRotate, makeScale3)
+import Math.Matrix4 exposing (makeRotate, makeScale3)
 import Math.Vector2 exposing (vec2)
 import Math.Vector3 exposing (Vec3, vec3)
 import Maybe.Extra as Maybe
@@ -67,7 +67,7 @@ view { w, h } { res, hover, focus, entities, passed, feedback, vfx } assets =
 
 
 focusImageView : Maybe StackCard -> Context -> List WebGL.Entity
-focusImageView focus { w, h, anim, radius, textures } =
+focusImageView focus { worldRot, ortho, camera, w, h, anim, radius, textures } =
     case anim of
         Pass _ ->
             []
@@ -84,9 +84,9 @@ focusImageView focus { w, h, anim, radius, textures } =
                         , scale = makeScale3 (0.2 * radius) (0.2 * radius) 1
                         , color = color
                         , pos = vec3 (w * 0.5) (h * 0.43) 0
-                        , worldRot = makeRotate 0 (vec3 0 0 1)
-                        , perspective = makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
-                        , camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
+                        , worldRot = worldRot
+                        , perspective = ortho
+                        , camera = camera
                         , texture = texture
                         }
                     ]

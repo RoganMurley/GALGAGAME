@@ -1,9 +1,9 @@
-module Render.Uniforms exposing (Uniforms, camera, perspective, uni, uniColour, uniColourMag, worldRot)
+module Render.Uniforms exposing (Uniforms, camera, ortho, perspective, uni, uniColour, uniColourMag, worldRot)
 
 import Colour exposing (Colour)
 import Game.Entity as Game
 import Game.Types exposing (Context)
-import Math.Matrix4 exposing (Mat4, makeLookAt, makeOrtho, makeRotate, makeScale3)
+import Math.Matrix4 exposing (Mat4, makeLookAt, makeOrtho, makePerspective, makeRotate, makeScale3)
 import Math.Vector3 exposing (Vec3, vec3)
 import Util exposing (to3d)
 
@@ -20,9 +20,14 @@ type alias Uniforms a =
     }
 
 
-perspective : Context -> Mat4
-perspective { w, h } =
+ortho : { ctx | w : Float, h : Float } -> Mat4
+ortho { w, h } =
     makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
+
+
+perspective : { ctx | w : Float, h : Float } -> Mat4
+perspective { w, h } =
+    makePerspective 45 (w / h) 0.01 100
 
 
 camera : Mat4
@@ -41,9 +46,9 @@ uni ctx { position, rotation, scale } =
     , scale = makeScale3 scale scale 1
     , color = Colour.white
     , pos = to3d position
-    , worldRot = makeRotate 0 <| vec3 0 0 1
-    , perspective = perspective ctx
-    , camera = camera
+    , worldRot = ctx.worldRot
+    , perspective = ctx.ortho
+    , camera = ctx.camera
     }
 
 
@@ -62,8 +67,8 @@ uniColourMag ctx colour mag { position, rotation, scale } =
     , scale = makeScale3 scale scale 1
     , color = colour
     , pos = to3d position
-    , worldRot = makeRotate 0 <| vec3 0 0 1
-    , perspective = perspective ctx
-    , camera = camera
+    , worldRot = ctx.worldRot
+    , perspective = ctx.ortho
+    , camera = ctx.camera
     , mag = mag
     }
