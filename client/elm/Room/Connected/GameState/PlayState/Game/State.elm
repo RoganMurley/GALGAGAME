@@ -246,16 +246,24 @@ hoverDamage hover dmg =
 
 getHoverHand : Game.Model -> Maybe Vec2 -> Maybe HandEntity
 getHoverHand { entities } mouse =
-    Maybe.andThen
-        (\pos -> List.find (hitTest pos 32) entities.hand)
-        mouse
+    Nothing
+
+
+
+-- Maybe.andThen
+--     (\pos -> List.find (hitTest pos 32) entities.hand)
+--     mouse
 
 
 getHoverStack : Game.Model -> Maybe Vec2 -> Maybe StackEntity
 getHoverStack { entities } mouse =
-    Maybe.andThen
-        (\pos -> List.find (hitTest pos 64) entities.stack)
-        mouse
+    Nothing
+
+
+
+-- Maybe.andThen
+--     (\pos -> List.find (hitTest pos 64) entities.stack)
+--     mouse
 
 
 getFocus : Context -> Maybe HandEntity -> Maybe StackEntity -> Maybe StackCard

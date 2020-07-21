@@ -6,9 +6,11 @@ import Card.Types exposing (Card)
 import Game.Entity as Game
 import Game.Types exposing (Context, HandEntity, OtherHandEntity)
 import Hover exposing (Hover(..), HoverOther, HoverSelf)
+import Math.Matrix4 exposing (Mat4, makeRotate)
 import Math.Vector2 exposing (Vec2, vec2)
+import Math.Vector3 exposing (Vec3, vec3)
 import Stack.Entities
-import Util exposing (interp2D, interpFloat)
+import Util exposing (interp, interp2D, interpFloat)
 import WhichPlayer.Types exposing (WhichPlayer(..))
 
 
@@ -75,18 +77,21 @@ entities hover ({ w, h, anim, model, progress } as ctx) =
                     indexModifier finalI
 
                 pos =
-                    interp2D progress
+                    interp progress
                         (handCardPosition ctx PlayerA i n hover)
                         (handCardPosition ctx PlayerA finalI finalN hover)
 
                 rot =
-                    interpFloat progress
-                        (handCardRotation PlayerA i n)
-                        (handCardRotation PlayerA finalI finalN)
+                    makeRotate
+                        (interpFloat progress
+                            (handCardRotation PlayerA i n)
+                            (handCardRotation PlayerA finalI finalN)
+                        )
+                        (vec3 0 0 1)
             in
             { position = pos
             , rotation = rot
-            , scale = 1
+            , scale = 0.003
             , card = card
             , owner = PlayerA
             , index = finalI
@@ -104,16 +109,18 @@ entities hover ({ w, h, anim, model, progress } as ctx) =
                         Just card ->
                             let
                                 pos =
-                                    interp2D progress
-                                        (vec2 w h)
+                                    interp progress
+                                        (vec3 1 -1 0)
                                         (handCardPosition ctx PlayerA n (n + 1) hover)
 
                                 rot =
-                                    interpFloat progress 0 (handCardRotation PlayerA n (n + 1))
+                                    makeRotate
+                                        (interpFloat progress 0 (handCardRotation PlayerA n (n + 1)))
+                                        (vec3 0 0 1)
                             in
                             [ { position = pos
                               , rotation = rot
-                              , scale = 1
+                              , scale = 0.003
                               , card = card
                               , owner = PlayerA
                               , index = n
@@ -126,15 +133,15 @@ entities hover ({ w, h, anim, model, progress } as ctx) =
                 Play PlayerA card i ->
                     let
                         pos =
-                            interp2D progress
+                            interp progress
                                 (handCardPosition ctx PlayerA i n hover)
                                 (playPosition ctx)
 
                         rot =
-                            interpFloat progress (handCardRotation PlayerA i n) pi
+                            makeRotate (interpFloat progress (handCardRotation PlayerA i n) pi) (vec3 0 0 1)
 
                         scale =
-                            interpFloat progress 1 1.3
+                            0.003
                     in
                     [ { position = pos
                       , rotation = rot
@@ -161,15 +168,17 @@ entities hover ({ w, h, anim, model, progress } as ctx) =
                             , card = card
                             , index = handIndex
                             , position =
-                                interp2D progress
+                                interp progress
                                     stackEntity.position
                                     (handCardPosition ctx PlayerA handIndex finalN hover)
-                            , rotation =
-                                interpFloat progress
-                                    stackEntity.rotation
-                                    (handCardRotation PlayerA handIndex finalN)
+                            , rotation = makeRotate 0 (vec3 0 0 1)
+
+                            --
+                            -- interpFloat progress
+                            --     stackEntity.rotation
+                            --     (handCardRotation PlayerA handIndex finalN)
                             , scale =
-                                interpFloat progress stackEntity.scale 1
+                                0.003
                             }
                     in
                     List.map makeBounceEntity playerBounces
@@ -180,7 +189,7 @@ entities hover ({ w, h, anim, model, progress } as ctx) =
     mainEntities ++ extraEntities
 
 
-otherEntities : HoverOther -> Context -> List (Game.Entity {})
+otherEntities : HoverOther -> Context -> List (Game.Entity3D {})
 otherEntities hover ({ w, anim, model, progress } as ctx) =
     let
         finalN =
@@ -228,14 +237,17 @@ otherEntities hover ({ w, anim, model, progress } as ctx) =
                     indexModifier finalI
             in
             { position =
-                interp2D progress
+                interp progress
                     (handCardPosition ctx PlayerB i n hover)
                     (handCardPosition ctx PlayerB finalI finalN hover)
             , rotation =
-                interpFloat progress
-                    (handCardRotation PlayerB i n)
-                    (handCardRotation PlayerB finalI finalN)
-            , scale = 1
+                makeRotate
+                    (interpFloat progress
+                        (handCardRotation PlayerB i n)
+                        (handCardRotation PlayerB finalI finalN)
+                    )
+                    (vec3 0 0 1)
+            , scale = 0.003
             }
 
         mainEntities : List OtherHandEntity
@@ -247,24 +259,28 @@ otherEntities hover ({ w, anim, model, progress } as ctx) =
             case anim of
                 Draw PlayerB ->
                     [ { position =
-                            interp2D progress
-                                (vec2 w 0)
+                            interp progress
+                                (vec3 1 1 0)
                                 (handCardPosition ctx PlayerB n (n + 1) hover)
                       , rotation =
-                            interpFloat progress 0 (handCardRotation PlayerB n (n + 1))
-                      , scale = 1
+                            makeRotate
+                                (interpFloat progress 0 (handCardRotation PlayerB n (n + 1)))
+                                (vec3 0 0 1)
+                      , scale = 0.003
                       }
                     ]
 
                 Play PlayerB _ i ->
                     [ { position =
-                            interp2D progress
+                            interp progress
                                 (handCardPosition ctx PlayerB i n hover)
                                 (playPosition ctx)
                       , rotation =
-                            interpFloat progress (handCardRotation PlayerB i n) 0
+                            makeRotate
+                                (interpFloat progress (handCardRotation PlayerB i n) 0)
+                                (vec3 0 0 1)
                       , scale =
-                            interpFloat progress 1 1.3
+                            0.003
                       }
                     ]
 
@@ -274,22 +290,27 @@ otherEntities hover ({ w, anim, model, progress } as ctx) =
                         playerBounces =
                             Animation.getPlayerBounceCards PlayerB bounces model.stack
 
-                        makeBounceEntity : HandBounce -> Game.Entity {}
+                        makeBounceEntity : HandBounce -> Game.Entity3D {}
                         makeBounceEntity { stackIndex, handIndex } =
                             let
                                 stackEntity =
                                     Stack.Entities.stackEntity ctx 0 (List.length model.stack) stackIndex
                             in
                             { position =
-                                interp2D progress
+                                interp progress
                                     stackEntity.position
                                     (handCardPosition ctx PlayerB handIndex finalN hover)
-                            , rotation =
-                                interpFloat progress
-                                    stackEntity.rotation
-                                    (handCardRotation PlayerB handIndex finalN)
+                            , rotation = makeRotate 0 (vec3 0 0 1)
+
+                            -- , rotation =
+                            --     makeRotate
+                            --         (interpFloat progress
+                            --             stackEntity.rotation
+                            --             (handCardRotation PlayerB handIndex finalN)
+                            --         )
+                            --         (vec3 0 0 1)
                             , scale =
-                                interpFloat progress stackEntity.scale 1
+                                0.003
                             }
                     in
                     List.map makeBounceEntity playerBounces
@@ -300,27 +321,27 @@ otherEntities hover ({ w, anim, model, progress } as ctx) =
     mainEntities ++ extraEntities
 
 
-handOrigin : Context -> WhichPlayer -> Int -> Vec2
+handOrigin : Context -> WhichPlayer -> Int -> Vec3
 handOrigin { w, h, radius, anim, tick } which count =
     let
         ( width, height, spacing ) =
-            ( 0.1 * radius, 0.1 * radius, 35.0 )
+            ( 0.0001, 0.0001, 0.2 )
 
         shake =
-            Animation.animShake anim which tick
+            0.001 * Animation.animShake anim which tick
 
         x =
-            w / 2 - 0.5 * (width + spacing) * (toFloat <| count - 1) + shake
+            -0.5 * (width + spacing) * (toFloat <| count - 1)
 
         y =
             case which of
                 PlayerA ->
-                    h - height - shake
+                    -0.6
 
                 PlayerB ->
-                    height + shake
+                    0.6
     in
-    vec2 x y
+    vec3 x y 0.5
 
 
 handCardRotation : WhichPlayer -> Int -> Int -> Float
@@ -331,17 +352,17 @@ handCardRotation which i count =
     in
     case which of
         PlayerA ->
-            pi + magnitude
-
-        PlayerB ->
             -magnitude
 
+        PlayerB ->
+            magnitude
 
-handCardPosition : Context -> WhichPlayer -> Int -> Int -> Hover a -> Vec2
+
+handCardPosition : Context -> WhichPlayer -> Int -> Int -> Hover a -> Vec3
 handCardPosition ({ radius } as ctx) which index count hover =
     let
         ( width, _, spacing ) =
-            ( 0.1 * radius, 0.1 * radius, 35.0 )
+            ( 0.0001, 0.0001, 0.2 )
 
         sign =
             case which of
@@ -350,6 +371,9 @@ handCardPosition ({ radius } as ctx) which index count hover =
 
                 PlayerB ->
                     -1
+
+        x =
+            toFloat index * (width + spacing)
 
         y =
             let
@@ -380,15 +404,11 @@ handCardPosition ({ radius } as ctx) which index count hover =
             in
             sign * (baseY + hoverY)
     in
-    Math.Vector2.add
-        (handOrigin ctx which count)
-    <|
-        Math.Vector2.add
-            (vec2 (toFloat index * (width + spacing)) 0)
-        <|
-            vec2 0 y
+    vec3 x (-0.004 * y) 0
+        |> Math.Vector3.add
+            (handOrigin ctx which count)
 
 
-playPosition : Context -> Vec2
+playPosition : Context -> Vec3
 playPosition { w, h, radius } =
-    vec2 (w / 2) (h / 2 - radius * 0.62)
+    vec3 0 0.615 0

@@ -379,10 +379,11 @@ mouseClick mode { x, y } state =
             get identity state
 
         mHandEntity =
-            List.find
-                (hitTest pos 28)
-                game.entities.hand
+            Nothing
 
+        -- List.find
+        --     (hitTest pos 28)
+        --     game.entities.hand
         allButtons =
             game.entities.buttons
                 ++ (case state of
