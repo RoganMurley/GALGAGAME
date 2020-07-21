@@ -24,7 +24,7 @@ type CardCol
 
 
 type alias Entity a =
-    Game.Entity
+    Game.Entity3D
         { a
             | card : Card
             , owner : WhichPlayer

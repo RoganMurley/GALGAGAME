@@ -26,9 +26,11 @@ tick ctx _ model =
             RuneSelect.entities ctx model
 
         newHover =
-            Maybe.andThen
-                (\pos -> List.find (hitTest pos 32) newEntities)
-                ctx.mouse
+            Nothing
+
+        -- Maybe.andThen
+        --     (\pos -> List.find (hitTest pos 32) newEntities)
+        --     ctx.mouse
     in
     { model
         | entities = newEntities

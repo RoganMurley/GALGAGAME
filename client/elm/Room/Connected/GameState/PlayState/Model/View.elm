@@ -1,5 +1,7 @@
 module Model.View exposing (focusImageView, focusTextView, view)
 
+-- import Trail
+
 import Animation.State as Animation exposing (animMaxTick)
 import Animation.Types exposing (Anim(..))
 import Assets.Types as Assets
@@ -26,7 +28,6 @@ import Render.Types as Render
 import Render.Uniforms exposing (uniColourMag)
 import Stack.Types exposing (StackCard)
 import Stack.View as Stack
-import Trail
 import Util exposing (interpFloat)
 import WebGL
 import WhichPlayer.Types exposing (WhichPlayer(..))
@@ -51,7 +52,8 @@ view { w, h } { res, hover, focus, entities, passed, feedback, vfx } assets =
             -- , Background.ringView
             , Stack.view entities.stack
             , focusImageView focus
-            , Trail.view
+
+            -- , Trail.view
             , Hand.view entities.hand
             , Hand.otherView entities.otherHand
             , Hand.millView

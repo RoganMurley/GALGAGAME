@@ -4,9 +4,9 @@ import Animation.Types exposing (Anim(..), Bounce(..), CardDiscard(..), CardLimb
 import Array
 import Game.Entity as Game
 import Game.Types exposing (Context, StackEntity)
-import Math.Matrix4 exposing (Mat4, makeRotate)
+import Math.Matrix4 exposing (Mat4, makeRotate, rotate)
 import Math.Vector2 exposing (Vec2, vec2)
-import Math.Vector3 exposing (vec3)
+import Math.Vector3 exposing (Vec3, vec3)
 import Random
 import Random.List
 import Stack.Types exposing (Stack, StackCard)
@@ -83,13 +83,9 @@ entities ctx =
                             [ { owner = owner
                               , card = card
                               , index = -1
-                              , position =
-                                    Math.Vector2.add
-                                        (vec2 (w / 2) (h / 2))
-                                        (vec2 0 (-0.615 * radius))
-                              , rotation = pi
-                              , rotate3d = makeRotate 0 (vec3 0 0 1)
-                              , scale = 1.3
+                              , position = vec3 0 0.615 0
+                              , rotation = makeRotate 0 (vec3 0 0 1)
+                              , scale = 0.003
                               }
                             ]
 
@@ -102,7 +98,7 @@ entities ctx =
 stackCardEntity : Context -> Float -> Int -> Int -> StackCard -> StackEntity
 stackCardEntity ctx baseRotateProgress finalStackLen finalIndex { card, owner } =
     let
-        entity : Game.Entity { rotate3d : Mat4 }
+        entity : Game.Entity3D {}
         entity =
             stackEntity ctx baseRotateProgress finalStackLen finalIndex
     in
@@ -111,12 +107,11 @@ stackCardEntity ctx baseRotateProgress finalStackLen finalIndex { card, owner } 
     , index = finalIndex
     , position = entity.position
     , rotation = entity.rotation
-    , rotate3d = entity.rotate3d
     , scale = entity.scale
     }
 
 
-stackEntity : Context -> Float -> Int -> Int -> Game.Entity { rotate3d : Mat4 }
+stackEntity : Context -> Float -> Int -> Int -> Game.Entity3D {}
 stackEntity { anim, progress } baseRotateProgress finalStackLen finalIndex =
     let
         finalI : Float
@@ -208,17 +203,26 @@ stackEntity { anim, progress } baseRotateProgress finalStackLen finalIndex =
         rotateProgress =
             baseRotateProgress + animRotateProgress
 
-        rotation : Float
-        rotation =
+        ringRotation : Float
+        ringRotation =
             -1
                 * interpFloat progress
                     (i * segmentAngle - rotateProgress * segmentAngle)
                     (finalI * segmentAngle - rotateProgress * segmentAngle)
 
-        position : Vec2
+        position : Vec3
         position =
-            Math.Vector2.scale distance <|
-                vec2 (sin rotation) (cos rotation)
+            Math.Vector3.scale distance <|
+                vec3 (sin ringRotation) (cos ringRotation) 0
+
+        rotation : Mat4
+        rotation =
+            makeRotate -ringRotation (vec3 0 0 1)
+                |> rotate (0.35 * pi) (vec3 1 0 0)
+
+        scale : Float
+        scale =
+            0.003
 
         baseDistance : Float
         baseDistance =
@@ -247,7 +251,6 @@ stackEntity { anim, progress } baseRotateProgress finalStackLen finalIndex =
                     baseDistance
     in
     { position = position
-    , rotation = -rotation
-    , scale = 0.003
-    , rotate3d = makeRotate 0 (vec3 0 0 1)
+    , rotation = rotation
+    , scale = scale
     }

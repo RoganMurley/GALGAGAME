@@ -50,16 +50,15 @@ type alias Context =
 
 
 type alias StackEntity =
-    Game.Entity
+    Game.Entity3D
         { card : Card
         , index : Int
         , owner : WhichPlayer
-        , rotate3d : Mat4
         }
 
 
 type alias HandEntity =
-    Game.Entity
+    Game.Entity3D
         { card : Card
         , index : Int
         , owner : WhichPlayer
@@ -67,7 +66,7 @@ type alias HandEntity =
 
 
 type alias OtherHandEntity =
-    Game.Entity {}
+    Game.Entity3D {}
 
 
 type alias ButtonEntity =

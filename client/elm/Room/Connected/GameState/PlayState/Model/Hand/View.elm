@@ -7,8 +7,10 @@ import Card.View as Card
 import Ease
 import Game.Entity as Game
 import Game.Types exposing (Context)
+import Math.Matrix4 exposing (makeRotate)
 import Math.Vector2 exposing (vec2)
-import Util exposing (interp2D, interpFloat)
+import Math.Vector3 exposing (vec3)
+import Util exposing (interp, interp2D, interpFloat)
 import WebGL
 import WhichPlayer.Types exposing (WhichPlayer(..))
 
@@ -19,7 +21,7 @@ view handEntities ctx =
         List.map (Card.view ctx) handEntities
 
 
-otherView : List (Game.Entity {}) -> Context -> List WebGL.Entity
+otherView : List (Game.Entity3D {}) -> Context -> List WebGL.Entity
 otherView otherHandEntities ctx =
     List.concat <|
         List.map (Card.backView ctx) otherHandEntities
@@ -41,20 +43,23 @@ millView ({ w, h, progress, tick, anim } as ctx) =
                 startPos =
                     case owner of
                         PlayerA ->
-                            vec2 w h
+                            vec3 1 0 0
 
                         PlayerB ->
-                            vec2 w 0
+                            vec3 1 1 0
 
                 entity =
                     { owner = owner
                     , card = card
                     , position =
-                        interp2D
+                        interp
                             progress
                             startPos
-                            (vec2 (w / 2) (h / 2))
-                    , rotation = interpFloat progress pi (pi - sign * 0.05 * pi)
+                            (vec3 0 0 0)
+                    , rotation =
+                        makeRotate
+                            (interpFloat progress pi (pi - sign * 0.05 * pi))
+                            (vec3 0 0 1)
                     , scale = interpFloat progress 1 4
                     }
             in
