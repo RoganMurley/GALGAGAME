@@ -10,6 +10,7 @@ import Game.Types exposing (Context)
 import Math.Matrix4 exposing (makeRotate)
 import Math.Vector2 exposing (vec2)
 import Math.Vector3 exposing (vec3)
+import Quaternion exposing (Quaternion)
 import Util exposing (interp, interp2D, interpFloat)
 import WebGL
 import WhichPlayer.Types exposing (WhichPlayer(..))
@@ -56,10 +57,11 @@ millView ({ w, h, progress, tick, anim } as ctx) =
                             progress
                             startPos
                             (vec3 0 0 0)
-                    , rotation =
-                        makeRotate
-                            (interpFloat progress pi (pi - sign * 0.05 * pi))
-                            (vec3 0 0 1)
+                    , rotation = Quaternion.identity
+
+                    -- makeRotate
+                    --     (interpFloat progress pi (pi - sign * 0.05 * pi))
+                    --     (vec3 0 0 1)
                     , scale = interpFloat progress 1 4
                     }
             in

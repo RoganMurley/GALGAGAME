@@ -9,6 +9,7 @@ import Hover exposing (Hover(..), HoverOther, HoverSelf)
 import Math.Matrix4 exposing (Mat4, makeRotate)
 import Math.Vector2 exposing (Vec2, vec2)
 import Math.Vector3 exposing (Vec3, vec3)
+import Quaternion exposing (Quaternion)
 import Stack.Entities
 import Util exposing (interp, interp2D, interpFloat)
 import WhichPlayer.Types exposing (WhichPlayer(..))
@@ -82,12 +83,9 @@ entities hover ({ w, h, anim, model, progress } as ctx) =
                         (handCardPosition ctx PlayerA finalI finalN hover)
 
                 rot =
-                    makeRotate
-                        (interpFloat progress
-                            (handCardRotation PlayerA i n)
-                            (handCardRotation PlayerA finalI finalN)
-                        )
-                        (vec3 0 0 1)
+                    Quaternion.lerp progress
+                        (Quaternion.zRotation (handCardRotation PlayerA i n))
+                        (Quaternion.zRotation (handCardRotation PlayerA finalI finalN))
             in
             { position = pos
             , rotation = rot
@@ -114,9 +112,10 @@ entities hover ({ w, h, anim, model, progress } as ctx) =
                                         (handCardPosition ctx PlayerA n (n + 1) hover)
 
                                 rot =
-                                    makeRotate
-                                        (interpFloat progress 0 (handCardRotation PlayerA n (n + 1)))
-                                        (vec3 0 0 1)
+                                    Quaternion.lerp
+                                        progress
+                                        Quaternion.identity
+                                        (Quaternion.zRotation (handCardRotation PlayerA n (n + 1)))
                             in
                             [ { position = pos
                               , rotation = rot
@@ -138,7 +137,10 @@ entities hover ({ w, h, anim, model, progress } as ctx) =
                                 (playPosition ctx)
 
                         rot =
-                            makeRotate (interpFloat progress (handCardRotation PlayerA i n) pi) (vec3 0 0 1)
+                            Quaternion.lerp
+                                progress
+                                (Quaternion.zRotation (handCardRotation PlayerA n (n + 1)))
+                                (Quaternion.xRotation (0.35 * pi))
 
                         scale =
                             0.003
@@ -171,12 +173,11 @@ entities hover ({ w, h, anim, model, progress } as ctx) =
                                 interp progress
                                     stackEntity.position
                                     (handCardPosition ctx PlayerA handIndex finalN hover)
-                            , rotation = makeRotate 0 (vec3 0 0 1)
-
-                            --
-                            -- interpFloat progress
-                            --     stackEntity.rotation
-                            --     (handCardRotation PlayerA handIndex finalN)
+                            , rotation =
+                                Quaternion.lerp
+                                    progress
+                                    stackEntity.rotation
+                                    (Quaternion.zRotation (handCardRotation PlayerA handIndex finalN))
                             , scale =
                                 0.003
                             }
@@ -241,12 +242,10 @@ otherEntities hover ({ w, anim, model, progress } as ctx) =
                     (handCardPosition ctx PlayerB i n hover)
                     (handCardPosition ctx PlayerB finalI finalN hover)
             , rotation =
-                makeRotate
-                    (interpFloat progress
-                        (handCardRotation PlayerB i n)
-                        (handCardRotation PlayerB finalI finalN)
-                    )
-                    (vec3 0 0 1)
+                Quaternion.lerp
+                    progress
+                    (Quaternion.zRotation (handCardRotation PlayerB i n))
+                    (Quaternion.zRotation (handCardRotation PlayerB finalI finalN))
             , scale = 0.003
             }
 
@@ -263,9 +262,10 @@ otherEntities hover ({ w, anim, model, progress } as ctx) =
                                 (vec3 1 1 0)
                                 (handCardPosition ctx PlayerB n (n + 1) hover)
                       , rotation =
-                            makeRotate
-                                (interpFloat progress 0 (handCardRotation PlayerB n (n + 1)))
-                                (vec3 0 0 1)
+                            Quaternion.lerp
+                                progress
+                                Quaternion.identity
+                                (Quaternion.zRotation (handCardRotation PlayerB n (n + 1)))
                       , scale = 0.003
                       }
                     ]
@@ -276,9 +276,10 @@ otherEntities hover ({ w, anim, model, progress } as ctx) =
                                 (handCardPosition ctx PlayerB i n hover)
                                 (playPosition ctx)
                       , rotation =
-                            makeRotate
-                                (interpFloat progress (handCardRotation PlayerB i n) 0)
-                                (vec3 0 0 1)
+                            Quaternion.lerp
+                                progress
+                                (Quaternion.zRotation (handCardRotation PlayerB i n))
+                                (Quaternion.xRotation (0.35 * pi))
                       , scale =
                             0.003
                       }
@@ -300,15 +301,11 @@ otherEntities hover ({ w, anim, model, progress } as ctx) =
                                 interp progress
                                     stackEntity.position
                                     (handCardPosition ctx PlayerB handIndex finalN hover)
-                            , rotation = makeRotate 0 (vec3 0 0 1)
-
-                            -- , rotation =
-                            --     makeRotate
-                            --         (interpFloat progress
-                            --             stackEntity.rotation
-                            --             (handCardRotation PlayerB handIndex finalN)
-                            --         )
-                            --         (vec3 0 0 1)
+                            , rotation =
+                                Quaternion.lerp
+                                    progress
+                                    stackEntity.rotation
+                                    (Quaternion.zRotation (handCardRotation PlayerB handIndex finalN))
                             , scale =
                                 0.003
                             }

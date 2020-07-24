@@ -7,6 +7,7 @@ import Game.Types exposing (Context, StackEntity)
 import Math.Matrix4 exposing (Mat4, makeRotate, rotate)
 import Math.Vector2 exposing (Vec2, vec2)
 import Math.Vector3 exposing (Vec3, vec3)
+import Quaternion exposing (Quaternion)
 import Random
 import Random.List
 import Stack.Types exposing (Stack, StackCard)
@@ -84,7 +85,7 @@ entities ctx =
                               , card = card
                               , index = -1
                               , position = vec3 0 0.615 0
-                              , rotation = makeRotate 0 (vec3 0 0 1)
+                              , rotation = Quaternion.identity
                               , scale = 0.003
                               }
                             ]
@@ -215,10 +216,10 @@ stackEntity { anim, progress } baseRotateProgress finalStackLen finalIndex =
             Math.Vector3.scale distance <|
                 vec3 (sin ringRotation) (cos ringRotation) 0
 
-        rotation : Mat4
+        rotation : Quaternion
         rotation =
-            makeRotate -ringRotation (vec3 0 0 1)
-                |> rotate (0.35 * pi) (vec3 1 0 0)
+            Quaternion.xRotation (0.35 * pi)
+                |> Quaternion.rotate (Quaternion.zRotation -ringRotation)
 
         scale : Float
         scale =

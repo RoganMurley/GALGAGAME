@@ -7,6 +7,7 @@ import Game.Entity as Game
 import Game.Types exposing (Context)
 import Math.Matrix4 exposing (makeRotate, makeScale3, rotate)
 import Math.Vector3 exposing (vec3)
+import Quaternion exposing (Quaternion)
 import Render.Primitives
 import Render.Shaders
 import Stack.Types exposing (StackCard)
@@ -54,7 +55,7 @@ view ctx entity =
     Texture.with3 textures card.imgURL "cardBackBack.png" orbTexturePath <|
         \texture cardBackTexture cardOrbTexture ->
             [ Render.Primitives.quad Render.Shaders.fragment <|
-                { rotation = rotation
+                { rotation = Quaternion.makeRotate rotation
                 , scale = makeScale3 (scale * width) (scale * height) 1
                 , color = Colour.cardCol card.col
                 , pos = position
@@ -64,7 +65,7 @@ view ctx entity =
                 , texture = cardBackTexture
                 }
             , Render.Primitives.quad Render.Shaders.fragment <|
-                { rotation = rotation
+                { rotation = Quaternion.makeRotate rotation
                 , scale = makeScale3 (scale * width) (scale * height) 1
                 , color = Colour.white
                 , pos = position
@@ -74,7 +75,7 @@ view ctx entity =
                 , texture = cardOrbTexture
                 }
             , Render.Primitives.quad Render.Shaders.fragment <|
-                { rotation = rotation
+                { rotation = Quaternion.makeRotate rotation
                 , scale = makeScale3 (scale * 0.6 * width) (scale * 0.6 * height) 1
                 , color = glyphColour
                 , pos = position
@@ -95,7 +96,7 @@ backView { camera, perspective, worldRot, radius, textures } { position, rotatio
     Texture.with2 textures "cardBackBack.png" "cardOrbOther.png" <|
         \texture cardOrbTexture ->
             [ Render.Primitives.quad Render.Shaders.fragment <|
-                { rotation = rotation
+                { rotation = Quaternion.makeRotate rotation
                 , scale = makeScale3 (scale * width) (scale * height) 1
                 , color = vec3 (200 / 255) (200 / 255) (200 / 255)
                 , pos = position
@@ -105,7 +106,7 @@ backView { camera, perspective, worldRot, radius, textures } { position, rotatio
                 , texture = texture
                 }
             , Render.Primitives.quad Render.Shaders.fragment <|
-                { rotation = rotation
+                { rotation = Quaternion.makeRotate rotation
                 , scale = makeScale3 (scale * width) (scale * height) 1
                 , color = Colour.white
                 , pos = position
@@ -157,7 +158,7 @@ limboingView ctx { position, rotation, scale, card, owner } =
         \texture cardOrbTexture cardBackTexture ->
             [ Render.Primitives.quad Render.Shaders.fragmentAlpha <|
                 { texture = cardBackTexture
-                , rotation = rotation
+                , rotation = Quaternion.makeRotate rotation
                 , scale = makeScale3 (scale * width) (scale * height) 1
                 , color = Colour.cardCol card.col
                 , pos = position
@@ -168,7 +169,7 @@ limboingView ctx { position, rotation, scale, card, owner } =
                 }
             , Render.Primitives.quad Render.Shaders.fragmentAlpha <|
                 { texture = cardOrbTexture
-                , rotation = rotation
+                , rotation = Quaternion.makeRotate rotation
                 , scale = makeScale3 (scale * width) (scale * height) 1
                 , color = Colour.white
                 , pos = position
@@ -179,7 +180,7 @@ limboingView ctx { position, rotation, scale, card, owner } =
                 }
             , Render.Primitives.quad Render.Shaders.fragmentAlpha <|
                 { texture = texture
-                , rotation = rotation
+                , rotation = Quaternion.makeRotate rotation
                 , scale = makeScale3 (scale * 0.6 * width) (scale * 0.6 * height) 1
                 , color = glyphColour
                 , pos = position
@@ -221,7 +222,7 @@ dissolvingView ctx { position, rotation, scale, card, owner } =
             [ Render.Primitives.quad Render.Shaders.disintegrate <|
                 { texture = cardBackTexture
                 , noise = noise
-                , rotation = rotation
+                , rotation = Quaternion.makeRotate rotation
                 , scale = makeScale3 (scale * width) (scale * height) 1
                 , color = Colour.cardCol card.col
                 , pos = position
@@ -233,7 +234,7 @@ dissolvingView ctx { position, rotation, scale, card, owner } =
             , Render.Primitives.quad Render.Shaders.disintegrate <|
                 { texture = cardOrbTexture
                 , noise = noise
-                , rotation = rotation
+                , rotation = Quaternion.makeRotate rotation
                 , scale = makeScale3 (scale * width) (scale * height) 1
                 , color = Colour.white
                 , pos = position
@@ -245,7 +246,7 @@ dissolvingView ctx { position, rotation, scale, card, owner } =
             , Render.Primitives.quad Render.Shaders.disintegrate <|
                 { texture = texture
                 , noise = noise
-                , rotation = rotation
+                , rotation = Quaternion.makeRotate rotation
                 , scale = makeScale3 (scale * 0.6 * width) (scale * 0.6 * height) 1
                 , color = glyphColour
                 , pos = position
@@ -287,7 +288,7 @@ fabricatingView ctx { position, rotation, scale, card, owner } =
             [ Render.Primitives.quad Render.Shaders.disintegrate <|
                 { texture = cardBackTexture
                 , noise = noise
-                , rotation = rotation
+                , rotation = Quaternion.makeRotate rotation
                 , scale = makeScale3 (scale * width) (scale * height) 1
                 , color = Colour.cardCol card.col
                 , pos = position
@@ -299,7 +300,7 @@ fabricatingView ctx { position, rotation, scale, card, owner } =
             , Render.Primitives.quad Render.Shaders.disintegrate <|
                 { texture = cardOrbTexture
                 , noise = noise
-                , rotation = rotation
+                , rotation = Quaternion.makeRotate rotation
                 , scale = makeScale3 (scale * width) (scale * height) 1
                 , color = Colour.white
                 , pos = position
@@ -311,7 +312,7 @@ fabricatingView ctx { position, rotation, scale, card, owner } =
             , Render.Primitives.quad Render.Shaders.disintegrate <|
                 { texture = texture
                 , noise = noise
-                , rotation = rotation
+                , rotation = Quaternion.makeRotate rotation
                 , scale = makeScale3 (scale * 0.6 * width) (scale * 0.6 * height) 1
                 , color = glyphColour
                 , pos = position
@@ -351,7 +352,7 @@ transmutingView ctx stackCard finalStackCard { position, rotation, scale } =
     Texture.with5 textures stackCard.card.imgURL finalStackCard.card.imgURL orbTexturePath finalOrbTexturePath "cardBackBack.png" <|
         \texture finalTexture cardOrbTexture finalCardOrbTexture cardBackTexture ->
             [ Render.Primitives.quad Render.Shaders.fragmentTransmute <|
-                { rotation = rotation
+                { rotation = Quaternion.makeRotate rotation
                 , scale = makeScale3 (scale * width) (scale * height) 1
                 , color = Colour.cardCol stackCard.card.col
                 , finalColor = Colour.cardCol finalStackCard.card.col
@@ -364,7 +365,7 @@ transmutingView ctx stackCard finalStackCard { position, rotation, scale } =
                 , time = progress
                 }
             , Render.Primitives.quad Render.Shaders.fragmentTransmute <|
-                { rotation = rotation
+                { rotation = Quaternion.makeRotate rotation
                 , scale = makeScale3 (scale * width) (scale * height) 1
                 , color = Colour.white
                 , finalColor = Colour.white
@@ -377,7 +378,7 @@ transmutingView ctx stackCard finalStackCard { position, rotation, scale } =
                 , time = progress
                 }
             , Render.Primitives.quad Render.Shaders.fragmentTransmute <|
-                { rotation = rotation
+                { rotation = Quaternion.makeRotate rotation
                 , scale = makeScale3 (scale * 0.6 * width) (scale * 0.6 * height) 1
                 , color = glyphColour
                 , finalColor = finalGlyphColour
