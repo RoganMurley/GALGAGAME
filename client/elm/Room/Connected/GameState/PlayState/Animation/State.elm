@@ -42,7 +42,7 @@ animMaxTick anim =
                 750.0
 
             Play _ _ _ ->
-                250.0
+                300.0
 
             Mill _ _ ->
                 500.0

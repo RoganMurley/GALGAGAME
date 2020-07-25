@@ -40,7 +40,7 @@ view { dimensions, pixelRatio, time } assets anim =
 
 
 stainView : Maybe StackCard -> Context -> List WebGL.Entity
-stainView focus ({ camera, ortho, worldRot, w, h, radius, textures } as ctx) =
+stainView focus ({ camera, ortho, w, h, radius, textures } as ctx) =
     let
         rotation =
             getRingRotation ctx
@@ -54,7 +54,7 @@ stainView focus ({ camera, ortho, worldRot, w, h, radius, textures } as ctx) =
                         , scale = makeScale3 (0.66 * radius) (0.66 * radius) 1
                         , color = Colour.background owner
                         , pos = vec3 (w * 0.5) (h * 0.5) 0
-                        , worldRot = worldRot
+                        
                         , perspective = ortho
                         , camera = camera
                         , mag = 1.0
@@ -73,7 +73,7 @@ stainView focus ({ camera, ortho, worldRot, w, h, radius, textures } as ctx) =
                     , scale = makeScale3 (0.8 * radius) (0.8 * radius) 1
                     , color = Colour.white
                     , pos = vec3 (w * 0.5) (h * 0.5) 0
-                    , worldRot = worldRot
+                    
                     , perspective = ortho
                     , camera = camera
                     , texture = texture
@@ -102,7 +102,7 @@ getRingRotation { anim, model, progress } =
 
 
 radialView : Vfx.Model -> Context -> List WebGL.Entity
-radialView { rotation } ({ camera, ortho, w, worldRot, h, textures } as ctx) =
+radialView { rotation } ({ camera, ortho, w, h, textures } as ctx) =
     let
         size =
             1.4 * max w h
@@ -114,7 +114,7 @@ radialView { rotation } ({ camera, ortho, w, worldRot, h, textures } as ctx) =
                 , scale = makeScale3 (0.5 * size) (0.5 * size) 1
                 , color = Colour.white
                 , pos = vec3 (w * 0.5) (h * 0.5) 0
-                , worldRot = worldRot
+                
                 , perspective = ortho
                 , camera = camera
                 , spin = getRingRotation ctx

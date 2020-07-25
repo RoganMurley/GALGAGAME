@@ -1,4 +1,4 @@
-module Stack.Entities exposing (entities, stackEntity)
+module Stack.Entities exposing (baseDistance, baseRotation, entities, stackEntity)
 
 import Animation.Types exposing (Anim(..), Bounce(..), CardDiscard(..), CardLimbo(..))
 import Array
@@ -84,8 +84,8 @@ entities ctx =
                             [ { owner = owner
                               , card = card
                               , index = -1
-                              , position = vec3 0 0.615 0
-                              , rotation = Quaternion.identity
+                              , position = vec3 0 baseDistance 0
+                              , rotation = baseRotation
                               , scale = 0.003
                               }
                             ]
@@ -218,16 +218,12 @@ stackEntity { anim, progress } baseRotateProgress finalStackLen finalIndex =
 
         rotation : Quaternion
         rotation =
-            Quaternion.xRotation (0.35 * pi)
+            baseRotation
                 |> Quaternion.rotate (Quaternion.zRotation -ringRotation)
 
         scale : Float
         scale =
             0.003
-
-        baseDistance : Float
-        baseDistance =
-            0.5
 
         distance : Float
         distance =
@@ -255,3 +251,13 @@ stackEntity { anim, progress } baseRotateProgress finalStackLen finalIndex =
     , rotation = rotation
     , scale = scale
     }
+
+
+baseDistance : Float
+baseDistance =
+    0.5
+
+
+baseRotation : Quaternion
+baseRotation =
+    Quaternion.xRotation (0.35 * pi)

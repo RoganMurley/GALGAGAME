@@ -42,7 +42,6 @@ type alias Context =
     , fonts : Font.Model
     , resolving : Bool
     , mouse : Maybe Vec2
-    , worldRot : Mat4
     , perspective : Mat4
     , ortho : Mat4
     , camera : Mat4

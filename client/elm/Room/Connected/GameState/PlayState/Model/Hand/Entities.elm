@@ -187,7 +187,7 @@ entities hover ({ w, h, anim, model, progress } as ctx) =
                 _ ->
                     []
     in
-    mainEntities ++ extraEntities
+    extraEntities ++ mainEntities
 
 
 otherEntities : HoverOther -> Context -> List (Game.Entity3D {})
@@ -315,7 +315,7 @@ otherEntities hover ({ w, anim, model, progress } as ctx) =
                 _ ->
                     []
     in
-    mainEntities ++ extraEntities
+    extraEntities ++ mainEntities
 
 
 handOrigin : Context -> WhichPlayer -> Int -> Vec3
@@ -408,4 +408,4 @@ handCardPosition ({ radius } as ctx) which index count hover =
 
 playPosition : Context -> Vec3
 playPosition { w, h, radius } =
-    vec3 0 0.615 0
+    vec3 0 0.5 0
