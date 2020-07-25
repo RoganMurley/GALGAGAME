@@ -32,7 +32,7 @@ foo = 1
 --
 --
 -- trailQuad : Colour -> Vec2 -> Vec2 -> Context -> WebGL.Entity
--- trailQuad colour initial final { worldRot, ortho, camera, w, h, progress, anim, tick } =
+-- trailQuad colour initial final { ortho, camera, w, h, progress, anim, tick } =
 --     let
 --         start : Vec2
 --         start =
@@ -51,7 +51,7 @@ foo = 1
 --         , scale = makeScale3 (0.5 * w) (0.5 * h) 1
 --         , color = colour
 --         , pos = vec3 (w * 0.5) (h * 0.5) 0
---         , worldRot = worldRot
+--         
 --         , perspective = ortho
 --         , camera = camera
 --         , start = toShaderSpace w h start

@@ -14,7 +14,7 @@ import WebGL.Texture
 
 
 view : String -> String -> Entity -> Context -> List WebGL.Entity
-view fontName text entity { camera, ortho, worldRot, fonts, textures } =
+view fontName text entity { camera, ortho, fonts, textures } =
     Texture.with textures fontName <|
         \texture ->
             case Dict.get fontName fonts.fonts of
@@ -53,7 +53,6 @@ view fontName text entity { camera, ortho, worldRot, fonts, textures } =
                                                 (offset + entity.x - 0.5 * textWidth + entity.scaleX * (width - originX))
                                                 (0.75 * textHeight + entity.y - entity.scaleY * originY)
                                                 0
-                                        , worldRot = worldRot
                                         , perspective = ortho
                                         , camera = camera
                                         , texture = texture

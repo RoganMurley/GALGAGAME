@@ -1,4 +1,4 @@
-module Render.Uniforms exposing (Uniforms, camera, ortho, perspective, uni, uniColour, uniColourMag, worldRot)
+module Render.Uniforms exposing (Uniforms, camera, ortho, perspective, uni, uniColour, uniColourMag)
 
 import Colour exposing (Colour)
 import Game.Entity as Game
@@ -14,7 +14,6 @@ type alias Uniforms a =
         , scale : Mat4
         , color : Vec3
         , pos : Vec3
-        , worldRot : Mat4
         , perspective : Mat4
         , camera : Mat4
     }
@@ -35,18 +34,12 @@ camera =
     makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
 
 
-worldRot : Mat4
-worldRot =
-    makeRotate 0 <| vec3 0 0 1
-
-
 uni : Context -> Game.Entity a -> Uniforms {}
 uni ctx { position, rotation, scale } =
     { rotation = makeRotate rotation <| vec3 0 0 1
     , scale = makeScale3 scale scale 1
     , color = Colour.white
     , pos = to3d position
-    , worldRot = ctx.worldRot
     , perspective = ctx.ortho
     , camera = ctx.camera
     }
@@ -67,7 +60,6 @@ uniColourMag ctx colour mag { position, rotation, scale } =
     , scale = makeScale3 scale scale 1
     , color = colour
     , pos = to3d position
-    , worldRot = ctx.worldRot
     , perspective = ctx.ortho
     , camera = ctx.camera
     , mag = mag

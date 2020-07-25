@@ -69,7 +69,7 @@ view { w, h } { res, hover, focus, entities, passed, feedback, vfx } assets =
 
 
 focusImageView : Maybe StackCard -> Context -> List WebGL.Entity
-focusImageView focus { worldRot, ortho, camera, w, h, anim, radius, textures } =
+focusImageView focus { ortho, camera, w, h, anim, radius, textures } =
     case anim of
         Pass _ ->
             []
@@ -86,7 +86,7 @@ focusImageView focus { worldRot, ortho, camera, w, h, anim, radius, textures } =
                         , scale = makeScale3 (0.2 * radius) (0.2 * radius) 1
                         , color = color
                         , pos = vec3 (w * 0.5) (h * 0.43) 0
-                        , worldRot = worldRot
+                        
                         , perspective = ortho
                         , camera = camera
                         , texture = texture

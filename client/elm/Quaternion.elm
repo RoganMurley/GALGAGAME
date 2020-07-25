@@ -48,6 +48,7 @@ axis { vector } =
 makeRotate : Quaternion -> Mat4
 makeRotate quaternion =
     Math.Matrix4.makeRotate (angle quaternion) (axis quaternion)
+        |> Math.Matrix4.rotate pi (vec3 0 1 0)
 
 
 identity : Quaternion
