@@ -2,6 +2,7 @@ module Stack.Entities exposing (baseDistance, baseRotation, entities, stackEntit
 
 import Animation.Types exposing (Anim(..), Bounce(..), CardDiscard(..), CardLimbo(..))
 import Array
+import Card.State as Card
 import Game.Entity as Game
 import Game.Types exposing (Context, StackEntity)
 import Math.Matrix4 exposing (Mat4, makeRotate, rotate)
@@ -86,7 +87,7 @@ entities ctx =
                               , index = -1
                               , position = vec3 0 baseDistance 0
                               , rotation = baseRotation
-                              , scale = 0.003
+                              , scale = Card.scale
                               }
                             ]
 
@@ -221,9 +222,9 @@ stackEntity { anim, progress } baseRotateProgress finalStackLen finalIndex =
             baseRotation
                 |> Quaternion.rotate (Quaternion.zRotation -ringRotation)
 
-        scale : Float
+        scale : Vec3
         scale =
-            0.003
+            Card.scale
 
         distance : Float
         distance =

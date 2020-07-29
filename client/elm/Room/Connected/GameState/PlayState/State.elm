@@ -1,6 +1,7 @@
 module PlayState.State exposing (carry, get, map, mouseClick, resolveOutcomeStr, tick, update)
 
 import Animation.Types exposing (Anim(..))
+import Assets.State as Assets
 import Audio.State exposing (playSound)
 import Browser.Navigation
 import Collision exposing (hitTest)
@@ -14,6 +15,7 @@ import List.Extra as List
 import Main.Messages as Main
 import Main.Types exposing (Flags)
 import Math.Vector2 exposing (vec2)
+import Math.Vector3 as Vector3 exposing (vec3)
 import Mode exposing (Mode)
 import Model.Decoders as Model
 import Model.Diff exposing (Diff, initDiff)
@@ -23,10 +25,11 @@ import Mouse exposing (Position)
 import PlayState.Decoders as PlayState
 import PlayState.Messages exposing (Msg(..), PlayingOnly(..), TurnOnly(..))
 import PlayState.Types as PlayState exposing (PlayState(..), ResolveOutcomeInput)
-import Ports exposing (websocketSend)
+import Ports exposing (log, websocketSend)
 import Resolvable.State as Resolvable
 import Resolvable.Types as Resolvable
 import Result
+import Unproject
 import Util exposing (message)
 import WhichPlayer.Types exposing (WhichPlayer(..))
 
@@ -369,8 +372,8 @@ resolveOutcome mState { initial, resDiffList, finalState } =
     carry state newState
 
 
-mouseClick : Mode -> Position -> PlayState -> ( PlayState, Cmd Main.Msg )
-mouseClick mode { x, y } state =
+mouseClick : Flags -> Mode -> Position -> PlayState -> ( PlayState, Cmd Main.Msg )
+mouseClick { dimensions } mode { x, y } state =
     let
         pos =
             vec2 (toFloat x) (toFloat y)
@@ -378,12 +381,6 @@ mouseClick mode { x, y } state =
         game =
             get identity state
 
-        mHandEntity =
-            Nothing
-
-        -- List.find
-        --     (hitTest pos 28)
-        --     game.entities.hand
         allButtons =
             game.entities.buttons
                 ++ (case state of
@@ -425,5 +422,33 @@ mouseClick mode { x, y } state =
                 msg
                 state
                 mode
+
+        -- Unproject
+        { perspective, camera } =
+            Game.bareContextInit dimensions Assets.init (Just pos)
+
+        ( width, height ) =
+            dimensions
+
+        unprojectCoords =
+            { x = toFloat x / toFloat width, y = toFloat y / toFloat height }
+
+        mRay =
+            Unproject.unprojectedRay unprojectCoords perspective camera
+
+        mHandEntity =
+            case mRay of
+                Just ray ->
+                    List.find
+                        (\entity -> Unproject.intersect ray entity >= 0)
+                        game.entities.hand
+
+                Nothing ->
+                    Nothing
     in
-    ( newPlayState, Cmd.batch [ newMsg, buttonMsg ] )
+    ( newPlayState
+    , Cmd.batch
+        [ newMsg
+        , buttonMsg
+        ]
+    )

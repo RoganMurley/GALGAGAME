@@ -83,6 +83,7 @@ type alias Entities =
     , hand : List HandEntity
     , otherHand : List OtherHandEntity
     , buttons : List ButtonEntity
+    , debug : List (Game.Entity3D {})
     }
 
 

@@ -31,13 +31,13 @@ init mode gameType roomID =
     }
 
 
-update : Msg -> Model -> ( Model, Cmd Main.Msg )
-update msg ({ game, mode } as model) =
+update : Flags -> Msg -> Model -> ( Model, Cmd Main.Msg )
+update flags msg ({ game, mode } as model) =
     case msg of
         GameStateMsg gameMsg ->
             let
                 ( newGame, cmd ) =
-                    GameState.update gameMsg game mode
+                    GameState.update gameMsg game flags mode
             in
             ( { model | game = newGame }, cmd )
 
@@ -64,8 +64,8 @@ tick flags model dt =
     ( { model | game = game, tick = newTick }, Cmd.map GameStateMsg msg )
 
 
-receive : Model -> String -> ( Model, Cmd Main.Msg )
-receive ({ mode } as model) msg =
+receive : Flags -> Model -> String -> ( Model, Cmd Main.Msg )
+receive flags ({ mode } as model) msg =
     let
         ( command, content ) =
             splitOnColon msg
@@ -77,6 +77,7 @@ receive ({ mode } as model) msg =
                     GameState.update
                         (GameState.Sync content)
                         model.game
+                        flags
                         mode
             in
             ( { model | game = newGame }, cmd )
@@ -91,6 +92,7 @@ receive ({ mode } as model) msg =
                                     PlayState.HoverOtherOutcome hoverOther
                                 )
                                 model.game
+                                flags
                                 mode
                     in
                     ( { model | game = newGame }
@@ -113,6 +115,7 @@ receive ({ mode } as model) msg =
                                     PlayState.DamageOutcome damageOutcome
                                 )
                                 model.game
+                                flags
                                 mode
                     in
                     ( { model | game = newGame }, cmd )
@@ -126,6 +129,7 @@ receive ({ mode } as model) msg =
                     GameState.update
                         (GameState.ResolveOutcome content)
                         model.game
+                        flags
                         mode
             in
             ( { model | game = newGame }, cmd )
@@ -151,6 +155,7 @@ receive ({ mode } as model) msg =
                             PlayState.ReplaySaved content
                         )
                         model.game
+                        flags
                         mode
             in
             ( { model | game = newGame }, cmd )
@@ -165,6 +170,7 @@ receive ({ mode } as model) msg =
                                     PlayState.StatChange statChange
                                 )
                                 model.game
+                                flags
                                 mode
                     in
                     ( { model | game = newGame }, cmd )
