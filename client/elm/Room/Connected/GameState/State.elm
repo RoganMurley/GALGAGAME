@@ -16,8 +16,8 @@ import PlayState.Types exposing (PlayState)
 import Ports exposing (log)
 
 
-update : Msg -> GameState -> Mode -> ( GameState, Cmd Main.Msg )
-update msg state mode =
+update : Msg -> GameState -> Flags -> Mode -> ( GameState, Cmd Main.Msg )
+update msg state flags mode =
     case msg of
         MouseClick pos ->
             case state of
@@ -31,7 +31,7 @@ update msg state mode =
                 Started playState ->
                     let
                         ( newPlayState, cmd ) =
-                            PlayState.mouseClick mode pos playState
+                            PlayState.mouseClick flags mode pos playState
                     in
                     ( Started newPlayState, cmd )
 

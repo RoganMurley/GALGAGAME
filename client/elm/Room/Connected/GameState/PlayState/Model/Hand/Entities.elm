@@ -2,6 +2,7 @@ module Hand.Entities exposing (entities, handCardPosition, handCardRotation, han
 
 import Animation.State as Animation
 import Animation.Types exposing (Anim(..), Bounce, HandBounce)
+import Card.State as Card
 import Card.Types exposing (Card)
 import Game.Entity as Game
 import Game.Types exposing (Context, HandEntity, OtherHandEntity)
@@ -89,7 +90,7 @@ entities hover ({ w, h, anim, model, progress } as ctx) =
             in
             { position = pos
             , rotation = rot
-            , scale = 0.003
+            , scale = Card.scale
             , card = card
             , owner = PlayerA
             , index = finalI
@@ -119,7 +120,7 @@ entities hover ({ w, h, anim, model, progress } as ctx) =
                             in
                             [ { position = pos
                               , rotation = rot
-                              , scale = 0.003
+                              , scale = Card.scale
                               , card = card
                               , owner = PlayerA
                               , index = n
@@ -143,7 +144,7 @@ entities hover ({ w, h, anim, model, progress } as ctx) =
                                 (Quaternion.xRotation (0.35 * pi))
 
                         scale =
-                            0.003
+                            Card.scale
                     in
                     [ { position = pos
                       , rotation = rot
@@ -178,8 +179,7 @@ entities hover ({ w, h, anim, model, progress } as ctx) =
                                     progress
                                     stackEntity.rotation
                                     (Quaternion.zRotation (handCardRotation PlayerA handIndex finalN))
-                            , scale =
-                                0.003
+                            , scale = Card.scale
                             }
                     in
                     List.map makeBounceEntity playerBounces
@@ -246,7 +246,7 @@ otherEntities hover ({ w, anim, model, progress } as ctx) =
                     progress
                     (Quaternion.zRotation (handCardRotation PlayerB i n))
                     (Quaternion.zRotation (handCardRotation PlayerB finalI finalN))
-            , scale = 0.003
+            , scale = Card.scale
             }
 
         mainEntities : List OtherHandEntity
@@ -266,7 +266,7 @@ otherEntities hover ({ w, anim, model, progress } as ctx) =
                                 progress
                                 Quaternion.identity
                                 (Quaternion.zRotation (handCardRotation PlayerB n (n + 1)))
-                      , scale = 0.003
+                      , scale = Card.scale
                       }
                     ]
 
@@ -280,8 +280,7 @@ otherEntities hover ({ w, anim, model, progress } as ctx) =
                                 progress
                                 (Quaternion.zRotation (handCardRotation PlayerB i n))
                                 (Quaternion.xRotation (0.35 * pi))
-                      , scale =
-                            0.003
+                      , scale = Card.scale
                       }
                     ]
 
@@ -306,8 +305,7 @@ otherEntities hover ({ w, anim, model, progress } as ctx) =
                                     progress
                                     stackEntity.rotation
                                     (Quaternion.zRotation (handCardRotation PlayerB handIndex finalN))
-                            , scale =
-                                0.003
+                            , scale = Card.scale
                             }
                     in
                     List.map makeBounceEntity playerBounces
@@ -338,7 +336,7 @@ handOrigin { w, h, radius, anim, tick } which count =
                 PlayerB ->
                     0.6
     in
-    vec3 x y 0.5
+    vec3 x y 0.4
 
 
 handCardRotation : WhichPlayer -> Int -> Int -> Float

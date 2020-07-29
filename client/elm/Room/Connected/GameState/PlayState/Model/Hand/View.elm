@@ -2,6 +2,7 @@ module Hand.View exposing (millView, otherView, view)
 
 import Animation.State as Animation
 import Animation.Types exposing (Anim(..))
+import Card.State as Card
 import Card.Types as Card
 import Card.View as Card
 import Ease
@@ -56,13 +57,13 @@ millView ({ w, h, progress, tick, anim } as ctx) =
                         interp
                             progress
                             startPos
-                            (vec3 0 0 0)
+                            (vec3 0 0 1.5)
                     , rotation = Quaternion.identity
 
                     -- makeRotate
                     --     (interpFloat progress pi (pi - sign * 0.05 * pi))
                     --     (vec3 0 0 1)
-                    , scale = interpFloat progress 1 4
+                    , scale = Card.scale
                     }
             in
             Card.dissolvingView

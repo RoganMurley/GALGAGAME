@@ -18,5 +18,5 @@ type alias Entity3D a =
     { a
         | position : Vec3
         , rotation : Quaternion
-        , scale : Float
+        , scale : Vec3
     }

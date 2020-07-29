@@ -139,7 +139,7 @@ update msg ({ assets, room, settings, flags } as model) =
         Receive str ->
             let
                 ( newRoom, cmd ) =
-                    Room.receive str room
+                    Room.receive flags str room
             in
             ( { model | room = newRoom }, cmd )
 
@@ -204,14 +204,6 @@ update msg ({ assets, room, settings, flags } as model) =
 
         MousePosition pos ->
             let
-                -- ( newRoom, newCmd ) =
-                --     Room.update
-                --         room
-                --         (Room.ConnectedMsg <|
-                --             Connected.GameStateMsg <|
-                --                 GameState.Mouse mouse
-                --         )
-                --         flags
                 newFlags =
                     { flags | mouse = Just (vec2 (toFloat pos.x) (toFloat pos.y)) }
 

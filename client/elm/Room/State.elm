@@ -48,7 +48,7 @@ update model msg flags =
                 Connected connected ->
                     let
                         ( newConnected, cmd ) =
-                            Connected.update connectedMsg connected
+                            Connected.update flags connectedMsg connected
                     in
                     ( Connected newConnected, cmd )
 
@@ -130,8 +130,8 @@ update model msg flags =
                     ( model, Cmd.none )
 
 
-receive : String -> Model -> ( Model, Cmd Main.Msg )
-receive str model =
+receive : Flags -> String -> Model -> ( Model, Cmd Main.Msg )
+receive flags str model =
     case model of
         MainMenu ->
             ( MainMenu, Cmd.none )
@@ -142,7 +142,7 @@ receive str model =
         Connected connected ->
             let
                 ( newConnected, cmd ) =
-                    Connected.receive connected str
+                    Connected.receive flags connected str
             in
             ( Connected newConnected, cmd )
 
