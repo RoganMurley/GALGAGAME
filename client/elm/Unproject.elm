@@ -7,15 +7,18 @@ import Maybe
 import Tuple exposing (pair)
 
 
-unprojectedRay : { x : Float, y : Float } -> Mat4 -> Mat4 -> Maybe Vec3
+unprojectedRay : { x : Float, y : Float } -> Mat4 -> Mat4 -> Maybe { origin : Vec3, direction : Vec3 }
 unprojectedRay { x, y } perspective camera =
     case
         ( unproject { x = x, y = y, z = 0 } perspective camera
-        , unproject { x = x, y = y, z = 1 } perspective camera
+        , unproject { x = x, y = y, z = -1 } perspective camera
         )
     of
         ( Just a, Just b ) ->
-            Just <| Vector3.sub a b
+            Just
+                { direction = Vector3.sub a b |> Vector3.normalize
+                , origin = vec3 0 0 -2
+                }
 
         _ ->
             Nothing
@@ -23,36 +26,57 @@ unprojectedRay { x, y } perspective camera =
 
 unproject : { x : Float, y : Float, z : Float } -> Mat4 -> Mat4 -> Maybe Vec3
 unproject { x, y, z } perspective camera =
-    Matrix4.inverse (Matrix4.mul perspective camera)
-        |> Maybe.map
-            (\inverted ->
-                Matrix4.transform
-                    inverted
-                    (vec3 ((1 - x) * 2 - 1) (y * 2 - 1) z)
-            )
+    let
+        clipSpace : Vec3
+        clipSpace =
+            vec3 (x * 2 - 1) ((1 - y) * 2 - 1) z
+
+        eyeSpace : Maybe Vec3
+        eyeSpace =
+            Matrix4.inverse perspective
+                |> Maybe.map
+                    (\inverted ->
+                        Matrix4.transform
+                            inverted
+                            clipSpace
+                    )
+
+        worldSpace : Maybe Vec3
+        worldSpace =
+            case eyeSpace of
+                Just eye ->
+                    Matrix4.inverse camera
+                        |> Maybe.map
+                            (\inverted ->
+                                Matrix4.transform
+                                    inverted
+                                    eye
+                            )
+
+                Nothing ->
+                    Nothing
+    in
+    worldSpace
 
 
 radius =
-    0.08
+    0.16
 
 
-intersect : Vec3 -> { a | position : Vec3 } -> Float
-intersect ray { position } =
+intersect : { origin : Vec3, direction : Vec3 } -> { a | position : Vec3 } -> Float
+intersect { origin, direction } { position } =
     let
-        origin =
-            vec3 0 0 1
-
         oc =
-            Vector3.sub position origin
+            Vector3.sub origin position
 
         a =
-            Vector3.dot ray ray
+            Vector3.dot direction direction
 
         b =
-            2 * Vector3.dot oc ray
+            2 * Vector3.dot oc direction
 
         c =
-            Vector3.dot oc oc - radius * radius
+            Vector3.dot oc oc - (radius * radius)
 
         discriminant =
             b * b - 4 * a * c

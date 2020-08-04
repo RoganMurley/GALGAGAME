@@ -72,7 +72,7 @@ view { w, h } { res, hover, focus, entities, passed, feedback, vfx } assets =
 
 
 focusImageView : Maybe StackCard -> Context -> List WebGL.Entity
-focusImageView focus { ortho, camera, w, h, anim, radius, textures } =
+focusImageView focus { ortho, camera2d, w, h, anim, radius, textures } =
     case anim of
         Pass _ ->
             []
@@ -90,7 +90,7 @@ focusImageView focus { ortho, camera, w, h, anim, radius, textures } =
                         , color = color
                         , pos = vec3 (w * 0.5) (h * 0.43) 0
                         , perspective = ortho
-                        , camera = camera
+                        , camera = camera2d
                         , texture = texture
                         }
                     ]
@@ -548,7 +548,7 @@ feedbackView feedback ctx =
 
 
 debugView : List (Entity3D {}) -> Context -> List WebGL.Entity
-debugView entities { perspective, camera } =
+debugView entities { perspective, camera3d } =
     List.map
         (\{ scale, rotation, position } ->
             Render.Primitives.quad Render.Shaders.matte
@@ -557,7 +557,7 @@ debugView entities { perspective, camera } =
                 , color = vec3 1 1 (Math.Vector3.getZ position)
                 , pos = position
                 , perspective = perspective
-                , camera = camera
+                , camera = camera3d
                 , alpha = 1
                 }
         )

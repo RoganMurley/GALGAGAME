@@ -1,4 +1,4 @@
-module Render.Uniforms exposing (Uniforms, camera, ortho, perspective, uni, uniColour, uniColourMag)
+module Render.Uniforms exposing (Uniforms, camera2d, camera3d, ortho, perspective, uni, uniColour, uniColourMag)
 
 import Colour exposing (Colour)
 import Game.Entity as Game
@@ -21,7 +21,7 @@ type alias Uniforms a =
 
 ortho : { ctx | w : Float, h : Float } -> Mat4
 ortho { w, h } =
-    makeOrtho 0 (w / 2) (h / 2) 0 0.01 1000
+    makeOrtho 0 (w / 2) (h / 2) 0 0 1
 
 
 perspective : { ctx | w : Float, h : Float } -> Mat4
@@ -29,9 +29,14 @@ perspective { w, h } =
     makePerspective 45 (w / h) 0.01 100
 
 
-camera : Mat4
-camera =
+camera2d : Mat4
+camera2d =
     makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
+
+
+camera3d : Mat4
+camera3d =
+    makeLookAt (vec3 0 0 -1) (vec3 0 0 0) (vec3 0 1 0)
 
 
 uni : Context -> Game.Entity a -> Uniforms {}
@@ -41,7 +46,7 @@ uni ctx { position, rotation, scale } =
     , color = Colour.white
     , pos = to3d position
     , perspective = ctx.ortho
-    , camera = ctx.camera
+    , camera = ctx.camera2d
     }
 
 
@@ -61,6 +66,6 @@ uniColourMag ctx colour mag { position, rotation, scale } =
     , color = colour
     , pos = to3d position
     , perspective = ctx.ortho
-    , camera = ctx.camera
+    , camera = ctx.camera2d
     , mag = mag
     }
