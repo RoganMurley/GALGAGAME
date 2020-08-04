@@ -4,7 +4,7 @@ import Animation.State as Animation
 import Animation.Types as Animation
 import Assets.State as Assets
 import Assets.Types as Assets
-import Collision exposing (hitTest)
+import Collision exposing (hitTest, hitTest3d)
 import Connected.Messages as Connected
 import Game.Entity exposing (Entity3D)
 import Game.Types as Game exposing (ButtonEntity, Context, Entities, Feedback, HandEntity, StackEntity)
@@ -16,12 +16,11 @@ import List.Extra as List
 import Main.Messages as Main
 import Main.Types exposing (Flags)
 import Math.Vector2 exposing (Vec2, vec2)
-import Math.Vector3 exposing (Vec3, vec3)
+import Math.Vector3 exposing (Vec3)
 import Maybe.Extra as Maybe
 import Model.State as Model
 import Model.Types as Model exposing (Model)
 import PlayState.Messages as PlayState
-import Quaternion
 import Render.Uniforms exposing (camera2d, camera3d, ortho, perspective)
 import Resolvable.State as Resolvable exposing (activeAnim, activeAnimDamage, activeModel, activeStackCard, resolving)
 import Resolvable.Types as Resolvable
@@ -143,12 +142,14 @@ tick { dimensions, mouse } dt model =
                 mouse
 
         mRay =
-            case mUnprojectCoords of
-                Just unprojectCoords ->
-                    Unproject.unprojectedRay unprojectCoords ctx.perspective ctx.camera3d
-
-                Nothing ->
-                    Nothing
+            mUnprojectCoords
+                |> Maybe.andThen
+                    (\unprojectCoords ->
+                        Unproject.unprojectedRay
+                            unprojectCoords
+                            ctx.perspective
+                            ctx.camera3d
+                    )
 
         hoverHand =
             getHoverHand model mRay
@@ -278,26 +279,24 @@ hoverDamage hover dmg =
 
 getHoverHand : Game.Model -> Maybe { origin : Vec3, direction : Vec3 } -> Maybe HandEntity
 getHoverHand { entities } mRay =
-    case mRay of
-        Just ray ->
-            List.find
-                (\entity -> Unproject.intersect ray entity >= 0)
-                entities.hand
-
-        Nothing ->
-            Nothing
+    mRay
+        |> Maybe.andThen
+            (\ray ->
+                List.find
+                    (hitTest3d ray 0.18)
+                    entities.hand
+            )
 
 
 getHoverStack : Game.Model -> Maybe { origin : Vec3, direction : Vec3 } -> Maybe StackEntity
 getHoverStack { entities } mRay =
-    case mRay of
-        Just ray ->
-            List.find
-                (\entity -> Unproject.intersect ray entity >= 0)
-                entities.stack
-
-        Nothing ->
-            Nothing
+    mRay
+        |> Maybe.andThen
+            (\ray ->
+                List.find
+                    (hitTest3d ray 0.18)
+                    entities.stack
+            )
 
 
 getFocus : Context -> Maybe HandEntity -> Maybe StackEntity -> Maybe StackCard
@@ -388,28 +387,5 @@ buttonEntities passed mouse { w, h, model, radius, resolving } =
 
 
 debugEntities : { origin : Vec3, direction : Vec3 } -> Context -> List (Entity3D {})
-debugEntities { origin, direction } ctx =
-    let
-        count =
-            100
-    in
-    [ { position = vec3 0.3 0 -0.4
-      , scale = vec3 0.01 0.01 1
-      , rotation = Quaternion.identity
-      }
-    ]
-
-
-
--- :: List.map
---     (\t ->
---         { position =
---             Math.Vector3.add origin <|
---                 Math.Vector3.scale
---                     (10 * (toFloat t / count))
---                     direction
---         , scale = vec3 0.01 0.01 1
---         , rotation = Quaternion.identity
---         }
---     )
---     (List.range 0 count)
+debugEntities _ _ =
+    []

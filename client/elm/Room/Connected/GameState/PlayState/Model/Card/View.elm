@@ -5,14 +5,13 @@ import Card.Types as Card
 import Colour
 import Game.Entity as Game
 import Game.Types exposing (Context)
-import Math.Matrix4 exposing (makeRotate, makeScale, rotate)
+import Math.Matrix4 exposing (makeRotate, makeScale)
 import Math.Vector3 as Vector3 exposing (vec3)
-import Quaternion exposing (Quaternion)
+import Quaternion
 import Render.Primitives
 import Render.Shaders
 import Stack.Types exposing (StackCard)
 import Texture.State as Texture
-import Util exposing (to3d)
 import WebGL
 import WhichPlayer.Types exposing (WhichPlayer(..))
 
@@ -20,7 +19,7 @@ import WhichPlayer.Types exposing (WhichPlayer(..))
 view : Context -> Card.Entity a -> List WebGL.Entity
 view ctx entity =
     let
-        { camera3d, perspective, radius, textures } =
+        { camera3d, perspective, textures } =
             ctx
 
         { position, rotation, scale, card, owner } =
@@ -75,7 +74,7 @@ view ctx entity =
 
 
 backView : Context -> Game.Entity3D {} -> List WebGL.Entity
-backView { camera3d, perspective, radius, textures } { position, rotation, scale } =
+backView { camera3d, perspective, textures } { position, rotation, scale } =
     Texture.with2 textures "cardBackBack.png" "cardOrbOther.png" <|
         \texture cardOrbTexture ->
             [ Render.Primitives.quad Render.Shaders.fragment <|
@@ -102,7 +101,7 @@ backView { camera3d, perspective, radius, textures } { position, rotation, scale
 limboingView : Context -> Card.Entity a -> List WebGL.Entity
 limboingView ctx { position, rotation, scale, card, owner } =
     let
-        { perspective, camera3d, anim, radius, textures } =
+        { perspective, camera3d, anim, textures } =
             ctx
 
         glyphColour =
@@ -170,7 +169,7 @@ limboingView ctx { position, rotation, scale, card, owner } =
 dissolvingView : Context -> Card.Entity a -> List WebGL.Entity
 dissolvingView ctx { position, rotation, scale, card, owner } =
     let
-        { perspective, camera3d, radius, progress, textures } =
+        { perspective, camera3d, progress, textures } =
             ctx
 
         glyphColour =
@@ -230,7 +229,7 @@ dissolvingView ctx { position, rotation, scale, card, owner } =
 fabricatingView : Context -> Card.Entity a -> List WebGL.Entity
 fabricatingView ctx { position, rotation, scale, card, owner } =
     let
-        { perspective, camera3d, radius, progress, textures } =
+        { perspective, camera3d, progress, textures } =
             ctx
 
         glyphColour =
@@ -290,7 +289,7 @@ fabricatingView ctx { position, rotation, scale, card, owner } =
 transmutingView : Context -> StackCard -> StackCard -> Card.Entity a -> List WebGL.Entity
 transmutingView ctx stackCard finalStackCard { position, rotation, scale } =
     let
-        { perspective, camera3d, radius, progress, textures } =
+        { perspective, camera3d, progress, textures } =
             ctx
 
         ( glyphColour, orbTexturePath ) =
