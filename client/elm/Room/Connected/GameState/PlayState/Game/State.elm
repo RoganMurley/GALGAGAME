@@ -6,7 +6,6 @@ import Assets.State as Assets
 import Assets.Types as Assets
 import Collision exposing (hitTest, hitTest3d)
 import Connected.Messages as Connected
-import Game.Entity exposing (Entity3D)
 import Game.Types as Game exposing (ButtonEntity, Context, Entities, Feedback, HandEntity, StackEntity)
 import GameState.Messages as GameState
 import Hand.Entities as Hand
@@ -21,7 +20,7 @@ import Maybe.Extra as Maybe
 import Model.State as Model
 import Model.Types as Model exposing (Model)
 import PlayState.Messages as PlayState
-import Render.Uniforms exposing (camera2d, camera3d, ortho, perspective)
+import Render.Uniforms as Uniforms
 import Resolvable.State as Resolvable exposing (activeAnim, activeAnimDamage, activeModel, activeStackCard, resolving)
 import Resolvable.Types as Resolvable
 import Room.Messages as Room
@@ -49,27 +48,34 @@ gameInit model =
 contextInit : ( Int, Int ) -> Resolvable.Model -> Assets.Model -> Maybe Vec2 -> Context
 contextInit ( width, height ) res { textures, fonts } mouse =
     let
-        w =
-            toFloat width
-
-        h =
-            toFloat height
+        coords =
+            { w =
+                toFloat width
+            , h =
+                toFloat height
+            }
 
         radius =
-            if h < w then
-                0.8 * h * 0.5
+            if coords.h < coords.w then
+                0.8 * coords.h * 0.5
 
             else
-                1.2 * w * 0.5
+                1.2 * coords.w * 0.5
 
         anim =
             activeAnim res
 
         animDamage =
             activeAnimDamage res
+
+        perspective =
+            Uniforms.perspective coords
+
+        ortho =
+            Uniforms.ortho coords
     in
-    { w = w
-    , h = h
+    { w = coords.w
+    , h = coords.h
     , radius = radius
     , anim = anim
     , animDamage = animDamage
@@ -81,10 +87,11 @@ contextInit ( width, height ) res { textures, fonts } mouse =
     , fonts = fonts
     , resolving = resolving res
     , mouse = mouse
-    , perspective = perspective { w = w, h = h }
-    , ortho = ortho { w = w, h = h }
-    , camera2d = camera2d
-    , camera3d = camera3d
+    , mouseRay = Unproject.rayFromMouse mouse coords perspective Uniforms.camera3d
+    , perspective = perspective
+    , ortho = ortho
+    , camera2d = Uniforms.camera2d
+    , camera3d = Uniforms.camera3d
     }
 
 
@@ -103,7 +110,6 @@ entitiesInit =
     , hand = []
     , otherHand = []
     , buttons = []
-    , debug = []
     }
 
 
@@ -129,33 +135,11 @@ tick { dimensions, mouse } dt model =
         ctx =
             contextInit dimensions res Assets.init mouse
 
-        ( width, height ) =
-            dimensions
-
-        mUnprojectCoords =
-            Maybe.map
-                (\m ->
-                    { x = Math.Vector2.getX m / toFloat width
-                    , y = Math.Vector2.getY m / toFloat height
-                    }
-                )
-                mouse
-
-        mRay =
-            mUnprojectCoords
-                |> Maybe.andThen
-                    (\unprojectCoords ->
-                        Unproject.unprojectedRay
-                            unprojectCoords
-                            ctx.perspective
-                            ctx.camera3d
-                    )
-
         hoverHand =
-            getHoverHand model mRay
+            getHoverHand model ctx.mouseRay
 
         hoverStack =
-            getHoverStack model mRay
+            getHoverStack model ctx.mouseRay
 
         ( hover, hoverMsg ) =
             hoverUpdate model.hover hoverHand hoverStack dt
@@ -179,13 +163,6 @@ tick { dimensions, mouse } dt model =
                     , hand = Hand.entities model.hover ctx
                     , otherHand = Hand.otherEntities model.otherHover ctx
                     , buttons = buttonEntities model.passed mouse ctx
-                    , debug =
-                        case mRay of
-                            Just ray ->
-                                debugEntities ray ctx
-
-                            Nothing ->
-                                []
                     }
                 , focus = focus
                 , feedback = feedback
@@ -384,8 +361,3 @@ buttonEntities passed mouse { w, h, model, radius, resolving } =
       , onClick = onClick
       }
     ]
-
-
-debugEntities : { origin : Vec3, direction : Vec3 } -> Context -> List (Entity3D {})
-debugEntities _ _ =
-    []

@@ -1,9 +1,28 @@
-module Unproject exposing (unproject, unprojectedRay)
+module Unproject exposing (rayFromMouse, unproject, unprojectedRay)
 
 import Collision exposing (Ray)
 import Math.Matrix4 as Matrix4 exposing (Mat4)
+import Math.Vector2 exposing (Vec2)
 import Math.Vector3 as Vector3 exposing (Vec3, vec3)
 import Maybe
+
+
+rayFromMouse : Maybe Vec2 -> { w : Float, h : Float } -> Mat4 -> Mat4 -> Maybe Ray
+rayFromMouse mMouse { w, h } perspective camera =
+    mMouse
+        |> Maybe.andThen
+            (\mouse ->
+                let
+                    { x, y } =
+                        Math.Vector2.toRecord mouse
+
+                    coords =
+                        { x = x / w
+                        , y = y / h
+                        }
+                in
+                unprojectedRay coords perspective camera
+            )
 
 
 unprojectedRay : { x : Float, y : Float } -> Mat4 -> Mat4 -> Maybe Ray

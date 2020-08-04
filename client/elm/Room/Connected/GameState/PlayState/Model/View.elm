@@ -1,7 +1,5 @@
 module Model.View exposing (focusImageView, focusTextView, view)
 
--- import Trail
-
 import Animation.State as Animation exposing (animMaxTick)
 import Animation.Types exposing (Anim(..))
 import Assets.Types as Assets
@@ -13,17 +11,15 @@ import Endgame.WebGL as Endgame
 import Font.State as Font
 import Font.Types as Font
 import Font.View as Font
-import Game.Entity exposing (Entity3D)
 import Game.State exposing (contextInit)
 import Game.Types as Game exposing (ButtonEntity, Context, Feedback)
 import Hand.View as Hand
 import Hover exposing (Hover(..), HoverSelf)
-import Math.Matrix4 exposing (makeRotate, makeScale, makeScale3)
+import Math.Matrix4 exposing (makeRotate, makeScale3)
 import Math.Vector2 exposing (vec2)
 import Math.Vector3 exposing (Vec3, vec3)
 import Maybe.Extra as Maybe
 import Model.Wave as Wave
-import Quaternion
 import Render.Primitives
 import Render.Shaders
 import Render.Types as Render
@@ -67,7 +63,6 @@ view { w, h } { res, hover, focus, entities, passed, feedback, vfx } assets =
             , buttonsView entities.buttons
             , Endgame.animView
             , feedbackView feedback
-            , debugView entities.debug
             ]
 
 
@@ -545,20 +540,3 @@ feedbackView feedback ctx =
                     }
         )
         feedback
-
-
-debugView : List (Entity3D {}) -> Context -> List WebGL.Entity
-debugView entities { perspective, camera3d } =
-    List.map
-        (\{ scale, rotation, position } ->
-            Render.Primitives.quad Render.Shaders.matte
-                { rotation = Quaternion.makeRotate rotation
-                , scale = makeScale scale
-                , color = vec3 1 1 (Math.Vector3.getZ position)
-                , pos = position
-                , perspective = perspective
-                , camera = camera3d
-                , alpha = 1
-                }
-        )
-        entities
