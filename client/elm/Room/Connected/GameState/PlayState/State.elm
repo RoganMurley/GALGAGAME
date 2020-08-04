@@ -28,7 +28,6 @@ import Ports exposing (websocketSend)
 import Resolvable.State as Resolvable
 import Resolvable.Types as Resolvable
 import Result
-import Unproject
 import Util exposing (message)
 import WhichPlayer.Types exposing (WhichPlayer(..))
 
@@ -422,21 +421,11 @@ mouseClick { dimensions } mode { x, y } state =
                 state
                 mode
 
-        -- Unproject
         ctx =
             Game.bareContextInit dimensions Assets.init (Just pos)
 
-        ( width, height ) =
-            dimensions
-
-        unprojectCoords =
-            { x = toFloat x / toFloat width, y = toFloat y / toFloat height }
-
-        mRay =
-            Unproject.unprojectedRay unprojectCoords ctx.perspective ctx.camera3d
-
         mHandEntity =
-            mRay
+            ctx.mouseRay
                 |> Maybe.andThen
                     (\ray ->
                         List.find (hitTest3d ray 0.18) game.entities.hand

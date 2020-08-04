@@ -2,6 +2,7 @@ module Game.Types exposing (ButtonEntity, Context, Entities, Feedback, HandEntit
 
 import Animation.Types exposing (Anim)
 import Card.Types exposing (Card)
+import Collision exposing (Ray)
 import Font.Types as Font
 import Game.Entity as Game
 import Hover exposing (HoverOther, HoverSelf)
@@ -42,6 +43,7 @@ type alias Context =
     , fonts : Font.Model
     , resolving : Bool
     , mouse : Maybe Vec2
+    , mouseRay : Maybe Ray
     , perspective : Mat4
     , ortho : Mat4
     , camera2d : Mat4
@@ -84,7 +86,6 @@ type alias Entities =
     , hand : List HandEntity
     , otherHand : List OtherHandEntity
     , buttons : List ButtonEntity
-    , debug : List (Game.Entity3D {})
     }
 
 
