@@ -141,7 +141,7 @@ entities hover ({ w, h, anim, model, progress } as ctx) =
                             Quaternion.lerp
                                 progress
                                 (Quaternion.zRotation (handCardRotation PlayerA n (n + 1)))
-                                (Quaternion.xRotation (0.35 * pi))
+                                (Quaternion.xRotation (-0.35 * pi))
 
                         scale =
                             Card.scale
@@ -336,7 +336,7 @@ handOrigin { w, h, radius, anim, tick } which count =
                 PlayerB ->
                     0.6
     in
-    vec3 x y 0.4
+    vec3 x y -0.4
 
 
 handCardRotation : WhichPlayer -> Int -> Int -> Float

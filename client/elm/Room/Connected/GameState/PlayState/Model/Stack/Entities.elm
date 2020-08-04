@@ -207,10 +207,9 @@ stackEntity { anim, progress } baseRotateProgress finalStackLen finalIndex =
 
         ringRotation : Float
         ringRotation =
-            -1
-                * interpFloat progress
-                    (i * segmentAngle - rotateProgress * segmentAngle)
-                    (finalI * segmentAngle - rotateProgress * segmentAngle)
+            interpFloat progress
+                (i * segmentAngle - rotateProgress * segmentAngle)
+                (finalI * segmentAngle - rotateProgress * segmentAngle)
 
         position : Vec3
         position =
@@ -261,4 +260,4 @@ baseDistance =
 
 baseRotation : Quaternion
 baseRotation =
-    Quaternion.xRotation (0.35 * pi)
+    Quaternion.xRotation (-0.35 * pi)

@@ -20,7 +20,7 @@ import WhichPlayer.Types exposing (WhichPlayer(..))
 view : Context -> Card.Entity a -> List WebGL.Entity
 view ctx entity =
     let
-        { camera, perspective, radius, textures } =
+        { camera3d, perspective, radius, textures } =
             ctx
 
         { position, rotation, scale, card, owner } =
@@ -50,7 +50,7 @@ view ctx entity =
                 , color = Colour.cardCol card.col
                 , pos = position
                 , perspective = perspective
-                , camera = camera
+                , camera = camera3d
                 , texture = cardBackTexture
                 }
             , Render.Primitives.quad Render.Shaders.fragment <|
@@ -59,7 +59,7 @@ view ctx entity =
                 , color = Colour.white
                 , pos = position
                 , perspective = perspective
-                , camera = camera
+                , camera = camera3d
                 , texture = cardOrbTexture
                 }
             , Render.Primitives.quad Render.Shaders.fragment <|
@@ -68,14 +68,14 @@ view ctx entity =
                 , color = glyphColour
                 , pos = position
                 , perspective = perspective
-                , camera = camera
+                , camera = camera3d
                 , texture = texture
                 }
             ]
 
 
 backView : Context -> Game.Entity3D {} -> List WebGL.Entity
-backView { camera, perspective, radius, textures } { position, rotation, scale } =
+backView { camera3d, perspective, radius, textures } { position, rotation, scale } =
     Texture.with2 textures "cardBackBack.png" "cardOrbOther.png" <|
         \texture cardOrbTexture ->
             [ Render.Primitives.quad Render.Shaders.fragment <|
@@ -84,7 +84,7 @@ backView { camera, perspective, radius, textures } { position, rotation, scale }
                 , color = vec3 (200 / 255) (200 / 255) (200 / 255)
                 , pos = position
                 , perspective = perspective
-                , camera = camera
+                , camera = camera3d
                 , texture = texture
                 }
             , Render.Primitives.quad Render.Shaders.fragment <|
@@ -93,7 +93,7 @@ backView { camera, perspective, radius, textures } { position, rotation, scale }
                 , color = Colour.white
                 , pos = position
                 , perspective = perspective
-                , camera = camera
+                , camera = camera3d
                 , texture = cardOrbTexture
                 }
             ]
@@ -102,7 +102,7 @@ backView { camera, perspective, radius, textures } { position, rotation, scale }
 limboingView : Context -> Card.Entity a -> List WebGL.Entity
 limboingView ctx { position, rotation, scale, card, owner } =
     let
-        { perspective, camera, anim, radius, textures } =
+        { perspective, camera3d, anim, radius, textures } =
             ctx
 
         glyphColour =
@@ -141,7 +141,7 @@ limboingView ctx { position, rotation, scale, card, owner } =
                 , color = Colour.cardCol card.col
                 , pos = position
                 , perspective = perspective
-                , camera = camera
+                , camera = camera3d
                 , alpha = progress
                 }
             , Render.Primitives.quad Render.Shaders.fragmentAlpha <|
@@ -151,7 +151,7 @@ limboingView ctx { position, rotation, scale, card, owner } =
                 , color = Colour.white
                 , pos = position
                 , perspective = perspective
-                , camera = camera
+                , camera = camera3d
                 , alpha = progress
                 }
             , Render.Primitives.quad Render.Shaders.fragmentAlpha <|
@@ -161,7 +161,7 @@ limboingView ctx { position, rotation, scale, card, owner } =
                 , color = glyphColour
                 , pos = position
                 , perspective = perspective
-                , camera = camera
+                , camera = camera3d
                 , alpha = progress
                 }
             ]
@@ -170,7 +170,7 @@ limboingView ctx { position, rotation, scale, card, owner } =
 dissolvingView : Context -> Card.Entity a -> List WebGL.Entity
 dissolvingView ctx { position, rotation, scale, card, owner } =
     let
-        { perspective, camera, radius, progress, textures } =
+        { perspective, camera3d, radius, progress, textures } =
             ctx
 
         glyphColour =
@@ -199,7 +199,7 @@ dissolvingView ctx { position, rotation, scale, card, owner } =
                 , color = Colour.cardCol card.col
                 , pos = position
                 , perspective = perspective
-                , camera = camera
+                , camera = camera3d
                 , time = progress
                 }
             , Render.Primitives.quad Render.Shaders.disintegrate <|
@@ -210,7 +210,7 @@ dissolvingView ctx { position, rotation, scale, card, owner } =
                 , color = Colour.white
                 , pos = position
                 , perspective = perspective
-                , camera = camera
+                , camera = camera3d
                 , time = progress
                 }
             , Render.Primitives.quad Render.Shaders.disintegrate <|
@@ -221,7 +221,7 @@ dissolvingView ctx { position, rotation, scale, card, owner } =
                 , color = glyphColour
                 , pos = position
                 , perspective = perspective
-                , camera = camera
+                , camera = camera3d
                 , time = progress
                 }
             ]
@@ -230,7 +230,7 @@ dissolvingView ctx { position, rotation, scale, card, owner } =
 fabricatingView : Context -> Card.Entity a -> List WebGL.Entity
 fabricatingView ctx { position, rotation, scale, card, owner } =
     let
-        { perspective, camera, radius, progress, textures } =
+        { perspective, camera3d, radius, progress, textures } =
             ctx
 
         glyphColour =
@@ -259,7 +259,7 @@ fabricatingView ctx { position, rotation, scale, card, owner } =
                 , color = Colour.cardCol card.col
                 , pos = position
                 , perspective = perspective
-                , camera = camera
+                , camera = camera3d
                 , time = 1 - progress
                 }
             , Render.Primitives.quad Render.Shaders.disintegrate <|
@@ -270,7 +270,7 @@ fabricatingView ctx { position, rotation, scale, card, owner } =
                 , color = Colour.white
                 , pos = position
                 , perspective = perspective
-                , camera = camera
+                , camera = camera3d
                 , time = 1 - progress
                 }
             , Render.Primitives.quad Render.Shaders.disintegrate <|
@@ -281,7 +281,7 @@ fabricatingView ctx { position, rotation, scale, card, owner } =
                 , color = glyphColour
                 , pos = position
                 , perspective = perspective
-                , camera = camera
+                , camera = camera3d
                 , time = 1 - progress
                 }
             ]
@@ -290,7 +290,7 @@ fabricatingView ctx { position, rotation, scale, card, owner } =
 transmutingView : Context -> StackCard -> StackCard -> Card.Entity a -> List WebGL.Entity
 transmutingView ctx stackCard finalStackCard { position, rotation, scale } =
     let
-        { perspective, camera, radius, progress, textures } =
+        { perspective, camera3d, radius, progress, textures } =
             ctx
 
         ( glyphColour, orbTexturePath ) =
@@ -318,7 +318,7 @@ transmutingView ctx stackCard finalStackCard { position, rotation, scale } =
                 , finalColor = Colour.cardCol finalStackCard.card.col
                 , pos = position
                 , perspective = perspective
-                , camera = camera
+                , camera = camera3d
                 , texture = cardBackTexture
                 , finalTexture = cardBackTexture
                 , time = progress
@@ -330,7 +330,7 @@ transmutingView ctx stackCard finalStackCard { position, rotation, scale } =
                 , finalColor = Colour.white
                 , pos = position
                 , perspective = perspective
-                , camera = camera
+                , camera = camera3d
                 , texture = cardOrbTexture
                 , finalTexture = finalCardOrbTexture
                 , time = progress
@@ -342,7 +342,7 @@ transmutingView ctx stackCard finalStackCard { position, rotation, scale } =
                 , finalColor = finalGlyphColour
                 , pos = position
                 , perspective = perspective
-                , camera = camera
+                , camera = camera3d
                 , texture = texture
                 , finalTexture = finalTexture
                 , time = progress

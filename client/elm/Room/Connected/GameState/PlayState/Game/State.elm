@@ -22,7 +22,7 @@ import Model.State as Model
 import Model.Types as Model exposing (Model)
 import PlayState.Messages as PlayState
 import Quaternion
-import Render.Uniforms exposing (camera, ortho, perspective)
+import Render.Uniforms exposing (camera2d, camera3d, ortho, perspective)
 import Resolvable.State as Resolvable exposing (activeAnim, activeAnimDamage, activeModel, activeStackCard, resolving)
 import Resolvable.Types as Resolvable
 import Room.Messages as Room
@@ -84,7 +84,8 @@ contextInit ( width, height ) res { textures, fonts } mouse =
     , mouse = mouse
     , perspective = perspective { w = w, h = h }
     , ortho = ortho { w = w, h = h }
-    , camera = camera
+    , camera2d = camera2d
+    , camera3d = camera3d
     }
 
 
@@ -144,7 +145,7 @@ tick { dimensions, mouse } dt model =
         mRay =
             case mUnprojectCoords of
                 Just unprojectCoords ->
-                    Unproject.unprojectedRay unprojectCoords ctx.perspective ctx.camera
+                    Unproject.unprojectedRay unprojectCoords ctx.perspective ctx.camera3d
 
                 Nothing ->
                     Nothing
@@ -275,7 +276,7 @@ hoverDamage hover dmg =
             NoHover
 
 
-getHoverHand : Game.Model -> Maybe Vec3 -> Maybe HandEntity
+getHoverHand : Game.Model -> Maybe { origin : Vec3, direction : Vec3 } -> Maybe HandEntity
 getHoverHand { entities } mRay =
     case mRay of
         Just ray ->
@@ -287,7 +288,7 @@ getHoverHand { entities } mRay =
             Nothing
 
 
-getHoverStack : Game.Model -> Maybe Vec3 -> Maybe StackEntity
+getHoverStack : Game.Model -> Maybe { origin : Vec3, direction : Vec3 } -> Maybe StackEntity
 getHoverStack { entities } mRay =
     case mRay of
         Just ray ->
@@ -386,17 +387,29 @@ buttonEntities passed mouse { w, h, model, radius, resolving } =
     ]
 
 
-debugEntities : Vec3 -> Context -> List (Entity3D {})
-debugEntities ray ctx =
+debugEntities : { origin : Vec3, direction : Vec3 } -> Context -> List (Entity3D {})
+debugEntities { origin, direction } ctx =
     let
         count =
             100
     in
-    List.map
-        (\t ->
-            { position = Math.Vector3.scale (toFloat t / (10 * count)) ray
-            , scale = vec3 0.01 0.01 1
-            , rotation = Quaternion.identity
-            }
-        )
-        (List.range 0 100)
+    [ { position = vec3 0.3 0 -0.4
+      , scale = vec3 0.01 0.01 1
+      , rotation = Quaternion.identity
+      }
+    ]
+
+
+
+-- :: List.map
+--     (\t ->
+--         { position =
+--             Math.Vector3.add origin <|
+--                 Math.Vector3.scale
+--                     (10 * (toFloat t / count))
+--                     direction
+--         , scale = vec3 0.01 0.01 1
+--         , rotation = Quaternion.identity
+--         }
+--     )
+--     (List.range 0 count)

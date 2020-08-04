@@ -9,6 +9,7 @@ import Endgame.WebGL as Endgame
 import Game.State as Game
 import Game.Types as Game
 import GameType exposing (GameType(..))
+import Hand.Entities exposing (handCardPosition)
 import Hover exposing (encodeHoverSelf)
 import Json.Decode as Json
 import List.Extra as List
@@ -424,7 +425,7 @@ mouseClick { dimensions } mode { x, y } state =
                 mode
 
         -- Unproject
-        { perspective, camera } =
+        ctx =
             Game.bareContextInit dimensions Assets.init (Just pos)
 
         ( width, height ) =
@@ -434,7 +435,7 @@ mouseClick { dimensions } mode { x, y } state =
             { x = toFloat x / toFloat width, y = toFloat y / toFloat height }
 
         mRay =
-            Unproject.unprojectedRay unprojectCoords perspective camera
+            Unproject.unprojectedRay unprojectCoords ctx.perspective ctx.camera3d
 
         mHandEntity =
             case mRay of
@@ -445,6 +446,9 @@ mouseClick { dimensions } mode { x, y } state =
 
                 Nothing ->
                     Nothing
+
+        debugPos =
+            vec3 0.3 0 -0.4
     in
     ( newPlayState
     , Cmd.batch

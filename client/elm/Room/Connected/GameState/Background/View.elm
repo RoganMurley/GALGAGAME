@@ -34,13 +34,18 @@ view { dimensions, pixelRatio, time } assets anim =
             { baseCtx | anim = anim, progress = time / 4000 }
     in
     div []
-        [ WebGL.toHtml [ width <| floor <| toFloat w * pixelRatio, height <| floor <| toFloat h * pixelRatio, class "webgl-canvas" ] <|
+        [ WebGL.toHtml
+            [ width <| floor <| toFloat w * pixelRatio
+            , height <| floor <| toFloat h * pixelRatio
+            , class "webgl-canvas"
+            ]
+          <|
             radialView Vfx.init ctx
         ]
 
 
 stainView : Maybe StackCard -> Context -> List WebGL.Entity
-stainView focus ({ camera, ortho, w, h, radius, textures } as ctx) =
+stainView focus ({ camera2d, ortho, w, h, radius, textures } as ctx) =
     let
         rotation =
             getRingRotation ctx
@@ -54,9 +59,8 @@ stainView focus ({ camera, ortho, w, h, radius, textures } as ctx) =
                         , scale = makeScale3 (0.66 * radius) (0.66 * radius) 1
                         , color = Colour.background owner
                         , pos = vec3 (w * 0.5) (h * 0.5) 0
-                        
                         , perspective = ortho
-                        , camera = camera
+                        , camera = camera2d
                         , mag = 1.0
                         }
                     ]
@@ -73,9 +77,8 @@ stainView focus ({ camera, ortho, w, h, radius, textures } as ctx) =
                     , scale = makeScale3 (0.8 * radius) (0.8 * radius) 1
                     , color = Colour.white
                     , pos = vec3 (w * 0.5) (h * 0.5) 0
-                    
                     , perspective = ortho
-                    , camera = camera
+                    , camera = camera2d
                     , texture = texture
                     }
                 ]
@@ -102,7 +105,7 @@ getRingRotation { anim, model, progress } =
 
 
 radialView : Vfx.Model -> Context -> List WebGL.Entity
-radialView { rotation } ({ camera, ortho, w, h, textures } as ctx) =
+radialView { rotation } ({ camera2d, ortho, w, h, textures } as ctx) =
     let
         size =
             1.4 * max w h
@@ -114,9 +117,8 @@ radialView { rotation } ({ camera, ortho, w, h, textures } as ctx) =
                 , scale = makeScale3 (0.5 * size) (0.5 * size) 1
                 , color = Colour.white
                 , pos = vec3 (w * 0.5) (h * 0.5) 0
-                
                 , perspective = ortho
-                , camera = camera
+                , camera = camera2d
                 , spin = getRingRotation ctx
                 , depth = rotation
                 , texture = texture

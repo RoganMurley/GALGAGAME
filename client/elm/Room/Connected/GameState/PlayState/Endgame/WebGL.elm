@@ -25,7 +25,7 @@ import WhichPlayer.Types exposing (WhichPlayer(..))
 
 
 animView : Context -> List WebGL.Entity
-animView ({ camera, ortho, w, h, radius, anim, progress } as ctx) =
+animView ({ camera2d, ortho, w, h, radius, anim, progress } as ctx) =
     case anim of
         GameEnd winner ->
             let
@@ -53,9 +53,8 @@ animView ({ camera, ortho, w, h, radius, anim, progress } as ctx) =
                         , color = backgroundColor
                         , alpha = 0.8 * Ease.outCubic progress
                         , pos = vec3 (w * 0.5) (h * 0.5) 0
-                        
                         , perspective = ortho
-                        , camera = camera
+                        , camera = camera2d
                         }
                   ]
                 , Font.view
@@ -101,7 +100,7 @@ view { w, h } assets winner resolving buttons =
 
 
 buttonsView : Context -> List ButtonEntity -> List WebGL.Entity
-buttonsView ({ camera, ortho } as ctx) buttons =
+buttonsView ({ camera2d, ortho } as ctx) buttons =
     let
         buttonView : ButtonEntity -> List WebGL.Entity
         buttonView { font, text, position, scale, disabled, hover } =
@@ -127,9 +126,8 @@ buttonsView ({ camera, ortho } as ctx) buttons =
                     else
                         vec3 1 0 0
                 , pos = vec3 (Math.Vector2.getX position) (Math.Vector2.getY position) 0
-                
                 , perspective = ortho
-                , camera = camera
+                , camera = camera2d
                 , alpha =
                     if hover then
                         1

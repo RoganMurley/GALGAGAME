@@ -44,7 +44,8 @@ type alias Context =
     , mouse : Maybe Vec2
     , perspective : Mat4
     , ortho : Mat4
-    , camera : Mat4
+    , camera2d : Mat4
+    , camera3d : Mat4
     }
 
 
