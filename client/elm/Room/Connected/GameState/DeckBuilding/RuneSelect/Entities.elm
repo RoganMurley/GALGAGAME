@@ -3,15 +3,14 @@ module RuneSelect.Entities exposing (entities)
 import Card.State as Card
 import Card.Types as Card
 import Game.Types exposing (Context)
-import Math.Matrix4 exposing (makeRotate)
 import Math.Vector3 exposing (vec3)
-import Quaternion exposing (Quaternion)
+import Quaternion
 import RuneSelect.Types exposing (Model)
 import WhichPlayer.Types exposing (WhichPlayer(..))
 
 
 entities : Context -> Model -> List (Card.Entity {})
-entities { radius, w, h } model =
+entities _ model =
     let
         rune =
             model.carousel.selected

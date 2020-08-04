@@ -1,9 +1,7 @@
 module RuneSelect.State exposing (tick, update)
 
 import Carousel
-import Collision exposing (hitTest)
 import Game.Types exposing (Context)
-import List.Extra as List
 import RuneSelect.Entities as RuneSelect
 import RuneSelect.Messages exposing (Msg(..))
 import RuneSelect.Types exposing (Model)

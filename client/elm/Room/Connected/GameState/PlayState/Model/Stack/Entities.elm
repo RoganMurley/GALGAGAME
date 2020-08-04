@@ -5,8 +5,7 @@ import Array
 import Card.State as Card
 import Game.Entity as Game
 import Game.Types exposing (Context, StackEntity)
-import Math.Matrix4 exposing (Mat4, makeRotate, rotate)
-import Math.Vector2 exposing (Vec2, vec2)
+import Math.Matrix4 exposing (rotate)
 import Math.Vector3 exposing (Vec3, vec3)
 import Quaternion exposing (Quaternion)
 import Random
@@ -18,7 +17,7 @@ import Util exposing (interpFloat)
 entities : Context -> List StackEntity
 entities ctx =
     let
-        { w, h, radius, anim, model, progress, stackCard } =
+        { anim, model, progress, stackCard } =
             ctx
 
         finalStack =

@@ -8,11 +8,9 @@ import Card.View as Card
 import Ease
 import Game.Entity as Game
 import Game.Types exposing (Context)
-import Math.Matrix4 exposing (makeRotate)
-import Math.Vector2 exposing (vec2)
 import Math.Vector3 exposing (vec3)
-import Quaternion exposing (Quaternion)
-import Util exposing (interp, interp2D, interpFloat)
+import Quaternion
+import Util exposing (interp)
 import WebGL
 import WhichPlayer.Types exposing (WhichPlayer(..))
 
@@ -30,7 +28,7 @@ otherView otherHandEntities ctx =
 
 
 millView : Context -> List WebGL.Entity
-millView ({ w, h, progress, tick, anim } as ctx) =
+millView ({ progress, tick, anim } as ctx) =
     case anim of
         Mill owner card ->
             let
@@ -58,11 +56,11 @@ millView ({ w, h, progress, tick, anim } as ctx) =
                             progress
                             startPos
                             (vec3 0 0 1.5)
-                    , rotation = Quaternion.identity
-
-                    -- makeRotate
-                    --     (interpFloat progress pi (pi - sign * 0.05 * pi))
-                    --     (vec3 0 0 1)
+                    , rotation =
+                        Quaternion.lerp
+                            progress
+                            Quaternion.identity
+                            (Quaternion.zRotation (-sign * 0.05 * pi))
                     , scale = Card.scale
                     }
             in

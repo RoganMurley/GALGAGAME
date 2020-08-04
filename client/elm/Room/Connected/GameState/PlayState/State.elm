@@ -4,19 +4,17 @@ import Animation.Types exposing (Anim(..))
 import Assets.State as Assets
 import Audio.State exposing (playSound)
 import Browser.Navigation
-import Collision exposing (hitTest)
+import Collision exposing (hitTest3d)
 import Endgame.WebGL as Endgame
 import Game.State as Game
 import Game.Types as Game
 import GameType exposing (GameType(..))
-import Hand.Entities exposing (handCardPosition)
 import Hover exposing (encodeHoverSelf)
 import Json.Decode as Json
 import List.Extra as List
 import Main.Messages as Main
 import Main.Types exposing (Flags)
 import Math.Vector2 exposing (vec2)
-import Math.Vector3 as Vector3 exposing (vec3)
 import Mode exposing (Mode)
 import Model.Decoders as Model
 import Model.Diff exposing (Diff, initDiff)
@@ -26,7 +24,7 @@ import Mouse exposing (Position)
 import PlayState.Decoders as PlayState
 import PlayState.Messages exposing (Msg(..), PlayingOnly(..), TurnOnly(..))
 import PlayState.Types as PlayState exposing (PlayState(..), ResolveOutcomeInput)
-import Ports exposing (log, websocketSend)
+import Ports exposing (websocketSend)
 import Resolvable.State as Resolvable
 import Resolvable.Types as Resolvable
 import Result
@@ -438,17 +436,11 @@ mouseClick { dimensions } mode { x, y } state =
             Unproject.unprojectedRay unprojectCoords ctx.perspective ctx.camera3d
 
         mHandEntity =
-            case mRay of
-                Just ray ->
-                    List.find
-                        (\entity -> Unproject.intersect ray entity >= 0)
-                        game.entities.hand
-
-                Nothing ->
-                    Nothing
-
-        debugPos =
-            vec3 0.3 0 -0.4
+            mRay
+                |> Maybe.andThen
+                    (\ray ->
+                        List.find (hitTest3d ray 0.18) game.entities.hand
+                    )
     in
     ( newPlayState
     , Cmd.batch
