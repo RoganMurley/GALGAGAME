@@ -41,22 +41,13 @@ view { w, h } { res, hover, focus, entities, passed, feedback, vfx } assets =
         List.map ((|>) ctx)
             [ Background.radialView vfx
             , Wave.view
-
-            -- , Background.ornateView
             , lifeOrbView
             , passView
-
-            -- , Background.stainView focus
-            -- , Background.ringView
             , Stack.view entities.stack
             , focusImageView focus
-
-            -- , Trail.view
             , Hand.view entities.hand
             , Hand.otherView entities.otherHand
             , Hand.millView
-
-            -- , Background.cursorView
             , damageWebGl hover
             , turnView focus passed
             , focusTextView focus
@@ -141,10 +132,10 @@ lifeOrbView ({ w, h, radius, model, anim, animDamage, tick } as ctx) =
             0.085
 
         life =
-            floor <| 50 * lifePercentage
+            floor <| 50 * finalLifePercentage
 
         otherLife =
-            floor <| 50 * otherLifePercentage
+            floor <| 50 * finalOtherLifePercentage
     in
     [ Render.Primitives.fullCircle <|
         uniColourMag ctx

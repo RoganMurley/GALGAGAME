@@ -91,13 +91,6 @@ texturePaths =
     , { name = "cardBackBack.png", path = "/img/textures/cardBackBack.png" }
     , { name = "cardOrb.png", path = "/img/textures/cardOrb.png" }
     , { name = "cardOrbOther.png", path = "/img/textures/cardOrbOther.png" }
-    , { name = "stain.png", path = "/img/textures/stain.png" }
-    , { name = "tea.png", path = "/img/textures/tea.png" }
-
-    -- Ring
-    , { name = "ring.png", path = "/img/textures/ring.png" }
-    , { name = "lifeclaw.png", path = "/img/textures/lifeclaw.png" }
-    , { name = "cursor.png", path = "/img/textures/cursor.png" }
 
     -- VFX
     , { name = "noise.png", path = "/img/textures/noise.png" }
