@@ -27,19 +27,14 @@ rayFromMouse mMouse { w, h } perspective camera =
 
 unprojectedRay : { x : Float, y : Float } -> Mat4 -> Mat4 -> Maybe Ray
 unprojectedRay { x, y } perspective camera =
-    case
-        ( unproject { x = x, y = y, z = 0 } perspective camera
-        , unproject { x = x, y = y, z = -1 } perspective camera
+    Maybe.map2
+        (\a b ->
+            { direction = Vector3.sub a b |> Vector3.normalize
+            , origin = vec3 0 0 -2
+            }
         )
-    of
-        ( Just a, Just b ) ->
-            Just
-                { direction = Vector3.sub a b |> Vector3.normalize
-                , origin = vec3 0 0 -2
-                }
-
-        _ ->
-            Nothing
+        (unproject { x = x, y = y, z = 0 } perspective camera)
+        (unproject { x = x, y = y, z = -1 } perspective camera)
 
 
 unproject : { x : Float, y : Float, z : Float } -> Mat4 -> Mat4 -> Maybe Vec3
