@@ -1,9 +1,13 @@
-module Room.View exposing (titleView, view)
+module Room.View exposing (titleView, view, webglView)
 
+import Animation.Types exposing (Anim(..))
 import Assets.Types as Assets
+import Background.View as Background
 import Connected.View as Connected
 import Feedback.View as Feedback
+import GameState.View as GameState
 import Html as Html exposing (Html, div)
+import Html.Attributes exposing (class, height, width)
 import Lobby.View as Lobby
 import Login.View as Login
 import Main.Messages as Main
@@ -15,6 +19,7 @@ import Room.Types exposing (Model(..))
 import Settings.Types as Settings
 import Settings.View as Settings
 import Signup.View as Signup
+import WebGL
 
 
 view : Model -> Settings.Model -> Flags -> Assets.Model -> Html Main.Msg
@@ -31,10 +36,10 @@ view model settings flags assets =
                         Lobby.view lobby
 
                 Connected connected ->
-                    Connected.view connected flags assets
+                    Connected.htmlView connected flags
 
                 Replay replay ->
-                    Replay.view replay flags assets
+                    Replay.htmlView replay
 
                 Login login ->
                     Html.map (Main.RoomMsg << LoginMsg) <|
@@ -51,6 +56,7 @@ view model settings flags assets =
     div []
         [ Settings.view settings (settingsView model flags)
         , roomView
+        , webglView model flags assets
         ]
 
 
@@ -91,3 +97,30 @@ titleView model =
 
         _ ->
             "GALGAGAME"
+
+
+webglView : Model -> Flags -> Assets.Model -> Html Main.Msg
+webglView model flags assets =
+    let
+        params =
+            GameState.paramsFromFlags flags
+
+        entities =
+            case model of
+                Connected connected ->
+                    Connected.webglView connected flags assets
+
+                Replay replay ->
+                    Replay.webglView replay flags assets
+
+                _ ->
+                    Background.webglView params assets NullAnim
+    in
+    div []
+        [ WebGL.toHtml
+            [ width <| floor <| toFloat params.w * params.pixelRatio
+            , height <| floor <| toFloat params.h * params.pixelRatio
+            , class "webgl-canvas"
+            ]
+            entities
+        ]

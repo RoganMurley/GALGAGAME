@@ -1,31 +1,39 @@
-module Replay.View exposing (view)
-
--- import Background.View as Background
--- import Endgame.View as Endgame
+module Replay.View exposing (htmlView, webglView)
 
 import Animation.Types exposing (Anim(..))
 import Assets.Types as Assets
 import Connected.View exposing (playersView)
 import GameState.Types exposing (GameState(..))
 import GameState.View as GameState
-import Html exposing (Html, div)
-import Html.Attributes exposing (class)
+import Html exposing (Html, text)
 import Main.Messages as Main
 import Main.Types exposing (Flags)
 import Replay.Types exposing (Model)
+import WebGL
 
 
-view : Model -> Flags -> Assets.Model -> Html Main.Msg
-view { replay } flags assets =
-    div [ class "replay" ] <|
-        case replay of
-            Just { state, usernamePa, usernamePb } ->
-                [ playersView { pa = Just usernamePa, pb = Just usernamePb }
-                , GameState.view (Started state) "" flags assets
-                ]
+htmlView : Model -> Html Main.Msg
+htmlView { replay } =
+    case replay of
+        Just { usernamePa, usernamePb } ->
+            playersView
+                { pa = Just usernamePa, pb = Just usernamePb }
 
-            Nothing ->
-                []
+        Nothing ->
+            text ""
+
+
+webglView : Model -> Flags -> Assets.Model -> List WebGL.Entity
+webglView { replay } flags assets =
+    case replay of
+        Just { state } ->
+            GameState.webglView
+                (Started state)
+                (GameState.paramsFromFlags flags)
+                assets
+
+        Nothing ->
+            []
 
 
 
