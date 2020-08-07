@@ -1,4 +1,4 @@
-module DeckBuilding.View exposing (view)
+module DeckBuilding.View exposing (webglView)
 
 import Assets.Types as Assets
 import Background.View exposing (radialView)
@@ -8,8 +8,6 @@ import Font.Types as Font
 import Font.View as Font
 import Game.State exposing (bareContextInit)
 import Game.Types exposing (Context)
-import Html exposing (Html, div)
-import Html.Attributes exposing (class, height, width)
 import Math.Vector3 exposing (vec3)
 import Render.Types as Render
 import RuneSelect.Types as RuneSelect exposing (RuneCursor(..))
@@ -19,110 +17,22 @@ import WebGL.Texture as WebGL
 import WhichPlayer.Types exposing (WhichPlayer(..))
 
 
-view : Render.Params -> Model -> Assets.Model -> Html Msg
-view { w, h, pixelRatio } model assets =
+webglView : Render.Params -> Model -> Assets.Model -> List WebGL.Entity
+webglView { w, h } model assets =
     let
         ctx =
             bareContextInit ( w, h ) assets Nothing
     in
-    div [ class "clock" ]
-        [ WebGL.toHtml
-            [ width <| floor <| toFloat w * pixelRatio, height <| floor <| toFloat h * pixelRatio, class "webgl-canvas" ]
-          <|
-            List.concat <|
-                List.map ((|>) ctx)
-                    (case model.runeSelect of
-                        Just runeSelect ->
-                            [ RuneSelect.webglView runeSelect ]
-
-                        Nothing ->
-                            [ webglView model ]
-                    )
-
-        -- , case model.runeSelect of
-        --     Nothing ->
-        --         div []
-        --             [ h1 [] [ text "WHO ARE YOU?" ]
-        --             , charactersView model
-        --             ]
-        --
-        --     Just runeSelect ->
-        --         div [ class "rune-select" ]
-        --             [ h1 [] [ text "BREWING" ]
-        --             , RuneSelect.view ctx runeSelect
-        --             ]
-        ]
-
-
-
--- charactersView : Model -> Html Msg
--- charactersView { characters } =
---     let
---         character =
---             characters.selected
---     in
---     div [ class "characters" ]
---         [ div [ class "character-select-bottom" ]
---             [ div [ class "character-name" ] [ text character.name ]
---             , div [ class "character-last-row" ]
---                 [ div [ class "character-prev-button", onClick PreviousCharacter ] []
---                 , button [ class "character-confirm", class "menu-button", onClick <| Select character ] [ text "READY" ]
---                 , div [ class "character-next-button", onClick NextCharacter ] []
---                 ]
---             ]
---         ]
--- characterView : Character -> Html Msg
--- characterView ({ runeA, runeB, runeC } as character) =
---     div [ class "character" ]
---         [ spacer
---         , div
---             [ class "character-circle" ]
---             [ div [ class "name" ] [ text character.name ]
--- , div [ class "character-runes" ]
---     [ img [ class "character-rune", src <| "/img/textures/" ++ runeA.imgURL, onClick <| EnterRuneSelect RuneCursorA ] []
---     , img [ class "character-rune", src <| "/img/textures/" ++ runeB.imgURL, onClick <| EnterRuneSelect RuneCursorB ] []
---     , img [ class "character-rune", src <| "/img/textures/" ++ runeC.imgURL, onClick <| EnterRuneSelect RuneCursorC ] []
---     ]
---     ]
--- ]
-
-
-webglView : Model -> Context -> List WebGL.Entity
-webglView { vfx } ctx =
-    -- let
-    -- teaProgress =
-    --     min bounceTick 300 / 300
-    -- teaPop =
-    --     10 * Ease.outBounce teaProgress
-    -- in
     List.concat <|
-        -- [ [ Render.Primitives.circle <|
-        --         uniColourMag ctx
-        --             Colour.tea
-        --             1
-        --             { scale = radius * 0.73
-        --             , position = vec2 (w * 0.5) (h * 0.5)
-        --             , rotation = 0
-        --             }
-        --   ]
-        -- , Texture.with textures "tea.png"
-        --     \texture ->
-        --         [ Render.Primitives.quad Render.Shaders.fragment
-        --             { rotation = makeRotate pi (vec3 0 0 1)
-        --             , scale = makeScale3 (0.73 * radius + teaPop) (0.73 * radius + teaPop) 1
-        --             , color = Colour.white
-        --             , pos = vec3 (w * 0.5) (h * 0.5) 0
-        --             , worldRot = ctx.worldRot
-        --             , perspective = ctx.ortho
-        --             , camera = ctx.camera
-        --             , texture = texture
-        --             }
-        --         ]
-        -- ,
-        List.map ((|>) ctx)
-            [ radialView vfx
-            , titleView vfx.rotation
-            ]
+        List.map ((|>) ctx) <|
+            case model.runeSelect of
+                Just runeSelect ->
+                    [ RuneSelect.webglView runeSelect ]
+
+                Nothing ->
+                    [ radialView model.vfx
+                    , titleView model.vfx.rotation
+                    ]
 
 
 titleView : Float -> Context -> List WebGL.Entity
