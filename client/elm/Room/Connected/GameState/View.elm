@@ -1,4 +1,4 @@
-module GameState.View exposing (view)
+module GameState.View exposing (htmlView, paramsFromFlags, webglView)
 
 import Animation.Types exposing (Anim(..))
 import Assets.Types as Assets
@@ -7,7 +7,7 @@ import DeckBuilding.View as DeckBuilding
 import GameState.Messages exposing (Msg(..))
 import GameState.Types exposing (GameState(..), WaitType(..))
 import Html exposing (Html, button, div, input, text)
-import Html.Attributes exposing (class, height, id, readonly, type_, value, width)
+import Html.Attributes exposing (class, id, readonly, type_, value)
 import Html.Events exposing (onClick)
 import Main.Messages as Main
 import Main.Types exposing (Flags)
@@ -16,29 +16,8 @@ import Render.Types as Render
 import WebGL
 
 
-view : GameState -> String -> Flags -> Assets.Model -> Html Main.Msg
-view state roomID flags assets =
-    let
-        ( w, h ) =
-            flags.dimensions
-
-        params =
-            { time = flags.time, w = w, h = h, pixelRatio = flags.pixelRatio }
-    in
-    div []
-        [ WebGL.toHtml
-            [ width <| floor <| toFloat w * flags.pixelRatio
-            , height <| floor <| toFloat h * flags.pixelRatio
-            , class "webgl-canvas"
-            ]
-          <|
-            webglView state params assets
-        , htmlView state roomID flags assets
-        ]
-
-
-htmlView : GameState -> String -> Flags -> Assets.Model -> Html Main.Msg
-htmlView state roomID flags assets =
+htmlView : GameState -> String -> Flags -> Html Main.Msg
+htmlView state roomID flags =
     case state of
         Waiting waitType ->
             div [] [ waitingView waitType flags roomID ]
@@ -113,3 +92,16 @@ webglView state params assets =
 
         Started started ->
             PlayState.webglView started params assets
+
+
+paramsFromFlags : Flags -> Render.Params
+paramsFromFlags { dimensions, pixelRatio, time } =
+    let
+        ( w, h ) =
+            dimensions
+    in
+    { w = w
+    , h = h
+    , pixelRatio = pixelRatio
+    , time = time
+    }

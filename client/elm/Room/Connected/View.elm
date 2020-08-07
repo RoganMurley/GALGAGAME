@@ -1,4 +1,4 @@
-module Connected.View exposing (concedeView, playersView, specMenuView, titleView, view)
+module Connected.View exposing (concedeView, htmlView, playersView, specMenuView, titleView, webglView)
 
 import Assets.Types as Assets
 import Connected.Messages as Connected
@@ -11,14 +11,20 @@ import Html.Events exposing (onClick)
 import Main.Messages exposing (Msg(..))
 import Main.Types exposing (Flags)
 import PlayState.Types exposing (PlayState(..))
+import WebGL
 
 
-view : Model -> Flags -> Assets.Model -> Html Msg
-view { game, roomID, players } flags assets =
+htmlView : Model -> Flags -> Html Msg
+htmlView { game, roomID, players } flags =
     div []
         [ playersView players
-        , GameState.view game roomID flags assets
+        , GameState.htmlView game roomID flags
         ]
+
+
+webglView : Model -> Flags -> Assets.Model -> List WebGL.Entity
+webglView { game } flags assets =
+    GameState.webglView game (GameState.paramsFromFlags flags) assets
 
 
 playersView : Players -> Html Msg
