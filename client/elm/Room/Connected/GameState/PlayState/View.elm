@@ -1,23 +1,16 @@
-module PlayState.View exposing (view)
+module PlayState.View exposing (webglView)
 
 import Animation.Types exposing (Anim(..))
 import Assets.Types as Assets
 import Endgame.WebGL as Endgame
-import Main.Types exposing (Flags)
 import Model.View as Model
 import PlayState.Types exposing (PlayState(..))
+import Render.Types as Render
 import WebGL
 
 
-view : PlayState -> Flags -> Assets.Model -> List WebGL.Entity
-view playState { time, dimensions, pixelRatio } assets =
-    let
-        ( w, h ) =
-            dimensions
-
-        params =
-            { time = time, w = w, h = h, pixelRatio = pixelRatio }
-    in
+webglView : PlayState -> Render.Params -> Assets.Model -> List WebGL.Entity
+webglView playState params assets =
     case playState of
         Playing { game } ->
             Model.view params game assets
