@@ -1,4 +1,4 @@
-module Unproject exposing (rayFromMouse, unproject, unprojectedRay)
+module Unproject exposing (rayFromMouse, unproject)
 
 import Collision exposing (Ray)
 import Math.Matrix4 as Matrix4 exposing (Mat4)
@@ -21,12 +21,12 @@ rayFromMouse mMouse { w, h } perspective camera =
                         , y = y / h
                         }
                 in
-                unprojectedRay coords perspective camera
+                unprojectRay coords perspective camera
             )
 
 
-unprojectedRay : { x : Float, y : Float } -> Mat4 -> Mat4 -> Maybe Ray
-unprojectedRay { x, y } perspective camera =
+unprojectRay : { x : Float, y : Float } -> Mat4 -> Mat4 -> Maybe Ray
+unprojectRay { x, y } perspective camera =
     Maybe.map2
         (\a b ->
             { direction = Vector3.sub a b |> Vector3.normalize
@@ -43,29 +43,11 @@ unproject { x, y, z } perspective camera =
         clipSpace : Vec3
         clipSpace =
             vec3 (x * 2 - 1) ((1 - y) * 2 - 1) z
-
-        mEyeSpace : Maybe Vec3
-        mEyeSpace =
-            Matrix4.inverse perspective
-                |> Maybe.map
-                    (\inverted ->
-                        Matrix4.transform
-                            inverted
-                            clipSpace
-                    )
-
-        worldSpace : Maybe Vec3
-        worldSpace =
-            mEyeSpace
-                |> Maybe.andThen
-                    (\eyeSpace ->
-                        Matrix4.inverse camera
-                            |> Maybe.map
-                                (\inverted ->
-                                    Matrix4.transform
-                                        inverted
-                                        eyeSpace
-                                )
-                    )
     in
-    worldSpace
+    Matrix4.inverse (Matrix4.mul perspective camera)
+        |> Maybe.map
+            (\inverted ->
+                Matrix4.transform
+                    inverted
+                    clipSpace
+            )
