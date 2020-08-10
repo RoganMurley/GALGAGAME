@@ -1,21 +1,21 @@
 .menu-button {
   margin: 5px;
 
-  color: #42210b;
+  color: #f5f25e;
 
   font-size: 24px;
-  font-family: 'Trattatello', serif;
+  font-family: sans-serif;
 
   background-color: rgba(0, 0, 0, 0);
 
-  border-color: #42210b;
+  border-color: #f5f25e;
   border-radius: 5px;
   border-width: 3px;
   width: 200px;
 
   &:hover {
-    color: #fffabb;
-    background-color: #42210b;
+    color: #000;
+    background-color: #f5f25e;
     cursor: pointer; cursor: hand;
   }
 
