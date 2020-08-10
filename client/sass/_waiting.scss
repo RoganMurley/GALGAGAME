@@ -1,7 +1,7 @@
 .waiting {
-  color: #f4f15e;;
+  color: #f4f15e;
   font-size: 50px;
-  font-family: 'Trattatello', sans-serif;
+  font-family: sans-serif;
   font-weight: bold;
 
   height: 100vh;
@@ -11,12 +11,6 @@
   flex-direction: column;
 
   user-select: text;
-
-  .waiting-prompt {
-    background: #f2454a;
-    padding: 5px 10px;
-    margin-bottom: 20px;
-  }
 
   input {
     font-family: monospace;
