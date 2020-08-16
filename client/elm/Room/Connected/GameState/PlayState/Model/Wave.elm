@@ -2,41 +2,46 @@ module Model.Wave exposing (view)
 
 import Animation.Types exposing (Anim(..), Hurt(..))
 import Colour exposing (Colour)
-import Game.Entity as Game
 import Game.Types exposing (Context)
-import Math.Vector2 exposing (vec2)
+import Math.Matrix4 exposing (makeRotate, makeScale3)
+import Math.Vector3 exposing (vec3)
 import Render.Primitives
-import Render.Uniforms exposing (uniColourMag)
-import Util exposing (interpFloat)
+import Render.Shaders
+import Texture.State as Texture
 import WebGL
 
 
 view : Context -> List WebGL.Entity
-view ({ w, h, radius, anim, progress } as ctx) =
+view ctx =
     let
-        scale =
-            interpFloat progress 0 (3 * radius)
+        { w, h, anim, progress, ortho, camera2d, textures } =
+            ctx
 
-        render : Colour -> Game.Entity {} -> WebGL.Entity
-        render =
-            \c e -> Render.Primitives.circle <| uniColourMag ctx c 1.0 e
+        size =
+            1.4 * max w h
+
+        render : Colour -> List WebGL.Entity
+        render color =
+            Texture.with textures "shock.png" <|
+                \texture ->
+                    [ Render.Primitives.quad Render.Shaders.shock
+                        { rotation = makeRotate pi <| vec3 0 0 1
+                        , scale = makeScale3 (0.5 * size) (0.5 * size) 1
+                        , color = color
+                        , pos = vec3 (w * 0.5) (h * 0.5) 0
+                        , perspective = ortho
+                        , camera = camera2d
+                        , texture = texture
+                        , progress = progress
+                        }
+                    ]
     in
     case anim of
         Hurt _ _ _ ->
-            [ render Colour.red
-                { scale = scale
-                , position = vec2 (w / 2) (h / 2)
-                , rotation = 0
-                }
-            ]
+            render Colour.red
 
         Heal _ _ ->
-            [ render Colour.green
-                { scale = scale
-                , position = vec2 (w / 2) (h / 2)
-                , rotation = 0
-                }
-            ]
+            render Colour.green
 
         _ ->
             []

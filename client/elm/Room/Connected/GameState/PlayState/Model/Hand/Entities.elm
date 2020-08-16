@@ -315,15 +315,16 @@ otherEntities hover ({ anim, model, progress } as ctx) =
 
 
 handOrigin : Context -> WhichPlayer -> Int -> Vec3
-handOrigin _ which count =
+handOrigin { anim, tick } which count =
     let
         ( width, spacing ) =
             ( 0.0001, 0.2 )
 
-        -- shake =
-        --     0.1 * Animation.animShake anim which tick
+        shake =
+            0.01 * Animation.animShake anim which tick
+
         x =
-            -0.5 * (width + spacing) * (toFloat <| count - 1)
+            0.5 * (width + spacing) * (toFloat <| count - 1)
 
         y =
             case which of
@@ -333,7 +334,7 @@ handOrigin _ which count =
                 PlayerB ->
                     0.6
     in
-    vec3 x y -0.4
+    vec3 x y (-0.4 + shake)
 
 
 handCardRotation : WhichPlayer -> Int -> Int -> Float
@@ -344,10 +345,10 @@ handCardRotation which i count =
     in
     case which of
         PlayerA ->
-            -magnitude
+            magnitude
 
         PlayerB ->
-            magnitude
+            -magnitude
 
 
 handCardPosition : Context -> WhichPlayer -> Int -> Int -> Hover a -> Vec3
@@ -396,7 +397,7 @@ handCardPosition ctx which index count hover =
             in
             sign * (baseY + hoverY)
     in
-    vec3 x (-0.004 * y) 0
+    vec3 -x (-0.004 * y) 0
         |> Math.Vector3.add
             (handOrigin ctx which count)
 
