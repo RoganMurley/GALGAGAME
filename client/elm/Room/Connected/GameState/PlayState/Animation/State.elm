@@ -84,7 +84,7 @@ progress anim tick =
         easingFunction =
             case anim of
                 Heal _ _ ->
-                    Ease.outQuad
+                    Ease.outQuint
 
                 Mill _ _ ->
                     Ease.outQuint
@@ -96,7 +96,7 @@ progress anim tick =
                     Ease.linear
 
                 Hurt _ _ _ ->
-                    Ease.outQuad
+                    Ease.outQuint
 
                 Windup _ ->
                     Ease.outBounce
