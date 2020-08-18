@@ -58,9 +58,15 @@ view { w, h } { res, hover, focus, entities, passed, feedback, vfx } assets =
 
 
 focusImageView : Maybe StackCard -> Context -> List WebGL.Entity
-focusImageView focus { ortho, camera2d, w, h, anim, radius, textures } =
+focusImageView focus { tick, ortho, camera2d, w, h, anim, radius, textures } =
     case anim of
+        Mill _ _ ->
+            []
+
         Pass _ ->
+            []
+
+        HandFullPass ->
             []
 
         _ ->
@@ -69,12 +75,15 @@ focusImageView focus { ortho, camera2d, w, h, anim, radius, textures } =
                     let
                         color =
                             Colour.white
+
+                        shake =
+                            Animation.animShake anim PlayerA tick + Animation.animShake anim PlayerB tick
                     in
                     [ Render.Primitives.quad Render.Shaders.fragment
                         { rotation = makeRotate pi (vec3 0 0 1)
                         , scale = makeScale3 (0.2 * radius) (0.2 * radius) 1
                         , color = color
-                        , pos = vec3 (w * 0.5) (h * 0.43) 0
+                        , pos = vec3 (w * 0.5 + shake) (h * 0.43 + shake) 0
                         , perspective = ortho
                         , camera = camera2d
                         , texture = texture
@@ -193,7 +202,7 @@ lifeOrbView ({ w, h, radius, model, anim, animDamage, tick } as ctx) =
 
 
 focusTextView : Maybe StackCard -> Context -> List WebGL.Entity
-focusTextView focus ({ w, h, anim, radius } as ctx) =
+focusTextView focus ({ w, h, anim, radius, tick } as ctx) =
     case anim of
         Mill _ _ ->
             []
@@ -210,11 +219,15 @@ focusTextView focus ({ w, h, anim, radius } as ctx) =
                     []
 
                 Just { card } ->
+                    let
+                        shake =
+                            Animation.animShake anim PlayerA tick + Animation.animShake anim PlayerB tick
+                    in
                     List.concat
                         [ Font.view "Futura"
                             card.name
-                            { x = 0.5 * w
-                            , y = 0.5 * h + radius * 0.1
+                            { x = 0.5 * w + shake
+                            , y = 0.5 * h + radius * 0.1 + shake
                             , scaleX = 0.00025 * radius
                             , scaleY = 0.00025 * radius
                             , color = Colour.white
@@ -222,8 +235,8 @@ focusTextView focus ({ w, h, anim, radius } as ctx) =
                             ctx
                         , Font.view "Futura"
                             card.desc
-                            { x = 0.5 * w
-                            , y = 0.5 * h + radius * 0.3
+                            { x = 0.5 * w + shake
+                            , y = 0.5 * h + radius * 0.3 + shake
                             , scaleX = 0.00012 * radius
                             , scaleY = 0.00012 * radius
                             , color = Colour.white
