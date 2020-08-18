@@ -260,7 +260,7 @@ getHoverHand { entities } mRay =
         |> Maybe.andThen
             (\ray ->
                 List.find
-                    (hitTest3d ray 0.18)
+                    (hitTest3d ray 0.12)
                     entities.hand
             )
 

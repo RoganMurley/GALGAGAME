@@ -68,6 +68,9 @@ animMaxTick anim =
             Unlimbo _ ->
                 750.0
 
+            Hurt _ d _ ->
+                (toFloat d / 50) * 4000.0
+
             _ ->
                 400.0
           )
@@ -96,7 +99,7 @@ progress anim tick =
                     Ease.linear
 
                 Hurt _ _ _ ->
-                    Ease.outQuint
+                    Ease.linear
 
                 Windup _ ->
                     Ease.outBounce

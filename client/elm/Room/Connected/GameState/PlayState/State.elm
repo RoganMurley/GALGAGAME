@@ -428,7 +428,7 @@ mouseClick { dimensions } mode { x, y } state =
             ctx.mouseRay
                 |> Maybe.andThen
                     (\ray ->
-                        List.find (hitTest3d ray 0.18) game.entities.hand
+                        List.find (hitTest3d ray 0.12) game.entities.hand
                     )
     in
     ( newPlayState
