@@ -2,6 +2,7 @@ module Model.Wave exposing (view)
 
 import Animation.Types exposing (Anim(..), Hurt(..))
 import Colour exposing (Colour)
+import Ease
 import Game.Types exposing (Context)
 import Math.Matrix4 exposing (makeRotate, makeScale3)
 import Math.Vector3 exposing (vec3)
@@ -9,6 +10,7 @@ import Render.Primitives
 import Render.Shaders
 import Texture.State as Texture
 import WebGL
+import WhichPlayer.Types exposing (WhichPlayer(..))
 
 
 view : Context -> List WebGL.Entity
@@ -33,7 +35,7 @@ view ctx =
                         , camera = camera2d
                         , texture = texture
                         , progress = time
-                        , hurt = toFloat (50 - damage) / 50
+                        , hurt = Ease.outQuint <| toFloat damage / 50
                         }
                     ]
     in
@@ -42,7 +44,7 @@ view ctx =
             render d progress <| vec3 1 0 0
 
         Heal _ m ->
-            render m (1 - progress) <| vec3 0 1 0
+            render m progress <| vec3 0 1 0
 
         _ ->
             []

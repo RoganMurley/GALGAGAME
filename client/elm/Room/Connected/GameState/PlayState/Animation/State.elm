@@ -25,7 +25,11 @@ animShake anim which tick =
         mag =
             baseMag * (1.0 - Ease.outQuad (tick / animMaxTick anim))
     in
-    mag * (toFloat <| modBy 20 (ceiling tick * 1247823748932 + 142131)) - 10
+    mag * (toFloat <| modBy 20 (ceiling tick * 1247823748932 + 142131))
+
+
+
+-- - 10
 
 
 animMaxTick : Anim -> Float
@@ -68,8 +72,11 @@ animMaxTick anim =
             Unlimbo _ ->
                 750.0
 
-            Hurt _ d _ ->
-                (toFloat d / 50) * 4000.0
+            Hurt _ _ _ ->
+                400.0
+
+            Heal _ _ ->
+                400.0
 
             _ ->
                 400.0
@@ -86,6 +93,9 @@ progress anim tick =
         easingFunction : Float -> Float
         easingFunction =
             case anim of
+                Hurt _ _ _ ->
+                    Ease.outQuint
+
                 Heal _ _ ->
                     Ease.outQuint
 
@@ -96,9 +106,6 @@ progress anim tick =
                     Ease.inQuad
 
                 Confound _ ->
-                    Ease.linear
-
-                Hurt _ _ _ ->
                     Ease.linear
 
                 Windup _ ->

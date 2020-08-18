@@ -378,8 +378,8 @@ laser =
             vec2 fpos = (vec2(-sqrt(1. / polar.x), polar.y) + add) * mul;
 
             vec4 sample = texture2D(texture, fpos);
-            float time  = .2 + progress;
-            gl_FragColor = vec4(color, (step(sample.r, time) - step(sample.r, hurt * time)) * sample.a);
+            float stepProgress =  progress - .2;
+            gl_FragColor = vec4(color, hurt * step(sample.r, 1. - stepProgress) * sample.a);
         }
 
     |]
