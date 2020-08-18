@@ -1,4 +1,4 @@
-module Render.Shaders exposing (circleFragment, disintegrate, fragment, fragmentAlpha, fragmentTransmute, fullCircleFragment, matte, ornate, shock, starfield, trail, tunnel, vertex)
+module Render.Shaders exposing (circleFragment, disintegrate, fragment, fragmentAlpha, fragmentTransmute, fullCircleFragment, laser, matte, ornate, spiral, starfield, trail, tunnel, vertex)
 
 import Math.Vector2 exposing (Vec2)
 import Math.Vector3 exposing (Vec3)
@@ -311,8 +311,8 @@ tunnel =
     |]
 
 
-shock : Shader {} (Uniforms { progress : Float, texture : Texture }) { vcoord : Vec2 }
-shock =
+spiral : Shader {} (Uniforms { progress : Float, texture : Texture }) { vcoord : Vec2 }
+spiral =
     [glsl|
         precision mediump float;
 
@@ -342,7 +342,44 @@ shock =
             vec4 sample = texture2D(texture, fpos);
 
             float dist = 0.;1. - dot(2. * vcoord - 1., 2. * vcoord - 1.);
-            gl_FragColor = vec4(color, .95) * sample.a - vec4(vec3(dist * dist), .0);
+            gl_FragColor = vec4(color, .95) * sample.a;
+        }
+
+    |]
+
+
+laser : Shader {} (Uniforms { hurt : Float, progress : Float, texture : Texture }) { vcoord : Vec2 }
+laser =
+    [glsl|
+        precision mediump float;
+
+        uniform vec3 color;
+        uniform float progress;
+        uniform float hurt;
+        uniform sampler2D texture;
+
+        varying vec2 vcoord;
+
+        const float tau = 6.283;
+
+        vec2 to_polar(vec2 xy){
+            return vec2(length(xy), atan(xy.y, xy.x) / tau);
+        }
+
+        void main ()
+        {
+            vec2 uv = vcoord;
+            vec2 cartesian = uv - vec2(.5);
+            vec2 polar = to_polar(cartesian);
+
+            vec2 add = vec2(.0, .132641);
+            vec2 mul = vec2(.05, 12.);
+
+            vec2 fpos = (vec2(-sqrt(1. / polar.x), polar.y) + add) * mul;
+
+            vec4 sample = texture2D(texture, fpos);
+            float time  = .2 + progress;
+            gl_FragColor = vec4(color, (step(sample.r, time) - step(sample.r, hurt * time)) * sample.a);
         }
 
     |]

@@ -94,7 +94,8 @@ texturePaths =
 
     -- VFX
     , { name = "noise.png", path = "/img/textures/noise.png" }
-    , { name = "shock.png", path = "/img/textures/shock.png" }
+    , { name = "laser.png", path = "/img/textures/laser.png" }
+    , { name = "spiral.png", path = "/img/textures/spiral.png" }
 
     -- Cards
     , { name = "fireball.png", path = "/img/textures/fireball.png" }

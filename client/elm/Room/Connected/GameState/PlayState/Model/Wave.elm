@@ -20,11 +20,11 @@ view ctx =
         size =
             1.4 * max w h
 
-        render : Colour -> List WebGL.Entity
-        render color =
-            Texture.with textures "shock.png" <|
+        render : Int -> Float -> Colour -> List WebGL.Entity
+        render damage time color =
+            Texture.with textures "laser.png" <|
                 \texture ->
-                    [ Render.Primitives.quad Render.Shaders.shock
+                    [ Render.Primitives.quad Render.Shaders.laser
                         { rotation = makeRotate pi <| vec3 0 0 1
                         , scale = makeScale3 (0.5 * size) (0.5 * size) 1
                         , color = color
@@ -32,16 +32,17 @@ view ctx =
                         , perspective = ortho
                         , camera = camera2d
                         , texture = texture
-                        , progress = progress
+                        , progress = time
+                        , hurt = toFloat (50 - damage) / 50
                         }
                     ]
     in
     case anim of
-        Hurt _ _ _ ->
-            render Colour.red
+        Hurt _ d _ ->
+            render d progress <| vec3 1 0 0
 
-        Heal _ _ ->
-            render Colour.green
+        Heal _ m ->
+            render m (1 - progress) <| vec3 0 1 0
 
         _ ->
             []
