@@ -115,9 +115,19 @@ webglView model flags assets =
 
                 _ ->
                     Background.webglView params assets NullAnim
+
+        options =
+            List.concat
+                [ [ WebGL.alpha True, WebGL.depth 1 ]
+                , if params.pixelRatio < 2 then
+                    [ WebGL.antialias ]
+
+                  else
+                    []
+                ]
     in
     div []
-        [ WebGL.toHtml
+        [ WebGL.toHtmlWith options
             [ width <| floor <| toFloat params.w * params.pixelRatio
             , height <| floor <| toFloat params.h * params.pixelRatio
             , class "webgl-canvas"
