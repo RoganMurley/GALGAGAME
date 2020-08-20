@@ -95,36 +95,44 @@ view { w, h } assets winner resolving buttons =
     else
         List.concat
             [ animView { ctx | anim = GameEnd winner, progress = 1 }
-            , buttonsView ctx buttons
+            , buttonsView ctx winner buttons
             ]
 
 
-buttonsView : Context -> List ButtonEntity -> List WebGL.Entity
-buttonsView ({ camera2d, ortho } as ctx) buttons =
+buttonsView : Context -> Maybe WhichPlayer -> List ButtonEntity -> List WebGL.Entity
+buttonsView ({ camera2d, ortho } as ctx) winner buttons =
     let
         buttonView : ButtonEntity -> List WebGL.Entity
         buttonView { font, text, position, scale, disabled, hover } =
             let
-                color =
+                textColor =
                     case ( disabled, hover ) of
                         ( True, _ ) ->
                             vec3 0 0 0
 
                         ( False, True ) ->
-                            vec3 1 0 0
+                            case winner of
+                                Just PlayerB ->
+                                    vec3 1 0 0
+
+                                _ ->
+                                    vec3 0 1 0
 
                         ( False, False ) ->
+                            vec3 (244 / 255) (241 / 255) (94 / 255)
+
+                bgColor =
+                    case winner of
+                        Just PlayerB ->
+                            vec3 (244 / 255) (241 / 255) (94 / 255)
+
+                        _ ->
                             vec3 (244 / 255) (241 / 255) (94 / 255)
             in
             Render.Primitives.quad Render.Shaders.matte
                 { rotation = makeRotate pi (vec3 0 0 1)
                 , scale = makeScale3 (4 * scale) scale 1
-                , color =
-                    if hover then
-                        vec3 (244 / 255) (241 / 255) (94 / 255)
-
-                    else
-                        vec3 1 0 0
+                , color = bgColor
                 , pos = vec3 (Math.Vector2.getX position) (Math.Vector2.getY position) 0
                 , perspective = ortho
                 , camera = camera2d
@@ -142,7 +150,7 @@ buttonsView ({ camera2d, ortho } as ctx) buttons =
                     , y = Math.Vector2.getY position
                     , scaleX = scale * 0.002
                     , scaleY = scale * 0.002
-                    , color = color
+                    , color = textColor
                     }
                     ctx
     in
