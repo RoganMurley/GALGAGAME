@@ -84,10 +84,10 @@ buttonView button _ ctx =
 
         ( textColor, bgColor ) =
             if button.hover > 0 then
-                ( vec3 (0 / 255) (0 / 255) (0 / 255), vec3 (255 / 255) (255 / 255) (0 / 255) )
+                ( vec3 (0 / 255) (0 / 255) (80 / 255), vec3 (255 / 255) (255 / 255) (0 / 255) )
 
             else
-                ( vec3 (0 / 255) (0 / 255) (0 / 255), vec3 (244 / 255) (241 / 255) (94 / 255) )
+                ( vec3 (0 / 255) (0 / 255) (80 / 255), vec3 (244 / 255) (241 / 255) (94 / 255) )
 
         hoverPop =
             10 * Ease.outQuint (button.hover / 300)
