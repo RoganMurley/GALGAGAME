@@ -1,4 +1,4 @@
-module DeckBuilding.Types exposing (Character, Model)
+module DeckBuilding.Types exposing (Button, Character, Model)
 
 import Carousel exposing (Carousel)
 import RuneSelect.Types as RuneSelect exposing (Rune)
@@ -12,6 +12,7 @@ type alias Model =
     , ready : Bool
     , bounceTick : Float
     , vfx : Vfx.Model
+    , buttons : Buttons
     }
 
 
@@ -21,4 +22,17 @@ type alias Character =
     , runeA : Rune
     , runeB : Rune
     , runeC : Rune
+    }
+
+
+type alias Button =
+    { x : Float
+    , y : Float
+    , size : Float
+    , hover : Float
+    }
+
+
+type alias Buttons =
+    { ready : Maybe Button
     }
