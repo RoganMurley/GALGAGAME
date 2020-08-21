@@ -38,6 +38,6 @@ tick dt model ctx =
                 model.brightness
     in
     { model
-        | rotation = model.rotation + 10 + 100 * dt * Ease.inExpo risk
+        | rotation = model.rotation + 10 + 100 * dt * Ease.inSine risk
         , brightness = brightness
     }

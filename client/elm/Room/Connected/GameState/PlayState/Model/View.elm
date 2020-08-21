@@ -338,20 +338,20 @@ buttonsView buttons ctx =
             let
                 textColor =
                     if disabled then
-                        vec3 (100 / 255) (100 / 255) (50 / 255)
+                        vec3 (0 / 255) (0 / 255) (0 / 255)
 
                     else
-                        vec3 (244 / 255) (241 / 255) (94 / 255)
+                        vec3 (0 / 255) (0 / 255) (80 / 255)
 
                 backgroundColor =
                     if disabled then
                         vec3 (62 / 255) (62 / 255) (62 / 255)
 
                     else if hover then
-                        vec3 (160 / 255) (160 / 255) (160 / 255)
+                        vec3 (255 / 255) (255 / 255) (0 / 255)
 
                     else
-                        vec3 (122 / 255) (122 / 255) (122 / 255)
+                        vec3 (244 / 255) (241 / 255) (94 / 255)
             in
             List.concat
                 [ [ Render.Primitives.fullCircle <|
