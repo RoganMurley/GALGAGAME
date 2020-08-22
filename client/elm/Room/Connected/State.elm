@@ -32,12 +32,12 @@ init mode gameType roomID =
 
 
 update : Flags -> Msg -> Model -> ( Model, Cmd Main.Msg )
-update flags msg ({ game, mode } as model) =
+update flags msg ({ game, mode, gameType } as model) =
     case msg of
         GameStateMsg gameMsg ->
             let
                 ( newGame, cmd ) =
-                    GameState.update gameMsg game flags mode
+                    GameState.update gameMsg game flags mode gameType
             in
             ( { model | game = newGame }, cmd )
 
@@ -56,7 +56,7 @@ tick : Flags -> Model -> Float -> ( Model, Cmd Msg )
 tick flags model dt =
     let
         ( game, msg ) =
-            GameState.tick flags model.gameType model.game dt
+            GameState.tick flags model.game dt
 
         newTick =
             model.tick + dt
@@ -65,7 +65,7 @@ tick flags model dt =
 
 
 receive : Flags -> Model -> String -> ( Model, Cmd Main.Msg )
-receive flags ({ mode } as model) msg =
+receive flags ({ mode, gameType } as model) msg =
     let
         ( command, content ) =
             splitOnColon msg
@@ -79,6 +79,7 @@ receive flags ({ mode } as model) msg =
                         model.game
                         flags
                         mode
+                        gameType
             in
             ( { model | game = newGame }, cmd )
 
@@ -94,6 +95,7 @@ receive flags ({ mode } as model) msg =
                                 model.game
                                 flags
                                 mode
+                                gameType
                     in
                     ( { model | game = newGame }
                     , Cmd.batch
@@ -117,6 +119,7 @@ receive flags ({ mode } as model) msg =
                                 model.game
                                 flags
                                 mode
+                                gameType
                     in
                     ( { model | game = newGame }, cmd )
 
@@ -131,6 +134,7 @@ receive flags ({ mode } as model) msg =
                         model.game
                         flags
                         mode
+                        gameType
             in
             ( { model | game = newGame }, cmd )
 
@@ -157,6 +161,7 @@ receive flags ({ mode } as model) msg =
                         model.game
                         flags
                         mode
+                        gameType
             in
             ( { model | game = newGame }, cmd )
 
@@ -172,6 +177,7 @@ receive flags ({ mode } as model) msg =
                                 model.game
                                 flags
                                 mode
+                                gameType
                     in
                     ( { model | game = newGame }, cmd )
 
