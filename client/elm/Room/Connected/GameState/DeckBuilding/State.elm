@@ -1,13 +1,14 @@
 module DeckBuilding.State exposing (getRuneFromCursor, init, mouseClick, nextCursor, tick, update)
 
+import Buttons.State as Buttons
+import Buttons.Types as Buttons exposing (ButtonType(..))
 import Carousel
-import Collision exposing (hitTest)
 import DeckBuilding.Encoders exposing (encodeCharacter)
 import DeckBuilding.Messages exposing (Msg(..))
-import DeckBuilding.Types exposing (Button, Character, Model)
+import DeckBuilding.Types exposing (Character, Model)
 import Game.Types exposing (Context)
 import Main.Messages as Main
-import Math.Vector2 exposing (vec2)
+import Math.Vector3 exposing (vec3)
 import Mouse exposing (Position)
 import Ports exposing (log)
 import RuneSelect.State as RuneSelect
@@ -24,12 +25,12 @@ init character remaining runes =
     , ready = False
     , bounceTick = 0
     , vfx = Vfx.init
-    , buttons = { ready = Nothing }
+    , buttons = Buttons.empty
     }
 
 
 update : Msg -> Model -> ( Model, Cmd Main.Msg )
-update msg ({ characters } as model) =
+update msg ({ characters, buttons } as model) =
     case msg of
         Select character ->
             let
@@ -42,15 +43,42 @@ update msg ({ characters } as model) =
             ( { model | ready = True }, cmd )
 
         NextCharacter ->
+            let
+                newButtons =
+                    Buttons.update
+                        "next"
+                        (\b -> { b | hover = 0 })
+                        buttons
+            in
             if not model.ready then
-                ( { model | characters = Carousel.forward characters, bounceTick = 0 }, Cmd.none )
+                ( { model
+                    | characters =
+                        Carousel.forward characters
+                    , bounceTick = 0
+                    , buttons = newButtons
+                  }
+                , Cmd.none
+                )
 
             else
                 ( model, Cmd.none )
 
         PreviousCharacter ->
+            let
+                newButtons =
+                    Buttons.update
+                        "prev"
+                        (\b -> { b | hover = 0 })
+                        buttons
+            in
             if not model.ready then
-                ( { model | characters = Carousel.backward characters, bounceTick = 0 }, Cmd.none )
+                ( { model
+                    | characters = Carousel.backward characters
+                    , bounceTick = 0
+                    , buttons = newButtons
+                  }
+                , Cmd.none
+                )
 
             else
                 ( model, Cmd.none )
@@ -111,55 +139,61 @@ tick ctx dt model =
     let
         newRuneSelect =
             Maybe.map (RuneSelect.tick ctx dt) model.runeSelect
+
+        { w, h } =
+            ctx
     in
     { model
         | runeSelect = newRuneSelect
         , bounceTick = model.bounceTick + dt
         , vfx = Vfx.tick dt model.vfx ctx
         , buttons =
-            { ready =
-                if model.ready then
-                    Nothing
+            if model.ready then
+                Buttons.empty
 
-                else
-                    Just <| readyButton model.buttons.ready dt ctx
-            }
-    }
-
-
-readyButton : Maybe Button -> Float -> Context -> Button
-readyButton mButton dt { mouse, w, h } =
-    let
-        x =
-            w * 0.5
-
-        y =
-            h * 0.8
-
-        previousHover =
-            case mButton of
-                Just button ->
-                    button.hover
-
-                Nothing ->
-                    0
-
-        hover =
-            case mouse of
-                Just m ->
-                    if hitTest m 100 { position = vec2 x y } then
-                        min (previousHover + dt) 300
-
-                    else
-                        0
-
-                Nothing ->
-                    0
-    in
-    { x = x
-    , y = y
-    , hover = hover
-    , size = 0.6 * max w h
+            else
+                Buttons.fromList <|
+                    List.map (\f -> f dt ctx.mouse model.buttons)
+                        [ Buttons.entity
+                            "ready"
+                            { x = 0.5 * w
+                            , y = 0.8 * h
+                            , xScale = 1.4 * max w h
+                            , yScale = 0.6 * max w h
+                            , btn =
+                                TextButton
+                                    { font = "Futura"
+                                    , text = "Ready?"
+                                    , textColor = vec3 (0 / 255) (0 / 255) (80 / 255)
+                                    , bgColor = vec3 (244 / 255) (241 / 255) (94 / 255)
+                                    , options = [ Buttons.HoverText "Ready!" ]
+                                    }
+                            }
+                        , Buttons.entity
+                            "next"
+                            { x = 0.7 * w
+                            , y = 0.5 * h
+                            , xScale = 0.6 * max w h
+                            , yScale = 0.6 * max w h
+                            , btn =
+                                ImageButton
+                                    { img = "next.png"
+                                    , color = vec3 1 1 1
+                                    }
+                            }
+                        , Buttons.entity
+                            "prev"
+                            { x = 0.3 * w
+                            , y = 0.5 * h
+                            , xScale = -0.6 * max w h
+                            , yScale = 0.6 * max w h
+                            , btn =
+                                ImageButton
+                                    { img = "next.png"
+                                    , color = vec3 1 1 1
+                                    }
+                            }
+                        ]
     }
 
 
@@ -204,22 +238,20 @@ nextCursor cursor =
 
 mouseClick : Position -> Model -> ( Model, Cmd Main.Msg )
 mouseClick _ model =
-    case model.runeSelect of
+    case Buttons.hit model.buttons of
+        Just key ->
+            case key of
+                "ready" ->
+                    update (Select model.characters.selected) model
+
+                "next" ->
+                    update NextCharacter model
+
+                "prev" ->
+                    update PreviousCharacter model
+
+                _ ->
+                    ( model, Cmd.none )
+
         Nothing ->
-            let
-                hit =
-                    case model.buttons.ready of
-                        Just { hover } ->
-                            hover > 0
-
-                        Nothing ->
-                            False
-            in
-            if hit then
-                update (Select model.characters.selected) model
-
-            else
-                ( model, Cmd.none )
-
-        _ ->
             ( model, Cmd.none )

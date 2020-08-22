@@ -96,6 +96,7 @@ texturePaths =
     , { name = "noise.png", path = "/img/textures/noise.png" }
     , { name = "laser.png", path = "/img/textures/laser.png" }
     , { name = "spiral.png", path = "/img/textures/spiral.png" }
+    , { name = "next.png", path = "/img/textures/next.png" }
 
     -- Cards
     , { name = "fireball.png", path = "/img/textures/fireball.png" }
