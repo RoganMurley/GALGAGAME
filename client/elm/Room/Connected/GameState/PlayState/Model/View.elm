@@ -42,7 +42,6 @@ view { w, h } { res, hover, focus, entities, passed, feedback, vfx } assets =
             [ Background.radialView vfx
             , Wave.view
             , lifeOrbView
-            , passView
             , Stack.view entities.stack
             , focusImageView focus
             , Hand.view entities.hand
@@ -246,7 +245,7 @@ focusTextView focus ({ w, h, anim, radius, tick } as ctx) =
 
 
 damageWebGl : HoverSelf -> Context -> List WebGL.Entity
-damageWebGl hover ({ w, h, radius, resolving, animDamage } as ctx) =
+damageWebGl hover ({ w, h, radius, resolving, animDamage, tick, anim } as ctx) =
     let
         hoverDmg =
             case hover of
@@ -291,11 +290,18 @@ damageWebGl hover ({ w, h, radius, resolving, animDamage } as ctx) =
             else
                 String.fromFloat d
 
+        progress =
+            if resolving then
+                Ease.outElastic <| tick / animMaxTick anim
+
+            else
+                0
+
         scale =
-            0.07
+            0.14 + 0.05 * progress
 
         xOffset =
-            0.4 * radius
+            0.55 * radius
 
         yOffset =
             0.9 * radius
@@ -489,35 +495,6 @@ turnView focus passed ctx =
                     }
                     ctx
                 ]
-
-        _ ->
-            []
-
-
-passView : Context -> List WebGL.Entity
-passView ({ anim, w, h, radius } as ctx) =
-    case anim of
-        Pass which ->
-            [ Render.Primitives.fullCircle <|
-                uniColourMag ctx
-                    (Colour.focusBackground which)
-                    1.0
-                    { scale = 0.66 * radius
-                    , position = vec2 (w * 0.5) (h * 0.5)
-                    , rotation = 0
-                    }
-            ]
-
-        HandFullPass ->
-            [ Render.Primitives.fullCircle <|
-                uniColourMag ctx
-                    (Colour.focusBackground PlayerA)
-                    1.0
-                    { scale = 0.66 * radius
-                    , position = vec2 (w * 0.5) (h * 0.5)
-                    , rotation = 0
-                    }
-            ]
 
         _ ->
             []

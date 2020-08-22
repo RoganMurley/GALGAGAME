@@ -43,10 +43,10 @@ millView ({ progress, tick, anim } as ctx) =
                 startPos =
                     case owner of
                         PlayerA ->
-                            vec3 1 0 0
+                            vec3 -1 0 0
 
                         PlayerB ->
-                            vec3 1 1 0
+                            vec3 -1 1 0
 
                 entity =
                     { owner = owner
@@ -55,7 +55,7 @@ millView ({ progress, tick, anim } as ctx) =
                         interp
                             progress
                             startPos
-                            (vec3 0 0 1.5)
+                            (vec3 0 0 -1)
                     , rotation =
                         Quaternion.lerp
                             progress
