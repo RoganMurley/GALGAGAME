@@ -3,23 +3,20 @@ module Endgame.WebGL exposing (animView, buttonEntities, view)
 import Animation.Types exposing (Anim(..))
 import Assets.State as Assets
 import Assets.Types as Assets
-import Collision exposing (hitTest)
-import Connected.Messages as Connected
+import Buttons.State as Buttons
+import Buttons.Types as Buttons exposing (ButtonType(..), Buttons)
+import Buttons.View as Buttons
 import Ease
 import Font.View as Font
 import Game.State exposing (bareContextInit)
-import Game.Types exposing (ButtonEntity, Context)
-import GameState.Messages as GameState
+import Game.Types exposing (Context)
 import GameType exposing (GameType(..))
-import Main.Messages as Main
 import Math.Matrix4 exposing (makeRotate, makeScale3)
-import Math.Vector2 exposing (Vec2, vec2)
+import Math.Vector2 exposing (Vec2)
 import Math.Vector3 exposing (vec3)
-import PlayState.Messages as PlayState
 import Render.Primitives
 import Render.Shaders
 import Render.Types as Render
-import Room.Messages as Room
 import WebGL
 import WhichPlayer.Types exposing (WhichPlayer(..))
 
@@ -83,7 +80,7 @@ animView ({ camera2d, ortho, w, h, radius, anim, progress } as ctx) =
             []
 
 
-view : Render.Params -> Assets.Model -> Maybe WhichPlayer -> Bool -> List ButtonEntity -> List WebGL.Entity
+view : Render.Params -> Assets.Model -> Maybe WhichPlayer -> Bool -> Buttons -> List WebGL.Entity
 view { w, h } assets winner resolving buttons =
     let
         ctx =
@@ -95,144 +92,49 @@ view { w, h } assets winner resolving buttons =
     else
         List.concat
             [ animView { ctx | anim = GameEnd winner, progress = 1 }
-            , buttonsView ctx winner buttons
+            , Buttons.view buttons ctx
             ]
 
 
-buttonsView : Context -> Maybe WhichPlayer -> List ButtonEntity -> List WebGL.Entity
-buttonsView ({ camera2d, ortho } as ctx) winner buttons =
+buttonEntities : Render.Params -> Buttons -> Float -> Maybe Vec2 -> Buttons
+buttonEntities renderParams buttons dt mouse =
     let
-        buttonView : ButtonEntity -> List WebGL.Entity
-        buttonView { font, text, position, scale, disabled, hover } =
-            let
-                textColor =
-                    case ( disabled, hover ) of
-                        ( True, _ ) ->
-                            vec3 0 0 0
+        w =
+            toFloat renderParams.w
 
-                        ( False, True ) ->
-                            case winner of
-                                Just PlayerB ->
-                                    vec3 1 0 0
-
-                                _ ->
-                                    vec3 0 1 0
-
-                        ( False, False ) ->
-                            vec3 (244 / 255) (241 / 255) (94 / 255)
-
-                bgColor =
-                    case winner of
-                        Just PlayerB ->
-                            vec3 (244 / 255) (241 / 255) (94 / 255)
-
-                        _ ->
-                            vec3 (244 / 255) (241 / 255) (94 / 255)
-            in
-            Render.Primitives.quad Render.Shaders.matte
-                { rotation = makeRotate pi (vec3 0 0 1)
-                , scale = makeScale3 (4 * scale) scale 1
-                , color = bgColor
-                , pos = vec3 (Math.Vector2.getX position) (Math.Vector2.getY position) 0
-                , perspective = ortho
-                , camera = camera2d
-                , alpha =
-                    if hover then
-                        1
-
-                    else
-                        0.5
-                }
-                :: Font.view
-                    font
-                    text
-                    { x = Math.Vector2.getX position
-                    , y = Math.Vector2.getY position
-                    , scaleX = scale * 0.002
-                    , scaleY = scale * 0.002
-                    , color = textColor
-                    }
-                    ctx
+        h =
+            toFloat renderParams.h
     in
-    List.concat <| List.map buttonView buttons
-
-
-buttonEntities : Render.Params -> Maybe Vec2 -> Maybe GameType -> Maybe WhichPlayer -> Maybe String -> List ButtonEntity
-buttonEntities { w, h } mouse mGameType winner mReplayId =
-    case mGameType of
-        Nothing ->
-            []
-
-        Just gameType ->
-            let
-                ctx =
-                    bareContextInit ( w, h ) Assets.init mouse
-
-                playMsg =
-                    Main.RoomMsg
-                        << Room.ConnectedMsg
-                        << Connected.GameStateMsg
-                        << GameState.PlayStateMsg
-
-                buttonScale =
-                    128
-
-                -- Play Again
-                playAgainPos =
-                    vec2 (ctx.w * 0.3) (ctx.h * 0.6)
-
-                playAgainIsHover =
-                    case mouse of
-                        Just mousePos ->
-                            hitTest playAgainPos buttonScale { position = mousePos }
-
-                        Nothing ->
-                            False
-
-                playAgainOnClick =
-                    case ( gameType, winner ) of
-                        ( TutorialGame, Just PlayerA ) ->
-                            playMsg PlayState.GotoComputerGame
-
-                        _ ->
-                            playMsg <| PlayState.PlayingOnly PlayState.Rematch
-
-                -- Replay
-                replayPos =
-                    vec2 (ctx.w * 0.7) (ctx.h * 0.6)
-
-                replayIsHover =
-                    case mouse of
-                        Just mousePos ->
-                            hitTest replayPos buttonScale { position = mousePos }
-
-                        Nothing ->
-                            False
-
-                ( replayIsDisabled, replayOnClick ) =
-                    case mReplayId of
-                        Just replayId ->
-                            ( False, Just <| playMsg <| PlayState.GotoReplay replayId )
-
-                        Nothing ->
-                            ( True, Nothing )
-            in
-            [ { position = playAgainPos
-              , scale = 32
-              , rotation = 0
-              , text = "Play Again"
-              , font = "Futura"
-              , disabled = False
-              , hover = playAgainIsHover
-              , onClick = Just playAgainOnClick
-              }
-            , { position = replayPos
-              , scale = 32
-              , rotation = 0
-              , text = "Watch Replay"
-              , font = "Futura"
-              , disabled = replayIsDisabled
-              , hover = replayIsHover
-              , onClick = replayOnClick
-              }
+    Buttons.fromList <|
+        List.map (\f -> f dt mouse buttons)
+            [ Buttons.entity
+                "playAgain"
+                { x = 0.35 * w
+                , y = 0.6 * h
+                , xScale = 2.7 * max w h
+                , yScale = 0.6 * max w h
+                , btn =
+                    TextButton
+                        { font = "Futura"
+                        , text = "Play Again?"
+                        , textColor = vec3 (0 / 255) (0 / 255) (80 / 255)
+                        , bgColor = vec3 (244 / 255) (241 / 255) (94 / 255)
+                        , options = [ Buttons.HoverText "Play Again!" ]
+                        }
+                }
+            , Buttons.entity
+                "watchReplay"
+                { x = 0.65 * w
+                , y = 0.6 * h
+                , xScale = 2.7 * max w h
+                , yScale = 0.6 * max w h
+                , btn =
+                    TextButton
+                        { font = "Futura"
+                        , text = "Watch Replay?"
+                        , textColor = vec3 (0 / 255) (0 / 255) (80 / 255)
+                        , bgColor = vec3 (244 / 255) (241 / 255) (94 / 255)
+                        , options = [ Buttons.HoverText "Watch Replay!" ]
+                        }
+                }
             ]

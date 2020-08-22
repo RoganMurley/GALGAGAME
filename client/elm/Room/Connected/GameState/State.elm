@@ -16,8 +16,8 @@ import PlayState.Types exposing (PlayState)
 import Ports exposing (log)
 
 
-update : Msg -> GameState -> Flags -> Mode -> ( GameState, Cmd Main.Msg )
-update msg state flags mode =
+update : Msg -> GameState -> Flags -> Mode -> GameType -> ( GameState, Cmd Main.Msg )
+update msg state flags mode gameType =
     case msg of
         MouseClick pos ->
             case state of
@@ -31,7 +31,7 @@ update msg state flags mode =
                 Started playState ->
                     let
                         ( newPlayState, cmd ) =
-                            PlayState.mouseClick flags mode pos playState
+                            PlayState.mouseClick flags gameType mode pos playState
                     in
                     ( Started newPlayState, cmd )
 
@@ -126,8 +126,8 @@ carry old new =
             new
 
 
-tick : Flags -> GameType -> GameState -> Float -> ( GameState, Cmd Msg )
-tick flags gameType state dt =
+tick : Flags -> GameState -> Float -> ( GameState, Cmd Msg )
+tick flags state dt =
     case state of
         Selecting selecting ->
             let
@@ -142,7 +142,7 @@ tick flags gameType state dt =
         Started playState ->
             let
                 ( newState, cmd ) =
-                    PlayState.tick flags (Just gameType) playState dt
+                    PlayState.tick flags playState dt
             in
             ( Started newState, Cmd.map PlayStateMsg cmd )
 

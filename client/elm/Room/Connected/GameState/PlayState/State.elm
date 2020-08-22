@@ -4,10 +4,13 @@ import Animation.Types exposing (Anim(..))
 import Assets.State as Assets
 import Audio.State exposing (playSound)
 import Browser.Navigation
+import Buttons.State as Buttons
 import Collision exposing (hitTest3d)
+import Connected.Messages as Connected
 import Endgame.WebGL as Endgame
 import Game.State as Game
 import Game.Types as Game
+import GameState.Messages as GameState
 import GameType exposing (GameType(..))
 import Hover exposing (encodeHoverSelf)
 import Json.Decode as Json
@@ -22,12 +25,13 @@ import Model.State as Model
 import Model.Types exposing (Model)
 import Mouse exposing (Position)
 import PlayState.Decoders as PlayState
-import PlayState.Messages exposing (Msg(..), PlayingOnly(..), TurnOnly(..))
+import PlayState.Messages as PlayState exposing (Msg(..), PlayingOnly(..), TurnOnly(..))
 import PlayState.Types as PlayState exposing (PlayState(..), ResolveOutcomeInput)
 import Ports exposing (websocketSend)
 import Resolvable.State as Resolvable
 import Resolvable.Types as Resolvable
 import Result
+import Room.Messages as Room
 import Util exposing (message)
 import WhichPlayer.Types exposing (WhichPlayer(..))
 
@@ -239,8 +243,8 @@ updateTurnOnly msg state =
             ( state, Cmd.none )
 
 
-tick : Flags -> Maybe GameType -> PlayState -> Float -> ( PlayState, Cmd Msg )
-tick flags gameType state dt =
+tick : Flags -> PlayState -> Float -> ( PlayState, Cmd Msg )
+tick flags state dt =
     case state of
         Playing ({ game } as playing) ->
             let
@@ -254,7 +258,7 @@ tick flags gameType state dt =
             , msg
             )
 
-        Ended ({ game, winner, replayId } as ended) ->
+        Ended ({ game, buttons } as ended) ->
             let
                 ( newGame, msg ) =
                     Game.tick flags dt game
@@ -269,13 +273,13 @@ tick flags gameType state dt =
                     , pixelRatio = flags.pixelRatio
                     }
 
-                buttonEntities =
-                    Endgame.buttonEntities params flags.mouse gameType winner replayId
+                newButtons =
+                    Endgame.buttonEntities params buttons dt flags.mouse
             in
             ( Ended
                 { ended
                     | game = newGame
-                    , buttonEntities = buttonEntities
+                    , buttons = newButtons
                 }
             , msg
             )
@@ -370,8 +374,8 @@ resolveOutcome mState { initial, resDiffList, finalState } =
     carry state newState
 
 
-mouseClick : Flags -> Mode -> Position -> PlayState -> ( PlayState, Cmd Main.Msg )
-mouseClick { dimensions } mode { x, y } state =
+mouseClick : Flags -> GameType -> Mode -> Position -> PlayState -> ( PlayState, Cmd Main.Msg )
+mouseClick { dimensions } gameType mode { x, y } state =
     let
         pos =
             vec2 (toFloat x) (toFloat y)
@@ -381,13 +385,6 @@ mouseClick { dimensions } mode { x, y } state =
 
         allButtons =
             game.entities.buttons
-                ++ (case state of
-                        Playing _ ->
-                            []
-
-                        Ended { buttonEntities } ->
-                            buttonEntities
-                   )
 
         mButtonEntity =
             List.find
@@ -430,10 +427,50 @@ mouseClick { dimensions } mode { x, y } state =
                     (\ray ->
                         List.find (hitTest3d ray 0.12) game.entities.hand
                     )
+
+        -- Endgame
+        playMsg =
+            message
+                << Main.RoomMsg
+                << Room.ConnectedMsg
+                << Connected.GameStateMsg
+                << GameState.PlayStateMsg
+
+        endgameButtonMsg =
+            case state of
+                Ended { buttons, replayId, winner } ->
+                    case Buttons.hit buttons of
+                        Just key ->
+                            case key of
+                                "playAgain" ->
+                                    case ( gameType, winner ) of
+                                        ( TutorialGame, Just PlayerA ) ->
+                                            playMsg PlayState.GotoComputerGame
+
+                                        _ ->
+                                            playMsg <| PlayState.PlayingOnly PlayState.Rematch
+
+                                "watchReplay" ->
+                                    case replayId of
+                                        Just r ->
+                                            playMsg <| PlayState.GotoReplay r
+
+                                        Nothing ->
+                                            Cmd.none
+
+                                _ ->
+                                    Cmd.none
+
+                        Nothing ->
+                            Cmd.none
+
+                _ ->
+                    Cmd.none
     in
     ( newPlayState
     , Cmd.batch
         [ newMsg
         , buttonMsg
+        , endgameButtonMsg
         ]
     )

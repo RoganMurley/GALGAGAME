@@ -1,5 +1,6 @@
 module PlayState.Decoders exposing (decoder, endedDecoder, playingDecoder, resolveOutcomeInputDecoder)
 
+import Buttons.State as Buttons
 import Game.State exposing (gameInit)
 import Json.Decode as Json exposing (Decoder, field, maybe)
 import Model.Decoders as Model
@@ -40,7 +41,7 @@ endedDecoder =
                 , game = gameInit model
                 , replayId = Nothing
                 , xp = Nothing
-                , buttonEntities = []
+                , buttons = Buttons.empty
                 }
     in
     Json.map2 endedInit

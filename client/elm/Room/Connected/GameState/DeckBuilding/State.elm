@@ -178,7 +178,7 @@ tick ctx dt model =
                             , btn =
                                 ImageButton
                                     { img = "next.png"
-                                    , color = vec3 1 1 1
+                                    , color = vec3 (244 / 255) (241 / 255) (94 / 255)
                                     }
                             }
                         , Buttons.entity
@@ -190,7 +190,7 @@ tick ctx dt model =
                             , btn =
                                 ImageButton
                                     { img = "next.png"
-                                    , color = vec3 1 1 1
+                                    , color = vec3 (244 / 255) (241 / 255) (94 / 255)
                                     }
                             }
                         ]

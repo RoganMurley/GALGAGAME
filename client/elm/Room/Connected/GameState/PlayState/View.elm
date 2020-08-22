@@ -15,12 +15,12 @@ webglView playState params assets =
         Playing { game } ->
             Model.view params game assets
 
-        Ended { winner, game, buttonEntities } ->
+        Ended { winner, game, buttons } ->
             let
                 resolving =
                     not <| List.isEmpty game.res.resList
             in
             List.concat
                 [ Model.view params game assets
-                , Endgame.view params assets winner resolving buttonEntities
+                , Endgame.view params assets winner resolving buttons
                 ]

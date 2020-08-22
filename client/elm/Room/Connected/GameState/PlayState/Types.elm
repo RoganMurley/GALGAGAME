@@ -1,5 +1,6 @@
 module PlayState.Types exposing (PlayState(..), ResolveOutcomeInput)
 
+import Buttons.Types exposing (Buttons)
 import Game.Types as Game
 import Model.Types exposing (Model)
 import Resolvable.Types as Resolvable
@@ -14,7 +15,7 @@ type PlayState
         , winner : Maybe WhichPlayer
         , replayId : Maybe String
         , xp : Maybe StatChange
-        , buttonEntities : List Game.ButtonEntity
+        , buttons : Buttons
         }
 
 
