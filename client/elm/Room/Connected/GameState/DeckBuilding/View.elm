@@ -91,6 +91,13 @@ buttonView button _ ctx =
 
         hoverPop =
             10 * Ease.outQuint (button.hover / 300)
+
+        buttonText =
+            if button.hover > 0 then
+                "READY!"
+
+            else
+                "READY?"
     in
     List.concat
         [ [ Render.Primitives.quad Render.Shaders.matte
@@ -109,7 +116,7 @@ buttonView button _ ctx =
           ]
         , Font.view
             "Futura"
-            "READY"
+            buttonText
             { x = button.x
             , y = button.y
             , scaleX = 0.0001 * button.size + 0.001 * hoverPop

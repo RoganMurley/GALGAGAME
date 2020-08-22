@@ -29,6 +29,12 @@ parse which msg =
             Right $ Beta.hurt d (other which) Slash
           Nothing ->
             Left ("Cannot parse " <> content <> " to int" :: Err)
+      "slashSelf" ->
+        case readMay $ cs content of
+          Just d ->
+            Right $ Beta.hurt d which Slash
+          Nothing ->
+            Left ("Cannot parse " <> content <> " to int" :: Err)
       "heal" ->
         case readMay $ cs content of
           Just h ->

@@ -48,7 +48,7 @@ waitingView waitType { httpPort, hostname } roomID =
         waitingPrompt =
             case waitType of
                 WaitCustom ->
-                    "Give this link to your Opponent"
+                    "Give this link to your opponent"
 
                 WaitQuickplay ->
                     "Finding Opponent"

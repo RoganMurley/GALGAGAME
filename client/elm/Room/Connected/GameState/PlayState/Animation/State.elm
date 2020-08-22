@@ -17,7 +17,7 @@ animShake anim which tick =
                         0
 
                     else
-                        1.0 * Ease.outQuad (toFloat d / 50.0)
+                        Ease.outQuad (toFloat d / 50.0)
 
                 _ ->
                     0.0

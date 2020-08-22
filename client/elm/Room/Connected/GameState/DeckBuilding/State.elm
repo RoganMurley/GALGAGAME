@@ -116,7 +116,14 @@ tick ctx dt model =
         | runeSelect = newRuneSelect
         , bounceTick = model.bounceTick + dt
         , vfx = Vfx.tick dt model.vfx ctx
-        , buttons = { ready = Just <| readyButton model.buttons.ready dt ctx }
+        , buttons =
+            { ready =
+                if model.ready then
+                    Nothing
+
+                else
+                    Just <| readyButton model.buttons.ready dt ctx
+            }
     }
 
 
