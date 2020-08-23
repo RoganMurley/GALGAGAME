@@ -57,22 +57,45 @@ textButtonView button params ctx =
 
         hoverText =
             Buttons.getHoverText params
+
+        circular =
+            Buttons.isCircular params
+
+        background =
+            if circular then
+                [ Render.Primitives.quad Render.Shaders.fullCircleFragment
+                    { rotation = makeRotate pi (vec3 0 0 1)
+                    , scale =
+                        makeScale3
+                            (0.06 * xScale + hoverPop)
+                            (0.06 * yScale + hoverPop)
+                            1
+                    , color = bgColor
+                    , pos = vec3 x y 0
+                    , perspective = ortho
+                    , camera = camera2d
+                    , mag = 1
+                    }
+                ]
+
+            else
+                [ Render.Primitives.quad Render.Shaders.matte
+                    { rotation = makeRotate pi (vec3 0 0 1)
+                    , scale =
+                        makeScale3
+                            (0.04 * xScale + hoverPop)
+                            (0.04 * yScale + hoverPop)
+                            1
+                    , color = bgColor
+                    , alpha = 1
+                    , pos = vec3 x y 0
+                    , perspective = ortho
+                    , camera = camera2d
+                    }
+                ]
     in
     List.concat
-        [ [ Render.Primitives.quad Render.Shaders.matte
-                { rotation = makeRotate pi (vec3 0 0 1)
-                , scale =
-                    makeScale3
-                        (0.04 * xScale + hoverPop)
-                        (0.04 * yScale + hoverPop)
-                        1
-                , color = bgColor
-                , alpha = 1
-                , pos = vec3 x y 0
-                , perspective = ortho
-                , camera = camera2d
-                }
-          ]
+        [ background
         , Font.view
             font
             text

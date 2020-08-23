@@ -121,6 +121,7 @@ buttonEntities renderParams buttons dt mouse =
                         , bgColor = vec3 (244 / 255) (241 / 255) (94 / 255)
                         , options = [ Buttons.HoverText "Play Again!" ]
                         }
+                , disabled = False
                 }
             , Buttons.entity
                 "watchReplay"
@@ -136,5 +137,6 @@ buttonEntities renderParams buttons dt mouse =
                         , bgColor = vec3 (244 / 255) (241 / 255) (94 / 255)
                         , options = [ Buttons.HoverText "Watch Replay!" ]
                         }
+                , disabled = False
                 }
             ]

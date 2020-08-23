@@ -41,3 +41,4 @@ type alias ImageButtonParams =
 
 type TextButtonOption
     = HoverText String
+    | Circular

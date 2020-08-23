@@ -4,6 +4,7 @@ import Animation.State as Animation exposing (animMaxTick)
 import Animation.Types exposing (Anim(..))
 import Assets.Types as Assets
 import Background.View as Background
+import Buttons.View as Buttons
 import Card.State exposing (cardTexture)
 import Colour
 import Ease
@@ -12,7 +13,7 @@ import Font.State as Font
 import Font.Types as Font
 import Font.View as Font
 import Game.State exposing (contextInit)
-import Game.Types as Game exposing (ButtonEntity, Context, Feedback)
+import Game.Types as Game exposing (Context, Feedback)
 import Hand.View as Hand
 import Hover exposing (Hover(..), HoverSelf)
 import Math.Matrix4 exposing (makeRotate, makeScale3)
@@ -32,8 +33,11 @@ import WhichPlayer.Types exposing (WhichPlayer(..))
 
 
 view : Render.Params -> Game.Model -> Assets.Model -> List WebGL.Entity
-view { w, h } { res, hover, focus, entities, passed, feedback, vfx } assets =
+view { w, h } game assets =
     let
+        { res, hover, focus, entities, passed, feedback, vfx, buttons } =
+            game
+
         ctx =
             contextInit ( w, h ) res assets Nothing
     in
@@ -50,7 +54,7 @@ view { w, h } { res, hover, focus, entities, passed, feedback, vfx } assets =
             , damageWebGl hover
             , turnView focus passed
             , focusTextView focus
-            , buttonsView entities.buttons
+            , Buttons.view buttons
             , Endgame.animView
             , feedbackView feedback
             ]
@@ -336,53 +340,56 @@ damageWebGl hover ({ w, h, radius, resolving, animDamage, tick, anim } as ctx) =
         ]
 
 
-buttonsView : List ButtonEntity -> Context -> List WebGL.Entity
-buttonsView buttons ctx =
-    let
-        buttonView : ButtonEntity -> List WebGL.Entity
-        buttonView { font, text, position, scale, disabled, hover } =
-            let
-                textColor =
-                    if disabled then
-                        vec3 (0 / 255) (0 / 255) (0 / 255)
 
-                    else
-                        vec3 (0 / 255) (0 / 255) (80 / 255)
-
-                backgroundColor =
-                    if disabled then
-                        vec3 (62 / 255) (62 / 255) (62 / 255)
-
-                    else if hover then
-                        vec3 (255 / 255) (255 / 255) (0 / 255)
-
-                    else
-                        vec3 (244 / 255) (241 / 255) (94 / 255)
-            in
-            List.concat
-                [ [ Render.Primitives.fullCircle <|
-                        uniColourMag ctx
-                            backgroundColor
-                            1
-                            { scale = 0.12 * ctx.radius
-                            , position = position
-                            , rotation = 0
-                            }
-                  ]
-                , Font.view
-                    font
-                    text
-                    { x = Math.Vector2.getX position
-                    , y = Math.Vector2.getY position
-                    , scaleX = scale * 0.0016
-                    , scaleY = scale * 0.0016
-                    , color = textColor
-                    }
-                    ctx
-                ]
-    in
-    List.concat <|
-        List.map buttonView buttons
+--
+--
+-- buttonsView : List ButtonEntity -> Context -> List WebGL.Entity
+-- buttonsView buttons ctx =
+--     let
+--         buttonView : ButtonEntity -> List WebGL.Entity
+--         buttonView { font, text, position, scale, disabled, hover } =
+--             let
+--                 textColor =
+--                     if disabled then
+--                         vec3 (0 / 255) (0 / 255) (0 / 255)
+--
+--                     else
+--                         vec3 (0 / 255) (0 / 255) (80 / 255)
+--
+--                 backgroundColor =
+--                     if disabled then
+--                         vec3 (62 / 255) (62 / 255) (62 / 255)
+--
+--                     else if hover then
+--                         vec3 (255 / 255) (255 / 255) (0 / 255)
+--
+--                     else
+--                         vec3 (244 / 255) (241 / 255) (94 / 255)
+--             in
+--             List.concat
+--                 [ [ Render.Primitives.fullCircle <|
+--                         uniColourMag ctx
+--                             backgroundColor
+--                             1
+--                             { scale = 0.12 * ctx.radius
+--                             , position = position
+--                             , rotation = 0
+--                             }
+--                   ]
+--                 , Font.view
+--                     font
+--                     text
+--                     { x = Math.Vector2.getX position
+--                     , y = Math.Vector2.getY position
+--                     , scaleX = scale * 0.0016
+--                     , scaleY = scale * 0.0016
+--                     , color = textColor
+--                     }
+--                     ctx
+--                 ]
+--     in
+--     List.concat <|
+--         List.map buttonView buttons
 
 
 turnView : Maybe StackCard -> Bool -> Context -> List WebGL.Entity
