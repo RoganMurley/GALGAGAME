@@ -1,7 +1,7 @@
 module DeckBuilding.State exposing (getRuneFromCursor, init, mouseClick, nextCursor, tick, update)
 
 import Buttons.State as Buttons
-import Buttons.Types as Buttons exposing (ButtonType(..))
+import Buttons.Types as Buttons exposing (ButtonType(..), Buttons)
 import Carousel
 import DeckBuilding.Encoders exposing (encodeCharacter)
 import DeckBuilding.Messages exposing (Msg(..))
@@ -139,65 +139,118 @@ tick ctx dt model =
     let
         newRuneSelect =
             Maybe.map (RuneSelect.tick ctx dt) model.runeSelect
-
-        { w, h } =
-            ctx
     in
     { model
         | runeSelect = newRuneSelect
         , bounceTick = model.bounceTick + dt
         , vfx = Vfx.tick dt model.vfx ctx
         , buttons =
-            if model.ready then
-                Buttons.empty
+            case model.runeSelect of
+                Just runeSelect ->
+                    RuneSelect.buttons ctx dt runeSelect
 
-            else
-                Buttons.fromList <|
-                    List.map (\f -> f dt ctx.mouse model.buttons)
-                        [ Buttons.entity
-                            "ready"
-                            { x = 0.5 * w
-                            , y = 0.8 * h
-                            , xScale = 1.4 * max w h
-                            , yScale = 0.6 * max w h
-                            , btn =
-                                TextButton
-                                    { font = "Futura"
-                                    , text = "Ready?"
-                                    , textColor = vec3 (0 / 255) (0 / 255) (80 / 255)
-                                    , bgColor = vec3 (244 / 255) (241 / 255) (94 / 255)
-                                    , options = [ Buttons.HoverText "Ready!" ]
-                                    }
-                            , disabled = False
-                            }
-                        , Buttons.entity
-                            "next"
-                            { x = 0.7 * w
-                            , y = 0.5 * h
-                            , xScale = 0.6 * max w h
-                            , yScale = 0.6 * max w h
-                            , btn =
-                                ImageButton
-                                    { img = "next.png"
-                                    , color = vec3 (244 / 255) (241 / 255) (94 / 255)
-                                    }
-                            , disabled = False
-                            }
-                        , Buttons.entity
-                            "prev"
-                            { x = 0.3 * w
-                            , y = 0.5 * h
-                            , xScale = -0.6 * max w h
-                            , yScale = 0.6 * max w h
-                            , btn =
-                                ImageButton
-                                    { img = "next.png"
-                                    , color = vec3 (244 / 255) (241 / 255) (94 / 255)
-                                    }
-                            , disabled = False
-                            }
-                        ]
+                Nothing ->
+                    characterButtons ctx dt model
     }
+
+
+characterButtons : Context -> Float -> Model -> Buttons
+characterButtons { w, h, mouse } dt { ready, buttons, characters } =
+    let
+        runeScale =
+            0.9 * max w h
+
+        triangleSide =
+            runeScale * 0.06
+    in
+    if ready then
+        Buttons.empty
+
+    else
+        Buttons.fromList <|
+            List.map (\f -> f dt mouse buttons)
+                [ Buttons.entity
+                    "ready"
+                    { x = 0.5 * w
+                    , y = 0.8 * h
+                    , xScale = 1.4 * max w h
+                    , yScale = 0.6 * max w h
+                    , btn =
+                        TextButton
+                            { font = "Futura"
+                            , text = "Ready?"
+                            , textColor = vec3 (0 / 255) (0 / 255) (80 / 255)
+                            , bgColor = vec3 (244 / 255) (241 / 255) (94 / 255)
+                            , options = [ Buttons.HoverText "Ready!" ]
+                            }
+                    , disabled = False
+                    }
+                , Buttons.entity
+                    "next"
+                    { x = 0.7 * w
+                    , y = 0.5 * h
+                    , xScale = 0.6 * max w h
+                    , yScale = 0.6 * max w h
+                    , btn =
+                        ImageButton
+                            { img = "next.png"
+                            , color = vec3 (244 / 255) (241 / 255) (94 / 255)
+                            }
+                    , disabled = False
+                    }
+                , Buttons.entity
+                    "prev"
+                    { x = 0.3 * w
+                    , y = 0.5 * h
+                    , xScale = -0.6 * max w h
+                    , yScale = 0.6 * max w h
+                    , btn =
+                        ImageButton
+                            { img = "next.png"
+                            , color = vec3 (244 / 255) (241 / 255) (94 / 255)
+                            }
+                    , disabled = False
+                    }
+                , Buttons.entity
+                    "runeA"
+                    { x = 0.5 * w
+                    , y = 0.5 * h - triangleSide
+                    , xScale = runeScale
+                    , yScale = runeScale
+                    , btn =
+                        ImageButton
+                            { img = characters.selected.runeA.imgURL
+                            , color = vec3 (255 / 255) (255 / 255) (255 / 255)
+                            }
+                    , disabled = False
+                    }
+                , Buttons.entity
+                    "runeB"
+                    { x = 0.5 * w + triangleSide / sin 1.04
+                    , y = 0.5 * h + triangleSide
+                    , xScale = runeScale
+                    , yScale = runeScale
+                    , btn =
+                        ImageButton
+                            { img = characters.selected.runeB.imgURL
+                            , color = vec3 (255 / 255) (255 / 255) (255 / 255)
+                            }
+                    , disabled = False
+                    }
+                , Buttons.entity
+                    "runeC"
+                    { x = 0.5 * w - triangleSide / sin 1.04
+                    , y = 0.5 * h + triangleSide
+                    , xScale = runeScale
+                    , yScale = runeScale
+                    , btn =
+                        ImageButton
+                            { img = characters.selected.runeC.imgURL
+                            , color = vec3 (255 / 255) (255 / 255) (255 / 255)
+                            }
+                    , disabled = False
+                    }
+                ]
 
 
 getRuneFromCursor : RuneCursor -> Character -> Rune
