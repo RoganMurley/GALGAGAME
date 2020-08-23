@@ -1,5 +1,7 @@
-module RuneSelect.State exposing (tick, update)
+module RuneSelect.State exposing (buttons, tick, update)
 
+import Buttons.State as Buttons
+import Buttons.Types exposing (Buttons)
 import Carousel
 import Game.Types exposing (Context)
 import RuneSelect.Entities as RuneSelect
@@ -34,3 +36,8 @@ tick ctx _ model =
         | entities = newEntities
         , hover = newHover
     }
+
+
+buttons : Context -> Float -> Model -> Buttons
+buttons ctx dt model =
+    Buttons.empty
