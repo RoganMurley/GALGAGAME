@@ -4,18 +4,17 @@ import Animation.State as Animation
 import Animation.Types as Animation
 import Assets.State as Assets
 import Assets.Types as Assets
-import Collision exposing (hitTest, hitTest3d)
-import Connected.Messages as Connected
-import Game.Types as Game exposing (ButtonEntity, Context, Entities, Feedback, HandEntity, StackEntity)
-import GameState.Messages as GameState
+import Buttons.State as Buttons
+import Buttons.Types as Buttons exposing (ButtonType(..), Buttons)
+import Collision exposing (hitTest3d)
+import Game.Types as Game exposing (Context, Entities, Feedback, HandEntity, StackEntity)
 import Hand.Entities as Hand
 import Hand.State exposing (maxHandLength)
 import Hover exposing (Hover(..), HoverBase, HoverSelf)
 import List.Extra as List
-import Main.Messages as Main
 import Main.Types exposing (Flags)
-import Math.Vector2 exposing (Vec2, vec2)
-import Math.Vector3 exposing (Vec3)
+import Math.Vector2 exposing (Vec2)
+import Math.Vector3 exposing (Vec3, vec3)
 import Maybe.Extra as Maybe
 import Model.State as Model
 import Model.Types as Model exposing (Model)
@@ -23,7 +22,6 @@ import PlayState.Messages as PlayState
 import Render.Uniforms as Uniforms
 import Resolvable.State as Resolvable exposing (activeAnim, activeAnimDamage, activeModel, activeStackCard, resolving)
 import Resolvable.Types as Resolvable
-import Room.Messages as Room
 import Stack.Entities as Stack
 import Stack.Types exposing (StackCard)
 import Unproject
@@ -42,6 +40,7 @@ gameInit model =
     , passed = False
     , feedback = []
     , vfx = Vfx.init
+    , buttons = Buttons.empty
     }
 
 
@@ -109,7 +108,6 @@ entitiesInit =
     { stack = []
     , hand = []
     , otherHand = []
-    , buttons = []
     }
 
 
@@ -162,11 +160,11 @@ tick { dimensions, mouse } dt model =
                     { stack = Stack.entities ctx
                     , hand = Hand.entities model.hover ctx
                     , otherHand = Hand.otherEntities model.otherHover ctx
-                    , buttons = buttonEntities model.passed mouse ctx
                     }
                 , focus = focus
                 , feedback = feedback
                 , vfx = Vfx.tick dt model.vfx ctx
+                , buttons = buttonEntities model.passed mouse dt model.buttons ctx
             }
     in
     ( newModel, hoverMsg )
@@ -310,54 +308,59 @@ feedbackTick feedback dt =
             feedback
 
 
-buttonEntities : Bool -> Maybe Vec2 -> Context -> List ButtonEntity
-buttonEntities passed mouse { w, h, model, radius, resolving } =
+buttonEntities : Bool -> Maybe Vec2 -> Float -> Buttons -> Context -> Buttons
+buttonEntities passed mouse dt buttons { w, h, model, radius, resolving } =
     let
-        position =
-            vec2 (w * 0.5 + 0.64 * radius) (h * 0.5 + 0.67 * radius)
-
         handFull =
             List.length model.hand == maxHandLength
 
         yourTurn =
             model.turn == PlayerA
 
-        isDisabled =
+        disabled =
             handFull || not yourTurn || passed || resolving
-
-        isHover =
-            case mouse of
-                Just mousePos ->
-                    hitTest position 32 { position = mousePos }
-
-                Nothing ->
-                    False
-
-        playMsg =
-            Main.RoomMsg
-                << Room.ConnectedMsg
-                << Connected.GameStateMsg
-                << GameState.PlayStateMsg
-                << PlayState.PlayingOnly
-
-        onClick : Maybe Main.Msg
-        onClick =
-            if not isDisabled then
-                Just <| playMsg <| PlayState.TurnOnly PlayState.EndTurn
-
-            else if handFull && not resolving then
-                Just <| playMsg PlayState.IllegalPass
-
-            else
-                Nothing
     in
-    [ { position = position
-      , scale = 32
-      , rotation = 0
-      , text = "GO"
-      , font = "Futura"
-      , disabled = isDisabled
-      , hover = isHover
-      , onClick = onClick
-      }
-    ]
+    Buttons.fromList <|
+        if not disabled then
+            [ Buttons.entity
+                "go"
+                { x = w * 0.5 + 0.64 * radius
+                , y = h * 0.5 + 0.67 * radius
+                , xScale = 0.42 * max w h
+                , yScale = 0.42 * max w h
+                , btn =
+                    TextButton
+                        { font = "Futura"
+                        , text = "GO?"
+                        , textColor = vec3 (0 / 255) (0 / 255) (80 / 255)
+                        , bgColor = vec3 (244 / 255) (241 / 255) (94 / 255)
+                        , options = [ Buttons.HoverText "GO!", Buttons.Circular ]
+                        }
+                , disabled = disabled
+                }
+                dt
+                mouse
+                buttons
+            ]
+
+        else
+            [ Buttons.entity
+                "goDisabled"
+                { x = w * 0.5 + 0.64 * radius
+                , y = h * 0.5 + 0.67 * radius
+                , xScale = 0.42 * max w h
+                , yScale = 0.42 * max w h
+                , btn =
+                    TextButton
+                        { font = "Futura"
+                        , text = "GO?"
+                        , textColor = vec3 (0 / 255) (0 / 255) (0 / 255)
+                        , bgColor = vec3 (70 / 255) (70 / 255) (70 / 255)
+                        , options = [ Buttons.Circular ]
+                        }
+                , disabled = disabled
+                }
+                dt
+                mouse
+                buttons
+            ]

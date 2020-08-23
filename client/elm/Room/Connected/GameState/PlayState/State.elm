@@ -319,6 +319,7 @@ carry old new =
                 , entities = get .entities old
                 , focus = get .focus old
                 , vfx = get .vfx old
+                , buttons = get .buttons old
             }
         )
         new
@@ -383,14 +384,6 @@ mouseClick { dimensions } gameType mode { x, y } state =
         game =
             get identity state
 
-        allButtons =
-            game.entities.buttons
-
-        mButtonEntity =
-            List.find
-                .hover
-                allButtons
-
         msg =
             case mHandEntity of
                 Just { card, index } ->
@@ -398,19 +391,6 @@ mouseClick { dimensions } gameType mode { x, y } state =
 
                 Nothing ->
                     ClickFeedback pos
-
-        buttonMsg =
-            case mButtonEntity of
-                Just { onClick } ->
-                    case onClick of
-                        Just clickMsg ->
-                            message clickMsg
-
-                        Nothing ->
-                            Cmd.none
-
-                Nothing ->
-                    Cmd.none
 
         ( newPlayState, newMsg ) =
             update
@@ -436,11 +416,30 @@ mouseClick { dimensions } gameType mode { x, y } state =
                 << Connected.GameStateMsg
                 << GameState.PlayStateMsg
 
-        endgameButtonMsg =
+        buttonMsg =
             case state of
+                Playing _ ->
+                    case Buttons.hit game.buttons of
+                        Just ( key, _ ) ->
+                            case key of
+                                "go" ->
+                                    playMsg <|
+                                        PlayingOnly <|
+                                            PlayState.TurnOnly PlayState.EndTurn
+
+                                "goDisabled" ->
+                                    playMsg <|
+                                        PlayState.PlayingOnly PlayState.IllegalPass
+
+                                _ ->
+                                    Cmd.none
+
+                        Nothing ->
+                            Cmd.none
+
                 Ended { buttons, replayId, winner } ->
                     case Buttons.hit buttons of
-                        Just key ->
+                        Just ( key, _ ) ->
                             case key of
                                 "playAgain" ->
                                     case ( gameType, winner ) of
@@ -463,14 +462,10 @@ mouseClick { dimensions } gameType mode { x, y } state =
 
                         Nothing ->
                             Cmd.none
-
-                _ ->
-                    Cmd.none
     in
     ( newPlayState
     , Cmd.batch
         [ newMsg
         , buttonMsg
-        , endgameButtonMsg
         ]
     )

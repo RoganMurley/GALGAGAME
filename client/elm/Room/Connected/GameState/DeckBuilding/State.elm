@@ -168,6 +168,7 @@ tick ctx dt model =
                                     , bgColor = vec3 (244 / 255) (241 / 255) (94 / 255)
                                     , options = [ Buttons.HoverText "Ready!" ]
                                     }
+                            , disabled = False
                             }
                         , Buttons.entity
                             "next"
@@ -180,6 +181,7 @@ tick ctx dt model =
                                     { img = "next.png"
                                     , color = vec3 (244 / 255) (241 / 255) (94 / 255)
                                     }
+                            , disabled = False
                             }
                         , Buttons.entity
                             "prev"
@@ -192,6 +194,7 @@ tick ctx dt model =
                                     { img = "next.png"
                                     , color = vec3 (244 / 255) (241 / 255) (94 / 255)
                                     }
+                            , disabled = False
                             }
                         ]
     }
@@ -239,7 +242,7 @@ nextCursor cursor =
 mouseClick : Position -> Model -> ( Model, Cmd Main.Msg )
 mouseClick _ model =
     case Buttons.hit model.buttons of
-        Just key ->
+        Just ( key, _ ) ->
             case key of
                 "ready" ->
                     update (Select model.characters.selected) model

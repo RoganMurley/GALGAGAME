@@ -1,12 +1,12 @@
-module Game.Types exposing (ButtonEntity, Context, Entities, Feedback, HandEntity, Model, OtherHandEntity, StackEntity)
+module Game.Types exposing (Context, Entities, Feedback, HandEntity, Model, OtherHandEntity, StackEntity)
 
 import Animation.Types exposing (Anim)
+import Buttons.Types exposing (Buttons)
 import Card.Types exposing (Card)
 import Collision exposing (Ray)
 import Font.Types as Font
 import Game.Entity as Game
 import Hover exposing (HoverOther, HoverSelf)
-import Main.Messages as Main
 import Math.Matrix4 exposing (Mat4)
 import Math.Vector2 exposing (Vec2)
 import Model.Types as Model
@@ -26,6 +26,7 @@ type alias Model =
     , passed : Bool
     , feedback : List Feedback
     , vfx : Vfx.Model
+    , buttons : Buttons
     }
 
 
@@ -71,21 +72,10 @@ type alias OtherHandEntity =
     Game.Entity3D {}
 
 
-type alias ButtonEntity =
-    Game.Entity
-        { font : String
-        , text : String
-        , onClick : Maybe Main.Msg
-        , disabled : Bool
-        , hover : Bool
-        }
-
-
 type alias Entities =
     { stack : List StackEntity
     , hand : List HandEntity
     , otherHand : List OtherHandEntity
-    , buttons : List ButtonEntity
     }
 
 

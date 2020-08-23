@@ -1,4 +1,4 @@
-module Buttons.State exposing (empty, entity, fromList, get, getHoverText, hit, update)
+module Buttons.State exposing (empty, entity, fromList, get, getHoverText, hit, isCircular, update)
 
 import Buttons.Types exposing (Button, ButtonType(..), Buttons(..), TextButtonOption(..), TextButtonParams)
 import Collision exposing (hitTest)
@@ -9,12 +9,12 @@ import Math.Vector2 exposing (Vec2, vec2)
 
 entity :
     String
-    -> { x : Float, y : Float, xScale : Float, yScale : Float, btn : ButtonType }
+    -> { x : Float, y : Float, xScale : Float, yScale : Float, btn : ButtonType, disabled : Bool }
     -> Float
     -> Maybe Vec2
     -> Buttons
     -> ( String, Button )
-entity key { x, y, xScale, yScale, btn } dt mMouse buttons =
+entity key { x, y, xScale, yScale, btn, disabled } dt mMouse buttons =
     let
         previousHover : Float
         previousHover =
@@ -41,7 +41,7 @@ entity key { x, y, xScale, yScale, btn } dt mMouse buttons =
       , hover = hover
       , xScale = xScale
       , yScale = yScale
-      , disabled = False
+      , disabled = disabled
       , btn = btn
       }
     )
@@ -62,10 +62,9 @@ get key (Buttons buttons) =
     Dict.get key buttons
 
 
-hit : Buttons -> Maybe String
+hit : Buttons -> Maybe ( String, Button )
 hit (Buttons buttons) =
     List.find (\( _, { hover } ) -> hover > 0) (Dict.toList buttons)
-        |> Maybe.map Tuple.first
 
 
 update : String -> (Button -> Button) -> Buttons -> Buttons
@@ -86,5 +85,27 @@ getHoverText { text, options } =
                     case option of
                         HoverText hoverText ->
                             Just hoverText
+
+                        _ ->
+                            Nothing
     in
     List.foldl reducer Nothing options |> Maybe.withDefault text
+
+
+isCircular : TextButtonParams -> Bool
+isCircular { options } =
+    let
+        reducer : TextButtonOption -> Bool -> Bool
+        reducer option acc =
+            if acc then
+                True
+
+            else
+                case option of
+                    Circular ->
+                        True
+
+                    _ ->
+                        False
+    in
+    List.foldl reducer False options
