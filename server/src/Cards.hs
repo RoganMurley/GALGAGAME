@@ -166,7 +166,7 @@ balance =
 scythe :: Card
 scythe =
   Card
-    "Harvest"
+    "Scythe"
     "Lifesteal for 5"
     "scythe.png"
     Green
@@ -176,7 +176,7 @@ scythe =
 bloodsucker :: Card
 bloodsucker =
   Card
-    "Scythe"
+    "Feast"
     "Lifesteal for 3 for each other card on the wheel"
     "bloodsucker.png"
     Green
@@ -240,7 +240,7 @@ surge =
     Violet
     $ \w -> do
       stack <- getStack
-      let count = length . filter (\(StackCard _ (Card name _ _ _ _)) -> name == "Brainbomb") $ stack
+      let count = length . filter (\(StackCard _ (Card name _ _ _ _)) -> name == "Cascade") $ stack
       hurt ((count + 1) * 10) (other w) Slash
 
 
