@@ -179,8 +179,8 @@ allRunes =
 wrath :: Rune
 wrath =
   Rune
-    "Ginger"
-    "Tastes like burning."
+    "Fire"
+    "You're dangerous and unpredictable."
     "confound.png"
     (Cards.missile, Cards.fireball, Cards.offering, Cards.confound)
 
@@ -188,8 +188,8 @@ wrath =
 pride :: Rune
 pride =
   Rune
-    "Blueberry"
-    "Tastes like the weather."
+    "Heavens"
+    "You punish mistakes."
     "hubris.png"
     (Cards.hammer, Cards.lightning, Cards.feint, Cards.hubris)
 
@@ -197,8 +197,8 @@ pride =
 lust :: Rune
 lust =
   Rune
-    "Grape"
-    "Tastes like the blood of a lover."
+    "Blood"
+    "You steal life."
     "reverse.png"
     (Cards.scythe, Cards.bloodsucker, Cards.serpent, Cards.reversal)
 
@@ -206,8 +206,8 @@ lust =
 gluttony :: Rune
 gluttony =
   Rune
-    "Hibiscus"
-    "Tastes like tomorrow."
+    "Mind"
+    "You play mind games."
     "prophecy.png"
     (Cards.staff, Cards.surge, Cards.mimic, Cards.prophecy)
 
@@ -215,8 +215,8 @@ gluttony =
 envy :: Rune
 envy =
   Rune
-    "Nettle"
-    "Tastes like a mirror."
+    "Body"
+    "You protect yourself."
     "reflect.png"
     (Cards.grudge, Cards.overwhelm, Cards.potion, Cards.reflect)
 
@@ -224,8 +224,8 @@ envy =
 sloth :: Rune
 sloth =
   Rune
-    "Salt"
-    "Tastes like tears."
+    "Heart"
+    "You're strong but hard to control."
     "balance.png"
     (Cards.katana, Cards.curse, Cards.bless, Cards.balance)
 
@@ -233,8 +233,8 @@ sloth =
 greed :: Rune
 greed =
   Rune
-    "Honey"
-    "Tastes like an insatiable thirst."
+    "Gold"
+    "You punish hoarding."
     "alchemy.png"
     (Cards.relicblade, Cards.greed, Cards.echo, Cards.alchemy)
 
