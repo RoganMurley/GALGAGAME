@@ -2,8 +2,7 @@ module Cards where
 
 import Control.Monad (when)
 import CardAnim (Hurt(..), Transmute(..))
-import Card (Card(Card), CardCol(..), description)
-import Data.Monoid ((<>))
+import Card (Card(Card), CardCol(..))
 import Player (other)
 import Safe (headMay)
 import StackCard (StackCard(StackCard))
@@ -18,7 +17,7 @@ import DSL.Beta hiding (confound, reflect)
 missile :: Card
 missile =
   Card
-    "Missile"
+    "Dagger"
     "Hurt for 7"
     "missile.png"
     Red
@@ -29,7 +28,7 @@ fireball :: Card
 fireball =
   Card
     "Fireball"
-    "Hurt for 5 for each other card in play"
+    "Hurt for 5 for each other card on the wheel"
     "fireball.png"
     Red
     $ \w -> do
@@ -53,8 +52,8 @@ offering =
 confound :: Card
 confound =
   Card
-    "Confound"
-    "Shuffle the order of all cards in play"
+    "Chaos"
+    "Shuffle the order of all cards on the wheel"
     "confound.png"
     Red
     $ \_ -> do
@@ -66,7 +65,7 @@ confound =
 hammer :: Card
 hammer =
   Card
-    "Shot"
+    "Hammer"
     "Hurt for 8"
     "hammer.png"
     Blue
@@ -76,8 +75,8 @@ hammer =
 lightning :: Card
 lightning =
   Card
-    "Lightning"
-    "Hurt for 4 for each other card in play"
+    "Thunder"
+    "Hurt for 4 for each other card on the wheel"
     "lightning.png"
     Blue
     $ \w -> do
@@ -88,8 +87,8 @@ lightning =
 feint :: Card
 feint =
   Card
-    "Feint"
-    "Return all of your cards in play to hand"
+    "Moon"
+    "Return all of your cards on the wheel to hand"
     "feint.png"
     Blue
     $ \w -> bounce (\(StackCard o _) -> w == o)
@@ -98,8 +97,8 @@ feint =
 hubris :: Card
 hubris =
   Card
-    "Hubris"
-    "Discard all cards in play"
+    "Sun"
+    "Discard all cards on the wheel"
     "hubris.png"
     Blue
     $ \_ -> discard (const True)
@@ -109,7 +108,7 @@ hubris =
 katana :: Card
 katana =
   Card
-    "Arrow"
+    "Blade"
     "Hurt for 9"
     "katana.png"
     White
@@ -119,7 +118,7 @@ katana =
 curse :: Card
 curse =
   Card
-    "Curse"
+    "Cruelty"
     "Hurt weakest player for 15"
     "curse.png"
     White
@@ -135,7 +134,7 @@ curse =
 bless :: Card
 bless =
   Card
-    "Bless"
+    "Charity"
     "Heal weakest player for 15"
     "bless.png"
     White
@@ -177,8 +176,8 @@ scythe =
 bloodsucker :: Card
 bloodsucker =
   Card
-    "Feast"
-    "Lifesteal for 3 for each other card in play"
+    "Scythe"
+    "Lifesteal for 3 for each other card on the wheel"
     "bloodsucker.png"
     Green
     $ \w -> do
@@ -213,7 +212,7 @@ reversal :: Card
 reversal =
   Card
     "Reversal"
-    "Reverse the order of all cards in play"
+    "Reverse the order of all cards on the wheel"
     "reverse.png"
     Green
     $ const Beta.reverse
@@ -223,7 +222,7 @@ reversal =
 staff :: Card
 staff =
   Card
-    "Dart"
+    "Staff"
     "Hurt for 4, then draw 1"
     "staff.png"
     Violet
@@ -235,8 +234,8 @@ staff =
 surge :: Card
 surge =
   Card
-    "Brainbomb"
-    "Hurt for 10 for each 'Brainbomb' in play"
+    "Cascade"
+    "Hurt for 10 for each 'CASCADE' in play"
     "surge.png"
     Violet
     $ \w -> do
@@ -248,8 +247,8 @@ surge =
 prophecy :: Card
 prophecy =
   Card
-    "Prophecy"
-    "Return all cards in play to hand"
+    "Eye"
+    "Return all cards on the wheel to hand"
     "prophecy.png"
     Violet
     $ \_ -> bounce (const True)
@@ -283,7 +282,7 @@ overwhelm =
 potion :: Card
 potion =
   Card
-    "Potion"
+    "Love"
     "Heal for 10"
     "potion.png"
     Orange
@@ -293,8 +292,8 @@ potion =
 reflect :: Card
 reflect =
   Card
-    "Reflect"
-    "Change the owner of all cards in play"
+    "Mirror"
+    "Change the owner of all cards on the wheel"
     "reflect.png"
     Orange
     $ const Beta.reflect
@@ -345,7 +344,7 @@ alchemy :: Card
 alchemy =
   Card
     "Alchemy"
-    ("Change next card to " <> description gold)
+    ("Change next card to GOLD")
     "alchemy.png"
     Yellow
     $ \_ -> transmute gold TransmuteCard
@@ -460,7 +459,7 @@ unravel :: Card
 unravel =
   Card
     "Unravel"
-    "Discard from play all cards in dark zones"
+    "Discard on the wheel in dark zones"
     "unravel.png"
     Mystery
     $ \_ -> do

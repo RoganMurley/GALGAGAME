@@ -29,7 +29,10 @@ webglView { w, h } model assets =
         List.map ((|>) ctx) <|
             case model.runeSelect of
                 Just runeSelect ->
-                    [ RuneSelect.webglView runeSelect ]
+                    [ radialView model.vfx
+                    , RuneSelect.view runeSelect
+                    , Buttons.view model.buttons
+                    ]
 
                 Nothing ->
                     [ radialView model.vfx

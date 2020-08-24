@@ -11,6 +11,7 @@ import Main.Messages as Main
 import Math.Vector3 exposing (vec3)
 import Mouse exposing (Position)
 import Ports exposing (log)
+import RuneSelect.Messages as RuneSelect
 import RuneSelect.State as RuneSelect
 import RuneSelect.Types as RuneSelect exposing (Rune, RuneCursor(..))
 import Util
@@ -105,6 +106,7 @@ update msg ({ characters, buttons } as model) =
                             (List.filter (\r -> not (List.member r excludedRunes)) model.runes)
                     , entities = []
                     , hover = Nothing
+                    , buttons = Buttons.empty
                     }
             in
             ( { model | runeSelect = Just runeSelect }, Cmd.none )
@@ -294,20 +296,55 @@ nextCursor cursor =
 
 mouseClick : Position -> Model -> ( Model, Cmd Main.Msg )
 mouseClick _ model =
-    case Buttons.hit model.buttons of
-        Just ( key, _ ) ->
-            case key of
-                "ready" ->
-                    update (Select model.characters.selected) model
+    case model.runeSelect of
+        Nothing ->
+            case Buttons.hit model.buttons of
+                Just ( key, _ ) ->
+                    case key of
+                        "ready" ->
+                            update (Select model.characters.selected) model
 
-                "next" ->
-                    update NextCharacter model
+                        "next" ->
+                            update NextCharacter model
 
-                "prev" ->
-                    update PreviousCharacter model
+                        "prev" ->
+                            update PreviousCharacter model
 
-                _ ->
+                        "runeA" ->
+                            update (EnterRuneSelect RuneCursorA) model
+
+                        "runeB" ->
+                            update (EnterRuneSelect RuneCursorB) model
+
+                        "runeC" ->
+                            update (EnterRuneSelect RuneCursorC) model
+
+                        _ ->
+                            ( model, Cmd.none )
+
+                Nothing ->
                     ( model, Cmd.none )
 
-        Nothing ->
-            ( model, Cmd.none )
+        Just runeSelect ->
+            case Buttons.hit runeSelect.buttons of
+                Just ( key, _ ) ->
+                    case key of
+                        "nextRune" ->
+                            update (RuneSelectMsg RuneSelect.NextRune) model
+
+                        "prevRune" ->
+                            update (RuneSelectMsg RuneSelect.PreviousRune) model
+
+                        "selectRune" ->
+                            case model.runeSelect of
+                                Just { cursor, carousel } ->
+                                    update (ConfirmRune cursor carousel.selected) model
+
+                                Nothing ->
+                                    ( model, Cmd.none )
+
+                        _ ->
+                            ( model, Cmd.none )
+
+                Nothing ->
+                    ( model, Cmd.none )
