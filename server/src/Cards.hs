@@ -235,7 +235,7 @@ surge :: Card
 surge =
   Card
     "Cascade"
-    "Hurt for 10 for each 'CASCADE' in play"
+    "Hurt for 10 for each CASCADE in play"
     "surge.png"
     Violet
     $ \w -> do
