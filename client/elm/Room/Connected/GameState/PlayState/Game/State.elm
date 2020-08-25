@@ -319,13 +319,19 @@ buttonEntities passed mouse dt buttons { w, h, model, radius, resolving } =
 
         disabled =
             handFull || not yourTurn || passed || resolving
+
+        x =
+            w * 0.5 + 0.7 * radius
+
+        y =
+            h * 0.5 + 0.8 * radius
     in
     Buttons.fromList <|
         if not disabled then
             [ Buttons.entity
                 "go"
-                { x = w * 0.5 + 0.64 * radius
-                , y = h * 0.5 + 0.67 * radius
+                { x = x
+                , y = y
                 , xScale = 0.42 * max w h
                 , yScale = 0.42 * max w h
                 , btn =
@@ -346,8 +352,8 @@ buttonEntities passed mouse dt buttons { w, h, model, radius, resolving } =
         else
             [ Buttons.entity
                 "goDisabled"
-                { x = w * 0.5 + 0.64 * radius
-                , y = h * 0.5 + 0.67 * radius
+                { x = x
+                , y = y
                 , xScale = 0.42 * max w h
                 , yScale = 0.42 * max w h
                 , btn =

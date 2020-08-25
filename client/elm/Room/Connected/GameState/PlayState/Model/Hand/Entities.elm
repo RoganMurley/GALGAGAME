@@ -329,10 +329,10 @@ handOrigin { anim, tick } which count =
         y =
             case which of
                 PlayerA ->
-                    -0.6
+                    -0.64
 
                 PlayerB ->
-                    0.6
+                    0.7
     in
     vec3 x y (-0.4 + shake)
 

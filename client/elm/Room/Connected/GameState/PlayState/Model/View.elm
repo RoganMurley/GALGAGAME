@@ -130,14 +130,17 @@ lifeOrbView ({ w, h, radius, model, anim, animDamage, tick } as ctx) =
         otherShake =
             Animation.animShake anim PlayerB tick
 
+        ( xOffset, yOffset ) =
+            ( 0.7 * radius, 0.875 * radius )
+
         pos =
             Math.Vector2.add
-                (vec2 (w * 0.5 - 0.8 * radius) (h * 0.5 - 0.675 * radius))
+                (vec2 (w * 0.5 - xOffset) (h * 0.5 - yOffset))
                 (vec2 -shake shake)
 
         otherPos =
             Math.Vector2.add
-                (vec2 (w * 0.5 + 0.8 * radius) (h * 0.5 - 0.675 * radius))
+                (vec2 (w * 0.5 + xOffset) (h * 0.5 - yOffset))
                 (vec2 otherShake otherShake)
 
         textScale =
@@ -230,7 +233,7 @@ focusTextView focus ({ w, h, anim, radius, tick } as ctx) =
                         [ Font.view "Futura"
                             card.name
                             { x = 0.5 * w + shake
-                            , y = 0.5 * h + radius * 0.1 + shake
+                            , y = 0.5 * h + radius * 0.15 + shake
                             , scaleX = 0.00025 * radius
                             , scaleY = 0.00025 * radius
                             , color = Colour.white
@@ -305,7 +308,7 @@ damageWebGl hover ({ w, h, radius, resolving, animDamage, tick, anim } as ctx) =
             0.14 + 0.05 * progress
 
         xOffset =
-            0.55 * radius
+            0.45 * radius
 
         yOffset =
             0.9 * radius
@@ -338,58 +341,6 @@ damageWebGl hover ({ w, h, radius, resolving, animDamage, tick, anim } as ctx) =
           else
             []
         ]
-
-
-
---
---
--- buttonsView : List ButtonEntity -> Context -> List WebGL.Entity
--- buttonsView buttons ctx =
---     let
---         buttonView : ButtonEntity -> List WebGL.Entity
---         buttonView { font, text, position, scale, disabled, hover } =
---             let
---                 textColor =
---                     if disabled then
---                         vec3 (0 / 255) (0 / 255) (0 / 255)
---
---                     else
---                         vec3 (0 / 255) (0 / 255) (80 / 255)
---
---                 backgroundColor =
---                     if disabled then
---                         vec3 (62 / 255) (62 / 255) (62 / 255)
---
---                     else if hover then
---                         vec3 (255 / 255) (255 / 255) (0 / 255)
---
---                     else
---                         vec3 (244 / 255) (241 / 255) (94 / 255)
---             in
---             List.concat
---                 [ [ Render.Primitives.fullCircle <|
---                         uniColourMag ctx
---                             backgroundColor
---                             1
---                             { scale = 0.12 * ctx.radius
---                             , position = position
---                             , rotation = 0
---                             }
---                   ]
---                 , Font.view
---                     font
---                     text
---                     { x = Math.Vector2.getX position
---                     , y = Math.Vector2.getY position
---                     , scaleX = scale * 0.0016
---                     , scaleY = scale * 0.0016
---                     , color = textColor
---                     }
---                     ctx
---                 ]
---     in
---     List.concat <|
---         List.map buttonView buttons
 
 
 turnView : Maybe StackCard -> Bool -> Context -> List WebGL.Entity
