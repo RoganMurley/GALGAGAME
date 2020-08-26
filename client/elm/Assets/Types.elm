@@ -1,6 +1,7 @@
 module Assets.Types exposing (Handler, Loader, Model, Path)
 
 import Font.Types as Font
+import Manifest.Types exposing (Manifest)
 import Task exposing (Task)
 import Texture.Types as Texture
 
@@ -8,6 +9,7 @@ import Texture.Types as Texture
 type alias Model =
     { textures : Texture.Model
     , fonts : Font.Model
+    , manifest : Maybe Manifest
     }
 
 
