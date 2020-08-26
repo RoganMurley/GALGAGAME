@@ -8,7 +8,6 @@ import Browser.Events
 import Browser.Navigation
 import Connected.Messages as Connected
 import Feedback.State as Feedback
-import Font.State as Font
 import GameState.Messages as GameState
 import GameState.Types exposing (GameState(..))
 import GameType
@@ -43,10 +42,6 @@ import Util exposing (authLocation)
 init : Flags -> Url -> Int -> ( Main.Model, Cmd Msg )
 init flags url initialVolume =
     let
-        fetchFont : List (Cmd Msg)
-        fetchFont =
-            List.map (Cmd.map (AssetsMsg << Assets.FontMsg)) Font.fetch
-
         fetchManifest =
             List.map (Cmd.map (AssetsMsg << Assets.ManifestMsg)) Manifest.fetch
 
@@ -60,7 +55,7 @@ init flags url initialVolume =
                 url
     in
     ( model
-    , Cmd.batch (cmd :: fetchManifest ++ fetchFont ++ fetchSounds)
+    , Cmd.batch (cmd :: fetchManifest ++ fetchSounds)
     )
 
 

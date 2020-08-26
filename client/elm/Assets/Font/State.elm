@@ -8,6 +8,7 @@ import Font.Messages exposing (Msg(..))
 import Font.Types exposing (Font, FontPath, Model)
 import Http
 import Main.Messages as Main
+import Manifest.Types exposing (Manifest)
 import Ports exposing (log)
 
 
@@ -31,8 +32,8 @@ save model name font =
     { model | fonts = Dict.insert name font model.fonts }
 
 
-fetch : List (Cmd Msg)
-fetch =
+fetch : Manifest -> List (Cmd Msg)
+fetch manifest =
     let
         loader : Assets.Loader Font Http.Error
         loader { path } =
@@ -52,13 +53,32 @@ fetch =
         paths =
             List.map
                 (\{ name, jsonPath } -> { name = name, path = jsonPath })
-                fontPaths
+                (fontPaths manifest)
     in
     Assets.fetch loader handler paths
 
 
-fontPaths : List FontPath
-fontPaths =
-    [ { name = "Rock Salt", jsonPath = "/fonts/rock_salt/fontmap.json", texturePath = "/fonts/rock_salt/fontmap.png" }
-    , { name = "Futura", jsonPath = "/fonts/futura/fontmap.json", texturePath = "/fonts/futura/fontmap.png" }
-    ]
+fontPaths : Manifest -> List FontPath
+fontPaths manifest =
+    let
+        revise : FontPath -> FontPath
+        revise { name, jsonPath, texturePath } =
+            { name = name
+            , texturePath =
+                (Dict.get (String.dropLeft 1 texturePath) manifest
+                    |> Maybe.map (\s -> "/" ++ s)
+                )
+                    |> Maybe.withDefault texturePath
+            , jsonPath =
+                (Dict.get (String.dropLeft 1 jsonPath) manifest
+                    |> Maybe.map (\s -> "/" ++ s)
+                )
+                    |> Maybe.withDefault jsonPath
+            }
+    in
+    List.map revise
+        [ { name = "Futura"
+          , jsonPath = "/fonts/futura/fontmap.json"
+          , texturePath = "/fonts/futura/fontmap.png"
+          }
+        ]

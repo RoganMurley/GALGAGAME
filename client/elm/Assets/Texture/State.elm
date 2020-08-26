@@ -78,7 +78,7 @@ fetch manifest =
             texturePaths manifest
                 ++ List.map
                     (\{ name, texturePath } -> { name = name, path = texturePath })
-                    fontPaths
+                    (fontPaths manifest)
     in
     Assets.fetch loader handler paths
 
