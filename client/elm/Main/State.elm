@@ -21,6 +21,7 @@ import Login.Decoders as Login
 import Login.State as Login
 import Main.Messages exposing (Msg(..))
 import Main.Types as Main exposing (Flags)
+import Manifest.State as Manifest
 import Math.Vector2 exposing (vec2)
 import Mode exposing (Mode(..))
 import Ports exposing (analytics, click, copyInput, godModeCommand, mouseMove, reload, selectAllInput, touch, websocketListen, websocketReconnect, websocketSend)
@@ -34,7 +35,6 @@ import Routing.Types as Routing
 import Settings.State as Settings
 import Settings.Types as Settings
 import Signup.State as Signup
-import Texture.State as Texture
 import Url exposing (Url)
 import Url.Parser exposing (parse)
 import Util exposing (authLocation)
@@ -43,13 +43,12 @@ import Util exposing (authLocation)
 init : Flags -> Url -> Int -> ( Main.Model, Cmd Msg )
 init flags url initialVolume =
     let
-        fetchTextures : List (Cmd Msg)
-        fetchTextures =
-            List.map (Cmd.map (AssetsMsg << Assets.TextureMsg)) Texture.fetch
-
         fetchFont : List (Cmd Msg)
         fetchFont =
             List.map (Cmd.map (AssetsMsg << Assets.FontMsg)) Font.fetch
+
+        fetchManifest =
+            List.map (Cmd.map (AssetsMsg << Assets.ManifestMsg)) Manifest.fetch
 
         ( model, cmd ) =
             locationUpdate
@@ -61,7 +60,7 @@ init flags url initialVolume =
                 url
     in
     ( model
-    , Cmd.batch (cmd :: fetchFont ++ fetchTextures ++ fetchSounds)
+    , Cmd.batch (cmd :: fetchManifest ++ fetchFont ++ fetchSounds)
     )
 
 

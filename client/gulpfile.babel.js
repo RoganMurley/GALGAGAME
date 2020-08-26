@@ -5,6 +5,7 @@ import uglify from 'gulp-uglify';
 import minify from 'gulp-minify-css';
 import inline from 'gulp-inline-source';
 import identity from 'gulp-identity';
+import rev from 'gulp-rev';
 import yargs from 'yargs';
 
 
@@ -48,6 +49,10 @@ gulp.task('html', () => {
 // COPY
 gulp.task('copy', () => {
   return gulp.src(`${dir.dev}/**`)
+    .pipe(gulp.dest(dir.build))
+    .pipe(rev())
+    .pipe(gulp.dest(dir.build))
+    .pipe(rev.manifest())
     .pipe(gulp.dest(dir.build));
 });
 

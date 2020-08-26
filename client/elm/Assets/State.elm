@@ -4,6 +4,7 @@ import Assets.Messages exposing (Msg(..))
 import Assets.Types exposing (Model)
 import Font.State as Font
 import Main.Messages as Main
+import Manifest.State as Manifest
 import Texture.State as Texture
 
 
@@ -11,6 +12,7 @@ init : Model
 init =
     { textures = Texture.init
     , fonts = Font.init
+    , manifest = Manifest.init
     }
 
 
@@ -32,5 +34,14 @@ update msg model =
                     Font.update fontMsg model.fonts
             in
             ( { model | fonts = newFonts }
+            , cmd
+            )
+
+        ManifestMsg manifestMsg ->
+            let
+                ( newManifest, cmd ) =
+                    Manifest.update manifestMsg model.manifest
+            in
+            ( { model | manifest = newManifest }
             , cmd
             )
