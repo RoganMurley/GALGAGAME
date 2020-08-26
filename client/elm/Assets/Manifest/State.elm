@@ -3,6 +3,7 @@ module Manifest.State exposing (fetch, init, update)
 import Assets.Fetch as Assets
 import Assets.Messages as Assets
 import Assets.Types as Assets
+import Audio.State as Audio
 import Font.State as Font
 import Http
 import Main.Messages as Main
@@ -34,8 +35,12 @@ update msg m =
                     List.map
                         (Cmd.map (Main.AssetsMsg << Assets.TextureMsg))
                         (Texture.fetch manifest)
+
+                fetchAudio : List (Cmd Main.Msg)
+                fetchAudio =
+                    Audio.fetch manifest
             in
-            ( Just manifest, Cmd.batch <| fetchFont ++ fetchTextures )
+            ( Just manifest, Cmd.batch <| fetchFont ++ fetchTextures ++ fetchAudio )
 
         ManifestError errorStr ->
             ( m, log <| "Error loading asset manifest: " ++ errorStr )

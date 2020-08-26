@@ -1,6 +1,8 @@
-module Audio.State exposing (fetchSounds, playSound, playSoundWith, setVolume)
+module Audio.State exposing (fetch, playSound, playSoundWith, setVolume)
 
 import Audio.Types exposing (SoundOption(..))
+import Dict
+import Manifest.Types exposing (Manifest)
 import Ports
 
 
@@ -47,33 +49,40 @@ setVolume =
     Ports.volume
 
 
-fetchSounds : List (Cmd msg)
-fetchSounds =
+fetch : Manifest -> List (Cmd msg)
+fetch manifest =
     let
         loader : String -> Cmd msg
         loader soundPath =
-            Ports.loadAudio <| "/sfx/" ++ soundPath
+            Ports.loadAudio soundPath
+
+        revise : String -> String
+        revise path =
+            (Dict.get (String.dropLeft 1 path) manifest
+                |> Maybe.map (\s -> "/" ++ s)
+            )
+                |> Maybe.withDefault path
     in
-    List.map loader sounds
+    List.map loader <| List.map revise sounds
 
 
 sounds : List String
 sounds =
-    [ "draw.mp3"
-    , "damage.mp3"
-    , "heal.mp3"
-    , "bounce.mp3"
-    , "bite.mp3"
-    , "curse.mp3"
-    , "reverse.mp3"
-    , "playCard.mp3"
-    , "transmuteCard.mp3"
-    , "transmuteOwner.mp3"
-    , "obliterate.mp3"
-    , "burn.mp3"
-    , "evilTick.mp3"
-    , "victory.mp3"
-    , "defeat.mp3"
-    , "endTurn.mp3"
-    , "hover.mp3"
+    [ "/sfx/draw.mp3"
+    , "/sfx/damage.mp3"
+    , "/sfx/heal.mp3"
+    , "/sfx/bounce.mp3"
+    , "/sfx/bite.mp3"
+    , "/sfx/curse.mp3"
+    , "/sfx/reverse.mp3"
+    , "/sfx/playCard.mp3"
+    , "/sfx/transmuteCard.mp3"
+    , "/sfx/transmuteOwner.mp3"
+    , "/sfx/obliterate.mp3"
+    , "/sfx/burn.mp3"
+    , "/sfx/evilTick.mp3"
+    , "/sfx/victory.mp3"
+    , "/sfx/defeat.mp3"
+    , "/sfx/endTurn.mp3"
+    , "/sfx/hover.mp3"
     ]
