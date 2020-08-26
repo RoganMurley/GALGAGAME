@@ -2,7 +2,7 @@ module Main.State exposing (init, locationUpdate, subscriptions, update)
 
 import Assets.Messages as Assets
 import Assets.State as Assets
-import Audio.State exposing (fetchSounds, setVolume)
+import Audio.State exposing (setVolume)
 import Browser
 import Browser.Events
 import Browser.Navigation
@@ -55,7 +55,7 @@ init flags url initialVolume =
                 url
     in
     ( model
-    , Cmd.batch (cmd :: fetchManifest ++ fetchSounds)
+    , Cmd.batch (cmd :: fetchManifest)
     )
 
 
