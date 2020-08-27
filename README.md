@@ -10,9 +10,7 @@ Try it out at https://www.ringofworlds.com.
 
 Join the [discord](https://discord.gg/SVXXej4).
 
-Read the [devlog](https://forums.tigsource.com/index.php?topic=66122.0).
-
-[![CircleCI](https://circleci.com/gh/RoganMurley/Ring-of-Worlds.svg?style=shield)](https://circleci.com/gh/RoganMurley/Ring-of-Worlds)
+[![CircleCI](https://circleci.com/gh/RoganMurley/GALGAGAME.svg?style=shield)](https://circleci.com/gh/RoganMurley/GALGAGAME)
 
 ## Dependencies:
 * [npm](https://www.npmjs.com/get-npm)
