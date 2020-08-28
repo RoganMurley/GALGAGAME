@@ -14,17 +14,17 @@ popd
 
 echo "Building server..."
 pushd server
-docker build . -f=prod.Dockerfile --tag=game-ringofworlds
+docker build . -f=prod.Dockerfile --tag=game-galgagame
 popd
-docker save -o .images/game-ringofworlds game-ringofworlds
+docker save -o .images/game-galgagame game-galgagame
 
 echo "Provisioning instance..."
 docker-machine create --driver=digitalocean --digitalocean-access-token=$DIGITALOCEAN_ACCESS_TOKEN --digitalocean-region=sfo2 --digitalocean-image=ubuntu-20-04-x64 --digitalocean-tags=ring-of-worlds $name
 eval "$(docker-machine env $name)"
 
 echo "Copying image to server..."
-docker-machine scp .images/game-ringofworlds $name:game-ringofworlds
-docker load -i .images/game-ringofworlds
+docker-machine scp .images/game-galgagame $name:game-galgagame
+docker load -i .images/game-galgagame
 
 echo "Building server..."
 # Need to export COMPOSE_TLS_VERSION=TLSv1_2
