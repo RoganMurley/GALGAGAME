@@ -9,7 +9,7 @@ import Database.Beam.Backend.SQL.BeamExtensions (runInsertReturningList)
 import GameState (PlayState)
 import Mirror (Mirror(..))
 import Player (WhichPlayer(..))
-import Schema (RingOfWorldsDb(..), ringOfWorldsDb)
+import Schema (GalgagameDb(..), galgagameDb)
 
 import qualified Auth.Schema
 
@@ -66,7 +66,7 @@ save :: Replay -> App Int
 save replay = do
   let playerA = getUsername PlayerA replay
   let playerB = getUsername PlayerB replay
-  result <- runBeam $ runInsertReturningList (replays ringOfWorldsDb) $
+  result <- runBeam $ runInsertReturningList (replays galgagameDb) $
     insertExpressions [
       Replay.Schema.Replay
         default_
@@ -80,5 +80,5 @@ load :: Int -> App (Maybe Text)
 load replayId = do
   result <- runBeam $ runSelectReturningOne $
     select $ filter_ (\row -> Replay.Schema.replayId row ==. val_ replayId) $
-      all_ $ replays ringOfWorldsDb
+      all_ $ replays galgagameDb
   return $ Replay.Schema.replayReplay <$> result

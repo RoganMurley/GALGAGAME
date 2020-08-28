@@ -12,7 +12,7 @@ import Database.PostgreSQL.Simple.Errors (ConstraintViolation(..))
 import Data.String.Conversions (cs)
 import Database.Beam ((==.), all_, filter_, insert, insertValues, runInsert, runSelectReturningOne, select, val_)
 import Web.Cookie (parseCookiesText)
-import Schema (RingOfWorldsDb(..), ringOfWorldsDb)
+import Schema (GalgagameDb(..), galgagameDb)
 import System.Log.Logger (errorM)
 import Text.Printf (printf)
 
@@ -57,8 +57,8 @@ saveUser :: ByteString -> ByteString -> ByteString -> Bool -> App Bool
 saveUser email username hashedPassword contactable = do
   let user = Schema.User (cs email) (cs username) (cs hashedPassword) contactable False
   let stat = Schema.Stats (Schema.UserId $ cs username) 0
-  userResult <- runBeamIntegrity $ runInsert $ insert (users ringOfWorldsDb) $ insertValues [ user ]
-  statsResult <- runBeamIntegrity $ runInsert $ insert (stats ringOfWorldsDb) $ insertValues [ stat ]
+  userResult <- runBeamIntegrity $ runInsert $ insert (users galgagameDb) $ insertValues [ user ]
+  statsResult <- runBeamIntegrity $ runInsert $ insert (stats galgagameDb) $ insertValues [ stat ]
   case userResult <* statsResult of
     Right _ ->
       return True
@@ -72,7 +72,7 @@ checkPassword :: ByteString -> ByteString -> App Bool
 checkPassword username password = do
   user <- runBeam $ runSelectReturningOne $
     select $ filter_ (\row -> Schema.userUsername row ==. val_ (cs username)) $
-      all_ $ users ringOfWorldsDb
+      all_ $ users galgagameDb
   return $
     case Schema.userPasshash <$> user of
       Just hashedPassword ->
