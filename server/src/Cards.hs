@@ -235,13 +235,13 @@ surge :: Card
 surge =
   Card
     "Cascade"
-    "Hurt for 10 for each CASCADE in play"
+    "Hurt for 8 for each CASCADE in play"
     "surge.png"
     Violet
     $ \w -> do
       stack <- getStack
       let count = length . filter (\(StackCard _ (Card name _ _ _ _)) -> name == "Cascade") $ stack
-      hurt ((count + 1) * 10) (other w) Slash
+      hurt ((count + 1) * 8) (other w) Slash
 
 
 prophecy :: Card
