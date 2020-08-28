@@ -4,7 +4,10 @@ node_modules/
 client/static/build/
 client/ssl/www.ringofworlds.com.ca-bundle
 client/ssl/www.ringofworlds.com.key
+client/ssl/www.galgagame.com.ca-bundle
+client/ssl/www.galgagame.com.key
 prod.env
 .DS_Store
 .images/game-hubris
 .images/game-ringofworlds
+.images/game-galgagame
