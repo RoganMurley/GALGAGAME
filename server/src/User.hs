@@ -3,7 +3,7 @@ module User where
 import Config (App, runBeam)
 import Data.Text (Text)
 import Database.Beam ((==.), all_, filter_, runSelectReturningOne, select, val_)
-import Schema (RingOfWorldsDb(..), ringOfWorldsDb)
+import Schema (GalgagameDb(..), galgagameDb)
 
 import qualified Auth.Apps as Auth
 import qualified Auth.Schema as Auth
@@ -34,7 +34,7 @@ getUserFromToken mToken = do
     Just username -> do
       mUser <- runBeam $ runSelectReturningOne $
         select $ filter_ (\row -> Auth.userUsername row ==. val_ username) $
-          all_ $ users ringOfWorldsDb
+          all_ $ users galgagameDb
       case mUser of
         Just user ->
           return $ User user

@@ -1,4 +1,4 @@
-name:                ringofworlds
+name:                galgagame
 version:             0.1.0.0
 synopsis:            Initial project template from stack
 description:         Please see README.md
@@ -111,7 +111,7 @@ library
                      , ExistentialQuantification
                      , TypeOperators
 
-executable ringofworlds
+executable galgagame
   hs-source-dirs:      app
   main-is:             Main.hs
   ghc-options:         -threaded -rtsopts -with-rtsopts=-N -Wall -Werror -Wcompat -Wincomplete-record-updates -Wincomplete-uni-patterns -Wredundant-constraints -O2
@@ -126,7 +126,7 @@ executable ringofworlds
                      , postgresql-simple
                      , random
                      , resource-pool
-                     , ringofworlds
+                     , galgagame
                      , safe
                      , string-conversions
                      , text
@@ -141,14 +141,14 @@ executable ringofworlds
                      , RecordWildCards
                      , NamedFieldPuns
 
-test-suite ringofworlds-test
+test-suite galgagame-test
   type:                exitcode-stdio-1.0
   hs-source-dirs:      test
   main-is:             Spec.hs
   build-depends:       base
                      , quickcheck-instances
                      , random
-                     , ringofworlds
+                     , galgagame
                      , tasty
                      , tasty-hunit
                      , tasty-quickcheck

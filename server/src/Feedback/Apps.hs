@@ -5,7 +5,7 @@ import Database.Beam (default_, insert, insertExpressions, runInsert, val_)
 import Data.String.Conversions (cs)
 
 import Config (App, runBeam)
-import Schema (RingOfWorldsDb(..), ringOfWorldsDb)
+import Schema (GalgagameDb(..), galgagameDb)
 
 import qualified Auth.Schema
 import Feedback.Schema as Schema
@@ -15,7 +15,7 @@ saveFeedback :: Maybe ByteString -> ByteString -> App ()
 saveFeedback mUsername body =
   runBeam $
     runInsert $
-      insert (feedback ringOfWorldsDb) $
+      insert (feedback galgagameDb) $
         insertExpressions [
           Schema.Feedback
             default_

@@ -14,14 +14,14 @@ import Feedback.Schema (FeedbackT)
 import Replay.Schema (ReplayT)
 import Stats.Schema (StatsT)
 
-data RingOfWorldsDb f = RingOfWorldsDb
+data GalgagameDb f = GalgagameDb
   { replays  :: f (TableEntity ReplayT)
   , users    :: f (TableEntity UserT)
   , stats    :: f (TableEntity StatsT)
   , feedback :: f (TableEntity FeedbackT)
   } deriving (Generic)
 
-instance Database be RingOfWorldsDb
+instance Database be GalgagameDb
 
-ringOfWorldsDb :: DatabaseSettings be RingOfWorldsDb
-ringOfWorldsDb = defaultDbSettings
+galgagameDb :: DatabaseSettings be GalgagameDb
+galgagameDb = defaultDbSettings

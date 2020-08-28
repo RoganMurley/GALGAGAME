@@ -7,7 +7,7 @@ import Data.Int (Int64)
 import Data.Maybe (fromMaybe)
 import Data.Text (Text)
 
-import Schema (RingOfWorldsDb(..), ringOfWorldsDb)
+import Schema (GalgagameDb(..), galgagameDb)
 import qualified Stats.Schema
 import qualified Auth.Schema
 
@@ -27,12 +27,12 @@ load :: Text -> App Experience
 load username = do
   result <- runBeam $ runSelectReturningOne $
     select $ filter_ (\row -> Stats.Schema.statsUser row ==. val_ (Auth.Schema.UserId username)) $
-      all_ $ stats ringOfWorldsDb
+      all_ $ stats galgagameDb
   return $ fromMaybe 0 $ Stats.Schema.statsExperience <$> result
 
 increase :: Text -> Experience -> App ()
 increase username xp = do
-  runBeam $ runUpdate $ update (stats ringOfWorldsDb)
+  runBeam $ runUpdate $ update (stats galgagameDb)
     (\row -> [Stats.Schema.statsExperience row <-. current_ (Stats.Schema.statsExperience row) + val_ xp])
     (\row -> Stats.Schema.statsUser row ==. val_ (Auth.Schema.UserId username))
 
