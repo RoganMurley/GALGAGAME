@@ -161,4 +161,4 @@ test-suite ringofworlds-test
 
 source-repository head
   type:     git
-  location: https://github.com/RoganMurley/hubris
+  location: https://github.com/RoganMurley/galgagame
