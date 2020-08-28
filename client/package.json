@@ -1,5 +1,5 @@
 {
-  "name": "ring-of-worlds",
+  "name": "galgagame",
   "version": "1.0.0",
   "description": "",
   "main": "gulpfile.js",
@@ -24,9 +24,9 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/RoganMurley/Ring-of-Worlds.git"
+    "url": "git+https://github.com/RoganMurley/GALGAGAME.git"
   },
   "author": "",
   "license": "",
-  "homepage": "https://ringofworlds.com"
+  "homepage": "https://galgagame.com"
 }
