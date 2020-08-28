@@ -52,7 +52,7 @@ offering =
 confound :: Card
 confound =
   Card
-    "Chaos"
+    "Confound"
     "Shuffle the order of all cards on the wheel"
     "confound.png"
     Red
@@ -87,7 +87,7 @@ lightning =
 feint :: Card
 feint =
   Card
-    "Moon"
+    "Feint"
     "Return all of your cards on the wheel to hand"
     "feint.png"
     Blue
@@ -97,7 +97,7 @@ feint =
 hubris :: Card
 hubris =
   Card
-    "Sun"
+    "Hubris"
     "Discard all cards on the wheel"
     "hubris.png"
     Blue
@@ -247,7 +247,7 @@ surge =
 prophecy :: Card
 prophecy =
   Card
-    "Eye"
+    "Prophecy"
     "Return all cards on the wheel to hand"
     "prophecy.png"
     Violet
@@ -282,7 +282,7 @@ overwhelm =
 potion :: Card
 potion =
   Card
-    "Love"
+    "Potion"
     "Heal for 10"
     "potion.png"
     Orange
@@ -292,7 +292,7 @@ potion =
 reflect :: Card
 reflect =
   Card
-    "Mirror"
+    "Reflect"
     "Change the owner of all cards on the wheel"
     "reflect.png"
     Orange
