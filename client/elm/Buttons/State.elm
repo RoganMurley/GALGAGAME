@@ -24,7 +24,7 @@ entity key { x, y, xScale, yScale, btn, disabled } dt mMouse buttons =
 
         isHit : Bool
         isHit =
-            Maybe.map (\mouse -> hitTest mouse (0.07 * xScale) { position = vec2 x y }) mMouse
+            Maybe.map (\mouse -> hitTest mouse (0.07 * abs xScale) { position = vec2 x y }) mMouse
                 |> Maybe.withDefault False
 
         hover : Float
