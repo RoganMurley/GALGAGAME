@@ -6,8 +6,8 @@ data CardDiscard = NoDiscard Int | CardDiscard
   deriving (Show, Eq)
 
 instance ToJSON CardDiscard where
-  toJSON (NoDiscard finalStackIndex) =
+  toJSON (NoDiscard finalIndex) =
     object [
-      "finalStackIndex" .= finalStackIndex
+      "finalIndex" .= finalIndex
     ]
   toJSON CardDiscard = "discard"

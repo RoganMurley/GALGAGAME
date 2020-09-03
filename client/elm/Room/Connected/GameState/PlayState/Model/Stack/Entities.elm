@@ -126,7 +126,7 @@ stackEntity { anim, progress } baseRotateProgress finalStackLen finalIndex =
                         _ ->
                             toFloat finalIndex + 1.0
 
-                Discard discards ->
+                DiscardStack discards ->
                     case Array.get finalIndex <| Array.fromList discards of
                         Just (NoDiscard discardIndex) ->
                             toFloat discardIndex + 1.0
@@ -165,7 +165,7 @@ stackEntity { anim, progress } baseRotateProgress finalStackLen finalIndex =
                 Bounce _ ->
                     toFloat finalIndex + 1.0
 
-                Discard _ ->
+                DiscardStack _ ->
                     toFloat finalIndex + 1.0
 
                 Limbo _ ->
@@ -227,7 +227,7 @@ stackEntity { anim, progress } baseRotateProgress finalStackLen finalIndex =
         distance : Float
         distance =
             case anim of
-                Discard discards ->
+                DiscardStack discards ->
                     case Array.get finalIndex <| Array.fromList discards of
                         Just CardDiscard ->
                             baseDistance + toFloat (12 - finalIndex) * progress * 0.01

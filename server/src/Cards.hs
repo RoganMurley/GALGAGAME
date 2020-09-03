@@ -101,7 +101,7 @@ hubris =
     "Discard all cards on the wheel"
     "hubris.png"
     Blue
-    $ \_ -> discard (const True)
+    $ \_ -> discardStack (const True)
 
 
 -- Balancer
@@ -387,6 +387,71 @@ theEnd =
     $ \w -> hurt 10 w Slash
 
 
+-- Duelist
+lance :: Card
+lance =
+  Card
+    "Lance"
+    "Hurt for 10"
+    "lance.png"
+    Copper
+    $ \w -> hurt 10 (other w) Slash
+
+
+meltdown :: Card
+meltdown =
+  Card
+    "Meltdown"
+    "Discard your hand, then hurt for 5 for each card discarded"
+    "meltdown.png"
+    Copper
+    $ \w -> do
+      handSize <- length <$> getHand w
+      discardHand w (const True)
+      hurt (5 * handSize) (other w) Slash
+
+
+duel :: Card
+duel =
+  Card
+    "Duel"
+    "Give each player a PISTOL"
+    "duel.png"
+    Copper
+    $ \w -> do
+      addToHand w pistol
+      addToHand (other w) pistol
+
+
+pistol :: Card
+pistol =
+  Card
+    "Pistol"
+    "Hurt for 30"
+    "pistol.png"
+    Copper
+    $ \w -> hurt 30 (other w) Slash
+
+
+taunt :: Card
+taunt =
+  Card
+    "Taunt"
+    "Your opponent is forced to play a random card"
+    "taunt.png"
+    Copper
+    $ \w -> do
+      gen <- getGen
+      hand <- getHand (other w)
+      let mCard = headMay . (shuffle gen) $ zip [0..] hand
+      case mCard of
+        Just (index, c) -> do
+          Beta.play (other w) c index
+          Beta.windup
+        Nothing ->
+          Beta.null
+
+
 -- Daily
 subjugate :: Card
 subjugate =
@@ -394,10 +459,10 @@ subjugate =
     "Subjugate"
     "Discard next card for each card in your hand"
     "subjugate.png"
-    Mystery
+    Copper
     $ \w -> do
       handLen <- length <$> getHand w
-      discard $ \(i, _) -> i < handLen
+      discardStack $ \(i, _) -> i < handLen
 
 
 avarice :: Card
@@ -459,12 +524,12 @@ unravel :: Card
 unravel =
   Card
     "Unravel"
-    "Discard on the wheel in dark zones"
+    "Discard cards on the wheel in dark zones"
     "unravel.png"
     Mystery
     $ \_ -> do
       rot <- getRot
-      discard $ \(i, _) -> odd (i + rot)
+      discardStack $ \(i, _) -> odd (i + rot)
 
 
 respite :: Card
@@ -537,6 +602,7 @@ basicCards =
   , grudge
   , relicblade
   , ritual
+  , lance
   ]
 
 
@@ -549,6 +615,7 @@ specialCards =
   , curse
   , greed
   , lightning
+  , meltdown
   ]
 
 
@@ -563,6 +630,7 @@ supportCards =
   , mimic
   , telepathy
   , goldrush
+  , taunt
   ]
 
 
@@ -589,6 +657,8 @@ otherCards =
   , voidbeam
   , feud
   , inevitable
+  , duel
+  , pistol
   ]
 
 

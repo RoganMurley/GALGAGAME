@@ -27,7 +27,8 @@ data CardAnim
   | Windup
   | Fabricate StackCard
   | Bounce [CardBounce]
-  | Discard [CardDiscard]
+  | DiscardStack [CardDiscard]
+  | DiscardHand WhichPlayer [CardDiscard]
   | Pass WhichPlayer
   | Limbo [CardLimbo]
   | Unlimbo
@@ -117,10 +118,16 @@ instance ToJSON CardAnim where
     , "player" .= PlayerA
     , "bounce" .= b
     ]
-  toJSON (Discard d) =
+  toJSON (DiscardStack d) =
     object
-    [ "name"    .= ("discard" :: Text)
+    [ "name"    .= ("discardStack" :: Text)
     , "player"  .= PlayerA
+    , "discard" .= d
+    ]
+  toJSON (DiscardHand w d) =
+    object
+    [ "name"    .= ("discardHand" :: Text)
+    , "player"  .= w
     , "discard" .= d
     ]
   toJSON (Pass w) =
@@ -148,7 +155,6 @@ instance Mirror CardAnim where
   mirror Reflect             = Reflect
   mirror Confound            = Confound
   mirror Reverse             = Reverse
-
   mirror (Play w c i)        = Play (other w) c i
   mirror (Transmute ca cb t) = Transmute (mirror ca) (mirror cb) t
   mirror (GameEnd w)         = GameEnd (other <$> w)
@@ -157,7 +163,8 @@ instance Mirror CardAnim where
   mirror Windup              = Windup
   mirror (Fabricate c)       = Fabricate (mirror c)
   mirror (Bounce b)          = Bounce b
-  mirror (Discard d)         = Discard d
+  mirror (DiscardStack d)    = DiscardStack d
+  mirror (DiscardHand w d)   = DiscardHand (other w) d
   mirror (Pass w)            = Pass (other w)
   mirror (Limbo l)           = Limbo l
   mirror Unlimbo             = Unlimbo

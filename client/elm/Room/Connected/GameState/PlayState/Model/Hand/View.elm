@@ -1,7 +1,8 @@
 module Hand.View exposing (millView, otherView, view)
 
 import Animation.State as Animation
-import Animation.Types exposing (Anim(..))
+import Animation.Types exposing (Anim(..), CardDiscard(..))
+import Array
 import Card.State as Card
 import Card.Types as Card
 import Card.View as Card
@@ -17,14 +18,42 @@ import WhichPlayer.Types exposing (WhichPlayer(..))
 
 view : List (Card.Entity { index : Int }) -> Context -> List WebGL.Entity
 view handEntities ctx =
+    let
+        cardView i =
+            case ctx.anim of
+                DiscardHand PlayerA discards ->
+                    case Array.get i <| Array.fromList discards of
+                        Just CardDiscard ->
+                            Card.dissolvingView ctx
+
+                        _ ->
+                            Card.view ctx
+
+                _ ->
+                    Card.view ctx
+    in
     List.concat <|
-        List.map (Card.view ctx) handEntities
+        List.indexedMap cardView handEntities
 
 
 otherView : List (Game.Entity3D {}) -> Context -> List WebGL.Entity
 otherView otherHandEntities ctx =
+    let
+        cardView i =
+            case ctx.anim of
+                DiscardHand PlayerB discards ->
+                    case Array.get i <| Array.fromList discards of
+                        Just CardDiscard ->
+                            Card.backDissolvingView ctx
+
+                        _ ->
+                            Card.backView ctx
+
+                _ ->
+                    Card.backView ctx
+    in
     List.concat <|
-        List.map (Card.backView ctx) otherHandEntities
+        List.indexedMap cardView otherHandEntities
 
 
 millView : Context -> List WebGL.Entity

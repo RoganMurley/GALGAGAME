@@ -1,4 +1,4 @@
-module Card.View exposing (backView, dissolvingView, fabricatingView, limboingView, transmutingView, view)
+module Card.View exposing (backDissolvingView, backView, dissolvingView, fabricatingView, limboingView, transmutingView, view)
 
 import Animation.Types exposing (Anim(..))
 import Card.Types as Card
@@ -347,3 +347,56 @@ transmutingView ctx stackCard finalStackCard { position, rotation, scale } =
                 , time = progress
                 }
             ]
+
+
+backDissolvingView : Context -> Game.Entity3D {} -> List WebGL.Entity
+backDissolvingView { perspective, camera3d, progress, textures } { position, rotation, scale } =
+    Texture.with3 textures "cardOrbOther.png" "cardBackBack.png" "noise.png" <|
+        \cardOrbTexture cardBackTexture noise ->
+            [ Render.Primitives.quad Render.Shaders.disintegrate <|
+                { texture = cardBackTexture
+                , noise = noise
+                , rotation = Quaternion.makeRotate rotation
+                , scale = makeScale scale
+                , color = vec3 (200 / 255) (200 / 255) (200 / 255)
+                , pos = position
+                , perspective = perspective
+                , camera = camera3d
+                , time = progress
+                }
+            , Render.Primitives.quad Render.Shaders.disintegrate <|
+                { texture = cardOrbTexture
+                , noise = noise
+                , rotation = Quaternion.makeRotate rotation
+                , scale = makeScale scale
+                , color = Colour.white
+                , pos = position
+                , perspective = perspective
+                , camera = camera3d
+                , time = progress
+                }
+            ]
+
+
+
+-- Texture.with2 textures "cardBackBack.png" "cardOrbOther.png" <|
+--     \texture cardOrbTexture ->
+--         [ Render.Primitives.quad Render.Shaders.fragment <|
+--             { rotation = Quaternion.makeRotate rotation
+--             , scale = makeScale scale
+--             , color = vec3 (200 / 255) (200 / 255) (200 / 255)
+--             , pos = position
+--             , perspective = perspective
+--             , camera = camera3d
+--             , texture = texture
+--             }
+--         , Render.Primitives.quad Render.Shaders.fragment <|
+--             { rotation = Quaternion.makeRotate rotation
+--             , scale = makeScale scale
+--             , color = Colour.white
+--             , pos = position
+--             , perspective = perspective
+--             , camera = camera3d
+--             , texture = cardOrbTexture
+--             }
+--         ]

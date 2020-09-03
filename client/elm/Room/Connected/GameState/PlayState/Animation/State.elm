@@ -63,8 +63,11 @@ animMaxTick anim =
             Bounce _ ->
                 750.0
 
-            Discard _ ->
+            DiscardStack _ ->
                 750.0
+
+            DiscardHand _ _ ->
+                400.0
 
             Limbo _ ->
                 750.0

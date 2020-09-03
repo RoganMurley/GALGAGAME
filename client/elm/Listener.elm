@@ -80,7 +80,7 @@ animSfx anim =
                 TransmuteOwner ->
                     Just "transmuteOwner.mp3"
 
-        Discard _ ->
+        DiscardStack _ ->
             Just "obliterate.mp3"
 
         Mill _ _ ->

@@ -61,7 +61,7 @@ view entities ctx =
                         _ ->
                             Card.view ctx
 
-                Discard discards ->
+                DiscardStack discards ->
                     case Array.get i <| Array.fromList discards of
                         Just CardDiscard ->
                             Card.dissolvingView ctx

@@ -28,7 +28,8 @@ data DSL a
   | Windup a
   | Fabricate StackCard a
   | Bounce [CardBounce] a
-  | Discard [CardDiscard] a
+  | DiscardStack [CardDiscard] a
+  | DiscardHand WhichPlayer [CardDiscard] a
   | Pass WhichPlayer a
   | Limbo [CardLimbo] a
   | Unlimbo a
