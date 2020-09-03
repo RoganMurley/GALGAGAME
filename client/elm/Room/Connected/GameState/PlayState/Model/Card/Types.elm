@@ -20,6 +20,7 @@ type CardCol
     | Blue
     | White
     | Violet
+    | Copper
     | Mystery
 
 

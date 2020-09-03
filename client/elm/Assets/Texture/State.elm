@@ -144,8 +144,15 @@ texturePaths manifest =
             , { name = "missile.png", path = "/img/textures/missile.png" }
             , { name = "grudge.png", path = "/img/textures/grudge.png" }
 
-            -- Dailies
+            -- new
             , { name = "subjugate.png", path = "/img/textures/subjugate.png" }
+            , { name = "lance.png", path = "/img/textures/lance.png" }
+            , { name = "meltdown.png", path = "/img/textures/meltdown.png" }
+            , { name = "duel.png", path = "/img/textures/duel.png" }
+            , { name = "pistol.png", path = "/img/textures/pistol.png" }
+            , { name = "taunt.png", path = "/img/textures/taunt.png" }
+
+            -- Dailies
             , { name = "avarice.png", path = "/img/textures/avarice.png" }
             , { name = "goldrush.png", path = "/img/textures/goldrush.png" }
             , { name = "telepathy.png", path = "/img/textures/telepathy.png" }

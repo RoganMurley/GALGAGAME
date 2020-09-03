@@ -59,8 +59,11 @@ decoder =
                 "bounce" ->
                     bounceDecoder
 
-                "discard" ->
-                    discardDecoder
+                "discardStack" ->
+                    discardStackDecoder
+
+                "discardHand" ->
+                    discardHandDecoder
 
                 "pass" ->
                     passDecoder
@@ -233,21 +236,26 @@ bounceDecoder =
                 oneOf [ noBounceDecoder, bounceDiscardDecoder, bounceIndexDecoder ]
 
 
-discardDecoder : Decoder Anim
-discardDecoder =
-    let
-        noDiscardDecoder : Decoder CardDiscard
-        noDiscardDecoder =
-            Json.map NoDiscard <| field "finalStackIndex" int
+cardDiscardDecoder : Decoder CardDiscard
+cardDiscardDecoder =
+    oneOf
+        [ Json.map NoDiscard <| field "finalIndex" int
+        , Json.map (always CardDiscard) <| constDecoder "discard"
+        ]
 
-        cardDiscardDecoder : Decoder CardDiscard
-        cardDiscardDecoder =
-            Json.map (always CardDiscard) <| constDecoder "discard"
-    in
-    Json.map Discard <|
+
+discardStackDecoder : Decoder Anim
+discardStackDecoder =
+    Json.map DiscardStack <|
         field "discard" <|
-            list <|
-                oneOf [ noDiscardDecoder, cardDiscardDecoder ]
+            list cardDiscardDecoder
+
+
+discardHandDecoder : Decoder Anim
+discardHandDecoder =
+    Json.map2 DiscardHand
+        (field "player" WhichPlayer.decoder)
+        (field "discard" <| list cardDiscardDecoder)
 
 
 passDecoder : Decoder Anim

@@ -22,7 +22,8 @@ type Anim
     | Windup WhichPlayer
     | Fabricate StackCard
     | Bounce (List Bounce)
-    | Discard (List CardDiscard)
+    | DiscardStack (List CardDiscard)
+    | DiscardHand WhichPlayer (List CardDiscard)
     | Pass WhichPlayer
     | Limbo (List CardLimbo)
     | Unlimbo WhichPlayer

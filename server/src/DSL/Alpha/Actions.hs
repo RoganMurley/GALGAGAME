@@ -149,8 +149,12 @@ bounce f = do
   modHand PlayerB $ \h -> h ++ (stackcard_card <$> pbBouncing)
 
 
-discard :: ((Int, StackCard) -> Bool) -> Program ()
-discard f = modStack $ indexedFilter (not . f)
+discardStack :: ((Int, StackCard) -> Bool) -> Program ()
+discardStack f = modStack $ indexedFilter (not . f)
+
+
+discardHand :: WhichPlayer -> ((Int, Card) -> Bool) -> Program ()
+discardHand w f = modHand w $ indexedFilter (not . f)
 
 
 confound :: Program ()

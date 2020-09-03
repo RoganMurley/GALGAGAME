@@ -173,6 +173,7 @@ allRunes =
   , wrath
   , envy
   , pride
+  , duelist
   ]
 
 
@@ -237,6 +238,15 @@ greed =
     "You punish hoarding."
     "alchemy.png"
     (Cards.relicblade, Cards.greed, Cards.echo, Cards.alchemy)
+
+
+duelist :: Rune
+duelist =
+  Rune
+    "Crown"
+    "You use every advantage you have."
+    "subjugate.png"
+    (Cards.lance, Cards.meltdown, Cards.taunt, Cards.subjugate)
 
 
 -- Characters

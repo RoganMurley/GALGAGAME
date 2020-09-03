@@ -27,7 +27,8 @@ data DSL n
   | Windup n
   | Fabricate StackCard n
   | Bounce (StackCard -> Bool) n
-  | Discard ((Int, StackCard) -> Bool) n
+  | DiscardStack ((Int, StackCard) -> Bool) n
+  | DiscardHand WhichPlayer ((Int, Card) -> Bool) n
   | SetHeadOwner WhichPlayer n
   | Limbo ((Int, StackCard) -> Bool) n
   | Unlimbo n

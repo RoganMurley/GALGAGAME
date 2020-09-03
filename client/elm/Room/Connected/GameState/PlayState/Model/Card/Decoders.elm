@@ -40,6 +40,9 @@ cardColDecoder =
                 "violet" ->
                     succeed Violet
 
+                "copper" ->
+                    succeed Copper
+
                 "mystery" ->
                     succeed Mystery
 

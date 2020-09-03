@@ -1,7 +1,8 @@
 module Hand.Entities exposing (entities, handCardPosition, handCardRotation, handOrigin, otherEntities, playPosition)
 
 import Animation.State as Animation
-import Animation.Types exposing (Anim(..), Bounce, HandBounce)
+import Animation.Types exposing (Anim(..), Bounce, CardDiscard(..), HandBounce)
+import Array
 import Card.State as Card
 import Card.Types exposing (Card)
 import Game.Entity as Game
@@ -392,10 +393,27 @@ handCardPosition ctx which index count hover =
                         _ ->
                             0
 
+                discardY =
+                    case ctx.anim of
+                        DiscardHand w discards ->
+                            if w /= which then
+                                0
+
+                            else
+                                case Array.get index <| Array.fromList discards of
+                                    Just CardDiscard ->
+                                        -10 * ctx.progress
+
+                                    _ ->
+                                        0
+
+                        _ ->
+                            0
+
                 baseY =
                     abs <| 4 * (toFloat <| ceiling (i - (c * 0.5)))
             in
-            sign * (baseY + hoverY)
+            sign * (baseY + hoverY + discardY)
     in
     vec3 -x (-0.004 * y) 0
         |> Math.Vector3.add
