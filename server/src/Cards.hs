@@ -202,7 +202,7 @@ parasite =
   Card
     "Parasite"
     "Hurt yourself for 4"
-    "bad-apple.png"
+    "badapple.png"
     Green
     $ \w -> do
       hurt 4 w Bite
