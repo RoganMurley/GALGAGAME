@@ -85,82 +85,19 @@ fetch manifest =
 
 texturePaths : Manifest -> List Assets.Path
 texturePaths manifest =
-    let
-        revise { name, path } =
-            { name = name
-            , path =
-                Dict.get (String.dropLeft 1 path) manifest
-                    |> Maybe.withDefault path
-            }
-    in
-    List.map revise <|
-        List.reverse
-            [ -- Testing
-              { name = "radial.png", path = "/img/textures/radial.png" }
-            , { name = "cardBack.png", path = "/img/textures/cardBackNegative.png" }
-            , { name = "cardBackRed.png", path = "/img/textures/cardBackRed.png" }
-            , { name = "cardBackBack.png", path = "/img/textures/cardBackBack.png" }
-            , { name = "cardOrb.png", path = "/img/textures/cardOrb.png" }
-            , { name = "cardOrbOther.png", path = "/img/textures/cardOrbOther.png" }
-
-            -- VFX
-            , { name = "noise.png", path = "/img/textures/noise.png" }
-            , { name = "laser.png", path = "/img/textures/laser.png" }
-            , { name = "spiral.png", path = "/img/textures/spiral.png" }
-            , { name = "next.png", path = "/img/textures/next.png" }
-
-            -- Cards
-            , { name = "fireball.png", path = "/img/textures/fireball.png" }
-            , { name = "offering.png", path = "/img/textures/offering.png" }
-            , { name = "confound.png", path = "/img/textures/confound.png" }
-            , { name = "overwhelm.png", path = "/img/textures/envy.png" }
-            , { name = "echo.png", path = "/img/textures/echo.png" }
-            , { name = "feint.png", path = "/img/textures/feint.png" }
-            , { name = "potion.png", path = "/img/textures/potion.png" }
-            , { name = "reflect.png", path = "/img/textures/reflect.png" }
-            , { name = "staff.png", path = "/img/textures/staff.png" }
-            , { name = "surge.png", path = "/img/textures/brainbomb.png" }
-            , { name = "prophecy.png", path = "/img/textures/prophecy.png" }
-            , { name = "scythe.png", path = "/img/textures/harvest.png" }
-            , { name = "bloodsucker.png", path = "/img/textures/feast.png" }
-            , { name = "serpent.png", path = "/img/textures/beguile.png" }
-            , { name = "reverse.png", path = "/img/textures/reverse.png" }
-            , { name = "bad-apple.png", path = "/img/textures/badapple.png" }
-            , { name = "greed.png", path = "/img/textures/greed.png" }
-            , { name = "alchemy.png", path = "/img/textures/alchemy.png" }
-            , { name = "hammer.png", path = "/img/textures/strike.png" }
-            , { name = "lightning.png", path = "/img/textures/lightning.png" }
-            , { name = "hubris.png", path = "/img/textures/hubris.png" }
-            , { name = "katana.png", path = "/img/textures/katana.png" }
-            , { name = "curse.png", path = "/img/textures/curse.png" }
-            , { name = "bless.png", path = "/img/textures/bless.png" }
-            , { name = "balance.png", path = "/img/textures/balance.png" }
-            , { name = "end.png", path = "/img/textures/end.png" }
-            , { name = "sting.png", path = "/img/textures/sting.png" }
-            , { name = "gold.png", path = "/img/textures/gold.png" }
-            , { name = "waxworks.png", path = "/img/textures/mimic.png" }
-            , { name = "missile.png", path = "/img/textures/missile.png" }
-            , { name = "grudge.png", path = "/img/textures/grudge.png" }
-
-            -- new
-            , { name = "subjugate.png", path = "/img/textures/subjugate.png" }
-            , { name = "lance.png", path = "/img/textures/lance.png" }
-            , { name = "meltdown.png", path = "/img/textures/meltdown.png" }
-            , { name = "duel.png", path = "/img/textures/duel.png" }
-            , { name = "pistol.png", path = "/img/textures/pistol.png" }
-            , { name = "taunt.png", path = "/img/textures/taunt.png" }
-
-            -- Dailies
-            , { name = "avarice.png", path = "/img/textures/avarice.png" }
-            , { name = "goldrush.png", path = "/img/textures/goldrush.png" }
-            , { name = "telepathy.png", path = "/img/textures/telepathy.png" }
-            , { name = "ritual.png", path = "/img/textures/ritual.png" }
-            , { name = "unravel.png", path = "/img/textures/unravel.png" }
-            , { name = "respite.png", path = "/img/textures/respite.png" }
-            , { name = "voidbeam.png", path = "/img/textures/voidbeam.png" }
-            , { name = "feud.png", path = "/img/textures/feud.png" }
-            , { name = "inevitable.png", path = "/img/textures/inevitable.png" }
-            ]
+    Dict.filter
+        (\key _ -> String.startsWith "img/textures/" key)
+        manifest
+        |> Dict.toList
+        |> List.map
+            (\( revisedName, path ) ->
+                { name =
+                    String.dropLeft
+                        (String.length "img/textures/")
+                        revisedName
+                , path = path
+                }
+            )
 
 
 with : Model -> String -> (Texture -> List a) -> List a
