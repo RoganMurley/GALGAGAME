@@ -190,7 +190,7 @@ serpent =
   Card
     "Infect"
     ("Add 2 PARASITE cards to their hand")
-    "serpent.png"
+    "beguile.png"
     Green
     $ \w -> do
       addToHand (other w) parasite
