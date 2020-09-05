@@ -1,4 +1,10 @@
-module Audio.Types exposing (PlayAudioMessage, SoundOption(..))
+module Audio.Types exposing (Model, PlayAudioMessage, SoundOption(..))
+
+import Dict exposing (Dict)
+
+
+type alias Model =
+    { sounds : Dict String String }
 
 
 type SoundOption

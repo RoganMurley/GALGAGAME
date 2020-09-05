@@ -2,6 +2,7 @@ module PlayState.State exposing (carry, get, map, mouseClick, resolveOutcomeStr,
 
 import Animation.Types exposing (Anim(..))
 import Assets.State as Assets
+import Assets.Types as Assets
 import Audio.State exposing (playSound)
 import Browser.Navigation
 import Buttons.State as Buttons
@@ -36,11 +37,11 @@ import Util exposing (message)
 import WhichPlayer.Types exposing (WhichPlayer(..))
 
 
-update : Msg -> PlayState -> Mode -> ( PlayState, Cmd Main.Msg )
-update msg state mode =
+update : Msg -> PlayState -> Mode -> Assets.Model -> ( PlayState, Cmd Main.Msg )
+update msg state mode assets =
     case msg of
         PlayingOnly playingOnly ->
-            updatePlayingOnly playingOnly state mode
+            updatePlayingOnly playingOnly state mode assets
 
         HoverOtherOutcome otherHover ->
             case state of
@@ -92,8 +93,8 @@ update msg state mode =
             ( map (\game -> { game | feedback = { progress = 1000, pos = pos } :: game.feedback }) state, Cmd.none )
 
 
-updatePlayingOnly : PlayingOnly -> PlayState -> Mode.Mode -> ( PlayState, Cmd Main.Msg )
-updatePlayingOnly msg state mode =
+updatePlayingOnly : PlayingOnly -> PlayState -> Mode.Mode -> Assets.Model -> ( PlayState, Cmd Main.Msg )
+updatePlayingOnly msg state mode assets =
     case mode of
         Mode.Spectating ->
             ( state, Cmd.none )
@@ -113,7 +114,7 @@ updatePlayingOnly msg state mode =
                         sound =
                             case Game.getHoverIndex hover of
                                 Just _ ->
-                                    playSound "/sfx/hover.mp3"
+                                    playSound assets.audio "sfx/hover.mp3"
 
                                 Nothing ->
                                     Cmd.none
@@ -162,11 +163,11 @@ updatePlayingOnly msg state mode =
                             )
 
                 TurnOnly turnOnly ->
-                    updateTurnOnly turnOnly state
+                    updateTurnOnly turnOnly state assets
 
 
-updateTurnOnly : TurnOnly -> PlayState -> ( PlayState, Cmd Main.Msg )
-updateTurnOnly msg state =
+updateTurnOnly : TurnOnly -> PlayState -> Assets.Model -> ( PlayState, Cmd Main.Msg )
+updateTurnOnly msg state { audio } =
     case state of
         Playing { game } ->
             if game.res.final.turn == PlayerA then
@@ -181,7 +182,7 @@ updateTurnOnly msg state =
                         ( newState
                         , Cmd.batch
                             [ websocketSend "end:"
-                            , playSound "/sfx/endTurn.mp3"
+                            , playSound audio "sfx/endTurn.mp3"
                             ]
                         )
 
@@ -375,8 +376,8 @@ resolveOutcome mState { initial, resDiffList, finalState } =
     carry state newState
 
 
-mouseClick : Flags -> GameType -> Mode -> Position -> PlayState -> ( PlayState, Cmd Main.Msg )
-mouseClick { dimensions } gameType mode { x, y } state =
+mouseClick : Flags -> Assets.Model -> GameType -> Mode -> Position -> PlayState -> ( PlayState, Cmd Main.Msg )
+mouseClick { dimensions } assets gameType mode { x, y } state =
     let
         pos =
             vec2 (toFloat x) (toFloat y)
@@ -397,6 +398,7 @@ mouseClick { dimensions } gameType mode { x, y } state =
                 msg
                 state
                 mode
+                assets
 
         ctx =
             Game.bareContextInit dimensions Assets.init (Just pos)

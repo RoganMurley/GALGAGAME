@@ -79,7 +79,7 @@ update msg ({ assets, room, settings, flags } as model) =
                 newMsg =
                     case room of
                         Room.Connected { game, tick } ->
-                            listen game tick
+                            listen assets.audio game tick
 
                         Room.Replay { replay } ->
                             case replay of
@@ -87,7 +87,7 @@ update msg ({ assets, room, settings, flags } as model) =
                                     Cmd.none
 
                                 Just { state, tick } ->
-                                    listen (Started state) tick
+                                    listen assets.audio (Started state) tick
 
                         _ ->
                             Cmd.none
@@ -133,14 +133,14 @@ update msg ({ assets, room, settings, flags } as model) =
         Receive str ->
             let
                 ( newRoom, cmd ) =
-                    Room.receive flags str room
+                    Room.receive flags assets str room
             in
             ( { model | room = newRoom }, cmd )
 
         RoomMsg roomMsg ->
             let
                 ( newRoom, cmd ) =
-                    Room.update room roomMsg flags
+                    Room.update room roomMsg assets flags
             in
             ( { model | room = newRoom }, cmd )
 
@@ -217,6 +217,7 @@ update msg ({ assets, room, settings, flags } as model) =
                             Connected.GameStateMsg <|
                                 GameState.MouseClick mouse
                         )
+                        assets
                         flags
             in
             ( { model | room = newRoom }

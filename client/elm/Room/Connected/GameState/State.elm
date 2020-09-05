@@ -1,6 +1,7 @@
 module GameState.State exposing (tick, update)
 
 import Assets.State as Assets
+import Assets.Types as Assets
 import DeckBuilding.State as DeckBuilding
 import Game.State exposing (bareContextInit)
 import GameState.Decoders exposing (stateDecoder)
@@ -16,8 +17,8 @@ import PlayState.Types exposing (PlayState)
 import Ports exposing (log)
 
 
-update : Msg -> GameState -> Flags -> Mode -> GameType -> ( GameState, Cmd Main.Msg )
-update msg state flags mode gameType =
+update : Msg -> GameState -> Flags -> Mode -> GameType -> Assets.Model -> ( GameState, Cmd Main.Msg )
+update msg state flags mode gameType assets =
     case msg of
         MouseClick pos ->
             case state of
@@ -31,7 +32,7 @@ update msg state flags mode gameType =
                 Started playState ->
                     let
                         ( newPlayState, cmd ) =
-                            PlayState.mouseClick flags gameType mode pos playState
+                            PlayState.mouseClick flags assets gameType mode pos playState
                     in
                     ( Started newPlayState, cmd )
 
@@ -43,7 +44,7 @@ update msg state flags mode gameType =
                 Started playState ->
                     let
                         ( newPlayState, cmd ) =
-                            PlayState.update playStateMsg playState mode
+                            PlayState.update playStateMsg playState mode assets
                     in
                     ( Started newPlayState, cmd )
 

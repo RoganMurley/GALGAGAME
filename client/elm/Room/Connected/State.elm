@@ -1,5 +1,6 @@
 module Connected.State exposing (init, receive, tick, update)
 
+import Assets.Types as Assets
 import Audio.State exposing (playSound)
 import Connected.Decoders exposing (decodeDamageOutcome, decodePlayers)
 import Connected.Messages exposing (Msg(..))
@@ -31,13 +32,13 @@ init mode gameType roomID =
     }
 
 
-update : Flags -> Msg -> Model -> ( Model, Cmd Main.Msg )
-update flags msg ({ game, mode, gameType } as model) =
+update : Flags -> Assets.Model -> Msg -> Model -> ( Model, Cmd Main.Msg )
+update flags assets msg ({ game, mode, gameType } as model) =
     case msg of
         GameStateMsg gameMsg ->
             let
                 ( newGame, cmd ) =
-                    GameState.update gameMsg game flags mode gameType
+                    GameState.update gameMsg game flags mode gameType assets
             in
             ( { model | game = newGame }, cmd )
 
@@ -64,8 +65,8 @@ tick flags model dt =
     ( { model | game = game, tick = newTick }, Cmd.map GameStateMsg msg )
 
 
-receive : Flags -> Model -> String -> ( Model, Cmd Main.Msg )
-receive flags ({ mode, gameType } as model) msg =
+receive : Flags -> Assets.Model -> Model -> String -> ( Model, Cmd Main.Msg )
+receive flags assets ({ mode, gameType } as model) msg =
     let
         ( command, content ) =
             splitOnColon msg
@@ -80,6 +81,7 @@ receive flags ({ mode, gameType } as model) msg =
                         flags
                         mode
                         gameType
+                        assets
             in
             ( { model | game = newGame }, cmd )
 
@@ -96,11 +98,12 @@ receive flags ({ mode, gameType } as model) msg =
                                 flags
                                 mode
                                 gameType
+                                assets
                     in
                     ( { model | game = newGame }
                     , Cmd.batch
                         [ cmd
-                        , playSound "/sfx/hover.mp3"
+                        , playSound assets.audio "/sfx/hover.mp3"
                         ]
                     )
 
@@ -120,6 +123,7 @@ receive flags ({ mode, gameType } as model) msg =
                                 flags
                                 mode
                                 gameType
+                                assets
                     in
                     ( { model | game = newGame }, cmd )
 
@@ -135,6 +139,7 @@ receive flags ({ mode, gameType } as model) msg =
                         flags
                         mode
                         gameType
+                        assets
             in
             ( { model | game = newGame }, cmd )
 
@@ -162,6 +167,7 @@ receive flags ({ mode, gameType } as model) msg =
                         flags
                         mode
                         gameType
+                        assets
             in
             ( { model | game = newGame }, cmd )
 
@@ -178,6 +184,7 @@ receive flags ({ mode, gameType } as model) msg =
                                 flags
                                 mode
                                 gameType
+                                assets
                     in
                     ( { model | game = newGame }, cmd )
 

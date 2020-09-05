@@ -89,9 +89,7 @@ texturePaths manifest =
         revise { name, path } =
             { name = name
             , path =
-                (Dict.get (String.dropLeft 1 path) manifest
-                    |> Maybe.map (\s -> "/" ++ s)
-                )
+                Dict.get (String.dropLeft 1 path) manifest
                     |> Maybe.withDefault path
             }
     in
