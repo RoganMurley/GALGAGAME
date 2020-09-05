@@ -65,20 +65,16 @@ fontPaths manifest =
         revise { name, jsonPath, texturePath } =
             { name = name
             , texturePath =
-                (Dict.get (String.dropLeft 1 texturePath) manifest
-                    |> Maybe.map (\s -> "/" ++ s)
-                )
+                Dict.get texturePath manifest
                     |> Maybe.withDefault texturePath
             , jsonPath =
-                (Dict.get (String.dropLeft 1 jsonPath) manifest
-                    |> Maybe.map (\s -> "/" ++ s)
-                )
+                Dict.get jsonPath manifest
                     |> Maybe.withDefault jsonPath
             }
     in
     List.map revise
         [ { name = "Futura"
-          , jsonPath = "/fonts/futura/fontmap.json"
-          , texturePath = "/fonts/futura/fontmap.png"
+          , jsonPath = "fonts/futura/fontmap.json"
+          , texturePath = "fonts/futura/fontmap.png"
           }
         ]

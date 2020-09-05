@@ -1,5 +1,6 @@
 module Room.State exposing (init, receive, tick, update)
 
+import Assets.Types as Assets
 import Browser.Navigation
 import Connected.State as Connected
 import Feedback.State as Feedback
@@ -20,8 +21,8 @@ init =
     MainMenu
 
 
-update : Model -> Msg -> Flags -> ( Model, Cmd Main.Msg )
-update model msg flags =
+update : Model -> Msg -> Assets.Model -> Flags -> ( Model, Cmd Main.Msg )
+update model msg assets flags =
     case msg of
         MenuMsg menuMsg ->
             case model of
@@ -48,7 +49,7 @@ update model msg flags =
                 Connected connected ->
                     let
                         ( newConnected, cmd ) =
-                            Connected.update flags connectedMsg connected
+                            Connected.update flags assets connectedMsg connected
                     in
                     ( Connected newConnected, cmd )
 
@@ -130,8 +131,8 @@ update model msg flags =
                     ( model, Cmd.none )
 
 
-receive : Flags -> String -> Model -> ( Model, Cmd Main.Msg )
-receive flags str model =
+receive : Flags -> Assets.Model -> String -> Model -> ( Model, Cmd Main.Msg )
+receive flags assets str model =
     case model of
         MainMenu ->
             ( MainMenu, Cmd.none )
@@ -142,7 +143,7 @@ receive flags str model =
         Connected connected ->
             let
                 ( newConnected, cmd ) =
-                    Connected.receive flags connected str
+                    Connected.receive flags assets connected str
             in
             ( Connected newConnected, cmd )
 

@@ -2,7 +2,7 @@ module Listener exposing (animSfx, listen)
 
 import Animation.Types exposing (Anim(..), Hurt(..), Transmute(..))
 import Audio.State exposing (playSoundWith)
-import Audio.Types exposing (SoundOption(..))
+import Audio.Types as Audio exposing (SoundOption(..))
 import GameState.Types exposing (GameState(..))
 import Main.Messages exposing (Msg)
 import PlayState.State as PlayState
@@ -11,8 +11,8 @@ import Resolvable.Types as Resolvable
 import WhichPlayer.Types exposing (WhichPlayer(..))
 
 
-listen : GameState -> Float -> Cmd Msg
-listen state tick =
+listen : Audio.Model -> GameState -> Float -> Cmd Msg
+listen sounds state tick =
     let
         modelListen : Resolvable.Model -> Cmd Msg
         modelListen res =
@@ -20,7 +20,8 @@ listen state tick =
                 case animSfx <| activeAnim res of
                     Just url ->
                         playSoundWith
-                            ("/sfx/" ++ url)
+                            sounds
+                            ("sfx/" ++ url)
                             [ Volume 0.5 ]
 
                     Nothing ->
@@ -30,7 +31,7 @@ listen state tick =
                 Cmd.none
     in
     if tick == 0 then
-        playSoundWith "/music/background.mp3" [ Loop, Once ]
+        playSoundWith sounds "music/background.mp3" [ Loop, Once ]
 
     else
         case state of
