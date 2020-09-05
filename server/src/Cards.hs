@@ -67,7 +67,7 @@ hammer =
   Card
     "Hammer"
     "Hurt for 8"
-    "hammer.png"
+    "strike.png"
     Blue
     $ \w -> hurt 8 (other w) Slash
 
@@ -236,7 +236,7 @@ surge =
   Card
     "Cascade"
     "Hurt for 8 for each CASCADE in play"
-    "surge.png"
+    "brainbomb.png"
     Violet
     $ \w -> do
       stack <- getStack
@@ -272,7 +272,7 @@ overwhelm =
   Card
     "Envy"
     "Hurt for 3 for each card in your hand"
-    "overwhelm.png"
+    "envy.png"
     Orange
     $ \w -> do
       len <- length <$> getHand w
