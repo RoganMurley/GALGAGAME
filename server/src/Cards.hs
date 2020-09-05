@@ -327,7 +327,7 @@ mimic =
   Card
     "Mimic"
     "Play a copy of a random card in your hand"
-    "waxworks.png"
+    "mimic.png"
     Violet
     $ \w -> do
       gen <- getGen
