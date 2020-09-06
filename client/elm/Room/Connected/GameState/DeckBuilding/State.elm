@@ -1,4 +1,4 @@
-module DeckBuilding.State exposing (getRuneFromCursor, init, mouseClick, nextCursor, tick, update)
+module DeckBuilding.State exposing (getRuneFromCursor, init, mouseDown, nextCursor, tick, update)
 
 import Buttons.State as Buttons
 import Buttons.Types as Buttons exposing (ButtonType(..), Buttons)
@@ -294,8 +294,8 @@ nextCursor cursor =
             RuneCursorA
 
 
-mouseClick : Position -> Model -> ( Model, Cmd Main.Msg )
-mouseClick _ model =
+mouseDown : Position -> Model -> ( Model, Cmd Main.Msg )
+mouseDown _ model =
     case model.runeSelect of
         Nothing ->
             case Buttons.hit model.buttons of

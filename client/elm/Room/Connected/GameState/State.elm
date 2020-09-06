@@ -20,19 +20,19 @@ import Ports exposing (log)
 update : Msg -> GameState -> Flags -> Mode -> GameType -> Assets.Model -> ( GameState, Cmd Main.Msg )
 update msg state flags mode gameType assets =
     case msg of
-        MouseClick pos ->
+        MouseDown pos ->
             case state of
                 Selecting selecting ->
                     let
                         ( newSelecting, cmd ) =
-                            DeckBuilding.mouseClick pos selecting
+                            DeckBuilding.mouseDown pos selecting
                     in
                     ( Selecting newSelecting, cmd )
 
                 Started playState ->
                     let
                         ( newPlayState, cmd ) =
-                            PlayState.mouseClick flags assets gameType mode pos playState
+                            PlayState.mouseDown flags assets gameType mode pos playState
                     in
                     ( Started newPlayState, cmd )
 

@@ -21,7 +21,7 @@ type Msg
     | Logout
     | LogoutCallback (Result Http.Error ())
     | MousePosition Mouse.Position
-    | MouseClick Mouse.Position
+    | MouseDown Mouse.Position
     | MouseUp Mouse.Position
     | Receive String
     | Resize Int Int

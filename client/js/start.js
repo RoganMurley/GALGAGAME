@@ -84,7 +84,7 @@ app.ports.analytics.subscribe(function () {
 });
 
 function handleMouseDown(e) {
-  app.ports.click.send({
+  app.ports.mouseDown.send({
     x: Math.floor(e.clientX),
     y: Math.floor(e.clientY),
   });

@@ -10,5 +10,5 @@ type Msg
     | ResolveOutcome String
     | SelectingMsg DeckBuilding.Msg
     | Sync String
-    | MouseClick Mouse.Position
+    | MouseDown Mouse.Position
     | MouseUp Mouse.Position
