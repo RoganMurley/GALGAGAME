@@ -83,8 +83,15 @@ app.ports.analytics.subscribe(function () {
   }
 });
 
-function handleClick (e) {
+function handleMouseDown(e) {
   app.ports.click.send({
+    x: Math.floor(e.clientX),
+    y: Math.floor(e.clientY),
+  });
+};
+
+function handleMouseUp(e) {
+  app.ports.mouseUp.send({
     x: Math.floor(e.clientX),
     y: Math.floor(e.clientY),
   });
@@ -92,7 +99,7 @@ function handleClick (e) {
 
 var touched = false;
 
-function handleMouseMove (e) {
+function handleMouseMove(e) {
   if (touched) {
     return;
   }
@@ -102,7 +109,7 @@ function handleMouseMove (e) {
   });
 }
 
-function handleTouch (e) {
+function handleTouch(e) {
   touched = true;
   var touch = e.touches[0];
   app.ports.touch.send({
@@ -111,13 +118,14 @@ function handleTouch (e) {
   });
 };
 
-function handleTouchEnd (e) {
+function handleTouchEnd(e) {
   touched = true;
   app.ports.touch.send(null);
 };
 
 // iOS doesn't handle click events on the body so get the elm element.
-document.body.firstChild.addEventListener('click', handleClick, false);
+document.body.firstChild.addEventListener('mousedown', handleMouseDown, false);
+document.body.firstChild.addEventListener('mouseup', handleMouseUp, false);
 
 document.body.addEventListener('mousemove', handleMouseMove, false);
 document.body.addEventListener('touchstart', handleTouch, false);

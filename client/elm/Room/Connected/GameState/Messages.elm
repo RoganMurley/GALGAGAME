@@ -11,3 +11,4 @@ type Msg
     | SelectingMsg DeckBuilding.Msg
     | Sync String
     | MouseClick Mouse.Position
+    | MouseUp Mouse.Position

@@ -23,7 +23,7 @@ import Main.Types as Main exposing (Flags)
 import Manifest.State as Manifest
 import Math.Vector2 exposing (vec2)
 import Mode exposing (Mode(..))
-import Ports exposing (analytics, click, copyInput, godModeCommand, mouseMove, reload, selectAllInput, touch, websocketListen, websocketReconnect, websocketSend)
+import Ports exposing (analytics, click, copyInput, godModeCommand, mouseMove, mouseUp, reload, selectAllInput, touch, websocketListen, websocketReconnect, websocketSend)
 import Replay.State as Replay
 import Room.Generators exposing (generate)
 import Room.Messages as Room
@@ -216,6 +216,22 @@ update msg ({ assets, room, settings, flags } as model) =
                         (Room.ConnectedMsg <|
                             Connected.GameStateMsg <|
                                 GameState.MouseClick mouse
+                        )
+                        assets
+                        flags
+            in
+            ( { model | room = newRoom }
+            , newCmd
+            )
+
+        MouseUp mouse ->
+            let
+                ( newRoom, newCmd ) =
+                    Room.update
+                        room
+                        (Room.ConnectedMsg <|
+                            Connected.GameStateMsg <|
+                                GameState.MouseUp mouse
                         )
                         assets
                         flags
@@ -460,6 +476,7 @@ subscriptions _ =
         , Browser.Events.onAnimationFrameDelta Frame
         , Browser.Events.onResize Resize
         , mouseMove MousePosition
+        , mouseUp MouseUp
         , click MouseClick
         , touch TouchPosition
         , Browser.Events.onKeyPress (Json.map KeyPress Keyboard.keyDecoder)

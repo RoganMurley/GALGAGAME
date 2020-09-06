@@ -4,7 +4,6 @@ import Card.State as Card
 import Card.View as Card
 import Game.Types exposing (Context)
 import Holding.Types exposing (Holding(..))
-import Quaternion
 import WebGL
 import WhichPlayer.Types exposing (WhichPlayer(..))
 
