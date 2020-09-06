@@ -6,4 +6,8 @@ import Math.Vector3 exposing (Vec3)
 
 type Holding
     = NoHolding
-    | Holding Card Int Vec3
+    | Holding
+        { card : Card
+        , handIndex : Int
+        , pos : Vec3
+        }
