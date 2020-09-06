@@ -150,7 +150,7 @@ tick { dimensions, mouse } dt model =
             hoverTick model.otherHover dt
 
         focus =
-            getFocus ctx hoverHand hoverStack
+            getFocus ctx hoverHand hoverStack model.holding
 
         feedback =
             feedbackTick model.feedback dt
@@ -282,20 +282,25 @@ getHoverStack { entities } mRay =
             )
 
 
-getFocus : Context -> Maybe HandEntity -> Maybe StackEntity -> Maybe StackCard
-getFocus { anim, stackCard } hoverHand hoverStack =
+getFocus : Context -> Maybe HandEntity -> Maybe StackEntity -> Holding -> Maybe StackCard
+getFocus { anim, stackCard } hoverHand hoverStack holding =
     let
         hoverCard =
             Maybe.or
                 (Maybe.map (\{ card, owner } -> { owner = owner, card = card }) hoverStack)
                 (Maybe.map (\{ card } -> { owner = PlayerA, card = card }) hoverHand)
     in
-    case anim of
-        Animation.Play _ _ _ ->
-            Nothing
+    case holding of
+        NoHolding ->
+            case anim of
+                Animation.Play _ _ _ ->
+                    Nothing
 
-        _ ->
-            Maybe.or stackCard hoverCard
+                _ ->
+                    Maybe.or stackCard hoverCard
+
+        Holding card _ _ ->
+            Just { card = card, owner = PlayerA }
 
 
 feedbackTick : List Feedback -> Float -> List Feedback
