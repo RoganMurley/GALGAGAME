@@ -10,8 +10,12 @@ init : Card -> Int -> Maybe Collision.Ray -> Holding
 init card handIndex mRay =
     case mRay of
         Just { origin, direction } ->
-            Holding card handIndex <|
-                Math.Vector3.add origin direction
+            Holding
+                { card = card
+                , handIndex = handIndex
+                , pos =
+                    Math.Vector3.add origin direction
+                }
 
         Nothing ->
             NoHolding
@@ -23,14 +27,14 @@ getHandIndex holding =
         NoHolding ->
             Nothing
 
-        Holding _ index _ ->
-            Just index
+        Holding { handIndex } ->
+            Just handIndex
 
 
 tick : Holding -> Maybe Collision.Ray -> Float -> Holding
 tick holding ray _ =
     case holding of
-        Holding card handIndex _ ->
+        Holding { card, handIndex } ->
             init card handIndex ray
 
         NoHolding ->

@@ -15,7 +15,7 @@ view holding ctx =
         NoHolding ->
             []
 
-        Holding card _ pos ->
+        Holding { card, pos } ->
             Card.view ctx
                 { position = pos
                 , rotation = Quaternion.identity

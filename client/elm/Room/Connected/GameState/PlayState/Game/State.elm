@@ -299,7 +299,7 @@ getFocus { anim, stackCard } hoverHand hoverStack holding =
                 _ ->
                     Maybe.or stackCard hoverCard
 
-        Holding card _ _ ->
+        Holding { card } ->
             Just { card = card, owner = PlayerA }
 
 
