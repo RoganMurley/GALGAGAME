@@ -1,4 +1,4 @@
-module PlayState.State exposing (carry, get, map, mouseClick, mouseUp, resolveOutcomeStr, tick, update)
+module PlayState.State exposing (carry, get, map, mouseDown, mouseUp, resolveOutcomeStr, tick, update)
 
 import Animation.Types exposing (Anim(..))
 import Assets.State as Assets
@@ -392,8 +392,8 @@ resolveOutcome mState { initial, resDiffList, finalState } =
     carry state newState
 
 
-mouseClick : Flags -> Assets.Model -> GameType -> Mode -> Position -> PlayState -> ( PlayState, Cmd Main.Msg )
-mouseClick { dimensions } assets gameType mode { x, y } state =
+mouseDown : Flags -> Assets.Model -> GameType -> Mode -> Position -> PlayState -> ( PlayState, Cmd Main.Msg )
+mouseDown { dimensions } assets gameType mode { x, y } state =
     let
         pos =
             vec2 (toFloat x) (toFloat y)
@@ -498,16 +498,14 @@ mouseUp _ assets _ mode _ state =
         mMsg =
             case game.holding of
                 Holding { card, handIndex, pos } ->
-                    if Math.Vector3.getY pos > -0.15 then
-                        Just <|
-                            PlayingOnly <|
-                                TurnOnly <|
+                    Just <|
+                        PlayingOnly <|
+                            TurnOnly <|
+                                if Math.Vector3.getY pos > -0.15 then
                                     PlayCard card handIndex pos
 
-                    else
-                        Just <|
-                            PlayingOnly <|
-                                TurnOnly UnholdCard
+                                else
+                                    UnholdCard
 
                 NoHolding ->
                     Nothing
