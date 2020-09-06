@@ -15,10 +15,10 @@ view holding ctx =
         NoHolding ->
             []
 
-        Holding { card, pos } ->
+        Holding { card, pos, rot } ->
             Card.view ctx
                 { position = pos
-                , rotation = Quaternion.identity
+                , rotation = rot
                 , scale = Card.scale
                 , card = card
                 , owner = PlayerA

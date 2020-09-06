@@ -2,6 +2,7 @@ module Holding.Types exposing (Holding(..))
 
 import Card.Types exposing (Card)
 import Math.Vector3 exposing (Vec3)
+import Quaternion exposing (Quaternion)
 
 
 type Holding
@@ -10,4 +11,5 @@ type Holding
         { card : Card
         , handIndex : Int
         , pos : Vec3
+        , rot : Quaternion
         }
