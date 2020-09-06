@@ -1,6 +1,7 @@
 module PlayState.Messages exposing (Msg(..), PlayingOnly(..), TurnOnly(..))
 
 import Card.Types exposing (Card)
+import Collision
 import Hover exposing (HoverOther, HoverSelf)
 import Math.Vector2 exposing (Vec2)
 import Stats exposing (StatChange)
@@ -27,3 +28,4 @@ type PlayingOnly
 type TurnOnly
     = EndTurn
     | PlayCard Card Int
+    | HoldCard Card Int (Maybe Collision.Ray)

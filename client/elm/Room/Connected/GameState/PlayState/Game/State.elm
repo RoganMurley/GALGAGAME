@@ -1,4 +1,4 @@
-module Game.State exposing (bareContextInit, contextInit, entitiesInit, gameInit, getFocus, getHoverIndex, hoverDamage, hoverInit, tick)
+module Game.State exposing (bareContextInit, contextInit, entitiesInit, gameInit, getFocus, getHoverIndex, hold, hoverDamage, hoverInit, tick)
 
 import Animation.State as Animation
 import Animation.Types as Animation
@@ -6,10 +6,13 @@ import Assets.State as Assets
 import Assets.Types as Assets
 import Buttons.State as Buttons
 import Buttons.Types as Buttons exposing (ButtonType(..), Buttons)
+import Card.Types exposing (Card)
 import Collision exposing (hitTest3d)
 import Game.Types as Game exposing (Context, Entities, Feedback, HandEntity, StackEntity)
 import Hand.Entities as Hand
 import Hand.State exposing (maxHandLength)
+import Holding.State as Holding
+import Holding.Types exposing (Holding(..))
 import Hover exposing (Hover(..), HoverBase, HoverSelf)
 import List.Extra as List
 import Main.Types exposing (Flags)
@@ -41,6 +44,7 @@ gameInit model =
     , feedback = []
     , vfx = Vfx.init
     , buttons = Buttons.empty
+    , holding = NoHolding
     }
 
 
@@ -151,6 +155,9 @@ tick { dimensions, mouse } dt model =
         feedback =
             feedbackTick model.feedback dt
 
+        holding =
+            Holding.tick model.holding ctx.mouseRay dt
+
         newModel =
             { model
                 | res = res
@@ -165,6 +172,7 @@ tick { dimensions, mouse } dt model =
                 , feedback = feedback
                 , vfx = Vfx.tick dt model.vfx ctx
                 , buttons = buttonEntities model.passed mouse dt model.buttons ctx
+                , holding = holding
             }
     in
     ( newModel, hoverMsg )
@@ -370,3 +378,10 @@ buttonEntities passed mouse dt buttons { w, h, model, radius, resolving } =
                 mouse
                 buttons
             ]
+
+
+hold : Card -> Int -> Maybe Collision.Ray -> Game.Model -> Game.Model
+hold card handIndex ray game =
+    { game
+        | holding = Holding.init card handIndex ray
+    }

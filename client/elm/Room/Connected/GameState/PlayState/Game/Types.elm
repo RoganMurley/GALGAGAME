@@ -6,6 +6,7 @@ import Card.Types exposing (Card)
 import Collision exposing (Ray)
 import Font.Types as Font
 import Game.Entity as Game
+import Holding.Types exposing (Holding)
 import Hover exposing (HoverOther, HoverSelf)
 import Math.Matrix4 exposing (Mat4)
 import Math.Vector2 exposing (Vec2)
@@ -27,6 +28,7 @@ type alias Model =
     , feedback : List Feedback
     , vfx : Vfx.Model
     , buttons : Buttons
+    , holding : Holding
     }
 
 

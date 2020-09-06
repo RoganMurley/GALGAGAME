@@ -237,6 +237,11 @@ updateTurnOnly msg state { audio } =
                         , websocketSend <| "play:" ++ String.fromInt index
                         )
 
+                    HoldCard card index ray ->
+                        ( map (Game.hold card index ray) state
+                        , Cmd.none
+                        )
+
             else
                 ( state, Cmd.none )
 
@@ -321,6 +326,7 @@ carry old new =
                 , focus = get .focus old
                 , vfx = get .vfx old
                 , buttons = get .buttons old
+                , holding = get .holding old
             }
         )
         new
@@ -388,7 +394,7 @@ mouseClick { dimensions } assets gameType mode { x, y } state =
         msg =
             case mHandEntity of
                 Just { card, index } ->
-                    PlayingOnly <| TurnOnly <| PlayCard card index
+                    PlayingOnly <| TurnOnly <| HoldCard card index ctx.mouseRay
 
                 Nothing ->
                     ClickFeedback pos
