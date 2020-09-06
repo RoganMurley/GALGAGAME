@@ -39,6 +39,18 @@ update msg state flags mode gameType assets =
                 _ ->
                     ( state, Cmd.none )
 
+        MouseUp pos ->
+            case state of
+                Started playState ->
+                    let
+                        ( newPlayState, cmd ) =
+                            PlayState.mouseUp flags assets gameType mode pos playState
+                    in
+                    ( Started newPlayState, cmd )
+
+                _ ->
+                    ( state, Cmd.none )
+
         PlayStateMsg playStateMsg ->
             case state of
                 Started playState ->

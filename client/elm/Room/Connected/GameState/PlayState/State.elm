@@ -1,4 +1,4 @@
-module PlayState.State exposing (carry, get, map, mouseClick, resolveOutcomeStr, tick, update)
+module PlayState.State exposing (carry, get, map, mouseClick, mouseUp, resolveOutcomeStr, tick, update)
 
 import Animation.Types exposing (Anim(..))
 import Assets.State as Assets
@@ -13,6 +13,7 @@ import Game.State as Game
 import Game.Types as Game
 import GameState.Messages as GameState
 import GameType exposing (GameType(..))
+import Holding.Types exposing (Holding(..))
 import Hover exposing (encodeHoverSelf)
 import Json.Decode as Json
 import List.Extra as List
@@ -194,6 +195,7 @@ updateTurnOnly msg state { audio } =
                                 resolveOutcome
                                     (Just state)
                                     { initial = initial, resDiffList = resDiffList, finalState = finalState }
+                                    |> map (\g -> { g | holding = NoHolding })
 
                             initial : Model
                             initial =
@@ -477,3 +479,32 @@ mouseClick { dimensions } assets gameType mode { x, y } state =
         , buttonMsg
         ]
     )
+
+
+mouseUp : Flags -> Assets.Model -> GameType -> Mode -> Position -> PlayState -> ( PlayState, Cmd Main.Msg )
+mouseUp _ assets _ mode _ state =
+    let
+        game =
+            get identity state
+
+        mMsg =
+            case game.holding of
+                Holding { card, handIndex } ->
+                    Just <| PlayingOnly <| TurnOnly <| PlayCard card handIndex
+
+                NoHolding ->
+                    Nothing
+
+        ( newPlayState, cmd ) =
+            case mMsg of
+                Just msg ->
+                    update
+                        msg
+                        state
+                        mode
+                        assets
+
+                Nothing ->
+                    ( state, Cmd.none )
+    in
+    ( newPlayState, cmd )
