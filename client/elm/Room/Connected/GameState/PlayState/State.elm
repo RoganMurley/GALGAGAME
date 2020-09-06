@@ -20,6 +20,7 @@ import List.Extra as List
 import Main.Messages as Main
 import Main.Types exposing (Flags)
 import Math.Vector2 exposing (vec2)
+import Math.Vector3
 import Mode exposing (Mode)
 import Model.Decoders as Model
 import Model.Diff exposing (Diff, initDiff)
@@ -243,6 +244,13 @@ updateTurnOnly msg state { audio } =
                         ( map (Game.hold card index ray) state
                         , Cmd.none
                         )
+
+                    UnholdCard ->
+                        let
+                            newState =
+                                map (\g -> { g | holding = NoHolding }) state
+                        in
+                        ( newState, Cmd.none )
 
             else
                 ( state, Cmd.none )
@@ -490,7 +498,16 @@ mouseUp _ assets _ mode _ state =
         mMsg =
             case game.holding of
                 Holding { card, handIndex, pos } ->
-                    Just <| PlayingOnly <| TurnOnly <| PlayCard card handIndex pos
+                    if Math.Vector3.getY pos > -0.15 then
+                        Just <|
+                            PlayingOnly <|
+                                TurnOnly <|
+                                    PlayCard card handIndex pos
+
+                    else
+                        Just <|
+                            PlayingOnly <|
+                                TurnOnly UnholdCard
 
                 NoHolding ->
                     Nothing

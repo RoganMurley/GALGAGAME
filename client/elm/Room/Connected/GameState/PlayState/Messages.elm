@@ -30,3 +30,4 @@ type TurnOnly
     = EndTurn
     | PlayCard Card Int Vec3
     | HoldCard Card Int (Maybe Collision.Ray)
+    | UnholdCard
