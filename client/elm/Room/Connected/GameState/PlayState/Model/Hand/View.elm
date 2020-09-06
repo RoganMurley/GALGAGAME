@@ -9,6 +9,8 @@ import Card.View as Card
 import Ease
 import Game.Entity as Game
 import Game.Types exposing (Context)
+import Holding.State as Holding
+import Holding.Types exposing (Holding(..))
 import Math.Vector3 exposing (vec3)
 import Quaternion
 import Util exposing (interp)
@@ -16,21 +18,28 @@ import WebGL
 import WhichPlayer.Types exposing (WhichPlayer(..))
 
 
-view : List (Card.Entity { index : Int }) -> Context -> List WebGL.Entity
-view handEntities ctx =
+view : List (Card.Entity { index : Int }) -> Holding -> Context -> List WebGL.Entity
+view handEntities holding ctx =
     let
+        holdingIndex =
+            Holding.getHandIndex holding
+
         cardView i =
-            case ctx.anim of
-                DiscardHand PlayerA discards ->
-                    case Array.get i <| Array.fromList discards of
-                        Just CardDiscard ->
-                            Card.dissolvingView ctx
+            if Just i == holdingIndex then
+                \_ -> []
 
-                        _ ->
-                            Card.view ctx
+            else
+                case ctx.anim of
+                    DiscardHand PlayerA discards ->
+                        case Array.get i <| Array.fromList discards of
+                            Just CardDiscard ->
+                                Card.dissolvingView ctx
 
-                _ ->
-                    Card.view ctx
+                            _ ->
+                                Card.view ctx
+
+                    _ ->
+                        Card.view ctx
     in
     List.concat <|
         List.indexedMap cardView handEntities

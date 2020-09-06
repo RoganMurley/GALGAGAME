@@ -15,6 +15,7 @@ import Font.View as Font
 import Game.State exposing (contextInit)
 import Game.Types as Game exposing (Context, Feedback)
 import Hand.View as Hand
+import Holding.View as Holding
 import Hover exposing (Hover(..), HoverSelf)
 import Math.Matrix4 exposing (makeRotate, makeScale3)
 import Math.Vector2 exposing (vec2)
@@ -35,7 +36,7 @@ import WhichPlayer.Types exposing (WhichPlayer(..))
 view : Render.Params -> Game.Model -> Assets.Model -> List WebGL.Entity
 view { w, h } game assets =
     let
-        { res, hover, focus, entities, passed, feedback, vfx, buttons } =
+        { res, hover, focus, entities, passed, feedback, vfx, buttons, holding } =
             game
 
         ctx =
@@ -48,7 +49,7 @@ view { w, h } game assets =
             , lifeOrbView
             , Stack.view entities.stack
             , focusImageView focus
-            , Hand.view entities.hand
+            , Hand.view entities.hand holding
             , Hand.otherView entities.otherHand
             , Hand.millView
             , damageWebGl hover
@@ -57,6 +58,7 @@ view { w, h } game assets =
             , Buttons.view buttons
             , Endgame.animView
             , feedbackView feedback
+            , Holding.view holding
             ]
 
 
