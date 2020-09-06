@@ -1,4 +1,4 @@
-module Quaternion exposing (Quaternion, angle, axis, identity, lerp, make, makeRotate, rotate, scale, xRotation, yRotation, zRotation)
+module Quaternion exposing (Quaternion, add, angle, axis, identity, lerp, make, makeRotate, rotate, scale, xRotation, yRotation, zRotation)
 
 -- Based on https://package.elm-lang.org/packages/nphollon/geo3d/2.1.1/Quaternion
 
