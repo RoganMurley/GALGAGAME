@@ -70,7 +70,7 @@ animSfx anim =
         Reverse _ ->
             Just "reverse.mp3"
 
-        Play _ _ _ ->
+        Play _ _ _ _ ->
             Just "playCard.mp3"
 
         Transmute _ _ _ transmute ->

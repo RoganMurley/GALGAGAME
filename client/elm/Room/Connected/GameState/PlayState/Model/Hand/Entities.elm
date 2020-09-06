@@ -54,7 +54,7 @@ entities hover ({ anim, model, progress } as ctx) =
         indexModifier : Int -> Int
         indexModifier =
             case anim of
-                Play PlayerA _ index ->
+                Play PlayerA _ index _ ->
                     \i ->
                         if i >= index then
                             i + 1
@@ -129,11 +129,16 @@ entities hover ({ anim, model, progress } as ctx) =
                         Nothing ->
                             []
 
-                Play PlayerA card i ->
+                Play PlayerA card i mStartPos ->
                     let
+                        startPos =
+                            Maybe.withDefault
+                                (handCardPosition ctx PlayerA i n hover)
+                                mStartPos
+
                         pos =
                             interp progress
-                                (handCardPosition ctx PlayerA i n hover)
+                                startPos
                                 (playPosition ctx)
 
                         rot =
@@ -219,7 +224,7 @@ otherEntities hover ({ anim, model, progress } as ctx) =
         indexModifier : Int -> Int
         indexModifier =
             case anim of
-                Play PlayerB _ index ->
+                Play PlayerB _ index _ ->
                     \i ->
                         if i >= index then
                             i + 1
@@ -269,7 +274,7 @@ otherEntities hover ({ anim, model, progress } as ctx) =
                       }
                     ]
 
-                Play PlayerB _ i ->
+                Play PlayerB _ i _ ->
                     [ { position =
                             interp progress
                                 (handCardPosition ctx PlayerB i n hover)

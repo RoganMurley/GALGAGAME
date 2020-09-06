@@ -1,6 +1,7 @@
 module Animation.Types exposing (Anim(..), Bounce(..), CardDiscard(..), CardLimbo(..), HandBounce, Hurt(..), Transmute(..))
 
 import Card.Types exposing (Card)
+import Math.Vector3 exposing (Vec3)
 import Stack.Types exposing (StackCard)
 import WhichPlayer.Types exposing (WhichPlayer)
 
@@ -13,7 +14,7 @@ type Anim
     | Reflect WhichPlayer
     | Reverse WhichPlayer
     | Confound WhichPlayer
-    | Play WhichPlayer Card Int
+    | Play WhichPlayer Card Int (Maybe Vec3)
     | Transmute WhichPlayer StackCard StackCard Transmute
     | Mill WhichPlayer Card
     | GameStart WhichPlayer

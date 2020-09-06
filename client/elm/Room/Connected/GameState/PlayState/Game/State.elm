@@ -293,7 +293,7 @@ getFocus { anim, stackCard } hoverHand hoverStack holding =
     case holding of
         NoHolding ->
             case anim of
-                Animation.Play _ _ _ ->
+                Animation.Play _ _ _ _ ->
                     Nothing
 
                 _ ->

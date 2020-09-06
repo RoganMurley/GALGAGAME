@@ -4,6 +4,7 @@ import Card.Types exposing (Card)
 import Collision
 import Hover exposing (HoverOther, HoverSelf)
 import Math.Vector2 exposing (Vec2)
+import Math.Vector3 exposing (Vec3)
 import Stats exposing (StatChange)
 
 
@@ -27,5 +28,5 @@ type PlayingOnly
 
 type TurnOnly
     = EndTurn
-    | PlayCard Card Int
+    | PlayCard Card Int Vec3
     | HoldCard Card Int (Maybe Collision.Ray)

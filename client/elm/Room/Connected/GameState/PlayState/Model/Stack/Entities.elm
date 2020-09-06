@@ -37,7 +37,7 @@ entities ctx =
         stack : Stack
         stack =
             case anim of
-                Play _ _ _ ->
+                Play _ _ _ _ ->
                     List.drop 1 finalStack
 
                 Rotate _ ->
