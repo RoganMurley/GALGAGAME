@@ -45,7 +45,7 @@ animMaxTick anim =
             Confound _ ->
                 750.0
 
-            Play _ _ _ ->
+            Play _ _ _ _ ->
                 300.0
 
             Mill _ _ ->

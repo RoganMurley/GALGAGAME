@@ -154,10 +154,11 @@ reverseDecoder =
 
 playDecoder : Decoder Anim
 playDecoder =
-    Json.map3 Play
+    Json.map4 Play
         (field "player" WhichPlayer.decoder)
         (field "card" Card.decoder)
         (field "index" int)
+        (succeed Nothing)
 
 
 transmuteDecoder : Decoder Anim

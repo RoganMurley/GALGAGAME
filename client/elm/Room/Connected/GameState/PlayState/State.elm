@@ -187,7 +187,7 @@ updateTurnOnly msg state { audio } =
                             ]
                         )
 
-                    PlayCard card index ->
+                    PlayCard card index pos ->
                         let
                             -- Construct the ResolveData clientside to avoid latency.
                             newState : PlayState
@@ -216,7 +216,7 @@ updateTurnOnly msg state { audio } =
                             resDiffList : List Resolvable.ResolveDiffData
                             resDiffList =
                                 [ { diff = playDiff
-                                  , anim = Play PlayerA card index
+                                  , anim = Play PlayerA card index (Just pos)
                                   , animDamage = ( 0, 0 )
                                   , stackCard = Nothing
                                   }
@@ -489,8 +489,8 @@ mouseUp _ assets _ mode _ state =
 
         mMsg =
             case game.holding of
-                Holding { card, handIndex } ->
-                    Just <| PlayingOnly <| TurnOnly <| PlayCard card handIndex
+                Holding { card, handIndex, pos } ->
+                    Just <| PlayingOnly <| TurnOnly <| PlayCard card handIndex pos
 
                 NoHolding ->
                     Nothing
