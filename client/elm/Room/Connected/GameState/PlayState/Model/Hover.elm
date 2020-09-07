@@ -1,4 +1,4 @@
-module Hover exposing (Hover(..), HoverBase, HoverOther, HoverSelf, HoverStack, decodeHoverOther, encodeHoverSelf)
+module Hover exposing (Hover(..), HoverBase, HoverOther, HoverSelf, HoverStack, decodeHoverOther, encodeHoverSelf, getDmg)
 
 import Json.Decode
 import Json.Encode
@@ -28,6 +28,19 @@ type Hover a
     = HoverHand (HoverBase a)
     | HoverStack (HoverBase a)
     | NoHover
+
+
+getDmg : HoverSelf -> ( Life, Life )
+getDmg hover =
+    case hover of
+        HoverHand { dmg } ->
+            dmg
+
+        HoverStack { dmg } ->
+            dmg
+
+        NoHover ->
+            ( 0, 0 )
 
 
 encodeHoverSelf : HoverSelf -> String

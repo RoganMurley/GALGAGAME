@@ -13,6 +13,7 @@ import Game.State as Game
 import Game.Types as Game
 import GameState.Messages as GameState
 import GameType exposing (GameType(..))
+import Holding.State as Holding
 import Holding.Types exposing (Holding(..))
 import Hover exposing (encodeHoverSelf)
 import Json.Decode as Json
@@ -60,9 +61,21 @@ update msg state mode assets =
                 Playing ({ game } as playing) ->
                     let
                         hover =
-                            Game.hoverDamage game.hover dmg
+                            Game.hoverDamage
+                                game.hover
+                                dmg
+
+                        holding =
+                            Holding.setDamage game.holding dmg
                     in
-                    ( Playing { playing | game = { game | hover = hover } }
+                    ( Playing
+                        { playing
+                            | game =
+                                { game
+                                    | hover = hover
+                                    , holding = holding
+                                }
+                        }
                     , Cmd.none
                     )
 
@@ -241,9 +254,16 @@ updateTurnOnly msg state { audio } =
                         )
 
                     HoldCard card index ray ->
-                        ( map (Game.hold card index ray) state
-                        , Cmd.none
-                        )
+                        let
+                            dmg =
+                                Hover.getDmg game.hover
+
+                            newState =
+                                map
+                                    (Game.hold card index ray dmg)
+                                    state
+                        in
+                        ( newState, Cmd.none )
 
                     UnholdCard ->
                         let

@@ -15,6 +15,7 @@ import Font.View as Font
 import Game.State exposing (contextInit)
 import Game.Types as Game exposing (Context, Feedback)
 import Hand.View as Hand
+import Holding.Types exposing (Holding(..))
 import Holding.View as Holding
 import Hover exposing (Hover(..), HoverSelf)
 import Math.Matrix4 exposing (makeRotate, makeScale3)
@@ -52,7 +53,7 @@ view { w, h } game assets =
             , Hand.view entities.hand holding
             , Hand.otherView entities.otherHand
             , Hand.millView
-            , damageWebGl hover
+            , damageView hover holding
             , turnView focus passed
             , focusTextView focus
             , Buttons.view buttons
@@ -253,35 +254,27 @@ focusTextView focus ({ w, h, anim, radius, tick } as ctx) =
                         ]
 
 
-damageWebGl : HoverSelf -> Context -> List WebGL.Entity
-damageWebGl hover ({ w, h, radius, resolving, animDamage, tick, anim } as ctx) =
+damageView : HoverSelf -> Holding -> Context -> List WebGL.Entity
+damageView hover holding ({ w, h, radius, resolving, animDamage, tick, anim } as ctx) =
     let
         hoverDmg =
-            case hover of
-                HoverHand { dmg } ->
-                    Just dmg
+            case holding of
+                NoHolding ->
+                    Hover.getDmg hover
 
-                HoverStack { dmg } ->
-                    Just dmg
-
-                NoHover ->
-                    Nothing
+                Holding { dmg } ->
+                    dmg
 
         ( damage, otherDamage ) =
-            case hoverDmg of
-                Just dmg ->
-                    if resolving then
-                        animDamage
+            if resolving then
+                animDamage
 
-                    else
-                        let
-                            ( dmgA, dmgB ) =
-                                dmg
-                        in
-                        ( toFloat dmgA, toFloat dmgB )
-
-                Nothing ->
-                    animDamage
+            else
+                let
+                    ( dmgA, dmgB ) =
+                        hoverDmg
+                in
+                ( toFloat dmgA, toFloat dmgB )
 
         damageToColour : Float -> Vec3
         damageToColour d =
