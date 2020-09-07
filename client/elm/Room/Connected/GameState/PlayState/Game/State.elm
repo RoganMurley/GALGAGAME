@@ -20,7 +20,7 @@ import Math.Vector2 exposing (Vec2)
 import Math.Vector3 exposing (Vec3, vec3)
 import Maybe.Extra as Maybe
 import Model.State as Model
-import Model.Types as Model exposing (Model)
+import Model.Types as Model exposing (Life, Model)
 import PlayState.Messages as PlayState
 import Render.Uniforms as Uniforms
 import Resolvable.State as Resolvable exposing (activeAnim, activeAnimDamage, activeModel, activeStackCard, resolving)
@@ -144,7 +144,7 @@ tick { dimensions, mouse } dt model =
             getHoverStack model ctx.mouseRay
 
         ( hover, hoverMsg ) =
-            hoverUpdate model.hover hoverHand hoverStack dt
+            hoverUpdate model.hover hoverHand hoverStack holding dt
 
         otherHover =
             hoverTick model.otherHover dt
@@ -213,8 +213,8 @@ hoverTick hover dt =
             NoHover
 
 
-hoverUpdate : HoverSelf -> Maybe HandEntity -> Maybe StackEntity -> Float -> ( HoverSelf, Cmd PlayState.Msg )
-hoverUpdate oldHover handEntity stackEntity dt =
+hoverUpdate : HoverSelf -> Maybe HandEntity -> Maybe StackEntity -> Holding -> Float -> ( HoverSelf, Cmd PlayState.Msg )
+hoverUpdate oldHover handEntity stackEntity holding dt =
     let
         hoverHandIndex =
             Maybe.map .index handEntity
@@ -231,20 +231,25 @@ hoverUpdate oldHover handEntity stackEntity dt =
         newHover =
             hoverTick oldHover dt
     in
-    if hoverIndex == oldHoverIndex then
-        ( newHover, Cmd.none )
+    case holding of
+        NoHolding ->
+            if hoverIndex == oldHoverIndex then
+                ( newHover, Cmd.none )
 
-    else
-        let
-            freshHover =
-                hoverInit hoverHandIndex hoverStackIndex { index = 0, tick = 0, dmg = ( 0, 0 ) }
-        in
-        ( freshHover
-        , message <|
-            PlayState.PlayingOnly <|
-                PlayState.HoverCard
-                    freshHover
-        )
+            else
+                let
+                    freshHover =
+                        hoverInit hoverHandIndex hoverStackIndex { index = 0, tick = 0, dmg = ( 0, 0 ) }
+                in
+                ( freshHover
+                , message <|
+                    PlayState.PlayingOnly <|
+                        PlayState.HoverCard
+                            freshHover
+                )
+
+        _ ->
+            ( NoHover, Cmd.none )
 
 
 hoverDamage : HoverSelf -> ( Model.Life, Model.Life ) -> HoverSelf
@@ -385,8 +390,8 @@ buttonEntities passed mouse dt buttons { w, h, model, radius, resolving } =
             ]
 
 
-hold : Card -> Int -> Maybe Collision.Ray -> Game.Model -> Game.Model
-hold card handIndex ray game =
+hold : Card -> Int -> Maybe Collision.Ray -> ( Life, Life ) -> Game.Model -> Game.Model
+hold card handIndex ray dmg game =
     { game
-        | holding = Holding.init card handIndex ray
+        | holding = Holding.init card handIndex ray dmg
     }
