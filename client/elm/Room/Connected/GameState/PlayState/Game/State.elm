@@ -343,6 +343,9 @@ buttonEntities passed mouse dt buttons { w, h, model, radius, resolving } =
 
         y =
             h * 0.5 + 0.8 * radius
+
+        scale =
+            2 * radius
     in
     Buttons.fromList <|
         if not disabled then
@@ -350,8 +353,8 @@ buttonEntities passed mouse dt buttons { w, h, model, radius, resolving } =
                 "go"
                 { x = x
                 , y = y
-                , xScale = 0.42 * max w h
-                , yScale = 0.42 * max w h
+                , xScale = scale
+                , yScale = scale
                 , btn =
                     TextButton
                         { font = "Futura"
@@ -372,8 +375,8 @@ buttonEntities passed mouse dt buttons { w, h, model, radius, resolving } =
                 "goDisabled"
                 { x = x
                 , y = y
-                , xScale = 0.42 * max w h
-                , yScale = 0.42 * max w h
+                , xScale = scale
+                , yScale = scale
                 , btn =
                     TextButton
                         { font = "Futura"
