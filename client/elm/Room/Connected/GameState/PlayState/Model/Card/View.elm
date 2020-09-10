@@ -6,7 +6,7 @@ import Colour
 import Game.Entity as Game
 import Game.Types exposing (Context)
 import Math.Matrix4 exposing (makeRotate, makeScale)
-import Math.Vector3 as Vector3 exposing (vec3)
+import Math.Vector3 as Vector3
 import Quaternion
 import Render.Primitives
 import Render.Shaders
@@ -24,33 +24,17 @@ view ctx entity =
 
         { position, rotation, scale, card, owner } =
             entity
-
-        glyphColour =
-            case owner of
-                PlayerA ->
-                    Colour.white
-
-                PlayerB ->
-                    Colour.black
-
-        orbTexturePath =
-            case owner of
-                PlayerA ->
-                    "cardOrb.png"
-
-                PlayerB ->
-                    "cardOrbOther.png"
     in
-    Texture.with3 textures card.imgURL "cardBackBack.png" orbTexturePath <|
-        \texture cardBackTexture cardOrbTexture ->
+    Texture.with3 textures card.imgURL "cardBack.png" "cardOutline.png" <|
+        \texture backTexture outlineTexture ->
             [ Render.Primitives.quad Render.Shaders.fragment <|
                 { rotation = Quaternion.makeRotate rotation
                 , scale = makeScale scale
-                , color = Colour.cardCol card.col
+                , color = Colour.card owner
                 , pos = position
                 , perspective = perspective
                 , camera = camera3d
-                , texture = cardBackTexture
+                , texture = backTexture
                 }
             , Render.Primitives.quad Render.Shaders.fragment <|
                 { rotation = Quaternion.makeRotate rotation
@@ -59,12 +43,12 @@ view ctx entity =
                 , pos = position
                 , perspective = perspective
                 , camera = camera3d
-                , texture = cardOrbTexture
+                , texture = outlineTexture
                 }
             , Render.Primitives.quad Render.Shaders.fragment <|
                 { rotation = Quaternion.makeRotate rotation
                 , scale = makeScale <| Vector3.scale 0.6 scale
-                , color = glyphColour
+                , color = Colour.white
                 , pos = position
                 , perspective = perspective
                 , camera = camera3d
@@ -75,16 +59,16 @@ view ctx entity =
 
 backView : Context -> Game.Entity3D {} -> List WebGL.Entity
 backView { camera3d, perspective, textures } { position, rotation, scale } =
-    Texture.with2 textures "cardBackBack.png" "cardOrbOther.png" <|
-        \texture cardOrbTexture ->
+    Texture.with2 textures "cardBack.png" "cardOutline.png" <|
+        \backTexture outlineTexture ->
             [ Render.Primitives.quad Render.Shaders.fragment <|
                 { rotation = Quaternion.makeRotate rotation
                 , scale = makeScale scale
-                , color = vec3 (200 / 255) (200 / 255) (200 / 255)
+                , color = Colour.background PlayerB
                 , pos = position
                 , perspective = perspective
                 , camera = camera3d
-                , texture = texture
+                , texture = backTexture
                 }
             , Render.Primitives.quad Render.Shaders.fragment <|
                 { rotation = Quaternion.makeRotate rotation
@@ -93,7 +77,7 @@ backView { camera3d, perspective, textures } { position, rotation, scale } =
                 , pos = position
                 , perspective = perspective
                 , camera = camera3d
-                , texture = cardOrbTexture
+                , texture = outlineTexture
                 }
             ]
 
@@ -103,14 +87,6 @@ limboingView ctx { position, rotation, scale, card, owner } =
     let
         { perspective, camera3d, anim, textures } =
             ctx
-
-        glyphColour =
-            case owner of
-                PlayerA ->
-                    Colour.white
-
-                PlayerB ->
-                    Colour.black
 
         progress =
             case anim of
@@ -122,29 +98,21 @@ limboingView ctx { position, rotation, scale, card, owner } =
 
                 _ ->
                     0
-
-        orbTexturePath =
-            case owner of
-                PlayerA ->
-                    "cardOrb.png"
-
-                PlayerB ->
-                    "cardOrbOther.png"
     in
-    Texture.with3 textures card.imgURL orbTexturePath "cardBackBack.png" <|
-        \texture cardOrbTexture cardBackTexture ->
+    Texture.with3 textures card.imgURL "cardOutline.png" "cardBack.png" <|
+        \texture outlineTexture backTexture ->
             [ Render.Primitives.quad Render.Shaders.fragmentAlpha <|
-                { texture = cardBackTexture
+                { texture = backTexture
                 , rotation = Quaternion.makeRotate rotation
                 , scale = makeScale scale
-                , color = Colour.cardCol card.col
+                , color = Colour.card owner
                 , pos = position
                 , perspective = perspective
                 , camera = camera3d
                 , alpha = progress
                 }
             , Render.Primitives.quad Render.Shaders.fragmentAlpha <|
-                { texture = cardOrbTexture
+                { texture = outlineTexture
                 , rotation = Quaternion.makeRotate rotation
                 , scale = makeScale scale
                 , color = Colour.white
@@ -157,7 +125,7 @@ limboingView ctx { position, rotation, scale, card, owner } =
                 { texture = texture
                 , rotation = Quaternion.makeRotate rotation
                 , scale = makeScale <| Vector3.scale 0.6 scale
-                , color = glyphColour
+                , color = Colour.white
                 , pos = position
                 , perspective = perspective
                 , camera = camera3d
@@ -171,38 +139,22 @@ dissolvingView ctx { position, rotation, scale, card, owner } =
     let
         { perspective, camera3d, progress, textures } =
             ctx
-
-        glyphColour =
-            case owner of
-                PlayerA ->
-                    Colour.white
-
-                PlayerB ->
-                    Colour.black
-
-        orbTexturePath =
-            case owner of
-                PlayerA ->
-                    "cardOrb.png"
-
-                PlayerB ->
-                    "cardOrbOther.png"
     in
-    Texture.with4 textures card.imgURL orbTexturePath "cardBackBack.png" "noise.png" <|
-        \texture cardOrbTexture cardBackTexture noise ->
+    Texture.with4 textures card.imgURL "cardBack.png" "cardOutline.png" "noise.png" <|
+        \texture backTexture outlineTexture noise ->
             [ Render.Primitives.quad Render.Shaders.disintegrate <|
-                { texture = cardBackTexture
+                { texture = backTexture
                 , noise = noise
                 , rotation = Quaternion.makeRotate rotation
                 , scale = makeScale scale
-                , color = Colour.cardCol card.col
+                , color = Colour.card owner
                 , pos = position
                 , perspective = perspective
                 , camera = camera3d
                 , time = progress
                 }
             , Render.Primitives.quad Render.Shaders.disintegrate <|
-                { texture = cardOrbTexture
+                { texture = outlineTexture
                 , noise = noise
                 , rotation = Quaternion.makeRotate rotation
                 , scale = makeScale scale
@@ -217,7 +169,7 @@ dissolvingView ctx { position, rotation, scale, card, owner } =
                 , noise = noise
                 , rotation = Quaternion.makeRotate rotation
                 , scale = makeScale <| Vector3.scale 0.6 scale
-                , color = glyphColour
+                , color = Colour.white
                 , pos = position
                 , perspective = perspective
                 , camera = camera3d
@@ -231,38 +183,22 @@ fabricatingView ctx { position, rotation, scale, card, owner } =
     let
         { perspective, camera3d, progress, textures } =
             ctx
-
-        glyphColour =
-            case owner of
-                PlayerA ->
-                    Colour.white
-
-                PlayerB ->
-                    Colour.black
-
-        orbTexturePath =
-            case owner of
-                PlayerA ->
-                    "cardOrb.png"
-
-                PlayerB ->
-                    "cardOrbOther.png"
     in
-    Texture.with4 textures card.imgURL orbTexturePath "cardBackBack.png" "noise.png" <|
-        \texture cardOrbTexture cardBackTexture noise ->
+    Texture.with4 textures card.imgURL "cardBack.png" "cardOutline.png" "noise.png" <|
+        \texture backTexture outlineTexture noise ->
             [ Render.Primitives.quad Render.Shaders.disintegrate <|
-                { texture = cardBackTexture
+                { texture = backTexture
                 , noise = noise
                 , rotation = Quaternion.makeRotate rotation
                 , scale = makeScale scale
-                , color = Colour.cardCol card.col
+                , color = Colour.card owner
                 , pos = position
                 , perspective = perspective
                 , camera = camera3d
                 , time = 1 - progress
                 }
             , Render.Primitives.quad Render.Shaders.disintegrate <|
-                { texture = cardOrbTexture
+                { texture = outlineTexture
                 , noise = noise
                 , rotation = Quaternion.makeRotate rotation
                 , scale = makeScale scale
@@ -277,7 +213,7 @@ fabricatingView ctx { position, rotation, scale, card, owner } =
                 , noise = noise
                 , rotation = Quaternion.makeRotate rotation
                 , scale = makeScale <| Vector3.scale 0.6 scale
-                , color = glyphColour
+                , color = Colour.white
                 , pos = position
                 , perspective = perspective
                 , camera = camera3d
@@ -291,35 +227,19 @@ transmutingView ctx stackCard finalStackCard { position, rotation, scale } =
     let
         { perspective, camera3d, progress, textures } =
             ctx
-
-        ( glyphColour, orbTexturePath ) =
-            case stackCard.owner of
-                PlayerA ->
-                    ( Colour.white, "cardOrb.png" )
-
-                PlayerB ->
-                    ( Colour.black, "cardOrbOther.png" )
-
-        ( finalGlyphColour, finalOrbTexturePath ) =
-            case finalStackCard.owner of
-                PlayerA ->
-                    ( Colour.white, "cardOrb.png" )
-
-                PlayerB ->
-                    ( Colour.black, "cardOrbOther.png" )
     in
-    Texture.with5 textures stackCard.card.imgURL finalStackCard.card.imgURL orbTexturePath finalOrbTexturePath "cardBackBack.png" <|
-        \texture finalTexture cardOrbTexture finalCardOrbTexture cardBackTexture ->
+    Texture.with4 textures stackCard.card.imgURL finalStackCard.card.imgURL "cardOutline.png" "cardBack.png" <|
+        \texture finalTexture outlineTexture backTexture ->
             [ Render.Primitives.quad Render.Shaders.fragmentTransmute <|
                 { rotation = Quaternion.makeRotate rotation
                 , scale = makeScale scale
-                , color = Colour.cardCol stackCard.card.col
-                , finalColor = Colour.cardCol finalStackCard.card.col
+                , color = Colour.card stackCard.owner
+                , finalColor = Colour.card finalStackCard.owner
                 , pos = position
                 , perspective = perspective
                 , camera = camera3d
-                , texture = cardBackTexture
-                , finalTexture = cardBackTexture
+                , texture = backTexture
+                , finalTexture = backTexture
                 , time = progress
                 }
             , Render.Primitives.quad Render.Shaders.fragmentTransmute <|
@@ -330,15 +250,15 @@ transmutingView ctx stackCard finalStackCard { position, rotation, scale } =
                 , pos = position
                 , perspective = perspective
                 , camera = camera3d
-                , texture = cardOrbTexture
-                , finalTexture = finalCardOrbTexture
+                , texture = outlineTexture
+                , finalTexture = outlineTexture
                 , time = progress
                 }
             , Render.Primitives.quad Render.Shaders.fragmentTransmute <|
                 { rotation = Quaternion.makeRotate rotation
                 , scale = makeScale <| Vector3.scale 0.6 scale
-                , color = glyphColour
-                , finalColor = finalGlyphColour
+                , color = Colour.white
+                , finalColor = Colour.white
                 , pos = position
                 , perspective = perspective
                 , camera = camera3d
@@ -351,21 +271,21 @@ transmutingView ctx stackCard finalStackCard { position, rotation, scale } =
 
 backDissolvingView : Context -> Game.Entity3D {} -> List WebGL.Entity
 backDissolvingView { perspective, camera3d, progress, textures } { position, rotation, scale } =
-    Texture.with3 textures "cardOrbOther.png" "cardBackBack.png" "noise.png" <|
-        \cardOrbTexture cardBackTexture noise ->
+    Texture.with3 textures "cardOutline.png" "cardBack.png" "noise.png" <|
+        \outlineTexture backTexture noise ->
             [ Render.Primitives.quad Render.Shaders.disintegrate <|
-                { texture = cardBackTexture
+                { texture = backTexture
                 , noise = noise
                 , rotation = Quaternion.makeRotate rotation
                 , scale = makeScale scale
-                , color = vec3 (200 / 255) (200 / 255) (200 / 255)
+                , color = Colour.card PlayerB
                 , pos = position
                 , perspective = perspective
                 , camera = camera3d
                 , time = progress
                 }
             , Render.Primitives.quad Render.Shaders.disintegrate <|
-                { texture = cardOrbTexture
+                { texture = outlineTexture
                 , noise = noise
                 , rotation = Quaternion.makeRotate rotation
                 , scale = makeScale scale
@@ -376,27 +296,3 @@ backDissolvingView { perspective, camera3d, progress, textures } { position, rot
                 , time = progress
                 }
             ]
-
-
-
--- Texture.with2 textures "cardBackBack.png" "cardOrbOther.png" <|
---     \texture cardOrbTexture ->
---         [ Render.Primitives.quad Render.Shaders.fragment <|
---             { rotation = Quaternion.makeRotate rotation
---             , scale = makeScale scale
---             , color = vec3 (200 / 255) (200 / 255) (200 / 255)
---             , pos = position
---             , perspective = perspective
---             , camera = camera3d
---             , texture = texture
---             }
---         , Render.Primitives.quad Render.Shaders.fragment <|
---             { rotation = Quaternion.makeRotate rotation
---             , scale = makeScale scale
---             , color = Colour.white
---             , pos = position
---             , perspective = perspective
---             , camera = camera3d
---             , texture = cardOrbTexture
---             }
---         ]
