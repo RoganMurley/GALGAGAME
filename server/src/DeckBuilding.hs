@@ -173,70 +173,81 @@ allRunes =
   , wrath
   , envy
   , pride
-  , duelist
+  , fungus
+  , base
+  --, duelist
   ]
 
 
 wrath :: Rune
 wrath =
   Rune
-    "Fire"
+    "FIRE"
     "You're dangerous and unpredictable."
-    "confound.png"
-    (Cards.missile, Cards.fireball, Cards.offering, Cards.confound)
+    "fire-circle.png"
+    (Cards.fireSword, Cards.fireball, Cards.fireCup, Cards.confound)
 
 
 pride :: Rune
 pride =
   Rune
-    "Heavens"
+    "THUNDER"
     "You punish mistakes."
-    "hubris.png"
+    "thunder-circle.png"
     (Cards.hammer, Cards.lightning, Cards.feint, Cards.hubris)
+
+
+fungus :: Rune
+fungus =
+  Rune
+    "FUNGUS"
+    "You steal life."
+    "fungus-seal.png"
+    (Cards.scythe, Cards.bloodsucker, Cards.serpent, Cards.reversal)
 
 
 lust :: Rune
 lust =
   Rune
-    "Blood"
+    "BLOOD"
     "You steal life."
-    "reverse.png"
-    (Cards.scythe, Cards.bloodsucker, Cards.serpent, Cards.reversal)
+    "blood-circle.png"
+    (Cards.bloodSword, Cards.bloodHex, Cards.offering, Cards.sacrifice)
 
 
 gluttony :: Rune
 gluttony =
   Rune
-    "Mind"
+    "VISION"
     "You play mind games."
-    "prophecy.png"
+    "vision-circle.png"
     (Cards.staff, Cards.surge, Cards.mimic, Cards.prophecy)
 
 
 envy :: Rune
 envy =
   Rune
-    "Body"
+    "WATER"
     "You protect yourself."
-    "reflect.png"
+    "water-circle.png"
     (Cards.grudge, Cards.overwhelm, Cards.potion, Cards.reflect)
 
 
 sloth :: Rune
 sloth =
   Rune
-    "Heart"
+    "DUALITY"
     "You're strong but hard to control."
-    "balance.png"
+    "duality-coin.png"
     (Cards.katana, Cards.curse, Cards.bless, Cards.balance)
 
 
 greed :: Rune
 greed =
   Rune
-    "Gold"
+    "GOLD"
     "You punish hoarding."
-    "alchemy.png"
+    "gold-circle.png"
     (Cards.relicblade, Cards.greed, Cards.echo, Cards.alchemy)
 
 
@@ -247,6 +258,15 @@ duelist =
     "You use every advantage you have."
     "subjugate.png"
     (Cards.lance, Cards.meltdown, Cards.taunt, Cards.subjugate)
+
+
+base :: Rune
+base =
+  Rune
+    "BEGINNINGS"
+    "You are basic."
+    "basic-coin.png"
+    (Cards.basicSword, Cards.basicWand, Cards.basicCup, Cards.basicCoin)
 
 
 -- Characters
@@ -264,7 +284,7 @@ catherine =
     "Catherine"
     "/img/textures/confound.png"
     wrath
-    lust
+    fungus
     envy
 
 

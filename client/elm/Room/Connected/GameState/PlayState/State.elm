@@ -465,7 +465,7 @@ mouseDown { dimensions } assets gameType mode { x, y } state =
                                         PlayingOnly <|
                                             PlayState.TurnOnly PlayState.EndTurn
 
-                                "goDisabled" ->
+                                "goHandFull" ->
                                     playMsg <|
                                         PlayState.PlayingOnly PlayState.IllegalPass
 
