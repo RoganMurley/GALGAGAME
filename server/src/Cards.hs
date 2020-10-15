@@ -14,12 +14,12 @@ import DSL.Beta hiding (confound, reflect)
 
 
 -- Striker
-missile :: Card
-missile =
+fireSword :: Card
+fireSword =
   Card
-    "Dagger"
+    "BLAZE SWORD"
     "Hurt for 7"
-    "missile.png"
+    "blaze-sword.png"
     Red
     $ \w -> hurt 7 (other w) Slash
 
@@ -27,24 +27,24 @@ missile =
 fireball :: Card
 fireball =
   Card
-    "Fireball"
+    "BLAZE WAND"
     "Hurt for 5 for each other card on the wheel"
-    "fireball.png"
+    "blaze-wand.png"
     Red
     $ \w -> do
       len <- length <$> getStack
       hurt (len * 5) (other w) Slash
 
 
-offering :: Card
-offering =
+fireCup :: Card
+fireCup =
   Card
-    "Offering"
-    "Pay 4 life to draw 2"
-    "offering.png"
+    "BLAZE CUP"
+    "Discard your hand, then draw 2"
+    "blaze-cup.png"
     Red
     $ \w -> do
-      hurt 4 w Slash
+      discardHand w (const True)
       draw w w
       draw w w
 
@@ -52,9 +52,9 @@ offering =
 confound :: Card
 confound =
   Card
-    "Confound"
+    "BLAZE COIN"
     "Shuffle the order of all cards on the wheel"
-    "confound.png"
+    "blaze-coin.png"
     Red
     $ \_ -> do
       Beta.confound
@@ -65,9 +65,9 @@ confound =
 hammer :: Card
 hammer =
   Card
-    "Hammer"
+    "HEAVEN SWORD"
     "Hurt for 8"
-    "strike.png"
+    "heavens-sword.png"
     Blue
     $ \w -> hurt 8 (other w) Slash
 
@@ -75,9 +75,9 @@ hammer =
 lightning :: Card
 lightning =
   Card
-    "Thunder"
+    "HEAVEN WAND"
     "Hurt for 4 for each other card on the wheel"
-    "lightning.png"
+    "heavens-wand.png"
     Blue
     $ \w -> do
       len <- length <$> getStack
@@ -87,9 +87,9 @@ lightning =
 feint :: Card
 feint =
   Card
-    "Feint"
+    "HEAVEN CUP"
     "Return all of your cards on the wheel to hand"
-    "feint.png"
+    "heavens-cup.png"
     Blue
     $ \w -> bounce (\(StackCard o _) -> w == o)
 
@@ -97,9 +97,9 @@ feint =
 hubris :: Card
 hubris =
   Card
-    "Hubris"
+    "HEAVEN COIN"
     "Discard all cards on the wheel"
-    "hubris.png"
+    "heavens-coin.png"
     Blue
     $ \_ -> discardStack (const True)
 
@@ -108,9 +108,9 @@ hubris =
 katana :: Card
 katana =
   Card
-    "Blade"
+    "DUALITY SWORD"
     "Hurt for 9"
-    "katana.png"
+    "duality-sword.png"
     White
     $ \w -> hurt 9 (other w) Slash
 
@@ -118,9 +118,9 @@ katana =
 curse :: Card
 curse =
   Card
-    "Cruelty"
+    "DUALITY WAND"
     "Hurt weakest player for 15"
-    "curse.png"
+    "duality-wand.png"
     White
     $ \w -> do
       let dmg = 15
@@ -134,9 +134,9 @@ curse =
 bless :: Card
 bless =
   Card
-    "Charity"
+    "DUALITY CUP"
     "Heal weakest player for 15"
-    "bless.png"
+    "duality-cup.png"
     White
     $ \w -> do
       let mag = 15
@@ -150,9 +150,9 @@ bless =
 balance :: Card
 balance =
   Card
-    "Balance"
+    "DUALITY COIN"
     "Change next card's owner to weakest player"
-    "balance.png"
+    "duality-coin.png"
     White
     $ \w -> do
       paLife <- getLife w
@@ -166,9 +166,9 @@ balance =
 scythe :: Card
 scythe =
   Card
-    "Scythe"
+    "SHROOM SWORD"
     "Lifesteal for 5"
-    "scythe.png"
+    "shroom-sword.png"
     Green
     $ \w -> lifesteal 5 (other w)
 
@@ -176,9 +176,9 @@ scythe =
 bloodsucker :: Card
 bloodsucker =
   Card
-    "Feast"
+    "SHROOM WAND"
     "Lifesteal for 3 for each other card on the wheel"
-    "bloodsucker.png"
+    "shroom-wand.png"
     Green
     $ \w -> do
       len <- length <$> getStack
@@ -188,9 +188,9 @@ bloodsucker =
 serpent :: Card
 serpent =
   Card
-    "Infect"
-    ("Add 2 PARASITE cards to their hand")
-    "beguile.png"
+    "SHROOM CUP"
+    ("Add 2 SPORE cards to their hand")
+    "shroom-cup.png"
     Green
     $ \w -> do
       addToHand (other w) parasite
@@ -200,9 +200,9 @@ serpent =
 parasite :: Card
 parasite =
   Card
-    "Parasite"
+    "SPORE"
     "Hurt yourself for 4"
-    "badapple.png"
+    "spore.png"
     Green
     $ \w -> do
       hurt 4 w Bite
@@ -211,20 +211,74 @@ parasite =
 reversal :: Card
 reversal =
   Card
-    "Reversal"
+    "SHROOM COIN"
     "Reverse the order of all cards on the wheel"
-    "reverse.png"
+    "shroom-coin.png"
     Green
     $ const Beta.reverse
+
+-- Blood
+bloodSword :: Card
+bloodSword =
+  Card
+    "BLOOD SWORD"
+    "Pay 4 life to hurt for 12"
+    "blood-sword.png"
+    Red
+    $ \w -> do
+      hurt 4 w Slash
+      hurt 12 (other w) Slash
+
+
+bloodHex :: Card
+bloodHex =
+  Card
+    "BLOOD HEX"
+    "Both player's life becomes that of the weakest"
+    "blood-wand.png"
+    Red
+    $ \w -> do
+      lifePa <- getLife w
+      lifePb <- getLife (other w)
+      if (lifePa > lifePb) then
+        (hurt (lifePa - lifePb) w Slash)
+      else
+        (hurt (lifePb - lifePa) (other w) Slash)
+
+offering :: Card
+offering =
+  Card
+    "BLOOD GRAIL"
+    "Pay 4 life to draw 3"
+    "blood-cup.png"
+    Red
+    $ \w -> do
+      hurt 4 w Slash
+      draw w w
+      draw w w
+      draw w w
+
+
+sacrifice :: Card
+sacrifice =
+  Card
+    "BLOOD SEAL"
+    "Pay half your life to discard the next card"
+    "blood-circle.png"
+    Green
+    $ \w -> do
+      l <- getLife w
+      hurt (l `quot` 2) w Slash
+      discardStack (\(i, _) -> i == 0)
 
 
 -- Watcher
 staff :: Card
 staff =
   Card
-    "Staff"
+    "MIRAGE SWORD"
     "Hurt for 4, then draw 1"
-    "staff.png"
+    "mirage-sword.png"
     Violet
     $ \w -> do
       hurt 4 (other w) Slash
@@ -234,22 +288,22 @@ staff =
 surge :: Card
 surge =
   Card
-    "Cascade"
-    "Hurt for 8 for each CASCADE in play"
-    "brainbomb.png"
+    "MIRAGE WAND"
+    "Hurt for 8 for each MIRAGE WAND in play"
+    "mirage-wand.png"
     Violet
     $ \w -> do
       stack <- getStack
-      let count = length . filter (\(StackCard _ (Card name _ _ _ _)) -> name == "Cascade") $ stack
+      let count = length . filter (\(StackCard _ (Card name _ _ _ _)) -> name == "MIRAGE WAND") $ stack
       hurt ((count + 1) * 8) (other w) Slash
 
 
 prophecy :: Card
 prophecy =
   Card
-    "Prophecy"
+    "MIRAGE COIN"
     "Return all cards on the wheel to hand"
-    "prophecy.png"
+    "mirage-coin.png"
     Violet
     $ \_ -> bounce (const True)
 
@@ -258,9 +312,9 @@ prophecy =
 grudge :: Card
 grudge =
   Card
-    "Grudge"
-    "Hurt for 3, add a copy of this card to hand"
-    "grudge.png"
+    "MIRROR SWORD"
+    "Hurt for 3, add a copy of this card to your hand"
+    "mirror-sword.png"
     Orange
     $ \w -> do
       hurt 3 (other w) Slash
@@ -270,31 +324,35 @@ grudge =
 overwhelm :: Card
 overwhelm =
   Card
-    "Envy"
+    "MIRROR WAND"
     "Hurt for 3 for each card in your hand"
-    "envy.png"
+    "mirror-wand.png"
     Orange
     $ \w -> do
       len <- length <$> getHand w
       hurt (len * 3) (other w) Slash
 
-
-potion :: Card
-potion =
+echo :: Card
+echo =
   Card
-    "Potion"
-    "Heal for 10"
-    "potion.png"
-    Orange
-    $ heal 10
+    "MIRROR CUP"
+    "The next card activates twice"
+    "mirror-cup.png"
+    Yellow
+    $ \_ -> do
+      raw $ do
+        Alpha.modStackHead $
+          \(StackCard which (Card name desc pic col e)) ->
+            StackCard which (Card name desc pic col (\w -> (e w) >> (e w)))
+      Beta.null
 
 
 reflect :: Card
 reflect =
   Card
-    "Reflect"
+    "MIRROR COIN"
     "Change the owner of all cards on the wheel"
-    "reflect.png"
+    "mirror-coin.png"
     Orange
     $ const Beta.reflect
 
@@ -303,9 +361,9 @@ reflect =
 relicblade :: Card
 relicblade =
   Card
-    "Sting"
+    "ALCHEMY SWORD"
     "Hurt for 6"
-    "sting.png"
+    "alchemy-sword.png"
     Yellow
     $ \w -> hurt 6 (other w) Slash
 
@@ -313,21 +371,31 @@ relicblade =
 greed :: Card
 greed =
   Card
-    "Greed"
+    "ALCHEMY WAND"
     "Hurt for 3 for each card in their hand"
-    "greed.png"
+    "alchemy-wand.png"
     Yellow
     $ \w -> do
       len <- length <$> getHand (other w)
       hurt (len * 3) (other w) Slash
 
 
+potion :: Card
+potion =
+  Card
+    "ALCHEMY CUP"
+    "Heal for 10"
+    "alchemy-cup.png"
+    Orange
+    $ heal 10
+
+
 mimic :: Card
 mimic =
   Card
-    "Mimic"
+    "MIRAGE CUP"
     "Play a copy of a random card in your hand"
-    "mimic.png"
+    "mirage-cup.png"
     Violet
     $ \w -> do
       gen <- getGen
@@ -343,9 +411,9 @@ mimic =
 alchemy :: Card
 alchemy =
   Card
-    "Alchemy"
+    "ALCHEMY COIN"
     ("Change next card to GOLD")
-    "alchemy.png"
+    "alchemy-coin.png"
     Yellow
     $ \_ -> transmute gold TransmuteCard
 
@@ -353,28 +421,13 @@ alchemy =
 gold :: Card
 gold =
   Card
-    "Gold"
+    "GOLD"
     "Draw 2"
-    "gold.png"
+    "strange-gold.png"
     Yellow
     $ \w -> do
       draw w w
       draw w w
-
-
-echo :: Card
-echo =
-  Card
-    "Echo"
-    "When the next card activates it does so twice"
-    "echo.png"
-    Yellow
-    $ \_ -> do
-      raw $ do
-        Alpha.modStackHead $
-          \(StackCard which (Card name desc pic col e)) ->
-            StackCard which (Card name desc pic col (\w -> (e w) >> (e w)))
-      Beta.null
 
 
 theEnd :: Card
@@ -594,7 +647,7 @@ sword =
 
 basicCards :: [Card]
 basicCards =
-  [ missile
+  [ fireSword
   , hammer
   , katana
   , scythe
@@ -603,6 +656,7 @@ basicCards =
   , relicblade
   , ritual
   , lance
+  , bloodSword
   ]
 
 
@@ -616,6 +670,7 @@ specialCards =
   , greed
   , lightning
   , meltdown
+  , bloodHex
   ]
 
 
