@@ -372,7 +372,12 @@ buttonEntities passed mouse dt buttons { w, h, model, radius, resolving } =
 
         else
             [ Buttons.entity
-                "goDisabled"
+                (if handFull then
+                    "goDisabled"
+
+                 else
+                    "goHandFull"
+                )
                 { x = x
                 , y = y
                 , xScale = scale
