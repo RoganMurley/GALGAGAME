@@ -556,20 +556,10 @@ morphCoin :: Card
 morphCoin =
   Card
     "MORPH COIN"
-    "All MORPH cards on the wheel become COINs, then the next card becomes MORPH."
+    "The next card becomes a MORPH card"
     "cards/morph/coin.png"
     Copper
     $ \_ -> do
-      raw $
-        Alpha.modStackAll (
-          \(StackCard{ stackcard_owner, stackcard_card }) ->
-            let
-              card :: Card
-              card = if isPrefixOf "MORPH" (card_name stackcard_card) then morphCoin else stackcard_card
-            in
-              (StackCard{ stackcard_owner, stackcard_card = card })
-        )
-      Beta.null
       raw $
         Alpha.modStackHead (
           \(StackCard{ stackcard_owner, stackcard_card }) ->
