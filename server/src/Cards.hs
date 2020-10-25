@@ -13,7 +13,7 @@ import qualified DSL.Beta as Beta
 import DSL.Beta hiding (confound, reflect)
 
 
--- Striker
+-- Blaze
 fireSword :: Card
 fireSword =
   Card
@@ -61,7 +61,7 @@ confound =
       Beta.null
 
 
--- Breaker
+-- Heaven
 hammer :: Card
 hammer =
   Card
@@ -104,7 +104,7 @@ hubris =
     $ \_ -> discardStack (const True)
 
 
--- Balancer
+-- Duality
 katana :: Card
 katana =
   Card
@@ -162,7 +162,7 @@ balance =
       when (paLife == pbLife) Beta.null
 
 
--- Drinker
+-- Shroom
 scythe :: Card
 scythe =
   Card
@@ -217,6 +217,7 @@ reversal =
     Green
     $ const Beta.reverse
 
+
 -- Blood
 bloodSword :: Card
 bloodSword =
@@ -233,7 +234,7 @@ bloodSword =
 bloodHex :: Card
 bloodHex =
   Card
-    "BLOOD HEX"
+    "BLOOD WAND"
     "Both player's life becomes that of the weakest"
     "cards/blood/wand.png"
     Red
@@ -248,7 +249,7 @@ bloodHex =
 offering :: Card
 offering =
   Card
-    "BLOOD GRAIL"
+    "BLOOD CUP"
     "Pay 4 life to draw 3"
     "cards/blood/cup.png"
     Red
@@ -272,7 +273,7 @@ sacrifice =
       discardStack (\(i, _) -> i == 0)
 
 
--- Watcher
+-- Mirage
 staff :: Card
 staff =
   Card
@@ -283,6 +284,24 @@ staff =
     $ \w -> do
       hurt 4 (other w) Slash
       draw w w
+
+
+mimic :: Card
+mimic =
+  Card
+    "MIRAGE CUP"
+    "Play a copy of a random card in your hand"
+    "cards/mirage/cup.png"
+    Violet
+    $ \w -> do
+      gen <- getGen
+      hand <- getHand w
+      let mCard = headMay . (shuffle gen) $ hand
+      case mCard of
+        Just c ->
+          fabricate $ StackCard w c
+        Nothing ->
+          Beta.null
 
 
 surge :: Card
@@ -308,13 +327,13 @@ prophecy =
     $ \_ -> bounce (const True)
 
 
--- Shielder
+-- Mirror
 grudge :: Card
 grudge =
   Card
     "MIRROR SWORD"
     "Hurt for 3, add a copy of this card to your hand"
-    "cards/mirage/sword.png"
+    "cards/mirror/sword.png"
     Orange
     $ \w -> do
       hurt 3 (other w) Slash
@@ -326,7 +345,7 @@ overwhelm =
   Card
     "MIRROR WAND"
     "Hurt for 3 for each card in your hand"
-    "cards/mirage/wand.png"
+    "cards/mirror/wand.png"
     Orange
     $ \w -> do
       len <- length <$> getHand w
@@ -337,7 +356,7 @@ echo =
   Card
     "MIRROR CUP"
     "The next card activates twice"
-    "cards/mirage/cup.png"
+    "cards/mirror/cup.png"
     Yellow
     $ \_ -> do
       raw $ do
@@ -352,12 +371,12 @@ reflect =
   Card
     "MIRROR COIN"
     "Change the owner of all cards on the wheel"
-    "cards/mirage/coin.png"
+    "cards/mirror/coin.png"
     Orange
     $ const Beta.reflect
 
 
--- Collector
+-- Alchemy
 relicblade :: Card
 relicblade =
   Card
@@ -390,29 +409,11 @@ potion =
     $ heal 10
 
 
-mimic :: Card
-mimic =
-  Card
-    "MIRAGE CUP"
-    "Play a copy of a random card in your hand"
-    "cards/mirage/cup.png"
-    Violet
-    $ \w -> do
-      gen <- getGen
-      hand <- getHand w
-      let mCard = headMay . (shuffle gen) $ hand
-      case mCard of
-        Just c ->
-          fabricate $ StackCard w c
-        Nothing ->
-          Beta.null
-
-
 alchemy :: Card
 alchemy =
   Card
     "ALCHEMY COIN"
-    ("Change next card to GOLD")
+    ("Change next card to STRANGE GOLD")
     "cards/alchemy/coin.png"
     Yellow
     $ \_ -> transmute gold TransmuteCard
@@ -421,7 +422,7 @@ alchemy =
 gold :: Card
 gold =
   Card
-    "GOLD"
+    "STRANGE GOLD"
     "Draw 2"
     "cards/strange/gold.png"
     Yellow
@@ -430,6 +431,7 @@ gold =
       draw w w
 
 
+-- Other
 theEnd :: Card
 theEnd =
   Card
