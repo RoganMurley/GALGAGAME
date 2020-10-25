@@ -167,98 +167,97 @@ getRune name =
 allRunes :: [Rune]
 allRunes =
   [
-  --lust
-   gluttony
-  , greed
-  , sloth
-  , wrath
-  , envy
-  , pride
-  , fungus
-  --, base
-  --, duelist
+    blazeRune
+  , heavenRune
+  , shroomRune
+  -- , bloodRune
+  , mirageRune
+  , mirrorRune
+  , dualityRune
+  , alchemyRune
+  --, crownRune
   ]
 
 
-wrath :: Rune
-wrath =
+blazeRune :: Rune
+blazeRune =
   Rune
     "BLAZE"
-    "Entropy distilled."
+    "Blazing heart."
     "cards/blaze/coin.png"
-    (Cards.fireSword, Cards.fireball, Cards.fireCup, Cards.confound)
+    (Cards.blazeSword, Cards.blazeWand, Cards.blazeCup, Cards.blazeCoin)
 
 
-pride :: Rune
-pride =
+heavenRune :: Rune
+heavenRune =
   Rune
     "HEAVEN"
     "It appears the heavens have opened."
     "cards/heaven/coin.png"
-    (Cards.hammer, Cards.lightning, Cards.feint, Cards.hubris)
+    (Cards.heavenSword, Cards.heavenWand, Cards.heavenCup, Cards.heavenCoin)
 
 
-fungus :: Rune
-fungus =
+shroomRune :: Rune
+shroomRune =
   Rune
     "SHROOM"
     "Earth to earth."
     "cards/shroom/coin.png"
-    (Cards.scythe, Cards.bloodsucker, Cards.serpent, Cards.reversal)
+    (Cards.shroomSword, Cards.shroomWand, Cards.shroomCup, Cards.shroomCoin)
 
 
-lust :: Rune
-lust =
+bloodRune :: Rune
+bloodRune =
   Rune
     "BLOOD"
     "You steal life."
     "cards/blood/coin.png"
-    (Cards.bloodSword, Cards.bloodHex, Cards.offering, Cards.sacrifice)
+    (Cards.bloodSword, Cards.bloodWand, Cards.bloodCup, Cards.bloodCoin)
 
 
-gluttony :: Rune
-gluttony =
+mirageRune :: Rune
+mirageRune =
   Rune
     "MIRAGE"
     "Seeing is believing."
     "cards/mirage/coin.png"
-    (Cards.staff, Cards.surge, Cards.mimic, Cards.prophecy)
+    (Cards.mirageSword, Cards.mirageWand, Cards.mirageCup, Cards.mirageCoin)
 
 
-envy :: Rune
-envy =
+mirrorRune :: Rune
+mirrorRune =
   Rune
     "MIRROR"
     "A reflection of a reflection."
     "cards/mirror/coin.png"
-    (Cards.grudge, Cards.overwhelm, Cards.echo, Cards.reflect)
+    (Cards.mirrorSword, Cards.mirrorWand, Cards.mirrorCup, Cards.mirrorCoin)
 
 
-sloth :: Rune
-sloth =
+dualityRune :: Rune
+dualityRune =
   Rune
     "DUALITY"
     "Strength from weakness, weakness from strength."
     "cards/duality/coin.png"
-    (Cards.katana, Cards.curse, Cards.bless, Cards.balance)
+    (Cards.dualitySword, Cards.dualityWand, Cards.dualityCup, Cards.dualityCoin)
 
 
-greed :: Rune
-greed =
+alchemyRune :: Rune
+alchemyRune =
   Rune
     "ALCHEMY"
     "For the lead hearted."
     "cards/alchemy/coin.png"
-    (Cards.relicblade, Cards.greed, Cards.potion, Cards.alchemy)
+    (Cards.alchemySword, Cards.alchemyWand, Cards.alchemyCup, Cards.alchemyCoin)
 
 
-duelist :: Rune
-duelist =
+crownRune :: Rune
+crownRune =
   Rune
-    "Crown"
+    "CROWN"
     "You use every advantage you have."
-    "subjugate.png"
-    (Cards.lance, Cards.meltdown, Cards.taunt, Cards.subjugate)
+    "cards/crown/coin.png"
+    (Cards.crownSword, Cards.crownWand, Cards.crownCup, Cards.crownCoin)
 
 
 -- Characters
@@ -275,9 +274,9 @@ catherine =
   Character
     "Catherine"
     "/img/textures/confound.png"
-    wrath
-    fungus
-    envy
+    blazeRune
+    shroomRune
+    mirrorRune
 
 
 marcus :: Character
@@ -285,9 +284,9 @@ marcus =
   Character
     "Marcus"
     "/img/textures/hubris.png"
-    pride
-    gluttony
-    sloth
+    heavenRune
+    mirageRune
+    dualityRune
 
 
 freja :: Character
@@ -295,9 +294,9 @@ freja =
   Character
     "Freja"
     "/img/textures/alchemy.png"
-    greed
-    envy
-    wrath
+    alchemyRune
+    mirrorRune
+    blazeRune
 
 
 characterCards :: Character -> Deck
