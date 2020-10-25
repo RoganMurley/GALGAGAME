@@ -19,7 +19,7 @@ fireSword =
   Card
     "BLAZE SWORD"
     "Hurt for 7"
-    "blaze-sword.png"
+    "cards/blaze/sword.png"
     Red
     $ \w -> hurt 7 (other w) Slash
 
@@ -29,7 +29,7 @@ fireball =
   Card
     "BLAZE WAND"
     "Hurt for 5 for each other card on the wheel"
-    "blaze-wand.png"
+    "cards/blaze/wand.png"
     Red
     $ \w -> do
       len <- length <$> getStack
@@ -41,7 +41,7 @@ fireCup =
   Card
     "BLAZE CUP"
     "Discard your hand, then draw 2"
-    "blaze-cup.png"
+    "cards/blaze/cup.png"
     Red
     $ \w -> do
       discardHand w (const True)
@@ -54,7 +54,7 @@ confound =
   Card
     "BLAZE COIN"
     "Shuffle the order of all cards on the wheel"
-    "blaze-coin.png"
+    "cards/blaze/coin.png"
     Red
     $ \_ -> do
       Beta.confound
@@ -67,7 +67,7 @@ hammer =
   Card
     "HEAVEN SWORD"
     "Hurt for 8"
-    "heavens-sword.png"
+    "cards/heaven/sword.png"
     Blue
     $ \w -> hurt 8 (other w) Slash
 
@@ -77,7 +77,7 @@ lightning =
   Card
     "HEAVEN WAND"
     "Hurt for 4 for each other card on the wheel"
-    "heavens-wand.png"
+    "cards/heaven/wand.png"
     Blue
     $ \w -> do
       len <- length <$> getStack
@@ -89,7 +89,7 @@ feint =
   Card
     "HEAVEN CUP"
     "Return all of your cards on the wheel to hand"
-    "heavens-cup.png"
+    "cards/heaven/cup.png"
     Blue
     $ \w -> bounce (\(StackCard o _) -> w == o)
 
@@ -99,7 +99,7 @@ hubris =
   Card
     "HEAVEN COIN"
     "Discard all cards on the wheel"
-    "heavens-coin.png"
+    "cards/heaven/coin.png"
     Blue
     $ \_ -> discardStack (const True)
 
@@ -110,7 +110,7 @@ katana =
   Card
     "DUALITY SWORD"
     "Hurt for 9"
-    "duality-sword.png"
+    "cards/duality/sword.png"
     White
     $ \w -> hurt 9 (other w) Slash
 
@@ -120,7 +120,7 @@ curse =
   Card
     "DUALITY WAND"
     "Hurt weakest player for 15"
-    "duality-wand.png"
+    "cards/duality/wand.png"
     White
     $ \w -> do
       let dmg = 15
@@ -136,7 +136,7 @@ bless =
   Card
     "DUALITY CUP"
     "Heal weakest player for 15"
-    "duality-cup.png"
+    "cards/duality/cup.png"
     White
     $ \w -> do
       let mag = 15
@@ -152,7 +152,7 @@ balance =
   Card
     "DUALITY COIN"
     "Change next card's owner to weakest player"
-    "duality-coin.png"
+    "cards/duality/coin.png"
     White
     $ \w -> do
       paLife <- getLife w
@@ -168,7 +168,7 @@ scythe =
   Card
     "SHROOM SWORD"
     "Lifesteal for 5"
-    "shroom-sword.png"
+    "cards/shroom/sword.png"
     Green
     $ \w -> lifesteal 5 (other w)
 
@@ -178,7 +178,7 @@ bloodsucker =
   Card
     "SHROOM WAND"
     "Lifesteal for 3 for each other card on the wheel"
-    "shroom-wand.png"
+    "cards/shroom/wand.png"
     Green
     $ \w -> do
       len <- length <$> getStack
@@ -189,8 +189,8 @@ serpent :: Card
 serpent =
   Card
     "SHROOM CUP"
-    ("Add 2 SPORE cards to their hand")
-    "shroom-cup.png"
+    ("Add 2 STRANGE SPORE cards to their hand")
+    "cards/shroom/cup.png"
     Green
     $ \w -> do
       addToHand (other w) parasite
@@ -200,9 +200,9 @@ serpent =
 parasite :: Card
 parasite =
   Card
-    "SPORE"
+    "STRANGE SPORE"
     "Hurt yourself for 4"
-    "spore.png"
+    "cards/strange/spore.png"
     Green
     $ \w -> do
       hurt 4 w Bite
@@ -213,7 +213,7 @@ reversal =
   Card
     "SHROOM COIN"
     "Reverse the order of all cards on the wheel"
-    "shroom-coin.png"
+    "cards/shroom/coin.png"
     Green
     $ const Beta.reverse
 
@@ -223,7 +223,7 @@ bloodSword =
   Card
     "BLOOD SWORD"
     "Pay 4 life to hurt for 12"
-    "blood-sword.png"
+    "cards/blood/sword.png"
     Red
     $ \w -> do
       hurt 4 w Slash
@@ -235,7 +235,7 @@ bloodHex =
   Card
     "BLOOD HEX"
     "Both player's life becomes that of the weakest"
-    "blood-wand.png"
+    "cards/blood/wand.png"
     Red
     $ \w -> do
       lifePa <- getLife w
@@ -250,7 +250,7 @@ offering =
   Card
     "BLOOD GRAIL"
     "Pay 4 life to draw 3"
-    "blood-cup.png"
+    "cards/blood/cup.png"
     Red
     $ \w -> do
       hurt 4 w Slash
@@ -262,9 +262,9 @@ offering =
 sacrifice :: Card
 sacrifice =
   Card
-    "BLOOD SEAL"
+    "BLOOD COIN"
     "Pay half your life to discard the next card"
-    "blood-circle.png"
+    "cards/blood/coin.png"
     Green
     $ \w -> do
       l <- getLife w
@@ -278,7 +278,7 @@ staff =
   Card
     "MIRAGE SWORD"
     "Hurt for 4, then draw 1"
-    "mirage-sword.png"
+    "cards/mirage/sword.png"
     Violet
     $ \w -> do
       hurt 4 (other w) Slash
@@ -290,7 +290,7 @@ surge =
   Card
     "MIRAGE WAND"
     "Hurt for 8 for each MIRAGE WAND in play"
-    "mirage-wand.png"
+    "cards/mirage/wand.png"
     Violet
     $ \w -> do
       stack <- getStack
@@ -303,7 +303,7 @@ prophecy =
   Card
     "MIRAGE COIN"
     "Return all cards on the wheel to hand"
-    "mirage-coin.png"
+    "cards/mirage/coin.png"
     Violet
     $ \_ -> bounce (const True)
 
@@ -314,7 +314,7 @@ grudge =
   Card
     "MIRROR SWORD"
     "Hurt for 3, add a copy of this card to your hand"
-    "mirror-sword.png"
+    "cards/mirage/sword.png"
     Orange
     $ \w -> do
       hurt 3 (other w) Slash
@@ -326,7 +326,7 @@ overwhelm =
   Card
     "MIRROR WAND"
     "Hurt for 3 for each card in your hand"
-    "mirror-wand.png"
+    "cards/mirage/wand.png"
     Orange
     $ \w -> do
       len <- length <$> getHand w
@@ -337,7 +337,7 @@ echo =
   Card
     "MIRROR CUP"
     "The next card activates twice"
-    "mirror-cup.png"
+    "cards/mirage/cup.png"
     Yellow
     $ \_ -> do
       raw $ do
@@ -352,7 +352,7 @@ reflect =
   Card
     "MIRROR COIN"
     "Change the owner of all cards on the wheel"
-    "mirror-coin.png"
+    "cards/mirage/coin.png"
     Orange
     $ const Beta.reflect
 
@@ -363,7 +363,7 @@ relicblade =
   Card
     "ALCHEMY SWORD"
     "Hurt for 6"
-    "alchemy-sword.png"
+    "cards/alchemy/sword.png"
     Yellow
     $ \w -> hurt 6 (other w) Slash
 
@@ -373,7 +373,7 @@ greed =
   Card
     "ALCHEMY WAND"
     "Hurt for 3 for each card in their hand"
-    "alchemy-wand.png"
+    "cards/alchemy/wand.png"
     Yellow
     $ \w -> do
       len <- length <$> getHand (other w)
@@ -385,7 +385,7 @@ potion =
   Card
     "ALCHEMY CUP"
     "Heal for 10"
-    "alchemy-cup.png"
+    "cards/alchemy/cup.png"
     Orange
     $ heal 10
 
@@ -395,7 +395,7 @@ mimic =
   Card
     "MIRAGE CUP"
     "Play a copy of a random card in your hand"
-    "mirage-cup.png"
+    "cards/mirage/cup.png"
     Violet
     $ \w -> do
       gen <- getGen
@@ -413,7 +413,7 @@ alchemy =
   Card
     "ALCHEMY COIN"
     ("Change next card to GOLD")
-    "alchemy-coin.png"
+    "cards/alchemy/coin.png"
     Yellow
     $ \_ -> transmute gold TransmuteCard
 
@@ -423,7 +423,7 @@ gold =
   Card
     "GOLD"
     "Draw 2"
-    "strange-gold.png"
+    "cards/strange/gold.png"
     Yellow
     $ \w -> do
       draw w w
@@ -433,9 +433,9 @@ gold =
 theEnd :: Card
 theEnd =
   Card
-    "The End"
+    "STRANGE END"
     "You're out of cards, hurt yourself for 10"
-    "end.png"
+    "cards/strange/end.png"
     Mystery
     $ \w -> hurt 10 w Slash
 
