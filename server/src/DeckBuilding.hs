@@ -185,7 +185,7 @@ wrath =
   Rune
     "BLAZE"
     "Entropy distilled."
-    "blaze-coin.png"
+    "cards/blaze/coin.png"
     (Cards.fireSword, Cards.fireball, Cards.fireCup, Cards.confound)
 
 
@@ -194,7 +194,7 @@ pride =
   Rune
     "HEAVEN"
     "It appears the heavens have opened."
-    "heavens-coin.png"
+    "cards/heaven/coin.png"
     (Cards.hammer, Cards.lightning, Cards.feint, Cards.hubris)
 
 
@@ -203,7 +203,7 @@ fungus =
   Rune
     "SHROOM"
     "Earth to earth."
-    "shroom-coin.png"
+    "cards/shroom/coin.png"
     (Cards.scythe, Cards.bloodsucker, Cards.serpent, Cards.reversal)
 
 
@@ -212,7 +212,7 @@ lust =
   Rune
     "BLOOD"
     "You steal life."
-    "blood-circle.png"
+    "cards/blood/coin.png"
     (Cards.bloodSword, Cards.bloodHex, Cards.offering, Cards.sacrifice)
 
 
@@ -221,7 +221,7 @@ gluttony =
   Rune
     "MIRAGE"
     "Seeing is believing."
-    "mirage-coin.png"
+    "cards/mirage/coin.png"
     (Cards.staff, Cards.surge, Cards.mimic, Cards.prophecy)
 
 
@@ -230,7 +230,7 @@ envy =
   Rune
     "MIRROR"
     "A reflection of a reflection."
-    "mirror-coin.png"
+    "cards/mirror/coin.png"
     (Cards.grudge, Cards.overwhelm, Cards.echo, Cards.reflect)
 
 
@@ -239,7 +239,7 @@ sloth =
   Rune
     "DUALITY"
     "Strength from weakness, weakness from strength."
-    "duality-coin.png"
+    "cards/duality/coin.png"
     (Cards.katana, Cards.curse, Cards.bless, Cards.balance)
 
 
@@ -248,7 +248,7 @@ greed =
   Rune
     "ALCHEMY"
     "For the lead hearted."
-    "alchemy-coin.png"
+    "cards/alchemy/coin.png"
     (Cards.relicblade, Cards.greed, Cards.potion, Cards.alchemy)
 
 
