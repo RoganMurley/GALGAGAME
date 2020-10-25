@@ -2,10 +2,11 @@ module Cards where
 
 import Control.Monad (when)
 import CardAnim (Hurt(..), Transmute(..))
-import Card (Card(Card), CardCol(..))
+import Card (Card(..), CardCol(..))
+import Data.Text (isPrefixOf, isSuffixOf)
 import Player (other)
 import Safe (headMay)
-import StackCard (StackCard(StackCard))
+import StackCard (StackCard(..))
 import Util (shuffle)
 
 import qualified DSL.Alpha as Alpha
@@ -431,17 +432,6 @@ strangeGold =
       draw w w
 
 
--- Other
-strangeEnd :: Card
-strangeEnd =
-  Card
-    "STRANGE END"
-    "You're out of cards, hurt yourself for 10"
-    "cards/strange/end.png"
-    Mystery
-    $ \w -> hurt 10 w Slash
-
-
 -- Crown
 crownSword :: Card
 crownSword =
@@ -495,6 +485,112 @@ crownCoin =
     $ \w -> do
       handLen <- length <$> getHand w
       discardStack $ \(i, _) -> i < handLen
+
+
+-- Morph
+morphSword :: Card
+morphSword =
+  Card
+    "MORPH SWORD"
+    "All MORPH cards on the wheel become SWORDs, then hurt for 7."
+    "cards/morph/sword.png"
+    Copper
+    $ \w -> do
+      raw $
+        Alpha.modStackAll (
+          \(StackCard{ stackcard_owner, stackcard_card }) ->
+            let
+              card :: Card
+              card = if isPrefixOf "MORPH" (card_name stackcard_card) then morphSword else stackcard_card
+            in
+              (StackCard{ stackcard_owner, stackcard_card = card })
+        )
+      Beta.null
+      hurt 7 (other w) Slash
+
+
+morphWand :: Card
+morphWand =
+  Card
+    "MORPH WAND"
+    "All MORPH cards on the wheel become WANDs, then hurt for 3 for each card on the wheel."
+    "cards/morph/wand.png"
+    Copper
+    $ \w -> do
+      raw $
+        Alpha.modStackAll (
+          \(StackCard{ stackcard_owner, stackcard_card }) ->
+            let
+              card :: Card
+              card = if isPrefixOf "MORPH" (card_name stackcard_card) then morphWand else stackcard_card
+            in
+              (StackCard{ stackcard_owner, stackcard_card = card })
+        )
+      Beta.null
+      len <- length <$> getStack
+      hurt (len * 3) (other w) Slash
+
+
+morphCup :: Card
+morphCup =
+  Card
+    "MORPH CUP"
+    "All MORPH cards on the wheel become CUPs, then heal for 8."
+    "cards/morph/cup.png"
+    Copper
+    $ \w -> do
+      raw $
+        Alpha.modStackAll (
+          \(StackCard{ stackcard_owner, stackcard_card }) ->
+            let
+              card :: Card
+              card = if isPrefixOf "MORPH" (card_name stackcard_card) then morphCup else stackcard_card
+            in
+              (StackCard{ stackcard_owner, stackcard_card = card })
+        )
+      Beta.null
+      heal 8 w
+
+
+morphCoin :: Card
+morphCoin =
+  Card
+    "MORPH COIN"
+    "All MORPH cards on the wheel become COINs, then the next card becomes MORPH."
+    "cards/morph/coin.png"
+    Copper
+    $ \_ -> do
+      raw $
+        Alpha.modStackAll (
+          \(StackCard{ stackcard_owner, stackcard_card }) ->
+            let
+              card :: Card
+              card = if isPrefixOf "MORPH" (card_name stackcard_card) then morphCoin else stackcard_card
+            in
+              (StackCard{ stackcard_owner, stackcard_card = card })
+        )
+      Beta.null
+      raw $
+        Alpha.modStackHead (
+          \(StackCard{ stackcard_owner, stackcard_card }) ->
+            let
+              card :: Card
+              card = if isSuffixOf "SWORD" (card_name stackcard_card) then morphSword else (if isSuffixOf "WAND" (card_name stackcard_card) then morphWand else (if isSuffixOf "CUP" (card_name stackcard_card) then morphCup else (if isSuffixOf "COIN" (card_name stackcard_card) then morphCoin else (stackcard_card))))
+            in
+              (StackCard{ stackcard_owner, stackcard_card = card })
+        )
+      Beta.null
+
+
+-- Other
+strangeEnd :: Card
+strangeEnd =
+  Card
+    "STRANGE END"
+    "You're out of cards, hurt yourself for 10"
+    "cards/strange/end.png"
+    Mystery
+    $ \w -> hurt 10 w Slash
 
 
 -- Experiments
@@ -586,6 +682,7 @@ swords =
   , dualitySword
   , alchemySword
   , crownSword
+  , morphSword
   ]
 
 
@@ -600,6 +697,7 @@ wands =
   , dualityWand
   , alchemyWand
   , crownWand
+  , morphWand
   ]
 
 
@@ -614,6 +712,7 @@ cups =
   , dualityCup
   , alchemyCup
   , crownCup
+  , morphCup
   ]
 
 
@@ -628,6 +727,7 @@ coins =
   , dualityCoin
   , alchemyCoin
   , crownCoin
+  , morphCoin
   ]
 
 

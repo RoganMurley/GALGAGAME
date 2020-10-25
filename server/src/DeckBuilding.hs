@@ -176,6 +176,7 @@ allRunes =
   , dualityRune
   , alchemyRune
   --, crownRune
+  , morphRune
   ]
 
 
@@ -258,6 +259,15 @@ crownRune =
     "You use every advantage you have."
     "cards/crown/coin.png"
     (Cards.crownSword, Cards.crownWand, Cards.crownCup, Cards.crownCoin)
+
+
+morphRune :: Rune
+morphRune =
+  Rune
+    "MORPH"
+    "For the mutable mind."
+    "cards/morph/coin.png"
+    (Cards.morphSword, Cards.morphWand, Cards.morphCup, Cards.morphCoin)
 
 
 -- Characters
