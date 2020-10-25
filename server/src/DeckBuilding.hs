@@ -166,78 +166,90 @@ getRune name =
 -- RUNES
 allRunes :: [Rune]
 allRunes =
-  [ lust
-  , gluttony
+  [
+  --lust
+   gluttony
   , greed
   , sloth
   , wrath
   , envy
   , pride
-  , duelist
+  , fungus
+  --, base
+  --, duelist
   ]
 
 
 wrath :: Rune
 wrath =
   Rune
-    "Fire"
-    "You're dangerous and unpredictable."
-    "confound.png"
-    (Cards.missile, Cards.fireball, Cards.offering, Cards.confound)
+    "BLAZE"
+    "Entropy distilled."
+    "blaze-coin.png"
+    (Cards.fireSword, Cards.fireball, Cards.fireCup, Cards.confound)
 
 
 pride :: Rune
 pride =
   Rune
-    "Heavens"
-    "You punish mistakes."
-    "hubris.png"
+    "HEAVEN"
+    "It appears the heavens have opened."
+    "heavens-coin.png"
     (Cards.hammer, Cards.lightning, Cards.feint, Cards.hubris)
+
+
+fungus :: Rune
+fungus =
+  Rune
+    "SHROOM"
+    "Earth to earth."
+    "shroom-coin.png"
+    (Cards.scythe, Cards.bloodsucker, Cards.serpent, Cards.reversal)
 
 
 lust :: Rune
 lust =
   Rune
-    "Blood"
+    "BLOOD"
     "You steal life."
-    "reverse.png"
-    (Cards.scythe, Cards.bloodsucker, Cards.serpent, Cards.reversal)
+    "blood-circle.png"
+    (Cards.bloodSword, Cards.bloodHex, Cards.offering, Cards.sacrifice)
 
 
 gluttony :: Rune
 gluttony =
   Rune
-    "Mind"
-    "You play mind games."
-    "prophecy.png"
+    "MIRAGE"
+    "Seeing is believing."
+    "mirage-coin.png"
     (Cards.staff, Cards.surge, Cards.mimic, Cards.prophecy)
 
 
 envy :: Rune
 envy =
   Rune
-    "Body"
-    "You protect yourself."
-    "reflect.png"
-    (Cards.grudge, Cards.overwhelm, Cards.potion, Cards.reflect)
+    "MIRROR"
+    "A reflection of a reflection."
+    "mirror-coin.png"
+    (Cards.grudge, Cards.overwhelm, Cards.echo, Cards.reflect)
 
 
 sloth :: Rune
 sloth =
   Rune
-    "Heart"
-    "You're strong but hard to control."
-    "balance.png"
+    "DUALITY"
+    "Strength from weakness, weakness from strength."
+    "duality-coin.png"
     (Cards.katana, Cards.curse, Cards.bless, Cards.balance)
 
 
 greed :: Rune
 greed =
   Rune
-    "Gold"
-    "You punish hoarding."
-    "alchemy.png"
-    (Cards.relicblade, Cards.greed, Cards.echo, Cards.alchemy)
+    "ALCHEMY"
+    "For the lead hearted."
+    "alchemy-coin.png"
+    (Cards.relicblade, Cards.greed, Cards.potion, Cards.alchemy)
 
 
 duelist :: Rune
@@ -264,7 +276,7 @@ catherine =
     "Catherine"
     "/img/textures/confound.png"
     wrath
-    lust
+    fungus
     envy
 
 
