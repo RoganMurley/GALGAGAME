@@ -13,7 +13,7 @@ import Safe (headMay, tailSafe)
 import StackCard(StackCard(StackCard, stackcard_card), isOwner)
 import Util (deleteIndex, indexedFilter, shuffle)
 
-import {-# SOURCE #-} Cards (theEnd)
+import {-# SOURCE #-} Cards (strangeEnd)
 
 
 makeFree ''DSL
@@ -126,7 +126,7 @@ draw w d =
         modDeck d tailSafe
         addToHand w card
       Nothing ->
-        addToHand w theEnd
+        addToHand w strangeEnd
 
 
 transmute :: Card -> Program ()

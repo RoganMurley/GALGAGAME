@@ -25,8 +25,8 @@ view ctx entity =
         { position, rotation, scale, card, owner } =
             entity
     in
-    Texture.with3 textures card.imgURL "cardBack.png" "cardOutline.png" <|
-        \texture backTexture outlineTexture ->
+    Texture.with2 textures "cardBack.png" "cardOutline.png" <|
+        \backTexture outlineTexture ->
             [ Render.Primitives.quad Render.Shaders.fragment <|
                 { rotation = Quaternion.makeRotate rotation
                 , scale = makeScale scale
@@ -45,16 +45,20 @@ view ctx entity =
                 , camera = camera3d
                 , texture = outlineTexture
                 }
-            , Render.Primitives.quad Render.Shaders.fragment <|
-                { rotation = Quaternion.makeRotate rotation
-                , scale = makeScale <| Vector3.scale 0.6 scale
-                , color = Colour.white
-                , pos = position
-                , perspective = perspective
-                , camera = camera3d
-                , texture = texture
-                }
             ]
+                ++ (Texture.with textures card.imgURL <|
+                        \texture ->
+                            [ Render.Primitives.quad Render.Shaders.fragment <|
+                                { rotation = Quaternion.makeRotate rotation
+                                , scale = makeScale <| Vector3.scale 0.6 scale
+                                , color = Colour.white
+                                , pos = position
+                                , perspective = perspective
+                                , camera = camera3d
+                                , texture = texture
+                                }
+                            ]
+                   )
 
 
 backView : Context -> Game.Entity3D {} -> List WebGL.Entity

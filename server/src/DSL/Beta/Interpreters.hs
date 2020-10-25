@@ -28,7 +28,7 @@ import qualified DSL.Anim as Anim
 import qualified DSL.Log as Log
 import qualified ModelDiff
 
-import {-# SOURCE #-} Cards (theEnd)
+import {-# SOURCE #-} Cards (strangeEnd)
 
 
 alphaI :: Program a -> Alpha.Program a
@@ -108,7 +108,7 @@ drawAnim w d alpha = do
   final <- toLeft alpha
   if (handLength < maxHandLength)
     then toRight . liftF $ Anim.Draw w ()
-    else toRight . liftF $ Anim.Mill w (fromMaybe theEnd nextCard) ()
+    else toRight . liftF $ Anim.Mill w (fromMaybe strangeEnd nextCard) ()
   return final
 
 

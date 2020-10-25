@@ -14,8 +14,8 @@ import DSL.Beta hiding (confound, reflect)
 
 
 -- Blaze
-fireSword :: Card
-fireSword =
+blazeSword :: Card
+blazeSword =
   Card
     "BLAZE SWORD"
     "Hurt for 7"
@@ -24,8 +24,8 @@ fireSword =
     $ \w -> hurt 7 (other w) Slash
 
 
-fireball :: Card
-fireball =
+blazeWand :: Card
+blazeWand =
   Card
     "BLAZE WAND"
     "Hurt for 5 for each other card on the wheel"
@@ -36,8 +36,8 @@ fireball =
       hurt (len * 5) (other w) Slash
 
 
-fireCup :: Card
-fireCup =
+blazeCup :: Card
+blazeCup =
   Card
     "BLAZE CUP"
     "Discard your hand, then draw 2"
@@ -49,8 +49,8 @@ fireCup =
       draw w w
 
 
-confound :: Card
-confound =
+blazeCoin :: Card
+blazeCoin =
   Card
     "BLAZE COIN"
     "Shuffle the order of all cards on the wheel"
@@ -62,8 +62,8 @@ confound =
 
 
 -- Heaven
-hammer :: Card
-hammer =
+heavenSword :: Card
+heavenSword =
   Card
     "HEAVEN SWORD"
     "Hurt for 8"
@@ -72,8 +72,8 @@ hammer =
     $ \w -> hurt 8 (other w) Slash
 
 
-lightning :: Card
-lightning =
+heavenWand :: Card
+heavenWand =
   Card
     "HEAVEN WAND"
     "Hurt for 4 for each other card on the wheel"
@@ -84,8 +84,8 @@ lightning =
       hurt (len * 4) (other w) Slash
 
 
-feint :: Card
-feint =
+heavenCup :: Card
+heavenCup =
   Card
     "HEAVEN CUP"
     "Return all of your cards on the wheel to hand"
@@ -94,8 +94,8 @@ feint =
     $ \w -> bounce (\(StackCard o _) -> w == o)
 
 
-hubris :: Card
-hubris =
+heavenCoin :: Card
+heavenCoin =
   Card
     "HEAVEN COIN"
     "Discard all cards on the wheel"
@@ -105,8 +105,8 @@ hubris =
 
 
 -- Duality
-katana :: Card
-katana =
+dualitySword :: Card
+dualitySword =
   Card
     "DUALITY SWORD"
     "Hurt for 9"
@@ -115,8 +115,8 @@ katana =
     $ \w -> hurt 9 (other w) Slash
 
 
-curse :: Card
-curse =
+dualityWand :: Card
+dualityWand =
   Card
     "DUALITY WAND"
     "Hurt weakest player for 15"
@@ -131,8 +131,8 @@ curse =
       when (paLife == pbLife) Beta.null
 
 
-bless :: Card
-bless =
+dualityCup :: Card
+dualityCup =
   Card
     "DUALITY CUP"
     "Heal weakest player for 15"
@@ -147,8 +147,8 @@ bless =
       when (paLife == pbLife) Beta.null
 
 
-balance :: Card
-balance =
+dualityCoin :: Card
+dualityCoin =
   Card
     "DUALITY COIN"
     "Change next card's owner to weakest player"
@@ -163,8 +163,8 @@ balance =
 
 
 -- Shroom
-scythe :: Card
-scythe =
+shroomSword :: Card
+shroomSword =
   Card
     "SHROOM SWORD"
     "Lifesteal for 5"
@@ -173,8 +173,8 @@ scythe =
     $ \w -> lifesteal 5 (other w)
 
 
-bloodsucker :: Card
-bloodsucker =
+shroomWand :: Card
+shroomWand =
   Card
     "SHROOM WAND"
     "Lifesteal for 3 for each other card on the wheel"
@@ -185,20 +185,20 @@ bloodsucker =
       lifesteal (len * 3) (other w)
 
 
-serpent :: Card
-serpent =
+shroomCup :: Card
+shroomCup =
   Card
     "SHROOM CUP"
     ("Add 2 STRANGE SPORE cards to their hand")
     "cards/shroom/cup.png"
     Green
     $ \w -> do
-      addToHand (other w) parasite
-      addToHand (other w) parasite
+      addToHand (other w) strangeSpore
+      addToHand (other w) strangeSpore
 
 
-parasite :: Card
-parasite =
+strangeSpore :: Card
+strangeSpore =
   Card
     "STRANGE SPORE"
     "Hurt yourself for 4"
@@ -208,8 +208,8 @@ parasite =
       hurt 4 w Bite
 
 
-reversal :: Card
-reversal =
+shroomCoin :: Card
+shroomCoin =
   Card
     "SHROOM COIN"
     "Reverse the order of all cards on the wheel"
@@ -231,8 +231,8 @@ bloodSword =
       hurt 12 (other w) Slash
 
 
-bloodHex :: Card
-bloodHex =
+bloodWand :: Card
+bloodWand =
   Card
     "BLOOD WAND"
     "Both player's life becomes that of the weakest"
@@ -246,8 +246,8 @@ bloodHex =
       else
         (hurt (lifePb - lifePa) (other w) Slash)
 
-offering :: Card
-offering =
+bloodCup :: Card
+bloodCup =
   Card
     "BLOOD CUP"
     "Pay 4 life to draw 3"
@@ -260,8 +260,8 @@ offering =
       draw w w
 
 
-sacrifice :: Card
-sacrifice =
+bloodCoin :: Card
+bloodCoin =
   Card
     "BLOOD COIN"
     "Pay half your life to discard the next card"
@@ -274,8 +274,8 @@ sacrifice =
 
 
 -- Mirage
-staff :: Card
-staff =
+mirageSword :: Card
+mirageSword =
   Card
     "MIRAGE SWORD"
     "Hurt for 4, then draw 1"
@@ -286,8 +286,8 @@ staff =
       draw w w
 
 
-mimic :: Card
-mimic =
+mirageCup :: Card
+mirageCup =
   Card
     "MIRAGE CUP"
     "Play a copy of a random card in your hand"
@@ -304,8 +304,8 @@ mimic =
           Beta.null
 
 
-surge :: Card
-surge =
+mirageWand :: Card
+mirageWand =
   Card
     "MIRAGE WAND"
     "Hurt for 8 for each MIRAGE WAND in play"
@@ -317,8 +317,8 @@ surge =
       hurt ((count + 1) * 8) (other w) Slash
 
 
-prophecy :: Card
-prophecy =
+mirageCoin :: Card
+mirageCoin =
   Card
     "MIRAGE COIN"
     "Return all cards on the wheel to hand"
@@ -328,8 +328,8 @@ prophecy =
 
 
 -- Mirror
-grudge :: Card
-grudge =
+mirrorSword :: Card
+mirrorSword =
   Card
     "MIRROR SWORD"
     "Hurt for 3, add a copy of this card to your hand"
@@ -337,11 +337,11 @@ grudge =
     Orange
     $ \w -> do
       hurt 3 (other w) Slash
-      addToHand w grudge
+      addToHand w mirrorSword
 
 
-overwhelm :: Card
-overwhelm =
+mirrorWand :: Card
+mirrorWand =
   Card
     "MIRROR WAND"
     "Hurt for 3 for each card in your hand"
@@ -351,8 +351,8 @@ overwhelm =
       len <- length <$> getHand w
       hurt (len * 3) (other w) Slash
 
-echo :: Card
-echo =
+mirrorCup :: Card
+mirrorCup =
   Card
     "MIRROR CUP"
     "The next card activates twice"
@@ -366,8 +366,8 @@ echo =
       Beta.null
 
 
-reflect :: Card
-reflect =
+mirrorCoin :: Card
+mirrorCoin =
   Card
     "MIRROR COIN"
     "Change the owner of all cards on the wheel"
@@ -377,8 +377,8 @@ reflect =
 
 
 -- Alchemy
-relicblade :: Card
-relicblade =
+alchemySword :: Card
+alchemySword =
   Card
     "ALCHEMY SWORD"
     "Hurt for 6"
@@ -387,8 +387,8 @@ relicblade =
     $ \w -> hurt 6 (other w) Slash
 
 
-greed :: Card
-greed =
+alchemyWand :: Card
+alchemyWand =
   Card
     "ALCHEMY WAND"
     "Hurt for 3 for each card in their hand"
@@ -399,8 +399,8 @@ greed =
       hurt (len * 3) (other w) Slash
 
 
-potion :: Card
-potion =
+alchemyCup :: Card
+alchemyCup =
   Card
     "ALCHEMY CUP"
     "Heal for 10"
@@ -409,18 +409,18 @@ potion =
     $ heal 10
 
 
-alchemy :: Card
-alchemy =
+alchemyCoin :: Card
+alchemyCoin =
   Card
     "ALCHEMY COIN"
     ("Change next card to STRANGE GOLD")
     "cards/alchemy/coin.png"
     Yellow
-    $ \_ -> transmute gold TransmuteCard
+    $ \_ -> transmute strangeGold TransmuteCard
 
 
-gold :: Card
-gold =
+strangeGold :: Card
+strangeGold =
   Card
     "STRANGE GOLD"
     "Draw 2"
@@ -432,8 +432,8 @@ gold =
 
 
 -- Other
-theEnd :: Card
-theEnd =
+strangeEnd :: Card
+strangeEnd =
   Card
     "STRANGE END"
     "You're out of cards, hurt yourself for 10"
@@ -442,23 +442,23 @@ theEnd =
     $ \w -> hurt 10 w Slash
 
 
--- Duelist
-lance :: Card
-lance =
+-- Crown
+crownSword :: Card
+crownSword =
   Card
-    "Lance"
+    "CROWN SWORD"
     "Hurt for 10"
-    "lance.png"
+    "cards/crown/sword.png"
     Copper
     $ \w -> hurt 10 (other w) Slash
 
 
-meltdown :: Card
-meltdown =
+crownWand :: Card
+crownWand =
   Card
-    "Meltdown"
+    "CROWN WAND"
     "Discard your hand, then hurt for 5 for each card discarded"
-    "meltdown.png"
+    "cards/crown/wand.png"
     Copper
     $ \w -> do
       handSize <- length <$> getHand w
@@ -466,34 +466,12 @@ meltdown =
       hurt (5 * handSize) (other w) Slash
 
 
-duel :: Card
-duel =
+crownCup :: Card
+crownCup =
   Card
-    "Duel"
-    "Give each player a PISTOL"
-    "duel.png"
-    Copper
-    $ \w -> do
-      addToHand w pistol
-      addToHand (other w) pistol
-
-
-pistol :: Card
-pistol =
-  Card
-    "Pistol"
-    "Hurt for 30"
-    "pistol.png"
-    Copper
-    $ \w -> hurt 30 (other w) Slash
-
-
-taunt :: Card
-taunt =
-  Card
-    "Taunt"
+    "CROWN CUP"
     "Your opponent is forced to play a random card"
-    "taunt.png"
+    "cards/crown/cup.png"
     Copper
     $ \w -> do
       gen <- getGen
@@ -507,59 +485,19 @@ taunt =
           Beta.null
 
 
--- Daily
-subjugate :: Card
-subjugate =
+crownCoin :: Card
+crownCoin =
   Card
-    "Subjugate"
+    "CROWN COIN"
     "Discard next card for each card in your hand"
-    "subjugate.png"
+    "cards/crown/coin.png"
     Copper
     $ \w -> do
       handLen <- length <$> getHand w
       discardStack $ \(i, _) -> i < handLen
 
 
-avarice :: Card
-avarice =
-  Card
-    "Avarice"
-    "Hurt for 2 for each card in your and their hand"
-    "avarice.png"
-    Mystery
-    $ \w -> do
-      len      <- length <$> getHand w
-      lenOther <- length <$> getHand (other w)
-      let total = len + lenOther
-      hurt (total * 2) (other w) Slash
-
-
-goldrush :: Card
-goldrush =
-  Card
-    "Goldrush"
-    "Both players draw 2"
-    "goldrush.png"
-    Mystery
-    $ \w -> do
-      draw w w
-      draw (other w) (other w)
-      draw w w
-      draw (other w) (other w)
-
-
-telepathy :: Card
-telepathy =
-  Card
-    "Telepathy"
-    "Draw 2 from their deck"
-    "telepathy.png"
-    Mystery
-    $ \w -> do
-      draw w (other w)
-      draw w (other w)
-
-
+-- Experiments
 ritual :: Card
 ritual =
   Card
@@ -637,87 +575,69 @@ inevitable =
       limbo $ \(i, _) -> i == 0
 
 
-sword :: Card
-sword =
-  Card
-    "Projectile"
-    "Hurt for 10"
-    "sword.png"
-    Mystery
-    $ \w -> hurt 10 (other w) Slash
-
-
-basicCards :: [Card]
-basicCards =
-  [ fireSword
-  , hammer
-  , katana
-  , scythe
-  , staff
-  , grudge
-  , relicblade
-  , ritual
-  , lance
+swords :: [Card]
+swords =
+  [ blazeSword
+  , heavenSword
+  , shroomSword
   , bloodSword
+  , mirageSword
+  , mirrorSword
+  , dualitySword
+  , alchemySword
+  , crownSword
   ]
 
 
-specialCards :: [Card]
-specialCards =
-  [ fireball
-  , bloodsucker
-  , surge
-  , overwhelm
-  , curse
-  , greed
-  , lightning
-  , meltdown
-  , bloodHex
+wands :: [Card]
+wands =
+  [ blazeWand
+  , heavenWand
+  , shroomWand
+  , bloodWand
+  , mirageWand
+  , mirrorWand
+  , dualityWand
+  , alchemyWand
+  , crownWand
   ]
 
 
-supportCards :: [Card]
-supportCards =
-  [ offering
-  , feint
-  , serpent
-  , echo
-  , potion
-  , bless
-  , mimic
-  , telepathy
-  , goldrush
-  , taunt
+cups :: [Card]
+cups =
+  [ blazeCup
+  , heavenCup
+  , shroomCup
+  , bloodCup
+  , mirageCup
+  , mirrorCup
+  , dualityCup
+  , alchemyCup
+  , crownCup
   ]
 
 
-controlCards :: [Card]
-controlCards =
-  [ confound
-  , hubris
-  , reversal
-  , prophecy
-  , reflect
-  , balance
-  , alchemy
-  , unravel
-  , subjugate
+coins :: [Card]
+coins =
+  [ blazeCoin
+  , heavenCoin
+  , shroomCoin
+  , bloodCoin
+  , mirageCoin
+  , mirrorCoin
+  , dualityCoin
+  , alchemyCoin
+  , crownCoin
   ]
 
 
-otherCards :: [Card]
-otherCards =
-  [ parasite
-  , gold
-  , theEnd
-  , respite
-  , voidbeam
-  , feud
-  , inevitable
-  , duel
-  , pistol
+others :: [Card]
+others =
+  [ strangeSpore
+  , strangeGold
+  , strangeEnd
   ]
 
 
 allCards :: [Card]
-allCards = basicCards ++ specialCards ++ supportCards ++ controlCards ++ otherCards
+allCards = swords ++ wands ++ cups ++ coins ++ others
