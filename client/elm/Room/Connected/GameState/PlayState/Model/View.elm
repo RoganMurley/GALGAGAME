@@ -29,7 +29,6 @@ import Render.Types as Render
 import Render.Uniforms exposing (uniColourMag)
 import Stack.Types exposing (StackCard)
 import Stack.View as Stack
-import Texture.State as Texture
 import Util exposing (interpFloat)
 import WebGL
 import WhichPlayer.Types exposing (WhichPlayer(..))
@@ -48,7 +47,8 @@ view { w, h } game assets =
         List.map ((|>) ctx)
             [ Background.radialView vfx
             , lifeOrbView
-            , galgaView
+
+            -- , galgaView
             , Wave.view
             , Stack.view entities.stack
             , focusImageView focus
@@ -136,7 +136,7 @@ lifeOrbView ({ w, h, radius, model, anim, animDamage, tick } as ctx) =
             Animation.animShake anim PlayerB tick
 
         ( xOffset, yOffset ) =
-            ( 0.47 * radius, 0.9 * radius )
+            ( 0.7 * radius, 0.875 * radius )
 
         pos =
             Math.Vector2.add
@@ -302,10 +302,10 @@ damageView hover holding ({ w, h, radius, resolving, animDamage, tick, anim } as
                 0
 
         scale =
-            0.08 + 0.05 * progress
+            0.14 + 0.05 * progress
 
         xOffset =
-            0.23 * radius
+            0.45 * radius
 
         yOffset =
             0.9 * radius
@@ -476,43 +476,3 @@ feedbackView feedback ctx =
                     }
         )
         feedback
-
-
-galgaView : Context -> List WebGL.Entity
-galgaView ctx =
-    let
-        { w, h, textures, ortho, camera2d, radius } =
-            ctx
-
-        size =
-            0.4 * radius
-
-        ( xOffset, yOffset ) =
-            ( 0.7 * radius, 0.84 * radius )
-    in
-    List.concat
-        [ Texture.with textures "galga.png" <|
-            \texture ->
-                [ Render.Primitives.quad Render.Shaders.fragment
-                    { rotation = makeRotate pi (vec3 0 0 1)
-                    , scale = makeScale3 (-0.5 * size) (0.5 * size) 1
-                    , color = Colour.white
-                    , pos = vec3 (w * 0.5 - xOffset) (h * 0.5 - yOffset) 0
-                    , perspective = ortho
-                    , camera = camera2d
-                    , texture = texture
-                    }
-                ]
-        , Texture.with textures "galga2.png" <|
-            \texture ->
-                [ Render.Primitives.quad Render.Shaders.fragment
-                    { rotation = makeRotate pi (vec3 0 0 1)
-                    , scale = makeScale3 (0.5 * size) (0.5 * size) 1
-                    , color = Colour.white
-                    , pos = vec3 (w * 0.5 + xOffset) (h * 0.5 - yOffset) 0
-                    , perspective = ortho
-                    , camera = camera2d
-                    , texture = texture
-                    }
-                ]
-        ]
