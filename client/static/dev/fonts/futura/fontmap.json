@@ -60,7 +60,7 @@
     "S":{"x":3629,"y":0,"width":127,"height":204,"originX":-12,"originY":199,"advance":149},
     "T":{"x":2748,"y":270,"width":121,"height":196,"originX":-1,"originY":195,"advance":124},
     "U":{"x":1054,"y":270,"width":147,"height":200,"originX":-21,"originY":195,"advance":189},
-    "V":{"x":2085,"y":0,"width":175,"height":211,"originX":1,"originY":195,"advance":173},
+    "V":{"x":2085,"y":0,"width":175,"height":211,"originX":26,"originY":195,"advance":173},
     "W":{"x":1232,"y":0,"width":273,"height":218,"originX":1,"originY":204,"advance":272},
     "X":{"x":1872,"y":270,"width":156,"height":196,"originX":-1,"originY":195,"advance":158},
     "Y":{"x":1713,"y":270,"width":159,"height":196,"originX":3,"originY":195,"advance":154},
