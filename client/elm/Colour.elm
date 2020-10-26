@@ -1,6 +1,5 @@
-module Colour exposing (Colour, background, black, blue, card, cardCol, darkGray, focusBackground, glyph, green, red, white, yellow)
+module Colour exposing (Colour, background, black, blue, card, darkGray, focusBackground, glyph, green, red, white, yellow)
 
-import Card.Types exposing (CardCol(..))
 import Math.Vector3 exposing (Vec3, vec3)
 import WhichPlayer.Types exposing (WhichPlayer(..))
 
@@ -82,34 +81,3 @@ glyph which =
 
         PlayerB ->
             vec3 (191 / 255) (49 / 255) (14 / 255)
-
-
-cardCol : CardCol -> Colour
-cardCol col =
-    case col of
-        Red ->
-            vec3 (255 / 255) (0 / 255) (0 / 255)
-
-        Orange ->
-            vec3 (255 / 255) (127 / 255) (0 / 255)
-
-        Yellow ->
-            vec3 (255 / 255) (255 / 255) (0 / 255)
-
-        Green ->
-            vec3 (0 / 255) (255 / 255) (0 / 255)
-
-        Blue ->
-            vec3 (0 / 255) (0 / 255) (255 / 255)
-
-        White ->
-            vec3 (225 / 255) (225 / 255) (225 / 255)
-
-        Violet ->
-            vec3 (139 / 255) (0 / 255) (255 / 255)
-
-        Copper ->
-            vec3 (166 / 255) (25 / 255) (27 / 255)
-
-        Mystery ->
-            vec3 (255 / 255) (255 / 255) (255 / 255)
