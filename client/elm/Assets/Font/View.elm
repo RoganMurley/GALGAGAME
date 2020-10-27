@@ -2,9 +2,10 @@ module Font.View exposing (view)
 
 import Dict
 import Font.Shaders
-import Font.Types exposing (Entity, FontChar)
+import Font.Types exposing (Entity, FontChar, Line)
 import Game.Types exposing (Context)
 import List
+import List.Extra as List
 import Math.Matrix4 exposing (makeRotate, makeScale3)
 import Math.Vector3 exposing (vec3)
 import Render.Primitives
@@ -20,18 +21,17 @@ view fontName text entity { camera2d, ortho, fonts, textures } =
             case Dict.get fontName fonts.fonts of
                 Just font ->
                     let
-                        chars : List FontChar
-                        chars =
-                            List.filterMap
-                                (\char -> Dict.get char font)
-                                (String.toList text)
+                        lines : List Line
+                        lines =
+                            List.map
+                                (\( _, line ) -> List.filterMap (\char -> Dict.get char font) line)
+                                (List.groupWhile (\_ b -> b /= '\n') ('\n' :: String.toList text))
 
-                        textWidth : Float
-                        textWidth =
+                        getLineWidth : Line -> Float
+                        getLineWidth =
                             List.foldl
                                 (\char acc -> entity.scaleX * (char.width + char.advance) + acc)
                                 0
-                                chars
 
                         textHeight : Float
                         textHeight =
@@ -40,19 +40,27 @@ view fontName text entity { camera2d, ortho, fonts, textures } =
                         ( textureWidth, textureHeight ) =
                             WebGL.Texture.size texture
 
-                        charView : FontChar -> ( Float, List WebGL.Entity ) -> ( Float, List WebGL.Entity )
-                        charView { x, y, width, height, originX, originY, advance } ( offset, entities ) =
+                        charView : Int -> Float -> FontChar -> ( Float, List WebGL.Entity ) -> ( Float, List WebGL.Entity )
+                        charView lineNum lineWidth { x, y, width, height, originX, originY, advance } ( offset, entities ) =
                             let
+                                n =
+                                    toFloat <| lineNum
+
+                                xPos =
+                                    offset + entity.x - 0.5 * lineWidth + entity.scaleX * (width - originX)
+
+                                yLineSpacing =
+                                    1000 * entity.scaleY
+
+                                yPos =
+                                    0.75 * textHeight + (n * yLineSpacing) + (n * 2 * textHeight) + entity.y - entity.scaleY * originY
+
                                 newEntities =
                                     Render.Primitives.quad Font.Shaders.char
                                         { rotation = makeRotate pi (vec3 0 0 1)
                                         , scale = makeScale3 (entity.scaleX * width) (entity.scaleY * height) 1
                                         , color = entity.color
-                                        , pos =
-                                            vec3
-                                                (offset + entity.x - 0.5 * textWidth + entity.scaleX * (width - originX))
-                                                (0.75 * textHeight + entity.y - entity.scaleY * originY)
-                                                0
+                                        , pos = vec3 xPos yPos 0
                                         , perspective = ortho
                                         , camera = camera2d
                                         , texture = texture
@@ -67,8 +75,12 @@ view fontName text entity { camera2d, ortho, fonts, textures } =
                             in
                             ( offset + entity.scaleX * (width + advance), newEntities )
                     in
-                    Tuple.second <|
-                        List.foldl charView ( 0, [] ) chars
+                    List.concat <|
+                        List.map Tuple.second <|
+                            List.indexedMap
+                                (\lineNum ( line, lineWidth ) -> List.foldl (charView lineNum lineWidth) ( 0, [] ) line)
+                            <|
+                                List.map (\line -> ( line, getLineWidth line )) lines
 
                 Nothing ->
                     []
