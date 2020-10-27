@@ -49,11 +49,8 @@ view fontName text entity { camera2d, ortho, fonts, textures } =
                                 xPos =
                                     offset + entity.x - 0.5 * lineWidth + entity.scaleX * (width - originX)
 
-                                yLineSpacing =
-                                    1000 * entity.scaleY
-
                                 yPos =
-                                    0.75 * textHeight + (n * yLineSpacing) + (n * 2 * textHeight) + entity.y - entity.scaleY * originY
+                                    0.75 * textHeight + (n * 2 * textHeight) + entity.y - entity.scaleY * originY
 
                                 newEntities =
                                     Render.Primitives.quad Font.Shaders.char
