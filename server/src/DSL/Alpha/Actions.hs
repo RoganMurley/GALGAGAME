@@ -10,7 +10,8 @@ import Player (WhichPlayer(..), other)
 import Life (Life)
 import Model (Deck, Hand, Limbo, Passes(..), Stack, Turn, maxHandLength)
 import Safe (headMay, tailSafe)
-import StackCard(StackCard(StackCard, stackcard_card), isOwner)
+import StackCard (StackCard(StackCard, stackcard_card), isOwner)
+import Transmutation (Transmutation(..))
 import Util (deleteIndex, indexedFilter, shuffle)
 
 import {-# SOURCE #-} Cards (strangeEnd)
@@ -118,25 +119,28 @@ handFull w = do
 
 
 draw :: WhichPlayer -> WhichPlayer -> Program ()
-draw w d =
+draw w d = do
+  deck <- getDeck d
+  case headMay deck of
+    Just card -> do
+      modDeck d tailSafe
+      addToHand w card
+    Nothing ->
+      addToHand w strangeEnd
+
+
+transmute :: ((Int, StackCard) -> Transmutation) -> Program ()
+transmute f =
+  let
+    combiner :: Transmutation -> StackCard -> StackCard
+    combiner (Transmutation _ finalStackCard) _         = finalStackCard
+    combiner NoTransmutation                  stackCard = stackCard
+  in
   do
-    deck <- getDeck d
-    case headMay deck of
-      Just card -> do
-        modDeck d tailSafe
-        addToHand w card
-      Nothing ->
-        addToHand w strangeEnd
-
-
-transmute :: Card -> Program ()
-transmute c = do
-  modStackHead (\(StackCard o _) -> StackCard o c)
-
-
-setHeadOwner :: WhichPlayer -> Program ()
-setHeadOwner w = do
-  modStackHead (\(StackCard _ c) -> StackCard w c)
+    stack <- getStack
+    let transmutations = f <$> zip [0..] stack
+    let newStack = uncurry combiner <$> zip transmutations stack
+    setStack newStack
 
 
 bounce :: (StackCard -> Bool) -> Program ()
