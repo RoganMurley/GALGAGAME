@@ -3,12 +3,13 @@ module DSL.Anim.DSL where
 import Bounce (CardBounce)
 import Control.Monad.Free (Free(..))
 import Card (Card)
-import CardAnim (CardAnim, Hurt, Transmute)
+import CardAnim (CardAnim, Hurt)
 import Discard (CardDiscard)
 import Life (Life)
 import Limbo (CardLimbo)
 import Player (WhichPlayer)
 import StackCard (StackCard)
+import Transmutation (Transmutation)
 
 
 data DSL a
@@ -21,7 +22,7 @@ data DSL a
   | Confound a
   | Reverse a
   | Play WhichPlayer Card Int a
-  | Transmute StackCard StackCard Transmute a
+  | Transmute [Transmutation] a
   | Mill WhichPlayer Card a
   | GameEnd (Maybe WhichPlayer) a
   | Rotate a

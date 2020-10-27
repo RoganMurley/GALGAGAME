@@ -10,17 +10,17 @@ import Limbo (CardLimbo)
 import Mirror (Mirror(..))
 import Player (WhichPlayer(..), other)
 import StackCard (StackCard)
+import Transmutation (Transmutation)
 
 
 data CardAnim
   = Heal WhichPlayer Life
   | Draw WhichPlayer
   | Hurt WhichPlayer Life Hurt
-  | Reflect
   | Reverse
   | Confound
   | Play WhichPlayer Card Int
-  | Transmute StackCard StackCard Transmute
+  | Transmute [Transmutation]
   | Mill WhichPlayer Card
   | GameEnd (Maybe WhichPlayer)
   | Rotate
@@ -54,11 +54,6 @@ instance ToJSON CardAnim where
     [ "name"   .= ("draw" :: Text)
     , "player" .= w
     ]
-  toJSON Reflect =
-    object
-    [ "name"   .= ("reflect" :: Text)
-    , "player" .= PlayerA
-    ]
   toJSON Confound =
     object
     [ "name"   .= ("confound" :: Text)
@@ -76,12 +71,10 @@ instance ToJSON CardAnim where
     , "card"   .= c
     , "index"  .= i
     ]
-  toJSON (Transmute ca cb t) =
+  toJSON (Transmute t) =
     object
     [ "name"      .= ("transmute" :: Text)
     , "player"    .= PlayerA
-    , "cardA"     .= ca
-    , "cardB"     .= cb
     , "transmute" .= t
     ]
   toJSON (Mill w c) =
@@ -152,11 +145,10 @@ instance Mirror CardAnim where
   mirror (Hurt w d h)        = Hurt (other w) d h
   mirror (Heal w h)          = Heal (other w) h
   mirror (Draw w)            = Draw  (other w)
-  mirror Reflect             = Reflect
   mirror Confound            = Confound
   mirror Reverse             = Reverse
   mirror (Play w c i)        = Play (other w) c i
-  mirror (Transmute ca cb t) = Transmute (mirror ca) (mirror cb) t
+  mirror (Transmute t)       = Transmute (mirror <$> t)
   mirror (GameEnd w)         = GameEnd (other <$> w)
   mirror (Mill w c)          = Mill (other w) c
   mirror Rotate              = Rotate
@@ -180,15 +172,6 @@ instance ToJSON Hurt where
   toJSON Slash = "slash"
   toJSON Bite  = "bite"
   toJSON Curse = "curse"
-
-data Transmute
-  = TransmuteCard
-  | TransmuteOwner
-  deriving (Show, Eq)
-
-instance ToJSON Transmute where
-  toJSON TransmuteCard  = "transmuteCard"
-  toJSON TransmuteOwner = "transmuteOwner"
 
 
 type SfxUrl = Text

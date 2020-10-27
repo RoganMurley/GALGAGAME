@@ -7,6 +7,8 @@ import Control.Monad.Free.TH (makeFree)
 import DSL.Beta.DSL (DSL(..), Program)
 import Life (Life)
 import Player (WhichPlayer(..), other)
+import StackCard (StackCard(..))
+import Transmutation (Transmutation(..))
 import Util (split)
 
 import qualified DSL.Alpha as Alpha
@@ -25,3 +27,11 @@ refreshGen = do
   gen <- getGen
   let (newGen, _) = split gen
   raw $ Alpha.setGen newGen
+
+
+transmuteHead :: (StackCard -> StackCard) -> Program ()
+transmuteHead f = transmute transmuter
+  where
+    transmuter :: (Int, StackCard) -> Transmutation
+    transmuter (0, sc) = Transmutation sc (f sc)
+    transmuter _       = NoTransmutation

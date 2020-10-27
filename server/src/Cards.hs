@@ -1,16 +1,17 @@
 module Cards where
 
 import Control.Monad (when)
-import CardAnim (Hurt(..), Transmute(..))
+import CardAnim (Hurt(..))
 import Card (Aspect(..), Card(..), Suit(..))
 import Player (other)
 import Safe (headMay)
-import StackCard (StackCard(..))
+import StackCard (StackCard(..), changeOwner)
+import Transmutation (Transmutation(..))
 import Util (shuffle)
 
 import qualified DSL.Alpha as Alpha
 import qualified DSL.Beta as Beta
-import DSL.Beta hiding (confound, reflect)
+import DSL.Beta
 
 
 -- Blaze
@@ -45,7 +46,7 @@ blazeCoin =
   Card Blaze Coin
     "Shuffle the order of all cards on the wheel"
     $ \_ -> do
-      Beta.confound
+      confound
       Beta.null
 
 
@@ -121,8 +122,8 @@ dualityCoin =
     $ \w -> do
       paLife <- getLife w
       pbLife <- getLife (other w)
-      when (paLife > pbLife) (setHeadOwner (other w))
-      when (paLife < pbLife) (setHeadOwner w)
+      when (paLife > pbLife) (transmuteHead (\(StackCard _ c) -> StackCard (other w) c))
+      when (paLife < pbLife) (transmuteHead (\(StackCard _ c) -> StackCard w c))
       when (paLife == pbLife) Beta.null
 
 
@@ -287,7 +288,7 @@ mirrorCoin :: Card
 mirrorCoin =
   Card Mirror Coin
     "Change the owner of all cards on the wheel"
-    $ const Beta.reflect
+    $ \_ -> transmute (\(_, stackCard) -> Transmutation stackCard (changeOwner stackCard))
 
 
 -- Alchemy
@@ -318,7 +319,7 @@ alchemyCoin :: Card
 alchemyCoin =
   Card Alchemy Coin
     "Change next card to STRANGE GOLD"
-    $ \_ -> transmute strangeGold TransmuteCard
+    $ \_ -> transmuteHead (\(StackCard o _) -> StackCard o strangeGold)
 
 
 strangeGold :: Card
@@ -380,19 +381,13 @@ morphSword =
     "Hurt for 7, then all MORPH cards on\nthe wheel become SWORDs"
     $ \w -> do
       hurt 7 (other w) Slash
-      raw $
-        Alpha.modStackAll $
-          \(StackCard{ stackcard_owner, stackcard_card }) ->
-            StackCard{
-              stackcard_owner,
-              stackcard_card =
-                case card_aspect stackcard_card of
-                  Morph ->
-                    morphSword
-                  _ ->
-                    stackcard_card
-            }
-      Beta.null
+      transmute $
+        \(_, stackCard) ->
+          case stackCard of
+            StackCard owner (Card{ card_aspect = Morph }) ->
+              Transmutation stackCard (StackCard owner morphSword)
+            _ ->
+              NoTransmutation
 
 
 morphWand :: Card
@@ -402,19 +397,13 @@ morphWand =
     $ \w -> do
       len <- length <$> getStack
       hurt (len * 3) (other w) Slash
-      raw $
-        Alpha.modStackAll $
-          \(StackCard{ stackcard_owner, stackcard_card }) ->
-            StackCard{
-              stackcard_owner,
-              stackcard_card =
-                case card_aspect stackcard_card of
-                  Morph ->
-                    morphWand
-                  _ ->
-                    stackcard_card
-            }
-      Beta.null
+      transmute $
+        \(_, stackCard) ->
+          case stackCard of
+            StackCard owner (Card{ card_aspect = Morph }) ->
+              Transmutation stackCard (StackCard owner morphWand)
+            _ ->
+              NoTransmutation
 
 
 morphCup :: Card
@@ -423,19 +412,13 @@ morphCup =
     "Heal for 8, then all MORPH cards on\nthe wheel become CUPs"
     $ \w -> do
       heal 8 w
-      raw $
-        Alpha.modStackAll $
-          \(StackCard{ stackcard_owner, stackcard_card }) ->
-            StackCard{
-              stackcard_owner,
-              stackcard_card =
-                case card_aspect stackcard_card of
-                  Morph ->
-                    morphCup
-                  _ ->
-                    stackcard_card
-            }
-      Beta.null
+      transmute $
+        \(_, stackCard) ->
+          case stackCard of
+            StackCard owner (Card{ card_aspect = Morph }) ->
+              Transmutation stackCard (StackCard owner morphCup)
+            _ ->
+              NoTransmutation
 
 
 morphCoin :: Card
@@ -443,27 +426,20 @@ morphCoin =
   Card Morph Coin
     "The next card becomes a MORPH card"
     $ \_ -> do
-      raw $
-        Alpha.modStackHead (
-          \(StackCard{ stackcard_owner, stackcard_card }) ->
-            let
-              card :: Card
-              card =
-                case card_suit stackcard_card of
-                  Sword ->
-                    morphSword
-                  Wand ->
-                    morphWand
-                  Cup ->
-                    morphCup
-                  Coin ->
-                    morphCoin
-                  OtherSuit _ ->
-                    stackcard_card
-            in
-              (StackCard{ stackcard_owner, stackcard_card = card })
-        )
-      Beta.null
+      transmuteHead $
+        \stackCard@(StackCard{ stackcard_owner, stackcard_card}) ->
+          case card_suit stackcard_card of
+            Sword ->
+              StackCard stackcard_owner morphSword
+            Wand ->
+              StackCard stackcard_owner morphWand
+            Cup ->
+              StackCard stackcard_owner morphCup
+            Coin ->
+              StackCard stackcard_owner morphCoin
+            OtherSuit _ ->
+              stackCard
+
 
 
 -- Other

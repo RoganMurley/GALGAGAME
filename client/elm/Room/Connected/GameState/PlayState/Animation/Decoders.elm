@@ -1,6 +1,6 @@
 module Animation.Decoders exposing (decoder)
 
-import Animation.Types exposing (Anim(..), Bounce(..), CardDiscard(..), CardLimbo(..), Hurt(..), Transmute(..))
+import Animation.Types exposing (Anim(..), Bounce(..), CardDiscard(..), CardLimbo(..), Hurt(..), Transmutation(..))
 import Card.Decoders as Card
 import Json.Decode as Json exposing (Decoder, fail, field, int, list, null, oneOf, string, succeed)
 import Stack.Decoders as Stack
@@ -25,9 +25,6 @@ decoder =
 
                 "draw" ->
                     drawDecoder
-
-                "reflect" ->
-                    reflectDecoder
 
                 "reverse" ->
                     reverseDecoder
@@ -134,12 +131,6 @@ drawDecoder =
         (field "player" WhichPlayer.decoder)
 
 
-reflectDecoder : Decoder Anim
-reflectDecoder =
-    Json.map Reflect
-        (field "player" WhichPlayer.decoder)
-
-
 confoundDecoder : Decoder Anim
 confoundDecoder =
     Json.map Confound
@@ -161,26 +152,21 @@ playDecoder =
         (succeed Nothing)
 
 
+transmutationDecoder : Decoder Transmutation
+transmutationDecoder =
+    oneOf
+        [ Json.map2 Transmutation
+            (field "cardA" Stack.stackCardDecoder)
+            (field "cardB" Stack.stackCardDecoder)
+        , null NoTransmutation
+        ]
+
+
 transmuteDecoder : Decoder Anim
 transmuteDecoder =
-    let
-        getDecoder : String -> Decoder Transmute
-        getDecoder s =
-            case s of
-                "transmuteCard" ->
-                    succeed TransmuteCard
-
-                "transmuteOwner" ->
-                    succeed TransmuteOwner
-
-                _ ->
-                    fail <| s ++ " is not a valid transmute type"
-    in
-    Json.map4 Transmute
-        (field "player" WhichPlayer.decoder)
-        (field "cardA" Stack.stackCardDecoder)
-        (field "cardB" Stack.stackCardDecoder)
-        (field "transmute" string |> Json.andThen getDecoder)
+    Json.map Transmute <|
+        field "transmute" <|
+            list transmutationDecoder
 
 
 millDecoder : Decoder Anim

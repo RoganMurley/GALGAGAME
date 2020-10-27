@@ -1,12 +1,13 @@
 module DSL.Beta.DSL where
 
 import Card (Card)
-import CardAnim (CardAnim, Hurt, Transmute)
+import CardAnim (CardAnim, Hurt)
 import Control.Monad.Free (Free(..))
 import Life (Life)
 import Model (Deck, Hand, Limbo, Stack)
 import Player (WhichPlayer(..))
 import StackCard (StackCard)
+import Transmutation (Transmutation)
 import Util (Gen)
 
 import qualified DSL.Alpha.DSL as Alpha
@@ -18,18 +19,16 @@ data DSL n
   | Heal Life WhichPlayer n
   | Draw WhichPlayer WhichPlayer n
   | AddToHand WhichPlayer Card n
-  | Reflect n
   | Confound n
   | Reverse n
   | Play WhichPlayer Card Int n
-  | Transmute Card Transmute n
+  | Transmute ((Int, StackCard) -> Transmutation) n
   | Rotate n
   | Windup n
   | Fabricate StackCard n
   | Bounce (StackCard -> Bool) n
   | DiscardStack ((Int, StackCard) -> Bool) n
   | DiscardHand WhichPlayer ((Int, Card) -> Bool) n
-  | SetHeadOwner WhichPlayer n
   | Limbo ((Int, StackCard) -> Bool) n
   | Unlimbo n
   | GetDeck WhichPlayer (Deck -> n)

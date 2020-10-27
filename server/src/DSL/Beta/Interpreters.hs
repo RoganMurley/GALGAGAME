@@ -4,7 +4,7 @@ module DSL.Beta.Interpreters where
 
 import Bounce (CardBounce(..))
 import Card (Card)
-import CardAnim (Transmute(..), cardAnimDamage)
+import CardAnim (cardAnimDamage)
 import Control.Monad (when)
 import Control.Monad.Free (Free(..), foldFree, liftF)
 import Data.Functor.Sum (Sum(..))
@@ -14,14 +14,14 @@ import Discard (CardDiscard(..))
 import DSL.Beta.DSL
 import DSL.Util (toLeft, toRight)
 import Limbo (CardLimbo(..))
-import Player (WhichPlayer(..))
-
 import Life (Life)
 import Model (Model, gameover, maxHandLength)
 import ModelDiff (ModelDiff)
+import Player (WhichPlayer(..))
 import ResolveData (ResolveData(..))
 import Safe (headMay)
-import StackCard (StackCard(..), changeOwner)
+import StackCard (StackCard(..))
+import Transmutation
 
 import qualified DSL.Alpha as Alpha
 import qualified DSL.Anim as Anim
@@ -37,18 +37,16 @@ alphaI (Free (Hurt d w _ n))      = Alpha.hurt d w                >>  alphaI n
 alphaI (Free (Heal h w n))        = Alpha.heal h w                >>  alphaI n
 alphaI (Free (Draw w d n))        = Alpha.draw w d                >>  alphaI n
 alphaI (Free (AddToHand w c n))   = Alpha.addToHand w c           >>  alphaI n
-alphaI (Free (Reflect n))         = Alpha.modStackAll changeOwner >>  alphaI n
 alphaI (Free (Confound n))        = Alpha.confound                >>  alphaI n
 alphaI (Free (Reverse n))         = Alpha.modStack reverse        >>  alphaI n
 alphaI (Free (Play w c i n))      = Alpha.play w c i              >>  alphaI n
-alphaI (Free (Transmute c _ n))   = Alpha.transmute c             >>  alphaI n
+alphaI (Free (Transmute f n))     = Alpha.transmute f             >>  alphaI n
 alphaI (Free (Rotate n))          = Alpha.rotate                  >>  alphaI n
 alphaI (Free (Windup n))          = Alpha.windup                  >>  alphaI n
 alphaI (Free (Fabricate c n))     = Alpha.modStack ((:) c)        >>  alphaI n
 alphaI (Free (Bounce f n))        = Alpha.bounce f                >>  alphaI n
 alphaI (Free (DiscardStack f n))  = Alpha.discardStack f          >>  alphaI n
-alphaI (Free (DiscardHand w f n)) = Alpha.discardHand w f        >>  alphaI n
-alphaI (Free (SetHeadOwner w n))  = Alpha.setHeadOwner w          >>  alphaI n
+alphaI (Free (DiscardHand w f n)) = Alpha.discardHand w f         >>  alphaI n
 alphaI (Free (Limbo f n))         = Alpha.limbo f                 >>  alphaI n
 alphaI (Free (Unlimbo n))         = Alpha.unlimbo                 >>  alphaI n
 alphaI (Free (GetGen f))          = Alpha.getGen                  >>= alphaI . f
@@ -70,7 +68,6 @@ basicAnim anim alphaProgram = toLeft alphaProgram <* (toRight . liftF $ anim)
 animI :: DSL a -> (Alpha.Program a -> AlphaAnimProgram a)
 animI (Null _)            = basicAnim $ Anim.Null ()
 animI (Hurt d w h _)      = basicAnim $ Anim.Hurt w d h ()
-animI (Reflect _)         = basicAnim $ Anim.Reflect ()
 animI (Confound _)        = basicAnim $ Anim.Confound ()
 animI (Reverse _)         = basicAnim $ Anim.Reverse ()
 animI (Rotate _)          = basicAnim $ Anim.Rotate ()
@@ -81,11 +78,10 @@ animI (Heal _ w _)        = healAnim w
 animI (AddToHand w c  _)  = addToHandAnim w c
 animI (Draw w d _)        = drawAnim w d
 animI (Play w c i _)      = playAnim w c i
-animI (Transmute c t _)   = transmuteAnim c t
+animI (Transmute f _)     = transmuteAnim f
 animI (Bounce f _)        = bounceAnim f
 animI (DiscardStack f _)  = discardStackAnim f
 animI (DiscardHand w f _) = discardHandAnim w f
-animI (SetHeadOwner w _)  = setHeadOwnerAnim w
 animI (Limbo f _)         = limboAnim f
 animI (Unlimbo _)         = unlimboAnim
 animI _                   = toLeft
@@ -129,16 +125,12 @@ playAnim w c i alpha = do
   return final
 
 
-transmuteAnim :: Card -> Transmute -> Alpha.Program a -> AlphaAnimProgram a
-transmuteAnim cb t alpha = do
-  stackHead <- headMay <$> toLeft Alpha.getStack
+transmuteAnim :: ((Int, StackCard) -> Transmutation) -> Alpha.Program a -> AlphaAnimProgram a
+transmuteAnim f alpha = do
+  stack <- toLeft Alpha.getStack
+  let transmutations = f <$> zip [0..] stack
   final <- toLeft alpha
-  case stackHead of
-    (Just ca) ->
-      let o = stackcard_owner ca in
-      toRight . liftF $ Anim.Transmute ca (StackCard o cb) t ()
-    Nothing ->
-      toRight . liftF $ Anim.Null ()
+  toRight . liftF $ Anim.Transmute transmutations ()
   return final
 
 
@@ -259,18 +251,6 @@ getLimbos f = do
         else
           NoLimbo finalStackIndex : getLimbos' (stackIndex + 1) (finalStackIndex + 1) rest
       getLimbos' _ _ [] = []
-
-
-setHeadOwnerAnim :: WhichPlayer -> Alpha.Program a -> AlphaAnimProgram a
-setHeadOwnerAnim w alpha = do
-  stackHead <- headMay <$> toLeft Alpha.getStack
-  final <- toLeft alpha
-  case stackHead of
-    Just (StackCard o c) ->
-      toRight . liftF $ Anim.Transmute (StackCard o c) (StackCard w c) TransmuteOwner ()
-    Nothing ->
-      toRight . liftF $ Anim.Null ()
-  return final
 
 
 type AlphaAnimProgram = Free (Sum Alpha.DSL Anim.DSL)
