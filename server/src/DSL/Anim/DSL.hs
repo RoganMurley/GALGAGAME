@@ -18,7 +18,6 @@ data DSL a
   | Hurt WhichPlayer Life Hurt a
   | Heal WhichPlayer Life a
   | Draw WhichPlayer a
-  | Reflect a
   | Confound a
   | Reverse a
   | Play WhichPlayer Card Int a
