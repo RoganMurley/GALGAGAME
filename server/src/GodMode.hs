@@ -6,7 +6,7 @@ import Data.String.Conversions (cs)
 import Data.Text (Text)
 import Safe (readMay)
 
-import Card (Card(..))
+import Card (Card(..), cardName)
 import CardAnim (Hurt(..))
 import Cards (allCards)
 import Player (WhichPlayer(..), other)
@@ -44,7 +44,7 @@ parse which msg =
       "draw" ->
         Right $ Beta.draw which which
       "card" ->
-        case find (\c -> card_name c == content) allCards of
+        case find (\(Card{ card_aspect, card_suit }) -> cardName card_aspect card_suit == content) allCards of
           Just card ->
             Right $ Beta.addToHand which card
           Nothing ->
