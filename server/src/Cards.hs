@@ -3,7 +3,7 @@ module Cards where
 import Control.Monad (when)
 import CardAnim (Hurt(..), Transmute(..))
 import Card (Card(..), Suit(..))
-import Data.Text (isPrefixOf, isSuffixOf)
+import Data.Text (isPrefixOf)
 import Player (other)
 import Safe (headMay)
 import StackCard (StackCard(..))
@@ -492,7 +492,7 @@ morphSword :: Card
 morphSword =
   Card
     "MORPH SWORD"
-    "Hurt for 7, then all MORPH cards on the wheel become SWORDs"
+    "Hurt for 7, then all MORPH cards on\nthe wheel become SWORDs"
     "cards/morph/sword.png"
     Sword
     $ \w -> do
@@ -513,7 +513,7 @@ morphWand :: Card
 morphWand =
   Card
     "MORPH WAND"
-    "Hurt for 3 for each card on the wheel, then all MORPH cards on the wheel become WANDs"
+    "Hurt for 3 for each card on the wheel,\nthen all MORPH cards on the wheel\nbecome WANDs"
     "cards/morph/wand.png"
     Wand
     $ \w -> do
@@ -535,7 +535,7 @@ morphCup :: Card
 morphCup =
   Card
     "MORPH CUP"
-    "Heal for 8, then all MORPH cards on the wheel become CUPs"
+    "Heal for 8, then all MORPH cards on\nthe wheel become CUPs"
     "cards/morph/cup.png"
     Cup
     $ \w -> do

@@ -1,4 +1,4 @@
-module Font.Types exposing (Entity, Font, FontChar, FontPath, Model)
+module Font.Types exposing (Entity, Font, FontChar, FontPath, Line, Model)
 
 import Dict exposing (Dict)
 import Math.Vector3 exposing (Vec3)
@@ -21,6 +21,10 @@ type alias FontChar =
     , originY : Float
     , advance : Float
     }
+
+
+type alias Line =
+    List FontChar
 
 
 type alias FontPath =
