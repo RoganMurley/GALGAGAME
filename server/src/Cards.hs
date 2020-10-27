@@ -16,23 +16,15 @@ import DSL.Beta hiding (confound, reflect)
 -- Blaze
 blazeSword :: Card
 blazeSword =
-  Card
-    "BLAZE SWORD"
+  Card Blaze Sword
     "Hurt for 7"
-    "cards/blaze/sword.png"
-    Blaze
-    Sword
     $ \w -> hurt 7 (other w) Slash
 
 
 blazeWand :: Card
 blazeWand =
-  Card
-    "BLAZE WAND"
+  Card Blaze Wand
     "Hurt for 5 for each other card on the wheel"
-    "cards/blaze/wand.png"
-    Blaze
-    Wand
     $ \w -> do
       len <- length <$> getStack
       hurt (len * 5) (other w) Slash
@@ -40,12 +32,8 @@ blazeWand =
 
 blazeCup :: Card
 blazeCup =
-  Card
-    "BLAZE CUP"
+  Card Blaze Cup
     "Discard your hand, then draw 2"
-    "cards/blaze/cup.png"
-    Blaze
-    Cup
     $ \w -> do
       discardHand w (const True)
       draw w w
@@ -54,12 +42,8 @@ blazeCup =
 
 blazeCoin :: Card
 blazeCoin =
-  Card
-    "BLAZE COIN"
+  Card Blaze Coin
     "Shuffle the order of all cards on the wheel"
-    "cards/blaze/coin.png"
-    Blaze
-    Coin
     $ \_ -> do
       Beta.confound
       Beta.null
@@ -68,23 +52,15 @@ blazeCoin =
 -- Heaven
 heavenSword :: Card
 heavenSword =
-  Card
-    "HEAVEN SWORD"
+  Card Heaven Sword
     "Hurt for 8"
-    "cards/heaven/sword.png"
-    Heaven
-    Sword
     $ \w -> hurt 8 (other w) Slash
 
 
 heavenWand :: Card
 heavenWand =
-  Card
-    "HEAVEN WAND"
+  Card Heaven Wand
     "Hurt for 4 for each other card on the wheel"
-    "cards/heaven/wand.png"
-    Heaven
-    Wand
     $ \w -> do
       len <- length <$> getStack
       hurt (len * 4) (other w) Slash
@@ -92,46 +68,30 @@ heavenWand =
 
 heavenCup :: Card
 heavenCup =
-  Card
-    "HEAVEN CUP"
+  Card Heaven Cup
     "Return all of your cards on the wheel to hand"
-    "cards/heaven/cup.png"
-    Heaven
-    Cup
     $ \w -> bounce (\(StackCard o _) -> w == o)
 
 
 heavenCoin :: Card
 heavenCoin =
-  Card
-    "HEAVEN COIN"
+  Card Heaven Coin
     "Discard all cards on the wheel"
-    "cards/heaven/coin.png"
-    Heaven
-    Coin
     $ \_ -> discardStack (const True)
 
 
 -- Duality
 dualitySword :: Card
 dualitySword =
-  Card
-    "DUALITY SWORD"
+  Card Duality Sword
     "Hurt for 9"
-    "cards/duality/sword.png"
-    Duality
-    Sword
     $ \w -> hurt 9 (other w) Slash
 
 
 dualityWand :: Card
 dualityWand =
-  Card
-    "DUALITY WAND"
+  Card Duality Wand
     "Hurt weakest player for 15"
-    "cards/duality/wand.png"
-    Duality
-    Wand
     $ \w -> do
       let dmg = 15
       paLife <- getLife w
@@ -143,12 +103,8 @@ dualityWand =
 
 dualityCup :: Card
 dualityCup =
-  Card
-    "DUALITY CUP"
+  Card Duality Cup
     "Heal weakest player for 15"
-    "cards/duality/cup.png"
-    Duality
-    Cup
     $ \w -> do
       let mag = 15
       paLife <- getLife w
@@ -160,12 +116,8 @@ dualityCup =
 
 dualityCoin :: Card
 dualityCoin =
-  Card
-    "DUALITY COIN"
+  Card Duality Coin
     "Change next card's owner to weakest player"
-    "cards/duality/coin.png"
-    Duality
-    Coin
     $ \w -> do
       paLife <- getLife w
       pbLife <- getLife (other w)
@@ -177,23 +129,15 @@ dualityCoin =
 -- Shroom
 shroomSword :: Card
 shroomSword =
-  Card
-    "SHROOM SWORD"
+  Card Shroom Sword
     "Lifesteal for 5"
-    "cards/shroom/sword.png"
-    Shroom
-    Sword
     $ \w -> lifesteal 5 (other w)
 
 
 shroomWand :: Card
 shroomWand =
-  Card
-    "SHROOM WAND"
+  Card Shroom Wand
     "Lifesteal for 3 for each other card on the wheel"
-    "cards/shroom/wand.png"
-    Shroom
-    Wand
     $ \w -> do
       len <- length <$> getStack
       lifesteal (len * 3) (other w)
@@ -201,12 +145,8 @@ shroomWand =
 
 shroomCup :: Card
 shroomCup =
-  Card
-    "SHROOM CUP"
+  Card Shroom Cup
     ("Add 2 STRANGE SPORE cards to their hand")
-    "cards/shroom/cup.png"
-    Shroom
-    Cup
     $ \w -> do
       addToHand (other w) strangeSpore
       addToHand (other w) strangeSpore
@@ -214,36 +154,24 @@ shroomCup =
 
 strangeSpore :: Card
 strangeSpore =
-  Card
-    "STRANGE SPORE"
+  Card Strange (OtherSuit "SPORE")
     "Hurt yourself for 4"
-    "cards/strange/spore.png"
-    Strange
-    OtherSuit
     $ \w -> do
       hurt 4 w Bite
 
 
 shroomCoin :: Card
 shroomCoin =
-  Card
-    "SHROOM COIN"
+  Card Shroom Coin
     "Reverse the order of all cards on the wheel"
-    "cards/shroom/coin.png"
-    Shroom
-    Coin
     $ const Beta.reverse
 
 
 -- Blood
 bloodSword :: Card
 bloodSword =
-  Card
-    "BLOOD SWORD"
+  Card Blood Sword
     "Pay 4 life to hurt for 12"
-    "cards/blood/sword.png"
-    Blood
-    Sword
     $ \w -> do
       hurt 4 w Slash
       hurt 12 (other w) Slash
@@ -251,12 +179,8 @@ bloodSword =
 
 bloodWand :: Card
 bloodWand =
-  Card
-    "BLOOD WAND"
+  Card Blood Wand
     "Both player's life becomes that of the weakest"
-    "cards/blood/wand.png"
-    Blood
-    Wand
     $ \w -> do
       lifePa <- getLife w
       lifePb <- getLife (other w)
@@ -267,12 +191,8 @@ bloodWand =
 
 bloodCup :: Card
 bloodCup =
-  Card
-    "BLOOD CUP"
+  Card Blood Cup
     "Pay 4 life to draw 3"
-    "cards/blood/cup.png"
-    Blood
-    Cup
     $ \w -> do
       hurt 4 w Slash
       draw w w
@@ -282,12 +202,8 @@ bloodCup =
 
 bloodCoin :: Card
 bloodCoin =
-  Card
-    "BLOOD COIN"
+  Card Blood Coin
     "Pay half your life to discard the next card"
-    "cards/blood/coin.png"
-    Blood
-    Coin
     $ \w -> do
       l <- getLife w
       hurt (l `quot` 2) w Slash
@@ -297,12 +213,8 @@ bloodCoin =
 -- Mirage
 mirageSword :: Card
 mirageSword =
-  Card
-    "MIRAGE SWORD"
+  Card Mirage Sword
     "Hurt for 4, then draw 1"
-    "cards/mirage/sword.png"
-    Mirage
-    Sword
     $ \w -> do
       hurt 4 (other w) Slash
       draw w w
@@ -310,26 +222,19 @@ mirageSword =
 
 mirageWand :: Card
 mirageWand =
-  Card
-    "MIRAGE WAND"
+  Card Mirage Wand
     "Hurt for 8 for each MIRAGE WAND in play"
-    "cards/mirage/wand.png"
-    Mirage
-    Wand
     $ \w -> do
       stack <- getStack
-      let count = length . filter (\(StackCard _ (Card{ card_name })) -> card_name == "MIRAGE WAND") $ stack
+      let isMirageWand = \(Card{ card_aspect, card_suit }) -> card_aspect == Mirage && card_suit == Wand
+      let count = length . filter (\(StackCard{ stackcard_card }) -> isMirageWand stackcard_card) $ stack
       hurt ((count + 1) * 8) (other w) Slash
 
 
 mirageCup :: Card
 mirageCup =
-  Card
-    "MIRAGE CUP"
+  Card Mirage Cup
     "Play a copy of a random card in your hand"
-    "cards/mirage/cup.png"
-    Mirage
-    Cup
     $ \w -> do
       gen <- getGen
       hand <- getHand w
@@ -343,24 +248,16 @@ mirageCup =
 
 mirageCoin :: Card
 mirageCoin =
-  Card
-    "MIRAGE COIN"
+  Card Mirage Coin
     "Return all cards on the wheel to hand"
-    "cards/mirage/coin.png"
-    Mirage
-    Coin
     $ \_ -> bounce (const True)
 
 
 -- Mirror
 mirrorSword :: Card
 mirrorSword =
-  Card
-    "MIRROR SWORD"
+  Card Mirror Sword
     "Hurt for 3, add a copy of this card to your hand"
-    "cards/mirror/sword.png"
-    Mirror
-    Sword
     $ \w -> do
       hurt 3 (other w) Slash
       addToHand w mirrorSword
@@ -368,63 +265,43 @@ mirrorSword =
 
 mirrorWand :: Card
 mirrorWand =
-  Card
-    "MIRROR WAND"
+  Card Mirror Wand
     "Hurt for 3 for each card in your hand"
-    "cards/mirror/wand.png"
-    Mirror
-    Wand
     $ \w -> do
       len <- length <$> getHand w
       hurt (len * 3) (other w) Slash
 
 mirrorCup :: Card
 mirrorCup =
-  Card
-    "MIRROR CUP"
+  Card Mirror Cup
     "The next card activates twice"
-    "cards/mirror/cup.png"
-    Mirror
-    Cup
     $ \_ -> do
       raw $ do
         Alpha.modStackHead $
-          \(StackCard which (Card name desc pic aspect suit e)) ->
-            StackCard which (Card name desc pic aspect suit (\w -> (e w) >> (e w)))
+          \(StackCard which (Card aspect suit desc e)) ->
+            StackCard which (Card aspect suit desc (\w -> (e w) >> (e w)))
       Beta.null
 
 
 mirrorCoin :: Card
 mirrorCoin =
-  Card
-    "MIRROR COIN"
+  Card Mirror Coin
     "Change the owner of all cards on the wheel"
-    "cards/mirror/coin.png"
-    Mirror
-    Coin
     $ const Beta.reflect
 
 
 -- Alchemy
 alchemySword :: Card
 alchemySword =
-  Card
-    "ALCHEMY SWORD"
+  Card Alchemy Sword
     "Hurt for 6"
-    "cards/alchemy/sword.png"
-    Alchemy
-    Sword
     $ \w -> hurt 6 (other w) Slash
 
 
 alchemyWand :: Card
 alchemyWand =
-  Card
-    "ALCHEMY WAND"
+  Card Alchemy Wand
     "Hurt for 3 for each card in their hand"
-    "cards/alchemy/wand.png"
-    Alchemy
-    Wand
     $ \w -> do
       len <- length <$> getHand (other w)
       hurt (len * 3) (other w) Slash
@@ -432,34 +309,22 @@ alchemyWand =
 
 alchemyCup :: Card
 alchemyCup =
-  Card
-    "ALCHEMY CUP"
+  Card Alchemy Cup
     "Heal for 10"
-    "cards/alchemy/cup.png"
-    Alchemy
-    Cup
     $ heal 10
 
 
 alchemyCoin :: Card
 alchemyCoin =
-  Card
-    "ALCHEMY COIN"
-    ("Change next card to STRANGE GOLD")
-    "cards/alchemy/coin.png"
-    Alchemy
-    Coin
+  Card Alchemy Coin
+    "Change next card to STRANGE GOLD"
     $ \_ -> transmute strangeGold TransmuteCard
 
 
 strangeGold :: Card
 strangeGold =
-  Card
-    "STRANGE GOLD"
+  Card Strange (OtherSuit "GOLD")
     "Draw 2"
-    "cards/strange/gold.png"
-    Strange
-    OtherSuit
     $ \w -> do
       draw w w
       draw w w
@@ -468,23 +333,15 @@ strangeGold =
 -- Crown
 crownSword :: Card
 crownSword =
-  Card
-    "CROWN SWORD"
+  Card Crown Sword
     "Hurt for 10"
-    "cards/crown/sword.png"
-    Crown
-    Sword
     $ \w -> hurt 10 (other w) Slash
 
 
 crownWand :: Card
 crownWand =
-  Card
-    "CROWN WAND"
+  Card Crown Wand
     "Discard your hand, then hurt for 5 for each card discarded"
-    "cards/crown/wand.png"
-    Crown
-    Wand
     $ \w -> do
       handSize <- length <$> getHand w
       discardHand w (const True)
@@ -493,12 +350,8 @@ crownWand =
 
 crownCup :: Card
 crownCup =
-  Card
-    "CROWN CUP"
+  Card Crown Cup
     "Your opponent is forced to play a random card"
-    "cards/crown/cup.png"
-    Crown
-    Cup
     $ \w -> do
       gen <- getGen
       hand <- getHand (other w)
@@ -513,12 +366,8 @@ crownCup =
 
 crownCoin :: Card
 crownCoin =
-  Card
-    "CROWN COIN"
+  Card Crown Coin
     "Discard next card for each card in your hand"
-    "cards/crown/coin.png"
-    Crown
-    Coin
     $ \w -> do
       handLen <- length <$> getHand w
       discardStack $ \(i, _) -> i < handLen
@@ -527,12 +376,8 @@ crownCoin =
 -- Morph
 morphSword :: Card
 morphSword =
-  Card
-    "MORPH SWORD"
+  Card Morph Sword
     "Hurt for 7, then all MORPH cards on\nthe wheel become SWORDs"
-    "cards/morph/sword.png"
-    Morph
-    Sword
     $ \w -> do
       hurt 7 (other w) Slash
       raw $
@@ -552,12 +397,8 @@ morphSword =
 
 morphWand :: Card
 morphWand =
-  Card
-    "MORPH WAND"
+  Card Morph Wand
     "Hurt for 3 for each card on the wheel,\nthen all MORPH cards on the wheel\nbecome WANDs"
-    "cards/morph/wand.png"
-    Morph
-    Wand
     $ \w -> do
       len <- length <$> getStack
       hurt (len * 3) (other w) Slash
@@ -578,12 +419,8 @@ morphWand =
 
 morphCup :: Card
 morphCup =
-  Card
-    "MORPH CUP"
+  Card Morph Cup
     "Heal for 8, then all MORPH cards on\nthe wheel become CUPs"
-    "cards/morph/cup.png"
-    Morph
-    Cup
     $ \w -> do
       heal 8 w
       raw $
@@ -603,12 +440,8 @@ morphCup =
 
 morphCoin :: Card
 morphCoin =
-  Card
-    "MORPH COIN"
+  Card Morph Coin
     "The next card becomes a MORPH card"
-    "cards/morph/coin.png"
-    Morph
-    Coin
     $ \_ -> do
       raw $
         Alpha.modStackHead (
@@ -625,7 +458,7 @@ morphCoin =
                     morphCup
                   Coin ->
                     morphCoin
-                  OtherSuit ->
+                  OtherSuit _ ->
                     stackcard_card
             in
               (StackCard{ stackcard_owner, stackcard_card = card })
@@ -636,97 +469,89 @@ morphCoin =
 -- Other
 strangeEnd :: Card
 strangeEnd =
-  Card
-    "STRANGE END"
+  Card Strange (OtherSuit "END")
     "You're out of cards, hurt yourself for 10"
-    "cards/strange/end.png"
-    Strange
-    OtherSuit
     $ \w -> hurt 10 w Slash
 
 
 -- Experiments
-ritual :: Card
-ritual =
-  Card
-    "Ritual"
-    "If zone is dark hurt for 8, or if zone is light heal for 8"
-    "ritual.png"
-    OtherAspect
-    Sword
-    $ \w -> do
-      rot <- getRot
-      if even rot then
-        hurt 8 (other w) Curse
-      else
-        heal 8 w
+--ritual :: Card
+--ritual =
+--  Card (OtherAspect "EXPERIMENT") (OtherSuit "Sword")
+--    "If zone is dark hurt for 8, or if zone is light heal for 8"
+--    $ \w -> do
+--      rot <- getRot
+--      if even rot then
+--        hurt 8 (other w) Curse
+--      else
+--        heal 8 w
 
 
-unravel :: Card
-unravel =
-  Card
-    "Unravel"
-    "Discard cards on the wheel in dark zones"
-    "unravel.png"
-    OtherAspect
-    Coin
-    $ \_ -> do
-      rot <- getRot
-      discardStack $ \(i, _) -> odd (i + rot)
+--unravel :: Card
+--unravel =
+--  Card
+--    "Unravel"
+--    "Discard cards on the wheel in dark zones"
+--    "unravel.png"
+--    OtherAspect
+--    Coin
+--    $ \_ -> do
+--      rot <- getRot
+--      discardStack $ \(i, _) -> odd (i + rot)
 
 
-respite :: Card
-respite =
-  Card
-    "Respite"
-    "Limbo the next 3 cards"
-    "respite.png"
-    OtherAspect
-    Coin
-    $ \_ -> do
-      limbo $ \(i, _) -> i < 3
+--respite :: Card
+--respite =
+--  Card
+--    "Respite"
+--    "Limbo the next 3 cards"
+--    "respite.png"
+--    OtherAspect
+--    Coin
+--    $ \_ -> do
+--      limbo $ \(i, _) -> i < 3
 
 
-voidbeam :: Card
-voidbeam =
-  Card
-    "Voidbeam"
-    "Hurt for 10 for each card in limbo"
-    "voidbeam.png"
-    OtherAspect
-    Wand
-    $ \w -> do
-      l <- getLimbo
-      let dmg = 10 * length l
-      hurt dmg (other w) Slash
+--voidbeam :: Card
+--voidbeam =
+--  Card
+--    "Voidbeam"
+--    "Hurt for 10 for each card in limbo"
+--    "voidbeam.png"
+--    OtherAspect
+--    Wand
+--    $ \w -> do
+--      l <- getLimbo
+--      let dmg = 10 * length l
+--      hurt dmg (other w) Slash
 
 
-feud :: Card
-feud =
-  Card
-    "Feud"
-    "Hurt for 2, limbo a copy of this card"
-    "feud.png"
-    OtherAspect
-    Sword
-    $ \w -> do
-      hurt 2 (other w) Slash
-      fabricate $ StackCard w feud
-      limbo $ \(i, _) -> i == 0
+--feud :: Card
+--feud =
+--  Card
+--    "Feud"
+--    "Hurt for 2, limbo a copy of this card"
+--    "feud.png"
+--    OtherAspect
+--    Sword
+--    $ \w -> do
+--      hurt 2 (other w) Slash
+--      fabricate $ StackCard w feud
+--      limbo $ \(i, _) -> i == 0
 
 
-inevitable :: Card
-inevitable =
-  Card
-    "Inevitable"
-    "Hurt for 1, limbo a copy of this card with double damage"
-    "inevitable.png"
-    OtherAspect
-    Sword
-    $ \w -> do
-      hurt 1 (other w) Slash
-      fabricate $ StackCard (other w) inevitable
-      limbo $ \(i, _) -> i == 0
+--inevitable :: Card
+--inevitable =
+--  Card
+--    "Inevitable"
+--    "Hurt for 1, limbo a copy of this card with double damage"
+--    "inevitable.png"
+--    OtherAspect
+--    Sword
+--    $ \w -> do
+--      hurt 1 (other w) Slash
+--      fabricate $ StackCard (other w) inevitable
+--      limbo $ \(i, _) -> i == 0
 
 
 swords :: [Card]
