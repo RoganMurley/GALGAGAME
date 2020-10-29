@@ -14,6 +14,21 @@ import Stack.Types exposing (Stack, StackCard)
 import Util exposing (interpFloat)
 
 
+baseDistance : Float
+baseDistance =
+    0.5
+
+
+baseRotation : Quaternion
+baseRotation =
+    Quaternion.xRotation (-0.35 * pi)
+
+
+segmentAngle : Float
+segmentAngle =
+    -2.0 * pi / 12.0
+
+
 entities : Context -> List StackEntity
 entities ctx =
     let
@@ -22,17 +37,6 @@ entities ctx =
 
         finalStack =
             model.stack
-
-        rotationProgress =
-            case anim of
-                Rotate _ ->
-                    progress
-
-                Windup _ ->
-                    1 - progress
-
-                _ ->
-                    0
 
         stack : Stack
         stack =
@@ -70,7 +74,7 @@ entities ctx =
 
         mainEntities =
             List.indexedMap
-                (stackCardEntity ctx rotationProgress (List.length stack))
+                (stackCardEntity ctx (List.length stack))
                 stack
 
         extraEntities =
@@ -96,12 +100,12 @@ entities ctx =
     mainEntities ++ extraEntities
 
 
-stackCardEntity : Context -> Float -> Int -> Int -> StackCard -> StackEntity
-stackCardEntity ctx baseRotateProgress finalStackLen finalIndex { card, owner } =
+stackCardEntity : Context -> Int -> Int -> StackCard -> StackEntity
+stackCardEntity ctx finalStackLen finalIndex { card, owner } =
     let
         entity : Game.Entity3D {}
         entity =
-            stackEntity ctx baseRotateProgress finalStackLen finalIndex
+            stackEntity ctx finalStackLen finalIndex
     in
     { owner = owner
     , card = card
@@ -112,9 +116,12 @@ stackCardEntity ctx baseRotateProgress finalStackLen finalIndex { card, owner } 
     }
 
 
-stackEntity : Context -> Float -> Int -> Int -> Game.Entity3D {}
-stackEntity { anim, progress } baseRotateProgress finalStackLen finalIndex =
+stackEntity : Context -> Int -> Int -> Game.Entity3D {}
+stackEntity ctx finalStackLen finalIndex =
     let
+        { anim, progress } =
+            ctx
+
         finalI : Float
         finalI =
             case anim of
@@ -183,39 +190,6 @@ stackEntity { anim, progress } baseRotateProgress finalStackLen finalIndex =
                 _ ->
                     finalStackLen
 
-        animRotateProgress : Float
-        animRotateProgress =
-            case anim of
-                Fabricate _ ->
-                    if finalI < 2 then
-                        0
-
-                    else
-                        0
-
-                _ ->
-                    0
-
-        rotateProgress : Float
-        rotateProgress =
-            baseRotateProgress + animRotateProgress
-
-        ringRotation : Float
-        ringRotation =
-            interpFloat progress
-                (i * segmentAngle - rotateProgress * segmentAngle)
-                (finalI * segmentAngle - rotateProgress * segmentAngle)
-
-        position : Vec3
-        position =
-            Math.Vector3.scale distance <|
-                vec3 (sin ringRotation) (cos ringRotation) 0
-
-        rotation : Quaternion
-        rotation =
-            baseRotation
-                |> Quaternion.rotate (Quaternion.zRotation -ringRotation)
-
         distance : Float
         distance =
             case anim of
@@ -238,33 +212,23 @@ stackEntity { anim, progress } baseRotateProgress finalStackLen finalIndex =
                 _ ->
                     baseDistance
     in
-    { position = position
-    , rotation = rotation
-    , scale = Card.scale
-    }
-
-
-baseDistance : Float
-baseDistance =
-    0.5
-
-
-baseRotation : Quaternion
-baseRotation =
-    Quaternion.xRotation (-0.35 * pi)
-
-
-segmentAngle : Float
-segmentAngle =
-    -2.0 * pi / 12.0
+    wheelEntity ctx distance i finalI
 
 
 wheelEntities : Context -> List WheelEntity
 wheelEntities ctx =
+    List.map (\i -> wheelEntity ctx baseDistance i i) <|
+        List.map toFloat <|
+            List.range 0 11
+
+
+wheelEntity : Context -> Float -> Float -> Float -> WheelEntity
+wheelEntity ctx distance i finalI =
     let
         { anim, progress } =
             ctx
 
+        rotateProgress : Float
         rotateProgress =
             case anim of
                 Rotate _ ->
@@ -276,31 +240,23 @@ wheelEntities ctx =
                 _ ->
                     0
 
-        distance : Float
-        distance =
-            baseDistance
+        position : Vec3
+        position =
+            Math.Vector3.scale distance <|
+                vec3 (sin ringRotation) (cos ringRotation) 0
 
-        wheelEntity : Float -> WheelEntity
-        wheelEntity i =
-            let
-                position : Vec3
-                position =
-                    Math.Vector3.scale distance <|
-                        vec3 (sin ringRotation) (cos ringRotation) 0
+        ringRotation : Float
+        ringRotation =
+            interpFloat progress
+                (i * segmentAngle - rotateProgress * segmentAngle)
+                (finalI * segmentAngle - rotateProgress * segmentAngle)
 
-                ringRotation : Float
-                ringRotation =
-                    i * segmentAngle - rotateProgress * segmentAngle
-
-                rotation : Quaternion
-                rotation =
-                    baseRotation
-                        |> Quaternion.rotate (Quaternion.zRotation -ringRotation)
-            in
-            { position = position
-            , rotation = rotation
-            , scale = Card.scale
-            , alpha = 0.3
-            }
+        rotation : Quaternion
+        rotation =
+            baseRotation
+                |> Quaternion.rotate (Quaternion.zRotation -ringRotation)
     in
-    List.map wheelEntity <| List.map toFloat <| List.range 0 11
+    { position = position
+    , rotation = rotation
+    , scale = Card.scale
+    }

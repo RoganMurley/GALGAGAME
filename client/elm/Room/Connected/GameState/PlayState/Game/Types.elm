@@ -75,7 +75,7 @@ type alias OtherHandEntity =
 
 
 type alias WheelEntity =
-    Game.Entity3D { alpha : Float }
+    Game.Entity3D {}
 
 
 type alias Entities =

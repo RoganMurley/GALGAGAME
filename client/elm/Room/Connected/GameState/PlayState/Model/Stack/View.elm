@@ -73,7 +73,7 @@ wheelView : List WheelEntity -> Context -> List WebGL.Entity
 wheelView entities { camera3d, perspective, textures } =
     let
         wheelEntityView : WheelEntity -> List WebGL.Entity
-        wheelEntityView { position, scale, rotation, alpha } =
+        wheelEntityView { position, scale, rotation } =
             Texture.with textures "cardOutline.png" <|
                 \texture ->
                     [ Render.Primitives.quad Render.Shaders.fragmentAlpha <|
@@ -84,7 +84,7 @@ wheelView entities { camera3d, perspective, textures } =
                         , perspective = perspective
                         , camera = camera3d
                         , texture = texture
-                        , alpha = alpha
+                        , alpha = 0.5
                         }
                     ]
     in
