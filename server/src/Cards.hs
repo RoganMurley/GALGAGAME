@@ -138,7 +138,7 @@ shroomSword =
 shroomWand :: Card
 shroomWand =
   Card Shroom Wand
-    "Lifesteal for 3 for each other card on the wheel"
+    "Lifesteal for 3 for each other card\non the wheel"
     $ \w -> do
       len <- length <$> getStack
       lifesteal (len * 3) (other w)
@@ -147,7 +147,7 @@ shroomWand =
 shroomCup :: Card
 shroomCup =
   Card Shroom Cup
-    ("Add 2 STRANGE SPORE cards to their hand")
+    ("Add 2 STRANGE SPORE cards to\ntheir hand")
     $ \w -> do
       addToHand (other w) strangeSpore
       addToHand (other w) strangeSpore
@@ -258,7 +258,7 @@ mirageCoin =
 mirrorSword :: Card
 mirrorSword =
   Card Mirror Sword
-    "Hurt for 3, add a copy of this card to your hand"
+    "Hurt for 3, add a copy of this card\nto your hand"
     $ \w -> do
       hurt 3 (other w) Slash
       addToHand w mirrorSword

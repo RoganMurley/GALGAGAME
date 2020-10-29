@@ -1,4 +1,4 @@
-module Game.Types exposing (Context, Entities, Feedback, HandEntity, Model, OtherHandEntity, StackEntity)
+module Game.Types exposing (Context, Entities, Feedback, HandEntity, Model, OtherHandEntity, StackEntity, WheelEntity)
 
 import Animation.Types exposing (Anim)
 import Buttons.Types exposing (Buttons)
@@ -74,10 +74,15 @@ type alias OtherHandEntity =
     Game.Entity3D {}
 
 
+type alias WheelEntity =
+    Game.Entity3D { alpha : Float }
+
+
 type alias Entities =
     { stack : List StackEntity
     , hand : List HandEntity
     , otherHand : List OtherHandEntity
+    , wheel : List WheelEntity
     }
 
 

@@ -47,9 +47,8 @@ view { w, h } game assets =
         List.map ((|>) ctx)
             [ Background.radialView vfx
             , lifeOrbView
-
-            -- , galgaView
             , Wave.view
+            , Stack.wheelView entities.wheel
             , Stack.view entities.stack
             , focusImageView focus
             , Hand.view entities.hand holding
