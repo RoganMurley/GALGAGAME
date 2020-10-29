@@ -112,6 +112,7 @@ entitiesInit =
     { stack = []
     , hand = []
     , otherHand = []
+    , wheel = []
     }
 
 
@@ -167,6 +168,7 @@ tick { dimensions, mouse } dt model =
                     { stack = Stack.entities ctx
                     , hand = Hand.entities model.hover ctx
                     , otherHand = Hand.otherEntities model.otherHover ctx
+                    , wheel = Stack.wheelEntities ctx
                     }
                 , focus = focus
                 , feedback = feedback

@@ -1,10 +1,10 @@
-module Stack.Entities exposing (baseDistance, baseRotation, entities, stackEntity)
+module Stack.Entities exposing (baseDistance, baseRotation, entities, stackEntity, wheelEntities)
 
 import Animation.Types exposing (Anim(..), Bounce(..), CardDiscard(..), CardLimbo(..))
 import Array
 import Card.State as Card
 import Game.Entity as Game
-import Game.Types exposing (Context, StackEntity)
+import Game.Types exposing (Context, StackEntity, WheelEntity)
 import Math.Matrix4 exposing (rotate)
 import Math.Vector3 exposing (Vec3, vec3)
 import Quaternion exposing (Quaternion)
@@ -183,10 +183,6 @@ stackEntity { anim, progress } baseRotateProgress finalStackLen finalIndex =
                 _ ->
                     finalStackLen
 
-        segmentAngle : Float
-        segmentAngle =
-            -2.0 * pi / 12.0
-
         animRotateProgress : Float
         animRotateProgress =
             case anim of
@@ -220,10 +216,6 @@ stackEntity { anim, progress } baseRotateProgress finalStackLen finalIndex =
             baseRotation
                 |> Quaternion.rotate (Quaternion.zRotation -ringRotation)
 
-        scale : Vec3
-        scale =
-            Card.scale
-
         distance : Float
         distance =
             case anim of
@@ -248,7 +240,7 @@ stackEntity { anim, progress } baseRotateProgress finalStackLen finalIndex =
     in
     { position = position
     , rotation = rotation
-    , scale = scale
+    , scale = Card.scale
     }
 
 
@@ -260,3 +252,55 @@ baseDistance =
 baseRotation : Quaternion
 baseRotation =
     Quaternion.xRotation (-0.35 * pi)
+
+
+segmentAngle : Float
+segmentAngle =
+    -2.0 * pi / 12.0
+
+
+wheelEntities : Context -> List WheelEntity
+wheelEntities ctx =
+    let
+        { anim, progress } =
+            ctx
+
+        rotateProgress =
+            case anim of
+                Rotate _ ->
+                    progress
+
+                Windup _ ->
+                    1 - progress
+
+                _ ->
+                    0
+
+        distance : Float
+        distance =
+            baseDistance
+
+        wheelEntity : Float -> WheelEntity
+        wheelEntity i =
+            let
+                position : Vec3
+                position =
+                    Math.Vector3.scale distance <|
+                        vec3 (sin ringRotation) (cos ringRotation) 0
+
+                ringRotation : Float
+                ringRotation =
+                    i * segmentAngle - rotateProgress * segmentAngle
+
+                rotation : Quaternion
+                rotation =
+                    baseRotation
+                        |> Quaternion.rotate (Quaternion.zRotation -ringRotation)
+            in
+            { position = position
+            , rotation = rotation
+            , scale = Card.scale
+            , alpha = 0.3
+            }
+    in
+    List.map wheelEntity <| List.map toFloat <| List.range 0 11
