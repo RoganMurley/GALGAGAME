@@ -138,55 +138,71 @@ bounceAnim f alpha = do
   return final
 
 
+
+data BounceState = BounceState
+  { stackIndex :: Int
+  , handAIndex :: Int
+  , handBIndex :: Int
+  , bounces    :: Wheel (Maybe CardBounce)
+  } deriving (Show)
+
+
 getBounces :: (Int -> StackCard -> Bool) -> Alpha.Program (Wheel (Maybe CardBounce))
 getBounces f = do
   stack <- Alpha.getStack
   handALen <- length <$> Alpha.getHand PlayerA
   handBLen <- length <$> Alpha.getHand PlayerB
-  let (_, _, _, bounces) = foldr reduce (0, handALen, handBLen, Wheel.init $ const Nothing) stack
+  let startState = (BounceState{
+    stackIndex = 0,
+    handAIndex = handALen,
+    handBIndex = handBLen,
+    bounces = Wheel.init $ const Nothing
+  })
+  let BounceState{ bounces } = foldr reduce startState stack
   return bounces
   where
-    reduce :: Maybe StackCard -> (Int, Int, Int, Wheel (Maybe CardBounce)) -> (Int, Int, Int, Wheel (Maybe CardBounce))
-    reduce Nothing (indexStack, indexA, indexB, wheel) =
-      ( indexStack + 1
-      , indexA
-      , indexB
-      , Wheel.fwrd wheel
-      )
-    reduce (Just stackCard) (indexStack, indexA, indexB, wheel) =
-      if f indexStack stackCard then
+    reduce :: Maybe StackCard -> BounceState -> BounceState
+    reduce Nothing state =
+      state
+        { stackIndex = stackIndex state + 1
+        , bounces = Wheel.fwrd $ bounces state
+        }
+    reduce (Just stackCard) state@(BounceState{ stackIndex, handAIndex, handBIndex, bounces }) =
+      if f stackIndex stackCard then
         case stackcard_owner stackCard of
           PlayerA ->
-            if indexA >= maxHandLength then
-              ( indexStack + 1
-              , indexA
-              , indexB
-              , Wheel.fwrd $ wheel { wheel_0 = Just BounceDiscard }
+            if handAIndex >= maxHandLength then
+              (state
+                { stackIndex = stackIndex + 1
+                , bounces = Wheel.fwrd $ bounces { wheel_0 = Just BounceDiscard }
+                }
               )
             else
-              ( indexStack + 1
-              , indexA + 1
-              , indexB
-              , Wheel.fwrd $ wheel { wheel_0 = Just (BounceIndex indexA) }
+              (state
+                { stackIndex = stackIndex + 1
+                , handAIndex = handAIndex + 1
+                , bounces = Wheel.fwrd $ bounces { wheel_0 = Just (BounceIndex handAIndex) }
+                }
               )
           PlayerB ->
-            if indexB >= maxHandLength then
-              ( indexStack + 1
-              , indexA
-              , indexB
-              , Wheel.fwrd $ wheel { wheel_0 = Just BounceDiscard }
+            if handBIndex >= maxHandLength then
+              (state
+                { stackIndex = stackIndex + 1
+                , bounces = Wheel.fwrd $ bounces { wheel_0 = Just BounceDiscard }
+                }
               )
             else
-              ( indexStack + 1
-              , indexA
-              , indexB + 1
-              , Wheel.fwrd $ wheel { wheel_0 = Just (BounceIndex indexB) }
+              (state
+                { stackIndex = stackIndex + 1
+                , handBIndex = handBIndex + 1
+                , bounces = Wheel.fwrd $ bounces { wheel_0 = Just (BounceIndex handBIndex) }
+                }
               )
       else
-        ( indexStack + 1
-        , indexA
-        , indexB
-        , Wheel.fwrd wheel
+        (state
+          { stackIndex = stackIndex + 1
+          , bounces = Wheel.fwrd bounces
+          }
         )
 
 
