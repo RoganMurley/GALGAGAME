@@ -5,6 +5,7 @@ import CardAnim (CardAnim(..))
 import Control.Monad (when)
 import Control.Monad.Free (foldFree)
 import Control.Monad.Trans.Writer (Writer, runWriter, tell)
+import Data.Foldable (toList)
 import Data.Maybe (fromMaybe)
 import Data.Monoid ((<>))
 import Data.String.Conversions (cs)
@@ -12,15 +13,17 @@ import Data.Text (Text)
 import DeckBuilding (CharacterChoice, DeckBuilding(..), choiceToCharacter, initDeckBuilding, selectCharacter)
 import GameState (GameState(..), PlayState(..), initModel)
 import GodMode
-import Model (Hand, Passes(..), Model, Stack, Turn)
+import Model (Hand, Passes(..), Model, Turn)
 import Outcome (HoverState(..), Outcome)
 import Player (WhichPlayer(..), other)
 import ResolveData (ResolveData(..), resolveAnim)
-import Safe (atMay, headMay)
+import Safe (atMay)
 import Scenario (Scenario(..))
+import Stack (Stack)
 import StackCard (StackCard(..))
 import User (User(..), getUsername)
-import Util (Err, Gen, deleteIndex, split)
+import Util (Err, Gen, deleteIndex, split, times)
+import Wheel (Wheel(..))
 
 
 import qualified DSL.Alpha as Alpha
@@ -28,6 +31,7 @@ import qualified DSL.Beta as Beta
 import qualified Outcome
 import qualified Replay.Active as Active
 import qualified Replay.Final as Final
+import qualified Stack
 
 
 data GameCommand =
@@ -220,7 +224,6 @@ endTurn which model replay
             let
               roundEndProgram :: Beta.Program ()
               roundEndProgram = do
-                Beta.unlimbo
                 Beta.raw Alpha.swapTurn
                 Beta.raw Alpha.resetPasses
                 Beta.draw PlayerA PlayerA
@@ -291,7 +294,7 @@ resolveAll model replay resolutionCount =
       return (Playing model replay)
   where
     stackCard :: Maybe StackCard
-    stackCard = Alpha.evalI model (headMay <$> Alpha.getStack)
+    stackCard = Alpha.evalI model (wheel_0 <$> Alpha.getStack)
     card :: Maybe (Beta.Program ())
     card = (\(StackCard o c) -> (card_eff c) o) <$> stackCard
     isFinite :: Bool
@@ -346,16 +349,16 @@ hoverCard (HoverStack i) which model =
   let
     stack = Alpha.evalI model $ Alpha.getStack :: Stack
   in
-    case atMay stack i of
-      Just (StackCard owner card) ->
+    case atMay (toList stack) i of
+      Just (Just (StackCard owner card)) ->
         Right (Nothing, [ Outcome.Encodable $ Outcome.Hover which (HoverStack i) damage ])
         where
           newModel = Alpha.modI model $ do
             let index = i + 1 -- plus one to account for stackCard
-            Alpha.modStack (drop index)
+            Alpha.modStack $ times index Stack.rotate
             Alpha.modRot ((-) index)
           damage = Beta.damageNumbersI newModel $ card_eff card owner
-      Nothing ->
+      _ ->
         ignore
 hoverCard NoHover which _ =
   Right (Nothing, [ Outcome.Encodable $ Outcome.Hover which NoHover (0, 0) ])

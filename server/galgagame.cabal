@@ -42,7 +42,6 @@ library
                      , GameState
                      , GodMode
                      , Life
-                     , Limbo
                      , Mirror
                      , Model
                      , ModelDiff
@@ -57,11 +56,13 @@ library
                      , Scenario
                      , Schema
                      , Server
+                     , Stack
                      , StackCard
                      , Start
                      , Stats.Schema
                      , Stats.Stats
                      , Transmutation
+                     , Wheel
                      , User
                      , Util
   other-modules:       DSL.Alpha.Actions

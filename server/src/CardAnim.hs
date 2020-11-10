@@ -6,11 +6,11 @@ import Data.Aeson (ToJSON(..), (.=), object)
 import Data.Text (Text)
 import Discard (CardDiscard)
 import Life (Life)
-import Limbo (CardLimbo)
 import Mirror (Mirror(..))
 import Player (WhichPlayer(..), other)
 import StackCard (StackCard)
 import Transmutation (Transmutation)
+import Wheel (Wheel)
 
 
 data CardAnim
@@ -20,18 +20,16 @@ data CardAnim
   | Reverse
   | Confound
   | Play WhichPlayer Card Int
-  | Transmute [Transmutation]
+  | Transmute (Wheel (Maybe Transmutation))
   | Mill WhichPlayer Card
   | GameEnd (Maybe WhichPlayer)
   | Rotate
   | Windup
   | Fabricate StackCard
-  | Bounce [CardBounce]
-  | DiscardStack [CardDiscard]
+  | Bounce (Wheel (Maybe CardBounce))
+  | DiscardStack (Wheel Bool)
   | DiscardHand WhichPlayer [CardDiscard]
   | Pass WhichPlayer
-  | Limbo [CardLimbo]
-  | Unlimbo
   deriving (Show, Eq)
 
 
@@ -128,17 +126,6 @@ instance ToJSON CardAnim where
     [ "name"   .= ("pass" :: Text)
     , "player" .= w
     ]
-  toJSON (Limbo l) =
-    object
-    [ "name"   .= ("limbo" :: Text)
-    , "player" .= PlayerA
-    , "limbo"  .= l
-    ]
-  toJSON Unlimbo =
-    object
-    [ "name"    .= ("unlimbo" :: Text)
-    , "player"  .= PlayerA
-    ]
 
 
 instance Mirror CardAnim where
@@ -158,8 +145,6 @@ instance Mirror CardAnim where
   mirror (DiscardStack d)    = DiscardStack d
   mirror (DiscardHand w d)   = DiscardHand (other w) d
   mirror (Pass w)            = Pass (other w)
-  mirror (Limbo l)           = Limbo l
-  mirror Unlimbo             = Unlimbo
 
 
 data Hurt
