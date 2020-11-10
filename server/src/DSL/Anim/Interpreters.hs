@@ -25,8 +25,6 @@ next (Bounce _ n)        = n
 next (DiscardStack _ n)  = n
 next (DiscardHand _ _ n) = n
 next (Pass _ n)          = n
-next (Limbo _ n)         = n
-next (Unlimbo n)         = n
 
 
 animate :: DSL a -> Maybe CardAnim
@@ -48,5 +46,3 @@ animate (Bounce b _)         = Just $ CardAnim.Bounce b
 animate (DiscardStack d _)   = Just $ CardAnim.DiscardStack d
 animate (DiscardHand w d _)  = Just $ CardAnim.DiscardHand w d
 animate (Pass w _)           = Just $ CardAnim.Pass w
-animate (Limbo l _)          = Just $ CardAnim.Limbo l
-animate (Unlimbo _)          = Just CardAnim.Unlimbo

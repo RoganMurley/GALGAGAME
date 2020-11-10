@@ -10,6 +10,7 @@ import Player (WhichPlayer(..), other)
 import Util (Gen, shuffle, split)
 
 import qualified Replay.Active as Active
+import qualified Stack
 
 
 data GameState =
@@ -78,7 +79,7 @@ initState = Waiting
 
 initModel :: Turn -> Character -> Character -> Gen -> Model
 initModel turn ca cb gen =
-  Model turn [] [] pm_a pm_b NoPass gen 0
+  Model turn Stack.init pm_a pm_b NoPass gen 0
   where
     (genPA, genPB) = split gen :: (Gen, Gen)
     -- PlayerA

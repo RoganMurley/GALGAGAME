@@ -8,8 +8,9 @@ import Data.Monoid (Monoid)
 import Data.Semigroup ((<>), Semigroup)
 import Life (Life)
 import Mirror (Mirror(..))
-import Model (Hand, Deck, Limbo, Model(..), Passes, PlayerModel(..), Turn, Stack)
+import Model (Hand, Deck, Model(..), Passes, PlayerModel(..), Turn)
 import Player (WhichPlayer(..), other)
+import Stack (Stack)
 import Util (Gen)
 
 
@@ -17,7 +18,6 @@ import Util (Gen)
 data ModelDiff = ModelDiff
   { modeldiff_turn   :: Maybe Turn
   , modeldiff_stack  :: Maybe Stack
-  , modeldiff_limbo  :: Maybe Limbo
   , modeldiff_pa     :: PlayerModelDiff
   , modeldiff_pb     :: PlayerModelDiff
   , modeldiff_passes :: Maybe Passes
@@ -40,11 +40,10 @@ omitNull = filter ((/= Null) . snd)
 
 
 instance ToJSON ModelDiff where
-  toJSON ModelDiff{ modeldiff_turn, modeldiff_stack, modeldiff_limbo, modeldiff_pa, modeldiff_pb, modeldiff_rot } =
+  toJSON ModelDiff{ modeldiff_turn, modeldiff_stack, modeldiff_pa, modeldiff_pb, modeldiff_rot } =
     object . (omitNull) $
       [ "turn"   .= modeldiff_turn
       , "stack"  .= modeldiff_stack
-      , "limbo"  .= modeldiff_limbo
       , "handPA" .= pmodeldiff_hand modeldiff_pa
       , "handPB" .= (length <$> pmodeldiff_hand modeldiff_pb)
       , "lifePA" .= pmodeldiff_life modeldiff_pa
@@ -54,8 +53,8 @@ instance ToJSON ModelDiff where
 
 
 instance Mirror ModelDiff where
-  mirror (ModelDiff turn stack limbo pa pb passes gen rot) =
-    ModelDiff (other <$> turn) (mirror stack) (mirror limbo) pb pa passes gen rot
+  mirror (ModelDiff turn stack pa pb passes gen rot) =
+    ModelDiff (other <$> turn) (mirror stack) pb pa passes gen rot
 
 
 getPmodelDiff :: WhichPlayer -> ModelDiff -> PlayerModelDiff
@@ -77,7 +76,6 @@ update m d =
   Model
     { model_turn   = fromMaybe (model_turn m)   (modeldiff_turn d)
     , model_stack  = fromMaybe (model_stack m)  (modeldiff_stack d)
-    , model_limbo  = fromMaybe (model_limbo m)  (modeldiff_limbo d)
     , model_passes = fromMaybe (model_passes m) (modeldiff_passes d)
     , model_gen    = fromMaybe (model_gen m)    (modeldiff_gen d)
     , model_rot    = fromMaybe (model_rot m)    (modeldiff_rot d)
@@ -100,7 +98,6 @@ instance Semigroup ModelDiff where
     ModelDiff
       { modeldiff_turn   = (modeldiff_turn b)   <|> (modeldiff_turn a)
       , modeldiff_stack  = (modeldiff_stack b)  <|> (modeldiff_stack a)
-      , modeldiff_limbo  = (modeldiff_limbo b)  <|> (modeldiff_limbo a)
       , modeldiff_passes = (modeldiff_passes b) <|> (modeldiff_passes a)
       , modeldiff_gen    = (modeldiff_gen b)    <|> (modeldiff_gen a)
       , modeldiff_rot    = (modeldiff_rot b)    <|> (modeldiff_rot a)
@@ -115,7 +112,6 @@ instance Monoid ModelDiff where
       ModelDiff
         { modeldiff_turn   = Nothing
         , modeldiff_stack  = Nothing
-        , modeldiff_limbo  = Nothing
         , modeldiff_passes = Nothing
         , modeldiff_gen    = Nothing
         , modeldiff_rot    = Nothing

@@ -8,11 +8,15 @@ import Data.List (partition)
 import DSL.Alpha.DSL (DSL(..), Program)
 import Player (WhichPlayer(..), other)
 import Life (Life)
-import Model (Deck, Hand, Limbo, Passes(..), Stack, Turn, maxHandLength)
+import Model (Deck, Hand, Passes(..), Turn, maxHandLength)
 import Safe (headMay, tailSafe)
+import Stack (Stack, chainMap, modChain)
 import StackCard (StackCard(StackCard, stackcard_card), isOwner)
 import Transmutation (Transmutation(..))
 import Util (deleteIndex, indexedFilter, shuffle)
+import Wheel (Wheel(..))
+
+import qualified Stack
 
 import {-# SOURCE #-} Cards (strangeEnd)
 
@@ -41,14 +45,6 @@ modStack :: (Stack -> Stack) -> Program ()
 modStack f = getStack >>= (setStack . f)
 
 
-modLimbo :: (Limbo -> Limbo) -> Program ()
-modLimbo f = getLimbo >>= (setLimbo . f)
-
-
-modStackAll :: (StackCard -> StackCard) -> Program ()
-modStackAll f = modStack $ fmap f
-
-
 modTurn :: (Turn -> Turn) -> Program ()
 modTurn f = getTurn >>= (setTurn . f)
 
@@ -63,13 +59,12 @@ modPasses f = getPasses >>= (setPasses . f)
 
 modStackHead :: (StackCard -> StackCard) -> Program ()
 modStackHead f = do
-  s <- getStack
-  case headMay s of
+  stack <- getStack
+  case wheel_0 stack of
     Just c ->
-      setStack $ f c : (tailSafe s)
+      setStack $ stack { wheel_0 = Just (f c) }
     Nothing ->
       return ()
-
 
 
 hurt :: Life -> WhichPlayer -> Program ()
@@ -91,7 +86,7 @@ play w c i = do
   swapTurn
   resetPasses
   modHand w $ deleteIndex i
-  modStack $ (:) (StackCard w c)
+  modStack $ (\stack -> stack { wheel_0 = Just (StackCard w c) })
 
 
 incPasses :: Passes -> Passes
@@ -107,6 +102,7 @@ swapTurn :: Program ()
 swapTurn = do
   modTurn other
   modPasses incPasses
+
 
 addToHand :: WhichPlayer -> Card -> Program ()
 addToHand w c = modHand w (\h -> h ++ [c])
@@ -129,65 +125,64 @@ draw w d = do
       addToHand w strangeEnd
 
 
-transmute :: ((Int, StackCard) -> Transmutation) -> Program ()
+transmute :: (Int -> StackCard -> Maybe Transmutation) -> Program ()
 transmute f =
   let
-    combiner :: Transmutation -> StackCard -> StackCard
-    combiner (Transmutation _ finalStackCard) _         = finalStackCard
-    combiner NoTransmutation                  stackCard = stackCard
+    combiner :: Maybe Transmutation -> Maybe StackCard -> Maybe StackCard
+    combiner (Just (Transmutation _ finalStackCard)) (Just _)  = Just finalStackCard
+    combiner _                                       stackCard = stackCard
   in
   do
     stack <- getStack
-    let transmutations = f <$> zip [0..] stack
-    let newStack = uncurry combiner <$> zip transmutations stack
-    setStack newStack
+    let transmutations = Stack.chainMap f stack
+    setStack (combiner <$> transmutations <*> stack)
 
 
-bounce :: (StackCard -> Bool) -> Program ()
-bounce f = do
+bounce :: (Int -> StackCard -> Bool) -> Program ()
+bounce func = do
   stack <- getStack
-  let (bouncing, staying) = partition f stack
-  setStack staying
+  let f = \i c -> not $ func i c
+  modStack (Stack.chainFilter f)
+  let bouncing = indexedFilter f $ Stack.chainToList stack
   let (paBouncing, pbBouncing) = partition (isOwner PlayerA) bouncing
   modHand PlayerA $ \h -> h ++ (stackcard_card <$> paBouncing)
   modHand PlayerB $ \h -> h ++ (stackcard_card <$> pbBouncing)
 
 
-discardStack :: ((Int, StackCard) -> Bool) -> Program ()
-discardStack f = modStack $ indexedFilter (not . f)
+discardStack :: (Int -> StackCard -> Bool) -> Program ()
+discardStack f = modStack $ Stack.chainFilter (\i c -> not $ f i c)
 
 
-discardHand :: WhichPlayer -> ((Int, Card) -> Bool) -> Program ()
-discardHand w f = modHand w $ indexedFilter (not . f)
+discardHand :: WhichPlayer -> (Int -> Card -> Bool) -> Program ()
+discardHand w f = modHand w $ indexedFilter (\i c -> not $ f i c)
 
 
 confound :: Program ()
 confound = do
   gen <- getGen
-  modStack $ shuffle gen
+  modStack $ modChain $ shuffle gen
+  return ()
+
+
+reversal :: Program ()
+reversal = do
+  modStack $ modChain reverse
+  return ()
+
+
+fabricate :: StackCard -> Program ()
+fabricate stackCard = do
+  windup
+  modStack $ (\stack -> stack { wheel_0 = Just stackCard })
 
 
 rotate :: Program ()
 rotate = do
-  modStack tailSafe
+  modStack Stack.rotate
   modRot (\x -> x - 1)
 
 
 windup :: Program ()
 windup = do
+  modStack Stack.windup
   modRot ((+) 1)
-
-
-limbo :: ((Int, StackCard) -> Bool) -> Program ()
-limbo f = do
-  stack <- getStack
-  let limboed = indexedFilter f stack
-  modLimbo $ (++) limboed
-  modStack $ indexedFilter (not . f)
-
-
-unlimbo :: Program ()
-unlimbo = do
-  limbos <- getLimbo
-  modStack ((++) limbos)
-  setLimbo []

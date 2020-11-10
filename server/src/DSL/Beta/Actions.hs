@@ -32,6 +32,6 @@ refreshGen = do
 transmuteHead :: (StackCard -> StackCard) -> Program ()
 transmuteHead f = transmute transmuter
   where
-    transmuter :: (Int, StackCard) -> Transmutation
-    transmuter (0, sc) = Transmutation sc (f sc)
-    transmuter _       = NoTransmutation
+    transmuter :: Int -> StackCard -> Maybe Transmutation
+    transmuter 0 sc = Just $ Transmutation sc (f sc)
+    transmuter _ _  = Nothing

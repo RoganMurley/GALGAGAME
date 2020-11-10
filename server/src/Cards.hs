@@ -5,6 +5,7 @@ import CardAnim (Hurt(..))
 import Card (Aspect(..), Card(..), Suit(..))
 import Player (other)
 import Safe (headMay)
+import Stack (chainToList)
 import StackCard (StackCard(..), changeOwner)
 import Transmutation (Transmutation(..))
 import Util (shuffle)
@@ -25,9 +26,9 @@ blazeSword =
 blazeWand :: Card
 blazeWand =
   Card Blaze Wand
-    "Hurt for 5 for each other card on the wheel"
+    "Hurt for 5 for each other card in the chain"
     $ \w -> do
-      len <- length <$> getStack
+      len <- length . chainToList <$> getStack
       hurt (len * 5) (other w) Slash
 
 
@@ -36,7 +37,7 @@ blazeCup =
   Card Blaze Cup
     "Discard your hand, then draw 2"
     $ \w -> do
-      discardHand w (const True)
+      discardHand w (\_ _ -> True)
       draw w w
       draw w w
 
@@ -44,7 +45,7 @@ blazeCup =
 blazeCoin :: Card
 blazeCoin =
   Card Blaze Coin
-    "Shuffle the order of all cards on the wheel"
+    "Shuffle the order of all cards in the chain"
     $ \_ -> do
       confound
       Beta.null
@@ -61,24 +62,24 @@ heavenSword =
 heavenWand :: Card
 heavenWand =
   Card Heaven Wand
-    "Hurt for 4 for each other card on the wheel"
+    "Hurt for 4 for each other card in the chain"
     $ \w -> do
-      len <- length <$> getStack
+      len <- length . chainToList <$> getStack
       hurt (len * 4) (other w) Slash
 
 
 heavenCup :: Card
 heavenCup =
   Card Heaven Cup
-    "Return all of your cards on the wheel to hand"
-    $ \w -> bounce (\(StackCard o _) -> w == o)
+    "Return all of your cards in the chain to hand"
+    $ \w -> bounce (\_ (StackCard o _) -> w == o)
 
 
 heavenCoin :: Card
 heavenCoin =
   Card Heaven Coin
-    "Discard all cards on the wheel"
-    $ \_ -> discardStack (const True)
+    "Discard all cards in the chain"
+    $ \_ -> discardStack (\_ _ -> True)
 
 
 -- Duality
@@ -138,9 +139,9 @@ shroomSword =
 shroomWand :: Card
 shroomWand =
   Card Shroom Wand
-    "Lifesteal for 3 for each other card\non the wheel"
+    "Lifesteal for 3 for each other card\nin the chain"
     $ \w -> do
-      len <- length <$> getStack
+      len <- length . chainToList <$> getStack
       lifesteal (len * 3) (other w)
 
 
@@ -164,7 +165,7 @@ strangeSpore =
 shroomCoin :: Card
 shroomCoin =
   Card Shroom Coin
-    "Reverse the order of all cards on the wheel"
+    "Reverse the order of all cards in the chain"
     $ const Beta.reverse
 
 
@@ -208,7 +209,7 @@ bloodCoin =
     $ \w -> do
       l <- getLife w
       hurt (l `quot` 2) w Slash
-      discardStack (\(i, _) -> i == 0)
+      discardStack (\i _ -> i == 0)
 
 
 -- Mirage
@@ -224,11 +225,11 @@ mirageSword =
 mirageWand :: Card
 mirageWand =
   Card Mirage Wand
-    "Hurt for 8 for each MIRAGE WAND in play"
+    "Hurt for 8 for each MIRAGE WAND in the chain"
     $ \w -> do
-      stack <- getStack
+      chain <- chainToList <$> getStack
       let isMirageWand = \(Card{ card_aspect, card_suit }) -> card_aspect == Mirage && card_suit == Wand
-      let count = length . filter (\(StackCard{ stackcard_card }) -> isMirageWand stackcard_card) $ stack
+      let count = length . filter (\(StackCard{ stackcard_card }) -> isMirageWand stackcard_card) $ chain
       hurt ((count + 1) * 8) (other w) Slash
 
 
@@ -250,8 +251,8 @@ mirageCup =
 mirageCoin :: Card
 mirageCoin =
   Card Mirage Coin
-    "Return all cards on the wheel to hand"
-    $ \_ -> bounce (const True)
+    "Return all cards in the chain to hand"
+    $ \_ -> bounce (\_ _ -> True)
 
 
 -- Mirror
@@ -287,8 +288,10 @@ mirrorCup =
 mirrorCoin :: Card
 mirrorCoin =
   Card Mirror Coin
-    "Change the owner of all cards on the wheel"
-    $ \_ -> transmute (\(_, stackCard) -> Transmutation stackCard (changeOwner stackCard))
+    "Change the owner of all cards in the chain"
+    $ \_ ->
+      transmute $
+        \_ stackCard -> Just $ Transmutation stackCard (changeOwner stackCard)
 
 
 -- Alchemy
@@ -345,7 +348,7 @@ crownWand =
     "Discard your hand, then hurt for 5 for each card discarded"
     $ \w -> do
       handSize <- length <$> getHand w
-      discardHand w (const True)
+      discardHand w (\_ _ -> True)
       hurt (5 * handSize) (other w) Slash
 
 
@@ -371,54 +374,54 @@ crownCoin =
     "Discard next card for each card in your hand"
     $ \w -> do
       handLen <- length <$> getHand w
-      discardStack $ \(i, _) -> i < handLen
+      discardStack $ \i _ -> i < handLen
 
 
 -- Morph
 morphSword :: Card
 morphSword =
   Card Morph Sword
-    "Hurt for 7, then all MORPH cards on\nthe wheel become SWORDs"
+    "Hurt for 7, then all MORPH cards in\nthe chain become SWORDs"
     $ \w -> do
       hurt 7 (other w) Slash
       transmute $
-        \(_, stackCard) ->
+        \_ stackCard ->
           case stackCard of
             StackCard owner (Card{ card_aspect = Morph }) ->
-              Transmutation stackCard (StackCard owner morphSword)
+              Just $ Transmutation stackCard (StackCard owner morphSword)
             _ ->
-              NoTransmutation
+              Nothing
 
 
 morphWand :: Card
 morphWand =
   Card Morph Wand
-    "Hurt for 3 for each card on the wheel,\nthen all MORPH cards on the wheel\nbecome WANDs"
+    "Hurt for 3 for each card on the wheel,\nthen all MORPH cards in the chain\nbecome WANDs"
     $ \w -> do
       len <- length <$> getStack
       hurt (len * 3) (other w) Slash
       transmute $
-        \(_, stackCard) ->
+        \_ stackCard ->
           case stackCard of
             StackCard owner (Card{ card_aspect = Morph }) ->
-              Transmutation stackCard (StackCard owner morphWand)
+              Just $ Transmutation stackCard (StackCard owner morphWand)
             _ ->
-              NoTransmutation
+              Nothing
 
 
 morphCup :: Card
 morphCup =
   Card Morph Cup
-    "Heal for 8, then all MORPH cards on\nthe wheel become CUPs"
+    "Heal for 8, then all MORPH cards in\nthe chain become CUPs"
     $ \w -> do
       heal 8 w
       transmute $
-        \(_, stackCard) ->
+        \_ stackCard ->
           case stackCard of
             StackCard owner (Card{ card_aspect = Morph }) ->
-              Transmutation stackCard (StackCard owner morphCup)
+              Just $ Transmutation stackCard (StackCard owner morphCup)
             _ ->
-              NoTransmutation
+              Nothing
 
 
 morphCoin :: Card
@@ -448,86 +451,6 @@ strangeEnd =
   Card Strange (OtherSuit "END")
     "You're out of cards, hurt yourself for 10"
     $ \w -> hurt 10 w Slash
-
-
--- Experiments
---ritual :: Card
---ritual =
---  Card (OtherAspect "EXPERIMENT") (OtherSuit "Sword")
---    "If zone is dark hurt for 8, or if zone is light heal for 8"
---    $ \w -> do
---      rot <- getRot
---      if even rot then
---        hurt 8 (other w) Curse
---      else
---        heal 8 w
-
-
---unravel :: Card
---unravel =
---  Card
---    "Unravel"
---    "Discard cards on the wheel in dark zones"
---    "unravel.png"
---    OtherAspect
---    Coin
---    $ \_ -> do
---      rot <- getRot
---      discardStack $ \(i, _) -> odd (i + rot)
-
-
---respite :: Card
---respite =
---  Card
---    "Respite"
---    "Limbo the next 3 cards"
---    "respite.png"
---    OtherAspect
---    Coin
---    $ \_ -> do
---      limbo $ \(i, _) -> i < 3
-
-
---voidbeam :: Card
---voidbeam =
---  Card
---    "Voidbeam"
---    "Hurt for 10 for each card in limbo"
---    "voidbeam.png"
---    OtherAspect
---    Wand
---    $ \w -> do
---      l <- getLimbo
---      let dmg = 10 * length l
---      hurt dmg (other w) Slash
-
-
---feud :: Card
---feud =
---  Card
---    "Feud"
---    "Hurt for 2, limbo a copy of this card"
---    "feud.png"
---    OtherAspect
---    Sword
---    $ \w -> do
---      hurt 2 (other w) Slash
---      fabricate $ StackCard w feud
---      limbo $ \(i, _) -> i == 0
-
-
---inevitable :: Card
---inevitable =
---  Card
---    "Inevitable"
---    "Hurt for 1, limbo a copy of this card with double damage"
---    "inevitable.png"
---    OtherAspect
---    Sword
---    $ \w -> do
---      hurt 1 (other w) Slash
---      fabricate $ StackCard (other w) inevitable
---      limbo $ \(i, _) -> i == 0
 
 
 swords :: [Card]
