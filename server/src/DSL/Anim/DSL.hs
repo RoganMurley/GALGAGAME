@@ -18,8 +18,6 @@ data DSL a
   | Hurt WhichPlayer Life Hurt a
   | Heal WhichPlayer Life a
   | Draw WhichPlayer a
-  | Confound a
-  | Reverse a
   | Play WhichPlayer Card Int a
   | Transmute (Wheel (Maybe Transmutation)) a
   | Mill WhichPlayer Card a
