@@ -2,6 +2,7 @@
 module DSL.Alpha.Actions where
 
 import Card (Card)
+import Control.Applicative ((<|>))
 import Control.Monad.Free (MonadFree, liftF)
 import Control.Monad.Free.TH (makeFree)
 import Data.List (partition)
@@ -10,10 +11,10 @@ import Player (WhichPlayer(..), other)
 import Life (Life)
 import Model (Deck, Hand, Passes(..), Turn, maxHandLength)
 import Safe (headMay, tailSafe)
-import Stack (Stack, chainMap, modChain)
+import Stack (Stack, chainMap)
 import StackCard (StackCard(StackCard, stackcard_card), isOwner)
 import Transmutation (Transmutation(..))
-import Util (deleteIndex, indexedFilter, shuffle)
+import Util (deleteIndex, indexedFilter)
 import Wheel (Wheel(..))
 
 import qualified Stack
@@ -149,25 +150,32 @@ bounce func = do
   modHand PlayerB $ \h -> h ++ (stackcard_card <$> pbBouncing)
 
 
+moveStack :: (Int -> StackCard -> Maybe Int) -> Program ()
+moveStack f =
+  let
+    -- Stack with moved cards at their targets.
+    targetReduce :: (Maybe Int, Maybe StackCard) -> Stack -> Stack
+    targetReduce (Just i, mStackCard) stack = Stack.set stack i mStackCard
+    targetReduce (Nothing, _) stack         = stack
+  in
+    do
+      stack <- getStack
+      let moves = Stack.chainMap f stack
+      -- Stack with moved cards at their targets.
+      let targets = foldr targetReduce Stack.init ((,) <$> moves <*> stack) :: Stack
+      -- Stack with static cards only.
+      let statics = (*>) <$> moves <*> stack :: Stack
+      -- Stack with cards at their final positions.
+      let newStack = (<|>) <$> targets <*> statics :: Stack
+      setStack newStack
+
+
 discardStack :: (Int -> StackCard -> Bool) -> Program ()
 discardStack f = modStack $ Stack.chainFilter (\i c -> not $ f i c)
 
 
 discardHand :: WhichPlayer -> (Int -> Card -> Bool) -> Program ()
 discardHand w f = modHand w $ indexedFilter (\i c -> not $ f i c)
-
-
-confound :: Program ()
-confound = do
-  gen <- getGen
-  modStack $ modChain $ shuffle gen
-  return ()
-
-
-reversal :: Program ()
-reversal = do
-  modStack $ modChain reverse
-  return ()
 
 
 fabricate :: StackCard -> Program ()
