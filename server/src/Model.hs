@@ -6,7 +6,6 @@ import Life (Life)
 import Mirror (Mirror(..))
 import Player (WhichPlayer(..), other)
 import Stack (Stack)
-import StackCard (StackCard(..))
 import Util (Gen)
 
 
