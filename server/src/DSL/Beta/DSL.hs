@@ -20,8 +20,6 @@ data DSL n
   | Heal Life WhichPlayer n
   | Draw WhichPlayer WhichPlayer n
   | AddToHand WhichPlayer Card n
-  | Confound n
-  | Reverse n
   | Play WhichPlayer Card Int n
   | Transmute (Int -> StackCard -> Maybe Transmutation) n
   | Rotate n
@@ -30,6 +28,7 @@ data DSL n
   | Bounce (Int -> StackCard -> Bool) n
   | DiscardStack (Int -> StackCard -> Bool) n
   | DiscardHand WhichPlayer (Int -> Card -> Bool) n
+  | MoveStack (Int -> StackCard -> Maybe Int) n
   | GetDeck WhichPlayer (Deck -> n)
   | GetHand WhichPlayer (Hand -> n)
   | GetLife WhichPlayer (Life -> n)

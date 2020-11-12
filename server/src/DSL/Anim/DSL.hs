@@ -30,6 +30,7 @@ data DSL a
   | Bounce (Wheel (Maybe CardBounce)) a
   | DiscardStack (Wheel Bool) a
   | DiscardHand WhichPlayer [CardDiscard] a
+  | MoveStack (Wheel (Maybe Int)) a
   | Pass WhichPlayer a
   deriving (Functor)
 

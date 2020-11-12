@@ -166,7 +166,7 @@ shroomCoin :: Card
 shroomCoin =
   Card Shroom Coin
     "Reverse the order of all cards in the chain"
-    $ const Beta.reverse
+    $ const reversal
 
 
 -- Blood

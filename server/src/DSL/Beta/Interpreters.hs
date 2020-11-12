@@ -32,27 +32,26 @@ import {-# SOURCE #-} Cards (strangeEnd)
 
 
 alphaI :: Program a -> Alpha.Program a
-alphaI (Free (Raw p n))           = p                      >>  alphaI n
-alphaI (Free (Hurt d w _ n))      = Alpha.hurt d w         >>  alphaI n
-alphaI (Free (Heal h w n))        = Alpha.heal h w         >>  alphaI n
-alphaI (Free (Draw w d n))        = Alpha.draw w d         >>  alphaI n
-alphaI (Free (AddToHand w c n))   = Alpha.addToHand w c    >>  alphaI n
-alphaI (Free (Confound n))        = Alpha.confound         >>  alphaI n
-alphaI (Free (Reverse n))         = Alpha.reversal         >>  alphaI n
-alphaI (Free (Play w c i n))      = Alpha.play w c i       >>  alphaI n
-alphaI (Free (Transmute f n))     = Alpha.transmute f      >>  alphaI n
-alphaI (Free (Rotate n))          = Alpha.rotate           >>  alphaI n
-alphaI (Free (Windup n))          = Alpha.windup           >>  alphaI n
-alphaI (Free (Fabricate c n))     = Alpha.fabricate c      >>  alphaI n
-alphaI (Free (Bounce f n))        = Alpha.bounce f         >>  alphaI n
-alphaI (Free (DiscardStack f n))  = Alpha.discardStack f   >>  alphaI n
-alphaI (Free (DiscardHand w f n)) = Alpha.discardHand w f  >>  alphaI n
-alphaI (Free (GetGen f))          = Alpha.getGen           >>= alphaI . f
-alphaI (Free (GetRot f))          = Alpha.getRot           >>= alphaI . f
-alphaI (Free (GetLife w f))       = Alpha.getLife w        >>= alphaI . f
-alphaI (Free (GetHand w f))       = Alpha.getHand w        >>= alphaI . f
-alphaI (Free (GetDeck w f))       = Alpha.getDeck w        >>= alphaI . f
-alphaI (Free (GetStack f))        = Alpha.getStack         >>= alphaI . f
+alphaI (Free (Raw p n))           = p                     >>  alphaI n
+alphaI (Free (Hurt d w _ n))      = Alpha.hurt d w        >>  alphaI n
+alphaI (Free (Heal h w n))        = Alpha.heal h w        >>  alphaI n
+alphaI (Free (Draw w d n))        = Alpha.draw w d        >>  alphaI n
+alphaI (Free (AddToHand w c n))   = Alpha.addToHand w c   >>  alphaI n
+alphaI (Free (Play w c i n))      = Alpha.play w c i      >>  alphaI n
+alphaI (Free (Transmute f n))     = Alpha.transmute f     >>  alphaI n
+alphaI (Free (Rotate n))          = Alpha.rotate          >>  alphaI n
+alphaI (Free (Windup n))          = Alpha.windup          >>  alphaI n
+alphaI (Free (Fabricate c n))     = Alpha.fabricate c     >>  alphaI n
+alphaI (Free (Bounce f n))        = Alpha.bounce f        >>  alphaI n
+alphaI (Free (DiscardStack f n))  = Alpha.discardStack f  >>  alphaI n
+alphaI (Free (DiscardHand w f n)) = Alpha.discardHand w f >>  alphaI n
+alphaI (Free (MoveStack f n))     = Alpha.moveStack f     >>  alphaI n
+alphaI (Free (GetGen f))          = Alpha.getGen          >>= alphaI . f
+alphaI (Free (GetRot f))          = Alpha.getRot          >>= alphaI . f
+alphaI (Free (GetLife w f))       = Alpha.getLife w       >>= alphaI . f
+alphaI (Free (GetHand w f))       = Alpha.getHand w       >>= alphaI . f
+alphaI (Free (GetDeck w f))       = Alpha.getDeck w       >>= alphaI . f
+alphaI (Free (GetStack f))        = Alpha.getStack        >>= alphaI . f
 alphaI (Free (RawAnim _ n))       = alphaI n
 alphaI (Free (Null n))            = alphaI n
 alphaI (Pure x)                   = Pure x
@@ -65,8 +64,6 @@ basicAnim anim alphaProgram = toLeft alphaProgram <* (toRight . liftF $ anim)
 animI :: DSL a -> (Alpha.Program a -> AlphaAnimProgram a)
 animI (Null _)            = basicAnim $ Anim.Null ()
 animI (Hurt d w h _)      = basicAnim $ Anim.Hurt w d h ()
-animI (Confound _)        = basicAnim $ Anim.Confound ()
-animI (Reverse _)         = basicAnim $ Anim.Reverse ()
 animI (Rotate _)          = basicAnim $ Anim.Rotate ()
 animI (Windup _)          = basicAnim $ Anim.Windup ()
 animI (Fabricate c _)     = basicAnim $ Anim.Fabricate c ()
@@ -79,6 +76,7 @@ animI (Transmute f _)     = transmuteAnim f
 animI (Bounce f _)        = bounceAnim f
 animI (DiscardStack f _)  = discardStackAnim f
 animI (DiscardHand w f _) = discardHandAnim w f
+animI (MoveStack f _)     = moveStackAnim f
 animI _                   = toLeft
 
 
@@ -135,6 +133,15 @@ bounceAnim f alpha = do
   toRight . liftF $ Anim.Bounce bounces ()
   final <- toLeft alpha
   toRight . liftF $ Anim.Null ()
+  return final
+
+
+moveStackAnim :: (Int -> StackCard -> Maybe Int) -> Alpha.Program a -> AlphaAnimProgram a
+moveStackAnim f alpha = do
+  stack <- toLeft Alpha.getStack
+  let moves = chainMap f stack
+  final <- toLeft alpha
+  toRight . liftF $ Anim.MoveStack moves ()
   return final
 
 
