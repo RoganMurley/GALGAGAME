@@ -7,6 +7,8 @@ import Safe (atMay)
 import StackCard (StackCard(..))
 import Wheel (indexWheel, Wheel(..))
 
+import Debug.Trace (trace)
+
 import qualified Wheel
 
 
@@ -50,17 +52,16 @@ set stack _  _         = stack
 
 
 chainMask :: Stack -> Wheel Bool
-chainMask s = chainMask' s falseMask
+chainMask s = chainMask' s $ Wheel.init $ const False
   where
-    falseMask :: Wheel Bool
-    falseMask = Wheel.init $ const False
     chainMask' :: Stack -> Wheel Bool -> Wheel Bool
     chainMask' stack mask =
+      trace ("mask: " ++ show mask) $
       case wheel_0 stack of
         Just _ ->
           chainMask'
             (Wheel.back (stack { wheel_0 = Nothing } ))
-            (Wheel.fwrd (mask { wheel_0 = True }))
+            (Wheel.fwrd (mask { wheel_11 = True }))
         Nothing ->
           mask
 
@@ -99,9 +100,9 @@ modChain f stack = (<|>) <$> modded <*> stack
     modded = stackFromList $ f $ chainToList stack :: Stack
 
 
-
 rotate :: Stack -> Stack
 rotate stack = Wheel.fwrd $ stack { wheel_0 = Nothing }
+
 
 windup :: Stack -> Stack
 windup = Wheel.back

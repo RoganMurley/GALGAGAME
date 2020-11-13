@@ -108,8 +108,8 @@ binary f a b = Wheel
   }
 
 
-fwrd :: Wheel a -> Wheel a
-fwrd w = Wheel
+back :: Wheel a -> Wheel a
+back w = Wheel
   { wheel_0  = wheel_1 w
   , wheel_1  = wheel_2 w
   , wheel_2  = wheel_3 w
@@ -125,20 +125,20 @@ fwrd w = Wheel
   }
 
 
-back :: Wheel a -> Wheel a
-back w = Wheel
+fwrd :: Wheel a -> Wheel a
+fwrd w = Wheel
   { wheel_0  = wheel_11 w
-  , wheel_1  = wheel_10 w
-  , wheel_2  = wheel_9 w
-  , wheel_3  = wheel_8 w
-  , wheel_4  = wheel_7 w
-  , wheel_5  = wheel_6 w
+  , wheel_1  = wheel_0 w
+  , wheel_2  = wheel_1 w
+  , wheel_3  = wheel_2 w
+  , wheel_4  = wheel_3 w
+  , wheel_5  = wheel_4 w
   , wheel_6  = wheel_5 w
-  , wheel_7  = wheel_4 w
-  , wheel_8  = wheel_3 w
-  , wheel_9  = wheel_2 w
-  , wheel_10 = wheel_1 w
-  , wheel_11 = wheel_0 w
+  , wheel_7  = wheel_6 w
+  , wheel_8  = wheel_7 w
+  , wheel_9  = wheel_8 w
+  , wheel_10 = wheel_9 w
+  , wheel_11 = wheel_10 w
   }
 
 

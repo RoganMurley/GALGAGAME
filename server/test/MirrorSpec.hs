@@ -15,6 +15,7 @@ import Model (Model)
 import ModelDiff (ModelDiff)
 import StackCard (StackCard)
 import Stack (Stack)
+import Transmutation (Transmutation)
 
 import qualified Replay.Active as Active
 import qualified Replay.Final as Final
@@ -46,4 +47,5 @@ tests =
     , testGroup "Final.Replay"  $ coerce (prop :: PhantomTree Final.Replay)
     , testGroup "ModelDiff"     $ coerce (prop :: PhantomTree ModelDiff)
     , testGroup "Stack"         $ coerce (prop :: PhantomTree Stack)
+    , testGroup "Transmutation" $ coerce (prop :: PhantomTree Transmutation)
     ]
