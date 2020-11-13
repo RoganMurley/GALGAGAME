@@ -15,23 +15,37 @@ tests :: TestTree
 tests =
   testGroup "Stack"
     [ chainMaskTestCase
+    , chainLengthTestCase
     ]
 
 
-chainMaskTestCase :: TestTree
-chainMaskTestCase =
-  let
+stack :: Stack
+stack = Stack.stackFromList [stackCard, stackCard, stackCard, stackCard]
+  where
     stackCard :: StackCard
     stackCard = StackCard{
         stackcard_owner = PlayerA
       , stackcard_card = Cards.blazeSword
       }
-    stack :: Stack
-    stack = Stack.stackFromList [stackCard, stackCard, stackCard, stackCard]
-    actual :: Wheel Bool
-    actual = Stack.chainMask stack
-    expected :: Wheel Bool
-    expected = Wheel.init (\i -> i < 4)
+
+
+chainMaskTestCase :: TestTree
+chainMaskTestCase =
+  testCase "Chain mask" $
+    Stack.chainMask stack @?= Wheel.init (\i -> i < 4)
+
+
+chainFilterTestCase :: TestTree
+chainFilterTestCase =
+  let
+    expected :: Stack
+    expected = Stack.init { wheel_0 = wheel_0 stack, wheel_2 = wheel_2 stack }
   in
-    testCase "Chain mask" $ do
-      actual @?= expected
+  testCase "Chain filter" $
+    Stack.chainFilter (\i _ -> i `mod` 2 == 1) stack @?= expected
+
+
+chainLengthTestCase :: TestTree
+chainLengthTestCase =
+  testCase "Chain length" $
+    Stack.chainLength stack @?= 4

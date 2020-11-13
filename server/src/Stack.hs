@@ -101,8 +101,8 @@ modChain f stack = (<|>) <$> modded <*> stack
 
 
 rotate :: Stack -> Stack
-rotate stack = Wheel.fwrd $ stack { wheel_0 = Nothing }
+rotate stack = Wheel.back $ stack { wheel_0 = Nothing }
 
 
 windup :: Stack -> Stack
-windup = Wheel.back
+windup = Wheel.fwrd
