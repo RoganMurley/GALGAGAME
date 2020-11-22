@@ -2,12 +2,13 @@ module Bounce where
 
 import Data.Aeson (ToJSON(..), (.=), object)
 
-data CardBounce = BounceDiscard | BounceIndex Int
+data CardBounce = BounceDiscard | BounceIndex Int Int
   deriving (Show, Eq)
 
 instance ToJSON CardBounce where
   toJSON BounceDiscard = "bounceDiscard"
-  toJSON (BounceIndex handIndex) =
+  toJSON (BounceIndex stackIndex handIndex) =
     object [
-      "handIndex" .= handIndex
+      "handIndex"  .= handIndex
+    , "stackIndex" .= stackIndex
     ]

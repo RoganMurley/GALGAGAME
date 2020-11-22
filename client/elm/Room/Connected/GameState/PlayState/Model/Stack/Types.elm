@@ -1,6 +1,7 @@
 module Stack.Types exposing (Stack, StackCard)
 
 import Card.Types exposing (Card)
+import Wheel.Types exposing (Wheel)
 import WhichPlayer.Types exposing (WhichPlayer)
 
 
@@ -11,4 +12,4 @@ type alias StackCard =
 
 
 type alias Stack =
-    List StackCard
+    Wheel (Maybe StackCard)

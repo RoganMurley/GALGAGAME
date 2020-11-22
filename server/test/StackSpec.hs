@@ -32,7 +32,7 @@ stack = Stack.stackFromList [stackCard, stackCard, stackCard, stackCard]
 chainMaskTestCase :: TestTree
 chainMaskTestCase =
   testCase "Chain mask" $
-    Stack.chainMask stack @?= Wheel.init (\i -> i < 4)
+    Stack.chainMask stack @?= Wheel.init (\i -> (i > 0) && (i < 4))
 
 
 chainFilterTestCase :: TestTree
@@ -48,4 +48,4 @@ chainFilterTestCase =
 chainLengthTestCase :: TestTree
 chainLengthTestCase =
   testCase "Chain length" $
-    Stack.chainLength stack @?= 4
+    Stack.chainLength stack @?= 3

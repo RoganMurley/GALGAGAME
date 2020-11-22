@@ -1,4 +1,4 @@
-module Util exposing (authLocation, interp, interp2D, interpFloat, message, portProtocol, px, splitOnColon, to3d, zip)
+module Util exposing (authLocation, curry, interp, interp2D, interpFloat, message, portProtocol, px, splitOnColon, to3d, uncurry, zip)
 
 import Main.Types exposing (Flags)
 import Math.Vector2 exposing (Vec2)
@@ -79,3 +79,13 @@ interpFloat t start end =
 to3d : Vec2 -> Vec3
 to3d pos =
     vec3 (Math.Vector2.getX pos) (Math.Vector2.getY pos) 0
+
+
+curry : (( a, b ) -> c) -> a -> b -> c
+curry f a b =
+    f ( a, b )
+
+
+uncurry : (a -> b -> c) -> ( a, b ) -> c
+uncurry f ( a, b ) =
+    f a b

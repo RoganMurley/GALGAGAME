@@ -3,7 +3,8 @@ module Animation.State exposing (animMaxTick, animShake, getPlayerBounceCards, p
 import Animation.Types exposing (Anim(..), Bounce(..), HandBounce)
 import Ease
 import Stack.Types exposing (Stack, StackCard)
-import Util exposing (zip)
+import Wheel.State as Wheel
+import Wheel.Types exposing (Wheel)
 import WhichPlayer.Types exposing (WhichPlayer(..))
 
 
@@ -28,22 +29,12 @@ animShake anim which tick =
     mag * (toFloat <| modBy 20 (ceiling tick * 1247823748932 + 142131))
 
 
-
--- - 10
-
-
 animMaxTick : Anim -> Float
 animMaxTick anim =
     1.5
         * (case anim of
             Draw _ ->
                 250.0
-
-            Reverse _ ->
-                750.0
-
-            Confound _ ->
-                750.0
 
             Play _ _ _ _ ->
                 300.0
@@ -69,17 +60,14 @@ animMaxTick anim =
             DiscardHand _ _ ->
                 400.0
 
-            Limbo _ ->
-                750.0
-
-            Unlimbo _ ->
-                750.0
-
             Hurt _ _ _ ->
                 400.0
 
             Heal _ _ ->
                 400.0
+
+            MoveStack _ time ->
+                toFloat time
 
             _ ->
                 400.0
@@ -108,9 +96,6 @@ progress anim tick =
                 Rotate _ ->
                     Ease.inQuad
 
-                Confound _ ->
-                    Ease.linear
-
                 Windup _ ->
                     Ease.outBounce
 
@@ -120,29 +105,34 @@ progress anim tick =
     easingFunction (tick / maxTick)
 
 
-getPlayerBounceCards : WhichPlayer -> List Bounce -> Stack -> List HandBounce
+getPlayerBounceCards : WhichPlayer -> Wheel (Maybe Bounce) -> Stack -> List HandBounce
 getPlayerBounceCards w bounces stack =
     let
-        makeBounce : ( Bounce, StackCard ) -> Maybe HandBounce
-        makeBounce ( bounce, { owner, card } ) =
-            if owner == w then
-                case bounce of
-                    BounceIndex stackIndex handIndex ->
-                        Just
-                            { stackIndex = stackIndex
-                            , handIndex = handIndex
-                            , card = card
-                            }
+        makeBounce : ( Maybe Bounce, Maybe StackCard ) -> Maybe HandBounce
+        makeBounce input =
+            case input of
+                ( Just bounce, Just { owner, card } ) ->
+                    if owner == w then
+                        case bounce of
+                            BounceIndex stackIndex handIndex ->
+                                Just
+                                    { stackIndex = stackIndex
+                                    , handIndex = handIndex
+                                    , card = card
+                                    }
 
-                    NoBounce _ ->
+                            BounceDiscard ->
+                                Nothing
+
+                    else
                         Nothing
 
-                    BounceDiscard ->
-                        Nothing
-
-            else
-                Nothing
+                _ ->
+                    Nothing
     in
     List.filterMap identity <|
-        List.map makeBounce <|
-            zip bounces stack
+        Wheel.toList <|
+            Wheel.map makeBounce <|
+                Wheel.apply
+                    (Wheel.map (\x y -> ( x, y )) bounces)
+                    stack

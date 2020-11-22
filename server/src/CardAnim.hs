@@ -8,7 +8,6 @@ import Discard (CardDiscard)
 import Life (Life)
 import Mirror (Mirror(..))
 import Player (WhichPlayer(..), other)
-import StackCard (StackCard)
 import Transmutation (Transmutation)
 import Wheel (Wheel)
 
@@ -23,11 +22,10 @@ data CardAnim
   | GameEnd (Maybe WhichPlayer)
   | Rotate
   | Windup
-  | Fabricate StackCard
   | Bounce (Wheel (Maybe CardBounce))
   | DiscardStack (Wheel Bool)
   | DiscardHand WhichPlayer [CardDiscard]
-  | MoveStack (Wheel (Maybe Int))
+  | MoveStack (Wheel (Maybe Int)) Int
   | Pass WhichPlayer
   deriving (Show, Eq)
 
@@ -86,12 +84,6 @@ instance ToJSON CardAnim where
     [ "name"   .= ("windup" :: Text)
     , "player" .= PlayerA
     ]
-  toJSON (Fabricate stackCard) =
-    object
-    [ "name"      .= ("fabricate" :: Text)
-    , "player"    .= PlayerA
-    , "stackCard" .= stackCard
-    ]
   toJSON (Bounce b) =
     object
     [ "name"   .= ("bounce" :: Text)
@@ -110,11 +102,12 @@ instance ToJSON CardAnim where
     , "player"  .= w
     , "discard" .= d
     ]
-  toJSON (MoveStack m) =
+  toJSON (MoveStack m t) =
     object
     [ "name"   .= ("moveStack" :: Text)
     , "player" .= PlayerA
     , "moves"  .= m
+    , "time"  .= t
     ]
   toJSON (Pass w) =
     object
@@ -133,11 +126,10 @@ instance Mirror CardAnim where
   mirror (Mill w c)        = Mill (other w) c
   mirror Rotate            = Rotate
   mirror Windup            = Windup
-  mirror (Fabricate c)     = Fabricate (mirror c)
   mirror (Bounce b)        = Bounce b
   mirror (DiscardStack d)  = DiscardStack d
   mirror (DiscardHand w d) = DiscardHand (other w) d
-  mirror (MoveStack m)     = MoveStack m
+  mirror (MoveStack m t)   = MoveStack m t
   mirror (Pass w)          = Pass (other w)
 
 

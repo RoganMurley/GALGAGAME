@@ -7,7 +7,6 @@ import CardAnim (CardAnim, Hurt)
 import Discard (CardDiscard)
 import Life (Life)
 import Player (WhichPlayer)
-import StackCard (StackCard)
 import Transmutation (Transmutation)
 import Wheel (Wheel)
 
@@ -24,11 +23,10 @@ data DSL a
   | GameEnd (Maybe WhichPlayer) a
   | Rotate a
   | Windup a
-  | Fabricate StackCard a
   | Bounce (Wheel (Maybe CardBounce)) a
   | DiscardStack (Wheel Bool) a
   | DiscardHand WhichPlayer [CardDiscard] a
-  | MoveStack (Wheel (Maybe Int)) a
+  | MoveStack (Wheel (Maybe Int)) Int a
   | Pass WhichPlayer a
   deriving (Functor)
 

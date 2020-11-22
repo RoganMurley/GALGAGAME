@@ -26,7 +26,7 @@ decoder =
     Json.map7 Diff
         (maybe <| field "handPA" <| list Card.decoder)
         (maybe <| field "handPB" int)
-        (maybe <| field "stack" <| list Stack.stackCardDecoder)
+        (maybe <| field "stack" Stack.decoder)
         (maybe <| field "turn" WhichPlayer.decoder)
         (maybe <| field "lifePA" int)
         (maybe <| field "lifePB" int)

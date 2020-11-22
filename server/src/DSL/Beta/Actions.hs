@@ -35,21 +35,22 @@ transmuteHead :: (StackCard -> StackCard) -> Program ()
 transmuteHead f = transmute transmuter
   where
     transmuter :: Int -> StackCard -> Maybe Transmutation
-    transmuter 0 sc = Just $ Transmutation sc (f sc)
+    transmuter 1 sc = Just $ Transmutation sc (f sc)
     transmuter _ _  = Nothing
+
 
 confound :: Program ()
 confound = do
   gen <- getGen
   stack <- getStack
-  let chain = fst <$> zip [0..] (Stack.chainToList stack) :: [Int]
+  let chain = fst <$> zip [1..] (Stack.chainToList stack) :: [Int]
   let shuffled = shuffle gen chain :: [Int]
-  moveStack (\i _ -> atMay shuffled i)
+  moveStack (\i _ -> if i > 0 then atMay shuffled (i - 1) else Nothing) 750
   return ()
 
 
 reversal :: Program ()
 reversal = do
-  stackLen <- length <$> getStack
-  moveStack (\i _ -> Just $ stackLen - 1 - i)
+  chainLen <- Stack.chainLength <$> getStack
+  moveStack (\i _ -> if i > 0 then Just (chainLen - i + 1) else Nothing) 750
   return ()

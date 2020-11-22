@@ -1,4 +1,4 @@
-module Card.View exposing (backDissolvingView, backView, dissolvingView, fabricatingView, limboingView, transmutingView, view)
+module Card.View exposing (backDissolvingView, backView, dissolvingView, transmutingView, view)
 
 import Animation.Types exposing (Anim(..))
 import Card.Types as Card
@@ -86,58 +86,6 @@ backView { camera3d, perspective, textures } { position, rotation, scale } =
             ]
 
 
-limboingView : Context -> Card.Entity a -> List WebGL.Entity
-limboingView ctx { position, rotation, scale, card, owner } =
-    let
-        { perspective, camera3d, anim, textures } =
-            ctx
-
-        progress =
-            case anim of
-                Limbo _ ->
-                    1 - ctx.progress
-
-                Unlimbo _ ->
-                    ctx.progress
-
-                _ ->
-                    0
-    in
-    Texture.with3 textures card.imgURL "cardOutline.png" "cardBack.png" <|
-        \texture outlineTexture backTexture ->
-            [ Render.Primitives.quad Render.Shaders.fragmentAlpha <|
-                { texture = backTexture
-                , rotation = Quaternion.makeRotate rotation
-                , scale = makeScale scale
-                , color = Colour.card owner
-                , pos = position
-                , perspective = perspective
-                , camera = camera3d
-                , alpha = progress
-                }
-            , Render.Primitives.quad Render.Shaders.fragmentAlpha <|
-                { texture = outlineTexture
-                , rotation = Quaternion.makeRotate rotation
-                , scale = makeScale scale
-                , color = Colour.white
-                , pos = position
-                , perspective = perspective
-                , camera = camera3d
-                , alpha = progress
-                }
-            , Render.Primitives.quad Render.Shaders.fragmentAlpha <|
-                { texture = texture
-                , rotation = Quaternion.makeRotate rotation
-                , scale = makeScale <| Vector3.scale 0.6 scale
-                , color = Colour.white
-                , pos = position
-                , perspective = perspective
-                , camera = camera3d
-                , alpha = progress
-                }
-            ]
-
-
 dissolvingView : Context -> Card.Entity a -> List WebGL.Entity
 dissolvingView ctx { position, rotation, scale, card, owner } =
     let
@@ -182,48 +130,49 @@ dissolvingView ctx { position, rotation, scale, card, owner } =
             ]
 
 
-fabricatingView : Context -> Card.Entity a -> List WebGL.Entity
-fabricatingView ctx { position, rotation, scale, card, owner } =
-    let
-        { perspective, camera3d, progress, textures } =
-            ctx
-    in
-    Texture.with4 textures card.imgURL "cardBack.png" "cardOutline.png" "noise.png" <|
-        \texture backTexture outlineTexture noise ->
-            [ Render.Primitives.quad Render.Shaders.disintegrate <|
-                { texture = backTexture
-                , noise = noise
-                , rotation = Quaternion.makeRotate rotation
-                , scale = makeScale scale
-                , color = Colour.card owner
-                , pos = position
-                , perspective = perspective
-                , camera = camera3d
-                , time = 1 - progress
-                }
-            , Render.Primitives.quad Render.Shaders.disintegrate <|
-                { texture = outlineTexture
-                , noise = noise
-                , rotation = Quaternion.makeRotate rotation
-                , scale = makeScale scale
-                , color = Colour.white
-                , pos = position
-                , perspective = perspective
-                , camera = camera3d
-                , time = 1 - progress
-                }
-            , Render.Primitives.quad Render.Shaders.disintegrate <|
-                { texture = texture
-                , noise = noise
-                , rotation = Quaternion.makeRotate rotation
-                , scale = makeScale <| Vector3.scale 0.6 scale
-                , color = Colour.white
-                , pos = position
-                , perspective = perspective
-                , camera = camera3d
-                , time = 1 - progress
-                }
-            ]
+
+-- fabricatingView : Context -> Card.Entity a -> List WebGL.Entity
+-- fabricatingView ctx { position, rotation, scale, card, owner } =
+--     let
+--         { perspective, camera3d, progress, textures } =
+--             ctx
+--     in
+--     Texture.with4 textures card.imgURL "cardBack.png" "cardOutline.png" "noise.png" <|
+--         \texture backTexture outlineTexture noise ->
+--             [ Render.Primitives.quad Render.Shaders.disintegrate <|
+--                 { texture = backTexture
+--                 , noise = noise
+--                 , rotation = Quaternion.makeRotate rotation
+--                 , scale = makeScale scale
+--                 , color = Colour.card owner
+--                 , pos = position
+--                 , perspective = perspective
+--                 , camera = camera3d
+--                 , time = 1 - progress
+--                 }
+--             , Render.Primitives.quad Render.Shaders.disintegrate <|
+--                 { texture = outlineTexture
+--                 , noise = noise
+--                 , rotation = Quaternion.makeRotate rotation
+--                 , scale = makeScale scale
+--                 , color = Colour.white
+--                 , pos = position
+--                 , perspective = perspective
+--                 , camera = camera3d
+--                 , time = 1 - progress
+--                 }
+--             , Render.Primitives.quad Render.Shaders.disintegrate <|
+--                 { texture = texture
+--                 , noise = noise
+--                 , rotation = Quaternion.makeRotate rotation
+--                 , scale = makeScale <| Vector3.scale 0.6 scale
+--                 , color = Colour.white
+--                 , pos = position
+--                 , perspective = perspective
+--                 , camera = camera3d
+--                 , time = 1 - progress
+--                 }
+--             ]
 
 
 transmutingView : Context -> StackCard -> StackCard -> Card.Entity a -> List WebGL.Entity

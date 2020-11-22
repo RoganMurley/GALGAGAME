@@ -7,8 +7,6 @@ import Safe (atMay)
 import StackCard (StackCard(..))
 import Wheel (indexWheel, Wheel(..))
 
-import Debug.Trace (trace)
-
 import qualified Wheel
 
 
@@ -56,12 +54,11 @@ chainMask s = chainMask' s $ Wheel.init $ const False
   where
     chainMask' :: Stack -> Wheel Bool -> Wheel Bool
     chainMask' stack mask =
-      trace ("mask: " ++ show mask) $
-      case wheel_0 stack of
+      case wheel_1 stack of
         Just _ ->
           chainMask'
-            (Wheel.back (stack { wheel_0 = Nothing } ))
-            (Wheel.fwrd (mask { wheel_11 = True }))
+            (Wheel.back (stack { wheel_1 = Nothing } ))
+            (Wheel.fwrd (mask { wheel_0 = True }))
         Nothing ->
           mask
 
@@ -82,7 +79,19 @@ chainMap f stack = chainOnlyF <$> chainMask stack <*> indexWheel <*> stack
 
 
 chainFilter :: (Int -> StackCard -> Bool) -> Stack -> Stack
-chainFilter f = Stack.chainMap $ \i c -> if f i c then Just c else Nothing
+chainFilter f stack =
+  let
+    -- Everything in the chain is in a Just, everything outside is a bare Nothing.
+    filtered :: Wheel (Maybe (Maybe StackCard))
+    filtered = Stack.chainMap (\i c -> Just $ if f i c then Just c else Nothing) stack
+    -- If we're outside the chain stay as is, if inside the chain filter out.
+    combiner :: Maybe StackCard -> Maybe (Maybe StackCard) -> Maybe StackCard
+    combiner mSc Nothing          = mSc
+    combiner _   (Just Nothing)   = Nothing
+    combiner _   (Just (Just sc)) = Just sc
+  in
+    combiner <$> stack <*> filtered
+
 
 
 chainToList :: Stack -> [StackCard]
@@ -101,7 +110,7 @@ modChain f stack = (<|>) <$> modded <*> stack
 
 
 rotate :: Stack -> Stack
-rotate stack = Wheel.back $ stack { wheel_0 = Nothing }
+rotate = Wheel.back
 
 
 windup :: Stack -> Stack
