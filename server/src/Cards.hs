@@ -5,7 +5,7 @@ import CardAnim (Hurt(..))
 import Card (Aspect(..), Card(..), Suit(..))
 import Player (other)
 import Safe (headMay)
-import Stack (chainToList)
+import Stack (chainLength, chainToList)
 import StackCard (StackCard(..), changeOwner)
 import Transmutation (Transmutation(..))
 import Util (shuffle)
@@ -28,7 +28,7 @@ blazeWand =
   Card Blaze Wand
     "Hurt for 5 for each other card in the chain"
     $ \w -> do
-      len <- length . chainToList <$> getStack
+      len <- chainLength <$> getStack
       hurt (len * 5) (other w) Slash
 
 
@@ -64,7 +64,7 @@ heavenWand =
   Card Heaven Wand
     "Hurt for 4 for each other card in the chain"
     $ \w -> do
-      len <- length . chainToList <$> getStack
+      len <- chainLength <$> getStack
       hurt (len * 4) (other w) Slash
 
 
@@ -141,7 +141,7 @@ shroomWand =
   Card Shroom Wand
     "Lifesteal for 3 for each other card\nin the chain"
     $ \w -> do
-      len <- length . chainToList <$> getStack
+      len <- chainLength <$> getStack
       lifesteal (len * 3) (other w)
 
 
@@ -236,16 +236,18 @@ mirageWand =
 mirageCup :: Card
 mirageCup =
   Card Mirage Cup
-    "Play a copy of a random card in your hand"
+    "Become a copy of a random card in your hand"
     $ \w -> do
       gen <- getGen
       hand <- getHand w
-      let mCard = headMay . (shuffle gen) $ hand
-      case mCard of
-        Just c ->
-          fabricate $ StackCard w c
+      let mCopyCard = headMay . (shuffle gen) $ hand
+      case mCopyCard of
+        Just copyCard -> do
+          let stackCard = StackCard{ stackcard_card = copyCard, stackcard_owner = w }
+          transmuteActive (\_ -> Just stackCard)
+          (card_eff copyCard) (stackcard_owner stackCard)
         Nothing ->
-          Beta.null
+         return ()
 
 
 mirageCoin :: Card
@@ -398,7 +400,7 @@ morphWand =
   Card Morph Wand
     "Hurt for 3 for each card on the wheel,\nthen all MORPH cards in the chain\nbecome WANDs"
     $ \w -> do
-      len <- length <$> getStack
+      len <- chainLength <$> getStack
       hurt (len * 3) (other w) Slash
       transmute $
         \_ stackCard ->

@@ -127,7 +127,6 @@ instance Arbitrary CardAnim where
     , GameEnd <$> arbitrary
     , pure Rotate
     , pure Windup
-    , Fabricate <$> arbitrary
     , Bounce <$> arbitrary
     , DiscardStack <$> arbitrary
     , DiscardHand <$> arbitrary <*> arbitrary

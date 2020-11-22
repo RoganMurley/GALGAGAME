@@ -48,7 +48,7 @@ view { w, h } game assets =
             [ Background.radialView vfx
             , lifeOrbView
             , Wave.view
-            , Stack.wheelView entities.wheel
+            , Stack.wheelBgView entities.wheel
             , Stack.view entities.stack
             , focusImageView focus
             , Hand.view entities.hand holding

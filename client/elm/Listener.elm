@@ -67,9 +67,6 @@ animSfx anim =
         Draw _ ->
             Just "draw.mp3"
 
-        Reverse _ ->
-            Just "reverse.mp3"
-
         Play _ _ _ _ ->
             Just "playCard.mp3"
 

@@ -2,7 +2,9 @@ module Vfx.State exposing (init, tick)
 
 import Ease
 import Game.Types exposing (Context)
+import Maybe.Extra as Maybe
 import Vfx.Types exposing (Model)
+import Wheel.State as Wheel
 
 
 init : Model
@@ -14,7 +16,7 @@ tick : Float -> Model -> Context -> Model
 tick dt model ctx =
     let
         risk =
-            (toFloat <| List.length ctx.model.stack)
+            (toFloat <| List.length <| Maybe.values <| Wheel.toList ctx.model.stack)
                 / 12
 
         targetBrightness =

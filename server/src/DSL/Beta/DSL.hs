@@ -22,13 +22,13 @@ data DSL n
   | AddToHand WhichPlayer Card n
   | Play WhichPlayer Card Int n
   | Transmute (Int -> StackCard -> Maybe Transmutation) n
+  | TransmuteActive (StackCard -> Maybe StackCard) n
   | Rotate n
   | Windup n
-  | Fabricate StackCard n
   | Bounce (Int -> StackCard -> Bool) n
   | DiscardStack (Int -> StackCard -> Bool) n
   | DiscardHand WhichPlayer (Int -> Card -> Bool) n
-  | MoveStack (Int -> StackCard -> Maybe Int) n
+  | MoveStack (Int -> StackCard -> Maybe Int) Int n
   | GetDeck WhichPlayer (Deck -> n)
   | GetHand WhichPlayer (Hand -> n)
   | GetLife WhichPlayer (Life -> n)

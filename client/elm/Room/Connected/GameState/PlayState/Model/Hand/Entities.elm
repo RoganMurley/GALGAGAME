@@ -169,7 +169,7 @@ entities hover ({ anim, model, progress } as ctx) =
                         makeBounceEntity { handIndex, stackIndex, card } =
                             let
                                 stackEntity =
-                                    Stack.Entities.stackEntity ctx (List.length model.stack) stackIndex
+                                    Stack.Entities.stackEntity ctx stackIndex
                             in
                             { owner = PlayerA
                             , card = card
@@ -298,7 +298,7 @@ otherEntities hover ({ anim, model, progress } as ctx) =
                         makeBounceEntity { stackIndex, handIndex } =
                             let
                                 stackEntity =
-                                    Stack.Entities.stackEntity ctx (List.length model.stack) stackIndex
+                                    Stack.Entities.stackEntity ctx stackIndex
                             in
                             { position =
                                 interp progress

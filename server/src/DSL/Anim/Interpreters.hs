@@ -18,11 +18,10 @@ next (Mill _ _ n)        = n
 next (GameEnd _ n)       = n
 next (Rotate n)          = n
 next (Windup n)          = n
-next (Fabricate _ n)     = n
 next (Bounce _ n)        = n
 next (DiscardStack _ n)  = n
 next (DiscardHand _ _ n) = n
-next (MoveStack _ n)     = n
+next (MoveStack _ _ n)   = n
 next (Pass _ n)          = n
 
 
@@ -38,9 +37,8 @@ animate (Mill w c _)        = Just $ CardAnim.Mill w c
 animate (GameEnd w _)       = Just $ CardAnim.GameEnd w
 animate (Rotate _)          = Just $ CardAnim.Rotate
 animate (Windup _)          = Just $ CardAnim.Windup
-animate (Fabricate c _)     = Just $ CardAnim.Fabricate c
 animate (Bounce b _)        = Just $ CardAnim.Bounce b
 animate (DiscardStack d _)  = Just $ CardAnim.DiscardStack d
 animate (DiscardHand w d _) = Just $ CardAnim.DiscardHand w d
-animate (MoveStack m _)     = Just $ CardAnim.MoveStack m
+animate (MoveStack m t _)   = Just $ CardAnim.MoveStack m t
 animate (Pass w _)          = Just $ CardAnim.Pass w
