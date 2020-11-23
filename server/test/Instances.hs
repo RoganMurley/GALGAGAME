@@ -49,7 +49,7 @@ instance Arbitrary Card where
 
 
 instance Arbitrary Model where
-  arbitrary = Model <$> arbitrary <*> arbitrary <*> arbitrary <*> arbitrary <*> arbitrary <*> arbitrary <*> arbitrary
+  arbitrary = Model <$> arbitrary <*> arbitrary <*> arbitrary <*> arbitrary <*> arbitrary <*> arbitrary <*> arbitrary <*> arbitrary
 
 
 instance CoArbitrary Model where
@@ -110,7 +110,7 @@ instance Arbitrary Final.Replay where
 
 
 instance Arbitrary ModelDiff where
-  arbitrary = ModelDiff <$> arbitrary <*> arbitrary <*> arbitrary <*> arbitrary <*> arbitrary <*> arbitrary <*> arbitrary
+  arbitrary = ModelDiff <$> arbitrary <*> arbitrary <*> arbitrary <*> arbitrary <*> arbitrary <*> arbitrary <*> arbitrary <*> arbitrary
 
 
 instance Arbitrary PlayerModelDiff where
@@ -130,7 +130,7 @@ instance Arbitrary CardAnim where
     , Bounce <$> arbitrary
     , DiscardStack <$> arbitrary
     , DiscardHand <$> arbitrary <*> arbitrary
-    , MoveStack <$> arbitrary
+    , MoveStack <$> arbitrary <*> arbitrary
     , Pass <$> arbitrary
     ]
 
@@ -153,7 +153,7 @@ instance Arbitrary Transmutation where
 instance Arbitrary CardBounce where
   arbitrary = oneof
     [ pure BounceDiscard
-    , BounceIndex <$> arbitrary
+    , BounceIndex <$> arbitrary <*> arbitrary
     ]
 
 
@@ -165,4 +165,4 @@ instance Arbitrary CardDiscard where
 
 
 instance Arbitrary ResolveData where
-  arbitrary = ResolveData <$> arbitrary <*> arbitrary <*> arbitrary <*> arbitrary
+  arbitrary = ResolveData <$> arbitrary <*> arbitrary <*> arbitrary
