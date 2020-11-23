@@ -1,17 +1,16 @@
 module Stack.Entities exposing (baseDistance, baseRotation, entities, stackEntity, wheelEntities)
 
-import Animation.Types exposing (Anim(..), Bounce(..), CardDiscard(..), CardLimbo(..))
-import Array
+import Animation.Types exposing (Anim(..), Bounce(..), CardDiscard(..))
 import Card.State as Card
 import Game.Entity as Game
 import Game.Types exposing (Context, StackEntity, WheelEntity)
 import Math.Matrix4 exposing (rotate)
 import Math.Vector3 exposing (Vec3, vec3)
+import Maybe.Extra as Maybe
 import Quaternion exposing (Quaternion)
-import Random
-import Random.List
 import Stack.Types exposing (Stack, StackCard)
 import Util exposing (interpFloat)
+import Wheel.State as Wheel
 
 
 baseDistance : Float
@@ -32,7 +31,7 @@ segmentAngle =
 entities : Context -> List StackEntity
 entities ctx =
     let
-        { anim, model, progress, stackCard } =
+        { anim, model } =
             ctx
 
         finalStack =
@@ -42,70 +41,25 @@ entities ctx =
         stack =
             case anim of
                 Play _ _ _ _ ->
-                    List.drop 1 finalStack
-
-                Rotate _ ->
-                    case stackCard of
-                        Just c ->
-                            c :: finalStack
-
-                        Nothing ->
-                            finalStack
-
-                Confound _ ->
-                    let
-                        generator : Random.Generator Stack
-                        generator =
-                            Random.List.shuffle finalStack
-
-                        -- We get a new seed each 20% of the animation's progress.
-                        -- So we shuffle the list 5 times.
-                        seed : Random.Seed
-                        seed =
-                            Random.initialSeed <| floor <| progress / 0.2
-
-                        ( shuffledStack, _ ) =
-                            Random.step generator seed
-                    in
-                    shuffledStack
+                    { finalStack | wheel0 = Nothing }
 
                 _ ->
                     finalStack
-
-        mainEntities =
-            List.indexedMap
-                (stackCardEntity ctx (List.length stack))
-                stack
-
-        extraEntities =
-            case anim of
-                Rotate _ ->
-                    []
-
-                _ ->
-                    case stackCard of
-                        Just { owner, card } ->
-                            [ { owner = owner
-                              , card = card
-                              , index = -1
-                              , position = vec3 0 baseDistance 0
-                              , rotation = baseRotation
-                              , scale = Card.scale
-                              }
-                            ]
-
-                        Nothing ->
-                            []
     in
-    mainEntities ++ extraEntities
+    Maybe.values <|
+        Wheel.toList <|
+            Wheel.map (\( i, mSc ) -> Maybe.map (stackCardEntity ctx i) mSc) <|
+                Wheel.apply
+                    (Wheel.map (\x y -> ( x, y )) Wheel.indexed)
+                    stack
 
 
-stackCardEntity : Context -> Int -> Int -> StackCard -> StackEntity
-stackCardEntity ctx finalStackLen finalIndex { card, owner } =
+stackCardEntity : Context -> Int -> StackCard -> StackEntity
+stackCardEntity ctx finalIndex { card, owner } =
     let
         entity : Game.Entity3D {}
         entity =
-            stackEntity ctx finalStackLen finalIndex
+            stackEntity ctx finalIndex
     in
     { owner = owner
     , card = card
@@ -116,8 +70,8 @@ stackCardEntity ctx finalStackLen finalIndex { card, owner } =
     }
 
 
-stackEntity : Context -> Int -> Int -> Game.Entity3D {}
-stackEntity ctx finalStackLen finalIndex =
+stackEntity : Context -> Int -> Game.Entity3D {}
+stackEntity ctx finalIndex =
     let
         { anim, progress } =
             ctx
@@ -125,86 +79,36 @@ stackEntity ctx finalStackLen finalIndex =
         finalI : Float
         finalI =
             case anim of
-                Bounce bounces ->
-                    case Array.get finalIndex <| Array.fromList bounces of
-                        Just (NoBounce bounceIndex) ->
-                            toFloat bounceIndex + 1.0
+                MoveStack moves _ ->
+                    case Wheel.get finalIndex moves |> Maybe.join of
+                        Just moveIndex ->
+                            toFloat moveIndex
 
                         _ ->
-                            toFloat finalIndex + 1.0
+                            toFloat finalIndex
 
-                DiscardStack discards ->
-                    case Array.get finalIndex <| Array.fromList discards of
-                        Just (NoDiscard discardIndex) ->
-                            toFloat discardIndex + 1.0
-
-                        _ ->
-                            toFloat finalIndex + 1.0
-
-                Limbo limbos ->
-                    case Array.get finalIndex <| Array.fromList limbos of
-                        Just (NoLimbo limboIndex) ->
-                            toFloat limboIndex + 1.0
-
-                        _ ->
-                            toFloat finalIndex + 1.0
+                Rotate _ ->
+                    toFloat finalIndex + 1
 
                 _ ->
-                    toFloat finalIndex + 1.0
+                    toFloat finalIndex
 
         i : Float
         i =
             case anim of
-                Reverse _ ->
-                    if finalI == 0 then
-                        0
-
-                    else
-                        1.0 + toFloat stackLen - finalI
-
-                Fabricate _ ->
-                    if finalI > 1 then
-                        finalI - 1
-
-                    else
-                        finalI
-
-                Bounce _ ->
-                    toFloat finalIndex + 1.0
-
-                DiscardStack _ ->
-                    toFloat finalIndex + 1.0
-
-                Limbo _ ->
-                    toFloat finalIndex + 1.0
-
-                _ ->
+                Rotate _ ->
                     finalI
 
-        stackLen : Int
-        stackLen =
-            case anim of
-                Fabricate _ ->
-                    finalStackLen - 1
-
                 _ ->
-                    finalStackLen
+                    toFloat finalIndex
 
         distance : Float
         distance =
             case anim of
                 DiscardStack discards ->
-                    case Array.get finalIndex <| Array.fromList discards of
-                        Just CardDiscard ->
+                    case Wheel.get finalIndex discards of
+                        Just True ->
                             baseDistance + toFloat (12 - finalIndex) * progress * 0.01
-
-                        _ ->
-                            baseDistance
-
-                Limbo limbos ->
-                    case Array.get finalIndex <| Array.fromList limbos of
-                        Just CardLimbo ->
-                            0.615 + toFloat (12 - finalIndex) * progress * 0.01
 
                         _ ->
                             baseDistance

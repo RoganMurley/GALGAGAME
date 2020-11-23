@@ -23,7 +23,7 @@ import Model.State as Model
 import Model.Types as Model exposing (Life, Model)
 import PlayState.Messages as PlayState
 import Render.Uniforms as Uniforms
-import Resolvable.State as Resolvable exposing (activeAnim, activeAnimDamage, activeModel, activeStackCard, resolving)
+import Resolvable.State as Resolvable exposing (activeAnim, activeAnimDamage, activeModel, resolving)
 import Resolvable.Types as Resolvable
 import Stack.Entities as Stack
 import Stack.Types exposing (StackCard)
@@ -83,7 +83,6 @@ contextInit ( width, height ) res { textures, fonts } mouse =
     , anim = anim
     , animDamage = animDamage
     , model = activeModel res
-    , stackCard = activeStackCard res
     , tick = res.tick
     , progress = Animation.progress anim res.tick
     , textures = textures
@@ -290,12 +289,15 @@ getHoverStack { entities } mRay =
 
 
 getFocus : Context -> Maybe HandEntity -> Maybe StackEntity -> Holding -> Maybe StackCard
-getFocus { anim, stackCard } hoverHand hoverStack holding =
+getFocus { anim, model } hoverHand hoverStack holding =
     let
         hoverCard =
             Maybe.or
                 (Maybe.map (\{ card, owner } -> { owner = owner, card = card }) hoverStack)
                 (Maybe.map (\{ card } -> { owner = PlayerA, card = card }) hoverHand)
+
+        stackCard =
+            model.stack.wheel0
     in
     case holding of
         NoHolding ->

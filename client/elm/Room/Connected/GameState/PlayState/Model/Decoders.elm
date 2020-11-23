@@ -12,7 +12,7 @@ decoder =
     Json.map7 Model
         (field "handPA" <| list Card.decoder)
         (field "handPB" int)
-        (field "stack" <| list Stack.stackCardDecoder)
+        (field "stack" Stack.decoder)
         (field "turn" WhichPlayer.decoder)
         (field "lifePA" int)
         (field "lifePB" int)

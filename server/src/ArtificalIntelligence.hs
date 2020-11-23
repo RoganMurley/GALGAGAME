@@ -13,6 +13,7 @@ import GameState
 import Model
 import Player (WhichPlayer(..))
 import Scenario (Scenario(..))
+import Stack (chainLength)
 import Util (Gen, fromRight)
 
 import qualified Replay.Active
@@ -32,7 +33,7 @@ evalState (Playing model _)            = evalModel model
   where
     evalModel :: Model -> Weight
     evalModel m
-      | (length $ evalI m $ getStack) > 0 =
+      | (chainLength $ evalI m $ getStack) > 0 =
         evalState . fst . runWriter $ resolveAll m Replay.Active.null 0
       | otherwise =
           (evalPlayer PlayerA m) - (evalPlayer PlayerB m)

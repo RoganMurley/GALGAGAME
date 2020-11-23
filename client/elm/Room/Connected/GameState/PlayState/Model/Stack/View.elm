@@ -1,16 +1,17 @@
-module Stack.View exposing (view, wheelView)
+module Stack.View exposing (view, wheelBgView)
 
-import Animation.Types exposing (Anim(..), Bounce(..), CardDiscard(..), CardLimbo(..), Transmutation(..))
-import Array
+import Animation.Types exposing (Anim(..), Bounce(..), CardDiscard(..), Transmutation(..))
 import Card.View as Card
 import Colour
 import Game.Types exposing (Context, StackEntity, WheelEntity)
 import Math.Matrix4 exposing (makeRotate, makeScale)
+import Maybe.Extra as Maybe
 import Quaternion
 import Render.Primitives
 import Render.Shaders
 import Texture.State as Texture
 import WebGL
+import Wheel.State as Wheel
 
 
 view : List StackEntity -> Context -> List WebGL.Entity
@@ -19,22 +20,15 @@ view entities ctx =
         makeEntity i =
             case ctx.anim of
                 Transmute transmutations ->
-                    case Array.get i <| Array.fromList transmutations of
+                    case Wheel.get i transmutations |> Maybe.join of
                         Just (Transmutation ca cb) ->
                             Card.transmutingView ctx ca cb
 
                         _ ->
                             Card.view ctx
 
-                Fabricate _ ->
-                    if i == 0 then
-                        Card.fabricatingView ctx
-
-                    else
-                        Card.view ctx
-
                 Bounce bounces ->
-                    case Array.get i <| Array.fromList bounces of
+                    case Wheel.get i bounces |> Maybe.join of
                         Just (BounceIndex _ _) ->
                             \_ -> []
 
@@ -45,23 +39,12 @@ view entities ctx =
                             Card.view ctx
 
                 DiscardStack discards ->
-                    case Array.get i <| Array.fromList discards of
-                        Just CardDiscard ->
+                    case Wheel.get i discards of
+                        Just True ->
                             Card.dissolvingView ctx
 
                         _ ->
                             Card.view ctx
-
-                Limbo limbos ->
-                    case Array.get i <| Array.fromList limbos of
-                        Just CardLimbo ->
-                            Card.limboingView ctx
-
-                        _ ->
-                            Card.view ctx
-
-                Unlimbo _ ->
-                    Card.limboingView ctx
 
                 _ ->
                     Card.view ctx
@@ -69,8 +52,8 @@ view entities ctx =
     List.concat <| List.indexedMap makeEntity entities
 
 
-wheelView : List WheelEntity -> Context -> List WebGL.Entity
-wheelView entities { camera3d, perspective, textures } =
+wheelBgView : List WheelEntity -> Context -> List WebGL.Entity
+wheelBgView entities { camera3d, perspective, textures } =
     let
         wheelEntityView : WheelEntity -> List WebGL.Entity
         wheelEntityView { position, scale, rotation } =

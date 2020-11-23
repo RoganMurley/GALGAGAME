@@ -37,6 +37,7 @@ import Resolvable.Types as Resolvable
 import Result
 import Room.Messages as Room
 import Util exposing (message)
+import Wheel.State as Wheel
 import WhichPlayer.Types exposing (WhichPlayer(..))
 
 
@@ -164,7 +165,6 @@ updatePlayingOnly msg state mode assets =
                                     [ { diff = initDiff
                                       , anim = HandFullPass
                                       , animDamage = ( 0, 0 )
-                                      , stackCard = Nothing
                                       }
                                     ]
                             in
@@ -215,29 +215,36 @@ updateTurnOnly msg state { audio } =
                             initial =
                                 game.res.final
 
+                            { stack } =
+                                initial
+
+                            playDiffStack =
+                                { stack | wheel0 = Just { owner = PlayerA, card = card } }
+
                             playDiff : Diff
                             playDiff =
                                 { initDiff
                                     | turn = Just PlayerB
-                                    , stack = Just <| { owner = PlayerA, card = card } :: initial.stack
+                                    , stack = Just playDiffStack
                                     , hand = Just <| List.removeAt index initial.hand
                                 }
 
                             windupDiff : Diff
                             windupDiff =
-                                { initDiff | rot = Just <| initial.rot + 1 }
+                                { initDiff
+                                    | rot = Just <| initial.rot + 1
+                                    , stack = Just <| Wheel.fwrd playDiffStack
+                                }
 
                             resDiffList : List Resolvable.ResolveDiffData
                             resDiffList =
                                 [ { diff = playDiff
                                   , anim = Play PlayerA card index (Just pos)
                                   , animDamage = ( 0, 0 )
-                                  , stackCard = Nothing
                                   }
                                 , { diff = windupDiff
                                   , anim = Windup PlayerA
                                   , animDamage = ( 0, 0 )
-                                  , stackCard = Nothing
                                   }
                                 ]
 

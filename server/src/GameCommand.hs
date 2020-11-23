@@ -5,6 +5,7 @@ import CardAnim (CardAnim(..))
 import Control.Monad (when)
 import Control.Monad.Free (foldFree)
 import Control.Monad.Trans.Writer (Writer, runWriter, tell)
+import Data.Foldable (toList)
 import Data.Maybe (fromMaybe)
 import Data.Monoid ((<>))
 import Data.String.Conversions (cs)
@@ -12,15 +13,17 @@ import Data.Text (Text)
 import DeckBuilding (CharacterChoice, DeckBuilding(..), choiceToCharacter, initDeckBuilding, selectCharacter)
 import GameState (GameState(..), PlayState(..), initModel)
 import GodMode
-import Model (Hand, Passes(..), Model, Stack, Turn)
+import Model (Hand, Passes(..), Model, Turn)
 import Outcome (HoverState(..), Outcome)
 import Player (WhichPlayer(..), other)
 import ResolveData (ResolveData(..), resolveAnim)
-import Safe (atMay, headMay)
+import Safe (atMay)
 import Scenario (Scenario(..))
+import Stack (Stack)
 import StackCard (StackCard(..))
 import User (User(..), getUsername)
-import Util (Err, Gen, deleteIndex, split)
+import Util (Err, Gen, deleteIndex, split, times)
+import Wheel (Wheel(..))
 
 
 import qualified DSL.Alpha as Alpha
@@ -28,6 +31,7 @@ import qualified DSL.Beta as Beta
 import qualified Outcome
 import qualified Replay.Active as Active
 import qualified Replay.Final as Final
+import qualified Stack
 
 
 data GameCommand =
@@ -152,7 +156,7 @@ nextSelectState deckModel turn startProgram gen (mUserPa, mUserPb) =
             usernamePa = fromMaybe "" $ getUsername <$> mUserPa :: Text
             usernamePb = fromMaybe "" $ getUsername <$> mUserPb :: Text
             replay = Active.init model usernamePa usernamePb :: Active.Replay
-            (newModel, _, res) = Beta.execute model Nothing $ foldFree Beta.betaI startProgram
+            (newModel, _, res) = Beta.execute model $ foldFree Beta.betaI startProgram
             playstate :: PlayState
             playstate = Playing newModel (Active.add replay res)
           in
@@ -178,7 +182,7 @@ nextSelectState deckModel turn startProgram gen (mUserPa, mUserPb) =
 
 
 playCard :: Int -> WhichPlayer -> Model -> Active.Replay -> Either Err (Maybe GameState, [Outcome])
-playCard index which m replay
+playCard index which model replay
   | turn /= which = Left "You can't play a card when it's not your turn"
   | otherwise     =
     case card of
@@ -190,18 +194,38 @@ playCard index which m replay
           program = do
             Beta.play which c index
             Beta.windup
-          (newModel, _, res) = Beta.execute m Nothing $ foldFree Beta.betaI program
-          newPlayState = Playing newModel (Active.add replay res) :: PlayState
+            Beta.raw $ Alpha.setHold True
+          (newModel, _, res) = Beta.execute model $ foldFree Beta.betaI program
         in
-          Right (
-            Just . Started $ newPlayState,
-            [
-              Outcome.Encodable $ Outcome.Resolve res m newPlayState (Just which)
-            ]
-          )
+          case runWriter $ resolveAll newModel (replay `Active.add` res) 0 of
+            (Playing m newReplay, newRes) ->
+              let
+                newPlayState = Playing m (newReplay `Active.add` newRes)
+                -- The player who played the card does that animation clientside, so only send the rest.
+              in
+                Right (
+                  Just . Started $ newPlayState,
+                  [ Outcome.Encodable $ Outcome.Resolve (res ++ newRes) model    newPlayState (Just which)
+                  , Outcome.Encodable $ Outcome.Resolve newRes          newModel newPlayState (Just (other which))
+                  ]
+                )
+            (Ended w m newReplay g, newRes) ->
+              let
+                newPlayState = Ended w m newReplay g :: PlayState
+                newState     = Started newPlayState  :: GameState
+                finalReplay  = Final.finalise newReplay newPlayState :: Final.Replay
+              in
+                Right (
+                  Just newState,
+                  [ Outcome.Encodable $ Outcome.Resolve (res ++ newRes) model    newPlayState (Just which)
+                  , Outcome.Encodable $ Outcome.Resolve newRes          newModel newPlayState (Just (other which))
+                  , Outcome.HandleExperience w
+                  , Outcome.SaveReplay finalReplay
+                  ]
+                )
   where
     (hand, turn, card) =
-      Alpha.evalI m $ do
+      Alpha.evalI model $ do
         h <- Alpha.getHand which
         t <- Alpha.getTurn
         let c = atMay hand index :: Maybe Card
@@ -220,20 +244,17 @@ endTurn which model replay
             let
               roundEndProgram :: Beta.Program ()
               roundEndProgram = do
-                Beta.unlimbo
                 Beta.raw Alpha.swapTurn
                 Beta.raw Alpha.resetPasses
                 Beta.draw PlayerA PlayerA
                 Beta.draw PlayerB PlayerB
-              (newModel, _, endRes) = Beta.execute m Nothing $ foldFree Beta.betaI roundEndProgram
+              (newModel, _, endRes) = Beta.execute m $ foldFree Beta.betaI roundEndProgram
               newPlayState = Playing newModel (Active.add newReplay endRes) :: PlayState
               newState = Started newPlayState :: GameState
             in
               Right (
                 Just newState,
-                [
-                  Outcome.Encodable $ Outcome.Resolve (res ++ endRes) model newPlayState Nothing
-                ]
+                [ Outcome.Encodable $ Outcome.Resolve (res ++ endRes) model newPlayState Nothing ]
               )
           (Ended w m newReplay g, res) ->
             let
@@ -243,8 +264,7 @@ endTurn which model replay
             in
               Right (
                 Just newState,
-                [
-                  Outcome.Encodable $ Outcome.Resolve res model newPlayState Nothing
+                [ Outcome.Encodable $ Outcome.Resolve res model newPlayState Nothing
                 , Outcome.HandleExperience w
                 , Outcome.SaveReplay finalReplay
                 ]
@@ -255,7 +275,7 @@ endTurn which model replay
           endTurnProgram = do
             Beta.raw Alpha.swapTurn
             Beta.rawAnim $ Pass which
-          (newModel, _, res) = Beta.execute model Nothing $ foldFree Beta.betaI endTurnProgram
+          (newModel, _, res) = Beta.execute model $ foldFree Beta.betaI endTurnProgram
           newPlayState = Playing newModel replay :: PlayState
         in
           Right (
@@ -275,39 +295,43 @@ endTurn which model replay
 
 
 resolveAll :: Model -> Active.Replay -> Int -> Writer [ResolveData] PlayState
-resolveAll model replay resolutionCount =
-  case stackCard of
-    Just c -> do
-      let (m, _, res) = Beta.execute model (Just c) program :: (Model, String, [ResolveData])
-      tell res
-      case checkWin m (Active.add replay res) of
-        Playing m' newReplay ->
-          resolveAll m' newReplay nextResolutionCount
-        Ended w m' newReplay gen -> do
+resolveAll model replay resolutionCount = do
+  let (modelA, _, resA) = Beta.execute model preProgram :: (Model, String, [ResolveData])
+  tell resA
+  let mStackCard = Alpha.evalI modelA (wheel_0 <$> Alpha.getStack)
+  case mStackCard of
+    Just stackCard -> do
+      let (modelB, _, resB) = Beta.execute modelA (cardProgram stackCard) :: (Model, String, [ResolveData])
+      tell resB
+      let newReplay = replay `Active.add` resA `Active.add` resB
+      case checkWin modelB newReplay of
+        Playing m finalReplay ->
+          resolveAll m finalReplay nextResolutionCount
+        Ended w m finalReplay gen -> do
           let endRes = [resolveAnim $ GameEnd w]
           tell endRes
-          return (Ended w m' (Active.add newReplay endRes) gen)
-    Nothing ->
-      return (Playing model replay)
+          return (Ended w m (finalReplay `Active.add` endRes) gen)
+    Nothing -> do
+      let newReplay = replay `Active.add` resA
+      return (Playing modelA newReplay)
   where
-    stackCard :: Maybe StackCard
-    stackCard = Alpha.evalI model (headMay <$> Alpha.getStack)
-    card :: Maybe (Beta.Program ())
-    card = (\(StackCard o c) -> (card_eff c) o) <$> stackCard
     isFinite :: Bool
     isFinite = resolutionCount < 20
     nextResolutionCount :: Int
     nextResolutionCount = if isFinite then resolutionCount + 1 else 0
-    program :: Beta.AlphaLogAnimProgram ()
-    program =
-      case card of
-        Just p ->
-          foldFree Beta.betaI $ do
-            Beta.rotate
-            Beta.refreshGen
-            when isFinite p
-        Nothing ->
-          return ()
+    preProgram :: Beta.AlphaLogAnimProgram ()
+    preProgram =
+      foldFree Beta.betaI $ do
+        holding <- Beta.getHold
+        when (not holding) Beta.rotate
+        Beta.raw (Alpha.setHold False)
+        Beta.refreshGen
+    cardProgram :: StackCard -> Beta.AlphaLogAnimProgram ()
+    cardProgram StackCard{ stackcard_card, stackcard_owner } =
+      foldFree Beta.betaI $ do
+        when isFinite $ (card_eff stackcard_card) stackcard_owner
+        holding <- Beta.getHold
+        when (not holding) $ Beta.raw $ Alpha.modStack (\wheel -> wheel { wheel_0 = Nothing })
 
 
 checkWin :: Model -> Active.Replay -> PlayState
@@ -346,16 +370,15 @@ hoverCard (HoverStack i) which model =
   let
     stack = Alpha.evalI model $ Alpha.getStack :: Stack
   in
-    case atMay stack i of
-      Just (StackCard owner card) ->
+    case atMay (toList stack) i of
+      Just (Just (StackCard owner card)) ->
         Right (Nothing, [ Outcome.Encodable $ Outcome.Hover which (HoverStack i) damage ])
         where
           newModel = Alpha.modI model $ do
-            let index = i + 1 -- plus one to account for stackCard
-            Alpha.modStack (drop index)
-            Alpha.modRot ((-) index)
+            Alpha.modStack $ times i Stack.rotate
+            Alpha.modRot ((-) i)
           damage = Beta.damageNumbersI newModel $ card_eff card owner
-      Nothing ->
+      _ ->
         ignore
 hoverCard NoHover which _ =
   Right (Nothing, [ Outcome.Encodable $ Outcome.Hover which NoHover (0, 0) ])
@@ -368,7 +391,7 @@ godMode mUser str which model replay =
       Right betaProgram ->
         let
           program = foldFree Beta.betaI $ betaProgram :: Beta.AlphaLogAnimProgram ()
-          (m, _, res) = Beta.execute model Nothing program :: (Model, String, [ResolveData])
+          (m, _, res) = Beta.execute model program :: (Model, String, [ResolveData])
           newPlayState = Playing m (Active.add replay res) :: PlayState
         in
           Right (

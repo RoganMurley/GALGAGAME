@@ -7,13 +7,15 @@ import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.QuickCheck (Arbitrary, testProperty)
 
 import CardAnim (CardAnim)
-import Characters (CharModel)
+import DeckBuilding (DeckBuilding)
 import GameState (GameState, PlayState)
 import Instances ()
 import Mirror (Mirror, mirror)
 import Model (Model)
 import ModelDiff (ModelDiff)
 import StackCard (StackCard)
+import Stack (Stack)
+import Transmutation (Transmutation)
 
 import qualified Replay.Active as Active
 import qualified Replay.Final as Final
@@ -39,9 +41,11 @@ tests =
     , testGroup "Model"         $ coerce (prop :: PhantomTree Model)
     , testGroup "GameState"     $ coerce (prop :: PhantomTree GameState)
     , testGroup "PlayState"     $ coerce (prop :: PhantomTree PlayState)
-    , testGroup "CharModel"     $ coerce (prop :: PhantomTree CharModel)
+    , testGroup "DeckBuilding"  $ coerce (prop :: PhantomTree DeckBuilding)
     , testGroup "CardAnim"      $ coerce (prop :: PhantomTree CardAnim)
     , testGroup "Active.Replay" $ coerce (prop :: PhantomTree Active.Replay)
     , testGroup "Final.Replay"  $ coerce (prop :: PhantomTree Final.Replay)
     , testGroup "ModelDiff"     $ coerce (prop :: PhantomTree ModelDiff)
+    , testGroup "Stack"         $ coerce (prop :: PhantomTree Stack)
+    , testGroup "Transmutation" $ coerce (prop :: PhantomTree Transmutation)
     ]

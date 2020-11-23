@@ -1,8 +1,9 @@
-module Animation.Types exposing (Anim(..), Bounce(..), CardDiscard(..), CardLimbo(..), HandBounce, Hurt(..), Transmutation(..))
+module Animation.Types exposing (Anim(..), Bounce(..), CardDiscard(..), HandBounce, Hurt(..), Transmutation(..))
 
 import Card.Types exposing (Card)
 import Math.Vector3 exposing (Vec3)
 import Stack.Types exposing (StackCard)
+import Wheel.Types exposing (Wheel)
 import WhichPlayer.Types exposing (WhichPlayer)
 
 
@@ -11,22 +12,18 @@ type Anim
     | Hurt WhichPlayer Int Hurt
     | Heal WhichPlayer Int
     | Draw WhichPlayer
-    | Reverse WhichPlayer
-    | Confound WhichPlayer
     | Play WhichPlayer Card Int (Maybe Vec3)
-    | Transmute (List Transmutation)
+    | Transmute (Wheel (Maybe Transmutation))
     | Mill WhichPlayer Card
     | GameStart WhichPlayer
     | GameEnd (Maybe WhichPlayer)
     | Rotate WhichPlayer
     | Windup WhichPlayer
-    | Fabricate StackCard
-    | Bounce (List Bounce)
-    | DiscardStack (List CardDiscard)
+    | Bounce (Wheel (Maybe Bounce))
+    | DiscardStack (Wheel Bool)
     | DiscardHand WhichPlayer (List CardDiscard)
+    | MoveStack (Wheel (Maybe Int)) Int
     | Pass WhichPlayer
-    | Limbo (List CardLimbo)
-    | Unlimbo WhichPlayer
     | HandFullPass
     | Finding
 
@@ -38,8 +35,7 @@ type Hurt
 
 
 type Bounce
-    = NoBounce Int
-    | BounceDiscard
+    = BounceDiscard
     | BounceIndex Int Int
 
 
@@ -48,14 +44,8 @@ type CardDiscard
     | CardDiscard
 
 
-type CardLimbo
-    = NoLimbo Int
-    | CardLimbo
-
-
 type Transmutation
     = Transmutation StackCard StackCard
-    | NoTransmutation
 
 
 type alias HandBounce =
