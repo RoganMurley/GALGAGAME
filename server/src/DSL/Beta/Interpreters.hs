@@ -74,6 +74,7 @@ animI (Heal _ w _)          = healAnim w
 animI (AddToHand w c  _)    = addToHandAnim w c
 animI (Draw w d _)          = drawAnim w d
 animI (Play w c i _)        = playAnim w c i
+animI (Transmute f _)       = transmuteAnim f
 animI (TransmuteActive f _) = transmuteActiveAnim f
 animI (Bounce f _)          = bounceAnim f
 animI (DiscardStack f _)    = discardStackAnim f
