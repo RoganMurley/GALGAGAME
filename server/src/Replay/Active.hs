@@ -29,7 +29,7 @@ init model pa pb = Replay model [] pa pb
 null :: Replay
 null =
   Replay
-    (Model PlayerA Stack.init (PlayerModel [] [] 0) (PlayerModel [] [] 0) NoPass (mkGen 0) 0)
+    (Model PlayerA Stack.init (PlayerModel [] [] 0) (PlayerModel [] [] 0) NoPass (mkGen 0) 0 False)
     []
     ""
     ""

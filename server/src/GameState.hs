@@ -79,7 +79,7 @@ initState = Waiting
 
 initModel :: Turn -> Character -> Character -> Gen -> Model
 initModel turn ca cb gen =
-  Model turn Stack.init pm_a pm_b NoPass gen 0
+  Model turn Stack.init pm_a pm_b NoPass gen 0 False
   where
     (genPA, genPB) = split gen :: (Gen, Gen)
     -- PlayerA
