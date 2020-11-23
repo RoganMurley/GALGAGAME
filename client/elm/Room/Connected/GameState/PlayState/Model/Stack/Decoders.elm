@@ -1,9 +1,15 @@
-module Stack.Decoders exposing (stackCardDecoder)
+module Stack.Decoders exposing (decoder, stackCardDecoder)
 
 import Card.Decoders as Card
-import Json.Decode as Json exposing (Decoder, field)
-import Stack.Types exposing (StackCard)
+import Json.Decode as Json exposing (Decoder, field, maybe)
+import Stack.Types exposing (Stack, StackCard)
+import Wheel.Decoders as Wheel
 import WhichPlayer.Decoders as WhichPlayer
+
+
+decoder : Decoder Stack
+decoder =
+    Wheel.decoder (maybe stackCardDecoder)
 
 
 stackCardDecoder : Decoder StackCard

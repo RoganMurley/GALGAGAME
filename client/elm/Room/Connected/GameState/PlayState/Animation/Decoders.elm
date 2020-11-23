@@ -1,9 +1,10 @@
 module Animation.Decoders exposing (decoder)
 
-import Animation.Types exposing (Anim(..), Bounce(..), CardDiscard(..), CardLimbo(..), Hurt(..), Transmutation(..))
+import Animation.Types exposing (Anim(..), Bounce(..), CardDiscard(..), Hurt(..), Transmutation(..))
 import Card.Decoders as Card
-import Json.Decode as Json exposing (Decoder, fail, field, int, list, null, oneOf, string, succeed)
+import Json.Decode as Json exposing (Decoder, bool, fail, field, int, list, maybe, null, oneOf, string, succeed)
 import Stack.Decoders as Stack
+import Wheel.Decoders as Wheel
 import WhichPlayer.Decoders as WhichPlayer
 
 
@@ -26,12 +27,6 @@ decoder =
                 "draw" ->
                     drawDecoder
 
-                "reverse" ->
-                    reverseDecoder
-
-                "confound" ->
-                    confoundDecoder
-
                 "play" ->
                     playDecoder
 
@@ -50,9 +45,6 @@ decoder =
                 "windup" ->
                     windupDecoder
 
-                "fabricate" ->
-                    fabricateDecoder
-
                 "bounce" ->
                     bounceDecoder
 
@@ -62,14 +54,11 @@ decoder =
                 "discardHand" ->
                     discardHandDecoder
 
+                "moveStack" ->
+                    moveStackDecoder
+
                 "pass" ->
                     passDecoder
-
-                "limbo" ->
-                    limboDecoder
-
-                "unlimbo" ->
-                    unlimboDecoder
 
                 _ ->
                     Json.fail <| "Unknown anim name " ++ animName
@@ -131,18 +120,6 @@ drawDecoder =
         (field "player" WhichPlayer.decoder)
 
 
-confoundDecoder : Decoder Anim
-confoundDecoder =
-    Json.map Confound
-        (field "player" WhichPlayer.decoder)
-
-
-reverseDecoder : Decoder Anim
-reverseDecoder =
-    Json.map Reverse
-        (field "player" WhichPlayer.decoder)
-
-
 playDecoder : Decoder Anim
 playDecoder =
     Json.map4 Play
@@ -154,19 +131,17 @@ playDecoder =
 
 transmutationDecoder : Decoder Transmutation
 transmutationDecoder =
-    oneOf
-        [ Json.map2 Transmutation
-            (field "cardA" Stack.stackCardDecoder)
-            (field "cardB" Stack.stackCardDecoder)
-        , null NoTransmutation
-        ]
+    Json.map2 Transmutation
+        (field "cardA" Stack.stackCardDecoder)
+        (field "cardB" Stack.stackCardDecoder)
 
 
 transmuteDecoder : Decoder Anim
 transmuteDecoder =
     Json.map Transmute <|
         field "transmute" <|
-            list transmutationDecoder
+            Wheel.decoder <|
+                maybe transmutationDecoder
 
 
 millDecoder : Decoder Anim
@@ -194,19 +169,9 @@ windupDecoder =
         (field "player" WhichPlayer.decoder)
 
 
-fabricateDecoder : Decoder Anim
-fabricateDecoder =
-    Json.map Fabricate
-        (field "stackCard" Stack.stackCardDecoder)
-
-
 bounceDecoder : Decoder Anim
 bounceDecoder =
     let
-        noBounceDecoder : Decoder Bounce
-        noBounceDecoder =
-            Json.map NoBounce <| field "finalStackIndex" int
-
         bounceDiscardDecoder : Decoder Bounce
         bounceDiscardDecoder =
             Json.map (always BounceDiscard) <| constDecoder "bounceDiscard"
@@ -219,8 +184,9 @@ bounceDecoder =
     in
     Json.map Bounce <|
         field "bounce" <|
-            list <|
-                oneOf [ noBounceDecoder, bounceDiscardDecoder, bounceIndexDecoder ]
+            Wheel.decoder <|
+                maybe <|
+                    oneOf [ bounceDiscardDecoder, bounceIndexDecoder ]
 
 
 cardDiscardDecoder : Decoder CardDiscard
@@ -235,7 +201,7 @@ discardStackDecoder : Decoder Anim
 discardStackDecoder =
     Json.map DiscardStack <|
         field "discard" <|
-            list cardDiscardDecoder
+            Wheel.decoder bool
 
 
 discardHandDecoder : Decoder Anim
@@ -245,30 +211,14 @@ discardHandDecoder =
         (field "discard" <| list cardDiscardDecoder)
 
 
+moveStackDecoder : Decoder Anim
+moveStackDecoder =
+    Json.map2 MoveStack
+        (field "moves" <| Wheel.decoder <| maybe int)
+        (field "time" int)
+
+
 passDecoder : Decoder Anim
 passDecoder =
     Json.map Pass
-        (field "player" WhichPlayer.decoder)
-
-
-limboDecoder : Decoder Anim
-limboDecoder =
-    let
-        noLimboDecoder : Decoder CardLimbo
-        noLimboDecoder =
-            Json.map NoLimbo <| field "finalStackIndex" int
-
-        cardLimboDecoder : Decoder CardLimbo
-        cardLimboDecoder =
-            Json.map (always CardLimbo) <| constDecoder "limbo"
-    in
-    Json.map Limbo <|
-        field "limbo" <|
-            list <|
-                oneOf [ noLimboDecoder, cardLimboDecoder ]
-
-
-unlimboDecoder : Decoder Anim
-unlimboDecoder =
-    Json.map Unlimbo
         (field "player" WhichPlayer.decoder)

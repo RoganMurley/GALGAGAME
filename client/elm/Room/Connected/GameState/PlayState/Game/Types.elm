@@ -41,7 +41,6 @@ type alias Context =
     , anim : Anim
     , animDamage : ( Float, Float )
     , model : Model.Model
-    , stackCard : Maybe StackCard
     , textures : Texture.Model
     , fonts : Font.Model
     , resolving : Bool

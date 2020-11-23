@@ -6,10 +6,9 @@ import Card (Card)
 import CardAnim (CardAnim, Hurt)
 import Discard (CardDiscard)
 import Life (Life)
-import Limbo (CardLimbo)
 import Player (WhichPlayer)
-import StackCard (StackCard)
 import Transmutation (Transmutation)
+import Wheel (Wheel)
 
 
 data DSL a
@@ -18,21 +17,17 @@ data DSL a
   | Hurt WhichPlayer Life Hurt a
   | Heal WhichPlayer Life a
   | Draw WhichPlayer a
-  | Confound a
-  | Reverse a
   | Play WhichPlayer Card Int a
-  | Transmute [Transmutation] a
+  | Transmute (Wheel (Maybe Transmutation)) a
   | Mill WhichPlayer Card a
   | GameEnd (Maybe WhichPlayer) a
   | Rotate a
   | Windup a
-  | Fabricate StackCard a
-  | Bounce [CardBounce] a
-  | DiscardStack [CardDiscard] a
+  | Bounce (Wheel (Maybe CardBounce)) a
+  | DiscardStack (Wheel Bool) a
   | DiscardHand WhichPlayer [CardDiscard] a
+  | MoveStack (Wheel (Maybe Int)) Int a
   | Pass WhichPlayer a
-  | Limbo [CardLimbo] a
-  | Unlimbo a
   deriving (Functor)
 
 type Program a = Free DSL a

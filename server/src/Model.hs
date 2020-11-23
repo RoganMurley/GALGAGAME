@@ -5,19 +5,19 @@ import Data.Aeson (ToJSON(..), (.=), object)
 import Life (Life)
 import Mirror (Mirror(..))
 import Player (WhichPlayer(..), other)
-import StackCard (StackCard(..))
+import Stack (Stack)
 import Util (Gen)
 
 
 data Model = Model
   { model_turn   :: Turn
   , model_stack  :: Stack
-  , model_limbo  :: Limbo
   , model_pa     :: PlayerModel
   , model_pb     :: PlayerModel
   , model_passes :: Passes
   , model_gen    :: Gen
   , model_rot    :: Int
+  , model_hold   :: Bool
   }
   deriving (Eq, Show)
 
@@ -36,12 +36,6 @@ type Hand = [Card]
 type Deck = [Card]
 
 
-type Stack = [StackCard]
-
-
-type Limbo = [StackCard]
-
-
 type Turn = WhichPlayer
 
 
@@ -50,12 +44,11 @@ data Passes = NoPass | OnePass
 
 
 instance ToJSON Model where
-  toJSON Model{ model_turn, model_stack, model_limbo, model_pa, model_pb, model_rot } =
+  toJSON Model{ model_turn, model_stack, model_pa, model_pb, model_rot } =
     object
       [
         "turn"   .= model_turn
       , "stack"  .= model_stack
-      , "limbo"  .= model_limbo
       , "handPA" .= pmodel_hand model_pa
       , "handPB" .= length (pmodel_hand model_pb)
       , "lifePA" .= pmodel_life model_pa
@@ -65,8 +58,8 @@ instance ToJSON Model where
 
 
 instance Mirror Model where
-  mirror (Model turn stack limbo pa pb passes gen rot) =
-    Model (other turn) (mirror stack) (mirror limbo) pb pa passes gen rot
+  mirror (Model turn stack pa pb passes gen rot hold) =
+    Model (other turn) (mirror stack) pb pa passes gen rot hold
 
 
 maxHandLength :: Int

@@ -96,5 +96,5 @@ breakAt b t =
     (x, T.drop (T.length b) y)
 
 
-indexedFilter :: ((Int, a) -> Bool) -> [a] -> [a]
-indexedFilter f xs = fmap snd $ filter f (zip [0..] xs)
+indexedFilter :: (Int -> a -> Bool) -> [a] -> [a]
+indexedFilter f xs = fmap snd $ filter (uncurry f) (zip [0..] xs)

@@ -6,32 +6,27 @@ import Data.Aeson (ToJSON(..), (.=), object)
 import Data.Text (Text)
 import Discard (CardDiscard)
 import Life (Life)
-import Limbo (CardLimbo)
 import Mirror (Mirror(..))
 import Player (WhichPlayer(..), other)
-import StackCard (StackCard)
 import Transmutation (Transmutation)
+import Wheel (Wheel)
 
 
 data CardAnim
   = Heal WhichPlayer Life
   | Draw WhichPlayer
   | Hurt WhichPlayer Life Hurt
-  | Reverse
-  | Confound
   | Play WhichPlayer Card Int
-  | Transmute [Transmutation]
+  | Transmute (Wheel (Maybe Transmutation))
   | Mill WhichPlayer Card
   | GameEnd (Maybe WhichPlayer)
   | Rotate
   | Windup
-  | Fabricate StackCard
-  | Bounce [CardBounce]
-  | DiscardStack [CardDiscard]
+  | Bounce (Wheel (Maybe CardBounce))
+  | DiscardStack (Wheel Bool)
   | DiscardHand WhichPlayer [CardDiscard]
+  | MoveStack (Wheel (Maybe Int)) Int
   | Pass WhichPlayer
-  | Limbo [CardLimbo]
-  | Unlimbo
   deriving (Show, Eq)
 
 
@@ -53,16 +48,6 @@ instance ToJSON CardAnim where
     object
     [ "name"   .= ("draw" :: Text)
     , "player" .= w
-    ]
-  toJSON Confound =
-    object
-    [ "name"   .= ("confound" :: Text)
-    , "player" .= PlayerA
-    ]
-  toJSON Reverse =
-    object
-    [ "name"   .= ("reverse" :: Text)
-    , "player" .= PlayerA
     ]
   toJSON (Play w c i) =
     object
@@ -99,12 +84,6 @@ instance ToJSON CardAnim where
     [ "name"   .= ("windup" :: Text)
     , "player" .= PlayerA
     ]
-  toJSON (Fabricate stackCard) =
-    object
-    [ "name"      .= ("fabricate" :: Text)
-    , "player"    .= PlayerA
-    , "stackCard" .= stackCard
-    ]
   toJSON (Bounce b) =
     object
     [ "name"   .= ("bounce" :: Text)
@@ -123,43 +102,35 @@ instance ToJSON CardAnim where
     , "player"  .= w
     , "discard" .= d
     ]
+  toJSON (MoveStack m t) =
+    object
+    [ "name"   .= ("moveStack" :: Text)
+    , "player" .= PlayerA
+    , "moves"  .= m
+    , "time"  .= t
+    ]
   toJSON (Pass w) =
     object
     [ "name"   .= ("pass" :: Text)
     , "player" .= w
     ]
-  toJSON (Limbo l) =
-    object
-    [ "name"   .= ("limbo" :: Text)
-    , "player" .= PlayerA
-    , "limbo"  .= l
-    ]
-  toJSON Unlimbo =
-    object
-    [ "name"    .= ("unlimbo" :: Text)
-    , "player"  .= PlayerA
-    ]
 
 
 instance Mirror CardAnim where
-  mirror (Hurt w d h)        = Hurt (other w) d h
-  mirror (Heal w h)          = Heal (other w) h
-  mirror (Draw w)            = Draw  (other w)
-  mirror Confound            = Confound
-  mirror Reverse             = Reverse
-  mirror (Play w c i)        = Play (other w) c i
-  mirror (Transmute t)       = Transmute (mirror <$> t)
-  mirror (GameEnd w)         = GameEnd (other <$> w)
-  mirror (Mill w c)          = Mill (other w) c
-  mirror Rotate              = Rotate
-  mirror Windup              = Windup
-  mirror (Fabricate c)       = Fabricate (mirror c)
-  mirror (Bounce b)          = Bounce b
-  mirror (DiscardStack d)    = DiscardStack d
-  mirror (DiscardHand w d)   = DiscardHand (other w) d
-  mirror (Pass w)            = Pass (other w)
-  mirror (Limbo l)           = Limbo l
-  mirror Unlimbo             = Unlimbo
+  mirror (Hurt w d h)      = Hurt (other w) d h
+  mirror (Heal w h)        = Heal (other w) h
+  mirror (Draw w)          = Draw  (other w)
+  mirror (Play w c i)      = Play (other w) c i
+  mirror (Transmute t)     = Transmute (mirror <$> t)
+  mirror (GameEnd w)       = GameEnd (other <$> w)
+  mirror (Mill w c)        = Mill (other w) c
+  mirror Rotate            = Rotate
+  mirror Windup            = Windup
+  mirror (Bounce b)        = Bounce b
+  mirror (DiscardStack d)  = DiscardStack d
+  mirror (DiscardHand w d) = DiscardHand (other w) d
+  mirror (MoveStack m t)   = MoveStack m t
+  mirror (Pass w)          = Pass (other w)
 
 
 data Hurt

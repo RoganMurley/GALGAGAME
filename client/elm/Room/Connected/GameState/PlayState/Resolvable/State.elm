@@ -1,4 +1,4 @@
-module Resolvable.State exposing (activeAnim, activeAnimDamage, activeModel, activeStackCard, init, merge, resDiffToData, resolveStep, resolving, tick, tickEnd, tickStart)
+module Resolvable.State exposing (activeAnim, activeAnimDamage, activeModel, init, merge, resDiffToData, resolveStep, resolving, tick, tickEnd, tickStart)
 
 import Animation.State as Animation
 import Animation.Types exposing (Anim(..))
@@ -6,7 +6,6 @@ import List.Extra as List
 import Model.Diff as Model
 import Model.Types as Model
 import Resolvable.Types as Resolvable
-import Stack.Types exposing (StackCard)
 import Util exposing (zip)
 
 
@@ -45,11 +44,6 @@ activeAnimDamage { resList } =
 
         Nothing ->
             ( 0, 0 )
-
-
-activeStackCard : Resolvable.Model -> Maybe StackCard
-activeStackCard { resList } =
-    List.head resList |> Maybe.andThen .stackCard
 
 
 tickStart : Resolvable.Model -> Bool
@@ -96,7 +90,6 @@ merge model diffData =
     { model = Model.merge diffData.diff model
     , anim = diffData.anim
     , animDamage = diffData.animDamage
-    , stackCard = diffData.stackCard
     }
 
 
@@ -113,11 +106,10 @@ resDiffToData model resDiffs =
                 List.scanl Model.merge model diffs
 
         combine : ( Model.Model, Resolvable.ResolveDiffData ) -> Resolvable.ResolveData
-        combine ( m, { anim, animDamage, stackCard } ) =
+        combine ( m, { anim, animDamage } ) =
             { model = m
             , anim = anim
             , animDamage = animDamage
-            , stackCard = stackCard
             }
     in
     List.map combine <|

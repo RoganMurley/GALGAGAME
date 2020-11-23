@@ -12,8 +12,8 @@ data Transmutation = Transmutation StackCard StackCard | NoTransmutation
 instance ToJSON Transmutation where
   toJSON (Transmutation ca cb) =
     object
-    [ "cardA"     .= ca
-    , "cardB"     .= cb
+    [ "cardA" .= ca
+    , "cardB" .= cb
     ]
   toJSON NoTransmutation = Null
 
