@@ -245,7 +245,7 @@ mirageCup =
         Just copyCard -> do
           let stackCard = StackCard{ stackcard_card = copyCard, stackcard_owner = w }
           transmuteActive (\_ -> Just stackCard)
-          (card_eff copyCard) (stackcard_owner stackCard)
+          Beta.null
         Nothing ->
          return ()
 

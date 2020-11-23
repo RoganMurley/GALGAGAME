@@ -23,6 +23,7 @@ data ModelDiff = ModelDiff
   , modeldiff_passes :: Maybe Passes
   , modeldiff_gen    :: Maybe Gen
   , modeldiff_rot    :: Maybe Int
+  , modeldiff_hold   :: Maybe Bool
   }
   deriving (Eq, Show)
 
@@ -53,8 +54,8 @@ instance ToJSON ModelDiff where
 
 
 instance Mirror ModelDiff where
-  mirror (ModelDiff turn stack pa pb passes gen rot) =
-    ModelDiff (other <$> turn) (mirror stack) pb pa passes gen rot
+  mirror (ModelDiff turn stack pa pb passes gen rot hold) =
+    ModelDiff (other <$> turn) (mirror stack) pb pa passes gen rot hold
 
 
 getPmodelDiff :: WhichPlayer -> ModelDiff -> PlayerModelDiff
@@ -79,6 +80,7 @@ update m d =
     , model_passes = fromMaybe (model_passes m) (modeldiff_passes d)
     , model_gen    = fromMaybe (model_gen m)    (modeldiff_gen d)
     , model_rot    = fromMaybe (model_rot m)    (modeldiff_rot d)
+    , model_hold   = fromMaybe (model_hold m)   (modeldiff_hold d)
     , model_pa     = updateP   (model_pa m)     (modeldiff_pa d)
     , model_pb     = updateP   (model_pb m)     (modeldiff_pb d)
     }
@@ -101,6 +103,7 @@ instance Semigroup ModelDiff where
       , modeldiff_passes = (modeldiff_passes b) <|> (modeldiff_passes a)
       , modeldiff_gen    = (modeldiff_gen b)    <|> (modeldiff_gen a)
       , modeldiff_rot    = (modeldiff_rot b)    <|> (modeldiff_rot a)
+      , modeldiff_hold   = (modeldiff_hold b)   <|> (modeldiff_hold a)
       , modeldiff_pa     = (modeldiff_pa b) <> (modeldiff_pa a)
       , modeldiff_pb     = (modeldiff_pb b) <> (modeldiff_pb a)
       }
@@ -115,6 +118,7 @@ instance Monoid ModelDiff where
         , modeldiff_passes = Nothing
         , modeldiff_gen    = Nothing
         , modeldiff_rot    = Nothing
+        , modeldiff_hold   = Nothing
         , modeldiff_pa     = mempty
         , modeldiff_pb     = mempty
         }

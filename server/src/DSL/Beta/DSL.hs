@@ -35,6 +35,7 @@ data DSL n
   | GetGen (Gen -> n)
   | GetStack (Stack -> n)
   | GetRot (Int -> n)
+  | GetHold (Bool -> n)
   | RawAnim CardAnim n
   | Null n
   deriving (Functor)

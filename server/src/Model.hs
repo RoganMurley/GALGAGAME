@@ -17,6 +17,7 @@ data Model = Model
   , model_passes :: Passes
   , model_gen    :: Gen
   , model_rot    :: Int
+  , model_hold   :: Bool
   }
   deriving (Eq, Show)
 
@@ -57,8 +58,8 @@ instance ToJSON Model where
 
 
 instance Mirror Model where
-  mirror (Model turn stack pa pb passes gen rot) =
-    Model (other turn) (mirror stack) pb pa passes gen rot
+  mirror (Model turn stack pa pb passes gen rot hold) =
+    Model (other turn) (mirror stack) pb pa passes gen rot hold
 
 
 maxHandLength :: Int

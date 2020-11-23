@@ -6,7 +6,6 @@ import List.Extra as List
 import Model.Diff as Model
 import Model.Types as Model
 import Resolvable.Types as Resolvable
-import Stack.Types exposing (StackCard)
 import Util exposing (zip)
 
 

@@ -17,6 +17,7 @@ data DSL n =
   | GetStack (Stack -> n)
   | GetTurn (Turn -> n)
   | GetRot (Int -> n)
+  | GetHold (Bool -> n)
   | SetGen Gen n
   | SetDeck WhichPlayer Deck n
   | SetHand WhichPlayer Hand n
@@ -25,6 +26,7 @@ data DSL n =
   | SetStack Stack n
   | SetTurn Turn n
   | SetRot Int n
+  | SetHold Bool n
   deriving (Functor)
 
 

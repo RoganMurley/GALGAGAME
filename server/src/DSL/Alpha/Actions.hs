@@ -148,6 +148,7 @@ transmuteActive f =
         case f activeCard of
           Just finalStackCard -> do
             setStack (stack { wheel_0 = Just finalStackCard })
+            setHold True
           Nothing ->
             return ()
       Nothing ->

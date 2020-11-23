@@ -54,6 +54,7 @@ alphaI (Free (GetLife w f))         = Alpha.getLife w         >>= alphaI . f
 alphaI (Free (GetHand w f))         = Alpha.getHand w         >>= alphaI . f
 alphaI (Free (GetDeck w f))         = Alpha.getDeck w         >>= alphaI . f
 alphaI (Free (GetStack f))          = Alpha.getStack          >>= alphaI . f
+alphaI (Free (GetHold f))           = Alpha.getHold           >>= alphaI . f
 alphaI (Free (RawAnim _ n))         = alphaI n
 alphaI (Free (Null n))              = alphaI n
 alphaI (Pure x)                     = Pure x
@@ -125,6 +126,7 @@ transmuteAnim f alpha = do
   let transmutations = Stack.chainMap f stack
   final <- toLeft alpha
   toRight . liftF $ Anim.Transmute transmutations ()
+  toRight . liftF $ Anim.Null ()
   return final
 
 
