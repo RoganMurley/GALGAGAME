@@ -36,7 +36,11 @@ webglView { w, h } model assets =
 
                 Nothing ->
                     [ radialView model.vfx
-                    , charactersView model.characters model.vfx.rotation
+                    , if model.ready then
+                        waitingView model.vfx.rotation
+
+                      else
+                        charactersView model.characters model.vfx.rotation
                     , Buttons.view model.buttons
                     ]
 
@@ -53,15 +57,34 @@ charactersView characters tick ctx =
         size =
             1.4 * max w h
     in
-    List.concat
-        [ Font.view
-            "Futura"
-            character.name
-            { x = w * 0.5 - 0.003 * size
-            , y = h * 0.2
-            , scaleX = 0.0001 * size + 0.003 * sin (tick * 0.005)
-            , scaleY = 0.0001 * size + 0.003 * sin (tick * 0.007)
-            , color = vec3 (244 / 255) (241 / 255) (94 / 255)
-            }
+    Font.view
+        "Futura"
+        character.name
+        { x = w * 0.5 - 0.003 * size
+        , y = h * 0.2
+        , scaleX = 0.0001 * size + 0.003 * sin (tick * 0.005)
+        , scaleY = 0.0001 * size + 0.003 * sin (tick * 0.007)
+        , color = vec3 (244 / 255) (241 / 255) (94 / 255)
+        }
+        ctx
+
+
+waitingView : Float -> Context -> List WebGL.Entity
+waitingView tick ctx =
+    let
+        { w, h } =
             ctx
-        ]
+
+        size =
+            1.4 * max w h
+    in
+    Font.view
+        "Futura"
+        "WAITING ON\nOPPONENT"
+        { x = w * 0.5 - 0.003 * size
+        , y = h * 0.4
+        , scaleX = 0.0001 * size + 0.003 * sin (tick * 0.005)
+        , scaleY = 0.0001 * size + 0.003 * sin (tick * 0.007)
+        , color = vec3 (244 / 255) (241 / 255) (94 / 255)
+        }
+        ctx
