@@ -62,7 +62,7 @@ heavenSword =
 heavenWand :: Card
 heavenWand =
   Card Heaven Wand
-    "Hurt for 4 for each other card in the chain"
+    "Hurt for 4 for each other card\nin the chain"
     $ \w -> do
       len <- chainLength <$> getStack
       hurt (len * 4) (other w) Slash
@@ -71,7 +71,7 @@ heavenWand =
 heavenCup :: Card
 heavenCup =
   Card Heaven Cup
-    "Return all of your cards in the chain to hand"
+    "Return all of your cards\nin the chain to hand"
     $ \w -> bounce (\_ (StackCard o _) -> w == o)
 
 
@@ -119,7 +119,7 @@ dualityCup =
 dualityCoin :: Card
 dualityCoin =
   Card Duality Coin
-    "Change next card's owner to weakest player"
+    "Change next card's owner\nto weakest player"
     $ \w -> do
       paLife <- getLife w
       pbLife <- getLife (other w)
@@ -165,7 +165,7 @@ strangeSpore =
 shroomCoin :: Card
 shroomCoin =
   Card Shroom Coin
-    "Reverse the order of all cards in the chain"
+    "Reverse the order of all cards\nin the chain"
     $ const reversal
 
 
@@ -182,7 +182,7 @@ bloodSword =
 bloodWand :: Card
 bloodWand =
   Card Blood Wand
-    "Both player's life becomes that of the weakest"
+    "Both player's life becomes that\nof the weakest"
     $ \w -> do
       lifePa <- getLife w
       lifePb <- getLife (other w)
@@ -205,7 +205,7 @@ bloodCup =
 bloodCoin :: Card
 bloodCoin =
   Card Blood Coin
-    "Pay half your life to discard the next card"
+    "Pay half your life to discard\nthe next card"
     $ \w -> do
       l <- getLife w
       hurt (l `quot` 2) w Slash
@@ -225,7 +225,7 @@ mirageSword =
 mirageWand :: Card
 mirageWand =
   Card Mirage Wand
-    "Hurt for 8 for each MIRAGE WAND in the chain"
+    "Hurt for 8 for each MIRAGE WAND\nin the chain"
     $ \w -> do
       chain <- chainToList <$> getStack
       let isMirageWand = \(Card{ card_aspect, card_suit }) -> card_aspect == Mirage && card_suit == Wand
@@ -236,7 +236,7 @@ mirageWand =
 mirageCup :: Card
 mirageCup =
   Card Mirage Cup
-    "Become a copy of a random card in your hand"
+    "Become a copy of a random card\nin your hand"
     $ \w -> do
       gen <- getGen
       hand <- getHand w
@@ -290,7 +290,7 @@ mirrorCup =
 mirrorCoin :: Card
 mirrorCoin =
   Card Mirror Coin
-    "Change the owner of all cards in the chain"
+    "Change the owner of all cards\nin the chain"
     $ \_ ->
       transmute $
         \_ stackCard -> Just $ Transmutation stackCard (changeOwner stackCard)
@@ -307,7 +307,7 @@ alchemySword =
 alchemyWand :: Card
 alchemyWand =
   Card Alchemy Wand
-    "Hurt for 3 for each card in their hand"
+    "Hurt for 3 for each card\nin their hand"
     $ \w -> do
       len <- length <$> getHand (other w)
       hurt (len * 3) (other w) Slash
@@ -347,7 +347,7 @@ crownSword =
 crownWand :: Card
 crownWand =
   Card Crown Wand
-    "Discard your hand, then hurt for 5 for each card discarded"
+    "Discard your hand, then hurt\nfor 5 for each card discarded"
     $ \w -> do
       handSize <- length <$> getHand w
       discardHand w (\_ _ -> True)
@@ -357,7 +357,7 @@ crownWand =
 crownCup :: Card
 crownCup =
   Card Crown Cup
-    "Your opponent is forced to play a random card"
+    "Your opponent is forced to\nplay a random card"
     $ \w -> do
       gen <- getGen
       hand <- getHand (other w)
@@ -373,7 +373,7 @@ crownCup =
 crownCoin :: Card
 crownCoin =
   Card Crown Coin
-    "Discard next card for each card in your hand"
+    "Discard next card for each\ncard in your hand"
     $ \w -> do
       handLen <- length <$> getHand w
       discardStack $ \i _ -> i < handLen
@@ -451,7 +451,7 @@ morphCoin =
 strangeEnd :: Card
 strangeEnd =
   Card Strange (OtherSuit "END")
-    "You're out of cards, hurt yourself for 10"
+    "You're out of cards,\nhurt yourself for 10"
     $ \w -> hurt 10 w Slash
 
 
