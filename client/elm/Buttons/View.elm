@@ -39,7 +39,7 @@ textButtonView button params ctx =
         { ortho, camera2d } =
             ctx
 
-        { x, y, xScale, yScale, hover } =
+        { x, y, width, height, hover } =
             button
 
         { bgColor, textColor, font } =
@@ -67,8 +67,8 @@ textButtonView button params ctx =
                     { rotation = makeRotate pi (vec3 0 0 1)
                     , scale =
                         makeScale3
-                            (0.06 * xScale + hoverPop)
-                            (0.06 * yScale + hoverPop)
+                            (width + hoverPop)
+                            (height + hoverPop)
                             1
                     , color = bgColor
                     , pos = vec3 x y 0
@@ -83,8 +83,8 @@ textButtonView button params ctx =
                     { rotation = makeRotate pi (vec3 0 0 1)
                     , scale =
                         makeScale3
-                            (0.04 * xScale + hoverPop)
-                            (0.04 * yScale + hoverPop)
+                            (width + hoverPop)
+                            (height + hoverPop)
                             1
                     , color = bgColor
                     , alpha = 1
@@ -93,6 +93,13 @@ textButtonView button params ctx =
                     , camera = camera2d
                     }
                 ]
+
+        additionalTextScale =
+            if circular then
+                0.65
+
+            else
+                1
     in
     List.concat
         [ background
@@ -101,8 +108,8 @@ textButtonView button params ctx =
             text
             { x = x
             , y = y
-            , scaleX = 0.0001 * yScale + 0.001 * hoverPop
-            , scaleY = 0.0001 * yScale + 0.001 * hoverPop
+            , scaleX = additionalTextScale * 0.0025 * (height + 0.6 * hoverPop)
+            , scaleY = additionalTextScale * 0.0025 * (height + 0.6 * hoverPop)
             , color = textColor
             }
             ctx
@@ -115,11 +122,18 @@ imageButtonView button { img, color } ctx =
         { ortho, camera2d, textures } =
             ctx
 
-        { x, y, xScale, yScale, hover } =
+        { x, y, width, height, hover } =
             button
 
         hoverPop =
             10 * Ease.outQuint (hover / 300)
+
+        matchSign a b =
+            if a >= 0 then
+                b
+
+            else
+                -b
     in
     Texture.with textures img <|
         \texture ->
@@ -127,8 +141,8 @@ imageButtonView button { img, color } ctx =
                 { rotation = makeRotate pi (vec3 0 0 1)
                 , scale =
                     makeScale3
-                        (0.04 * xScale + xScale * 0.001 * hoverPop)
-                        (0.04 * yScale + yScale * 0.001 * hoverPop)
+                        (width + matchSign width hoverPop)
+                        (height + matchSign height hoverPop)
                         1
                 , color = color
                 , pos = vec3 x y 0
