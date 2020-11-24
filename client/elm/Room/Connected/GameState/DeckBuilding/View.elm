@@ -51,11 +51,11 @@ charactersView characters tick ctx =
         character =
             characters.selected
 
-        { w, h } =
+        { w, h, radius } =
             ctx
 
         size =
-            1.4 * max w h
+            6 * radius
     in
     Font.view
         "Futura"

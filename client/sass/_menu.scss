@@ -10,8 +10,11 @@
     font-size: 6rem;
     font-family: sans-serif;
     font-weight: 400;
-
     margin: 15px;
+
+    @media (max-width: 600px) {
+      font-size: 3rem;
+    }
   }
 
   .main-menu-buttons {

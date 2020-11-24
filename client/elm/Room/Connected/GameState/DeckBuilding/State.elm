@@ -192,7 +192,7 @@ characterButtons { radius, w, h, mouse } dt { ready, buttons, characters } =
                     }
                 , Buttons.entity
                     "next"
-                    { x = 0.7 * w
+                    { x = 0.5 * w + triangleSide * 3
                     , y = 0.5 * h
                     , width = arrowScale
                     , height = arrowScale
@@ -205,7 +205,7 @@ characterButtons { radius, w, h, mouse } dt { ready, buttons, characters } =
                     }
                 , Buttons.entity
                     "prev"
-                    { x = 0.3 * w
+                    { x = 0.5 * w - triangleSide * 3
                     , y = 0.5 * h
                     , width = -arrowScale
                     , height = arrowScale

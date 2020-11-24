@@ -437,5 +437,5 @@ handCardPosition ctx which index count hover =
 
 
 playPosition : Context -> Vec3
-playPosition _ =
-    vec3 0 0.5 0
+playPosition ctx =
+    vec3 0 (Stack.Entities.baseDistance ctx) 0
