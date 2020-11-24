@@ -25,6 +25,7 @@ view { error, gameType } =
                             [ text "LOGIN & PLAY" ]
                         ]
                     , div [ class "vertical-rule" ] []
+                    , div [ class "horizontal-rule" ] []
                     , button [ onClick <| JoinRoom, class "menu-button" ] [ text "PLAY AS GUEST" ]
                     ]
                 , div [ class "error" ] [ text error ]

@@ -13,9 +13,9 @@ import Util exposing (interpFloat)
 import Wheel.State as Wheel
 
 
-baseDistance : Float
-baseDistance =
-    0.5
+baseDistance : Context -> Float
+baseDistance { radius } =
+    radius * 0.0017
 
 
 baseRotation : Quaternion
@@ -108,20 +108,20 @@ stackEntity ctx finalIndex =
                 DiscardStack discards ->
                     case Wheel.get finalIndex discards of
                         Just True ->
-                            baseDistance + toFloat (12 - finalIndex) * progress * 0.01
+                            baseDistance ctx + toFloat (12 - finalIndex) * progress * 0.01
 
                         _ ->
-                            baseDistance
+                            baseDistance ctx
 
                 _ ->
-                    baseDistance
+                    baseDistance ctx
     in
     wheelEntity ctx distance i finalI
 
 
 wheelEntities : Context -> List WheelEntity
 wheelEntities ctx =
-    List.map (\i -> wheelEntity ctx baseDistance i i) <|
+    List.map (\i -> wheelEntity ctx (baseDistance ctx) i i) <|
         List.map toFloat <|
             List.range 0 11
 
@@ -129,7 +129,7 @@ wheelEntities ctx =
 wheelEntity : Context -> Float -> Float -> Float -> WheelEntity
 wheelEntity ctx distance i finalI =
     let
-        { anim, progress } =
+        { anim, progress, radius } =
             ctx
 
         rotateProgress : Float
@@ -162,5 +162,5 @@ wheelEntity ctx distance i finalI =
     in
     { position = position
     , rotation = rotation
-    , scale = Card.scale
+    , scale = Math.Vector3.scale (0.0035 * radius) Card.scale
     }

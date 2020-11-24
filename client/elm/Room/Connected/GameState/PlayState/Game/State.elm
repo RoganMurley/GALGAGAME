@@ -343,7 +343,7 @@ buttonEntities passed mouse dt buttons { w, h, model, radius, resolving } =
             handFull || not yourTurn || passed || resolving
 
         x =
-            w * 0.5 + 0.7 * radius
+            w * 0.5 + 0.65 * radius
 
         y =
             h * 0.5 + 0.8 * radius

@@ -135,7 +135,7 @@ lifeOrbView ({ w, h, radius, model, anim, animDamage, tick } as ctx) =
             Animation.animShake anim PlayerB tick
 
         ( xOffset, yOffset ) =
-            ( 0.7 * radius, 0.875 * radius )
+            ( 0.65   * radius, 0.875 * radius )
 
         pos =
             Math.Vector2.add

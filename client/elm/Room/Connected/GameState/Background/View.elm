@@ -41,9 +41,6 @@ getRingRotation { anim, model, progress } =
                 Windup _ ->
                     toFloat model.rot + (1 - progress)
 
-                Finding ->
-                    -12 * progress
-
                 _ ->
                     toFloat model.rot
     in
