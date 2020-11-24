@@ -157,13 +157,16 @@ tick ctx dt model =
 
 
 characterButtons : Context -> Float -> Model -> Buttons
-characterButtons { w, h, mouse } dt { ready, buttons, characters } =
+characterButtons { radius, w, h, mouse } dt { ready, buttons, characters } =
     let
         runeScale =
-            0.9 * max w h
+            radius * 0.25
 
         triangleSide =
-            runeScale * 0.06
+            radius * 0.2
+
+        arrowScale =
+            radius * 0.1
     in
     if ready then
         Buttons.empty
@@ -175,8 +178,8 @@ characterButtons { w, h, mouse } dt { ready, buttons, characters } =
                     "ready"
                     { x = 0.5 * w
                     , y = 0.8 * h
-                    , xScale = 1.4 * max w h
-                    , yScale = 0.6 * max w h
+                    , width = 0.25 * radius
+                    , height = 0.1 * radius
                     , btn =
                         TextButton
                             { font = "Futura"
@@ -191,8 +194,8 @@ characterButtons { w, h, mouse } dt { ready, buttons, characters } =
                     "next"
                     { x = 0.7 * w
                     , y = 0.5 * h
-                    , xScale = 0.6 * max w h
-                    , yScale = 0.6 * max w h
+                    , width = arrowScale
+                    , height = arrowScale
                     , btn =
                         ImageButton
                             { img = "next.png"
@@ -204,8 +207,8 @@ characterButtons { w, h, mouse } dt { ready, buttons, characters } =
                     "prev"
                     { x = 0.3 * w
                     , y = 0.5 * h
-                    , xScale = -0.6 * max w h
-                    , yScale = 0.6 * max w h
+                    , width = -arrowScale
+                    , height = arrowScale
                     , btn =
                         ImageButton
                             { img = "next.png"
@@ -217,8 +220,8 @@ characterButtons { w, h, mouse } dt { ready, buttons, characters } =
                     "runeA"
                     { x = 0.5 * w
                     , y = 0.5 * h - triangleSide
-                    , xScale = runeScale
-                    , yScale = runeScale
+                    , width = runeScale
+                    , height = runeScale
                     , btn =
                         ImageButton
                             { img = characters.selected.runeA.imgURL
@@ -230,8 +233,8 @@ characterButtons { w, h, mouse } dt { ready, buttons, characters } =
                     "runeB"
                     { x = 0.5 * w + triangleSide / sin 1.04
                     , y = 0.5 * h + triangleSide
-                    , xScale = runeScale
-                    , yScale = runeScale
+                    , width = runeScale
+                    , height = runeScale
                     , btn =
                         ImageButton
                             { img = characters.selected.runeB.imgURL
@@ -243,8 +246,8 @@ characterButtons { w, h, mouse } dt { ready, buttons, characters } =
                     "runeC"
                     { x = 0.5 * w - triangleSide / sin 1.04
                     , y = 0.5 * h + triangleSide
-                    , xScale = runeScale
-                    , yScale = runeScale
+                    , width = runeScale
+                    , height = runeScale
                     , btn =
                         ImageButton
                             { img = characters.selected.runeC.imgURL

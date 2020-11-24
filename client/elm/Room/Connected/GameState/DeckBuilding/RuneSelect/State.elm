@@ -43,9 +43,6 @@ tick ctx dt model =
         newHover =
             Nothing
 
-        -- Maybe.andThen
-        --     (\pos -> List.find (hitTest pos 32) newEntities)
-        --     ctx.mouse
         newButtons =
             buttons ctx dt model
     in
@@ -57,15 +54,19 @@ tick ctx dt model =
 
 
 buttons : Context -> Float -> Model -> Buttons
-buttons { mouse, w, h } dt model =
+buttons { mouse, radius, w, h } dt model =
+    let
+        arrowScale =
+            radius * 0.1
+    in
     Buttons.fromList <|
         List.map (\f -> f dt mouse model.buttons)
             [ Buttons.entity
                 "nextRune"
                 { x = 0.7 * w
                 , y = 0.5 * h
-                , xScale = 0.6 * max w h
-                , yScale = 0.6 * max w h
+                , width = arrowScale
+                , height = arrowScale
                 , btn =
                     ImageButton
                         { img = "next.png"
@@ -77,8 +78,8 @@ buttons { mouse, w, h } dt model =
                 "prevRune"
                 { x = 0.3 * w
                 , y = 0.5 * h
-                , xScale = -0.6 * max w h
-                , yScale = 0.6 * max w h
+                , width = -arrowScale
+                , height = arrowScale
                 , btn =
                     ImageButton
                         { img = "next.png"
@@ -90,8 +91,8 @@ buttons { mouse, w, h } dt model =
                 "selectRune"
                 { x = 0.5 * w
                 , y = 0.9 * h
-                , xScale = 1.6 * max w h
-                , yScale = 0.6 * max w h
+                , width = 0.25 * radius
+                , height = 0.1 * radius
                 , btn =
                     TextButton
                         { font = "Futura"

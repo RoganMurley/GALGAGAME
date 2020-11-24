@@ -104,6 +104,18 @@ buttonEntities renderParams buttons dt mouse =
 
         h =
             toFloat renderParams.h
+
+        textColor =
+            vec3 (0 / 255) (0 / 255) (80 / 255)
+
+        bgColor =
+            vec3 (244 / 255) (241 / 255) (94 / 255)
+
+        buttonWidth =
+            0.12 * max w h
+
+        buttonHeight =
+            0.02 * max w h
     in
     Buttons.fromList <|
         List.map (\f -> f dt mouse buttons)
@@ -111,14 +123,14 @@ buttonEntities renderParams buttons dt mouse =
                 "playAgain"
                 { x = 0.35 * w
                 , y = 0.6 * h
-                , xScale = 2.7 * max w h
-                , yScale = 0.6 * max w h
+                , width = buttonWidth
+                , height = buttonHeight
                 , btn =
                     TextButton
                         { font = "Futura"
                         , text = "Play Again?"
-                        , textColor = vec3 (0 / 255) (0 / 255) (80 / 255)
-                        , bgColor = vec3 (244 / 255) (241 / 255) (94 / 255)
+                        , textColor = textColor
+                        , bgColor = bgColor
                         , options = [ Buttons.HoverText "Play Again!" ]
                         }
                 , disabled = False
@@ -127,14 +139,14 @@ buttonEntities renderParams buttons dt mouse =
                 "watchReplay"
                 { x = 0.65 * w
                 , y = 0.6 * h
-                , xScale = 2.7 * max w h
-                , yScale = 0.6 * max w h
+                , width = buttonWidth
+                , height = buttonHeight
                 , btn =
                     TextButton
                         { font = "Futura"
                         , text = "Watch Replay?"
-                        , textColor = vec3 (0 / 255) (0 / 255) (80 / 255)
-                        , bgColor = vec3 (244 / 255) (241 / 255) (94 / 255)
+                        , textColor = textColor
+                        , bgColor = bgColor
                         , options = [ Buttons.HoverText "Watch Replay!" ]
                         }
                 , disabled = False

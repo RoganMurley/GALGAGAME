@@ -11,8 +11,8 @@ type Buttons
 type alias Button =
     { x : Float
     , y : Float
-    , xScale : Float
-    , yScale : Float
+    , width : Float
+    , height : Float
     , hover : Float
     , disabled : Bool
     , btn : ButtonType

@@ -1,7 +1,7 @@
 module Buttons.State exposing (empty, entity, fromList, get, getHoverText, hit, isCircular, update)
 
 import Buttons.Types exposing (Button, ButtonType(..), Buttons(..), TextButtonOption(..), TextButtonParams)
-import Collision exposing (hitTest)
+import Collision exposing (AABB, hitAABB)
 import Dict
 import List.Extra as List
 import Math.Vector2 exposing (Vec2, vec2)
@@ -9,12 +9,12 @@ import Math.Vector2 exposing (Vec2, vec2)
 
 entity :
     String
-    -> { x : Float, y : Float, xScale : Float, yScale : Float, btn : ButtonType, disabled : Bool }
+    -> { x : Float, y : Float, width : Float, height : Float, btn : ButtonType, disabled : Bool }
     -> Float
     -> Maybe Vec2
     -> Buttons
     -> ( String, Button )
-entity key { x, y, xScale, yScale, btn, disabled } dt mMouse buttons =
+entity key { x, y, width, height, btn, disabled } dt mMouse buttons =
     let
         previousHover : Float
         previousHover =
@@ -22,9 +22,15 @@ entity key { x, y, xScale, yScale, btn, disabled } dt mMouse buttons =
                 |> Maybe.map .hover
                 |> Maybe.withDefault 0
 
+        aabb : AABB
+        aabb =
+            { r1 = vec2 (x - abs width) (y - abs height)
+            , r2 = vec2 (x + abs width) (y + abs height)
+            }
+
         isHit : Bool
         isHit =
-            Maybe.map (\mouse -> hitTest mouse (0.07 * abs xScale) { position = vec2 x y }) mMouse
+            Maybe.map (\mouse -> hitAABB aabb mouse) mMouse
                 |> Maybe.withDefault False
 
         hover : Float
@@ -39,8 +45,8 @@ entity key { x, y, xScale, yScale, btn, disabled } dt mMouse buttons =
     , { x = x
       , y = y
       , hover = hover
-      , xScale = xScale
-      , yScale = yScale
+      , width = width
+      , height = height
       , disabled = disabled
       , btn = btn
       }
