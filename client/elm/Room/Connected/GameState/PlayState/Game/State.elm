@@ -165,7 +165,7 @@ tick { dimensions, mouse } dt model =
                 , otherHover = otherHover
                 , entities =
                     { stack = Stack.entities ctx
-                    , hand = Hand.entities model.hover ctx
+                    , hand = Hand.entities model.hover holding ctx
                     , otherHand = Hand.otherEntities model.otherHover ctx
                     , wheel = Stack.wheelEntities ctx
                     }

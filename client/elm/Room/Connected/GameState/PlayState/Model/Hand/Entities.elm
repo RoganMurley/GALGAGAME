@@ -7,16 +7,19 @@ import Card.State as Card
 import Card.Types exposing (Card)
 import Game.Entity as Game
 import Game.Types exposing (Context, HandEntity, OtherHandEntity)
+import Holding.State as Holding
+import Holding.Types exposing (Holding(..))
 import Hover exposing (Hover(..), HoverOther, HoverSelf)
 import Math.Vector3 exposing (Vec3, vec3)
+import Maybe.Extra as Maybe
 import Quaternion
 import Stack.Entities
 import Util exposing (interp, interpFloat)
 import WhichPlayer.Types exposing (WhichPlayer(..))
 
 
-entities : HoverSelf -> Context -> List HandEntity
-entities hover ({ anim, model, progress } as ctx) =
+entities : HoverSelf -> Holding -> Context -> List HandEntity
+entities hover holding ({ anim, model, progress } as ctx) =
     let
         finalHand =
             case anim of
@@ -71,7 +74,10 @@ entities hover ({ anim, model, progress } as ctx) =
         finalN =
             List.length finalHand
 
-        entity : ( Int, Card ) -> HandEntity
+        holdingIndex =
+            Holding.getHandIndex holding
+
+        entity : ( Int, Card ) -> Maybe HandEntity
         entity ( finalI, card ) =
             let
                 i =
@@ -87,17 +93,22 @@ entities hover ({ anim, model, progress } as ctx) =
                         (Quaternion.zRotation (handCardRotation PlayerA i n))
                         (Quaternion.zRotation (handCardRotation PlayerA finalI finalN))
             in
-            { position = pos
-            , rotation = rot
-            , scale = Card.scale
-            , card = card
-            , owner = PlayerA
-            , index = finalI
-            }
+            if Just finalI == holdingIndex then
+                Nothing
+
+            else
+                Just <|
+                    { position = pos
+                    , rotation = rot
+                    , scale = Card.scale
+                    , card = card
+                    , owner = PlayerA
+                    , index = finalI
+                    }
 
         mainEntities : List HandEntity
         mainEntities =
-            List.map entity <| List.indexedMap (\a b -> ( a, b )) hand
+            Maybe.values <| List.map entity <| List.indexedMap (\a b -> ( a, b )) hand
 
         extraEntities : List HandEntity
         extraEntities =

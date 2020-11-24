@@ -51,7 +51,7 @@ view { w, h } game assets =
             , Stack.wheelBgView entities.wheel
             , Stack.view entities.stack
             , focusImageView focus
-            , Hand.view entities.hand holding
+            , Hand.view entities.hand
             , Hand.otherView entities.otherHand
             , Hand.millView
             , damageView hover holding
