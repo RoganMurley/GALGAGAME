@@ -304,16 +304,16 @@ locationUpdate model url =
                             Just <| "/play/custom/" ++ roomID
 
                         GameType.ComputerGame ->
-                            Just "/play/computer/"
+                            Just "/play/computer"
 
                         GameType.QuickplayGame ->
-                            Just "/play/quickplay/"
+                            Just "/play/quickplay"
 
                         GameType.TutorialGame ->
-                            Just "/play/tutorial/"
+                            Just "/play/tutorial"
 
                         GameType.DailyGame ->
-                            Just "/play/daily/"
+                            Just "/play/daily"
 
                 _ ->
                     Nothing
