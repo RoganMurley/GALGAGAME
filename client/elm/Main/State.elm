@@ -263,21 +263,37 @@ update msg ({ assets, room, settings, flags } as model) =
 
         TouchPosition pos ->
             let
-                -- ( newRoom, newCmd ) =
-                --     Room.update
-                --         room
-                --         (Room.ConnectedMsg <|
-                --             Connected.GameStateMsg <|
-                --                 GameState.Touch pos
-                --         )
-                --         flags
                 newFlags =
                     { flags | mouse = Maybe.map (\{ x, y } -> vec2 (toFloat x) (toFloat y)) pos }
 
-                newCmd =
-                    Cmd.none
+                ( newRoom, newCmd ) =
+                    case ( flags.mouse, pos ) of
+                        ( Nothing, Just newMouse ) ->
+                            Room.update
+                                room
+                                (Room.ConnectedMsg <|
+                                    Connected.GameStateMsg <|
+                                        GameState.MouseDown newMouse
+                                )
+                                assets
+                                flags
+
+                        ( Just oldMouse, Nothing ) ->
+                            Room.update
+                                room
+                                (Room.ConnectedMsg <|
+                                    Connected.GameStateMsg <|
+                                        GameState.MouseUp <|
+                                            (\{ x, y } -> { x = round x, y = round y }) <|
+                                                Math.Vector2.toRecord oldMouse
+                                )
+                                assets
+                                flags
+
+                        _ ->
+                            ( room, Cmd.none )
             in
-            ( { model | flags = newFlags }
+            ( { model | flags = newFlags, room = newRoom }
             , newCmd
             )
 
