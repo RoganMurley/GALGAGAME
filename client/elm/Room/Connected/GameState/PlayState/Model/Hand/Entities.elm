@@ -18,6 +18,16 @@ import Util exposing (interp, interpFloat)
 import WhichPlayer.Types exposing (WhichPlayer(..))
 
 
+width : Float
+width =
+    0.0001
+
+
+spacing : Float
+spacing =
+    0.125
+
+
 entities : HoverSelf -> Holding -> Context -> List HandEntity
 entities hover holding ({ anim, model, progress } as ctx) =
     let
@@ -202,7 +212,7 @@ entities hover holding ({ anim, model, progress } as ctx) =
                 _ ->
                     []
     in
-    extraEntities ++ mainEntities
+    mainEntities ++ extraEntities
 
 
 otherEntities : HoverOther -> Context -> List (Game.Entity3D {})
@@ -328,15 +338,12 @@ otherEntities hover ({ anim, model, progress } as ctx) =
                 _ ->
                     []
     in
-    extraEntities ++ mainEntities
+    mainEntities ++ extraEntities
 
 
 handOrigin : Context -> WhichPlayer -> Int -> Vec3
 handOrigin { anim, tick } which count =
     let
-        ( width, spacing ) =
-            ( 0.0001, 0.2 )
-
         shake =
             0.01 * Animation.animShake anim which tick
 
@@ -371,9 +378,6 @@ handCardRotation which i count =
 handCardPosition : Context -> WhichPlayer -> Int -> Int -> Hover a -> Vec3
 handCardPosition ctx which index count hover =
     let
-        ( width, _, spacing ) =
-            ( 0.0001, 0.0001, 0.2 )
-
         sign =
             case which of
                 PlayerA ->

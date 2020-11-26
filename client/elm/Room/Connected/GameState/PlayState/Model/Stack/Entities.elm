@@ -14,8 +14,8 @@ import Wheel.State as Wheel
 
 
 baseDistance : Context -> Float
-baseDistance { radius } =
-    radius * 0.0017
+baseDistance _ =
+    0.5
 
 
 baseRotation : Quaternion
@@ -129,7 +129,7 @@ wheelEntities ctx =
 wheelEntity : Context -> Float -> Float -> Float -> WheelEntity
 wheelEntity ctx distance i finalI =
     let
-        { anim, progress, radius } =
+        { anim, progress } =
             ctx
 
         rotateProgress : Float
@@ -162,5 +162,7 @@ wheelEntity ctx distance i finalI =
     in
     { position = position
     , rotation = rotation
-    , scale = Math.Vector3.scale (0.0035 * radius) Card.scale
+    , scale = Card.scale
+
+    -- , scale = Math.Vector3.scale (0.0035 * radius) Card.scale
     }
