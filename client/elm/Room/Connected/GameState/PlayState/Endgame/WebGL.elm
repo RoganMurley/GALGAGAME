@@ -40,8 +40,11 @@ animView ({ camera2d, ortho, w, h, radius, anim, progress } as ctx) =
                 color =
                     vec3 (244 / 255) (241 / 255) (94 / 255)
 
-                size =
-                    radius * 3
+                shadowOffsetX =
+                    0.009 * radius
+
+                scale =
+                    0.0008 * radius
             in
             List.concat
                 [ [ Render.Primitives.quad Render.Shaders.matte
@@ -57,10 +60,10 @@ animView ({ camera2d, ortho, w, h, radius, anim, progress } as ctx) =
                 , Font.view
                     "Futura"
                     text
-                    { x = w * 0.5 - 0.003 * size
+                    { x = w * 0.5 - shadowOffsetX
                     , y = h * 0.4
-                    , scaleX = 0.3 * Ease.outBounce (progress * progress)
-                    , scaleY = 0.3 * Ease.outBounce (progress * progress)
+                    , scaleX = scale * Ease.outBounce (progress * progress)
+                    , scaleY = scale * Ease.outBounce (progress * progress)
                     , color = vec3 (40 / 255) (20 / 255) (20 / 255)
                     }
                     ctx
@@ -69,8 +72,8 @@ animView ({ camera2d, ortho, w, h, radius, anim, progress } as ctx) =
                     text
                     { x = w * 0.5
                     , y = h * 0.4
-                    , scaleX = 0.3 * Ease.outBounce progress
-                    , scaleY = 0.3 * Ease.outBounce progress
+                    , scaleX = scale * Ease.outBounce progress
+                    , scaleY = scale * Ease.outBounce progress
                     , color = color
                     }
                     ctx
@@ -121,8 +124,8 @@ buttonEntities renderParams buttons dt mouse =
         List.map (\f -> f dt mouse buttons)
             [ Buttons.entity
                 "playAgain"
-                { x = 0.35 * w
-                , y = 0.6 * h
+                { x = 0.5 * w
+                , y = 0.55 * h
                 , width = buttonWidth
                 , height = buttonHeight
                 , btn =
@@ -137,8 +140,8 @@ buttonEntities renderParams buttons dt mouse =
                 }
             , Buttons.entity
                 "watchReplay"
-                { x = 0.65 * w
-                , y = 0.6 * h
+                { x = 0.5 * w
+                , y = 0.65 * h
                 , width = buttonWidth
                 , height = buttonHeight
                 , btn =
