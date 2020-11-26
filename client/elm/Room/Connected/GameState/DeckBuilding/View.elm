@@ -80,7 +80,7 @@ waitingView tick ctx =
     in
     Font.view
         "Futura"
-        "WAITING ON\nOPPONENT"
+        "WAITING FOR\nOPPONENT"
         { x = w * 0.5 - 0.003 * size
         , y = h * 0.4
         , scaleX = 0.0001 * size + 0.003 * sin (tick * 0.005)

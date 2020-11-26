@@ -31,7 +31,7 @@ Join the [discord](https://discord.gg/SVXXej4).
 * `./scripts/makeFakeCertificates`
 * `docker-compose build`
 
-## Run localy
+## Run locally
 * `docker-compose up`
 
 App will be served at https://localhost:4430.

@@ -135,7 +135,7 @@ lifeOrbView ({ w, h, radius, model, anim, animDamage, tick } as ctx) =
             Animation.animShake anim PlayerB tick
 
         ( xOffset, yOffset ) =
-            ( 0.65   * radius, 0.875 * radius )
+            ( 0.65 * radius, 0.875 * radius )
 
         pos =
             Math.Vector2.add
@@ -301,13 +301,13 @@ damageView hover holding ({ w, h, radius, resolving, animDamage, tick, anim } as
                 0
 
         scale =
-            0.14 + 0.05 * progress
+            radius * 0.0003 * (1 + 0.05 * progress)
 
         xOffset =
-            0.45 * radius
+            0.3 * radius
 
         yOffset =
-            0.9 * radius
+            0.95 * radius
     in
     List.concat
         [ if damage /= 0 then
