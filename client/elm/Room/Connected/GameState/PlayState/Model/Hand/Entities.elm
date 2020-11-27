@@ -342,7 +342,7 @@ otherEntities hover ({ anim, model, progress } as ctx) =
 
 
 handOrigin : Context -> WhichPlayer -> Int -> Vec3
-handOrigin { anim, tick } which count =
+handOrigin { anim, tick, w, h } which count =
     let
         shake =
             0.01 * Animation.animShake anim which tick
@@ -357,8 +357,27 @@ handOrigin { anim, tick } which count =
 
                 PlayerB ->
                     0.7
+
+        baseZ =
+            -0.4 + shake
+
+        z =
+            if w >= h then
+                0
+
+            else if w / h < 0.5 then
+                0.2
+
+            else if w / h < 0.55 then
+                0.15
+
+            else if w / h < 0.6 then
+                0.1
+
+            else
+                0.05
     in
-    vec3 x y (-0.4 + shake)
+    vec3 x y (baseZ + z)
 
 
 handCardRotation : WhichPlayer -> Int -> Int -> Float
@@ -442,4 +461,8 @@ handCardPosition ctx which index count hover =
 
 playPosition : Context -> Vec3
 playPosition ctx =
-    vec3 0 (Stack.Entities.baseDistance ctx) 0
+    let
+        entity =
+            Stack.Entities.wheelEntity ctx (Stack.Entities.baseDistance ctx) 0 0
+    in
+    entity.position
