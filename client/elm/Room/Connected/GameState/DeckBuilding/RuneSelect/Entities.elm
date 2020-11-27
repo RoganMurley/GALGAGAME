@@ -17,32 +17,29 @@ entities _ model =
 
         rotation =
             Quaternion.identity
-
-        circleRadius =
-            0.35
     in
-    [ { position = vec3 0 -circleRadius 0
+    [ { position = vec3 -0.1 -0.3 0
       , rotation = rotation
       , scale = Card.scale
       , card = rune.cards.b
       , owner = PlayerA
       }
-    , { position = vec3 circleRadius 0 0
+    , { position = vec3 -0.3 -0.3 0
       , rotation = rotation
       , scale = Card.scale
       , card = rune.cards.a
       , owner = PlayerA
       }
-    , { position = vec3 0 circleRadius 0
-      , rotation = rotation
-      , scale = Card.scale
-      , card = rune.cards.d
-      , owner = PlayerA
-      }
-    , { position = vec3 -circleRadius 0 0
+    , { position = vec3 0.1 -0.3 0
       , rotation = rotation
       , scale = Card.scale
       , card = rune.cards.c
+      , owner = PlayerA
+      }
+    , { position = vec3 0.3 -0.3 0
+      , rotation = rotation
+      , scale = Card.scale
+      , card = rune.cards.d
       , owner = PlayerA
       }
     ]

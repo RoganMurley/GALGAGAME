@@ -58,13 +58,16 @@ buttons { mouse, radius, w, h } dt model =
     let
         arrowScale =
             radius * 0.1
+
+        arrowOffset =
+            radius * 0.43
     in
     Buttons.fromList <|
         List.map (\f -> f dt mouse model.buttons)
             [ Buttons.entity
                 "nextRune"
-                { x = 0.7 * w
-                , y = 0.5 * h
+                { x = 0.5 * w + arrowOffset
+                , y = 0.9 * h
                 , width = arrowScale
                 , height = arrowScale
                 , btn =
@@ -76,8 +79,8 @@ buttons { mouse, radius, w, h } dt model =
                 }
             , Buttons.entity
                 "prevRune"
-                { x = 0.3 * w
-                , y = 0.5 * h
+                { x = 0.5 * w - arrowOffset
+                , y = 0.9 * h
                 , width = -arrowScale
                 , height = arrowScale
                 , btn =

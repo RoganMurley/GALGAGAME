@@ -160,13 +160,16 @@ characterButtons : Context -> Float -> Model -> Buttons
 characterButtons { radius, w, h, mouse } dt { ready, buttons, characters } =
     let
         runeScale =
-            radius * 0.25
+            radius * 0.3
 
         triangleSide =
-            radius * 0.2
+            radius * 0.27
 
         arrowScale =
             radius * 0.1
+
+        arrowOffset =
+            0.43 * radius
     in
     if ready then
         Buttons.empty
@@ -192,8 +195,8 @@ characterButtons { radius, w, h, mouse } dt { ready, buttons, characters } =
                     }
                 , Buttons.entity
                     "next"
-                    { x = 0.5 * w + triangleSide * 3
-                    , y = 0.5 * h
+                    { x = 0.5 * w + arrowOffset
+                    , y = 0.8 * h
                     , width = arrowScale
                     , height = arrowScale
                     , btn =
@@ -205,8 +208,8 @@ characterButtons { radius, w, h, mouse } dt { ready, buttons, characters } =
                     }
                 , Buttons.entity
                     "prev"
-                    { x = 0.5 * w - triangleSide * 3
-                    , y = 0.5 * h
+                    { x = 0.5 * w - arrowOffset
+                    , y = 0.8 * h
                     , width = -arrowScale
                     , height = arrowScale
                     , btn =
