@@ -45,7 +45,7 @@ blazeCup =
 blazeCoin :: Card
 blazeCoin =
   Card Blaze Coin
-    "Shuffle the order of all cards in the chain"
+    "Shuffle the order of all cards\nin the chain"
     $ \_ -> do
       confound
       Beta.null
