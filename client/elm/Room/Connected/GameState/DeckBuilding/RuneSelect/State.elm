@@ -3,7 +3,9 @@ module RuneSelect.State exposing (buttons, tick, update)
 import Buttons.State as Buttons
 import Buttons.Types as Buttons exposing (ButtonType(..), Buttons)
 import Carousel
+import Collision
 import Game.Types exposing (Context)
+import List.Extra as List
 import Math.Vector3 exposing (vec3)
 import RuneSelect.Entities as RuneSelect
 import RuneSelect.Messages exposing (Msg(..))
@@ -41,7 +43,13 @@ tick ctx dt model =
             RuneSelect.entities ctx model
 
         newHover =
-            Nothing
+            ctx.mouseRay
+                |> Maybe.andThen
+                    (\ray ->
+                        List.find
+                            (Collision.hitTest3d ray 0.18)
+                            newEntities
+                    )
 
         newButtons =
             buttons ctx dt model

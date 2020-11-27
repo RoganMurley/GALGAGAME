@@ -19,7 +19,7 @@ import Holding.Types exposing (Holding(..))
 import Holding.View as Holding
 import Hover exposing (Hover(..), HoverSelf)
 import Math.Matrix4 exposing (makeRotate, makeScale3)
-import Math.Vector2 exposing (vec2)
+import Math.Vector2 exposing (Vec2, vec2)
 import Math.Vector3 exposing (Vec3, vec3)
 import Maybe.Extra as Maybe
 import Model.Wave as Wave
@@ -50,13 +50,13 @@ view { w, h } game assets =
             , Wave.view
             , Stack.wheelBgView entities.wheel
             , Stack.view entities.stack
-            , focusImageView focus
+            , focusImageView (vec2 0 0) focus
             , Hand.view entities.hand
             , Hand.otherView entities.otherHand
             , Hand.millView
             , damageView hover holding
             , turnView focus passed
-            , focusTextView focus
+            , focusTextView (vec2 0 0) focus
             , Buttons.view buttons
             , Endgame.animView
             , feedbackView feedback
@@ -64,8 +64,8 @@ view { w, h } game assets =
             ]
 
 
-focusImageView : Maybe StackCard -> Context -> List WebGL.Entity
-focusImageView focus { tick, ortho, camera2d, w, h, anim, radius, textures } =
+focusImageView : Vec2 -> Maybe StackCard -> Context -> List WebGL.Entity
+focusImageView originVec focus { tick, ortho, camera2d, w, h, anim, radius, textures } =
     case anim of
         Mill _ _ ->
             []
@@ -85,12 +85,15 @@ focusImageView focus { tick, ortho, camera2d, w, h, anim, radius, textures } =
 
                         shake =
                             Animation.animShake anim PlayerA tick + Animation.animShake anim PlayerB tick
+
+                        origin =
+                            Math.Vector2.toRecord originVec
                     in
                     [ Render.Primitives.quad Render.Shaders.fragment
                         { rotation = makeRotate pi (vec3 0 0 1)
                         , scale = makeScale3 (0.2 * radius) (0.2 * radius) 1
                         , color = color
-                        , pos = vec3 (w * 0.5 + shake) (h * 0.43 + shake) 0
+                        , pos = vec3 (origin.x + w * 0.5 + shake) (origin.y + h * 0.43 + shake) 0
                         , perspective = ortho
                         , camera = camera2d
                         , texture = texture
@@ -211,8 +214,8 @@ lifeOrbView ({ w, h, radius, model, anim, animDamage, tick } as ctx) =
             ]
 
 
-focusTextView : Maybe StackCard -> Context -> List WebGL.Entity
-focusTextView focus ({ w, h, anim, radius, tick } as ctx) =
+focusTextView : Vec2 -> Maybe StackCard -> Context -> List WebGL.Entity
+focusTextView originVec focus ({ w, h, anim, radius, tick } as ctx) =
     case anim of
         Mill _ _ ->
             []
@@ -232,12 +235,15 @@ focusTextView focus ({ w, h, anim, radius, tick } as ctx) =
                     let
                         shake =
                             Animation.animShake anim PlayerA tick + Animation.animShake anim PlayerB tick
+
+                        origin =
+                            Math.Vector2.toRecord originVec
                     in
                     List.concat
                         [ Font.view "Futura"
                             card.name
-                            { x = 0.5 * w + shake
-                            , y = 0.5 * h + radius * 0.15 + shake
+                            { x = origin.x + 0.5 * w + shake
+                            , y = origin.y + 0.5 * h + radius * 0.15 + shake
                             , scaleX = 0.00025 * radius
                             , scaleY = 0.00025 * radius
                             , color = Colour.white
@@ -245,8 +251,8 @@ focusTextView focus ({ w, h, anim, radius, tick } as ctx) =
                             ctx
                         , Font.view "Futura"
                             card.desc
-                            { x = 0.5 * w + shake
-                            , y = 0.5 * h + radius * 0.3 + shake
+                            { x = origin.x + 0.5 * w + shake
+                            , y = origin.y + 0.5 * h + radius * 0.3 + shake
                             , scaleX = 0.00012 * radius
                             , scaleY = 0.00012 * radius
                             , color = Colour.white

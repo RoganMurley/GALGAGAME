@@ -3,8 +3,9 @@ module RuneSelect.View exposing (view)
 import Card.View as Card
 import Font.View as Font
 import Game.Types exposing (Context)
+import Math.Vector2 exposing (vec2)
 import Math.Vector3 exposing (vec3)
-import Model.View exposing (focusImageView)
+import Model.View exposing (focusImageView, focusTextView)
 import RuneSelect.Messages exposing (Msg(..))
 import RuneSelect.Types exposing (Model, RuneCursor(..))
 import WebGL
@@ -25,8 +26,10 @@ view model ({ w, h, tick } as ctx) =
     List.concat
         [ List.concat <| List.map (Card.view ctx) model.entities
         , focusImageView
+            (vec2 0 (-h * 0.1))
             focus
             ctx
+        , focusTextView (vec2 0 (-h * 0.1)) focus ctx
         , Font.view
             "Futura"
             model.carousel.selected.name
