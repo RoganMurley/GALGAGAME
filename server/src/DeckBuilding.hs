@@ -282,7 +282,7 @@ allCharacters = [
 catherine :: Character
 catherine =
   Character
-    "Catherine"
+    "Fool"
     "/img/textures/confound.png"
     blazeRune
     shroomRune
@@ -292,21 +292,21 @@ catherine =
 marcus :: Character
 marcus =
   Character
-    "Marcus"
+    "Magician"
     "/img/textures/hubris.png"
-    heavenRune
-    mirageRune
-    dualityRune
+    alchemyRune
+    mirrorRune
+    morphRune
 
 
 freja :: Character
 freja =
   Character
-    "Freja"
+    "Priestess"
     "/img/textures/alchemy.png"
-    alchemyRune
-    mirrorRune
-    blazeRune
+    heavenRune
+    mirageRune
+    dualityRune
 
 
 characterCards :: Character -> Deck

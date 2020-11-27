@@ -359,23 +359,23 @@ handOrigin { anim, tick, w, h } which count =
                     0.7
 
         baseZ =
-            -0.4 + shake
+            -0.35 + shake
 
         z =
             if w >= h then
                 0
 
             else if w / h < 0.5 then
-                0.2
-
-            else if w / h < 0.55 then
                 0.15
 
-            else if w / h < 0.6 then
+            else if w / h < 0.55 then
                 0.1
 
-            else
+            else if w / h < 0.6 then
                 0.05
+
+            else
+                0.025
     in
     vec3 x y (baseZ + z)
 

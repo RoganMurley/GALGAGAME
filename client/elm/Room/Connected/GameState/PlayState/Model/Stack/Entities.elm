@@ -152,13 +152,13 @@ wheelEntity ctx distance i finalI =
                 2.5
 
             else if w / h < 0.55 then
-                2
+                1.75
 
             else if w / h < 0.6 then
-                1.5
+                1.25
 
             else
-                1.25
+                1
 
         position : Vec3
         position =
