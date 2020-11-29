@@ -49,6 +49,10 @@ parse which msg =
             Right $ Beta.addToHand which card
           Nothing ->
             Left ("Unknown card: " <> content :: Err)
+      "windup" ->
+        Right $ Beta.windup
+      "rotate" ->
+        Right $ Beta.rotate
       _ ->
         Left ("Unknown commandment: " <> command :: Err)
 

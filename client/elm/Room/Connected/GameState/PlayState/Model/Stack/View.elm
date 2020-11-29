@@ -17,39 +17,39 @@ import Wheel.State as Wheel
 view : List StackEntity -> Context -> List WebGL.Entity
 view entities ctx =
     let
-        makeEntity i =
+        makeEntity entity =
             case ctx.anim of
                 Transmute transmutations ->
-                    case Wheel.get i transmutations |> Maybe.join of
+                    case Wheel.get entity.index transmutations |> Maybe.join of
                         Just (Transmutation ca cb) ->
-                            Card.transmutingView ctx ca cb
+                            Card.transmutingView ctx ca cb entity
 
                         _ ->
-                            Card.view ctx
+                            Card.view ctx entity
 
                 Bounce bounces ->
-                    case Wheel.get i bounces |> Maybe.join of
+                    case Wheel.get entity.index bounces |> Maybe.join of
                         Just (BounceIndex _ _) ->
-                            \_ -> []
+                            []
 
                         Just BounceDiscard ->
-                            Card.dissolvingView ctx
+                            Card.dissolvingView ctx entity
 
                         _ ->
-                            Card.view ctx
+                            Card.view ctx entity
 
                 DiscardStack discards ->
-                    case Wheel.get i discards of
+                    case Wheel.get entity.index discards of
                         Just True ->
-                            Card.dissolvingView ctx
+                            Card.dissolvingView ctx entity
 
                         _ ->
-                            Card.view ctx
+                            Card.view ctx entity
 
                 _ ->
-                    Card.view ctx
+                    Card.view ctx entity
     in
-    List.concat <| List.indexedMap makeEntity entities
+    List.concat <| List.map makeEntity entities
 
 
 wheelBgView : List WheelEntity -> Context -> List WebGL.Entity
