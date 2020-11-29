@@ -186,7 +186,7 @@ blazeRune =
     "BLAZE"
     "Blazing heart."
     "cards/blaze/coin.png"
-    (Cards.blazeSword, Cards.blazeWand, Cards.blazeCup, Cards.blazeCoin)
+    (Cards.blazeSword, Cards.blazeWand, Cards.blazeGrail, Cards.blazeCoin)
 
 
 heavenRune :: Rune
@@ -195,7 +195,7 @@ heavenRune =
     "HEAVEN"
     "It appears the heavens have opened."
     "cards/heaven/coin.png"
-    (Cards.heavenSword, Cards.heavenWand, Cards.heavenCup, Cards.heavenCoin)
+    (Cards.heavenSword, Cards.heavenWand, Cards.heavenGrail, Cards.heavenCoin)
 
 
 shroomRune :: Rune
@@ -204,7 +204,7 @@ shroomRune =
     "SHROOM"
     "Earth to earth."
     "cards/shroom/coin.png"
-    (Cards.shroomSword, Cards.shroomWand, Cards.shroomCup, Cards.shroomCoin)
+    (Cards.shroomSword, Cards.shroomWand, Cards.shroomGrail, Cards.shroomCoin)
 
 
 bloodRune :: Rune
@@ -213,7 +213,7 @@ bloodRune =
     "BLOOD"
     "You steal life."
     "cards/blood/coin.png"
-    (Cards.bloodSword, Cards.bloodWand, Cards.bloodCup, Cards.bloodCoin)
+    (Cards.bloodSword, Cards.bloodWand, Cards.bloodGrail, Cards.bloodCoin)
 
 
 mirageRune :: Rune
@@ -222,7 +222,7 @@ mirageRune =
     "MIRAGE"
     "Seeing is believing."
     "cards/mirage/coin.png"
-    (Cards.mirageSword, Cards.mirageWand, Cards.mirageCup, Cards.mirageCoin)
+    (Cards.mirageSword, Cards.mirageWand, Cards.mirageGrail, Cards.mirageCoin)
 
 
 mirrorRune :: Rune
@@ -231,7 +231,7 @@ mirrorRune =
     "MIRROR"
     "A reflection of a reflection."
     "cards/mirror/coin.png"
-    (Cards.mirrorSword, Cards.mirrorWand, Cards.mirrorCup, Cards.mirrorCoin)
+    (Cards.mirrorSword, Cards.mirrorWand, Cards.mirrorGrail, Cards.mirrorCoin)
 
 
 dualityRune :: Rune
@@ -240,7 +240,7 @@ dualityRune =
     "DUALITY"
     "Strength from weakness, weakness from strength."
     "cards/duality/coin.png"
-    (Cards.dualitySword, Cards.dualityWand, Cards.dualityCup, Cards.dualityCoin)
+    (Cards.dualitySword, Cards.dualityWand, Cards.dualityGrail, Cards.dualityCoin)
 
 
 alchemyRune :: Rune
@@ -249,7 +249,7 @@ alchemyRune =
     "ALCHEMY"
     "For the lead hearted."
     "cards/alchemy/coin.png"
-    (Cards.alchemySword, Cards.alchemyWand, Cards.alchemyCup, Cards.alchemyCoin)
+    (Cards.alchemySword, Cards.alchemyWand, Cards.alchemyGrail, Cards.alchemyCoin)
 
 
 crownRune :: Rune
@@ -258,7 +258,7 @@ crownRune =
     "CROWN"
     "You use every advantage you have."
     "cards/crown/coin.png"
-    (Cards.crownSword, Cards.crownWand, Cards.crownCup, Cards.crownCoin)
+    (Cards.crownSword, Cards.crownWand, Cards.crownGrail, Cards.crownCoin)
 
 
 morphRune :: Rune
@@ -267,7 +267,7 @@ morphRune =
     "MORPH"
     "For the mutable mind."
     "cards/morph/coin.png"
-    (Cards.morphSword, Cards.morphWand, Cards.morphCup, Cards.morphCoin)
+    (Cards.morphSword, Cards.morphWand, Cards.morphGrail, Cards.morphCoin)
 
 
 -- Characters

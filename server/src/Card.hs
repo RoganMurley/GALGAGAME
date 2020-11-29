@@ -38,7 +38,7 @@ data Card = Card
 data Suit
   = Sword
   | Wand
-  | Cup
+  | Grail
   | Coin
   | OtherSuit Text
   deriving (Eq, Show)
