@@ -84,19 +84,19 @@ titleView : Model -> String
 titleView model =
     case model of
         Connected connected ->
-            Connected.titleView connected ++ " | GALGAGAME"
+            Connected.titleView connected ++ " | GALGA"
 
         Replay _ ->
-            "Replay | GALGAGAME"
+            "Replay | GALGA"
 
         Login _ ->
-            "Login | GALGAGAME"
+            "Login | GALGA"
 
         Signup _ ->
-            "Signup | GALGAGAME"
+            "Signup | GALGA"
 
         _ ->
-            "GALGAGAME"
+            "GALGA"
 
 
 webglView : Model -> Flags -> Assets.Model -> Html Main.Msg
