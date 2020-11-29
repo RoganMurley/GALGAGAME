@@ -4,14 +4,15 @@ module DSL.Beta.Actions where
 import CardAnim (Hurt(..))
 import Control.Monad.Free (MonadFree, liftF)
 import Control.Monad.Free.TH (makeFree)
+import Data.Map (Map)
 import DSL.Beta.DSL (DSL(..), Program)
 import Life (Life)
 import Player (WhichPlayer(..), other)
-import Safe (atMay)
 import StackCard (StackCard(..))
 import Transmutation (Transmutation(..))
 import Util (shuffle, split)
 
+import qualified Data.Map as Map
 import qualified DSL.Alpha as Alpha
 import qualified Stack
 
@@ -43,14 +44,16 @@ confound :: Program ()
 confound = do
   gen <- getGen
   stack <- getStack
-  let chain = fst <$> zip [1..] (Stack.chainToList stack) :: [Int]
-  let shuffled = shuffle gen chain :: [Int]
-  moveStack (\i _ -> if i > 0 then atMay shuffled (i - 1) else Nothing) 750
-  return ()
+  let diasporaIs = drop 1 $ fst <$> Stack.diasporaFromStack stack :: [Int]
+  let shuffledIs = shuffle gen diasporaIs :: [Int]
+  let diasporaMap = Map.fromList $ zip diasporaIs shuffledIs :: Map Int Int
+  moveStack (\i _ -> Map.lookup i diasporaMap) 750
 
 
 reversal :: Program ()
 reversal = do
-  chainLen <- Stack.chainLength <$> getStack
-  moveStack (\i _ -> if i > 0 then Just (chainLen - i + 1) else Nothing) 750
-  return ()
+  diaspora <- Stack.diasporaFromStack <$> getStack
+  let diasporaIs = drop 1 $ fst <$> diaspora :: [Int]
+  let reversedIs = reverse diasporaIs :: [Int]
+  let diasporaMap = Map.fromList $ zip diasporaIs reversedIs :: Map Int Int
+  moveStack (\i _ -> Map.lookup i diasporaMap) 750

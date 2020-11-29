@@ -1,9 +1,7 @@
 module Stack where
 
-import Control.Applicative ((<|>))
 import Data.Foldable (toList)
-import Data.Maybe (catMaybes)
-import Safe (atMay)
+import Data.Maybe (catMaybes, fromMaybe)
 import StackCard (StackCard(..))
 import Wheel (indexWheel, Wheel(..))
 
@@ -49,69 +47,51 @@ set stack 11 stackCard = stack { wheel_11 = stackCard }
 set stack _  _         = stack
 
 
-chainMask :: Stack -> Wheel Bool
-chainMask s = chainMask' s $ Wheel.init $ const False
-  where
-    chainMask' :: Stack -> Wheel Bool -> Wheel Bool
-    chainMask' stack mask =
-      case wheel_1 stack of
-        Just _ ->
-          chainMask'
-            (Wheel.back (stack { wheel_1 = Nothing } ))
-            (Wheel.fwrd (mask { wheel_0 = True }))
-        Nothing ->
-          mask
-
-
-chainLength :: Stack -> Int
-chainLength stack = length $ filter id $ toList $ chainMask stack
-
-
-chainMap :: (Int -> StackCard -> Maybe a) -> Stack -> Wheel (Maybe a)
-chainMap f stack = chainOnlyF <$> chainMask stack <*> indexWheel <*> stack
-  where
-    chainOnlyF masked i mStackCard =
-      case (mStackCard, masked) of
-        (Just stackCard, True) ->
-          f i stackCard
-        _ ->
-          Nothing
-
-
-chainFilter :: (Int -> StackCard -> Bool) -> Stack -> Stack
-chainFilter f stack =
-  let
-    -- Everything in the chain is in a Just, everything outside is a bare Nothing.
-    filtered :: Wheel (Maybe (Maybe StackCard))
-    filtered = Stack.chainMap (\i c -> Just $ if f i c then Just c else Nothing) stack
-    -- If we're outside the chain stay as is, if inside the chain filter out.
-    combiner :: Maybe StackCard -> Maybe (Maybe StackCard) -> Maybe StackCard
-    combiner mSc Nothing          = mSc
-    combiner _   (Just Nothing)   = Nothing
-    combiner _   (Just (Just sc)) = Just sc
-  in
-    combiner <$> stack <*> filtered
-
-
-
-chainToList :: Stack -> [StackCard]
-chainToList stack =
-  catMaybes $ snd <$> (filter fst $ zip (toList $ chainMask stack) (toList stack))
-
-
-stackFromList :: [StackCard] -> Stack
-stackFromList xs = Wheel.init (atMay xs)
-
-
-modChain :: ([StackCard] -> [StackCard]) -> Stack -> Stack
-modChain f stack = (<|>) <$> modded <*> stack
-  where
-    modded = stackFromList $ f $ chainToList stack :: Stack
-
-
 rotate :: Stack -> Stack
 rotate = Wheel.back
 
 
 windup :: Stack -> Stack
 windup = Wheel.fwrd
+
+
+diasporaFromStack :: Stack -> [(Int, StackCard)]
+diasporaFromStack stack =
+  catMaybes $ fmap combine $ zip [0..] $ toList stack
+  where
+    combine :: (Int, Maybe StackCard) -> Maybe (Int, StackCard)
+    combine (i, (Just sc)) = Just (i, sc)
+    combine (_, Nothing)   = Nothing
+
+
+stackFromDiaspora :: [(Int, StackCard)] -> Stack
+stackFromDiaspora diaspora =
+  foldr reduce Stack.init diaspora
+  where
+    reduce :: (Int, StackCard) -> Stack -> Stack
+    reduce (i, sc) stack = set stack i (Just sc)
+
+
+diasporaLength :: Stack -> Int
+diasporaLength = length . filter (\(i, _) -> i > 0) . diasporaFromStack
+
+
+diasporaMap :: (Int -> StackCard -> Maybe a) -> Stack -> Wheel (Maybe a)
+diasporaMap f stack = fForMaybes <$> indexWheel <*> stack
+  where
+    fForMaybes i (Just sc) = f i sc
+    fForMaybes _ Nothing   = Nothing
+
+
+diasporaFilter :: (Int -> StackCard -> Bool) -> Stack -> Stack
+diasporaFilter f stack =
+  let
+    maybeBoolWheel :: Wheel (Maybe Bool)
+    maybeBoolWheel = (\i sc -> fmap (f i) sc) <$> indexWheel <*> stack
+    boolWheel :: Wheel Bool
+    boolWheel = fromMaybe False <$> maybeBoolWheel
+    combine :: Bool -> Maybe StackCard -> Maybe StackCard
+    combine True  sc = sc
+    combine False _  = Nothing
+  in
+  combine <$> boolWheel <*> stack

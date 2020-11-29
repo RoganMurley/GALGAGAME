@@ -21,7 +21,6 @@ import ResolveData (ResolveData(..))
 import Safe (headMay)
 import StackCard (StackCard(..))
 import Transmutation
-import Util (times)
 import Wheel
 
 import qualified DSL.Alpha as Alpha
@@ -124,7 +123,7 @@ playAnim w c i alpha = do
 transmuteAnim :: (Int -> StackCard -> Maybe Transmutation) -> Alpha.Program a -> AlphaAnimProgram a
 transmuteAnim f alpha = do
   stack <- toLeft Alpha.getStack
-  let transmutations = Stack.chainMap f stack
+  let transmutations = Stack.diasporaMap f stack
   final <- toLeft alpha
   toRight . liftF $ Anim.Transmute transmutations ()
   toRight . liftF $ Anim.Null ()
@@ -163,7 +162,7 @@ bounceAnim f alpha = do
 moveStackAnim :: (Int -> StackCard -> Maybe Int) -> Int -> Alpha.Program a -> AlphaAnimProgram a
 moveStackAnim f time alpha = do
   stack <- toLeft Alpha.getStack
-  let moves = Stack.chainMap f stack
+  let moves = Stack.diasporaMap f stack
   toRight . liftF $ Anim.MoveStack moves time ()
   final <- toLeft alpha
   toRight . liftF $ Anim.Null ()
@@ -181,17 +180,17 @@ data BounceState = BounceState
 
 getBounces :: (Int -> StackCard -> Bool) -> Alpha.Program (Wheel (Maybe CardBounce))
 getBounces f = do
-  chain <- Stack.chainToList <$> Alpha.getStack
+  stack <- Alpha.getStack
   handALen <- length <$> Alpha.getHand PlayerA
   handBLen <- length <$> Alpha.getHand PlayerB
   let startState = (BounceState{
-    stackIndex = 1,
+    stackIndex = 0,
     handAIndex = handALen,
     handBIndex = handBLen,
     bounces = Wheel.init $ const Nothing
   })
-  let BounceState{ bounces } = foldl' reduce startState chain
-  return $ times ((length chain) + 1) Wheel.fwrd bounces
+  let BounceState{ bounces } = foldl' reduce startState stack
+  return bounces
   where
     next :: BounceState -> BounceState
     next state@(BounceState{ stackIndex, bounces }) = (
@@ -200,8 +199,9 @@ getBounces f = do
         , bounces = Wheel.back bounces
         }
       )
-    reduce :: BounceState -> StackCard -> BounceState
-    reduce state@(BounceState{ stackIndex, handAIndex, handBIndex, bounces }) stackCard =
+    reduce :: BounceState -> Maybe StackCard -> BounceState
+    reduce state Nothing = next state
+    reduce state@(BounceState{ stackIndex, handAIndex, handBIndex, bounces }) (Just stackCard) =
       next $
         if f stackIndex stackCard then
           case stackcard_owner stackCard of
@@ -262,8 +262,8 @@ getHandDiscards w f = do
 getStackDiscards :: (Int -> StackCard -> Bool) -> Alpha.Program (Wheel Bool)
 getStackDiscards f = do
   stack <- Alpha.getStack
-  let discarder = \i c -> if f i c then Just True else Just False
-  return $ fromMaybe False <$> Stack.chainMap discarder stack
+  let discarder = \i c -> Just $ f i c
+  return $ fromMaybe False <$> Stack.diasporaMap discarder stack
 
 
 type AlphaAnimProgram = Free (Sum Alpha.DSL Anim.DSL)

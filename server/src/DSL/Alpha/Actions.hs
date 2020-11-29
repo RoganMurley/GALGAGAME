@@ -11,7 +11,7 @@ import Player (WhichPlayer(..), other)
 import Life (Life)
 import Model (Deck, Hand, Passes(..), Turn, maxHandLength)
 import Safe (headMay, tailSafe)
-import Stack (Stack, chainMap)
+import Stack (Stack)
 import StackCard (StackCard(..), isOwner)
 import Transmutation (Transmutation(..))
 import Util (deleteIndex, indexedFilter)
@@ -135,7 +135,7 @@ transmute f =
   in
   do
     stack <- getStack
-    let transmutations = Stack.chainMap f stack
+    let transmutations = Stack.diasporaMap f stack
     setStack (combiner <$> transmutations <*> stack)
 
 
@@ -157,9 +157,10 @@ transmuteActive f =
 
 bounce :: (Int -> StackCard -> Bool) -> Program ()
 bounce f = do
-  chain <- Stack.chainToList <$> getStack
-  modStack (Stack.chainFilter (\i c -> not $ f i c))
-  let bouncing = indexedFilter f chain
+  diaspora <- Stack.diasporaFromStack <$> getStack
+  let stackCards = fmap snd diaspora :: [StackCard]
+  modStack $ Stack.diasporaFilter (\i c -> not $ f i c)
+  let bouncing = indexedFilter f stackCards
   let (paBouncing, pbBouncing) = partition (isOwner PlayerA) bouncing
   modHand PlayerA $ \h -> h ++ (stackcard_card <$> paBouncing)
   modHand PlayerB $ \h -> h ++ (stackcard_card <$> pbBouncing)
@@ -175,20 +176,18 @@ moveStack f =
   in
     do
       stack <- getStack
-      let moves = Stack.chainMap f stack
+      let moves = Stack.diasporaMap f stack
       -- Stack with moved cards at their targets.
       let targets = foldr targetReduce Stack.init ((,) <$> moves <*> stack) :: Stack
       -- Stack with static cards only.
-      let chainStatics = (\a b -> (a <* b) *> b) <$> moves <*> stack :: Stack
-      let otherStatics = Stack.chainFilter (\_ _ -> False) stack :: Stack
-      let statics = (<|>) <$> chainStatics <*> otherStatics :: Stack
+      let statics = (\a b -> (a <* b) *> b) <$> moves <*> stack :: Stack
       -- Stack with cards at their final positions.
       let newStack = (<|>) <$> targets <*> statics :: Stack
       setStack newStack
 
 
 discardStack :: (Int -> StackCard -> Bool) -> Program ()
-discardStack f = modStack $ Stack.chainFilter (\i c -> not $ f i c)
+discardStack f = modStack $ Stack.diasporaFilter (\i c -> not $ f i c)
 
 
 discardHand :: WhichPlayer -> (Int -> Card -> Bool) -> Program ()
