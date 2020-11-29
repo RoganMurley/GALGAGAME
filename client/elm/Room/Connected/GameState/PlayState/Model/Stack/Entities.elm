@@ -158,7 +158,7 @@ wheelEntity ctx distance i finalI =
                 1.25
 
             else
-                1
+                0.5
 
         position : Vec3
         position =
