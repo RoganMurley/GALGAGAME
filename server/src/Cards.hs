@@ -32,9 +32,9 @@ blazeWand =
       hurt (len * 5) (other w) Slash
 
 
-blazeCup :: Card
-blazeCup =
-  Card Blaze Cup
+blazeGrail :: Card
+blazeGrail =
+  Card Blaze Grail
     "Discard your hand, then draw 2"
     $ \w -> do
       discardHand w (\_ _ -> True)
@@ -68,9 +68,9 @@ heavenWand =
       hurt (len * 4) (other w) Slash
 
 
-heavenCup :: Card
-heavenCup =
-  Card Heaven Cup
+heavenGrail :: Card
+heavenGrail =
+  Card Heaven Grail
     "Return all of your cards\non the wheel to hand"
     $ \w -> bounce (\i (StackCard o _) -> i > 0 && w == o)
 
@@ -103,9 +103,9 @@ dualityWand =
       when (paLife == pbLife) Beta.null
 
 
-dualityCup :: Card
-dualityCup =
-  Card Duality Cup
+dualityGrail :: Card
+dualityGrail =
+  Card Duality Grail
     "Heal weakest player for 15"
     $ \w -> do
       let mag = 15
@@ -145,9 +145,9 @@ shroomWand =
       lifesteal (len * 3) (other w)
 
 
-shroomCup :: Card
-shroomCup =
-  Card Shroom Cup
+shroomGrail :: Card
+shroomGrail =
+  Card Shroom Grail
     ("Add 2 STRANGE SPORE cards to\ntheir hand")
     $ \w -> do
       addToHand (other w) strangeSpore
@@ -191,9 +191,9 @@ bloodWand =
       else
         (hurt (lifePb - lifePa) (other w) Slash)
 
-bloodCup :: Card
-bloodCup =
-  Card Blood Cup
+bloodGrail :: Card
+bloodGrail =
+  Card Blood Grail
     "Pay 4 life to draw 3"
     $ \w -> do
       hurt 4 w Slash
@@ -233,9 +233,9 @@ mirageWand =
       hurt (count * 8) (other w) Slash
 
 
-mirageCup :: Card
-mirageCup =
-  Card Mirage Cup
+mirageGrail :: Card
+mirageGrail =
+  Card Mirage Grail
     "Become a copy of a random card\nin your hand"
     $ \w -> do
       gen <- getGen
@@ -275,9 +275,9 @@ mirrorWand =
       len <- length <$> getHand w
       hurt (len * 3) (other w) Slash
 
-mirrorCup :: Card
-mirrorCup =
-  Card Mirror Cup
+mirrorGrail :: Card
+mirrorGrail =
+  Card Mirror Grail
     "Card in next socket\nactivates twice"
     $ \_ -> do
       raw $ do
@@ -313,9 +313,9 @@ alchemyWand =
       hurt (len * 3) (other w) Slash
 
 
-alchemyCup :: Card
-alchemyCup =
-  Card Alchemy Cup
+alchemyGrail :: Card
+alchemyGrail =
+  Card Alchemy Grail
     "Heal for 10"
     $ heal 10
 
@@ -354,9 +354,9 @@ crownWand =
       hurt (5 * handSize) (other w) Slash
 
 
-crownCup :: Card
-crownCup =
-  Card Crown Cup
+crownGrail :: Card
+crownGrail =
+  Card Crown Grail
     "Your opponent is forced to\nplay a random card"
     $ \w -> do
       gen <- getGen
@@ -411,17 +411,17 @@ morphWand =
               Nothing
 
 
-morphCup :: Card
-morphCup =
-  Card Morph Cup
-    "Heal for 8, then all MORPH cards on\nthe wheel become CUPs"
+morphGrail :: Card
+morphGrail =
+  Card Morph Grail
+    "Heal for 8, then all MORPH cards on\nthe wheel become GRAILs"
     $ \w -> do
       heal 8 w
       transmute $
         \_ stackCard ->
           case stackCard of
             StackCard owner (Card{ card_aspect = Morph }) ->
-              Just $ Transmutation stackCard (StackCard owner morphCup)
+              Just $ Transmutation stackCard (StackCard owner morphGrail)
             _ ->
               Nothing
 
@@ -438,8 +438,8 @@ morphCoin =
               StackCard stackcard_owner morphSword
             Wand ->
               StackCard stackcard_owner morphWand
-            Cup ->
-              StackCard stackcard_owner morphCup
+            Grail ->
+              StackCard stackcard_owner morphGrail
             Coin ->
               StackCard stackcard_owner morphCoin
             OtherSuit _ ->
@@ -485,18 +485,18 @@ wands =
   ]
 
 
-cups :: [Card]
-cups =
-  [ blazeCup
-  , heavenCup
-  , shroomCup
-  , bloodCup
-  , mirageCup
-  , mirrorCup
-  , dualityCup
-  , alchemyCup
-  , crownCup
-  , morphCup
+grails :: [Card]
+grails =
+  [ blazeGrail
+  , heavenGrail
+  , shroomGrail
+  , bloodGrail
+  , mirageGrail
+  , mirrorGrail
+  , dualityGrail
+  , alchemyGrail
+  , crownGrail
+  , morphGrail
   ]
 
 
@@ -524,4 +524,4 @@ others =
 
 
 allCards :: [Card]
-allCards = swords ++ wands ++ cups ++ coins ++ others
+allCards = swords ++ wands ++ grails ++ coins ++ others
