@@ -15,7 +15,7 @@ import GameState.Messages as GameState
 import GameType exposing (GameType(..))
 import Holding.State as Holding
 import Holding.Types exposing (Holding(..))
-import Hover exposing (encodeHoverSelf)
+import Hover exposing (Hover(..), encodeHoverSelf)
 import Json.Decode as Json
 import List.Extra as List
 import Main.Messages as Main
@@ -269,8 +269,21 @@ updateTurnOnly msg state { audio } =
                                 map
                                     (Game.hold card index ray dmg)
                                     state
+
+                            -- On mobile hovers aren't triggered, so send a hover event
+                            -- if one wasn't triggered.
+                            newMsg =
+                                case game.hover of
+                                    HoverHand _ ->
+                                        Cmd.none
+
+                                    _ ->
+                                        message <|
+                                            Main.Send <|
+                                                "hover:"
+                                                    ++ encodeHoverSelf (HoverHand { index = index, tick = 0, dmg = ( 0, 0 ) })
                         in
-                        ( newState, Cmd.none )
+                        ( newState, newMsg )
 
                     UnholdCard ->
                         let
