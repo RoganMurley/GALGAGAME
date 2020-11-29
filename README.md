@@ -1,10 +1,10 @@
-# GALGAGAME
+# GALGA
 
 |
 <img src="https://i.imgur.com/z9Jo00u.gif" height="200"> | <img src="https://i.imgur.com/PgOAsJc.gif" height="200"> |
 |----|----|
 
-GALGAGAME is a browser-based multiplayer digital card game written in the purely functional programming languages Haskell and Elm. It is a WIP under active development.
+GALGA is a browser-based multiplayer digital card game written in the purely functional programming languages Haskell and Elm. It is a WIP under active development.
 
 Try it out at https://www.galgagame.com.
 
