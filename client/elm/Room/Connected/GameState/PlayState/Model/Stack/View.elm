@@ -57,7 +57,7 @@ wheelBgView entities { camera3d, perspective, textures } =
     let
         wheelEntityView : WheelEntity -> List WebGL.Entity
         wheelEntityView { position, scale, rotation } =
-            Texture.with textures "cardOutline.png" <|
+            Texture.with textures "cardBackOutline.png" <|
                 \texture ->
                     [ Render.Primitives.quad Render.Shaders.fragmentAlpha <|
                         { rotation = Quaternion.makeRotate rotation
