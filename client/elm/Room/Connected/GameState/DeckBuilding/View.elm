@@ -62,8 +62,8 @@ charactersView characters tick ctx =
         character.name
         { x = w * 0.5 - 0.003 * size
         , y = h * 0.2
-        , scaleX = 0.0001 * size + 0.003 * sin (tick * 0.005)
-        , scaleY = 0.0001 * size + 0.003 * sin (tick * 0.007)
+        , scaleX = 0.00006 * size + 0.003 * sin (tick * 0.005)
+        , scaleY = 0.00006 * size + 0.003 * sin (tick * 0.007)
         , color = vec3 (244 / 255) (241 / 255) (94 / 255)
         }
         ctx

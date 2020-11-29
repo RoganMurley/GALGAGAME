@@ -230,7 +230,7 @@ mirageWand =
       diaspora <- diasporaFromStack <$> getStack
       let isMirageWand = \(Card{ card_aspect, card_suit }) -> card_aspect == Mirage && card_suit == Wand
       let count = length . filter (\(_, StackCard{ stackcard_card }) -> isMirageWand stackcard_card) $ diaspora
-      hurt ((count + 1) * 8) (other w) Slash
+      hurt (count * 8) (other w) Slash
 
 
 mirageCup :: Card
@@ -323,7 +323,7 @@ alchemyCup =
 alchemyCoin :: Card
 alchemyCoin =
   Card Alchemy Coin
-    "Change card in next socket to STRANGE GOLD"
+    "Change card in next socket\nto STRANGE GOLD"
     $ \_ -> transmuteHead (\(StackCard o _) -> StackCard o strangeGold)
 
 

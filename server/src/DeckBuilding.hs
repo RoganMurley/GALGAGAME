@@ -282,7 +282,7 @@ allCharacters = [
 catherine :: Character
 catherine =
   Character
-    "Fool"
+    "0 / The Fool"
     "/img/textures/confound.png"
     blazeRune
     shroomRune
@@ -292,7 +292,7 @@ catherine =
 marcus :: Character
 marcus =
   Character
-    "Magician"
+    "I / The Magician"
     "/img/textures/hubris.png"
     alchemyRune
     mirrorRune
@@ -302,7 +302,7 @@ marcus =
 freja :: Character
 freja =
   Character
-    "Priestess"
+    "II / The High Priestess"
     "/img/textures/alchemy.png"
     heavenRune
     mirageRune
