@@ -1,4 +1,7 @@
 # GALGA
+<img width="512" alt="galga" src="https://user-images.githubusercontent.com/3668870/100647436-696e8280-3337-11eb-80ca-0c3a263a0d0d.png">
+
+
 GALGA is a browser-based multiplayer digital card game written in the purely functional programming languages Haskell and Elm. It is a WIP under active development.
 
 Try it out at https://www.galgagame.com.
