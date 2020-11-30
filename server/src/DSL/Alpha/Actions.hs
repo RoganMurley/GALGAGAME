@@ -173,6 +173,9 @@ moveStack f =
     targetReduce :: (Maybe Int, Maybe StackCard) -> Stack -> Stack
     targetReduce (Just i, mStackCard) stack = Stack.set stack i mStackCard
     targetReduce (Nothing, _) stack         = stack
+    invertMaybe :: Maybe a -> Maybe ()
+    invertMaybe (Just _) = Nothing
+    invertMaybe Nothing  = Just ()
   in
     do
       stack <- getStack
@@ -180,7 +183,7 @@ moveStack f =
       -- Stack with moved cards at their targets.
       let targets = foldr targetReduce Stack.init ((,) <$> moves <*> stack) :: Stack
       -- Stack with static cards only.
-      let statics = (\a b -> (a <* b) *> b) <$> moves <*> stack :: Stack
+      let statics = (invertMaybe <$> moves) *> stack
       -- Stack with cards at their final positions.
       let newStack = (<|>) <$> targets <*> statics :: Stack
       setStack newStack
