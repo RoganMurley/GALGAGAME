@@ -31,7 +31,7 @@ listen sounds state tick =
                 Cmd.none
     in
     if tick == 0 then
-        playSoundWith sounds "music/galga-ambience.mp3" [ Loop, Once ]
+        playSoundWith sounds "music/background.mp3" [ Loop, Once ]
 
     else
         case state of
@@ -61,19 +61,26 @@ animSfx anim =
                         Curse ->
                             Just "curse.mp3"
 
-        Heal _ _ ->
-            Just "heal.mp3"
+        Heal _ h ->
+            if h > 0 then
+                Just "heal.mp3"
+
+            else
+                Nothing
 
         Draw _ ->
             Just "draw.mp3"
 
         Play _ _ _ _ ->
-            Just "playCard.mp3"
+            Just "slash.mp3"
 
         Transmute _ ->
-            Just "transmuteCard.mp3"
+            Just "transmute.mp3"
 
         DiscardStack _ ->
+            Just "obliterate.mp3"
+
+        DiscardHand _ _ ->
             Just "obliterate.mp3"
 
         Mill _ _ ->
@@ -95,6 +102,15 @@ animSfx anim =
 
         Bounce _ ->
             Just "bounce.mp3"
+
+        Rotate _ ->
+            Just "rotate.mp3"
+
+        Windup _ ->
+            Just "windup.mp3"
+
+        MoveStack _ _ ->
+            Just "moveStack.mp3"
 
         _ ->
             Nothing

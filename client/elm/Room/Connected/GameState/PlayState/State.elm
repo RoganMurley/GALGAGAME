@@ -130,7 +130,8 @@ updatePlayingOnly msg state mode assets =
                         sound =
                             case Game.getHoverIndex hover of
                                 Just _ ->
-                                    playSound assets.audio "sfx/hover.mp3"
+                                    -- playSound assets.audio "sfx/hover.mp3"
+                                    Cmd.none
 
                                 Nothing ->
                                     Cmd.none
