@@ -362,7 +362,9 @@ hoverCard (HoverHand i) which model =
       Just card ->
         Right (Nothing, [ Outcome.Encodable $ Outcome.Hover which (HoverHand i) damage ])
         where
-          newModel = Alpha.modI model $ Alpha.modHand which $ deleteIndex i
+          newModel = Alpha.modI model $ do
+            Alpha.modHand which (deleteIndex i)
+            Alpha.modStack (\s -> (Stack.windup s) { wheel_0 = Just $ StackCard which card })
           damage = Beta.damageNumbersI newModel $ card_eff card which
       Nothing ->
         ignore
@@ -375,7 +377,7 @@ hoverCard (HoverStack i) which model =
         Right (Nothing, [ Outcome.Encodable $ Outcome.Hover which (HoverStack i) damage ])
         where
           newModel = Alpha.modI model $ do
-            Alpha.modStack $ times i Stack.rotate
+            Alpha.modStack $ times i (\s -> Stack.rotate (s { wheel_0 = Nothing }))
             Alpha.modRot ((-) i)
           damage = Beta.damageNumbersI newModel $ card_eff card owner
       _ ->
