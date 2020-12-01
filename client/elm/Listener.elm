@@ -12,7 +12,7 @@ import WhichPlayer.Types exposing (WhichPlayer(..))
 
 
 listen : Audio.Model -> GameState -> Float -> Cmd Msg
-listen sounds state _ =
+listen sounds state tick =
     let
         modelListen : Resolvable.Model -> Cmd Msg
         modelListen res =
@@ -30,16 +30,16 @@ listen sounds state _ =
             else
                 Cmd.none
     in
-    -- if tick == 0 then
-    --     playSoundWith sounds "music/background.mp3" [ Loop, Once ]
-    --
-    -- else
-    case state of
-        Started playstate ->
-            modelListen <| PlayState.get .res playstate
+    if tick == 0 then
+        playSoundWith sounds "music/galga-ambience.mp3" [ Loop, Once ]
 
-        _ ->
-            Cmd.none
+    else
+        case state of
+            Started playstate ->
+                modelListen <| PlayState.get .res playstate
+
+            _ ->
+                Cmd.none
 
 
 animSfx : Anim -> Maybe String
