@@ -5,29 +5,251 @@
     <meta charset="utf-8">
     <meta name="description" content="GALGA is a groundbreaking multiplayer digital card game. Escape the ninth circle of hell on the wings of a fallen angel, with a little help from your friends...">
     <title>GALGA</title>
-    <link href="/main.css" rel="stylesheet">
-    <link rel="apple-touch-icon" sizes="57x57" href="favicons/apple-icon-57x57.png">
-    <link rel="apple-touch-icon" sizes="60x60" href="favicons/apple-icon-60x60.png">
-    <link rel="apple-touch-icon" sizes="72x72" href="favicons/apple-icon-72x72.png">
-    <link rel="apple-touch-icon" sizes="76x76" href="favicons/apple-icon-76x76.png">
-    <link rel="apple-touch-icon" sizes="114x114" href="favicons/apple-icon-114x114.png">
-    <link rel="apple-touch-icon" sizes="120x120" href="favicons/apple-icon-120x120.png">
-    <link rel="apple-touch-icon" sizes="144x144" href="favicons/apple-icon-144x144.png">
-    <link rel="apple-touch-icon" sizes="152x152" href="favicons/apple-icon-152x152.png">
-    <link rel="apple-touch-icon" sizes="180x180" href="favicons/apple-icon-180x180.png">
-    <link rel="icon" type="image/png" sizes="192x192"  href="favicons/android-icon-192x192.png">
-    <link rel="icon" type="image/png" sizes="32x32" href="favicons/favicon-32x32.png">
-    <link rel="icon" type="image/png" sizes="96x96" href="favicons/favicon-96x96.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="favicons/favicon-16x16.png">
-    <link rel="manifest" href="favicons/manifest.json">
+    <link rel="stylesheet" href="https://use.typekit.net/myn3frc.css">
+    <link rel="apple-touch-icon" sizes="57x57" href="/favicons/apple-icon-57x57.png">
+    <link rel="apple-touch-icon" sizes="60x60" href="/favicons/apple-icon-60x60.png">
+    <link rel="apple-touch-icon" sizes="72x72" href="/favicons/apple-icon-72x72.png">
+    <link rel="apple-touch-icon" sizes="76x76" href="/favicons/apple-icon-76x76.png">
+    <link rel="apple-touch-icon" sizes="114x114" href="/favicons/apple-icon-114x114.png">
+    <link rel="apple-touch-icon" sizes="120x120" href="/favicons/apple-icon-120x120.png">
+    <link rel="apple-touch-icon" sizes="144x144" href="/favicons/apple-icon-144x144.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="/favicons/apple-icon-152x152.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/favicons/apple-icon-180x180.png">
+    <link rel="icon" type="image/png" sizes="192x192"  href="/favicons/android-icon-192x192.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicons/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="96x96" href="/favicons/favicon-96x96.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicons/favicon-16x16.png">
+    <link rel="manifest" href="/favicons/manifest.json">
     <meta name="msapplication-TileColor" content="#ffffff">
-    <meta name="msapplication-TileImage" content="favicons/ms-icon-144x144.png">
+    <meta name="msapplication-TileImage" content="/favicons/ms-icon-144x144.png">
     <meta name="theme-color" content="#ffffff">
-    <script src="/Main.js"></script>
-    <script src="/howler.min.js"></script>
+    <style>
+      body {
+        font-family: "futura-pt", sans-serif;
+        margin: 0;
+        overflow-x: hidden;
+      }
+      .afraid {
+        font-size: 86px;
+        margin-bottom: 38px;
+      }
+      .content {
+        align-items: center;
+        color: #000050;
+        display: flex;
+        font-size: 18px;
+        margin: 16px;
+        max-width: 400px;
+      }
+      .cta {
+        background-color: #f5f25e;
+        border: #f5f25e 3px solid;
+        border-radius: 20px;
+        color: #000050;
+        font-weight: 900;
+        padding: 7px;
+        text-decoration: unset;
+      }
+      .cta:hover {
+        color: #f5f25e;
+        background-color: #000050;
+        border: #f5f25e 3px solid;
+      }
+      .cta-header-wrapper {
+        margin: 16px 8px 0 0;
+      }
+      .escape {
+        font-size: 32px;
+        margin-bottom: 38px;
+        margin-top: 0;
+      }
+      .final {
+        align-items: center;
+        background-color: #f5f25e;
+        border-top: #000050 solid 40px;
+        display: flex;
+        flex-direction: column;
+        height: 160px;
+        justify-content: center;
+      }
+      .final-cta {
+        background-color: #000050;
+        border: #000050 12px solid;
+        border-radius: 60px;
+        color: #fff;
+        font-size: 2.5rem;
+        font-weight: 900;
+        padding: 12px;
+        text-decoration: unset;
+      }
+      .final-cta:hover {
+        color: #000050;
+        background-color: #f5f25e;
+        border: #000050 12px solid;
+      }
+      .footer-link {
+        color: #f5f25e;
+        margin: 0 8px;
+      }
+      .footer {
+        align-items: center;
+        background: #000050;
+        min-height: 40px;
+        color: #f5f25e;
+        display: flex;
+      }
+      .hero {
+        background-color: #000050;
+        color: #fff;
+        display: flex;
+      }
+      .hero-image {
+        align-items: center;
+        display: flex;
+      }
+      .hero-image img {
+        margin: auto;
+        max-width: 400px;
+      }
+      .hero-text {
+        margin-bottom: 48px;
+        margin-left: 40px;
+        max-width: 600px;
+      }
+      .content-row {
+        align-items: center;
+        display: flex;
+        margin: 16px 0;
+      }
+      .screenshot {
+        width: 300px;
+        margin: 0 50px;
+      }
+      .spacer {
+        flex: 1;
+      }
+      .sticky-header {
+        background-color: #000050;
+        display: flex;
+        height: 60px;
+        opacity: 0.95;
+        position: sticky;
+        top: 0;
+      }
+      .sticky-header-bg {
+        background-color: #000050;
+        height: 60px;
+        position: absolute;
+        top: 0;
+        width: 100%;
+      }
+      .title {
+        color: #f5f25e;
+        font-weight: 900;
+        margin: 0;
+        padding: 9px;
+      }
+
+      @media (max-width: 600px) {
+        .afraid {
+          font-size: 62px;
+        }
+        .escape {
+          font-size: 24px;
+        }
+        .content-row {
+          flex-direction: column;
+        }
+        .content-row.content-row-a {
+          flex-direction: column-reverse;;
+        }
+        .footer {
+          flex-direction: column;
+        }
+        .hero {
+          flex-direction: column;
+        }
+        .hero-text {
+          order: 1;
+        }
+        .screenshot {
+          margin: auto;
+        }
+      }
+    </style>
   </head>
   <body>
-    <script src="../js/start.js" inline></script>
+    <div class="sticky-header-bg"></div>
+    <div class="sticky-header">
+      <h1 class="title">GALGA</h1>
+      <div class="spacer"></div>
+      <div class="cta-header-wrapper">
+        <a class="cta" href="/play">PLAY FOR FREE</a>
+      </div>
+    </div>
+    <div class="hero">
+      <div class="spacer"></div>
+      <div class="hero-text">
+        <h2 class="afraid">DO NOT BE AFRAID.</h2>
+        <h3 class="escape">Together, we can escape this place.</h3>
+        <a class="cta" href="/play">I'M NOT AFRAID, LET'S PLAY</a>
+      </div>
+      <div class="hero-image">
+        <img alt="Hero image" src="/img/landing/hero.png">
+      </div>
+      <div class="spacer"></div>
+    </div>
+    <div class="content-row content-row-a">
+      <div class="spacer"></div>
+      <div class="content">
+        GALGA is a groundbreaking digital card game about escaping the ninth circle of hell. It will take all of your wit, cunning and nerve to survive. Do you have what it takes?
+      </div>
+      <div class="content">
+        <img alt="Screenshot of GALGA gameplay" class="screenshot" src="/img/landing/screenshot-gameplay.png">
+      </div>
+      <div class="spacer"></div>
+    </div>
+    <div class="content-row content-row-b">
+      <div class="spacer"></div>
+      <div class="content">
+        <img alt="Screenshot of GALGA character select" class="screenshot" src="/img/landing/screenshot-gameplay-3.png">
+      </div>
+      <div class="content">
+        Play cards on the wheel to decide your fate, but be careful. The more cards are in play, the more dangerous they become.
+      </div>
+      <div class="spacer"></div>
+    </div>
+    <div class="content-row content-row-a">
+      <div class="spacer"></div>
+      <div class="content">
+        Play with AI, friends or strangers for free in your browser. No download or sign-up required. What are you waiting for?
+      </div>
+      <div class="content">
+        <img alt="A screenshot of GALGA" class="screenshot" src="/img/landing/screenshot-char-select.png">
+      </div>
+      <div class="spacer"></div>
+    </div>
+    <div class="content-row content-row-b">
+      <div class="spacer"></div>
+      <div class="content">
+        <img alt="A screenshot of GALGA" class="screenshot" src="/img/landing/screenshot-gameplay-2.png">
+      </div>
+      <div class="content">
+        GALGA is a handcrafted game made with love. We hope you have as much fun playing as we are having making it!
+      </div>
+      <div class="spacer"></div>
+    </div>
+    <div class="final">
+      <div class="spacer"></div>
+      <a class="final-cta" href="/play">PLAY FOR FREE</a>
+      <div class="spacer"></div>
+    </div>
+    <div class="footer">
+      <a class="footer-link" href="https://github.com/RoganMurley/">Find us on GitHub</a>
+      <a class="footer-link" href="https://discord.gg/SVXXej4">Join the Discord</a>
+      <div class="spacer"></div>
+      <a class="footer-link" href="https://www.roganmurley.com">A Rogan Murley Game</a>
+    </div>
     <script async src="https://www.googletagmanager.com/gtag/js?id=UA-111390905-1"></script>
     <script>
       window.dataLayer = window.dataLayer || [];
