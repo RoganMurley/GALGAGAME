@@ -19,8 +19,6 @@ import Network.Wai (Application)
 import Network.Wai.Handler.WebSockets
 import Network.Wai.Handler.Warp (run)
 import System.Environment (lookupEnv)
-import System.IO (BufferMode(LineBuffering), hSetBuffering, stdout)
-import System.Log.Logger (Priority(DEBUG), infoM, warningM, setLevel, updateGlobalLogger)
 
 import Act (actOutcome, actPlay, actSpec, syncClient, syncPlayersRoom, syncClient)
 import ArtificalIntelligence (Action(..), chooseAction)
@@ -50,6 +48,8 @@ import Client (Client(..), ClientConnection(..))
 import qualified Command
 import Command (Command(..))
 
+import qualified Log
+
 import qualified Room
 import Room (Room)
 
@@ -64,8 +64,7 @@ import qualified Data.GUID as GUID
 
 main :: IO ()
 main = do
-  updateGlobalLogger "app" $ setLevel DEBUG
-  hSetBuffering stdout LineBuffering
+  Log.setup
 
   -- If we're on production, these env vars will be present.
   -- Defined in `prod.env` secret.
@@ -86,8 +85,7 @@ main = do
   authApp   <- runApp connectInfoConfig $ Auth.app connectInfoConfig
   state     <- atomically $ newTVar Server.initState
 
-
-  infoM "app" "Starting up!"
+  Log.info "Starting up!"
   run 9160 $ waiApp state connectInfoConfig authApp
 
 
@@ -112,23 +110,23 @@ wsApp state connectInfoConfig pending =
 connectionFail :: WS.Connection -> String -> App ()
 connectionFail conn str =
   liftIO $ do
-    warningM "app" str
+    Log.warning str
     WS.sendTextData conn . Command.toChat . ErrorCommand $ cs str
 
 
 begin :: WS.Connection -> Text -> User -> TVar Server.State -> App ()
 begin conn roomReq user state = do
   let username = getUsername user :: Text
-  liftIO $ infoM "app" $ printf "<%s>: New connection" username
+  Log.info $ printf "<%s>: New connection" username
   case parseRoomReq roomReq of
     Just (RoomRequest roomName) -> do
-      liftIO $ infoM "app" $ printf "<%s>: Requesting room [%s]" username roomName
+      liftIO $ Log.info $ printf "<%s>: Requesting room [%s]" username roomName
       msg <- liftIO $ WS.receiveData conn
       case parsePrefix msg of
         Nothing ->
           connectionFail conn $ printf "<%s>: Connection protocol failure" msg
         Just prefix -> do
-          liftIO $ infoM "app" $ printf "<%s>: %s" username (show prefix)
+          liftIO $ Log.info $ printf "<%s>: %s" username (show prefix)
           gen <- liftIO getGen
           guid <- liftIO GUID.genText
           let scenario = makeScenario prefix
@@ -218,11 +216,11 @@ makeScenario prefix =
 
 beginPlay :: TVar Server.State -> Client -> TVar Room -> App ()
 beginPlay state client roomVar = do
-  liftIO $ infoM "app" $ printf "<%s>: Begin playing" (show $ Client.name client)
+  liftIO $ Log.info $ printf "<%s>: Begin playing" (show $ Client.name client)
   added <- liftIO $  atomically $ addPlayerClient client roomVar
   case added of
     Nothing -> do
-      liftIO $ infoM "app" $ printf "<%s>: Room is full" (show $ Client.name client)
+      liftIO $ Log.info $ printf "<%s>: Room is full" (show $ Client.name client)
       Client.send (Command.toChat $ ErrorCommand "room is full") client
     Just (which, outcomes) ->
       finally
@@ -232,14 +230,14 @@ beginPlay state client roomVar = do
 
 beginSpec :: TVar Server.State -> Client -> TVar Room -> App ()
 beginSpec state client roomVar = do
-  liftIO $ infoM "app" $ printf "<%s>: Begin spectating" (show $ Client.name client)
+  liftIO $ Log.info $ printf "<%s>: Begin spectating" (show $ Client.name client)
   finally
     (spectate client roomVar)
     (disconnect client roomVar state)
 
 beginComputer :: TVar Server.State -> Client -> TVar Room -> App ()
 beginComputer state client roomVar = do
-  liftIO $ infoM "app" $ printf "<%s>: Begin AI game" (show $ Client.name client)
+  liftIO $ Log.info $ printf "<%s>: Begin AI game" (show $ Client.name client)
   cpuGuid <- liftIO GUID.genText
   (computer, added) <- liftIO . atomically $ do
     computerAdded <- addComputerClient cpuGuid roomVar
@@ -247,7 +245,7 @@ beginComputer state client roomVar = do
     return (computerAdded, playerAdded)
   case (,) <$> computer <*> added of
     Nothing -> do
-      liftIO $ infoM "app" $ printf "<%s>: Room is full" (show $ Client.name client)
+      liftIO $ Log.info $ printf "<%s>: Room is full" (show $ Client.name client)
       Client.send (Command.toChat $ ErrorCommand "Room is full") client
     Just (computerClient, (which, outcomes)) ->
       finally
@@ -261,14 +259,14 @@ beginComputer state client roomVar = do
 
 beginQueue :: TVar Server.State -> Client -> TVar Room -> App ()
 beginQueue state client roomVar = do
-  liftIO $ infoM "app" $ printf "<%s>: Begin quickplay game" (show $ Client.name client)
+  liftIO $ Log.info $ printf "<%s>: Begin quickplay game" (show $ Client.name client)
   roomM <- liftIO . atomically $ Server.queue (client, roomVar) state
   case roomM of
     Just (_, existingRoom) -> do
-      liftIO $ infoM "app" $ printf "<%s>: Joining existing quickplay room" (show $ Client.name client)
+      liftIO $ Log.info $ printf "<%s>: Joining existing quickplay room" (show $ Client.name client)
       beginPlay state client existingRoom
     Nothing -> do
-      liftIO $ infoM "app" $ printf "<%s>: Creating new quickplay room" (show $ Client.name client)
+      liftIO $ Log.info $ printf "<%s>: Creating new quickplay room" (show $ Client.name client)
       finally
         (beginPlay state client roomVar)
         (liftIO . atomically $ Server.dequeue client state)
@@ -305,7 +303,7 @@ play which client roomVar outcomes = do
 computerPlay :: WhichPlayer -> TVar Room -> App ()
 computerPlay which roomVar = do
   _ <- runMaybeT . forever $ loop
-  liftIO . infoM "app" $ printf "AI signing off"
+  liftIO . Log.info $ printf "AI signing off"
   return ()
   where
     loop :: MaybeT App ()
@@ -364,11 +362,11 @@ disconnect client roomVar state = do
   syncPlayersRoom room
   if Room.empty room then
     (liftIO $ do
-      infoM "app" $ printf "<%s>: Room is empty, deleting room" (show $ Client.name client)
+      Log.info $ printf "<%s>: Room is empty, deleting room" (show $ Client.name client)
       atomically $ Server.deleteRoom (Room.getName room) state
     )
       else
         (liftIO $ do
-          infoM "app" $ printf "<%s>: Room is not empty, retaining room" (show $ Client.name client)
+          Log.info $ printf "<%s>: Room is not empty, retaining room" (show $ Client.name client)
           readTVarIO state
         )

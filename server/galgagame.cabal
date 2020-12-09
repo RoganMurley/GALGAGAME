@@ -42,6 +42,7 @@ library
                      , GameState
                      , GodMode
                      , Life
+                     , Log
                      , Mirror
                      , Model
                      , ModelDiff
