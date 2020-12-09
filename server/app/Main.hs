@@ -117,7 +117,7 @@ connectionFail conn str =
 begin :: WS.Connection -> Text -> User -> TVar Server.State -> App ()
 begin conn roomReq user state = do
   let username = getUsername user :: Text
-  Log.info $ printf "<%s>: New connection" username
+  liftIO $ Log.info $ printf "<%s>: New connection" username
   case parseRoomReq roomReq of
     Just (RoomRequest roomName) -> do
       liftIO $ Log.info $ printf "<%s>: Requesting room [%s]" username roomName
