@@ -5,6 +5,8 @@ jobs:
       image: circleci/classic:edge
     steps:
       - checkout
+      - setup_remote_docker:
+          version: 19.03.13
       - restore_cache:
           name: Restore Cached NPM Dependencies
           keys:
