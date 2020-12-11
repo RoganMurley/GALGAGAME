@@ -37,6 +37,7 @@ import Signup.State as Signup
 import Url exposing (Url)
 import Url.Parser exposing (parse)
 import Util exposing (authLocation)
+import World.State as World
 
 
 init : Flags -> Url -> Int -> ( Main.Model, Cmd Msg )
@@ -475,6 +476,15 @@ locationUpdate model url =
                         | room =
                             Room.Feedback <|
                                 Feedback.init nextPath
+                      }
+                    , Cmd.none
+                    )
+
+                Routing.World ->
+                    ( { model
+                        | room =
+                            Room.World
+                                World.init
                       }
                     , Cmd.none
                     )

@@ -13,6 +13,7 @@ route =
         , map Login loginRoute
         , map Signup signupRoute
         , map Feedback feedbackRoute
+        , map World worldRoute
         , map Home top
         ]
 
@@ -53,3 +54,8 @@ replayRoute =
 feedbackRoute : Parser a a
 feedbackRoute =
     s "feedback"
+
+
+worldRoute : Parser a a
+worldRoute =
+    s "world"
