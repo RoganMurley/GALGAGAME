@@ -14,6 +14,7 @@ import Replay.State as Replay
 import Room.Messages exposing (Msg(..))
 import Room.Types exposing (Model(..))
 import Signup.State as Signup
+import World.State as World
 
 
 init : Model
@@ -104,6 +105,18 @@ update model msg assets flags =
                 _ ->
                     ( model, Cmd.none )
 
+        WorldMsg worldMsg ->
+            case model of
+                World world ->
+                    let
+                        ( newWorld, cmd ) =
+                            World.update world worldMsg flags
+                    in
+                    ( World newWorld, cmd )
+
+                _ ->
+                    ( model, Cmd.none )
+
         StartGame mode ->
             case model of
                 Lobby { gameType, roomID } ->
@@ -159,6 +172,9 @@ receive flags assets str model =
         Feedback feedback ->
             ( Feedback feedback, Feedback.receive str )
 
+        World world ->
+            ( World world, World.receive str )
+
 
 tick : Flags -> Model -> Float -> ( Model, Cmd Msg )
 tick flags room dt =
@@ -187,3 +203,6 @@ tick flags room dt =
 
         Feedback feedback ->
             ( Feedback feedback, Cmd.none )
+
+        World world ->
+            ( World world, Cmd.none )
