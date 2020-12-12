@@ -22,7 +22,7 @@ jobs:
                    elm-analyse
       - run:
           name: Setup Docker machine
-          command: base=https://github.com/docker/machine/releases/download/v0.14.0 &&
+          command: base=https://github.com/docker/machine/releases/download/v0.16.2 &&
                    curl -L $base/docker-machine-$(uname -s)-$(uname -m) >/tmp/docker-machine &&
                    sudo install /tmp/docker-machine /usr/local/bin/docker-machine
       - run:
