@@ -19,7 +19,7 @@ popd
 docker save -o .images/game-galgagame game-galgagame
 
 echo "Provisioning instance..."
-docker-machine create --driver=digitalocean --digitalocean-access-token=$DIGITALOCEAN_ACCESS_TOKEN --digitalocean-region=sfo2 --digitalocean-image=ubuntu-20-04-x64 --digitalocean-tags=ring-of-worlds $name
+docker-machine create --driver=digitalocean --digitalocean-access-token=$DIGITALOCEAN_ACCESS_TOKEN --digitalocean-region=sfo2 --digitalocean-image=ubuntu-20-10-x64 --digitalocean-tags=ring-of-worlds --engine-install-url "https://releases.rancher.com/install-docker/19.03.9.sh" $name
 eval "$(docker-machine env $name)"
 
 echo "Copying image to server..."
