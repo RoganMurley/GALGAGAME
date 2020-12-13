@@ -6,6 +6,7 @@ import Mode exposing (Mode(..))
 
 type alias Model =
     { roomID : String
+    , joinAttempts : Int
     , error : String
     , gameType : GameType
     , mode : Mode
