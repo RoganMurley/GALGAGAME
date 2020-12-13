@@ -170,12 +170,12 @@ var socket = createSocket();
 app.ports.websocketSend.subscribe(function (input) {
   if (socket.readyState === WebSocket.OPEN) {
     socket.send(input);
-  } else {
-    websocketMessageQueue.push(input);
+    return;
   }
   if (socket.readyState === WebSocket.CLOSED) {
     socket = createSocket();
   }
+  websocketMessageQueue.push(input);
 });
 
 app.ports.websocketReconnect.subscribe(function () {

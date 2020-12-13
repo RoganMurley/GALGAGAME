@@ -7,13 +7,20 @@ import Lobby.Types exposing (LoginState(..), Model)
 import Main.Messages as Main
 import Main.Types exposing (Flags)
 import Mode exposing (Mode(..))
+import Ports exposing (websocketReconnect)
 import Room.Messages as Room
 import Util exposing (message, splitOnColon)
+
+
+maxJoinAttempts : Int
+maxJoinAttempts =
+    2
 
 
 init : String -> GameType -> Mode -> Model
 init roomID gameType mode =
     { roomID = roomID
+    , joinAttempts = 0
     , error = ""
     , gameType = gameType
     , mode = mode
@@ -57,7 +64,20 @@ update ({ gameType, mode } as model) msg flags =
             )
 
         JoinRoomErr error ->
-            ( { model | error = error }, Cmd.none )
+            let
+                joinAttempts =
+                    model.joinAttempts + 1
+            in
+            if joinAttempts >= maxJoinAttempts then
+                ( { model | error = error, joinAttempts = joinAttempts }, Cmd.none )
+
+            else
+                ( { model | joinAttempts = joinAttempts }
+                , Cmd.batch
+                    [ websocketReconnect ()
+                    , message <| Main.RoomMsg <| Room.LobbyMsg <| JoinRoom
+                    ]
+                )
 
         GotoLogin ->
             ( model
