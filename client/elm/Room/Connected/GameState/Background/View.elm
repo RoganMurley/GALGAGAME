@@ -25,9 +25,15 @@ webglView { w, h, time } assets anim =
             bareContextInit ( w, h ) assets Nothing
 
         ctx =
-            { baseCtx | anim = anim, progress = time / 4000 }
+            { baseCtx | anim = anim }
+
+        baseVfx =
+            Vfx.init
+
+        vfx =
+            { baseVfx | rotation = time }
     in
-    radialView Vfx.init ctx
+    radialView vfx ctx
 
 
 getRingRotation : Context -> Float
