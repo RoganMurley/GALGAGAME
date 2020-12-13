@@ -130,51 +130,6 @@ dissolvingView ctx { position, rotation, scale, card, owner } =
             ]
 
 
-
--- fabricatingView : Context -> Card.Entity a -> List WebGL.Entity
--- fabricatingView ctx { position, rotation, scale, card, owner } =
---     let
---         { perspective, camera3d, progress, textures } =
---             ctx
---     in
---     Texture.with4 textures card.imgURL "cardBack.png" "cardOutline.png" "noise.png" <|
---         \texture backTexture outlineTexture noise ->
---             [ Render.Primitives.quad Render.Shaders.disintegrate <|
---                 { texture = backTexture
---                 , noise = noise
---                 , rotation = Quaternion.makeRotate rotation
---                 , scale = makeScale scale
---                 , color = Colour.card owner
---                 , pos = position
---                 , perspective = perspective
---                 , camera = camera3d
---                 , time = 1 - progress
---                 }
---             , Render.Primitives.quad Render.Shaders.disintegrate <|
---                 { texture = outlineTexture
---                 , noise = noise
---                 , rotation = Quaternion.makeRotate rotation
---                 , scale = makeScale scale
---                 , color = Colour.white
---                 , pos = position
---                 , perspective = perspective
---                 , camera = camera3d
---                 , time = 1 - progress
---                 }
---             , Render.Primitives.quad Render.Shaders.disintegrate <|
---                 { texture = texture
---                 , noise = noise
---                 , rotation = Quaternion.makeRotate rotation
---                 , scale = makeScale <| Vector3.scale 0.6 scale
---                 , color = Colour.white
---                 , pos = position
---                 , perspective = perspective
---                 , camera = camera3d
---                 , time = 1 - progress
---                 }
---             ]
-
-
 transmutingView : Context -> StackCard -> StackCard -> Card.Entity a -> List WebGL.Entity
 transmutingView ctx stackCard finalStackCard { position, rotation, scale } =
     let
