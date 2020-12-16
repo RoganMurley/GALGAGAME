@@ -40,3 +40,9 @@ getUserFromToken mToken = do
           return $ User user
         Nothing ->
           return GuestUser
+
+
+isSuperuser :: User -> Bool
+isSuperuser (User user) = Auth.userSuperuser user
+isSuperuser CpuUser     = False
+isSuperuser GuestUser   = False

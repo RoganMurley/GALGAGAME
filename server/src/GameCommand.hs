@@ -12,7 +12,6 @@ import Data.String.Conversions (cs)
 import Data.Text (Text)
 import DeckBuilding (CharacterChoice, DeckBuilding(..), choiceToCharacter, initDeckBuilding, selectCharacter)
 import GameState (GameState(..), PlayState(..), initModel)
-import GodMode
 import Model (Hand, Passes(..), Model, Turn)
 import Outcome (HoverState(..), Outcome)
 import Player (WhichPlayer(..), other)
@@ -21,13 +20,14 @@ import Safe (atMay)
 import Scenario (Scenario(..))
 import Stack (Stack)
 import StackCard (StackCard(..))
-import User (User(..), getUsername)
+import User (User(..), getUsername, isSuperuser)
 import Util (Err, Gen, deleteIndex, split, times)
 import Wheel (Wheel(..))
 
 
 import qualified DSL.Alpha as Alpha
 import qualified DSL.Beta as Beta
+import qualified GodMode
 import qualified Outcome
 import qualified Replay.Active as Active
 import qualified Replay.Final as Final
@@ -388,7 +388,7 @@ hoverCard NoHover which _ =
 
 godMode :: Maybe User -> Text -> WhichPlayer -> Model -> Active.Replay -> Either Err (Maybe GameState, [Outcome])
 godMode mUser str which model replay =
-  if fromMaybe False $ GodMode.isSuperuser <$> mUser then
+  if fromMaybe False $ isSuperuser <$> mUser then
     case GodMode.parse which str of
       Right betaProgram ->
         let

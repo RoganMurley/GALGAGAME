@@ -3,7 +3,7 @@ module Main where
 import Control.Concurrent.Lifted (fork, threadDelay)
 import Control.Monad (forM_)
 import Control.Monad.STM (atomically)
-import Control.Concurrent.STM.TVar (TVar, newTVar, readTVar, readTVarIO)
+import Control.Concurrent.STM.TVar (TVar, newTVar, readTVarIO)
 import Control.Monad.Trans.Maybe (MaybeT)
 import Control.Exception.Lifted (finally)
 import Control.Monad (forever, mzero, when)
@@ -26,13 +26,13 @@ import Config (App, ConnectInfoConfig(..), runApp)
 import Database (postgresConnectInfo, redisConnectInfo)
 import GameState (GameState(..), PlayState(..), WaitType(..))
 import Model (Turn)
-import Negotiation (Prefix(..), RoomRequest(..), parseRoomReq, parsePrefix)
+import Negotiation (Prefix(..), Request(..), parseRequest, parsePrefix)
 import Outcome (Outcome)
 import Player (WhichPlayer(..), other)
 import Scenario (Scenario(..))
 import Start (startProgram, tutorialStartProgram)
 import Stats.Stats (Experience)
-import User (User(..), getUsername, getUserFromToken)
+import User (User(..), getUsername, getUserFromToken, isSuperuser)
 import Util (Gen, getGen, shuffle, split)
 
 import qualified DSL.Beta as Beta
@@ -115,10 +115,10 @@ connectionFail conn str =
 
 
 begin :: WS.Connection -> Text -> User -> TVar Server.State -> App ()
-begin conn roomReq user state = do
+begin conn request user state = do
   let username = getUsername user :: Text
   liftIO $ Log.info $ printf "<%s>: New connection" username
-  case parseRoomReq roomReq of
+  case parseRequest request of
     Just (RoomRequest roomName) -> do
       liftIO $ Log.info $ printf "<%s>: Requesting room [%s]" username roomName
       msg <- liftIO $ WS.receiveData conn
@@ -143,8 +143,22 @@ begin conn roomReq user state = do
           liftIO $ WS.sendTextData conn ("replay:" <> replay)
         Nothing ->
           liftIO $ WS.sendTextData conn ("replayNotFound:" :: Text)
+    Just (SystemMessageRequest systemMessage) ->
+      case User.isSuperuser user of
+        True -> do
+          liftIO $ Log.info $ printf ("System message received: " <> cs systemMessage)
+          roomVars <- liftIO . atomically $ Server.getAllRooms state
+          forM_ roomVars (
+            \roomVar -> do
+              room <- liftIO $ readTVarIO roomVar
+              fork $ Room.broadcast ("systemMessage:" <> systemMessage) room
+            )
+          liftIO $ WS.sendTextData conn ("systemMessageSuccess:" :: Text)
+          liftIO $ Log.info $ printf ("System message success")
+        False ->
+          liftIO $ Log.error $ printf "Illegal system message"
     Nothing ->
-      connectionFail conn $ printf "<%s>: Bad room name protocol %s" (show username) roomReq
+      connectionFail conn $ printf "<%s>: Bad room name protocol %s" (show username) request
 
 
 beginPrefix :: Prefix -> TVar Server.State -> Client -> TVar Room -> App ()
@@ -288,7 +302,7 @@ spectate client roomVar = do
 play :: WhichPlayer -> Client -> TVar Room -> [Outcome] -> App ()
 play which client roomVar outcomes = do
   Client.send ("acceptPlay:" :: Text) client
-  room <- liftIO . atomically $ readTVar roomVar
+  room <- liftIO $ readTVarIO roomVar
   syncPlayersRoom room
   syncClient client (Room.getState room)
   forM_ outcomes (actOutcome room)
@@ -319,13 +333,13 @@ computerPlay which roomVar = do
           Nothing ->
             return ()
         -- Break out if the room's empty.
-        room <- liftIO . atomically $ readTVar roomVar
+        room <- liftIO $ readTVarIO roomVar
         when (Room.empty room) mzero
 
 
 chooseComputerCommand :: WhichPlayer -> TVar Room -> Gen -> App (Maybe Command)
 chooseComputerCommand which room gen = do
-  r <- liftIO . atomically $ readTVar room
+  r <- liftIO $ readTVarIO room
   case Room.getState r of
     Selecting deckModel _ _ ->
       if DeckBuilding.isReady deckModel which then
