@@ -6,13 +6,14 @@ import Safe (readMay)
 import Util (breakAt)
 
 
-data RoomRequest =
+data Request =
     RoomRequest Text
   | PlayReplayRequest Int
+  | SystemMessageRequest Text
 
 
-parseRoomReq :: Text -> Maybe RoomRequest
-parseRoomReq msg =
+parseRequest :: Text -> Maybe Request
+parseRequest msg =
   case breakAt ":" msg of
     ("room", name) ->
       Just . RoomRequest $ name
@@ -22,6 +23,8 @@ parseRoomReq msg =
           Just . PlayReplayRequest $ replayId
         Nothing ->
           Nothing
+    ("systemMessage", message) ->
+      Just . SystemMessageRequest $ message
     _ ->
       Nothing
 

@@ -11,9 +11,8 @@ import CardAnim (Hurt(..))
 import Cards (allCards)
 import Player (WhichPlayer(..), other)
 import Util (Err, breakAt)
-import User (User(..))
+import User (isSuperuser)
 
-import qualified Auth.Schema as Auth
 import qualified DSL.Beta as Beta
 
 
@@ -55,9 +54,3 @@ parse which msg =
         Right $ Beta.rotate
       _ ->
         Left ("Unknown commandment: " <> command :: Err)
-
-
-isSuperuser :: User -> Bool
-isSuperuser (User user) = Auth.userSuperuser user
-isSuperuser CpuUser     = False
-isSuperuser GuestUser   = False

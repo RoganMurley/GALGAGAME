@@ -4,7 +4,7 @@ import Prelude hiding (lookup, putStrLn)
 
 import Control.Monad.STM (STM)
 import Control.Concurrent.STM.TVar (TVar, newTVar, readTVar)
-import Data.Map.Strict (Map, delete, empty, insert, keys, lookup)
+import Data.Map.Strict (Map, delete, elems, empty, insert, keys, lookup)
 import Data.Text (Text)
 import Safe (headMay)
 
@@ -38,7 +38,7 @@ initState = State empty []
 -- GETTING / DELETING ROOMS
 getRoom :: Room.Name -> TVar State -> STM (Maybe (TVar Room))
 getRoom name state =
-  (lookup name) . (\(State s _) -> s) <$> readTVar state
+  (lookup name) . state_rooms <$> readTVar state
 
 
 createRoom :: Room.Name -> TVar Room -> TVar State -> STM (TVar Room)
@@ -62,6 +62,10 @@ getOrCreateRoom name wait gen scenario state = do
 deleteRoom :: Room.Name -> TVar State -> STM (State)
 deleteRoom name state =
   modReadTVar state $ \(State s qs) -> State (delete name s) qs
+
+
+getAllRooms :: TVar State -> STM ([TVar Room])
+getAllRooms state = elems . state_rooms <$> readTVar state
 
 
 -- QUEUEING
