@@ -7,8 +7,8 @@ import Room.View as Room
 
 
 view : Model -> Html Msg
-view { room, settings, flags, assets } =
-    Room.view room settings flags assets
+view { room, settings, notifications, flags, assets } =
+    Room.view room settings notifications flags assets
 
 
 titleView : Model -> String

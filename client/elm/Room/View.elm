@@ -13,6 +13,8 @@ import Login.View as Login
 import Main.Messages as Main
 import Main.Types exposing (Flags)
 import Menu.View as Menu
+import Notifications.Types as Notifications
+import Notifications.View as Notifications
 import Replay.View as Replay
 import Room.Messages exposing (Msg(..))
 import Room.Types exposing (Model(..))
@@ -23,8 +25,8 @@ import WebGL
 import World.View as World
 
 
-view : Model -> Settings.Model -> Flags -> Assets.Model -> Html Main.Msg
-view model settings flags assets =
+view : Model -> Settings.Model -> Notifications.Model -> Flags -> Assets.Model -> Html Main.Msg
+view model settings notifications flags assets =
     let
         roomView =
             case model of
@@ -59,7 +61,8 @@ view model settings flags assets =
                         World.htmlView world
     in
     div []
-        [ Settings.view settings (settingsView model flags)
+        [ Html.map Main.NotificationsMsg <| Notifications.view notifications
+        , Settings.view settings (settingsView model flags)
         , roomView
         , webglView model flags assets
         ]
