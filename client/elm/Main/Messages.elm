@@ -5,6 +5,7 @@ import Browser exposing (UrlRequest)
 import Http
 import Keyboard exposing (Key)
 import Mouse
+import Notifications.Messages as Notifications
 import Room.Messages as Room
 import Settings.Messages as Settings
 import Settings.Types exposing (VolumeType)
@@ -26,6 +27,7 @@ type Msg
     | Receive String
     | Resize Int Int
     | RoomMsg Room.Msg
+    | NotificationsMsg Notifications.Msg
     | SelectAllInput String
     | Send String
     | SettingsMsg Settings.Msg

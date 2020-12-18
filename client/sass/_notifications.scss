@@ -1,0 +1,11 @@
+.notification {
+  background-color: #f5f25e;
+  font-family: monospace;
+  font-weight: 900;
+  padding: 8px;
+  text-align: center;
+
+  &:hover {
+    cursor: pointer;
+  }
+}

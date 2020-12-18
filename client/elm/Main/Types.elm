@@ -3,6 +3,7 @@ module Main.Types exposing (Flags, InputFlags, Model, Seed)
 import Assets.Types as Assets
 import Browser.Navigation
 import Math.Vector2 exposing (Vec2)
+import Notifications.Types as Notifications
 import Room.Types as Room
 import Settings.Types as Settings
 
@@ -12,6 +13,7 @@ type alias Model =
     , flags : Flags
     , settings : Settings.Model
     , assets : Assets.Model
+    , notifications : Notifications.Model
     }
 
 

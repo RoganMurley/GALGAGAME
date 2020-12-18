@@ -23,6 +23,7 @@ import Main.Types as Main exposing (Flags)
 import Manifest.State as Manifest
 import Math.Vector2 exposing (vec2)
 import Mode exposing (Mode(..))
+import Notifications.State as Notifications
 import Ports exposing (analytics, copyInput, godModeCommand, mouseDown, mouseMove, mouseUp, reload, selectAllInput, touch, websocketListen, websocketReconnect, websocketSend)
 import Replay.State as Replay
 import Room.Generators exposing (generate)
@@ -52,6 +53,7 @@ init flags url initialVolume =
                 , flags = flags
                 , settings = Settings.init initialVolume
                 , assets = Assets.init
+                , notifications = Notifications.init
                 }
                 url
     in
@@ -61,7 +63,7 @@ init flags url initialVolume =
 
 
 update : Msg -> Main.Model -> ( Main.Model, Cmd Msg )
-update msg ({ assets, room, settings, flags } as model) =
+update msg ({ assets, room, notifications, settings, flags } as model) =
     case msg of
         CopyInput elementId ->
             ( model, copyInput elementId )
@@ -135,8 +137,11 @@ update msg ({ assets, room, settings, flags } as model) =
             let
                 ( newRoom, cmd ) =
                     Room.receive flags assets str room
+
+                newNotifications =
+                    Notifications.receive str notifications
             in
-            ( { model | room = newRoom }, cmd )
+            ( { model | room = newRoom, notifications = newNotifications }, cmd )
 
         RoomMsg roomMsg ->
             let
@@ -144,6 +149,14 @@ update msg ({ assets, room, settings, flags } as model) =
                     Room.update room roomMsg assets flags
             in
             ( { model | room = newRoom }, cmd )
+
+        NotificationsMsg notificationsMsg ->
+            ( { model
+                | notifications =
+                    Notifications.update model.notifications notificationsMsg
+              }
+            , Cmd.none
+            )
 
         UrlRequest urlRequest ->
             case urlRequest of
