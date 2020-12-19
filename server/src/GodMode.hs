@@ -11,7 +11,6 @@ import CardAnim (Hurt(..))
 import Cards (allCards)
 import Player (WhichPlayer(..), other)
 import Util (Err, breakAt)
-import User (isSuperuser)
 
 import qualified DSL.Beta as Beta
 
