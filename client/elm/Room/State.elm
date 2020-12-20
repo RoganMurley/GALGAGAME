@@ -205,4 +205,4 @@ tick flags room dt =
             ( Feedback feedback, Cmd.none )
 
         World world ->
-            ( World world, Cmd.none )
+            ( World <| World.tick world dt, Cmd.none )
