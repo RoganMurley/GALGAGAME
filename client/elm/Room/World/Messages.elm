@@ -1,5 +1,8 @@
 module World.Messages exposing (Msg(..))
 
+import World.Types exposing (World)
+
 
 type Msg
-    = Msg
+    = JoinWorld
+    | LoadWorld World

@@ -10,6 +10,7 @@ data Request =
     RoomRequest Text
   | PlayReplayRequest Int
   | SystemMessageRequest Text
+  | WorldRequest
 
 
 parseRequest :: Text -> Maybe Request
@@ -25,6 +26,8 @@ parseRequest msg =
           Nothing
     ("systemMessage", message) ->
       Just . SystemMessageRequest $ message
+    ("world", _) ->
+      Just WorldRequest
     _ ->
       Nothing
 

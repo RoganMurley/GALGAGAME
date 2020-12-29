@@ -18,7 +18,7 @@ import Listener exposing (listen)
 import Lobby.State as Lobby
 import Login.Decoders as Login
 import Login.State as Login
-import Main.Messages exposing (Msg(..))
+import Main.Messages as Main exposing (Msg(..))
 import Main.Types as Main exposing (Flags)
 import Manifest.State as Manifest
 import Math.Vector2 exposing (vec2)
@@ -37,7 +37,8 @@ import Settings.Types as Settings
 import Signup.State as Signup
 import Url exposing (Url)
 import Url.Parser exposing (parse)
-import Util exposing (authLocation)
+import Util exposing (authLocation, message)
+import World.Messages as World
 import World.State as World
 
 
@@ -499,7 +500,7 @@ locationUpdate model url =
                             Room.World
                                 World.init
                       }
-                    , Cmd.none
+                    , message <| Main.RoomMsg <| Room.WorldMsg World.JoinWorld
                     )
 
         Nothing ->

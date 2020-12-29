@@ -10,11 +10,11 @@ import Control.Monad (forever, mzero, when)
 import Control.Monad.IO.Class (liftIO)
 import Control.Monad.Trans.Class (lift)
 import Control.Monad.Trans.Maybe (runMaybeT)
+import Data.Aeson (encode)
 import Data.Monoid ((<>))
 import Data.String.Conversions (cs)
 import Data.Text (Text)
 import Text.Printf (printf)
-
 import Network.Wai (Application)
 import Network.Wai.Handler.WebSockets
 import Network.Wai.Handler.Warp (run)
@@ -54,6 +54,8 @@ import qualified Room
 import Room (Room)
 
 import qualified Replay.Final
+
+import qualified World
 
 import qualified Network.WebSockets as WS
 
@@ -157,8 +159,12 @@ begin conn request user state = do
           liftIO $ Log.info $ printf ("System message success")
         False ->
           liftIO $ Log.error $ printf "Illegal system message"
+    Just WorldRequest -> do
+      liftIO $ Log.info $ printf "<%s>: Visting World" username
+      world <- World.getWorld state
+      liftIO $ WS.sendTextData conn ("world:" <> encode world)
     Nothing ->
-      connectionFail conn $ printf "<%s>: Bad room name protocol %s" (show username) request
+      connectionFail conn $ printf "<%s>: Bad request %s" (show username) request
 
 
 beginPrefix :: Prefix -> TVar Server.State -> Client -> TVar Room -> App ()
