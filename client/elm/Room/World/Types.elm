@@ -1,5 +1,22 @@
-module World.Types exposing (Model)
+module World.Types exposing (Encounter, Model, World)
+
+import Buttons.Types exposing (Buttons(..))
 
 
 type alias Model =
-    { time : Float }
+    { buttons : Buttons
+    , time : Float
+    , world : World
+    }
+
+
+type alias World =
+    List Encounter
+
+
+type alias Encounter =
+    { guid : String
+    , name : String
+    , x : Float
+    , y : Float
+    }
