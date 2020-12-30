@@ -20,4 +20,4 @@ type Msg
     | SignupMsg Signup.Msg
     | FeedbackMsg Feedback.Msg
     | WorldMsg World.Msg
-    | StartGame Mode
+    | StartGame Mode (Maybe String)

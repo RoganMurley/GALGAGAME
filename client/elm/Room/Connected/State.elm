@@ -1,4 +1,4 @@
-module Connected.State exposing (init, receive, tick, update)
+module Connected.State exposing (init, mouseDown, mouseUp, receive, tick, update)
 
 import Assets.Types as Assets
 import Audio.State exposing (playSound)
@@ -14,6 +14,7 @@ import Json.Decode as Json
 import Main.Messages as Main
 import Main.Types exposing (Flags)
 import Mode exposing (Mode(..))
+import Mouse
 import PlayState.Messages as PlayState
 import Ports exposing (log, websocketSend)
 import Settings.Messages as Settings
@@ -193,3 +194,21 @@ receive flags assets ({ mode, gameType } as model) msg =
 
         _ ->
             ( model, log <| "Error decoding message from server: " ++ msg )
+
+
+mouseUp : Flags -> Assets.Model -> Model -> Mouse.Position -> ( Model, Cmd Main.Msg )
+mouseUp flags assets model pos =
+    let
+        ( game, cmd ) =
+            GameState.mouseUp pos model.game flags model.mode model.gameType assets
+    in
+    ( { model | game = game }, cmd )
+
+
+mouseDown : Flags -> Assets.Model -> Model -> Mouse.Position -> ( Model, Cmd Main.Msg )
+mouseDown flags assets model pos =
+    let
+        ( game, cmd ) =
+            GameState.mouseDown pos model.game flags model.mode model.gameType assets
+    in
+    ( { model | game = game }, cmd )

@@ -58,7 +58,7 @@ send message (Client _ (PlayerConnection conn) _) = liftIO $ sendTextData conn m
 send _       _                                    = return ()
 
 
-receive :: Client -> App (Text)
+receive :: Client -> App Text
 receive (Client _ (PlayerConnection conn) _) = liftIO $ receiveData conn
 receive  _                                   = return ("")
 

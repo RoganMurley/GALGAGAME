@@ -131,13 +131,10 @@ begin conn request user state = do
           liftIO $ Log.info $ printf "<%s>: %s" username (show prefix)
           gen <- liftIO getGen
           guid <- liftIO GUID.genText
+          let client = Client user (PlayerConnection conn) guid
           let scenario = makeScenario prefix
           roomVar <- liftIO . atomically $ Server.getOrCreateRoom roomName (prefixWaitType prefix) gen scenario state
-          beginPrefix
-            prefix
-            state
-            (Client user (PlayerConnection conn) guid)
-            roomVar
+          beginPrefix prefix state client roomVar
     Just (PlayReplayRequest replayId) -> do
       mReplay <- Replay.Final.load replayId
       case mReplay of
@@ -163,6 +160,9 @@ begin conn request user state = do
       liftIO $ Log.info $ printf "<%s>: Visting World" username
       world <- World.getWorld state
       liftIO $ WS.sendTextData conn ("world:" <> encode world)
+      guid <- liftIO GUID.genText
+      let client = Client user (PlayerConnection conn) guid
+      beginWorld state client
     Nothing ->
       connectionFail conn $ printf "<%s>: Bad request %s" (show username) request
 
@@ -290,6 +290,23 @@ beginQueue state client roomVar = do
       finally
         (beginPlay state client roomVar)
         (liftIO . atomically $ Server.dequeue client state)
+
+
+beginWorld :: TVar Server.State -> Client -> App ()
+beginWorld state client = do
+  msg <- Client.receive client
+  let req = World.parseRequest msg
+  case req of
+    Just (World.JoinEncounter roomName) -> do
+      liftIO $ Log.info $ printf "<%s>: Joining world encounter" (show $ Client.name client)
+      Client.send ("joinEncounter:" <> roomName) client
+      gen <- liftIO getGen
+      let scenario = makeScenario PrefixCpu
+      roomVar <- liftIO . atomically $ Server.getOrCreateRoom roomName WaitCustom gen scenario state
+      beginComputer state client roomVar
+    Nothing -> do
+      liftIO $ Log.error $ printf "<%s>: Unknown world request" (show $ Client.name client)
+      Client.send "unknown world request" client
 
 
 spectate :: Client -> TVar Room -> App ()

@@ -1,15 +1,17 @@
-module Room.State exposing (init, receive, tick, update)
+module Room.State exposing (init, mouseDown, mouseUp, receive, tick, update)
 
 import Assets.Types as Assets
 import Browser.Navigation
 import Connected.State as Connected
 import Feedback.State as Feedback
-import GameType
+import GameType exposing (GameType(..))
 import Lobby.State as Lobby
 import Login.State as Login
 import Main.Messages as Main
 import Main.Types exposing (Flags)
 import Menu.State as Menu
+import Mouse
+import Ports exposing (log)
 import Replay.State as Replay
 import Room.Messages exposing (Msg(..))
 import Room.Types exposing (Model(..))
@@ -117,11 +119,15 @@ update model msg assets flags =
                 _ ->
                     ( model, Cmd.none )
 
-        StartGame mode ->
+        StartGame mode messageRoomID ->
             case model of
-                Lobby { gameType, roomID } ->
-                    ( Connected <| Connected.init mode gameType roomID
-                    , case gameType of
+                Lobby lobby ->
+                    let
+                        roomID =
+                            Maybe.withDefault lobby.roomID messageRoomID
+                    in
+                    ( Connected <| Connected.init mode lobby.gameType roomID
+                    , case lobby.gameType of
                         GameType.ComputerGame ->
                             Cmd.none
 
@@ -139,6 +145,16 @@ update model msg assets flags =
                         GameType.DailyGame ->
                             Cmd.none
                     )
+
+                World _ ->
+                    case messageRoomID of
+                        Just roomID ->
+                            ( Connected <| Connected.init mode ComputerGame roomID
+                            , Cmd.none
+                            )
+
+                        Nothing ->
+                            ( model, log "Missing room ID from World start game" )
 
                 _ ->
                     ( model, Cmd.none )
@@ -206,3 +222,45 @@ tick flags room dt =
 
         World world ->
             ( World <| World.tick flags world dt, Cmd.none )
+
+
+mouseUp : Flags -> Assets.Model -> Model -> Mouse.Position -> ( Model, Cmd Main.Msg )
+mouseUp flags assets model pos =
+    case model of
+        Connected connected ->
+            let
+                ( newConnected, cmd ) =
+                    Connected.mouseUp flags assets connected pos
+            in
+            ( Connected newConnected, cmd )
+
+        World world ->
+            let
+                ( newWorld, cmd ) =
+                    World.mouseDown flags assets world pos
+            in
+            ( World newWorld, cmd )
+
+        _ ->
+            ( model, Cmd.none )
+
+
+mouseDown : Flags -> Assets.Model -> Model -> Mouse.Position -> ( Model, Cmd Main.Msg )
+mouseDown flags assets model pos =
+    case model of
+        Connected connected ->
+            let
+                ( newConnected, cmd ) =
+                    Connected.mouseDown flags assets connected pos
+            in
+            ( Connected newConnected, cmd )
+
+        World world ->
+            let
+                ( newWorld, cmd ) =
+                    World.mouseDown flags assets world pos
+            in
+            ( World newWorld, cmd )
+
+        _ ->
+            ( model, Cmd.none )

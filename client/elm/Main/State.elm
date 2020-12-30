@@ -6,9 +6,7 @@ import Audio.State exposing (setVolume)
 import Browser
 import Browser.Events
 import Browser.Navigation
-import Connected.Messages as Connected
 import Feedback.State as Feedback
-import GameState.Messages as GameState
 import GameState.Types exposing (GameState(..))
 import GameType
 import Http
@@ -226,14 +224,11 @@ update msg ({ assets, room, notifications, settings, flags } as model) =
         MouseDown mouse ->
             let
                 ( newRoom, newCmd ) =
-                    Room.update
-                        room
-                        (Room.ConnectedMsg <|
-                            Connected.GameStateMsg <|
-                                GameState.MouseDown mouse
-                        )
-                        assets
+                    Room.mouseDown
                         flags
+                        assets
+                        room
+                        mouse
             in
             ( { model | room = newRoom }
             , newCmd
@@ -242,14 +237,11 @@ update msg ({ assets, room, notifications, settings, flags } as model) =
         MouseUp mouse ->
             let
                 ( newRoom, newCmd ) =
-                    Room.update
-                        room
-                        (Room.ConnectedMsg <|
-                            Connected.GameStateMsg <|
-                                GameState.MouseUp mouse
-                        )
-                        assets
+                    Room.mouseUp
                         flags
+                        assets
+                        room
+                        mouse
             in
             ( { model | room = newRoom }
             , newCmd
@@ -284,26 +276,20 @@ update msg ({ assets, room, notifications, settings, flags } as model) =
                 ( newRoom, newCmd ) =
                     case ( flags.mouse, pos ) of
                         ( Nothing, Just newMouse ) ->
-                            Room.update
-                                room
-                                (Room.ConnectedMsg <|
-                                    Connected.GameStateMsg <|
-                                        GameState.MouseDown newMouse
-                                )
-                                assets
+                            Room.mouseDown
                                 flags
+                                assets
+                                room
+                                newMouse
 
                         ( Just oldMouse, Nothing ) ->
-                            Room.update
-                                room
-                                (Room.ConnectedMsg <|
-                                    Connected.GameStateMsg <|
-                                        GameState.MouseUp <|
-                                            (\{ x, y } -> { x = round x, y = round y }) <|
-                                                Math.Vector2.toRecord oldMouse
-                                )
-                                assets
+                            Room.mouseUp
                                 flags
+                                assets
+                                room
+                                ((\{ x, y } -> { x = round x, y = round y }) <|
+                                    Math.Vector2.toRecord oldMouse
+                                )
 
                         _ ->
                             ( room, Cmd.none )

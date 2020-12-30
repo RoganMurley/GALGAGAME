@@ -4,7 +4,7 @@ import Control.Concurrent.STM.TVar (TVar)
 import Control.Monad.IO.Class (liftIO)
 import Data.Aeson (ToJSON(..), (.=), object)
 import Data.Text (Text)
-import Util (getGen, shuffle)
+import Util (breakAt, getGen, shuffle)
 
 import Config (App)
 
@@ -124,3 +124,19 @@ instance ToJSON Encounter where
     , "x"    .= encounter_x
     , "y"    .= encounter_y
     ]
+
+
+data WorldRequest = JoinEncounter Text
+  deriving (Eq, Show)
+
+
+parseRequest :: Text -> Maybe WorldRequest
+parseRequest msg =
+  let
+    (command, content) = breakAt ":" msg :: (Text, Text)
+  in
+    case command of
+      "joinEncounter" ->
+        Just . JoinEncounter $ content
+      _ ->
+        Nothing
