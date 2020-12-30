@@ -100,12 +100,12 @@ receive msg =
         "acceptPlay" ->
             message <|
                 Main.RoomMsg <|
-                    Room.StartGame Playing
+                    Room.StartGame Playing Nothing
 
         "acceptSpec" ->
             message <|
                 Main.RoomMsg <|
-                    Room.StartGame Spectating
+                    Room.StartGame Spectating Nothing
 
         "error" ->
             message <|

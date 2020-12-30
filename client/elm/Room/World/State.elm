@@ -1,6 +1,7 @@
-module World.State exposing (init, receive, tick, update)
+module World.State exposing (init, mouseDown, mouseUp, receive, tick, update)
 
 import Assets.State as Assets
+import Assets.Types as Assets
 import Buttons.State as Buttons
 import Buttons.Types as Buttons exposing (Button, Buttons)
 import Game.State exposing (bareContextInit)
@@ -8,6 +9,8 @@ import Json.Decode as Json
 import Main.Messages as Main
 import Main.Types exposing (Flags)
 import Math.Vector3 exposing (vec3)
+import Mode exposing (Mode(..))
+import Mouse
 import Ports exposing (log)
 import Room.Messages as Room
 import Util exposing (message, splitOnColon)
@@ -76,6 +79,26 @@ tick flags model dt =
     }
 
 
+mouseUp : Flags -> Assets.Model -> Model -> Mouse.Position -> ( Model, Cmd Main.Msg )
+mouseUp _ _ model _ =
+    ( model, Cmd.none )
+
+
+mouseDown : Flags -> Assets.Model -> Model -> Mouse.Position -> ( Model, Cmd Main.Msg )
+mouseDown _ _ model _ =
+    case Buttons.hit model.buttons of
+        Just ( key, _ ) ->
+            ( model
+            , message <|
+                Main.Send <|
+                    "joinEncounter:"
+                        ++ key
+            )
+
+        Nothing ->
+            ( model, Cmd.none )
+
+
 receive : String -> Cmd Main.Msg
 receive msg =
     let
@@ -93,6 +116,9 @@ receive msg =
 
                 Err err ->
                     log <| Json.errorToString err
+
+        "joinEncounter" ->
+            message <| Main.RoomMsg <| Room.StartGame Playing (Just content)
 
         _ ->
             Cmd.none

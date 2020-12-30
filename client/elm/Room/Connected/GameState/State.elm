@@ -1,4 +1,4 @@
-module GameState.State exposing (tick, update)
+module GameState.State exposing (mouseDown, mouseUp, tick, update)
 
 import Assets.State as Assets
 import Assets.Types as Assets
@@ -12,45 +12,15 @@ import Json.Decode as Json
 import Main.Messages as Main
 import Main.Types exposing (Flags)
 import Mode exposing (Mode)
+import Mouse
 import PlayState.State as PlayState
 import PlayState.Types exposing (PlayState)
 import Ports exposing (log)
 
 
 update : Msg -> GameState -> Flags -> Mode -> GameType -> Assets.Model -> ( GameState, Cmd Main.Msg )
-update msg state flags mode gameType assets =
+update msg state _ mode _ assets =
     case msg of
-        MouseDown pos ->
-            case state of
-                Selecting selecting ->
-                    let
-                        ( newSelecting, cmd ) =
-                            DeckBuilding.mouseDown pos selecting
-                    in
-                    ( Selecting newSelecting, cmd )
-
-                Started playState ->
-                    let
-                        ( newPlayState, cmd ) =
-                            PlayState.mouseDown flags assets gameType mode pos playState
-                    in
-                    ( Started newPlayState, cmd )
-
-                _ ->
-                    ( state, Cmd.none )
-
-        MouseUp pos ->
-            case state of
-                Started playState ->
-                    let
-                        ( newPlayState, cmd ) =
-                            PlayState.mouseUp flags assets gameType mode pos playState
-                    in
-                    ( Started newPlayState, cmd )
-
-                _ ->
-                    ( state, Cmd.none )
-
         PlayStateMsg playStateMsg ->
             case state of
                 Started playState ->
@@ -109,6 +79,41 @@ update msg state flags mode gameType assets =
 
                 _ ->
                     ( state, log "Expected a Selecting state" )
+
+
+mouseDown : Mouse.Position -> GameState -> Flags -> Mode -> GameType -> Assets.Model -> ( GameState, Cmd Main.Msg )
+mouseDown pos state flags mode gameType assets =
+    case state of
+        Selecting selecting ->
+            let
+                ( newSelecting, cmd ) =
+                    DeckBuilding.mouseDown pos selecting
+            in
+            ( Selecting newSelecting, cmd )
+
+        Started playState ->
+            let
+                ( newPlayState, cmd ) =
+                    PlayState.mouseDown flags assets gameType mode pos playState
+            in
+            ( Started newPlayState, cmd )
+
+        _ ->
+            ( state, Cmd.none )
+
+
+mouseUp : Mouse.Position -> GameState -> Flags -> Mode -> GameType -> Assets.Model -> ( GameState, Cmd Main.Msg )
+mouseUp pos state flags mode gameType assets =
+    case state of
+        Started playState ->
+            let
+                ( newPlayState, cmd ) =
+                    PlayState.mouseUp flags assets gameType mode pos playState
+            in
+            ( Started newPlayState, cmd )
+
+        _ ->
+            ( state, Cmd.none )
 
 
 carry : GameState -> GameState -> GameState
