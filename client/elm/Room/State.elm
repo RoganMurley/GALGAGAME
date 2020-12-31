@@ -16,6 +16,8 @@ import Replay.State as Replay
 import Room.Messages exposing (Msg(..))
 import Room.Types exposing (Model(..))
 import Signup.State as Signup
+import Util exposing (message)
+import World.Messages as World
 import World.State as World
 
 
@@ -128,28 +130,19 @@ update model msg assets flags =
                     in
                     ( Connected <| Connected.init mode lobby.gameType roomID
                     , case lobby.gameType of
-                        GameType.ComputerGame ->
-                            Cmd.none
-
                         GameType.CustomGame ->
                             Browser.Navigation.pushUrl flags.key <|
                                 "/play/custom/"
                                     ++ roomID
 
-                        GameType.QuickplayGame ->
-                            Cmd.none
-
-                        GameType.TutorialGame ->
-                            Cmd.none
-
-                        GameType.DailyGame ->
+                        _ ->
                             Cmd.none
                     )
 
                 World _ ->
                     case messageRoomID of
                         Just roomID ->
-                            ( Connected <| Connected.init mode ComputerGame roomID
+                            ( Connected <| Connected.init mode WorldGame roomID
                             , Cmd.none
                             )
 
@@ -158,6 +151,11 @@ update model msg assets flags =
 
                 _ ->
                     ( model, Cmd.none )
+
+        VisitWorld ->
+            ( World World.init
+            , message <| Main.Send "endEncounter:"
+            )
 
 
 receive : Flags -> Assets.Model -> String -> Model -> ( Model, Cmd Main.Msg )

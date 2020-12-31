@@ -99,8 +99,8 @@ view { w, h } assets winner resolving buttons =
             ]
 
 
-buttonEntities : Render.Params -> Buttons -> Float -> Maybe Vec2 -> Buttons
-buttonEntities renderParams buttons dt mouse =
+buttonEntities : Render.Params -> Buttons -> GameType -> Float -> Maybe Vec2 -> Buttons
+buttonEntities renderParams buttons gameType dt mouse =
     let
         w =
             toFloat renderParams.w
@@ -122,36 +122,58 @@ buttonEntities renderParams buttons dt mouse =
     in
     Buttons.fromList <|
         List.map (\f -> f dt mouse buttons)
-            [ Buttons.entity
-                "playAgain"
-                { x = 0.5 * w
-                , y = 0.55 * h
-                , width = buttonWidth
-                , height = buttonHeight
-                , btn =
-                    TextButton
-                        { font = "Futura"
-                        , text = "Play Again?"
-                        , textColor = textColor
-                        , bgColor = bgColor
-                        , options = [ Buttons.HoverText "Play Again!" ]
+            (case gameType of
+                WorldGame ->
+                    [ Buttons.entity
+                        "continue"
+                        { x = 0.5 * w
+                        , y = 0.55 * h
+                        , width = buttonWidth
+                        , height = buttonHeight
+                        , btn =
+                            TextButton
+                                { font = "Futura"
+                                , text = "Continue?"
+                                , textColor = textColor
+                                , bgColor = bgColor
+                                , options = [ Buttons.HoverText "Continue!" ]
+                                }
+                        , disabled = False
                         }
-                , disabled = False
-                }
-            , Buttons.entity
-                "watchReplay"
-                { x = 0.5 * w
-                , y = 0.65 * h
-                , width = buttonWidth
-                , height = buttonHeight
-                , btn =
-                    TextButton
-                        { font = "Futura"
-                        , text = "Watch Replay?"
-                        , textColor = textColor
-                        , bgColor = bgColor
-                        , options = [ Buttons.HoverText "Watch Replay!" ]
+                    ]
+
+                _ ->
+                    [ Buttons.entity
+                        "playAgain"
+                        { x = 0.5 * w
+                        , y = 0.55 * h
+                        , width = buttonWidth
+                        , height = buttonHeight
+                        , btn =
+                            TextButton
+                                { font = "Futura"
+                                , text = "Play Again?"
+                                , textColor = textColor
+                                , bgColor = bgColor
+                                , options = [ Buttons.HoverText "Play Again!" ]
+                                }
+                        , disabled = False
                         }
-                , disabled = False
-                }
-            ]
+                    , Buttons.entity
+                        "watchReplay"
+                        { x = 0.5 * w
+                        , y = 0.65 * h
+                        , width = buttonWidth
+                        , height = buttonHeight
+                        , btn =
+                            TextButton
+                                { font = "Futura"
+                                , text = "Watch Replay?"
+                                , textColor = textColor
+                                , bgColor = bgColor
+                                , options = [ Buttons.HoverText "Watch Replay!" ]
+                                }
+                        , disabled = False
+                        }
+                    ]
+            )

@@ -144,8 +144,8 @@ carry old new =
             new
 
 
-tick : Flags -> GameState -> Float -> ( GameState, Cmd Msg )
-tick flags state dt =
+tick : Flags -> GameState -> GameType -> Float -> ( GameState, Cmd Msg )
+tick flags state gameType dt =
     case state of
         Selecting selecting ->
             let
@@ -160,7 +160,7 @@ tick flags state dt =
         Started playState ->
             let
                 ( newState, cmd ) =
-                    PlayState.tick flags playState dt
+                    PlayState.tick flags playState gameType dt
             in
             ( Started newState, Cmd.map PlayStateMsg cmd )
 

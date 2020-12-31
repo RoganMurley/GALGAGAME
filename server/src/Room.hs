@@ -35,10 +35,10 @@ data Room = Room
 new :: WaitType -> Gen -> Name -> Scenario -> Room
 new wait gen name scenario =
   Room
-    { room_pa    = Nothing
-    , room_pb    = Nothing
+    { room_pa = Nothing
+    , room_pb = Nothing
     , room_specs = []
-    , room_name  = name
+    , room_name = name
     , room_state = initState wait gen
     , room_scenario = scenario
     }

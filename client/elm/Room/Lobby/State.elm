@@ -53,6 +53,9 @@ update ({ gameType, mode } as model) msg flags =
                                 DailyGame ->
                                     "playDaily:"
 
+                                WorldGame ->
+                                    "playWorld:"
+
                         Spectating ->
                             "spectate:"
             in
@@ -138,6 +141,9 @@ gameTypeToString gameType =
 
         DailyGame ->
             "DAILY CHALLENGE"
+
+        WorldGame ->
+            "WORLD ENCOUNTER "
 
 
 skipLobbyCmd : Maybe String -> Cmd Main.Msg

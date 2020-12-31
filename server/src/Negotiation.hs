@@ -51,4 +51,5 @@ data Prefix =
   | PrefixTutorial
   | PrefixDaily
   | PrefixQueue
+  | PrefixWorld
   deriving Show

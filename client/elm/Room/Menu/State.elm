@@ -12,22 +12,30 @@ update msg { key } =
     case msg of
         Start gameType ->
             let
-                url : String
-                url =
+                mUrl : Maybe String
+                mUrl =
                     case gameType of
                         GameType.ComputerGame ->
-                            "computer"
+                            Just "computer"
 
                         GameType.CustomGame ->
-                            "custom"
+                            Just "custom"
 
                         GameType.QuickplayGame ->
-                            "quickplay"
+                            Just "quickplay"
 
                         GameType.TutorialGame ->
-                            "tutorial"
+                            Just "tutorial"
 
                         GameType.DailyGame ->
-                            "daily"
+                            Just "daily"
+
+                        GameType.WorldGame ->
+                            Nothing
             in
-            Browser.Navigation.pushUrl key <| "/play/" ++ url
+            case mUrl of
+                Just url ->
+                    Browser.Navigation.pushUrl key <| "/play/" ++ url
+
+                Nothing ->
+                    Cmd.none
