@@ -104,8 +104,8 @@ addPlayerClient client roomVar =
         (room, Nothing)
 
 
-addComputerClient :: Text -> TVar Room -> STM (Maybe Client)
-addComputerClient guid room =
+addComputerClient :: Text -> Text -> TVar Room -> STM (Maybe Client)
+addComputerClient name guid room =
   modReturnTVar room $ \r ->
     case Room.addPlayer client r of
       Just (r', _, _) ->
@@ -113,7 +113,7 @@ addComputerClient guid room =
       Nothing ->
         (r, Nothing)
   where
-    client = Client.cpuClient guid :: Client
+    client = Client.cpuClient name guid :: Client
 
 
 removeClient :: Client -> TVar Room -> STM (Room)

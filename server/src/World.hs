@@ -3,6 +3,7 @@ module World where
 import Control.Concurrent.STM.TVar (TVar)
 import Control.Monad.IO.Class (liftIO)
 import Data.Aeson (ToJSON(..), (.=), object)
+import Data.List (find)
 import Data.Text (Text)
 import Util (breakAt, getGen, shuffle)
 
@@ -22,6 +23,13 @@ data Encounter = Encounter
   , encounter_x    :: Float
   , encounter_y    :: Float
   } deriving (Eq, Show)
+
+
+encounterFromGuid :: World -> Text -> Maybe Encounter
+encounterFromGuid (World encounters) guid =
+  find
+    (\encounter -> encounter_guid encounter == guid)
+    encounters
 
 
 encounterNames :: [Text]
