@@ -118,9 +118,8 @@ concede which (Started (Playing model replay)) =
     finalReplay = Final.finalise newReplay newPlayState :: Final.Replay
   in
     Right (
-      Just . Started $ newPlayState
-    , [
-        Outcome.Encodable $ Outcome.Resolve res model newPlayState Nothing
+      Just . Started $ newPlayState,
+      [ Outcome.Encodable $ Outcome.Resolve res model newPlayState Nothing
       , Outcome.HandleExperience winner
       , Outcome.SaveReplay finalReplay
       ]
@@ -212,7 +211,7 @@ playCard index which model replay
             (Ended w m newReplay g, newRes) ->
               let
                 newPlayState = Ended w m newReplay g :: PlayState
-                newState     = Started newPlayState  :: GameState
+                newState     = Started newPlayState :: GameState
                 finalReplay  = Final.finalise newReplay newPlayState :: Final.Replay
               in
                 Right (

@@ -158,8 +158,6 @@ begin conn request user state = do
           liftIO $ Log.error $ printf "Illegal system message"
     Just WorldRequest -> do
       liftIO $ Log.info $ printf "<%s>: Visting World" username
-      world <- World.getWorld state
-      liftIO $ WS.sendTextData conn ("world:" <> encode world)
       guid <- liftIO GUID.genText
       let client = Client user (PlayerConnection conn) guid
       beginWorld state client
@@ -174,6 +172,7 @@ beginPrefix PrefixCpu      = beginComputer
 beginPrefix PrefixTutorial = beginComputer
 beginPrefix PrefixDaily    = beginComputer
 beginPrefix PrefixQueue    = beginQueue
+beginPrefix PrefixWorld    = beginComputer
 
 
 prefixWaitType :: Prefix -> WaitType
@@ -294,6 +293,8 @@ beginQueue state client roomVar = do
 
 beginWorld :: TVar Server.State -> Client -> App ()
 beginWorld state client = do
+  world <- World.getWorld state
+  Client.send (cs $ "world:" <> encode world) client
   msg <- Client.receive client
   let req = World.parseRequest msg
   case req of
@@ -301,11 +302,12 @@ beginWorld state client = do
       liftIO $ Log.info $ printf "<%s>: Joining world encounter" (show $ Client.name client)
       Client.send ("joinEncounter:" <> roomName) client
       gen <- liftIO getGen
-      let scenario = makeScenario PrefixCpu
+      let scenario = makeScenario PrefixWorld
       roomVar <- liftIO . atomically $ Server.getOrCreateRoom roomName WaitCustom gen scenario state
       beginComputer state client roomVar
+      beginWorld state client
     Nothing -> do
-      liftIO $ Log.error $ printf "<%s>: Unknown world request" (show $ Client.name client)
+      liftIO $ Log.error $ printf "<%s>: Unknown world request '%s'" (show $ Client.name client) msg
       Client.send "unknown world request" client
 
 
@@ -331,10 +333,14 @@ play which client roomVar outcomes = do
   forM_ outcomes (actOutcome room)
   _ <- runMaybeT . forever $ do
     msg <- lift $ Client.receive client
-    lift $ actPlay (Command.parse (Client.name client) msg) which roomVar username
+    let username = Client.name client
+    let command = Command.parse username msg
+    case command of
+      EndEncounterCommand ->
+        mzero -- Exit the loop, the encounter is over.
+      _ ->
+        lift $ actPlay command which roomVar username
   return ()
-  where
-    username = Client.name client
 
 
 computerPlay :: WhichPlayer -> TVar Room -> App ()
@@ -344,20 +350,19 @@ computerPlay which roomVar = do
   return ()
   where
     loop :: MaybeT App ()
-    loop =
-      do
-        lift $ threadDelay 1000000
-        gen <- liftIO $ getGen
-        command <- lift $ chooseComputerCommand which roomVar gen
-        case command of
-          Just c -> do
-            lift $ actPlay c which roomVar "CPU"
-            lift $ threadDelay 10000
-          Nothing ->
-            return ()
-        -- Break out if the room's empty.
-        room <- liftIO $ readTVarIO roomVar
-        when (Room.empty room) mzero
+    loop = do
+      lift $ threadDelay 1000000
+      gen <- liftIO $ getGen
+      command <- lift $ chooseComputerCommand which roomVar gen
+      case command of
+        Just c -> do
+          lift $ actPlay c which roomVar "CPU"
+          lift $ threadDelay 10000
+        Nothing ->
+          return ()
+      -- Break out if the room's empty.
+      room <- liftIO $ readTVarIO roomVar
+      when (Room.empty room) mzero
 
 
 chooseComputerCommand :: WhichPlayer -> TVar Room -> Gen -> App (Maybe Command)

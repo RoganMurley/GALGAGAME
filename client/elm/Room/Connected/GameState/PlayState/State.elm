@@ -300,8 +300,8 @@ updateTurnOnly msg state { audio } =
             ( state, Cmd.none )
 
 
-tick : Flags -> PlayState -> Float -> ( PlayState, Cmd Msg )
-tick flags state dt =
+tick : Flags -> PlayState -> GameType -> Float -> ( PlayState, Cmd Msg )
+tick flags state gameType dt =
     case state of
         Playing ({ game } as playing) ->
             let
@@ -331,7 +331,7 @@ tick flags state dt =
                     }
 
                 newButtons =
-                    Endgame.buttonEntities params buttons dt flags.mouse
+                    Endgame.buttonEntities params buttons gameType dt flags.mouse
             in
             ( Ended
                 { ended
@@ -515,6 +515,9 @@ mouseDown { dimensions } assets gameType mode { x, y } state =
 
                                         Nothing ->
                                             Cmd.none
+
+                                "continue" ->
+                                    message << Main.RoomMsg <| Room.VisitWorld
 
                                 _ ->
                                     Cmd.none

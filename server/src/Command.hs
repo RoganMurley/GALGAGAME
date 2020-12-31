@@ -22,6 +22,7 @@ data Command =
   | RematchCommand
   | ConcedeCommand
   | SelectCharacterCommand CharacterChoice
+  | EndEncounterCommand
   | GodModeCommand Text
   | ErrorCommand Text
   deriving (Show)
@@ -59,6 +60,8 @@ parse name msg =
             ErrorCommand $ cs err
           Right choice ->
             SelectCharacterCommand choice
+      "endEncounter" ->
+        EndEncounterCommand
       "god" ->
         GodModeCommand content
       _ ->

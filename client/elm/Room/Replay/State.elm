@@ -1,5 +1,6 @@
 module Replay.State exposing (getReplay, init, receive, tick, update)
 
+import GameType exposing (GameType(..))
 import Json.Decode as Json
 import Main.Messages as Main
 import Main.Types exposing (Flags)
@@ -66,7 +67,7 @@ tick flags model dt =
                 (\r ->
                     { r
                         | state =
-                            Tuple.first <| PlayState.tick flags r.state dt
+                            Tuple.first <| PlayState.tick flags r.state CustomGame dt
                         , tick = r.tick + dt
                     }
                 )

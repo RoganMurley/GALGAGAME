@@ -21,3 +21,4 @@ type Msg
     | FeedbackMsg Feedback.Msg
     | WorldMsg World.Msg
     | StartGame Mode (Maybe String)
+    | VisitWorld
