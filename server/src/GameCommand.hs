@@ -2,7 +2,7 @@ module GameCommand where
 
 import Card (Card(..))
 import CardAnim (CardAnim(..))
-import Control.Monad (when)
+import Control.Monad (join, when)
 import Control.Monad.Free (foldFree)
 import Control.Monad.Trans.Writer (Writer, runWriter, tell)
 import Data.Foldable (toList)
@@ -20,7 +20,7 @@ import Safe (atMay)
 import Scenario (Scenario(..))
 import Stack (Stack)
 import StackCard (StackCard(..))
-import User (User(..), getUsername, isSuperuser)
+import User (User(..), getUsername, getQueryUsername, isSuperuser)
 import Util (Err, Gen, deleteIndex, split, times)
 import Wheel (Wheel(..))
 
@@ -152,9 +152,13 @@ nextSelectState deckModel turn startProgram gen (mUserPa, mUserPb) =
         (DeckBuilding (Just ca) (Just cb)) ->
           let
             model = initModel turn ca cb gen :: Model
-            usernamePa = fromMaybe "" $ getUsername <$> mUserPa :: Text
-            usernamePb = fromMaybe "" $ getUsername <$> mUserPb :: Text
-            replay = Active.init model usernamePa usernamePb :: Active.Replay
+            displayUsernamePa = fromMaybe "" $ getUsername <$> mUserPa :: Text
+            displayUsernamePb = fromMaybe "" $ getUsername <$> mUserPb :: Text
+            queryUsernamePa = fromMaybe "" $ join $ getQueryUsername <$> mUserPa :: Text
+            queryUsernamePb = fromMaybe "" $ join $ getQueryUsername <$> mUserPb :: Text
+            usernamesPa = (displayUsernamePa, queryUsernamePa)
+            usernamesPb = (displayUsernamePb, queryUsernamePb)
+            replay = Active.init model usernamesPa usernamesPb :: Active.Replay
             (newModel, _, res) = Beta.execute model $ foldFree Beta.betaI startProgram
             playstate :: PlayState
             playstate = Playing newModel (Active.add replay res)

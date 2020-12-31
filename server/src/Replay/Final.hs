@@ -22,7 +22,7 @@ data Replay = Replay Active.Replay PlayState
 
 
 instance ToJSON Replay where
-  toJSON (Replay (Active.Replay initial res pa pb) final) =
+  toJSON (Replay (Active.Replay initial res (pa, _) (pb, _)) final) =
     object [
       "list"    .= res
     , "initial" .= initial
@@ -41,25 +41,21 @@ finalise :: Active.Replay -> PlayState -> Replay
 finalise = Replay
 
 
--- This is hacky, change replay usernames to be a sum type for CPU and Guest.
 getUsername :: WhichPlayer -> Replay -> Maybe Text
-getUsername which (Replay (Active.Replay _ _ ua ub) _) =
+getUsername which (Replay (Active.Replay _ _ (_, pa) (_, pb)) _) =
   let
-    username :: Text
-    username =
+    textUsername =
       case which of
         PlayerA ->
-          ua
+          pa
         PlayerB ->
-          ub
+          pb
   in
-    case username of
-      "cpu" ->
+    case textUsername of
+      "" ->
         Nothing
-      "guest" ->
-        Nothing
-      _ ->
-        Just username
+      s ->
+        Just s
 
 
 save :: Replay -> App Int

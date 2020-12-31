@@ -168,11 +168,11 @@ begin conn request user state = do
 beginPrefix :: Prefix -> TVar Server.State -> Client -> TVar Room -> App ()
 beginPrefix PrefixPlay     = beginPlay
 beginPrefix PrefixSpec     = beginSpec
-beginPrefix PrefixCpu      = beginComputer
-beginPrefix PrefixTutorial = beginComputer
-beginPrefix PrefixDaily    = beginComputer
+beginPrefix PrefixCpu      = beginComputer "CPU"
+beginPrefix PrefixTutorial = beginComputer "CPU"
+beginPrefix PrefixDaily    = beginComputer "CPU"
 beginPrefix PrefixQueue    = beginQueue
-beginPrefix PrefixWorld    = beginComputer
+beginPrefix PrefixWorld    = beginComputer "CPU"
 
 
 prefixWaitType :: Prefix -> WaitType
@@ -254,12 +254,12 @@ beginSpec state client roomVar = do
     (spectate client roomVar)
     (disconnect client roomVar state)
 
-beginComputer :: TVar Server.State -> Client -> TVar Room -> App ()
-beginComputer state client roomVar = do
+beginComputer :: Text -> TVar Server.State -> Client -> TVar Room -> App ()
+beginComputer cpuName state client roomVar = do
   liftIO $ Log.info $ printf "<%s>: Begin AI game" (show $ Client.name client)
   cpuGuid <- liftIO GUID.genText
   (computer, added) <- liftIO . atomically $ do
-    computerAdded <- addComputerClient cpuGuid roomVar
+    computerAdded <- addComputerClient cpuName cpuGuid roomVar
     playerAdded <- addPlayerClient client roomVar
     return (computerAdded, playerAdded)
   case (,) <$> computer <*> added of
@@ -298,17 +298,24 @@ beginWorld state client = do
   msg <- Client.receive client
   let req = World.parseRequest msg
   case req of
-    Just (World.JoinEncounter roomName) -> do
-      liftIO $ Log.info $ printf "<%s>: Joining world encounter" (show $ Client.name client)
-      Client.send ("joinEncounter:" <> roomName) client
-      gen <- liftIO getGen
-      let scenario = makeScenario PrefixWorld
-      roomVar <- liftIO . atomically $ Server.getOrCreateRoom roomName WaitCustom gen scenario state
-      beginComputer state client roomVar
-      beginWorld state client
+    Just (World.JoinEncounter encounterId) ->
+      case World.encounterFromGuid world encounterId of
+        Just encounter -> do
+          liftIO $ Log.info $ printf "<%s>: Joining world encounter" (show $ Client.name client)
+          Client.send ("joinEncounter:" <> encounterId) client
+          gen <- liftIO getGen
+          let scenario = makeScenario PrefixWorld
+          let roomName = encounterId
+          let cpuName = World.encounter_name encounter
+          roomVar <- liftIO . atomically $ Server.getOrCreateRoom roomName WaitCustom gen scenario state
+          beginComputer cpuName state client roomVar
+          beginWorld state client
+        Nothing -> do
+          liftIO $ Log.error $ printf "<%s>: No such encounter" (show $ Client.name client)
+          Client.send "error:no such encounter" client
     Nothing -> do
       liftIO $ Log.error $ printf "<%s>: Unknown world request '%s'" (show $ Client.name client) msg
-      Client.send "unknown world request" client
+      Client.send "error:unknown world request" client
 
 
 spectate :: Client -> TVar Room -> App ()

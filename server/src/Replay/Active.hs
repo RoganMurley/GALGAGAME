@@ -10,8 +10,21 @@ import Util (mkGen)
 import qualified Stack
 
 
-data Replay = Replay Model [ResolveData] Text Text
-  deriving (Show, Eq)
+data Replay = Replay
+  { replay_model :: Model
+  , replay_res   :: [ResolveData]
+  , replay_pa    :: Usernames
+  , replay_pb    :: Usernames
+  } deriving (Show, Eq)
+
+
+type Usernames = (DisplayUsername, QueryUsername)
+
+
+type DisplayUsername = Text
+
+
+type QueryUsername = Text
 
 
 instance Mirror Replay where
@@ -22,14 +35,21 @@ add :: Replay -> [ResolveData] -> Replay
 add (Replay m xs pa pb) ys = Replay m (xs ++ ys) pa pb
 
 
-init :: Model -> Text -> Text -> Replay
-init model pa pb = Replay model [] pa pb
+init :: Model -> Usernames -> Usernames -> Replay
+init model pa pb =
+  Replay
+    { replay_model = model
+    , replay_res   = []
+    , replay_pa    = pa
+    , replay_pb    = pb
+    }
 
 
 null :: Replay
 null =
   Replay
-    (Model PlayerA Stack.init (PlayerModel [] [] 0) (PlayerModel [] [] 0) NoPass (mkGen 0) 0 False)
-    []
-    ""
-    ""
+    { replay_model = Model PlayerA Stack.init (PlayerModel [] [] 0) (PlayerModel [] [] 0) NoPass (mkGen 0) 0 False
+    , replay_res   = []
+    , replay_pa    = ("", "")
+    , replay_pb    = ("", "")
+    }

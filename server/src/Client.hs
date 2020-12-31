@@ -63,5 +63,5 @@ receive (Client _ (PlayerConnection conn) _) = liftIO $ receiveData conn
 receive  _                                   = return ("")
 
 
-cpuClient :: Text -> Client
-cpuClient = Client CpuUser ComputerConnection
+cpuClient :: Text -> Text -> Client
+cpuClient username = Client (CpuUser username) ComputerConnection

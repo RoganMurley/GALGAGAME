@@ -9,19 +9,19 @@ import qualified Auth.Apps as Auth
 import qualified Auth.Schema as Auth
 
 
-data User = User Auth.User | CpuUser | GuestUser
+data User = User Auth.User | CpuUser Text | GuestUser
   deriving (Show)
 
 
 getUsername :: User -> Text
-getUsername (User user) = Auth.userUsername user
-getUsername CpuUser     = "cpu"
-getUsername GuestUser   = "guest"
+getUsername (User user)    = Auth.userUsername user
+getUsername (CpuUser name) = name
+getUsername GuestUser      = "guest"
 
 
 getQueryUsername :: User -> Maybe Text
 getQueryUsername (User user) = Just . getUsername $ User user
-getQueryUsername CpuUser     = Nothing
+getQueryUsername (CpuUser _) = Nothing
 getQueryUsername GuestUser   = Nothing
 
 
@@ -44,5 +44,5 @@ getUserFromToken mToken = do
 
 isSuperuser :: User -> Bool
 isSuperuser (User user) = Auth.userSuperuser user
-isSuperuser CpuUser     = False
+isSuperuser (CpuUser _) = False
 isSuperuser GuestUser   = False
