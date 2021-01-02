@@ -62,7 +62,7 @@ tick flags model dt =
                 , btn =
                     Buttons.TextButton
                         { font = "Futura"
-                        , text = encounter.name
+                        , text = encounter.numeral
                         , textColor = vec3 (0 / 255) (0 / 255) (80 / 255)
                         , bgColor = vec3 (244 / 255) (241 / 255) (94 / 255)
                         , options = [ Buttons.Circular ]
