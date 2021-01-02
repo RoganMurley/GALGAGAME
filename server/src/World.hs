@@ -4,6 +4,7 @@ import Control.Concurrent.STM.TVar (TVar)
 import Control.Monad.IO.Class (liftIO)
 import Data.Aeson (ToJSON(..), (.=), object)
 import Data.List (find)
+import Data.Set (Set)
 import Data.Text (Text)
 import Player (WhichPlayer(..))
 import Scenario (Scenario(..))
@@ -13,11 +14,15 @@ import Util (breakAt)
 import Config (App)
 
 import qualified Data.GUID as GUID
+import qualified Data.Set as Set
 import qualified DeckBuilding
 import qualified Server
 
 
-data World = World [Encounter]
+data World = World
+  { world_encounters :: [Encounter]
+  , world_others :: [(Float, Float)]
+  }
   deriving (Eq, Show)
 
 
@@ -31,10 +36,10 @@ data Encounter = Encounter
 
 
 encounterFromGuid :: World -> Text -> Maybe Encounter
-encounterFromGuid (World encounters) guid =
+encounterFromGuid (World{ world_encounters }) guid =
   find
     (\encounter -> encounter_guid encounter == guid)
-    encounters
+    world_encounters
 
 
 newEncounter :: Edge -> App Encounter
@@ -53,14 +58,25 @@ newEncounter (Edge{ edge_tarot, edge_key }) = do
 
 getWorld :: TVar Server.State -> App World
 getWorld _ = do
-  let key = Foundation
+  let key = Crown
   let edges = worldnode_edges $ getEdges key worldTree
   encounters <- mapM newEncounter edges
-  return $ World encounters
+  let edgeKeys = Set.fromList $ edge_key <$> edges :: Set WorldKey
+  let otherKeys = Set.difference allKeys edgeKeys :: Set WorldKey
+  let others = getPosition <$> Set.toList otherKeys :: [(Float, Float)]
+  return $
+    World
+    { world_encounters = encounters
+    , world_others     = others
+    }
 
 
 instance ToJSON World where
-  toJSON (World encounters) = toJSON encounters
+  toJSON (World{ world_encounters, world_others }) =
+    object [
+      "encounters" .= toJSON world_encounters
+    , "others"     .= toJSON world_others
+    ]
 
 
 instance ToJSON Encounter where
@@ -175,6 +191,22 @@ data Edge =
   { edge_tarot :: Tarot
   , edge_key   :: WorldKey
   } deriving (Eq, Show)
+
+
+allKeys :: Set WorldKey
+allKeys =
+  Set.fromList
+    [ Crown
+    , Understanding
+    , Wisdom
+    , Severity
+    , Mercy
+    , Splendor
+    , Victory
+    , Beauty
+    , Foundation
+    , Kingdom
+    ]
 
 
 worldTree :: WorldTree
