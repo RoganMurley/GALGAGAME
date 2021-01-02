@@ -23,7 +23,10 @@ init : Model
 init =
     { buttons = Buttons.empty
     , time = 0
-    , world = []
+    , world =
+        { encounters = []
+        , others = []
+        }
     }
 
 
@@ -49,10 +52,11 @@ tick flags model dt =
         buttons : Buttons
         buttons =
             Buttons.fromList <|
-                List.map toButton model.world
+                List.map encounterToButton model.world.encounters
+                    ++ List.map otherToButton model.world.others
 
-        toButton : Encounter -> ( String, Button )
-        toButton encounter =
+        encounterToButton : Encounter -> ( String, Button )
+        encounterToButton encounter =
             Buttons.entity
                 encounter.guid
                 { x = encounter.x * w
@@ -68,6 +72,28 @@ tick flags model dt =
                         , options = [ Buttons.Circular ]
                         }
                 , disabled = False
+                }
+                dt
+                flags.mouse
+                model.buttons
+
+        otherToButton : ( Float, Float ) -> ( String, Button )
+        otherToButton ( x, y ) =
+            Buttons.entity
+                (String.fromFloat x ++ "/" ++ String.fromFloat y)
+                { x = x * w
+                , y = y * h
+                , width = 0.1 * radius
+                , height = 0.1 * radius
+                , btn =
+                    Buttons.TextButton
+                        { font = "Futura"
+                        , text = "?"
+                        , textColor = vec3 (0 / 255) (0 / 255) (0 / 255)
+                        , bgColor = vec3 (70 / 255) (70 / 255) (70 / 255)
+                        , options = [ Buttons.Circular ]
+                        }
+                , disabled = True
                 }
                 dt
                 flags.mouse

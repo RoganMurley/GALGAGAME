@@ -6,7 +6,15 @@ import World.Types exposing (Encounter, World)
 
 decoder : Decoder World
 decoder =
-    list encounterDecoder
+    let
+        posDecoder =
+            Json.map2 Tuple.pair
+                (Json.index 0 float)
+                (Json.index 1 float)
+    in
+    Json.map2 World
+        (field "encounters" <| list encounterDecoder)
+        (field "others" <| list posDecoder)
 
 
 encounterDecoder : Decoder Encounter

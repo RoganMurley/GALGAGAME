@@ -11,7 +11,9 @@ type alias Model =
 
 
 type alias World =
-    List Encounter
+    { encounters : List Encounter
+    , others : List ( Float, Float )
+    }
 
 
 type alias Encounter =
