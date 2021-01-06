@@ -64,7 +64,8 @@ library
                      , Stats.Stats
                      , Transmutation
                      , Wheel
-                     , World
+                     , World.World
+                     , World.Schema
                      , User
                      , Util
   other-modules:       DSL.Alpha.Actions

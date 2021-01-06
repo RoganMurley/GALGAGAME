@@ -55,7 +55,7 @@ import Room (Room)
 
 import qualified Replay.Final
 
-import qualified World
+import qualified World.World as World
 
 import qualified Network.WebSockets as WS
 
@@ -160,7 +160,7 @@ begin conn request user state = do
       liftIO $ Log.info $ printf "<%s>: Visting World" username
       guid <- liftIO GUID.genText
       let client = Client user (PlayerConnection conn) guid
-      beginWorld state client
+      beginWorld state client Nothing
     Nothing ->
       connectionFail conn $ printf "<%s>: Bad request %s" (show username) request
 
@@ -291,9 +291,10 @@ beginQueue state client roomVar = do
         (liftIO . atomically $ Server.dequeue client state)
 
 
-beginWorld :: TVar Server.State -> Client -> App ()
-beginWorld state client = do
-  world <- World.getWorld state
+beginWorld :: TVar Server.State -> Client -> Maybe World.WorldProgress -> App ()
+beginWorld state client mProgress = do
+  let username = Client.queryUsername client
+  world <- World.getWorld username state mProgress
   Client.send (cs $ "world:" <> encode world) client
   msg <- Client.receive client
   let req = World.parseRequest msg
@@ -309,7 +310,10 @@ beginWorld state client = do
           let cpuName = World.encounter_name encounter
           roomVar <- liftIO . atomically $ Server.getOrCreateRoom roomName WaitCustom gen scenario state
           beginComputer cpuName state client roomVar
-          beginWorld state client
+          let newProgress = World.WorldProgress $ World.encounter_key encounter
+          liftIO $ Log.info $ printf "<%s>: New world progress %s" (show $ Client.name client) (show newProgress)
+          World.updateProgress username newProgress
+          beginWorld state client (Just newProgress)
         Nothing -> do
           liftIO $ Log.error $ printf "<%s>: No such encounter" (show $ Client.name client)
           Client.send "error:no such encounter" client

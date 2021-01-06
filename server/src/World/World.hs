@@ -1,22 +1,31 @@
-module World where
+{-# LANGUAGE DeriveGeneric #-}
+module World.World where
 
+import Config (App, runBeam)
 import Control.Concurrent.STM.TVar (TVar)
 import Control.Monad.IO.Class (liftIO)
-import Data.Aeson (ToJSON(..), (.=), object)
+import Data.Aeson (FromJSON(..), ToJSON(..), (.:), (.=), eitherDecode, encode, object, withObject)
 import Data.List (find)
+import Data.Maybe (fromMaybe)
 import Data.Set (Set)
+import Data.String.Conversions (cs)
 import Data.Text (Text)
+import Database.Beam ((==.), all_, filter_, insert, insertValues, runInsert, runSelectReturningOne, runUpdate, save, select, val_)
+import GHC.Generics
 import Player (WhichPlayer(..))
 import Scenario (Scenario(..))
+import Schema (GalgagameDb(..), galgagameDb)
 import Start (startProgram)
+import Text.Printf (printf)
 import Util (breakAt)
 
-import Config (App)
-
+import qualified Auth.Schema
 import qualified Data.GUID as GUID
 import qualified Data.Set as Set
 import qualified DeckBuilding
+import qualified Log
 import qualified Server
+import qualified World.Schema as Schema
 
 
 data World = World
@@ -32,6 +41,7 @@ data Encounter = Encounter
   , encounter_numeral :: Text
   , encounter_x       :: Float
   , encounter_y       :: Float
+  , encounter_key     :: WorldKey
   } deriving (Eq, Show)
 
 
@@ -53,12 +63,14 @@ newEncounter (Edge{ edge_tarot, edge_key }) = do
     , encounter_numeral = tarot_numeral
     , encounter_x       = x
     , encounter_y       = y
+    , encounter_key     = edge_key
     }
 
 
-getWorld :: TVar Server.State -> App World
-getWorld _ = do
-  let key = Crown
+getWorld :: Maybe Text -> TVar Server.State -> Maybe WorldProgress -> App World
+getWorld mUsername _ mProgress = do
+  progress <- fromMaybe (loadProgress mUsername) (return <$> mProgress)
+  let key = worldprogress_key progress
   let edges = worldnode_edges $ getEdges key worldTree
   encounters <- mapM newEncounter edges
   let edgeKeys = Set.fromList $ edge_key <$> edges :: Set WorldKey
@@ -107,7 +119,7 @@ parseRequest msg =
 
 
 makeScenario :: Encounter -> Scenario
-makeScenario (Encounter{ encounter_name }) =
+makeScenario (Encounter{ encounter_numeral }) =
   Scenario {
     scenario_turn = PlayerA
   , scenario_characterPa = characterPa
@@ -119,7 +131,7 @@ makeScenario (Encounter{ encounter_name }) =
   where
     characterPa :: Maybe DeckBuilding.Character
     characterPa =
-      case encounter_name of
+      case encounter_numeral of
         "0" ->
           Just $
             DeckBuilding.Character
@@ -128,6 +140,22 @@ makeScenario (Encounter{ encounter_name }) =
               DeckBuilding.mirrorRune
               DeckBuilding.mirrorRune
               DeckBuilding.mirrorRune
+        "I" ->
+          Just $
+            DeckBuilding.Character
+              "The Magician"
+              ""
+              DeckBuilding.blazeRune
+              DeckBuilding.blazeRune
+              DeckBuilding.blazeRune
+        "II" ->
+          Just $
+            DeckBuilding.Character
+              "The Priestess"
+              ""
+              DeckBuilding.heavenRune
+              DeckBuilding.heavenRune
+              DeckBuilding.heavenRune
         "V" ->
           Just $
             DeckBuilding.Character
@@ -177,8 +205,12 @@ data WorldKey =
   | Beauty
   | Foundation
   | Kingdom
-  deriving (Eq, Ord, Show)
+  deriving (Eq, Generic, Ord, Show)
 
+
+instance ToJSON WorldKey
+
+instance FromJSON WorldKey
 
 data WorldNode =
   WorldNode
@@ -356,3 +388,63 @@ tarotJudgement = Tarot "Judgement" "XX"
 
 tarotWorld :: Tarot
 tarotWorld = Tarot "The World" "XXI"
+
+
+-- World Progress
+data WorldProgress = WorldProgress
+  { worldprogress_key :: WorldKey
+  } deriving (Show)
+
+instance ToJSON WorldProgress where
+  toJSON (WorldProgress{ worldprogress_key }) =
+    object [
+      "key" .= worldprogress_key
+    ]
+
+instance FromJSON WorldProgress where
+  parseJSON =
+    withObject "WorldProgress" $
+    \o ->
+      WorldProgress
+        <$> o .: "key"
+
+
+initialProgress :: WorldProgress
+initialProgress = WorldProgress Crown
+
+
+updateProgress :: Maybe Text -> WorldProgress -> App ()
+updateProgress (Just username) progressState = do
+  result <- runBeam $ runSelectReturningOne $
+    select $ filter_ (\row -> Schema.progressUser row ==. val_ (Auth.Schema.UserId username)) $
+      all_ $ progress galgagameDb
+  let prog = Schema.Progress (Auth.Schema.UserId $ cs username) (cs $ encode progressState)
+  case result of
+    Just _ -> do
+      liftIO $ Log.info $ printf "World progress found, updating..."
+      runBeam $ runUpdate $ save (progress galgagameDb) prog
+    Nothing -> do
+      liftIO $ Log.info $ printf "World progress not found, inserting..."
+      runBeam $ runInsert $ insert (progress galgagameDb) $ insertValues [ prog ]
+updateProgress Nothing _ = return ()
+
+
+loadProgress :: Maybe Text -> App WorldProgress
+loadProgress Nothing         = return initialProgress
+loadProgress (Just username) = do
+  result <- runBeam $ runSelectReturningOne $
+    select $ filter_ (\row -> Schema.progressUser row ==. val_ (Auth.Schema.UserId username)) $
+      all_ $ progress galgagameDb
+  return $ fromDb $ Schema.progressState <$> result
+  where
+    fromDb :: Maybe Text -> WorldProgress
+    fromDb mText =
+      case mText of
+        Just text ->
+          case eitherDecode $ cs text of
+            Left _ ->
+              initialProgress
+            Right prog ->
+              prog
+        Nothing ->
+          initialProgress
