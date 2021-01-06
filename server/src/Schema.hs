@@ -13,12 +13,14 @@ import Auth.Schema (UserT)
 import Feedback.Schema (FeedbackT)
 import Replay.Schema (ReplayT)
 import Stats.Schema (StatsT)
+import World.Schema (ProgressT)
 
 data GalgagameDb f = GalgagameDb
   { replays  :: f (TableEntity ReplayT)
   , users    :: f (TableEntity UserT)
   , stats    :: f (TableEntity StatsT)
   , feedback :: f (TableEntity FeedbackT)
+  , progress :: f (TableEntity ProgressT)
   } deriving (Generic)
 
 instance Database be GalgagameDb
