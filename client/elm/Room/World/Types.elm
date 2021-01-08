@@ -5,6 +5,7 @@ import Buttons.Types exposing (Buttons(..))
 
 type alias Model =
     { buttons : Buttons
+    , disabledButtons : Buttons
     , time : Float
     , world : World
     }
