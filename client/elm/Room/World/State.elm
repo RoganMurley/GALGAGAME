@@ -59,8 +59,8 @@ tick flags model dt =
         encounterToButton encounter =
             Buttons.entity
                 encounter.guid
-                { x = encounter.x * w
-                , y = encounter.y * h
+                { x = 0.5 * w + ((encounter.x - 0.5) * radius * 5)
+                , y = 0.5 * h + ((encounter.y - 0.5) * radius * 5)
                 , width = 0.1 * radius
                 , height = 0.1 * radius
                 , btn =
@@ -86,8 +86,8 @@ tick flags model dt =
         otherToButton ( x, y ) =
             Buttons.entity
                 (String.fromFloat x ++ "/" ++ String.fromFloat y)
-                { x = x * w
-                , y = y * h
+                { x = 0.5 * w + ((x - 0.5) * radius * 5)
+                , y = 0.5 * h + ((y - 0.5) * radius * 5)
                 , width = 0.1 * radius
                 , height = 0.1 * radius
                 , btn =
