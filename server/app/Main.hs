@@ -24,7 +24,7 @@ import Act (actOutcome, actPlay, actSpec, syncClient, syncPlayersRoom, syncClien
 import ArtificalIntelligence (Action(..), chooseAction)
 import Config (App, ConnectInfoConfig(..), runApp)
 import Database (postgresConnectInfo, redisConnectInfo)
-import GameState (GameState(..), PlayState(..), WaitType(..))
+import GameState (GameState(..), PlayState(..), WaitType(..), isWinner)
 import Model (Turn)
 import Negotiation (Prefix(..), Request(..), parseRequest, parsePrefix)
 import Outcome (Outcome)
@@ -166,13 +166,13 @@ begin conn request user state = do
 
 
 beginPrefix :: Prefix -> TVar Server.State -> Client -> TVar Room -> App ()
-beginPrefix PrefixPlay     = beginPlay
-beginPrefix PrefixSpec     = beginSpec
-beginPrefix PrefixCpu      = beginComputer "CPU"
-beginPrefix PrefixTutorial = beginComputer "CPU"
-beginPrefix PrefixDaily    = beginComputer "CPU"
-beginPrefix PrefixQueue    = beginQueue
-beginPrefix PrefixWorld    = beginComputer "CPU"
+beginPrefix PrefixPlay     s c r = beginPlay s c r
+beginPrefix PrefixSpec     s c r = beginSpec s c r
+beginPrefix PrefixQueue    s c r = beginQueue s c r
+beginPrefix PrefixCpu      s c r = beginComputer "CPU" s c r >> return ()
+beginPrefix PrefixTutorial s c r = beginComputer "CPU" s c r >> return ()
+beginPrefix PrefixDaily    s c r = beginComputer "CPU" s c r >> return ()
+beginPrefix PrefixWorld    s c r = beginComputer "CPU" s c r >> return ()
 
 
 prefixWaitType :: Prefix -> WaitType
@@ -243,7 +243,10 @@ beginPlay state client roomVar = do
       Client.send (Command.toChat $ ErrorCommand "room is full") client
     Just (which, outcomes) ->
       finally
-        (play which client roomVar outcomes)
+        (do
+          _ <- play which client roomVar outcomes
+          return ()
+        )
         (disconnect client roomVar state)
 
 
@@ -254,7 +257,7 @@ beginSpec state client roomVar = do
     (spectate client roomVar)
     (disconnect client roomVar state)
 
-beginComputer :: Text -> TVar Server.State -> Client -> TVar Room -> App ()
+beginComputer :: Text -> TVar Server.State -> Client -> TVar Room -> App Bool
 beginComputer cpuName state client roomVar = do
   liftIO $ Log.info $ printf "<%s>: Begin AI game" (show $ Client.name client)
   cpuGuid <- liftIO GUID.genText
@@ -266,14 +269,17 @@ beginComputer cpuName state client roomVar = do
     Nothing -> do
       liftIO $ Log.info $ printf "<%s>: Room is full" (show $ Client.name client)
       Client.send (Command.toChat $ ErrorCommand "Room is full") client
+      return False
     Just (computerClient, (which, outcomes)) ->
       finally
         (do
           _ <- fork (computerPlay (other which) roomVar)
-          (play which client roomVar outcomes))
+          play which client roomVar outcomes
+        )
         (do
           _ <- disconnect computerClient roomVar state
-          (disconnect client roomVar state))
+          (disconnect client roomVar state)
+        )
 
 
 beginQueue :: TVar Server.State -> Client -> TVar Room -> App ()
@@ -309,11 +315,19 @@ beginWorld state client mProgress = do
           let roomName = encounterId
           let cpuName = World.encounter_name encounter
           roomVar <- liftIO . atomically $ Server.getOrCreateRoom roomName WaitCustom gen scenario state
-          beginComputer cpuName state client roomVar
-          let newProgress = World.WorldProgress $ World.encounter_key encounter
-          liftIO $ Log.info $ printf "<%s>: New world progress %s" (show $ Client.name client) (show newProgress)
-          World.updateProgress username newProgress
-          beginWorld state client (Just newProgress)
+          didWin <- beginComputer cpuName state client roomVar
+          if didWin then
+            (do
+              let newProgress = World.WorldProgress $ World.encounter_key encounter
+              liftIO $ Log.info $ printf "<%s>: Win! New world progress %s" (show $ Client.name client) (show newProgress)
+              World.updateProgress username newProgress
+              beginWorld state client (Just newProgress)
+            )
+            else
+              (do
+                liftIO $ Log.info $ printf "<%s>: Loss!" (show $ Client.name client)
+                beginWorld state client mProgress
+              )
         Nothing -> do
           liftIO $ Log.error $ printf "<%s>: No such encounter" (show $ Client.name client)
           Client.send "error:no such encounter" client
@@ -335,7 +349,7 @@ spectate client roomVar = do
   return ()
 
 
-play :: WhichPlayer -> Client -> TVar Room -> [Outcome] -> App ()
+play :: WhichPlayer -> Client -> TVar Room -> [Outcome] -> App Bool
 play which client roomVar outcomes = do
   Client.send ("acceptPlay:" :: Text) client
   room <- liftIO $ readTVarIO roomVar
@@ -351,7 +365,8 @@ play which client roomVar outcomes = do
         mzero -- Exit the loop, the encounter is over.
       _ ->
         lift $ actPlay command which roomVar username
-  return ()
+  finalRoom <- liftIO $ readTVarIO roomVar
+  return $ isWinner which $ Room.getState finalRoom
 
 
 computerPlay :: WhichPlayer -> TVar Room -> App ()

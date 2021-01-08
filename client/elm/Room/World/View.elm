@@ -18,7 +18,7 @@ htmlView _ =
 
 
 webglView : Model -> Flags -> Assets.Model -> List WebGL.Entity
-webglView { buttons, time } { mouse, dimensions } assets =
+webglView { buttons, disabledButtons, time } { mouse, dimensions } assets =
     let
         ctx =
             bareContextInit dimensions assets mouse
@@ -37,4 +37,5 @@ webglView { buttons, time } { mouse, dimensions } assets =
     List.concat
         [ Background.radialView vfx ctx
         , Buttons.view buttons ctx
+        , Buttons.view disabledButtons ctx
         ]

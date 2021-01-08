@@ -93,3 +93,8 @@ initModel turn ca cb gen =
 buildDeck :: Character -> Deck
 buildDeck selection =
   characterCards selection >>= replicate 3
+
+
+isWinner :: WhichPlayer -> GameState -> Bool
+isWinner which (Started (Ended (Just winner) _ _ _)) = which == winner
+isWinner _ _ = False

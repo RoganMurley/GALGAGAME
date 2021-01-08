@@ -22,6 +22,7 @@ import World.Types exposing (Encounter, Model)
 init : Model
 init =
     { buttons = Buttons.empty
+    , disabledButtons = Buttons.empty
     , time = 0
     , world =
         { encounters = []
@@ -53,7 +54,6 @@ tick flags model dt =
         buttons =
             Buttons.fromList <|
                 List.map encounterToButton model.world.encounters
-                    ++ List.map otherToButton model.world.others
 
         encounterToButton : Encounter -> ( String, Button )
         encounterToButton encounter =
@@ -77,6 +77,11 @@ tick flags model dt =
                 flags.mouse
                 model.buttons
 
+        otherButtons : Buttons
+        otherButtons =
+            Buttons.fromList <|
+                List.map otherToButton model.world.others
+
         otherToButton : ( Float, Float ) -> ( String, Button )
         otherToButton ( x, y ) =
             Buttons.entity
@@ -97,11 +102,12 @@ tick flags model dt =
                 }
                 dt
                 flags.mouse
-                model.buttons
+                model.disabledButtons
     in
     { model
         | time = model.time + dt
         , buttons = buttons
+        , disabledButtons = otherButtons
     }
 
 
