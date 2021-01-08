@@ -281,17 +281,35 @@ getEdges Foundation    = worldtree_foundation
 getEdges Kingdom       = worldtree_kingdom
 
 
+gap :: Float
+gap = 0.08
+level0 :: Float
+level0 = 0.33
+level1 :: Float
+level1 = level0 + gap
+level2 :: Float
+level2 = level1 + gap
+level3 :: Float
+level3 = level2 + gap
+levelBeauty0 :: Float
+levelBeauty0 = level2 + 0.5 * gap
+levelBeauty1 :: Float
+levelBeauty1 = levelBeauty0 + gap
+levelBeauty2 :: Float
+levelBeauty2 = levelBeauty1 + gap
+
+
 getPosition :: WorldKey -> (Float, Float)
-getPosition Crown         = (0.5, 0.2)
-getPosition Understanding = (0.4, 0.3)
-getPosition Wisdom        = (0.6, 0.3)
-getPosition Severity      = (0.4, 0.45)
-getPosition Mercy         = (0.6, 0.45)
-getPosition Splendor      = (0.4, 0.6)
-getPosition Victory       = (0.6, 0.6)
-getPosition Beauty        = (0.5, 0.525)
-getPosition Foundation    = (0.5, 0.675)
-getPosition Kingdom       = (0.5, 0.825)
+getPosition Crown         = (0.5, level0)
+getPosition Understanding = (0.4, level1)
+getPosition Wisdom        = (0.6, level1)
+getPosition Severity      = (0.4, level2)
+getPosition Mercy         = (0.6, level2)
+getPosition Splendor      = (0.4, level3)
+getPosition Victory       = (0.6, level3)
+getPosition Beauty        = (0.5, levelBeauty0)
+getPosition Foundation    = (0.5, levelBeauty1)
+getPosition Kingdom       = (0.5, levelBeauty2)
 
 
 -- Tarot
