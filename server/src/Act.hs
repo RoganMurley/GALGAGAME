@@ -92,9 +92,13 @@ actSpec cmd roomVar = do
   Room.broadcast (Command.toChat cmd) room
 
 
-syncClient :: Client -> GameState -> App ()
-syncClient client game =
-  Client.send (("sync:" <>) . cs . encode $ game) client
+syncClient :: Client -> WhichPlayer -> GameState -> App ()
+syncClient client which game =
+  case which of
+    PlayerA ->
+      Client.send (("sync:" <>) . cs . encode $ game) client
+    PlayerB ->
+      Client.send (("sync:" <>) . cs . encode . mirror $ game) client
 
 
 syncRoomClients :: Room -> App ()

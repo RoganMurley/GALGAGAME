@@ -18,12 +18,12 @@ import Util
 import Vfx.State as Vfx
 
 
-init : Character -> List Character -> List Rune -> Model
-init character remaining runes =
+init : Bool -> Character -> List Character -> List Rune -> Model
+init ready character remaining runes =
     { characters = Carousel.init character remaining
     , runes = runes
     , runeSelect = Nothing
-    , ready = False
+    , ready = ready
     , bounceTick = 0
     , vfx = Vfx.init
     , buttons = Buttons.empty
