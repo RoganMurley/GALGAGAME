@@ -4,7 +4,7 @@ import DeckBuilding.Decoders
 import DeckBuilding.State as DeckBuilding
 import DeckBuilding.Types exposing (Character)
 import GameState.Types exposing (GameState(..), WaitType(..))
-import Json.Decode as Json exposing (Decoder, fail, field, list, string, succeed)
+import Json.Decode as Json exposing (Decoder, fail, field, list, maybe, string, succeed)
 import PlayState.Decoders as PlayState
 import RuneSelect.Decoders
 import RuneSelect.Types exposing (Rune)
@@ -41,19 +41,25 @@ waitingDecoder =
 selectingDecoder : Decoder GameState
 selectingDecoder =
     let
-        makeSelectState : List Character -> List Rune -> Result String GameState
-        makeSelectState characters runes =
+        makeSelectState : Maybe Character -> List Character -> List Rune -> Result String GameState
+        makeSelectState selectedCharacter characters runes =
             case characters of
                 character :: remaining ->
                     Ok <|
                         Selecting <|
-                            DeckBuilding.init character remaining runes
+                            case selectedCharacter of
+                                Just selected ->
+                                    DeckBuilding.init True selected characters runes
+
+                                Nothing ->
+                                    DeckBuilding.init False character remaining runes
 
                 _ ->
                     Err "No characters"
     in
     collapseResults <|
-        Json.map2 makeSelectState
+        Json.map3 makeSelectState
+            (field "character" <| maybe DeckBuilding.Decoders.character)
             (field "all_characters" <| list DeckBuilding.Decoders.character)
             (field "all_runes" <| list RuneSelect.Decoders.rune)
 

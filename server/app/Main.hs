@@ -20,7 +20,7 @@ import Network.Wai.Handler.WebSockets
 import Network.Wai.Handler.Warp (run)
 import System.Environment (lookupEnv)
 
-import Act (actOutcome, actPlay, actSpec, syncClient, syncPlayersRoom, syncClient)
+import Act (actOutcome, actPlay, actSpec, syncPlayersRoom, syncClient)
 import ArtificalIntelligence (Action(..), chooseAction)
 import Config (App, ConnectInfoConfig(..), runApp)
 import Database (postgresConnectInfo, redisConnectInfo)
@@ -341,7 +341,7 @@ spectate client roomVar = do
   room <- liftIO . atomically $ addSpecClient client roomVar
   Client.send ("acceptSpec:" :: Text) client
   Room.broadcast (Command.toChat (SpectateCommand (Client.name client))) room
-  syncClient client (Room.getState room)
+  syncClient client PlayerA (Room.getState room)
   syncPlayersRoom room
   _ <- runMaybeT . forever $ do
     msg <- lift $ Client.receive client
@@ -354,7 +354,8 @@ play which client roomVar outcomes = do
   Client.send ("acceptPlay:" :: Text) client
   room <- liftIO $ readTVarIO roomVar
   syncPlayersRoom room
-  syncClient client (Room.getState room)
+  let gameState = Room.getState room
+  syncClient client which gameState
   forM_ outcomes (actOutcome room)
   _ <- runMaybeT . forever $ do
     msg <- lift $ Client.receive client

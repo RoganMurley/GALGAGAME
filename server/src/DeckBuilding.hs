@@ -103,7 +103,7 @@ isReady deckModel which =
     PlayerA ->
       isJust $ deckbuilding_pa deckModel
     PlayerB ->
-      isJust $ deckbuilding_pa deckModel
+      isJust $ deckbuilding_pb deckModel
 
 
 -- CharacterChoice
