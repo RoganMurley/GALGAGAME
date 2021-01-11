@@ -29,8 +29,9 @@ import qualified World.Schema as Schema
 
 
 data World = World
-  { world_encounters :: [Encounter]
-  , world_others :: [(Float, Float)]
+  { world_encounters    :: [Encounter]
+  , world_others        :: [(Float, Float)]
+  , world_edgePositions :: [((Float, Float), (Float, Float))]
   }
   deriving (Eq, Show)
 
@@ -76,18 +77,22 @@ getWorld mUsername _ mProgress = do
   let edgeKeys = Set.fromList $ edge_key <$> edges :: Set WorldKey
   let otherKeys = Set.difference allKeys edgeKeys :: Set WorldKey
   let others = getPosition <$> Set.toList otherKeys :: [(Float, Float)]
+  let startPos = getPosition key
+  let edgePositions = zip (repeat startPos) (getPosition <$> Set.toList edgeKeys)
   return $
     World
-    { world_encounters = encounters
-    , world_others     = others
+    { world_encounters    = encounters
+    , world_others        = others
+    , world_edgePositions = edgePositions
     }
 
 
 instance ToJSON World where
-  toJSON (World{ world_encounters, world_others }) =
+  toJSON (World{ world_encounters, world_others, world_edgePositions }) =
     object [
       "encounters" .= toJSON world_encounters
     , "others"     .= toJSON world_others
+    , "edges"      .= toJSON world_edgePositions
     ]
 
 

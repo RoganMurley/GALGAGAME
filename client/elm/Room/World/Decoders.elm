@@ -1,6 +1,7 @@
 module World.Decoders exposing (decoder)
 
 import Json.Decode as Json exposing (Decoder, field, float, list, string)
+import Line.Decoders as Line
 import World.Types exposing (Encounter, World)
 
 
@@ -12,9 +13,10 @@ decoder =
                 (Json.index 0 float)
                 (Json.index 1 float)
     in
-    Json.map2 World
+    Json.map3 World
         (field "encounters" <| list encounterDecoder)
         (field "others" <| list posDecoder)
+        (field "edges" <| list Line.decoder)
 
 
 encounterDecoder : Decoder Encounter

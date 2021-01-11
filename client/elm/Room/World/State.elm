@@ -17,6 +17,7 @@ import Util exposing (message, splitOnColon)
 import World.Decoders as World
 import World.Messages exposing (Msg(..))
 import World.Types exposing (Encounter, Model)
+import World.WorldPos exposing (toWorldPos)
 
 
 init : Model
@@ -27,6 +28,7 @@ init =
     , world =
         { encounters = []
         , others = []
+        , edges = []
         }
     }
 
@@ -47,7 +49,7 @@ tick flags model dt =
         ctx =
             bareContextInit flags.dimensions Assets.init flags.mouse
 
-        { w, h, radius } =
+        { radius } =
             ctx
 
         buttons : Buttons
@@ -57,10 +59,14 @@ tick flags model dt =
 
         encounterToButton : Encounter -> ( String, Button )
         encounterToButton encounter =
+            let
+                { x, y } =
+                    toWorldPos ctx encounter
+            in
             Buttons.entity
                 encounter.guid
-                { x = 0.5 * w + ((encounter.x - 0.5) * radius * 5)
-                , y = 0.5 * h + ((encounter.y - 0.5) * radius * 5)
+                { x = x
+                , y = y
                 , width = 0.1 * radius
                 , height = 0.1 * radius
                 , btn =
@@ -84,10 +90,14 @@ tick flags model dt =
 
         otherToButton : ( Float, Float ) -> ( String, Button )
         otherToButton ( x, y ) =
+            let
+                worldPos =
+                    toWorldPos ctx { x = x, y = y }
+            in
             Buttons.entity
                 (String.fromFloat x ++ "/" ++ String.fromFloat y)
-                { x = 0.5 * w + ((x - 0.5) * radius * 5)
-                , y = 0.5 * h + ((y - 0.5) * radius * 5)
+                { x = worldPos.x
+                , y = worldPos.y
                 , width = 0.1 * radius
                 , height = 0.1 * radius
                 , btn =
