@@ -318,7 +318,7 @@ beginWorld state client mProgress = do
           didWin <- beginComputer cpuName state client roomVar
           if didWin then
             (do
-              let newProgress = World.WorldProgress $ World.encounter_key encounter
+              let newProgress = World.getNewProgress encounter mProgress
               liftIO $ Log.info $ printf "<%s>: Win! New world progress %s" (show $ Client.name client) (show newProgress)
               World.updateProgress username newProgress
               beginWorld state client (Just newProgress)

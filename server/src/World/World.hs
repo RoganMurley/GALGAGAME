@@ -72,7 +72,9 @@ getWorld :: Maybe Text -> TVar Server.State -> Maybe WorldProgress -> App World
 getWorld mUsername _ mProgress = do
   progress <- fromMaybe (loadProgress mUsername) (return <$> mProgress)
   let key = worldprogress_key progress
-  let edges = worldnode_edges $ getEdges key worldTree
+  let adjEdges = worldnode_edges $ getEdges key worldTree
+  let visitedKeys = worldprogress_visited progress
+  let edges = filter (\Edge{ edge_key } -> not $ Set.member edge_key visitedKeys) adjEdges
   encounters <- mapM newEncounter edges
   let edgeKeys = Set.fromList $ edge_key <$> edges :: Set WorldKey
   let otherKeys = Set.difference allKeys edgeKeys :: Set WorldKey
@@ -169,6 +171,14 @@ makeScenario (Encounter{ encounter_numeral }) =
               DeckBuilding.morphRune
               DeckBuilding.morphRune
               DeckBuilding.morphRune
+        "VI" ->
+          Just $
+            DeckBuilding.Character
+              "The Lovers"
+              ""
+              DeckBuilding.dualityRune
+              DeckBuilding.dualityRune
+              DeckBuilding.dualityRune
         "X" ->
           Just $
             DeckBuilding.Character
@@ -317,6 +327,19 @@ getPosition Foundation    = (0.5, levelBeauty1)
 getPosition Kingdom       = (0.5, levelBeauty2)
 
 
+getNewProgress :: Encounter -> Maybe WorldProgress -> WorldProgress
+getNewProgress (Encounter{ encounter_key }) Nothing =
+  WorldProgress
+    { worldprogress_key = encounter_key
+    , worldprogress_visited = Set.singleton encounter_key
+    }
+getNewProgress (Encounter{ encounter_key }) (Just (WorldProgress{ worldprogress_visited })) =
+  WorldProgress
+    { worldprogress_key = encounter_key
+    , worldprogress_visited = Set.insert encounter_key worldprogress_visited
+    }
+
+
 -- Tarot
 data Tarot =
   Tarot
@@ -415,13 +438,15 @@ tarotWorld = Tarot "The World" "XXI"
 
 -- World Progress
 data WorldProgress = WorldProgress
-  { worldprogress_key :: WorldKey
+  { worldprogress_key     :: WorldKey
+  , worldprogress_visited :: Set WorldKey
   } deriving (Show)
 
 instance ToJSON WorldProgress where
-  toJSON (WorldProgress{ worldprogress_key }) =
+  toJSON (WorldProgress{ worldprogress_key, worldprogress_visited }) =
     object [
-      "key" .= worldprogress_key
+      "key"     .= worldprogress_key
+    , "visited" .= worldprogress_visited
     ]
 
 instance FromJSON WorldProgress where
@@ -430,10 +455,11 @@ instance FromJSON WorldProgress where
     \o ->
       WorldProgress
         <$> o .: "key"
+        <*> o .: "visited"
 
 
 initialProgress :: WorldProgress
-initialProgress = WorldProgress Crown
+initialProgress = WorldProgress Crown Set.empty
 
 
 updateProgress :: Maybe Text -> WorldProgress -> App ()
