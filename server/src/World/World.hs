@@ -6,7 +6,6 @@ import Control.Concurrent.STM.TVar (TVar)
 import Control.Monad.IO.Class (liftIO)
 import Data.Aeson (FromJSON(..), ToJSON(..), (.:), (.=), eitherDecode, encode, object, withObject)
 import Data.List (find)
-import Data.Maybe (fromMaybe)
 import Data.Set (Set)
 import Data.String.Conversions (cs)
 import Data.Text (Text)
@@ -71,9 +70,8 @@ newEncounter (Edge{ edge_tarot, edge_key }) = do
     }
 
 
-getWorld :: Maybe Text -> TVar Server.State -> Maybe WorldProgress -> App World
-getWorld mUsername _ mProgress = do
-  progress <- fromMaybe (loadProgress mUsername) (return <$> mProgress)
+getWorld :: TVar Server.State -> WorldProgress -> App World
+getWorld _ progress = do
   let key = worldprogress_key progress
   let adjEdges = worldnode_edges $ getEdges key worldTree
   let visitedKeys = worldprogress_visited progress
@@ -332,13 +330,8 @@ getPosition Foundation    = (0.5, levelBeauty1)
 getPosition Kingdom       = (0.5, levelBeauty2)
 
 
-getNewProgress :: Encounter -> Maybe WorldProgress -> WorldProgress
-getNewProgress (Encounter{ encounter_key }) Nothing =
-  WorldProgress
-    { worldprogress_key = encounter_key
-    , worldprogress_visited = Set.singleton encounter_key
-    }
-getNewProgress (Encounter{ encounter_key }) (Just (WorldProgress{ worldprogress_visited })) =
+getNewProgress :: Encounter -> WorldProgress -> WorldProgress
+getNewProgress (Encounter{ encounter_key }) (WorldProgress{ worldprogress_visited }) =
   WorldProgress
     { worldprogress_key = encounter_key
     , worldprogress_visited = Set.insert encounter_key worldprogress_visited
