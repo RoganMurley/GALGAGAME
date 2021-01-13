@@ -27,11 +27,14 @@ import qualified Log
 import qualified Server
 import qualified World.Schema as Schema
 
+type Pos = (Float, Float)
+
 
 data World = World
   { world_encounters    :: [Encounter]
-  , world_others        :: [(Float, Float)]
-  , world_edgePositions :: [((Float, Float), (Float, Float))]
+  , world_others        :: [Pos]
+  , world_edgePositions :: [(Pos, Pos)]
+  , world_visited       :: [Pos]
   }
   deriving (Eq, Show)
 
@@ -77,8 +80,8 @@ getWorld mUsername _ mProgress = do
   let edges = filter (\Edge{ edge_key } -> not $ Set.member edge_key visitedKeys) adjEdges
   encounters <- mapM newEncounter edges
   let edgeKeys = Set.fromList $ edge_key <$> edges :: Set WorldKey
-  let otherKeys = Set.difference allKeys edgeKeys :: Set WorldKey
-  let others = getPosition <$> Set.toList otherKeys :: [(Float, Float)]
+  let otherKeys = Set.difference allKeys (Set.union edgeKeys visitedKeys) :: Set WorldKey
+  let others = getPosition <$> Set.toList otherKeys :: [Pos]
   let startPos = getPosition key
   let edgePositions = zip (repeat startPos) (getPosition <$> Set.toList edgeKeys)
   return $
@@ -86,15 +89,17 @@ getWorld mUsername _ mProgress = do
     { world_encounters    = encounters
     , world_others        = others
     , world_edgePositions = edgePositions
+    , world_visited       = getPosition <$> Set.toList visitedKeys
     }
 
 
 instance ToJSON World where
-  toJSON (World{ world_encounters, world_others, world_edgePositions }) =
+  toJSON (World{ world_encounters, world_others, world_edgePositions, world_visited }) =
     object [
       "encounters" .= toJSON world_encounters
     , "others"     .= toJSON world_others
     , "edges"      .= toJSON world_edgePositions
+    , "visited"    .= toJSON world_visited
     ]
 
 
@@ -314,7 +319,7 @@ levelBeauty2 :: Float
 levelBeauty2 = levelBeauty1 + gap
 
 
-getPosition :: WorldKey -> (Float, Float)
+getPosition :: WorldKey -> Pos
 getPosition Crown         = (0.5, level0)
 getPosition Understanding = (0.4, level1)
 getPosition Wisdom        = (0.6, level1)

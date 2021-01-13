@@ -22,13 +22,15 @@ import World.WorldPos exposing (toWorldPos)
 
 init : Model
 init =
-    { buttons = Buttons.empty
-    , disabledButtons = Buttons.empty
+    { encounterButtons = Buttons.empty
+    , otherButtons = Buttons.empty
+    , visitedButtons = Buttons.empty
     , time = 0
     , world =
         { encounters = []
         , others = []
         , edges = []
+        , visited = []
         }
     }
 
@@ -52,8 +54,9 @@ tick flags model dt =
         { radius } =
             ctx
 
-        buttons : Buttons
-        buttons =
+        -- Encounter buttons
+        encounterButtons : Buttons
+        encounterButtons =
             Buttons.fromList <|
                 List.map encounterToButton model.world.encounters
 
@@ -81,8 +84,9 @@ tick flags model dt =
                 }
                 dt
                 flags.mouse
-                model.buttons
+                model.encounterButtons
 
+        -- Other buttons
         otherButtons : Buttons
         otherButtons =
             Buttons.fromList <|
@@ -112,12 +116,45 @@ tick flags model dt =
                 }
                 dt
                 flags.mouse
-                model.disabledButtons
+                model.otherButtons
+
+        -- Visited buttons
+        visitedButtons : Buttons
+        visitedButtons =
+            Buttons.fromList <|
+                List.map visitedToButton model.world.visited
+
+        visitedToButton : ( Float, Float ) -> ( String, Button )
+        visitedToButton ( x, y ) =
+            let
+                worldPos =
+                    toWorldPos ctx { x = x, y = y }
+            in
+            Buttons.entity
+                (String.fromFloat x ++ "/" ++ String.fromFloat y)
+                { x = worldPos.x
+                , y = worldPos.y
+                , width = 0.06 * radius
+                , height = 0.06 * radius
+                , btn =
+                    Buttons.TextButton
+                        { font = "Futura"
+                        , text = ""
+                        , textColor = vec3 (0 / 255) (0 / 255) (0 / 255)
+                        , bgColor = vec3 (244 / 255) (241 / 255) (94 / 255)
+                        , options = [ Buttons.Circular ]
+                        }
+                , disabled = True
+                }
+                dt
+                flags.mouse
+                model.visitedButtons
     in
     { model
         | time = model.time + dt
-        , buttons = buttons
-        , disabledButtons = otherButtons
+        , encounterButtons = encounterButtons
+        , otherButtons = otherButtons
+        , visitedButtons = visitedButtons
     }
 
 
@@ -128,7 +165,7 @@ mouseUp _ _ model _ =
 
 mouseDown : Flags -> Assets.Model -> Model -> Mouse.Position -> ( Model, Cmd Main.Msg )
 mouseDown _ _ model _ =
-    case Buttons.hit model.buttons of
+    case Buttons.hit model.encounterButtons of
         Just ( key, _ ) ->
             ( model
             , message <|
