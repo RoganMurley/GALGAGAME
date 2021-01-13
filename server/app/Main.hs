@@ -11,6 +11,7 @@ import Control.Monad.IO.Class (liftIO)
 import Control.Monad.Trans.Class (lift)
 import Control.Monad.Trans.Maybe (runMaybeT)
 import Data.Aeson (encode)
+import Data.Maybe (fromMaybe)
 import Data.Monoid ((<>))
 import Data.String.Conversions (cs)
 import Data.Text (Text)
@@ -300,7 +301,8 @@ beginQueue state client roomVar = do
 beginWorld :: TVar Server.State -> Client -> Maybe World.WorldProgress -> App ()
 beginWorld state client mProgress = do
   let username = Client.queryUsername client
-  world <- World.getWorld username state mProgress
+  progress <- fromMaybe (World.loadProgress username) (return <$> mProgress)
+  world <- World.getWorld state progress
   Client.send (cs $ "world:" <> encode world) client
   msg <- Client.receive client
   let req = World.parseRequest msg
@@ -318,7 +320,7 @@ beginWorld state client mProgress = do
           didWin <- beginComputer cpuName state client roomVar
           if didWin then
             (do
-              let newProgress = World.getNewProgress encounter mProgress
+              let newProgress = World.getNewProgress encounter progress
               liftIO $ Log.info $ printf "<%s>: Win! New world progress %s" (show $ Client.name client) (show newProgress)
               World.updateProgress username newProgress
               beginWorld state client (Just newProgress)
