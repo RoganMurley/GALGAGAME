@@ -23,7 +23,7 @@ htmlView _ =
 webglView : Model -> Flags -> Assets.Model -> List WebGL.Entity
 webglView model { mouse, dimensions } assets =
     let
-        { world, buttons, disabledButtons, time } =
+        { world, encounterButtons, otherButtons, visitedButtons, time } =
             model
 
         ctx =
@@ -44,6 +44,7 @@ webglView model { mouse, dimensions } assets =
     List.concat
         [ Background.radialView vfx ctx
         , List.concat <| List.map (\edge -> Line.view (lineToWorldPos ctx edge) lineOptions ctx) world.edges
-        , Buttons.view buttons ctx
-        , Buttons.view disabledButtons ctx
+        , Buttons.view encounterButtons ctx
+        , Buttons.view otherButtons ctx
+        , Buttons.view visitedButtons ctx
         ]

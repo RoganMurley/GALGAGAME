@@ -5,8 +5,9 @@ import Line.Types exposing (Line)
 
 
 type alias Model =
-    { buttons : Buttons
-    , disabledButtons : Buttons
+    { encounterButtons : Buttons
+    , otherButtons : Buttons
+    , visitedButtons : Buttons
     , time : Float
     , world : World
     }
@@ -16,6 +17,7 @@ type alias World =
     { encounters : List Encounter
     , others : List ( Float, Float )
     , edges : List Line
+    , visited : List ( Float, Float )
     }
 
 
