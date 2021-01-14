@@ -31,6 +31,7 @@ init =
         , others = []
         , edges = []
         , visited = []
+        , visitedEdges = []
         }
     }
 

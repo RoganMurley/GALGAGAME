@@ -34,6 +34,7 @@ data World = World
   , world_others        :: [Pos]
   , world_edgePositions :: [(Pos, Pos)]
   , world_visited       :: [Pos]
+  , world_visitedEdges  :: [(Pos, Pos)]
   }
   deriving (Eq, Show)
 
@@ -88,16 +89,18 @@ getWorld _ progress = do
     , world_others        = others
     , world_edgePositions = edgePositions
     , world_visited       = getPosition <$> Set.toList visitedKeys
+    , world_visitedEdges  = worldprogress_visitedEdges progress
     }
 
 
 instance ToJSON World where
-  toJSON (World{ world_encounters, world_others, world_edgePositions, world_visited }) =
+  toJSON (World{ world_encounters, world_others, world_edgePositions, world_visited, world_visitedEdges }) =
     object [
-      "encounters" .= toJSON world_encounters
-    , "others"     .= toJSON world_others
-    , "edges"      .= toJSON world_edgePositions
-    , "visited"    .= toJSON world_visited
+      "encounters"   .= toJSON world_encounters
+    , "others"       .= toJSON world_others
+    , "edges"        .= toJSON world_edgePositions
+    , "visited"      .= toJSON world_visited
+    , "visitedEdges" .= toJSON world_visitedEdges
     ]
 
 
@@ -331,12 +334,17 @@ getPosition Kingdom       = (0.5, levelBeauty2)
 
 
 getNewProgress :: Encounter -> WorldProgress -> WorldProgress
-getNewProgress (Encounter{ encounter_key }) (WorldProgress{ worldprogress_visited }) =
+getNewProgress encounter progress =
   WorldProgress
     { worldprogress_key = encounter_key
     , worldprogress_visited = Set.insert encounter_key worldprogress_visited
+    , worldprogress_visitedEdges = edge : worldprogress_visitedEdges
     }
-
+  where
+    Encounter{ encounter_key, encounter_x, encounter_y } = encounter
+    WorldProgress{ worldprogress_key, worldprogress_visited, worldprogress_visitedEdges } = progress
+    edge :: (Pos, Pos)
+    edge = (getPosition worldprogress_key, (encounter_x, encounter_y))
 
 -- Tarot
 data Tarot =
@@ -438,13 +446,15 @@ tarotWorld = Tarot "The World" "XXI"
 data WorldProgress = WorldProgress
   { worldprogress_key     :: WorldKey
   , worldprogress_visited :: Set WorldKey
+  , worldprogress_visitedEdges :: [(Pos, Pos)]
   } deriving (Show)
 
 instance ToJSON WorldProgress where
-  toJSON (WorldProgress{ worldprogress_key, worldprogress_visited }) =
+  toJSON (WorldProgress{ worldprogress_key, worldprogress_visited, worldprogress_visitedEdges }) =
     object [
       "key"     .= worldprogress_key
     , "visited" .= worldprogress_visited
+    , "visitedEdges" .= worldprogress_visitedEdges
     ]
 
 instance FromJSON WorldProgress where
@@ -454,10 +464,11 @@ instance FromJSON WorldProgress where
       WorldProgress
         <$> o .: "key"
         <*> o .: "visited"
+        <*> o .: "visitedEdges"
 
 
 initialProgress :: WorldProgress
-initialProgress = WorldProgress Crown Set.empty
+initialProgress = WorldProgress Crown (Set.singleton Crown) []
 
 
 updateProgress :: Maybe Text -> WorldProgress -> App ()

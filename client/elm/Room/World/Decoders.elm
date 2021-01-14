@@ -13,11 +13,12 @@ decoder =
                 (Json.index 0 float)
                 (Json.index 1 float)
     in
-    Json.map4 World
+    Json.map5 World
         (field "encounters" <| list encounterDecoder)
         (field "others" <| list posDecoder)
         (field "edges" <| list Line.decoder)
         (field "visited" <| list posDecoder)
+        (field "visitedEdges" <| list Line.decoder)
 
 
 encounterDecoder : Decoder Encounter
