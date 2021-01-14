@@ -43,7 +43,7 @@ webglView model { mouse, dimensions } assets =
     in
     List.concat
         [ Background.radialView vfx ctx
-        , List.concat <| List.map (\edge -> Line.view (lineToWorldPos ctx edge) lineOptions ctx) world.edges
+        , List.concat <| List.map (\edge -> Line.view (lineToWorldPos ctx edge) lineOptions ctx) (world.edges ++ world.visitedEdges)
         , Buttons.view encounterButtons ctx
         , Buttons.view otherButtons ctx
         , Buttons.view visitedButtons ctx

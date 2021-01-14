@@ -18,6 +18,7 @@ type alias World =
     , others : List ( Float, Float )
     , edges : List Line
     , visited : List ( Float, Float )
+    , visitedEdges : List Line
     }
 
 
