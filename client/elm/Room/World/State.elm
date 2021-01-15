@@ -111,7 +111,7 @@ tick flags model dt =
                         , text = "?"
                         , textColor = vec3 (0 / 255) (0 / 255) (0 / 255)
                         , bgColor = vec3 (70 / 255) (70 / 255) (70 / 255)
-                        , options = [ Buttons.Circular ]
+                        , options = [ Buttons.Circular, Buttons.NoHover ]
                         }
                 , disabled = True
                 }
@@ -143,7 +143,7 @@ tick flags model dt =
                         , text = ""
                         , textColor = vec3 (0 / 255) (0 / 255) (0 / 255)
                         , bgColor = vec3 (244 / 255) (241 / 255) (94 / 255)
-                        , options = [ Buttons.Circular ]
+                        , options = [ Buttons.Circular, Buttons.NoHover ]
                         }
                 , disabled = True
                 }
