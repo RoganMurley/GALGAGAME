@@ -30,8 +30,20 @@ entity key { x, y, width, height, btn, disabled } dt mMouse buttons =
 
         isHit : Bool
         isHit =
-            Maybe.map (\mouse -> hitAABB aabb mouse) mMouse
-                |> Maybe.withDefault False
+            case btn of
+                TextButton params ->
+                    if noHover params then
+                        False
+
+                    else
+                        Maybe.map
+                            (\mouse -> hitAABB aabb mouse)
+                            mMouse
+                            |> Maybe.withDefault False
+
+                _ ->
+                    Maybe.map (\mouse -> hitAABB aabb mouse) mMouse
+                        |> Maybe.withDefault False
 
         hover : Float
         hover =
@@ -109,6 +121,25 @@ isCircular { options } =
             else
                 case option of
                     Circular ->
+                        True
+
+                    _ ->
+                        False
+    in
+    List.foldl reducer False options
+
+
+noHover : TextButtonParams -> Bool
+noHover { options } =
+    let
+        reducer : TextButtonOption -> Bool -> Bool
+        reducer option acc =
+            if acc then
+                True
+
+            else
+                case option of
+                    NoHover ->
                         True
 
                     _ ->
