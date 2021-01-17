@@ -79,7 +79,7 @@ getWorld _ progress = do
   let edges = filter (\Edge{ edge_key } -> not $ Set.member edge_key visitedKeys) adjEdges
   encounters <- mapM newEncounter edges
   let edgeKeys = Set.fromList $ edge_key <$> edges :: Set WorldKey
-  let otherKeys = Set.difference allKeys (Set.union edgeKeys visitedKeys) :: Set WorldKey
+  let otherKeys = Set.difference mainKeys (Set.union edgeKeys visitedKeys) :: Set WorldKey
   let others = getPosition <$> Set.toList otherKeys :: [Pos]
   let startPos = getPosition key
   let edgePositions = zip (repeat startPos) (getPosition <$> Set.toList edgeKeys)
@@ -202,7 +202,8 @@ makeScenario (Encounter{ encounter_numeral }) =
 -- Graph nonsense
 data WorldTree =
   WorldTree
-  { worldtree_crown         :: WorldNode
+  { worldtree_start         :: WorldNode
+  , worldtree_crown         :: WorldNode
   , worldtree_understanding :: WorldNode
   , worldtree_wisdom        :: WorldNode
   , worldtree_severity      :: WorldNode
@@ -215,8 +216,9 @@ data WorldTree =
   }
 
 
-data WorldKey =
-    Crown
+data WorldKey
+  = Start
+  | Crown
   | Understanding
   | Wisdom
   | Severity
@@ -246,8 +248,8 @@ data Edge =
   } deriving (Eq, Show)
 
 
-allKeys :: Set WorldKey
-allKeys =
+mainKeys :: Set WorldKey
+mainKeys =
   Set.fromList
     [ Crown
     , Understanding
@@ -265,7 +267,8 @@ allKeys =
 worldTree :: WorldTree
 worldTree =
   WorldTree
-  { worldtree_crown         = crown
+  { worldtree_start         = start
+  , worldtree_crown         = crown
   , worldtree_understanding = understanding
   , worldtree_wisdom        = wisdom
   , worldtree_severity      = severity
@@ -277,6 +280,7 @@ worldTree =
   , worldtree_kingdom       = kingdom
   }
   where
+  start         = WorldNode [Edge tarotBeginning Crown]
   crown         = WorldNode [Edge tarotMagician Understanding, Edge tarotFool Wisdom, Edge tarotPriestess Beauty]
   understanding = WorldNode [Edge tarotMagician Crown, Edge tarotFool Wisdom, Edge tarotChariot Severity, Edge tarotLovers Beauty]
   wisdom        = WorldNode [Edge tarotFool Crown, Edge tarotEmpress Understanding, Edge tarotHierophant Mercy, Edge tarotEmperor Beauty]
@@ -290,6 +294,7 @@ worldTree =
 
 
 getEdges :: WorldKey ->  WorldTree -> WorldNode
+getEdges Start         = worldtree_start
 getEdges Crown         = worldtree_crown
 getEdges Understanding = worldtree_understanding
 getEdges Wisdom        = worldtree_wisdom
@@ -321,6 +326,7 @@ levelBeauty2 = levelBeauty1 + gap
 
 
 getPosition :: WorldKey -> Pos
+getPosition Start         = (0.5, level0)
 getPosition Crown         = (0.5, level0)
 getPosition Understanding = (0.4, level1)
 getPosition Wisdom        = (0.6, level1)
@@ -352,6 +358,10 @@ data Tarot =
   { tarot_name    :: Text
   , tarot_numeral :: Text
   } deriving (Eq, Show)
+
+
+tarotBeginning :: Tarot
+tarotBeginning = Tarot "The Beginning" "S"
 
 
 tarotFool :: Tarot
@@ -468,7 +478,7 @@ instance FromJSON WorldProgress where
 
 
 initialProgress :: WorldProgress
-initialProgress = WorldProgress Crown (Set.singleton Crown) []
+initialProgress = WorldProgress Start Set.empty []
 
 
 updateProgress :: Maybe Text -> WorldProgress -> App ()
