@@ -2,8 +2,7 @@ module GameState where
 
 import Data.Aeson (ToJSON(..), (.=), object)
 
-import DeckBuilding (Character, DeckBuilding, characterCards)
-import Life (maxLife)
+import DeckBuilding (Character(..), DeckBuilding, characterCards)
 import Mirror (Mirror(..))
 import Model (Deck, PlayerModel(..), Model(..), Passes(..), Turn)
 import Player (WhichPlayer(..), other)
@@ -84,10 +83,10 @@ initModel turn ca cb gen =
     (genPA, genPB) = split gen :: (Gen, Gen)
     -- PlayerA
     deckPA = shuffle genPA (buildDeck ca) :: Deck
-    pm_a = PlayerModel [] deckPA maxLife :: PlayerModel
+    pm_a = PlayerModel [] deckPA (character_maxLife ca) (character_maxLife ca) :: PlayerModel
     -- PlayerB
     deckPB = shuffle genPB (buildDeck cb) :: Deck
-    pm_b = PlayerModel [] deckPB maxLife :: PlayerModel
+    pm_b = PlayerModel [] deckPB (character_maxLife cb) (character_maxLife cb) :: PlayerModel
 
 
 buildDeck :: Character -> Deck

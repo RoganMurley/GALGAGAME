@@ -12,6 +12,8 @@ type alias Model =
     , turn : WhichPlayer
     , life : Life
     , otherLife : Life
+    , maxLife : Life
+    , otherMaxLife : Life
     , rot : Int
     }
 

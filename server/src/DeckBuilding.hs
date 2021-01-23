@@ -5,6 +5,7 @@ import Data.Aeson (FromJSON(..), ToJSON(..), (.:), (.=), object, withObject)
 import Data.List (find)
 import Data.Maybe (isJust)
 import Data.Text (Text)
+import Life (Life, initMaxLife)
 import Mirror (Mirror(..))
 import Model (Deck)
 import Player (WhichPlayer(..))
@@ -42,12 +43,13 @@ data Character = Character
   , character_rune_a  :: Rune
   , character_rune_b  :: Rune
   , character_rune_c  :: Rune
+  , character_maxLife :: Life
   }
   deriving (Eq, Show)
 
 
 instance ToJSON Character where
-  toJSON (Character name imgUrl runeA runeB runeC) =
+  toJSON (Character name imgUrl runeA runeB runeC _) =
     object
       [ "name"    .= name
       , "img_url" .= imgUrl
@@ -60,8 +62,8 @@ instance ToJSON Character where
 -- DeckBuilding
 data DeckBuilding =
   DeckBuilding {
-    deckbuilding_pa :: Maybe Character
-  , deckbuilding_pb :: Maybe Character
+    deckbuilding_pa     :: Maybe Character
+  , deckbuilding_pb     :: Maybe Character
   } deriving (Eq, Show)
 
 
@@ -141,6 +143,7 @@ choiceToCharacter CharacterChoice{choice_name, choice_ra, choice_rb, choice_rc} 
       <*> getRune choice_ra
       <*> getRune choice_rb
       <*> getRune choice_rc
+      <*> pure initMaxLife
   else
     Left "Rune choices were not unique"
 
@@ -287,6 +290,7 @@ catherine =
     blazeRune
     shroomRune
     mirrorRune
+    initMaxLife
 
 
 marcus :: Character
@@ -297,6 +301,7 @@ marcus =
     alchemyRune
     mirrorRune
     morphRune
+    initMaxLife
 
 
 freja :: Character
@@ -307,6 +312,7 @@ freja =
     heavenRune
     mirageRune
     dualityRune
+    initMaxLife
 
 
 characterCards :: Character -> Deck
