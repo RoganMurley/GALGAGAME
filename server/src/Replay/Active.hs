@@ -1,6 +1,7 @@
 module Replay.Active where
 
 import Data.Text (Text)
+import Life (initMaxLife)
 import Mirror (Mirror(..))
 import Model (Model(Model), Passes(NoPass), PlayerModel(PlayerModel))
 import Player (WhichPlayer(PlayerA))
@@ -48,7 +49,7 @@ init model pa pb =
 null :: Replay
 null =
   Replay
-    { replay_model = Model PlayerA Stack.init (PlayerModel [] [] 0) (PlayerModel [] [] 0) NoPass (mkGen 0) 0 False
+    { replay_model = Model PlayerA Stack.init (PlayerModel [] [] 0 initMaxLife) (PlayerModel [] [] 0 initMaxLife) NoPass (mkGen 0) 0 False
     , replay_res   = []
     , replay_pa    = ("", "")
     , replay_pb    = ("", "")

@@ -11,6 +11,7 @@ import Data.String.Conversions (cs)
 import Data.Text (Text)
 import Database.Beam ((==.), all_, filter_, insert, insertValues, runInsert, runSelectReturningOne, runUpdate, save, select, val_)
 import GHC.Generics
+import Life (initMaxLife)
 import Player (WhichPlayer(..))
 import Scenario (Scenario(..))
 import Schema (GalgagameDb(..), galgagameDb)
@@ -145,6 +146,15 @@ makeScenario (Encounter{ encounter_numeral }) =
     characterPa :: Maybe DeckBuilding.Character
     characterPa =
       case encounter_numeral of
+        "S" ->
+          Just $
+            DeckBuilding.Character
+              "The Beginning"
+              ""
+              DeckBuilding.blazeRune
+              DeckBuilding.heavenRune
+              DeckBuilding.shroomRune
+              20
         "0" ->
           Just $
             DeckBuilding.Character
@@ -153,6 +163,7 @@ makeScenario (Encounter{ encounter_numeral }) =
               DeckBuilding.mirrorRune
               DeckBuilding.mirrorRune
               DeckBuilding.mirrorRune
+              initMaxLife
         "I" ->
           Just $
             DeckBuilding.Character
@@ -161,6 +172,7 @@ makeScenario (Encounter{ encounter_numeral }) =
               DeckBuilding.blazeRune
               DeckBuilding.blazeRune
               DeckBuilding.blazeRune
+              initMaxLife
         "II" ->
           Just $
             DeckBuilding.Character
@@ -169,6 +181,7 @@ makeScenario (Encounter{ encounter_numeral }) =
               DeckBuilding.heavenRune
               DeckBuilding.heavenRune
               DeckBuilding.heavenRune
+              initMaxLife
         "V" ->
           Just $
             DeckBuilding.Character
@@ -177,6 +190,7 @@ makeScenario (Encounter{ encounter_numeral }) =
               DeckBuilding.morphRune
               DeckBuilding.morphRune
               DeckBuilding.morphRune
+              initMaxLife
         "VI" ->
           Just $
             DeckBuilding.Character
@@ -185,6 +199,7 @@ makeScenario (Encounter{ encounter_numeral }) =
               DeckBuilding.dualityRune
               DeckBuilding.dualityRune
               DeckBuilding.dualityRune
+              initMaxLife
         "X" ->
           Just $
             DeckBuilding.Character
@@ -193,6 +208,7 @@ makeScenario (Encounter{ encounter_numeral }) =
               DeckBuilding.blazeRune
               DeckBuilding.blazeRune
               DeckBuilding.blazeRune
+              initMaxLife
         _ ->
           Nothing
     characterPb :: Maybe DeckBuilding.Character

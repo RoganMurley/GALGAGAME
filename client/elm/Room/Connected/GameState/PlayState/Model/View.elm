@@ -111,10 +111,10 @@ lifeOrbView ({ w, h, radius, model, anim, animDamage, tick } as ctx) =
             Ease.outQuad (tick / animMaxTick anim)
 
         finalLifePercentage =
-            toFloat model.life / 50
+            toFloat model.life / toFloat model.maxLife
 
         finalOtherLifePercentage =
-            toFloat model.otherLife / 50
+            toFloat model.otherLife / toFloat model.otherMaxLife
 
         ( lifeChange, otherLifeChange ) =
             animDamage
@@ -122,13 +122,13 @@ lifeOrbView ({ w, h, radius, model, anim, animDamage, tick } as ctx) =
         lifePercentage =
             interpFloat
                 progress
-                (finalLifePercentage - (lifeChange / 50) * finalLifePercentage)
+                (finalLifePercentage - (lifeChange / toFloat model.maxLife) * finalLifePercentage)
                 finalLifePercentage
 
         otherLifePercentage =
             interpFloat
                 progress
-                (finalOtherLifePercentage - (otherLifeChange / 50) * finalOtherLifePercentage)
+                (finalOtherLifePercentage - (otherLifeChange / toFloat model.otherMaxLife) * finalOtherLifePercentage)
                 finalOtherLifePercentage
 
         shake =
@@ -154,10 +154,10 @@ lifeOrbView ({ w, h, radius, model, anim, animDamage, tick } as ctx) =
             0.00035 * radius
 
         life =
-            floor <| 50 * finalLifePercentage
+            floor <| toFloat model.maxLife * finalLifePercentage
 
         otherLife =
-            floor <| 50 * finalOtherLifePercentage
+            floor <| toFloat model.otherMaxLife * finalOtherLifePercentage
     in
     [ Render.Primitives.fullCircle <|
         uniColourMag ctx

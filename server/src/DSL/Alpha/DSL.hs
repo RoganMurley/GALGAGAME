@@ -13,6 +13,7 @@ data DSL n =
   | GetDeck WhichPlayer (Deck -> n)
   | GetHand WhichPlayer (Hand-> n)
   | GetLife WhichPlayer (Life -> n)
+  | GetMaxLife WhichPlayer (Life -> n)
   | GetPasses (Passes -> n)
   | GetStack (Stack -> n)
   | GetTurn (Turn -> n)
