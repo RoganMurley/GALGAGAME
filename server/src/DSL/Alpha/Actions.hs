@@ -75,7 +75,7 @@ hurt dmg w = modLife w (-dmg+)
 heal :: Life -> WhichPlayer -> Program ()
 heal mag w = do
   maxLife <- getMaxLife w
-  modLife w (\l -> max maxLife (l + mag))
+  modLife w (\l -> min maxLife (l + mag))
 
 
 lifesteal :: Life -> WhichPlayer -> Program ()
