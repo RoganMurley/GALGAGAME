@@ -15,10 +15,11 @@ import WebGL
 
 
 htmlView : Model -> Flags -> Html Msg
-htmlView { game, roomID, players } flags =
+htmlView { game, roomID, players, errored } flags =
     div []
         [ playersView players
         , GameState.htmlView game roomID flags
+        , errorView errored
         ]
 
 
@@ -96,3 +97,12 @@ titleView { players } =
             String.toUpper <| Maybe.withDefault "???" mName
     in
     name players.pb ++ " vs " ++ name players.pa
+
+
+errorView : Bool -> Html a
+errorView errored =
+    if errored then
+        div [ class "connected-error" ] [ text "Something went wrong" ]
+
+    else
+        text ""

@@ -12,6 +12,7 @@ type alias Model =
     , roomID : String
     , players : Players
     , tick : Float
+    , errored : Bool
     }
 
 

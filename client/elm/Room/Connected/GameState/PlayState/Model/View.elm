@@ -246,7 +246,7 @@ focusTextView originVec focus ({ w, h, anim, radius, tick } as ctx) =
                             , y = origin.y + 0.5 * h + radius * 0.15 + shake
                             , scaleX = 0.00025 * radius
                             , scaleY = 0.00025 * radius
-                            , color = Colour.white
+                            , color = vec3 (244 / 255) (241 / 255) (94 / 255)
                             }
                             ctx
                         , Font.view "Futura"
