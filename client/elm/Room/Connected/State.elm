@@ -30,6 +30,7 @@ init mode gameType roomID =
     , roomID = roomID
     , players = { pa = Nothing, pb = Nothing }
     , tick = 0
+    , errored = False
     }
 
 
@@ -197,7 +198,7 @@ receive flags assets ({ mode, gameType } as model) msg =
                     ( model, log <| Json.errorToString err )
 
         _ ->
-            ( model, log <| "Error decoding message from server: " ++ msg )
+            ( { model | errored = False }, log <| "Error decoding message from server: " ++ msg )
 
 
 mouseUp : Flags -> Assets.Model -> Model -> Mouse.Position -> ( Model, Cmd Main.Msg )
