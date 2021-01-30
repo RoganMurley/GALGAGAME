@@ -15,13 +15,13 @@ instance Eq Card where
 
 
 instance Show Card where
-  show (Card{ card_aspect, card_suit }) = cs $ cardName card_aspect card_suit
+  show card = cs $ cardName card
 
 
 instance ToJSON Card where
   toJSON card =
     object
-      [ "name"     .= cardName (card_aspect card) (card_suit card)
+      [ "name"     .= cardName card
       , "desc"     .= card_desc card
       , "imageURL" .= cardImgUrl (card_aspect card) (card_suit card)
       ]
@@ -78,9 +78,9 @@ aspectText aspect =
       cs $ show aspect
 
 
-cardName :: Aspect -> Suit -> Text
-cardName aspect suit =
-  toUpper $ aspectText aspect <> " " <> suitText suit
+cardName :: Card -> Text
+cardName (Card{ card_aspect, card_suit }) =
+  toUpper $ aspectText card_aspect <> " " <> suitText card_suit
 
 
 cardImgUrl :: Aspect -> Suit -> Text

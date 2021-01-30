@@ -1,11 +1,14 @@
 {-# LANGUAGE DeriveGeneric #-}
 module World.World where
 
+import Card (cardName)
+import Cards (cardsByName)
 import Config (App, runBeam)
 import Control.Concurrent.STM.TVar (TVar)
 import Control.Monad.IO.Class (liftIO)
 import Data.Aeson (FromJSON(..), ToJSON(..), (.:), (.=), eitherDecode, encode, object, withObject)
 import Data.List (find)
+import Data.Maybe (catMaybes)
 import Data.Set (Set)
 import Data.String.Conversions (cs)
 import Data.Text (Text)
@@ -20,7 +23,9 @@ import Text.Printf (printf)
 import Util (breakAt)
 
 import qualified Auth.Schema
+import qualified Cards
 import qualified Data.GUID as GUID
+import qualified Data.Map as Map
 import qualified Data.Set as Set
 import qualified DeckBuilding
 import qualified Log
@@ -132,8 +137,8 @@ parseRequest msg =
         Nothing
 
 
-makeScenario :: Encounter -> Scenario
-makeScenario (Encounter{ encounter_numeral }) =
+makeScenario :: WorldProgress -> Encounter -> Scenario
+makeScenario (WorldProgress{ worldprogress_deck }) (Encounter{ encounter_numeral }) =
   Scenario {
     scenario_turn = PlayerA
   , scenario_characterPa = characterPa
@@ -151,68 +156,60 @@ makeScenario (Encounter{ encounter_numeral }) =
             DeckBuilding.Character
               "The Beginning"
               ""
-              DeckBuilding.blazeRune
-              DeckBuilding.heavenRune
-              DeckBuilding.shroomRune
+              (Left (DeckBuilding.blazeRune, DeckBuilding.heavenRune, DeckBuilding.shroomRune))
               20
         "0" ->
           Just $
             DeckBuilding.Character
               "The Fool"
               ""
-              DeckBuilding.mirrorRune
-              DeckBuilding.mirrorRune
-              DeckBuilding.mirrorRune
+              (Left (DeckBuilding.mirrorRune, DeckBuilding.mirrorRune, DeckBuilding.mirrorRune))
               initMaxLife
         "I" ->
           Just $
             DeckBuilding.Character
               "The Magician"
               ""
-              DeckBuilding.blazeRune
-              DeckBuilding.blazeRune
-              DeckBuilding.blazeRune
+              (Left (DeckBuilding.blazeRune, DeckBuilding.blazeRune, DeckBuilding.blazeRune))
               initMaxLife
         "II" ->
           Just $
             DeckBuilding.Character
               "The Priestess"
               ""
-              DeckBuilding.heavenRune
-              DeckBuilding.heavenRune
-              DeckBuilding.heavenRune
+              (Left (DeckBuilding.heavenRune, DeckBuilding.heavenRune, DeckBuilding.heavenRune))
               initMaxLife
         "V" ->
           Just $
             DeckBuilding.Character
               "The Hierophant"
               ""
-              DeckBuilding.morphRune
-              DeckBuilding.morphRune
-              DeckBuilding.morphRune
+              (Left (DeckBuilding.morphRune, DeckBuilding.morphRune, DeckBuilding.morphRune))
               initMaxLife
         "VI" ->
           Just $
             DeckBuilding.Character
               "The Lovers"
               ""
-              DeckBuilding.dualityRune
-              DeckBuilding.dualityRune
-              DeckBuilding.dualityRune
+              (Left (DeckBuilding.dualityRune, DeckBuilding.dualityRune, DeckBuilding.dualityRune))
               initMaxLife
         "X" ->
           Just $
             DeckBuilding.Character
               "Wheel of Fortune"
               ""
-              DeckBuilding.blazeRune
-              DeckBuilding.blazeRune
-              DeckBuilding.blazeRune
+              (Left (DeckBuilding.blazeRune, DeckBuilding.blazeRune, DeckBuilding.blazeRune))
               initMaxLife
         _ ->
           Nothing
     characterPb :: Maybe DeckBuilding.Character
-    characterPb = Just DeckBuilding.catherine
+    characterPb =
+      Just $
+        DeckBuilding.Character
+          "Prideful Fool"
+          ""
+          (Right $catMaybes $ (\name -> Map.lookup name cardsByName) <$> worldprogress_deck)
+          initMaxLife
 
 
 -- Graph nonsense
@@ -361,10 +358,11 @@ getNewProgress encounter progress =
     { worldprogress_key = encounter_key
     , worldprogress_visited = Set.insert encounter_key worldprogress_visited
     , worldprogress_visitedEdges = edge : worldprogress_visitedEdges
+    , worldprogress_deck = worldprogress_deck
     }
   where
     Encounter{ encounter_key, encounter_x, encounter_y } = encounter
-    WorldProgress{ worldprogress_key, worldprogress_visited, worldprogress_visitedEdges } = progress
+    WorldProgress{ worldprogress_deck, worldprogress_key, worldprogress_visited, worldprogress_visitedEdges } = progress
     edge :: (Pos, Pos)
     edge = (getPosition worldprogress_key, (encounter_x, encounter_y))
 
@@ -470,17 +468,19 @@ tarotWorld = Tarot "The World" "XXI"
 
 -- World Progress
 data WorldProgress = WorldProgress
-  { worldprogress_key     :: WorldKey
-  , worldprogress_visited :: Set WorldKey
+  { worldprogress_key          :: WorldKey
+  , worldprogress_visited      :: Set WorldKey
   , worldprogress_visitedEdges :: [(Pos, Pos)]
+  , worldprogress_deck         :: [Text]
   } deriving (Show)
 
 instance ToJSON WorldProgress where
-  toJSON (WorldProgress{ worldprogress_key, worldprogress_visited, worldprogress_visitedEdges }) =
+  toJSON (WorldProgress{ worldprogress_key, worldprogress_visited, worldprogress_visitedEdges, worldprogress_deck }) =
     object [
-      "key"     .= worldprogress_key
-    , "visited" .= worldprogress_visited
+      "key"          .= worldprogress_key
+    , "visited"      .= worldprogress_visited
     , "visitedEdges" .= worldprogress_visitedEdges
+    , "deck"         .= worldprogress_deck
     ]
 
 instance FromJSON WorldProgress where
@@ -491,10 +491,16 @@ instance FromJSON WorldProgress where
         <$> o .: "key"
         <*> o .: "visited"
         <*> o .: "visitedEdges"
+        <*> o .: "character"
 
 
 initialProgress :: WorldProgress
-initialProgress = WorldProgress Start Set.empty []
+initialProgress =
+  WorldProgress
+    Start
+    Set.empty
+    []
+    (cardName <$> [Cards.blazeGrail])
 
 
 updateProgress :: Maybe Text -> WorldProgress -> App ()

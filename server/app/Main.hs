@@ -313,7 +313,7 @@ beginWorld state client mProgress = do
           liftIO $ Log.info $ printf "<%s>: Joining world encounter" (show $ Client.name client)
           Client.send ("joinEncounter:" <> encounterId) client
           gen <- liftIO getGen
-          let scenario = World.makeScenario encounter
+          let scenario = World.makeScenario progress encounter
           let roomName = encounterId
           let cpuName = World.encounter_name encounter
           roomVar <- liftIO . atomically $ Server.getOrCreateRoom roomName WaitCustom gen scenario state
