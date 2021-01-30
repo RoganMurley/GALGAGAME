@@ -2,7 +2,9 @@ module Cards where
 
 import Control.Monad (when)
 import CardAnim (Hurt(..))
-import Card (Aspect(..), Card(..), Suit(..))
+import Card (Aspect(..), Card(..), Suit(..), cardName)
+import Data.Map (Map, fromList)
+import Data.Text (Text)
 import Player (other)
 import Safe (headMay)
 import Stack (diasporaFromStack, diasporaLength)
@@ -525,3 +527,7 @@ others =
 
 allCards :: [Card]
 allCards = swords ++ wands ++ grails ++ coins ++ others
+
+
+cardsByName :: Map Text Card
+cardsByName = fromList $ fmap (\card -> (cardName card, card)) allCards

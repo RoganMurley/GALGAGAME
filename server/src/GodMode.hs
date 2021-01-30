@@ -1,17 +1,16 @@
 module GodMode where
 
-import Data.List (find)
 import Data.Monoid ((<>))
 import Data.String.Conversions (cs)
 import Data.Text (Text)
 import Safe (readMay)
 
-import Card (Card(..), cardName)
 import CardAnim (Hurt(..))
-import Cards (allCards)
+import Cards (cardsByName)
 import Player (WhichPlayer(..), other)
 import Util (Err, breakAt)
 
+import qualified Data.Map as Map
 import qualified DSL.Beta as Beta
 
 
@@ -42,7 +41,7 @@ parse which msg =
       "draw" ->
         Right $ Beta.draw which which
       "card" ->
-        case find (\(Card{ card_aspect, card_suit }) -> cardName card_aspect card_suit == content) allCards of
+        case Map.lookup content cardsByName of
           Just card ->
             Right $ Beta.addToHand which card
           Nothing ->

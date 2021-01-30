@@ -40,16 +40,14 @@ type RuneCards = (Card, Card, Card, Card)
 data Character = Character
   { character_name    :: Text
   , character_img_url :: Text
-  , character_rune_a  :: Rune
-  , character_rune_b  :: Rune
-  , character_rune_c  :: Rune
+  , character_choice  :: Either (Rune, Rune, Rune) Deck
   , character_maxLife :: Life
   }
   deriving (Eq, Show)
 
 
 instance ToJSON Character where
-  toJSON (Character name imgUrl runeA runeB runeC _) =
+  toJSON (Character name imgUrl (Left (runeA, runeB, runeC)) _) =
     object
       [ "name"    .= name
       , "img_url" .= imgUrl
@@ -57,13 +55,18 @@ instance ToJSON Character where
       , "rune_b"  .= runeB
       , "rune_c"  .= runeC
       ]
+  toJSON (Character name imgUrl _ _) =
+    object
+      [ "name"    .= name
+      , "img_url" .= imgUrl
+      ]
 
 
 -- DeckBuilding
 data DeckBuilding =
-  DeckBuilding {
-    deckbuilding_pa     :: Maybe Character
-  , deckbuilding_pb     :: Maybe Character
+  DeckBuilding
+  { deckbuilding_pa :: Maybe Character
+  , deckbuilding_pb :: Maybe Character
   } deriving (Eq, Show)
 
 
@@ -135,15 +138,17 @@ choiceToCharacter CharacterChoice{choice_name, choice_ra, choice_rb, choice_rc} 
     baseCharacter = getCharacter choice_name
     uniqueChoices :: Bool
     uniqueChoices = Set.size (Set.fromList [choice_ra, choice_rb, choice_rc]) == 3
+    makeCharacter :: Text -> Text -> Rune -> Rune -> Rune -> Character
+    makeCharacter name imgUrl choicePa choicePb choicePc =
+      Character name imgUrl (Left (choicePa, choicePb, choicePc)) initMaxLife
   in
   if uniqueChoices then
-    Character
+    makeCharacter
       <$> (character_name <$> baseCharacter)
       <*> (character_img_url <$> baseCharacter)
       <*> getRune choice_ra
       <*> getRune choice_rb
       <*> getRune choice_rc
-      <*> pure initMaxLife
   else
     Left "Rune choices were not unique"
 
@@ -287,9 +292,7 @@ catherine =
   Character
     "0 / The Fool"
     "/img/textures/confound.png"
-    blazeRune
-    shroomRune
-    mirrorRune
+    (Left (blazeRune, shroomRune, mirrorRune))
     initMaxLife
 
 
@@ -298,9 +301,7 @@ marcus =
   Character
     "I / The Magician"
     "/img/textures/hubris.png"
-    alchemyRune
-    mirrorRune
-    morphRune
+    (Left (alchemyRune, mirrorRune, morphRune))
     initMaxLife
 
 
@@ -309,13 +310,15 @@ freja =
   Character
     "II / The High Priestess"
     "/img/textures/alchemy.png"
-    heavenRune
-    mirageRune
-    dualityRune
+    (Left (heavenRune, mirageRune, dualityRune))
     initMaxLife
 
 
 characterCards :: Character -> Deck
-characterCards Character{ character_rune_a, character_rune_b, character_rune_c } =
-  concat $ (\(p, q, r, s) -> [p, q, r, s]) <$>
-    [rune_cards character_rune_a, rune_cards character_rune_b, rune_cards character_rune_c]
+characterCards Character{ character_choice } =
+  case character_choice of
+    Left (runeA, runeB, runeC) ->
+      concat $ (\(p, q, r, s) -> [p, q, r, s]) <$>
+        [rune_cards runeA, rune_cards runeB, rune_cards runeC]
+    Right deck ->
+      deck
