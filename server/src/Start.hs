@@ -17,8 +17,8 @@ initHandLength which first
 
 startProgram :: Turn -> Beta.Program ()
 startProgram turn = do
-  replicateM_ (initHandLength PlayerA turn) (Beta.draw PlayerA PlayerA 0.1)
-  replicateM_ (initHandLength PlayerB turn) (Beta.draw PlayerB PlayerB 0.1)
+  replicateM_ (initHandLength PlayerA turn) (Beta.draw PlayerA PlayerA 0.25)
+  replicateM_ (initHandLength PlayerB turn) (Beta.draw PlayerB PlayerB 0.25)
 
 
 tutorialStartProgram :: Turn -> Beta.Program ()
