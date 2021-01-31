@@ -18,7 +18,7 @@ data DSL n
   = Raw (Alpha.Program ()) n
   | Hurt Life WhichPlayer Hurt n
   | Heal Life WhichPlayer n
-  | Draw WhichPlayer WhichPlayer n
+  | Draw WhichPlayer WhichPlayer Float n
   | AddToHand WhichPlayer Card n
   | Play WhichPlayer Card Int n
   | Transmute (Int -> StackCard -> Maybe Transmutation) n

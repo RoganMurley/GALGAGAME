@@ -68,7 +68,7 @@ animSfx anim =
             else
                 Nothing
 
-        Draw _ ->
+        Draw _ _ ->
             Just "draw.mp3"
 
         Play _ _ _ _ ->

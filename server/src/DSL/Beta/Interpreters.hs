@@ -36,7 +36,7 @@ alphaI :: Program a -> Alpha.Program a
 alphaI (Free (Raw p n))             = p                       >>  alphaI n
 alphaI (Free (Hurt d w _ n))        = Alpha.hurt d w          >>  alphaI n
 alphaI (Free (Heal h w n))          = Alpha.heal h w          >>  alphaI n
-alphaI (Free (Draw w d n))          = Alpha.draw w d          >>  alphaI n
+alphaI (Free (Draw w d _ n))        = Alpha.draw w d          >>  alphaI n
 alphaI (Free (AddToHand w c n))     = Alpha.addToHand w c     >>  alphaI n
 alphaI (Free (Play w c i n))        = Alpha.play w c i        >>  alphaI n
 alphaI (Free (Transmute f n))       = Alpha.transmute f       >>  alphaI n
@@ -71,7 +71,7 @@ animI (Windup _)            = basicAnim $ Anim.Windup ()
 animI (RawAnim r _)         = basicAnim $ Anim.Raw r ()
 animI (Heal _ w _)          = healAnim w
 animI (AddToHand w c  _)    = addToHandAnim w c
-animI (Draw w d _)          = drawAnim w d
+animI (Draw w d t _)        = drawAnim w d t
 animI (Play w c i _)        = playAnim w c i
 animI (Transmute f _)       = transmuteAnim f
 animI (TransmuteActive f _) = transmuteActiveAnim f
@@ -92,13 +92,13 @@ healAnim w alpha = do
   return final
 
 
-drawAnim :: WhichPlayer -> WhichPlayer -> Alpha.Program a -> AlphaAnimProgram a
-drawAnim w d alpha = do
+drawAnim :: WhichPlayer -> WhichPlayer -> Float -> Alpha.Program a -> AlphaAnimProgram a
+drawAnim w d t alpha = do
   nextCard <- headMay <$> toLeft (Alpha.getDeck d)
   handLength <- length <$> toLeft (Alpha.getHand w)
   final <- toLeft alpha
   if (handLength < maxHandLength)
-    then toRight . liftF $ Anim.Draw w ()
+    then toRight . liftF $ Anim.Draw w t ()
     else toRight . liftF $ Anim.Mill w (fromMaybe strangeEnd nextCard) ()
   return final
 
@@ -108,7 +108,7 @@ addToHandAnim w c alpha = do
   handLength <- length <$> toLeft (Alpha.getHand w)
   final <- toLeft alpha
   if (handLength < maxHandLength)
-    then toRight . liftF $ Anim.Draw w ()
+    then toRight . liftF $ Anim.Draw w 1 ()
     else toRight . liftF $ Anim.Mill w c ()
   return final
 

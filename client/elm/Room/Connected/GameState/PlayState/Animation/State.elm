@@ -31,10 +31,10 @@ animShake anim which tick =
 
 animMaxTick : Anim -> Float
 animMaxTick anim =
-    1.5
+    1.2
         * (case anim of
-            Draw _ ->
-                250.0
+            Draw _ timeModifier ->
+                timeModifier * 250.0
 
             Play _ _ _ _ ->
                 300.0

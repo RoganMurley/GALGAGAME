@@ -190,6 +190,7 @@ makeScenario prefix =
   , scenario_prog = prog
   , scenario_xpWin = xpWin
   , scenario_xpLoss = xpLoss
+  , scenario_reward = Nothing
   }
   where
     characterPa :: Maybe DeckBuilding.Character
@@ -320,7 +321,7 @@ beginWorld state client mProgress = do
           didWin <- beginComputer cpuName state client roomVar
           if didWin then
             (do
-              let newProgress = World.getNewProgress encounter progress
+              let newProgress = World.getNewProgress encounter scenario progress
               liftIO $ Log.info $ printf "<%s>: Win! New world progress %s" (show $ Client.name client) (show newProgress)
               World.updateProgress username newProgress
               beginWorld state client (Just newProgress)

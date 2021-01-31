@@ -16,7 +16,7 @@ data DSL a
   | Raw CardAnim a
   | Hurt WhichPlayer Life Hurt a
   | Heal WhichPlayer Life a
-  | Draw WhichPlayer a
+  | Draw WhichPlayer Float a
   | Play WhichPlayer Card Int a
   | Transmute (Wheel (Maybe Transmutation)) a
   | Mill WhichPlayer Card a
