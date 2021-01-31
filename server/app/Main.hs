@@ -328,8 +328,10 @@ beginWorld state client mProgress = do
             )
             else
               (do
-                liftIO $ Log.info $ printf "<%s>: Loss!" (show $ Client.name client)
-                beginWorld state client mProgress
+                let newProgress = World.initialProgress
+                liftIO $ Log.info $ printf "<%s>: Loss! New world progress %s" (show $ Client.name client) (show newProgress)
+                World.updateProgress username newProgress
+                beginWorld state client (Just newProgress)
               )
         Nothing -> do
           liftIO $ Log.error $ printf "<%s>: No such encounter" (show $ Client.name client)
