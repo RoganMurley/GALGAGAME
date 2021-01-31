@@ -146,6 +146,7 @@ makeScenario (WorldProgress{ worldprogress_deck }) (Encounter{ encounter_numeral
   , scenario_prog = startProgram PlayerA
   , scenario_xpWin = 100
   , scenario_xpLoss = 70
+  , scenario_reward = reward
   }
   where
     characterPa :: Maybe DeckBuilding.Character
@@ -210,6 +211,12 @@ makeScenario (WorldProgress{ worldprogress_deck }) (Encounter{ encounter_numeral
           ""
           (Right $catMaybes $ (\name -> Map.lookup name cardsByName) <$> worldprogress_deck)
           initMaxLife
+    reward =
+      case encounter_numeral of
+        "S" ->
+          Just [Cards.mirrorSword, Cards.mirrorWand, Cards.mirrorGrail, Cards.mirrorCoin]
+        _ ->
+         Nothing
 
 
 -- Graph nonsense
@@ -352,19 +359,27 @@ getPosition Foundation    = (0.5, levelBeauty1)
 getPosition Kingdom       = (0.5, levelBeauty2)
 
 
-getNewProgress :: Encounter -> WorldProgress -> WorldProgress
-getNewProgress encounter progress =
+getNewProgress :: Encounter -> Scenario -> WorldProgress -> WorldProgress
+getNewProgress encounter scenario progress =
   WorldProgress
     { worldprogress_key = encounter_key
     , worldprogress_visited = Set.insert encounter_key worldprogress_visited
     , worldprogress_visitedEdges = edge : worldprogress_visitedEdges
-    , worldprogress_deck = worldprogress_deck
+    , worldprogress_deck = deck
     }
   where
     Encounter{ encounter_key, encounter_x, encounter_y } = encounter
     WorldProgress{ worldprogress_deck, worldprogress_key, worldprogress_visited, worldprogress_visitedEdges } = progress
+    Scenario{ scenario_reward } = scenario
     edge :: (Pos, Pos)
     edge = (getPosition worldprogress_key, (encounter_x, encounter_y))
+    deck =
+      case scenario_reward of
+        Just rewardCards ->
+          (cardName <$> rewardCards) ++ worldprogress_deck
+        Nothing ->
+          worldprogress_deck
+
 
 -- Tarot
 data Tarot =
@@ -500,7 +515,7 @@ initialProgress =
     Start
     Set.empty
     []
-    (cardName <$> [Cards.blazeGrail])
+    (cardName <$> [Cards.blazeSword, Cards.blazeWand, Cards.blazeGrail, Cards.blazeCoin])
 
 
 updateProgress :: Maybe Text -> WorldProgress -> App ()

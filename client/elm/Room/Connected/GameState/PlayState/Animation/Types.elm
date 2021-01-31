@@ -11,7 +11,7 @@ type Anim
     = NullAnim
     | Hurt WhichPlayer Int Hurt
     | Heal WhichPlayer Int
-    | Draw WhichPlayer
+    | Draw WhichPlayer Float
     | Play WhichPlayer Card Int (Maybe Vec3)
     | Transmute (Wheel (Maybe Transmutation))
     | Mill WhichPlayer Card

@@ -40,8 +40,8 @@ blazeGrail =
     "Discard your hand, then draw 2"
     $ \w -> do
       discardHand w (\_ _ -> True)
-      draw w w
-      draw w w
+      draw w w 1
+      draw w w 1
 
 
 blazeCoin :: Card
@@ -199,9 +199,9 @@ bloodGrail =
     "Pay 4 life to draw 3"
     $ \w -> do
       hurt 4 w Slash
-      draw w w
-      draw w w
-      draw w w
+      draw w w 1
+      draw w w 1
+      draw w w 1
 
 
 bloodCoin :: Card
@@ -221,7 +221,7 @@ mirageSword =
     "Hurt for 4, then draw 1"
     $ \w -> do
       hurt 4 (other w) Slash
-      draw w w
+      draw w w 1
 
 
 mirageWand :: Card
@@ -334,8 +334,8 @@ strangeGold =
   Card Strange (OtherSuit "GOLD")
     "Draw 2"
     $ \w -> do
-      draw w w
-      draw w w
+      draw w w 1
+      draw w w 1
 
 
 -- Crown

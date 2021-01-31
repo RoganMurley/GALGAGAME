@@ -39,7 +39,7 @@ parse which msg =
           Nothing ->
             Left ("Cannot parse " <> content <> " to int" :: Err)
       "draw" ->
-        Right $ Beta.draw which which
+        Right $ Beta.draw which which 0.1
       "card" ->
         case Map.lookup content cardsByName of
           Just card ->

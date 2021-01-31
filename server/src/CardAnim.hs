@@ -14,7 +14,7 @@ import Wheel (Wheel)
 
 data CardAnim
   = Heal WhichPlayer Life
-  | Draw WhichPlayer
+  | Draw WhichPlayer Float
   | Hurt WhichPlayer Life Hurt
   | Play WhichPlayer Card Int
   | Transmute (Wheel (Maybe Transmutation))
@@ -44,10 +44,11 @@ instance ToJSON CardAnim where
     , "player" .= w
     , "heal"   .= h
     ]
-  toJSON (Draw w) =
+  toJSON (Draw w t) =
     object
-    [ "name"   .= ("draw" :: Text)
-    , "player" .= w
+    [ "name"         .= ("draw" :: Text)
+    , "timeModifier" .= t
+    , "player"       .= w
     ]
   toJSON (Play w c i) =
     object
@@ -119,7 +120,7 @@ instance ToJSON CardAnim where
 instance Mirror CardAnim where
   mirror (Hurt w d h)      = Hurt (other w) d h
   mirror (Heal w h)        = Heal (other w) h
-  mirror (Draw w)          = Draw  (other w)
+  mirror (Draw w t)        = Draw  (other w) t
   mirror (Play w c i)      = Play (other w) c i
   mirror (Transmute t)     = Transmute (mirror <$> t)
   mirror (GameEnd w)       = GameEnd (other <$> w)

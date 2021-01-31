@@ -249,8 +249,8 @@ endTurn which model replay
               roundEndProgram = do
                 Beta.raw Alpha.swapTurn
                 Beta.raw Alpha.resetPasses
-                Beta.draw PlayerA PlayerA
-                Beta.draw PlayerB PlayerB
+                Beta.draw PlayerA PlayerA 1
+                Beta.draw PlayerB PlayerB 1
               (newModel, _, endRes) = Beta.execute m $ foldFree Beta.betaI roundEndProgram
               newPlayState = Playing newModel (Active.add newReplay endRes) :: PlayState
               newState = Started newPlayState :: GameState

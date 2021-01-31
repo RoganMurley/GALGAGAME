@@ -2,7 +2,7 @@ module Animation.Decoders exposing (decoder)
 
 import Animation.Types exposing (Anim(..), Bounce(..), CardDiscard(..), Hurt(..), Transmutation(..))
 import Card.Decoders as Card
-import Json.Decode as Json exposing (Decoder, bool, fail, field, int, list, maybe, null, oneOf, string, succeed)
+import Json.Decode as Json exposing (Decoder, bool, fail, field, float, int, list, maybe, null, oneOf, string, succeed)
 import Stack.Decoders as Stack
 import Wheel.Decoders as Wheel
 import WhichPlayer.Decoders as WhichPlayer
@@ -116,8 +116,9 @@ healDecoder =
 
 drawDecoder : Decoder Anim
 drawDecoder =
-    Json.map Draw
+    Json.map2 Draw
         (field "player" WhichPlayer.decoder)
+        (field "timeModifier" float)
 
 
 playDecoder : Decoder Anim

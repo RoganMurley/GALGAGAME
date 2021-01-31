@@ -46,7 +46,7 @@ entities hover holding ({ anim, model, progress } as ctx) =
 
         ( hand, drawingCard ) =
             case anim of
-                Draw PlayerA ->
+                Draw PlayerA _ ->
                     ( List.take (List.length finalHand - 1) finalHand
                     , List.head <| List.reverse finalHand
                     )
@@ -123,7 +123,7 @@ entities hover holding ({ anim, model, progress } as ctx) =
         extraEntities : List HandEntity
         extraEntities =
             case anim of
-                Draw PlayerA ->
+                Draw PlayerA _ ->
                     case drawingCard of
                         Just card ->
                             let
@@ -233,7 +233,7 @@ otherEntities hover ({ anim, model, progress } as ctx) =
 
         n =
             case anim of
-                Draw PlayerB ->
+                Draw PlayerB _ ->
                     finalN - 1
 
                 Bounce _ ->
@@ -281,7 +281,7 @@ otherEntities hover ({ anim, model, progress } as ctx) =
         extraEntities : List OtherHandEntity
         extraEntities =
             case anim of
-                Draw PlayerB ->
+                Draw PlayerB _ ->
                     [ { position =
                             interp progress
                                 (vec3 -1 1 -1)
