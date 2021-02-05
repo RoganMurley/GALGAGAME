@@ -45,7 +45,8 @@ data Suit
 
 
 data Aspect
-  = Blaze
+  = Basic
+  | Blaze
   | Heaven
   | Duality
   | Shroom
@@ -80,7 +81,11 @@ aspectText aspect =
 
 cardName :: Card -> Text
 cardName (Card{ card_aspect, card_suit }) =
-  toUpper $ aspectText card_aspect <> " " <> suitText card_suit
+  case card_aspect of
+    Basic ->
+      toUpper $ suitText card_suit
+    _ ->
+      toUpper $ aspectText card_aspect <> " " <> suitText card_suit
 
 
 cardImgUrl :: Aspect -> Suit -> Text
