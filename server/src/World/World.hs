@@ -157,29 +157,29 @@ makeScenario (WorldProgress{ worldprogress_deck }) (Encounter{ encounter_numeral
             DeckBuilding.Character
               "The Beginning"
               ""
-              (Left (DeckBuilding.blazeRune, DeckBuilding.heavenRune, DeckBuilding.shroomRune))
+              (Left (DeckBuilding.mirrorRune, DeckBuilding.mirrorRune, DeckBuilding.mirrorRune))
               20
         "0" ->
           Just $
             DeckBuilding.Character
               "The Fool"
               ""
-              (Left (DeckBuilding.mirrorRune, DeckBuilding.mirrorRune, DeckBuilding.mirrorRune))
-              initMaxLife
+              (Left (DeckBuilding.shroomRune, DeckBuilding.shroomRune, DeckBuilding.shroomRune))
+              30
         "I" ->
           Just $
             DeckBuilding.Character
               "The Magician"
               ""
               (Left (DeckBuilding.blazeRune, DeckBuilding.blazeRune, DeckBuilding.blazeRune))
-              initMaxLife
+              30
         "II" ->
           Just $
             DeckBuilding.Character
               "The Priestess"
               ""
               (Left (DeckBuilding.heavenRune, DeckBuilding.heavenRune, DeckBuilding.heavenRune))
-              initMaxLife
+              30
         "V" ->
           Just $
             DeckBuilding.Character
@@ -209,12 +209,18 @@ makeScenario (WorldProgress{ worldprogress_deck }) (Encounter{ encounter_numeral
         DeckBuilding.Character
           "Prideful Fool"
           ""
-          (Right $catMaybes $ (\name -> Map.lookup name cardsByName) <$> worldprogress_deck)
+          (Right $ catMaybes $ (\name -> Map.lookup name cardsByName) <$> worldprogress_deck)
           initMaxLife
     reward =
       case encounter_numeral of
         "S" ->
           Just [Cards.mirrorSword, Cards.mirrorWand, Cards.mirrorGrail, Cards.mirrorCoin]
+        "0" ->
+          Just [Cards.shroomSword, Cards.shroomWand, Cards.shroomGrail, Cards.shroomCoin]
+        "I" ->
+          Just [Cards.heavenSword, Cards.heavenWand, Cards.heavenGrail, Cards.heavenCoin]
+        "II" ->
+          Just [Cards.blazeSword, Cards.blazeWand, Cards.blazeGrail, Cards.blazeCoin]
         _ ->
          Nothing
 
@@ -515,7 +521,7 @@ initialProgress =
     Start
     Set.empty
     []
-    (cardName <$> [Cards.blazeSword, Cards.blazeWand, Cards.blazeGrail, Cards.blazeCoin])
+    (cardName <$> [Cards.basicSword, Cards.basicWand, Cards.basicGrail, Cards.basicCoin])
 
 
 updateProgress :: Maybe Text -> WorldProgress -> App ()

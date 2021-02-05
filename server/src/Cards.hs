@@ -17,6 +17,38 @@ import qualified DSL.Beta as Beta
 import DSL.Beta
 
 
+-- Basic
+basicSword :: Card
+basicSword =
+  Card Basic Sword
+    "Hurt for 6"
+    $ \w -> hurt 6 (other w) Slash
+
+
+basicWand :: Card
+basicWand =
+  Card Basic Wand
+    "Hurt for 3 for each other card\non the wheel"
+    $ \w -> do
+      len <- diasporaLength <$> getStack
+      hurt (len * 3) (other w) Slash
+
+
+basicGrail :: Card
+basicGrail =
+  Card Basic Grail
+    "Heal for 5"
+    $ \w -> heal 5 w
+
+
+basicCoin :: Card
+basicCoin =
+  Card Basic Coin
+    "Discard cards in the\nnext 3 sockets"
+    $ \_ -> do
+      discardStack (\i _ -> (i > 0) && (i < 4))
+
+
 -- Blaze
 blazeSword :: Card
 blazeSword =
@@ -459,7 +491,8 @@ strangeEnd =
 
 swords :: [Card]
 swords =
-  [ blazeSword
+  [ basicSword
+  , blazeSword
   , heavenSword
   , shroomSword
   , bloodSword
@@ -474,7 +507,8 @@ swords =
 
 wands :: [Card]
 wands =
-  [ blazeWand
+  [ basicWand
+  , blazeWand
   , heavenWand
   , shroomWand
   , bloodWand
@@ -489,7 +523,8 @@ wands =
 
 grails :: [Card]
 grails =
-  [ blazeGrail
+  [ basicGrail
+  , blazeGrail
   , heavenGrail
   , shroomGrail
   , bloodGrail
@@ -504,7 +539,8 @@ grails =
 
 coins :: [Card]
 coins =
-  [ blazeCoin
+  [ basicCoin
+  , blazeCoin
   , heavenCoin
   , shroomCoin
   , bloodCoin
