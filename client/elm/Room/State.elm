@@ -235,7 +235,7 @@ mouseUp flags assets model pos =
         World world ->
             let
                 ( newWorld, cmd ) =
-                    World.mouseDown flags assets world pos
+                    World.mouseUp flags assets world pos
             in
             ( World newWorld, cmd )
 
