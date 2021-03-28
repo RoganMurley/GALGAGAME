@@ -95,7 +95,7 @@ webglView state params assets =
 
 
 paramsFromFlags : Flags -> Render.Params
-paramsFromFlags { dimensions, pixelRatio, time } =
+paramsFromFlags { dimensions, pixelRatio, time, scaling } =
     let
         ( w, h ) =
             dimensions
@@ -104,4 +104,5 @@ paramsFromFlags { dimensions, pixelRatio, time } =
     , h = h
     , pixelRatio = pixelRatio
     , time = time
+    , scaling = scaling
     }

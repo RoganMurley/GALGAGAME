@@ -174,6 +174,18 @@ update msg ({ assets, room, notifications, settings, flags } as model) =
             , Cmd.batch [ cmd, analytics () ]
             )
 
+        SetScaling scaling ->
+            let
+                newScaling =
+                    clamp 0.25 2 scaling
+
+                newFlags =
+                    { flags | scaling = newScaling }
+            in
+            ( { model | flags = newFlags }
+            , Ports.scaling newScaling
+            )
+
         SetVolume volumeType volume ->
             let
                 newVolume =
