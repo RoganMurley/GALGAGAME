@@ -26,6 +26,7 @@ type alias InputFlags =
     , username : Maybe String
     , pixelRatio : Float
     , initialVolume : Int
+    , initialScaling : Float
     }
 
 
@@ -39,6 +40,7 @@ type alias Flags =
     , mouse : Maybe Vec2
     , key : Browser.Navigation.Key
     , pixelRatio : Float
+    , scaling : Float
     }
 
 

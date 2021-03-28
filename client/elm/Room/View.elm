@@ -62,7 +62,7 @@ view model settings notifications flags assets =
     in
     div []
         [ Html.map Main.NotificationsMsg <| Notifications.view notifications
-        , Settings.view settings (settingsView model flags)
+        , Settings.view settings flags (settingsView model flags)
         , roomView
         , webglView model flags assets
         ]
@@ -139,8 +139,8 @@ webglView model flags assets =
     in
     div []
         [ WebGL.toHtmlWith options
-            [ width <| floor <| toFloat params.w * params.pixelRatio
-            , height <| floor <| toFloat params.h * params.pixelRatio
+            [ width <| floor <| toFloat params.w * params.pixelRatio * params.scaling
+            , height <| floor <| toFloat params.h * params.pixelRatio * params.scaling
             , class "webgl-canvas"
             ]
             entities

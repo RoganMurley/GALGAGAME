@@ -5,12 +5,16 @@ var hostname = window.location.hostname;
 var httpPort = window.location.port;
 var portProtocol = httpPort ?  ":" + httpPort : "";
 
-var initialVolume = localStorage.getItem('volume');
+var initialVolume = localStorage.getItem("volume");
 if (initialVolume === null) {
   initialVolume = 100;
 }
-
 setVolume(initialVolume);
+
+var initialScaling = localStorage.getItem("scaling");
+if (initialScaling === null) {
+  initialScaling = 1;
+}
 
 var app = Elm.Main.init({
   flags: {
@@ -22,6 +26,7 @@ var app = Elm.Main.init({
     username: null,
     pixelRatio: window.devicePixelRatio,
     initialVolume: parseFloat(initialVolume, 10),
+    initialScaling: parseFloat(initialScaling, 10),
   },
 });
 
@@ -66,6 +71,10 @@ function setVolume(v) {
 app.ports.volume.subscribe(function (input) {
   setVolume(input);
   localStorage.setItem('volume', input);
+});
+
+app.ports.scaling.subscribe(function (input) {
+  localStorage.setItem('scaling', input);
 });
 
 app.ports.log.subscribe(function (input) {

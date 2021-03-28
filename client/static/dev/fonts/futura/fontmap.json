@@ -29,7 +29,7 @@
     "*":{"x":2217,"y":473,"width":104,"height":98,"originX":-27,"originY":213,"advance":158},
     "+":{"x":584,"y":473,"width":136,"height":135,"originX":-11,"originY":168,"advance":158},
     ",":{"x":2460,"y":473,"width":58,"height":84,"originX":-4,"originY":38,"advance":79},
-    "-":{"x":3165,"y":473,"width":60,"height":28,"originX":2,"originY":76,"advance":56},
+    "-":{"x":3165,"y":473,"width":60,"height":28,"originX":12,"originY":168,"advance":56},
     ".":{"x":2977,"y":473,"width":39,"height":38,"originX":-20,"originY":33,"advance":79},
     "/":{"x":254,"y":0,"width":138,"height":269,"originX":4,"originY":215,"advance":133},
     ":":{"x":1427,"y":473,"width":39,"height":132,"originX":-20,"originY":127,"advance":79},

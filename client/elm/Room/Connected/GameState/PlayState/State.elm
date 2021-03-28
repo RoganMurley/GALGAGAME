@@ -328,6 +328,7 @@ tick flags state gameType dt =
                     , w = w
                     , h = h
                     , pixelRatio = flags.pixelRatio
+                    , scaling = flags.scaling
                     }
 
                 newButtons =

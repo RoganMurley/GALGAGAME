@@ -4,12 +4,13 @@ import Html exposing (Html, div, h1, img, input, label, text)
 import Html.Attributes as H exposing (class, src, style, type_, value)
 import Html.Events exposing (onClick, onInput)
 import Main.Messages as Main
+import Main.Types exposing (Flags)
 import Settings.Messages as Settings
 import Settings.Types exposing (ModalState(..), Model, VolumeType(..))
 
 
-view : Model -> List (Html Main.Msg) -> Html Main.Msg
-view { modalState, masterVolume } nestedViews =
+view : Model -> Flags -> List (Html Main.Msg) -> Html Main.Msg
+view { modalState, masterVolume } { scaling } nestedViews =
     let
         settingsStyle =
             case modalState of
@@ -36,8 +37,8 @@ view { modalState, masterVolume } nestedViews =
                 [ class "settings-body"
                 ]
                 [ h1 [] [ text "SETTINGS" ]
-                , label [ class "settings-volume" ]
-                    [ text "Volume"
+                , label [ class "settings-label" ]
+                    [ text <| "Volume (" ++ String.fromInt masterVolume ++ "%)"
                     , input
                         [ class "settings-slider"
                         , type_ "range"
@@ -46,6 +47,20 @@ view { modalState, masterVolume } nestedViews =
                         , value <| String.fromInt masterVolume
                         , onInput
                             (\v -> Main.SetVolume Master <| Maybe.withDefault 0 (String.toInt v))
+                        ]
+                        []
+                    ]
+                , label [ class "settings-label" ]
+                    [ text <| "Quality (" ++ String.fromFloat scaling ++ ")"
+                    , input
+                        [ class "settings-slider"
+                        , type_ "range"
+                        , H.min "0"
+                        , H.max "2"
+                        , H.step "0.1"
+                        , value <| String.fromFloat scaling
+                        , onInput
+                            (\s -> Main.SetScaling <| Maybe.withDefault 1 (String.toFloat s))
                         ]
                         []
                     ]

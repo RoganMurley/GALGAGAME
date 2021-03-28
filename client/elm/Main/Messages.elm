@@ -31,6 +31,7 @@ type Msg
     | SelectAllInput String
     | Send String
     | SettingsMsg Settings.Msg
+    | SetScaling Float
     | SetVolume VolumeType Int
     | TouchPosition (Maybe Mouse.Position)
     | UrlChange Url

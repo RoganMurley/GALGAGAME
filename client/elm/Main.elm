@@ -43,6 +43,7 @@ initFull inputFlags url key =
             , dimensions = inputFlags.dimensions
             , username = inputFlags.username
             , pixelRatio = inputFlags.pixelRatio
+            , scaling = inputFlags.initialScaling
             , key = key
             , mouse = Nothing
             }
