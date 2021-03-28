@@ -109,7 +109,7 @@ tick flags model dt =
                     Buttons.TextButton
                         { font = "Futura"
                         , text = "?"
-                        , textColor = vec3 (0 / 255) (0 / 255) (0 / 255)
+                        , textColor = vec3 (40 / 255) (40 / 255) (40 / 255)
                         , bgColor = vec3 (70 / 255) (70 / 255) (70 / 255)
                         , options = [ Buttons.Circular, Buttons.NoHover ]
                         }
