@@ -1,4 +1,4 @@
-module World.Types exposing (Encounter, Model, World)
+module World.Types exposing (Decision, Encounter, Model, World)
 
 import Buttons.Types exposing (Buttons(..))
 import Line.Types exposing (Line)
@@ -8,6 +8,7 @@ type alias Model =
     { encounterButtons : Buttons
     , otherButtons : Buttons
     , visitedButtons : Buttons
+    , choiceButtons : Buttons
     , time : Float
     , world : World
     }
@@ -19,6 +20,7 @@ type alias World =
     , edges : List Line
     , visited : List ( Float, Float )
     , visitedEdges : List Line
+    , decision : Maybe Decision
     }
 
 
@@ -28,4 +30,13 @@ type alias Encounter =
     , numeral : String
     , x : Float
     , y : Float
+    }
+
+
+type alias Decision =
+    { id : String
+    , title : String
+    , text : String
+    , choiceA : String
+    , choiceB : String
     }

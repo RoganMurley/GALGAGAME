@@ -1,7 +1,7 @@
 {-# LANGUAGE DeriveGeneric #-}
 module World.World where
 
-import Card (cardName)
+import Card (Card(..), Suit(..), cardName)
 import Cards (cardsByName)
 import Config (App, runBeam)
 import Control.Concurrent.STM.TVar (TVar)
@@ -41,6 +41,7 @@ data World = World
   , world_edgePositions :: [(Pos, Pos)]
   , world_visited       :: [Pos]
   , world_visitedEdges  :: [(Pos, Pos)]
+  , world_decision      :: Maybe Decision
   }
   deriving (Eq, Show)
 
@@ -96,17 +97,19 @@ getWorld _ progress = do
     , world_edgePositions = edgePositions
     , world_visited       = getPosition <$> Set.toList visitedKeys
     , world_visitedEdges  = worldprogress_visitedEdges progress
+    , world_decision      = worldprogress_decisionId progress >>= decisionFromId
     }
 
 
 instance ToJSON World where
-  toJSON (World{ world_encounters, world_others, world_edgePositions, world_visited, world_visitedEdges }) =
+  toJSON (World{ world_encounters, world_others, world_edgePositions, world_visited, world_visitedEdges, world_decision }) =
     object [
       "encounters"   .= toJSON world_encounters
     , "others"       .= toJSON world_others
     , "edges"        .= toJSON world_edgePositions
     , "visited"      .= toJSON world_visited
     , "visitedEdges" .= toJSON world_visitedEdges
+    , "decision"     .= toJSON world_decision
     ]
 
 
@@ -121,7 +124,9 @@ instance ToJSON Encounter where
     ]
 
 
-data WorldRequest = JoinEncounter Text
+data WorldRequest
+  = JoinEncounter Text
+  | EncounterDecision Text
   deriving (Eq, Show)
 
 
@@ -133,6 +138,8 @@ parseRequest msg =
     case command of
       "joinEncounter" ->
         Just . JoinEncounter $ content
+      "encounterDecision" ->
+        Just . EncounterDecision $ content
       _ ->
         Nothing
 
@@ -368,10 +375,11 @@ getPosition Kingdom       = (0.5, levelBeauty2)
 getNewProgress :: Encounter -> Scenario -> WorldProgress -> WorldProgress
 getNewProgress encounter scenario progress =
   WorldProgress
-    { worldprogress_key = encounter_key
-    , worldprogress_visited = Set.insert encounter_key worldprogress_visited
+    { worldprogress_key          = encounter_key
+    , worldprogress_visited      = Set.insert encounter_key worldprogress_visited
     , worldprogress_visitedEdges = edge : worldprogress_visitedEdges
-    , worldprogress_deck = deck
+    , worldprogress_deck         = deck
+    , worldprogress_decisionId   = decision_id <$> decision
     }
   where
     Encounter{ encounter_key, encounter_x, encounter_y } = encounter
@@ -385,6 +393,8 @@ getNewProgress encounter scenario progress =
           (cardName <$> rewardCards) ++ worldprogress_deck
         Nothing ->
           worldprogress_deck
+    decision :: Maybe Decision
+    decision = decisionFromEncounter encounter
 
 
 -- Tarot
@@ -493,15 +503,18 @@ data WorldProgress = WorldProgress
   , worldprogress_visited      :: Set WorldKey
   , worldprogress_visitedEdges :: [(Pos, Pos)]
   , worldprogress_deck         :: [Text]
+  , worldprogress_decisionId   :: Maybe Text
   } deriving (Show)
 
+
 instance ToJSON WorldProgress where
-  toJSON (WorldProgress{ worldprogress_key, worldprogress_visited, worldprogress_visitedEdges, worldprogress_deck }) =
+  toJSON (WorldProgress{ worldprogress_key, worldprogress_visited, worldprogress_visitedEdges, worldprogress_deck, worldprogress_decisionId }) =
     object [
       "key"          .= worldprogress_key
     , "visited"      .= worldprogress_visited
     , "visitedEdges" .= worldprogress_visitedEdges
     , "deck"         .= worldprogress_deck
+    , "decisionId"   .= worldprogress_decisionId
     ]
 
 instance FromJSON WorldProgress where
@@ -513,6 +526,7 @@ instance FromJSON WorldProgress where
         <*> o .: "visited"
         <*> o .: "visitedEdges"
         <*> o .: "character"
+        <*> o .: "decisionId"
 
 
 initialProgress :: WorldProgress
@@ -522,6 +536,7 @@ initialProgress =
     Set.empty
     []
     (cardName <$> [Cards.basicSword, Cards.basicWand, Cards.basicGrail, Cards.basicCoin])
+    Nothing
 
 
 updateProgress :: Maybe Text -> WorldProgress -> App ()
@@ -559,3 +574,71 @@ loadProgress (Just username) = do
               prog
         Nothing ->
           initialProgress
+
+
+
+-- Decision
+data Decision = Decision
+  { decision_id            :: Text
+  , decision_title         :: Text
+  , decision_text          :: Text
+  , decision_choice_a_text :: Text
+  , decision_choice_a_eff  :: WorldProgress -> WorldProgress
+  , decision_choice_b_text :: Text
+  , decision_choice_b_eff  :: WorldProgress -> WorldProgress
+  }
+
+
+instance ToJSON Decision where
+  toJSON (Decision{ decision_id, decision_title, decision_text, decision_choice_a_text, decision_choice_b_text }) =
+    object [
+      "id"                     .= toJSON decision_id
+    , "title"                  .= toJSON decision_title
+    , "text"                   .= toJSON decision_text
+    , "decision_choice_a_text" .= toJSON decision_choice_a_text
+    , "decision_choice_b_text" .= toJSON decision_choice_b_text
+    ]
+
+
+instance Eq Decision where
+  a == b = decision_id a == decision_id b
+
+
+instance Show Decision where
+  show decision = cs $ decision_id decision
+
+
+devilDecision :: Decision
+devilDecision =
+  Decision
+    { decision_id            = "devil"
+    , decision_title         = "DEVIL"
+    , decision_text          = "\"Your grails overflow.\nI'll take them off your hands,\n for a price.\""
+    , decision_choice_a_text = "Deal"
+    , decision_choice_a_eff  = dealEff
+    , decision_choice_b_text = "No Deal"
+    , decision_choice_b_eff  = id
+    }
+  where
+    nameToSuit :: Text -> Maybe Suit
+    nameToSuit name = card_suit <$> Map.lookup name cardsByName
+    dealEff :: WorldProgress -> WorldProgress
+    dealEff worldprogress =
+      worldprogress {
+        worldprogress_deck =
+          filter (\name -> nameToSuit name /= Just Grail) (worldprogress_deck worldprogress)
+      }
+
+
+decisionFromId :: Text -> Maybe Decision
+decisionFromId "devil" = Just devilDecision
+decisionFromId _       = Nothing
+
+
+decisionFromEncounter :: Encounter -> Maybe Decision
+decisionFromEncounter (Encounter{ encounter_key }) =
+  case encounter_key of
+    Crown ->
+      Just devilDecision
+    _ ->
+      Nothing
