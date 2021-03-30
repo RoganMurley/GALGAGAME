@@ -25,6 +25,7 @@ init =
     { encounterButtons = Buttons.empty
     , otherButtons = Buttons.empty
     , visitedButtons = Buttons.empty
+    , choiceButtons = Buttons.empty
     , time = 0
     , world =
         { encounters = []
@@ -32,6 +33,7 @@ init =
         , edges = []
         , visited = []
         , visitedEdges = []
+        , decision = Nothing
         }
     }
 
@@ -52,111 +54,168 @@ tick flags model dt =
         ctx =
             bareContextInit flags.dimensions Assets.init flags.mouse
 
-        { radius } =
+        { radius, w, h } =
             ctx
-
-        -- Encounter buttons
-        encounterButtons : Buttons
-        encounterButtons =
-            Buttons.fromList <|
-                List.map encounterToButton model.world.encounters
-
-        encounterToButton : Encounter -> ( String, Button )
-        encounterToButton encounter =
-            let
-                { x, y } =
-                    toWorldPos ctx encounter
-            in
-            Buttons.entity
-                encounter.guid
-                { x = x
-                , y = y
-                , width = 0.1 * radius
-                , height = 0.1 * radius
-                , btn =
-                    Buttons.TextButton
-                        { font = "Futura"
-                        , text = "?"
-                        , textColor = vec3 (0 / 255) (0 / 255) (80 / 255)
-                        , bgColor = vec3 (244 / 255) (241 / 255) (94 / 255)
-                        , options = [ Buttons.Circular ]
-                        }
-                , disabled = False
-                }
-                dt
-                flags.mouse
-                model.encounterButtons
-
-        -- Other buttons
-        otherButtons : Buttons
-        otherButtons =
-            Buttons.fromList <|
-                List.map otherToButton model.world.others
-
-        otherToButton : ( Float, Float ) -> ( String, Button )
-        otherToButton ( x, y ) =
-            let
-                worldPos =
-                    toWorldPos ctx { x = x, y = y }
-            in
-            Buttons.entity
-                (String.fromFloat x ++ "/" ++ String.fromFloat y)
-                { x = worldPos.x
-                , y = worldPos.y
-                , width = 0.1 * radius
-                , height = 0.1 * radius
-                , btn =
-                    Buttons.TextButton
-                        { font = "Futura"
-                        , text = "?"
-                        , textColor = vec3 (40 / 255) (40 / 255) (40 / 255)
-                        , bgColor = vec3 (70 / 255) (70 / 255) (70 / 255)
-                        , options = [ Buttons.Circular, Buttons.NoHover ]
-                        }
-                , disabled = True
-                }
-                dt
-                flags.mouse
-                model.otherButtons
-
-        -- Visited buttons
-        visitedButtons : Buttons
-        visitedButtons =
-            Buttons.fromList <|
-                List.map visitedToButton model.world.visited
-
-        visitedToButton : ( Float, Float ) -> ( String, Button )
-        visitedToButton ( x, y ) =
-            let
-                worldPos =
-                    toWorldPos ctx { x = x, y = y }
-            in
-            Buttons.entity
-                (String.fromFloat x ++ "/" ++ String.fromFloat y)
-                { x = worldPos.x
-                , y = worldPos.y
-                , width = 0.06 * radius
-                , height = 0.06 * radius
-                , btn =
-                    Buttons.TextButton
-                        { font = "Futura"
-                        , text = ""
-                        , textColor = vec3 (0 / 255) (0 / 255) (0 / 255)
-                        , bgColor = vec3 (244 / 255) (241 / 255) (94 / 255)
-                        , options = [ Buttons.Circular, Buttons.NoHover ]
-                        }
-                , disabled = True
-                }
-                dt
-                flags.mouse
-                model.visitedButtons
     in
-    { model
-        | time = model.time + dt
-        , encounterButtons = encounterButtons
-        , otherButtons = otherButtons
-        , visitedButtons = visitedButtons
-    }
+    case model.world.decision of
+        Nothing ->
+            let
+                -- Encounter buttons
+                encounterButtons : Buttons
+                encounterButtons =
+                    Buttons.fromList <|
+                        List.map encounterToButton model.world.encounters
+
+                encounterToButton : Encounter -> ( String, Button )
+                encounterToButton encounter =
+                    let
+                        { x, y } =
+                            toWorldPos ctx encounter
+                    in
+                    Buttons.entity
+                        encounter.guid
+                        { x = x
+                        , y = y
+                        , width = 0.1 * radius
+                        , height = 0.1 * radius
+                        , btn =
+                            Buttons.TextButton
+                                { font = "Futura"
+                                , text = "?"
+                                , textColor = vec3 (0 / 255) (0 / 255) (80 / 255)
+                                , bgColor = vec3 (244 / 255) (241 / 255) (94 / 255)
+                                , options = [ Buttons.Circular ]
+                                }
+                        , disabled = False
+                        }
+                        dt
+                        flags.mouse
+                        model.encounterButtons
+
+                -- Other buttons
+                otherButtons : Buttons
+                otherButtons =
+                    Buttons.fromList <|
+                        List.map otherToButton model.world.others
+
+                otherToButton : ( Float, Float ) -> ( String, Button )
+                otherToButton ( x, y ) =
+                    let
+                        worldPos =
+                            toWorldPos ctx { x = x, y = y }
+                    in
+                    Buttons.entity
+                        (String.fromFloat x ++ "/" ++ String.fromFloat y)
+                        { x = worldPos.x
+                        , y = worldPos.y
+                        , width = 0.1 * radius
+                        , height = 0.1 * radius
+                        , btn =
+                            Buttons.TextButton
+                                { font = "Futura"
+                                , text = "?"
+                                , textColor = vec3 (40 / 255) (40 / 255) (40 / 255)
+                                , bgColor = vec3 (70 / 255) (70 / 255) (70 / 255)
+                                , options = [ Buttons.Circular, Buttons.NoHover ]
+                                }
+                        , disabled = True
+                        }
+                        dt
+                        flags.mouse
+                        model.otherButtons
+
+                -- Visited buttons
+                visitedButtons : Buttons
+                visitedButtons =
+                    Buttons.fromList <|
+                        List.map visitedToButton model.world.visited
+
+                visitedToButton : ( Float, Float ) -> ( String, Button )
+                visitedToButton ( x, y ) =
+                    let
+                        worldPos =
+                            toWorldPos ctx { x = x, y = y }
+                    in
+                    Buttons.entity
+                        (String.fromFloat x ++ "/" ++ String.fromFloat y)
+                        { x = worldPos.x
+                        , y = worldPos.y
+                        , width = 0.06 * radius
+                        , height = 0.06 * radius
+                        , btn =
+                            Buttons.TextButton
+                                { font = "Futura"
+                                , text = ""
+                                , textColor = vec3 (0 / 255) (0 / 255) (0 / 255)
+                                , bgColor = vec3 (244 / 255) (241 / 255) (94 / 255)
+                                , options = [ Buttons.Circular, Buttons.NoHover ]
+                                }
+                        , disabled = True
+                        }
+                        dt
+                        flags.mouse
+                        model.visitedButtons
+            in
+            { model
+                | time = model.time + dt
+                , encounterButtons = encounterButtons
+                , otherButtons = otherButtons
+                , visitedButtons = visitedButtons
+                , choiceButtons = Buttons.empty
+            }
+
+        Just decision ->
+            let
+                choiceButtons : Buttons
+                choiceButtons =
+                    Buttons.fromList <|
+                        [ Buttons.entity
+                            "a"
+                            { x = w * 0.5
+                            , y = h * 0.7
+                            , width = 0.4 * radius
+                            , height = 0.08 * radius
+                            , btn =
+                                Buttons.TextButton
+                                    { font = "Futura"
+                                    , text = decision.choiceA ++ "?"
+                                    , textColor = vec3 (0 / 255) (0 / 255) (0 / 255)
+                                    , bgColor = vec3 (244 / 255) (241 / 255) (94 / 255)
+                                    , options = [ Buttons.HoverText <| decision.choiceA ++ "!" ]
+                                    }
+                            , disabled = False
+                            }
+                            dt
+                            flags.mouse
+                            model.choiceButtons
+                        , Buttons.entity
+                            "b"
+                            { x = w * 0.5
+                            , y = h * 0.8
+                            , width = 0.4 * radius
+                            , height = 0.08 * radius
+                            , btn =
+                                Buttons.TextButton
+                                    { font = "Futura"
+                                    , text = decision.choiceB ++ "?"
+                                    , textColor = vec3 (0 / 255) (0 / 255) (0 / 255)
+                                    , bgColor = vec3 (244 / 255) (241 / 255) (94 / 255)
+                                    , options = [ Buttons.HoverText <| decision.choiceB ++ "!" ]
+                                    }
+                            , disabled = False
+                            }
+                            dt
+                            flags.mouse
+                            model.choiceButtons
+                        ]
+            in
+            { model
+                | time = model.time + dt
+                , encounterButtons = Buttons.empty
+                , otherButtons = Buttons.empty
+                , visitedButtons = Buttons.empty
+                , choiceButtons = choiceButtons
+            }
 
 
 mouseUp : Flags -> Assets.Model -> Model -> Mouse.Position -> ( Model, Cmd Main.Msg )
@@ -176,7 +235,17 @@ mouseDown _ _ model _ =
             )
 
         Nothing ->
-            ( model, Cmd.none )
+            case Buttons.hit model.choiceButtons of
+                Just ( key, _ ) ->
+                    ( model
+                    , message <|
+                        Main.Send <|
+                            "encounterDecision:"
+                                ++ key
+                    )
+
+                Nothing ->
+                    ( model, Cmd.none )
 
 
 receive : String -> Cmd Main.Msg

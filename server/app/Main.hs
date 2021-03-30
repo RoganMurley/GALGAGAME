@@ -336,6 +336,26 @@ beginWorld state client mProgress = do
         Nothing -> do
           liftIO $ Log.error $ printf "<%s>: No such encounter" (show $ Client.name client)
           Client.send "error:no such encounter" client
+    Just (World.EncounterDecision choice) ->
+      case World.world_decision world of
+        Just decision -> do
+          liftIO $ Log.info $ printf "<%s>: Making decision %s" (show $ Client.name client) (show choice)
+          case choice of
+            "a" -> do
+              let eff = World.decision_choice_a_eff decision
+              let newProgress = eff progress { World.worldprogress_decisionId = Nothing }
+              World.updateProgress username newProgress
+              beginWorld state client (Just newProgress)
+            "b" -> do
+              let eff = World.decision_choice_b_eff decision
+              let newProgress = eff progress { World.worldprogress_decisionId = Nothing }
+              World.updateProgress username newProgress
+              beginWorld state client (Just newProgress)
+            _ -> do
+              liftIO $ Log.error $ printf "<%s>: Invalid choice %s" (show $ Client.name client) (show choice)
+              Client.send "error:invalid choice" client
+        Nothing ->
+          Client.send "error:not in a decision state" client
     Nothing -> do
       liftIO $ Log.error $ printf "<%s>: Unknown world request '%s'" (show $ Client.name client) msg
       Client.send "error:unknown world request" client
