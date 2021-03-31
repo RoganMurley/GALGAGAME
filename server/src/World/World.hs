@@ -526,7 +526,7 @@ instance FromJSON WorldProgress where
         <$> o .: "key"
         <*> o .: "visited"
         <*> o .: "visitedEdges"
-        <*> o .: "character"
+        <*> o .: "deck"
         <*> o .: "decisionId"
 
 
@@ -562,20 +562,19 @@ loadProgress (Just username) = do
   result <- runBeam $ runSelectReturningOne $
     select $ filter_ (\row -> Schema.progressUser row ==. val_ (Auth.Schema.UserId username)) $
       all_ $ progress galgagameDb
-  return $ fromDb $ Schema.progressState <$> result
-  where
-    fromDb :: Maybe Text -> WorldProgress
-    fromDb mText =
-      case mText of
-        Just text ->
-          case eitherDecode $ cs text of
-            Left _ ->
-              initialProgress
-            Right prog ->
-              prog
-        Nothing ->
-          initialProgress
-
+  let progressState = Schema.progressState <$> result
+  liftIO $ Log.info $ printf "progressState: %s" (show progressState)
+  case progressState of
+    Just state -> do
+      let decoded = eitherDecode $ cs state :: Either String WorldProgress
+      case decoded of
+        Left err -> do
+          liftIO $ Log.error $ printf "Error loading world progress: %s" err
+          return initialProgress
+        Right progress ->
+          return progress
+    Nothing ->
+      return initialProgress
 
 
 -- Decision
