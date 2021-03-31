@@ -8,10 +8,11 @@ import Control.Concurrent.STM.TVar (TVar)
 import Control.Monad.IO.Class (liftIO)
 import Data.Aeson (FromJSON(..), ToJSON(..), (.:), (.=), eitherDecode, encode, object, withObject)
 import Data.List (find)
+import Data.Map (Map, fromList)
 import Data.Maybe (catMaybes)
 import Data.Set (Set)
 import Data.String.Conversions (cs)
-import Data.Text (Text)
+import Data.Text (Text, intercalate)
 import Database.Beam ((==.), all_, filter_, insert, insertValues, runInsert, runSelectReturningOne, runUpdate, save, select, val_)
 import GHC.Generics
 import Life (initMaxLife)
@@ -220,14 +221,14 @@ makeScenario (WorldProgress{ worldprogress_deck }) (Encounter{ encounter_numeral
           initMaxLife
     reward =
       case encounter_numeral of
-        "S" ->
-          Just [Cards.mirrorSword, Cards.mirrorWand, Cards.mirrorGrail, Cards.mirrorCoin]
-        "0" ->
-          Just [Cards.shroomSword, Cards.shroomWand, Cards.shroomGrail, Cards.shroomCoin]
-        "I" ->
-          Just [Cards.heavenSword, Cards.heavenWand, Cards.heavenGrail, Cards.heavenCoin]
-        "II" ->
-          Just [Cards.blazeSword, Cards.blazeWand, Cards.blazeGrail, Cards.blazeCoin]
+        -- "S" ->
+        --   Just [Cards.mirrorSword, Cards.mirrorWand, Cards.mirrorGrail, Cards.mirrorCoin]
+        -- "0" ->
+        --   Just [Cards.shroomSword, Cards.shroomWand, Cards.shroomGrail, Cards.shroomCoin]
+        -- "I" ->
+        --   Just [Cards.heavenSword, Cards.heavenWand, Cards.heavenGrail, Cards.heavenCoin]
+        -- "II" ->
+        --   Just [Cards.blazeSword, Cards.blazeWand, Cards.blazeGrail, Cards.blazeCoin]
         _ ->
          Nothing
 
@@ -630,15 +631,65 @@ devilDecision =
       }
 
 
+rewardDecision :: Text -> [Card] -> Decision
+rewardDecision decisionId cards =
+  Decision
+    { decision_id            = decisionId
+    , decision_title         = "REWARD"
+    , decision_text          = intercalate "\n" cardNames
+    , decision_choice_a_text = "CLAIM"
+    , decision_choice_a_eff  = dealEff
+    , decision_choice_b_text = "REJECT"
+    , decision_choice_b_eff  = id
+    }
+  where
+    cardNames :: [Text]
+    cardNames = cardName <$> cards
+    dealEff :: WorldProgress -> WorldProgress
+    dealEff worldprogress =
+      worldprogress {
+        worldprogress_deck = worldprogress_deck worldprogress ++ cardNames
+      }
+
+
+mirrorDecision :: Decision
+mirrorDecision = rewardDecision "mirror" [Cards.mirrorSword, Cards.mirrorWand, Cards.mirrorGrail, Cards.mirrorCoin]
+
+
+blazeDecision :: Decision
+blazeDecision = rewardDecision "blaze" [Cards.blazeSword, Cards.blazeWand, Cards.blazeGrail, Cards.blazeCoin]
+
+
+heavenDecision :: Decision
+heavenDecision = rewardDecision "heaven" [Cards.heavenSword, Cards.heavenWand, Cards.heavenGrail, Cards.heavenCoin]
+
+
+shroomDecision :: Decision
+shroomDecision = rewardDecision "shroom" [Cards.shroomSword, Cards.shroomWand, Cards.shroomGrail, Cards.shroomCoin]
+
+
+allDecisions :: [Decision]
+allDecisions = [devilDecision, mirrorDecision, blazeDecision, heavenDecision, shroomDecision]
+
+decisionByIdMap :: Map Text Decision
+decisionByIdMap = fromList $ fmap (\decision -> (decision_id decision, decision)) allDecisions
+
 decisionFromId :: Text -> Maybe Decision
-decisionFromId "devil" = Just devilDecision
-decisionFromId _       = Nothing
+decisionFromId decisionId = Map.lookup decisionId decisionByIdMap
 
 
 decisionFromEncounter :: Encounter -> Maybe Decision
-decisionFromEncounter (Encounter{ encounter_key }) =
-  case encounter_key of
-    Crown ->
+decisionFromEncounter (Encounter{ encounter_numeral }) =
+  case encounter_numeral of
+    "S" ->
+      Just mirrorDecision
+    "I" ->
+      Just shroomDecision
+    "II" ->
+      Just blazeDecision
+    "III" ->
+      Just heavenDecision
+    "XV" ->
       Just devilDecision
     _ ->
       Nothing
