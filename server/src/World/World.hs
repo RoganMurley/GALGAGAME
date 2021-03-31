@@ -667,11 +667,17 @@ shroomDecision :: Decision
 shroomDecision = rewardDecision "shroom" [Cards.shroomSword, Cards.shroomWand, Cards.shroomGrail, Cards.shroomCoin]
 
 
+dualityDecision :: Decision
+dualityDecision = rewardDecision "duality" [Cards.dualitySword, Cards.dualityWand, Cards.dualityGrail, Cards.dualityCoin]
+
+
 allDecisions :: [Decision]
-allDecisions = [devilDecision, mirrorDecision, blazeDecision, heavenDecision, shroomDecision]
+allDecisions = [devilDecision, mirrorDecision, blazeDecision, heavenDecision, shroomDecision, dualityDecision]
+
 
 decisionByIdMap :: Map Text Decision
 decisionByIdMap = fromList $ fmap (\decision -> (decision_id decision, decision)) allDecisions
+
 
 decisionFromId :: Text -> Maybe Decision
 decisionFromId decisionId = Map.lookup decisionId decisionByIdMap
@@ -682,12 +688,14 @@ decisionFromEncounter (Encounter{ encounter_numeral }) =
   case encounter_numeral of
     "S" ->
       Just mirrorDecision
-    "I" ->
+    "0" ->
       Just shroomDecision
-    "II" ->
+    "I" ->
       Just blazeDecision
-    "III" ->
+    "II" ->
       Just heavenDecision
+    "VI" ->
+      Just dualityDecision
     "XV" ->
       Just devilDecision
     _ ->
