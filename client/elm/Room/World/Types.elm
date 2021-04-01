@@ -1,4 +1,4 @@
-module World.Types exposing (Decision, Encounter, Model, World)
+module World.Types exposing (Decision, DecisionChoice, Encounter, Model, World)
 
 import Buttons.Types exposing (Buttons(..))
 import Line.Types exposing (Line)
@@ -37,6 +37,10 @@ type alias Decision =
     { id : String
     , title : String
     , text : String
-    , choiceA : String
-    , choiceB : String
+    , choices : List DecisionChoice
+    }
+
+
+type alias DecisionChoice =
+    { text : String
     }

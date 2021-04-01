@@ -166,48 +166,33 @@ tick flags model dt =
 
         Just decision ->
             let
+                choiceButton : Int -> String -> ( String, Buttons.Button )
+                choiceButton index choice =
+                    Buttons.entity
+                        (String.fromInt index)
+                        { x = w * 0.5
+                        , y = h * (0.7 + toFloat index * 0.1)
+                        , width = 0.4 * radius
+                        , height = 0.08 * radius
+                        , btn =
+                            Buttons.TextButton
+                                { font = "Futura"
+                                , text = choice ++ "?"
+                                , textColor = vec3 (0 / 255) (0 / 255) (0 / 255)
+                                , bgColor = vec3 (244 / 255) (241 / 255) (94 / 255)
+                                , options = [ Buttons.HoverText <| choice ++ "!" ]
+                                }
+                        , disabled = False
+                        }
+                        dt
+                        flags.mouse
+                        model.choiceButtons
+
                 choiceButtons : Buttons
                 choiceButtons =
                     Buttons.fromList <|
-                        [ Buttons.entity
-                            "a"
-                            { x = w * 0.5
-                            , y = h * 0.7
-                            , width = 0.4 * radius
-                            , height = 0.08 * radius
-                            , btn =
-                                Buttons.TextButton
-                                    { font = "Futura"
-                                    , text = decision.choiceA ++ "?"
-                                    , textColor = vec3 (0 / 255) (0 / 255) (0 / 255)
-                                    , bgColor = vec3 (244 / 255) (241 / 255) (94 / 255)
-                                    , options = [ Buttons.HoverText <| decision.choiceA ++ "!" ]
-                                    }
-                            , disabled = False
-                            }
-                            dt
-                            flags.mouse
-                            model.choiceButtons
-                        , Buttons.entity
-                            "b"
-                            { x = w * 0.5
-                            , y = h * 0.8
-                            , width = 0.4 * radius
-                            , height = 0.08 * radius
-                            , btn =
-                                Buttons.TextButton
-                                    { font = "Futura"
-                                    , text = decision.choiceB ++ "?"
-                                    , textColor = vec3 (0 / 255) (0 / 255) (0 / 255)
-                                    , bgColor = vec3 (244 / 255) (241 / 255) (94 / 255)
-                                    , options = [ Buttons.HoverText <| decision.choiceB ++ "!" ]
-                                    }
-                            , disabled = False
-                            }
-                            dt
-                            flags.mouse
-                            model.choiceButtons
-                        ]
+                        List.indexedMap choiceButton <|
+                            List.map .text decision.choices
             in
             { model
                 | time = model.time + dt
