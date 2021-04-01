@@ -545,6 +545,10 @@ initialProgress =
     Nothing
 
 
+startProgress :: WorldProgress
+startProgress = initialProgress { worldprogress_decisionId = Just "start" }
+
+
 updateProgress :: Maybe Text -> WorldProgress -> App ()
 updateProgress (Just username) progressState = do
   result <- runBeam $ runSelectReturningOne $
@@ -562,7 +566,7 @@ updateProgress Nothing _ = return ()
 
 
 loadProgress :: Maybe Text -> App WorldProgress
-loadProgress Nothing         = return initialProgress
+loadProgress Nothing         = return startProgress
 loadProgress (Just username) = do
   result <- runBeam $ runSelectReturningOne $
     select $ filter_ (\row -> Schema.progressUser row ==. val_ (Auth.Schema.UserId username)) $
@@ -575,11 +579,11 @@ loadProgress (Just username) = do
       case decoded of
         Left err -> do
           liftIO $ Log.error $ printf "Error loading world progress: %s" err
-          return initialProgress
+          return startProgress
         Right progress ->
           return progress
     Nothing ->
-      return initialProgress
+      return startProgress
 
 
 -- Decision
@@ -663,6 +667,18 @@ rewardDecision decisionId cards =
       }
 
 
+startDecision :: Decision
+startDecision =
+  Decision
+    { decision_id      = "start"
+    , decision_title   = "GALGA"
+    , decision_text    = "Do not be afraid.\n Together, we can escape this place."
+    , decision_choices = [
+      DecisionChoice "BEGIN" (const initialProgress)
+    ]
+    }
+
+
 defeatDecision :: Decision
 defeatDecision =
   Decision
@@ -694,7 +710,7 @@ dualityDecision = rewardDecision "duality" [Cards.dualitySword, Cards.dualityWan
 
 
 allDecisions :: [Decision]
-allDecisions = [defeatDecision, devilDecision, mirrorDecision, blazeDecision, heavenDecision, shroomDecision, dualityDecision]
+allDecisions = [startDecision, defeatDecision, devilDecision, mirrorDecision, blazeDecision, heavenDecision, shroomDecision, dualityDecision]
 
 
 decisionByIdMap :: Map Text Decision
