@@ -19,6 +19,7 @@ import Text.Printf (printf)
 import Network.Wai (Application)
 import Network.Wai.Handler.WebSockets
 import Network.Wai.Handler.Warp (run)
+import Safe (atMay)
 import System.Environment (lookupEnv)
 
 import Act (actOutcome, actPlay, actSpec, syncPlayersRoom, syncClient)
@@ -336,21 +337,16 @@ beginWorld state client mProgress = do
         Nothing -> do
           liftIO $ Log.error $ printf "<%s>: No such encounter" (show $ Client.name client)
           Client.send "error:no such encounter" client
-    (Just (World.EncounterDecision choice), Just decision) -> do
-      liftIO $ Log.info $ printf "<%s>: Making decision %s" (show $ Client.name client) (show choice)
-      case choice of
-        "a" -> do
-          let eff = World.decision_choice_a_eff decision
-          let newProgress = eff progress { World.worldprogress_decisionId = Nothing }
-          World.updateProgress username newProgress
-          beginWorld state client (Just newProgress)
-        "b" -> do
-          let eff = World.decision_choice_b_eff decision
+    (Just (World.EncounterDecision choiceIndex), Just decision) -> do
+      liftIO $ Log.info $ printf "<%s>: Making decision %s" (show $ Client.name client) (show choiceIndex)
+      case atMay (World.decision_choices decision) choiceIndex of
+        Just choice -> do
+          let eff = World.decisionchoice_eff choice
           let newProgress = eff progress { World.worldprogress_decisionId = Nothing }
           World.updateProgress username newProgress
           beginWorld state client (Just newProgress)
         _ -> do
-          liftIO $ Log.error $ printf "<%s>: Invalid choice %s" (show $ Client.name client) (show choice)
+          liftIO $ Log.error $ printf "<%s>: Invalid choice %s" (show $ Client.name client) (show choiceIndex)
           Client.send "error:invalid choice" client
     (Nothing, _) -> do
       liftIO $ Log.error $ printf "<%s>: Unknown world request '%s'" (show $ Client.name client) msg

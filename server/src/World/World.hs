@@ -17,6 +17,7 @@ import Database.Beam ((==.), all_, filter_, insert, insertValues, runInsert, run
 import GHC.Generics
 import Life (initMaxLife)
 import Player (WhichPlayer(..))
+import Safe (readMay)
 import Scenario (Scenario(..))
 import Schema (GalgagameDb(..), galgagameDb)
 import Start (startProgram)
@@ -127,7 +128,7 @@ instance ToJSON Encounter where
 
 data WorldRequest
   = JoinEncounter Text
-  | EncounterDecision Text
+  | EncounterDecision Int
   deriving (Eq, Show)
 
 
@@ -140,7 +141,11 @@ parseRequest msg =
       "joinEncounter" ->
         Just . JoinEncounter $ content
       "encounterDecision" ->
-        Just . EncounterDecision $ content
+        case readMay $ cs content of
+          Just choice ->
+            Just . EncounterDecision $ choice
+          Nothing ->
+            Nothing
       _ ->
         Nothing
 
@@ -579,24 +584,20 @@ loadProgress (Just username) = do
 
 -- Decision
 data Decision = Decision
-  { decision_id            :: Text
-  , decision_title         :: Text
-  , decision_text          :: Text
-  , decision_choice_a_text :: Text
-  , decision_choice_a_eff  :: WorldProgress -> WorldProgress
-  , decision_choice_b_text :: Text
-  , decision_choice_b_eff  :: WorldProgress -> WorldProgress
-  }
+  { decision_id      :: Text
+  , decision_title   :: Text
+  , decision_text    :: Text
+  , decision_choices :: [DecisionChoice]
+  } deriving (Show)
 
 
 instance ToJSON Decision where
-  toJSON (Decision{ decision_id, decision_title, decision_text, decision_choice_a_text, decision_choice_b_text }) =
+  toJSON (Decision{ decision_id, decision_title, decision_text, decision_choices }) =
     object [
-      "id"                     .= toJSON decision_id
-    , "title"                  .= toJSON decision_title
-    , "text"                   .= toJSON decision_text
-    , "decision_choice_a_text" .= toJSON decision_choice_a_text
-    , "decision_choice_b_text" .= toJSON decision_choice_b_text
+      "id"      .= toJSON decision_id
+    , "title"   .= toJSON decision_title
+    , "text"    .= toJSON decision_text
+    , "choices" .= toJSON decision_choices
     ]
 
 
@@ -604,20 +605,31 @@ instance Eq Decision where
   a == b = decision_id a == decision_id b
 
 
-instance Show Decision where
-  show decision = cs $ decision_id decision
+data DecisionChoice = DecisionChoice
+  { decisionchoice_text :: Text
+  , decisionchoice_eff  :: WorldProgress -> WorldProgress
+  }
+
+
+instance ToJSON DecisionChoice where
+  toJSON (DecisionChoice{ decisionchoice_text, decisionchoice_eff }) =
+    object [ "text" .= toJSON decisionchoice_text ]
+
+
+instance Show DecisionChoice where
+  show decisionChoice = cs $ decisionchoice_text decisionChoice
 
 
 devilDecision :: Decision
 devilDecision =
   Decision
-    { decision_id            = "devil"
-    , decision_title         = "DEVIL"
-    , decision_text          = "\"Your grails overflow.\nI'll take them off your hands,\n for a price.\""
-    , decision_choice_a_text = "Deal"
-    , decision_choice_a_eff  = dealEff
-    , decision_choice_b_text = "No Deal"
-    , decision_choice_b_eff  = id
+    { decision_id      = "devil"
+    , decision_title   = "DEVIL"
+    , decision_text    = "\"Your grails overflow.\nI'll take them off your hands,\n for a price.\""
+    , decision_choices =
+      [ DecisionChoice "CLAIM" dealEff
+      , DecisionChoice "REJECT" id
+      ]
     }
   where
     nameToSuit :: Text -> Maybe Suit
@@ -633,13 +645,13 @@ devilDecision =
 rewardDecision :: Text -> [Card] -> Decision
 rewardDecision decisionId cards =
   Decision
-    { decision_id            = decisionId
-    , decision_title         = "REWARD"
-    , decision_text          = intercalate "\n" cardNames
-    , decision_choice_a_text = "CLAIM"
-    , decision_choice_a_eff  = dealEff
-    , decision_choice_b_text = "REJECT"
-    , decision_choice_b_eff  = id
+    { decision_id      = decisionId
+    , decision_title   = "REWARD"
+    , decision_text    = intercalate "\n" cardNames
+    , decision_choices =
+      [ DecisionChoice "CLAIM" dealEff
+      , DecisionChoice "REJECT" id
+      ]
     }
   where
     cardNames :: [Text]

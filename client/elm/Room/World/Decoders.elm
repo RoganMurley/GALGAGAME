@@ -2,7 +2,7 @@ module World.Decoders exposing (decoder)
 
 import Json.Decode as Json exposing (Decoder, field, float, list, maybe, string)
 import Line.Decoders as Line
-import World.Types exposing (Decision, Encounter, World)
+import World.Types exposing (Decision, DecisionChoice, Encounter, World)
 
 
 decoder : Decoder World
@@ -34,9 +34,14 @@ encounterDecoder =
 
 decisionDecoder : Decoder Decision
 decisionDecoder =
-    Json.map5 Decision
+    Json.map4 Decision
         (field "id" string)
         (field "title" string)
         (field "text" string)
-        (field "decision_choice_a_text" string)
-        (field "decision_choice_b_text" string)
+        (field "choices" <| list decisionChoiceDecoder)
+
+
+decisionChoiceDecoder : Decoder DecisionChoice
+decisionChoiceDecoder =
+    Json.map DecisionChoice
+        (field "text" string)
