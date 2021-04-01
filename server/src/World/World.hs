@@ -612,7 +612,7 @@ data DecisionChoice = DecisionChoice
 
 
 instance ToJSON DecisionChoice where
-  toJSON (DecisionChoice{ decisionchoice_text, decisionchoice_eff }) =
+  toJSON (DecisionChoice{ decisionchoice_text }) =
     object [ "text" .= toJSON decisionchoice_text ]
 
 
@@ -663,6 +663,16 @@ rewardDecision decisionId cards =
       }
 
 
+defeatDecision :: Decision
+defeatDecision =
+  Decision
+    { decision_id      = "defeat"
+    , decision_title   = "DEFEAT"
+    , decision_text    = "Your journey ends here,\n but the wheel turns on..."
+    , decision_choices = [ DecisionChoice "ANOTHER" (const initialProgress) ]
+    }
+
+
 mirrorDecision :: Decision
 mirrorDecision = rewardDecision "mirror" [Cards.mirrorSword, Cards.mirrorWand, Cards.mirrorGrail, Cards.mirrorCoin]
 
@@ -684,7 +694,7 @@ dualityDecision = rewardDecision "duality" [Cards.dualitySword, Cards.dualityWan
 
 
 allDecisions :: [Decision]
-allDecisions = [devilDecision, mirrorDecision, blazeDecision, heavenDecision, shroomDecision, dualityDecision]
+allDecisions = [defeatDecision, devilDecision, mirrorDecision, blazeDecision, heavenDecision, shroomDecision, dualityDecision]
 
 
 decisionByIdMap :: Map Text Decision
