@@ -212,7 +212,7 @@ makeScenario (WorldProgress{ worldprogress_deck }) (Encounter{ encounter_numeral
             DeckBuilding.Character
               "Wheel of Fortune"
               ""
-              (Left (DeckBuilding.blazeRune, DeckBuilding.blazeRune, DeckBuilding.blazeRune))
+              (Left (DeckBuilding.alchemyRune, DeckBuilding.alchemyRune, DeckBuilding.alchemyRune))
               initMaxLife
         _ ->
           Nothing
@@ -709,8 +709,12 @@ dualityDecision :: Decision
 dualityDecision = rewardDecision "duality" [Cards.dualitySword, Cards.dualityWand, Cards.dualityGrail, Cards.dualityCoin]
 
 
+alchemyDecision :: Decision
+alchemyDecision = rewardDecision "alchemy" [Cards.alchemySword, Cards.alchemyWand, Cards.alchemyGrail, Cards.alchemyCoin]
+
+
 allDecisions :: [Decision]
-allDecisions = [startDecision, defeatDecision, devilDecision, mirrorDecision, blazeDecision, heavenDecision, shroomDecision, dualityDecision]
+allDecisions = [startDecision, defeatDecision, devilDecision, mirrorDecision, blazeDecision, heavenDecision, shroomDecision, dualityDecision, alchemyDecision]
 
 
 decisionByIdMap :: Map Text Decision
@@ -734,6 +738,8 @@ decisionFromEncounter (Encounter{ encounter_numeral }) =
       Just heavenDecision
     "VI" ->
       Just dualityDecision
+    "X" ->
+      Just alchemyDecision
     "XV" ->
       Just devilDecision
     _ ->
