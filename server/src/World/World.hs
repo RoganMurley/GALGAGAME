@@ -225,18 +225,7 @@ makeScenario (WorldProgress{ worldprogress_deck }) (Encounter{ encounter_numeral
           ""
           (Right $ catMaybes $ (\name -> Map.lookup name cardsByName) <$> worldprogress_deck)
           initMaxLife
-    reward =
-      case encounter_numeral of
-        -- "S" ->
-        --   Just [Cards.mirrorSword, Cards.mirrorWand, Cards.mirrorGrail, Cards.mirrorCoin]
-        -- "0" ->
-        --   Just [Cards.shroomSword, Cards.shroomWand, Cards.shroomGrail, Cards.shroomCoin]
-        -- "I" ->
-        --   Just [Cards.heavenSword, Cards.heavenWand, Cards.heavenGrail, Cards.heavenCoin]
-        -- "II" ->
-        --   Just [Cards.blazeSword, Cards.blazeWand, Cards.blazeGrail, Cards.blazeCoin]
-        _ ->
-         Nothing
+    reward = Nothing
 
 
 -- Graph nonsense
@@ -647,14 +636,14 @@ instance Show DecisionChoice where
   show decisionChoice = cs $ decisionchoice_text decisionChoice
 
 
-devilDecision :: Decision
-devilDecision =
+removeSuitDecision :: Text -> Text -> Suit -> Decision
+removeSuitDecision decisionId text suit =
   Decision
-    { decision_id      = "devil"
-    , decision_title   = "DEVIL"
-    , decision_text    = "\"Your grails overflow.\nI'll take them off your hands,\n for a price.\""
+    { decision_id      = decisionId
+    , decision_title   = "RENOUNCE"
+    , decision_text    = text
     , decision_choices =
-      [ DecisionChoice "CLAIM" dealEff
+      [ DecisionChoice "RENOUNCE" dealEff
       , DecisionChoice "REJECT" id
       ]
     }
@@ -665,8 +654,23 @@ devilDecision =
     dealEff worldprogress =
       worldprogress {
         worldprogress_deck =
-          filter (\name -> nameToSuit name /= Just Grail) (worldprogress_deck worldprogress)
+          filter (\name -> nameToSuit name /= Just suit) (worldprogress_deck worldprogress)
       }
+
+
+renounceSwordDecision :: Decision
+renounceSwordDecision = removeSuitDecision "renounceSword" "Renounce the SWORD?" Sword
+
+
+renounceGrailDecision :: Decision
+renounceGrailDecision = removeSuitDecision "renounceGrail" "Renounce the GRAIL?" Grail
+
+
+renounceWandDecision :: Decision
+renounceWandDecision = removeSuitDecision "renounceWand" "Renounce the WAND?" Wand
+
+renounceCoinDecision :: Decision
+renounceCoinDecision = removeSuitDecision "renounceCoin" "Renounce the COIN?" Coin
 
 
 rewardDecision :: Text -> [Card] -> Decision
@@ -737,7 +741,7 @@ alchemyDecision = rewardDecision "alchemy" [Cards.alchemySword, Cards.alchemyWan
 
 
 allDecisions :: [Decision]
-allDecisions = [startDecision, defeatDecision, devilDecision, mirrorDecision, blazeDecision, heavenDecision, shroomDecision, dualityDecision, alchemyDecision]
+allDecisions = [startDecision, defeatDecision, mirrorDecision, blazeDecision, heavenDecision, shroomDecision, dualityDecision, alchemyDecision, renounceCoinDecision, renounceWandDecision, renounceGrailDecision, renounceSwordDecision]
 
 
 decisionByIdMap :: Map Text Decision
@@ -763,7 +767,13 @@ decisionFromEncounter (Encounter{ encounter_numeral }) =
       Just dualityDecision
     "X" ->
       Just alchemyDecision
+    "IX" ->
+      Just renounceCoinDecision
+    "XIII" ->
+      Just renounceSwordDecision
+    "XIV" ->
+      Just renounceWandDecision
     "XV" ->
-      Just devilDecision
+      Just renounceGrailDecision
     _ ->
       Nothing
