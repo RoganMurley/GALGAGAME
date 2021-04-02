@@ -695,7 +695,7 @@ startDecision =
   Decision
     { decision_id      = "start"
     , decision_title   = "GALGA"
-    , decision_text    = "Do not be afraid.\n Together, we can escape this place."
+    , decision_text    = "Your journey begins."
     , decision_choices = [
       DecisionChoice "BEGIN" (const initialProgress)
     ]
@@ -707,7 +707,7 @@ defeatDecision =
   Decision
     { decision_id      = "defeat"
     , decision_title   = "DEFEAT"
-    , decision_text    = "Your journey ends here,\n but the wheel turns on..."
+    , decision_text    = "Your journey ends here."
     , decision_choices = [ DecisionChoice "ANOTHER" (const initialProgress) ]
     }
 
