@@ -58,6 +58,12 @@ webglView model { mouse, dimensions } assets =
 linesView : World -> Context -> List WebGL.Entity
 linesView world ctx =
     let
+        lockedLineOptions =
+            { col = vec3 0.2 0.2 0.4
+            , thickness = 0.01 * ctx.radius
+            , alpha = 1
+            }
+
         lineOptions =
             { col = vec3 0.96 0.95 0.37
             , thickness = 0.015 * ctx.radius
@@ -70,8 +76,11 @@ linesView world ctx =
             , alpha = 1
             }
     in
-    (List.concat <| List.map (\edge -> Line.view (lineToWorldPos ctx edge) lineOptions ctx) world.edges)
-        ++ (List.concat <| List.map (\edge -> Line.view (lineToWorldPos ctx edge) visitedLineOptions ctx) world.visitedEdges)
+    List.concat
+        [ List.concat <| List.map (\edge -> Line.view (lineToWorldPos ctx edge) lockedLineOptions ctx) world.lockedEdges
+        , List.concat <| List.map (\edge -> Line.view (lineToWorldPos ctx edge) lineOptions ctx) world.edges
+        , List.concat <| List.map (\edge -> Line.view (lineToWorldPos ctx edge) visitedLineOptions ctx) world.visitedEdges
+        ]
 
 
 decisionView : Decision -> Float -> Context -> List WebGL.Entity

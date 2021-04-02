@@ -20,6 +20,7 @@ type alias World =
     , edges : List Line
     , visited : List ( Float, Float )
     , visitedEdges : List Line
+    , lockedEdges : List Line
     , decision : Maybe Decision
     }
 

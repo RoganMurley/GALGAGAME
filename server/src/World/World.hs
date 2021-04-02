@@ -43,6 +43,7 @@ data World = World
   , world_edgePositions :: [(Pos, Pos)]
   , world_visited       :: [Pos]
   , world_visitedEdges  :: [(Pos, Pos)]
+  , world_lockedEdges   :: [(Pos, Pos)]
   , world_decision      :: Maybe Decision
   }
   deriving (Eq, Show)
@@ -83,34 +84,34 @@ newEncounter (Edge{ edge_tarot, edge_key }) = do
 getWorld :: TVar Server.State -> WorldProgress -> App World
 getWorld _ progress = do
   let key = worldprogress_key progress
-  let adjEdges = worldnode_edges $ getEdges key worldTree
+  let adjEdges = getAdjEdges key
   let visitedKeys = worldprogress_visited progress
   let edges = filter (\Edge{ edge_key } -> not $ Set.member edge_key visitedKeys) adjEdges
   encounters <- mapM newEncounter edges
   let edgeKeys = Set.fromList $ edge_key <$> edges :: Set WorldKey
   let otherKeys = Set.difference mainKeys (Set.union edgeKeys visitedKeys) :: Set WorldKey
   let others = getPosition <$> Set.toList otherKeys :: [Pos]
-  let startPos = getPosition key
-  let edgePositions = zip (repeat startPos) (getPosition <$> Set.toList edgeKeys)
   return $
     World
     { world_encounters    = encounters
     , world_others        = others
-    , world_edgePositions = edgePositions
+    , world_edgePositions = getEdgePositions key edgeKeys
     , world_visited       = getPosition <$> Set.toList visitedKeys
     , world_visitedEdges  = worldprogress_visitedEdges progress
+    , world_lockedEdges   = lockedEdgePositions
     , world_decision      = worldprogress_decisionId progress >>= decisionFromId
     }
 
 
 instance ToJSON World where
-  toJSON (World{ world_encounters, world_others, world_edgePositions, world_visited, world_visitedEdges, world_decision }) =
+  toJSON (World{ world_decision, world_encounters, world_others, world_edgePositions, world_lockedEdges, world_visited, world_visitedEdges }) =
     object [
       "encounters"   .= toJSON world_encounters
     , "others"       .= toJSON world_others
     , "edges"        .= toJSON world_edgePositions
     , "visited"      .= toJSON world_visited
     , "visitedEdges" .= toJSON world_visitedEdges
+    , "lockedEdges"  .= toJSON world_lockedEdges
     , "decision"     .= toJSON world_decision
     ]
 
@@ -344,6 +345,28 @@ getEdges Victory       = worldtree_victory
 getEdges Beauty        = worldtree_beauty
 getEdges Foundation    = worldtree_foundation
 getEdges Kingdom       = worldtree_kingdom
+
+
+getAdjEdges :: WorldKey -> [Edge]
+getAdjEdges key = worldnode_edges $ getEdges key worldTree
+
+
+getEdgePositions :: WorldKey -> Set WorldKey -> [(Pos, Pos)]
+getEdgePositions key edgeKeys = zip (repeat startPosition) endPositions
+  where
+    startPosition :: Pos
+    startPosition = getPosition key
+    endPositions :: [Pos]
+    endPositions = getPosition <$> (Set.toList $ edgeKeys)
+
+
+lockedEdgePositions :: [(Pos, Pos)]
+lockedEdgePositions = Set.toList $ Set.unions lockedEdges
+  where
+    lockedEdges :: [Set (Pos, Pos)]
+    lockedEdges = getLocked <$> (Set.toList mainKeys)
+    getLocked :: WorldKey -> Set (Pos, Pos)
+    getLocked key = Set.fromList $ getEdgePositions key (Set.fromList $ edge_key <$> getAdjEdges key)
 
 
 gap :: Float

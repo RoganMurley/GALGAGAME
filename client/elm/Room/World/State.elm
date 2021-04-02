@@ -33,6 +33,7 @@ init =
         , edges = []
         , visited = []
         , visitedEdges = []
+        , lockedEdges = []
         , decision = Nothing
         }
     }
