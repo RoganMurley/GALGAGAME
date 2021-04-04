@@ -57,6 +57,7 @@ data Aspect
   | Crown
   | Morph
   | Strange
+  | Tide
   | OtherAspect Text
   deriving (Eq, Show)
 

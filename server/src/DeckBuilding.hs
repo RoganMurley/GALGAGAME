@@ -174,8 +174,8 @@ getRune name =
 -- RUNES
 allRunes :: [Rune]
 allRunes =
-  [ basicRune
-  , blazeRune
+  [ blazeRune
+  , tideRune
   , heavenRune
   , shroomRune
   -- , bloodRune
@@ -188,13 +188,13 @@ allRunes =
   ]
 
 
-basicRune :: Rune
-basicRune =
+tideRune :: Rune
+tideRune =
   Rune
-    "BASIC"
-    "Totally basic."
-    "cards/basic/coin.png"
-    (Cards.basicSword, Cards.basicWand, Cards.basicGrail, Cards.basicCoin)
+    "TIDE"
+    "Tie thy lunar tether."
+    "cards/tide/coin.png"
+    (Cards.tideSword, Cards.tideWand, Cards.tideGrail, Cards.tideCoin)
 
 
 blazeRune :: Rune
