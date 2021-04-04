@@ -17,38 +17,6 @@ import qualified DSL.Beta as Beta
 import DSL.Beta
 
 
--- Basic
-basicSword :: Card
-basicSword =
-  Card Basic Sword
-    "Hurt for 6"
-    $ \w -> hurt 6 (other w) Slash
-
-
-basicWand :: Card
-basicWand =
-  Card Basic Wand
-    "Hurt for 3 for each other card\non the wheel"
-    $ \w -> do
-      len <- diasporaLength <$> getStack
-      hurt (len * 3) (other w) Slash
-
-
-basicGrail :: Card
-basicGrail =
-  Card Basic Grail
-    "Heal for 5"
-    $ \w -> heal 5 w
-
-
-basicCoin :: Card
-basicCoin =
-  Card Basic Coin
-    "Discard cards in the\nnext 3 sockets"
-    $ \_ -> do
-      discardStack (\i _ -> (i > 0) && (i < 4))
-
-
 -- Blaze
 blazeSword :: Card
 blazeSword =
@@ -83,6 +51,40 @@ blazeCoin =
     $ \_ -> do
       confound
       Beta.null
+
+
+-- Tide
+tideSword :: Card
+tideSword =
+  Card Tide Sword
+    "Hurt for 3, add a copy of this card\nto your hand"
+    $ \w -> do
+      hurt 3 (other w) Slash
+      addToHand w tideSword
+
+
+tideWand :: Card
+tideWand =
+  Card Tide Wand
+    "Hurt for 3 for each other card\non the wheel"
+    $ \w -> do
+      len <- diasporaLength <$> getStack
+      hurt (len * 3) (other w) Slash
+
+
+tideGrail :: Card
+tideGrail =
+  Card Tide Grail
+    "Heal for 8"
+    $ \w -> heal 8 w
+
+
+tideCoin :: Card
+tideCoin =
+  Card Tide Coin
+    "Discard cards in the\nnext 3 sockets"
+    $ \_ -> do
+      discardStack (\i _ -> (i > 0) && (i < 4))
 
 
 -- Heaven
@@ -491,8 +493,7 @@ strangeEnd =
 
 swords :: [Card]
 swords =
-  [ basicSword
-  , blazeSword
+  [ blazeSword
   , heavenSword
   , shroomSword
   , bloodSword
@@ -502,13 +503,13 @@ swords =
   , alchemySword
   , crownSword
   , morphSword
+  , tideSword
   ]
 
 
 wands :: [Card]
 wands =
-  [ basicWand
-  , blazeWand
+  [ blazeWand
   , heavenWand
   , shroomWand
   , bloodWand
@@ -518,13 +519,13 @@ wands =
   , alchemyWand
   , crownWand
   , morphWand
+  , tideWand
   ]
 
 
 grails :: [Card]
 grails =
-  [ basicGrail
-  , blazeGrail
+  [ blazeGrail
   , heavenGrail
   , shroomGrail
   , bloodGrail
@@ -534,13 +535,13 @@ grails =
   , alchemyGrail
   , crownGrail
   , morphGrail
+  , tideGrail
   ]
 
 
 coins :: [Card]
 coins =
-  [ basicCoin
-  , blazeCoin
+  [ blazeCoin
   , heavenCoin
   , shroomCoin
   , bloodCoin
@@ -550,6 +551,7 @@ coins =
   , alchemyCoin
   , crownCoin
   , morphCoin
+  , tideCoin
   ]
 
 

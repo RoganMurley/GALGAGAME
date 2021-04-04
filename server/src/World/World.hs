@@ -171,28 +171,28 @@ makeScenario (WorldProgress{ worldprogress_deck }) (Encounter{ encounter_numeral
             DeckBuilding.Character
               "The Beginning"
               ""
-              (Left (DeckBuilding.mirrorRune, DeckBuilding.mirrorRune, DeckBuilding.mirrorRune))
+              (Left (DeckBuilding.tideRune, DeckBuilding.tideRune, DeckBuilding.tideRune))
               20
         "0" ->
           Just $
             DeckBuilding.Character
               "The Fool"
               ""
-              (Left (DeckBuilding.shroomRune, DeckBuilding.shroomRune, DeckBuilding.shroomRune))
+              (Left (DeckBuilding.mirrorRune, DeckBuilding.mirrorRune, DeckBuilding.mirrorRune))
               30
         "I" ->
           Just $
             DeckBuilding.Character
               "The Magician"
               ""
-              (Left (DeckBuilding.blazeRune, DeckBuilding.blazeRune, DeckBuilding.blazeRune))
+              (Left (DeckBuilding.alchemyRune, DeckBuilding.alchemyRune, DeckBuilding.alchemyRune))
               30
         "II" ->
           Just $
             DeckBuilding.Character
               "The Priestess"
               ""
-              (Left (DeckBuilding.heavenRune, DeckBuilding.heavenRune, DeckBuilding.heavenRune))
+              (Left (DeckBuilding.mirageRune, DeckBuilding.mirageRune, DeckBuilding.mirageRune))
               30
         "V" ->
           Just $
@@ -311,10 +311,10 @@ worldTree =
   where
   start         = WorldNode [Edge tarotBeginning Crown]
   crown         = WorldNode [Edge tarotMagician Understanding, Edge tarotFool Wisdom, Edge tarotPriestess Beauty]
-  understanding = WorldNode [Edge tarotMagician Crown, Edge tarotFool Wisdom, Edge tarotChariot Severity, Edge tarotLovers Beauty]
+  understanding = WorldNode [Edge tarotMagician Crown, Edge tarotEmpress Wisdom, Edge tarotChariot Severity, Edge tarotLovers Beauty]
   wisdom        = WorldNode [Edge tarotFool Crown, Edge tarotEmpress Understanding, Edge tarotHierophant Mercy, Edge tarotEmperor Beauty]
   severity      = WorldNode [Edge tarotChariot Understanding, Edge tarotJustice Mercy, Edge tarotStrength Beauty, Edge tarotHanged Splendor]
-  mercy         = WorldNode [Edge tarotHierophant Wisdom, Edge tarotJustice Severity, Edge tarotHermit Beauty, Edge tarotDeath Victory]
+  mercy         = WorldNode [Edge tarotHierophant Wisdom, Edge tarotJustice Severity, Edge tarotHermit Beauty, Edge tarotWheel Victory]
   splendor      = WorldNode [Edge tarotHanged Severity, Edge tarotDevil Beauty, Edge tarotSun Foundation, Edge tarotJudgement Kingdom]
   victory       = WorldNode [Edge tarotWheel Mercy, Edge tarotDeath Beauty, Edge tarotStar Foundation, Edge tarotMoon Kingdom]
   beauty        = WorldNode [Edge tarotPriestess Crown, Edge tarotLovers Understanding, Edge tarotEmperor Wisdom, Edge tarotStrength Severity, Edge tarotHermit Mercy, Edge tarotDevil Splendor, Edge tarotDeath Victory, Edge tarotTemperance Foundation]
@@ -553,7 +553,7 @@ initialProgress =
     Start
     Set.empty
     []
-    (cardName <$> [Cards.basicSword, Cards.basicWand, Cards.basicGrail, Cards.basicCoin])
+    (cardName <$> [Cards.blazeSword, Cards.blazeWand, Cards.blazeGrail, Cards.blazeCoin])
     Nothing
 
 
@@ -716,8 +716,16 @@ defeatDecision =
     }
 
 
+tideDecision :: Decision
+tideDecision = rewardDecision "tide" [Cards.tideSword, Cards.tideWand, Cards.tideGrail, Cards.tideCoin]
+
+
 mirrorDecision :: Decision
 mirrorDecision = rewardDecision "mirror" [Cards.mirrorSword, Cards.mirrorWand, Cards.mirrorGrail, Cards.mirrorCoin]
+
+
+mirageDecision :: Decision
+mirageDecision = rewardDecision "mirage" [Cards.mirageSword, Cards.mirageWand, Cards.mirageGrail, Cards.mirageCoin]
 
 
 blazeDecision :: Decision
@@ -741,7 +749,7 @@ alchemyDecision = rewardDecision "alchemy" [Cards.alchemySword, Cards.alchemyWan
 
 
 allDecisions :: [Decision]
-allDecisions = [startDecision, defeatDecision, mirrorDecision, blazeDecision, heavenDecision, shroomDecision, dualityDecision, alchemyDecision, renounceCoinDecision, renounceWandDecision, renounceGrailDecision, renounceSwordDecision]
+allDecisions = [startDecision, defeatDecision, tideDecision, mirrorDecision, blazeDecision, heavenDecision, shroomDecision, dualityDecision, alchemyDecision, renounceCoinDecision, renounceWandDecision, renounceGrailDecision, renounceSwordDecision]
 
 
 decisionByIdMap :: Map Text Decision
@@ -756,17 +764,15 @@ decisionFromEncounter :: Encounter -> Maybe Decision
 decisionFromEncounter (Encounter{ encounter_numeral }) =
   case encounter_numeral of
     "S" ->
-      Just mirrorDecision
+      Just tideDecision
     "0" ->
-      Just shroomDecision
+      Just mirrorDecision
     "I" ->
-      Just blazeDecision
+      Just alchemyDecision
     "II" ->
-      Just heavenDecision
+      Just mirageDecision
     "VI" ->
       Just dualityDecision
-    "X" ->
-      Just alchemyDecision
     "IX" ->
       Just renounceCoinDecision
     "XIII" ->
