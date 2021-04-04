@@ -2,7 +2,7 @@
 module World.World where
 
 import Card (Card(..), Suit(..), cardName)
-import Cards (cardsByName)
+import Cards (cardsByName, getAspectCards)
 import Config (App, runBeam)
 import Control.Concurrent.STM.TVar (TVar)
 import Control.Monad.IO.Class (liftIO)
@@ -15,16 +15,18 @@ import Data.String.Conversions (cs)
 import Data.Text (Text, intercalate)
 import Database.Beam ((==.), all_, filter_, insert, insertValues, runInsert, runSelectReturningOne, runUpdate, save, select, val_)
 import GHC.Generics
-import Life (initMaxLife)
+import Life (Life, initMaxLife)
+import Model (Deck)
 import Player (WhichPlayer(..))
 import Safe (readMay)
 import Scenario (Scenario(..))
 import Schema (GalgagameDb(..), galgagameDb)
 import Start (startProgram)
 import Text.Printf (printf)
-import Util (breakAt)
+import Util (Gen, breakAt, genToSeed, getGen, randomChoice, seedToGen, split)
 
 import qualified Auth.Schema
+import qualified Card
 import qualified Cards
 import qualified Data.GUID as GUID
 import qualified Data.Map as Map
@@ -50,12 +52,14 @@ data World = World
 
 
 data Encounter = Encounter
-  { encounter_guid    :: Text
-  , encounter_name    :: Text
-  , encounter_numeral :: Text
-  , encounter_x       :: Float
-  , encounter_y       :: Float
-  , encounter_key     :: WorldKey
+  { encounter_guid      :: Text
+  , encounter_name      :: Text
+  , encounter_cardNames :: Maybe [Text]
+  , encounter_life      :: Life
+  , encounter_decision  :: Maybe Decision
+  , encounter_x         :: Float
+  , encounter_y         :: Float
+  , encounter_key       :: WorldKey
   } deriving (Eq, Show)
 
 
@@ -66,18 +70,20 @@ encounterFromGuid (World{ world_encounters }) guid =
     world_encounters
 
 
-newEncounter :: Edge -> App Encounter
-newEncounter (Edge{ edge_tarot, edge_key }) = do
+newEncounter :: WorldProgress -> Edge -> App Encounter
+newEncounter progress (Edge{ edge_tarot, edge_key }) = do
   guid <- liftIO GUID.genText
   let (x, y) = getPosition edge_key
-  let Tarot{ tarot_name, tarot_numeral } = edge_tarot
+  let Tarot{ tarot_name, tarot_life, tarot_cards, tarot_decision } = edge_tarot progress
   return $ Encounter
-    { encounter_guid    = guid
-    , encounter_name    = tarot_name
-    , encounter_numeral = tarot_numeral
-    , encounter_x       = x
-    , encounter_y       = y
-    , encounter_key     = edge_key
+    { encounter_guid      = guid
+    , encounter_name      = tarot_name
+    , encounter_cardNames = (fmap cardName) <$> tarot_cards
+    , encounter_life      = tarot_life
+    , encounter_decision  = tarot_decision
+    , encounter_x         = x
+    , encounter_y         = y
+    , encounter_key       = edge_key
     }
 
 
@@ -87,10 +93,10 @@ getWorld _ progress = do
   let adjEdges = getAdjEdges key
   let visitedKeys = worldprogress_visited progress
   let edges = filter (\Edge{ edge_key } -> not $ Set.member edge_key visitedKeys) adjEdges
-  encounters <- mapM newEncounter edges
   let edgeKeys = Set.fromList $ edge_key <$> edges :: Set WorldKey
   let otherKeys = Set.difference mainKeys (Set.union edgeKeys visitedKeys) :: Set WorldKey
   let others = getPosition <$> Set.toList otherKeys :: [Pos]
+  encounters <- mapM (newEncounter progress) edges
   return $
     World
     { world_encounters    = encounters
@@ -117,11 +123,10 @@ instance ToJSON World where
 
 
 instance ToJSON Encounter where
-  toJSON (Encounter{ encounter_guid, encounter_name, encounter_numeral, encounter_x, encounter_y }) =
+  toJSON (Encounter{ encounter_guid, encounter_name, encounter_x, encounter_y }) =
     object [
       "guid"    .= encounter_guid
     , "name"    .= encounter_name
-    , "numeral" .= encounter_numeral
     , "x"       .= encounter_x
     , "y"       .= encounter_y
     ]
@@ -152,7 +157,7 @@ parseRequest msg =
 
 
 makeScenario :: WorldProgress -> Encounter -> Scenario
-makeScenario (WorldProgress{ worldprogress_deck }) (Encounter{ encounter_numeral }) =
+makeScenario (WorldProgress{ worldprogress_deck }) encounter =
   Scenario {
     scenario_turn = PlayerA
   , scenario_characterPa = characterPa
@@ -160,62 +165,21 @@ makeScenario (WorldProgress{ worldprogress_deck }) (Encounter{ encounter_numeral
   , scenario_prog = startProgram PlayerA
   , scenario_xpWin = 100
   , scenario_xpLoss = 70
-  , scenario_reward = reward
+  , scenario_reward = Nothing
   }
   where
+    Encounter{ encounter_cardNames, encounter_life, encounter_name } = encounter
     characterPa :: Maybe DeckBuilding.Character
     characterPa =
-      case encounter_numeral of
-        "S" ->
+      case encounter_cardNames of
+        Just cardNames ->
           Just $
             DeckBuilding.Character
-              "The Beginning"
+              encounter_name
               ""
-              (Left (DeckBuilding.tideRune, DeckBuilding.tideRune, DeckBuilding.tideRune))
-              20
-        "0" ->
-          Just $
-            DeckBuilding.Character
-              "The Fool"
-              ""
-              (Left (DeckBuilding.mirrorRune, DeckBuilding.mirrorRune, DeckBuilding.mirrorRune))
-              30
-        "I" ->
-          Just $
-            DeckBuilding.Character
-              "The Magician"
-              ""
-              (Left (DeckBuilding.alchemyRune, DeckBuilding.alchemyRune, DeckBuilding.alchemyRune))
-              30
-        "II" ->
-          Just $
-            DeckBuilding.Character
-              "The Priestess"
-              ""
-              (Left (DeckBuilding.mirageRune, DeckBuilding.mirageRune, DeckBuilding.mirageRune))
-              30
-        "V" ->
-          Just $
-            DeckBuilding.Character
-              "The Hierophant"
-              ""
-              (Left (DeckBuilding.morphRune, DeckBuilding.morphRune, DeckBuilding.morphRune))
-              initMaxLife
-        "VI" ->
-          Just $
-            DeckBuilding.Character
-              "The Lovers"
-              ""
-              (Left (DeckBuilding.dualityRune, DeckBuilding.dualityRune, DeckBuilding.dualityRune))
-              initMaxLife
-        "X" ->
-          Just $
-            DeckBuilding.Character
-              "Wheel of Fortune"
-              ""
-              (Left (DeckBuilding.alchemyRune, DeckBuilding.alchemyRune, DeckBuilding.alchemyRune))
-              initMaxLife
-        _ ->
+              (Right $ deckFromCardNames cardNames)
+              encounter_life
+        Nothing ->
           Nothing
     characterPb :: Maybe DeckBuilding.Character
     characterPb =
@@ -223,9 +187,10 @@ makeScenario (WorldProgress{ worldprogress_deck }) (Encounter{ encounter_numeral
         DeckBuilding.Character
           "Prideful Fool"
           ""
-          (Right $ catMaybes $ (\name -> Map.lookup name cardsByName) <$> worldprogress_deck)
+          (Right $ deckFromCardNames worldprogress_deck)
           initMaxLife
-    reward = Nothing
+    deckFromCardNames :: [Text] -> Deck
+    deckFromCardNames names = catMaybes $ (\name -> Map.lookup name cardsByName) <$> names
 
 
 -- Graph nonsense
@@ -267,14 +232,14 @@ instance FromJSON WorldKey
 data WorldNode =
   WorldNode
   { worldnode_edges :: [Edge]
-  } deriving (Eq, Show)
+  }
 
 
 data Edge =
   Edge
-  { edge_tarot :: Tarot
+  { edge_tarot :: WorldProgress -> Tarot
   , edge_key   :: WorldKey
-  } deriving (Eq, Show)
+  }
 
 
 mainKeys :: Set WorldKey
@@ -397,10 +362,11 @@ getNewProgress encounter scenario progress =
     , worldprogress_visited      = Set.insert encounter_key worldprogress_visited
     , worldprogress_visitedEdges = edge : worldprogress_visitedEdges
     , worldprogress_deck         = deck
-    , worldprogress_decisionId   = decision_id <$> decision
+    , worldprogress_decisionId   = decision_id <$> encounter_decision
+    , worldprogress_gen          = nextGen progress
     }
   where
-    Encounter{ encounter_key, encounter_x, encounter_y } = encounter
+    Encounter{ encounter_decision, encounter_key, encounter_x, encounter_y } = encounter
     WorldProgress{ worldprogress_deck, worldprogress_key, worldprogress_visited, worldprogress_visitedEdges } = progress
     Scenario{ scenario_reward } = scenario
     edge :: (Pos, Pos)
@@ -411,108 +377,215 @@ getNewProgress encounter scenario progress =
           (cardName <$> rewardCards) ++ worldprogress_deck
         Nothing ->
           worldprogress_deck
-    decision :: Maybe Decision
-    decision = decisionFromEncounter encounter
+
+
+nextGen :: WorldProgress -> Gen
+nextGen (WorldProgress{ worldprogress_gen }) = fst $ split $ worldprogress_gen
 
 
 -- Tarot
 data Tarot =
   Tarot
-  { tarot_name    :: Text
-  , tarot_numeral :: Text
+  { tarot_name     :: Text
+  , tarot_life     :: Life
+  , tarot_cards    :: Maybe [Card]
+  , tarot_decision :: Maybe Decision
   } deriving (Eq, Show)
 
 
-tarotBeginning :: Tarot
-tarotBeginning = Tarot "The Beginning" "S"
+tarotBeginning :: WorldProgress -> Tarot
+tarotBeginning (WorldProgress{ worldprogress_gen }) =
+  let
+    (_, aspect) = getInitialPairing worldprogress_gen
+    decision =
+      case aspect of
+        Card.Heaven ->
+          Just heavenDecision
+        Card.Tide ->
+          Just tideDecision
+        Card.Shroom ->
+          Just shroomDecision
+        Card.Blaze ->
+          Just blazeDecision
+        _ ->
+          Nothing
+  in
+    Tarot
+      "Beginning"
+      20
+      (Just $ getAspectCards aspect)
+      decision
 
 
-tarotFool :: Tarot
-tarotFool = Tarot "The Fool" "0"
+tarotFool :: WorldProgress -> Tarot
+tarotFool _ =
+  Tarot
+    "Fool"
+    30
+    (Just [Cards.mirrorSword, Cards.mirrorWand, Cards.mirrorGrail, Cards.mirrorCoin])
+    (Just mirrorDecision)
 
 
-tarotMagician :: Tarot
-tarotMagician = Tarot "The Magician" "I"
+tarotMagician :: WorldProgress -> Tarot
+tarotMagician _ =
+  Tarot
+    "Magician"
+    30
+    (Just [Cards.alchemySword, Cards.alchemyWand, Cards.alchemyGrail, Cards.alchemyCoin])
+    (Just alchemyDecision)
 
 
-tarotPriestess :: Tarot
-tarotPriestess = Tarot "The Priestess" "II"
+tarotPriestess :: WorldProgress -> Tarot
+tarotPriestess _ =
+  Tarot
+    "Priestess"
+    30
+    (Just [Cards.mirageSword, Cards.mirageWand, Cards.mirageGrail, Cards.mirageCoin])
+    (Just mirageDecision)
 
 
-tarotEmpress :: Tarot
-tarotEmpress = Tarot "The Empress" "III"
+tarotEmpress :: WorldProgress -> Tarot
+tarotEmpress _ =
+  Tarot
+    "Empress"
+    50 Nothing
+    Nothing
 
 
-tarotEmperor :: Tarot
-tarotEmperor = Tarot "The Emperor" "IV"
+tarotEmperor :: WorldProgress -> Tarot
+tarotEmperor _ =
+  Tarot
+    "Emperor"
+    50
+    Nothing
+    Nothing
 
 
-tarotHierophant :: Tarot
-tarotHierophant = Tarot "The Hierophant" "V"
+tarotHierophant :: WorldProgress -> Tarot
+tarotHierophant _ =
+  Tarot
+    "Hierophant"
+    50
+    (Just [Cards.morphSword, Cards.morphWand, Cards.morphGrail, Cards.morphCoin])
+    Nothing
 
 
-tarotLovers :: Tarot
-tarotLovers = Tarot "The Lovers" "VI"
+tarotLovers :: WorldProgress -> Tarot
+tarotLovers _ =
+  Tarot
+    "Lovers"
+    50
+    (Just [Cards.dualitySword, Cards.dualityWand, Cards.dualityGrail, Cards.dualityCoin])
+    (Just dualityDecision)
 
 
-tarotChariot :: Tarot
-tarotChariot = Tarot "The Chariot" "VII"
+tarotChariot :: WorldProgress -> Tarot
+tarotChariot _ =
+  Tarot
+    "Chariot"
+    50
+    Nothing
+    Nothing
 
 
-tarotJustice :: Tarot
-tarotJustice = Tarot "Justice" "VIII"
+tarotJustice :: WorldProgress -> Tarot
+tarotJustice _ =
+  Tarot
+    "Justice"
+    50
+    Nothing
+    Nothing
 
 
-tarotHermit :: Tarot
-tarotHermit = Tarot "The Hermit" "IX"
+tarotHermit :: WorldProgress -> Tarot
+tarotHermit _ =
+  Tarot
+    "Hermit"
+    50
+    Nothing
+    (Just renounceCoinDecision)
 
 
-tarotWheel :: Tarot
-tarotWheel = Tarot "Wheel of Fortune" "X"
+tarotWheel :: WorldProgress -> Tarot
+tarotWheel _ =
+  Tarot
+    "Wheel of Fortune"
+    50
+    Nothing
+    Nothing
 
 
-tarotStrength :: Tarot
-tarotStrength = Tarot "Strength" "XI"
+tarotStrength :: WorldProgress -> Tarot
+tarotStrength _ =
+  Tarot
+    "Strength"
+    50
+    Nothing
+    Nothing
 
 
-tarotHanged :: Tarot
-tarotHanged = Tarot "The Hanged Man" "XII"
+tarotHanged :: WorldProgress -> Tarot
+tarotHanged _ =
+  Tarot
+    "Hanged Man" 50
+    Nothing
+    Nothing
 
 
-tarotDeath :: Tarot
-tarotDeath = Tarot "Death" "XIII"
+tarotDeath :: WorldProgress -> Tarot
+tarotDeath _ =
+  Tarot
+    "Death"
+    50
+    Nothing
+    (Just renounceSwordDecision)
 
 
-tarotTemperance :: Tarot
-tarotTemperance = Tarot "Temperance" "XIV"
+tarotTemperance :: WorldProgress -> Tarot
+tarotTemperance _ =
+  Tarot
+    "Temperance"
+    50
+    Nothing
+    (Just renounceGrailDecision)
 
 
-tarotDevil :: Tarot
-tarotDevil = Tarot "The Devil" "XV"
+tarotDevil :: WorldProgress -> Tarot
+tarotDevil _ =
+  Tarot
+    "Devil"
+    50
+    Nothing
+    (Just renounceWandDecision)
 
 
-tarotTower :: Tarot
-tarotTower = Tarot "The Tower" "XVI"
+tarotTower :: WorldProgress -> Tarot
+tarotTower _ =
+  Tarot
+    "Tower"
+    50
+    Nothing
+    Nothing
 
 
-tarotStar :: Tarot
-tarotStar = Tarot "The Star" "XVII"
+tarotStar :: WorldProgress -> Tarot
+tarotStar _ = Tarot "Star" 50 Nothing Nothing
 
 
-tarotMoon :: Tarot
-tarotMoon = Tarot "The Moon" "XVIII"
+tarotMoon :: WorldProgress -> Tarot
+tarotMoon _ = Tarot "Moon" 50 Nothing Nothing
 
 
-tarotSun :: Tarot
-tarotSun = Tarot "The Sun" "XIX"
+tarotSun :: WorldProgress -> Tarot
+tarotSun _ = Tarot "Sun" 50 Nothing Nothing
 
 
-tarotJudgement :: Tarot
-tarotJudgement = Tarot "Judgement" "XX"
+tarotJudgement :: WorldProgress -> Tarot
+tarotJudgement _ = Tarot "Judgement" 50 Nothing Nothing
 
 
-tarotWorld :: Tarot
-tarotWorld = Tarot "The World" "XXI"
+tarotWorld :: WorldProgress -> Tarot
+tarotWorld _ = Tarot "World" 50 Nothing Nothing
 
 
 -- World Progress
@@ -522,43 +595,62 @@ data WorldProgress = WorldProgress
   , worldprogress_visitedEdges :: [(Pos, Pos)]
   , worldprogress_deck         :: [Text]
   , worldprogress_decisionId   :: Maybe Text
+  , worldprogress_gen          :: Gen
   } deriving (Show)
 
 
 instance ToJSON WorldProgress where
-  toJSON (WorldProgress{ worldprogress_key, worldprogress_visited, worldprogress_visitedEdges, worldprogress_deck, worldprogress_decisionId }) =
+  toJSON (WorldProgress{ worldprogress_key, worldprogress_visited, worldprogress_visitedEdges, worldprogress_deck, worldprogress_decisionId, worldprogress_gen }) =
     object [
       "key"          .= worldprogress_key
     , "visited"      .= worldprogress_visited
     , "visitedEdges" .= worldprogress_visitedEdges
     , "deck"         .= worldprogress_deck
     , "decisionId"   .= worldprogress_decisionId
+    , "seed"         .= genToSeed worldprogress_gen
     ]
 
 instance FromJSON WorldProgress where
   parseJSON =
     withObject "WorldProgress" $
-    \o ->
-      WorldProgress
-        <$> o .: "key"
-        <*> o .: "visited"
-        <*> o .: "visitedEdges"
-        <*> o .: "deck"
-        <*> o .: "decisionId"
+    \o -> WorldProgress
+      <$> o .: "key"
+      <*> o .: "visited"
+      <*> o .: "visitedEdges"
+      <*> o .: "deck"
+      <*> o .: "decisionId"
+      <*> (seedToGen <$> o .: "seed")
 
 
-initialProgress :: WorldProgress
-initialProgress =
-  WorldProgress
-    Start
-    Set.empty
-    []
-    (cardName <$> [Cards.blazeSword, Cards.blazeWand, Cards.blazeGrail, Cards.blazeCoin])
-    Nothing
+getInitialPairing :: Gen -> (Card.Aspect, Card.Aspect)
+getInitialPairing gen = randomChoice gen possiblePairings
+  where
+    possiblePairings :: [(Card.Aspect, Card.Aspect)]
+    possiblePairings =
+      [ (Card.Heaven, Card.Shroom)
+      , (Card.Tide, Card.Blaze)
+      , (Card.Shroom, Card.Heaven)
+      , (Card.Blaze, Card.Tide)
+      ]
 
 
-startProgress :: WorldProgress
-startProgress = initialProgress { worldprogress_decisionId = Just "start" }
+initialProgress :: Gen -> WorldProgress
+initialProgress gen =
+  let
+    (aspect, _) = getInitialPairing gen
+    initialCards = Cards.getAspectCards aspect
+  in
+    WorldProgress
+      Start
+      Set.empty
+      []
+      (cardName <$> initialCards)
+      Nothing
+      gen
+
+
+startProgress :: Gen -> WorldProgress
+startProgress gen = (initialProgress gen) { worldprogress_decisionId = Just "start" }
 
 
 updateProgress :: Maybe Text -> WorldProgress -> App ()
@@ -578,7 +670,9 @@ updateProgress Nothing _ = return ()
 
 
 loadProgress :: Maybe Text -> App WorldProgress
-loadProgress Nothing         = return startProgress
+loadProgress Nothing         = do
+  gen <- liftIO getGen
+  return $ startProgress gen
 loadProgress (Just username) = do
   result <- runBeam $ runSelectReturningOne $
     select $ filter_ (\row -> Schema.progressUser row ==. val_ (Auth.Schema.UserId username)) $
@@ -591,11 +685,13 @@ loadProgress (Just username) = do
       case decoded of
         Left err -> do
           liftIO $ Log.error $ printf "Error loading world progress: %s" err
-          return startProgress
+          gen <- liftIO getGen
+          return $ startProgress gen
         Right progress ->
           return progress
-    Nothing ->
-      return startProgress
+    Nothing -> do
+      gen <- liftIO getGen
+      return $ startProgress gen
 
 
 -- Decision
@@ -701,7 +797,7 @@ startDecision =
     , decision_title   = "GALGA"
     , decision_text    = "Your journey begins."
     , decision_choices = [
-      DecisionChoice "BEGIN" (const initialProgress)
+      DecisionChoice "BEGIN" (\progress -> progress { worldprogress_decisionId = Nothing })
     ]
     }
 
@@ -712,7 +808,9 @@ defeatDecision =
     { decision_id      = "defeat"
     , decision_title   = "DEFEAT"
     , decision_text    = "Your journey ends here."
-    , decision_choices = [ DecisionChoice "ANOTHER" (const initialProgress) ]
+    , decision_choices = [
+      DecisionChoice "ANOTHER" (\progress -> initialProgress (worldprogress_gen progress))
+    ]
     }
 
 
@@ -749,7 +847,21 @@ alchemyDecision = rewardDecision "alchemy" [Cards.alchemySword, Cards.alchemyWan
 
 
 allDecisions :: [Decision]
-allDecisions = [startDecision, defeatDecision, tideDecision, mirrorDecision, blazeDecision, heavenDecision, shroomDecision, dualityDecision, alchemyDecision, renounceCoinDecision, renounceWandDecision, renounceGrailDecision, renounceSwordDecision]
+allDecisions =
+  [ startDecision
+  , defeatDecision
+  , tideDecision
+  , mirrorDecision
+  , blazeDecision
+  , heavenDecision
+  , shroomDecision
+  , dualityDecision
+  , alchemyDecision
+  , renounceCoinDecision
+  , renounceWandDecision
+  , renounceGrailDecision
+  , renounceSwordDecision
+  ]
 
 
 decisionByIdMap :: Map Text Decision
@@ -758,28 +870,3 @@ decisionByIdMap = fromList $ fmap (\decision -> (decision_id decision, decision)
 
 decisionFromId :: Text -> Maybe Decision
 decisionFromId decisionId = Map.lookup decisionId decisionByIdMap
-
-
-decisionFromEncounter :: Encounter -> Maybe Decision
-decisionFromEncounter (Encounter{ encounter_numeral }) =
-  case encounter_numeral of
-    "S" ->
-      Just tideDecision
-    "0" ->
-      Just mirrorDecision
-    "I" ->
-      Just alchemyDecision
-    "II" ->
-      Just mirageDecision
-    "VI" ->
-      Just dualityDecision
-    "IX" ->
-      Just renounceCoinDecision
-    "XIII" ->
-      Just renounceSwordDecision
-    "XIV" ->
-      Just renounceWandDecision
-    "XV" ->
-      Just renounceGrailDecision
-    _ ->
-      Nothing
