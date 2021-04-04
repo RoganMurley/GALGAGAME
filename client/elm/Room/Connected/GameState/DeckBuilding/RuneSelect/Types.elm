@@ -16,7 +16,6 @@ type alias Model =
 
 type alias Rune =
     { name : String
-    , desc : String
     , imgURL : String
     , cards : RuneCards
     }

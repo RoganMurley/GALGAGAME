@@ -17,17 +17,15 @@ import Data.Set as Set
 -- Rune
 data Rune = Rune
   { rune_name  :: Text
-  , rune_desc  :: Text
   , rune_img   :: Text
   , rune_cards :: RuneCards
   } deriving (Eq, Show)
 
 
 instance ToJSON Rune where
-  toJSON Rune{ rune_name, rune_desc, rune_img, rune_cards } =
+  toJSON Rune{ rune_name, rune_img, rune_cards } =
     object
       [ "name"    .= rune_name
-      , "desc"    .= rune_desc
       , "img_url" .= rune_img
       , "cards"   .= rune_cards
       ]
@@ -192,7 +190,6 @@ tideRune :: Rune
 tideRune =
   Rune
     "TIDE"
-    "Tie thy lunar tether."
     "cards/tide/coin.png"
     (Cards.tideSword, Cards.tideWand, Cards.tideGrail, Cards.tideCoin)
 
@@ -201,7 +198,6 @@ blazeRune :: Rune
 blazeRune =
   Rune
     "BLAZE"
-    "Blazing heart."
     "cards/blaze/coin.png"
     (Cards.blazeSword, Cards.blazeWand, Cards.blazeGrail, Cards.blazeCoin)
 
@@ -210,7 +206,6 @@ heavenRune :: Rune
 heavenRune =
   Rune
     "HEAVEN"
-    "It appears the heavens have opened."
     "cards/heaven/coin.png"
     (Cards.heavenSword, Cards.heavenWand, Cards.heavenGrail, Cards.heavenCoin)
 
@@ -219,7 +214,6 @@ shroomRune :: Rune
 shroomRune =
   Rune
     "SHROOM"
-    "Earth to earth."
     "cards/shroom/coin.png"
     (Cards.shroomSword, Cards.shroomWand, Cards.shroomGrail, Cards.shroomCoin)
 
@@ -228,7 +222,6 @@ bloodRune :: Rune
 bloodRune =
   Rune
     "BLOOD"
-    "You steal life."
     "cards/blood/coin.png"
     (Cards.bloodSword, Cards.bloodWand, Cards.bloodGrail, Cards.bloodCoin)
 
@@ -237,7 +230,6 @@ mirageRune :: Rune
 mirageRune =
   Rune
     "MIRAGE"
-    "Seeing is believing."
     "cards/mirage/coin.png"
     (Cards.mirageSword, Cards.mirageWand, Cards.mirageGrail, Cards.mirageCoin)
 
@@ -246,7 +238,6 @@ mirrorRune :: Rune
 mirrorRune =
   Rune
     "MIRROR"
-    "A reflection of a reflection."
     "cards/mirror/coin.png"
     (Cards.mirrorSword, Cards.mirrorWand, Cards.mirrorGrail, Cards.mirrorCoin)
 
@@ -255,7 +246,6 @@ dualityRune :: Rune
 dualityRune =
   Rune
     "DUALITY"
-    "Strength from weakness, weakness from strength."
     "cards/duality/coin.png"
     (Cards.dualitySword, Cards.dualityWand, Cards.dualityGrail, Cards.dualityCoin)
 
@@ -264,7 +254,6 @@ alchemyRune :: Rune
 alchemyRune =
   Rune
     "ALCHEMY"
-    "For the lead hearted."
     "cards/alchemy/coin.png"
     (Cards.alchemySword, Cards.alchemyWand, Cards.alchemyGrail, Cards.alchemyCoin)
 
@@ -273,7 +262,6 @@ crownRune :: Rune
 crownRune =
   Rune
     "CROWN"
-    "You use every advantage you have."
     "cards/crown/coin.png"
     (Cards.crownSword, Cards.crownWand, Cards.crownGrail, Cards.crownCoin)
 
@@ -282,7 +270,6 @@ morphRune :: Rune
 morphRune =
   Rune
     "MORPH"
-    "For the mutable mind."
     "cards/morph/coin.png"
     (Cards.morphSword, Cards.morphWand, Cards.morphGrail, Cards.morphCoin)
 
