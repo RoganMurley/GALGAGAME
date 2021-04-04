@@ -436,7 +436,7 @@ tarotMagician :: WorldProgress -> Tarot
 tarotMagician (WorldProgress{ worldprogress_gen }) =
   let
     cards =
-      (getAspectCards Card.Alchemy >>= replicate 2) ++
+      (getAspectCards Card.Alchemy >>= replicate 3) ++
       getAspectCards (randomChoice worldprogress_gen elementalAspects)
   in
     Tarot
@@ -450,7 +450,7 @@ tarotPriestess :: WorldProgress -> Tarot
 tarotPriestess (WorldProgress{ worldprogress_gen }) =
   let
     cards =
-      (getAspectCards Card.Mirage >>= replicate 2) ++
+      (getAspectCards Card.Mirage >>= replicate 3) ++
       getAspectCards (randomChoice worldprogress_gen elementalAspects)
   in
     Tarot
