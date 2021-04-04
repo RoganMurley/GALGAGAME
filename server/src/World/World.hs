@@ -1,7 +1,7 @@
 {-# LANGUAGE DeriveGeneric #-}
 module World.World where
 
-import Card (Card(..), Suit(..), cardName)
+import Card (Card(..), Suit(..), cardName, elementalAspects)
 import Cards (cardsByName, getAspectCards)
 import Config (App, runBeam)
 import Control.Concurrent.STM.TVar (TVar)
@@ -187,7 +187,7 @@ makeScenario (WorldProgress{ worldprogress_deck }) encounter =
         DeckBuilding.Character
           "Prideful Fool"
           ""
-          (Right $ deckFromCardNames worldprogress_deck)
+          (Right $ deckFromCardNames worldprogress_deck >>= replicate 3)
           initMaxLife
     deckFromCardNames :: [Text] -> Deck
     deckFromCardNames names = catMaybes $ (\name -> Map.lookup name cardsByName) <$> names
@@ -409,39 +409,55 @@ tarotBeginning (WorldProgress{ worldprogress_gen }) =
           Just blazeDecision
         _ ->
           Nothing
+    cards = getAspectCards aspect >>= replicate 3
   in
     Tarot
       "Beginning"
       20
-      (Just $ getAspectCards aspect)
+      (Just cards)
       decision
 
 
 tarotFool :: WorldProgress -> Tarot
-tarotFool _ =
-  Tarot
-    "Fool"
-    30
-    (Just [Cards.mirrorSword, Cards.mirrorWand, Cards.mirrorGrail, Cards.mirrorCoin])
-    (Just mirrorDecision)
+tarotFool (WorldProgress{ worldprogress_gen }) =
+  let
+    cards =
+      (getAspectCards Card.Mirror >>= replicate 2) ++
+      getAspectCards (randomChoice worldprogress_gen elementalAspects)
+  in
+    Tarot
+      "Fool"
+      30
+      (Just cards)
+      (Just mirrorDecision)
 
 
 tarotMagician :: WorldProgress -> Tarot
-tarotMagician _ =
-  Tarot
-    "Magician"
-    30
-    (Just [Cards.alchemySword, Cards.alchemyWand, Cards.alchemyGrail, Cards.alchemyCoin])
-    (Just alchemyDecision)
+tarotMagician (WorldProgress{ worldprogress_gen }) =
+  let
+    cards =
+      (getAspectCards Card.Alchemy >>= replicate 2) ++
+      getAspectCards (randomChoice worldprogress_gen elementalAspects)
+  in
+    Tarot
+      "Magician"
+      30
+      (Just cards)
+      (Just alchemyDecision)
 
 
 tarotPriestess :: WorldProgress -> Tarot
-tarotPriestess _ =
-  Tarot
-    "Priestess"
-    30
-    (Just [Cards.mirageSword, Cards.mirageWand, Cards.mirageGrail, Cards.mirageCoin])
-    (Just mirageDecision)
+tarotPriestess (WorldProgress{ worldprogress_gen }) =
+  let
+    cards =
+      (getAspectCards Card.Mirage >>= replicate 2) ++
+      getAspectCards (randomChoice worldprogress_gen elementalAspects)
+  in
+    Tarot
+      "Priestess"
+      30
+      (Just cards)
+      (Just mirageDecision)
 
 
 tarotEmpress :: WorldProgress -> Tarot
@@ -462,21 +478,31 @@ tarotEmperor _ =
 
 
 tarotHierophant :: WorldProgress -> Tarot
-tarotHierophant _ =
-  Tarot
-    "Hierophant"
-    50
-    (Just [Cards.morphSword, Cards.morphWand, Cards.morphGrail, Cards.morphCoin])
-    Nothing
+tarotHierophant (WorldProgress{ worldprogress_gen }) =
+  let
+    cards =
+      (getAspectCards Card.Morph >>= replicate 4) ++
+      getAspectCards (randomChoice worldprogress_gen elementalAspects)
+  in
+    Tarot
+      "Hierophant"
+      50
+      (Just cards)
+      Nothing
 
 
 tarotLovers :: WorldProgress -> Tarot
-tarotLovers _ =
-  Tarot
-    "Lovers"
-    50
-    (Just [Cards.dualitySword, Cards.dualityWand, Cards.dualityGrail, Cards.dualityCoin])
-    (Just dualityDecision)
+tarotLovers (WorldProgress{ worldprogress_gen }) =
+  let
+    cards =
+      (getAspectCards Card.Duality >>= replicate 4) ++
+      getAspectCards (randomChoice worldprogress_gen elementalAspects)
+  in
+    Tarot
+      "Lovers"
+      50
+      (Just cards)
+      (Just dualityDecision)
 
 
 tarotChariot :: WorldProgress -> Tarot

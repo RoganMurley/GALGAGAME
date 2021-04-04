@@ -90,8 +90,7 @@ initModel turn ca cb gen =
 
 
 buildDeck :: Character -> Deck
-buildDeck selection =
-  characterCards selection >>= replicate 3
+buildDeck = characterCards
 
 
 isWinner :: WhichPlayer -> GameState -> Bool
