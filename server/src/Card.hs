@@ -45,19 +45,18 @@ data Suit
 
 
 data Aspect
-  = Basic
+  = Heaven
+  | Tide
   | Blaze
-  | Heaven
-  | Duality
   | Shroom
-  | Blood
+  | Alchemy
   | Mirage
   | Mirror
-  | Alchemy
+  | Duality
+  | Blood
   | Crown
   | Morph
   | Strange
-  | Tide
   | OtherAspect Text
   deriving (Eq, Ord, Show)
 
@@ -81,14 +80,13 @@ aspectText aspect =
 
 
 cardName :: Card -> Text
-cardName (Card{ card_aspect, card_suit }) =
-  case card_aspect of
-    Basic ->
-      toUpper $ suitText card_suit
-    _ ->
-      toUpper $ aspectText card_aspect <> " " <> suitText card_suit
+cardName (Card{ card_aspect, card_suit }) = toUpper $ aspectText card_aspect <> " " <> suitText card_suit
 
 
 cardImgUrl :: Aspect -> Suit -> Text
 cardImgUrl aspect suit =
   toLower $ "cards/" <> aspectText aspect <> "/" <> suitText suit <> ".png"
+
+
+elementalAspects :: [Aspect]
+elementalAspects = [Heaven, Tide, Shroom, Blaze]

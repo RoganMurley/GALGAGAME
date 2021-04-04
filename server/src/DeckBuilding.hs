@@ -315,6 +315,6 @@ characterCards Character{ character_choice } =
   case character_choice of
     Left (runeA, runeB, runeC) ->
       concat $ (\(p, q, r, s) -> [p, q, r, s]) <$>
-        [rune_cards runeA, rune_cards runeB, rune_cards runeC]
+        [rune_cards runeA, rune_cards runeB, rune_cards runeC] >>= replicate 3
     Right deck ->
       deck
