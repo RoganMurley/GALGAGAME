@@ -21,6 +21,10 @@ shuffle _ []       = []
 shuffle (Gen g) xs = shuffle' xs (length xs) g
 
 
+randomChoice :: Gen -> [a] -> a
+randomChoice gen xs = head $ shuffle gen xs
+
+
 deleteIndex :: Int -> [a] -> [a]
 deleteIndex n xs =
   ys ++ tail zs
@@ -35,14 +39,11 @@ fromRight _ = error "Unsafe fromRight unwrapping failure"
 
 -- Special newtype-wrapped StdGen to ease equality checks.
 newtype Gen = Gen R.StdGen
+  deriving Show
 
 
 instance Eq Gen where
   _ == _ = True
-
-
-instance Show Gen where
-  show _ = "<Gen>"
 
 
 split :: Gen -> (Gen, Gen)
@@ -57,6 +58,14 @@ getGen = Gen <$> R.newStdGen
 
 mkGen :: Int -> Gen
 mkGen n = Gen . R.mkStdGen $ n
+
+
+genToSeed :: Gen -> String
+genToSeed (Gen gen) = show gen
+
+
+seedToGen :: String -> Gen
+seedToGen seed = Gen $ read seed
 
 
 modTVar :: TVar a -> (a -> a) -> STM ()

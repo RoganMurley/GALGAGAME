@@ -25,10 +25,9 @@ decoder =
 
 encounterDecoder : Decoder Encounter
 encounterDecoder =
-    Json.map5 Encounter
+    Json.map4 Encounter
         (field "guid" string)
         (field "name" string)
-        (field "numeral" string)
         (field "x" float)
         (field "y" float)
 

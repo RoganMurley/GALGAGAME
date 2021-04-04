@@ -41,7 +41,7 @@ data Suit
   | Grail
   | Coin
   | OtherSuit Text
-  deriving (Eq, Show)
+  deriving (Eq, Ord, Show)
 
 
 data Aspect
@@ -59,7 +59,7 @@ data Aspect
   | Strange
   | Tide
   | OtherAspect Text
-  deriving (Eq, Show)
+  deriving (Eq, Ord, Show)
 
 
 

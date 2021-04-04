@@ -3,7 +3,8 @@ module Cards where
 import Control.Monad (when)
 import CardAnim (Hurt(..))
 import Card (Aspect(..), Card(..), Suit(..), cardName)
-import Data.Map (Map, fromList)
+import Data.Map (Map)
+import Data.Maybe (fromMaybe)
 import Data.Text (Text)
 import Player (other)
 import Safe (headMay)
@@ -11,6 +12,8 @@ import Stack (diasporaFromStack, diasporaLength)
 import StackCard (StackCard(..), changeOwner)
 import Transmutation (Transmutation(..))
 import Util (shuffle)
+
+import qualified Data.Map as Map
 
 import qualified DSL.Alpha as Alpha
 import qualified DSL.Beta as Beta
@@ -568,4 +571,20 @@ allCards = swords ++ wands ++ grails ++ coins ++ others
 
 
 cardsByName :: Map Text Card
-cardsByName = fromList $ fmap (\card -> (cardName card, card)) allCards
+cardsByName = Map.fromList $ fmap (\card -> (cardName card, card)) allCards
+
+
+cardsByAspect :: Map Aspect [Card]
+cardsByAspect = Map.fromListWith (++) $ fmap (\card -> (card_aspect card, [card])) allCards
+
+
+getAspectCards :: Aspect -> [Card]
+getAspectCards aspect = fromMaybe [] $ Map.lookup aspect cardsByAspect
+
+
+cardsBySuit :: Map Suit [Card]
+cardsBySuit = Map.fromListWith (++) $ fmap (\card -> (card_suit card, [card])) allCards
+
+
+getSuitCards :: Suit -> [Card]
+getSuitCards suit = fromMaybe [] $ Map.lookup suit cardsBySuit

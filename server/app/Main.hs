@@ -329,7 +329,10 @@ beginWorld state client mProgress = do
             )
             else
               (do
-                let newProgress = progress { World.worldprogress_decisionId = Just "defeat" }
+                let newProgress = progress {
+                  World.worldprogress_decisionId = Just "defeat",
+                  World.worldprogress_gen = World.nextGen progress
+                }
                 liftIO $ Log.info $ printf "<%s>: Loss! New world progress %s" (show $ Client.name client) (show newProgress)
                 World.updateProgress username newProgress
                 beginWorld state client (Just newProgress)
@@ -342,6 +345,7 @@ beginWorld state client mProgress = do
       case atMay (World.decision_choices decision) choiceIndex of
         Just choice -> do
           let eff = World.decisionchoice_eff choice
+          -- Note that we don't get the next gen here
           let newProgress = eff progress { World.worldprogress_decisionId = Nothing }
           World.updateProgress username newProgress
           beginWorld state client (Just newProgress)

@@ -28,7 +28,6 @@ type alias World =
 type alias Encounter =
     { guid : String
     , name : String
-    , numeral : String
     , x : Float
     , y : Float
     }
