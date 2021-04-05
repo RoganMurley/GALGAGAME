@@ -314,6 +314,7 @@ mirrorWand =
       len <- length <$> getHand w
       hurt (len * 3) (other w) Slash
 
+
 mirrorGrail :: Card
 mirrorGrail =
   Card Mirror Grail
