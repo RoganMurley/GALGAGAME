@@ -300,10 +300,9 @@ mirageCoin =
 mirrorSword :: Card
 mirrorSword =
   Card Mirror Sword
-    "Hurt for 3, add a copy of this card\nto your hand"
+    "Hurt for 7"
     $ \w -> do
-      hurt 3 (other w) Slash
-      addToHand w mirrorSword
+      hurt 7 (other w) Slash
 
 
 mirrorWand :: Card
