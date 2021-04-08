@@ -303,7 +303,8 @@ beginQueue state client roomVar = do
 beginWorld :: TVar Server.State -> Client -> Maybe World.WorldProgress -> App ()
 beginWorld state client mProgress = do
   let username = Client.queryUsername client
-  progress <- fromMaybe (World.loadProgress username) (return <$> mProgress)
+  progress <- World.refreshProgress <$> fromMaybe (World.loadProgress username) (return <$> mProgress)
+  World.updateProgress username progress
   world <- World.getWorld state progress
   Client.send (cs $ "world:" <> encode world) client
   msg <- Client.receive client
@@ -318,14 +319,17 @@ beginWorld state client mProgress = do
           let scenario = World.makeScenario progress encounter
           let roomName = encounterId
           let cpuName = World.encounter_name encounter
+
+          let preProgress = World.preEncounterProgress encounter progress
+          World.updateProgress username preProgress
+
           roomVar <- liftIO . atomically $ Server.getOrCreateRoom roomName WaitCustom gen scenario state
           didWin <- beginComputer cpuName state client roomVar
           if didWin then
             (do
-              let newProgress = World.getNewProgress encounter scenario progress
-              liftIO $ Log.info $ printf "<%s>: Win! New world progress %s" (show $ Client.name client) (show newProgress)
-              World.updateProgress username newProgress
-              beginWorld state client (Just newProgress)
+              let postProgress = World.postEncounterProgress encounter scenario progress
+              liftIO $ Log.info $ printf "<%s>: Win! New world progress %s" (show $ Client.name client) (show postProgress)
+              beginWorld state client (Just postProgress)
             )
             else
               (do
@@ -334,7 +338,6 @@ beginWorld state client mProgress = do
                   World.worldprogress_gen = World.nextGen progress
                 }
                 liftIO $ Log.info $ printf "<%s>: Loss! New world progress %s" (show $ Client.name client) (show newProgress)
-                World.updateProgress username newProgress
                 beginWorld state client (Just newProgress)
               )
         Nothing -> do
@@ -346,8 +349,7 @@ beginWorld state client mProgress = do
         Just choice -> do
           let eff = World.decisionchoice_eff choice
           -- Note that we don't get the next gen here
-          let newProgress = eff progress { World.worldprogress_decisionId = Nothing }
-          World.updateProgress username newProgress
+          let newProgress = eff progress { World.worldprogress_decisionId = Nothing, World.worldprogress_roomId = Nothing }
           beginWorld state client (Just newProgress)
         _ -> do
           liftIO $ Log.error $ printf "<%s>: Invalid choice %s" (show $ Client.name client) (show choiceIndex)
