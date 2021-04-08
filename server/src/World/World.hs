@@ -9,7 +9,7 @@ import Control.Monad.IO.Class (liftIO)
 import Data.Aeson (FromJSON(..), ToJSON(..), (.:), (.=), eitherDecode, encode, object, withObject)
 import Data.List (find)
 import Data.Map (Map, fromList)
-import Data.Maybe (catMaybes)
+import Data.Maybe (catMaybes, isJust)
 import Data.Set (Set)
 import Data.String.Conversions (cs)
 import Data.Text (Text, intercalate)
@@ -357,14 +357,20 @@ getPosition Foundation    = (0.5, levelBeauty1)
 getPosition Kingdom       = (0.5, levelBeauty2)
 
 
-getNewProgress :: Encounter -> Scenario -> WorldProgress -> WorldProgress
-getNewProgress encounter scenario progress =
+preEncounterProgress :: Encounter -> WorldProgress -> WorldProgress
+preEncounterProgress (Encounter{ encounter_guid }) progress =
+  progress { worldprogress_roomId = Just encounter_guid }
+
+
+postEncounterProgress :: Encounter -> Scenario -> WorldProgress -> WorldProgress
+postEncounterProgress encounter scenario progress =
   WorldProgress
     { worldprogress_key          = encounter_key
     , worldprogress_visited      = Set.insert encounter_key worldprogress_visited
     , worldprogress_visitedEdges = edge : worldprogress_visitedEdges
     , worldprogress_deck         = deck
     , worldprogress_decisionId   = decision_id <$> encounter_decision
+    , worldprogress_roomId       = Nothing
     , worldprogress_gen          = nextGen progress
     }
   where
@@ -635,18 +641,20 @@ data WorldProgress = WorldProgress
   , worldprogress_visitedEdges :: [(Pos, Pos)]
   , worldprogress_deck         :: [Text]
   , worldprogress_decisionId   :: Maybe Text
+  , worldprogress_roomId       :: Maybe Text
   , worldprogress_gen          :: Gen
   } deriving (Show)
 
 
 instance ToJSON WorldProgress where
-  toJSON (WorldProgress{ worldprogress_key, worldprogress_visited, worldprogress_visitedEdges, worldprogress_deck, worldprogress_decisionId, worldprogress_gen }) =
+  toJSON (WorldProgress{ worldprogress_key, worldprogress_visited, worldprogress_visitedEdges, worldprogress_deck, worldprogress_decisionId, worldprogress_roomId, worldprogress_gen }) =
     object [
       "key"          .= worldprogress_key
     , "visited"      .= worldprogress_visited
     , "visitedEdges" .= worldprogress_visitedEdges
     , "deck"         .= worldprogress_deck
     , "decisionId"   .= worldprogress_decisionId
+    , "roomId"       .= worldprogress_roomId
     , "seed"         .= genToSeed worldprogress_gen
     ]
 
@@ -659,6 +667,7 @@ instance FromJSON WorldProgress where
       <*> o .: "visitedEdges"
       <*> o .: "deck"
       <*> o .: "decisionId"
+      <*> o .: "roomId"
       <*> (seedToGen <$> o .: "seed")
 
 
@@ -685,6 +694,7 @@ initialProgress gen =
       Set.empty
       []
       (cardName <$> initialCards)
+      Nothing
       Nothing
       gen
 
@@ -732,6 +742,19 @@ loadProgress (Just username) = do
     Nothing -> do
       gen <- liftIO getGen
       return $ startProgress gen
+
+
+refreshProgress :: WorldProgress -> WorldProgress
+refreshProgress progress =
+  if forceReset then
+    (initialProgress worldprogress_gen) { worldprogress_decisionId = Just "reset" }
+  else
+    progress { worldprogress_roomId = Nothing }
+  where
+    (WorldProgress{ worldprogress_roomId, worldprogress_gen }) = progress
+    -- If the user is in a room force reset the progress
+    forceReset :: Bool
+    forceReset = isJust worldprogress_roomId
 
 
 -- Decision
@@ -854,6 +877,18 @@ defeatDecision =
     }
 
 
+resetDecision :: Decision
+resetDecision =
+  Decision
+    { decision_id      = "reset"
+    , decision_title   = "Connection Lost"
+    , decision_text    = "Your progress was reset."
+    , decision_choices = [
+      DecisionChoice "ANOTHER" (\progress -> progress { worldprogress_decisionId = Nothing })
+    ]
+    }
+
+
 tideDecision :: Decision
 tideDecision = rewardDecision "tide" [Cards.tideSword, Cards.tideWand, Cards.tideGrail, Cards.tideCoin]
 
@@ -886,10 +921,13 @@ alchemyDecision :: Decision
 alchemyDecision = rewardDecision "alchemy" [Cards.alchemySword, Cards.alchemyWand, Cards.alchemyGrail, Cards.alchemyCoin]
 
 
+
+
 allDecisions :: [Decision]
 allDecisions =
   [ startDecision
   , defeatDecision
+  , resetDecision
   , tideDecision
   , mirrorDecision
   , blazeDecision
