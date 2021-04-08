@@ -1,7 +1,7 @@
 {-# LANGUAGE DeriveGeneric #-}
 module World.World where
 
-import Card (Card(..), Suit(..), cardName, elementalAspects)
+import Card (Card(..), Suit(..), cardName, elementalAspects, mainAspects)
 import Cards (cardsByName, getAspectCards)
 import Config (App, runBeam)
 import Control.Concurrent.STM.TVar (TVar)
@@ -23,7 +23,7 @@ import Scenario (Scenario(..))
 import Schema (GalgagameDb(..), galgagameDb)
 import Start (startProgram)
 import Text.Printf (printf)
-import Util (Gen, breakAt, genToSeed, getGen, randomChoice, seedToGen, split)
+import Util (Gen, breakAt, genToSeed, getGen, randomChoice, seedToGen, shuffle, split)
 
 import qualified Auth.Schema
 import qualified Card
@@ -74,11 +74,13 @@ newEncounter :: WorldProgress -> Edge -> App Encounter
 newEncounter progress (Edge{ edge_tarot, edge_key }) = do
   guid <- liftIO GUID.genText
   let (x, y) = getPosition edge_key
-  let Tarot{ tarot_name, tarot_life, tarot_cards, tarot_decision } = edge_tarot progress
+  let tarot = edge_tarot progress
+  let Tarot{ tarot_name, tarot_life, tarot_decision } = tarot
+  let tarotCards = getTarotCards tarot (worldprogress_gen progress)
   return $ Encounter
     { encounter_guid      = guid
     , encounter_name      = tarot_name
-    , encounter_cardNames = (fmap cardName) <$> tarot_cards
+    , encounter_cardNames = Just $ cardName <$> tarotCards
     , encounter_life      = tarot_life
     , encounter_decision  = tarot_decision
     , encounter_x         = x
@@ -391,6 +393,18 @@ data Tarot =
   , tarot_cards    :: Maybe [Card]
   , tarot_decision :: Maybe Decision
   } deriving (Eq, Show)
+
+
+getTarotCards :: Tarot -> Gen -> [Card]
+getTarotCards (Tarot{ tarot_cards }) gen =
+  case tarot_cards of
+    Just cards ->
+      cards
+    Nothing ->
+      let
+        cards = concat $ getAspectCards <$> (take 3 $ shuffle gen mainAspects)
+      in
+        cards >>= replicate 3
 
 
 tarotBeginning :: WorldProgress -> Tarot

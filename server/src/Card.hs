@@ -89,4 +89,40 @@ cardImgUrl aspect suit =
 
 
 elementalAspects :: [Aspect]
-elementalAspects = [Heaven, Tide, Shroom, Blaze]
+elementalAspects =
+  [ Heaven
+  , Tide
+  , Shroom
+  , Blaze
+  ]
+
+
+mainAspects :: [Aspect]
+mainAspects =
+  [ Heaven
+  , Tide
+  , Blaze
+  , Shroom
+  , Alchemy
+  , Mirage
+  , Mirror
+  , Duality
+  , Morph
+  ]
+
+
+allAspects :: [Aspect]
+allAspects =
+  [ Heaven
+  , Tide
+  , Blaze
+  , Shroom
+  , Alchemy
+  , Mirage
+  , Mirror
+  , Duality
+  , Blood
+  , Crown
+  , Morph
+  , Strange
+  ]
