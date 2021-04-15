@@ -518,7 +518,7 @@ mouseDown { dimensions } assets gameType mode { x, y } state =
                                             Cmd.none
 
                                 "continue" ->
-                                    message << Main.RoomMsg <| Room.VisitWorld
+                                    message << Main.RoomMsg <| Room.VisitWorld True
 
                                 _ ->
                                     Cmd.none

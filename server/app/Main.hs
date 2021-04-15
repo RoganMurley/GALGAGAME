@@ -302,6 +302,7 @@ beginQueue state client roomVar = do
 
 beginWorld :: TVar Server.State -> Client -> Maybe World.WorldProgress -> App ()
 beginWorld state client mProgress = do
+  Client.send "acceptWorld:" client
   let username = Client.queryUsername client
   progress <- World.refreshProgress <$> fromMaybe (World.loadProgress username) (return <$> mProgress)
   World.updateProgress username progress

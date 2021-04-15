@@ -349,164 +349,174 @@ locationUpdate model url =
 
                 _ ->
                     Nothing
+
+        route =
+            parse Routing.route url |> Maybe.withDefault Routing.default
     in
-    case parse Routing.route url of
-        Just route ->
-            case route of
-                Routing.Home ->
-                    ( { model | room = Room.init }
-                    , websocketReconnect ()
-                    )
+    case route of
+        Routing.Home ->
+            ( { model | room = Room.init }
+            , websocketReconnect ()
+            )
 
-                Routing.Play playRoute ->
-                    let
-                        username : Maybe String
-                        username =
-                            model.flags.username
+        Routing.Play playRoute ->
+            let
+                username : Maybe String
+                username =
+                    model.flags.username
 
-                        randomRoomID : String
-                        randomRoomID =
-                            generate Room.Generators.roomID model.flags.seed
-                    in
-                    case playRoute of
-                        Routing.ComputerPlay ->
-                            ( { model
-                                | room =
-                                    Room.Lobby <|
-                                        Lobby.init
-                                            randomRoomID
-                                            GameType.ComputerGame
-                                            Playing
-                              }
-                            , Lobby.skipLobbyCmd username
-                            )
-
-                        Routing.CustomPlay mRoomID ->
-                            let
-                                roomID : String
-                                roomID =
-                                    case mRoomID of
-                                        Just r ->
-                                            r
-
-                                        Nothing ->
-                                            randomRoomID
-
-                                lobbyModel : Main.Model
-                                lobbyModel =
-                                    { model
-                                        | room =
-                                            Room.Lobby <|
-                                                Lobby.init
-                                                    roomID
-                                                    GameType.CustomGame
-                                                    Playing
-                                    }
-                            in
-                            case model.room of
-                                -- Annoying stateful bit, fix me.
-                                -- WILL cause bugs.
-                                Room.Connected _ ->
-                                    ( model, Lobby.skipLobbyCmd username )
-
-                                _ ->
-                                    ( lobbyModel, Lobby.skipLobbyCmd username )
-
-                        Routing.QuickPlay ->
-                            ( { model
-                                | room =
-                                    Room.Lobby <|
-                                        Lobby.init
-                                            randomRoomID
-                                            GameType.QuickplayGame
-                                            Playing
-                              }
-                            , Lobby.skipLobbyCmd username
-                            )
-
-                        Routing.TutorialPlay ->
-                            ( { model
-                                | room =
-                                    Room.Lobby <|
-                                        Lobby.init
-                                            randomRoomID
-                                            GameType.TutorialGame
-                                            Playing
-                              }
-                            , Lobby.skipLobbyCmd username
-                            )
-
-                        Routing.DailyPlay ->
-                            ( { model
-                                | room =
-                                    Room.Lobby <|
-                                        Lobby.init
-                                            randomRoomID
-                                            GameType.DailyGame
-                                            Playing
-                              }
-                            , Lobby.skipLobbyCmd username
-                            )
-
-                Routing.Spec roomID ->
+                randomRoomID : String
+                randomRoomID =
+                    generate Room.Generators.roomID model.flags.seed
+            in
+            case playRoute of
+                Routing.ComputerPlay ->
                     ( { model
                         | room =
                             Room.Lobby <|
                                 Lobby.init
-                                    roomID
+                                    randomRoomID
                                     GameType.ComputerGame
-                                    Spectating
+                                    Playing
                       }
-                    , Cmd.none
+                    , Lobby.skipLobbyCmd username
                     )
 
-                Routing.Replay replayID ->
+                Routing.CustomPlay mRoomID ->
+                    let
+                        roomID : String
+                        roomID =
+                            case mRoomID of
+                                Just r ->
+                                    r
+
+                                Nothing ->
+                                    randomRoomID
+
+                        lobbyModel : Main.Model
+                        lobbyModel =
+                            { model
+                                | room =
+                                    Room.Lobby <|
+                                        Lobby.init
+                                            roomID
+                                            GameType.CustomGame
+                                            Playing
+                            }
+                    in
+                    case model.room of
+                        -- Annoying stateful bit, fix me.
+                        -- WILL cause bugs.
+                        Room.Connected _ ->
+                            ( model, Lobby.skipLobbyCmd username )
+
+                        _ ->
+                            ( lobbyModel, Lobby.skipLobbyCmd username )
+
+                Routing.QuickPlay ->
                     ( { model
                         | room =
-                            Room.Replay Replay.init
+                            Room.Lobby <|
+                                Lobby.init
+                                    randomRoomID
+                                    GameType.QuickplayGame
+                                    Playing
                       }
-                    , Replay.getReplay replayID
+                    , Lobby.skipLobbyCmd username
                     )
 
-                Routing.Login ->
+                Routing.TutorialPlay ->
                     ( { model
                         | room =
-                            Room.Login <|
-                                Login.init nextPath
+                            Room.Lobby <|
+                                Lobby.init
+                                    randomRoomID
+                                    GameType.TutorialGame
+                                    Playing
                       }
-                    , Cmd.none
+                    , Lobby.skipLobbyCmd username
                     )
 
-                Routing.Signup ->
+                Routing.DailyPlay ->
                     ( { model
                         | room =
-                            Room.Signup <|
-                                Signup.init nextPath
+                            Room.Lobby <|
+                                Lobby.init
+                                    randomRoomID
+                                    GameType.DailyGame
+                                    Playing
                       }
-                    , Cmd.none
+                    , Lobby.skipLobbyCmd username
                     )
 
-                Routing.Feedback ->
+                Routing.WorldPlay ->
                     ( { model
                         | room =
-                            Room.Feedback <|
-                                Feedback.init nextPath
+                            Room.Lobby <|
+                                Lobby.init
+                                    randomRoomID
+                                    GameType.WorldGame
+                                    Playing
                       }
-                    , Cmd.none
+                    , Lobby.skipLobbyCmd username
                     )
 
-                Routing.World ->
-                    ( { model
-                        | room =
-                            Room.World
-                                World.init
-                      }
-                    , message <| Main.RoomMsg <| Room.WorldMsg World.JoinWorld
-                    )
-
-        Nothing ->
-            ( { model | room = Room.init }
+        Routing.Spec roomID ->
+            ( { model
+                | room =
+                    Room.Lobby <|
+                        Lobby.init
+                            roomID
+                            GameType.ComputerGame
+                            Spectating
+              }
             , Cmd.none
+            )
+
+        Routing.Replay replayID ->
+            ( { model
+                | room =
+                    Room.Replay Replay.init
+              }
+            , Replay.getReplay replayID
+            )
+
+        Routing.Login ->
+            ( { model
+                | room =
+                    Room.Login <|
+                        Login.init nextPath
+              }
+            , Cmd.none
+            )
+
+        Routing.Signup ->
+            ( { model
+                | room =
+                    Room.Signup <|
+                        Signup.init nextPath
+              }
+            , Cmd.none
+            )
+
+        Routing.Feedback ->
+            ( { model
+                | room =
+                    Room.Feedback <|
+                        Feedback.init nextPath
+              }
+            , Cmd.none
+            )
+
+        Routing.World ->
+            ( { model
+                | room =
+                    Room.World
+                        World.init
+              }
+            , message <|
+                Main.RoomMsg <|
+                    Room.WorldMsg World.JoinWorld
             )
 
 

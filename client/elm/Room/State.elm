@@ -152,9 +152,13 @@ update model msg assets flags =
                 _ ->
                     ( model, Cmd.none )
 
-        VisitWorld ->
+        VisitWorld endEncounter ->
             ( World World.init
-            , message <| Main.Send "endEncounter:"
+            , if endEncounter then
+                message <| Main.Send "endEncounter:"
+
+              else
+                Cmd.none
             )
 
 
