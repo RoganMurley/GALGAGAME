@@ -1,7 +1,12 @@
-module Routing.State exposing (loginRoute, playRoute, replayRoute, route, specRoute)
+module Routing.State exposing (default, loginRoute, playRoute, replayRoute, route, specRoute)
 
 import Routing.Types exposing (PlayRoute(..), Route(..))
-import Url.Parser exposing ((</>), Parser, map, oneOf, s, string, top)
+import Url.Parser exposing ((</>), Parser, map, oneOf, s, string)
+
+
+default : Route
+default =
+    Play WorldPlay
 
 
 route : Parser (Route -> a) a
@@ -14,7 +19,6 @@ route =
         , map Signup signupRoute
         , map Feedback feedbackRoute
         , map World worldRoute
-        , map Home top
         ]
 
 
@@ -28,6 +32,7 @@ playRoute =
                 , map QuickPlay <| s "quickplay"
                 , map TutorialPlay <| s "tutorial"
                 , map DailyPlay <| s "daily"
+                , map WorldPlay <| s "journey"
                 ]
 
 

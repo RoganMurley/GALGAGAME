@@ -54,16 +54,24 @@ update ({ gameType, mode } as model) msg flags =
                                     "playDaily:"
 
                                 WorldGame ->
-                                    "playWorld:"
+                                    "world:"
 
                         Spectating ->
                             "spectate:"
+
+                joinRoomCmd : List (Cmd Main.Msg)
+                joinRoomCmd =
+                    case gameType of
+                        WorldGame ->
+                            []
+
+                        _ ->
+                            [ message <| Main.Send <| "room:" ++ model.roomID ]
             in
             ( model
-            , Cmd.batch
-                [ message <| Main.Send <| prefix
-                , message <| Main.Send <| "room:" ++ model.roomID
-                ]
+            , Cmd.batch <|
+                [ message <| Main.Send <| prefix ]
+                    ++ joinRoomCmd
             )
 
         JoinRoomErr error ->
@@ -100,6 +108,11 @@ receive msg =
             splitOnColon msg
     in
     case command of
+        "acceptWorld" ->
+            message <|
+                Main.RoomMsg <|
+                    Room.VisitWorld False
+
         "acceptPlay" ->
             message <|
                 Main.RoomMsg <|
@@ -143,7 +156,7 @@ gameTypeToString gameType =
             "DAILY CHALLENGE"
 
         WorldGame ->
-            "WORLD ENCOUNTER "
+            "GALGA"
 
 
 skipLobbyCmd : Maybe String -> Cmd Main.Msg
