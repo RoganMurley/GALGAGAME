@@ -35,9 +35,7 @@ import Settings.Types as Settings
 import Signup.State as Signup
 import Url exposing (Url)
 import Url.Parser exposing (parse)
-import Util exposing (authLocation, message)
-import World.Messages as World
-import World.State as World
+import Util exposing (authLocation)
 
 
 init : Flags -> Url -> Int -> ( Main.Model, Cmd Msg )
@@ -506,17 +504,6 @@ locationUpdate model url =
                         Feedback.init nextPath
               }
             , Cmd.none
-            )
-
-        Routing.World ->
-            ( { model
-                | room =
-                    Room.World
-                        World.init
-              }
-            , message <|
-                Main.RoomMsg <|
-                    Room.WorldMsg World.JoinWorld
             )
 
 

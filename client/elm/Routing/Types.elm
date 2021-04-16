@@ -9,7 +9,6 @@ type Route
     | Login
     | Signup
     | Feedback
-    | World
 
 
 type PlayRoute
