@@ -699,10 +699,6 @@ initialProgress gen =
       gen
 
 
-startProgress :: Gen -> WorldProgress
-startProgress gen = (initialProgress gen) { worldprogress_decisionId = Just "start" }
-
-
 updateProgress :: Maybe Text -> WorldProgress -> App ()
 updateProgress (Just username) progressState = do
   result <- runBeam $ runSelectReturningOne $
@@ -722,7 +718,7 @@ updateProgress Nothing _ = return ()
 loadProgress :: Maybe Text -> App WorldProgress
 loadProgress Nothing         = do
   gen <- liftIO getGen
-  return $ startProgress gen
+  return $ initialProgress gen
 loadProgress (Just username) = do
   result <- runBeam $ runSelectReturningOne $
     select $ filter_ (\row -> Schema.progressUser row ==. val_ (Auth.Schema.UserId username)) $
@@ -736,12 +732,12 @@ loadProgress (Just username) = do
         Left err -> do
           liftIO $ Log.error $ printf "Error loading world progress: %s" err
           gen <- liftIO getGen
-          return $ startProgress gen
+          return $ initialProgress gen
         Right progress ->
           return progress
     Nothing -> do
       gen <- liftIO getGen
-      return $ startProgress gen
+      return $ initialProgress gen
 
 
 refreshProgress :: WorldProgress -> WorldProgress
@@ -853,18 +849,6 @@ rewardDecision decisionId cards =
       }
 
 
-startDecision :: Decision
-startDecision =
-  Decision
-    { decision_id      = "start"
-    , decision_title   = "GALGA"
-    , decision_text    = "Your journey begins."
-    , decision_choices = [
-      DecisionChoice "BEGIN" (\progress -> progress { worldprogress_decisionId = Nothing })
-    ]
-    }
-
-
 defeatDecision :: Decision
 defeatDecision =
   Decision
@@ -925,8 +909,7 @@ alchemyDecision = rewardDecision "alchemy" [Cards.alchemySword, Cards.alchemyWan
 
 allDecisions :: [Decision]
 allDecisions =
-  [ startDecision
-  , defeatDecision
+  [ defeatDecision
   , resetDecision
   , tideDecision
   , mirrorDecision
