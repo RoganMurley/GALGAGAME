@@ -345,7 +345,7 @@ locationUpdate model url =
                             Just "/play/daily"
 
                         GameType.WorldGame ->
-                            Just "/world"
+                            Just "/play"
 
                 _ ->
                     Nothing
