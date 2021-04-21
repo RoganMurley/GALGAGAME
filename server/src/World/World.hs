@@ -364,15 +364,16 @@ preEncounterProgress (Encounter{ encounter_guid }) progress =
 
 postEncounterProgress :: Encounter -> Scenario -> WorldProgress -> WorldProgress
 postEncounterProgress encounter scenario progress =
-  WorldProgress
-    { worldprogress_key          = encounter_key
-    , worldprogress_visited      = Set.insert encounter_key worldprogress_visited
-    , worldprogress_visitedEdges = edge : worldprogress_visitedEdges
-    , worldprogress_deck         = deck
-    , worldprogress_decisionId   = decision_id <$> encounter_decision
-    , worldprogress_roomId       = Nothing
-    , worldprogress_gen          = nextGen progress
-    }
+  checkWin $
+    WorldProgress
+      { worldprogress_key          = encounter_key
+      , worldprogress_visited      = Set.insert encounter_key worldprogress_visited
+      , worldprogress_visitedEdges = edge : worldprogress_visitedEdges
+      , worldprogress_deck         = deck
+      , worldprogress_decisionId   = decision_id <$> encounter_decision
+      , worldprogress_roomId       = Nothing
+      , worldprogress_gen          = nextGen progress
+      }
   where
     Encounter{ encounter_decision, encounter_key, encounter_x, encounter_y } = encounter
     WorldProgress{ worldprogress_deck, worldprogress_key, worldprogress_visited, worldprogress_visitedEdges } = progress
@@ -385,6 +386,22 @@ postEncounterProgress encounter scenario progress =
           (cardName <$> rewardCards) ++ worldprogress_deck
         Nothing ->
           worldprogress_deck
+
+
+checkWin :: WorldProgress -> WorldProgress
+checkWin progress =
+  if didWin then
+    progress { worldprogress_decisionId = Just "complete" }
+      else
+        progress
+  where
+    WorldProgress{ worldprogress_key, worldprogress_visited } = progress
+    didWin :: Bool
+    didWin =
+      null $
+        filter
+          (\Edge{ edge_key } -> not $ Set.member edge_key worldprogress_visited)
+          (getAdjEdges worldprogress_key)
 
 
 nextGen :: WorldProgress -> Gen
@@ -853,8 +870,8 @@ defeatDecision :: Decision
 defeatDecision =
   Decision
     { decision_id      = "defeat"
-    , decision_title   = "DEFEAT"
-    , decision_text    = "Your journey ends here."
+    , decision_title   = "INCOMPLETE"
+    , decision_text    = "Your journey ends here,\nbut another is just beginning..."
     , decision_choices = [
       DecisionChoice "ANOTHER" (\progress -> initialProgress (worldprogress_gen progress))
     ]
@@ -869,6 +886,18 @@ resetDecision =
     , decision_text    = "Your progress was reset."
     , decision_choices = [
       DecisionChoice "ANOTHER" (\progress -> progress { worldprogress_decisionId = Nothing })
+    ]
+    }
+
+
+completeDecision :: Decision
+completeDecision =
+  Decision
+    { decision_id      = "complete"
+    , decision_title   = "COMPLETE"
+    , decision_text    = "Your journey was long,\nbut we are finally\nwhole again."
+    , decision_choices = [
+      DecisionChoice "ANOTHER" (\progress -> initialProgress (worldprogress_gen progress))
     ]
     }
 
@@ -909,7 +938,8 @@ alchemyDecision = rewardDecision "alchemy" [Cards.alchemySword, Cards.alchemyWan
 
 allDecisions :: [Decision]
 allDecisions =
-  [ defeatDecision
+  [ completeDecision
+  , defeatDecision
   , resetDecision
   , tideDecision
   , mirrorDecision
