@@ -57,7 +57,10 @@ import Room (Room)
 
 import qualified Replay.Final
 
+import qualified World.Decision as World
+import qualified World.Encounter as World
 import qualified World.World as World
+import qualified World.WorldProgress as World
 
 import qualified Network.WebSockets as WS
 
