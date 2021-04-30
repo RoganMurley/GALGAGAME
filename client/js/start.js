@@ -190,3 +190,7 @@ app.ports.websocketSend.subscribe(function (input) {
 app.ports.websocketReconnect.subscribe(function () {
   socket.close(1000, "Reconnecting");
 });
+
+window.beforeunload = function () {
+  socket.close()
+};
