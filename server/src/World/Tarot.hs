@@ -1,7 +1,7 @@
 module World.Tarot where
 
 import Card (Card(..), elementalAspects, mainAspects)
-import Cards (cardsByName, getAspectCards)
+import Cards (getAspectCards)
 import Data.Text (Text)
 import Life (Life)
 import World.Decision (Decision)
