@@ -317,7 +317,7 @@ beginWorld state client mProgress = do
     (Just (World.JoinEncounter encounterId), Nothing) ->
       case World.encounterFromGuid world encounterId of
         Just encounter -> do
-          liftIO $ Log.info $ printf "<%s>: Joining world encounter" (show $ Client.name client)
+          liftIO $ Log.info $ printf "<%s>: Joining world encounter %s" (show $ Client.name client) (encounterId)
           Client.send ("joinEncounter:" <> encounterId) client
           gen <- liftIO getGen
           let scenario = World.makeScenario progress encounter
