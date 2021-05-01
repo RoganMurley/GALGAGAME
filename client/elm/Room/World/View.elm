@@ -3,6 +3,9 @@ module World.View exposing (htmlView, webglView)
 import Assets.Types as Assets
 import Background.View as Background
 import Buttons.View as Buttons
+import Card.State as Card
+import Card.Types as Card exposing (Card)
+import Card.View as Card
 import Font.View as Font
 import Game.State exposing (bareContextInit)
 import Game.Types exposing (Context)
@@ -10,8 +13,10 @@ import Html exposing (Html, div)
 import Line.View as Line
 import Main.Types exposing (Flags)
 import Math.Vector3 exposing (vec3)
+import Quaternion
 import Vfx.State as Vfx
 import WebGL
+import WhichPlayer.Types exposing (WhichPlayer(..))
 import World.Messages exposing (Msg)
 import World.Types exposing (Decision, Model, World)
 import World.WorldPos exposing (lineToWorldPos)
@@ -84,13 +89,44 @@ linesView world ctx =
 
 
 decisionView : Decision -> Float -> Context -> List WebGL.Entity
-decisionView { title, text } time ctx =
+decisionView { cards, title, text } time ctx =
     let
         { w, h } =
             ctx
 
         size =
             1.4 * max w h
+
+        bodyView : List WebGL.Entity
+        bodyView =
+            if List.length cards > 0 then
+                List.concat <|
+                    List.map (Card.view ctx) <|
+                        List.indexedMap cardEntity cards
+
+            else
+                Font.view
+                    "Futura"
+                    text
+                    { x = w * 0.5
+                    , y = h * 0.4
+                    , scaleX = 0.00005 * size + 0.001 * sin (time * 0.002)
+                    , scaleY = 0.00005 * size + 0.001 * sin (time * 0.002)
+                    , color = vec3 (244 / 255) (241 / 255) (94 / 255)
+                    }
+                    ctx
+
+        cardEntity : Int -> Card -> Card.Entity {}
+        cardEntity i card =
+            { card = card
+            , owner = PlayerA
+            , scale = Card.scale
+            , rotation = Quaternion.identity
+            , position =
+                vec3 (-0.3 + toFloat i * 0.2)
+                    0
+                    0
+            }
     in
     List.concat
         [ Font.view
@@ -103,14 +139,5 @@ decisionView { title, text } time ctx =
             , color = vec3 (244 / 255) (241 / 255) (94 / 255)
             }
             ctx
-        , Font.view
-            "Futura"
-            text
-            { x = w * 0.5
-            , y = h * 0.4
-            , scaleX = 0.00005 * size + 0.001 * sin (time * 0.002)
-            , scaleY = 0.00005 * size + 0.001 * sin (time * 0.002)
-            , color = vec3 (244 / 255) (241 / 255) (94 / 255)
-            }
-            ctx
+        , bodyView
         ]
