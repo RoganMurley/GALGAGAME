@@ -1,5 +1,6 @@
 module World.Decoders exposing (decoder)
 
+import Card.Decoders as Card
 import Json.Decode as Json exposing (Decoder, field, float, list, maybe, string)
 import Line.Decoders as Line
 import World.Types exposing (Decision, DecisionChoice, Encounter, World)
@@ -34,10 +35,11 @@ encounterDecoder =
 
 decisionDecoder : Decoder Decision
 decisionDecoder =
-    Json.map4 Decision
+    Json.map5 Decision
         (field "id" string)
         (field "title" string)
         (field "text" string)
+        (field "cards" <| list Card.decoder)
         (field "choices" <| list decisionChoiceDecoder)
 
 

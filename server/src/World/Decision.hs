@@ -16,16 +16,18 @@ data Decision = Decision
   { decision_id      :: Text
   , decision_title   :: Text
   , decision_text    :: Text
+  , decision_cards   :: [Card]
   , decision_choices :: [DecisionChoice]
   } deriving (Show)
 
 
 instance ToJSON Decision where
-  toJSON (Decision{ decision_id, decision_title, decision_text, decision_choices }) =
+  toJSON (Decision{ decision_id, decision_title, decision_text, decision_cards, decision_choices }) =
     object [
       "id"      .= toJSON decision_id
     , "title"   .= toJSON decision_title
     , "text"    .= toJSON decision_text
+    , "cards"   .= toJSON decision_cards
     , "choices" .= toJSON decision_choices
     ]
 
@@ -55,6 +57,7 @@ removeSuitDecision decisionId text suit =
     { decision_id      = decisionId
     , decision_title   = "RENOUNCE"
     , decision_text    = text
+    , decision_cards   = []
     , decision_choices =
       [ DecisionChoice "RENOUNCE" dealEff
       , DecisionChoice "REJECT" id
@@ -92,6 +95,7 @@ rewardDecision decisionId cards =
     { decision_id      = decisionId
     , decision_title   = "REWARD"
     , decision_text    = intercalate "\n" cardNames
+    , decision_cards   = cards
     , decision_choices =
       [ DecisionChoice "CLAIM" dealEff
       , DecisionChoice "REJECT" id
@@ -113,6 +117,7 @@ defeatDecision =
     { decision_id      = "defeat"
     , decision_title   = "INCOMPLETE"
     , decision_text    = "Your journey ends here,\nbut another is just beginning..."
+    , decision_cards   = []
     , decision_choices = [
       DecisionChoice "ANOTHER" (\progress -> initialProgress (worldprogress_gen progress))
     ]
@@ -125,6 +130,7 @@ resetDecision =
     { decision_id      = "reset"
     , decision_title   = "Connection Lost"
     , decision_text    = "Your progress was reset."
+    , decision_cards   = []
     , decision_choices = [
       DecisionChoice "ANOTHER" (\progress -> progress { worldprogress_decisionId = Nothing })
     ]
@@ -137,6 +143,7 @@ completeDecision =
     { decision_id      = "complete"
     , decision_title   = "COMPLETE"
     , decision_text    = "Your journey was long,\nbut we are finally\nwhole again."
+    , decision_cards   = []
     , decision_choices = [
       DecisionChoice "ANOTHER" (\progress -> initialProgress (worldprogress_gen progress))
     ]
