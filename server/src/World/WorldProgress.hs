@@ -131,7 +131,7 @@ loadProgress (Just username) = do
 refreshProgress :: WorldProgress -> WorldProgress
 refreshProgress progress =
   if forceReset then
-    (initialProgress worldprogress_gen) { worldprogress_decisionId = Just "reset" }
+    initialProgress worldprogress_gen
   else
     progress { worldprogress_roomId = Nothing }
   where
