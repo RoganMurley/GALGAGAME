@@ -12,7 +12,7 @@ import Json.Decode as Json
 import Main.Messages as Main
 import Main.Types exposing (Flags)
 import Mode exposing (Mode)
-import Mouse
+import Mouse exposing (Position)
 import PlayState.State as PlayState
 import PlayState.Types exposing (PlayState)
 import Ports exposing (log)
@@ -81,20 +81,20 @@ update msg state _ mode _ assets =
                     ( state, log "Expected a Selecting state" )
 
 
-mouseDown : Mouse.Position -> GameState -> Flags -> Mode -> GameType -> Assets.Model -> ( GameState, Cmd Main.Msg )
-mouseDown pos state flags mode gameType assets =
+mouseDown : Position -> GameState -> Flags -> Mode -> GameType -> Assets.Model -> ( GameState, Cmd Main.Msg )
+mouseDown mousePos state flags mode gameType assets =
     case state of
         Selecting selecting ->
             let
                 ( newSelecting, cmd ) =
-                    DeckBuilding.mouseDown pos selecting
+                    DeckBuilding.mouseDown mousePos selecting
             in
             ( Selecting newSelecting, cmd )
 
         Started playState ->
             let
                 ( newPlayState, cmd ) =
-                    PlayState.mouseDown flags assets gameType mode pos playState
+                    PlayState.mouseDown flags assets gameType mode mousePos playState
             in
             ( Started newPlayState, cmd )
 
@@ -102,7 +102,7 @@ mouseDown pos state flags mode gameType assets =
             ( state, Cmd.none )
 
 
-mouseUp : Mouse.Position -> GameState -> Flags -> Mode -> GameType -> Assets.Model -> ( GameState, Cmd Main.Msg )
+mouseUp : Position -> GameState -> Flags -> Mode -> GameType -> Assets.Model -> ( GameState, Cmd Main.Msg )
 mouseUp pos state flags mode gameType assets =
     case state of
         Started playState ->

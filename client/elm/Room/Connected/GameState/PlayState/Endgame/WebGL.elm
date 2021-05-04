@@ -12,8 +12,8 @@ import Game.State exposing (bareContextInit)
 import Game.Types exposing (Context)
 import GameType exposing (GameType(..))
 import Math.Matrix4 exposing (makeRotate, makeScale3)
-import Math.Vector2 exposing (Vec2)
 import Math.Vector3 exposing (vec3)
+import Mouse exposing (MouseState(..))
 import Render.Primitives
 import Render.Shaders
 import Render.Types as Render
@@ -87,7 +87,7 @@ view : Render.Params -> Assets.Model -> Maybe WhichPlayer -> Bool -> Buttons -> 
 view { w, h } assets winner resolving buttons =
     let
         ctx =
-            bareContextInit ( w, h ) assets Nothing
+            bareContextInit ( w, h ) assets NoMouse
     in
     if resolving then
         []
@@ -99,8 +99,8 @@ view { w, h } assets winner resolving buttons =
             ]
 
 
-buttonEntities : Render.Params -> Buttons -> GameType -> Float -> Maybe Vec2 -> Buttons
-buttonEntities renderParams buttons gameType dt mouse =
+buttonEntities : Render.Params -> Buttons -> GameType -> Float -> MouseState -> Buttons
+buttonEntities renderParams buttons gameType dt mouseState =
     let
         w =
             toFloat renderParams.w
@@ -121,7 +121,7 @@ buttonEntities renderParams buttons gameType dt mouse =
             0.02 * max w h
     in
     Buttons.fromList <|
-        List.map (\f -> f dt mouse buttons)
+        List.map (\f -> f dt mouseState buttons)
             (case gameType of
                 WorldGame ->
                     [ Buttons.entity

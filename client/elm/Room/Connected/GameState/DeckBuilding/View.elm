@@ -11,6 +11,7 @@ import Font.View as Font
 import Game.State exposing (bareContextInit)
 import Game.Types exposing (Context)
 import Math.Vector3 exposing (vec3)
+import Mouse exposing (MouseState(..))
 import Render.Types as Render
 import RuneSelect.Types as RuneSelect exposing (RuneCursor(..))
 import RuneSelect.View as RuneSelect
@@ -23,7 +24,7 @@ webglView : Render.Params -> Model -> Assets.Model -> List WebGL.Entity
 webglView { w, h } model assets =
     let
         ctx =
-            bareContextInit ( w, h ) assets Nothing
+            bareContextInit ( w, h ) assets NoMouse
     in
     List.concat <|
         List.map ((|>) ctx) <|

@@ -112,7 +112,7 @@ function handleMouseMove(e) {
   if (touched) {
     return;
   }
-  app.ports.touch.send({
+  app.ports.mouseMove.send({
     x: Math.floor(e.clientX),
     y: Math.floor(e.clientY),
   });

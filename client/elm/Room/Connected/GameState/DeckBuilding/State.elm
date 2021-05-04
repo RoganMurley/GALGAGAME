@@ -8,6 +8,7 @@ import DeckBuilding.Messages exposing (Msg(..))
 import DeckBuilding.Types exposing (Character, Model)
 import Game.Types exposing (Context)
 import Main.Messages as Main
+import Math.Vector2 exposing (vec2)
 import Math.Vector3 exposing (vec3)
 import Mouse exposing (Position)
 import Ports exposing (log)
@@ -301,10 +302,14 @@ nextCursor cursor =
 
 
 mouseDown : Position -> Model -> ( Model, Cmd Main.Msg )
-mouseDown _ model =
+mouseDown { x, y } model =
+    let
+        pos =
+            vec2 (toFloat x) (toFloat y)
+    in
     case model.runeSelect of
         Nothing ->
-            case Buttons.hit model.buttons of
+            case Buttons.hit model.buttons pos of
                 Just ( key, _ ) ->
                     case key of
                         "ready" ->
@@ -332,7 +337,7 @@ mouseDown _ model =
                     ( model, Cmd.none )
 
         Just runeSelect ->
-            case Buttons.hit runeSelect.buttons of
+            case Buttons.hit runeSelect.buttons pos of
                 Just ( key, _ ) ->
                     case key of
                         "nextRune" ->

@@ -21,6 +21,7 @@ import Main.Types as Main exposing (Flags)
 import Manifest.State as Manifest
 import Math.Vector2 exposing (vec2)
 import Mode exposing (Mode(..))
+import Mouse exposing (MouseState(..))
 import Notifications.State as Notifications
 import Ports exposing (analytics, copyInput, godModeCommand, mouseDown, mouseMove, mouseUp, reload, selectAllInput, touch, websocketListen, websocketReconnect, websocketSend)
 import Replay.State as Replay
@@ -222,7 +223,9 @@ update msg ({ assets, room, notifications, settings, flags } as model) =
         MousePosition pos ->
             let
                 newFlags =
-                    { flags | mouse = Just (vec2 (toFloat pos.x) (toFloat pos.y)) }
+                    { flags
+                        | mouse = Mouse <| vec2 (toFloat pos.x) (toFloat pos.y)
+                    }
 
                 newCmd =
                     Cmd.none
@@ -278,28 +281,36 @@ update msg ({ assets, room, notifications, settings, flags } as model) =
         GetAuthCallback (Err _) ->
             ( model, Cmd.none )
 
-        TouchPosition pos ->
+        TouchPosition position ->
             let
+                mouse =
+                    case position of
+                        Just { x, y } ->
+                            Touch <| vec2 (toFloat x) (toFloat y)
+
+                        Nothing ->
+                            NoMouse
+
                 newFlags =
-                    { flags | mouse = Maybe.map (\{ x, y } -> vec2 (toFloat x) (toFloat y)) pos }
+                    { flags | mouse = mouse }
 
                 ( newRoom, newCmd ) =
-                    case ( flags.mouse, pos ) of
-                        ( Nothing, Just newMouse ) ->
+                    case ( flags.mouse, position ) of
+                        ( NoMouse, Just pos ) ->
                             Room.mouseDown
-                                flags
+                                newFlags
                                 assets
                                 room
-                                newMouse
+                                pos
 
-                        ( Just oldMouse, Nothing ) ->
+                        ( Touch vec, Nothing ) ->
                             Room.mouseUp
-                                flags
+                                newFlags
                                 assets
                                 room
-                                ((\{ x, y } -> { x = round x, y = round y }) <|
-                                    Math.Vector2.toRecord oldMouse
-                                )
+                                { x = round <| Math.Vector2.getX vec
+                                , y = round <| Math.Vector2.getY vec
+                                }
 
                         _ ->
                             ( room, Cmd.none )
