@@ -8,6 +8,7 @@ import Game.State exposing (bareContextInit)
 import Json.Decode as Json
 import Main.Messages as Main
 import Main.Types exposing (Flags)
+import Math.Vector2 exposing (vec2)
 import Math.Vector3 exposing (vec3)
 import Mode exposing (Mode(..))
 import Mouse
@@ -210,8 +211,12 @@ mouseUp _ _ model _ =
 
 
 mouseDown : Flags -> Assets.Model -> Model -> Mouse.Position -> ( Model, Cmd Main.Msg )
-mouseDown _ _ model _ =
-    case Buttons.hit model.encounterButtons of
+mouseDown _ _ model { x, y } =
+    let
+        pos =
+            vec2 (toFloat x) (toFloat y)
+    in
+    case Buttons.hit model.encounterButtons pos of
         Just ( key, _ ) ->
             ( model
             , message <|
@@ -221,7 +226,7 @@ mouseDown _ _ model _ =
             )
 
         Nothing ->
-            case Buttons.hit model.choiceButtons of
+            case Buttons.hit model.choiceButtons pos of
                 Just ( key, _ ) ->
                     ( model
                     , message <|

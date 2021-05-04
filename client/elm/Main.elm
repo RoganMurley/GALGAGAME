@@ -7,6 +7,7 @@ import Main.Messages exposing (Msg(..))
 import Main.State exposing (init, subscriptions, update)
 import Main.Types exposing (Flags, InputFlags, Model)
 import Main.View exposing (titleView, view)
+import Mouse exposing (MouseState(..))
 import Url exposing (Url)
 import Util exposing (message)
 
@@ -45,7 +46,7 @@ initFull inputFlags url key =
             , pixelRatio = inputFlags.pixelRatio
             , scaling = inputFlags.initialScaling
             , key = key
-            , mouse = Nothing
+            , mouse = NoMouse
             }
     in
     ( model

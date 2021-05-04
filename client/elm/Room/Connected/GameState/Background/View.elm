@@ -7,6 +7,7 @@ import Game.State exposing (bareContextInit)
 import Game.Types exposing (Context)
 import Math.Matrix4 exposing (makeRotate, makeScale3)
 import Math.Vector3 exposing (vec3)
+import Mouse exposing (MouseState(..))
 import Render.Primitives
 import Render.Shaders
 import Render.Types as Render
@@ -22,7 +23,7 @@ webglView : Render.Params -> Assets.Model -> Anim -> List WebGL.Entity
 webglView { w, h, time } assets anim =
     let
         baseCtx =
-            bareContextInit ( w, h ) assets Nothing
+            bareContextInit ( w, h ) assets NoMouse
 
         ctx =
             { baseCtx | anim = anim }

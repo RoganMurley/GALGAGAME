@@ -16,11 +16,11 @@ import Holding.Types exposing (Holding(..))
 import Hover exposing (Hover(..), HoverBase, HoverSelf)
 import List.Extra as List
 import Main.Types exposing (Flags)
-import Math.Vector2 exposing (Vec2)
 import Math.Vector3 exposing (Vec3, vec3)
 import Maybe.Extra as Maybe
 import Model.State as Model
 import Model.Types as Model exposing (Life, Model)
+import Mouse exposing (MouseState(..))
 import PlayState.Messages as PlayState
 import Render.Uniforms as Uniforms
 import Resolvable.State as Resolvable exposing (activeAnim, activeAnimDamage, activeModel, resolving)
@@ -48,8 +48,8 @@ gameInit model =
     }
 
 
-contextInit : ( Int, Int ) -> Resolvable.Model -> Assets.Model -> Maybe Vec2 -> Context
-contextInit ( width, height ) res { textures, fonts } mouse =
+contextInit : ( Int, Int ) -> Resolvable.Model -> Assets.Model -> MouseState -> Context
+contextInit ( width, height ) res { textures, fonts } mouseState =
     let
         coords =
             { w =
@@ -76,6 +76,9 @@ contextInit ( width, height ) res { textures, fonts } mouse =
 
         ortho =
             Uniforms.ortho coords
+
+        mouseVec =
+            Mouse.getVec mouseState
     in
     { w = coords.w
     , h = coords.h
@@ -88,8 +91,8 @@ contextInit ( width, height ) res { textures, fonts } mouse =
     , textures = textures
     , fonts = fonts
     , resolving = resolving res
-    , mouse = mouse
-    , mouseRay = Unproject.rayFromMouse mouse coords perspective Uniforms.camera3d
+    , mouse = mouseState
+    , mouseRay = Unproject.rayFromMouse mouseVec coords perspective Uniforms.camera3d
     , perspective = perspective
     , ortho = ortho
     , camera2d = Uniforms.camera2d
@@ -97,13 +100,13 @@ contextInit ( width, height ) res { textures, fonts } mouse =
     }
 
 
-bareContextInit : ( Int, Int ) -> Assets.Model -> Maybe Vec2 -> Context
-bareContextInit dimensions assets mouse =
+bareContextInit : ( Int, Int ) -> Assets.Model -> MouseState -> Context
+bareContextInit dimensions assets mouseState =
     let
         res =
             Resolvable.init Model.init []
     in
-    contextInit dimensions res assets mouse
+    contextInit dimensions res assets mouseState
 
 
 entitiesInit : Entities
@@ -331,8 +334,8 @@ feedbackTick feedback dt =
             feedback
 
 
-buttonEntities : Bool -> Maybe Vec2 -> Float -> Buttons -> Context -> Buttons
-buttonEntities passed mouse dt buttons { w, h, model, radius, resolving } =
+buttonEntities : Bool -> MouseState -> Float -> Buttons -> Context -> Buttons
+buttonEntities passed mouseState dt buttons { w, h, model, radius, resolving } =
     let
         handFull =
             List.length model.hand == maxHandLength
@@ -371,7 +374,7 @@ buttonEntities passed mouse dt buttons { w, h, model, radius, resolving } =
                 , disabled = disabled
                 }
                 dt
-                mouse
+                mouseState
                 buttons
             ]
 
@@ -398,7 +401,7 @@ buttonEntities passed mouse dt buttons { w, h, model, radius, resolving } =
                 , disabled = disabled
                 }
                 dt
-                mouse
+                mouseState
                 buttons
             ]
 

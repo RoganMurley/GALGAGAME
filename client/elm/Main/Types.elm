@@ -2,7 +2,7 @@ module Main.Types exposing (Flags, InputFlags, Model, Seed)
 
 import Assets.Types as Assets
 import Browser.Navigation
-import Math.Vector2 exposing (Vec2)
+import Mouse exposing (MouseState)
 import Notifications.Types as Notifications
 import Room.Types as Room
 import Settings.Types as Settings
@@ -37,7 +37,7 @@ type alias Flags =
     , time : Float
     , dimensions : ( Int, Int )
     , username : Maybe String
-    , mouse : Maybe Vec2
+    , mouse : MouseState
     , key : Browser.Navigation.Key
     , pixelRatio : Float
     , scaling : Float

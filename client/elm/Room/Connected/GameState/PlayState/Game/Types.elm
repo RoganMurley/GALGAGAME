@@ -11,6 +11,7 @@ import Hover exposing (HoverOther, HoverSelf)
 import Math.Matrix4 exposing (Mat4)
 import Math.Vector2 exposing (Vec2)
 import Model.Types as Model
+import Mouse exposing (MouseState(..))
 import Resolvable.Types as Resolvable
 import Stack.Types exposing (StackCard)
 import Texture.Types as Texture
@@ -44,7 +45,7 @@ type alias Context =
     , textures : Texture.Model
     , fonts : Font.Model
     , resolving : Bool
-    , mouse : Maybe Vec2
+    , mouse : MouseState
     , mouseRay : Maybe Ray
     , perspective : Mat4
     , ortho : Mat4

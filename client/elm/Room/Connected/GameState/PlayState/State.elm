@@ -27,7 +27,7 @@ import Model.Decoders as Model
 import Model.Diff exposing (Diff, initDiff)
 import Model.State as Model
 import Model.Types exposing (Model)
-import Mouse exposing (Position)
+import Mouse exposing (MouseState(..), Position)
 import PlayState.Decoders as PlayState
 import PlayState.Messages as PlayState exposing (Msg(..), PlayingOnly(..), TurnOnly(..))
 import PlayState.Types as PlayState exposing (PlayState(..), ResolveOutcomeInput)
@@ -435,7 +435,7 @@ resolveOutcome mState { initial, resDiffList, finalState } =
 
 
 mouseDown : Flags -> Assets.Model -> GameType -> Mode -> Position -> PlayState -> ( PlayState, Cmd Main.Msg )
-mouseDown { dimensions } assets gameType mode { x, y } state =
+mouseDown { dimensions, mouse } assets gameType mode { x, y } state =
     let
         pos =
             vec2 (toFloat x) (toFloat y)
@@ -459,7 +459,7 @@ mouseDown { dimensions } assets gameType mode { x, y } state =
                 assets
 
         ctx =
-            Game.bareContextInit dimensions Assets.init (Just pos)
+            Game.bareContextInit dimensions Assets.init mouse
 
         mHandEntity =
             ctx.mouseRay
@@ -479,7 +479,7 @@ mouseDown { dimensions } assets gameType mode { x, y } state =
         buttonMsg =
             case state of
                 Playing _ ->
-                    case Buttons.hit game.buttons of
+                    case Buttons.hit game.buttons pos of
                         Just ( key, _ ) ->
                             case key of
                                 "go" ->
@@ -498,7 +498,7 @@ mouseDown { dimensions } assets gameType mode { x, y } state =
                             Cmd.none
 
                 Ended { buttons, replayId, winner } ->
-                    case Buttons.hit buttons of
+                    case Buttons.hit buttons pos of
                         Just ( key, _ ) ->
                             case key of
                                 "playAgain" ->

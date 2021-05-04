@@ -5,16 +5,17 @@ import Collision exposing (AABB, hitAABB)
 import Dict
 import List.Extra as List
 import Math.Vector2 exposing (Vec2, vec2)
+import Mouse exposing (MouseState(..))
 
 
 entity :
     String
     -> { x : Float, y : Float, width : Float, height : Float, btn : ButtonType, disabled : Bool }
     -> Float
-    -> Maybe Vec2
+    -> MouseState
     -> Buttons
     -> ( String, Button )
-entity key { x, y, width, height, btn, disabled } dt mMouse buttons =
+entity key { x, y, width, height, btn, disabled } dt mouseState buttons =
     let
         previousHover : Float
         previousHover =
@@ -27,6 +28,15 @@ entity key { x, y, width, height, btn, disabled } dt mMouse buttons =
             { r1 = vec2 (x - abs width) (y - abs height)
             , r2 = vec2 (x + abs width) (y + abs height)
             }
+
+        mMouse : Maybe Vec2
+        mMouse =
+            case mouseState of
+                Mouse mouse ->
+                    Just mouse
+
+                _ ->
+                    Nothing
 
         isHit : Bool
         isHit =
@@ -80,9 +90,24 @@ get key (Buttons buttons) =
     Dict.get key buttons
 
 
-hit : Buttons -> Maybe ( String, Button )
-hit (Buttons buttons) =
-    List.find (\( _, { hover } ) -> hover > 0) (Dict.toList buttons)
+
+-- hit : Buttons -> Maybe ( String, Button )
+-- hit (Buttons buttons) =
+--     List.find (\( _, { hover } ) -> hover > 0) (Dict.toList buttons)
+
+
+hit : Buttons -> Vec2 -> Maybe ( String, Button )
+hit (Buttons buttons) vec =
+    let
+        getAabb : Button -> AABB
+        getAabb { x, y, width, height } =
+            { r1 = vec2 (x - abs width) (y - abs height)
+            , r2 = vec2 (x + abs width) (y + abs height)
+            }
+    in
+    List.find
+        (\( _, button ) -> hitAABB (getAabb button) vec)
+        (Dict.toList buttons)
 
 
 update : String -> (Button -> Button) -> Buttons -> Buttons

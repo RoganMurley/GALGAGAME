@@ -23,6 +23,7 @@ import Math.Vector2 exposing (Vec2, vec2)
 import Math.Vector3 exposing (Vec3, vec3)
 import Maybe.Extra as Maybe
 import Model.Wave as Wave
+import Mouse exposing (MouseState(..))
 import Render.Primitives
 import Render.Shaders
 import Render.Types as Render
@@ -41,7 +42,7 @@ view { w, h } game assets =
             game
 
         ctx =
-            contextInit ( w, h ) res assets Nothing
+            contextInit ( w, h ) res assets NoMouse
     in
     List.concat <|
         List.map ((|>) ctx)
