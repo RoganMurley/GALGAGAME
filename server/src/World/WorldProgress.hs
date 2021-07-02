@@ -60,14 +60,15 @@ instance FromJSON WorldProgress where
 
 
 getInitialPairing :: Gen -> (Card.Aspect, Card.Aspect)
-getInitialPairing gen = randomChoice gen possiblePairings
+getInitialPairing gen = (randomChoice genA aspects, randomChoice genB aspects)
   where
-    possiblePairings :: [(Card.Aspect, Card.Aspect)]
-    possiblePairings =
-      [ (Card.Heaven, Card.Shroom)
-      , (Card.Tide, Card.Blaze)
-      , (Card.Shroom, Card.Heaven)
-      , (Card.Blaze, Card.Tide)
+    (genA, genB) = split gen
+    aspects :: [Card.Aspect]
+    aspects =
+      [ Card.Heaven
+      , Card.Tide
+      , Card.Shroom
+      , Card.Blaze
       ]
 
 
