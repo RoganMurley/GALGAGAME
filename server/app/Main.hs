@@ -337,10 +337,7 @@ beginWorld state client mProgress = do
             )
             else
               (do
-                let newProgress = progress {
-                  World.worldprogress_decisionId = Just "defeat",
-                  World.worldprogress_gen = World.nextGen progress
-                }
+                let newProgress = World.initialProgress (World.nextGen progress)
                 liftIO $ Log.info $ printf "<%s>: Loss! New world progress %s" (show $ Client.name client) (show newProgress)
                 beginWorld state client (Just newProgress)
               )
