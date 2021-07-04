@@ -355,12 +355,15 @@ beginWorld state client mProgress = do
         _ -> do
           liftIO $ Log.error $ printf "<%s>: Invalid choice %s" (show $ Client.name client) (show choiceIndex)
           Client.send "error:invalid choice" client
+          beginWorld state client (Just progress)
     (Nothing, _) -> do
       liftIO $ Log.error $ printf "<%s>: Unknown world request '%s'" (show $ Client.name client) msg
       Client.send "error:unknown world request" client
+      beginWorld state client (Just progress)
     (Just _, _) -> do
       liftIO $ Log.error $ printf "<%s>: Illegal world request for state '%s'" (show $ Client.name client) msg
       Client.send "error:illegal world request for state" client
+      beginWorld state client (Just progress)
 
 
 spectate :: Client -> TVar Room -> App ()
