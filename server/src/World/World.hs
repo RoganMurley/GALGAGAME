@@ -136,8 +136,22 @@ makeScenario (WorldProgress{ worldprogress_deck }) encounter =
           ""
           (Right $ deckFromCardNames worldprogress_deck >>= replicate 3)
           initMaxLife
-    deckFromCardNames :: [Text] -> Deck
-    deckFromCardNames names = catMaybes $ (\name -> Map.lookup name cardsByName) <$> names
+
+
+deckFromCardNames :: [Text] -> Deck
+deckFromCardNames names = catMaybes $ (\name -> Map.lookup name cardsByName) <$> names
+
+
+pvpScenario :: WorldProgress -> Scenario -> Scenario
+pvpScenario (WorldProgress{ worldprogress_deck }) scenario =
+  scenario { scenario_characterPb =
+    Just $
+      DeckBuilding.Character
+        "Prideful Fool"
+        ""
+        (Right $ deckFromCardNames worldprogress_deck >>= replicate 3)
+        initMaxLife
+  }
 
 
 preEncounterProgress :: Encounter -> WorldProgress -> WorldProgress

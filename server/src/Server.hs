@@ -87,6 +87,14 @@ dequeue client state =
     \(State s qs) -> State s (filter (\(c, _) -> c /= client) qs)
 
 
+modScenario :: (Scenario -> Scenario) -> TVar Room -> STM Room
+modScenario f roomVar =
+  modReadTVar roomVar $ Room.modScenario f
+
+
+peekqueue :: TVar State -> STM (Maybe (Client, TVar Room))
+peekqueue state = (\(State _ qs) -> headMay qs) <$> readTVar state
+
 
 -- ADDING/REMOVING CLIENTS.
 addSpecClient :: Client -> TVar Room -> STM Room
