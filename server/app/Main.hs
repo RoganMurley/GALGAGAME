@@ -263,6 +263,7 @@ beginSpec state client roomVar = do
     (spectate client roomVar)
     (disconnect client roomVar state)
 
+
 beginComputer :: Text -> TVar Server.State -> Client -> TVar Room -> App Bool
 beginComputer cpuName state client roomVar = do
   liftIO $ Log.info $ printf "<%s>: Begin AI game" (show $ Client.name client)
@@ -327,20 +328,29 @@ beginWorld state client mProgress = do
           let preProgress = World.preEncounterProgress encounter progress
           World.updateProgress username preProgress
 
-          roomVar <- liftIO . atomically $ Server.getOrCreateRoom roomName WaitCustom gen scenario state
-          didWin <- beginComputer cpuName state client roomVar
-          if didWin then
-            (do
-              let postProgress = World.postEncounterProgress encounter scenario progress
-              liftIO $ Log.info $ printf "<%s>: Win! New world progress %s" (show $ Client.name client) (show postProgress)
-              beginWorld state client (Just postProgress)
-            )
-            else
-              (do
-                let newProgress = World.initialProgress (World.nextGen progress)
-                liftIO $ Log.info $ printf "<%s>: Loss! New world progress %s" (show $ Client.name client) (show newProgress)
-                beginWorld state client (Just newProgress)
-              )
+          liftIO $ Log.info $ printf "<%s>: Checking for world pvp encounter" (show $ Client.name client)
+          mPvpRoom <- liftIO . atomically $ Server.peekqueue state
+
+          case mPvpRoom of
+            Just (_, roomVar) -> do
+              _ <- liftIO . atomically $ Server.modScenario (World.pvpScenario progress) roomVar
+              beginPlay state client roomVar
+              beginWorld state client (Just preProgress)
+            Nothing -> do
+              roomVar <- liftIO . atomically $ Server.getOrCreateRoom roomName WaitCustom gen scenario state
+              didWin <- beginComputer cpuName state client roomVar
+              if didWin then
+                (do
+                  let postProgress = World.postEncounterProgress encounter scenario progress
+                  liftIO $ Log.info $ printf "<%s>: Win! New world progress %s" (show $ Client.name client) (show postProgress)
+                  beginWorld state client (Just postProgress)
+                )
+                else
+                  (do
+                    let newProgress = World.initialProgress (World.nextGen progress)
+                    liftIO $ Log.info $ printf "<%s>: Loss! New world progress %s" (show $ Client.name client) (show newProgress)
+                    beginWorld state client (Just newProgress)
+                  )
         Nothing -> do
           liftIO $ Log.error $ printf "<%s>: No such encounter" (show $ Client.name client)
           Client.send "error:no such encounter" client

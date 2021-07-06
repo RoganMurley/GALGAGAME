@@ -103,6 +103,10 @@ setClient PlayerA client room = room { room_pa = Just client }
 setClient PlayerB client room = room { room_pb = Just client }
 
 
+modScenario :: (Scenario -> Scenario) -> Room -> Room
+modScenario f room = room { room_scenario = f (room_scenario room) }
+
+
 roomSetup :: Room -> (Room, [Outcome])
 roomSetup room =
   let
