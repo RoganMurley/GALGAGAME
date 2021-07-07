@@ -49,14 +49,19 @@ instance ToJSON Character where
     object
       [ "name"    .= name
       , "img_url" .= imgUrl
-      , "rune_a"  .= runeA
-      , "rune_b"  .= runeB
-      , "rune_c"  .= runeC
+      , "choice"  .= (
+        object [
+          "rune_a"  .= runeA
+        , "rune_b"  .= runeB
+        , "rune_c"  .= runeC
+        ]
+      )
       ]
   toJSON (Character name imgUrl _ _) =
     object
       [ "name"    .= name
       , "img_url" .= imgUrl
+      , "choice"  .= (Nothing :: Maybe (Rune, Rune, Rune))
       ]
 
 
