@@ -86,31 +86,33 @@ update msg ({ characters, buttons } as model) =
                 ( model, Cmd.none )
 
         EnterRuneSelect cursor ->
-            let
-                rune : Rune
-                rune =
-                    getRuneFromCursor cursor characters.selected
+            case getRuneFromCursor cursor characters.selected of
+                Just rune ->
+                    let
+                        excludedRunes : List Rune
+                        excludedRunes =
+                            List.filterMap identity <|
+                                [ Just rune
+                                , getRuneFromCursor (nextCursor cursor) characters.selected
+                                , getRuneFromCursor (nextCursor (nextCursor cursor)) characters.selected
+                                ]
 
-                excludedRunes : List Rune
-                excludedRunes =
-                    [ rune
-                    , getRuneFromCursor (nextCursor cursor) characters.selected
-                    , getRuneFromCursor (nextCursor (nextCursor cursor)) characters.selected
-                    ]
+                        runeSelect : RuneSelect.Model
+                        runeSelect =
+                            { cursor = cursor
+                            , carousel =
+                                Carousel.init
+                                    rune
+                                    (List.filter (\r -> not (List.member r excludedRunes)) model.runes)
+                            , entities = []
+                            , hover = Nothing
+                            , buttons = Buttons.empty
+                            }
+                    in
+                    ( { model | runeSelect = Just runeSelect }, Cmd.none )
 
-                runeSelect : RuneSelect.Model
-                runeSelect =
-                    { cursor = cursor
-                    , carousel =
-                        Carousel.init
-                            rune
-                            (List.filter (\r -> not (List.member r excludedRunes)) model.runes)
-                    , entities = []
-                    , hover = Nothing
-                    , buttons = Buttons.empty
-                    }
-            in
-            ( { model | runeSelect = Just runeSelect }, Cmd.none )
+                Nothing ->
+                    ( model, Cmd.none )
 
         ConfirmRune cursor rune ->
             let
@@ -177,7 +179,7 @@ characterButtons { radius, w, h, mouse } dt { ready, buttons, characters } =
 
     else
         Buttons.fromList <|
-            List.map (\f -> f dt mouse buttons)
+            List.map (\f -> f dt mouse buttons) <|
                 [ Buttons.entity
                     "ready"
                     { x = 0.5 * w
@@ -194,98 +196,113 @@ characterButtons { radius, w, h, mouse } dt { ready, buttons, characters } =
                             }
                     , disabled = False
                     }
-                , Buttons.entity
-                    "next"
-                    { x = 0.5 * w + arrowOffset
-                    , y = 0.8 * h
-                    , width = arrowScale
-                    , height = arrowScale
-                    , btn =
-                        ImageButton
-                            { img = "next.png"
-                            , color = vec3 (244 / 255) (241 / 255) (94 / 255)
-                            }
-                    , disabled = False
-                    }
-                , Buttons.entity
-                    "prev"
-                    { x = 0.5 * w - arrowOffset
-                    , y = 0.8 * h
-                    , width = -arrowScale
-                    , height = arrowScale
-                    , btn =
-                        ImageButton
-                            { img = "next.png"
-                            , color = vec3 (244 / 255) (241 / 255) (94 / 255)
-                            }
-                    , disabled = False
-                    }
-                , Buttons.entity
-                    "runeA"
-                    { x = 0.5 * w
-                    , y = 0.5 * h - triangleSide
-                    , width = runeScale
-                    , height = runeScale
-                    , btn =
-                        ImageButton
-                            { img = characters.selected.runeA.imgURL
-                            , color = vec3 (255 / 255) (255 / 255) (255 / 255)
-                            }
-                    , disabled = False
-                    }
-                , Buttons.entity
-                    "runeB"
-                    { x = 0.5 * w + triangleSide / sin 1.04
-                    , y = 0.5 * h + triangleSide
-                    , width = runeScale
-                    , height = runeScale
-                    , btn =
-                        ImageButton
-                            { img = characters.selected.runeB.imgURL
-                            , color = vec3 (255 / 255) (255 / 255) (255 / 255)
-                            }
-                    , disabled = False
-                    }
-                , Buttons.entity
-                    "runeC"
-                    { x = 0.5 * w - triangleSide / sin 1.04
-                    , y = 0.5 * h + triangleSide
-                    , width = runeScale
-                    , height = runeScale
-                    , btn =
-                        ImageButton
-                            { img = characters.selected.runeC.imgURL
-                            , color = vec3 (255 / 255) (255 / 255) (255 / 255)
-                            }
-                    , disabled = False
-                    }
                 ]
+                    ++ (case characters.selected.choice of
+                            Nothing ->
+                                []
+
+                            Just choice ->
+                                [ Buttons.entity
+                                    "next"
+                                    { x = 0.5 * w + arrowOffset
+                                    , y = 0.8 * h
+                                    , width = arrowScale
+                                    , height = arrowScale
+                                    , btn =
+                                        ImageButton
+                                            { img = "next.png"
+                                            , color = vec3 (244 / 255) (241 / 255) (94 / 255)
+                                            }
+                                    , disabled = False
+                                    }
+                                , Buttons.entity
+                                    "prev"
+                                    { x = 0.5 * w - arrowOffset
+                                    , y = 0.8 * h
+                                    , width = -arrowScale
+                                    , height = arrowScale
+                                    , btn =
+                                        ImageButton
+                                            { img = "next.png"
+                                            , color = vec3 (244 / 255) (241 / 255) (94 / 255)
+                                            }
+                                    , disabled = False
+                                    }
+                                , Buttons.entity
+                                    "runeA"
+                                    { x = 0.5 * w
+                                    , y = 0.5 * h - triangleSide
+                                    , width = runeScale
+                                    , height = runeScale
+                                    , btn =
+                                        ImageButton
+                                            { img = choice.runeA.imgURL
+                                            , color = vec3 (255 / 255) (255 / 255) (255 / 255)
+                                            }
+                                    , disabled = False
+                                    }
+                                , Buttons.entity
+                                    "runeB"
+                                    { x = 0.5 * w + triangleSide / sin 1.04
+                                    , y = 0.5 * h + triangleSide
+                                    , width = runeScale
+                                    , height = runeScale
+                                    , btn =
+                                        ImageButton
+                                            { img = choice.runeB.imgURL
+                                            , color = vec3 (255 / 255) (255 / 255) (255 / 255)
+                                            }
+                                    , disabled = False
+                                    }
+                                , Buttons.entity
+                                    "runeC"
+                                    { x = 0.5 * w - triangleSide / sin 1.04
+                                    , y = 0.5 * h + triangleSide
+                                    , width = runeScale
+                                    , height = runeScale
+                                    , btn =
+                                        ImageButton
+                                            { img = choice.runeC.imgURL
+                                            , color = vec3 (255 / 255) (255 / 255) (255 / 255)
+                                            }
+                                    , disabled = False
+                                    }
+                                ]
+                       )
 
 
-getRuneFromCursor : RuneCursor -> Character -> Rune
-getRuneFromCursor cursor =
-    case cursor of
-        RuneCursorA ->
-            .runeA
+getRuneFromCursor : RuneCursor -> Character -> Maybe Rune
+getRuneFromCursor cursor character =
+    let
+        f =
+            case cursor of
+                RuneCursorA ->
+                    .runeA
 
-        RuneCursorB ->
-            .runeB
+                RuneCursorB ->
+                    .runeB
 
-        RuneCursorC ->
-            .runeC
+                RuneCursorC ->
+                    .runeC
+    in
+    Maybe.map f character.choice
 
 
 setRuneFromCursor : RuneCursor -> Rune -> Character -> Character
 setRuneFromCursor cursor rune character =
-    case cursor of
-        RuneCursorA ->
-            { character | runeA = rune }
+    let
+        f choice =
+            case cursor of
+                RuneCursorA ->
+                    { choice | runeA = rune }
 
-        RuneCursorB ->
-            { character | runeB = rune }
+                RuneCursorB ->
+                    { choice | runeB = rune }
 
-        RuneCursorC ->
-            { character | runeC = rune }
+                RuneCursorC ->
+                    { choice | runeC = rune }
+    in
+    { character | choice = Maybe.map f character.choice }
 
 
 nextCursor : RuneCursor -> RuneCursor

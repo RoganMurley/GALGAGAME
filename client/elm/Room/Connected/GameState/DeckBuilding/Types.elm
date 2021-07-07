@@ -1,4 +1,4 @@
-module DeckBuilding.Types exposing (Character, Model)
+module DeckBuilding.Types exposing (Character, Model, RuneChoice)
 
 import Buttons.Types exposing (Buttons)
 import Carousel exposing (Carousel)
@@ -21,7 +21,12 @@ type alias Model =
 type alias Character =
     { name : String
     , imgUrl : String
-    , runeA : Rune
+    , choice : Maybe RuneChoice
+    }
+
+
+type alias RuneChoice =
+    { runeA : Rune
     , runeB : Rune
     , runeC : Rune
     }
