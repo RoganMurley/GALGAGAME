@@ -82,11 +82,11 @@ tick flags model dt =
                         , height = 0.1 * radius
                         , btn =
                             Buttons.TextButton
-                                { font = "Futura"
+                                { font = "Icons"
                                 , text = "?"
                                 , textColor = vec3 (0 / 255) (0 / 255) (80 / 255)
                                 , bgColor = vec3 (244 / 255) (241 / 255) (94 / 255)
-                                , options = [ Buttons.Circular ]
+                                , options = [ Buttons.Circular, Buttons.IsIcon ]
                                 }
                         , disabled = False
                         }
@@ -114,11 +114,11 @@ tick flags model dt =
                         , height = 0.1 * radius
                         , btn =
                             Buttons.TextButton
-                                { font = "Futura"
-                                , text = "?"
+                                { font = "Icons"
+                                , text = "zzz"
                                 , textColor = vec3 (40 / 255) (40 / 255) (40 / 255)
                                 , bgColor = vec3 (70 / 255) (70 / 255) (70 / 255)
-                                , options = [ Buttons.Circular, Buttons.NoHover ]
+                                , options = [ Buttons.Circular, Buttons.NoHover, Buttons.IsIcon ]
                                 }
                         , disabled = True
                         }

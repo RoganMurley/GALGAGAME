@@ -6,6 +6,7 @@ import Dict
 import Ease
 import Font.View as Font
 import Game.Types exposing (Context)
+import Icon.View as Icon
 import List.Extra as List
 import Math.Matrix4 exposing (makeRotate, makeScale3)
 import Math.Vector3 exposing (vec3)
@@ -61,6 +62,9 @@ textButtonView button params ctx =
         circular =
             Buttons.isCircular params
 
+        isIcon =
+            Buttons.isIcon params
+
         background =
             if circular then
                 [ Render.Primitives.quad Render.Shaders.fullCircleFragment
@@ -100,19 +104,32 @@ textButtonView button params ctx =
 
             else
                 1
-    in
-    List.concat
-        [ background
-        , Font.view
-            font
-            text
+
+        textEntity =
             { x = x
             , y = y
             , scaleX = additionalTextScale * 0.0025 * (height + 0.6 * hoverPop)
             , scaleY = additionalTextScale * 0.0025 * (height + 0.6 * hoverPop)
             , color = textColor
             }
-            ctx
+
+        textView =
+            if isIcon then
+                Icon.view
+                    text
+                    textEntity
+                    ctx
+
+            else
+                Font.view
+                    font
+                    text
+                    textEntity
+                    ctx
+    in
+    List.concat
+        [ background
+        , textView
         ]
 
 

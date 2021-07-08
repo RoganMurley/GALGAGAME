@@ -43,3 +43,4 @@ type TextButtonOption
     = HoverText String
     | Circular
     | NoHover
+    | IsIcon

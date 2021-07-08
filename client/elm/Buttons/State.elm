@@ -1,4 +1,4 @@
-module Buttons.State exposing (empty, entity, fromList, get, getHoverText, hit, isCircular, update)
+module Buttons.State exposing (empty, entity, fromList, get, getHoverText, hit, isCircular, isIcon, update)
 
 import Buttons.Types exposing (Button, ButtonType(..), Buttons(..), TextButtonOption(..), TextButtonParams)
 import Collision exposing (AABB, hitAABB)
@@ -90,12 +90,6 @@ get key (Buttons buttons) =
     Dict.get key buttons
 
 
-
--- hit : Buttons -> Maybe ( String, Button )
--- hit (Buttons buttons) =
---     List.find (\( _, { hover } ) -> hover > 0) (Dict.toList buttons)
-
-
 hit : Buttons -> Vec2 -> Maybe ( String, Button )
 hit (Buttons buttons) vec =
     let
@@ -135,8 +129,8 @@ getHoverText { text, options } =
     List.foldl reducer Nothing options |> Maybe.withDefault text
 
 
-isCircular : TextButtonParams -> Bool
-isCircular { options } =
+isSomeBool : (TextButtonOption -> Bool) -> TextButtonParams -> Bool
+isSomeBool f { options } =
     let
         reducer : TextButtonOption -> Bool -> Bool
         reducer option acc =
@@ -144,30 +138,42 @@ isCircular { options } =
                 True
 
             else
-                case option of
-                    Circular ->
-                        True
-
-                    _ ->
-                        False
+                f option
     in
     List.foldl reducer False options
+
+
+isCircular : TextButtonParams -> Bool
+isCircular =
+    isSomeBool <|
+        \option ->
+            case option of
+                Circular ->
+                    True
+
+                _ ->
+                    False
+
+
+isIcon : TextButtonParams -> Bool
+isIcon =
+    isSomeBool <|
+        \option ->
+            case option of
+                IsIcon ->
+                    True
+
+                _ ->
+                    False
 
 
 noHover : TextButtonParams -> Bool
-noHover { options } =
-    let
-        reducer : TextButtonOption -> Bool -> Bool
-        reducer option acc =
-            if acc then
-                True
+noHover =
+    isSomeBool <|
+        \option ->
+            case option of
+                NoHover ->
+                    True
 
-            else
-                case option of
-                    NoHover ->
-                        True
-
-                    _ ->
-                        False
-    in
-    List.foldl reducer False options
+                _ ->
+                    False

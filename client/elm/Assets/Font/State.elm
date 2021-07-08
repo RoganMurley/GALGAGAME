@@ -77,4 +77,8 @@ fontPaths manifest =
           , jsonPath = "fonts/futura/fontmap.json"
           , texturePath = "fonts/futura/fontmap.png"
           }
+        , { name = "Icons"
+          , jsonPath = "fonts/icons/fontmap.json"
+          , texturePath = "fonts/icons/fontmap.png"
+          }
         ]
