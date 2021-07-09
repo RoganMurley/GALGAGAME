@@ -115,7 +115,7 @@ tick flags model dt =
                         , btn =
                             Buttons.TextButton
                                 { font = "Icons"
-                                , text = "zzz"
+                                , text = "?"
                                 , textColor = vec3 (40 / 255) (40 / 255) (40 / 255)
                                 , bgColor = vec3 (70 / 255) (70 / 255) (70 / 255)
                                 , options = [ Buttons.Circular, Buttons.NoHover, Buttons.IsIcon ]

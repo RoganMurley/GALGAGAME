@@ -335,7 +335,7 @@ beginWorld state client mProgress = do
             Just (_, roomVar) -> do
               _ <- liftIO . atomically $ Server.modScenario (World.pvpScenario progress) roomVar
               beginPlay state client roomVar
-              beginWorld state client (Just preProgress)
+              beginWorld state client (Just postProgress)
             Nothing -> do
               roomVar <- liftIO . atomically $ Server.getOrCreateRoom roomName WaitCustom gen scenario state
               didWin <- beginComputer cpuName state client roomVar
