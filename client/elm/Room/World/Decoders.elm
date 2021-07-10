@@ -1,9 +1,9 @@
 module World.Decoders exposing (decoder)
 
 import Card.Decoders as Card
-import Json.Decode as Json exposing (Decoder, field, float, list, maybe, string)
+import Json.Decode as Json exposing (Decoder, fail, field, float, list, maybe, string, succeed)
 import Line.Decoders as Line
-import World.Types exposing (Decision, DecisionChoice, Encounter, World)
+import World.Types exposing (Decision, DecisionChoice, Encounter, Variant(..), World)
 
 
 decoder : Decoder World
@@ -28,9 +28,9 @@ encounterDecoder : Decoder Encounter
 encounterDecoder =
     Json.map4 Encounter
         (field "guid" string)
-        (field "name" string)
         (field "x" float)
         (field "y" float)
+        (field "variant" variantDecoder)
 
 
 decisionDecoder : Decoder Decision
@@ -47,3 +47,20 @@ decisionChoiceDecoder : Decoder DecisionChoice
 decisionChoiceDecoder =
     Json.map DecisionChoice
         (field "text" string)
+
+
+variantDecoder : Decoder Variant
+variantDecoder =
+    string
+        |> Json.andThen
+            (\var ->
+                case var of
+                    "cpu" ->
+                        succeed CpuVariant
+
+                    "pvp" ->
+                        succeed PvpVariant
+
+                    _ ->
+                        fail <| "Unknown encounter variant " ++ var
+            )
