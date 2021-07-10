@@ -17,10 +17,10 @@ import Player (WhichPlayer(..))
 import Safe (readMay)
 import Scenario (Scenario(..))
 import Start (startProgram)
-import Util (breakAt)
+import Util (breakAt, infiniteGens)
 
 import World.Decision (Decision(..), decisionFromId)
-import World.Encounter (Encounter(..), newEncounter)
+import World.Encounter (CpuVariant(..), Encounter(..), Variant(..), newEncounter, postEncounterDecision)
 import World.Pos (Pos)
 import World.WorldKey (WorldKey)
 import World.WorldProgress (WorldProgress(..), nextGen)
@@ -53,7 +53,8 @@ getWorld _ progress = do
   let edgeKeys = Set.fromList $ edge_key <$> edges :: Set WorldKey
   let otherKeys = Set.difference mainKeys (Set.union edgeKeys visitedKeys) :: Set WorldKey
   let others = getPosition <$> Set.toList otherKeys :: [Pos]
-  encounters <- mapM (newEncounter progress) edges
+  let gen = worldprogress_gen progress
+  encounters <- mapM (uncurry $ newEncounter progress) $ zip edges (infiniteGens gen)
   return $
     World
     { world_encounters    = encounters
@@ -104,7 +105,7 @@ parseRequest msg =
 
 
 makeScenario :: WorldProgress -> Encounter -> Scenario
-makeScenario (WorldProgress{ worldprogress_deck }) encounter =
+makeScenario (WorldProgress{ worldprogress_deck }) (Encounter{ encounter_variant }) =
   Scenario {
     scenario_turn = PlayerA
   , scenario_characterPa = characterPa
@@ -115,18 +116,21 @@ makeScenario (WorldProgress{ worldprogress_deck }) encounter =
   , scenario_reward = Nothing
   }
   where
-    Encounter{ encounter_cardNames, encounter_life, encounter_name } = encounter
     characterPa :: Maybe DeckBuilding.Character
     characterPa =
-      case encounter_cardNames of
-        Just cardNames ->
-          Just $
-            DeckBuilding.Character
-              encounter_name
-              ""
-              (Right $ deckFromCardNames cardNames)
-              encounter_life
-        Nothing ->
+      case encounter_variant of
+        CpuVariant( CpuVariantConstructor { cpuVariant_life, cpuVariant_name, cpuVariant_cardNames }) ->
+          case cpuVariant_cardNames of
+            Just cardNames ->
+              Just $
+                DeckBuilding.Character
+                  cpuVariant_name
+                  ""
+                  (Right $ deckFromCardNames cardNames)
+                  cpuVariant_life
+            Nothing ->
+              Nothing
+        PvpVariant ->
           Nothing
     characterPb :: Maybe DeckBuilding.Character
     characterPb =
@@ -167,12 +171,13 @@ postEncounterProgress encounter scenario progress =
       , worldprogress_visited      = Set.insert encounter_key worldprogress_visited
       , worldprogress_visitedEdges = edge : worldprogress_visitedEdges
       , worldprogress_deck         = deck
-      , worldprogress_decisionId   = decision_id <$> encounter_decision
+      , worldprogress_decisionId   = decisionId
       , worldprogress_roomId       = Nothing
       , worldprogress_gen          = nextGen progress
       }
   where
-    Encounter{ encounter_decision, encounter_key, encounter_x, encounter_y } = encounter
+    Encounter{ encounter_key, encounter_x, encounter_y } = encounter
+    decisionId = decision_id <$> postEncounterDecision encounter
     WorldProgress{ worldprogress_deck, worldprogress_key, worldprogress_visited, worldprogress_visitedEdges } = progress
     Scenario{ scenario_reward } = scenario
     edge :: (Pos, Pos)

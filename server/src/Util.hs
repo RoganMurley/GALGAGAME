@@ -68,6 +68,14 @@ seedToGen :: String -> Gen
 seedToGen seed = Gen $ read seed
 
 
+random :: Gen -> Float
+random (Gen gen) = fst $ R.random gen
+
+
+infiniteGens :: Gen -> [Gen]
+infiniteGens gen = gen : (infiniteGens . fst $ split gen)
+
+
 modTVar :: TVar a -> (a -> a) -> STM ()
 modTVar var f = do
   x <- readTVar var

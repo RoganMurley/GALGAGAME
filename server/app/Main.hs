@@ -323,7 +323,7 @@ beginWorld state client mProgress = do
           gen <- liftIO getGen
           let scenario = World.makeScenario progress encounter
           let roomName = encounterId
-          let cpuName = World.encounter_name encounter
+          let cpuName = World.encounterName encounter
 
           let preProgress = World.preEncounterProgress encounter progress
           World.updateProgress username preProgress
@@ -335,7 +335,7 @@ beginWorld state client mProgress = do
             Just (_, roomVar) -> do
               _ <- liftIO . atomically $ Server.modScenario (World.pvpScenario progress) roomVar
               beginPlay state client roomVar
-              beginWorld state client (Just postProgress)
+              beginWorld state client (Just progress)
             Nothing -> do
               roomVar <- liftIO . atomically $ Server.getOrCreateRoom roomName WaitCustom gen scenario state
               didWin <- beginComputer cpuName state client roomVar

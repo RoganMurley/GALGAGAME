@@ -1,4 +1,4 @@
-module World.Types exposing (Decision, DecisionChoice, Encounter, Model, World)
+module World.Types exposing (Decision, DecisionChoice, Encounter, Model, Variant(..), World)
 
 import Buttons.Types exposing (Buttons(..))
 import Card.Types exposing (Card)
@@ -28,10 +28,15 @@ type alias World =
 
 type alias Encounter =
     { guid : String
-    , name : String
     , x : Float
     , y : Float
+    , variant : Variant
     }
+
+
+type Variant
+    = CpuVariant
+    | PvpVariant
 
 
 type alias Decision =

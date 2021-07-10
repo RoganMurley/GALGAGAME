@@ -17,7 +17,7 @@ import Room.Messages as Room
 import Util exposing (message, splitOnColon)
 import World.Decoders as World
 import World.Messages exposing (Msg(..))
-import World.Types exposing (Encounter, Model)
+import World.Types exposing (Encounter, Model, Variant(..))
 import World.WorldPos exposing (toWorldPos)
 
 
@@ -73,6 +73,14 @@ tick flags model dt =
                     let
                         { x, y } =
                             toWorldPos ctx encounter
+
+                        icon =
+                            case encounter.variant of
+                                PvpVariant ->
+                                    "zzz"
+
+                                CpuVariant ->
+                                    "?"
                     in
                     Buttons.entity
                         encounter.guid
@@ -83,7 +91,7 @@ tick flags model dt =
                         , btn =
                             Buttons.TextButton
                                 { font = "Icons"
-                                , text = "?"
+                                , text = icon
                                 , textColor = vec3 (0 / 255) (0 / 255) (80 / 255)
                                 , bgColor = vec3 (244 / 255) (241 / 255) (94 / 255)
                                 , options = [ Buttons.Circular, Buttons.IsIcon ]
