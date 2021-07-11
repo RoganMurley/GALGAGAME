@@ -191,6 +191,6 @@ app.ports.websocketReconnect.subscribe(function () {
   socket.close(1000, "Reconnecting");
 });
 
-window.beforeunload = function () {
+window.onbeforeunload = function () {
   socket.close()
 };

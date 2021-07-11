@@ -36,6 +36,7 @@ init =
         , visitedEdges = []
         , lockedEdges = []
         , decision = Nothing
+        , waitPvp = Nothing
         }
     }
 
@@ -49,6 +50,13 @@ update model msg _ =
         LoadWorld world ->
             ( { model | world = world }, Cmd.none )
 
+        WaitPvp ->
+            let
+                world =
+                    model.world
+            in
+            ( { model | world = { world | waitPvp = Just 0 } }, Cmd.none )
+
 
 tick : Flags -> Model -> Float -> Model
 tick flags model dt =
@@ -58,9 +66,60 @@ tick flags model dt =
 
         { radius, w, h } =
             ctx
+
+        world =
+            model.world
     in
-    case model.world.decision of
-        Nothing ->
+    case ( world.decision, world.waitPvp ) of
+        ( _, Just waitTime ) ->
+            { model
+                | time = model.time + dt
+                , encounterButtons = Buttons.empty
+                , otherButtons = Buttons.empty
+                , visitedButtons = Buttons.empty
+                , choiceButtons = Buttons.empty
+                , world = { world | waitPvp = Just <| waitTime + dt }
+            }
+
+        ( Just decision, _ ) ->
+            let
+                choiceButton : Int -> String -> ( String, Buttons.Button )
+                choiceButton index choice =
+                    Buttons.entity
+                        (String.fromInt index)
+                        { x = w * 0.5
+                        , y = h * (0.7 + toFloat index * 0.1)
+                        , width = 0.4 * radius
+                        , height = 0.08 * radius
+                        , btn =
+                            Buttons.TextButton
+                                { font = "Futura"
+                                , text = choice ++ "?"
+                                , textColor = vec3 (0 / 255) (0 / 255) (0 / 255)
+                                , bgColor = vec3 (244 / 255) (241 / 255) (94 / 255)
+                                , options = [ Buttons.HoverText <| choice ++ "!" ]
+                                }
+                        , disabled = False
+                        }
+                        dt
+                        flags.mouse
+                        model.choiceButtons
+
+                choiceButtons : Buttons
+                choiceButtons =
+                    Buttons.fromList <|
+                        List.indexedMap choiceButton <|
+                            List.map .text decision.choices
+            in
+            { model
+                | time = model.time + dt
+                , encounterButtons = Buttons.empty
+                , otherButtons = Buttons.empty
+                , visitedButtons = Buttons.empty
+                , choiceButtons = choiceButtons
+            }
+
+        _ ->
             let
                 -- Encounter buttons
                 encounterButtons : Buttons
@@ -81,6 +140,14 @@ tick flags model dt =
 
                                 CpuVariant ->
                                     "?"
+
+                        textColor =
+                            case encounter.variant of
+                                PvpVariant ->
+                                    vec3 (0 / 255) (0 / 255) (80 / 255)
+
+                                CpuVariant ->
+                                    vec3 (0 / 255) (0 / 255) (80 / 255)
                     in
                     Buttons.entity
                         encounter.guid
@@ -92,7 +159,7 @@ tick flags model dt =
                             Buttons.TextButton
                                 { font = "Icons"
                                 , text = icon
-                                , textColor = vec3 (0 / 255) (0 / 255) (80 / 255)
+                                , textColor = textColor
                                 , bgColor = vec3 (244 / 255) (241 / 255) (94 / 255)
                                 , options = [ Buttons.Circular, Buttons.IsIcon ]
                                 }
@@ -174,44 +241,6 @@ tick flags model dt =
                 , choiceButtons = Buttons.empty
             }
 
-        Just decision ->
-            let
-                choiceButton : Int -> String -> ( String, Buttons.Button )
-                choiceButton index choice =
-                    Buttons.entity
-                        (String.fromInt index)
-                        { x = w * 0.5
-                        , y = h * (0.7 + toFloat index * 0.1)
-                        , width = 0.4 * radius
-                        , height = 0.08 * radius
-                        , btn =
-                            Buttons.TextButton
-                                { font = "Futura"
-                                , text = choice ++ "?"
-                                , textColor = vec3 (0 / 255) (0 / 255) (0 / 255)
-                                , bgColor = vec3 (244 / 255) (241 / 255) (94 / 255)
-                                , options = [ Buttons.HoverText <| choice ++ "!" ]
-                                }
-                        , disabled = False
-                        }
-                        dt
-                        flags.mouse
-                        model.choiceButtons
-
-                choiceButtons : Buttons
-                choiceButtons =
-                    Buttons.fromList <|
-                        List.indexedMap choiceButton <|
-                            List.map .text decision.choices
-            in
-            { model
-                | time = model.time + dt
-                , encounterButtons = Buttons.empty
-                , otherButtons = Buttons.empty
-                , visitedButtons = Buttons.empty
-                , choiceButtons = choiceButtons
-            }
-
 
 mouseUp : Flags -> Assets.Model -> Model -> Mouse.Position -> ( Model, Cmd Main.Msg )
 mouseUp _ _ model _ =
@@ -267,6 +296,9 @@ receive msg =
 
         "joinEncounter" ->
             message <| Main.RoomMsg <| Room.StartGame Playing (Just content)
+
+        "worldWaitPvp" ->
+            message <| Main.RoomMsg <| Room.WorldMsg WaitPvp
 
         _ ->
             Cmd.none

@@ -43,11 +43,14 @@ webglView model { mouse, dimensions } assets =
             { baseVfx | rotation = time }
 
         bodyView =
-            case world.decision of
-                Just decision ->
+            case ( world.decision, world.waitPvp ) of
+                ( _, Just waitTime ) ->
+                    waitPvpView waitTime ctx
+
+                ( Just decision, _ ) ->
                     decisionView decision time ctx
 
-                Nothing ->
+                _ ->
                     linesView world ctx
     in
     List.concat
@@ -140,4 +143,27 @@ decisionView { cards, title, text } time ctx =
             }
             ctx
         , bodyView
+        ]
+
+
+waitPvpView : Float -> Context -> List WebGL.Entity
+waitPvpView time ctx =
+    let
+        { w, h } =
+            ctx
+
+        size =
+            (0.4 + abs (sin (time * 0.001))) * 1.4 * max w h
+    in
+    List.concat
+        [ Font.view
+            "Futura"
+            "You feel a strange\nsensation..."
+            { x = w * 0.5
+            , y = h * 0.4
+            , scaleX = 0.0001 * size + 0.003 * sin (time * 0.005)
+            , scaleY = 0.0001 * size + 0.003 * sin (time * 0.005)
+            , color = vec3 (244 / 255) (241 / 255) (94 / 255)
+            }
+            ctx
         ]
