@@ -24,15 +24,16 @@ import Room (Room)
 data State = State
   { state_rooms    :: Map Room.Name (TVar Room)
   , state_matching :: [(Client, TVar Room)]
+  , state_worldPvp :: Maybe (TVar Room)
   }
 
 
 instance Show State where
-  show (State s _) = show . keys $ s
+  show state = show . keys $ state_rooms state
 
 
 initState :: State
-initState = State empty []
+initState = State empty [] Nothing
 
 
 -- GETTING / DELETING ROOMS
@@ -45,7 +46,7 @@ createRoom :: Room.Name -> TVar Room -> TVar State -> STM (TVar Room)
 createRoom name roomVar state =
   modReturnTVar
     state
-    (\(State s m) -> (State (insert name roomVar s) m, roomVar))
+    (\(State s m w) -> (State (insert name roomVar s) m w, roomVar))
 
 
 getOrCreateRoom :: Room.Name -> WaitType -> Gen -> Scenario -> TVar State -> STM (TVar Room)
@@ -61,7 +62,7 @@ getOrCreateRoom name wait gen scenario state = do
 
 deleteRoom :: Room.Name -> TVar State -> STM (State)
 deleteRoom name state =
-  modReadTVar state $ \(State s qs) -> State (delete name s) qs
+  modReadTVar state $ \(State s qs r) -> State (delete name s) qs r
 
 
 getAllRooms :: TVar State -> STM ([TVar Room])
@@ -71,20 +72,20 @@ getAllRooms state = elems . state_rooms <$> readTVar state
 -- QUEUEING
 queue :: (Client, TVar Room) -> TVar State -> STM (Maybe (Client, TVar Room))
 queue q state = do
-    match <- (\(State _ qs) -> headMay qs) <$> readTVar state
+    match <- (\(State _ qs _) -> headMay qs) <$> readTVar state
     case match of
       Just (opponent, _) -> do
         _ <- dequeue opponent state
         return match
       Nothing -> do
-        modTVar state (\(State s qs) -> (State s (q : qs)))
+        modTVar state (\(State s qs w) -> (State s (q : qs) w))
         return match
 
 
 dequeue :: Client -> TVar State -> STM (State)
 dequeue client state =
   modReadTVar state $
-    \(State s qs) -> State s (filter (\(c, _) -> c /= client) qs)
+    \(State s qs w) -> State s (filter (\(c, _) -> c /= client) qs) w
 
 
 modScenario :: (Scenario -> Scenario) -> TVar Room -> STM Room
@@ -93,7 +94,19 @@ modScenario f roomVar =
 
 
 peekqueue :: TVar State -> STM (Maybe (Client, TVar Room))
-peekqueue state = (\(State _ qs) -> headMay qs) <$> readTVar state
+peekqueue state = (\(State _ qs _) -> headMay qs) <$> readTVar state
+
+
+-- WORLD PVP
+getWorldPvpRoom :: TVar State -> STM (Maybe (TVar Room))
+getWorldPvpRoom stateVar = do
+  state <- readTVar stateVar
+  return $ state_worldPvp state
+
+
+setWorldPvpRoom :: TVar State -> Maybe (TVar Room) -> STM ()
+setWorldPvpRoom stateVar mRoomVar =
+  modTVar stateVar (\state -> state { state_worldPvp = mRoomVar })
 
 
 -- ADDING/REMOVING CLIENTS.
