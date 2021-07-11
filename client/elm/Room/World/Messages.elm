@@ -6,3 +6,4 @@ import World.Types exposing (World)
 type Msg
     = JoinWorld
     | LoadWorld World
+    | WaitPvp

@@ -317,26 +317,18 @@ beginWorld state client mProgress = do
   case (req, World.world_decision world) of
     (Just (World.JoinEncounter encounterId), Nothing) ->
       case World.encounterFromGuid world encounterId of
-        Just encounter -> do
-          liftIO $ Log.info $ printf "<%s>: Joining world encounter %s" (show $ Client.name client) (encounterId)
-          Client.send ("joinEncounter:" <> encounterId) client
-          gen <- liftIO getGen
-          let scenario = World.makeScenario progress encounter
-          let roomName = encounterId
-          let cpuName = World.encounterName encounter
+        Just encounter ->
+          case World.encounter_variant encounter of
+            World.CpuVariant _ -> do
+              liftIO $ Log.info $ printf "<%s>: Joining cpu encounter %s" (show $ Client.name client) (encounterId)
+              Client.send ("joinEncounter:" <> encounterId) client
+              gen <- liftIO getGen
+              let scenario = World.makeScenario progress encounter
+              let roomName = encounterId
+              let cpuName = World.encounterName encounter
 
-          let preProgress = World.preEncounterProgress encounter progress
-          World.updateProgress username preProgress
-
-          liftIO $ Log.info $ printf "<%s>: Checking for world pvp encounter" (show $ Client.name client)
-          mPvpRoom <- liftIO . atomically $ Server.peekqueue state
-
-          case mPvpRoom of
-            Just (_, roomVar) -> do
-              _ <- liftIO . atomically $ Server.modScenario (World.pvpScenario progress) roomVar
-              beginPlay state client roomVar
-              beginWorld state client (Just progress)
-            Nothing -> do
+              let preProgress = World.preEncounterProgress encounter progress
+              World.updateProgress username preProgress
               roomVar <- liftIO . atomically $ Server.getOrCreateRoom roomName WaitCustom gen scenario state
               didWin <- beginComputer cpuName state client roomVar
               if didWin then
@@ -351,6 +343,20 @@ beginWorld state client mProgress = do
                     liftIO $ Log.info $ printf "<%s>: Loss! New world progress %s" (show $ Client.name client) (show newProgress)
                     beginWorld state client (Just newProgress)
                   )
+            World.PvpVariant -> do
+              liftIO $ Log.info $ printf "<%s>: Checking for world pvp encounter" (show $ Client.name client)
+              Client.send ("worldWaitPvp:") client
+              mPvpRoom <- pvpWaitLoop state 0 5000
+              case mPvpRoom of
+                Just roomVar -> do
+                  _ <- liftIO . atomically $ Server.modScenario (World.pvpScenario progress) roomVar
+                  room <- liftIO $ readTVarIO roomVar
+                  liftIO $ Log.info $ printf "<%s>: pvp encounter found!" (show $ Client.name client)
+                  Client.send ("joinEncounter:" <> Room.getName room) client
+                  beginPlay state client roomVar
+                Nothing ->
+                  liftIO $ Log.info $ printf "<%s>: No pvp encounter found" (show $ Client.name client)
+              beginWorld state client (Just progress)
         Nothing -> do
           liftIO $ Log.error $ printf "<%s>: No such encounter" (show $ Client.name client)
           Client.send "error:no such encounter" client
@@ -374,6 +380,23 @@ beginWorld state client mProgress = do
       liftIO $ Log.error $ printf "<%s>: Illegal world request for state '%s'" (show $ Client.name client) msg
       Client.send "error:illegal world request for state" client
       beginWorld state client (Just progress)
+
+
+pvpWaitLoop :: TVar Server.State -> Int -> Int -> App (Maybe (TVar Room))
+pvpWaitLoop state x n = do
+  threadDelay 1000
+  when (mod x 1000 == 0) (
+      liftIO $ Log.info $ printf "Waiting for pvp room (%d / %d)" x n
+    )
+  mQueueResult <- liftIO . atomically $ Server.peekqueue state
+  case mQueueResult of
+    Just (_, roomVar) ->
+      return (Just roomVar)
+    Nothing ->
+      if x < n then
+        pvpWaitLoop state (x + 1) n
+          else
+            return Nothing
 
 
 spectate :: Client -> TVar Room -> App ()
