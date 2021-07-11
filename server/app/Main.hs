@@ -346,14 +346,18 @@ beginWorld state client mProgress = do
             World.PvpVariant -> do
               liftIO $ Log.info $ printf "<%s>: Checking for world pvp encounter" (show $ Client.name client)
               Client.send ("worldWaitPvp:") client
-              mPvpRoom <- pvpWaitLoop state 0 5000
-              case mPvpRoom of
-                Just roomVar -> do
-                  _ <- liftIO . atomically $ Server.modScenario (World.pvpScenario progress) roomVar
+              mWorldPvp <- setupWorldPvp progress encounterId client state
+              case mWorldPvp of
+                Just (roomVar, which, outcomes) -> do
                   room <- liftIO $ readTVarIO roomVar
                   liftIO $ Log.info $ printf "<%s>: pvp encounter found!" (show $ Client.name client)
                   Client.send ("joinEncounter:" <> Room.getName room) client
-                  beginPlay state client roomVar
+                  finally
+                    (do
+                      _ <- play which client roomVar outcomes
+                      return ()
+                    )
+                    (disconnect client roomVar state)
                 Nothing ->
                   liftIO $ Log.info $ printf "<%s>: No pvp encounter found" (show $ Client.name client)
               beginWorld state client (Just progress)
@@ -382,19 +386,50 @@ beginWorld state client mProgress = do
       beginWorld state client (Just progress)
 
 
-pvpWaitLoop :: TVar Server.State -> Int -> Int -> App (Maybe (TVar Room))
-pvpWaitLoop state x n = do
-  threadDelay 1000
-  when (mod x 1000 == 0) (
-      liftIO $ Log.info $ printf "Waiting for pvp room (%d / %d)" x n
+setupWorldPvp :: World.WorldProgress -> Text -> Client -> TVar Server.State -> App (Maybe (TVar Room, WhichPlayer, [Outcome]))
+setupWorldPvp progress roomName client state = do
+  gen <- liftIO getGen
+  (roomVar, created, outcomes) <- liftIO . atomically $ do
+    mRoomVar <- Server.getWorldPvpRoom state
+    case mRoomVar of
+      Just roomVar -> do
+        Server.setWorldPvpRoom state Nothing
+        _ <- Server.modScenario (World.pvpScenario PlayerB progress) roomVar
+        added <- addPlayerClient client roomVar
+        let outcomes = fromMaybe [] $ snd <$> added
+        return (roomVar, False, outcomes)
+      Nothing -> do
+        let scenario = makeScenario PrefixWorld
+        let room = Room.new WaitWorldPvp gen roomName scenario
+        roomVar <- newTVar room
+        Server.setWorldPvpRoom state (Just roomVar)
+        _ <- Server.modScenario (World.pvpScenario PlayerA progress) roomVar
+        added <- addPlayerClient client roomVar
+        let outcomes = fromMaybe [] $ snd <$> added
+        return (roomVar, True, outcomes)
+  if created then
+    (do
+      finally
+        (awaitWorldPvp roomVar 0 5000 outcomes)
+        (liftIO . atomically $ Server.setWorldPvpRoom state Nothing)
     )
-  mQueueResult <- liftIO . atomically $ Server.peekqueue state
-  case mQueueResult of
-    Just (_, roomVar) ->
-      return (Just roomVar)
-    Nothing ->
+      else
+        return $ Just (roomVar, PlayerB, outcomes)
+
+
+awaitWorldPvp :: TVar Room -> Int -> Int -> [Outcome] -> App (Maybe (TVar Room, WhichPlayer, [Outcome]))
+awaitWorldPvp roomVar x n outcomes = do
+  room <- liftIO $ readTVarIO roomVar
+  case Room.full room of
+    True ->
+      return $ Just (roomVar, PlayerA, outcomes)
+    False ->
       if x < n then
-        pvpWaitLoop state (x + 1) n
+        (do
+          when (x /= 0) (threadDelay 1000)
+          when (mod x 1000 == 0) (liftIO $ Log.info $ printf "Waiting for pvp room (%d / %d)" x n)
+          awaitWorldPvp roomVar (x + 1) n outcomes
+        )
           else
             return Nothing
 
