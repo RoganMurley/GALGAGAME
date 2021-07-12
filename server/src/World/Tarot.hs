@@ -14,10 +14,11 @@ import World.Decision as Decision
 
 data Tarot =
   Tarot
-  { tarot_name     :: Text
-  , tarot_life     :: Life
-  , tarot_cards    :: Maybe [Card]
-  , tarot_decision :: Maybe Decision
+  { tarot_name      :: Text
+  , tarot_life      :: Life
+  , tarot_cards     :: Maybe [Card]
+  , tarot_decision  :: Maybe Decision
+  , tarot_pvpChance :: Float
   } deriving (Eq, Show)
 
 
@@ -56,6 +57,7 @@ tarotBeginning (WorldProgress{ worldprogress_gen }) =
       20
       (Just cards)
       decision
+      0
 
 
 tarotFool :: WorldProgress -> Tarot
@@ -70,6 +72,7 @@ tarotFool (WorldProgress{ worldprogress_gen }) =
       30
       (Just cards)
       (Just mirrorDecision)
+      0.1
 
 
 tarotMagician :: WorldProgress -> Tarot
@@ -84,6 +87,7 @@ tarotMagician (WorldProgress{ worldprogress_gen }) =
       30
       (Just cards)
       (Just alchemyDecision)
+      0.1
 
 
 tarotPriestess :: WorldProgress -> Tarot
@@ -98,6 +102,7 @@ tarotPriestess (WorldProgress{ worldprogress_gen }) =
       30
       (Just cards)
       (Just mirageDecision)
+      0.1
 
 
 tarotEmpress :: WorldProgress -> Tarot
@@ -106,6 +111,7 @@ tarotEmpress _ =
     "Empress"
     50 Nothing
     Nothing
+    0.3
 
 
 tarotEmperor :: WorldProgress -> Tarot
@@ -115,6 +121,7 @@ tarotEmperor _ =
     50
     Nothing
     Nothing
+    0.3
 
 
 tarotHierophant :: WorldProgress -> Tarot
@@ -129,6 +136,7 @@ tarotHierophant (WorldProgress{ worldprogress_gen }) =
       50
       (Just cards)
       Nothing
+      0.3
 
 
 tarotLovers :: WorldProgress -> Tarot
@@ -143,6 +151,7 @@ tarotLovers (WorldProgress{ worldprogress_gen }) =
       50
       (Just cards)
       (Just dualityDecision)
+      0.3
 
 
 tarotChariot :: WorldProgress -> Tarot
@@ -152,6 +161,7 @@ tarotChariot _ =
     50
     Nothing
     Nothing
+    0.3
 
 
 tarotJustice :: WorldProgress -> Tarot
@@ -161,6 +171,7 @@ tarotJustice _ =
     50
     Nothing
     Nothing
+    0.5
 
 
 tarotHermit :: WorldProgress -> Tarot
@@ -170,6 +181,7 @@ tarotHermit _ =
     50
     Nothing
     (Just Decision.renounceCoinDecision)
+    0.5
 
 
 tarotWheel :: WorldProgress -> Tarot
@@ -179,6 +191,7 @@ tarotWheel _ =
     50
     Nothing
     Nothing
+    0.5
 
 
 tarotStrength :: WorldProgress -> Tarot
@@ -188,6 +201,7 @@ tarotStrength _ =
     50
     Nothing
     Nothing
+    0.5
 
 
 tarotHanged :: WorldProgress -> Tarot
@@ -196,6 +210,7 @@ tarotHanged _ =
     "Hanged Man" 50
     Nothing
     Nothing
+    0.5
 
 
 tarotDeath :: WorldProgress -> Tarot
@@ -205,6 +220,7 @@ tarotDeath _ =
     50
     Nothing
     (Just Decision.renounceSwordDecision)
+    0.5
 
 
 tarotTemperance :: WorldProgress -> Tarot
@@ -214,6 +230,7 @@ tarotTemperance _ =
     50
     Nothing
     (Just Decision.renounceGrailDecision)
+    0.5
 
 
 tarotDevil :: WorldProgress -> Tarot
@@ -223,6 +240,7 @@ tarotDevil _ =
     50
     Nothing
     (Just Decision.renounceWandDecision)
+    0.5
 
 
 tarotTower :: WorldProgress -> Tarot
@@ -232,23 +250,54 @@ tarotTower _ =
     50
     Nothing
     Nothing
+    0.5
 
 
 tarotStar :: WorldProgress -> Tarot
-tarotStar _ = Tarot "Star" 50 Nothing Nothing
+tarotStar _ =
+  Tarot
+    "Star"
+    50
+    Nothing
+    Nothing
+    0.7
 
 
 tarotMoon :: WorldProgress -> Tarot
-tarotMoon _ = Tarot "Moon" 50 Nothing Nothing
+tarotMoon _ =
+  Tarot
+    "Moon"
+    50
+    Nothing
+    Nothing
+    0.7
 
 
 tarotSun :: WorldProgress -> Tarot
-tarotSun _ = Tarot "Sun" 50 Nothing Nothing
+tarotSun _ =
+  Tarot
+    "Sun"
+    50
+    Nothing
+    Nothing
+    0.7
 
 
 tarotJudgement :: WorldProgress -> Tarot
-tarotJudgement _ = Tarot "Judgement" 50 Nothing Nothing
+tarotJudgement _ =
+  Tarot
+    "Judgement"
+    50
+    Nothing
+    Nothing
+    0.7
 
 
 tarotWorld :: WorldProgress -> Tarot
-tarotWorld _ = Tarot "World" 50 Nothing Nothing
+tarotWorld _ =
+  Tarot
+    "World"
+    50
+    Nothing
+    Nothing
+    0.7
