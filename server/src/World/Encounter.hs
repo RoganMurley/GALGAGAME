@@ -69,7 +69,7 @@ newEncounter progress (Edge{ edge_tarot, edge_key }) gen = do
 
 getTarotVariant :: Tarot -> Gen -> App Variant
 getTarotVariant tarot gen = do
-  let Tarot{ tarot_name, tarot_life, tarot_decision } = tarot
+  let Tarot{ tarot_name, tarot_life, tarot_decision, tarot_pvpChance } = tarot
   let tarotCards = getTarotCards tarot gen
   let cpuVariant = (CpuVariant $
         CpuVariantConstructor
@@ -81,10 +81,10 @@ getTarotVariant tarot gen = do
         )
   let pvpVariant = PvpVariant
   let variant =
-        if random gen < 0.5 then
-          cpuVariant
-        else
+        if random gen < tarot_pvpChance then
           pvpVariant
+        else
+          cpuVariant
   return variant
 
 

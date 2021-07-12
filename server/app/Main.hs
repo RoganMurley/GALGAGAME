@@ -317,25 +317,26 @@ beginWorld state client mProgress = do
   case (req, World.world_decision world) of
     (Just (World.JoinEncounter encounterId), Nothing) ->
       case World.encounterFromGuid world encounterId of
-        Just encounter ->
+        Just encounter -> do
+          let scenario = World.makeScenario progress encounter
+          let roomName = encounterId
           case World.encounter_variant encounter of
             World.CpuVariant _ -> do
               liftIO $ Log.info $ printf "<%s>: Joining cpu encounter %s" (show $ Client.name client) (encounterId)
               Client.send ("joinEncounter:" <> encounterId) client
               gen <- liftIO getGen
-              let scenario = World.makeScenario progress encounter
-              let roomName = encounterId
               let cpuName = World.encounterName encounter
 
               let preProgress = World.preEncounterProgress encounter progress
               World.updateProgress username preProgress
+
               roomVar <- liftIO . atomically $ Server.getOrCreateRoom roomName WaitCustom gen scenario state
               didWin <- beginComputer cpuName state client roomVar
               if didWin then
                 (do
-                  let postProgress = World.postEncounterProgress encounter scenario progress
-                  liftIO $ Log.info $ printf "<%s>: Win! New world progress %s" (show $ Client.name client) (show postProgress)
-                  beginWorld state client (Just postProgress)
+                  let newProgress = World.postEncounterProgress encounter scenario progress
+                  liftIO $ Log.info $ printf "<%s>: Win! New world progress %s" (show $ Client.name client) (show newProgress)
+                  beginWorld state client (Just newProgress)
                 )
                 else
                   (do
@@ -346,7 +347,11 @@ beginWorld state client mProgress = do
             World.PvpVariant -> do
               liftIO $ Log.info $ printf "<%s>: Checking for world pvp encounter" (show $ Client.name client)
               Client.send ("worldWaitPvp:") client
-              mWorldPvp <- setupWorldPvp progress encounterId client state
+
+              let preProgress = World.preEncounterProgress encounter progress
+              World.updateProgress username preProgress
+
+              mWorldPvp <- setupWorldPvp progress roomName client state
               case mWorldPvp of
                 Just (roomVar, which, outcomes) -> do
                   room <- liftIO $ readTVarIO roomVar
@@ -358,9 +363,12 @@ beginWorld state client mProgress = do
                       return ()
                     )
                     (disconnect client roomVar state)
-                Nothing ->
+                  let newProgress = World.postEncounterProgress encounter scenario progress
+                  beginWorld state client (Just newProgress)
+                Nothing -> do
                   liftIO $ Log.info $ printf "<%s>: No pvp encounter found" (show $ Client.name client)
-              beginWorld state client (Just progress)
+                  let newProgress = World.postEncounterProgress encounter scenario progress
+                  beginWorld state client (Just newProgress)
         Nothing -> do
           liftIO $ Log.error $ printf "<%s>: No such encounter" (show $ Client.name client)
           Client.send "error:no such encounter" client
@@ -410,7 +418,7 @@ setupWorldPvp progress roomName client state = do
   if created then
     (do
       finally
-        (awaitWorldPvp roomVar 0 5000 outcomes)
+        (awaitWorldPvp roomVar 0 1000 outcomes)
         (liftIO . atomically $ Server.setWorldPvpRoom state Nothing)
     )
       else
