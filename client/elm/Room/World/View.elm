@@ -7,6 +7,7 @@ import Card.State as Card
 import Card.Types as Card exposing (Card)
 import Card.View as Card
 import Font.View as Font
+import Frame.View as Frame
 import Game.State exposing (bareContextInit)
 import Game.Types exposing (Context)
 import Html exposing (Html, div)
@@ -44,8 +45,8 @@ webglView model { mouse, dimensions } assets =
 
         bodyView =
             case ( world.decision, world.waitPvp ) of
-                ( _, Just waitTime ) ->
-                    waitPvpView waitTime ctx
+                ( _, Just pvp ) ->
+                    waitPvpView pvp ctx
 
                 ( Just decision, _ ) ->
                     decisionView decision time ctx
@@ -146,24 +147,49 @@ decisionView { cards, title, text } time ctx =
         ]
 
 
-waitPvpView : Float -> Context -> List WebGL.Entity
-waitPvpView time ctx =
+waitPvpView : ( Float, Int ) -> Context -> List WebGL.Entity
+waitPvpView ( time, frame ) ctx =
     let
         { w, h } =
             ctx
 
         size =
-            (0.4 + abs (sin (time * 0.001))) * 1.4 * max w h
+            (1.4 + abs (sin (time * 0.001))) * 1.4 * max w h
     in
     List.concat
-        [ Font.view
-            "Futura"
-            "You feel a strange\nsensation..."
+        [ Frame.view
+            "eggs.png"
+            (frame // 5)
+            256
             { x = w * 0.5
-            , y = h * 0.4
+            , y = h * 0.5
             , scaleX = 0.0001 * size + 0.003 * sin (time * 0.005)
             , scaleY = 0.0001 * size + 0.003 * sin (time * 0.005)
             , color = vec3 (244 / 255) (241 / 255) (94 / 255)
             }
             ctx
         ]
+
+
+
+-- waitPvpView : Float -> Context -> List WebGL.Entity
+-- waitPvpView time ctx =
+--     let
+--         { w, h } =
+--             ctx
+--
+--         size =
+--             (0.4 + abs (sin (time * 0.001))) * 1.4 * max w h
+--     in
+--     List.concat
+--         [ Font.view
+--             "Futura"
+--             "You feel a strange\nsensation..."
+--             { x = w * 0.5
+--             , y = h * 0.4
+--             , scaleX = 0.0001 * size + 0.003 * sin (time * 0.005)
+--             , scaleY = 0.0001 * size + 0.003 * sin (time * 0.005)
+--             , color = vec3 (244 / 255) (241 / 255) (94 / 255)
+--             }
+--             ctx
+--         ]
