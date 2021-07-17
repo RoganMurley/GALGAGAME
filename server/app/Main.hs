@@ -348,10 +348,11 @@ beginWorld state client mProgress = do
               liftIO $ Log.info $ printf "<%s>: Checking for world pvp encounter" (show $ Client.name client)
               Client.send ("worldWaitPvp:") client
 
+              mWorldPvp <- setupWorldPvp progress roomName client state
+
               let preProgress = World.preEncounterProgress encounter progress
               World.updateProgress username preProgress
 
-              mWorldPvp <- setupWorldPvp progress roomName client state
               case mWorldPvp of
                 Just (roomVar, which, outcomes) -> do
                   room <- liftIO $ readTVarIO roomVar
@@ -418,15 +419,15 @@ setupWorldPvp progress roomName client state = do
   if created then
     (do
       finally
-        (awaitWorldPvp roomVar 0 1000 outcomes)
+        (awaitWorldPvp client roomVar 0 (8*4) outcomes)
         (liftIO . atomically $ Server.setWorldPvpRoom state Nothing)
     )
       else
         return $ Just (roomVar, PlayerB, outcomes)
 
 
-awaitWorldPvp :: TVar Room -> Int -> Int -> [Outcome] -> App (Maybe (TVar Room, WhichPlayer, [Outcome]))
-awaitWorldPvp roomVar x n outcomes = do
+awaitWorldPvp :: Client -> TVar Room -> Int -> Int -> [Outcome] -> App (Maybe (TVar Room, WhichPlayer, [Outcome]))
+awaitWorldPvp client roomVar x n outcomes = do
   room <- liftIO $ readTVarIO roomVar
   case Room.full room of
     True ->
@@ -435,8 +436,14 @@ awaitWorldPvp roomVar x n outcomes = do
       if x < n then
         (do
           when (x /= 0) (threadDelay 1000)
-          when (mod x 1000 == 0) (liftIO $ Log.info $ printf "Waiting for pvp room (%d / %d)" x n)
-          awaitWorldPvp roomVar (x + 1) n outcomes
+          when (mod x 1 == 0) (liftIO $ Log.info $ printf "<%s>: Waiting for pvp room (%d / %d)" (show $ Client.name client) x n)
+          msg <- Client.receive client
+          case msg of
+            "crack" ->
+              return ()
+            _ -> do
+              liftIO $ Log.error $ printf "<%s>: Unexpected await world pvp request '%s'" (show $ Client.name client) msg
+          awaitWorldPvp client roomVar (x + 1) n outcomes
         )
           else
             return Nothing

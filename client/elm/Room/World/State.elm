@@ -55,7 +55,7 @@ update model msg _ =
                 world =
                     model.world
             in
-            ( { model | world = { world | waitPvp = Just 0 } }, Cmd.none )
+            ( { model | world = { world | waitPvp = Just ( 0, 0 ) } }, Cmd.none )
 
 
 tick : Flags -> Model -> Float -> Model
@@ -71,14 +71,14 @@ tick flags model dt =
             model.world
     in
     case ( world.decision, world.waitPvp ) of
-        ( _, Just waitTime ) ->
+        ( _, Just ( waitTime, frame ) ) ->
             { model
                 | time = model.time + dt
                 , encounterButtons = Buttons.empty
                 , otherButtons = Buttons.empty
                 , visitedButtons = Buttons.empty
                 , choiceButtons = Buttons.empty
-                , world = { world | waitPvp = Just <| waitTime + dt }
+                , world = { world | waitPvp = Just <| ( waitTime + dt, frame ) }
             }
 
         ( Just decision, _ ) ->
@@ -136,7 +136,7 @@ tick flags model dt =
                         icon =
                             case encounter.variant of
                                 PvpVariant ->
-                                    "zzz"
+                                    "egg"
 
                                 CpuVariant ->
                                     "?"
@@ -273,7 +273,22 @@ mouseDown _ _ model { x, y } =
                     )
 
                 Nothing ->
-                    ( model, Cmd.none )
+                    case model.world.waitPvp of
+                        Just ( time, frame ) ->
+                            let
+                                world =
+                                    model.world
+
+                                newWorld =
+                                    { world | waitPvp = Just ( time, min (7 * 4) (frame + 1) ) }
+                            in
+                            ( { model | world = newWorld }
+                            , message <|
+                                Main.Send "crack"
+                            )
+
+                        Nothing ->
+                            ( model, Cmd.none )
 
 
 receive : String -> Cmd Main.Msg

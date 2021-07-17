@@ -23,7 +23,7 @@ type alias World =
     , visitedEdges : List Line
     , lockedEdges : List Line
     , decision : Maybe Decision
-    , waitPvp : Maybe Float
+    , waitPvp : Maybe ( Float, Int )
     }
 
 
