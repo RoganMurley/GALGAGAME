@@ -1,4 +1,4 @@
-module World.Types exposing (Decision, DecisionChoice, Encounter, Model, Variant(..), World)
+module World.Types exposing (Decision, DecisionChoice, Encounter, Model, Variant(..), WaitPvp, World)
 
 import Buttons.Types exposing (Buttons(..))
 import Card.Types exposing (Card)
@@ -23,7 +23,7 @@ type alias World =
     , visitedEdges : List Line
     , lockedEdges : List Line
     , decision : Maybe Decision
-    , waitPvp : Maybe ( Float, Int )
+    , waitPvp : Maybe WaitPvp
     }
 
 
@@ -51,4 +51,11 @@ type alias Decision =
 
 type alias DecisionChoice =
     { text : String
+    }
+
+
+type alias WaitPvp =
+    { time : Float
+    , cracks : Int
+    , timeSinceCrack : Float
     }

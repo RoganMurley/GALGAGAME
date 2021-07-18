@@ -19,7 +19,7 @@ import Vfx.State as Vfx
 import WebGL
 import WhichPlayer.Types exposing (WhichPlayer(..))
 import World.Messages exposing (Msg)
-import World.Types exposing (Decision, Model, World)
+import World.Types exposing (Decision, Model, WaitPvp, World)
 import World.WorldPos exposing (lineToWorldPos)
 
 
@@ -147,24 +147,30 @@ decisionView { cards, title, text } time ctx =
         ]
 
 
-waitPvpView : ( Float, Int ) -> Context -> List WebGL.Entity
-waitPvpView ( time, frame ) ctx =
+waitPvpView : WaitPvp -> Context -> List WebGL.Entity
+waitPvpView { time, cracks, timeSinceCrack } ctx =
     let
         { w, h } =
             ctx
 
         size =
-            (1.4 + abs (sin (time * 0.001))) * 1.4 * max w h
+            (2 + abs (sin (time * 0.001))) * 1.4 * max w h
+
+        mag =
+            0.001 * max 0 (400 - timeSinceCrack)
+
+        shake =
+            mag * (toFloat <| modBy 20 (ceiling time * 1247823748932 + 142131))
     in
     List.concat
         [ Frame.view
             "eggs.png"
-            (frame // 5)
+            cracks
             256
-            { x = w * 0.5
-            , y = h * 0.5
-            , scaleX = 0.0001 * size + 0.003 * sin (time * 0.005)
-            , scaleY = 0.0001 * size + 0.003 * sin (time * 0.005)
+            { x = w * 0.5 + shake
+            , y = h * 0.5 + shake
+            , scaleX = 0.0001 * size + 0.003 * sin (time * 0.005) + 0.01 * shake
+            , scaleY = 0.0001 * size + 0.003 * sin (time * 0.005) + 0.01 * shake
             , color = vec3 (244 / 255) (241 / 255) (94 / 255)
             }
             ctx
