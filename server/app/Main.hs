@@ -419,7 +419,7 @@ setupWorldPvp progress roomName client state = do
   if created then
     (do
       finally
-        (awaitWorldPvp client roomVar 0 (8*4) outcomes)
+        (awaitWorldPvp client roomVar 0 8 outcomes)
         (liftIO . atomically $ Server.setWorldPvpRoom state Nothing)
     )
       else

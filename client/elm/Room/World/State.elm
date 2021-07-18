@@ -2,6 +2,7 @@ module World.State exposing (init, mouseDown, mouseUp, receive, tick, update)
 
 import Assets.State as Assets
 import Assets.Types as Assets
+import Audio.State exposing (playSound)
 import Buttons.State as Buttons
 import Buttons.Types as Buttons exposing (Button, Buttons)
 import Game.State exposing (bareContextInit)
@@ -55,7 +56,7 @@ update model msg _ =
                 world =
                     model.world
             in
-            ( { model | world = { world | waitPvp = Just ( 0, 0 ) } }, Cmd.none )
+            ( { model | world = { world | waitPvp = Just { time = 0, cracks = 0, timeSinceCrack = 99999 } } }, Cmd.none )
 
 
 tick : Flags -> Model -> Float -> Model
@@ -71,14 +72,22 @@ tick flags model dt =
             model.world
     in
     case ( world.decision, world.waitPvp ) of
-        ( _, Just ( waitTime, frame ) ) ->
+        ( _, Just waitPvp ) ->
             { model
                 | time = model.time + dt
                 , encounterButtons = Buttons.empty
                 , otherButtons = Buttons.empty
                 , visitedButtons = Buttons.empty
                 , choiceButtons = Buttons.empty
-                , world = { world | waitPvp = Just <| ( waitTime + dt, frame ) }
+                , world =
+                    { world
+                        | waitPvp =
+                            Just
+                                { waitPvp
+                                    | time = waitPvp.time + dt
+                                    , timeSinceCrack = waitPvp.timeSinceCrack + dt
+                                }
+                    }
             }
 
         ( Just decision, _ ) ->
@@ -248,7 +257,7 @@ mouseUp _ _ model _ =
 
 
 mouseDown : Flags -> Assets.Model -> Model -> Mouse.Position -> ( Model, Cmd Main.Msg )
-mouseDown _ _ model { x, y } =
+mouseDown _ { audio } model { x, y } =
     let
         pos =
             vec2 (toFloat x) (toFloat y)
@@ -274,17 +283,27 @@ mouseDown _ _ model { x, y } =
 
                 Nothing ->
                     case model.world.waitPvp of
-                        Just ( time, frame ) ->
+                        Just waitPvp ->
                             let
                                 world =
                                     model.world
 
                                 newWorld =
-                                    { world | waitPvp = Just ( time, min (7 * 4) (frame + 1) ) }
+                                    { world
+                                        | waitPvp =
+                                            Just <|
+                                                { waitPvp
+                                                    | cracks = min 7 (waitPvp.cracks + 1)
+                                                    , timeSinceCrack = 0
+                                                }
+                                    }
                             in
                             ( { model | world = newWorld }
-                            , message <|
-                                Main.Send "crack"
+                            , Cmd.batch
+                                [ message <|
+                                    Main.Send "crack"
+                                , playSound audio "sfx/damage.mp3"
+                                ]
                             )
 
                         Nothing ->
