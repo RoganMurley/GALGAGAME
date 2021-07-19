@@ -2,6 +2,7 @@ module Font.View exposing (view)
 
 import Dict
 import Font.Shaders
+import Font.State exposing (getKerning)
 import Font.Types exposing (Entity, FontChar, Line)
 import Game.Types exposing (Context)
 import List
@@ -10,6 +11,7 @@ import Math.Matrix4 exposing (makeRotate, makeScale3)
 import Math.Vector3 exposing (vec3)
 import Render.Primitives
 import Texture.State as Texture
+import Util exposing (zipWithPrev)
 import WebGL
 import WebGL.Texture
 
@@ -28,10 +30,13 @@ view fontName text entity { camera2d, ortho, fonts, textures } =
                                 (List.groupWhile (\_ b -> b /= '\n') ('\n' :: String.toList text))
 
                         getLineWidth : Line -> Float
-                        getLineWidth =
+                        getLineWidth line =
                             List.foldl
-                                (\char acc -> entity.scaleX * (char.width + char.advance) + acc)
+                                (\( mPrevChar, char ) acc ->
+                                    entity.scaleX * (char.width + char.advance) + getKerning mPrevChar char + acc
+                                )
                                 0
+                                (zipWithPrev line)
 
                         textHeight : Float
                         textHeight =
@@ -40,17 +45,23 @@ view fontName text entity { camera2d, ortho, fonts, textures } =
                         ( textureWidth, textureHeight ) =
                             WebGL.Texture.size texture
 
-                        charView : Int -> Float -> FontChar -> ( Float, List WebGL.Entity ) -> ( Float, List WebGL.Entity )
-                        charView lineNum lineWidth { x, y, width, height, originX, originY, advance } ( offset, entities ) =
+                        charView : Int -> Float -> ( Maybe FontChar, FontChar ) -> ( Float, List WebGL.Entity ) -> ( Float, List WebGL.Entity )
+                        charView lineNum lineWidth ( mPrevFontChar, fontChar ) ( offset, entities ) =
                             let
+                                { x, y, width, height, originX, originY, advance, char } =
+                                    fontChar
+
                                 n =
                                     toFloat <| lineNum
 
                                 xPos =
-                                    offset + entity.x - 0.5 * lineWidth + entity.scaleX * (width - originX)
+                                    offset + entity.x - 0.5 * lineWidth + entity.scaleX * (width - originX) + kerning
 
                                 yPos =
                                     0.75 * textHeight + (n * 2 * textHeight) + entity.y - entity.scaleY * originY
+
+                                kerning =
+                                    getKerning mPrevFontChar fontChar
 
                                 newEntities =
                                     Render.Primitives.quad Font.Shaders.char
@@ -70,12 +81,14 @@ view fontName text entity { camera2d, ortho, fonts, textures } =
                                         }
                                         :: entities
                             in
-                            ( offset + entity.scaleX * (width + advance), newEntities )
+                            ( offset + entity.scaleX * (width + advance) + kerning, newEntities )
                     in
                     List.concat <|
                         List.map Tuple.second <|
                             List.indexedMap
-                                (\lineNum ( line, lineWidth ) -> List.foldl (charView lineNum lineWidth) ( 0, [] ) line)
+                                (\lineNum ( line, lineWidth ) ->
+                                    List.foldl (charView lineNum lineWidth) ( 0, [] ) (zipWithPrev line)
+                                )
                             <|
                                 List.map (\line -> ( line, getLineWidth line )) lines
 

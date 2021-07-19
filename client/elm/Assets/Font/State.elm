@@ -1,11 +1,11 @@
-module Font.State exposing (fetch, fontPaths, init, update)
+module Font.State exposing (fetch, fontPaths, getKerning, init, update)
 
 import Assets.Fetch as Assets
 import Assets.Types as Assets
-import Dict
+import Dict exposing (Dict)
 import Font.Decoders as Font
 import Font.Messages exposing (Msg(..))
-import Font.Types exposing (Font, FontPath, Model)
+import Font.Types exposing (Font, FontChar, FontPath, Model)
 import Http
 import Main.Messages as Main
 import Manifest.Types exposing (Manifest)
@@ -82,3 +82,24 @@ fontPaths manifest =
           , texturePath = "fonts/icons/fontmap.png"
           }
         ]
+
+
+kernDict : Dict ( Char, Char ) Int
+kernDict =
+    Dict.fromList
+        [ ( ( 'A', 'V' ), -7 )
+        , ( ( 'W', 'A' ), -8 )
+        , ( ( 'W', 'O' ), -1 )
+        ]
+
+
+getKerning : Maybe FontChar -> FontChar -> Float
+getKerning mPrevChar char =
+    case mPrevChar of
+        Just prevChar ->
+            Dict.get ( prevChar.char, char.char ) kernDict
+                |> Maybe.withDefault 0
+                |> toFloat
+
+        Nothing ->
+            0

@@ -11,7 +11,7 @@ import String
 decoder : Decoder Font
 decoder =
     let
-        charactersDecoder : List ( String, FontChar ) -> Decoder Font
+        charactersDecoder : List ( String, Char -> FontChar ) -> Decoder Font
         charactersDecoder pairs =
             let
                 result : Result String Font
@@ -30,11 +30,11 @@ decoder =
                 Err error ->
                     Json.fail error
 
-        reduce : String -> FontChar -> Font -> Result String Font
+        reduce : String -> (Char -> FontChar) -> Font -> Result String Font
         reduce keyString fontChar font =
             case String.uncons keyString of
                 Just ( keyChar, "" ) ->
-                    Ok <| Dict.insert keyChar fontChar font
+                    Ok <| Dict.insert keyChar (fontChar keyChar) font
 
                 Just _ ->
                     Err <| "Key is not a character"
@@ -46,9 +46,9 @@ decoder =
         |> Json.andThen charactersDecoder
 
 
-fontCharDecoder : Decoder FontChar
+fontCharDecoder : Decoder (Char -> FontChar)
 fontCharDecoder =
-    Json.map7 FontChar
+    Json.map7 (\a b c d e f g h -> FontChar a b c d e f g h)
         (field "x" float)
         (field "y" float)
         (field "width" float)
