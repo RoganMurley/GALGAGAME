@@ -1,5 +1,6 @@
-module Util exposing (authLocation, curry, interp, interp2D, interpFloat, message, portProtocol, px, splitOnColon, to3d, uncurry, zip, zipWithPrev)
+module Util exposing (authLocation, curry, httpErrorToString, interp, interp2D, interpFloat, message, portProtocol, px, splitOnColon, to3d, uncurry, zip, zipWithPrev)
 
+import Http
 import Main.Types exposing (Flags)
 import Math.Vector2 exposing (Vec2)
 import Math.Vector3 exposing (Vec3, vec3)
@@ -96,3 +97,22 @@ curry f a b =
 uncurry : (a -> b -> c) -> ( a, b ) -> c
 uncurry f ( a, b ) =
     f a b
+
+
+httpErrorToString : Http.Error -> String
+httpErrorToString err =
+    case err of
+        Http.BadUrl url ->
+            "BadUrl " ++ url
+
+        Http.Timeout ->
+            "Timeout"
+
+        Http.NetworkError ->
+            "NetworkError"
+
+        Http.BadStatus response ->
+            "BadStatus " ++ String.fromInt response.status.code
+
+        Http.BadPayload debug response ->
+            "BadPayload " ++ debug ++ " " ++ response.body

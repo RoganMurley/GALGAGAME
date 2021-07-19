@@ -101,5 +101,10 @@
     "|":{"x":810,"y":0,"width":33,"height":245,"originX":-56,"originY":195,"advance":145},
     "}":{"x":0,"y":0,"width":71,"height":270,"originX":-11,"originY":215,"advance":92},
     "~":{"x":2834,"y":473,"width":143,"height":52,"originX":-25,"originY":216,"advance":193}
-  }
+  },
+  "kerning": [
+    ["A", "V", -7],
+    ["W", "A", -8],
+    ["W", "O", -1]
+  ]
 }

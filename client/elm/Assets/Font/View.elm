@@ -26,14 +26,14 @@ view fontName text entity { camera2d, ortho, fonts, textures } =
                         lines : List Line
                         lines =
                             List.map
-                                (\( _, line ) -> List.filterMap (\char -> Dict.get char font) line)
+                                (\( _, line ) -> List.filterMap (\char -> Dict.get char font.chars) line)
                                 (List.groupWhile (\_ b -> b /= '\n') ('\n' :: String.toList text))
 
                         getLineWidth : Line -> Float
                         getLineWidth line =
                             List.foldl
                                 (\( mPrevChar, char ) acc ->
-                                    entity.scaleX * (char.width + char.advance) + getKerning mPrevChar char + acc
+                                    entity.scaleX * (char.width + char.advance) + getKerning font mPrevChar char + acc
                                 )
                                 0
                                 (zipWithPrev line)
@@ -61,7 +61,7 @@ view fontName text entity { camera2d, ortho, fonts, textures } =
                                     0.75 * textHeight + (n * 2 * textHeight) + entity.y - entity.scaleY * originY
 
                                 kerning =
-                                    getKerning mPrevFontChar fontChar
+                                    getKerning font mPrevFontChar fontChar
 
                                 newEntities =
                                     Render.Primitives.quad Font.Shaders.char
