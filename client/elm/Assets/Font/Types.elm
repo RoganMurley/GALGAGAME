@@ -9,7 +9,9 @@ type alias Model =
 
 
 type alias Font =
-    Dict Char FontChar
+    { chars : Dict Char FontChar
+    , kernDict : Dict ( Char, Char ) Float
+    }
 
 
 type alias FontChar =

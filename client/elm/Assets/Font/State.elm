@@ -2,7 +2,7 @@ module Font.State exposing (fetch, fontPaths, getKerning, init, update)
 
 import Assets.Fetch as Assets
 import Assets.Types as Assets
-import Dict exposing (Dict)
+import Dict
 import Font.Decoders as Font
 import Font.Messages exposing (Msg(..))
 import Font.Types exposing (Font, FontChar, FontPath, Model)
@@ -10,6 +10,7 @@ import Http
 import Main.Messages as Main
 import Manifest.Types exposing (Manifest)
 import Ports exposing (log)
+import Util exposing (httpErrorToString)
 
 
 init : Model
@@ -43,8 +44,8 @@ fetch manifest =
         handler : Assets.Handler Font Http.Error Msg
         handler result =
             case result of
-                Err _ ->
-                    FontError "HTTP error"
+                Err err ->
+                    FontError <| httpErrorToString err
 
                 Ok textures ->
                     FontLoaded textures
@@ -84,22 +85,12 @@ fontPaths manifest =
         ]
 
 
-kernDict : Dict ( Char, Char ) Int
-kernDict =
-    Dict.fromList
-        [ ( ( 'A', 'V' ), -7 )
-        , ( ( 'W', 'A' ), -8 )
-        , ( ( 'W', 'O' ), -1 )
-        ]
-
-
-getKerning : Maybe FontChar -> FontChar -> Float
-getKerning mPrevChar char =
+getKerning : Font -> Maybe FontChar -> FontChar -> Float
+getKerning { kernDict } mPrevChar char =
     case mPrevChar of
         Just prevChar ->
             Dict.get ( prevChar.char, char.char ) kernDict
                 |> Maybe.withDefault 0
-                |> toFloat
 
         Nothing ->
             0
