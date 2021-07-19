@@ -284,27 +284,31 @@ mouseDown _ { audio } model { x, y } =
                 Nothing ->
                     case model.world.waitPvp of
                         Just waitPvp ->
-                            let
-                                world =
-                                    model.world
+                            if waitPvp.timeSinceCrack > 100 then
+                                let
+                                    world =
+                                        model.world
 
-                                newWorld =
-                                    { world
-                                        | waitPvp =
-                                            Just <|
-                                                { waitPvp
-                                                    | cracks = min 7 (waitPvp.cracks + 1)
-                                                    , timeSinceCrack = 0
-                                                }
-                                    }
-                            in
-                            ( { model | world = newWorld }
-                            , Cmd.batch
-                                [ message <|
-                                    Main.Send "crack"
-                                , playSound audio "sfx/damage.mp3"
-                                ]
-                            )
+                                    newWorld =
+                                        { world
+                                            | waitPvp =
+                                                Just <|
+                                                    { waitPvp
+                                                        | cracks = min 7 (waitPvp.cracks + 1)
+                                                        , timeSinceCrack = 0
+                                                    }
+                                        }
+                                in
+                                ( { model | world = newWorld }
+                                , Cmd.batch
+                                    [ message <|
+                                        Main.Send "crack"
+                                    , playSound audio "sfx/damage.mp3"
+                                    ]
+                                )
+
+                            else
+                                ( model, Cmd.none )
 
                         Nothing ->
                             ( model, Cmd.none )

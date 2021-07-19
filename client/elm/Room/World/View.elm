@@ -154,7 +154,7 @@ waitPvpView { time, cracks, timeSinceCrack } ctx =
             ctx
 
         size =
-            (2 + abs (sin (time * 0.001))) * 1.4 * max w h
+            ((0.2 * toFloat cracks) + 1 + abs (sin (time * 0.001))) * 1.4 * max w h
 
         mag =
             0.001 * max 0 (400 - timeSinceCrack)
