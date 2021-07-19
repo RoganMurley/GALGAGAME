@@ -20,6 +20,7 @@ type alias FontChar =
     , originX : Float
     , originY : Float
     , advance : Float
+    , char : Char
     }
 
 

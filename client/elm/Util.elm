@@ -1,4 +1,4 @@
-module Util exposing (authLocation, curry, interp, interp2D, interpFloat, message, portProtocol, px, splitOnColon, to3d, uncurry, zip)
+module Util exposing (authLocation, curry, interp, interp2D, interpFloat, message, portProtocol, px, splitOnColon, to3d, uncurry, zip, zipWithPrev)
 
 import Main.Types exposing (Flags)
 import Math.Vector2 exposing (Vec2)
@@ -55,6 +55,13 @@ splitOnColon str =
 zip : List a -> List b -> List ( a, b )
 zip =
     List.map2 (\a b -> ( a, b ))
+
+
+zipWithPrev : List a -> List ( Maybe a, a )
+zipWithPrev xs =
+    zip
+        (Nothing :: List.map Just xs)
+        xs
 
 
 interp : Float -> Vec3 -> Vec3 -> Vec3
