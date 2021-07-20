@@ -11,7 +11,7 @@ import Math.Matrix4 exposing (makeRotate, makeScale3)
 import Math.Vector3 exposing (vec3)
 import Render.Primitives
 import Texture.State as Texture
-import Util exposing (zipWithPrev)
+import Util exposing (foldlWithPrev)
 import WebGL
 import WebGL.Texture
 
@@ -31,12 +31,12 @@ view fontName text entity { camera2d, ortho, fonts, textures } =
 
                         getLineWidth : Line -> Float
                         getLineWidth line =
-                            List.foldl
-                                (\( mPrevChar, char ) acc ->
+                            foldlWithPrev
+                                (\mPrevChar char acc ->
                                     entity.scaleX * (char.width + char.advance) + getKerning font mPrevChar char + acc
                                 )
                                 0
-                                (zipWithPrev line)
+                                line
 
                         textHeight : Float
                         textHeight =
@@ -45,8 +45,8 @@ view fontName text entity { camera2d, ortho, fonts, textures } =
                         ( textureWidth, textureHeight ) =
                             WebGL.Texture.size texture
 
-                        charView : Int -> Float -> ( Maybe FontChar, FontChar ) -> ( Float, List WebGL.Entity ) -> ( Float, List WebGL.Entity )
-                        charView lineNum lineWidth ( mPrevFontChar, fontChar ) ( offset, entities ) =
+                        charView : Int -> Float -> Maybe FontChar -> FontChar -> ( Float, List WebGL.Entity ) -> ( Float, List WebGL.Entity )
+                        charView lineNum lineWidth mPrevFontChar fontChar ( offset, entities ) =
                             let
                                 { x, y, width, height, originX, originY, advance, char } =
                                     fontChar
@@ -87,7 +87,7 @@ view fontName text entity { camera2d, ortho, fonts, textures } =
                         List.map Tuple.second <|
                             List.indexedMap
                                 (\lineNum ( line, lineWidth ) ->
-                                    List.foldl (charView lineNum lineWidth) ( 0, [] ) (zipWithPrev line)
+                                    foldlWithPrev (charView lineNum lineWidth) ( 0, [] ) line
                                 )
                             <|
                                 List.map (\line -> ( line, getLineWidth line )) lines

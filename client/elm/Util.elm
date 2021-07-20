@@ -1,4 +1,4 @@
-module Util exposing (authLocation, curry, httpErrorToString, interp, interp2D, interpFloat, message, portProtocol, px, splitOnColon, to3d, uncurry, zip, zipWithPrev)
+module Util exposing (authLocation, curry, foldlWithPrev, httpErrorToString, interp, interp2D, interpFloat, message, portProtocol, px, splitOnColon, to3d, uncurry, zip)
 
 import Http
 import Main.Types exposing (Flags)
@@ -58,13 +58,6 @@ zip =
     List.map2 (\a b -> ( a, b ))
 
 
-zipWithPrev : List a -> List ( Maybe a, a )
-zipWithPrev xs =
-    zip
-        (Nothing :: List.map Just xs)
-        xs
-
-
 interp : Float -> Vec3 -> Vec3 -> Vec3
 interp t start end =
     Math.Vector3.add start <|
@@ -116,3 +109,22 @@ httpErrorToString err =
 
         Http.BadPayload debug response ->
             "BadPayload " ++ debug ++ " " ++ response.body
+
+
+foldlWithPrev : (Maybe a -> a -> b -> b) -> b -> List a -> b
+foldlWithPrev =
+    let
+        f : Maybe a -> (Maybe a -> a -> b -> b) -> b -> List a -> b
+        f prev step state list =
+            case list of
+                current :: remaining ->
+                    let
+                        newState =
+                            step prev current state
+                    in
+                    f (Just current) step newState remaining
+
+                _ ->
+                    state
+    in
+    f Nothing
