@@ -12,7 +12,7 @@ import GameCommand (GameCommand(..), resolveAll, update)
 import GameState
 import Mirror (mirror)
 import Model
-import Player (WhichPlayer(..))
+import Player (WhichPlayer(..), other)
 import Scenario (Scenario(..))
 import Stack (diasporaLength)
 import Util (Err, Gen)
@@ -26,23 +26,22 @@ data Action = PlayAction Int | EndAction
   deriving (Show)
 
 
-evalResult :: Either Err PlayState -> Weight
-evalResult (Right state) = evalState state
-evalResult (Left err)    = error (cs err)
+evalResult :: WhichPlayer -> Either Err PlayState -> Weight
+evalResult w (Right state) = evalState w state
+evalResult _ (Left err)    = error (cs err)
 
 
-evalState :: PlayState -> Weight
-evalState (Ended (Just PlayerA) _ _ _) = 100
-evalState (Ended (Just PlayerB) _ _ _) = -200
-evalState (Ended Nothing _  _ _)       = 50
-evalState (Playing model _)            = evalModel model
+evalState :: WhichPlayer -> PlayState -> Weight
+evalState w (Ended (Just winner) _ _ _)  = if winner == w then 100 else -200
+evalState _ (Ended Nothing _  _ _)       = 50
+evalState w (Playing model _)            = evalModel model
   where
     evalModel :: Model -> Weight
     evalModel m
       | (diasporaLength $ evalI m $ getStack) > 0 =
-        evalState . fst . runWriter $ resolveAll m Replay.Active.null 0
+        (evalState w) . fst . runWriter $ resolveAll m Replay.Active.null 0
       | otherwise =
-          (evalPlayer PlayerA m) - (evalPlayer PlayerB m)
+          (evalPlayer w m) - (evalPlayer (other w) m)
     evalPlayer :: WhichPlayer -> Model -> Weight
     evalPlayer which m =
       evalI m $ do
@@ -56,9 +55,16 @@ toCommand (PlayAction i) = PlayCard i
 toCommand EndAction      = EndTurn
 
 
-possibleActions :: Model -> [Action]
-possibleActions m = endAction ++ (PlayAction <$> xs)
+possibleActions :: WhichPlayer -> Model -> [Action]
+possibleActions which model = endAction ++ (PlayAction <$> xs)
   where
+    m :: Model
+    m =
+      case which of
+        PlayerA ->
+          model
+        PlayerB ->
+          mirror model
     handLength :: Int
     handLength = length $ evalI m $ getHand PlayerA
     xs :: [Int]
@@ -91,21 +97,14 @@ postulateAction which model gen scenario action =
 
 chooseAction :: Gen -> WhichPlayer -> Model -> Scenario -> Maybe Action
 chooseAction gen which model scenario
-  | modelTurn /= which = Nothing
-  | winningEnd model   = Just EndAction
-  | otherwise          = Just $ maximumBy comparison $ possibleActions m
+  | turn /= which    = Nothing
+  | winningEnd model = Just EndAction
+  | otherwise        = Just $ maximumBy comparison $ possibleActions which model
   where
+    turn :: Turn
+    turn = evalI model getTurn
     comparison :: Action -> Action -> Ordering
-    comparison = comparing $ evalResult . (postulateAction which model gen scenario)
-    modelTurn :: Turn
-    modelTurn = evalI model getTurn
-    m :: Model
-    m =
-      case which of
-        PlayerA ->
-          model
-        PlayerB ->
-          mirror model
+    comparison = comparing $ (evalResult which) . (postulateAction which model gen scenario)
 
 
 winningEnd :: Model -> Bool
