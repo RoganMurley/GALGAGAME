@@ -3,18 +3,19 @@ module ArtificalIntelligence where
 
 import Control.Monad.Trans.Writer (runWriter)
 import Data.List (maximumBy)
-import Data.Maybe (fromJust)
 import Data.Ord (comparing)
+import Data.String.Conversions (cs)
 import DSL.Alpha
 
 import Card (Card)
 import GameCommand (GameCommand(..), resolveAll, update)
 import GameState
+import Mirror (mirror)
 import Model
 import Player (WhichPlayer(..))
 import Scenario (Scenario(..))
 import Stack (diasporaLength)
-import Util (Gen, fromRight)
+import Util (Err, Gen)
 
 import qualified Replay.Active
 import qualified Cards
@@ -23,6 +24,11 @@ import qualified Cards
 type Weight = Int
 data Action = PlayAction Int | EndAction
   deriving (Show)
+
+
+evalResult :: Either Err PlayState -> Weight
+evalResult (Right state) = evalState state
+evalResult (Left err)    = error (cs err)
 
 
 evalState :: PlayState -> Weight
@@ -63,25 +69,43 @@ possibleActions m = endAction ++ (PlayAction <$> xs)
       | otherwise = [ EndAction ]
 
 
-postulateAction :: WhichPlayer -> Model -> Gen -> Scenario -> Action -> PlayState
+postulateAction :: WhichPlayer -> Model -> Gen -> Scenario -> Action -> Either Err PlayState
 postulateAction which model gen scenario action =
-  -- DANGEROUS, WE NEED TO SPLIT UP THE COMMAND STUFF IN GAMESTATE
-  (\(Started p) -> p) . fromJust . fst . fromRight $ update command which state scenario (Nothing, Nothing)
-  where
+  let
     command = toCommand action :: GameCommand
     state = Started $ Playing (modI model $ setGen gen) (Replay.Active.null) :: GameState
+    result = update command which state scenario (Nothing, Nothing)
+  in
+    case result of
+      Left err ->
+        Left err
+      Right (Just s, _) ->
+        case s of
+          Started started ->
+            Right started
+          _ ->
+            Left "Invalid gamestate to postulate an action upon"
+      _ ->
+        Left "Unwrapping error"
 
 
 chooseAction :: Gen -> WhichPlayer -> Model -> Scenario -> Maybe Action
 chooseAction gen which model scenario
   | modelTurn /= which = Nothing
   | winningEnd model   = Just EndAction
-  | otherwise          = Just $ maximumBy comparison $ possibleActions model
+  | otherwise          = Just $ maximumBy comparison $ possibleActions m
   where
     comparison :: Action -> Action -> Ordering
-    comparison = comparing $ evalState . (postulateAction which model gen scenario)
+    comparison = comparing $ evalResult . (postulateAction which model gen scenario)
     modelTurn :: Turn
     modelTurn = evalI model getTurn
+    m :: Model
+    m =
+      case which of
+        PlayerA ->
+          model
+        PlayerB ->
+          mirror model
 
 
 winningEnd :: Model -> Bool

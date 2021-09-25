@@ -190,7 +190,10 @@ playCard index which model replay
   | otherwise     =
     case card of
       Nothing ->
-        Left "You can't play a card you don't have in your hand"
+        Left $
+          cs $
+            "You can't play a card you don't have in your hand (" ++
+              show index ++ "," ++ show which ++ ")"
       Just c ->
         let
           program :: Beta.Program ()
