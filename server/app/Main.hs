@@ -300,8 +300,41 @@ beginQueue state client roomVar = do
     Nothing -> do
       liftIO $ Log.info $ printf "<%s>: Creating new quickplay room" (show $ Client.name client)
       finally
-        (beginPlay state client roomVar)
+        (do
+          asyncQueueCpuFallback state roomVar
+          beginPlay state client roomVar
+        )
         (liftIO . atomically $ Server.dequeue client state)
+
+
+asyncQueueCpuFallback :: TVar Server.State -> TVar Room -> App ()
+asyncQueueCpuFallback state roomVar = do
+  _ <- fork $ do
+    threadDelay (4 * 1000000)
+    room <- liftIO $ readTVarIO roomVar
+    case Room.full room of
+      True -> do
+        liftIO $ Log.info "No CPU needed for queue, rejoice"
+        return ()
+      False -> do
+        liftIO $ Log.info "CPU needed for queue, shame"
+        let cpuName = "CPU"
+        cpuGuid <- liftIO GUID.genText
+        added <- liftIO . atomically $ addComputerClient cpuName cpuGuid roomVar
+        case added of
+          Just client -> do
+            liftIO $ Log.info "CPU successfully added to room"
+            newRoom <- liftIO $ readTVarIO roomVar
+            syncPlayersRoom newRoom
+            finally
+              (computerPlay PlayerB roomVar)
+              (disconnect client roomVar state)
+            return ()
+
+          Nothing -> do
+            liftIO $ Log.info "Failed to add CPU"
+            return ()
+  return ()
 
 
 beginWorld :: TVar Server.State -> Client -> Maybe World.WorldProgress -> App ()

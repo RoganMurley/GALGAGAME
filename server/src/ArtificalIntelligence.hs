@@ -63,23 +63,23 @@ possibleActions m = endAction ++ (PlayAction <$> xs)
       | otherwise = [ EndAction ]
 
 
-postulateAction :: Model -> Gen -> Scenario -> Action -> PlayState
-postulateAction model gen scenario action =
+postulateAction :: WhichPlayer -> Model -> Gen -> Scenario -> Action -> PlayState
+postulateAction which model gen scenario action =
   -- DANGEROUS, WE NEED TO SPLIT UP THE COMMAND STUFF IN GAMESTATE
-  (\(Started p) -> p) . fromJust . fst . fromRight $ update command PlayerA state scenario (Nothing, Nothing)
+  (\(Started p) -> p) . fromJust . fst . fromRight $ update command which state scenario (Nothing, Nothing)
   where
     command = toCommand action :: GameCommand
     state = Started $ Playing (modI model $ setGen gen) (Replay.Active.null) :: GameState
 
 
-chooseAction :: Gen -> Turn -> Model -> Scenario -> Maybe Action
-chooseAction gen turn model scenario
-  | modelTurn /= turn = Nothing
-  | winningEnd model  = Just EndAction
-  | otherwise         = Just $ maximumBy comparison $ possibleActions model
+chooseAction :: Gen -> WhichPlayer -> Model -> Scenario -> Maybe Action
+chooseAction gen which model scenario
+  | modelTurn /= which = Nothing
+  | winningEnd model   = Just EndAction
+  | otherwise          = Just $ maximumBy comparison $ possibleActions model
   where
     comparison :: Action -> Action -> Ordering
-    comparison = comparing $ evalState . (postulateAction model gen scenario)
+    comparison = comparing $ evalState . (postulateAction which model gen scenario)
     modelTurn :: Turn
     modelTurn = evalI model getTurn
 
