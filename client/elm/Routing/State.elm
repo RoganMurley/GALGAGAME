@@ -6,7 +6,7 @@ import Url.Parser exposing ((</>), Parser, map, oneOf, s, string)
 
 default : Route
 default =
-    Play WorldPlay
+    Play QuickPlay
 
 
 route : Parser (Route -> a) a
