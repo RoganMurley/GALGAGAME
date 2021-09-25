@@ -2,8 +2,8 @@ module Main where
 
 import Control.Concurrent.Lifted (fork, threadDelay)
 import Control.Monad (forM_)
-import Control.Monad.STM (atomically)
-import Control.Concurrent.STM.TVar (TVar, newTVar, readTVarIO)
+import Control.Monad.STM (STM, atomically)
+import Control.Concurrent.STM.TVar (TVar, newTVar, readTVar, readTVarIO)
 import Control.Monad.Trans.Maybe (MaybeT)
 import Control.Exception.Lifted (finally)
 import Control.Monad (forever, mzero, when)
@@ -311,30 +311,32 @@ asyncQueueCpuFallback :: TVar Server.State -> TVar Room -> App ()
 asyncQueueCpuFallback state roomVar = do
   _ <- fork $ do
     threadDelay (4 * 1000000)
-    room <- liftIO $ readTVarIO roomVar
-    case Room.full room of
-      True -> do
-        liftIO $ Log.info "No CPU needed for queue, rejoice"
-        return ()
-      False -> do
-        liftIO $ Log.info "CPU needed for queue, shame"
-        let cpuName = "CPU"
-        cpuGuid <- liftIO GUID.genText
-        added <- liftIO . atomically $ addComputerClient cpuName cpuGuid roomVar
-        case added of
-          Just client -> do
-            liftIO $ Log.info "CPU successfully added to room"
-            newRoom <- liftIO $ readTVarIO roomVar
-            syncPlayersRoom newRoom
-            finally
-              (computerPlay PlayerB roomVar)
-              (disconnect client roomVar state)
-            return ()
-
-          Nothing -> do
-            liftIO $ Log.info "Failed to add CPU"
-            return ()
+    cpuGuid <- liftIO GUID.genText
+    result <- liftIO $ atomically (transaction cpuGuid)
+    case result of
+      Left toLog ->
+        liftIO $ Log.info toLog
+      Right client -> do
+        newRoom <- liftIO $ readTVarIO roomVar
+        syncPlayersRoom newRoom
+        finally
+          (computerPlay PlayerB roomVar)
+          (disconnect client roomVar state)
   return ()
+  where
+    transaction :: Text -> STM (Either String Client)
+    transaction guid = do
+      room <- readTVar roomVar
+      case Room.full room of
+        True -> do
+          return $ Left "No CPU needed for queue, rejoice"
+        False -> do
+          added <- addComputerClient "CPU" guid roomVar
+          case added of
+            Just client ->
+              return $ Right client
+            Nothing ->
+              return $ Left "Failed to add CPU"
 
 
 beginWorld :: TVar Server.State -> Client -> Maybe World.WorldProgress -> App ()
