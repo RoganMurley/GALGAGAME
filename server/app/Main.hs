@@ -291,24 +291,33 @@ beginComputer cpuName state client roomVar = do
 
 beginQueue :: TVar Server.State -> Client -> TVar Room -> App ()
 beginQueue state client roomVar = do
-  liftIO $ Log.info $ printf "<%s>: Begin quickplay game" (show $ Client.name client)
+  let clientName = show (Client.name client)
+  liftIO $ Log.info $ printf "<%s>: Begin quickplay game" clientName
   roomM <- liftIO . atomically $ Server.queue (client, roomVar) state
   case roomM of
     Just (_, existingRoom) -> do
-      liftIO $ Log.info $ printf "<%s>: Joining existing quickplay room" (show $ Client.name client)
+      liftIO $ Log.info $ printf "<%s>: Joining existing quickplay room" clientName
       beginPlay state client existingRoom
     Nothing -> do
-      liftIO $ Log.info $ printf "<%s>: Creating new quickplay room" (show $ Client.name client)
+      liftIO $ Log.info $ printf "<%s>: Creating new quickplay room" clientName
       finally
         (do
-          asyncQueueCpuFallback state client roomVar
+          asyncQueueCpuFallback client roomVar
           beginPlay state client roomVar
         )
-        (liftIO . atomically $ Server.dequeue client state)
+        (do
+          disconnectComputers roomVar state
+          liftIO . atomically $ Server.dequeue client state
+        )
+  gen <- liftIO getGen
+  guid <- liftIO GUID.genText
+  let scenario = makeScenario PrefixQueue
+  newRoomVar <- liftIO . atomically $ Server.getOrCreateRoom guid WaitQuickplay gen scenario state
+  beginQueue state client newRoomVar
 
 
-asyncQueueCpuFallback :: TVar Server.State -> Client -> TVar Room -> App ()
-asyncQueueCpuFallback state client roomVar = do
+asyncQueueCpuFallback :: Client -> TVar Room -> App ()
+asyncQueueCpuFallback client roomVar = do
   _ <- fork $ do
     threadDelay (4 * 1000000)
     cpuGuid <- liftIO GUID.genText
@@ -316,14 +325,12 @@ asyncQueueCpuFallback state client roomVar = do
     case result of
       Left toLog ->
         liftIO $ Log.info toLog
-      Right computerClient -> do
+      Right _ -> do
         newRoom <- liftIO $ readTVarIO roomVar
         let gameState = Room.getState newRoom
         syncClient client PlayerA gameState
         syncPlayersRoom newRoom
-        finally
-          (computerPlay PlayerB roomVar)
-          (disconnect computerClient roomVar state)
+        computerPlay PlayerB roomVar
   return ()
   where
     transaction :: Text -> STM (Either String Client)
@@ -589,3 +596,11 @@ disconnect client roomVar state = do
           Log.info $ printf "<%s>: Room is not empty, retaining room" (show $ Client.name client)
           readTVarIO state
         )
+
+
+disconnectComputers :: TVar Room -> TVar Server.State -> App ()
+disconnectComputers roomVar state = do
+  room <- liftIO $ readTVarIO roomVar
+  let clients = Room.getClients room
+  let computerClients = filter Client.isCpu clients
+  forM_ computerClients (\client -> disconnect client roomVar state)

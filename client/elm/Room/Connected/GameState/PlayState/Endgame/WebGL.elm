@@ -142,6 +142,25 @@ buttonEntities renderParams buttons gameType dt mouseState =
                         }
                     ]
 
+                QuickplayGame ->
+                    [ Buttons.entity
+                        "continue"
+                        { x = 0.5 * w
+                        , y = 0.55 * h
+                        , width = buttonWidth
+                        , height = buttonHeight
+                        , btn =
+                            TextButton
+                                { font = "Futura"
+                                , text = "Continue?"
+                                , textColor = textColor
+                                , bgColor = bgColor
+                                , options = [ Buttons.HoverText "Continue!" ]
+                                }
+                        , disabled = False
+                        }
+                    ]
+
                 _ ->
                     [ Buttons.entity
                         "playAgain"

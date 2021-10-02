@@ -65,3 +65,8 @@ receive  _                                   = return ("")
 
 cpuClient :: Text -> Text -> Client
 cpuClient username = Client (CpuUser username) ComputerConnection
+
+
+isCpu :: Client -> Bool
+isCpu (Client _ ComputerConnection _) = True
+isCpu _                               = False

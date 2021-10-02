@@ -149,6 +149,15 @@ update model msg assets flags =
                         Nothing ->
                             ( model, log "Missing room ID from World start game" )
 
+                Connected connected ->
+                    let
+                        roomID =
+                            Maybe.withDefault connected.roomID messageRoomID
+                    in
+                    ( Connected <| Connected.init mode connected.gameType roomID
+                    , message <| Main.Send "endEncounter:"
+                    )
+
                 _ ->
                     ( model, Cmd.none )
 

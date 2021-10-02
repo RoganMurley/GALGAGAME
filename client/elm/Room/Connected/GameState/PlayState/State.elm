@@ -518,7 +518,15 @@ mouseDown { dimensions, mouse } assets gameType mode { x, y } state =
                                             Cmd.none
 
                                 "continue" ->
-                                    message << Main.RoomMsg <| Room.VisitWorld True
+                                    case gameType of
+                                        WorldGame ->
+                                            message << Main.RoomMsg <| Room.VisitWorld True
+
+                                        _ ->
+                                            message
+                                                << Main.RoomMsg
+                                            <|
+                                                Room.StartGame Mode.Playing Nothing
 
                                 _ ->
                                     Cmd.none
