@@ -141,13 +141,13 @@ gameTypeToString : GameType -> String
 gameTypeToString gameType =
     case gameType of
         CustomGame ->
-            "PRIVATE ROOM"
+            "CUSTOM"
 
         ComputerGame ->
             "CPU ROOM"
 
         QuickplayGame ->
-            "MATCHMAKING"
+            "QUICKPLAY"
 
         TutorialGame ->
             "TUTORIAL"

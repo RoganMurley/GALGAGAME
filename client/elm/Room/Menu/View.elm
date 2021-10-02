@@ -15,7 +15,7 @@ view =
             [ h1 [] [ text "GALGA" ]
             , div [ class "main-menu-buttons" ] <|
                 List.map menuButton
-                    [ WorldGame, CustomGame ]
+                    [ QuickplayGame, CustomGame ]
             ]
         ]
 
