@@ -18,8 +18,11 @@ jobs:
           command: cd client &&
                    npm install -g gulp@4.0.0 gulp-cli@2.0.1 elm@0.19.0 elm-analyse@0.16.4 &&
                    npm install &&
-                   gulp build &&
-                   elm-analyse
+                   gulp build
+                   # Temp disable elm-analyse due to circleci issues with
+                   # https://github.com/stil4m/elm-analyse/issues/218
+                   # gulp build &&
+                   # elm-analyse
       - run:
           name: Setup Docker machine
           command: base=https://github.com/docker/machine/releases/download/v0.16.2 &&
