@@ -37,5 +37,6 @@
     "test-dependencies": {
         "direct": {},
         "indirect": {}
-    }
+    },
+    "circleci_cache_buster": true
 }
