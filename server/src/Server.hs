@@ -6,7 +6,6 @@ import Control.Monad.STM (STM)
 import Control.Concurrent.STM.TVar (TVar, newTVar, readTVar)
 import Data.Map.Strict (Map, delete, elems, empty, insert, keys, lookup)
 import Data.Text (Text)
-import Safe (headMay)
 
 import GameState (WaitType(..))
 import Outcome (Outcome)
@@ -23,7 +22,7 @@ import Room (Room)
 
 data State = State
   { state_rooms    :: Map Room.Name (TVar Room)
-  , state_matching :: [(Client, TVar Room)]
+  , state_matching :: Maybe (TVar Room)
   , state_worldPvp :: Maybe (TVar Room)
   }
 
@@ -33,7 +32,7 @@ instance Show State where
 
 
 initState :: State
-initState = State empty [] Nothing
+initState = State empty Nothing Nothing
 
 
 -- GETTING / DELETING ROOMS
@@ -70,31 +69,21 @@ getAllRooms state = elems . state_rooms <$> readTVar state
 
 
 -- QUEUEING
-queue :: (Client, TVar Room) -> TVar State -> STM (Maybe (Client, TVar Room))
-queue q state = do
-    match <- (\(State _ qs _) -> headMay qs) <$> readTVar state
+queue :: TVar Room -> TVar State -> STM (Maybe (TVar Room))
+queue roomVar state = do
+    match <- state_matching <$> readTVar state
     case match of
-      Just (opponent, _) -> do
-        _ <- dequeue opponent state
-        return match
+      Just existingRoomVar -> do
+        _ <- modTVar state (\(State s _ w) -> State s Nothing w)
+        return $ Just existingRoomVar
       Nothing -> do
-        modTVar state (\(State s qs w) -> (State s (q : qs) w))
-        return match
-
-
-dequeue :: Client -> TVar State -> STM (State)
-dequeue client state =
-  modReadTVar state $
-    \(State s qs w) -> State s (filter (\(c, _) -> c /= client) qs) w
+        _ <- modTVar state (\(State s _ w) -> (State s (Just roomVar) w))
+        return Nothing
 
 
 modScenario :: (Scenario -> Scenario) -> TVar Room -> STM Room
 modScenario f roomVar =
   modReadTVar roomVar $ Room.modScenario f
-
-
-peekqueue :: TVar State -> STM (Maybe (Client, TVar Room))
-peekqueue state = (\(State _ qs _) -> headMay qs) <$> readTVar state
 
 
 -- WORLD PVP

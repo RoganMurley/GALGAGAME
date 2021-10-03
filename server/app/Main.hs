@@ -293,9 +293,9 @@ beginQueue :: TVar Server.State -> Client -> TVar Room -> App ()
 beginQueue state client roomVar = do
   let clientName = show (Client.name client)
   liftIO $ Log.info $ printf "<%s>: Begin quickplay game" clientName
-  roomM <- liftIO . atomically $ Server.queue (client, roomVar) state
+  roomM <- liftIO . atomically $ Server.queue roomVar state
   case roomM of
-    Just (_, existingRoom) -> do
+    Just existingRoom -> do
       liftIO $ Log.info $ printf "<%s>: Joining existing quickplay room" clientName
       beginPlay state client existingRoom
     Nothing -> do
@@ -305,10 +305,7 @@ beginQueue state client roomVar = do
           asyncQueueCpuFallback client roomVar
           beginPlay state client roomVar
         )
-        (do
-          disconnectComputers roomVar state
-          liftIO . atomically $ Server.dequeue client state
-        )
+        (disconnectComputers roomVar state)
   gen <- liftIO getGen
   guid <- liftIO GUID.genText
   let scenario = makeScenario PrefixQueue
