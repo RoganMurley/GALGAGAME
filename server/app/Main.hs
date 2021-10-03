@@ -302,7 +302,7 @@ beginQueue state client roomVar = do
       liftIO $ Log.info $ printf "<%s>: Creating new quickplay room" clientName
       finally
         (do
-          asyncQueueCpuFallback client roomVar
+          asyncQueueCpuFallback state client roomVar
           beginPlay state client roomVar
         )
         (disconnectComputers roomVar state)
@@ -313,8 +313,8 @@ beginQueue state client roomVar = do
   beginQueue state client newRoomVar
 
 
-asyncQueueCpuFallback :: Client -> TVar Room -> App ()
-asyncQueueCpuFallback client roomVar = do
+asyncQueueCpuFallback :: TVar Server.State -> Client -> TVar Room -> App ()
+asyncQueueCpuFallback state client roomVar = do
   _ <- fork $ do
     threadDelay (4 * 1000000)
     cpuGuid <- liftIO GUID.genText
@@ -339,7 +339,8 @@ asyncQueueCpuFallback client roomVar = do
         False -> do
           added <- addComputerClient "CPU" guid roomVar
           case added of
-            Just computerClient ->
+            Just computerClient -> do
+              Server.dequeue state
               return $ Right computerClient
             Nothing ->
               return $ Left "Failed to add CPU"

@@ -74,11 +74,17 @@ queue roomVar state = do
     match <- state_matching <$> readTVar state
     case match of
       Just existingRoomVar -> do
-        _ <- modTVar state (\(State s _ w) -> State s Nothing w)
+        dequeue state
         return $ Just existingRoomVar
       Nothing -> do
         _ <- modTVar state (\(State s _ w) -> (State s (Just roomVar) w))
         return Nothing
+
+
+dequeue :: TVar State -> STM ()
+dequeue state = do
+  modTVar state (\(State s _ w) -> State s Nothing w)
+  return ()
 
 
 modScenario :: (Scenario -> Scenario) -> TVar Room -> STM Room
