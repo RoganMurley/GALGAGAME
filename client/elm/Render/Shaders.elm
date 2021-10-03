@@ -278,7 +278,7 @@ starfield =
 tunnel : Shader {} (Uniforms { depth : Float, spin : Float, texture : Texture }) { vcoord : Vec2 }
 tunnel =
     [glsl|
-        precision mediump float;
+        precision lowp float;
 
         uniform vec3 color;
         uniform float depth;
@@ -303,10 +303,7 @@ tunnel =
             vec2 mul = vec2(1., 12.);
 
             vec2 fpos = (vec2(-sqrt(1. / polar.x), polar.y) + add) * mul;
-
-            //float dist = 1. - dot(2. * vcoord - 1., 2. * vcoord - 1.);
-            float dist = 0.;
-            gl_FragColor = texture2D(texture, fpos) -vec4(vec3(dist * dist), .0);
+            gl_FragColor = texture2D(texture, fpos);
         }
 
     |]
