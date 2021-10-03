@@ -1,8 +1,9 @@
 module Main where
 
-import Control.Concurrent.Lifted (fork, threadDelay)
+import Control.Concurrent.Lifted (fork, killThread, threadDelay)
 import Control.Monad (forM_)
 import Control.Monad.STM (STM, atomically)
+import Control.Concurrent.Chan (newChan)
 import Control.Concurrent.STM.TVar (TVar, newTVar, readTVar, readTVarIO)
 import Control.Monad.Trans.Maybe (MaybeT)
 import Control.Exception.Lifted (finally)
@@ -72,28 +73,34 @@ import qualified Data.GUID as GUID
 main :: IO ()
 main = do
   Log.setup
+  loggerChan <- newChan
+  loggerThreadID <- Log.forkLogger loggerChan
+  finally (do
+    -- If we're on production, these env vars will be present.
+    -- Defined in `prod.env` secret.
+    redisHost     <- lookupEnv "REDIS_HOST"
+    redisPort     <- lookupEnv "REDIS_PORT"
+    redisPassword <- lookupEnv "REDIS_PASSWORD"
+    let redisVars = (redisHost, redisPort, redisPassword)
 
-  -- If we're on production, these env vars will be present.
-  -- Defined in `prod.env` secret.
-  redisHost     <- lookupEnv "REDIS_HOST"
-  redisPort     <- lookupEnv "REDIS_PORT"
-  redisPassword <- lookupEnv "REDIS_PASSWORD"
-  let redisVars = (redisHost, redisPort, redisPassword)
+    postgresHost     <- lookupEnv "POSTGRES_HOST"
+    postgresPort     <- lookupEnv "POSTGRES_PORT"
+    postgresUser     <- lookupEnv "POSTGRES_USER"
+    postgresPassword <- lookupEnv "POSTGRES_PASSWORD"
+    postgresDatabase <- lookupEnv "POSTGRES_DATABASE"
+    let postgresVars = (postgresHost, postgresPort, postgresUser, postgresPassword, postgresDatabase)
 
-  postgresHost     <- lookupEnv "POSTGRES_HOST"
-  postgresPort     <- lookupEnv "POSTGRES_PORT"
-  postgresUser     <- lookupEnv "POSTGRES_USER"
-  postgresPassword <- lookupEnv "POSTGRES_PASSWORD"
-  postgresDatabase <- lookupEnv "POSTGRES_DATABASE"
-  let postgresVars = (postgresHost, postgresPort, postgresUser, postgresPassword, postgresDatabase)
+    let connectInfoConfig = ConnectInfoConfig (redisConnectInfo redisVars) (postgresConnectInfo postgresVars) loggerChan
 
-  let connectInfoConfig = ConnectInfoConfig (redisConnectInfo redisVars) (postgresConnectInfo postgresVars)
+    authApp   <- runApp connectInfoConfig $ Auth.app connectInfoConfig
+    state     <- atomically $ newTVar Server.initState
 
-  authApp   <- runApp connectInfoConfig $ Auth.app connectInfoConfig
-  state     <- atomically $ newTVar Server.initState
+    Log.infoIO "Starting up!"
 
-  Log.info "Starting up!"
-  run 9160 $ waiApp state connectInfoConfig authApp
+    run 9160 $ waiApp state connectInfoConfig authApp
+    ) (-- Cleanup loose threads
+      killThread loggerThreadID
+    )
 
 
 waiApp :: TVar Server.State -> ConnectInfoConfig -> Application -> Application
@@ -115,25 +122,24 @@ wsApp state connectInfoConfig pending =
 
 
 connectionFail :: WS.Connection -> String -> App ()
-connectionFail conn str =
-  liftIO $ do
-    Log.warning str
-    WS.sendTextData conn . Command.toChat . ErrorCommand $ cs str
+connectionFail conn str = do
+  Log.warning str
+  liftIO $ WS.sendTextData conn . Command.toChat . ErrorCommand $ cs str
 
 
 begin :: WS.Connection -> Text -> User -> TVar Server.State -> App ()
 begin conn request user state = do
   let username = getUsername user :: Text
-  liftIO $ Log.info $ printf "<%s>: New connection" username
+  Log.info $ printf "<%s>: New connection" username
   case parseRequest request of
     Just (RoomRequest roomName) -> do
-      liftIO $ Log.info $ printf "<%s>: Requesting room [%s]" username roomName
+      Log.info $ printf "<%s>: Requesting room [%s]" username roomName
       msg <- liftIO $ WS.receiveData conn
       case parsePrefix msg of
         Nothing ->
           connectionFail conn $ printf "<%s>: Connection protocol failure" msg
         Just prefix -> do
-          liftIO $ Log.info $ printf "<%s>: %s" username (show prefix)
+          Log.info $ printf "<%s>: %s" username (show prefix)
           gen <- liftIO getGen
           guid <- liftIO GUID.genText
           let client = Client user (PlayerConnection conn) guid
@@ -150,7 +156,7 @@ begin conn request user state = do
     Just (SystemMessageRequest systemMessage) ->
       case User.isSuperuser user of
         True -> do
-          liftIO $ Log.info $ printf ("System message received: " <> cs systemMessage)
+          Log.info $ printf ("System message received: " <> cs systemMessage)
           roomVars <- liftIO . atomically $ Server.getAllRooms state
           forM_ roomVars (
             \roomVar -> do
@@ -158,11 +164,11 @@ begin conn request user state = do
               fork $ Room.broadcast ("systemMessage:" <> systemMessage) room
             )
           liftIO $ WS.sendTextData conn ("systemMessageSuccess:" :: Text)
-          liftIO $ Log.info $ printf ("System message success")
+          Log.info $ printf ("System message success")
         False ->
-          liftIO $ Log.error $ printf "Illegal system message"
+          Log.error $ printf "Illegal system message"
     Just WorldRequest -> do
-      liftIO $ Log.info $ printf "<%s>: Visting World" username
+      Log.info $ printf "<%s>: Visting World" username
       guid <- liftIO GUID.genText
       let client = Client user (PlayerConnection conn) guid
       beginWorld state client Nothing
@@ -241,11 +247,11 @@ makeScenario prefix =
 
 beginPlay :: TVar Server.State -> Client -> TVar Room -> App ()
 beginPlay state client roomVar = do
-  liftIO $ Log.info $ printf "<%s>: Begin playing" (show $ Client.name client)
+  Log.info $ printf "<%s>: Begin playing" (show $ Client.name client)
   added <- liftIO $  atomically $ addPlayerClient client roomVar
   case added of
     Nothing -> do
-      liftIO $ Log.info $ printf "<%s>: Room is full" (show $ Client.name client)
+      Log.info $ printf "<%s>: Room is full" (show $ Client.name client)
       Client.send (Command.toChat $ ErrorCommand "room is full") client
     Just (which, outcomes) ->
       finally
@@ -258,7 +264,7 @@ beginPlay state client roomVar = do
 
 beginSpec :: TVar Server.State -> Client -> TVar Room -> App ()
 beginSpec state client roomVar = do
-  liftIO $ Log.info $ printf "<%s>: Begin spectating" (show $ Client.name client)
+  Log.info $ printf "<%s>: Begin spectating" (show $ Client.name client)
   finally
     (spectate client roomVar)
     (disconnect client roomVar state)
@@ -266,7 +272,7 @@ beginSpec state client roomVar = do
 
 beginComputer :: Text -> TVar Server.State -> Client -> TVar Room -> App Bool
 beginComputer cpuName state client roomVar = do
-  liftIO $ Log.info $ printf "<%s>: Begin AI game" (show $ Client.name client)
+  Log.info $ printf "<%s>: Begin AI game" (show $ Client.name client)
   cpuGuid <- liftIO GUID.genText
   (computer, added) <- liftIO . atomically $ do
     computerAdded <- addComputerClient cpuName cpuGuid roomVar
@@ -274,7 +280,7 @@ beginComputer cpuName state client roomVar = do
     return (computerAdded, playerAdded)
   case (,) <$> computer <*> added of
     Nothing -> do
-      liftIO $ Log.info $ printf "<%s>: Room is full" (show $ Client.name client)
+      Log.info $ printf "<%s>: Room is full" (show $ Client.name client)
       Client.send (Command.toChat $ ErrorCommand "Room is full") client
       return False
     Just (computerClient, (which, outcomes)) ->
@@ -292,14 +298,14 @@ beginComputer cpuName state client roomVar = do
 beginQueue :: TVar Server.State -> Client -> TVar Room -> App ()
 beginQueue state client roomVar = do
   let clientName = show (Client.name client)
-  liftIO $ Log.info $ printf "<%s>: Begin quickplay game" clientName
+  Log.info $ printf "<%s>: Begin quickplay game" clientName
   roomM <- liftIO . atomically $ Server.queue roomVar state
   case roomM of
     Just existingRoom -> do
-      liftIO $ Log.info $ printf "<%s>: Joining existing quickplay room" clientName
+      Log.info $ printf "<%s>: Joining existing quickplay room" clientName
       beginPlay state client existingRoom
     Nothing -> do
-      liftIO $ Log.info $ printf "<%s>: Creating new quickplay room" clientName
+      Log.info $ printf "<%s>: Creating new quickplay room" clientName
       finally
         (do
           asyncQueueCpuFallback state client roomVar
@@ -321,7 +327,7 @@ asyncQueueCpuFallback state client roomVar = do
     result <- liftIO $ atomically (transaction cpuGuid)
     case result of
       Left toLog ->
-        liftIO $ Log.info toLog
+        Log.info toLog
       Right _ -> do
         newRoom <- liftIO $ readTVarIO roomVar
         let gameState = Room.getState newRoom
@@ -364,7 +370,7 @@ beginWorld state client mProgress = do
           let roomName = encounterId
           case World.encounter_variant encounter of
             World.CpuVariant _ -> do
-              liftIO $ Log.info $ printf "<%s>: Joining cpu encounter %s" (show $ Client.name client) (encounterId)
+              Log.info $ printf "<%s>: Joining cpu encounter %s" (show $ Client.name client) (encounterId)
               Client.send ("joinEncounter:" <> encounterId) client
               gen <- liftIO getGen
               let cpuName = World.encounterName encounter
@@ -377,17 +383,17 @@ beginWorld state client mProgress = do
               if didWin then
                 (do
                   let newProgress = World.postEncounterProgress encounter scenario progress
-                  liftIO $ Log.info $ printf "<%s>: Win! New world progress %s" (show $ Client.name client) (show newProgress)
+                  Log.info $ printf "<%s>: Win! New world progress %s" (show $ Client.name client) (show newProgress)
                   beginWorld state client (Just newProgress)
                 )
                 else
                   (do
                     let newProgress = World.initialProgress (World.nextGen progress)
-                    liftIO $ Log.info $ printf "<%s>: Loss! New world progress %s" (show $ Client.name client) (show newProgress)
+                    Log.info $ printf "<%s>: Loss! New world progress %s" (show $ Client.name client) (show newProgress)
                     beginWorld state client (Just newProgress)
                   )
             World.PvpVariant -> do
-              liftIO $ Log.info $ printf "<%s>: Checking for world pvp encounter" (show $ Client.name client)
+              Log.info $ printf "<%s>: Checking for world pvp encounter" (show $ Client.name client)
               Client.send ("worldWaitPvp:") client
 
               mWorldPvp <- setupWorldPvp progress roomName client state
@@ -398,7 +404,7 @@ beginWorld state client mProgress = do
               case mWorldPvp of
                 Just (roomVar, which, outcomes) -> do
                   room <- liftIO $ readTVarIO roomVar
-                  liftIO $ Log.info $ printf "<%s>: pvp encounter found!" (show $ Client.name client)
+                  Log.info $ printf "<%s>: pvp encounter found!" (show $ Client.name client)
                   Client.send ("joinEncounter:" <> Room.getName room) client
                   finally
                     (do
@@ -409,14 +415,14 @@ beginWorld state client mProgress = do
                   let newProgress = World.postEncounterProgress encounter scenario progress
                   beginWorld state client (Just newProgress)
                 Nothing -> do
-                  liftIO $ Log.info $ printf "<%s>: No pvp encounter found" (show $ Client.name client)
+                  Log.info $ printf "<%s>: No pvp encounter found" (show $ Client.name client)
                   let newProgress = World.postEncounterProgress encounter scenario progress
                   beginWorld state client (Just newProgress)
         Nothing -> do
-          liftIO $ Log.error $ printf "<%s>: No such encounter" (show $ Client.name client)
+          Log.error $ printf "<%s>: No such encounter" (show $ Client.name client)
           Client.send "error:no such encounter" client
     (Just (World.EncounterDecision choiceIndex), Just decision) -> do
-      liftIO $ Log.info $ printf "<%s>: Making decision %s" (show $ Client.name client) (show choiceIndex)
+      Log.info $ printf "<%s>: Making decision %s" (show $ Client.name client) (show choiceIndex)
       case atMay (World.decision_choices decision) choiceIndex of
         Just choice -> do
           let eff = World.decisionchoice_eff choice
@@ -424,15 +430,15 @@ beginWorld state client mProgress = do
           let newProgress = eff progress { World.worldprogress_decisionId = Nothing, World.worldprogress_roomId = Nothing }
           beginWorld state client (Just newProgress)
         _ -> do
-          liftIO $ Log.error $ printf "<%s>: Invalid choice %s" (show $ Client.name client) (show choiceIndex)
+          Log.error $ printf "<%s>: Invalid choice %s" (show $ Client.name client) (show choiceIndex)
           Client.send "error:invalid choice" client
           beginWorld state client (Just progress)
     (Nothing, _) -> do
-      liftIO $ Log.error $ printf "<%s>: Unknown world request '%s'" (show $ Client.name client) msg
+      Log.error $ printf "<%s>: Unknown world request '%s'" (show $ Client.name client) msg
       Client.send "error:unknown world request" client
       beginWorld state client (Just progress)
     (Just _, _) -> do
-      liftIO $ Log.error $ printf "<%s>: Illegal world request for state '%s'" (show $ Client.name client) msg
+      Log.error $ printf "<%s>: Illegal world request for state '%s'" (show $ Client.name client) msg
       Client.send "error:illegal world request for state" client
       beginWorld state client (Just progress)
 
@@ -478,13 +484,13 @@ awaitWorldPvp client roomVar x n outcomes = do
       if x < n then
         (do
           when (x /= 0) (threadDelay 1000)
-          when (mod x 1 == 0) (liftIO $ Log.info $ printf "<%s>: Waiting for pvp room (%d / %d)" (show $ Client.name client) x n)
+          when (mod x 1 == 0) (Log.info $ printf "<%s>: Waiting for pvp room (%d / %d)" (show $ Client.name client) x n)
           msg <- Client.receive client
           case msg of
             "crack" ->
               return ()
             _ -> do
-              liftIO $ Log.error $ printf "<%s>: Unexpected await world pvp request '%s'" (show $ Client.name client) msg
+              Log.error $ printf "<%s>: Unexpected await world pvp request '%s'" (show $ Client.name client) msg
           awaitWorldPvp client roomVar (x + 1) n outcomes
         )
           else
@@ -528,7 +534,7 @@ play which client roomVar outcomes = do
 computerPlay :: WhichPlayer -> TVar Room -> App ()
 computerPlay which roomVar = do
   _ <- runMaybeT . forever $ loop
-  liftIO . Log.info $ printf "AI signing off"
+  Log.info $ printf "AI signing off"
   return ()
   where
     loop :: MaybeT App ()
@@ -585,14 +591,14 @@ disconnect client roomVar state = do
   Room.broadcast (Command.toChat . LeaveCommand $ Client.name client) room
   syncPlayersRoom room
   if Room.empty room then
-    (liftIO $ do
+    (do
       Log.info $ printf "<%s>: Room is empty, deleting room" (show $ Client.name client)
-      atomically $ Server.deleteRoom (Room.getName room) state
+      liftIO $ atomically $ Server.deleteRoom (Room.getName room) state
     )
       else
-        (liftIO $ do
+        (do
           Log.info $ printf "<%s>: Room is not empty, retaining room" (show $ Client.name client)
-          readTVarIO state
+          liftIO $ readTVarIO state
         )
 
 

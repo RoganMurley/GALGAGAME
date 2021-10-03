@@ -61,13 +61,13 @@ roomUpdate cmd which roomVar =
 
 actPlay :: Command -> WhichPlayer -> TVar Room -> Text -> App ()
 actPlay cmd which roomVar username = do
-  liftIO $ Log.info $ printf "<%s>: %s" username (show cmd)
+  Log.info $ printf "<%s>: %s" username (show cmd)
   case trans cmd of
     Just command -> do
       (room, updated) <- liftIO $ atomically $ roomUpdate command which roomVar
       case updated of
         Left err -> do
-          liftIO $ Log.warning $ printf "Command error: %s" (show err)
+          Log.warning $ printf "Command error: %s" (show err)
           Room.sendToPlayer which (Command.toChat (ErrorCommand err)) room
         Right outcomes ->
           forM_ outcomes (actOutcome room)
@@ -149,10 +149,10 @@ handleExperience which winner room = do
       let xpDelta = if Just which == winner then scenario_xpWin scenario else scenario_xpLoss scenario
       Stats.increase username xpDelta
       let statChange = Stats.statChange initialXp xpDelta
-      liftIO $ Log.info $ printf "Xp change for %s: %s" username (show statChange)
+      Log.info $ printf "Xp change for %s: %s" username (show statChange)
       Room.sendToPlayer which (("xp:" <>) . cs . encode $ statChange) room
     Nothing -> do
-      liftIO $ Log.info "There's nobody here to gain that sweet xp :("
+      Log.info "There's nobody here to gain that sweet xp :("
       return ()
 
 actOutcome :: Room -> Outcome -> App ()
@@ -167,7 +167,7 @@ actOutcome room (Outcome.Encodable (Outcome.Chat username msg)) =
 actOutcome room (Outcome.Encodable (Outcome.Resolve models initial final exclude)) =
   resolveRoomClients models initial final exclude room
 actOutcome room (Outcome.SaveReplay replay) = do
-  liftIO $ Log.info "Saving replay..."
+  Log.info "Saving replay..."
   replayId <- Replay.Final.save replay
   Room.broadcast ("replaySaved:" <> (cs . show $ replayId)) room
 actOutcome room (Outcome.HandleExperience winner) = do

@@ -96,10 +96,10 @@ updateProgress (Just username) progressState = do
   let prog = Schema.Progress (Auth.Schema.UserId $ cs username) (cs $ encode progressState)
   case result of
     Just _ -> do
-      liftIO $ Log.info $ printf "World progress found, updating..."
+      Log.info $ printf "World progress found, updating..."
       runBeam $ runUpdate $ save (progress galgagameDb) prog
     Nothing -> do
-      liftIO $ Log.info $ printf "World progress not found, inserting..."
+      Log.info $ printf "World progress not found, inserting..."
       runBeam $ runInsert $ insert (progress galgagameDb) $ insertValues [ prog ]
 updateProgress Nothing _ = return ()
 
@@ -113,13 +113,13 @@ loadProgress (Just username) = do
     select $ filter_ (\row -> Schema.progressUser row ==. val_ (Auth.Schema.UserId username)) $
       all_ $ progress galgagameDb
   let progressState = Schema.progressState <$> result
-  liftIO $ Log.info $ printf "progressState: %s" (show progressState)
+  Log.info $ printf "progressState: %s" (show progressState)
   case progressState of
     Just state -> do
       let decoded = eitherDecode $ cs state :: Either String WorldProgress
       case decoded of
         Left err -> do
-          liftIO $ Log.error $ printf "Error loading world progress: %s" err
+          Log.error $ printf "Error loading world progress: %s" err
           gen <- liftIO getGen
           return $ initialProgress gen
         Right progress ->

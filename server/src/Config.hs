@@ -1,10 +1,12 @@
 module Config where
 
 import Control.Exception (catchJust)
+import Control.Concurrent.Chan (Chan)
 import Control.Monad.IO.Class (liftIO)
 import Control.Monad.Trans.Reader (ReaderT, asks, runReaderT)
 import Data.Pool (Pool, createPool, withResource)
 import Database.Beam.Postgres (Pg, runBeamPostgres)
+import System.Log.Logger (Priority)
 
 import qualified Database.Redis as Redis
 import qualified Database.PostgreSQL.Simple as Postgres
@@ -15,23 +17,25 @@ type App = ReaderT Config IO
 
 
 data ConnectInfoConfig = ConnectInfoConfig
-  { connectInfoConfig_redis    :: Redis.ConnectInfo
-  , connectInfoConfig_postgres :: Postgres.ConnectInfo
+  { connectInfoConfig_redis      :: Redis.ConnectInfo
+  , connectInfoConfig_postgres   :: Postgres.ConnectInfo
+  , connectInfoConfig_loggerChan :: Chan (Priority, String)
   }
 
 
 data Config = Config
-  { redisConn  :: Redis.Connection
+  { redisConn    :: Redis.Connection
   , postgresPool :: Pool Postgres.Connection
+  , loggerChan   :: Chan (Priority, String)
   }
 
 
 runApp :: ConnectInfoConfig -> App a -> IO a
-runApp (ConnectInfoConfig redisInfo postgresInfo) app =
+runApp (ConnectInfoConfig redisInfo postgresInfo loggerChan) app =
   do
     redisConn <- Redis.connect redisInfo
     postgresPool <- createPool (connectPostgres postgresInfo) Postgres.close 1 0.5 10
-    let config = Config redisConn postgresPool
+    let config = Config redisConn postgresPool loggerChan
     runReaderT app config
 
 
@@ -62,3 +66,7 @@ runRedis redis = do
 
 getTokenConn :: App Redis.Connection
 getTokenConn = asks redisConn
+
+
+getLoggerChan :: App (Chan (Priority, String))
+getLoggerChan = asks loggerChan
