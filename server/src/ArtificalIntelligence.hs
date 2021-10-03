@@ -97,9 +97,9 @@ postulateAction which model gen scenario action =
 
 chooseAction :: Gen -> WhichPlayer -> Model -> Scenario -> Maybe Action
 chooseAction gen which model scenario
-  | turn /= which    = Nothing
-  | winningEnd model = Just EndAction
-  | otherwise        = Just $ maximumBy comparison $ possibleActions which model
+  | turn /= which          = Nothing
+  | winningEnd which model = Just EndAction
+  | otherwise              = Just $ maximumBy comparison $ possibleActions which model
   where
     turn :: Turn
     turn = evalI model getTurn
@@ -107,14 +107,14 @@ chooseAction gen which model scenario
     comparison = comparing $ (evalResult which) . (postulateAction which model gen scenario)
 
 
-winningEnd :: Model -> Bool
-winningEnd model
-  | evalI model $ handFull PlayerA = False
+winningEnd :: WhichPlayer -> Model -> Bool
+winningEnd which model
+  | evalI model $ handFull which = False
   | otherwise                      =
     -- If ending the turn now would win, do it! We don't care about heuristics
     -- when we have a sure bet :)
     case fst . runWriter $ resolveAll model Replay.Active.null 0 of
-      Ended (Just PlayerA) _ _ _ -> True
+      Ended (Just winner) _ _ _  -> winner == which
       _                          -> False
 
 
