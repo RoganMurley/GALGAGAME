@@ -26,9 +26,3 @@ CREATE TABLE feedback (
   user__username TEXT REFERENCES users,
   created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
-
-CREATE TABLE progress (
-  user__username TEXT REFERENCES users UNIQUE,
-  state TEXT,
-  created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
-);
