@@ -166,10 +166,10 @@ begin conn request user state = do
 
 
 beginPrefix :: Prefix -> TVar Server.State -> Client -> TVar Room -> App ()
-beginPrefix PrefixPlay     s c r = beginPlay s c r
-beginPrefix PrefixSpec     s c r = beginSpec s c r
-beginPrefix PrefixQueue    s c r = beginQueue s c r
-beginPrefix PrefixCpu      s c r = beginComputer "CPU" s c r >> return ()
+beginPrefix PrefixPlay  s c r = beginPlay s c r
+beginPrefix PrefixSpec  s c r = beginSpec s c r
+beginPrefix PrefixQueue s c r = beginQueue s c r
+beginPrefix PrefixCpu   s c r = beginComputer "CPU" s c r >> return ()
 
 
 prefixWaitType :: Prefix -> WaitType
