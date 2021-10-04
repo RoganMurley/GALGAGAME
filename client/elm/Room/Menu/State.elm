@@ -26,9 +26,6 @@ update msg { key } =
 
                         GameType.TutorialGame ->
                             Just "tutorial"
-
-                        GameType.DailyGame ->
-                            Just "daily"
             in
             case mUrl of
                 Just url ->

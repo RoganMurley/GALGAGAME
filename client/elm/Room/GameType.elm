@@ -6,4 +6,3 @@ type GameType
     | ComputerGame
     | QuickplayGame
     | TutorialGame
-    | DailyGame

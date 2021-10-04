@@ -52,18 +52,6 @@ view progress anim mReplayId mXp gameType mUsername isReplay seed =
                         ]
                         [ text "PLAY AGAIN" ]
 
-                -- ( Just DailyGame, GameEnd (Just PlayerA) ) ->
-                --     button
-                --         [ class "rematch"
-                --         , onClick <|
-                --             Main.RoomMsg <|
-                --                 Room.ConnectedMsg <|
-                --                     Connected.GameStateMsg <|
-                --                         GameState.PlayStateMsg <|
-                --                             GotoComputerGame
-                --         , disabled isDisabled
-                --         ]
-                --         [ text "Play again" ]
                 _ ->
                     button
                         [ class "rematch"
@@ -138,9 +126,6 @@ view progress anim mReplayId mXp gameType mUsername isReplay seed =
 
                     Signup ->
                         a [ href "/signup" ] [ text "Sign up to gain experience" ]
-
-                    Daily ->
-                        a [ href "/play/daily", target "_blank" ] [ text "Try the daily challenge" ]
                 ]
 
         styles =
@@ -161,7 +146,7 @@ view progress anim mReplayId mXp gameType mUsername isReplay seed =
                 Just _ ->
                     Tuple.first <|
                         Random.step
-                            (Random.uniform Discord [ Feedback, Twitter, Daily ])
+                            (Random.uniform Discord [ Feedback, Twitter ])
                             (Random.initialSeed seed)
 
                 Nothing ->

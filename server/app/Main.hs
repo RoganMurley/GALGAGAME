@@ -171,7 +171,6 @@ beginPrefix PrefixSpec     s c r = beginSpec s c r
 beginPrefix PrefixQueue    s c r = beginQueue s c r
 beginPrefix PrefixCpu      s c r = beginComputer "CPU" s c r >> return ()
 beginPrefix PrefixTutorial s c r = beginComputer "CPU" s c r >> return ()
-beginPrefix PrefixDaily    s c r = beginComputer "CPU" s c r >> return ()
 
 
 prefixWaitType :: Prefix -> WaitType
@@ -196,8 +195,6 @@ makeScenario prefix =
       case prefix of
         PrefixTutorial ->
           Just DeckBuilding.catherine
-        PrefixDaily ->
-          Just DeckBuilding.marcus
         _ ->
           Nothing
     characterPb :: Maybe DeckBuilding.Character
@@ -205,8 +202,6 @@ makeScenario prefix =
       case prefix of
         PrefixTutorial ->
           Just DeckBuilding.marcus
-        PrefixDaily ->
-          Just DeckBuilding.catherine
         _ ->
           Nothing
     turn :: Turn
@@ -215,8 +210,6 @@ makeScenario prefix =
         PrefixCpu ->
           PlayerB
         PrefixTutorial ->
-          PlayerB
-        PrefixDaily ->
           PlayerB
         _ ->
           PlayerA

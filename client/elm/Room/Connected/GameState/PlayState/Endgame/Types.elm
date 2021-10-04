@@ -6,4 +6,3 @@ type Conversion
     | Discord
     | Twitter
     | Feedback
-    | Daily

@@ -36,7 +36,6 @@ parsePrefix msg =
     ("play", _)         -> Just PrefixPlay
     ("playComputer", _) -> Just PrefixCpu
     ("playTutorial", _) -> Just PrefixTutorial
-    ("playDaily", _)    -> Just PrefixDaily
     ("queue", _)        -> Just PrefixQueue
     _                   -> Nothing
 
@@ -46,6 +45,5 @@ data Prefix =
   | PrefixPlay
   | PrefixCpu
   | PrefixTutorial
-  | PrefixDaily
   | PrefixQueue
   deriving Show
