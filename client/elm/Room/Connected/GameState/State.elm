@@ -16,6 +16,7 @@ import Mouse exposing (Position)
 import PlayState.State as PlayState
 import PlayState.Types exposing (PlayState)
 import Ports exposing (log)
+import Waiting.State as Waiting
 
 
 update : Msg -> GameState -> Flags -> Mode -> GameType -> Assets.Model -> ( GameState, Cmd Main.Msg )
@@ -147,6 +148,9 @@ carry old new =
 tick : Flags -> GameState -> GameType -> Float -> ( GameState, Cmd Msg )
 tick flags state gameType dt =
     case state of
+        Waiting waiting ->
+            ( Waiting <| Waiting.tick dt waiting, Cmd.none )
+
         Selecting selecting ->
             let
                 ctx =
@@ -163,6 +167,3 @@ tick flags state gameType dt =
                     PlayState.tick flags playState gameType dt
             in
             ( Started newState, Cmd.map PlayStateMsg cmd )
-
-        _ ->
-            ( state, Cmd.none )

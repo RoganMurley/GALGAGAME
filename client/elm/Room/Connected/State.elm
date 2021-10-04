@@ -7,7 +7,7 @@ import Connected.Messages exposing (Msg(..))
 import Connected.Types exposing (Model, Players)
 import GameState.Messages as GameState
 import GameState.State as GameState
-import GameState.Types exposing (GameState(..), WaitType(..))
+import GameState.Types exposing (GameState(..))
 import GameType exposing (GameType)
 import Hover exposing (decodeHoverOther)
 import Json.Decode as Json
@@ -20,11 +20,13 @@ import Ports exposing (log, websocketSend)
 import Settings.Messages as Settings
 import Stats exposing (decodeStatChange)
 import Util exposing (message, splitOnColon)
+import Waiting.State as Waiting
+import Waiting.Types exposing (WaitType(..))
 
 
 init : Mode -> GameType -> String -> Model
 init mode gameType roomID =
-    { game = Waiting WaitQuickplay
+    { game = Waiting <| Waiting.init WaitQuickplay
     , gameType = gameType
     , mode = mode
     , roomID = roomID

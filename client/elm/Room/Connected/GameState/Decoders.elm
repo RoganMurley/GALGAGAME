@@ -1,41 +1,24 @@
-module GameState.Decoders exposing (collapseResults, selectingDecoder, stateDecoder, waitingDecoder)
+module GameState.Decoders exposing (collapseResults, selectingDecoder, stateDecoder)
 
 import DeckBuilding.Decoders
 import DeckBuilding.State as DeckBuilding
 import DeckBuilding.Types exposing (Character)
-import GameState.Types exposing (GameState(..), WaitType(..))
-import Json.Decode as Json exposing (Decoder, fail, field, list, maybe, string, succeed)
+import GameState.Types exposing (GameState(..))
+import Json.Decode as Json exposing (Decoder, fail, field, list, maybe, succeed)
 import PlayState.Decoders as PlayState
 import RuneSelect.Decoders
 import RuneSelect.Types exposing (Rune)
+import Waiting.Decoders as Waiting
+import Waiting.Types exposing (WaitType(..))
 
 
 stateDecoder : Decoder GameState
 stateDecoder =
     Json.oneOf
-        [ waitingDecoder
+        [ Json.map Waiting Waiting.decoder
         , selectingDecoder
         , Json.map Started PlayState.decoder
         ]
-
-
-waitingDecoder : Decoder GameState
-waitingDecoder =
-    let
-        decode : String -> Decoder WaitType
-        decode s =
-            case s of
-                "quickplay" ->
-                    succeed WaitQuickplay
-
-                "custom" ->
-                    succeed WaitCustom
-
-                _ ->
-                    fail <| "Invalid WaitType " ++ s
-    in
-    Json.map Waiting
-        (field "waiting" (string |> Json.andThen decode))
 
 
 selectingDecoder : Decoder GameState

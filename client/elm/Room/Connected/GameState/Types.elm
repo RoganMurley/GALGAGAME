@@ -1,15 +1,11 @@
-module GameState.Types exposing (GameState(..), WaitType(..))
+module GameState.Types exposing (GameState(..))
 
 import DeckBuilding.Types as DeckBuilding
 import PlayState.Types exposing (PlayState)
+import Waiting.Types as WaitType
 
 
 type GameState
-    = Waiting WaitType
+    = Waiting WaitType.Model
     | Selecting DeckBuilding.Model
     | Started PlayState
-
-
-type WaitType
-    = WaitQuickplay
-    | WaitCustom

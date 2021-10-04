@@ -2,25 +2,24 @@ module GameState.View exposing (htmlView, paramsFromFlags, webglView)
 
 import Animation.Types exposing (Anim(..))
 import Assets.Types as Assets
-import Background.View as Background
 import DeckBuilding.View as DeckBuilding
 import GameState.Messages exposing (Msg(..))
-import GameState.Types exposing (GameState(..), WaitType(..))
-import Html exposing (Html, button, div, input, text)
-import Html.Attributes exposing (class, id, readonly, type_, value)
-import Html.Events exposing (onClick)
+import GameState.Types exposing (GameState(..))
+import Html exposing (Html, text)
 import Main.Messages as Main
 import Main.Types exposing (Flags)
+import Mouse exposing (MouseState(..))
 import PlayState.View as PlayState
 import Render.Types as Render
+import Waiting.View as Waiting
 import WebGL
 
 
 htmlView : GameState -> String -> Flags -> Html Main.Msg
 htmlView state roomID flags =
     case state of
-        Waiting waitType ->
-            div [] [ waitingView waitType flags roomID ]
+        Waiting waiting ->
+            Waiting.htmlView waiting flags roomID
 
         Selecting _ ->
             text ""
@@ -29,63 +28,11 @@ htmlView state roomID flags =
             text ""
 
 
-waitingView : WaitType -> Flags -> String -> Html Main.Msg
-waitingView waitType { httpPort, hostname } roomID =
-    let
-        portProtocol =
-            if httpPort /= "" then
-                ":" ++ httpPort
-
-            else
-                ""
-
-        challengeLink =
-            "https://" ++ hostname ++ portProtocol ++ "/play/custom/" ++ roomID
-
-        myID =
-            "challenge-link"
-
-        waitingPrompt =
-            case waitType of
-                WaitCustom ->
-                    "Give this link to your opponent"
-
-                WaitQuickplay ->
-                    "Searching..."
-
-        waitingInfo : Html Main.Msg
-        waitingInfo =
-            case waitType of
-                WaitCustom ->
-                    div [ class "input-group" ]
-                        [ input
-                            [ value challengeLink
-                            , type_ "text"
-                            , readonly True
-                            , id myID
-                            , onClick <| Main.SelectAllInput myID
-                            ]
-                            []
-                        , button
-                            [ onClick <| Main.CopyInput myID, class "menu-button" ]
-                            [ text "COPY" ]
-                        ]
-
-                WaitQuickplay ->
-                    text ""
-    in
-    div [ class "waiting" ]
-        [ div [ class "waiting-prompt" ]
-            [ text waitingPrompt ]
-        , waitingInfo
-        ]
-
-
 webglView : GameState -> Render.Params -> Assets.Model -> List WebGL.Entity
 webglView state params assets =
     case state of
-        Waiting _ ->
-            Background.webglView params assets Finding
+        Waiting waiting ->
+            Waiting.webglView waiting params assets
 
         Selecting selecting ->
             DeckBuilding.webglView params selecting assets
