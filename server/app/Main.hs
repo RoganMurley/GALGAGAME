@@ -90,8 +90,10 @@ main = do
     Log.infoIO "Starting up!"
 
     run 9160 $ waiApp state connectInfoConfig authApp
-    ) (-- Cleanup loose threads
-      killThread loggerThreadID
+    ) (-- Cleanup loose threads. Useful when developing with repl.
+      do
+        Log.infoIO "Cleaning up!"
+        killThread loggerThreadID
     )
 
 
