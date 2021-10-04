@@ -97,6 +97,7 @@ library
                      , hedis
                      , hslogger
                      , http-types
+                     , lifted-base
                      , postgresql-simple
                      , random
                      , random-shuffle
