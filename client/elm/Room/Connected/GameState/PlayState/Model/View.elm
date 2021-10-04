@@ -8,7 +8,7 @@ import Buttons.View as Buttons
 import Card.State exposing (cardTexture)
 import Colour
 import Ease
-import Endgame.WebGL as Endgame
+import Endgame.View as Endgame
 import Font.State as Font
 import Font.Types as Font
 import Font.View as Font

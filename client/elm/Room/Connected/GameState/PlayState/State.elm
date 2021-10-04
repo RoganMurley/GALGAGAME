@@ -8,7 +8,7 @@ import Browser.Navigation
 import Buttons.State as Buttons
 import Collision exposing (hitTest3d)
 import Connected.Messages as Connected
-import Endgame.WebGL as Endgame
+import Endgame.View as Endgame
 import Game.State as Game
 import Game.Types as Game
 import GameState.Messages as GameState
@@ -435,7 +435,7 @@ resolveOutcome mState { initial, resDiffList, finalState } =
 
 
 mouseDown : Flags -> Assets.Model -> GameType -> Mode -> Position -> PlayState -> ( PlayState, Cmd Main.Msg )
-mouseDown { dimensions, mouse } assets gameType mode { x, y } state =
+mouseDown { dimensions, mouse } assets _ mode { x, y } state =
     let
         pos =
             vec2 (toFloat x) (toFloat y)
@@ -497,17 +497,12 @@ mouseDown { dimensions, mouse } assets gameType mode { x, y } state =
                         Nothing ->
                             Cmd.none
 
-                Ended { buttons, replayId, winner } ->
+                Ended { buttons, replayId } ->
                     case Buttons.hit buttons pos of
                         Just ( key, _ ) ->
                             case key of
                                 "playAgain" ->
-                                    case ( gameType, winner ) of
-                                        ( TutorialGame, Just PlayerA ) ->
-                                            playMsg PlayState.GotoComputerGame
-
-                                        _ ->
-                                            playMsg <| PlayState.PlayingOnly PlayState.Rematch
+                                    playMsg <| PlayState.PlayingOnly PlayState.Rematch
 
                                 "watchReplay" ->
                                     case replayId of

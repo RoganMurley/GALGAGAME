@@ -30,7 +30,7 @@ import Negotiation (Prefix(..), Request(..), parseRequest, parsePrefix)
 import Outcome (Outcome)
 import Player (WhichPlayer(..), other)
 import Scenario (Scenario(..))
-import Start (startProgram, tutorialStartProgram)
+import Start (startProgram)
 import Stats.Stats (Experience)
 import User (User(..), getUsername, getUserFromToken, isSuperuser)
 import Util (Gen, getGen, shuffle, split)
@@ -170,7 +170,6 @@ beginPrefix PrefixPlay     s c r = beginPlay s c r
 beginPrefix PrefixSpec     s c r = beginSpec s c r
 beginPrefix PrefixQueue    s c r = beginQueue s c r
 beginPrefix PrefixCpu      s c r = beginComputer "CPU" s c r >> return ()
-beginPrefix PrefixTutorial s c r = beginComputer "CPU" s c r >> return ()
 
 
 prefixWaitType :: Prefix -> WaitType
@@ -191,35 +190,18 @@ makeScenario prefix =
   }
   where
     characterPa :: Maybe DeckBuilding.Character
-    characterPa =
-      case prefix of
-        PrefixTutorial ->
-          Just DeckBuilding.catherine
-        _ ->
-          Nothing
+    characterPa = Nothing
     characterPb :: Maybe DeckBuilding.Character
-    characterPb =
-      case prefix of
-        PrefixTutorial ->
-          Just DeckBuilding.marcus
-        _ ->
-          Nothing
+    characterPb = Nothing
     turn :: Turn
     turn =
       case prefix of
         PrefixCpu ->
           PlayerB
-        PrefixTutorial ->
-          PlayerB
         _ ->
           PlayerA
     prog :: Beta.Program ()
-    prog =
-      case prefix of
-        PrefixTutorial -> do
-          tutorialStartProgram turn
-        _ ->
-          startProgram turn
+    prog = startProgram turn
     xpWin :: Experience
     xpWin = 100
     xpLoss :: Experience

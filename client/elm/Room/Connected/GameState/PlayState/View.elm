@@ -2,7 +2,7 @@ module PlayState.View exposing (webglView)
 
 import Animation.Types exposing (Anim(..))
 import Assets.Types as Assets
-import Endgame.WebGL as Endgame
+import Endgame.View as Endgame
 import Model.View as Model
 import PlayState.Types exposing (PlayState(..))
 import Render.Types as Render

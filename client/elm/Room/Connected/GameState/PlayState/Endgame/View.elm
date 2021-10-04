@@ -1,173 +1,179 @@
-module Endgame.View exposing (view)
+module Endgame.View exposing (animView, buttonEntities, view)
 
 import Animation.Types exposing (Anim(..))
-import Connected.Messages as Connected
-import Endgame.Types exposing (Conversion(..))
-import GameState.Messages as GameState
+import Assets.State as Assets
+import Assets.Types as Assets
+import Buttons.State as Buttons
+import Buttons.Types as Buttons exposing (ButtonType(..), Buttons)
+import Buttons.View as Buttons
+import Ease
+import Font.View as Font
+import Game.State exposing (bareContextInit)
+import Game.Types exposing (Context)
 import GameType exposing (GameType(..))
-import Html exposing (Html, a, button, div, text)
-import Html.Attributes exposing (class, classList, disabled, href, style, target)
-import Html.Events exposing (onClick)
-import Main.Messages as Main
-import Main.Types exposing (Seed)
-import PlayState.Messages exposing (Msg(..), PlayingOnly(..))
-import Random
-import Room.Messages as Room
-import Stats exposing (Experience, StatChange, levelAt, levelFromExperience, nextLevelAt)
+import Math.Matrix4 exposing (makeRotate, makeScale3)
+import Math.Vector3 exposing (vec3)
+import Mouse exposing (MouseState(..))
+import Render.Primitives
+import Render.Shaders
+import Render.Types as Render
+import WebGL
 import WhichPlayer.Types exposing (WhichPlayer(..))
 
 
-view : Float -> Anim -> Maybe String -> Maybe StatChange -> Maybe GameType -> Maybe String -> Bool -> Seed -> Html Main.Msg
-view progress anim mReplayId mXp gameType mUsername isReplay seed =
+animView : Context -> List WebGL.Entity
+animView ({ camera2d, ortho, w, h, radius, anim, progress } as ctx) =
+    case anim of
+        GameEnd winner ->
+            let
+                ( text, backgroundColor ) =
+                    case winner of
+                        Just PlayerA ->
+                            ( "VICTORY", vec3 (30 / 255) (200 / 255) (30 / 255) )
+
+                        Just PlayerB ->
+                            ( "DEFEAT", vec3 (200 / 255) (30 / 255) (30 / 255) )
+
+                        Nothing ->
+                            ( "DRAW", vec3 (255 / 255) (255 / 255) (255 / 255) )
+
+                color =
+                    vec3 (244 / 255) (241 / 255) (94 / 255)
+
+                shadowOffsetX =
+                    0.009 * radius
+
+                scale =
+                    0.0008 * radius
+            in
+            List.concat
+                [ [ Render.Primitives.quad Render.Shaders.matte
+                        { rotation = makeRotate pi (vec3 0 0 1)
+                        , scale = makeScale3 w h 1
+                        , color = backgroundColor
+                        , alpha = 0.8 * Ease.outCubic progress
+                        , pos = vec3 (w * 0.5) (h * 0.5) 0
+                        , perspective = ortho
+                        , camera = camera2d
+                        }
+                  ]
+                , Font.view
+                    "Futura"
+                    text
+                    { x = w * 0.5 - shadowOffsetX
+                    , y = h * 0.4
+                    , scaleX = scale * Ease.outBounce (progress * progress)
+                    , scaleY = scale * Ease.outBounce (progress * progress)
+                    , color = vec3 (40 / 255) (20 / 255) (20 / 255)
+                    }
+                    ctx
+                , Font.view
+                    "Futura"
+                    text
+                    { x = w * 0.5
+                    , y = h * 0.4
+                    , scaleX = scale * Ease.outBounce progress
+                    , scaleY = scale * Ease.outBounce progress
+                    , color = color
+                    }
+                    ctx
+                ]
+
+        _ ->
+            []
+
+
+view : Render.Params -> Assets.Model -> Maybe WhichPlayer -> Bool -> Buttons -> List WebGL.Entity
+view { w, h } assets winner resolving buttons =
     let
-        ( show, endGameText, endGameClass ) =
-            case anim of
-                GameEnd (Just PlayerA) ->
-                    ( True, "VICTORY", "victory" )
-
-                GameEnd (Just PlayerB) ->
-                    ( True, "DEFEAT", "defeat" )
-
-                GameEnd Nothing ->
-                    ( True, "DRAW", "draw" )
-
-                _ ->
-                    ( False, "", "no-win" )
-
-        isDisabled =
-            not show && (progress < 0.8)
-
-        rematchButton =
-            case ( gameType, anim ) of
-                ( Just TutorialGame, GameEnd (Just PlayerA) ) ->
-                    button
-                        [ class "rematch"
-                        , onClick <|
-                            Main.RoomMsg <|
-                                Room.ConnectedMsg <|
-                                    Connected.GameStateMsg <|
-                                        GameState.PlayStateMsg <|
-                                            GotoComputerGame
-                        , disabled isDisabled
-                        ]
-                        [ text "PLAY AGAIN" ]
-
-                _ ->
-                    button
-                        [ class "rematch"
-                        , onClick <|
-                            Main.RoomMsg <|
-                                Room.ConnectedMsg <|
-                                    Connected.GameStateMsg <|
-                                        GameState.PlayStateMsg <|
-                                            PlayingOnly Rematch
-                        , disabled isDisabled
-                        ]
-                        [ text "PLAY AGAIN" ]
-
-        watchReplayButton =
-            case mReplayId of
-                Just replayId ->
-                    button
-                        [ class "replay"
-                        , onClick <|
-                            Main.RoomMsg <|
-                                Room.ConnectedMsg <|
-                                    Connected.GameStateMsg <|
-                                        GameState.PlayStateMsg <|
-                                            GotoReplay replayId
-                        , disabled isDisabled
-                        ]
-                        [ text "WATCH REPLAY" ]
-
-                Nothing ->
-                    button
-                        [ class "replay", disabled True ]
-                        [ text "WATCH REPLAY" ]
-
-        experienceDisplay =
-            case mXp of
-                Just { initialXp, finalXp } ->
-                    let
-                        xp : Experience
-                        xp =
-                            initialXp + progress * (finalXp - initialXp)
-                    in
-                    div [ class "experience" ]
-                        [ div [ class "experience-progress" ]
-                            [ div
-                                [ class "experience-level-badge" ]
-                                [ text <| String.fromInt <| levelFromExperience xp ]
-                            , div
-                                [ class "experience-bar"
-                                , style "width" <|
-                                    String.fromFloat
-                                        (100 * (xp - levelAt xp) / (nextLevelAt xp - levelAt xp))
-                                        ++ "%"
-                                ]
-                                []
-                            ]
-                        ]
-
-                Nothing ->
-                    div [] []
-
-        conversionLink =
-            div [ class "endgame-conversion" ]
-                [ case conversion of
-                    Discord ->
-                        a [ href "https://discord.gg/SVXXej4", target "_blank" ] [ text "Join the community on Discord" ]
-
-                    Twitter ->
-                        a [ href "https://twitter.com/RoganMurley", target "_blank" ] [ text "Follow the devs on Twitter" ]
-
-                    Feedback ->
-                        a [ href "/feedback", target "_blank" ] [ text "Submit feedback to the devs" ]
-
-                    Signup ->
-                        a [ href "/signup" ] [ text "Sign up to gain experience" ]
-                ]
-
-        styles =
-            if show then
-                style "opacity" <| String.fromFloat progress
-
-            else
-                style "" ""
-
-        classes =
-            classList
-                [ ( "endgame-layer", True )
-                , ( endGameClass, True )
-                ]
-
-        conversion =
-            case mUsername of
-                Just _ ->
-                    Tuple.first <|
-                        Random.step
-                            (Random.uniform Discord [ Feedback, Twitter ])
-                            (Random.initialSeed seed)
-
-                Nothing ->
-                    Signup
-
-        buttons =
-            if isReplay then
-                []
-
-            else
-                [ rematchButton
-                , watchReplayButton
-                ]
+        ctx =
+            bareContextInit ( w, h ) assets NoMouse
     in
-    div [ classes, styles ]
-        [ div [ class "endgame-container" ]
-            [ div
-                [ class endGameClass ]
-                [ text endGameText ]
-            , experienceDisplay
-            , div [ class "endgame-buttons" ] buttons
-            , conversionLink
+    if resolving then
+        []
+
+    else
+        List.concat
+            [ animView { ctx | anim = GameEnd winner, progress = 1 }
+            , Buttons.view buttons ctx
             ]
-        ]
+
+
+buttonEntities : Render.Params -> Buttons -> GameType -> Float -> MouseState -> Buttons
+buttonEntities renderParams buttons gameType dt mouseState =
+    let
+        w =
+            toFloat renderParams.w
+
+        h =
+            toFloat renderParams.h
+
+        textColor =
+            vec3 (0 / 255) (0 / 255) (80 / 255)
+
+        bgColor =
+            vec3 (244 / 255) (241 / 255) (94 / 255)
+
+        buttonWidth =
+            0.12 * max w h
+
+        buttonHeight =
+            0.02 * max w h
+    in
+    Buttons.fromList <|
+        List.map (\f -> f dt mouseState buttons)
+            (case gameType of
+                QuickplayGame ->
+                    [ Buttons.entity
+                        "continue"
+                        { x = 0.5 * w
+                        , y = 0.55 * h
+                        , width = buttonWidth
+                        , height = buttonHeight
+                        , btn =
+                            TextButton
+                                { font = "Futura"
+                                , text = "Continue?"
+                                , textColor = textColor
+                                , bgColor = bgColor
+                                , options = [ Buttons.HoverText "Continue!" ]
+                                }
+                        , disabled = False
+                        }
+                    ]
+
+                _ ->
+                    [ Buttons.entity
+                        "playAgain"
+                        { x = 0.5 * w
+                        , y = 0.55 * h
+                        , width = buttonWidth
+                        , height = buttonHeight
+                        , btn =
+                            TextButton
+                                { font = "Futura"
+                                , text = "Play Again?"
+                                , textColor = textColor
+                                , bgColor = bgColor
+                                , options = [ Buttons.HoverText "Play Again!" ]
+                                }
+                        , disabled = False
+                        }
+                    , Buttons.entity
+                        "watchReplay"
+                        { x = 0.5 * w
+                        , y = 0.65 * h
+                        , width = buttonWidth
+                        , height = buttonHeight
+                        , btn =
+                            TextButton
+                                { font = "Futura"
+                                , text = "Watch Replay?"
+                                , textColor = textColor
+                                , bgColor = bgColor
+                                , options = [ Buttons.HoverText "Watch Replay!" ]
+                                }
+                        , disabled = False
+                        }
+                    ]
+            )

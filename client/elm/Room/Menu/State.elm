@@ -23,9 +23,6 @@ update msg { key } =
 
                         GameType.QuickplayGame ->
                             Just "quickplay"
-
-                        GameType.TutorialGame ->
-                            Just "tutorial"
             in
             case mUrl of
                 Just url ->

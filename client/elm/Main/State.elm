@@ -347,9 +347,6 @@ locationUpdate model url =
                         GameType.QuickplayGame ->
                             Just "/play/quickplay"
 
-                        GameType.TutorialGame ->
-                            Just "/play/tutorial"
-
                 _ ->
                     Nothing
 
@@ -423,18 +420,6 @@ locationUpdate model url =
                                 Lobby.init
                                     randomRoomID
                                     GameType.QuickplayGame
-                                    Playing
-                      }
-                    , Lobby.skipLobbyCmd username
-                    )
-
-                Routing.TutorialPlay ->
-                    ( { model
-                        | room =
-                            Room.Lobby <|
-                                Lobby.init
-                                    randomRoomID
-                                    GameType.TutorialGame
                                     Playing
                       }
                     , Lobby.skipLobbyCmd username
