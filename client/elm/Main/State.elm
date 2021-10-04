@@ -353,9 +353,6 @@ locationUpdate model url =
                         GameType.DailyGame ->
                             Just "/play/daily"
 
-                        GameType.WorldGame ->
-                            Just "/play"
-
                 _ ->
                     Nothing
 
@@ -453,18 +450,6 @@ locationUpdate model url =
                                 Lobby.init
                                     randomRoomID
                                     GameType.DailyGame
-                                    Playing
-                      }
-                    , Lobby.skipLobbyCmd username
-                    )
-
-                Routing.WorldPlay ->
-                    ( { model
-                        | room =
-                            Room.Lobby <|
-                                Lobby.init
-                                    randomRoomID
-                                    GameType.WorldGame
                                     Playing
                       }
                     , Lobby.skipLobbyCmd username

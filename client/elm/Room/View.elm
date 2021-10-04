@@ -22,7 +22,6 @@ import Settings.Types as Settings
 import Settings.View as Settings
 import Signup.View as Signup
 import WebGL
-import World.View as World
 
 
 view : Model -> Settings.Model -> Notifications.Model -> Flags -> Assets.Model -> Html Main.Msg
@@ -55,10 +54,6 @@ view model settings notifications flags assets =
                 Feedback feedback ->
                     Html.map (Main.RoomMsg << FeedbackMsg) <|
                         Feedback.view feedback
-
-                World world ->
-                    Html.map (Main.RoomMsg << WorldMsg) <|
-                        World.htmlView world
     in
     div []
         [ Html.map Main.NotificationsMsg <| Notifications.view notifications
@@ -120,9 +115,6 @@ webglView model flags assets =
 
                 Replay replay ->
                     Replay.webglView replay flags assets
-
-                World world ->
-                    World.webglView world flags assets
 
                 _ ->
                     Background.webglView params assets NullAnim

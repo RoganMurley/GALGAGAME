@@ -6,7 +6,6 @@ import Lobby.Types as Lobby
 import Login.Types as Login
 import Replay.Types as Replay
 import Signup.Types as Signup
-import World.Types as World
 
 
 type Model
@@ -17,4 +16,3 @@ type Model
     | Login Login.Model
     | Signup Signup.Model
     | Feedback Feedback.Model
-    | World World.Model

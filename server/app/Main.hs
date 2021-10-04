@@ -11,8 +11,6 @@ import Control.Monad (forever, mzero, when)
 import Control.Monad.IO.Class (liftIO)
 import Control.Monad.Trans.Class (lift)
 import Control.Monad.Trans.Maybe (runMaybeT)
-import Data.Aeson (encode)
-import Data.Maybe (fromMaybe)
 import Data.Monoid ((<>))
 import Data.String.Conversions (cs)
 import Data.Text (Text)
@@ -20,7 +18,6 @@ import Text.Printf (printf)
 import Network.Wai (Application)
 import Network.Wai.Handler.WebSockets
 import Network.Wai.Handler.Warp (run)
-import Safe (atMay)
 import System.Environment (lookupEnv)
 
 import Act (actOutcome, actPlay, actSpec, syncPlayersRoom, syncClient)
@@ -57,11 +54,6 @@ import qualified Room
 import Room (Room)
 
 import qualified Replay.Final
-
-import qualified World.Decision as World
-import qualified World.Encounter as World
-import qualified World.World as World
-import qualified World.WorldProgress as World
 
 import qualified Network.WebSockets as WS
 
@@ -167,11 +159,6 @@ begin conn request user state = do
           Log.info $ printf ("System message success")
         False ->
           Log.error $ printf "Illegal system message"
-    Just WorldRequest -> do
-      Log.info $ printf "<%s>: Visting World" username
-      guid <- liftIO GUID.genText
-      let client = Client user (PlayerConnection conn) guid
-      beginWorld state client Nothing
     Nothing ->
       connectionFail conn $ printf "<%s>: Bad request %s" (show username) request
 
@@ -183,7 +170,6 @@ beginPrefix PrefixQueue    s c r = beginQueue s c r
 beginPrefix PrefixCpu      s c r = beginComputer "CPU" s c r >> return ()
 beginPrefix PrefixTutorial s c r = beginComputer "CPU" s c r >> return ()
 beginPrefix PrefixDaily    s c r = beginComputer "CPU" s c r >> return ()
-beginPrefix PrefixWorld    s c r = beginComputer "CPU" s c r >> return ()
 
 
 prefixWaitType :: Prefix -> WaitType
@@ -350,151 +336,6 @@ asyncQueueCpuFallback state client roomVar = do
               return $ Right computerClient
             Nothing ->
               return $ Left "Failed to add CPU"
-
-
-beginWorld :: TVar Server.State -> Client -> Maybe World.WorldProgress -> App ()
-beginWorld state client mProgress = do
-  Client.send "acceptWorld:" client
-  let username = Client.queryUsername client
-  progress <- World.refreshProgress <$> fromMaybe (World.loadProgress username) (return <$> mProgress)
-  World.updateProgress username progress
-  world <- World.getWorld state progress
-  Client.send (cs $ "world:" <> encode world) client
-  msg <- Client.receive client
-  let req = World.parseRequest msg
-  case (req, World.world_decision world) of
-    (Just (World.JoinEncounter encounterId), Nothing) ->
-      case World.encounterFromGuid world encounterId of
-        Just encounter -> do
-          let scenario = World.makeScenario progress encounter
-          let roomName = encounterId
-          case World.encounter_variant encounter of
-            World.CpuVariant _ -> do
-              Log.info $ printf "<%s>: Joining cpu encounter %s" (show $ Client.name client) (encounterId)
-              Client.send ("joinEncounter:" <> encounterId) client
-              gen <- liftIO getGen
-              let cpuName = World.encounterName encounter
-
-              let preProgress = World.preEncounterProgress encounter progress
-              World.updateProgress username preProgress
-
-              roomVar <- liftIO . atomically $ Server.getOrCreateRoom roomName WaitCustom gen scenario state
-              didWin <- beginComputer cpuName state client roomVar
-              if didWin then
-                (do
-                  let newProgress = World.postEncounterProgress encounter scenario progress
-                  Log.info $ printf "<%s>: Win! New world progress %s" (show $ Client.name client) (show newProgress)
-                  beginWorld state client (Just newProgress)
-                )
-                else
-                  (do
-                    let newProgress = World.initialProgress (World.nextGen progress)
-                    Log.info $ printf "<%s>: Loss! New world progress %s" (show $ Client.name client) (show newProgress)
-                    beginWorld state client (Just newProgress)
-                  )
-            World.PvpVariant -> do
-              Log.info $ printf "<%s>: Checking for world pvp encounter" (show $ Client.name client)
-              Client.send ("worldWaitPvp:") client
-
-              mWorldPvp <- setupWorldPvp progress roomName client state
-
-              let preProgress = World.preEncounterProgress encounter progress
-              World.updateProgress username preProgress
-
-              case mWorldPvp of
-                Just (roomVar, which, outcomes) -> do
-                  room <- liftIO $ readTVarIO roomVar
-                  Log.info $ printf "<%s>: pvp encounter found!" (show $ Client.name client)
-                  Client.send ("joinEncounter:" <> Room.getName room) client
-                  finally
-                    (do
-                      _ <- play which client roomVar outcomes
-                      return ()
-                    )
-                    (disconnect client roomVar state)
-                  let newProgress = World.postEncounterProgress encounter scenario progress
-                  beginWorld state client (Just newProgress)
-                Nothing -> do
-                  Log.info $ printf "<%s>: No pvp encounter found" (show $ Client.name client)
-                  let newProgress = World.postEncounterProgress encounter scenario progress
-                  beginWorld state client (Just newProgress)
-        Nothing -> do
-          Log.error $ printf "<%s>: No such encounter" (show $ Client.name client)
-          Client.send "error:no such encounter" client
-    (Just (World.EncounterDecision choiceIndex), Just decision) -> do
-      Log.info $ printf "<%s>: Making decision %s" (show $ Client.name client) (show choiceIndex)
-      case atMay (World.decision_choices decision) choiceIndex of
-        Just choice -> do
-          let eff = World.decisionchoice_eff choice
-          -- Note that we don't get the next gen here
-          let newProgress = eff progress { World.worldprogress_decisionId = Nothing, World.worldprogress_roomId = Nothing }
-          beginWorld state client (Just newProgress)
-        _ -> do
-          Log.error $ printf "<%s>: Invalid choice %s" (show $ Client.name client) (show choiceIndex)
-          Client.send "error:invalid choice" client
-          beginWorld state client (Just progress)
-    (Nothing, _) -> do
-      Log.error $ printf "<%s>: Unknown world request '%s'" (show $ Client.name client) msg
-      Client.send "error:unknown world request" client
-      beginWorld state client (Just progress)
-    (Just _, _) -> do
-      Log.error $ printf "<%s>: Illegal world request for state '%s'" (show $ Client.name client) msg
-      Client.send "error:illegal world request for state" client
-      beginWorld state client (Just progress)
-
-
-setupWorldPvp :: World.WorldProgress -> Text -> Client -> TVar Server.State -> App (Maybe (TVar Room, WhichPlayer, [Outcome]))
-setupWorldPvp progress roomName client state = do
-  gen <- liftIO getGen
-  (roomVar, created, outcomes) <- liftIO . atomically $ do
-    mRoomVar <- Server.getWorldPvpRoom state
-    case mRoomVar of
-      Just roomVar -> do
-        Server.setWorldPvpRoom state Nothing
-        _ <- Server.modScenario (World.pvpScenario PlayerB progress) roomVar
-        added <- addPlayerClient client roomVar
-        let outcomes = fromMaybe [] $ snd <$> added
-        return (roomVar, False, outcomes)
-      Nothing -> do
-        let scenario = makeScenario PrefixWorld
-        let room = Room.new WaitWorldPvp gen roomName scenario
-        roomVar <- newTVar room
-        Server.setWorldPvpRoom state (Just roomVar)
-        _ <- Server.modScenario (World.pvpScenario PlayerA progress) roomVar
-        added <- addPlayerClient client roomVar
-        let outcomes = fromMaybe [] $ snd <$> added
-        return (roomVar, True, outcomes)
-  if created then
-    (do
-      finally
-        (awaitWorldPvp client roomVar 0 8 outcomes)
-        (liftIO . atomically $ Server.setWorldPvpRoom state Nothing)
-    )
-      else
-        return $ Just (roomVar, PlayerB, outcomes)
-
-
-awaitWorldPvp :: Client -> TVar Room -> Int -> Int -> [Outcome] -> App (Maybe (TVar Room, WhichPlayer, [Outcome]))
-awaitWorldPvp client roomVar x n outcomes = do
-  room <- liftIO $ readTVarIO roomVar
-  case Room.full room of
-    True ->
-      return $ Just (roomVar, PlayerA, outcomes)
-    False ->
-      if x < n then
-        (do
-          when (x /= 0) (threadDelay 1000)
-          when (mod x 1 == 0) (Log.info $ printf "<%s>: Waiting for pvp room (%d / %d)" (show $ Client.name client) x n)
-          msg <- Client.receive client
-          case msg of
-            "crack" ->
-              return ()
-            _ -> do
-              Log.error $ printf "<%s>: Unexpected await world pvp request '%s'" (show $ Client.name client) msg
-          awaitWorldPvp client roomVar (x + 1) n outcomes
-        )
-          else
-            return Nothing
 
 
 spectate :: Client -> TVar Room -> App ()

@@ -17,4 +17,3 @@ type PlayRoute
     | QuickPlay
     | TutorialPlay
     | DailyPlay
-    | WorldPlay

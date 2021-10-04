@@ -64,15 +64,6 @@ library
                      , Stats.Stats
                      , Transmutation
                      , Wheel
-                     , World.Decision
-                     , World.Encounter
-                     , World.Pos
-                     , World.Schema
-                     , World.Tarot
-                     , World.World
-                     , World.WorldKey
-                     , World.WorldProgress
-                     , World.WorldTree
                      , User
                      , Util
   other-modules:       DSL.Alpha.Actions

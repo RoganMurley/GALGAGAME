@@ -123,25 +123,6 @@ buttonEntities renderParams buttons gameType dt mouseState =
     Buttons.fromList <|
         List.map (\f -> f dt mouseState buttons)
             (case gameType of
-                WorldGame ->
-                    [ Buttons.entity
-                        "continue"
-                        { x = 0.5 * w
-                        , y = 0.55 * h
-                        , width = buttonWidth
-                        , height = buttonHeight
-                        , btn =
-                            TextButton
-                                { font = "Futura"
-                                , text = "Continue?"
-                                , textColor = textColor
-                                , bgColor = bgColor
-                                , options = [ Buttons.HoverText "Continue!" ]
-                                }
-                        , disabled = False
-                        }
-                    ]
-
                 QuickplayGame ->
                     [ Buttons.entity
                         "continue"

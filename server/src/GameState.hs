@@ -28,14 +28,12 @@ instance ToJSON GameState where
 data WaitType =
     WaitCustom
   | WaitQuickplay
-  | WaitWorldPvp
   deriving (Eq, Show)
 
 
 instance ToJSON WaitType where
   toJSON WaitCustom    = "custom"
   toJSON WaitQuickplay = "quickplay"
-  toJSON WaitWorldPvp  = "worldPvp"
 
 
 getStateGen :: GameState -> Gen

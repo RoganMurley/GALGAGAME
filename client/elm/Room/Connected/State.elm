@@ -74,10 +74,6 @@ receive flags assets ({ mode, gameType } as model) msg =
             splitOnColon msg
     in
     case command of
-        "acceptPlay" ->
-            -- noop as world sends this
-            ( model, Cmd.none )
-
         "sync" ->
             let
                 ( newGame, cmd ) =

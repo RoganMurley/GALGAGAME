@@ -8,7 +8,6 @@ import Menu.Messages as Menu
 import Mode exposing (Mode)
 import Replay.Messages as Replay
 import Signup.Messages as Signup
-import World.Messages as World
 
 
 type Msg
@@ -19,6 +18,4 @@ type Msg
     | ReplayMsg Replay.Msg
     | SignupMsg Signup.Msg
     | FeedbackMsg Feedback.Msg
-    | WorldMsg World.Msg
     | StartGame Mode (Maybe String)
-    | VisitWorld Bool

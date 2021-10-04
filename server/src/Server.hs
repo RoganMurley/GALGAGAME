@@ -23,7 +23,6 @@ import Room (Room)
 data State = State
   { state_rooms    :: Map Room.Name (TVar Room)
   , state_matching :: Maybe (TVar Room)
-  , state_worldPvp :: Maybe (TVar Room)
   }
 
 
@@ -32,7 +31,7 @@ instance Show State where
 
 
 initState :: State
-initState = State empty Nothing Nothing
+initState = State empty Nothing
 
 
 -- GETTING / DELETING ROOMS
@@ -45,7 +44,7 @@ createRoom :: Room.Name -> TVar Room -> TVar State -> STM (TVar Room)
 createRoom name roomVar state =
   modReturnTVar
     state
-    (\(State s m w) -> (State (insert name roomVar s) m w, roomVar))
+    (\(State s m) -> (State (insert name roomVar s) m , roomVar))
 
 
 getOrCreateRoom :: Room.Name -> WaitType -> Gen -> Scenario -> TVar State -> STM (TVar Room)
@@ -61,7 +60,7 @@ getOrCreateRoom name wait gen scenario state = do
 
 deleteRoom :: Room.Name -> TVar State -> STM (State)
 deleteRoom name state =
-  modReadTVar state $ \(State s qs r) -> State (delete name s) qs r
+  modReadTVar state $ \(State s qs) -> State (delete name s) qs
 
 
 getAllRooms :: TVar State -> STM ([TVar Room])
@@ -77,31 +76,19 @@ queue roomVar state = do
         dequeue state
         return $ Just existingRoomVar
       Nothing -> do
-        _ <- modTVar state (\(State s _ w) -> (State s (Just roomVar) w))
+        _ <- modTVar state (\(State s _) -> (State s (Just roomVar)))
         return Nothing
 
 
 dequeue :: TVar State -> STM ()
 dequeue state = do
-  modTVar state (\(State s _ w) -> State s Nothing w)
+  modTVar state (\(State s _) -> State s Nothing)
   return ()
 
 
 modScenario :: (Scenario -> Scenario) -> TVar Room -> STM Room
 modScenario f roomVar =
   modReadTVar roomVar $ Room.modScenario f
-
-
--- WORLD PVP
-getWorldPvpRoom :: TVar State -> STM (Maybe (TVar Room))
-getWorldPvpRoom stateVar = do
-  state <- readTVar stateVar
-  return $ state_worldPvp state
-
-
-setWorldPvpRoom :: TVar State -> Maybe (TVar Room) -> STM ()
-setWorldPvpRoom stateVar mRoomVar =
-  modTVar stateVar (\state -> state { state_worldPvp = mRoomVar })
 
 
 -- ADDING/REMOVING CLIENTS.

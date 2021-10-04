@@ -11,14 +11,11 @@ import Main.Messages as Main
 import Main.Types exposing (Flags)
 import Menu.State as Menu
 import Mouse
-import Ports exposing (log)
 import Replay.State as Replay
 import Room.Messages exposing (Msg(..))
 import Room.Types exposing (Model(..))
 import Signup.State as Signup
 import Util exposing (message)
-import World.Messages as World
-import World.State as World
 
 
 init : Model
@@ -109,18 +106,6 @@ update model msg assets flags =
                 _ ->
                     ( model, Cmd.none )
 
-        WorldMsg worldMsg ->
-            case model of
-                World world ->
-                    let
-                        ( newWorld, cmd ) =
-                            World.update world worldMsg flags
-                    in
-                    ( World newWorld, cmd )
-
-                _ ->
-                    ( model, Cmd.none )
-
         StartGame mode messageRoomID ->
             case model of
                 Lobby lobby ->
@@ -139,16 +124,6 @@ update model msg assets flags =
                             Cmd.none
                     )
 
-                World _ ->
-                    case messageRoomID of
-                        Just roomID ->
-                            ( Connected <| Connected.init mode WorldGame roomID
-                            , Cmd.none
-                            )
-
-                        Nothing ->
-                            ( model, log "Missing room ID from World start game" )
-
                 Connected connected ->
                     let
                         roomID =
@@ -160,15 +135,6 @@ update model msg assets flags =
 
                 _ ->
                     ( model, Cmd.none )
-
-        VisitWorld endEncounter ->
-            ( World World.init
-            , if endEncounter then
-                message <| Main.Send "endEncounter:"
-
-              else
-                Cmd.none
-            )
 
 
 receive : Flags -> Assets.Model -> String -> Model -> ( Model, Cmd Main.Msg )
@@ -199,9 +165,6 @@ receive flags assets str model =
         Feedback feedback ->
             ( Feedback feedback, Feedback.receive str )
 
-        World world ->
-            ( World world, World.receive str )
-
 
 tick : Flags -> Model -> Float -> ( Model, Cmd Msg )
 tick flags room dt =
@@ -231,9 +194,6 @@ tick flags room dt =
         Feedback feedback ->
             ( Feedback feedback, Cmd.none )
 
-        World world ->
-            ( World <| World.tick flags world dt, Cmd.none )
-
 
 mouseUp : Flags -> Assets.Model -> Model -> Mouse.Position -> ( Model, Cmd Main.Msg )
 mouseUp flags assets model pos =
@@ -244,13 +204,6 @@ mouseUp flags assets model pos =
                     Connected.mouseUp flags assets connected pos
             in
             ( Connected newConnected, cmd )
-
-        World world ->
-            let
-                ( newWorld, cmd ) =
-                    World.mouseUp flags assets world pos
-            in
-            ( World newWorld, cmd )
 
         _ ->
             ( model, Cmd.none )
@@ -265,13 +218,6 @@ mouseDown flags assets model pos =
                     Connected.mouseDown flags assets connected pos
             in
             ( Connected newConnected, cmd )
-
-        World world ->
-            let
-                ( newWorld, cmd ) =
-                    World.mouseDown flags assets world pos
-            in
-            ( World newWorld, cmd )
 
         _ ->
             ( model, Cmd.none )

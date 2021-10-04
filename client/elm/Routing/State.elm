@@ -31,7 +31,6 @@ playRoute =
                 , map QuickPlay <| s "quickplay"
                 , map TutorialPlay <| s "tutorial"
                 , map DailyPlay <| s "daily"
-                , map WorldPlay <| s "journey"
                 ]
 
 

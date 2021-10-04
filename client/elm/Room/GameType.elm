@@ -7,4 +7,3 @@ type GameType
     | QuickplayGame
     | TutorialGame
     | DailyGame
-    | WorldGame
