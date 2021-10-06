@@ -92,7 +92,12 @@ app.ports.analytics.subscribe(function () {
   }
 });
 
+var touched = false;
+
 function handleMouseDown(e) {
+  if (touched) {
+    return;
+  }
   app.ports.mouseDown.send({
     x: Math.floor(e.clientX),
     y: Math.floor(e.clientY),
@@ -100,13 +105,14 @@ function handleMouseDown(e) {
 };
 
 function handleMouseUp(e) {
+  if (touched) {
+    return;
+  }
   app.ports.mouseUp.send({
     x: Math.floor(e.clientX),
     y: Math.floor(e.clientY),
   });
 };
-
-var touched = false;
 
 function handleMouseMove(e) {
   if (touched) {
