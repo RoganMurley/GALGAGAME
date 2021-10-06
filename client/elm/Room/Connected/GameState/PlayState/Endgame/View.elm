@@ -140,6 +140,22 @@ buttonEntities renderParams buttons gameType dt mouseState =
                                 }
                         , disabled = False
                         }
+                    , Buttons.entity
+                        "watchReplay"
+                        { x = 0.5 * w
+                        , y = 0.65 * h
+                        , width = buttonWidth
+                        , height = buttonHeight
+                        , btn =
+                            TextButton
+                                { font = "Futura"
+                                , text = "Watch Replay?"
+                                , textColor = textColor
+                                , bgColor = bgColor
+                                , options = [ Buttons.HoverText "Watch Replay!" ]
+                                }
+                        , disabled = False
+                        }
                     ]
 
                 _ ->
