@@ -417,7 +417,7 @@ crownCoin =
     "Discard next card for each\ncard in your hand"
     $ \w -> do
       handLen <- length <$> getHand w
-      discardStack $ \i _ -> i < handLen
+      discardStack $ \i _ -> (i /= 0) && (i < handLen + 1)
 
 
 -- Morph
