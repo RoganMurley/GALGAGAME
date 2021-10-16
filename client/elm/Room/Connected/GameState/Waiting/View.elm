@@ -65,7 +65,7 @@ htmlView { waitType } { httpPort, hostname } roomID =
 
 
 webglView : Model -> Render.Params -> Assets.Model -> List WebGL.Entity
-webglView { bounceTick } params assets =
+webglView { bounceTick, waitType } params assets =
     let
         ctx =
             bareContextInit ( params.w, params.h ) assets NoMouse
@@ -78,14 +78,20 @@ webglView { bounceTick } params assets =
     in
     List.concat
         [ Background.webglView params assets Finding
-        , Font.view
-            "Futura"
-            "SCRYING FOR\nOPPONENT..."
-            { x = w * 0.5 - 0.003 * size
-            , y = h * 0.4
-            , scaleX = 0.0001 * size + 0.003 * sin (bounceTick * 0.005)
-            , scaleY = 0.0001 * size + 0.003 * sin (bounceTick * 0.007)
-            , color = vec3 (244 / 255) (241 / 255) (94 / 255)
-            }
-            ctx
         ]
+        ++ (case waitType of
+                WaitQuickplay ->
+                    Font.view
+                        "Futura"
+                        "SCRYING FOR\nOPPONENT..."
+                        { x = w * 0.5 - 0.003 * size
+                        , y = h * 0.4
+                        , scaleX = 0.0001 * size + 0.003 * sin (bounceTick * 0.005)
+                        , scaleY = 0.0001 * size + 0.003 * sin (bounceTick * 0.007)
+                        , color = vec3 (244 / 255) (241 / 255) (94 / 255)
+                        }
+                        ctx
+
+                _ ->
+                    []
+           )
