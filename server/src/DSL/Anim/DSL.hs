@@ -19,7 +19,7 @@ data DSL a
   | Draw WhichPlayer Float a
   | Play WhichPlayer Card Int a
   | Transmute (Wheel (Maybe Transmutation)) a
-  | Mill WhichPlayer Card a
+  | Mill WhichPlayer Card Float a
   | GameEnd (Maybe WhichPlayer) a
   | Rotate a
   | Windup a

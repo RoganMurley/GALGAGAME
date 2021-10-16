@@ -39,8 +39,8 @@ animMaxTick anim =
             Play _ _ _ _ ->
                 300.0
 
-            Mill _ _ ->
-                500.0
+            Mill _ _ timeModifier ->
+                timeModifier * 500.0
 
             GameEnd _ ->
                 1250.0
@@ -90,7 +90,7 @@ progress anim tick =
                 Heal _ _ ->
                     Ease.outQuint
 
-                Mill _ _ ->
+                Mill _ _ _ ->
                     Ease.outQuint
 
                 Rotate _ ->

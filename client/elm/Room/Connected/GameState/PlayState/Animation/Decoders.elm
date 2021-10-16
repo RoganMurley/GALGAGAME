@@ -147,9 +147,10 @@ transmuteDecoder =
 
 millDecoder : Decoder Anim
 millDecoder =
-    Json.map2 Mill
+    Json.map3 Mill
         (field "player" WhichPlayer.decoder)
         (field "card" Card.decoder)
+        (field "timeModifier" float)
 
 
 gameEndDecoder : Decoder Anim

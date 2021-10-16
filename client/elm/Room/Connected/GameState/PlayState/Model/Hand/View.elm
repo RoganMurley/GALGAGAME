@@ -59,7 +59,7 @@ otherView otherHandEntities ctx =
 millView : Context -> List WebGL.Entity
 millView ({ progress, tick, anim } as ctx) =
     case anim of
-        Mill owner card ->
+        Mill owner card _ ->
             let
                 sign =
                     case owner of

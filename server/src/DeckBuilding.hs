@@ -188,6 +188,7 @@ allRunes =
   , alchemyRune
   --, crownRune
   , morphRune
+  -- , abyssRune
   ]
 
 
@@ -277,6 +278,13 @@ morphRune =
     "MORPH"
     "cards/morph/coin.png"
     (Cards.morphSword, Cards.morphWand, Cards.morphGrail, Cards.morphCoin)
+
+abyssRune :: Rune
+abyssRune =
+  Rune
+    "ABYSS"
+    "cards/morph/coin.png"
+    (Cards.abyssSword, Cards.abyssWand, Cards.abyssGrail, Cards.abyssSword)
 
 
 -- Characters

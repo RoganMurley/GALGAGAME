@@ -83,7 +83,7 @@ animSfx anim =
         DiscardHand _ _ ->
             Just "obliterate.mp3"
 
-        Mill _ _ ->
+        Mill _ _ _ ->
             Just "burn.mp3"
 
         GameEnd winner ->

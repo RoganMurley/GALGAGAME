@@ -11,9 +11,11 @@ import Safe (headMay)
 import Stack (diasporaFromStack, diasporaLength)
 import StackCard (StackCard(..), changeOwner)
 import Transmutation (Transmutation(..))
-import Util (shuffle)
+import Util (many, manyIndexed, shuffle)
 
 import qualified Data.Map as Map
+
+import qualified Ease
 
 import qualified DSL.Alpha as Alpha
 import qualified DSL.Beta as Beta
@@ -485,6 +487,36 @@ morphCoin =
               stackCard
 
 
+-- Abyss
+abyssSword :: Card
+abyssSword =
+  Card Abyss Sword
+    "Discard 5 from their deck"
+    $ \w -> do
+      let mag = 5
+      manyIndexed mag $ \i -> mill (other w) (1 * (Ease.outQuad 0.5 * (fromIntegral i / fromIntegral mag)))
+
+
+abyssWand :: Card
+abyssWand =
+  Card Abyss Wand
+    "Discard 3 from their deck\nfor each other card in play"
+    $ \w -> do
+      len <- diasporaLength <$> getStack
+      let mag = 3 * len
+      manyIndexed mag $ \i -> mill (other w) (1 * (Ease.outQuad 0.5 * (fromIntegral i / fromIntegral mag)))
+
+
+abyssGrail :: Card
+abyssGrail =
+  Card Abyss Grail
+    "Both players discard their hands\nthen draw 5"
+    $ \w -> do
+      discardHand w (\_ _ -> True)
+      discardHand (other w) (\_ _ -> True)
+      many 5 $ draw w w 0.4
+      many 5 $ draw (other w) (other w) 0.4
+
 
 -- Other
 strangeEnd :: Card
@@ -507,6 +539,7 @@ swords =
   , crownSword
   , morphSword
   , tideSword
+  , abyssSword
   ]
 
 
@@ -523,6 +556,7 @@ wands =
   , crownWand
   , morphWand
   , tideWand
+  , abyssWand
   ]
 
 
@@ -539,6 +573,7 @@ grails =
   , crownGrail
   , morphGrail
   , tideGrail
+  , abyssGrail
   ]
 
 

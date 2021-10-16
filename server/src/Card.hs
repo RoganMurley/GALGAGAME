@@ -56,6 +56,7 @@ data Aspect
   | Blood
   | Crown
   | Morph
+  | Abyss
   | Strange
   | OtherAspect Text
   deriving (Eq, Ord, Show)

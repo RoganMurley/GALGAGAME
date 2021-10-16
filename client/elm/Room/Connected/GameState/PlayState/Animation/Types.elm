@@ -14,7 +14,7 @@ type Anim
     | Draw WhichPlayer Float
     | Play WhichPlayer Card Int (Maybe Vec3)
     | Transmute (Wheel (Maybe Transmutation))
-    | Mill WhichPlayer Card
+    | Mill WhichPlayer Card Float
     | GameStart WhichPlayer
     | GameEnd (Maybe WhichPlayer)
     | Rotate WhichPlayer

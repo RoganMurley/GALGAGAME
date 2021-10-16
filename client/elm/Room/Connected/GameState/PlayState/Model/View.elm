@@ -68,7 +68,7 @@ view { w, h } game assets =
 focusImageView : Vec2 -> Maybe StackCard -> Context -> List WebGL.Entity
 focusImageView originVec focus { tick, ortho, camera2d, w, h, anim, radius, textures } =
     case anim of
-        Mill _ _ ->
+        Mill _ _ _ ->
             []
 
         Pass _ ->
@@ -218,7 +218,7 @@ lifeOrbView ({ w, h, radius, model, anim, animDamage, tick } as ctx) =
 focusTextView : Vec2 -> Maybe StackCard -> Context -> List WebGL.Entity
 focusTextView originVec focus ({ w, h, anim, radius, tick } as ctx) =
     case anim of
-        Mill _ _ ->
+        Mill _ _ _ ->
             []
 
         Pass _ ->
@@ -356,7 +356,7 @@ turnView focus passed ctx =
             radius * 3
     in
     case ( anim, focus, passed ) of
-        ( Mill _ _, _, _ ) ->
+        ( Mill _ _ _, _, _ ) ->
             []
 
         ( NullAnim, Nothing, False ) ->

@@ -18,7 +18,7 @@ data CardAnim
   | Hurt WhichPlayer Life Hurt
   | Play WhichPlayer Card Int
   | Transmute (Wheel (Maybe Transmutation))
-  | Mill WhichPlayer Card
+  | Mill WhichPlayer Card Float
   | GameEnd (Maybe WhichPlayer)
   | Rotate
   | Windup
@@ -63,11 +63,12 @@ instance ToJSON CardAnim where
     , "player"    .= PlayerA
     , "transmute" .= t
     ]
-  toJSON (Mill w c) =
+  toJSON (Mill w c t) =
     object
-    [ "name"   .= ("mill" :: Text)
-    , "player" .= w
-    , "card"   .= c
+    [ "name"         .= ("mill" :: Text)
+    , "player"       .= w
+    , "card"         .= c
+    , "timeModifier" .= t
     ]
   toJSON (GameEnd w) =
     object
@@ -124,7 +125,7 @@ instance Mirror CardAnim where
   mirror (Play w c i)      = Play (other w) c i
   mirror (Transmute t)     = Transmute (mirror <$> t)
   mirror (GameEnd w)       = GameEnd (other <$> w)
-  mirror (Mill w c)        = Mill (other w) c
+  mirror (Mill w c t)      = Mill (other w) c t
   mirror Rotate            = Rotate
   mirror Windup            = Windup
   mirror (Bounce b)        = Bounce b

@@ -1,5 +1,6 @@
 module Util where
 
+import Control.Monad (replicateM_)
 import Control.Concurrent.STM (STM)
 import Control.Concurrent.STM.TVar (TVar, readTVar, writeTVar)
 import Data.Text (Text)
@@ -14,6 +15,15 @@ type Err = Text
 -- Apply a function n times.
 times :: Int -> (a -> a) -> a -> a
 times n f x = (iterate f x) !! n
+
+
+-- Perform a monadic action n times
+many :: Monad m => Int -> m a -> m ()
+many = replicateM_
+
+
+manyIndexed :: Monad m => Int -> (Int -> m a) -> m ()
+manyIndexed i f = if i > 0 then f i >> manyIndexed (i - 1) f else return ()
 
 
 shuffle :: Gen -> [a] -> [a]

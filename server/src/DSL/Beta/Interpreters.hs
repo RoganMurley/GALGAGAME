@@ -47,6 +47,7 @@ alphaI (Free (Bounce f n))          = Alpha.bounce f          >>  alphaI n
 alphaI (Free (DiscardStack f n))    = Alpha.discardStack f    >>  alphaI n
 alphaI (Free (DiscardHand w f n))   = Alpha.discardHand w f   >>  alphaI n
 alphaI (Free (MoveStack f _ n))     = Alpha.moveStack f       >>  alphaI n
+alphaI (Free (Mill w _ n))          = Alpha.mill w            >>  alphaI n
 alphaI (Free (GetGen f))            = Alpha.getGen            >>= alphaI . f
 alphaI (Free (GetRot f))            = Alpha.getRot            >>= alphaI . f
 alphaI (Free (GetLife w f))         = Alpha.getLife w         >>= alphaI . f
@@ -79,6 +80,7 @@ animI (Bounce f _)          = bounceAnim f
 animI (DiscardStack f _)    = discardStackAnim f
 animI (DiscardHand w f _)   = discardHandAnim w f
 animI (MoveStack f t _)     = moveStackAnim f t
+animI (Mill w t _)         = millAnim w t
 animI _                     = toLeft
 
 
@@ -99,7 +101,15 @@ drawAnim w d t alpha = do
   final <- toLeft alpha
   if (handLength < maxHandLength)
     then toRight . liftF $ Anim.Draw w t ()
-    else toRight . liftF $ Anim.Mill w (fromMaybe strangeEnd nextCard) ()
+    else toRight . liftF $ Anim.Mill w (fromMaybe strangeEnd nextCard) 1 ()
+  return final
+
+
+millAnim :: WhichPlayer -> Float -> Alpha.Program a -> AlphaAnimProgram a
+millAnim w t alpha = do
+  nextCard <- headMay <$> toLeft (Alpha.getDeck w)
+  final <- toLeft alpha
+  toRight . liftF $ Anim.Mill w (fromMaybe strangeEnd nextCard) t ()
   return final
 
 
@@ -109,7 +119,7 @@ addToHandAnim w c alpha = do
   final <- toLeft alpha
   if (handLength < maxHandLength)
     then toRight . liftF $ Anim.Draw w 1 ()
-    else toRight . liftF $ Anim.Mill w c ()
+    else toRight . liftF $ Anim.Mill w c 1 ()
   return final
 
 

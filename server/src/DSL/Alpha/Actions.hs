@@ -209,3 +209,7 @@ windup :: Program ()
 windup = do
   modStack Stack.windup
   modRot ((+) 1)
+
+
+mill :: WhichPlayer -> Program ()
+mill w = modDeck w tailSafe
