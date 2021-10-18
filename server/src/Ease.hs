@@ -11,19 +11,19 @@ linear = id
 
 
 inQuad :: Float -> Float
-inQuad x = x ^ 2
+inQuad x = x ** 2
 
 
 inCubic :: Float -> Float
-inCubic x = x ^ 3
+inCubic x = x ** 3
 
 
 inQuart :: Float -> Float
-inQuart x = x ^ 4
+inQuart x = x ** 4
 
 
 inQuint :: Float -> Float
-inQuint x = x ^ 5
+inQuint x = x ** 5
 
 
 outQuad :: Float -> Float
