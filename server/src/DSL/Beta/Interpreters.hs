@@ -80,7 +80,7 @@ animI (Bounce f _)          = bounceAnim f
 animI (DiscardStack f _)    = discardStackAnim f
 animI (DiscardHand w f _)   = discardHandAnim w f
 animI (MoveStack f t _)     = moveStackAnim f t
-animI (Mill w t _)         = millAnim w t
+animI (Mill w t _)          = millAnim w t
 animI _                     = toLeft
 
 

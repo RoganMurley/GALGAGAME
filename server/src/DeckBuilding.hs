@@ -78,7 +78,7 @@ instance ToJSON DeckBuilding where
     object
       [ "character"      .= deckbuilding_pa
       , "all_characters" .= allCharacters
-      , "all_runes"      .= allRunes
+      , "all_runes"      .= mainRunes
       ]
 
 
@@ -167,7 +167,7 @@ getCharacter name =
 
 getRune :: Text -> Either Text Rune
 getRune name =
-  case find (\Rune{rune_name} -> rune_name == name) allRunes of
+  case find (\Rune{rune_name} -> rune_name == name) mainRunes of
     Just rune ->
       Right rune
     Nothing ->
@@ -175,8 +175,8 @@ getRune name =
 
 
 -- RUNES
-allRunes :: [Rune]
-allRunes =
+mainRunes :: [Rune]
+mainRunes =
   [ blazeRune
   , tideRune
   , heavenRune
@@ -189,6 +189,16 @@ allRunes =
   --, crownRune
   , morphRune
   -- , abyssRune
+  -- , blightRune
+  ]
+
+allRunes :: [Rune]
+allRunes =
+  mainRunes ++
+  [ bloodRune
+  , crownRune
+  , abyssRune
+  , blightRune
   ]
 
 
@@ -285,6 +295,13 @@ abyssRune =
     "ABYSS"
     "cards/morph/coin.png"
     (Cards.abyssSword, Cards.abyssWand, Cards.abyssGrail, Cards.abyssSword)
+
+blightRune :: Rune
+blightRune =
+  Rune
+    "BLIGHT"
+    "cards/morph/coin.png"
+    (Cards.blightSword, Cards.blightWand, Cards.blightGrail, Cards.blightSword)
 
 
 -- Characters

@@ -1,6 +1,7 @@
 module Cards where
 
 import Control.Monad (when)
+import Control.Monad.Free (hoistFree)
 import CardAnim (Hurt(..))
 import Card (Aspect(..), Card(..), Suit(..), cardName)
 import Data.Map (Map)
@@ -516,6 +517,47 @@ abyssGrail =
       discardHand (other w) (\_ _ -> True)
       many 5 $ draw w w 0.4
       many 5 $ draw (other w) (other w) 0.4
+
+
+-- Blight
+blightSword :: Card
+blightSword =
+  Card Blight Sword
+    "Hurt for 12 then\nheal them for 4"
+    $ \w -> do
+      hurt 12 (other w) Slash
+      heal 4 (other w)
+
+
+blightWand :: Card
+blightWand =
+  Card Blight Wand
+    "Hurt for 5 for each other\ncard on the wheel, then heal them for 10"
+    $ \w -> do
+      len <- diasporaLength <$> getStack
+      hurt (len * 5) (other w) Slash
+      heal 10 (other w)
+
+
+blightGrail :: Card
+blightGrail =
+  Card Blight Grail
+    "Healing becomes hurting\nfor all other cards on the wheel"
+    $ \_ -> raw $ Alpha.modStack (fmap . fmap $ healToHurt)
+    where
+      healToHurt :: StackCard -> StackCard
+      healToHurt sc = sc { stackcard_card = newCard }
+        where
+          StackCard { stackcard_card } = sc
+          Card { card_eff } = stackcard_card
+          -- eff :: WhichPlayer -> Beta.Program ()
+          eff w = hoistFree metaprogram (card_eff w)
+          newCard :: Card
+          newCard = stackcard_card { card_eff = eff }
+
+      metaprogram :: Beta.DSL a -> Beta.DSL a
+      metaprogram (Heal l w n) = Hurt l w Slash n
+      metaprogram dsl = dsl
 
 
 -- Other

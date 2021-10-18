@@ -57,6 +57,7 @@ data Aspect
   | Crown
   | Morph
   | Abyss
+  | Blight
   | Strange
   | OtherAspect Text
   deriving (Eq, Ord, Show)
@@ -125,5 +126,6 @@ allAspects =
   , Blood
   , Crown
   , Morph
+  , Blight
   , Strange
   ]
