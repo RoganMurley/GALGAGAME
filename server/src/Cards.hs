@@ -528,20 +528,19 @@ blightSword =
 blightWand :: Card
 blightWand =
   newCard Blight Wand
-    "Hurt for 5 for each other\ncard on the wheel, then heal them for 10"
+    "Hurt for 15,\nthen heal them for 5"
     $ \w -> do
-      len <- diasporaLength <$> getStack
-      hurt (len * 5) (other w) Slash
-      heal 10 (other w)
+      hurt 15 (other w) Slash
+      heal 5 (other w)
 
 
 blightGrail :: Card
 blightGrail =
   newCard Blight Grail
     "Healing becomes hurting\nfor all other cards on the wheel"
-    $ \_ -> raw $
-      Alpha.modStack $
-        fmap . fmap $ cardMap $ addStatus StatusBlighted
+    $ \_ -> do
+      raw $ Alpha.modStack $ fmap . fmap $ cardMap $ addStatus StatusBlighted
+      Beta.null
 
 
 -- Other

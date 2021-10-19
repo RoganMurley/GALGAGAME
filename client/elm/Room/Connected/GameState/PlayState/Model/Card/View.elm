@@ -6,11 +6,12 @@ import Colour
 import Game.Entity as Game
 import Game.Types exposing (Context)
 import Math.Matrix4 exposing (makeRotate, makeScale)
-import Math.Vector3 as Vector3
+import Math.Vector3 as Vector3 exposing (vec3)
 import Quaternion
 import Render.Primitives
 import Render.Shaders
 import Stack.Types exposing (StackCard)
+import Status.Types exposing (Status(..))
 import Texture.State as Texture
 import WebGL
 import WhichPlayer.Types exposing (WhichPlayer(..))
@@ -24,6 +25,39 @@ view ctx entity =
 
         { position, rotation, scale, card, owner } =
             entity
+
+        statusView : Status -> List WebGL.Entity
+        statusView status =
+            case status of
+                StatusEcho ->
+                    Texture.with textures card.imgURL <|
+                        \texture ->
+                            [ Render.Primitives.quad Render.Shaders.fragmentAlpha <|
+                                { rotation = Quaternion.makeRotate rotation
+                                , scale = makeScale <| Vector3.scale 1.001 scale
+                                , color = vec3 1 1 1
+                                , alpha = 0.3
+                                , pos = position
+                                , perspective = perspective
+                                , camera = camera3d
+                                , texture = texture
+                                }
+                            ]
+
+                StatusBlighted ->
+                    Texture.with textures "cardBack.png" <|
+                        \texture ->
+                            [ Render.Primitives.quad Render.Shaders.fragmentAlpha <|
+                                { rotation = Quaternion.makeRotate rotation
+                                , scale = makeScale scale
+                                , color = vec3 0.9 0.9 0.98
+                                , alpha = 0.4
+                                , pos = position
+                                , perspective = perspective
+                                , camera = camera3d
+                                , texture = texture
+                                }
+                            ]
     in
     Texture.with2 textures "cardBack.png" "cardOutline.png" <|
         \backTexture outlineTexture ->
@@ -59,6 +93,7 @@ view ctx entity =
                                 }
                             ]
                    )
+                ++ (List.concat <| List.map statusView card.statuses)
 
 
 backView : Context -> Game.Entity3D {} -> List WebGL.Entity
