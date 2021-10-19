@@ -20,6 +20,7 @@ import Safe (atMay)
 import Scenario (Scenario(..))
 import Stack (Stack)
 import StackCard (StackCard(..))
+import StatusEff (applyStatuses)
 import User (User(..), getUsername, getQueryUsername, isSuperuser)
 import Util (Err, Gen, deleteIndex, split, times)
 import Wheel (Wheel(..))
@@ -335,7 +336,8 @@ resolveAll model replay resolutionCount = do
     cardProgram :: StackCard -> Beta.AlphaLogAnimProgram ()
     cardProgram StackCard{ stackcard_card, stackcard_owner } =
       foldFree Beta.betaI $ do
-        when isFinite $ (card_eff stackcard_card) stackcard_owner
+        let eff = card_eff (applyStatuses stackcard_card)
+        when isFinite $ eff stackcard_owner
         holding <- Beta.getHold
         when (not holding) $ Beta.raw $ Alpha.modStack (\wheel -> wheel { wheel_0 = Nothing })
 

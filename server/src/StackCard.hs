@@ -31,3 +31,11 @@ changeOwner = mirror
 
 isOwner :: WhichPlayer -> StackCard -> Bool
 isOwner w (StackCard o _) = w == o
+
+
+cardMap :: (Card -> Card) -> StackCard -> StackCard
+cardMap f (StackCard { stackcard_owner, stackcard_card }) =
+  StackCard {
+    stackcard_owner = stackcard_owner,
+    stackcard_card = f stackcard_card
+  }

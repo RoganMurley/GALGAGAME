@@ -1,16 +1,15 @@
 module Cards where
 
 import Control.Monad (when)
-import Control.Monad.Free (hoistFree)
 import CardAnim (Hurt(..))
-import Card (Aspect(..), Card(..), Suit(..), cardName)
+import Card (Aspect(..), Card(..), Suit(..), Status(..), addStatus, cardName, newCard)
 import Data.Map (Map)
 import Data.Maybe (fromMaybe)
 import Data.Text (Text)
 import Player (other)
 import Safe (headMay)
 import Stack (diasporaFromStack, diasporaLength)
-import StackCard (StackCard(..), changeOwner)
+import StackCard (StackCard(..), changeOwner, cardMap)
 import Transmutation (Transmutation(..))
 import Util (many, manyIndexed, shuffle)
 
@@ -26,14 +25,14 @@ import DSL.Beta
 -- Blaze
 blazeSword :: Card
 blazeSword =
-  Card Blaze Sword
+  newCard Blaze Sword
     "Hurt for 7"
     $ \w -> hurt 7 (other w) Slash
 
 
 blazeWand :: Card
 blazeWand =
-  Card Blaze Wand
+  newCard Blaze Wand
     "Hurt for 5 for each other card\non the wheel"
     $ \w -> do
       len <- diasporaLength <$> getStack
@@ -42,7 +41,7 @@ blazeWand =
 
 blazeGrail :: Card
 blazeGrail =
-  Card Blaze Grail
+  newCard Blaze Grail
     "Discard your hand, then draw 2"
     $ \w -> do
       discardHand w (\_ _ -> True)
@@ -52,7 +51,7 @@ blazeGrail =
 
 blazeCoin :: Card
 blazeCoin =
-  Card Blaze Coin
+  newCard Blaze Coin
     "Shuffle the order of all other\ncards on the wheel"
     $ \_ -> do
       confound
@@ -62,7 +61,7 @@ blazeCoin =
 -- Tide
 tideSword :: Card
 tideSword =
-  Card Tide Sword
+  newCard Tide Sword
     "Hurt for 3, add a copy of this card\nto your hand"
     $ \w -> do
       hurt 3 (other w) Slash
@@ -71,7 +70,7 @@ tideSword =
 
 tideWand :: Card
 tideWand =
-  Card Tide Wand
+  newCard Tide Wand
     "Hurt for 3 for each other card\non the wheel"
     $ \w -> do
       len <- diasporaLength <$> getStack
@@ -80,14 +79,14 @@ tideWand =
 
 tideGrail :: Card
 tideGrail =
-  Card Tide Grail
+  newCard Tide Grail
     "Heal for 8"
     $ \w -> heal 8 w
 
 
 tideCoin :: Card
 tideCoin =
-  Card Tide Coin
+  newCard Tide Coin
     "Discard cards in the\nnext 3 sockets"
     $ \_ -> do
       discardStack (\i _ -> (i > 0) && (i < 4))
@@ -96,14 +95,14 @@ tideCoin =
 -- Heaven
 heavenSword :: Card
 heavenSword =
-  Card Heaven Sword
+  newCard Heaven Sword
     "Hurt for 8"
     $ \w -> hurt 8 (other w) Slash
 
 
 heavenWand :: Card
 heavenWand =
-  Card Heaven Wand
+  newCard Heaven Wand
     "Hurt for 4 for each other card\non the wheel"
     $ \w -> do
       len <- diasporaLength <$> getStack
@@ -112,14 +111,14 @@ heavenWand =
 
 heavenGrail :: Card
 heavenGrail =
-  Card Heaven Grail
+  newCard Heaven Grail
     "Return all of your cards\non the wheel to hand"
     $ \w -> bounce (\i (StackCard o _) -> i > 0 && w == o)
 
 
 heavenCoin :: Card
 heavenCoin =
-  Card Heaven Coin
+  newCard Heaven Coin
     "Discard all cards on the wheel"
     $ \_ -> discardStack (\i _ -> i > 0)
 
@@ -127,14 +126,14 @@ heavenCoin =
 -- Duality
 dualitySword :: Card
 dualitySword =
-  Card Duality Sword
+  newCard Duality Sword
     "Hurt for 9"
     $ \w -> hurt 9 (other w) Slash
 
 
 dualityWand :: Card
 dualityWand =
-  Card Duality Wand
+  newCard Duality Wand
     "Hurt weakest player for 15"
     $ \w -> do
       let dmg = 15
@@ -147,7 +146,7 @@ dualityWand =
 
 dualityGrail :: Card
 dualityGrail =
-  Card Duality Grail
+  newCard Duality Grail
     "Heal weakest player for 15"
     $ \w -> do
       let mag = 15
@@ -160,7 +159,7 @@ dualityGrail =
 
 dualityCoin :: Card
 dualityCoin =
-  Card Duality Coin
+  newCard Duality Coin
     "Change next card's owner\nto weakest player"
     $ \w -> do
       paLife <- getLife w
@@ -173,14 +172,14 @@ dualityCoin =
 -- Shroom
 shroomSword :: Card
 shroomSword =
-  Card Shroom Sword
+  newCard Shroom Sword
     "Lifesteal for 5"
     $ \w -> lifesteal 5 (other w)
 
 
 shroomWand :: Card
 shroomWand =
-  Card Shroom Wand
+  newCard Shroom Wand
     "Lifesteal for 3 for each other card\non the wheel"
     $ \w -> do
       len <- diasporaLength <$> getStack
@@ -189,7 +188,7 @@ shroomWand =
 
 shroomGrail :: Card
 shroomGrail =
-  Card Shroom Grail
+  newCard Shroom Grail
     ("Add 2 STRANGE SPORE cards to\ntheir hand")
     $ \w -> do
       addToHand (other w) strangeSpore
@@ -198,7 +197,7 @@ shroomGrail =
 
 strangeSpore :: Card
 strangeSpore =
-  Card Strange (OtherSuit "SPORE")
+  newCard Strange (OtherSuit "SPORE")
     "Hurt yourself for 4"
     $ \w -> do
       hurt 4 w Bite
@@ -206,7 +205,7 @@ strangeSpore =
 
 shroomCoin :: Card
 shroomCoin =
-  Card Shroom Coin
+  newCard Shroom Coin
     "Reverse the order of all other\ncards on the wheel"
     $ const reversal
 
@@ -214,7 +213,7 @@ shroomCoin =
 -- Blood
 bloodSword :: Card
 bloodSword =
-  Card Blood Sword
+  newCard Blood Sword
     "Pay 4 life to hurt for 12"
     $ \w -> do
       hurt 4 w Slash
@@ -223,7 +222,7 @@ bloodSword =
 
 bloodWand :: Card
 bloodWand =
-  Card Blood Wand
+  newCard Blood Wand
     "Both player's life becomes that\nof the weakest"
     $ \w -> do
       lifePa <- getLife w
@@ -235,7 +234,7 @@ bloodWand =
 
 bloodGrail :: Card
 bloodGrail =
-  Card Blood Grail
+  newCard Blood Grail
     "Pay 4 life to draw 3"
     $ \w -> do
       hurt 4 w Slash
@@ -246,7 +245,7 @@ bloodGrail =
 
 bloodCoin :: Card
 bloodCoin =
-  Card Blood Coin
+  newCard Blood Coin
     "Pay half your life to discard\nthe next card"
     $ \w -> do
       l <- getLife w
@@ -257,7 +256,7 @@ bloodCoin =
 -- Mirage
 mirageSword :: Card
 mirageSword =
-  Card Mirage Sword
+  newCard Mirage Sword
     "Hurt for 4, then draw 1"
     $ \w -> do
       hurt 4 (other w) Slash
@@ -266,7 +265,7 @@ mirageSword =
 
 mirageWand :: Card
 mirageWand =
-  Card Mirage Wand
+  newCard Mirage Wand
     "Hurt for 8 for each MIRAGE WAND\non the wheel"
     $ \w -> do
       diaspora <- diasporaFromStack <$> getStack
@@ -277,7 +276,7 @@ mirageWand =
 
 mirageGrail :: Card
 mirageGrail =
-  Card Mirage Grail
+  newCard Mirage Grail
     "Become a copy of a random card\nin your hand"
     $ \w -> do
       gen <- getGen
@@ -294,7 +293,7 @@ mirageGrail =
 
 mirageCoin :: Card
 mirageCoin =
-  Card Mirage Coin
+  newCard Mirage Coin
     "Return all cards on the wheel to hand"
     $ \_ -> bounce (\i _ -> i > 0)
 
@@ -302,7 +301,7 @@ mirageCoin =
 -- Mirror
 mirrorSword :: Card
 mirrorSword =
-  Card Mirror Sword
+  newCard Mirror Sword
     "Hurt for 7"
     $ \w -> do
       hurt 7 (other w) Slash
@@ -310,7 +309,7 @@ mirrorSword =
 
 mirrorWand :: Card
 mirrorWand =
-  Card Mirror Wand
+  newCard Mirror Wand
     "Hurt for 3 for each card in your hand"
     $ \w -> do
       len <- length <$> getHand w
@@ -319,19 +318,16 @@ mirrorWand =
 
 mirrorGrail :: Card
 mirrorGrail =
-  Card Mirror Grail
+  newCard Mirror Grail
     "Card in next socket\nactivates twice"
     $ \_ -> do
-      raw $ do
-        Alpha.modStackHead $
-          \(StackCard which (Card aspect suit desc e)) ->
-            StackCard which (Card aspect suit desc (\w -> (e w) >> (e w)))
+      raw $ Alpha.modStackHead $ cardMap (addStatus StatusEcho)
       Beta.null
 
 
 mirrorCoin :: Card
 mirrorCoin =
-  Card Mirror Coin
+  newCard Mirror Coin
     "Change the owner of all cards\non the wheel"
     $ \_ ->
       transmute $
@@ -341,14 +337,14 @@ mirrorCoin =
 -- Alchemy
 alchemySword :: Card
 alchemySword =
-  Card Alchemy Sword
+  newCard Alchemy Sword
     "Hurt for 6"
     $ \w -> hurt 6 (other w) Slash
 
 
 alchemyWand :: Card
 alchemyWand =
-  Card Alchemy Wand
+  newCard Alchemy Wand
     "Hurt for 3 for each card\nin their hand"
     $ \w -> do
       len <- length <$> getHand (other w)
@@ -357,21 +353,21 @@ alchemyWand =
 
 alchemyGrail :: Card
 alchemyGrail =
-  Card Alchemy Grail
+  newCard Alchemy Grail
     "Heal for 10"
     $ heal 10
 
 
 alchemyCoin :: Card
 alchemyCoin =
-  Card Alchemy Coin
+  newCard Alchemy Coin
     "Change card in next socket\nto STRANGE GOLD"
     $ \_ -> transmuteHead (\(StackCard o _) -> StackCard o strangeGold)
 
 
 strangeGold :: Card
 strangeGold =
-  Card Strange (OtherSuit "GOLD")
+  newCard Strange (OtherSuit "GOLD")
     "Draw 2"
     $ \w -> do
       draw w w 1
@@ -381,14 +377,14 @@ strangeGold =
 -- Crown
 crownSword :: Card
 crownSword =
-  Card Crown Sword
+  newCard Crown Sword
     "Hurt for 10"
     $ \w -> hurt 10 (other w) Slash
 
 
 crownWand :: Card
 crownWand =
-  Card Crown Wand
+  newCard Crown Wand
     "Discard your hand, then hurt\nfor 5 for each card discarded"
     $ \w -> do
       handSize <- length <$> getHand w
@@ -398,7 +394,7 @@ crownWand =
 
 crownGrail :: Card
 crownGrail =
-  Card Crown Grail
+  newCard Crown Grail
     "Your opponent is forced to\nplay a random card"
     $ \w -> do
       gen <- getGen
@@ -414,7 +410,7 @@ crownGrail =
 
 crownCoin :: Card
 crownCoin =
-  Card Crown Coin
+  newCard Crown Coin
     "Discard next card for each\ncard in your hand"
     $ \w -> do
       handLen <- length <$> getHand w
@@ -424,7 +420,7 @@ crownCoin =
 -- Morph
 morphSword :: Card
 morphSword =
-  Card Morph Sword
+  newCard Morph Sword
     "Hurt for 7, then all MORPH cards on\nthe wheel become SWORDs"
     $ \w -> do
       hurt 7 (other w) Slash
@@ -439,7 +435,7 @@ morphSword =
 
 morphWand :: Card
 morphWand =
-  Card Morph Wand
+  newCard Morph Wand
     "Hurt for 3 for each card on the wheel,\nthen all MORPH cards on the wheel\nbecome WANDs"
     $ \w -> do
       len <- diasporaLength <$> getStack
@@ -455,7 +451,7 @@ morphWand =
 
 morphGrail :: Card
 morphGrail =
-  Card Morph Grail
+  newCard Morph Grail
     "Heal for 8, then all MORPH cards on\nthe wheel become GRAILs"
     $ \w -> do
       heal 8 w
@@ -470,7 +466,7 @@ morphGrail =
 
 morphCoin :: Card
 morphCoin =
-  Card Morph Coin
+  newCard Morph Coin
     "The next card becomes a MORPH card"
     $ \_ -> do
       transmuteHead $
@@ -491,7 +487,7 @@ morphCoin =
 -- Abyss
 abyssSword :: Card
 abyssSword =
-  Card Abyss Sword
+  newCard Abyss Sword
     "Discard 5 from their deck"
     $ \w -> do
       let mag = 5
@@ -500,7 +496,7 @@ abyssSword =
 
 abyssWand :: Card
 abyssWand =
-  Card Abyss Wand
+  newCard Abyss Wand
     "Discard 3 from their deck\nfor each other card in play"
     $ \w -> do
       len <- diasporaLength <$> getStack
@@ -510,7 +506,7 @@ abyssWand =
 
 abyssGrail :: Card
 abyssGrail =
-  Card Abyss Grail
+  newCard Abyss Grail
     "Both players discard their hands\nthen draw 5"
     $ \w -> do
       discardHand w (\_ _ -> True)
@@ -522,7 +518,7 @@ abyssGrail =
 -- Blight
 blightSword :: Card
 blightSword =
-  Card Blight Sword
+  newCard Blight Sword
     "Hurt for 12 then\nheal them for 4"
     $ \w -> do
       hurt 12 (other w) Slash
@@ -531,7 +527,7 @@ blightSword =
 
 blightWand :: Card
 blightWand =
-  Card Blight Wand
+  newCard Blight Wand
     "Hurt for 5 for each other\ncard on the wheel, then heal them for 10"
     $ \w -> do
       len <- diasporaLength <$> getStack
@@ -541,29 +537,17 @@ blightWand =
 
 blightGrail :: Card
 blightGrail =
-  Card Blight Grail
+  newCard Blight Grail
     "Healing becomes hurting\nfor all other cards on the wheel"
-    $ \_ -> raw $ Alpha.modStack (fmap . fmap $ healToHurt)
-    where
-      healToHurt :: StackCard -> StackCard
-      healToHurt sc = sc { stackcard_card = newCard }
-        where
-          StackCard { stackcard_card } = sc
-          Card { card_eff } = stackcard_card
-          -- eff :: WhichPlayer -> Beta.Program ()
-          eff w = hoistFree metaprogram (card_eff w)
-          newCard :: Card
-          newCard = stackcard_card { card_eff = eff }
-
-      metaprogram :: Beta.DSL a -> Beta.DSL a
-      metaprogram (Heal l w n) = Hurt l w Slash n
-      metaprogram dsl = dsl
+    $ \_ -> raw $
+      Alpha.modStack $
+        fmap . fmap $ cardMap $ addStatus StatusBlighted
 
 
 -- Other
 strangeEnd :: Card
 strangeEnd =
-  Card Strange (OtherSuit "END")
+  newCard Strange (OtherSuit "END")
     "You're out of cards,\nhurt yourself for 10"
     $ \w -> hurt 10 w Slash
 
@@ -582,6 +566,7 @@ swords =
   , morphSword
   , tideSword
   , abyssSword
+  , blightSword
   ]
 
 
@@ -599,6 +584,7 @@ wands =
   , morphWand
   , tideWand
   , abyssWand
+  , blightWand
   ]
 
 
@@ -616,6 +602,7 @@ grails =
   , morphGrail
   , tideGrail
   , abyssGrail
+  , blightGrail
   ]
 
 

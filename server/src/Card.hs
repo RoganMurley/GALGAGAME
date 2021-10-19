@@ -1,17 +1,19 @@
+{-# LANGUAGE DeriveGeneric #-}
 module Card where
 
-import Data.Aeson (ToJSON(..), (.=), object)
+import Data.Aeson (ToJSON(..), (.=), defaultOptions, genericToEncoding, object)
 import Data.Monoid ((<>))
 import Data.String.Conversions (cs)
 import Data.Text (Text, toLower, toUpper)
+import GHC.Generics (Generic)
 import Player (WhichPlayer(..))
 
 import {-# SOURCE #-} qualified DSL.Beta.DSL as Beta
 
 
 instance Eq Card where
-  (Card a1 s1 d1 _) == (Card a2 s2 d2 _) =
-    a1 == a2 && s1 == s2 && d1 == d2
+  (Card a1 s1 _ _ _) == (Card a2 s2 _ _ _) =
+    a1 == a2 && s1 == s2
 
 
 instance Show Card where
@@ -24,14 +26,16 @@ instance ToJSON Card where
       [ "name"     .= cardName card
       , "desc"     .= card_desc card
       , "imageURL" .= cardImgUrl (card_aspect card) (card_suit card)
+      , "statuses" .= card_statuses card
       ]
 
 
 data Card = Card
-  { card_aspect :: Aspect
-  , card_suit   :: Suit
-  , card_desc   :: Text
-  , card_eff    :: WhichPlayer -> Beta.Program ()
+  { card_aspect   :: Aspect
+  , card_suit     :: Suit
+  , card_desc     :: Text
+  , card_eff      :: WhichPlayer -> Beta.Program ()
+  , card_statuses :: [Status]
   }
 
 
@@ -61,7 +65,6 @@ data Aspect
   | Strange
   | OtherAspect Text
   deriving (Eq, Ord, Show)
-
 
 
 suitText :: Suit -> Text
@@ -129,3 +132,19 @@ allAspects =
   , Blight
   , Strange
   ]
+
+
+data Status = StatusEcho | StatusBlighted
+  deriving (Eq, Generic, Ord, Show)
+
+
+instance ToJSON Status where
+  toEncoding = genericToEncoding defaultOptions
+
+
+newCard :: Aspect -> Suit -> Text -> (WhichPlayer -> Beta.Program ()) -> Card
+newCard aspect suit desc eff = Card aspect suit desc eff []
+
+
+addStatus :: Status -> Card -> Card
+addStatus status card = card { card_statuses = status : card_statuses card }
