@@ -30,28 +30,15 @@ view ctx entity =
         statusView status =
             case status of
                 StatusEcho ->
-                    Texture.with textures card.imgURL <|
-                        \texture ->
-                            [ Render.Primitives.quad Render.Shaders.fragmentAlpha <|
-                                { rotation = Quaternion.makeRotate rotation
-                                , scale = makeScale <| Vector3.scale 1.001 scale
-                                , color = vec3 1 1 1
-                                , alpha = 0.3
-                                , pos = position
-                                , perspective = perspective
-                                , camera = camera3d
-                                , texture = texture
-                                }
-                            ]
+                    []
 
                 StatusBlighted ->
-                    Texture.with textures "cardBack.png" <|
+                    Texture.with textures "blighted.png" <|
                         \texture ->
-                            [ Render.Primitives.quad Render.Shaders.fragmentAlpha <|
+                            [ Render.Primitives.quad Render.Shaders.fragment <|
                                 { rotation = Quaternion.makeRotate rotation
                                 , scale = makeScale scale
-                                , color = vec3 0.9 0.9 0.98
-                                , alpha = 0.4
+                                , color = vec3 1 1 1
                                 , pos = position
                                 , perspective = perspective
                                 , camera = camera3d
