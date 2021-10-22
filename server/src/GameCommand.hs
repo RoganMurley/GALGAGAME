@@ -373,7 +373,7 @@ hoverCard (HoverHand i) which model =
           newModel = Alpha.modI model $ do
             Alpha.modHand which (deleteIndex i)
             Alpha.modStack (\s -> (Stack.windup s) { wheel_0 = Just $ StackCard which card })
-          damage = Beta.damageNumbersI newModel $ card_eff card which
+          damage = Beta.damageNumbersI newModel $ card_eff (applyStatuses card) which
       Nothing ->
         ignore
 hoverCard (HoverStack i) which model =
@@ -387,7 +387,7 @@ hoverCard (HoverStack i) which model =
           newModel = Alpha.modI model $ do
             Alpha.modStack $ times i (\s -> Stack.rotate (s { wheel_0 = Nothing }))
             Alpha.modRot ((-) i)
-          damage = Beta.damageNumbersI newModel $ card_eff card owner
+          damage = Beta.damageNumbersI newModel $ card_eff (applyStatuses card) owner
       _ ->
         ignore
 hoverCard NoHover which _ =
