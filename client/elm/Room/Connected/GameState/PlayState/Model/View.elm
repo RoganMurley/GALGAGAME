@@ -5,7 +5,7 @@ import Animation.Types exposing (Anim(..))
 import Assets.Types as Assets
 import Background.View as Background
 import Buttons.View as Buttons
-import Card.State exposing (cardTexture)
+import Card.View as Card
 import Colour
 import Ease
 import Endgame.View as Endgame
@@ -18,14 +18,12 @@ import Hand.View as Hand
 import Holding.Types exposing (Holding(..))
 import Holding.View as Holding
 import Hover exposing (Hover(..), HoverSelf)
-import Math.Matrix4 exposing (makeRotate, makeScale3)
 import Math.Vector2 exposing (Vec2, vec2)
 import Math.Vector3 exposing (Vec3, vec3)
-import Maybe.Extra as Maybe
 import Model.Wave as Wave
 import Mouse exposing (MouseState(..))
+import Quaternion
 import Render.Primitives
-import Render.Shaders
 import Render.Types as Render
 import Render.Uniforms exposing (uniColourMag)
 import Stack.Types exposing (StackCard)
@@ -51,7 +49,7 @@ view { w, h } game assets =
             , Wave.view
             , Stack.wheelBgView entities.wheel
             , Stack.view entities.stack
-            , focusImageView (vec2 0 0) focus
+            , focusImageView (vec3 0 0.15 0) focus
             , Hand.view entities.hand
             , Hand.otherView entities.otherHand
             , Hand.millView
@@ -65,8 +63,8 @@ view { w, h } game assets =
             ]
 
 
-focusImageView : Vec2 -> Maybe StackCard -> Context -> List WebGL.Entity
-focusImageView originVec focus { tick, ortho, camera2d, w, h, anim, radius, textures } =
+focusImageView : Vec3 -> Maybe StackCard -> Context -> List WebGL.Entity
+focusImageView originVec focus ({ anim, tick } as ctx) =
     case anim of
         Mill _ _ _ ->
             []
@@ -78,30 +76,23 @@ focusImageView originVec focus { tick, ortho, camera2d, w, h, anim, radius, text
             []
 
         _ ->
-            case Maybe.join <| Maybe.map (cardTexture textures << .card) focus of
-                Just texture ->
+            case focus of
+                Just { card, owner } ->
                     let
-                        color =
-                            Colour.white
-
                         shake =
-                            Animation.animShake anim PlayerA tick + Animation.animShake anim PlayerB tick
+                            0.01 * (Animation.animShake anim PlayerA tick + Animation.animShake anim PlayerB tick)
 
-                        origin =
-                            Math.Vector2.toRecord originVec
+                        entity =
+                            { rotation = Quaternion.identity
+                            , scale = vec3 0.13 0.13 0.13
+                            , position = Math.Vector3.add originVec (vec3 shake shake shake)
+                            , card = card
+                            , owner = owner
+                            }
                     in
-                    [ Render.Primitives.quad Render.Shaders.fragment
-                        { rotation = makeRotate pi (vec3 0 0 1)
-                        , scale = makeScale3 (0.2 * radius) (0.2 * radius) 1
-                        , color = color
-                        , pos = vec3 (origin.x + w * 0.5 + shake) (origin.y + h * 0.43 + shake) 0
-                        , perspective = ortho
-                        , camera = camera2d
-                        , texture = texture
-                        }
-                    ]
+                    Card.view ctx entity
 
-                Nothing ->
+                _ ->
                     []
 
 

@@ -26,7 +26,7 @@ view model ({ w, h, tick } as ctx) =
     List.concat
         [ List.concat <| List.map (Card.view ctx) model.entities
         , focusImageView
-            (vec2 0 (-h * 0.1))
+            (vec3 0 0.3 0)
             focus
             ctx
         , focusTextView (vec2 0 (-h * 0.1)) focus ctx
