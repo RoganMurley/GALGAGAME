@@ -35,6 +35,7 @@ library
                      , DSL.Beta
                      , DSL.Log
                      , DSL.Util
+                     , Ease
                      , Feedback.Apps
                      , Feedback.Schema
                      , Feedback.Views
@@ -62,6 +63,7 @@ library
                      , Start
                      , Stats.Schema
                      , Stats.Stats
+                     , StatusEff
                      , Transmutation
                      , Wheel
                      , User
