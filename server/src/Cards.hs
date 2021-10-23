@@ -362,7 +362,7 @@ alchemyCoin :: Card
 alchemyCoin =
   newCard Alchemy Coin
     "Change card in next socket\nto STRANGE GOLD"
-    $ \_ -> transmuteHead (\(StackCard o _) -> StackCard o strangeGold)
+    $ \_ -> transmuteHead (\(StackCard o (Card { card_statuses })) -> StackCard o (strangeGold { card_statuses = card_statuses }))
 
 
 strangeGold :: Card
@@ -473,13 +473,13 @@ morphCoin =
         \stackCard@(StackCard{ stackcard_owner, stackcard_card}) ->
           case card_suit stackcard_card of
             Sword ->
-              StackCard stackcard_owner morphSword
+              StackCard stackcard_owner (morphSword { card_statuses = card_statuses stackcard_card })
             Wand ->
-              StackCard stackcard_owner morphWand
+              StackCard stackcard_owner (morphWand { card_statuses = card_statuses stackcard_card })
             Grail ->
-              StackCard stackcard_owner morphGrail
+              StackCard stackcard_owner (morphGrail { card_statuses = card_statuses stackcard_card })
             Coin ->
-              StackCard stackcard_owner morphCoin
+              StackCard stackcard_owner (morphCoin { card_statuses = card_statuses stackcard_card })
             OtherSuit _ ->
               stackCard
 
@@ -519,10 +519,8 @@ abyssGrail =
 blightSword :: Card
 blightSword =
   newCard Blight Sword
-    "Hurt for 12 then\nheal them for 4"
-    $ \w -> do
-      hurt 12 (other w) Slash
-      heal 4 (other w)
+    "Hurt for 8"
+    $ \w -> hurt 8 (other w) Slash
 
 
 blightWand :: Card
@@ -541,6 +539,21 @@ blightGrail =
     $ \_ -> do
       raw $ Alpha.modStack $ fmap . fmap $ cardMap $ addStatus StatusBlighted
       Beta.null
+
+
+blightCoin :: Card
+blightCoin =
+  newCard Blight Coin
+    "Change card in next socket\nto STRANGE HERB"
+    $ \_ -> transmuteHead (\(StackCard o (Card { card_statuses })) -> StackCard o (strangeHerb { card_statuses = card_statuses }))
+
+
+strangeHerb :: Card
+strangeHerb =
+  newCard Strange (OtherSuit "HERB")
+    "Heal for 13"
+    $ \w -> do
+      heal 13 w
 
 
 -- Other
@@ -618,6 +631,7 @@ coins =
   , crownCoin
   , morphCoin
   , tideCoin
+  , blightCoin
   ]
 
 
@@ -625,6 +639,7 @@ others :: [Card]
 others =
   [ strangeSpore
   , strangeGold
+  , strangeHerb
   , strangeEnd
   ]
 

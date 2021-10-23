@@ -301,7 +301,7 @@ blightRune =
   Rune
     "BLIGHT"
     "cards/morph/coin.png"
-    (Cards.blightSword, Cards.blightWand, Cards.blightGrail, Cards.blightSword)
+    (Cards.blightSword, Cards.blightWand, Cards.blightGrail, Cards.blightCoin)
 
 
 -- Characters
