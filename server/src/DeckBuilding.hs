@@ -189,7 +189,7 @@ mainRunes =
   --, crownRune
   , morphRune
   -- , abyssRune
-  -- , blightRune
+  , blightRune
   ]
 
 allRunes :: [Rune]
@@ -300,7 +300,7 @@ blightRune :: Rune
 blightRune =
   Rune
     "BLIGHT"
-    "cards/morph/coin.png"
+    "cards/blight/coin.png"
     (Cards.blightSword, Cards.blightWand, Cards.blightGrail, Cards.blightCoin)
 
 
