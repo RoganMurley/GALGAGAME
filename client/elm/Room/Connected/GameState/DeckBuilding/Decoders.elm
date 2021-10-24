@@ -1,15 +1,13 @@
 module DeckBuilding.Decoders exposing (character)
 
 import DeckBuilding.Types exposing (Character, RuneChoice)
-import Json.Decode as Json exposing (Decoder, field, maybe, string)
+import Json.Decode as Json exposing (Decoder, field, maybe)
 import RuneSelect.Decoders
 
 
 character : Decoder Character
 character =
-    Json.map3 Character
-        (field "name" string)
-        (field "img_url" string)
+    Json.map Character
         (field "choice" <| maybe runeChoice)
 
 

@@ -7,8 +7,6 @@ import RuneSelect.Types exposing (Rune, RuneCursor)
 
 type Msg
     = Select Character
-    | NextCharacter
-    | PreviousCharacter
     | ConfirmRune RuneCursor Rune
     | EnterRuneSelect RuneCursor
     | RuneSelectMsg RuneSelect.Msg

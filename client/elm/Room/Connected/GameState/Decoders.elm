@@ -24,27 +24,19 @@ stateDecoder =
 selectingDecoder : Decoder GameState
 selectingDecoder =
     let
-        makeSelectState : Maybe Character -> List Character -> List Rune -> Result String GameState
-        makeSelectState selectedCharacter characters runes =
-            case characters of
-                character :: remaining ->
-                    Ok <|
-                        Selecting <|
-                            case selectedCharacter of
-                                Just selected ->
-                                    DeckBuilding.init True selected characters runes
+        makeSelectState : Maybe Character -> List Rune -> GameState
+        makeSelectState selectedCharacter runes =
+            Selecting <|
+                case selectedCharacter of
+                    Just selected ->
+                        DeckBuilding.init True selected runes
 
-                                Nothing ->
-                                    DeckBuilding.init False character remaining runes
-
-                _ ->
-                    Err "No characters"
+                    Nothing ->
+                        DeckBuilding.init False { choice = Nothing } runes
     in
-    collapseResults <|
-        Json.map3 makeSelectState
-            (field "character" <| maybe DeckBuilding.Decoders.character)
-            (field "all_characters" <| list DeckBuilding.Decoders.character)
-            (field "all_runes" <| list RuneSelect.Decoders.rune)
+    Json.map2 makeSelectState
+        (field "character" <| maybe DeckBuilding.Decoders.character)
+        (field "all_runes" <| list RuneSelect.Decoders.rune)
 
 
 collapseResults : Decoder (Result String a) -> Decoder a

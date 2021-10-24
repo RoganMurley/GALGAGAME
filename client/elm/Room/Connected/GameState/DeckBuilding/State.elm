@@ -19,9 +19,9 @@ import Util
 import Vfx.State as Vfx
 
 
-init : Bool -> Character -> List Character -> List Rune -> Model
-init ready character remaining runes =
-    { characters = Carousel.init character remaining
+init : Bool -> Character -> List Rune -> Model
+init ready character runes =
+    { character = character
     , runes = runes
     , runeSelect = Nothing
     , ready = ready
@@ -32,69 +32,28 @@ init ready character remaining runes =
 
 
 update : Msg -> Model -> ( Model, Cmd Main.Msg )
-update msg ({ characters, buttons } as model) =
+update msg ({ character } as model) =
     case msg of
-        Select character ->
+        Select selectCharacter ->
             let
                 cmd =
                     Util.message <|
                         Main.Send <|
                             "selectCharacter:"
-                                ++ encodeCharacter character
+                                ++ encodeCharacter selectCharacter
             in
             ( { model | ready = True }, cmd )
 
-        NextCharacter ->
-            let
-                newButtons =
-                    Buttons.update
-                        "next"
-                        (\b -> { b | hover = 0 })
-                        buttons
-            in
-            if not model.ready then
-                ( { model
-                    | characters =
-                        Carousel.forward characters
-                    , bounceTick = 0
-                    , buttons = newButtons
-                  }
-                , Cmd.none
-                )
-
-            else
-                ( model, Cmd.none )
-
-        PreviousCharacter ->
-            let
-                newButtons =
-                    Buttons.update
-                        "prev"
-                        (\b -> { b | hover = 0 })
-                        buttons
-            in
-            if not model.ready then
-                ( { model
-                    | characters = Carousel.backward characters
-                    , bounceTick = 0
-                    , buttons = newButtons
-                  }
-                , Cmd.none
-                )
-
-            else
-                ( model, Cmd.none )
-
         EnterRuneSelect cursor ->
-            case getRuneFromCursor cursor characters.selected of
+            case getRuneFromCursor cursor character of
                 Just rune ->
                     let
                         excludedRunes : List Rune
                         excludedRunes =
                             List.filterMap identity <|
                                 [ Just rune
-                                , getRuneFromCursor (nextCursor cursor) characters.selected
-                                , getRuneFromCursor (nextCursor (nextCursor cursor)) characters.selected
+                                , getRuneFromCursor (nextCursor cursor) character
+                                , getRuneFromCursor (nextCursor (nextCursor cursor)) character
                                 ]
 
                         runeSelect : RuneSelect.Model
@@ -115,16 +74,8 @@ update msg ({ characters, buttons } as model) =
                     ( model, Cmd.none )
 
         ConfirmRune cursor rune ->
-            let
-                newCharacter : Character
-                newCharacter =
-                    setRuneFromCursor cursor rune characters.selected
-            in
             ( { model
-                | characters =
-                    { characters
-                        | selected = newCharacter
-                    }
+                | character = setRuneFromCursor cursor rune character
                 , runeSelect = Nothing
               }
             , Cmd.none
@@ -160,7 +111,7 @@ tick ctx dt model =
 
 
 characterButtons : Context -> Float -> Model -> Buttons
-characterButtons { radius, w, h, mouse } dt { ready, buttons, characters } =
+characterButtons { radius, w, h, mouse } dt { ready, buttons, character } =
     let
         runeScale =
             radius * 0.3
@@ -197,7 +148,7 @@ characterButtons { radius, w, h, mouse } dt { ready, buttons, characters } =
                     , disabled = False
                     }
                 ]
-                    ++ (case characters.selected.choice of
+                    ++ (case character.choice of
                             Nothing ->
                                 []
 
@@ -330,13 +281,7 @@ mouseDown { x, y } model =
                 Just ( key, _ ) ->
                     case key of
                         "ready" ->
-                            update (Select model.characters.selected) model
-
-                        "next" ->
-                            update NextCharacter model
-
-                        "prev" ->
-                            update PreviousCharacter model
+                            update (Select model.character) model
 
                         "runeA" ->
                             update (EnterRuneSelect RuneCursorA) model

@@ -391,14 +391,11 @@ chooseComputerCommand which room gen = do
     randomChoice :: DeckBuilding.CharacterChoice
     randomChoice =
       DeckBuilding.CharacterChoice
-        (DeckBuilding.character_name (randomCharacter genA))
         (DeckBuilding.rune_name (randomRune genB))
         (DeckBuilding.rune_name (randomRune genC))
         (DeckBuilding.rune_name (randomRune genD))
     (genA, genB) = split gen
     (genC, genD) = split genA
-    randomCharacter :: Gen -> DeckBuilding.Character
-    randomCharacter g = head $ shuffle g DeckBuilding.allCharacters
     randomRune :: Gen -> DeckBuilding.Rune
     randomRune g = head $ shuffle g DeckBuilding.allRunes
 

@@ -36,20 +36,16 @@ type RuneCards = (Card, Card, Card, Card)
 
 -- Character
 data Character = Character
-  { character_name    :: Text
-  , character_img_url :: Text
-  , character_choice  :: Either (Rune, Rune, Rune) Deck
+  { character_choice  :: Either (Rune, Rune, Rune) Deck
   , character_maxLife :: Life
   }
   deriving (Eq, Show)
 
 
 instance ToJSON Character where
-  toJSON (Character name imgUrl (Left (runeA, runeB, runeC)) _) =
+  toJSON (Character (Left (runeA, runeB, runeC)) _) =
     object
-      [ "name"    .= name
-      , "img_url" .= imgUrl
-      , "choice"  .= (
+      [ "choice"  .= (
         object [
           "rune_a"  .= runeA
         , "rune_b"  .= runeB
@@ -57,11 +53,9 @@ instance ToJSON Character where
         ]
       )
       ]
-  toJSON (Character name imgUrl _ _) =
+  toJSON (Character _ _) =
     object
-      [ "name"    .= name
-      , "img_url" .= imgUrl
-      , "choice"  .= (Nothing :: Maybe (Rune, Rune, Rune))
+      [ "choice"  .= (Nothing :: Maybe (Rune, Rune, Rune))
       ]
 
 
@@ -77,7 +71,6 @@ instance ToJSON DeckBuilding where
   toJSON DeckBuilding{ deckbuilding_pa } =
     object
       [ "character"      .= deckbuilding_pa
-      , "all_characters" .= allCharacters
       , "all_runes"      .= mainRunes
       ]
 
@@ -116,8 +109,7 @@ isReady deckModel which =
 
 -- CharacterChoice
 data CharacterChoice = CharacterChoice
-  { choice_name :: Text
-  , choice_ra   :: Text
+  { choice_ra   :: Text
   , choice_rb   :: Text
   , choice_rc   :: Text
   } deriving (Eq, Show)
@@ -128,41 +120,27 @@ instance FromJSON CharacterChoice where
     withObject "CharacterChoice" $
     \o ->
       CharacterChoice
-        <$> o .: "character_name"
-        <*> o .: "rune_a"
+        <$> o .: "rune_a"
         <*> o .: "rune_b"
         <*> o .: "rune_c"
 
 
 choiceToCharacter :: CharacterChoice -> Either Text Character
-choiceToCharacter CharacterChoice{choice_name, choice_ra, choice_rb, choice_rc} =
+choiceToCharacter CharacterChoice{choice_ra, choice_rb, choice_rc} =
   let
-    baseCharacter :: Either Text Character
-    baseCharacter = getCharacter choice_name
     uniqueChoices :: Bool
     uniqueChoices = Set.size (Set.fromList [choice_ra, choice_rb, choice_rc]) == 3
-    makeCharacter :: Text -> Text -> Rune -> Rune -> Rune -> Character
-    makeCharacter name imgUrl choicePa choicePb choicePc =
-      Character name imgUrl (Left (choicePa, choicePb, choicePc)) initMaxLife
+    makeCharacter :: Rune -> Rune -> Rune -> Character
+    makeCharacter choicePa choicePb choicePc =
+      Character (Left (choicePa, choicePb, choicePc)) initMaxLife
   in
   if uniqueChoices then
     makeCharacter
-      <$> (character_name <$> baseCharacter)
-      <*> (character_img_url <$> baseCharacter)
-      <*> getRune choice_ra
+      <$> getRune choice_ra
       <*> getRune choice_rb
       <*> getRune choice_rc
   else
     Left "Rune choices were not unique"
-
-
-getCharacter :: Text -> Either Text Character
-getCharacter name =
-  case find (\Character{character_name} -> character_name == name) allCharacters of
-    Just character ->
-      Right character
-    Nothing ->
-      Left "Invalid character name"
 
 
 getRune :: Text -> Either Text Rune
@@ -302,42 +280,6 @@ blightRune =
     "BLIGHT"
     "cards/blight/coin.png"
     (Cards.blightSword, Cards.blightWand, Cards.blightGrail, Cards.blightCoin)
-
-
--- Characters
-allCharacters :: [Character]
-allCharacters = [
-    catherine
-  , marcus
-  , freja
-  ]
-
-
-catherine :: Character
-catherine =
-  Character
-    "0 / The Fool"
-    "/img/textures/confound.png"
-    (Left (blazeRune, shroomRune, mirrorRune))
-    initMaxLife
-
-
-marcus :: Character
-marcus =
-  Character
-    "I / The Magician"
-    "/img/textures/hubris.png"
-    (Left (alchemyRune, mirrorRune, morphRune))
-    initMaxLife
-
-
-freja :: Character
-freja =
-  Character
-    "II / The High Priestess"
-    "/img/textures/alchemy.png"
-    (Left (heavenRune, mirageRune, dualityRune))
-    initMaxLife
 
 
 characterCards :: Character -> Deck

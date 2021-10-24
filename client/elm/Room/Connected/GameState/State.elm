@@ -120,10 +120,10 @@ mouseUp pos state flags mode gameType assets =
 carry : GameState -> GameState -> GameState
 carry old new =
     case old of
-        Selecting { characters, runes, runeSelect, ready, bounceTick, vfx, buttons } ->
+        Selecting { character, runes, runeSelect, ready, bounceTick, vfx, buttons } ->
             case new of
                 Selecting selecting ->
-                    Selecting { selecting | characters = characters, runes = runes, runeSelect = runeSelect, ready = ready, bounceTick = bounceTick, vfx = vfx, buttons = buttons }
+                    Selecting { selecting | character = character, runes = runes, runeSelect = runeSelect, ready = ready, bounceTick = bounceTick, vfx = vfx, buttons = buttons }
 
                 Started started ->
                     Started <|
