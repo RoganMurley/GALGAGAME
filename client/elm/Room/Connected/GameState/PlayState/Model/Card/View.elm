@@ -25,26 +25,6 @@ view ctx entity =
 
         { position, rotation, scale, card, owner } =
             entity
-
-        statusView : Status -> List WebGL.Entity
-        statusView status =
-            case status of
-                StatusEcho ->
-                    []
-
-                StatusBlighted ->
-                    Texture.with textures "blighted.png" <|
-                        \texture ->
-                            [ Render.Primitives.quad Render.Shaders.fragment <|
-                                { rotation = Quaternion.makeRotate rotation
-                                , scale = makeScale scale
-                                , color = vec3 1 1 1
-                                , pos = position
-                                , perspective = perspective
-                                , camera = camera3d
-                                , texture = texture
-                                }
-                            ]
     in
     Texture.with2 textures "cardBack.png" "cardOutline.png" <|
         \backTexture outlineTexture ->
@@ -80,7 +60,35 @@ view ctx entity =
                                 }
                             ]
                    )
-                ++ (List.concat <| List.map statusView card.statuses)
+                ++ (List.concat <| List.map (statusView ctx entity) card.statuses)
+
+
+statusView : Context -> Card.Entity a -> Status -> List WebGL.Entity
+statusView ctx entity status =
+    let
+        { camera3d, perspective, textures } =
+            ctx
+
+        { position, rotation, scale } =
+            entity
+    in
+    case status of
+        StatusEcho ->
+            []
+
+        StatusBlighted ->
+            Texture.with textures "blighted.png" <|
+                \texture ->
+                    [ Render.Primitives.quad Render.Shaders.fragment <|
+                        { rotation = Quaternion.makeRotate rotation
+                        , scale = makeScale scale
+                        , color = vec3 1 1 1
+                        , pos = position
+                        , perspective = perspective
+                        , camera = camera3d
+                        , texture = texture
+                        }
+                    ]
 
 
 backView : Context -> Game.Entity3D {} -> List WebGL.Entity
@@ -153,8 +161,11 @@ dissolvingView ctx { position, rotation, scale, card, owner } =
 
 
 transmutingView : Context -> StackCard -> StackCard -> Card.Entity a -> List WebGL.Entity
-transmutingView ctx stackCard finalStackCard { position, rotation, scale } =
+transmutingView ctx stackCard finalStackCard entity =
     let
+        { position, rotation, scale } =
+            entity
+
         { perspective, camera3d, progress, textures } =
             ctx
     in
@@ -197,6 +208,7 @@ transmutingView ctx stackCard finalStackCard { position, rotation, scale } =
                 , time = progress
                 }
             ]
+                ++ (List.concat <| List.map (statusView ctx entity) stackCard.card.statuses)
 
 
 backDissolvingView : Context -> Game.Entity3D {} -> List WebGL.Entity
