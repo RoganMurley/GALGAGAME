@@ -41,6 +41,7 @@ import qualified Server
 import Server (addComputerClient, addPlayerClient, addSpecClient)
 
 import qualified DeckBuilding
+import DeckBuilding (Character(..), ChosenCharacter(..), UnchosenCharacter(..))
 
 import qualified Client
 import Client (Client(..), ClientConnection(..))
@@ -137,7 +138,7 @@ begin conn request user state = do
           gen <- liftIO getGen
           guid <- liftIO GUID.genText
           let client = Client user (PlayerConnection conn) guid
-          let scenario = makeScenario prefix
+          let scenario = makeScenario gen prefix
           roomVar <- liftIO . atomically $ Server.getOrCreateRoom roomName (prefixWaitType prefix) gen scenario state
           beginPrefix prefix state client roomVar
     Just (PlayReplayRequest replayId) -> do
@@ -177,8 +178,8 @@ prefixWaitType PrefixQueue = WaitQuickplay
 prefixWaitType _           = WaitCustom
 
 
-makeScenario :: Prefix -> Scenario
-makeScenario prefix =
+makeScenario :: Gen -> Prefix -> Scenario
+makeScenario gen prefix =
   Scenario {
     scenario_turn = turn
   , scenario_characterPa = characterPa
@@ -189,10 +190,11 @@ makeScenario prefix =
   , scenario_reward = Nothing
   }
   where
-    characterPa :: Maybe DeckBuilding.Character
-    characterPa = Nothing
-    characterPb :: Maybe DeckBuilding.Character
-    characterPb = Nothing
+    (genA, genB) = split gen
+    characterPa :: Either UnchosenCharacter ChosenCharacter
+    characterPa = Left . UnchosenCharacter $ Character (Left $ DeckBuilding.randomRunes genA) 50
+    characterPb :: Either UnchosenCharacter ChosenCharacter
+    characterPb = Left . UnchosenCharacter $ Character (Left $ DeckBuilding.randomRunes genB) 50
     turn :: Turn
     turn =
       case prefix of
@@ -277,7 +279,7 @@ beginQueue state client roomVar = do
         (disconnectComputers roomVar state)
   gen <- liftIO getGen
   guid <- liftIO GUID.genText
-  let scenario = makeScenario PrefixQueue
+  let scenario = makeScenario gen PrefixQueue
   newRoomVar <- liftIO . atomically $ Server.getOrCreateRoom guid WaitQuickplay gen scenario state
   beginQueue state client newRoomVar
 

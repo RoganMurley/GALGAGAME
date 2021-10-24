@@ -2,9 +2,9 @@ module GameState.Decoders exposing (collapseResults, selectingDecoder, stateDeco
 
 import DeckBuilding.Decoders
 import DeckBuilding.State as DeckBuilding
-import DeckBuilding.Types exposing (Character)
+import DeckBuilding.Types exposing (ChoosingCharacter(..))
 import GameState.Types exposing (GameState(..))
-import Json.Decode as Json exposing (Decoder, fail, field, list, maybe, succeed)
+import Json.Decode as Json exposing (Decoder, fail, field, list, succeed)
 import PlayState.Decoders as PlayState
 import RuneSelect.Decoders
 import RuneSelect.Types exposing (Rune)
@@ -24,18 +24,18 @@ stateDecoder =
 selectingDecoder : Decoder GameState
 selectingDecoder =
     let
-        makeSelectState : Maybe Character -> List Rune -> GameState
-        makeSelectState selectedCharacter runes =
+        makeSelectState : ChoosingCharacter -> List Rune -> GameState
+        makeSelectState choosingCharacter runes =
             Selecting <|
-                case selectedCharacter of
-                    Just selected ->
-                        DeckBuilding.init True selected runes
+                case choosingCharacter of
+                    ChosenCharacter character ->
+                        DeckBuilding.init True character runes
 
-                    Nothing ->
-                        DeckBuilding.init False { choice = Nothing } runes
+                    UnchosenCharacter character ->
+                        DeckBuilding.init False character runes
     in
     Json.map2 makeSelectState
-        (field "character" <| maybe DeckBuilding.Decoders.character)
+        (field "character" DeckBuilding.Decoders.choosingCharacter)
         (field "all_runes" <| list RuneSelect.Decoders.rune)
 
 

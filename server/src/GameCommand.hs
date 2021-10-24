@@ -10,7 +10,7 @@ import Data.Maybe (fromMaybe)
 import Data.Monoid ((<>))
 import Data.String.Conversions (cs)
 import Data.Text (Text)
-import DeckBuilding (CharacterChoice, DeckBuilding(..), choiceToCharacter, initDeckBuilding, selectCharacter)
+import DeckBuilding (CharacterChoice, ChosenCharacter(..), DeckBuilding(..), choiceToCharacter, initDeckBuilding, selectCharacter)
 import GameState (GameState(..), PlayState(..), initModel)
 import Model (Hand, Passes(..), Model, Turn)
 import Outcome (HoverState(..), Outcome)
@@ -150,7 +150,7 @@ nextSelectState deckModel turn startProgram gen (mUserPa, mUserPb) =
     result :: Maybe ([ResolveData], Model, PlayState)
     result =
       case deckModel of
-        (DeckBuilding (Just ca) (Just cb)) ->
+        (DeckBuilding (Right (ChosenCharacter ca)) (Right (ChosenCharacter cb))) ->
           let
             model = initModel turn ca cb gen :: Model
             displayUsernamePa = fromMaybe "" $ getUsername <$> mUserPa :: Text

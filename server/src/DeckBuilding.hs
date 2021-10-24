@@ -3,12 +3,13 @@ module DeckBuilding where
 import Card (Card(..))
 import Data.Aeson (FromJSON(..), ToJSON(..), (.:), (.=), object, withObject)
 import Data.List (find)
-import Data.Maybe (isJust)
+import Data.Either (isRight)
 import Data.Text (Text)
 import Life (Life, initMaxLife)
 import Mirror (Mirror(..))
 import Model (Deck)
 import Player (WhichPlayer(..))
+import Util (Gen, shuffle)
 
 import qualified Cards
 import Data.Set as Set
@@ -36,7 +37,7 @@ type RuneCards = (Card, Card, Card, Card)
 
 -- Character
 data Character = Character
-  { character_choice  :: Either (Rune, Rune, Rune) Deck
+  { character_choice :: Either (Rune, Rune, Rune) Deck
   , character_maxLife :: Life
   }
   deriving (Eq, Show)
@@ -45,41 +46,66 @@ data Character = Character
 instance ToJSON Character where
   toJSON (Character (Left (runeA, runeB, runeC)) _) =
     object
-      [ "choice"  .= (
+      [ "choice" .= (
         object [
-          "rune_a"  .= runeA
-        , "rune_b"  .= runeB
-        , "rune_c"  .= runeC
+          "rune_a" .= runeA
+        , "rune_b" .= runeB
+        , "rune_c" .= runeC
         ]
       )
       ]
   toJSON (Character _ _) =
     object
-      [ "choice"  .= (Nothing :: Maybe (Rune, Rune, Rune))
+      [ "choice" .= (Nothing :: Maybe (Rune, Rune, Rune))
       ]
+
+
+data ChosenCharacter = ChosenCharacter Character
+  deriving (Eq, Show)
+
+
+instance ToJSON ChosenCharacter where
+  toJSON (ChosenCharacter character) =
+    object ["chosen" .= character]
+
+
+data UnchosenCharacter = UnchosenCharacter Character
+  deriving (Eq, Show)
+
+
+instance ToJSON UnchosenCharacter where
+  toJSON (UnchosenCharacter character) =
+    object ["unchosen" .= character]
 
 
 -- DeckBuilding
 data DeckBuilding =
   DeckBuilding
-  { deckbuilding_pa :: Maybe Character
-  , deckbuilding_pb :: Maybe Character
+  { deckbuilding_pa :: Either UnchosenCharacter ChosenCharacter
+  , deckbuilding_pb :: Either UnchosenCharacter ChosenCharacter
   } deriving (Eq, Show)
 
 
 instance ToJSON DeckBuilding where
   toJSON DeckBuilding{ deckbuilding_pa } =
-    object
-      [ "character"      .= deckbuilding_pa
-      , "all_runes"      .= mainRunes
-      ]
+    case deckbuilding_pa of
+      Left unchosen ->
+        object
+          [ "character" .= unchosen
+          , "all_runes" .= mainRunes
+          ]
+      Right chosen ->
+        object
+          [ "character" .= chosen
+          , "all_runes" .= mainRunes
+          ]
 
 
 instance Mirror DeckBuilding where
   mirror (DeckBuilding pa pb) = DeckBuilding pb pa
 
 
-initDeckBuilding :: Maybe Character -> Maybe Character -> DeckBuilding
+initDeckBuilding :: Either UnchosenCharacter ChosenCharacter -> Either UnchosenCharacter ChosenCharacter -> DeckBuilding
 initDeckBuilding = DeckBuilding
 
 
@@ -88,13 +114,13 @@ selectCharacter deckModel which character =
   case which of
     PlayerA ->
       DeckBuilding {
-        deckbuilding_pa = Just character
+        deckbuilding_pa = Right . ChosenCharacter $ character
       , deckbuilding_pb = deckbuilding_pb deckModel
       }
     PlayerB ->
       DeckBuilding {
         deckbuilding_pa = deckbuilding_pa deckModel
-      , deckbuilding_pb = Just character
+      , deckbuilding_pb = Right . ChosenCharacter $ character
       }
 
 
@@ -102,9 +128,9 @@ isReady :: DeckBuilding -> WhichPlayer -> Bool
 isReady deckModel which =
   case which of
     PlayerA ->
-      isJust $ deckbuilding_pa deckModel
+      isRight $ deckbuilding_pa deckModel
     PlayerB ->
-      isJust $ deckbuilding_pb deckModel
+      isRight $ deckbuilding_pb deckModel
 
 
 -- CharacterChoice
@@ -290,3 +316,12 @@ characterCards Character{ character_choice } =
         [rune_cards runeA, rune_cards runeB, rune_cards runeC] >>= replicate 3
     Right deck ->
       deck
+
+
+randomRunes :: Gen -> (Rune, Rune, Rune)
+randomRunes gen =
+  case shuffle gen mainRunes of
+    runeA : runeB : runeC : _ ->
+      (runeA, runeB, runeC)
+    _ ->
+      error "not enough runes to randomise"

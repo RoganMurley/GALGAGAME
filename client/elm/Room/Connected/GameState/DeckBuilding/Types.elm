@@ -1,4 +1,4 @@
-module DeckBuilding.Types exposing (Character, Model, RuneChoice)
+module DeckBuilding.Types exposing (Character, ChoosingCharacter(..), Model, RuneChoice)
 
 import Buttons.Types exposing (Buttons)
 import Dict exposing (Dict(..))
@@ -20,6 +20,11 @@ type alias Model =
 type alias Character =
     { choice : Maybe RuneChoice
     }
+
+
+type ChoosingCharacter
+    = ChosenCharacter Character
+    | UnchosenCharacter Character
 
 
 type alias RuneChoice =

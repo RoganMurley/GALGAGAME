@@ -118,12 +118,6 @@ characterButtons { radius, w, h, mouse } dt { ready, buttons, character } =
 
         triangleSide =
             radius * 0.27
-
-        arrowScale =
-            radius * 0.1
-
-        arrowOffset =
-            0.43 * radius
     in
     if ready then
         Buttons.empty
@@ -154,32 +148,6 @@ characterButtons { radius, w, h, mouse } dt { ready, buttons, character } =
 
                             Just choice ->
                                 [ Buttons.entity
-                                    "next"
-                                    { x = 0.5 * w + arrowOffset
-                                    , y = 0.8 * h
-                                    , width = arrowScale
-                                    , height = arrowScale
-                                    , btn =
-                                        ImageButton
-                                            { img = "next.png"
-                                            , color = vec3 (244 / 255) (241 / 255) (94 / 255)
-                                            }
-                                    , disabled = False
-                                    }
-                                , Buttons.entity
-                                    "prev"
-                                    { x = 0.5 * w - arrowOffset
-                                    , y = 0.8 * h
-                                    , width = -arrowScale
-                                    , height = arrowScale
-                                    , btn =
-                                        ImageButton
-                                            { img = "next.png"
-                                            , color = vec3 (244 / 255) (241 / 255) (94 / 255)
-                                            }
-                                    , disabled = False
-                                    }
-                                , Buttons.entity
                                     "runeA"
                                     { x = 0.5 * w
                                     , y = 0.5 * h - triangleSide

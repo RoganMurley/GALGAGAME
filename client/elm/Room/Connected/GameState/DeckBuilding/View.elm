@@ -40,9 +40,30 @@ webglView { w, h } model assets =
                         waitingView model.vfx.rotation
 
                       else
-                        \_ -> []
+                        titleView model.vfx.rotation
                     , Buttons.view model.buttons
                     ]
+
+
+titleView : Float -> Context -> List WebGL.Entity
+titleView tick ctx =
+    let
+        { w, h, radius } =
+            ctx
+
+        size =
+            6 * radius
+    in
+    Font.view
+        "Futura"
+        "DECKBUILDING"
+        { x = w * 0.5 - 0.003 * size
+        , y = h * 0.2
+        , scaleX = 0.00006 * size + 0.003 * sin (tick * 0.005)
+        , scaleY = 0.00006 * size + 0.003 * sin (tick * 0.007)
+        , color = vec3 (244 / 255) (241 / 255) (94 / 255)
+        }
+        ctx
 
 
 waitingView : Float -> Context -> List WebGL.Entity
