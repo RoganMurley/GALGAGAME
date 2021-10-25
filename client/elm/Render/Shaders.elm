@@ -1,4 +1,4 @@
-module Render.Shaders exposing (circleFragment, disintegrate, fragment, fragmentAlpha, fragmentTransmute, fullCircleFragment, laser, matte, ornate, spiral, starfield, trail, tunnel, vertex)
+module Render.Shaders exposing (circleFragment, disintegrate, fragment, fragmentAlpha, fragmentGrayscale, fragmentTransmute, fullCircleFragment, laser, matte, ornate, spiral, starfield, trail, tunnel, vertex)
 
 import Math.Vector2 exposing (Vec2)
 import Math.Vector3 exposing (Vec3)
@@ -40,6 +40,26 @@ fragmentAlpha =
         void main ()
         {
             gl_FragColor = gl_FragColor = vec4(color, alpha) * texture2D(texture, vcoord);
+        }
+
+    |]
+
+
+fragmentGrayscale : Shader {} (Uniforms { texture : Texture }) { vcoord : Vec2 }
+fragmentGrayscale =
+    [glsl|
+        precision mediump float;
+
+        uniform sampler2D texture;
+        uniform vec3 color;
+
+        varying vec2 vcoord;
+
+        void main ()
+        {
+            gl_FragColor = vec4(color, 1.) * texture2D(texture, vcoord);
+            float mag = 0.299 * gl_FragColor.r + 0.587 * gl_FragColor.g + 0.114 * gl_FragColor.b;
+            gl_FragColor = vec4(mag, mag, mag, gl_FragColor.a);
         }
 
     |]

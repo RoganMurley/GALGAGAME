@@ -25,10 +25,17 @@ view ctx entity =
 
         { position, rotation, scale, card, owner } =
             entity
+
+        shader =
+            if List.any ((==) StatusNegate) card.statuses then
+                Render.Shaders.fragmentGrayscale
+
+            else
+                Render.Shaders.fragment
     in
     Texture.with2 textures "cardBack.png" "cardOutline.png" <|
         \backTexture outlineTexture ->
-            [ Render.Primitives.quad Render.Shaders.fragment <|
+            [ Render.Primitives.quad shader <|
                 { rotation = Quaternion.makeRotate rotation
                 , scale = makeScale scale
                 , color = Colour.card owner
@@ -37,7 +44,7 @@ view ctx entity =
                 , camera = camera3d
                 , texture = backTexture
                 }
-            , Render.Primitives.quad Render.Shaders.fragment <|
+            , Render.Primitives.quad shader <|
                 { rotation = Quaternion.makeRotate rotation
                 , scale = makeScale scale
                 , color = Colour.white
@@ -49,7 +56,7 @@ view ctx entity =
             ]
                 ++ (Texture.with textures card.imgURL <|
                         \texture ->
-                            [ Render.Primitives.quad Render.Shaders.fragment <|
+                            [ Render.Primitives.quad shader <|
                                 { rotation = Quaternion.makeRotate rotation
                                 , scale = makeScale <| Vector3.scale 0.6 scale
                                 , color = Colour.white
@@ -73,9 +80,6 @@ statusView ctx entity status =
             entity
     in
     case status of
-        StatusEcho ->
-            []
-
         StatusBlighted ->
             Texture.with textures "blighted.png" <|
                 \texture ->
@@ -89,6 +93,9 @@ statusView ctx entity status =
                         , texture = texture
                         }
                     ]
+
+        _ ->
+            []
 
 
 backView : Context -> Game.Entity3D {} -> List WebGL.Entity

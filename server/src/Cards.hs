@@ -246,11 +246,12 @@ bloodGrail =
 bloodCoin :: Card
 bloodCoin =
   newCard Blood Coin
-    "Pay half your life to discard\nthe next card"
+    "Pay half your life to negate\ncard in next socket"
     $ \w -> do
       l <- getLife w
       hurt (l `quot` 2) w Slash
-      discardStack (\i _ -> i == 0)
+      raw $ Alpha.modStackHead $ cardMap (addStatus StatusNegate)
+      Beta.null
 
 
 -- Mirage
