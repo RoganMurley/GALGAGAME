@@ -20,8 +20,10 @@ import Player (WhichPlayer(..))
 import ResolveData (ResolveData(..))
 import Safe (headMay)
 import StackCard (StackCard(..))
-import Transmutation
-import Wheel
+import Transmutation (Transmutation(..), headTransmuter)
+
+import Wheel (Wheel(..))
+import qualified Wheel
 
 import qualified DSL.Alpha as Alpha
 import qualified DSL.Anim as Anim
@@ -40,6 +42,7 @@ alphaI (Free (Draw w d _ n))        = Alpha.draw w d          >>  alphaI n
 alphaI (Free (AddToHand w c n))     = Alpha.addToHand w c     >>  alphaI n
 alphaI (Free (Play w c i n))        = Alpha.play w c i        >>  alphaI n
 alphaI (Free (Transmute f n))       = Alpha.transmute f       >>  alphaI n
+alphaI (Free (TransmuteHead f n))   = Alpha.transmuteHead f   >>  alphaI n
 alphaI (Free (TransmuteActive f n)) = Alpha.transmuteActive f >>  alphaI n
 alphaI (Free (Rotate n))            = Alpha.rotate            >>  alphaI n
 alphaI (Free (Windup n))            = Alpha.windup            >>  alphaI n
@@ -75,6 +78,7 @@ animI (AddToHand w c  _)    = addToHandAnim w c
 animI (Draw w d t _)        = drawAnim w d t
 animI (Play w c i _)        = playAnim w c i
 animI (Transmute f _)       = transmuteAnim f
+animI (TransmuteHead f _)   = transmuteHeadAnim f
 animI (TransmuteActive f _) = transmuteActiveAnim f
 animI (Bounce f _)          = bounceAnim f
 animI (DiscardStack f _)    = discardStackAnim f
@@ -138,6 +142,10 @@ transmuteAnim f alpha = do
   toRight . liftF $ Anim.Transmute transmutations ()
   toRight . liftF $ Anim.Null ()
   return final
+
+
+transmuteHeadAnim :: (StackCard -> StackCard) -> Alpha.Program a -> AlphaAnimProgram a
+transmuteHeadAnim f alpha = transmuteAnim (headTransmuter f) alpha
 
 
 transmuteActiveAnim :: (StackCard -> Maybe StackCard) -> Alpha.Program a -> AlphaAnimProgram a

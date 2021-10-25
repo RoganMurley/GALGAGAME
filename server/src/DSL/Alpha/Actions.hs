@@ -13,7 +13,7 @@ import Model (Deck, Hand, Passes(..), Turn, maxHandLength)
 import Safe (headMay, tailSafe)
 import Stack (Stack)
 import StackCard (StackCard(..), isOwner)
-import Transmutation (Transmutation(..))
+import Transmutation (Transmutation(..), headTransmuter)
 import Util (deleteIndex, indexedFilter)
 import Wheel (Wheel(..))
 
@@ -139,6 +139,10 @@ transmute f =
     stack <- getStack
     let transmutations = Stack.diasporaMap f stack
     setStack (combiner <$> transmutations <*> stack)
+
+
+transmuteHead :: (StackCard -> StackCard) -> Program ()
+transmuteHead f = transmute (headTransmuter f)
 
 
 transmuteActive :: (StackCard -> Maybe StackCard) -> Program ()

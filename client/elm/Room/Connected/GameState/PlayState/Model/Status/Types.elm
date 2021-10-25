@@ -5,3 +5,4 @@ type Status
     = StatusEcho
     | StatusBlighted
     | StatusNegate
+    | StatusVast

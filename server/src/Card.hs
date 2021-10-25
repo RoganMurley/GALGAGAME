@@ -134,7 +134,7 @@ allAspects =
   ]
 
 
-data Status = StatusEcho | StatusBlighted | StatusNegate
+data Status = StatusEcho | StatusBlighted | StatusNegate | StatusVast
   deriving (Eq, Generic, Ord, Show)
 
 

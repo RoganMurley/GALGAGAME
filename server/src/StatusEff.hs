@@ -4,6 +4,8 @@ import CardAnim (Hurt(..))
 import Control.Monad.Free (hoistFree)
 import Card (Card(..), Status(..))
 import DSL.Beta (DSL(..))
+import StackCard (StackCard(..))
+import Transmutation (Transmutation(..))
 
 import qualified DSL.Beta as Beta
 
@@ -22,8 +24,9 @@ applyStatuses card =
 
 statusEff :: Status -> (Beta.Program a -> Beta.Program a)
 statusEff StatusEcho     = \eff -> eff >> eff
-statusEff StatusBlighted = hoistFree  blightedRewrite
-statusEff StatusNegate   = hoistFree  negateRewrite
+statusEff StatusBlighted = hoistFree blightedRewrite
+statusEff StatusNegate   = hoistFree negateRewrite
+statusEff StatusVast     = hoistFree vastRewrite
 
 
 blightedRewrite :: Beta.DSL a -> Beta.DSL a
@@ -39,6 +42,7 @@ negateRewrite (Draw _ _ _ n)        = Null n
 negateRewrite (AddToHand _ _ n)     = Null n
 negateRewrite (Play _ _ _ n)        = Null n
 negateRewrite (Transmute _ n)       = Null n
+negateRewrite (TransmuteHead _ n)   = Null n
 negateRewrite (TransmuteActive _ n) = Null n
 negateRewrite (Rotate n)            = Null n
 negateRewrite (Windup n)            = Null n
@@ -56,3 +60,12 @@ negateRewrite (GetRot f)            = GetRot f
 negateRewrite (GetHold f)           = GetHold f
 negateRewrite (RawAnim _ n)         = Null n
 negateRewrite (Null n)              = Null n
+
+
+vastRewrite :: Beta.DSL a -> Beta.DSL a
+vastRewrite (TransmuteHead f n) = Transmute f' n
+  where
+    f' :: Int -> StackCard -> Maybe Transmutation
+    f' 0  _ = Just NoTransmutation
+    f' _ sc = Just $ Transmutation sc (f sc)
+vastRewrite dsl = dsl
