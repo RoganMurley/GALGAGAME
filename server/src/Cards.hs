@@ -538,7 +538,7 @@ feverGrail =
   newCard Fever Grail
     "Healing becomes hurting\nfor all other cards on the wheel"
     $ \_ ->
-      transmute (\_ sc -> Just $ Transmutation sc (cardMap (addStatus StatusBlighted) sc))
+      transmute (\i sc -> if i > 0 then Just (Transmutation sc (cardMap (addStatus StatusBlighted) sc)) else Nothing)
 
 
 feverCoin :: Card
