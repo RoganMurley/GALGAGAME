@@ -362,7 +362,7 @@ alchemyGrail =
 alchemyCoin :: Card
 alchemyCoin =
   newCard Alchemy Coin
-    "Change card in next socket\nto STRANGE GOLD"
+    "Change card in next socket\nto STRANGE GOLD (Draw 2)"
     $ \_ -> transmuteHead (\(StackCard o (Card { card_statuses })) -> StackCard o (strangeGold { card_statuses = card_statuses }))
 
 
@@ -516,42 +516,42 @@ abyssGrail =
       many 5 $ draw (other w) (other w) 0.4
 
 
--- Blight
-blightSword :: Card
-blightSword =
-  newCard Blight Sword
+-- Fever
+feverSword :: Card
+feverSword =
+  newCard Fever Sword
     "Hurt for 8"
     $ \w -> hurt 8 (other w) Slash
 
 
-blightWand :: Card
-blightWand =
-  newCard Blight Wand
-    "Hurt for 15,\nthen heal them for 5"
+feverWand :: Card
+feverWand =
+  newCard Fever Wand
+    "Hurt for 15 then heal\nthem for 5"
     $ \w -> do
       hurt 15 (other w) Slash
       heal 5 (other w)
 
 
-blightGrail :: Card
-blightGrail =
-  newCard Blight Grail
+feverGrail :: Card
+feverGrail =
+  newCard Fever Grail
     "Healing becomes hurting\nfor all other cards on the wheel"
     $ \_ ->
       transmute (\_ sc -> Just $ Transmutation sc (cardMap (addStatus StatusBlighted) sc))
 
 
-blightCoin :: Card
-blightCoin =
-  newCard Blight Coin
-    "Change card in next socket\nto STRANGE HERB"
+feverCoin :: Card
+feverCoin =
+  newCard Fever Coin
+    "Change card in next socket\nto STRANGE DREAM (Heal for 13)"
     $ \_ ->
-      transmuteHead (\(StackCard o (Card { card_statuses })) -> StackCard o (strangeHerb { card_statuses = card_statuses }))
+      transmuteHead (\(StackCard o (Card { card_statuses })) -> StackCard o (strangeDream { card_statuses = card_statuses }))
 
 
-strangeHerb :: Card
-strangeHerb =
-  newCard Strange (OtherSuit "HERB")
+strangeDream :: Card
+strangeDream =
+  newCard Strange (OtherSuit "DREAM")
     "Heal for 13"
     $ \w -> do
       heal 13 w
@@ -579,7 +579,7 @@ swords =
   , morphSword
   , tideSword
   , abyssSword
-  , blightSword
+  , feverSword
   ]
 
 
@@ -597,7 +597,7 @@ wands =
   , morphWand
   , tideWand
   , abyssWand
-  , blightWand
+  , feverWand
   ]
 
 
@@ -615,7 +615,7 @@ grails =
   , morphGrail
   , tideGrail
   , abyssGrail
-  , blightGrail
+  , feverGrail
   ]
 
 
@@ -632,7 +632,7 @@ coins =
   , crownCoin
   , morphCoin
   , tideCoin
-  , blightCoin
+  , feverCoin
   ]
 
 
@@ -640,7 +640,7 @@ others :: [Card]
 others =
   [ strangeSpore
   , strangeGold
-  , strangeHerb
+  , strangeDream
   , strangeEnd
   ]
 

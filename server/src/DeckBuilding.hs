@@ -185,15 +185,12 @@ mainRunes =
   , tideRune
   , heavenRune
   , shroomRune
-  -- , bloodRune
   , mirageRune
   , mirrorRune
   , dualityRune
   , alchemyRune
-  --, crownRune
   , morphRune
-  -- , abyssRune
-  , blightRune
+  , feverRune
   ]
 
 allRunes :: [Rune]
@@ -202,7 +199,6 @@ allRunes =
   [ bloodRune
   , crownRune
   , abyssRune
-  , blightRune
   ]
 
 
@@ -300,12 +296,12 @@ abyssRune =
     "cards/morph/coin.png"
     (Cards.abyssSword, Cards.abyssWand, Cards.abyssGrail, Cards.abyssSword)
 
-blightRune :: Rune
-blightRune =
+feverRune :: Rune
+feverRune =
   Rune
-    "BLIGHT"
-    "cards/blight/coin.png"
-    (Cards.blightSword, Cards.blightWand, Cards.blightGrail, Cards.blightCoin)
+    "FEVER"
+    "cards/fever/coin.png"
+    (Cards.feverSword, Cards.feverWand, Cards.feverGrail, Cards.feverCoin)
 
 
 characterCards :: Character -> Deck
