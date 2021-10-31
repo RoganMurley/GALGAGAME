@@ -393,28 +393,20 @@ crownWand =
       hurt (5 * handSize) (other w) Slash
 
 
--- crownGrail :: Card
--- crownGrail =
---   newCard Crown Grail
---     "Your opponent is forced to\nplay a random card"
---     $ \w -> do
---       gen <- getGen
---       hand <- getHand (other w)
---       let mCard = headMay . (shuffle gen) $ zip [0..] hand
---       case mCard of
---         Just (index, c) -> do
---           Beta.play (other w) c index
---           Beta.windup
---         Nothing ->
---           Beta.null
-
-
-
 crownGrail :: Card
 crownGrail =
   newCard Crown Grail
-    "When card in next socket targets a card\n instead target all cards on the\nwheel other than itself"
-    $ \_ -> transmuteHead (cardMap $ addStatus StatusVast)
+    "Your opponent is forced to\nplay a random card"
+    $ \w -> do
+      gen <- getGen
+      hand <- getHand (other w)
+      let mCard = headMay . (shuffle gen) $ zip [0..] hand
+      case mCard of
+        Just (index, c) -> do
+          Beta.play (other w) c index
+          Beta.windup
+        Nothing ->
+          Beta.null
 
 
 crownCoin :: Card

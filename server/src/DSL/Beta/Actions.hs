@@ -8,6 +8,8 @@ import Data.Map (Map)
 import DSL.Beta.DSL (DSL(..), Program)
 import Life (Life)
 import Player (WhichPlayer(..), other)
+import StackCard (StackCard(..))
+import Transmutation (Transmutation(..))
 import Util (shuffle, split)
 
 import qualified Data.Map as Map
@@ -28,6 +30,14 @@ refreshGen = do
   gen <- getGen
   let (newGen, _) = split gen
   raw $ Alpha.setGen newGen
+
+
+transmuteHead :: (StackCard -> StackCard) -> Program ()
+transmuteHead f = transmute transmuter
+  where
+    transmuter :: Int -> StackCard -> Maybe Transmutation
+    transmuter 1 sc = Just $ Transmutation sc (f sc)
+    transmuter _ _  = Nothing
 
 
 confound :: Program ()

@@ -185,12 +185,12 @@ mainRunes =
   , tideRune
   , heavenRune
   , shroomRune
-  , bloodRune
+  -- , bloodRune
   , mirageRune
   , mirrorRune
   , dualityRune
   , alchemyRune
-  , crownRune
+  --, crownRune
   , morphRune
   -- , abyssRune
   , blightRune

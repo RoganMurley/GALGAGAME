@@ -19,9 +19,6 @@ decoder =
                 "StatusNegate" ->
                     Json.succeed StatusNegate
 
-                "StatusVast" ->
-                    Json.succeed StatusVast
-
                 _ ->
                     Json.fail <| "Unknown status " ++ str
     in

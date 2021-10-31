@@ -21,11 +21,3 @@ instance ToJSON Transmutation where
 instance Mirror Transmutation where
   mirror (Transmutation ca cb) = Transmutation (mirror ca) (mirror cb)
   mirror NoTransmutation       = NoTransmutation
-
-
-headTransmuter :: (StackCard -> StackCard) -> (Int -> StackCard -> Maybe Transmutation)
-headTransmuter f = f'
-  where
-    f' :: Int -> StackCard -> Maybe Transmutation
-    f' 1 sc = Just $ Transmutation sc (f sc)
-    f' _ _  = Nothing

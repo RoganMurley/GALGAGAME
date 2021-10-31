@@ -22,7 +22,6 @@ data DSL n
   | AddToHand WhichPlayer Card n
   | Play WhichPlayer Card Int n
   | Transmute (Int -> StackCard -> Maybe Transmutation) n
-  | TransmuteHead (StackCard -> StackCard) n
   | TransmuteActive (StackCard -> Maybe StackCard) n
   | Rotate n
   | Windup n
