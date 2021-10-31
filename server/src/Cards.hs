@@ -537,16 +537,16 @@ blightGrail :: Card
 blightGrail =
   newCard Blight Grail
     "Healing becomes hurting\nfor all other cards on the wheel"
-    $ \_ -> do
-      raw $ Alpha.modStack $ fmap . fmap $ cardMap $ addStatus StatusBlighted
-      Beta.null
+    $ \_ ->
+      transmute (\_ sc -> Just $ Transmutation sc (cardMap (addStatus StatusBlighted) sc))
 
 
 blightCoin :: Card
 blightCoin =
   newCard Blight Coin
     "Change card in next socket\nto STRANGE HERB"
-    $ \_ -> transmuteHead (\(StackCard o (Card { card_statuses })) -> StackCard o (strangeHerb { card_statuses = card_statuses }))
+    $ \_ ->
+      transmuteHead (\(StackCard o (Card { card_statuses })) -> StackCard o (strangeHerb { card_statuses = card_statuses }))
 
 
 strangeHerb :: Card
