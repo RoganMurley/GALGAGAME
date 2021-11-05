@@ -69,7 +69,7 @@ update msg ({ assets, room, notifications, settings, flags } as model) =
         Frame rawDt ->
             let
                 dt =
-                    min 30 rawDt
+                    settings.gameSpeed * min 30 rawDt
 
                 newFlags =
                     { flags | time = flags.time + dt }

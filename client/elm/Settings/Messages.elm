@@ -5,3 +5,4 @@ type Msg
     = ToggleSettings
     | CloseSettings
     | OpenSettings
+    | SetGameSpeed Float

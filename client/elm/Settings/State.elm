@@ -10,6 +10,7 @@ init volume =
     , masterVolume = volume
     , musicVolume = volume
     , sfxVolume = volume
+    , gameSpeed = 1
     }
 
 
@@ -29,6 +30,9 @@ update msg m =
 
         CloseSettings ->
             closeModal m
+
+        SetGameSpeed gameSpeed ->
+            { m | gameSpeed = gameSpeed }
 
 
 openModal : Model -> Model

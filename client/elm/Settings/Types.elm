@@ -6,6 +6,7 @@ type alias Model =
     , masterVolume : Int
     , musicVolume : Int
     , sfxVolume : Int
+    , gameSpeed : Float
     }
 
 
