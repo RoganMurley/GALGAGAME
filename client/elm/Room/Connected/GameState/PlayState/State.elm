@@ -204,62 +204,75 @@ updateTurnOnly msg state { audio } =
 
                     PlayCard card index pos ->
                         let
-                            -- Construct the ResolveData clientside to avoid latency.
-                            newState : PlayState
-                            newState =
-                                resolveOutcome
-                                    (Just state)
-                                    { initial = initial, resDiffList = resDiffList, finalState = finalState }
-                                    |> map (\g -> { g | holding = NoHolding })
-
-                            initial : Model
-                            initial =
-                                game.res.final
-
-                            { stack } =
-                                initial
-
-                            playDiffStack =
-                                { stack | wheel0 = Just { owner = PlayerA, card = card } }
-
-                            playDiff : Diff
-                            playDiff =
-                                { initDiff
-                                    | turn = Just PlayerB
-                                    , stack = Just playDiffStack
-                                    , hand = Just <| List.removeAt index initial.hand
-                                }
-
-                            windupDiff : Diff
-                            windupDiff =
-                                { initDiff
-                                    | rot = Just <| initial.rot + 1
-                                    , stack = Just <| Wheel.fwrd playDiffStack
-                                }
-
-                            resDiffList : List Resolvable.ResolveDiffData
-                            resDiffList =
-                                [ { diff = playDiff
-                                  , anim = Play PlayerA card index (Just pos)
-                                  , animDamage = ( 0, 0 )
-                                  }
-                                , { diff = windupDiff
-                                  , anim = Windup PlayerA
-                                  , animDamage = ( 0, 0 )
-                                  }
-                                ]
-
-                            final : Model
-                            final =
-                                List.foldl Model.Diff.merge initial [ playDiff, windupDiff ]
-
-                            finalState : PlayState
-                            finalState =
-                                Playing { game = Game.gameInit final }
+                            isCardInHandAfterResolution : Bool
+                            isCardInHandAfterResolution =
+                                Just card == List.getAt index game.res.final.hand
                         in
-                        ( newState
-                        , websocketSend <| "play:" ++ String.fromInt index
-                        )
+                        if isCardInHandAfterResolution then
+                            let
+                                -- Construct the ResolveData clientside to avoid latency.
+                                newState : PlayState
+                                newState =
+                                    resolveOutcome
+                                        (Just state)
+                                        { initial = initial, resDiffList = resDiffList, finalState = finalState }
+                                        |> map (\g -> { g | holding = NoHolding })
+
+                                initial : Model
+                                initial =
+                                    game.res.final
+
+                                { stack } =
+                                    initial
+
+                                playDiffStack =
+                                    { stack | wheel0 = Just { owner = PlayerA, card = card } }
+
+                                playDiff : Diff
+                                playDiff =
+                                    { initDiff
+                                        | turn = Just PlayerB
+                                        , stack = Just playDiffStack
+                                        , hand = Just <| List.removeAt index initial.hand
+                                    }
+
+                                windupDiff : Diff
+                                windupDiff =
+                                    { initDiff
+                                        | rot = Just <| initial.rot + 1
+                                        , stack = Just <| Wheel.fwrd playDiffStack
+                                    }
+
+                                resDiffList : List Resolvable.ResolveDiffData
+                                resDiffList =
+                                    [ { diff = playDiff
+                                      , anim = Play PlayerA card index (Just pos)
+                                      , animDamage = ( 0, 0 )
+                                      }
+                                    , { diff = windupDiff
+                                      , anim = Windup PlayerA
+                                      , animDamage = ( 0, 0 )
+                                      }
+                                    ]
+
+                                final : Model
+                                final =
+                                    List.foldl Model.Diff.merge initial [ playDiff, windupDiff ]
+
+                                finalState : PlayState
+                                finalState =
+                                    Playing { game = Game.gameInit final }
+                            in
+                            ( newState
+                            , websocketSend <| "play:" ++ String.fromInt index
+                            )
+
+                        else
+                            let
+                                newGame =
+                                    { game | holding = NoHolding }
+                            in
+                            ( Playing { game = newGame }, Cmd.none )
 
                     HoldCard card index ray ->
                         let
