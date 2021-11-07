@@ -60,63 +60,53 @@ focusView rune focus ({ w, h, textures } as ctx) =
 
         _ ->
             let
-                z =
-                    4 + 3 * (h / w)
+                { a, b, c, d } =
+                    rune.cards
+
+                eachView imgURL { rot, x, y, scale } =
+                    Texture.with textures imgURL <|
+                        \texture ->
+                            [ Render.Primitives.quad Render.Shaders.fragment <|
+                                { rotation = Quaternion.makeRotate <| Quaternion.zRotation rot
+                                , scale = makeScale3 scale scale 1
+                                , color = Colour.white
+                                , pos = vec3 x y (4 + 3 * (h / w))
+                                , perspective = ctx.perspective
+                                , camera = ctx.camera3d
+                                , texture = texture
+                                }
+                            ]
             in
             List.concat
                 [ -- SWORD
-                  Texture.with textures rune.cards.a.imgURL <|
-                    \texture ->
-                        [ Render.Primitives.quad Render.Shaders.fragment <|
-                            { rotation = Quaternion.makeRotate <| Quaternion.zRotation (-0.25 * pi)
-                            , scale = makeScale3 1 1 1
-                            , color = Colour.white
-                            , pos = vec3 1.5 0.7 z
-                            , perspective = ctx.perspective
-                            , camera = ctx.camera3d
-                            , texture = texture
-                            }
-                        ]
+                  eachView a.imgURL
+                    { rot = -0.25 * pi
+                    , scale = 1
+                    , x = 1.5
+                    , y = 0.7
+                    }
 
                 -- WAND
-                , Texture.with textures rune.cards.b.imgURL <|
-                    \texture ->
-                        [ Render.Primitives.quad Render.Shaders.fragment <|
-                            { rotation = Quaternion.makeRotate <| Quaternion.zRotation 0
-                            , scale = makeScale3 1 1 1
-                            , color = Colour.white
-                            , pos = vec3 -1.5 0.7 z
-                            , perspective = ctx.perspective
-                            , camera = ctx.camera3d
-                            , texture = texture
-                            }
-                        ]
+                , eachView b.imgURL
+                    { rot = 0
+                    , scale = 1
+                    , x = -1.5
+                    , y = 0.7
+                    }
 
                 -- CUP
-                , Texture.with textures rune.cards.c.imgURL <|
-                    \texture ->
-                        [ Render.Primitives.quad Render.Shaders.fragment <|
-                            { rotation = Quaternion.makeRotate <| Quaternion.zRotation 0
-                            , scale = makeScale3 0.7 0.7 1
-                            , color = Colour.white
-                            , pos = vec3 0 0 z
-                            , perspective = ctx.perspective
-                            , camera = ctx.camera3d
-                            , texture = texture
-                            }
-                        ]
+                , eachView c.imgURL
+                    { rot = 0
+                    , scale = 0.7
+                    , x = 0
+                    , y = 0
+                    }
 
                 -- COIN
-                , Texture.with textures rune.cards.d.imgURL <|
-                    \texture ->
-                        [ Render.Primitives.quad Render.Shaders.fragment <|
-                            { rotation = Quaternion.makeRotate <| Quaternion.zRotation 0
-                            , scale = makeScale3 0.8 0.8 1
-                            , color = Colour.white
-                            , pos = vec3 0 1.4 z
-                            , perspective = ctx.perspective
-                            , camera = ctx.camera3d
-                            , texture = texture
-                            }
-                        ]
+                , eachView d.imgURL
+                    { rot = 0
+                    , scale = 0.8
+                    , x = 0
+                    , y = 1.4
+                    }
                 ]
