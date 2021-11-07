@@ -47,7 +47,7 @@ view model ({ w, h, tick } as ctx) =
 
 
 focusView : Rune -> Maybe StackCard -> Context -> List WebGL.Entity
-focusView rune focus ({ h, textures } as ctx) =
+focusView rune focus ({ w, h, textures } as ctx) =
     case focus of
         Just focusCard ->
             List.concat
@@ -59,6 +59,10 @@ focusView rune focus ({ h, textures } as ctx) =
                 ]
 
         _ ->
+            let
+                z =
+                    4 + 3 * (h / w)
+            in
             List.concat
                 [ -- SWORD
                   Texture.with textures rune.cards.a.imgURL <|
@@ -67,7 +71,7 @@ focusView rune focus ({ h, textures } as ctx) =
                             { rotation = Quaternion.makeRotate <| Quaternion.zRotation (-0.25 * pi)
                             , scale = makeScale3 1 1 1
                             , color = Colour.white
-                            , pos = vec3 1.5 0.7 6
+                            , pos = vec3 1.5 0.7 z
                             , perspective = ctx.perspective
                             , camera = ctx.camera3d
                             , texture = texture
@@ -81,7 +85,7 @@ focusView rune focus ({ h, textures } as ctx) =
                             { rotation = Quaternion.makeRotate <| Quaternion.zRotation 0
                             , scale = makeScale3 1 1 1
                             , color = Colour.white
-                            , pos = vec3 -1.5 0.7 6
+                            , pos = vec3 -1.5 0.7 z
                             , perspective = ctx.perspective
                             , camera = ctx.camera3d
                             , texture = texture
@@ -95,7 +99,7 @@ focusView rune focus ({ h, textures } as ctx) =
                             { rotation = Quaternion.makeRotate <| Quaternion.zRotation 0
                             , scale = makeScale3 0.7 0.7 1
                             , color = Colour.white
-                            , pos = vec3 0 0 6
+                            , pos = vec3 0 0 z
                             , perspective = ctx.perspective
                             , camera = ctx.camera3d
                             , texture = texture
@@ -109,7 +113,7 @@ focusView rune focus ({ h, textures } as ctx) =
                             { rotation = Quaternion.makeRotate <| Quaternion.zRotation 0
                             , scale = makeScale3 0.8 0.8 1
                             , color = Colour.white
-                            , pos = vec3 0 1.4 6
+                            , pos = vec3 0 1.4 z
                             , perspective = ctx.perspective
                             , camera = ctx.camera3d
                             , texture = texture
