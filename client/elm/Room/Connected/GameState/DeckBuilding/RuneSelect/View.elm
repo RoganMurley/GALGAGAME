@@ -1,13 +1,20 @@
 module RuneSelect.View exposing (view)
 
 import Card.View as Card
+import Colour
 import Font.View as Font
 import Game.Types exposing (Context)
+import Math.Matrix4 exposing (makeRotate, makeScale3)
 import Math.Vector2 exposing (vec2)
 import Math.Vector3 exposing (vec3)
 import Model.View exposing (focusImageView, focusTextView)
+import Quaternion
+import Render.Primitives
+import Render.Shaders
 import RuneSelect.Messages exposing (Msg(..))
-import RuneSelect.Types exposing (Model, RuneCursor(..))
+import RuneSelect.Types exposing (Model, Rune, RuneCursor(..))
+import Stack.Types exposing (StackCard)
+import Texture.State as Texture
 import WebGL
 import WhichPlayer.Types exposing (WhichPlayer(..))
 
@@ -25,11 +32,7 @@ view model ({ w, h, tick } as ctx) =
     in
     List.concat
         [ List.concat <| List.map (Card.view ctx) model.entities
-        , focusImageView
-            (vec3 0 0.3 0)
-            focus
-            ctx
-        , focusTextView (vec2 0 (-h * 0.1)) focus ctx
+        , focusView model.carousel.selected focus ctx
         , Font.view
             "Futura"
             model.carousel.selected.name
@@ -41,3 +44,75 @@ view model ({ w, h, tick } as ctx) =
             }
             ctx
         ]
+
+
+focusView : Rune -> Maybe StackCard -> Context -> List WebGL.Entity
+focusView rune focus ({ h, textures } as ctx) =
+    case focus of
+        Just focusCard ->
+            List.concat
+                [ focusImageView
+                    (vec3 0 0.3 0)
+                    (Just focusCard)
+                    ctx
+                , focusTextView (vec2 0 (-h * 0.1)) (Just focusCard) ctx
+                ]
+
+        _ ->
+            List.concat
+                [ -- SWORD
+                  Texture.with textures rune.cards.a.imgURL <|
+                    \texture ->
+                        [ Render.Primitives.quad Render.Shaders.fragment <|
+                            { rotation = Quaternion.makeRotate <| Quaternion.zRotation (-0.25 * pi)
+                            , scale = makeScale3 1 1 1
+                            , color = Colour.white
+                            , pos = vec3 1.5 0.7 6
+                            , perspective = ctx.perspective
+                            , camera = ctx.camera3d
+                            , texture = texture
+                            }
+                        ]
+
+                -- WAND
+                , Texture.with textures rune.cards.b.imgURL <|
+                    \texture ->
+                        [ Render.Primitives.quad Render.Shaders.fragment <|
+                            { rotation = Quaternion.makeRotate <| Quaternion.zRotation 0
+                            , scale = makeScale3 1 1 1
+                            , color = Colour.white
+                            , pos = vec3 -1.5 0.7 6
+                            , perspective = ctx.perspective
+                            , camera = ctx.camera3d
+                            , texture = texture
+                            }
+                        ]
+
+                -- CUP
+                , Texture.with textures rune.cards.c.imgURL <|
+                    \texture ->
+                        [ Render.Primitives.quad Render.Shaders.fragment <|
+                            { rotation = Quaternion.makeRotate <| Quaternion.zRotation 0
+                            , scale = makeScale3 0.7 0.7 1
+                            , color = Colour.white
+                            , pos = vec3 0 0 6
+                            , perspective = ctx.perspective
+                            , camera = ctx.camera3d
+                            , texture = texture
+                            }
+                        ]
+
+                -- COIN
+                , Texture.with textures rune.cards.d.imgURL <|
+                    \texture ->
+                        [ Render.Primitives.quad Render.Shaders.fragment <|
+                            { rotation = Quaternion.makeRotate <| Quaternion.zRotation 0
+                            , scale = makeScale3 0.8 0.8 1
+                            , color = Colour.white
+                            , pos = vec3 0 1.4 6
+                            , perspective = ctx.perspective
+                            , camera = ctx.camera3d
+                            , texture = texture
+                            }
+                        ]
+                ]
