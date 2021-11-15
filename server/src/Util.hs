@@ -1,5 +1,6 @@
 module Util where
 
+import Control.DeepSeq (NFData(..))
 import Control.Monad (replicateM_)
 import Control.Concurrent.STM (STM)
 import Control.Concurrent.STM.TVar (TVar, readTVar, writeTVar)
@@ -50,6 +51,10 @@ fromRight _ = error "Unsafe fromRight unwrapping failure"
 -- Special newtype-wrapped StdGen to ease equality checks.
 newtype Gen = Gen R.StdGen
   deriving Show
+
+
+instance NFData Gen where
+  rnf _ = ()
 
 
 instance Eq Gen where

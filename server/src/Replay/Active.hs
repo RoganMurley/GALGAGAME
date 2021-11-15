@@ -1,6 +1,9 @@
+{-# LANGUAGE DeriveGeneric, DeriveAnyClass #-}
 module Replay.Active where
 
+import Control.DeepSeq (NFData(..))
 import Data.Text (Text)
+import GHC.Generics (Generic)
 import Life (initMaxLife)
 import Mirror (Mirror(..))
 import Model (Model(Model), Passes(NoPass), PlayerModel(PlayerModel))
@@ -16,7 +19,7 @@ data Replay = Replay
   , replay_res   :: [ResolveData]
   , replay_pa    :: Usernames
   , replay_pb    :: Usernames
-  } deriving (Show, Eq)
+  } deriving (Eq, Generic, NFData, Show)
 
 
 type Usernames = (DisplayUsername, QueryUsername)

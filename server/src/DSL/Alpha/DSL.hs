@@ -4,7 +4,7 @@ import Control.Monad.Free (Free)
 import Player (WhichPlayer)
 import Util (Gen)
 import Life (Life)
-import Model (Deck, Hand, Passes, Turn)
+import Model (Deck, Hand, Model, Passes, Turn)
 import Stack (Stack)
 
 
@@ -19,6 +19,7 @@ data DSL n =
   | GetTurn (Turn -> n)
   | GetRot (Int -> n)
   | GetHold (Bool -> n)
+  | GetModel (Model -> n)
   | SetGen Gen n
   | SetDeck WhichPlayer Deck n
   | SetHand WhichPlayer Hand n

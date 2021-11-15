@@ -1,10 +1,13 @@
+{-# LANGUAGE DeriveGeneric, DeriveAnyClass #-}
 module CardAnim where
 
 import Bounce (CardBounce)
 import Card (Card(..))
+import Control.DeepSeq (NFData(..))
 import Data.Aeson (ToJSON(..), (.=), object)
 import Data.Text (Text)
 import Discard (CardDiscard)
+import GHC.Generics (Generic)
 import Life (Life)
 import Mirror (Mirror(..))
 import Player (WhichPlayer(..), other)
@@ -27,7 +30,7 @@ data CardAnim
   | DiscardHand WhichPlayer [CardDiscard]
   | MoveStack (Wheel (Maybe Int)) Int
   | Pass WhichPlayer
-  deriving (Show, Eq)
+  deriving (Show, Eq, Generic, NFData)
 
 
 instance ToJSON CardAnim where
@@ -139,7 +142,7 @@ data Hurt
   = Slash
   | Bite
   | Curse
-  deriving (Show, Eq)
+  deriving (Eq, Generic, NFData, Show)
 
 instance ToJSON Hurt where
   toJSON Slash = "slash"

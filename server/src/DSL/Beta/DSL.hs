@@ -4,7 +4,7 @@ import Card (Card)
 import CardAnim (CardAnim, Hurt)
 import Control.Monad.Free (Free(..))
 import Life (Life)
-import Model (Deck, Hand)
+import Model (Deck, Hand, Model)
 import Player (WhichPlayer(..))
 import Stack (Stack)
 import StackCard (StackCard)
@@ -37,6 +37,7 @@ data DSL n
   | GetStack (Stack -> n)
   | GetRot (Int -> n)
   | GetHold (Bool -> n)
+  | GetModel (Model -> n)
   | RawAnim CardAnim n
   | Null n
   deriving (Functor)

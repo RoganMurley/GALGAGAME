@@ -21,7 +21,7 @@ import Network.Wai.Handler.Warp (run)
 import System.Environment (lookupEnv)
 
 import Act (actOutcome, actPlay, actSpec, syncPlayersRoom, syncClient)
-import ArtificalIntelligence (Action(..), chooseAction)
+import ArtificialIntelligence (Action(..), chooseAction)
 import Config (App, ConnectInfoConfig(..), runApp)
 import Database (postgresConnectInfo, redisConnectInfo)
 import GameState (GameState(..), PlayState(..), WaitType(..), isWinner)

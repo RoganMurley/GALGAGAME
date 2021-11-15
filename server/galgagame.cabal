@@ -16,7 +16,7 @@ cabal-version:       >=1.10
 library
   hs-source-dirs:      src
   exposed-modules:     Act
-                     , ArtificalIntelligence
+                     , ArtificialIntelligence
                      , Auth.Apps
                      , Auth.Views
                      , Auth.Schema
@@ -85,6 +85,7 @@ library
                      , bytestring
                      , containers
                      , cookie
+                     , deepseq
                      , free
                      , guid
                      , hedis

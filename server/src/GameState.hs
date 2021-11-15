@@ -1,7 +1,9 @@
+{-# LANGUAGE DeriveGeneric, DeriveAnyClass #-}
 module GameState where
 
+import Control.DeepSeq (NFData(..))
 import Data.Aeson (ToJSON(..), (.=), object)
-
+import GHC.Generics (Generic)
 import DeckBuilding (Character(..), DeckBuilding, characterCards)
 import Mirror (Mirror(..))
 import Model (Deck, PlayerModel(..), Model(..), Passes(..), Turn)
@@ -46,7 +48,7 @@ getStateGen (Started (Ended _ _ _ gen)) = gen
 data PlayState =
     Playing Model Active.Replay
   | Ended (Maybe WhichPlayer) Model Active.Replay Gen
-  deriving (Eq, Show)
+  deriving (Eq, Generic, NFData, Show)
 
 
 instance ToJSON PlayState where

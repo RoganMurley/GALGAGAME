@@ -1,4 +1,4 @@
-module ArtificalIntelligence where
+module ArtificialIntelligence where
 
 import Control.Monad.Trans.Writer (runWriter)
 import Data.List (maximumBy)

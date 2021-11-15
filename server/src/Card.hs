@@ -1,6 +1,7 @@
-{-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE DeriveGeneric, DeriveAnyClass #-}
 module Card where
 
+import Control.DeepSeq (NFData(..))
 import Data.Aeson (ToJSON(..), (.=), defaultOptions, genericToEncoding, object)
 import Data.Monoid ((<>))
 import Data.String.Conversions (cs)
@@ -36,7 +37,7 @@ data Card = Card
   , card_desc     :: Text
   , card_eff      :: WhichPlayer -> Beta.Program ()
   , card_statuses :: [Status]
-  }
+  } deriving (Generic, NFData)
 
 
 data Suit
@@ -45,7 +46,7 @@ data Suit
   | Grail
   | Coin
   | OtherSuit Text
-  deriving (Eq, Ord, Show)
+  deriving (Eq, Generic, NFData, Ord, Show)
 
 
 data Aspect
@@ -62,9 +63,10 @@ data Aspect
   | Morph
   | Abyss
   | Fever
+  | Possibility
   | Strange
   | OtherAspect Text
-  deriving (Eq, Ord, Show)
+  deriving (Eq, Generic, NFData, Ord, Show)
 
 
 suitText :: Suit -> Text
@@ -135,7 +137,7 @@ allAspects =
 
 
 data Status = StatusEcho | StatusBlighted | StatusNegate
-  deriving (Eq, Generic, Ord, Show)
+  deriving (Eq, Generic, NFData, Ord, Show)
 
 
 instance ToJSON Status where

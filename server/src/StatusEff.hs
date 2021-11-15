@@ -54,5 +54,6 @@ negateRewrite (GetGen f)            = GetGen f
 negateRewrite (GetStack f)          = GetStack f
 negateRewrite (GetRot f)            = GetRot f
 negateRewrite (GetHold f)           = GetHold f
+negateRewrite (GetModel f)          = GetModel f
 negateRewrite (RawAnim _ n)         = Null n
 negateRewrite (Null n)              = Null n

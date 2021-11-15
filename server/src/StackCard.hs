@@ -1,7 +1,10 @@
+{-# LANGUAGE DeriveGeneric, DeriveAnyClass #-}
 module StackCard where
 
 import Card (Card(..))
+import Control.DeepSeq (NFData(..))
 import Data.Aeson (ToJSON(..), (.=), object)
+import GHC.Generics (Generic)
 import Mirror (Mirror(..))
 import Player (WhichPlayer(..), other)
 
@@ -10,7 +13,7 @@ data StackCard = StackCard
   { stackcard_owner :: WhichPlayer
   , stackcard_card  :: Card
   }
-  deriving (Eq, Show)
+  deriving (Eq, Generic, NFData, Show)
 
 
 instance ToJSON StackCard where

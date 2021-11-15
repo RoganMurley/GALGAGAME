@@ -1,11 +1,14 @@
+{-# LANGUAGE DeriveGeneric, DeriveAnyClass #-}
 module ModelDiff where
 
 import Control.Applicative ((<|>))
+import Control.DeepSeq (NFData(..))
 import Data.Aeson (ToJSON(..), (.=), object)
 import Data.Aeson.Types (Pair, Value(Null))
 import Data.Maybe (fromMaybe)
 import Data.Monoid (Monoid)
 import Data.Semigroup ((<>), Semigroup)
+import GHC.Generics (Generic)
 import Life (Life)
 import Mirror (Mirror(..))
 import Model (Hand, Deck, Model(..), Passes, PlayerModel(..), Turn)
@@ -25,7 +28,7 @@ data ModelDiff = ModelDiff
   , modeldiff_rot     :: Maybe Int
   , modeldiff_hold    :: Maybe Bool
   }
-  deriving (Eq, Show)
+  deriving (Eq, Generic, NFData, Show)
 
 
 data PlayerModelDiff = PlayerModelDiff
@@ -34,7 +37,7 @@ data PlayerModelDiff = PlayerModelDiff
   , pmodeldiff_life :: Maybe Life
   , pmodeldiff_maxLife :: Maybe Life
   }
-  deriving (Eq, Show)
+  deriving (Eq, Generic, NFData, Show)
 
 
 omitNull :: [Pair] -> [Pair]

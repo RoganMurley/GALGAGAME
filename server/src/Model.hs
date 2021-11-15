@@ -1,7 +1,10 @@
+{-# LANGUAGE DeriveGeneric, DeriveAnyClass #-}
 module Model where
 
 import Card (Card(..))
+import Control.DeepSeq (NFData(..))
 import Data.Aeson (ToJSON(..), (.=), object)
+import GHC.Generics (Generic)
 import Life (Life)
 import Mirror (Mirror(..))
 import Player (WhichPlayer(..), other)
@@ -19,7 +22,7 @@ data Model = Model
   , model_rot     :: Int
   , model_hold    :: Bool
   }
-  deriving (Eq, Show)
+  deriving (Eq, Generic, NFData, Show)
 
 
 data PlayerModel = PlayerModel
@@ -28,7 +31,7 @@ data PlayerModel = PlayerModel
   , pmodel_life    :: Life
   , pmodel_maxLife :: Life
   }
-  deriving (Eq, Show)
+  deriving (Eq, Generic, NFData, Show)
 
 
 type Hand = [Card]
@@ -41,7 +44,7 @@ type Turn = WhichPlayer
 
 
 data Passes = NoPass | OnePass
-  deriving (Eq, Show)
+  deriving (Eq, Generic, NFData, Show)
 
 
 instance ToJSON Model where

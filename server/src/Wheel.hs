@@ -1,7 +1,10 @@
+{-# LANGUAGE DeriveGeneric, DeriveAnyClass #-}
 module Wheel where
 
+import Control.DeepSeq (NFData(..))
 import Data.Aeson (ToJSON(..), (.=), object)
 import Data.Semigroup ((<>), Semigroup)
+import GHC.Generics (Generic)
 import Mirror (Mirror(..))
 
 
@@ -20,7 +23,7 @@ data Wheel a = Wheel
   , wheel_10 :: a
   , wheel_11 :: a
   }
-  deriving (Eq, Show)
+  deriving (Eq, Generic, NFData, Show)
 
 
 instance Functor Wheel where

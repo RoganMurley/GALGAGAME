@@ -55,6 +55,7 @@ alphaI (Free (GetHand w f))         = Alpha.getHand w         >>= alphaI . f
 alphaI (Free (GetDeck w f))         = Alpha.getDeck w         >>= alphaI . f
 alphaI (Free (GetStack f))          = Alpha.getStack          >>= alphaI . f
 alphaI (Free (GetHold f))           = Alpha.getHold           >>= alphaI . f
+alphaI (Free (GetModel f))          = Alpha.getModel          >>= alphaI . f
 alphaI (Free (RawAnim _ n))         = alphaI n
 alphaI (Free (Null n))              = alphaI n
 alphaI (Pure x)                     = Pure x

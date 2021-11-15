@@ -191,6 +191,7 @@ mainRunes =
   , alchemyRune
   , morphRune
   , feverRune
+  , possibilityRune
   ]
 
 allRunes :: [Rune]
@@ -302,6 +303,13 @@ feverRune =
     "FEVER"
     "cards/fever/coin.png"
     (Cards.feverSword, Cards.feverWand, Cards.feverGrail, Cards.feverCoin)
+
+possibilityRune :: Rune
+possibilityRune =
+  Rune
+    "POSSIBILITY"
+    "cards/possibility/coin.png"
+    (Cards.possibilitySword, Cards.possibilityWand, Cards.possibilityGrail, Cards.possibilityCoin)
 
 
 characterCards :: Character -> Deck

@@ -1,12 +1,15 @@
+{-# LANGUAGE DeriveGeneric, DeriveAnyClass #-}
 module Transmutation where
 
+import Control.DeepSeq (NFData(..))
 import Data.Aeson (ToJSON(..), Value(Null), (.=), object)
+import GHC.Generics (Generic)
 import Mirror (Mirror(..))
 import StackCard (StackCard)
 
 
 data Transmutation = Transmutation StackCard StackCard | NoTransmutation
-  deriving (Show, Eq)
+  deriving (Eq, Generic, NFData, Show)
 
 
 instance ToJSON Transmutation where
