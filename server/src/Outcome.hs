@@ -76,5 +76,6 @@ instance FromJSON HoverState where
 
 
 damageToHoverDamage :: Damage -> HoverDamage
-damageToHoverDamage (DamageCertain a) = HoverDamage a
+damageToHoverDamage (DamageCertain a)   = HoverDamage a
+damageToHoverDamage (DamageUncertain 0) = HoverDamage 0
 damageToHoverDamage (DamageUncertain _) = HoverDamageUncertain
