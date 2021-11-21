@@ -28,6 +28,7 @@ data DSL a
   | DiscardHand WhichPlayer [CardDiscard] a
   | MoveStack (Wheel (Maybe Int)) Int a
   | Pass WhichPlayer a
+  | GetGen a
   deriving (Functor)
 
 type Program a = Free DSL a

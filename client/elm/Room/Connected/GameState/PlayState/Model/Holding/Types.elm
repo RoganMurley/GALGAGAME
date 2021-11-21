@@ -1,8 +1,8 @@
 module Holding.Types exposing (Holding(..))
 
 import Card.Types exposing (Card)
+import Hover exposing (HoverDamage)
 import Math.Vector3 exposing (Vec3)
-import Model.Types exposing (Life)
 import Quaternion exposing (Quaternion)
 
 
@@ -11,7 +11,7 @@ type Holding
     | Holding
         { card : Card
         , handIndex : Int
-        , dmg : ( Life, Life )
+        , dmg : ( HoverDamage, HoverDamage )
         , pos : Vec3
         , rot : Quaternion
         }

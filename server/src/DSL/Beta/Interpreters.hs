@@ -4,7 +4,7 @@ module DSL.Beta.Interpreters where
 
 import Bounce (CardBounce(..))
 import Card (Card)
-import CardAnim (cardAnimDamage)
+import CardAnim (Damage, cardAnimDamage)
 import Control.Monad.Free (Free(..), foldFree, liftF)
 import Data.Foldable (foldl')
 import Data.Functor.Sum (Sum(..))
@@ -13,7 +13,6 @@ import Data.Monoid ((<>))
 import Discard (CardDiscard(..))
 import DSL.Beta.DSL
 import DSL.Util (toLeft, toRight)
-import Life (Life)
 import Model (Model, gameover, maxHandLength)
 import ModelDiff (ModelDiff)
 import Player (WhichPlayer(..))
@@ -71,6 +70,7 @@ animI (Hurt d w h _)        = basicAnim $ Anim.Hurt w d h ()
 animI (Rotate _)            = basicAnim $ Anim.Rotate ()
 animI (Windup _)            = basicAnim $ Anim.Windup ()
 animI (RawAnim r _)         = basicAnim $ Anim.Raw r ()
+animI (GetGen _)            = basicAnim $ Anim.GetGen ()
 animI (Heal _ w _)          = healAnim w
 animI (AddToHand w c  _)    = addToHandAnim w c
 animI (Draw w d t _)        = drawAnim w d t
@@ -318,12 +318,12 @@ execute = execute' "" [] mempty
       execute' (l ++ l' ++ "\n") a d m n
 
 
-damageNumbersI :: Model -> Program () -> (Life, Life)
+damageNumbersI :: Model -> Program () -> (Damage, Damage)
 damageNumbersI model program =
   let
     (_, _, resolveData) = execute model $ foldFree betaI program
-    damage = resolveData_animDamage <$> resolveData :: [(Life, Life)]
-    damagePa = sum $ fst <$> damage :: Life
-    damagePb = sum $ snd <$> damage :: Life
+    damage = resolveData_animDamage <$> resolveData :: [(Damage, Damage)]
+    damagePa = sum $ fst <$> damage :: Damage
+    damagePb = sum $ snd <$> damage :: Damage
   in
     (damagePa, damagePb)

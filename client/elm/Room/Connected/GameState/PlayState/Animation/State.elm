@@ -69,6 +69,9 @@ animMaxTick anim =
             MoveStack _ time ->
                 toFloat time
 
+            GetGen ->
+                1
+
             _ ->
                 400.0
           )

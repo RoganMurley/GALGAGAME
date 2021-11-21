@@ -23,6 +23,7 @@ next (DiscardStack _ n)  = n
 next (DiscardHand _ _ n) = n
 next (MoveStack _ _ n)   = n
 next (Pass _ n)          = n
+next (GetGen n)          = n
 
 
 animate :: DSL a -> Maybe CardAnim
@@ -42,3 +43,4 @@ animate (DiscardStack d _)  = Just $ CardAnim.DiscardStack d
 animate (DiscardHand w d _) = Just $ CardAnim.DiscardHand w d
 animate (MoveStack m t _)   = Just $ CardAnim.MoveStack m t
 animate (Pass w _)          = Just $ CardAnim.Pass w
+animate (GetGen _)          = Just $ CardAnim.GetGen

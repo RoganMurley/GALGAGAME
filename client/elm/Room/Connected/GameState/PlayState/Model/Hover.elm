@@ -1,12 +1,12 @@
-module Hover exposing (Hover(..), HoverBase, HoverOther, HoverSelf, HoverStack, decodeHoverOther, encodeHoverSelf, getDmg)
+module Hover exposing (Hover(..), HoverBase, HoverDamage(..), HoverOther, HoverSelf, HoverStack, damageDecoder, decodeHoverOther, encodeHoverSelf, getDmg)
 
-import Json.Decode
+import Json.Decode exposing (Decoder)
 import Json.Encode
 import Model.Types exposing (Life)
 
 
 type alias HoverSelf =
-    Hover { dmg : ( Life, Life ) }
+    Hover { dmg : ( HoverDamage, HoverDamage ) }
 
 
 type alias HoverOther =
@@ -14,7 +14,7 @@ type alias HoverOther =
 
 
 type alias HoverStack =
-    Hover { dmg : ( Life, Life ) }
+    Hover { dmg : ( HoverDamage, HoverDamage ) }
 
 
 type alias HoverBase a =
@@ -30,7 +30,12 @@ type Hover a
     | NoHover
 
 
-getDmg : HoverSelf -> ( Life, Life )
+type HoverDamage
+    = HoverDamage Life
+    | HoverDamageUncertain
+
+
+getDmg : HoverSelf -> ( HoverDamage, HoverDamage )
 getDmg hover =
     case hover of
         HoverHand { dmg } ->
@@ -40,7 +45,23 @@ getDmg hover =
             dmg
 
         NoHover ->
-            ( 0, 0 )
+            ( HoverDamage 0, HoverDamage 0 )
+
+
+damageDecoder : Decoder HoverDamage
+damageDecoder =
+    Json.Decode.oneOf
+        [ Json.Decode.map HoverDamage Json.Decode.int
+        , Json.Decode.string
+            |> Json.Decode.andThen
+                (\s ->
+                    if s == "?" then
+                        Json.Decode.succeed HoverDamageUncertain
+
+                    else
+                        Json.Decode.fail ("Unknown hover damage value: " ++ s)
+                )
+        ]
 
 
 encodeHoverSelf : HoverSelf -> String

@@ -30,6 +30,7 @@ data CardAnim
   | DiscardHand WhichPlayer [CardDiscard]
   | MoveStack (Wheel (Maybe Int)) Int
   | Pass WhichPlayer
+  | GetGen
   deriving (Show, Eq, Generic, NFData)
 
 
@@ -119,6 +120,11 @@ instance ToJSON CardAnim where
     [ "name"   .= ("pass" :: Text)
     , "player" .= w
     ]
+  toJSON GetGen =
+    object
+    [ "name"   .= ("getGen" :: Text)
+    , "player" .= PlayerA
+    ]
 
 
 instance Mirror CardAnim where
@@ -136,6 +142,7 @@ instance Mirror CardAnim where
   mirror (DiscardHand w d) = DiscardHand (other w) d
   mirror (MoveStack m t)   = MoveStack m t
   mirror (Pass w)          = Pass (other w)
+  mirror GetGen            = GetGen
 
 
 data Hurt
@@ -154,17 +161,49 @@ type SfxUrl = Text
 type ShaderName = Text
 
 
-cardAnimDamage :: CardAnim -> (Life, Life)
+data Damage = DamageCertain Life | DamageUncertain Life
+  deriving (Eq, Generic, NFData, Show)
+
+
+instance ToJSON Damage where
+  toJSON (DamageCertain a)   = toJSON a
+  toJSON (DamageUncertain a) = toJSON a
+
+
+instance Num Damage where
+  (+) (DamageCertain a)   (DamageCertain b)   = DamageCertain (a + b)
+  (+) (DamageCertain a)   (DamageUncertain b) = DamageUncertain (a + b)
+  (+) (DamageUncertain a) (DamageCertain b)   = DamageUncertain (a + b)
+  (+) (DamageUncertain a) (DamageUncertain b) = DamageUncertain (a + b)
+
+  (*) (DamageCertain a)   (DamageCertain b)   = DamageCertain (a * b)
+  (*) (DamageCertain a)   (DamageUncertain b) = DamageUncertain (a * b)
+  (*) (DamageUncertain a) (DamageCertain b)   = DamageUncertain (a * b)
+  (*) (DamageUncertain a) (DamageUncertain b) = DamageUncertain (a * b)
+
+  abs (DamageCertain a)   = DamageCertain (abs a)
+  abs (DamageUncertain a) = DamageUncertain (abs a)
+
+  signum (DamageCertain a)   = DamageCertain (signum a)
+  signum (DamageUncertain a) = DamageUncertain (signum a)
+
+  negate (DamageCertain a)   = DamageCertain (negate a)
+  negate (DamageUncertain a) = DamageUncertain (negate a)
+
+  fromInteger a = DamageCertain (fromIntegral a)
+
+
+cardAnimDamage :: CardAnim -> (Damage, Damage)
 cardAnimDamage anim =
   let
-      wrap :: WhichPlayer -> Life -> ( Life, Life )
+      wrap :: WhichPlayer -> Life -> ( Damage, Damage )
       wrap w d =
           case w of
               PlayerA ->
-                  ( d, 0 )
+                  ( DamageCertain d, DamageCertain 0 )
 
               PlayerB ->
-                  ( 0, d )
+                  ( DamageCertain 0, DamageCertain d )
   in
   case anim of
       Heal w h ->
@@ -173,5 +212,8 @@ cardAnimDamage anim =
       Hurt w d _ ->
           wrap w (-d)
 
+      GetGen ->
+          ( DamageUncertain 0, DamageUncertain 0)
+
       _ ->
-          ( 0, 0 )
+          ( DamageCertain 0, DamageCertain 0 )

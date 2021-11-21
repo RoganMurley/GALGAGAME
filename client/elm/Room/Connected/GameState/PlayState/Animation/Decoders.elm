@@ -60,6 +60,9 @@ decoder =
                 "pass" ->
                     passDecoder
 
+                "getGen" ->
+                    succeed GetGen
+
                 _ ->
                     Json.fail <| "Unknown anim name " ++ animName
     in

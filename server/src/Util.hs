@@ -130,3 +130,7 @@ breakAt b t =
 
 indexedFilter :: (Int -> a -> Bool) -> [a] -> [a]
 indexedFilter f xs = fmap snd $ filter (uncurry f) (zip [0..] xs)
+
+
+tupleMap2 :: (a -> b) -> (a, a) -> (b, b)
+tupleMap2 f (x, y) = (f x, f y)

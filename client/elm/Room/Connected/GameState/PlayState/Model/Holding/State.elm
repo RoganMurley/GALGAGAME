@@ -3,12 +3,12 @@ module Holding.State exposing (getHandIndex, init, setDamage, tick)
 import Card.Types exposing (Card)
 import Collision
 import Holding.Types exposing (Holding(..))
+import Hover exposing (HoverDamage)
 import Math.Vector3
-import Model.Types exposing (Life)
 import Quaternion
 
 
-init : Card -> Int -> Maybe Collision.Ray -> ( Life, Life ) -> Holding
+init : Card -> Int -> Maybe Collision.Ray -> ( HoverDamage, HoverDamage ) -> Holding
 init card handIndex mRay dmg =
     case mRay of
         Just { origin, direction } ->
@@ -74,7 +74,7 @@ tick holding ray _ =
             NoHolding
 
 
-setDamage : Holding -> ( Life, Life ) -> Holding
+setDamage : Holding -> ( HoverDamage, HoverDamage ) -> Holding
 setDamage holding dmg =
     case holding of
         Holding h ->

@@ -1,5 +1,6 @@
 module Outcome where
 
+import CardAnim (Damage(..))
 import Control.Applicative ((<|>))
 import Data.Aeson (FromJSON(..), ToJSON(..), Value(..), (.=), (.:), object)
 import Data.Text (Text)
@@ -21,15 +22,25 @@ data Outcome =
 
 data Encodable =
     Chat Text Text
-  | Hover WhichPlayer HoverState (Damage, Damage)
+  | Hover WhichPlayer HoverState (HoverDamage, HoverDamage)
   | Resolve [ResolveData] Model PlayState (Maybe WhichPlayer)
   deriving (Eq, Show)
+
+
+type Index = Int
+
 
 data HoverState = HoverHand Index | HoverStack Index | NoHover
   deriving (Eq, Show)
 
-type Index = Int
-type Damage = Int
+
+data HoverDamage = HoverDamage Int | HoverDamageUncertain
+  deriving (Eq, Show)
+
+
+instance ToJSON HoverDamage where
+  toJSON (HoverDamage a)        = toJSON a
+  toJSON (HoverDamageUncertain) = toJSON ("?" :: Text)
 
 
 instance ToJSON Encodable where
@@ -62,3 +73,8 @@ instance FromJSON HoverState where
     (HoverHand <$> v .: "hand") <|> (HoverStack <$> v .: "stack")
   parseJSON Null = pure NoHover
   parseJSON _ = fail "Not a valid HoverState"
+
+
+damageToHoverDamage :: Damage -> HoverDamage
+damageToHoverDamage (DamageCertain a) = HoverDamage a
+damageToHoverDamage (DamageUncertain _) = HoverDamageUncertain

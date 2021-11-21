@@ -15,7 +15,7 @@ import GameState.Messages as GameState
 import GameType exposing (GameType(..))
 import Holding.State as Holding
 import Holding.Types exposing (Holding(..))
-import Hover exposing (Hover(..), encodeHoverSelf)
+import Hover exposing (Hover(..), HoverDamage(..), encodeHoverSelf)
 import Json.Decode as Json
 import List.Extra as List
 import Main.Messages as Main
@@ -295,7 +295,7 @@ updateTurnOnly msg state { audio } =
                                         message <|
                                             Main.Send <|
                                                 "hover:"
-                                                    ++ encodeHoverSelf (HoverHand { index = index, tick = 0, dmg = ( 0, 0 ) })
+                                                    ++ encodeHoverSelf (HoverHand { index = index, tick = 0, dmg = ( HoverDamage 0, HoverDamage 0 ) })
                         in
                         ( newState, newMsg )
 

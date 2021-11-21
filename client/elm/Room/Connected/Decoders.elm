@@ -1,7 +1,8 @@
 module Connected.Decoders exposing (decodeDamageOutcome, decodePlayers)
 
 import Connected.Types exposing (Players)
-import Json.Decode as Json exposing (Decoder, index, int, maybe, string)
+import Hover exposing (HoverDamage)
+import Json.Decode as Json exposing (Decoder, index, maybe, string)
 
 
 decodePlayers : String -> Result Json.Error Players
@@ -16,13 +17,13 @@ playersDecoder =
         (index 1 <| maybe string)
 
 
-decodeDamageOutcome : String -> Result Json.Error ( Int, Int )
+decodeDamageOutcome : String -> Result Json.Error ( HoverDamage, HoverDamage )
 decodeDamageOutcome msg =
     let
-        decoder : Decoder ( Int, Int )
+        decoder : Decoder ( HoverDamage, HoverDamage )
         decoder =
             Json.map2 (\a b -> ( a, b ))
-                (index 0 int)
-                (index 1 int)
+                (index 0 Hover.damageDecoder)
+                (index 1 Hover.damageDecoder)
     in
     Json.decodeString decoder msg

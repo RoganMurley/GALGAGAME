@@ -1,11 +1,10 @@
 {-# LANGUAGE DeriveGeneric, DeriveAnyClass #-}
 module ResolveData where
 
-import CardAnim (CardAnim)
+import CardAnim (CardAnim, Damage)
 import Control.DeepSeq (NFData(..))
 import Data.Aeson (ToJSON(..), (.=), object)
 import GHC.Generics (Generic)
-import Life (Life)
 import Mirror (Mirror(..))
 import ModelDiff (ModelDiff)
 
@@ -13,7 +12,7 @@ data ResolveData =
   ResolveData
     { resolveData_diff       :: ModelDiff
     , resolveData_anim       :: Maybe CardAnim
-    , resolveData_animDamage :: (Life, Life)
+    , resolveData_animDamage :: (Damage, Damage)
     }
   deriving (Eq, Generic, NFData, Show)
 

@@ -26,6 +26,7 @@ type Anim
     | Pass WhichPlayer
     | HandFullPass
     | Finding
+    | GetGen
 
 
 type Hurt

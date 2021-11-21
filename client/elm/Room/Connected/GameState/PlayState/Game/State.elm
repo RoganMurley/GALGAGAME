@@ -13,13 +13,13 @@ import Hand.Entities as Hand
 import Hand.State exposing (maxHandLength)
 import Holding.State as Holding
 import Holding.Types exposing (Holding(..))
-import Hover exposing (Hover(..), HoverBase, HoverSelf)
+import Hover exposing (Hover(..), HoverBase, HoverDamage(..), HoverSelf)
 import List.Extra as List
 import Main.Types exposing (Flags)
 import Math.Vector3 exposing (Vec3, vec3)
 import Maybe.Extra as Maybe
 import Model.State as Model
-import Model.Types as Model exposing (Life, Model)
+import Model.Types as Model exposing (Model)
 import Mouse exposing (MouseState(..))
 import PlayState.Messages as PlayState
 import Render.Uniforms as Uniforms
@@ -243,7 +243,7 @@ hoverUpdate oldHover handEntity stackEntity holding dt =
             else
                 let
                     freshHover =
-                        hoverInit hoverHandIndex hoverStackIndex { index = 0, tick = 0, dmg = ( 0, 0 ) }
+                        hoverInit hoverHandIndex hoverStackIndex { index = 0, tick = 0, dmg = ( HoverDamage 0, HoverDamage 0 ) }
                 in
                 ( freshHover
                 , message <|
@@ -256,7 +256,7 @@ hoverUpdate oldHover handEntity stackEntity holding dt =
             ( NoHover, Cmd.none )
 
 
-hoverDamage : HoverSelf -> ( Model.Life, Model.Life ) -> HoverSelf
+hoverDamage : HoverSelf -> ( HoverDamage, HoverDamage ) -> HoverSelf
 hoverDamage hover dmg =
     case hover of
         HoverHand hoverHand ->
@@ -406,7 +406,7 @@ buttonEntities passed mouseState dt buttons { w, h, model, radius, resolving } =
             ]
 
 
-hold : Card -> Int -> Maybe Collision.Ray -> ( Life, Life ) -> Game.Model -> Game.Model
+hold : Card -> Int -> Maybe Collision.Ray -> ( HoverDamage, HoverDamage ) -> Game.Model -> Game.Model
 hold card handIndex ray dmg game =
     { game
         | holding = Holding.init card handIndex ray dmg

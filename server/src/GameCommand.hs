@@ -22,7 +22,7 @@ import Stack (Stack)
 import StackCard (StackCard(..))
 import StatusEff (applyStatuses)
 import User (User(..), getUsername, getQueryUsername, isSuperuser)
-import Util (Err, Gen, deleteIndex, split, times)
+import Util (Err, Gen, deleteIndex, split, times, tupleMap2)
 import Wheel (Wheel(..))
 
 
@@ -368,12 +368,13 @@ hoverCard (HoverHand i) which model =
   in
     case atMay hand i of
       Just card ->
-        Right (Nothing, [ Outcome.Encodable $ Outcome.Hover which (HoverHand i) damage ])
+        Right (Nothing, [ Outcome.Encodable $ Outcome.Hover which (HoverHand i) hoverDamage ])
         where
           newModel = Alpha.modI model $ do
             Alpha.modHand which (deleteIndex i)
             Alpha.modStack (\s -> (Stack.windup s) { wheel_0 = Just $ StackCard which card })
           damage = Beta.damageNumbersI newModel $ card_eff (applyStatuses card) which
+          hoverDamage = tupleMap2 Outcome.damageToHoverDamage damage
       Nothing ->
         ignore
 hoverCard (HoverStack i) which model =
@@ -382,16 +383,20 @@ hoverCard (HoverStack i) which model =
   in
     case atMay (toList stack) i of
       Just (Just (StackCard owner card)) ->
-        Right (Nothing, [ Outcome.Encodable $ Outcome.Hover which (HoverStack i) damage ])
+        Right (Nothing, [ Outcome.Encodable $ Outcome.Hover which (HoverStack i) hoverDamage ])
         where
           newModel = Alpha.modI model $ do
             Alpha.modStack $ times i (\s -> Stack.rotate (s { wheel_0 = Nothing }))
             Alpha.modRot ((-) i)
           damage = Beta.damageNumbersI newModel $ card_eff (applyStatuses card) owner
+          hoverDamage = tupleMap2 Outcome.damageToHoverDamage damage
       _ ->
         ignore
 hoverCard NoHover which _ =
-  Right (Nothing, [ Outcome.Encodable $ Outcome.Hover which NoHover (0, 0) ])
+  let
+    hoverDamage = tupleMap2 Outcome.damageToHoverDamage (0, 0)
+  in
+    Right (Nothing, [ Outcome.Encodable $ Outcome.Hover which NoHover hoverDamage ])
 
 
 godMode :: Maybe User -> Text -> WhichPlayer -> Model -> Active.Replay -> Either Err (Maybe GameState, [Outcome])

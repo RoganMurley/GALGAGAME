@@ -17,7 +17,7 @@ import Game.Types as Game exposing (Context, Feedback)
 import Hand.View as Hand
 import Holding.Types exposing (Holding(..))
 import Holding.View as Holding
-import Hover exposing (Hover(..), HoverSelf)
+import Hover exposing (Hover(..), HoverDamage(..), HoverSelf)
 import Math.Vector2 exposing (Vec2, vec2)
 import Math.Vector3 exposing (Vec3, vec3)
 import Model.Wave as Wave
@@ -266,30 +266,40 @@ damageView hover holding ({ w, h, radius, resolving, animDamage, tick, anim } as
 
         ( damage, otherDamage ) =
             if resolving then
-                animDamage
+                animDamageToHoverDamage animDamage
 
             else
-                let
-                    ( dmgA, dmgB ) =
-                        hoverDmg
-                in
-                ( toFloat dmgA, toFloat dmgB )
+                hoverDmg
 
-        damageToColour : Float -> Vec3
-        damageToColour d =
-            if d > 0 then
-                vec3 0 1 0
+        animDamageToHoverDamage : ( Float, Float ) -> ( HoverDamage, HoverDamage )
+        animDamageToHoverDamage ( a, b ) =
+            ( HoverDamage <| floor a, HoverDamage <| floor b )
 
-            else
-                vec3 1 0 0
+        damageToColour : HoverDamage -> Vec3
+        damageToColour dmg =
+            case dmg of
+                HoverDamage d ->
+                    if d > 0 then
+                        vec3 0 1 0
 
-        damageToString : Float -> String
-        damageToString d =
-            if d > 0 then
-                "+" ++ String.fromFloat d
+                    else
+                        vec3 1 0 0
 
-            else
-                String.fromFloat d
+                HoverDamageUncertain ->
+                    vec3 1 0 0
+
+        damageToString : HoverDamage -> String
+        damageToString dmg =
+            case dmg of
+                HoverDamage d ->
+                    if d > 0 then
+                        "+" ++ String.fromInt d
+
+                    else
+                        String.fromInt d
+
+                HoverDamageUncertain ->
+                    "?"
 
         progress =
             if resolving then
@@ -308,7 +318,7 @@ damageView hover holding ({ w, h, radius, resolving, animDamage, tick, anim } as
             0.95 * radius
     in
     List.concat
-        [ if damage /= 0 then
+        [ if damage /= HoverDamage 0 then
             Font.view "Futura"
                 (damageToString damage)
                 { x = 0.5 * w + xOffset
@@ -321,7 +331,7 @@ damageView hover holding ({ w, h, radius, resolving, animDamage, tick, anim } as
 
           else
             []
-        , if otherDamage /= 0 then
+        , if otherDamage /= HoverDamage 0 then
             Font.view "Futura"
                 (damageToString otherDamage)
                 { x = 0.5 * w - xOffset
