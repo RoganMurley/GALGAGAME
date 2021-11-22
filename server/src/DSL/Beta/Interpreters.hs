@@ -29,32 +29,34 @@ import qualified ModelDiff
 import qualified Stack
 
 import {-# SOURCE #-} Cards (strangeEnd)
+import {-# SOURCE #-} qualified Possibility
 
 
 alphaI :: Program a -> Alpha.Program a
-alphaI (Free (Raw p n))             = p                       >>  alphaI n
-alphaI (Free (Hurt d w _ n))        = Alpha.hurt d w          >>  alphaI n
-alphaI (Free (Heal h w n))          = Alpha.heal h w          >>  alphaI n
-alphaI (Free (Draw w d _ n))        = Alpha.draw w d          >>  alphaI n
-alphaI (Free (AddToHand w c n))     = Alpha.addToHand w c     >>  alphaI n
-alphaI (Free (Play w c i n))        = Alpha.play w c i        >>  alphaI n
-alphaI (Free (Transmute f n))       = Alpha.transmute f       >>  alphaI n
-alphaI (Free (TransmuteActive f n)) = Alpha.transmuteActive f >>  alphaI n
-alphaI (Free (Rotate n))            = Alpha.rotate            >>  alphaI n
-alphaI (Free (Windup n))            = Alpha.windup            >>  alphaI n
-alphaI (Free (Bounce f n))          = Alpha.bounce f          >>  alphaI n
-alphaI (Free (DiscardStack f n))    = Alpha.discardStack f    >>  alphaI n
-alphaI (Free (DiscardHand w f n))   = Alpha.discardHand w f   >>  alphaI n
-alphaI (Free (MoveStack f _ n))     = Alpha.moveStack f       >>  alphaI n
-alphaI (Free (Mill w _ n))          = Alpha.mill w            >>  alphaI n
-alphaI (Free (GetGen f))            = Alpha.getGen            >>= alphaI . f
-alphaI (Free (GetRot f))            = Alpha.getRot            >>= alphaI . f
-alphaI (Free (GetLife w f))         = Alpha.getLife w         >>= alphaI . f
-alphaI (Free (GetHand w f))         = Alpha.getHand w         >>= alphaI . f
-alphaI (Free (GetDeck w f))         = Alpha.getDeck w         >>= alphaI . f
-alphaI (Free (GetStack f))          = Alpha.getStack          >>= alphaI . f
-alphaI (Free (GetHold f))           = Alpha.getHold           >>= alphaI . f
-alphaI (Free (GetModel f))          = Alpha.getModel          >>= alphaI . f
+alphaI (Free (Raw p n))             = p                            >>  alphaI n
+alphaI (Free (Hurt d w _ n))        = Alpha.hurt d w               >>  alphaI n
+alphaI (Free (Heal h w n))          = Alpha.heal h w               >>  alphaI n
+alphaI (Free (Draw w d _ n))        = Alpha.draw w d               >>  alphaI n
+alphaI (Free (AddToHand w c n))     = Alpha.addToHand w c          >>  alphaI n
+alphaI (Free (Play w c i n))        = Alpha.play w c i             >>  alphaI n
+alphaI (Free (Transmute f n))       = Alpha.transmute f            >>  alphaI n
+alphaI (Free (TransmuteActive f n)) = Alpha.transmuteActive f      >>  alphaI n
+alphaI (Free (Rotate n))            = Alpha.rotate                 >>  alphaI n
+alphaI (Free (Windup n))            = Alpha.windup                 >>  alphaI n
+alphaI (Free (Bounce f n))          = Alpha.bounce f               >>  alphaI n
+alphaI (Free (DiscardStack f n))    = Alpha.discardStack f         >>  alphaI n
+alphaI (Free (DiscardHand w f n))   = Alpha.discardHand w f        >>  alphaI n
+alphaI (Free (MoveStack f _ n))     = Alpha.moveStack f            >>  alphaI n
+alphaI (Free (Mill w _ n))          = Alpha.mill w                 >>  alphaI n
+alphaI (Free (ChooseTimeline w n))  = Possibility.chooseTimeline w >>  alphaI n
+alphaI (Free (GetGen f))            = Alpha.getGen                 >>= alphaI . f
+alphaI (Free (GetRot f))            = Alpha.getRot                 >>= alphaI . f
+alphaI (Free (GetLife w f))         = Alpha.getLife w              >>= alphaI . f
+alphaI (Free (GetHand w f))         = Alpha.getHand w              >>= alphaI . f
+alphaI (Free (GetDeck w f))         = Alpha.getDeck w              >>= alphaI . f
+alphaI (Free (GetStack f))          = Alpha.getStack               >>= alphaI . f
+alphaI (Free (GetHold f))           = Alpha.getHold                >>= alphaI . f
+alphaI (Free (GetModel f))          = Alpha.getModel               >>= alphaI . f
 alphaI (Free (RawAnim _ n))         = alphaI n
 alphaI (Free (Null n))              = alphaI n
 alphaI (Pure x)                     = Pure x

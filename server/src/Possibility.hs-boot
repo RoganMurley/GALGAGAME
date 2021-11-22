@@ -1,6 +1,6 @@
 module Possibility where
 
 import Player (WhichPlayer)
-import qualified DSL.Beta as Beta
+import qualified DSL.Alpha as Alpha
 
-tipTheOdds :: WhichPlayer -> Beta.Program ()
+chooseTimeline :: WhichPlayer -> Alpha.Program ()

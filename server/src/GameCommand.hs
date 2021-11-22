@@ -204,7 +204,7 @@ playCard index which model replay
             Beta.raw $ Alpha.setHold True
           (newModel, _, res) = Beta.execute model $ foldFree Beta.betaI program
         in
-          case runWriter $ resolveAll newModel (replay `Active.add` res) 0 of
+          case runWriter $ resolveAll newModel (replay `Active.add` res) of
             (Playing m newReplay, newRes) ->
               let
                 newPlayState = Playing m (newReplay `Active.add` newRes)
@@ -246,7 +246,7 @@ endTurn which model replay
   | otherwise     =
     case passes of
       OnePass ->
-        case runWriter $ resolveAll model replay 0 of
+        case runWriter $ resolveAll model replay of
           (Playing m newReplay, res) ->
             let
               roundEndProgram :: Beta.Program ()
@@ -301,8 +301,12 @@ endTurn which model replay
     full = Alpha.evalI model $ Alpha.handFull which
 
 
-resolveAll :: Model -> Active.Replay -> Int -> Writer [ResolveData] PlayState
-resolveAll model replay resolutionCount = do
+resolveAll :: Model -> Active.Replay -> Writer [ResolveData] PlayState
+resolveAll model replay = resolveAll' model replay 0 id
+
+
+resolveAll' :: Model -> Active.Replay -> Int -> (Card -> Card) -> Writer [ResolveData] PlayState
+resolveAll' model replay resolutionCount rewrite = do
   let (modelA, _, resA) = Beta.execute model preProgram :: (Model, String, [ResolveData])
   tell resA
   let mStackCard = Alpha.evalI modelA (wheel_0 <$> Alpha.getStack)
@@ -313,7 +317,7 @@ resolveAll model replay resolutionCount = do
       let newReplay = replay `Active.add` resA `Active.add` resB
       case checkWin modelB newReplay of
         Playing m finalReplay ->
-          resolveAll m finalReplay nextResolutionCount
+          resolveAll' m finalReplay nextResolutionCount rewrite
         Ended w m finalReplay gen -> do
           let endRes = [resolveAnim $ GameEnd w]
           tell endRes
@@ -336,7 +340,7 @@ resolveAll model replay resolutionCount = do
     cardProgram :: StackCard -> Beta.AlphaLogAnimProgram ()
     cardProgram StackCard{ stackcard_card, stackcard_owner } =
       foldFree Beta.betaI $ do
-        let eff = card_eff (applyStatuses stackcard_card)
+        let eff = card_eff (rewrite . applyStatuses $ stackcard_card)
         when isFinite $ eff stackcard_owner
         holding <- Beta.getHold
         when (not holding) $ Beta.raw $ Alpha.modStack (\wheel -> wheel { wheel_0 = Nothing })

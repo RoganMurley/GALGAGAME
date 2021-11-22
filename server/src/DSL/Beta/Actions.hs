@@ -26,10 +26,11 @@ lifesteal d w = do
 
 
 refreshGen :: Program ()
-refreshGen = do
-  gen <- getGen
-  let (newGen, _) = split gen
-  raw $ Alpha.setGen newGen
+refreshGen =
+  raw $ do
+    gen <- Alpha.getGen
+    let (newGen, _) = split gen
+    Alpha.setGen newGen
 
 
 transmuteHead :: (StackCard -> StackCard) -> Program ()

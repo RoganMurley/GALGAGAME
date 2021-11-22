@@ -21,8 +21,6 @@ import qualified DSL.Alpha as Alpha
 import qualified DSL.Beta as Beta
 import DSL.Beta
 
-import {-# SOURCE #-} qualified Possibility
-
 
 -- Blaze
 blazeSword :: Card
@@ -584,7 +582,7 @@ possibilityGrail :: Card
 possibilityGrail =
   newCard Possibility Grail
     "Choose the best of 5\npossible timelines"
-    Possibility.tipTheOdds
+    Beta.chooseTimeline
 
 
 possibilityCoin :: Card

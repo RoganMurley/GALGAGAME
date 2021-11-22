@@ -38,7 +38,7 @@ evalState w (Playing model _)            = evalModel model
     evalModel :: Model -> Weight
     evalModel m
       | (diasporaLength $ evalI m $ getStack) > 0 =
-        (evalState w) . fst . runWriter $ resolveAll m Replay.Active.null 0
+        (evalState w) . fst . runWriter $ resolveAll m Replay.Active.null
       | otherwise =
           (evalPlayer w m) - (evalPlayer (other w) m)
     evalPlayer :: WhichPlayer -> Model -> Weight
@@ -112,7 +112,7 @@ winningEnd which model
   | otherwise                      =
     -- If ending the turn now would win, do it! We don't care about heuristics
     -- when we have a sure bet :)
-    case fst . runWriter $ resolveAll model Replay.Active.null 0 of
+    case fst . runWriter $ resolveAll model Replay.Active.null of
       Ended (Just winner) _ _ _  -> winner == which
       _                          -> False
 

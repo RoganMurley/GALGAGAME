@@ -22,8 +22,8 @@ applyStatuses card =
 
 statusEff :: Status -> (Beta.Program a -> Beta.Program a)
 statusEff StatusEcho     = \eff -> eff >> eff
-statusEff StatusBlighted = hoistFree  blightedRewrite
-statusEff StatusNegate   = hoistFree  negateRewrite
+statusEff StatusBlighted = hoistFree blightedRewrite
+statusEff StatusNegate   = hoistFree negateRewrite
 
 
 blightedRewrite :: Beta.DSL a -> Beta.DSL a
@@ -47,6 +47,7 @@ negateRewrite (DiscardStack _ n)    = Null n
 negateRewrite (DiscardHand _ _ n)   = Null n
 negateRewrite (MoveStack _ _ n)     = Null n
 negateRewrite (Mill _ _ n)          = Null n
+negateRewrite (ChooseTimeline _ n)  = Null n
 negateRewrite (GetDeck w f)         = GetDeck w f
 negateRewrite (GetHand w f)         = GetHand w f
 negateRewrite (GetLife w f)         = GetLife w f
