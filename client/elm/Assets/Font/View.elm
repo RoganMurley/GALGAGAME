@@ -33,7 +33,7 @@ view fontName text entity { camera2d, ortho, fonts, textures } =
                         getLineWidth line =
                             foldlWithPrev
                                 (\mPrevChar char acc ->
-                                    entity.scaleX * (char.width + char.advance) + getKerning font mPrevChar char + acc
+                                    entity.scaleX * (char.width + char.advance + getKerning font mPrevChar char) + acc
                                 )
                                 0
                                 line
@@ -55,7 +55,7 @@ view fontName text entity { camera2d, ortho, fonts, textures } =
                                     toFloat <| lineNum
 
                                 xPos =
-                                    offset + entity.x - 0.5 * lineWidth + entity.scaleX * (width - originX) + kerning
+                                    offset + entity.x - 0.5 * lineWidth + entity.scaleX * (width - originX + kerning)
 
                                 yPos =
                                     0.75 * textHeight + (n * 2 * textHeight) + entity.y - entity.scaleY * originY
@@ -81,7 +81,7 @@ view fontName text entity { camera2d, ortho, fonts, textures } =
                                         }
                                         :: entities
                             in
-                            ( offset + entity.scaleX * (width + advance) + kerning, newEntities )
+                            ( offset + entity.scaleX * (width + advance + kerning), newEntities )
                     in
                     List.concat <|
                         List.map Tuple.second <|
