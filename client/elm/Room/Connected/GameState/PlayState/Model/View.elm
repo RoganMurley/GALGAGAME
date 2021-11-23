@@ -134,13 +134,13 @@ lifeOrbView ({ w, h, radius, model, anim, animDamage, tick } as ctx) =
 
         pos =
             Math.Vector2.add
-                (vec2 (w * 0.5 - xOffset) (h * 0.5 - yOffset))
-                (vec2 -shake shake)
+                (vec2 (w * 0.5 + xOffset) (h * 0.5 - yOffset))
+                (vec2 otherShake otherShake)
 
         otherPos =
             Math.Vector2.add
-                (vec2 (w * 0.5 + xOffset) (h * 0.5 - yOffset))
-                (vec2 otherShake otherShake)
+                (vec2 (w * 0.5 - xOffset) (h * 0.5 - yOffset))
+                (vec2 -shake shake)
 
         textScale =
             0.00035 * radius
@@ -311,7 +311,7 @@ damageView hover holding ({ w, h, radius, resolving, animDamage, tick, anim } as
         [ if damage /= 0 then
             Font.view "Futura"
                 (damageToString damage)
-                { x = 0.5 * w - xOffset
+                { x = 0.5 * w + xOffset
                 , y = 0.5 * h - yOffset
                 , scaleX = scale
                 , scaleY = scale
@@ -324,7 +324,7 @@ damageView hover holding ({ w, h, radius, resolving, animDamage, tick, anim } as
         , if otherDamage /= 0 then
             Font.view "Futura"
                 (damageToString otherDamage)
-                { x = 0.5 * w + xOffset
+                { x = 0.5 * w - xOffset
                 , y = 0.5 * h - yOffset
                 , scaleX = scale
                 , scaleY = scale
