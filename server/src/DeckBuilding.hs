@@ -191,7 +191,6 @@ mainRunes =
   , alchemyRune
   , morphRune
   , feverRune
-  , possibilityRune
   ]
 
 allRunes :: [Rune]
@@ -200,6 +199,7 @@ allRunes =
   [ bloodRune
   , crownRune
   , abyssRune
+  , possibilityRune
   ]
 
 
