@@ -557,7 +557,7 @@ strangeDream =
       heal 13 w
 
 
--- Possibility§
+-- Possibility
 possibilitySword :: Card
 possibilitySword =
   newCard Possibility Sword
