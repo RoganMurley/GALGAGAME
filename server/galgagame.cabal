@@ -49,6 +49,7 @@ library
                      , ModelDiff
                      , Negotiation
                      , Outcome
+                     , Possibility
                      , Player
                      , Replay.Active
                      , Replay.Final
