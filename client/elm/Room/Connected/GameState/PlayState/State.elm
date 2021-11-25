@@ -185,7 +185,7 @@ updatePlayingOnly msg state mode assets =
 updateTurnOnly : TurnOnly -> PlayState -> Assets.Model -> ( PlayState, Cmd Main.Msg )
 updateTurnOnly msg state { audio } =
     case state of
-        Playing { game } ->
+        Playing ({ game } as playing) ->
             if game.res.final.turn == PlayerA then
                 case msg of
                     EndTurn ->
@@ -207,14 +207,18 @@ updateTurnOnly msg state { audio } =
                             isCardInHandAfterResolution : Bool
                             isCardInHandAfterResolution =
                                 Just card == List.getAt index game.res.final.hand
+
+                            isPremovable : Bool
+                            isPremovable =
+                                Resolvable.isPremovable game.res
                         in
-                        if isCardInHandAfterResolution then
+                        if isCardInHandAfterResolution && isPremovable then
                             let
                                 -- Construct the ResolveData clientside to avoid latency.
                                 newState : PlayState
                                 newState =
                                     resolveOutcome
-                                        (Just state)
+                                        (Just (Playing { playing | game = resolvedGame }))
                                         { initial = initial, resDiffList = resDiffList, finalState = finalState }
                                         |> map (\g -> { g | holding = NoHolding })
 
@@ -262,6 +266,14 @@ updateTurnOnly msg state { audio } =
                                 finalState : PlayState
                                 finalState =
                                     Playing { game = Game.gameInit final }
+
+                                resolvedGame : Game.Model
+                                resolvedGame =
+                                    let
+                                        resolvedRes =
+                                            game.res
+                                    in
+                                    { game | res = { resolvedRes | resList = [] } }
                             in
                             ( newState
                             , websocketSend <| "play:" ++ String.fromInt index

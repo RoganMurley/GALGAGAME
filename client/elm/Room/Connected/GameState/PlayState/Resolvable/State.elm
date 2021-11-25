@@ -1,4 +1,4 @@
-module Resolvable.State exposing (activeAnim, activeAnimDamage, activeModel, init, merge, resDiffToData, resolveStep, resolving, tick, tickEnd, tickStart)
+module Resolvable.State exposing (activeAnim, activeAnimDamage, activeModel, init, isPremovable, merge, resDiffToData, resolveStep, resolving, tick, tickEnd, tickStart)
 
 import Animation.State as Animation
 import Animation.Types exposing (Anim(..))
@@ -114,3 +114,30 @@ resDiffToData model resDiffs =
     in
     List.map combine <|
         zip models resDiffs
+
+
+isPremovable : Resolvable.Model -> Bool
+isPremovable { resList } =
+    let
+        f : Resolvable.ResolveData -> Bool
+        f { anim } =
+            case anim of
+                NullAnim ->
+                    True
+
+                Pass _ ->
+                    True
+
+                Play _ _ _ _ ->
+                    True
+
+                Rotate _ ->
+                    True
+
+                Windup _ ->
+                    True
+
+                _ ->
+                    False
+    in
+    List.all f resList
