@@ -14,3 +14,8 @@ instance ToJSON CardDiscard where
       "finalIndex" .= finalIndex
     ]
   toJSON CardDiscard = "discard"
+
+
+isDiscard :: CardDiscard -> Bool
+isDiscard CardDiscard = True
+isDiscard _           = False

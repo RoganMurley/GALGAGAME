@@ -146,7 +146,6 @@ instance Arbitrary Hurt where
 instance Arbitrary Transmutation where
   arbitrary = oneof
     [ Transmutation <$> arbitrary <*> arbitrary
-    , pure NoTransmutation
     ]
 
 

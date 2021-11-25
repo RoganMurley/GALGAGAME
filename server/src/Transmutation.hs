@@ -2,13 +2,13 @@
 module Transmutation where
 
 import Control.DeepSeq (NFData(..))
-import Data.Aeson (ToJSON(..), Value(Null), (.=), object)
+import Data.Aeson (ToJSON(..), (.=), object)
 import GHC.Generics (Generic)
 import Mirror (Mirror(..))
 import StackCard (StackCard)
 
 
-data Transmutation = Transmutation StackCard StackCard | NoTransmutation
+data Transmutation = Transmutation StackCard StackCard
   deriving (Eq, Generic, NFData, Show)
 
 
@@ -18,9 +18,7 @@ instance ToJSON Transmutation where
     [ "cardA" .= ca
     , "cardB" .= cb
     ]
-  toJSON NoTransmutation = Null
 
 
 instance Mirror Transmutation where
   mirror (Transmutation ca cb) = Transmutation (mirror ca) (mirror cb)
-  mirror NoTransmutation       = NoTransmutation

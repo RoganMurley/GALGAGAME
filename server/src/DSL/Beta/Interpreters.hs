@@ -5,12 +5,13 @@ module DSL.Beta.Interpreters where
 import Bounce (CardBounce(..))
 import Card (Card)
 import CardAnim (Damage, cardAnimDamage)
+import Control.Monad (when)
 import Control.Monad.Free (Free(..), foldFree, liftF)
 import Data.Foldable (foldl')
 import Data.Functor.Sum (Sum(..))
-import Data.Maybe (fromMaybe)
+import Data.Maybe (fromMaybe, isJust)
 import Data.Monoid ((<>))
-import Discard (CardDiscard(..))
+import Discard (CardDiscard(..), isDiscard)
 import DSL.Beta.DSL
 import DSL.Util (toLeft, toRight)
 import Model (Model, gameover, maxHandLength)
@@ -137,9 +138,10 @@ transmuteAnim :: (Int -> StackCard -> Maybe Transmutation) -> Alpha.Program a ->
 transmuteAnim f alpha = do
   stack <- toLeft Alpha.getStack
   let transmutations = Stack.diasporaMap f stack
+  let activity = any isJust transmutations
+  when activity (toRight . liftF $ Anim.Transmute transmutations ())
   final <- toLeft alpha
-  toRight . liftF $ Anim.Transmute transmutations ()
-  toRight . liftF $ Anim.Null ()
+  when activity (toRight . liftF $ Anim.Null ())
   return final
 
 
@@ -166,9 +168,10 @@ transmuteActiveAnim f alpha = do
 bounceAnim :: (Int -> StackCard -> Bool) -> Alpha.Program a -> AlphaAnimProgram a
 bounceAnim f alpha = do
   bounces <- toLeft $ getBounces f
-  toRight . liftF $ Anim.Bounce bounces ()
+  let activity = any isJust bounces
+  when activity (toRight . liftF $ Anim.Bounce bounces ())
   final <- toLeft alpha
-  toRight . liftF $ Anim.Null ()
+  when activity (toRight . liftF $ Anim.Null ())
   return final
 
 
@@ -176,9 +179,10 @@ moveStackAnim :: (Int -> StackCard -> Maybe Int) -> Int -> Alpha.Program a -> Al
 moveStackAnim f time alpha = do
   stack <- toLeft Alpha.getStack
   let moves = Stack.diasporaMap f stack
-  toRight . liftF $ Anim.MoveStack moves time ()
+  let activity = any isJust moves
+  when activity (toRight . liftF $ Anim.MoveStack moves time ())
   final <- toLeft alpha
-  toRight . liftF $ Anim.Null ()
+  when activity (toRight . liftF $ Anim.Null ())
   return final
 
 
@@ -243,18 +247,20 @@ getBounces f = do
 discardStackAnim :: (Int -> StackCard -> Bool) -> Alpha.Program a -> AlphaAnimProgram a
 discardStackAnim f alpha = do
   discards <- toLeft $ getStackDiscards f
-  toRight . liftF $ Anim.DiscardStack discards ()
+  let activity = any id discards
+  when activity (toRight . liftF $ Anim.DiscardStack discards ())
   final <- toLeft alpha
-  toRight . liftF $ Anim.Null ()
+  when activity (toRight . liftF $ Anim.Null ())
   return final
 
 
 discardHandAnim :: WhichPlayer -> (Int -> Card -> Bool) -> Alpha.Program a -> AlphaAnimProgram a
 discardHandAnim w f alpha = do
   discards <- toLeft $ getHandDiscards w f
-  toRight . liftF $ Anim.DiscardHand w discards ()
+  let activity = any isDiscard discards
+  when activity (toRight . liftF $ Anim.DiscardHand w discards ())
   final <- toLeft alpha
-  toRight . liftF $ Anim.Null ()
+  when activity (toRight . liftF $ Anim.Null ())
   return final
 
 
