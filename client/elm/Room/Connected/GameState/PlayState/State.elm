@@ -517,7 +517,7 @@ mouseDown { dimensions, mouse } assets _ mode { x, y } state =
                                     playMsg <|
                                         PlayState.PlayingOnly PlayState.IllegalPass
 
-                                "openChat" ->
+                                "toggleChat" ->
                                     message <|
                                         Main.RoomMsg <|
                                             Room.ConnectedMsg <|

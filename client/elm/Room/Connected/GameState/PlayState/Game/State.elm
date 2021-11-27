@@ -355,7 +355,7 @@ buttonEntities passed mouseState dt buttons { w, h, model, radius, resolving } =
         scale =
             0.12 * radius
     in
-    Buttons.fromList <|
+    Buttons.fromList
         [ if not disabled then
             Buttons.entity
                 "go"
@@ -402,7 +402,7 @@ buttonEntities passed mouseState dt buttons { w, h, model, radius, resolving } =
                 dt
                 mouseState
                 buttons
-        , Buttons.entity "openChat"
+        , Buttons.entity "toggleChat"
             { x = w * 0.5 - 0.65 * radius
             , y = y
             , width = scale

@@ -9,7 +9,8 @@
     "a":{"x":0,"y":0,"width":256,"height":256,"originX":0,"originY":192,"advance":256},
     "b":{"x":256,"y":0,"width":256,"height":256,"originX":0,"originY":192,"advance":256},
     "c":{"x":512,"y":0,"width":256,"height":256,"originX":0,"originY":192,"advance":256},
-    "d":{"x":768,"y":0,"width":256,"height":256,"originX":0,"originY":192,"advance":256}
+    "d":{"x":768,"y":0,"width":256,"height":256,"originX":0,"originY":192,"advance":256},
+    "e":{"x":0,"y":256,"width":256,"height":256,"originX":0,"originY":192,"advance":256}
   },
   "kerning": []
 }
