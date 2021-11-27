@@ -20,6 +20,9 @@ view iconName entity ctx =
                 "egg" ->
                     Just "c"
 
+                "chat" ->
+                    Just "d"
+
                 _ ->
                     Nothing
     in

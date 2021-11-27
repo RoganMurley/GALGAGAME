@@ -3,4 +3,6 @@ module Chat.Messages exposing (Msg(..))
 
 type Msg
     = RecvMessage String
-    | SetVisibility Bool
+    | SendMessage String
+    | ToggleVisibility
+    | SetInput String

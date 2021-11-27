@@ -1,4 +1,4 @@
-module Connected.State exposing (init, mouseDown, mouseUp, receive, tick, update)
+module Connected.State exposing (init, keyPress, mouseDown, mouseUp, receive, tick, update)
 
 import Assets.Types as Assets
 import Audio.State exposing (playSound)
@@ -13,6 +13,7 @@ import GameState.Types exposing (GameState(..))
 import GameType exposing (GameType)
 import Hover exposing (decodeHoverOther)
 import Json.Decode as Json
+import Keyboard exposing (Key(..))
 import Main.Messages as Main
 import Main.Types exposing (Flags)
 import Mode exposing (Mode(..))
@@ -37,6 +38,11 @@ init mode gameType roomID =
     , errored = False
     , chat = Chat.init
     }
+
+
+keyPress : Model -> Key -> Cmd Main.Msg
+keyPress { chat } keycode =
+    Chat.keyPress chat keycode
 
 
 update : Flags -> Assets.Model -> Msg -> Model -> ( Model, Cmd Main.Msg )

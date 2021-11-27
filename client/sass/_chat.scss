@@ -5,10 +5,15 @@
   display: flex;
   flex-direction: column;
   font-family: "futura-pt", sans-serif;
-  height: 140px;
+  height: 100px;
+  min-height: 100px;
+  min-width: 240px;
+  opacity: 0.95;
+  overflow: auto;
   padding: 5px;
   position: absolute;
-  width: 300px;
+  resize: both;
+  width: 240px;
 
   &__close {
     cursor: pointer;

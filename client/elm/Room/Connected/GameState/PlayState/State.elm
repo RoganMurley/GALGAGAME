@@ -6,6 +6,7 @@ import Assets.Types as Assets
 import Audio.State exposing (playSound)
 import Browser.Navigation
 import Buttons.State as Buttons
+import Chat.Messages as Chat
 import Collision exposing (hitTest3d)
 import Connected.Messages as Connected
 import Endgame.View as Endgame
@@ -515,6 +516,13 @@ mouseDown { dimensions, mouse } assets _ mode { x, y } state =
                                 "goHandFull" ->
                                     playMsg <|
                                         PlayState.PlayingOnly PlayState.IllegalPass
+
+                                "openChat" ->
+                                    message <|
+                                        Main.RoomMsg <|
+                                            Room.ConnectedMsg <|
+                                                Connected.ChatMsg <|
+                                                    Chat.ToggleVisibility
 
                                 _ ->
                                     Cmd.none

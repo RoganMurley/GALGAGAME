@@ -2,6 +2,7 @@ module Chat.Types exposing (Model)
 
 
 type alias Model =
-    { messages : List String
+    { input : String
+    , messages : List String
     , visible : Bool
     }

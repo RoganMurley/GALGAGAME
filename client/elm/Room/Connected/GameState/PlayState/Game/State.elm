@@ -356,8 +356,8 @@ buttonEntities passed mouseState dt buttons { w, h, model, radius, resolving } =
             0.12 * radius
     in
     Buttons.fromList <|
-        if not disabled then
-            [ Buttons.entity
+        [ if not disabled then
+            Buttons.entity
                 "go"
                 { x = x
                 , y = y
@@ -376,10 +376,9 @@ buttonEntities passed mouseState dt buttons { w, h, model, radius, resolving } =
                 dt
                 mouseState
                 buttons
-            ]
 
-        else
-            [ Buttons.entity
+          else
+            Buttons.entity
                 (if handFull then
                     "goHandFull"
 
@@ -403,7 +402,25 @@ buttonEntities passed mouseState dt buttons { w, h, model, radius, resolving } =
                 dt
                 mouseState
                 buttons
-            ]
+        , Buttons.entity "openChat"
+            { x = w * 0.5 - 0.65 * radius
+            , y = y
+            , width = scale
+            , height = scale
+            , btn =
+                TextButton
+                    { font = "Futura"
+                    , text = "chat"
+                    , textColor = vec3 (0 / 255) (0 / 255) (0 / 255)
+                    , bgColor = vec3 (244 / 255) (241 / 255) (94 / 255)
+                    , options = [ Buttons.Circular, Buttons.IsIcon ]
+                    }
+            , disabled = False
+            }
+            dt
+            mouseState
+            buttons
+        ]
 
 
 hold : Card -> Int -> Maybe Collision.Ray -> ( HoverDamage, HoverDamage ) -> Game.Model -> Game.Model

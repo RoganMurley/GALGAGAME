@@ -6,6 +6,7 @@ import Audio.State exposing (setVolume)
 import Browser
 import Browser.Events
 import Browser.Navigation
+import Connected.State as Connected
 import Feedback.State as Feedback
 import GameState.Types exposing (GameState(..))
 import GameType
@@ -97,15 +98,18 @@ update msg ({ assets, room, notifications, settings, flags } as model) =
             , Cmd.batch [ newMsg, Cmd.map RoomMsg tickMsg ]
             )
 
-        KeyPress keyCode ->
+        KeyPress key ->
             let
                 ( newModel, cmd ) =
                     case model.room of
+                        Room.Connected connected ->
+                            ( model, Connected.keyPress connected key )
+
                         Room.Login _ ->
-                            ( model, Login.keyPress keyCode )
+                            ( model, Login.keyPress key )
 
                         Room.Signup _ ->
-                            ( model, Signup.keyPress keyCode )
+                            ( model, Signup.keyPress key )
 
                         _ ->
                             ( model, Cmd.none )
