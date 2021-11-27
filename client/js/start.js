@@ -92,6 +92,27 @@ app.ports.analytics.subscribe(function () {
   }
 });
 
+// focus an element
+// attempts up to 3 times because there's a delay between update and view render.
+function focusEl(attempts) {
+  return (function (elementId) {
+    var el = document.getElementById(elementId);
+    if (el) {
+      el.focus();
+    } else {
+      if (attempts < 3) {
+        setTimeout(
+          function () {
+            focusEl(attempts + 1)(elementId);
+          },
+          10
+        );
+      }
+    }
+  });
+}
+app.ports.focusEl.subscribe(focusEl(0));
+
 var touched = false;
 
 function handleMouseDown(e) {

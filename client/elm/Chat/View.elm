@@ -7,7 +7,7 @@ import Dict
 import Ease
 import Game.Types exposing (Context)
 import Html exposing (Html, div, input, text)
-import Html.Attributes exposing (autofocus, class, value)
+import Html.Attributes exposing (autofocus, class, id, value)
 import Html.Events exposing (onClick, onInput)
 import Math.Vector2 exposing (vec2)
 import Math.Vector3 exposing (vec3)
@@ -30,7 +30,7 @@ htmlView model =
 
                     _ ->
                         List.map (\message -> div [] [ text message ]) model.messages
-            , input [ class "chatbox__input", autofocus True, onInput SetInput, value model.input ] []
+            , input [ class "chatbox__input", id "chat-input", autofocus True, onInput SetInput, value model.input ] []
             , div [ class "chatbox__close", onClick ToggleVisibility ] [ text "x" ]
             ]
 

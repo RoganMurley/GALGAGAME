@@ -64,7 +64,18 @@ update msg model { audio } =
                 ( model, Cmd.none )
 
         ToggleVisibility ->
-            ( { model | visible = not model.visible, notify = False }, Cmd.none )
+            let
+                visible =
+                    not model.visible
+
+                cmd =
+                    if visible then
+                        Ports.focusEl "chat-input"
+
+                    else
+                        Cmd.none
+            in
+            ( { model | visible = visible, notify = False }, cmd )
 
         SetInput input ->
             ( { model | input = input }, Cmd.none )
