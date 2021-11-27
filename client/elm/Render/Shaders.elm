@@ -298,7 +298,7 @@ starfield =
 tunnel : Shader {} (Uniforms { depth : Float, spin : Float, texture : Texture }) { vcoord : Vec2 }
 tunnel =
     [glsl|
-        precision lowp float;
+        precision highp float;
 
         uniform vec3 color;
         uniform float depth;
