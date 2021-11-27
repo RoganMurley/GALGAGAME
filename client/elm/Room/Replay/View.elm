@@ -2,6 +2,7 @@ module Replay.View exposing (htmlView, webglView)
 
 import Animation.Types exposing (Anim(..))
 import Assets.Types as Assets
+import Chat.State as Chat
 import Connected.View exposing (playersView)
 import GameState.Types exposing (GameState(..))
 import GameState.View as GameState
@@ -29,14 +30,9 @@ webglView { replay } flags assets =
         Just { state } ->
             GameState.webglView
                 (Started state)
+                Chat.init
                 (GameState.paramsFromFlags flags)
                 assets
 
         Nothing ->
             []
-
-
-
--- [ Background.view flags assets Finding
--- , Endgame.view 0.0 NullAnim Nothing Nothing Nothing Nothing True flags.seed
--- ]

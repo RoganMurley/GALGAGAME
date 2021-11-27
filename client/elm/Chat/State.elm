@@ -15,6 +15,7 @@ init =
     { input = ""
     , messages = []
     , visible = False
+    , notify = False
     }
 
 
@@ -37,7 +38,12 @@ update : Msg -> Model -> ( Model, Cmd Main.Msg )
 update msg model =
     case msg of
         RecvMessage newMessage ->
-            ( { model | messages = newMessage :: model.messages }, Cmd.none )
+            ( { model
+                | messages = model.messages ++ [ newMessage ]
+                , notify = not model.visible
+              }
+            , Cmd.none
+            )
 
         SendMessage newMessage ->
             if newMessage /= "" then
@@ -47,7 +53,7 @@ update msg model =
                 ( model, Cmd.none )
 
         ToggleVisibility ->
-            ( { model | visible = not model.visible }, Cmd.none )
+            ( { model | visible = not model.visible, notify = False }, Cmd.none )
 
         SetInput input ->
             ( { model | input = input }, Cmd.none )

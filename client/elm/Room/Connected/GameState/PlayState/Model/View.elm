@@ -6,6 +6,8 @@ import Assets.Types as Assets
 import Background.View as Background
 import Buttons.View as Buttons
 import Card.View as Card
+import Chat.Types as Chat
+import Chat.View as Chat
 import Colour
 import Ease
 import Endgame.View as Endgame
@@ -33,8 +35,8 @@ import WebGL
 import WhichPlayer.Types exposing (WhichPlayer(..))
 
 
-view : Render.Params -> Game.Model -> Assets.Model -> List WebGL.Entity
-view { w, h } game assets =
+view : Render.Params -> Game.Model -> Chat.Model -> Assets.Model -> List WebGL.Entity
+view { w, h } game chat assets =
     let
         { res, hover, focus, entities, passed, feedback, vfx, buttons, holding } =
             game
@@ -57,6 +59,7 @@ view { w, h } game assets =
             , turnView focus passed
             , focusTextView (vec2 0 0) focus
             , Buttons.view buttons
+            , Chat.notifyView chat buttons
             , Endgame.animView
             , feedbackView feedback
             , Holding.view holding

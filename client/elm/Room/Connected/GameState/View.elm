@@ -2,6 +2,7 @@ module GameState.View exposing (htmlView, paramsFromFlags, webglView)
 
 import Animation.Types exposing (Anim(..))
 import Assets.Types as Assets
+import Chat.Types as Chat
 import DeckBuilding.View as DeckBuilding
 import GameState.Messages exposing (Msg(..))
 import GameState.Types exposing (GameState(..))
@@ -28,8 +29,8 @@ htmlView state roomID flags =
             text ""
 
 
-webglView : GameState -> Render.Params -> Assets.Model -> List WebGL.Entity
-webglView state params assets =
+webglView : GameState -> Chat.Model -> Render.Params -> Assets.Model -> List WebGL.Entity
+webglView state chat params assets =
     case state of
         Waiting waiting ->
             Waiting.webglView waiting params assets
@@ -38,7 +39,7 @@ webglView state params assets =
             DeckBuilding.webglView params selecting assets
 
         Started started ->
-            PlayState.webglView started params assets
+            PlayState.webglView started chat params assets
 
 
 paramsFromFlags : Flags -> Render.Params

@@ -24,13 +24,13 @@ htmlView { chat, game, roomID, players, errored } flags =
         , errorView errored
         , Html.map
             (RoomMsg << Room.ConnectedMsg << Connected.ChatMsg)
-            (Chat.view chat)
+            (Chat.htmlView chat)
         ]
 
 
 webglView : Model -> Flags -> Assets.Model -> List WebGL.Entity
-webglView { game } flags assets =
-    GameState.webglView game (GameState.paramsFromFlags flags) assets
+webglView { chat, game } flags assets =
+    GameState.webglView game chat (GameState.paramsFromFlags flags) assets
 
 
 playersView : Players -> Html Msg
