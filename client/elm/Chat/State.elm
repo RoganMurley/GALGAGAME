@@ -1,5 +1,7 @@
 module Chat.State exposing (init, keyPress, update)
 
+import Assets.Types as Assets
+import Audio.State exposing (playSound)
 import Chat.Messages exposing (Msg(..))
 import Chat.Types exposing (Model)
 import Connected.Messages as Connected
@@ -34,16 +36,25 @@ keyPress { input, visible } code =
                 Cmd.none
 
 
-update : Msg -> Model -> ( Model, Cmd Main.Msg )
-update msg model =
+update : Msg -> Model -> Assets.Model -> ( Model, Cmd Main.Msg )
+update msg model { audio } =
     case msg of
         RecvMessage newMessage ->
-            ( { model
-                | messages = model.messages ++ [ newMessage ]
-                , notify = not model.visible
-              }
-            , Cmd.none
-            )
+            let
+                messages =
+                    newMessage :: model.messages
+
+                notify =
+                    not model.visible
+
+                cmd =
+                    if notify then
+                        playSound audio "sfx/notify.mp3"
+
+                    else
+                        Cmd.none
+            in
+            ( { model | messages = messages, notify = notify }, cmd )
 
         SendMessage newMessage ->
             if newMessage /= "" then

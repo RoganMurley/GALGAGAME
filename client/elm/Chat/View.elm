@@ -7,7 +7,7 @@ import Dict
 import Ease
 import Game.Types exposing (Context)
 import Html exposing (Html, div, input, text)
-import Html.Attributes exposing (class, style, value)
+import Html.Attributes exposing (autofocus, class, value)
 import Html.Events exposing (onClick, onInput)
 import Math.Vector2 exposing (vec2)
 import Math.Vector3 exposing (vec3)
@@ -18,26 +18,24 @@ import WebGL
 
 htmlView : Model -> Html Msg
 htmlView model =
-    div
-        [ class "chatbox"
-        , style "visibility"
-            (if model.visible then
-                "visible"
+    if model.visible then
+        div
+            [ class "chatbox" ]
+            [ div
+                [ class "chatbox__messages" ]
+              <|
+                case model.messages of
+                    [] ->
+                        [ div [ class "chatbox__empty" ] [ text "It's quiet in here..." ] ]
 
-             else
-                "hidden"
-            )
-        ]
-        [ div [ class "chatbox__messages" ] <|
-            case model.messages of
-                [] ->
-                    [ div [ class "chatbox__empty" ] [ text "It's quiet in here..." ] ]
+                    _ ->
+                        List.map (\message -> div [] [ text message ]) model.messages
+            , input [ class "chatbox__input", autofocus True, onInput SetInput, value model.input ] []
+            , div [ class "chatbox__close", onClick ToggleVisibility ] [ text "x" ]
+            ]
 
-                _ ->
-                    List.map (\message -> div [] [ text message ]) model.messages
-        , input [ class "chatbox__input", onInput SetInput, value model.input ] []
-        , div [ class "chatbox__close", onClick ToggleVisibility ] [ text "x" ]
-        ]
+    else
+        text ""
 
 
 notifyView : Model -> Buttons -> Context -> List WebGL.Entity

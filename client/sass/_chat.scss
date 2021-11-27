@@ -41,7 +41,9 @@
   }
 
   &__messages {
+    display: flex;
     flex: 1;
+    flex-direction: column-reverse;
     margin: 4px;
     overflow-y: scroll;
   }

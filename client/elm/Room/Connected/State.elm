@@ -51,7 +51,7 @@ update flags assets msg ({ chat, game, mode, gameType } as model) =
         ChatMsg chatMsg ->
             let
                 ( newChat, cmd ) =
-                    Chat.update chatMsg chat
+                    Chat.update chatMsg chat assets
             in
             ( { model | chat = newChat }, cmd )
 
@@ -214,7 +214,7 @@ receive flags assets ({ mode, gameType } as model) msg =
         "chat" ->
             let
                 ( newChat, cmd ) =
-                    Chat.update (Chat.RecvMessage content) model.chat
+                    Chat.update (Chat.RecvMessage content) model.chat assets
             in
             ( { model | chat = newChat }, cmd )
 
