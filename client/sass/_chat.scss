@@ -1,0 +1,38 @@
+.chatbox {
+  background: #f5f25e;
+  border-radius: 5px;
+  color: #000050;
+  display: flex;
+  flex-direction: column;
+  font-family: "futura-pt", sans-serif;
+  height: 140px;
+  padding: 5px;
+  position: absolute;
+  width: 300px;
+
+  &__close {
+    cursor: pointer;
+    font-size: 21px;
+    position: absolute;
+    right: 4px;
+    top: -8px;
+
+    &:hover {
+      font-size: 22px;
+    }
+  }
+
+  &__input {
+    color: #000050;
+    background: #fff;
+    border-radius: 5px;
+    border-color: #000050;
+    font-family: "futura-pt", sans-serif;
+  }
+
+  &__messages {
+    flex: 1;
+    margin: 4px;
+    overflow-y: scroll;
+  }
+}

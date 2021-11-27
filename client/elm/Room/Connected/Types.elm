@@ -1,5 +1,6 @@
 module Connected.Types exposing (Model, Players)
 
+import Chat.Types as Chat
 import GameState.Types exposing (GameState)
 import GameType exposing (GameType)
 import Mode exposing (Mode)
@@ -13,6 +14,7 @@ type alias Model =
     , players : Players
     , tick : Float
     , errored : Bool
+    , chat : Chat.Model
     }
 
 

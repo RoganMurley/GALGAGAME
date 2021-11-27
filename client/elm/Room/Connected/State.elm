@@ -2,6 +2,8 @@ module Connected.State exposing (init, mouseDown, mouseUp, receive, tick, update
 
 import Assets.Types as Assets
 import Audio.State exposing (playSound)
+import Chat.Messages as Chat
+import Chat.State as Chat
 import Connected.Decoders exposing (decodeDamageOutcome, decodePlayers)
 import Connected.Messages exposing (Msg(..))
 import Connected.Types exposing (Model, Players)
@@ -33,12 +35,20 @@ init mode gameType roomID =
     , players = { pa = Nothing, pb = Nothing }
     , tick = 0
     , errored = False
+    , chat = Chat.init
     }
 
 
 update : Flags -> Assets.Model -> Msg -> Model -> ( Model, Cmd Main.Msg )
-update flags assets msg ({ game, mode, gameType } as model) =
+update flags assets msg ({ chat, game, mode, gameType } as model) =
     case msg of
+        ChatMsg chatMsg ->
+            let
+                ( newChat, cmd ) =
+                    Chat.update chatMsg chat
+            in
+            ( { model | chat = newChat }, cmd )
+
         GameStateMsg gameMsg ->
             let
                 ( newGame, cmd ) =
@@ -194,6 +204,13 @@ receive flags assets ({ mode, gameType } as model) msg =
 
                 Err err ->
                     ( model, log <| Json.errorToString err )
+
+        "chat" ->
+            let
+                ( newChat, cmd ) =
+                    Chat.update (Chat.RecvMessage content) model.chat
+            in
+            ( { model | chat = newChat }, cmd )
 
         _ ->
             ( { model | errored = False }, log <| "Error decoding message from server: " ++ msg )

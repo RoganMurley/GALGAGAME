@@ -1,6 +1,7 @@
 module Connected.View exposing (concedeView, htmlView, playersView, specMenuView, titleView, webglView)
 
 import Assets.Types as Assets
+import Chat.View as Chat
 import Connected.Messages as Connected
 import Connected.Types exposing (Model, Players)
 import GameState.Types exposing (GameState(..))
@@ -11,15 +12,19 @@ import Html.Events exposing (onClick)
 import Main.Messages exposing (Msg(..))
 import Main.Types exposing (Flags)
 import PlayState.Types exposing (PlayState(..))
+import Room.Messages as Room
 import WebGL
 
 
 htmlView : Model -> Flags -> Html Msg
-htmlView { game, roomID, players, errored } flags =
+htmlView { chat, game, roomID, players, errored } flags =
     div []
         [ playersView players
         , GameState.htmlView game roomID flags
         , errorView errored
+        , Html.map
+            (RoomMsg << Room.ConnectedMsg << Connected.ChatMsg)
+            (Chat.view chat)
         ]
 
 
