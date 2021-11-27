@@ -7,6 +7,7 @@ import Audio.State exposing (playSound)
 import Browser.Navigation
 import Buttons.State as Buttons
 import Chat.Messages as Chat
+import Chat.Types as Chat
 import Collision exposing (hitTest3d)
 import Connected.Messages as Connected
 import Endgame.View as Endgame
@@ -326,13 +327,13 @@ updateTurnOnly msg state { audio } =
             ( state, Cmd.none )
 
 
-tick : Flags -> PlayState -> GameType -> Float -> ( PlayState, Cmd Msg )
-tick flags state gameType dt =
+tick : Flags -> PlayState -> Chat.Model -> GameType -> Float -> ( PlayState, Cmd Msg )
+tick flags state chat gameType dt =
     case state of
         Playing ({ game } as playing) ->
             let
                 ( newGame, msg ) =
-                    Game.tick flags dt game
+                    Game.tick flags dt game chat
             in
             ( Playing
                 { playing
@@ -344,7 +345,7 @@ tick flags state gameType dt =
         Ended ({ game, buttons } as ended) ->
             let
                 ( newGame, msg ) =
-                    Game.tick flags dt game
+                    Game.tick flags dt game chat
 
                 ( w, h ) =
                     flags.dimensions

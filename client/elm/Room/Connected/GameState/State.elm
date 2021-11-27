@@ -2,6 +2,7 @@ module GameState.State exposing (mouseDown, mouseUp, tick, update)
 
 import Assets.State as Assets
 import Assets.Types as Assets
+import Chat.Types as Chat
 import DeckBuilding.State as DeckBuilding
 import Game.State exposing (bareContextInit)
 import GameState.Decoders exposing (stateDecoder)
@@ -145,8 +146,8 @@ carry old new =
             new
 
 
-tick : Flags -> GameState -> GameType -> Float -> ( GameState, Cmd Msg )
-tick flags state gameType dt =
+tick : Flags -> GameState -> Chat.Model -> GameType -> Float -> ( GameState, Cmd Msg )
+tick flags state chat gameType dt =
     case state of
         Waiting waiting ->
             ( Waiting <| Waiting.tick dt waiting, Cmd.none )
@@ -164,6 +165,6 @@ tick flags state gameType dt =
         Started playState ->
             let
                 ( newState, cmd ) =
-                    PlayState.tick flags playState gameType dt
+                    PlayState.tick flags playState chat gameType dt
             in
             ( Started newState, Cmd.map PlayStateMsg cmd )

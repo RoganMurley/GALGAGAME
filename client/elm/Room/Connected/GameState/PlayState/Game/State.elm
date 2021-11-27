@@ -7,6 +7,7 @@ import Assets.Types as Assets
 import Buttons.State as Buttons
 import Buttons.Types as Buttons exposing (ButtonType(..), Buttons)
 import Card.Types exposing (Card)
+import Chat.Types as Chat
 import Collision exposing (hitTest3d)
 import Game.Types as Game exposing (Context, Entities, Feedback, HandEntity, StackEntity)
 import Hand.Entities as Hand
@@ -131,8 +132,8 @@ hoverInit handIndex stackIndex base =
             NoHover
 
 
-tick : Flags -> Float -> Game.Model -> ( Game.Model, Cmd PlayState.Msg )
-tick { dimensions, mouse } dt model =
+tick : Flags -> Float -> Game.Model -> Chat.Model -> ( Game.Model, Cmd PlayState.Msg )
+tick { dimensions, mouse } dt model chat =
     let
         res =
             Resolvable.tick dt model.res
@@ -175,7 +176,7 @@ tick { dimensions, mouse } dt model =
                 , focus = focus
                 , feedback = feedback
                 , vfx = Vfx.tick dt model.vfx ctx
-                , buttons = buttonEntities model.passed mouse dt model.buttons ctx
+                , buttons = buttonEntities model.passed mouse dt model.buttons chat ctx
                 , holding = holding
             }
     in
@@ -334,8 +335,8 @@ feedbackTick feedback dt =
             feedback
 
 
-buttonEntities : Bool -> MouseState -> Float -> Buttons -> Context -> Buttons
-buttonEntities passed mouseState dt buttons { w, h, model, radius, resolving } =
+buttonEntities : Bool -> MouseState -> Float -> Buttons -> Chat.Model -> Context -> Buttons
+buttonEntities passed mouseState dt buttons chat { w, h, model, radius, resolving } =
     let
         handFull =
             List.length model.hand == maxHandLength
@@ -410,7 +411,12 @@ buttonEntities passed mouseState dt buttons { w, h, model, radius, resolving } =
             , btn =
                 TextButton
                     { font = "Futura"
-                    , text = "chat"
+                    , text =
+                        if chat.visible then
+                            "chatClose"
+
+                        else
+                            "chat"
                     , textColor = vec3 (0 / 255) (0 / 255) (0 / 255)
                     , bgColor = vec3 (244 / 255) (241 / 255) (94 / 255)
                     , options = [ Buttons.Circular, Buttons.IsIcon ]
