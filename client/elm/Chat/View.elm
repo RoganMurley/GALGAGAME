@@ -11,8 +11,13 @@ view : Model -> Html Msg
 view model =
     if model.visible then
         div [ class "chatbox" ]
-            [ div [ class "chatbox__messages" ]
-                (List.map (\message -> div [] [ text message ]) model.messages)
+            [ div [ class "chatbox__messages" ] <|
+                case model.messages of
+                    [] ->
+                        [ div [ class "chatbox__empty" ] [ text "It's quite quiet in here..." ] ]
+
+                    _ ->
+                        List.map (\message -> div [] [ text message ]) model.messages
             , input [ class "chatbox__input", onInput SetInput, value model.input ] []
             , div [ class "chatbox__close", onClick ToggleVisibility ] [ text "x" ]
             ]
