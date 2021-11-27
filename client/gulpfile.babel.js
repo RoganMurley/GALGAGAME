@@ -1,5 +1,6 @@
 import gulp from 'gulp';
 import elm from 'gulp-elm';
+import filter from 'gulp-filter';
 import sass from 'gulp-sass';
 import uglify from 'gulp-uglify';
 import minify from 'gulp-minify-css';
@@ -50,6 +51,7 @@ gulp.task('html', () => {
 gulp.task('copy', () => {
   return gulp.src(`${dir.dev}/**`)
     .pipe(gulp.dest(dir.build))
+    .pipe(filter([`**`, `!${dir.build}/favicons/*`, `!${dir.build}/img/landing/*.png`]))
     .pipe(rev())
     .pipe(gulp.dest(dir.build))
     .pipe(rev.manifest())
