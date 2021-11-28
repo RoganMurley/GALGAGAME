@@ -2,6 +2,7 @@
   background: #f5f25e;
   border-radius: 5px;
   color: #000050;
+  cursor: grab;
   display: flex;
   flex-direction: column;
   font-family: "futura-pt", sans-serif;
@@ -14,6 +15,10 @@
   position: absolute;
   resize: both;
   width: 240px;
+
+  &--drag {
+    cursor: grabbing;
+  }
 
   &__close {
     cursor: pointer;

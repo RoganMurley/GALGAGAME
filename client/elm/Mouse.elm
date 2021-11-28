@@ -1,5 +1,6 @@
-module Mouse exposing (MouseState(..), Position, getVec)
+module Mouse exposing (MouseState(..), Position, decoder, getVec)
 
+import Json.Decode as Json exposing (Decoder)
 import Math.Vector2 exposing (Vec2)
 
 
@@ -26,3 +27,10 @@ getVec state =
 
         Touch vec ->
             Just vec
+
+
+decoder : Decoder Position
+decoder =
+    Json.map2 Position
+        (Json.field "x" Json.int)
+        (Json.field "y" Json.int)

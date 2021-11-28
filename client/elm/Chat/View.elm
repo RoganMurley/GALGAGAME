@@ -7,12 +7,15 @@ import Dict
 import Ease
 import Game.Types exposing (Context)
 import Html exposing (Html, div, input, text)
-import Html.Attributes exposing (autofocus, class, id, value)
-import Html.Events exposing (onClick, onInput)
+import Html.Attributes exposing (autofocus, class, classList, id, style, value)
+import Html.Events exposing (on, onClick, onInput)
+import Json.Decode as Json
 import Math.Vector2 exposing (vec2)
 import Math.Vector3 exposing (vec3)
+import Mouse
 import Render.Primitives
 import Render.Uniforms exposing (uniColourMag)
+import Util exposing (px)
 import WebGL
 
 
@@ -20,7 +23,14 @@ htmlView : Model -> Html Msg
 htmlView model =
     if model.visible then
         div
-            [ class "chatbox" ]
+            [ classList
+                [ ( "chatbox", True )
+                , ( "chatbox--drag", model.drag /= Nothing )
+                ]
+            , style "top" (toFloat model.pos.y |> px)
+            , style "left" (toFloat model.pos.x |> px)
+            , on "mousedown" (Json.map DragStart Mouse.decoder)
+            ]
             [ div
                 [ class "chatbox__messages" ]
               <|
@@ -31,7 +41,9 @@ htmlView model =
                     _ ->
                         List.map (\message -> div [] [ text message ]) model.messages
             , input [ class "chatbox__input", id "chat-input", autofocus True, onInput SetInput, value model.input ] []
-            , div [ class "chatbox__close", onClick ToggleVisibility ] [ text "x" ]
+            , div [ class "chatbox__close", onClick ToggleVisibility ]
+                [ text "x"
+                ]
             ]
 
     else

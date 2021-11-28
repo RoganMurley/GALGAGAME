@@ -76,13 +76,16 @@ update flags assets msg ({ chat, game, mode, gameType } as model) =
 tick : Flags -> Model -> Float -> ( Model, Cmd Msg )
 tick flags model dt =
     let
+        chat =
+            Chat.tick flags model.chat dt
+
         ( game, msg ) =
             GameState.tick flags model.game model.chat model.gameType dt
 
         newTick =
             model.tick + dt
     in
-    ( { model | game = game, tick = newTick }, Cmd.map GameStateMsg msg )
+    ( { model | chat = chat, game = game, tick = newTick }, Cmd.map GameStateMsg msg )
 
 
 receive : Flags -> Assets.Model -> Model -> String -> ( Model, Cmd Main.Msg )
@@ -225,10 +228,13 @@ receive flags assets ({ mode, gameType } as model) msg =
 mouseUp : Flags -> Assets.Model -> Model -> Mouse.Position -> ( Model, Cmd Main.Msg )
 mouseUp flags assets model pos =
     let
+        chat =
+            Chat.mouseUp flags model.chat
+
         ( game, cmd ) =
             GameState.mouseUp pos model.game flags model.mode model.gameType assets
     in
-    ( { model | game = game }, cmd )
+    ( { model | chat = chat, game = game }, cmd )
 
 
 mouseDown : Flags -> Assets.Model -> Model -> Mouse.Position -> ( Model, Cmd Main.Msg )
