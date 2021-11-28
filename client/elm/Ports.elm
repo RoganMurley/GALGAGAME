@@ -1,4 +1,4 @@
-port module Ports exposing (analytics, copyInput, focusEl, godModeCommand, loadAudio, log, mouseDown, mouseMove, mouseUp, playAudio, reload, scaling, selectAllInput, touch, volume, websocketListen, websocketReconnect, websocketSend)
+port module Ports exposing (analytics, copyInput, godModeCommand, loadAudio, log, mouseDown, mouseMove, mouseUp, playAudio, reload, scaling, selectAllInput, touch, volume, websocketListen, websocketReconnect, websocketSend)
 
 import Audio.Types exposing (PlayAudioMessage)
 import Mouse
@@ -53,6 +53,3 @@ port godModeCommand : (String -> msg) -> Sub msg
 
 
 port websocketListen : (String -> msg) -> Sub msg
-
-
-port focusEl : String -> Cmd msg

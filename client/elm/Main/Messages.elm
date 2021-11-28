@@ -37,3 +37,4 @@ type Msg
     | UrlChange Url
     | UrlRequest UrlRequest
     | GodCommand String
+    | NoOp

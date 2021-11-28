@@ -333,6 +333,9 @@ update msg ({ assets, room, notifications, settings, flags } as model) =
             in
             ( { model | assets = newAssets }, cmd )
 
+        NoOp ->
+            ( model, Cmd.none )
+
 
 locationUpdate : Main.Model -> Url -> ( Main.Model, Cmd Msg )
 locationUpdate model url =

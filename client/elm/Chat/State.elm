@@ -2,6 +2,7 @@ module Chat.State exposing (init, keyPress, update)
 
 import Assets.Types as Assets
 import Audio.State exposing (playSound)
+import Browser.Dom
 import Chat.Messages exposing (Msg(..))
 import Chat.Types exposing (Model)
 import Connected.Messages as Connected
@@ -9,6 +10,7 @@ import Keyboard exposing (Key(..))
 import Main.Messages as Main
 import Ports
 import Room.Messages as Room
+import Task
 import Util exposing (message)
 
 
@@ -70,7 +72,7 @@ update msg model { audio } =
 
                 cmd =
                     if visible then
-                        Ports.focusEl "chat-input"
+                        Task.attempt (\_ -> Main.NoOp) (Browser.Dom.focus "chat-input")
 
                     else
                         Cmd.none
