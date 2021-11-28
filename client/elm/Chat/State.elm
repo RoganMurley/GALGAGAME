@@ -135,3 +135,6 @@ update msg model { audio } =
 
         SetInput input ->
             ( { model | input = input }, Cmd.none )
+
+        NoOp ->
+            ( model, Cmd.none )

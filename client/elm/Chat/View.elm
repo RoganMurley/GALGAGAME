@@ -1,6 +1,7 @@
 module Chat.View exposing (htmlView, notifyView)
 
 import Buttons.Types exposing (Buttons(..))
+import Chat.Decoders exposing (chatDragEventDecoder)
 import Chat.Messages exposing (Msg(..))
 import Chat.Types exposing (Model)
 import Dict
@@ -9,10 +10,8 @@ import Game.Types exposing (Context)
 import Html exposing (Html, div, input, text)
 import Html.Attributes exposing (autofocus, class, classList, id, style, value)
 import Html.Events exposing (on, onClick, onInput)
-import Json.Decode as Json
 import Math.Vector2 exposing (vec2)
 import Math.Vector3 exposing (vec3)
-import Mouse
 import Render.Primitives
 import Render.Uniforms exposing (uniColourMag)
 import Util exposing (px)
@@ -29,7 +28,7 @@ htmlView model =
                 ]
             , style "top" (toFloat model.pos.y |> px)
             , style "left" (toFloat model.pos.x |> px)
-            , on "mousedown" (Json.map DragStart Mouse.decoder)
+            , on "mousedown" chatDragEventDecoder
             ]
             [ div
                 [ class "chatbox__messages" ]

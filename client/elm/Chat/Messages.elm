@@ -9,3 +9,4 @@ type Msg
     | ToggleVisibility
     | SetInput String
     | DragStart Mouse.Position
+    | NoOp
