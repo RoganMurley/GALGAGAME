@@ -187,7 +187,6 @@ makeScenario gen prefix =
   , scenario_prog = prog
   , scenario_xpWin = xpWin
   , scenario_xpLoss = xpLoss
-  , scenario_reward = Nothing
   }
   where
     (genA, genB) = split gen
