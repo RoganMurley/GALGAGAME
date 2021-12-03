@@ -6,6 +6,7 @@ import Control.Monad (forM_, when)
 import Control.Monad.IO.Class (liftIO)
 import Control.Monad.STM (STM, atomically)
 import Data.Aeson (encode)
+import Data.Time.Clock (UTCTime, getCurrentTime)
 import Data.Monoid ((<>))
 import Data.String.Conversions (cs)
 import Data.Text (Text)
@@ -39,8 +40,8 @@ import Room (Room)
 import qualified Stats.Stats as Stats
 
 
-roomUpdate :: GameCommand -> WhichPlayer -> TVar Room -> STM (Room, Either Err [Outcome])
-roomUpdate cmd which roomVar =
+roomUpdate :: GameCommand -> WhichPlayer -> UTCTime -> TVar Room -> STM (Room, Either Err [Outcome])
+roomUpdate cmd which time roomVar =
   modReturnTVar roomVar $ \room ->
     case updateRoom room of
       Left err ->
@@ -52,7 +53,7 @@ roomUpdate cmd which roomVar =
   where
     updateRoom :: Room -> Either Err (Maybe Room, [Outcome])
     updateRoom room =
-      case update cmd which (Room.getState room) (Room.getScenario room) (Room.getUsers room) of
+      case update cmd which (Room.getState room) (Room.getScenario room) (Room.getUsers room) time of
         Left err ->
           Left err
         Right (newState, outcomes) ->
@@ -64,7 +65,8 @@ actPlay cmd which roomVar username = do
   Log.info $ printf "<%s>: %s" username (show cmd)
   case trans cmd of
     Just command -> do
-      (room, updated) <- liftIO $ atomically $ roomUpdate command which roomVar
+      time <- liftIO getCurrentTime
+      (room, updated) <- liftIO $ atomically $ roomUpdate command which time roomVar
       case updated of
         Left err -> do
           Log.warning $ printf "Command error: %s" (show err)
@@ -83,6 +85,7 @@ actPlay cmd which roomVar username = do
     trans (ChatCommand name content) = Just (Chat name content)
     trans (SelectCharacterCommand c) = Just (SelectCharacter c)
     trans (GodModeCommand msg)       = Just (God msg)
+    trans HeartbeatCommand           = Just Heartbeat
     trans _                          = Nothing
 
 

@@ -24,6 +24,7 @@ data Command =
   | SelectCharacterCommand CharacterChoice
   | EndEncounterCommand
   | GodModeCommand Text
+  | HeartbeatCommand
   | ErrorCommand Text
   deriving (Show)
 
@@ -62,6 +63,8 @@ parse name msg =
             SelectCharacterCommand choice
       "endEncounter" ->
         EndEncounterCommand
+      "heartbeat" ->
+        HeartbeatCommand
       "god" ->
         GodModeCommand content
       _ ->

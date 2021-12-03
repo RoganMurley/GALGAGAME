@@ -5,6 +5,7 @@ import CardAnim (CardAnim(..))
 import Control.Monad (join, when)
 import Control.Monad.Free (foldFree)
 import Control.Monad.Trans.Writer (Writer, runWriter, tell)
+import Data.Time.Clock (NominalDiffTime, UTCTime, diffUTCTime)
 import Data.Foldable (toList)
 import Data.Maybe (fromMaybe)
 import Data.Monoid ((<>))
@@ -12,7 +13,7 @@ import Data.String.Conversions (cs)
 import Data.Text (Text)
 import DeckBuilding (CharacterChoice, ChosenCharacter(..), DeckBuilding(..), choiceToCharacter, initDeckBuilding, selectCharacter)
 import GameState (GameState(..), PlayState(..), PlayingR(..), initModel)
-import Model (Hand, Passes(..), Model, Turn)
+import Model (Hand, Passes(..), Model(..), Turn)
 import Outcome (HoverState(..), Outcome)
 import Player (WhichPlayer(..), other)
 import ResolveData (ResolveData(..), resolveAnim)
@@ -43,20 +44,27 @@ data GameCommand =
   | Concede
   | SelectCharacter CharacterChoice
   | Chat Text Text
+  | Heartbeat
   | God Text
   deriving (Show)
 
 
-update :: GameCommand -> WhichPlayer -> GameState -> Scenario -> (Maybe User, Maybe User) -> Either Err (Maybe GameState, [Outcome])
-update (Chat username msg) _ _ _ _        = chat username msg
-update cmd which state scenario users =
+update :: GameCommand -> WhichPlayer -> GameState -> Scenario -> (Maybe User, Maybe User) -> UTCTime -> Either Err (Maybe GameState, [Outcome])
+update (Chat username msg) _ _ _ _ _      = chat username msg
+update cmd which state scenario users time =
   case state of
     Waiting _ _ ->
-      Left ("Unknown command " <> (cs $ show cmd) <> " on a waiting GameState")
+      case cmd of
+        Heartbeat ->
+          ignore
+        _ ->
+          Left ("Unknown command " <> (cs $ show cmd) <> " on a waiting GameState")
     Selecting selectModel turn gen ->
       case cmd of
         SelectCharacter character ->
           select which character selectModel turn scenario gen users
+        Heartbeat ->
+          ignore
         _ ->
           Left ("Unknown command " <> (cs $ show cmd) <> " on a selecting GameState")
     Started playState ->
@@ -64,13 +72,15 @@ update cmd which state scenario users =
         Playing playing ->
           case cmd of
             EndTurn ->
-              endTurn which playing
+              endTurn which playing time
             PlayCard index ->
-              playCard index which playing
+              playCard index which playing time
             HoverCard hover ->
               hoverCard hover which playing
             Concede ->
               concede which state
+            Heartbeat ->
+              heartbeat time scenario playing
             God str ->
               godMode (getUser which users) str which playing
             _ ->
@@ -80,6 +90,8 @@ update cmd which state scenario users =
             Rematch ->
               rematch (winner, gen) users scenario
             HoverCard _ ->
+              ignore
+            Heartbeat ->
               ignore
             _ ->
               Left ("Unknown command " <> (cs $ show cmd) <> " on an Ended GameState")
@@ -192,8 +204,8 @@ nextSelectState deckModel turn startProgram gen (mUserPa, mUserPb) =
     (state, outcomes)
 
 
-playCard :: Int -> WhichPlayer -> PlayingR -> Either Err (Maybe GameState, [Outcome])
-playCard index which (PlayingR { playing_model = model, playing_replay = replay })
+playCard :: Int -> WhichPlayer -> PlayingR -> UTCTime -> Either Err (Maybe GameState, [Outcome])
+playCard index which (PlayingR { playing_model = model, playing_replay = replay }) time
   | turn /= which = Left "You can't play a card when it's not your turn"
   | otherwise     =
     case card of
@@ -211,10 +223,10 @@ playCard index which (PlayingR { playing_model = model, playing_replay = replay 
             Beta.raw $ Alpha.setHold True
           (newModel, _, res) = Beta.execute model $ foldFree Beta.betaI program
         in
-          case runWriter $ resolveAll (PlayingR newModel (replay `Active.add` res) Nothing) of
+          case runWriter $ resolveAll (PlayingR newModel (replay `Active.add` res) (Just time)) of
             (Playing (PlayingR m newReplay _), newRes) ->
               let
-                newPlayState = Playing (PlayingR m (newReplay `Active.add` newRes) Nothing)
+                newPlayState = Playing (PlayingR m (newReplay `Active.add` newRes) (Just time))
                 -- The player who played the card does that animation clientside, so only send the rest.
               in
                 Right (
@@ -246,8 +258,8 @@ playCard index which (PlayingR { playing_model = model, playing_replay = replay 
         return (h, t, c)
 
 
-endTurn :: WhichPlayer -> PlayingR -> Either Err (Maybe GameState, [Outcome])
-endTurn which playing
+endTurn :: WhichPlayer -> PlayingR -> UTCTime -> Either Err (Maybe GameState, [Outcome])
+endTurn which playing time
   | turn /= which = Left "You can't end the turn when it's not your turn"
   | full          = Left "You can't end the turn when your hand is full"
   | otherwise     =
@@ -263,7 +275,7 @@ endTurn which playing
                 Beta.draw PlayerA PlayerA 1
                 Beta.draw PlayerB PlayerB 1
               (newModel, _, endRes) = Beta.execute m $ foldFree Beta.betaI roundEndProgram
-              newPlayState = Playing (PlayingR newModel (Active.add newReplay endRes) Nothing) :: PlayState
+              newPlayState = Playing (PlayingR newModel (Active.add newReplay endRes) (Just time)) :: PlayState
               newState = Started newPlayState :: GameState
             in
               Right (
@@ -290,7 +302,7 @@ endTurn which playing
             Beta.raw Alpha.swapTurn
             Beta.rawAnim $ Pass which
           (newModel, _, res) = Beta.execute model $ foldFree Beta.betaI endTurnProgram
-          newPlayState = Playing (PlayingR newModel replay Nothing) :: PlayState
+          newPlayState = Playing (PlayingR newModel replay (Just time)) :: PlayState
         in
           Right (
             Just . Started $ newPlayState,
@@ -430,6 +442,20 @@ godMode mUser str which (PlayingR { playing_model = model, playing_replay = repl
         Left err
   else
     Left $ "Not a superuser"
+
+
+heartbeat :: UTCTime -> Scenario -> PlayingR -> Either Err (Maybe GameState, [Outcome])
+heartbeat currentTime scenario playing =
+  let
+    previousTime = fromMaybe currentTime $ playing_utc playing :: UTCTime
+    model = playing_model playing :: Model
+    timeLimit = scenario_timeLimit scenario :: NominalDiffTime
+    delta = diffUTCTime currentTime previousTime :: NominalDiffTime
+    which = model_turn model :: WhichPlayer
+  in
+    if delta > timeLimit then
+      concede which (Started . Playing $ playing)
+        else ignore
 
 
 getUser :: WhichPlayer -> (Maybe User, Maybe User) -> Maybe User

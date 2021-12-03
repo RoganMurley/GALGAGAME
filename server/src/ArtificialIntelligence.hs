@@ -4,6 +4,7 @@ import Control.Monad.Trans.Writer (runWriter)
 import Data.List (maximumBy)
 import Data.Ord (comparing)
 import Data.String.Conversions (cs)
+import Data.Time.Clock.POSIX (posixSecondsToUTCTime)
 import DSL.Alpha
 
 import Card (Card)
@@ -78,7 +79,7 @@ postulateAction which model gen scenario action =
   let
     command = toCommand action :: GameCommand
     state = Started . Playing $ playingFromModel (modI model $ setGen gen) :: GameState
-    result = update command which state scenario (Nothing, Nothing)
+    result = update command which state scenario (Nothing, Nothing) (posixSecondsToUTCTime 0)
   in
     case result of
       Left err ->
