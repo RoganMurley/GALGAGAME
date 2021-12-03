@@ -4,6 +4,7 @@ import Config (App)
 import Control.Monad (forM_)
 import Data.Maybe (maybeToList)
 import Data.Text (Text)
+import Data.Time.Clock.POSIX (posixSecondsToUTCTime)
 import DeckBuilding (initDeckBuilding)
 import GameCommand (nextSelectState)
 import GameState (GameState(..), WaitType(..), initState)
@@ -119,7 +120,7 @@ roomSetup room =
             turn = scenario_turn scenario
             startProgram = scenario_prog scenario
             users = Room.getUsers room
-            (state, newOutcomes) = nextSelectState deckBuildingModel turn startProgram gen users
+            (state, newOutcomes) = nextSelectState deckBuildingModel turn startProgram gen users (posixSecondsToUTCTime 0)
           in
             (room { room_state = state }, newOutcomes)
         _ ->

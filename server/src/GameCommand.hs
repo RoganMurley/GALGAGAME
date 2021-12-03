@@ -62,7 +62,7 @@ update cmd which state scenario users time =
     Selecting selectModel turn gen ->
       case cmd of
         SelectCharacter character ->
-          select which character selectModel turn scenario gen users
+          select which character selectModel turn scenario gen users time
         Heartbeat ->
           ignore
         _ ->
@@ -88,7 +88,7 @@ update cmd which state scenario users time =
         Ended winner _ _ gen ->
           case cmd of
             Rematch ->
-              rematch (winner, gen) users scenario
+              rematch (winner, gen) users scenario time
             HoverCard _ ->
               ignore
             Heartbeat ->
@@ -101,13 +101,17 @@ ignore :: Either Err (Maybe GameState, [Outcome])
 ignore = Right (Nothing, [])
 
 
-rematch :: (Maybe WhichPlayer, Gen) -> (Maybe User, Maybe User) -> Scenario -> Either Err (Maybe GameState, [Outcome])
-rematch (winner, gen) users scenario =
+rematch :: (Maybe WhichPlayer, Gen)
+        -> (Maybe User, Maybe User)
+        -> Scenario
+        -> UTCTime
+        -> Either Err (Maybe GameState, [Outcome])
+rematch (winner, gen) users scenario time =
   let
     deckModel = initDeckBuilding (scenario_characterPa scenario) (scenario_characterPb scenario)
     turn = fromMaybe PlayerA winner
     startProgram = scenario_prog scenario
-    (newState, outcomes) = nextSelectState deckModel turn startProgram (fst $ split gen) users
+    (newState, outcomes) = nextSelectState deckModel turn startProgram (fst $ split gen) users time
   in
     Right (Just newState, outcomes)
 
@@ -142,23 +146,37 @@ concede _ _ =
   Left "Cannot concede when not playing"
 
 
-select :: WhichPlayer -> CharacterChoice -> DeckBuilding -> Turn -> Scenario -> Gen -> (Maybe User, Maybe User) -> Either Err (Maybe GameState, [Outcome])
-select which choice deckModel turn scenario gen users =
+select :: WhichPlayer
+       -> CharacterChoice
+       -> DeckBuilding
+       -> Turn
+       -> Scenario
+       -> Gen
+       -> (Maybe User, Maybe User)
+       -> UTCTime
+       -> Either Err (Maybe GameState, [Outcome])
+select which choice deckModel turn scenario gen users time =
   case choiceToCharacter choice of
     Right character ->
       let
         newDeckModel :: DeckBuilding
         newDeckModel = selectCharacter deckModel which character
         startProgram = scenario_prog scenario
-        (newState, outcomes) = nextSelectState newDeckModel turn startProgram gen users
+        (newState, outcomes) = nextSelectState newDeckModel turn startProgram gen users time
       in
         Right (Just newState, outcomes)
     Left err ->
       Left err
 
 
-nextSelectState :: DeckBuilding -> Turn -> Beta.Program () -> Gen -> (Maybe User, Maybe User) -> (GameState, [Outcome])
-nextSelectState deckModel turn startProgram gen (mUserPa, mUserPb) =
+nextSelectState :: DeckBuilding
+                -> Turn
+                -> Beta.Program ()
+                -> Gen
+                -> (Maybe User, Maybe User)
+                -> UTCTime
+                -> (GameState, [Outcome])
+nextSelectState deckModel turn startProgram gen (mUserPa, mUserPb) time =
   let
     result :: Maybe ([ResolveData], Model, PlayState)
     result =
@@ -179,7 +197,7 @@ nextSelectState deckModel turn startProgram gen (mUserPa, mUserPb) =
                 PlayingR
                   { playing_model = newModel
                   , playing_replay = Active.add replay res
-                  , playing_utc = Nothing
+                  , playing_utc = Just time
                   }
               )
           in
