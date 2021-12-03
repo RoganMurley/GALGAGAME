@@ -27,6 +27,11 @@ import Waiting.State as Waiting
 import Waiting.Types exposing (WaitType(..))
 
 
+heartbeatInterval : Float
+heartbeatInterval =
+    10 * 1000
+
+
 init : Mode -> GameType -> String -> Model
 init mode gameType roomID =
     { game = Waiting <| Waiting.init WaitQuickplay
@@ -37,6 +42,7 @@ init mode gameType roomID =
     , tick = 0
     , errored = False
     , chat = Chat.init
+    , heartbeatTick = heartbeatInterval
     }
 
 
@@ -84,8 +90,18 @@ tick flags model dt =
 
         newTick =
             model.tick + dt
+
+        ( newHeartbeatTick, heartbeatCmds ) =
+            if model.heartbeatTick < 0 then
+                ( heartbeatInterval, [ Ports.websocketSend "heartbeat:" ] )
+
+            else
+                ( model.heartbeatTick - dt, [] )
+
+        cmd =
+            Cmd.batch (Cmd.map GameStateMsg msg :: heartbeatCmds)
     in
-    ( { model | chat = chat, game = game, tick = newTick }, Cmd.map GameStateMsg msg )
+    ( { model | chat = chat, game = game, tick = newTick, heartbeatTick = newHeartbeatTick }, cmd )
 
 
 receive : Flags -> Assets.Model -> Model -> String -> ( Model, Cmd Main.Msg )

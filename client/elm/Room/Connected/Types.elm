@@ -15,6 +15,7 @@ type alias Model =
     , tick : Float
     , errored : Bool
     , chat : Chat.Model
+    , heartbeatTick : Float
     }
 
 
