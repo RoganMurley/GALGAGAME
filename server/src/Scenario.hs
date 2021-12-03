@@ -1,5 +1,6 @@
 module Scenario where
 
+import Data.Time.Clock (NominalDiffTime)
 import DeckBuilding (ChosenCharacter, UnchosenCharacter)
 import Model (Turn)
 import Stats.Stats (Experience)
@@ -13,8 +14,9 @@ data Scenario = Scenario
   , scenario_prog        :: Beta.Program ()
   , scenario_xpWin       :: Experience
   , scenario_xpLoss      :: Experience
+  , scenario_timeLimit   :: NominalDiffTime
   }
 
 instance Show Scenario where
-  show (Scenario characterPa characterPb turn _ xpWin xpLoss ) =
-    "Scenario: " ++ show (characterPa, characterPb, turn, xpWin, xpLoss)
+  show (Scenario characterPa characterPb turn _ xpWin xpLoss timeLimit) =
+    "Scenario: " ++ show (characterPa, characterPb, turn, xpWin, xpLoss, timeLimit)

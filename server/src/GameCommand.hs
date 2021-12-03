@@ -11,7 +11,7 @@ import Data.Monoid ((<>))
 import Data.String.Conversions (cs)
 import Data.Text (Text)
 import DeckBuilding (CharacterChoice, ChosenCharacter(..), DeckBuilding(..), choiceToCharacter, initDeckBuilding, selectCharacter)
-import GameState (GameState(..), PlayState(..), initModel)
+import GameState (GameState(..), PlayState(..), PlayingR(..), initModel)
 import Model (Hand, Passes(..), Model, Turn)
 import Outcome (HoverState(..), Outcome)
 import Player (WhichPlayer(..), other)
@@ -61,18 +61,18 @@ update cmd which state scenario users =
           Left ("Unknown command " <> (cs $ show cmd) <> " on a selecting GameState")
     Started playState ->
       case playState of
-        Playing model replay ->
+        Playing playing ->
           case cmd of
             EndTurn ->
-              endTurn which model replay
+              endTurn which playing
             PlayCard index ->
-              playCard index which model replay
+              playCard index which playing
             HoverCard hover ->
-              hoverCard hover which model
+              hoverCard hover which playing
             Concede ->
               concede which state
             God str ->
-              godMode (getUser which users) str which model replay
+              godMode (getUser which users) str which playing
             _ ->
               Left ("Unknown command " <> (cs $ show cmd) <> " on a Playing GameState")
         Ended winner _ _ gen ->
@@ -109,8 +109,9 @@ chat username msg =
 
 
 concede :: WhichPlayer -> GameState -> Either Err (Maybe GameState, [Outcome])
-concede which (Started (Playing model replay)) =
+concede which (Started (Playing playing)) =
   let
+    PlayingR{ playing_model = model, playing_replay = replay } = playing
     gen = Alpha.evalI model Alpha.getGen :: Gen
     winner = Just $ other which :: Maybe WhichPlayer
     res = [resolveAnim $ GameEnd winner] :: [ResolveData]
@@ -162,7 +163,13 @@ nextSelectState deckModel turn startProgram gen (mUserPa, mUserPb) =
             replay = Active.init model usernamesPa usernamesPb :: Active.Replay
             (newModel, _, res) = Beta.execute model $ foldFree Beta.betaI startProgram
             playstate :: PlayState
-            playstate = Playing newModel (Active.add replay res)
+            playstate = Playing (
+                PlayingR
+                  { playing_model = newModel
+                  , playing_replay = Active.add replay res
+                  , playing_utc = Nothing
+                  }
+              )
           in
             Just (res, model, playstate)
         _ ->
@@ -185,8 +192,8 @@ nextSelectState deckModel turn startProgram gen (mUserPa, mUserPb) =
     (state, outcomes)
 
 
-playCard :: Int -> WhichPlayer -> Model -> Active.Replay -> Either Err (Maybe GameState, [Outcome])
-playCard index which model replay
+playCard :: Int -> WhichPlayer -> PlayingR -> Either Err (Maybe GameState, [Outcome])
+playCard index which (PlayingR { playing_model = model, playing_replay = replay })
   | turn /= which = Left "You can't play a card when it's not your turn"
   | otherwise     =
     case card of
@@ -204,10 +211,10 @@ playCard index which model replay
             Beta.raw $ Alpha.setHold True
           (newModel, _, res) = Beta.execute model $ foldFree Beta.betaI program
         in
-          case runWriter $ resolveAll newModel (replay `Active.add` res) of
-            (Playing m newReplay, newRes) ->
+          case runWriter $ resolveAll (PlayingR newModel (replay `Active.add` res) Nothing) of
+            (Playing (PlayingR m newReplay _), newRes) ->
               let
-                newPlayState = Playing m (newReplay `Active.add` newRes)
+                newPlayState = Playing (PlayingR m (newReplay `Active.add` newRes) Nothing)
                 -- The player who played the card does that animation clientside, so only send the rest.
               in
                 Right (
@@ -239,15 +246,15 @@ playCard index which model replay
         return (h, t, c)
 
 
-endTurn :: WhichPlayer -> Model -> Active.Replay -> Either Err (Maybe GameState, [Outcome])
-endTurn which model replay
+endTurn :: WhichPlayer -> PlayingR -> Either Err (Maybe GameState, [Outcome])
+endTurn which playing
   | turn /= which = Left "You can't end the turn when it's not your turn"
   | full          = Left "You can't end the turn when your hand is full"
   | otherwise     =
     case passes of
       OnePass ->
-        case runWriter $ resolveAll model replay of
-          (Playing m newReplay, res) ->
+        case runWriter $ resolveAll playing of
+          (Playing (PlayingR { playing_model = m, playing_replay = newReplay }), res) ->
             let
               roundEndProgram :: Beta.Program ()
               roundEndProgram = do
@@ -256,7 +263,7 @@ endTurn which model replay
                 Beta.draw PlayerA PlayerA 1
                 Beta.draw PlayerB PlayerB 1
               (newModel, _, endRes) = Beta.execute m $ foldFree Beta.betaI roundEndProgram
-              newPlayState = Playing newModel (Active.add newReplay endRes) :: PlayState
+              newPlayState = Playing (PlayingR newModel (Active.add newReplay endRes) Nothing) :: PlayState
               newState = Started newPlayState :: GameState
             in
               Right (
@@ -283,7 +290,7 @@ endTurn which model replay
             Beta.raw Alpha.swapTurn
             Beta.rawAnim $ Pass which
           (newModel, _, res) = Beta.execute model $ foldFree Beta.betaI endTurnProgram
-          newPlayState = Playing newModel replay :: PlayState
+          newPlayState = Playing (PlayingR newModel replay Nothing) :: PlayState
         in
           Right (
             Just . Started $ newPlayState,
@@ -299,14 +306,16 @@ endTurn which model replay
         return (t, p)
     full :: Bool
     full = Alpha.evalI model $ Alpha.handFull which
+    (PlayingR { playing_model = model, playing_replay = replay }) = playing
 
 
-resolveAll :: Model -> Active.Replay -> Writer [ResolveData] PlayState
-resolveAll model replay = resolveAll' model replay 0 id
+resolveAll :: PlayingR -> Writer [ResolveData] PlayState
+resolveAll playing = resolveAll' playing 0 id
 
 
-resolveAll' :: Model -> Active.Replay -> Int -> (Card -> Card) -> Writer [ResolveData] PlayState
-resolveAll' model replay resolutionCount rewrite = do
+resolveAll' :: PlayingR -> Int -> (Card -> Card) -> Writer [ResolveData] PlayState
+resolveAll' playing resolutionCount rewrite = do
+  let PlayingR{ playing_model = model, playing_replay = replay } = playing
   let (modelA, _, resA) = Beta.execute model preProgram :: (Model, String, [ResolveData])
   tell resA
   let mStackCard = Alpha.evalI modelA (wheel_0 <$> Alpha.getStack)
@@ -315,16 +324,16 @@ resolveAll' model replay resolutionCount rewrite = do
       let (modelB, _, resB) = Beta.execute modelA (cardProgram stackCard) :: (Model, String, [ResolveData])
       tell resB
       let newReplay = replay `Active.add` resA `Active.add` resB
-      case checkWin modelB newReplay of
-        Playing m finalReplay ->
-          resolveAll' m finalReplay nextResolutionCount rewrite
+      case checkWin (PlayingR modelB newReplay Nothing) of
+        Playing newPlaying ->
+          resolveAll' newPlaying nextResolutionCount rewrite
         Ended w m finalReplay gen -> do
           let endRes = [resolveAnim $ GameEnd w]
           tell endRes
           return (Ended w m (finalReplay `Active.add` endRes) gen)
     Nothing -> do
       let newReplay = replay `Active.add` resA
-      return (Playing modelA newReplay)
+      return (Playing (PlayingR modelA newReplay Nothing))
   where
     isFinite :: Bool
     isFinite = resolutionCount < 20
@@ -346,27 +355,27 @@ resolveAll' model replay resolutionCount rewrite = do
         when (not holding) $ Beta.raw $ Alpha.modStack (\wheel -> wheel { wheel_0 = Nothing })
 
 
-checkWin :: Model -> Active.Replay -> PlayState
-checkWin m r
+checkWin :: PlayingR -> PlayState
+checkWin (playing@(PlayingR { playing_model = model, playing_replay = replay }))
   | lifePA <= 0 && lifePB <= 0 =
-    Ended Nothing m r gen
+    Ended Nothing model replay gen
   | lifePB <= 0 =
-    Ended (Just PlayerA) m r gen
+    Ended (Just PlayerA) model replay gen
   | lifePA <= 0 =
-    Ended (Just PlayerB) m r gen
+    Ended (Just PlayerB) model replay gen
   | otherwise =
-    Playing m r
+    Playing playing
   where
     (gen, lifePA, lifePB) =
-      Alpha.evalI m $ do
+      Alpha.evalI model $ do
         g  <- Alpha.getGen
         la <- Alpha.getLife PlayerA
         lb <- Alpha.getLife PlayerB
         return (g, la, lb)
 
 
-hoverCard :: HoverState -> WhichPlayer -> Model -> Either Err (Maybe GameState, [Outcome])
-hoverCard (HoverHand i) which model =
+hoverCard :: HoverState -> WhichPlayer -> PlayingR -> Either Err (Maybe GameState, [Outcome])
+hoverCard (HoverHand i) which (PlayingR { playing_model = model }) =
   let
     hand = Alpha.evalI model $ Alpha.getHand which :: Hand
   in
@@ -381,7 +390,7 @@ hoverCard (HoverHand i) which model =
           hoverDamage = tupleMap2 Outcome.damageToHoverDamage damage
       Nothing ->
         ignore
-hoverCard (HoverStack i) which model =
+hoverCard (HoverStack i) which (PlayingR { playing_model = model }) =
   let
     stack = Alpha.evalI model $ Alpha.getStack :: Stack
   in
@@ -403,15 +412,15 @@ hoverCard NoHover which _ =
     Right (Nothing, [ Outcome.Encodable $ Outcome.Hover which NoHover hoverDamage ])
 
 
-godMode :: Maybe User -> Text -> WhichPlayer -> Model -> Active.Replay -> Either Err (Maybe GameState, [Outcome])
-godMode mUser str which model replay =
+godMode :: Maybe User -> Text -> WhichPlayer -> PlayingR -> Either Err (Maybe GameState, [Outcome])
+godMode mUser str which (PlayingR { playing_model = model, playing_replay = replay, playing_utc }) =
   if fromMaybe False $ isSuperuser <$> mUser then
     case GodMode.parse which str of
       Right betaProgram ->
         let
           program = foldFree Beta.betaI $ betaProgram :: Beta.AlphaLogAnimProgram ()
           (m, _, res) = Beta.execute model program :: (Model, String, [ResolveData])
-          newPlayState = Playing m (Active.add replay res) :: PlayState
+          newPlayState = Playing (PlayingR m (Active.add replay res) playing_utc) :: PlayState
         in
           Right (
             Just . Started $ newPlayState

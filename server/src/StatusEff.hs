@@ -47,7 +47,6 @@ negateRewrite (DiscardStack _ n)    = Null n
 negateRewrite (DiscardHand _ _ n)   = Null n
 negateRewrite (MoveStack _ _ n)     = Null n
 negateRewrite (Mill _ _ n)          = Null n
-negateRewrite (ChooseTimeline _ n)  = Null n
 negateRewrite (GetDeck w f)         = GetDeck w f
 negateRewrite (GetHand w f)         = GetHand w f
 negateRewrite (GetLife w f)         = GetLife w f

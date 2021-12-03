@@ -63,7 +63,6 @@ data Aspect
   | Morph
   | Abyss
   | Fever
-  | Possibility
   | Strange
   | OtherAspect Text
   deriving (Eq, Generic, NFData, Ord, Show)

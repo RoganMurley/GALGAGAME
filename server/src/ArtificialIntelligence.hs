@@ -16,7 +16,6 @@ import Scenario (Scenario(..))
 import Stack (diasporaLength)
 import Util (Err, Gen)
 
-import qualified Replay.Active
 import qualified Cards
 
 
@@ -31,14 +30,14 @@ evalResult _ (Left err)    = error (cs err)
 
 
 evalState :: WhichPlayer -> PlayState -> Weight
-evalState w (Ended (Just winner) _ _ _)  = if winner == w then 100 else -200
-evalState _ (Ended Nothing _  _ _)       = 50
-evalState w (Playing model _)            = evalModel model
+evalState w (Ended (Just winner) _ _ _)                    = if winner == w then 100 else -200
+evalState _ (Ended Nothing _  _ _)                         = 50
+evalState w (Playing (PlayingR { playing_model = model })) = evalModel model
   where
     evalModel :: Model -> Weight
     evalModel m
       | (diasporaLength $ evalI m $ getStack) > 0 =
-        (evalState w) . fst . runWriter $ resolveAll m Replay.Active.null
+        (evalState w) . fst . runWriter $ resolveAll $ playingFromModel m
       | otherwise =
           (evalPlayer w m) - (evalPlayer (other w) m)
     evalPlayer :: WhichPlayer -> Model -> Weight
@@ -78,7 +77,7 @@ postulateAction :: WhichPlayer -> Model -> Gen -> Scenario -> Action -> Either E
 postulateAction which model gen scenario action =
   let
     command = toCommand action :: GameCommand
-    state = Started $ Playing (modI model $ setGen gen) (Replay.Active.null) :: GameState
+    state = Started . Playing $ playingFromModel (modI model $ setGen gen) :: GameState
     result = update command which state scenario (Nothing, Nothing)
   in
     case result of
@@ -112,7 +111,7 @@ winningEnd which model
   | otherwise                      =
     -- If ending the turn now would win, do it! We don't care about heuristics
     -- when we have a sure bet :)
-    case fst . runWriter $ resolveAll model Replay.Active.null of
+    case fst . runWriter $ resolveAll (playingFromModel model) of
       Ended (Just winner) _ _ _  -> winner == which
       _                          -> False
 

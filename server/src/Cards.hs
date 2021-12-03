@@ -11,7 +11,7 @@ import Safe (headMay)
 import Stack (diasporaFromStack, diasporaLength)
 import StackCard (StackCard(..), changeOwner, cardMap)
 import Transmutation (Transmutation(..))
-import Util (many, manyIndexed, randomChoice, shuffle)
+import Util (many, manyIndexed, shuffle)
 
 import qualified Data.Map as Map
 
@@ -566,45 +566,6 @@ strangeDream =
       heal 13 w
 
 
--- Possibility
-possibilitySword :: Card
-possibilitySword =
-  newCard Possibility Sword
-    "Hurt for 5, up to 2 times"
-    $ \w -> do
-      gen <- getGen
-      let n = randomChoice gen [1..2]
-      many n (hurt 5 (other w) Slash)
-
-
-possibilityWand :: Card
-possibilityWand =
-  newCard Possibility Wand
-    "Hurt for 3, up to 6 times"
-    $ \w -> do
-      gen <- getGen
-      let n = randomChoice gen [1..6]
-      many n (hurt 3 (other w) Slash)
-
-
-possibilityGrail :: Card
-possibilityGrail =
-  newCard Possibility Grail
-    "Choose the best of 5\npossible timelines"
-    Beta.chooseTimeline
-
-
-possibilityCoin :: Card
-possibilityCoin =
-  newCard Possibility Coin
-    "Card in next socket becomes a copy\nof a random card in your deck"
-    $ \w -> do
-      gen <- getGen
-      deck <- getDeck w
-      let card = if length deck > 0 then randomChoice gen deck else strangeEnd
-      transmuteHead (\(StackCard o _) -> StackCard o card)
-
-
 -- Other
 strangeEnd :: Card
 strangeEnd =
@@ -628,7 +589,6 @@ swords =
   , tideSword
   , abyssSword
   , feverSword
-  , possibilitySword
   ]
 
 
@@ -647,7 +607,6 @@ wands =
   , tideWand
   , abyssWand
   , feverWand
-  , possibilityWand
   ]
 
 
@@ -666,7 +625,6 @@ grails =
   , tideGrail
   , abyssGrail
   , feverGrail
-  , possibilityGrail
   ]
 
 
@@ -684,7 +642,6 @@ coins =
   , morphCoin
   , tideCoin
   , feverCoin
-  , possibilityCoin
   ]
 
 

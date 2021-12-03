@@ -30,7 +30,6 @@ import qualified ModelDiff
 import qualified Stack
 
 import {-# SOURCE #-} Cards (strangeEnd)
-import {-# SOURCE #-} qualified Possibility
 
 
 alphaI :: Program a -> Alpha.Program a
@@ -49,7 +48,6 @@ alphaI (Free (DiscardStack f n))    = Alpha.discardStack f         >>  alphaI n
 alphaI (Free (DiscardHand w f n))   = Alpha.discardHand w f        >>  alphaI n
 alphaI (Free (MoveStack f _ n))     = Alpha.moveStack f            >>  alphaI n
 alphaI (Free (Mill w _ n))          = Alpha.mill w                 >>  alphaI n
-alphaI (Free (ChooseTimeline w n))  = Possibility.chooseTimeline w >>  alphaI n
 alphaI (Free (GetGen f))            = Alpha.getGen                 >>= alphaI . f
 alphaI (Free (GetRot f))            = Alpha.getRot                 >>= alphaI . f
 alphaI (Free (GetLife w f))         = Alpha.getLife w              >>= alphaI . f

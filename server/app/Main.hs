@@ -11,6 +11,7 @@ import Control.Monad (forever, mzero, when)
 import Control.Monad.IO.Class (liftIO)
 import Control.Monad.Trans.Class (lift)
 import Control.Monad.Trans.Maybe (runMaybeT)
+import Data.Time.Clock (NominalDiffTime)
 import Data.Monoid ((<>))
 import Data.String.Conversions (cs)
 import Data.Text (Text)
@@ -24,7 +25,7 @@ import Act (actOutcome, actPlay, actSpec, syncPlayersRoom, syncClient)
 import ArtificialIntelligence (Action(..), chooseAction)
 import Config (App, ConnectInfoConfig(..), runApp)
 import Database (postgresConnectInfo, redisConnectInfo)
-import GameState (GameState(..), PlayState(..), WaitType(..), isWinner)
+import GameState (GameState(..), PlayState(..), PlayingR(..), WaitType(..), isWinner)
 import Model (Turn)
 import Negotiation (Prefix(..), Request(..), parseRequest, parsePrefix)
 import Outcome (Outcome)
@@ -187,6 +188,7 @@ makeScenario gen prefix =
   , scenario_prog = prog
   , scenario_xpWin = xpWin
   , scenario_xpLoss = xpLoss
+  , scenario_timeLimit = timeLimit
   }
   where
     (genA, genB) = split gen
@@ -207,6 +209,8 @@ makeScenario gen prefix =
     xpWin = 100
     xpLoss :: Experience
     xpLoss = 70
+    timeLimit :: NominalDiffTime
+    timeLimit = fromIntegral (10 :: Integer)
 
 
 beginPlay :: TVar Server.State -> Client -> TVar Room -> App ()
@@ -381,8 +385,8 @@ chooseComputerCommand which room gen = do
         return Nothing
           else
             return . Just . SelectCharacterCommand $ randomChoice
-    Started (Playing m _) ->
-      return $ trans <$> chooseAction gen which m (Room.getScenario r)
+    Started (Playing (PlayingR { playing_model })) ->
+      return $ trans <$> chooseAction gen which playing_model (Room.getScenario r)
     _ ->
       return Nothing
   where
