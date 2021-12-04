@@ -92,7 +92,7 @@ tick flags model dt =
             model.tick + dt
 
         ( newHeartbeatTick, heartbeatCmds ) =
-            if model.heartbeatTick < 0 then
+            if model.heartbeatTick <= 0 then
                 ( heartbeatInterval, [ Ports.websocketSend "heartbeat:" ] )
 
             else

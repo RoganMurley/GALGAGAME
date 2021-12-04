@@ -1,6 +1,7 @@
-module Room.State exposing (init, mouseDown, mouseUp, receive, tick, update)
+module Room.State exposing (init, mouseDown, mouseUp, receive, tick, update, visibilityChange)
 
 import Assets.Types as Assets
+import Browser.Events exposing (Visibility)
 import Browser.Navigation
 import Connected.State as Connected
 import Feedback.State as Feedback
@@ -221,3 +222,13 @@ mouseDown flags assets model pos =
 
         _ ->
             ( model, Cmd.none )
+
+
+visibilityChange : Model -> Visibility -> Model
+visibilityChange model _ =
+    case model of
+        Connected connected ->
+            Connected { connected | heartbeatTick = 0 }
+
+        _ ->
+            model

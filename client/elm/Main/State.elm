@@ -336,6 +336,9 @@ update msg ({ assets, room, notifications, settings, flags } as model) =
         NoOp ->
             ( model, Cmd.none )
 
+        VisibilityChange visibility ->
+            ( { model | room = Room.visibilityChange room visibility }, Cmd.none )
+
 
 locationUpdate : Main.Model -> Url -> ( Main.Model, Cmd Msg )
 locationUpdate model url =
@@ -486,6 +489,7 @@ subscriptions _ =
         [ websocketListen Receive
         , Browser.Events.onAnimationFrameDelta Frame
         , Browser.Events.onResize Resize
+        , Browser.Events.onVisibilityChange VisibilityChange
         , mouseMove MousePosition
         , mouseDown MouseDown
         , mouseUp MouseUp

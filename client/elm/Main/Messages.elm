@@ -2,6 +2,7 @@ module Main.Messages exposing (Msg(..))
 
 import Assets.Messages as Assets
 import Browser exposing (UrlRequest)
+import Browser.Events exposing (Visibility)
 import Http
 import Keyboard exposing (Key)
 import Mouse
@@ -38,3 +39,4 @@ type Msg
     | UrlRequest UrlRequest
     | GodCommand String
     | NoOp
+    | VisibilityChange Visibility
