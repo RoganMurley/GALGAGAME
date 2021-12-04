@@ -30,6 +30,7 @@ type alias Model =
     , vfx : Vfx.Model
     , buttons : Buttons
     , holding : Holding
+    , timeLeft : Maybe Float
     }
 
 

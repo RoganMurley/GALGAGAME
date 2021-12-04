@@ -46,6 +46,7 @@ gameInit model =
     , vfx = Vfx.init
     , buttons = Buttons.empty
     , holding = NoHolding
+    , timeLeft = Nothing
     }
 
 
@@ -162,6 +163,9 @@ tick { dimensions, mouse } dt model chat =
         holding =
             Holding.tick model.holding ctx.mouseRay dt
 
+        timeLeft =
+            Maybe.map (\t -> t - dt) model.timeLeft
+
         newModel =
             { model
                 | res = res
@@ -178,6 +182,7 @@ tick { dimensions, mouse } dt model chat =
                 , vfx = Vfx.tick dt model.vfx ctx
                 , buttons = buttonEntities model.passed mouse dt model.buttons chat ctx
                 , holding = holding
+                , timeLeft = timeLeft
             }
     in
     ( newModel, hoverMsg )

@@ -60,6 +60,7 @@ view { w, h } game chat assets =
             , focusTextView (vec2 0 0) focus
             , Buttons.view buttons
             , Chat.notifyView chat buttons
+            , timeLeftView game.timeLeft
             , Endgame.animView
             , feedbackView feedback
             , Holding.view holding
@@ -486,3 +487,22 @@ feedbackView feedback ctx =
                     }
         )
         feedback
+
+
+timeLeftView : Maybe Float -> Context -> List WebGL.Entity
+timeLeftView timeLeft ({ w, h, radius } as ctx) =
+    Font.view "Futura"
+        (case timeLeft of
+            Just t ->
+                String.fromFloat t
+
+            Nothing ->
+                ""
+        )
+        { x = 0.5 * w
+        , y = 0.5 * h
+        , scaleX = radius * 0.0005
+        , scaleY = radius * 0.0005
+        , color = Colour.white
+        }
+        ctx

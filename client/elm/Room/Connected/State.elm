@@ -237,6 +237,31 @@ receive flags assets ({ mode, gameType } as model) msg =
             in
             ( { model | chat = newChat }, cmd )
 
+        "timeLeft" ->
+            case String.toFloat content of
+                Just timeLeft ->
+                    let
+                        ( game, cmd ) =
+                            GameState.update
+                                (GameState.PlayStateMsg <|
+                                    PlayState.ServerTimeLeft <|
+                                        timeLeft
+                                )
+                                model.game
+                                flags
+                                mode
+                                gameType
+                                assets
+
+                        -- Attempt to align the heartbeat with timeLeft
+                        heartbeatTick =
+                            min model.heartbeatTick timeLeft
+                    in
+                    ( { model | game = game, heartbeatTick = heartbeatTick }, cmd )
+
+                Nothing ->
+                    ( model, log <| "Unable to parse timeLeft value: " ++ content )
+
         _ ->
             ( { model | errored = False }, log <| "Error decoding message from server: " ++ msg )
 

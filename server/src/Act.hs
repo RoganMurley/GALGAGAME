@@ -169,6 +169,8 @@ actOutcome room (Outcome.Encodable (Outcome.Chat username msg)) =
   Room.broadcast ("chat:" <> username <> ": " <> msg) room
 actOutcome room (Outcome.Encodable (Outcome.Resolve models initial final exclude)) =
   resolveRoomClients models initial final exclude room
+actOutcome room (Outcome.Encodable (Outcome.Heartbeat timeLeft)) =
+  Room.broadcast ("timeLeft:" <> cs (show (1000 * realToFrac timeLeft :: Float))) room
 actOutcome room (Outcome.SaveReplay replay) = do
   Log.info "Saving replay..."
   replayId <- Replay.Final.save replay

@@ -17,6 +17,7 @@ type Msg
     | GotoComputerGame
     | StatChange StatChange
     | ClickFeedback Vec2
+    | ServerTimeLeft Float
 
 
 type PlayingOnly

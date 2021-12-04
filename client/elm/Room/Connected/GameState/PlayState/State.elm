@@ -110,6 +110,9 @@ update msg state mode assets =
         ClickFeedback pos ->
             ( map (\game -> { game | feedback = { progress = 1000, pos = pos } :: game.feedback }) state, Cmd.none )
 
+        ServerTimeLeft timeLeft ->
+            ( map (\game -> { game | timeLeft = Just timeLeft }) state, Cmd.none )
+
 
 updatePlayingOnly : PlayingOnly -> PlayState -> Mode.Mode -> Assets.Model -> ( PlayState, Cmd Main.Msg )
 updatePlayingOnly msg state mode assets =

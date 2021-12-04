@@ -470,10 +470,11 @@ heartbeat currentTime scenario playing =
     timeLimit = scenario_timeLimit scenario :: NominalDiffTime
     delta = diffUTCTime currentTime previousTime :: NominalDiffTime
     which = model_turn model :: WhichPlayer
+    timeLeft = timeLimit - delta :: NominalDiffTime
   in
     if delta > timeLimit then
       concede which (Started . Playing $ playing)
-        else ignore
+        else Right (Nothing, [Outcome.Encodable $ Outcome.Heartbeat timeLeft])
 
 
 getUser :: WhichPlayer -> (Maybe User, Maybe User) -> Maybe User

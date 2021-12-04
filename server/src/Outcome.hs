@@ -3,6 +3,7 @@ module Outcome where
 import CardAnim (Damage(..))
 import Control.Applicative ((<|>))
 import Data.Aeson (FromJSON(..), ToJSON(..), Value(..), (.=), (.:), object)
+import Data.Time.Clock (NominalDiffTime)
 import Data.Text (Text)
 import GameState (PlayState)
 import Model (Model)
@@ -24,6 +25,7 @@ data Encodable =
     Chat Text Text
   | Hover WhichPlayer HoverState (HoverDamage, HoverDamage)
   | Resolve [ResolveData] Model PlayState (Maybe WhichPlayer)
+  | Heartbeat NominalDiffTime
   deriving (Eq, Show)
 
 
@@ -57,6 +59,8 @@ instance ToJSON Encodable where
       , "initial" .= initial
       , "final"   .= state
       ]
+  toJSON (Heartbeat delta) =
+    object ["timeLeft" .= delta]
 
 
 instance ToJSON HoverState where
