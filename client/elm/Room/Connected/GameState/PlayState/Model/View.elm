@@ -491,18 +491,37 @@ feedbackView feedback ctx =
 
 timeLeftView : Maybe Float -> Context -> List WebGL.Entity
 timeLeftView timeLeft ({ w, h, radius } as ctx) =
-    Font.view "Futura"
-        (case timeLeft of
-            Just t ->
-                String.fromFloat t
+    case timeLeft of
+        Just t ->
+            let
+                seconds =
+                    20
 
-            Nothing ->
-                ""
-        )
-        { x = 0.5 * w
-        , y = 0.5 * h
-        , scaleX = radius * 0.0005
-        , scaleY = radius * 0.0005
-        , color = Colour.white
-        }
-        ctx
+                timeLimitProgress =
+                    Ease.inOutSine (1 - (clamp 0 (seconds * 1000) t / (seconds * 1000)))
+            in
+            if timeLimitProgress > 0 then
+                [ Render.Primitives.donut <|
+                    uniColourMag ctx
+                        (vec3 (244 / 255) (241 / 255) (94 / 255))
+                        timeLimitProgress
+                        { scale = 0.65 * radius
+                        , position = vec2 (w * 0.5) (h * 0.5)
+                        , rotation = 0
+                        }
+                ]
+
+            else
+                []
+
+        -- :: Font.view "Futura"
+        --     (String.fromFloat t)
+        --     { x = 0.5 * w
+        --     , y = 0.5 * h
+        --     , scaleX = radius * 0.0005
+        --     , scaleY = radius * 0.0005
+        --     , color = Colour.white
+        --     }
+        --     ctx
+        Nothing ->
+            []

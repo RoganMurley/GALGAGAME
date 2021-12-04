@@ -42,7 +42,7 @@ init mode gameType roomID =
     , tick = 0
     , errored = False
     , chat = Chat.init
-    , heartbeatTick = heartbeatInterval
+    , heartbeatTick = 0
     }
 
 

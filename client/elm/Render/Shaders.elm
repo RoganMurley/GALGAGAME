@@ -1,4 +1,4 @@
-module Render.Shaders exposing (circleFragment, disintegrate, fragment, fragmentAlpha, fragmentGrayscale, fragmentTransmute, fullCircleFragment, laser, matte, ornate, spiral, starfield, trail, tunnel, vertex)
+module Render.Shaders exposing (circleFragment, disintegrate, donutFragment, fragment, fragmentAlpha, fragmentGrayscale, fragmentTransmute, fullCircleFragment, laser, matte, ornate, spiral, starfield, trail, tunnel, vertex)
 
 import Math.Vector2 exposing (Vec2)
 import Math.Vector3 exposing (Vec3)
@@ -172,6 +172,32 @@ fullCircleFragment =
             } else {
                 gl_FragColor = vec4(color, .0);
             }
+        }
+
+    |]
+
+
+donutFragment : Shader {} (Uniforms { mag : Float }) { vcoord : Vec2 }
+donutFragment =
+    [glsl|
+        precision mediump float;
+
+        uniform vec3 color;
+        uniform float mag;
+
+        varying vec2 vcoord;
+
+        void main ()
+        {
+            float radius = .9;
+            float radiusInner = .8;
+            float dist = dot(2. * vcoord - 1., 2. * vcoord - 1.);
+            float angle = atan(2. * vcoord.x - 1., 2. * vcoord.y - 1.);
+            float intensity = step(dist, radius) - step(dist, radiusInner);
+            if (angle < (2. * mag - 1.) * 3.14159) {
+                return;
+            }
+            gl_FragColor = vec4(color, intensity);
         }
 
     |]

@@ -210,7 +210,7 @@ makeScenario gen prefix =
     xpLoss :: Experience
     xpLoss = 70
     timeLimit :: NominalDiffTime
-    timeLimit = fromIntegral (10 :: Integer)
+    timeLimit = fromIntegral (60 :: Integer)
 
 
 beginPlay :: TVar Server.State -> Client -> TVar Room -> App ()

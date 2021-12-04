@@ -1,4 +1,4 @@
-module Render.Primitives exposing (circle, entity, fullCircle, quad)
+module Render.Primitives exposing (circle, donut, entity, fullCircle, quad)
 
 import Math.Vector2 exposing (Vec2)
 import Render.Meshes
@@ -34,4 +34,11 @@ fullCircle : Uniforms { mag : Float } -> Entity
 fullCircle =
     entity
         Render.Shaders.fullCircleFragment
+        Render.Meshes.quad
+
+
+donut : Uniforms { mag : Float } -> Entity
+donut =
+    entity
+        Render.Shaders.donutFragment
         Render.Meshes.quad
