@@ -20,14 +20,17 @@ import Hand.View as Hand
 import Holding.Types exposing (Holding(..))
 import Holding.View as Holding
 import Hover exposing (Hover(..), HoverDamage(..), HoverSelf)
+import Math.Matrix4 exposing (makeRotate, makeScale3)
 import Math.Vector2 exposing (Vec2, vec2)
 import Math.Vector3 exposing (Vec3, vec3)
 import Model.Wave as Wave
 import Mouse exposing (MouseState(..))
 import Quaternion
 import Render.Primitives
+import Render.Shaders
 import Render.Types as Render
 import Render.Uniforms exposing (uniColourMag)
+import Stack.Entities exposing (wheelZ)
 import Stack.Types exposing (StackCard)
 import Stack.View as Stack
 import Util exposing (interpFloat)
@@ -490,7 +493,7 @@ feedbackView feedback ctx =
 
 
 timeLeftView : Maybe Float -> Context -> List WebGL.Entity
-timeLeftView timeLeft ({ w, h, radius } as ctx) =
+timeLeftView timeLeft ({ perspective, camera3d } as ctx) =
     case timeLeft of
         Just t ->
             let
@@ -501,27 +504,19 @@ timeLeftView timeLeft ({ w, h, radius } as ctx) =
                     Ease.inOutSine (1 - (clamp 0 (seconds * 1000) t / (seconds * 1000)))
             in
             if timeLimitProgress > 0 then
-                [ Render.Primitives.donut <|
-                    uniColourMag ctx
-                        (vec3 (244 / 255) (241 / 255) (94 / 255))
-                        timeLimitProgress
-                        { scale = 0.65 * radius
-                        , position = vec2 (w * 0.5) (h * 0.5)
-                        , rotation = 0
-                        }
+                [ Render.Primitives.quad Render.Shaders.donutFragment <|
+                    { rotation = Quaternion.makeRotate <| Quaternion.zRotation pi
+                    , scale = makeScale3 0.42 0.42 1
+                    , color = vec3 (244 / 255) (241 / 255) (94 / 255)
+                    , pos = vec3 0 0 (0.5 * wheelZ ctx)
+                    , perspective = perspective
+                    , camera = camera3d
+                    , mag = timeLimitProgress
+                    }
                 ]
 
             else
                 []
 
-        -- :: Font.view "Futura"
-        --     (String.fromFloat t)
-        --     { x = 0.5 * w
-        --     , y = 0.5 * h
-        --     , scaleX = radius * 0.0005
-        --     , scaleY = radius * 0.0005
-        --     , color = Colour.white
-        --     }
-        --     ctx
         Nothing ->
             []

@@ -1,4 +1,4 @@
-module Stack.Entities exposing (baseDistance, baseRotation, entities, stackEntity, wheelEntities, wheelEntity)
+module Stack.Entities exposing (baseDistance, baseRotation, entities, stackEntity, wheelEntities, wheelEntity, wheelZ)
 
 import Animation.Types exposing (Anim(..), Bounce(..), CardDiscard(..))
 import Card.State as Card
@@ -129,7 +129,7 @@ wheelEntities ctx =
 wheelEntity : Context -> Float -> Float -> Float -> WheelEntity
 wheelEntity ctx distance i finalI =
     let
-        { anim, progress, w, h } =
+        { anim, progress } =
             ctx
 
         rotateProgress : Float
@@ -145,20 +145,7 @@ wheelEntity ctx distance i finalI =
                     0
 
         z =
-            if w >= h then
-                0
-
-            else if w / h < 0.5 then
-                2.5
-
-            else if w / h < 0.55 then
-                1.75
-
-            else if w / h < 0.6 then
-                1.25
-
-            else
-                0.5
+            wheelZ ctx
 
         position : Vec3
         position =
@@ -180,3 +167,21 @@ wheelEntity ctx distance i finalI =
     , rotation = rotation
     , scale = Card.scale
     }
+
+
+wheelZ : Context -> Float
+wheelZ { w, h } =
+    if w >= h then
+        0
+
+    else if w / h < 0.5 then
+        2.5
+
+    else if w / h < 0.55 then
+        1.75
+
+    else if w / h < 0.6 then
+        1.25
+
+    else
+        0.5
