@@ -139,6 +139,7 @@ executable galgagame
                      , safe
                      , string-conversions
                      , text
+                     , time
                      , transformers
                      , stm
                      , wai
