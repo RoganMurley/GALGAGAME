@@ -10,7 +10,7 @@ import Settings.Types exposing (ModalState(..), Model, VolumeType(..))
 
 
 view : Model -> Flags -> List (Html Main.Msg) -> Html Main.Msg
-view { modalState, masterVolume, gameSpeed } { scaling } nestedViews =
+view { modalState, masterVolume } { scaling } nestedViews =
     let
         settingsStyle =
             case modalState of
@@ -64,25 +64,25 @@ view { modalState, masterVolume, gameSpeed } { scaling } nestedViews =
                         ]
                         []
                     ]
-                , label [ class "settings-label" ]
-                    [ text <| "Game Speed (" ++ String.fromFloat gameSpeed ++ ")"
-                    , input
-                        [ class "settings-slider"
-                        , type_ "range"
-                        , H.min "0.1"
-                        , H.max "2"
-                        , H.step "0.01"
-                        , value <| String.fromFloat gameSpeed
-                        , onInput
-                            (\s ->
-                                Main.SettingsMsg <|
-                                    Settings.SetGameSpeed <|
-                                        Maybe.withDefault 1 (String.toFloat s)
-                            )
-                        ]
-                        []
-                    ]
 
+                -- , label [ class "settings-label" ]
+                --     [ text <| "Game Speed (" ++ String.fromFloat gameSpeed ++ ")"
+                --     , input
+                --         [ class "settings-slider"
+                --         , type_ "range"
+                --         , H.min "0.1"
+                --         , H.max "2"
+                --         , H.step "0.01"
+                --         , value <| String.fromFloat gameSpeed
+                --         , onInput
+                --             (\s ->
+                --                 Main.SettingsMsg <|
+                --                     Settings.SetGameSpeed <|
+                --                         Maybe.withDefault 1 (String.toFloat s)
+                --             )
+                --         ]
+                --         []
+                --     ]
                 -- , label [ class "settings-volume" ]
                 --     [ text "Music Volume"
                 --     , input
