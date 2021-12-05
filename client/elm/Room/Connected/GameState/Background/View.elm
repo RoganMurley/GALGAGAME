@@ -32,7 +32,7 @@ webglView { w, h, time } assets anim =
             Vfx.init
 
         vfx =
-            { baseVfx | rotation = time }
+            { baseVfx | depth = time }
     in
     radialView vfx ctx
 
@@ -55,7 +55,7 @@ getRingRotation { anim, model, progress } =
 
 
 radialView : Vfx.Model -> Context -> List WebGL.Entity
-radialView { rotation } ({ camera2d, ortho, w, h, textures } as ctx) =
+radialView { depth } ({ camera2d, ortho, w, h, textures } as ctx) =
     let
         size =
             1.4 * max w h
@@ -70,7 +70,7 @@ radialView { rotation } ({ camera2d, ortho, w, h, textures } as ctx) =
                 , perspective = ortho
                 , camera = camera2d
                 , spin = getRingRotation ctx
-                , depth = rotation
+                , depth = depth
                 , texture = texture
                 }
             ]

@@ -35,12 +35,16 @@ webglView { w, h } model assets =
                     ]
 
                 Nothing ->
-                    [ radialView model.vfx
-                    , if model.ready then
-                        waitingView model.vfx.rotation
+                    let
+                        subview =
+                            if model.ready then
+                                waitingView
 
-                      else
-                        titleView model.vfx.rotation
+                            else
+                                titleView
+                    in
+                    [ radialView model.vfx
+                    , subview model.vfx.depth
                     , Buttons.view model.buttons
                     ]
 
