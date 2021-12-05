@@ -2,6 +2,8 @@ module GameState.State exposing (mouseDown, mouseUp, tick, update)
 
 import Assets.State as Assets
 import Assets.Types as Assets
+import Audio.State exposing (playSound)
+import Browser.Events exposing (Visibility(..))
 import Chat.Types as Chat
 import DeckBuilding.State as DeckBuilding
 import Game.State exposing (bareContextInit)
@@ -21,7 +23,7 @@ import Waiting.State as Waiting
 
 
 update : Msg -> GameState -> Flags -> Mode -> GameType -> Assets.Model -> ( GameState, Cmd Main.Msg )
-update msg state _ mode _ assets =
+update msg state flags mode _ assets =
     case msg of
         PlayStateMsg playStateMsg ->
             case state of
@@ -49,10 +51,21 @@ update msg state _ mode _ assets =
                 result : Result Json.Error PlayState
                 result =
                     PlayState.resolveOutcomeStr str oldPlayState
+
+                cmd =
+                    case flags.visibility of
+                        Visible ->
+                            Cmd.none
+
+                        Hidden ->
+                            Cmd.batch
+                                [ Ports.setTitle "🔔GALGA"
+                                , playSound assets.audio "sfx/notify.mp3"
+                                ]
             in
             case result of
                 Ok playState ->
-                    ( Started playState, Cmd.none )
+                    ( Started playState, cmd )
 
                 Err err ->
                     ( state, log <| Json.errorToString err )

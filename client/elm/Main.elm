@@ -1,6 +1,7 @@
 module Main exposing (initFull, main)
 
 import Browser
+import Browser.Events exposing (Visibility(..))
 import Browser.Navigation
 import Html exposing (Html)
 import Main.Messages exposing (Msg(..))
@@ -47,6 +48,7 @@ initFull inputFlags url key =
             , scaling = inputFlags.initialScaling
             , key = key
             , mouse = NoMouse
+            , visibility = Visible
             }
     in
     ( model

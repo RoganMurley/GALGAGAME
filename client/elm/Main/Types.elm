@@ -1,6 +1,7 @@
 module Main.Types exposing (Flags, InputFlags, Model, Seed)
 
 import Assets.Types as Assets
+import Browser.Events exposing (Visibility)
 import Browser.Navigation
 import Mouse exposing (MouseState)
 import Notifications.Types as Notifications
@@ -41,6 +42,7 @@ type alias Flags =
     , key : Browser.Navigation.Key
     , pixelRatio : Float
     , scaling : Float
+    , visibility : Visibility
     }
 
 

@@ -4,7 +4,7 @@ import Assets.Messages as Assets
 import Assets.State as Assets
 import Audio.State exposing (setVolume)
 import Browser
-import Browser.Events
+import Browser.Events exposing (Visibility(..))
 import Browser.Navigation
 import Connected.State as Connected
 import Feedback.State as Feedback
@@ -19,6 +19,7 @@ import Login.Decoders as Login
 import Login.State as Login
 import Main.Messages as Main exposing (Msg(..))
 import Main.Types as Main exposing (Flags)
+import Main.View exposing (titleView)
 import Manifest.State as Manifest
 import Math.Vector2 exposing (vec2)
 import Mode exposing (Mode(..))
@@ -337,7 +338,25 @@ update msg ({ assets, room, notifications, settings, flags } as model) =
             ( model, Cmd.none )
 
         VisibilityChange visibility ->
-            ( { model | room = Room.visibilityChange room visibility }, Cmd.none )
+            let
+                newRoom =
+                    Room.visibilityChange room visibility
+
+                newFlags =
+                    { flags
+                        | visibility = visibility
+                    }
+
+                -- Reset the title in case it was change in the background.
+                cmd =
+                    case visibility of
+                        Visible ->
+                            Ports.setTitle (titleView model)
+
+                        Hidden ->
+                            Cmd.none
+            in
+            ( { model | room = newRoom, flags = newFlags }, cmd )
 
 
 locationUpdate : Main.Model -> Url -> ( Main.Model, Cmd Msg )

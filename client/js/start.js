@@ -92,6 +92,10 @@ app.ports.analytics.subscribe(function () {
   }
 });
 
+app.ports.setTitle.subscribe(function (input) {
+  document.title = input;
+});
+
 var touched = false;
 
 function handleMouseDown(e) {

@@ -1,6 +1,7 @@
 module Connected.View exposing (concedeView, htmlView, playersView, specMenuView, titleView, webglView)
 
 import Assets.Types as Assets
+import Browser.Events exposing (Visibility(..))
 import Chat.View as Chat
 import Connected.Messages as Connected
 import Connected.Types exposing (Model, Players)
@@ -94,8 +95,8 @@ specMenuView { hostname, httpPort } { roomID } =
     ]
 
 
-titleView : Model -> String
-titleView { players } =
+titleView : Flags -> Model -> String
+titleView _ { players } =
     let
         name : Maybe String -> String
         name mName =

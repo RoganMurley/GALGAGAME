@@ -83,11 +83,11 @@ settingsView model flags =
             baseViews
 
 
-titleView : Model -> String
-titleView model =
+titleView : Flags -> Model -> String
+titleView flags model =
     case model of
         Connected connected ->
-            Connected.titleView connected ++ " | GALGA"
+            Connected.titleView flags connected ++ " | GALGA"
 
         Replay _ ->
             "Replay | GALGA"

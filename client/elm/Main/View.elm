@@ -12,5 +12,5 @@ view { room, settings, notifications, flags, assets } =
 
 
 titleView : Model -> String
-titleView { room } =
-    Room.titleView room
+titleView { flags, room } =
+    Room.titleView flags room
