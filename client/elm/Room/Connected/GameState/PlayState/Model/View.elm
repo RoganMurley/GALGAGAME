@@ -83,6 +83,9 @@ focusImageView originVec focus ({ anim, tick } as ctx) =
         HandFullPass ->
             []
 
+        Timeout ->
+            []
+
         _ ->
             case focus of
                 Just { card, owner } ->
@@ -224,6 +227,9 @@ focusTextView originVec focus ({ w, h, anim, radius, tick } as ctx) =
             []
 
         HandFullPass ->
+            []
+
+        Timeout ->
             []
 
         _ ->
@@ -498,6 +504,30 @@ turnView focus passed timeLeft ctx =
                     , y = h * 0.5
                     , scaleX = 0.0001 * size + 0.003 * sin (tick * 0.005)
                     , scaleY = 0.0001 * size + 0.003 * sin (tick * 0.007)
+                    , color = vec3 (244 / 255) (241 / 255) (94 / 255)
+                    }
+                    ctx
+                ]
+
+        ( Timeout, _, _ ) ->
+            List.concat
+                [ Font.view
+                    "Futura"
+                    "TIMEOUT!"
+                    { x = w * 0.5 - 0.003 * size
+                    , y = h * 0.5
+                    , scaleX = 0.00015 * size + 0.003 * sin (tick * 0.005)
+                    , scaleY = 0.00015 * size + 0.003 * sin (tick * 0.007)
+                    , color = vec3 (20 / 255) (20 / 255) (20 / 255)
+                    }
+                    ctx
+                , Font.view
+                    "Futura"
+                    "TIMEOUT!"
+                    { x = w * 0.5
+                    , y = h * 0.5
+                    , scaleX = 0.00015 * size + 0.003 * sin (tick * 0.005)
+                    , scaleY = 0.00015 * size + 0.003 * sin (tick * 0.007)
                     , color = vec3 (244 / 255) (241 / 255) (94 / 255)
                     }
                     ctx

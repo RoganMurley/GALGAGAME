@@ -30,6 +30,7 @@ data CardAnim
   | DiscardHand WhichPlayer [CardDiscard]
   | MoveStack (Wheel (Maybe Int)) Int
   | Pass WhichPlayer
+  | Timeout
   | GetGen
   deriving (Show, Eq, Generic, NFData)
 
@@ -125,6 +126,11 @@ instance ToJSON CardAnim where
     [ "name"   .= ("getGen" :: Text)
     , "player" .= PlayerA
     ]
+  toJSON Timeout =
+    object
+    [ "name"   .= ("timeout" :: Text)
+    , "player" .= PlayerA
+    ]
 
 
 instance Mirror CardAnim where
@@ -143,6 +149,7 @@ instance Mirror CardAnim where
   mirror (MoveStack m t)   = MoveStack m t
   mirror (Pass w)          = Pass (other w)
   mirror GetGen            = GetGen
+  mirror Timeout           = Timeout
 
 
 data Hurt

@@ -27,6 +27,7 @@ type Anim
     | HandFullPass
     | Finding
     | GetGen
+    | Timeout
 
 
 type Hurt

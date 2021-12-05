@@ -72,6 +72,9 @@ animMaxTick anim =
             GetGen ->
                 1
 
+            Timeout ->
+                2000
+
             _ ->
                 400.0
           )

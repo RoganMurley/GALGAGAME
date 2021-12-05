@@ -63,6 +63,9 @@ decoder =
                 "getGen" ->
                     succeed GetGen
 
+                "timeout" ->
+                    succeed Timeout
+
                 _ ->
                     Json.fail <| "Unknown anim name " ++ animName
     in

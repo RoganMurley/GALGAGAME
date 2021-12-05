@@ -78,7 +78,7 @@ update cmd which state scenario users time =
             HoverCard hover ->
               hoverCard hover which playing
             Concede ->
-              concede which state
+              concede which state []
             Heartbeat ->
               heartbeat time playing
             God str ->
@@ -125,14 +125,14 @@ chat username msg =
   )
 
 
-concede :: WhichPlayer -> GameState -> Either Err (Maybe GameState, [Outcome])
-concede which (Started (Playing playing)) =
+concede :: WhichPlayer -> GameState -> [ResolveData] -> Either Err (Maybe GameState, [Outcome])
+concede which (Started (Playing playing)) extraRes =
   let
     model = playing_model playing :: Model
     replay = playing_replay playing :: Active.Replay
     gen = Alpha.evalI model Alpha.getGen :: Gen
     winner = Just $ other which :: Maybe WhichPlayer
-    res = [resolveAnim $ GameEnd winner] :: [ResolveData]
+    res = extraRes ++ [resolveAnim $ GameEnd winner] :: [ResolveData]
     newReplay = Active.add replay res :: Active.Replay
     newPlayState = Ended winner model newReplay gen :: PlayState
     finalReplay = Final.finalise newReplay newPlayState :: Final.Replay
@@ -144,7 +144,7 @@ concede which (Started (Playing playing)) =
       , Outcome.SaveReplay finalReplay
       ]
     )
-concede _ _ =
+concede _ _ _ =
   Left "Cannot concede when not playing"
 
 
@@ -512,9 +512,10 @@ heartbeat currentTime playing =
     delta = diffUTCTime currentTime previousTime :: NominalDiffTime
     which = model_turn model :: WhichPlayer
     timeLeft = timeLimit - delta :: NominalDiffTime
+    (_, _, res) = Beta.execute model $ foldFree Beta.betaI (Beta.rawAnim Timeout)
   in
     if delta > timeLimit then
-      concede which (Started . Playing $ playing)
+      concede which (Started . Playing $ playing) res
         else Right (Nothing, [Outcome.Encodable $ Outcome.Heartbeat timeLeft])
 
 
