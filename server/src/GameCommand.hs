@@ -5,7 +5,7 @@ import CardAnim (CardAnim(..))
 import Control.Monad (join, when)
 import Control.Monad.Free (foldFree)
 import Control.Monad.Trans.Writer (Writer, runWriter, tell)
-import Data.Time.Clock (NominalDiffTime, UTCTime, diffUTCTime)
+import Data.Time.Clock (NominalDiffTime, UTCTime, addUTCTime, diffUTCTime)
 import Data.Foldable (toList)
 import Data.Maybe (fromMaybe)
 import Data.Monoid ((<>))
@@ -82,7 +82,7 @@ update cmd which state scenario users time =
             Heartbeat ->
               heartbeat time scenario playing
             God str ->
-              godMode (getUser which users) str which playing
+              godMode (getUser which users) str which time scenario playing
             _ ->
               Left ("Unknown command " <> (cs $ show cmd) <> " on a Playing GameState")
         Ended winner _ _ gen ->
@@ -442,11 +442,11 @@ hoverCard NoHover which _ =
     Right (Nothing, [ Outcome.Encodable $ Outcome.Hover which NoHover hoverDamage ])
 
 
-godMode :: Maybe User -> Text -> WhichPlayer -> PlayingR -> Either Err (Maybe GameState, [Outcome])
-godMode mUser str which (PlayingR { playing_model = model, playing_replay = replay, playing_utc }) =
+godMode :: Maybe User -> Text -> WhichPlayer -> UTCTime -> Scenario -> PlayingR -> Either Err (Maybe GameState, [Outcome])
+godMode mUser str which time scenario (PlayingR { playing_model = model, playing_replay = replay, playing_utc }) =
   if fromMaybe False $ isSuperuser <$> mUser then
     case GodMode.parse which str of
-      Right betaProgram ->
+      GodMode.ParsedProgram betaProgram ->
         let
           program = foldFree Beta.betaI $ betaProgram :: Beta.AlphaLogAnimProgram ()
           (m, _, res) = Beta.execute model program :: (Model, String, [ResolveData])
@@ -456,7 +456,18 @@ godMode mUser str which (PlayingR { playing_model = model, playing_replay = repl
             Just . Started $ newPlayState
           , [Outcome.Encodable $ Outcome.Resolve res model newPlayState Nothing]
           )
-      Left err ->
+      GodMode.ParsedTimeLimit t ->
+        let
+          -- Set the last interaction time to be t seconds before the time limit
+          utc = addUTCTime
+            (scenario_timeLimit scenario - fromIntegral t )
+            time
+        in
+          Right (
+            Just . Started . Playing $ PlayingR { playing_model = model, playing_replay = replay, playing_utc = Just time}
+          , [Outcome.Encodable $ Outcome.Heartbeat $ fromIntegral t]
+          )
+      GodMode.ParseError err ->
         Left err
   else
     Left $ "Not a superuser"

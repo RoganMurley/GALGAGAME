@@ -14,7 +14,12 @@ import qualified Data.Map as Map
 import qualified DSL.Beta as Beta
 
 
-parse :: WhichPlayer -> Text -> Either Err (Beta.Program ())
+data Parsed = ParsedProgram (Beta.Program ())
+            | ParsedTimeLimit Int
+            | ParseError Err
+
+
+parse :: WhichPlayer -> Text -> Parsed
 parse which msg =
   let
     (command, content) = breakAt " " msg :: (Text, Text)
@@ -23,32 +28,38 @@ parse which msg =
       "slash" ->
         case readMay $ cs content of
           Just d ->
-            Right $ Beta.hurt d (other which) Slash
+            ParsedProgram $ Beta.hurt d (other which) Slash
           Nothing ->
-            Left ("Cannot parse " <> content <> " to int" :: Err)
+            ParseError ("Cannot parse " <> content <> " to int" :: Err)
       "slashSelf" ->
         case readMay $ cs content of
           Just d ->
-            Right $ Beta.hurt d which Slash
+            ParsedProgram $ Beta.hurt d which Slash
           Nothing ->
-            Left ("Cannot parse " <> content <> " to int" :: Err)
+            ParseError ("Cannot parse " <> content <> " to int" :: Err)
       "heal" ->
         case readMay $ cs content of
           Just h ->
-            Right $ Beta.heal h which
+            ParsedProgram $ Beta.heal h which
           Nothing ->
-            Left ("Cannot parse " <> content <> " to int" :: Err)
+            ParseError ("Cannot parse " <> content <> " to int" :: Err)
       "draw" ->
-        Right $ Beta.draw which which 0.1
+        ParsedProgram $ Beta.draw which which 0.1
       "card" ->
         case Map.lookup content cardsByName of
           Just card ->
-            Right $ Beta.addToHand which card
+            ParsedProgram $ Beta.addToHand which card
           Nothing ->
-            Left ("Unknown card: " <> content :: Err)
+            ParseError ("Unknown card: " <> content :: Err)
       "windup" ->
-        Right $ Beta.windup
+        ParsedProgram $ Beta.windup
       "rotate" ->
-        Right $ Beta.rotate
+        ParsedProgram $ Beta.rotate
+      "timeLimit" ->
+        case readMay $ cs content of
+          Just t ->
+            ParsedTimeLimit t
+          Nothing ->
+            ParseError ("Cannot parse " <> content <> " to int" :: Err)
       _ ->
-        Left ("Unknown commandment: " <> command :: Err)
+        ParseError ("Unknown commandment: " <> command :: Err)
