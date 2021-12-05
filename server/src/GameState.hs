@@ -3,7 +3,7 @@ module GameState where
 
 import Control.DeepSeq (NFData(..))
 import Data.Aeson (ToJSON(..), (.=), object)
-import Data.Time.Clock (UTCTime)
+import Data.Time.Clock (NominalDiffTime, UTCTime)
 import GHC.Generics (Generic)
 import DeckBuilding (Character(..), DeckBuilding, characterCards)
 import Mirror (Mirror(..))
@@ -53,9 +53,10 @@ data PlayState =
 
 
 data PlayingR = PlayingR
-  { playing_model  :: Model
-  , playing_replay :: Active.Replay
-  , playing_utc    :: Maybe UTCTime
+  { playing_model     :: Model
+  , playing_replay    :: Active.Replay
+  , playing_utc       :: Maybe UTCTime
+  , playing_timeLimit :: NominalDiffTime
   } deriving (Eq, Generic, NFData, Show)
 
 
@@ -72,8 +73,8 @@ instance ToJSON PlayState where
 
 
 instance Mirror PlayState where
-  mirror (Playing (PlayingR m r u)) = Playing (PlayingR (mirror m) (mirror r) u)
-  mirror (Ended w m r gen)          = Ended (other <$> w) (mirror m) (mirror r) gen
+  mirror (Playing (PlayingR m r u t)) = Playing $ PlayingR (mirror m) (mirror r) u t
+  mirror (Ended w m r gen)            = Ended (other <$> w) (mirror m) (mirror r) gen
 
 
 instance Mirror GameState where

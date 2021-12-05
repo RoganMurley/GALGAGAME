@@ -119,8 +119,9 @@ roomSetup room =
             deckBuildingModel = initDeckBuilding (scenario_characterPa scenario) (scenario_characterPb scenario)
             turn = scenario_turn scenario
             startProgram = scenario_prog scenario
+            timeLimit = scenario_timeLimit scenario
             users = Room.getUsers room
-            (state, newOutcomes) = nextSelectState deckBuildingModel turn startProgram gen users (posixSecondsToUTCTime 0)
+            (state, newOutcomes) = nextSelectState deckBuildingModel turn startProgram gen users (posixSecondsToUTCTime 0) timeLimit
           in
             (room { room_state = state }, newOutcomes)
         _ ->

@@ -5,7 +5,7 @@ import CardAnim (CardAnim(..))
 import Control.Monad (join, when)
 import Control.Monad.Free (foldFree)
 import Control.Monad.Trans.Writer (Writer, runWriter, tell)
-import Data.Time.Clock (NominalDiffTime, UTCTime, addUTCTime, diffUTCTime)
+import Data.Time.Clock (NominalDiffTime, UTCTime, diffUTCTime)
 import Data.Foldable (toList)
 import Data.Maybe (fromMaybe)
 import Data.Monoid ((<>))
@@ -80,9 +80,9 @@ update cmd which state scenario users time =
             Concede ->
               concede which state
             Heartbeat ->
-              heartbeat time scenario playing
+              heartbeat time playing
             God str ->
-              godMode (getUser which users) str which time scenario playing
+              godMode (getUser which users) str which time playing
             _ ->
               Left ("Unknown command " <> (cs $ show cmd) <> " on a Playing GameState")
         Ended winner _ _ gen ->
@@ -111,7 +111,8 @@ rematch (winner, gen) users scenario time =
     deckModel = initDeckBuilding (scenario_characterPa scenario) (scenario_characterPb scenario)
     turn = fromMaybe PlayerA winner
     startProgram = scenario_prog scenario
-    (newState, outcomes) = nextSelectState deckModel turn startProgram (fst $ split gen) users time
+    timeLimit = scenario_timeLimit scenario
+    (newState, outcomes) = nextSelectState deckModel turn startProgram (fst $ split gen) users time timeLimit
   in
     Right (Just newState, outcomes)
 
@@ -163,7 +164,8 @@ select which choice deckModel turn scenario gen users time =
         newDeckModel :: DeckBuilding
         newDeckModel = selectCharacter deckModel which character
         startProgram = scenario_prog scenario
-        (newState, outcomes) = nextSelectState newDeckModel turn startProgram gen users time
+        timeLimit = scenario_timeLimit scenario
+        (newState, outcomes) = nextSelectState newDeckModel turn startProgram gen users time timeLimit
       in
         Right (Just newState, outcomes)
     Left err ->
@@ -176,8 +178,9 @@ nextSelectState :: DeckBuilding
                 -> Gen
                 -> (Maybe User, Maybe User)
                 -> UTCTime
+                -> NominalDiffTime
                 -> (GameState, [Outcome])
-nextSelectState deckModel turn startProgram gen (mUserPa, mUserPb) time =
+nextSelectState deckModel turn startProgram gen (mUserPa, mUserPb) time timeLimit =
   let
     result :: Maybe ([ResolveData], Model, PlayState)
     result =
@@ -198,6 +201,7 @@ nextSelectState deckModel turn startProgram gen (mUserPa, mUserPb) time =
               { playing_model = newModel
               , playing_replay = Active.add replay res
               , playing_utc = Just time
+              , playing_timeLimit = timeLimit
               }
           in
             Just (res, model, playstate)
@@ -464,8 +468,8 @@ hoverCard NoHover which _ =
     Right (Nothing, [ Outcome.Encodable $ Outcome.Hover which NoHover hoverDamage ])
 
 
-godMode :: Maybe User -> Text -> WhichPlayer -> UTCTime -> Scenario -> PlayingR -> Either Err (Maybe GameState, [Outcome])
-godMode mUser str which time scenario playing =
+godMode :: Maybe User -> Text -> WhichPlayer -> UTCTime -> PlayingR -> Either Err (Maybe GameState, [Outcome])
+godMode mUser str which time playing =
   let
     model = playing_model playing :: Model
     replay = playing_replay playing :: Active.Replay
@@ -485,29 +489,26 @@ godMode mUser str which time scenario playing =
               Just . Started $ newPlayState
             , [Outcome.Encodable $ Outcome.Resolve res model newPlayState Nothing]
             )
-        GodMode.ParsedTimeLimit t ->
-          let
-            -- Set the last interaction time to be t seconds before the time limit
-            utc = addUTCTime
-              (scenario_timeLimit scenario - fromIntegral t )
-              time
-          in
-            Right (
-              Just . Started . Playing $ playing { playing_utc = Just utc }
-            , [Outcome.Encodable $ Outcome.Heartbeat $ fromIntegral t]
-            )
+        GodMode.ParsedTimeLimit timeLimit ->
+          Right (
+            Just . Started . Playing $ playing
+              { playing_utc = Just time
+              , playing_timeLimit = fromIntegral timeLimit
+              }
+          , [Outcome.Encodable $ Outcome.Heartbeat $ fromIntegral timeLimit]
+          )
         GodMode.ParseError err ->
           Left err
     else
       Left "Not a superuser"
 
 
-heartbeat :: UTCTime -> Scenario -> PlayingR -> Either Err (Maybe GameState, [Outcome])
-heartbeat currentTime scenario playing =
+heartbeat :: UTCTime -> PlayingR -> Either Err (Maybe GameState, [Outcome])
+heartbeat currentTime playing =
   let
     previousTime = fromMaybe currentTime $ playing_utc playing :: UTCTime
     model = playing_model playing :: Model
-    timeLimit = scenario_timeLimit scenario :: NominalDiffTime
+    timeLimit = playing_timeLimit playing :: NominalDiffTime
     delta = diffUTCTime currentTime previousTime :: NominalDiffTime
     which = model_turn model :: WhichPlayer
     timeLeft = timeLimit - delta :: NominalDiffTime
