@@ -109,4 +109,8 @@ isWinner _ _ = False
 
 
 playingFromModel :: Model -> PlayingR
-playingFromModel m = PlayingR m Active.null Nothing
+playingFromModel model = PlayingR
+  { playing_model = model
+  , playing_replay = Active.null
+  , playing_utc = Nothing
+  }

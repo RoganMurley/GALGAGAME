@@ -33,8 +33,10 @@ evalResult _ (Left err)    = error (cs err)
 evalState :: WhichPlayer -> PlayState -> Weight
 evalState w (Ended (Just winner) _ _ _)                    = if winner == w then 100 else -200
 evalState _ (Ended Nothing _  _ _)                         = 50
-evalState w (Playing (PlayingR { playing_model = model })) = evalModel model
+evalState w (Playing playing) = evalModel model
   where
+    model :: Model
+    model = playing_model playing
     evalModel :: Model -> Weight
     evalModel m
       | (diasporaLength $ evalI m $ getStack) > 0 =

@@ -385,8 +385,9 @@ chooseComputerCommand which room gen = do
         return Nothing
           else
             return . Just . SelectCharacterCommand $ randomChoice
-    Started (Playing (PlayingR { playing_model })) ->
-      return $ trans <$> chooseAction gen which playing_model (Room.getScenario r)
+    Started (Playing playing) -> do
+      let model = playing_model playing
+      return $ trans <$> chooseAction gen which model (Room.getScenario r)
     _ ->
       return Nothing
   where

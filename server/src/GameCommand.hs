@@ -127,7 +127,8 @@ chat username msg =
 concede :: WhichPlayer -> GameState -> Either Err (Maybe GameState, [Outcome])
 concede which (Started (Playing playing)) =
   let
-    PlayingR{ playing_model = model, playing_replay = replay } = playing
+    model = playing_model playing :: Model
+    replay = playing_replay playing :: Active.Replay
     gen = Alpha.evalI model Alpha.getGen :: Gen
     winner = Just $ other which :: Maybe WhichPlayer
     res = [resolveAnim $ GameEnd winner] :: [ResolveData]
@@ -181,7 +182,7 @@ nextSelectState deckModel turn startProgram gen (mUserPa, mUserPb) time =
     result :: Maybe ([ResolveData], Model, PlayState)
     result =
       case deckModel of
-        (DeckBuilding (Right (ChosenCharacter ca)) (Right (ChosenCharacter cb))) ->
+        DeckBuilding (Right (ChosenCharacter ca)) (Right (ChosenCharacter cb)) ->
           let
             model = initModel turn ca cb gen :: Model
             displayUsernamePa = fromMaybe "" $ getUsername <$> mUserPa :: Text
@@ -193,13 +194,11 @@ nextSelectState deckModel turn startProgram gen (mUserPa, mUserPb) time =
             replay = Active.init model usernamesPa usernamesPb :: Active.Replay
             (newModel, _, res) = Beta.execute model $ foldFree Beta.betaI startProgram
             playstate :: PlayState
-            playstate = Playing (
-                PlayingR
-                  { playing_model = newModel
-                  , playing_replay = Active.add replay res
-                  , playing_utc = Just time
-                  }
-              )
+            playstate = Playing $ PlayingR
+              { playing_model = newModel
+              , playing_replay = Active.add replay res
+              , playing_utc = Just time
+              }
           in
             Just (res, model, playstate)
         _ ->
@@ -223,15 +222,12 @@ nextSelectState deckModel turn startProgram gen (mUserPa, mUserPb) time =
 
 
 playCard :: Int -> WhichPlayer -> PlayingR -> UTCTime -> Either Err (Maybe GameState, [Outcome])
-playCard index which (PlayingR { playing_model = model, playing_replay = replay }) time
+playCard index which playing time
   | turn /= which = Left "You can't play a card when it's not your turn"
   | otherwise     =
     case card of
       Nothing ->
-        Left $
-          cs $
-            "You can't play a card you don't have in your hand (" ++
-              show index ++ "," ++ show which ++ ")"
+        Left . cs $ "You can't play a card you don't have in your hand (" ++ show index ++ "," ++ show which ++ ")"
       Just c ->
         let
           program :: Beta.Program ()
@@ -240,20 +236,29 @@ playCard index which (PlayingR { playing_model = model, playing_replay = replay 
             Beta.windup
             Beta.raw $ Alpha.setHold True
           (newModel, _, res) = Beta.execute model $ foldFree Beta.betaI program
+          (result, newRes) = runWriter $ resolveAll playing
+            { playing_model = newModel
+            , playing_replay = replay `Active.add` res
+            }
         in
-          case runWriter $ resolveAll (PlayingR newModel (replay `Active.add` res) (Just time)) of
-            (Playing (PlayingR m newReplay _), newRes) ->
+          case result of
+            Playing newPlaying ->
               let
-                newPlayState = Playing (PlayingR m (newReplay `Active.add` newRes) (Just time))
-                -- The player who played the card does that animation clientside, so only send the rest.
+                newPlayState :: PlayState
+                newPlayState = Playing $ newPlaying
+                  { playing_model = playing_model newPlaying
+                  , playing_replay = playing_replay newPlaying `Active.add` newRes
+                  , playing_utc = Just time
+                  }
               in
-                Right (
-                  Just . Started $ newPlayState,
-                  [ Outcome.Encodable $ Outcome.Resolve (res ++ newRes) model    newPlayState (Just which)
-                  , Outcome.Encodable $ Outcome.Resolve newRes          newModel newPlayState (Just (other which))
-                  ]
-                )
-            (Ended w m newReplay g, newRes) ->
+              -- The player who played the card does that animation clientside, so only send the rest.
+              Right (
+                Just . Started $ newPlayState,
+                [ Outcome.Encodable $ Outcome.Resolve (res ++ newRes) model    newPlayState (Just which)
+                , Outcome.Encodable $ Outcome.Resolve newRes          newModel newPlayState (Just (other which))
+                ]
+              )
+            Ended w m newReplay g ->
               let
                 newPlayState = Ended w m newReplay g :: PlayState
                 newState     = Started newPlayState :: GameState
@@ -268,6 +273,8 @@ playCard index which (PlayingR { playing_model = model, playing_replay = replay 
                   ]
                 )
   where
+    model = playing_model playing :: Model
+    replay = playing_replay playing :: Active.Replay
     (hand, turn, card) =
       Alpha.evalI model $ do
         h <- Alpha.getHand which
@@ -284,7 +291,7 @@ endTurn which playing time
     case passes of
       OnePass ->
         case runWriter $ resolveAll playing of
-          (Playing (PlayingR { playing_model = m, playing_replay = newReplay }), res) ->
+          (Playing newPlaying, res) ->
             let
               roundEndProgram :: Beta.Program ()
               roundEndProgram = do
@@ -292,8 +299,13 @@ endTurn which playing time
                 Beta.raw Alpha.resetPasses
                 Beta.draw PlayerA PlayerA 1
                 Beta.draw PlayerB PlayerB 1
-              (newModel, _, endRes) = Beta.execute m $ foldFree Beta.betaI roundEndProgram
-              newPlayState = Playing (PlayingR newModel (Active.add newReplay endRes) (Just time)) :: PlayState
+              (newModel, _, endRes) = Beta.execute (playing_model newPlaying) $ foldFree Beta.betaI roundEndProgram
+              newPlayState :: PlayState
+              newPlayState = Playing $ newPlaying
+                { playing_model = newModel
+                , playing_replay = replay `Active.add` endRes
+                , playing_utc = Just time
+                }
               newState = Started newPlayState :: GameState
             in
               Right (
@@ -320,23 +332,26 @@ endTurn which playing time
             Beta.raw Alpha.swapTurn
             Beta.rawAnim $ Pass which
           (newModel, _, res) = Beta.execute model $ foldFree Beta.betaI endTurnProgram
-          newPlayState = Playing (PlayingR newModel replay (Just time)) :: PlayState
+          newPlayState :: PlayState
+          newPlayState = Playing $ playing
+            { playing_model = newModel
+            , playing_replay = replay `Active.add` res
+            , playing_utc = Just time
+            }
         in
           Right (
             Just . Started $ newPlayState,
-            [
-              Outcome.Encodable $ Outcome.Resolve res model newPlayState Nothing
-            ]
+            [Outcome.Encodable $ Outcome.Resolve res model newPlayState Nothing]
           )
   where
+    model = playing_model playing :: Model
+    replay = playing_replay playing :: Active.Replay
     (turn, passes) =
       Alpha.evalI model $ do
         t <- Alpha.getTurn
         p <- Alpha.getPasses
         return (t, p)
-    full :: Bool
-    full = Alpha.evalI model $ Alpha.handFull which
-    (PlayingR { playing_model = model, playing_replay = replay }) = playing
+    full = Alpha.evalI model $ Alpha.handFull which :: Bool
 
 
 resolveAll :: PlayingR -> Writer [ResolveData] PlayState
@@ -345,7 +360,8 @@ resolveAll playing = resolveAll' playing 0 id
 
 resolveAll' :: PlayingR -> Int -> (Card -> Card) -> Writer [ResolveData] PlayState
 resolveAll' playing resolutionCount rewrite = do
-  let PlayingR{ playing_model = model, playing_replay = replay } = playing
+  let model = playing_model playing
+  let replay = playing_replay playing
   let (modelA, _, resA) = Beta.execute model preProgram :: (Model, String, [ResolveData])
   tell resA
   let mStackCard = Alpha.evalI modelA (wheel_0 <$> Alpha.getStack)
@@ -354,16 +370,18 @@ resolveAll' playing resolutionCount rewrite = do
       let (modelB, _, resB) = Beta.execute modelA (cardProgram stackCard) :: (Model, String, [ResolveData])
       tell resB
       let newReplay = replay `Active.add` resA `Active.add` resB
-      case checkWin (PlayingR modelB newReplay Nothing) of
+      case checkWin (playing { playing_model = modelB, playing_replay = newReplay }) of
         Playing newPlaying ->
           resolveAll' newPlaying nextResolutionCount rewrite
         Ended w m finalReplay gen -> do
           let endRes = [resolveAnim $ GameEnd w]
           tell endRes
           return (Ended w m (finalReplay `Active.add` endRes) gen)
-    Nothing -> do
-      let newReplay = replay `Active.add` resA
-      return (Playing (PlayingR modelA newReplay Nothing))
+    Nothing ->
+      return . Playing $ playing
+        { playing_model = modelA
+        , playing_replay = replay `Active.add` resA
+        }
   where
     isFinite :: Bool
     isFinite = resolutionCount < 20
@@ -386,7 +404,7 @@ resolveAll' playing resolutionCount rewrite = do
 
 
 checkWin :: PlayingR -> PlayState
-checkWin (playing@(PlayingR { playing_model = model, playing_replay = replay }))
+checkWin playing
   | lifePA <= 0 && lifePB <= 0 =
     Ended Nothing model replay gen
   | lifePB <= 0 =
@@ -396,6 +414,8 @@ checkWin (playing@(PlayingR { playing_model = model, playing_replay = replay }))
   | otherwise =
     Playing playing
   where
+    model = playing_model playing :: Model
+    replay = playing_replay playing :: Active.Replay
     (gen, lifePA, lifePB) =
       Alpha.evalI model $ do
         g  <- Alpha.getGen
@@ -405,9 +425,10 @@ checkWin (playing@(PlayingR { playing_model = model, playing_replay = replay }))
 
 
 hoverCard :: HoverState -> WhichPlayer -> PlayingR -> Either Err (Maybe GameState, [Outcome])
-hoverCard (HoverHand i) which (PlayingR { playing_model = model }) =
+hoverCard (HoverHand i) which playing =
   let
     hand = Alpha.evalI model $ Alpha.getHand which :: Hand
+    model = playing_model playing :: Model
   in
     case atMay hand i of
       Just card ->
@@ -420,9 +441,10 @@ hoverCard (HoverHand i) which (PlayingR { playing_model = model }) =
           hoverDamage = tupleMap2 Outcome.damageToHoverDamage damage
       Nothing ->
         ignore
-hoverCard (HoverStack i) which (PlayingR { playing_model = model }) =
+hoverCard (HoverStack i) which playing =
   let
     stack = Alpha.evalI model $ Alpha.getStack :: Stack
+    model = playing_model playing :: Model
   in
     case atMay (toList stack) i of
       Just (Just (StackCard owner card)) ->
@@ -443,34 +465,41 @@ hoverCard NoHover which _ =
 
 
 godMode :: Maybe User -> Text -> WhichPlayer -> UTCTime -> Scenario -> PlayingR -> Either Err (Maybe GameState, [Outcome])
-godMode mUser str which time scenario (PlayingR { playing_model = model, playing_replay = replay, playing_utc }) =
-  if fromMaybe False $ isSuperuser <$> mUser then
-    case GodMode.parse which str of
-      GodMode.ParsedProgram betaProgram ->
-        let
-          program = foldFree Beta.betaI $ betaProgram :: Beta.AlphaLogAnimProgram ()
-          (m, _, res) = Beta.execute model program :: (Model, String, [ResolveData])
-          newPlayState = Playing (PlayingR m (Active.add replay res) playing_utc) :: PlayState
-        in
-          Right (
-            Just . Started $ newPlayState
-          , [Outcome.Encodable $ Outcome.Resolve res model newPlayState Nothing]
-          )
-      GodMode.ParsedTimeLimit t ->
-        let
-          -- Set the last interaction time to be t seconds before the time limit
-          utc = addUTCTime
-            (scenario_timeLimit scenario - fromIntegral t )
-            time
-        in
-          Right (
-            Just . Started . Playing $ PlayingR { playing_model = model, playing_replay = replay, playing_utc = Just utc}
-          , [Outcome.Encodable $ Outcome.Heartbeat $ fromIntegral t]
-          )
-      GodMode.ParseError err ->
-        Left err
-  else
-    Left $ "Not a superuser"
+godMode mUser str which time scenario playing =
+  let
+    model = playing_model playing :: Model
+    replay = playing_replay playing :: Active.Replay
+  in
+    if fromMaybe False $ isSuperuser <$> mUser then
+      case GodMode.parse which str of
+        GodMode.ParsedProgram betaProgram ->
+          let
+            program = foldFree Beta.betaI $ betaProgram :: Beta.AlphaLogAnimProgram ()
+            (m, _, res) = Beta.execute model program :: (Model, String, [ResolveData])
+            newPlayState = Playing $ playing
+              { playing_model = m
+              , playing_replay = Active.add replay res
+              }
+          in
+            Right (
+              Just . Started $ newPlayState
+            , [Outcome.Encodable $ Outcome.Resolve res model newPlayState Nothing]
+            )
+        GodMode.ParsedTimeLimit t ->
+          let
+            -- Set the last interaction time to be t seconds before the time limit
+            utc = addUTCTime
+              (scenario_timeLimit scenario - fromIntegral t )
+              time
+          in
+            Right (
+              Just . Started . Playing $ playing { playing_utc = Just utc }
+            , [Outcome.Encodable $ Outcome.Heartbeat $ fromIntegral t]
+            )
+        GodMode.ParseError err ->
+          Left err
+    else
+      Left "Not a superuser"
 
 
 heartbeat :: UTCTime -> Scenario -> PlayingR -> Either Err (Maybe GameState, [Outcome])
