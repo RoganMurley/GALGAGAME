@@ -99,7 +99,7 @@ tick ctx dt model =
     { model
         | runeSelect = newRuneSelect
         , bounceTick = model.bounceTick + dt
-        , vfx = Vfx.tick dt model.vfx ctx
+        , vfx = Vfx.tick dt model.vfx Nothing ctx
         , buttons =
             case model.runeSelect of
                 Just runeSelect ->

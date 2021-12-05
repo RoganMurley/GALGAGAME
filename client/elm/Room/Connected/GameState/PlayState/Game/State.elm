@@ -179,7 +179,7 @@ tick { dimensions, mouse } dt model chat =
                     }
                 , focus = focus
                 , feedback = feedback
-                , vfx = Vfx.tick dt model.vfx ctx
+                , vfx = Vfx.tick dt model.vfx timeLeft ctx
                 , buttons = buttonEntities model.passed mouse dt model.buttons chat ctx
                 , holding = holding
                 , timeLeft = timeLeft
