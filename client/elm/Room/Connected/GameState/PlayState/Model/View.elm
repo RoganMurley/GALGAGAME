@@ -367,45 +367,45 @@ turnView focus passed timeLeft ctx =
         timeLeftProgress =
             Maybe.withDefault 0 (Maybe.map TimeLimit.progress timeLeft)
     in
-    if timeLeftProgress > 0 then
-        case timeLeft of
-            Just t ->
-                let
-                    str =
-                        String.fromInt (ceiling (max 0 t / 1000))
-                in
-                List.concat
-                    [ Font.view
-                        "Futura"
-                        str
-                        { x = w * 0.5 - 0.003 * size
-                        , y = h * 0.5
-                        , scaleX = 0.0003 * size + 0.003 * sin (tick * 0.005)
-                        , scaleY = 0.0003 * size + 0.003 * sin (tick * 0.007)
-                        , color = vec3 (20 / 255) (20 / 255) (20 / 255)
-                        }
-                        ctx
-                    , Font.view
-                        "Futura"
-                        str
-                        { x = w * 0.5
-                        , y = h * 0.5
-                        , scaleX = 0.0003 * size + 0.003 * sin (tick * 0.005)
-                        , scaleY = 0.0003 * size + 0.003 * sin (tick * 0.007)
-                        , color = vec3 (244 / 255) (241 / 255) (94 / 255)
-                        }
-                        ctx
-                    ]
+    case ( anim, focus, passed ) of
+        ( Mill _ _ _, _, _ ) ->
+            []
 
-            Nothing ->
-                []
+        ( NullAnim, Nothing, False ) ->
+            if timeLeftProgress > 0 then
+                case timeLeft of
+                    Just t ->
+                        let
+                            str =
+                                String.fromInt (ceiling (max 0 t / 1000))
+                        in
+                        List.concat
+                            [ Font.view
+                                "Futura"
+                                str
+                                { x = w * 0.5 - 0.003 * size
+                                , y = h * 0.5
+                                , scaleX = 0.0003 * size + 0.003 * sin (tick * 0.005)
+                                , scaleY = 0.0003 * size + 0.003 * sin (tick * 0.007)
+                                , color = vec3 (20 / 255) (20 / 255) (20 / 255)
+                                }
+                                ctx
+                            , Font.view
+                                "Futura"
+                                str
+                                { x = w * 0.5
+                                , y = h * 0.5
+                                , scaleX = 0.0003 * size + 0.003 * sin (tick * 0.005)
+                                , scaleY = 0.0003 * size + 0.003 * sin (tick * 0.007)
+                                , color = vec3 (244 / 255) (241 / 255) (94 / 255)
+                                }
+                                ctx
+                            ]
 
-    else
-        case ( anim, focus, passed ) of
-            ( Mill _ _ _, _, _ ) ->
-                []
+                    Nothing ->
+                        []
 
-            ( NullAnim, Nothing, False ) ->
+            else
                 case model.turn of
                     PlayerA ->
                         List.concat
@@ -455,56 +455,56 @@ turnView focus passed timeLeft ctx =
                                 ctx
                             ]
 
-            ( Pass _, _, _ ) ->
-                List.concat
-                    [ Font.view
-                        "Futura"
-                        "PASS"
-                        { x = w * 0.5 - 0.003 * size
-                        , y = h * 0.5
-                        , scaleX = 0.0001 * size + 0.003 * sin (tick * 0.005)
-                        , scaleY = 0.0001 * size + 0.003 * sin (tick * 0.007)
-                        , color = vec3 (20 / 255) (20 / 255) (20 / 255)
-                        }
-                        ctx
-                    , Font.view
-                        "Futura"
-                        "PASS"
-                        { x = w * 0.5
-                        , y = h * 0.5
-                        , scaleX = 0.0001 * size + 0.003 * sin (tick * 0.005)
-                        , scaleY = 0.0001 * size + 0.003 * sin (tick * 0.007)
-                        , color = vec3 (244 / 255) (241 / 255) (94 / 255)
-                        }
-                        ctx
-                    ]
+        ( Pass _, _, _ ) ->
+            List.concat
+                [ Font.view
+                    "Futura"
+                    "PASS"
+                    { x = w * 0.5 - 0.003 * size
+                    , y = h * 0.5
+                    , scaleX = 0.0001 * size + 0.003 * sin (tick * 0.005)
+                    , scaleY = 0.0001 * size + 0.003 * sin (tick * 0.007)
+                    , color = vec3 (20 / 255) (20 / 255) (20 / 255)
+                    }
+                    ctx
+                , Font.view
+                    "Futura"
+                    "PASS"
+                    { x = w * 0.5
+                    , y = h * 0.5
+                    , scaleX = 0.0001 * size + 0.003 * sin (tick * 0.005)
+                    , scaleY = 0.0001 * size + 0.003 * sin (tick * 0.007)
+                    , color = vec3 (244 / 255) (241 / 255) (94 / 255)
+                    }
+                    ctx
+                ]
 
-            ( HandFullPass, _, _ ) ->
-                List.concat
-                    [ Font.view
-                        "Futura"
-                        "HAND FULL"
-                        { x = w * 0.5 - 0.003 * size
-                        , y = h * 0.5
-                        , scaleX = 0.0001 * size + 0.003 * sin (tick * 0.005)
-                        , scaleY = 0.0001 * size + 0.003 * sin (tick * 0.007)
-                        , color = vec3 (20 / 255) (20 / 255) (20 / 255)
-                        }
-                        ctx
-                    , Font.view
-                        "Futura"
-                        "HAND FULL"
-                        { x = w * 0.5
-                        , y = h * 0.5
-                        , scaleX = 0.0001 * size + 0.003 * sin (tick * 0.005)
-                        , scaleY = 0.0001 * size + 0.003 * sin (tick * 0.007)
-                        , color = vec3 (244 / 255) (241 / 255) (94 / 255)
-                        }
-                        ctx
-                    ]
+        ( HandFullPass, _, _ ) ->
+            List.concat
+                [ Font.view
+                    "Futura"
+                    "HAND FULL"
+                    { x = w * 0.5 - 0.003 * size
+                    , y = h * 0.5
+                    , scaleX = 0.0001 * size + 0.003 * sin (tick * 0.005)
+                    , scaleY = 0.0001 * size + 0.003 * sin (tick * 0.007)
+                    , color = vec3 (20 / 255) (20 / 255) (20 / 255)
+                    }
+                    ctx
+                , Font.view
+                    "Futura"
+                    "HAND FULL"
+                    { x = w * 0.5
+                    , y = h * 0.5
+                    , scaleX = 0.0001 * size + 0.003 * sin (tick * 0.005)
+                    , scaleY = 0.0001 * size + 0.003 * sin (tick * 0.007)
+                    , color = vec3 (244 / 255) (241 / 255) (94 / 255)
+                    }
+                    ctx
+                ]
 
-            _ ->
-                []
+        _ ->
+            []
 
 
 feedbackView : List Feedback -> Context -> List WebGL.Entity

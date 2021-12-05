@@ -464,7 +464,7 @@ godMode mUser str which time scenario (PlayingR { playing_model = model, playing
             time
         in
           Right (
-            Just . Started . Playing $ PlayingR { playing_model = model, playing_replay = replay, playing_utc = Just time}
+            Just . Started . Playing $ PlayingR { playing_model = model, playing_replay = replay, playing_utc = Just utc}
           , [Outcome.Encodable $ Outcome.Heartbeat $ fromIntegral t]
           )
       GodMode.ParseError err ->
