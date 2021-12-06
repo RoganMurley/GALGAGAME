@@ -114,4 +114,5 @@ playingFromModel model = PlayingR
   { playing_model = model
   , playing_replay = Active.null
   , playing_utc = Nothing
+  , playing_timeLimit = 0
   }
