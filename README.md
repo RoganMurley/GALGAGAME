@@ -1,7 +1,5 @@
 # GALGA
-![Dec-11-2021 00-07-01](https://user-images.githubusercontent.com/3668870/145655826-3e02cb61-300a-42da-8454-aa8d0d3b6ba5.gif)
-
-
+![GALGA gif](https://user-images.githubusercontent.com/3668870/145656414-8a6c26a0-3fa2-4e22-955f-29719a02e04a.gif)
 
 GALGA is a browser-based multiplayer digital card game written in the purely functional programming languages Haskell and Elm. It is a WIP under active development.
 
@@ -10,6 +8,10 @@ Try it out at https://www.galgagame.com.
 Join the [discord](https://discord.gg/SVXXej4).
 
 [![CircleCI](https://circleci.com/gh/RoganMurley/GALGAGAME.svg?style=shield)](https://circleci.com/gh/RoganMurley/GALGAGAME)
+
+
+![GALGA gif](https://user-images.githubusercontent.com/3668870/145655826-3e02cb61-300a-42da-8454-aa8d0d3b6ba5.gif)
+
 
 ## Dependencies:
 * [npm](https://www.npmjs.com/get-npm)
