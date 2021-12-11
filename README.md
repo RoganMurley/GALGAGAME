@@ -20,6 +20,8 @@ Join the [discord](https://discord.gg/SVXXej4).
 * [Haskell Tool Stack](https://docs.haskellstack.org/en/stable/README/)
 * [Docker](https://docs.docker.com/engine/installation/)
 
+![DYet another GALGA gif](https://user-images.githubusercontent.com/3668870/145656874-6f0223d8-d918-4043-9001-e3a3844c65fc.gif)
+
 ## Dev setup
 
 ### Build client
