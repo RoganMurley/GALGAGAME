@@ -3,6 +3,9 @@ module DeckBuilding.State exposing (getRuneFromCursor, init, mouseDown, nextCurs
 import Buttons.State as Buttons
 import Buttons.Types as Buttons exposing (ButtonType(..), Buttons)
 import Carousel
+import Chat.Messages as Chat
+import Chat.Types as Chat
+import Connected.Messages as Connected
 import DeckBuilding.Encoders exposing (encodeCharacter)
 import DeckBuilding.Messages exposing (Msg(..))
 import DeckBuilding.Types exposing (Character, Model)
@@ -12,10 +15,11 @@ import Math.Vector2 exposing (vec2)
 import Math.Vector3 exposing (vec3)
 import Mouse exposing (Position)
 import Ports exposing (log)
+import Room.Messages as Room
 import RuneSelect.Messages as RuneSelect
 import RuneSelect.State as RuneSelect
 import RuneSelect.Types as RuneSelect exposing (Rune, RuneCursor(..))
-import Util
+import Util exposing (message)
 import Vfx.State as Vfx
 
 
@@ -90,8 +94,8 @@ update msg ({ character } as model) =
                     ( model, log "RuneSelect message not on a RuneSelect game state" )
 
 
-tick : Context -> Float -> Model -> Model
-tick ctx dt model =
+tick : Context -> Float -> Chat.Model -> Model -> Model
+tick ctx dt chat model =
     let
         newRuneSelect =
             Maybe.map (RuneSelect.tick ctx dt) model.runeSelect
@@ -106,12 +110,12 @@ tick ctx dt model =
                     RuneSelect.buttons ctx dt runeSelect
 
                 Nothing ->
-                    characterButtons ctx dt model
+                    characterButtons ctx dt chat model
     }
 
 
-characterButtons : Context -> Float -> Model -> Buttons
-characterButtons { radius, w, h, mouse } dt { ready, buttons, character } =
+characterButtons : Context -> Float -> Chat.Model -> Model -> Buttons
+characterButtons { radius, w, h, mouse } dt chat { ready, buttons, character } =
     let
         runeScale =
             radius * 0.3
@@ -138,6 +142,26 @@ characterButtons { radius, w, h, mouse } dt { ready, buttons, character } =
                             , textColor = vec3 (0 / 255) (0 / 255) (80 / 255)
                             , bgColor = vec3 (244 / 255) (241 / 255) (94 / 255)
                             , options = [ Buttons.HoverText "Ready!" ]
+                            }
+                    , disabled = False
+                    }
+                , Buttons.entity "toggleChat"
+                    { x = w * 0.5 - 0.5 * radius
+                    , y = 0.8 * h
+                    , width = 0.12 * radius
+                    , height = 0.12 * radius
+                    , btn =
+                        TextButton
+                            { font = "Futura"
+                            , text =
+                                if chat.visible then
+                                    "chatClose"
+
+                                else
+                                    "chat"
+                            , textColor = vec3 (0 / 255) (0 / 255) (0 / 255)
+                            , bgColor = vec3 (244 / 255) (241 / 255) (94 / 255)
+                            , options = [ Buttons.Circular, Buttons.IsIcon ]
                             }
                     , disabled = False
                     }
@@ -250,6 +274,15 @@ mouseDown { x, y } model =
                     case key of
                         "ready" ->
                             update (Select model.character) model
+
+                        "toggleChat" ->
+                            ( model
+                            , message <|
+                                Main.RoomMsg <|
+                                    Room.ConnectedMsg <|
+                                        Connected.ChatMsg <|
+                                            Chat.ToggleVisibility
+                            )
 
                         "runeA" ->
                             update (EnterRuneSelect RuneCursorA) model
