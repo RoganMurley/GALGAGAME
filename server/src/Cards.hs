@@ -189,7 +189,7 @@ shroomWand =
 shroomGrail :: Card
 shroomGrail =
   newCard Shroom Grail
-    ("Add 2 STRANGE SPORE cards to\ntheir hand")
+    ("Give them 2 STRANGE SPOREs\n(Hurt yourself for 4)")
     $ \w -> do
       addToHand (other w) strangeSpore
       addToHand (other w) strangeSpore
@@ -320,7 +320,7 @@ mirrorWand =
 mirrorGrail :: Card
 mirrorGrail =
   newCard Mirror Grail
-    "Double the number of times\ncard in next socket activates"
+    "Double the number of times card\ncard in next socket activates"
     $ \_ -> do
       raw $ Alpha.modStackHead $ cardMap (addStatus StatusEcho)
       Beta.null
@@ -362,7 +362,7 @@ alchemyGrail =
 alchemyCoin :: Card
 alchemyCoin =
   newCard Alchemy Coin
-    "Change card in next socket\nto STRANGE GOLD (Draw 2)"
+    "Change card in next socket\nto STRANGE GOLD\n(Draw 2)"
     $ \_ -> transmuteHead (transmuteToCard strangeGold)
 
 
@@ -541,7 +541,7 @@ feverWand =
 feverGrail :: Card
 feverGrail =
   newCard Fever Grail
-    "Healing becomes hurting\nfor all other cards on the wheel"
+    "Healing becomes hurting for all\nother cards on the wheel"
     $ \_ ->
       transmute (\i sc -> if i > 0 then Just (Transmutation sc (cardMap (addStatus StatusBlighted) sc)) else Nothing)
 
@@ -549,7 +549,7 @@ feverGrail =
 feverCoin :: Card
 feverCoin =
   newCard Fever Coin
-    "Change card in next socket\nto STRANGE DREAM (Heal for 13)"
+    "Change card in next socket to\nSTRANGE DREAM\n(Heal for 13)"
     $ \_ ->
       transmuteHead (transmuteToCard strangeDream)
 
