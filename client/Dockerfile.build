@@ -1,5 +1,5 @@
 FROM alpine:3.7
 RUN mkdir build
 COPY . build
-RUN apk update && apk add --update nodejs && npm install -g gulp@4.0.0 gulp-cli@2.0.1 elm@0.19.0 elm-analyse@0.16.4
+RUN apk update && apk add --update nodejs && npm install -g gulp@4.0.0 gulp-cli@2.0.1 elm@0.19.0 elm-analyse@0.16.5
 RUN cd build/client && npm install && gulp build && elm-analyse
