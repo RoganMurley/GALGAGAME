@@ -10,3 +10,6 @@ type Msg
     | ConfirmRune RuneCursor Rune
     | EnterRuneSelect RuneCursor
     | RuneSelectMsg RuneSelect.Msg
+    | RandomRunes
+    | SetRunes Rune Rune Rune
+    | Error String

@@ -10,11 +10,14 @@ import DeckBuilding.Encoders exposing (encodeCharacter)
 import DeckBuilding.Messages exposing (Msg(..))
 import DeckBuilding.Types exposing (Character, Model)
 import Game.Types exposing (Context)
+import GameState.Messages as GameState
 import Main.Messages as Main
 import Math.Vector2 exposing (vec2)
 import Math.Vector3 exposing (vec3)
 import Mouse exposing (Position)
 import Ports exposing (log)
+import Random
+import Random.List as Random
 import Room.Messages as Room
 import RuneSelect.Messages as RuneSelect
 import RuneSelect.State as RuneSelect
@@ -85,6 +88,40 @@ update msg ({ character } as model) =
             , Cmd.none
             )
 
+        RandomRunes ->
+            let
+                randomizer : List Rune -> Main.Msg
+                randomizer runes =
+                    Main.RoomMsg <|
+                        Room.ConnectedMsg <|
+                            Connected.GameStateMsg <|
+                                GameState.SelectingMsg <|
+                                    case runes of
+                                        runeA :: runeB :: runeC :: _ ->
+                                            SetRunes runeA runeB runeC
+
+                                        _ ->
+                                            Error <|
+                                                "Rune randomizer failed because there were only "
+                                                    ++ String.fromInt (List.length runes)
+                                                    ++ " runes"
+            in
+            ( model, Random.generate (randomizer << Tuple.first) (Random.choices 3 model.runes) )
+
+        SetRunes runeA runeB runeC ->
+            ( { model
+                | character =
+                    { choice =
+                        Just
+                            { runeA = runeA
+                            , runeB = runeB
+                            , runeC = runeC
+                            }
+                    }
+              }
+            , Cmd.none
+            )
+
         RuneSelectMsg runeSelectMsg ->
             case model.runeSelect of
                 Just runeSelect ->
@@ -92,6 +129,9 @@ update msg ({ character } as model) =
 
                 Nothing ->
                     ( model, log "RuneSelect message not on a RuneSelect game state" )
+
+        Error str ->
+            ( model, log str )
 
 
 tick : Context -> Float -> Chat.Model -> Model -> Model
@@ -162,6 +202,21 @@ characterButtons { radius, w, h, mouse } dt chat { ready, buttons, character } =
                             , textColor = vec3 (0 / 255) (0 / 255) (0 / 255)
                             , bgColor = vec3 (244 / 255) (241 / 255) (94 / 255)
                             , options = [ Buttons.Circular, Buttons.IsIcon ]
+                            }
+                    , disabled = False
+                    }
+                , Buttons.entity "random"
+                    { x = w * 0.5 + 0.5 * radius
+                    , y = 0.8 * h
+                    , width = 0.12 * radius
+                    , height = 0.12 * radius
+                    , btn =
+                        TextButton
+                            { font = "Futura"
+                            , text = "?"
+                            , textColor = vec3 (0 / 255) (0 / 255) (0 / 255)
+                            , bgColor = vec3 (244 / 255) (241 / 255) (94 / 255)
+                            , options = [ Buttons.Circular ]
                             }
                     , disabled = False
                     }
@@ -283,6 +338,9 @@ mouseDown { x, y } model =
                                         Connected.ChatMsg <|
                                             Chat.ToggleVisibility
                             )
+
+                        "random" ->
+                            update RandomRunes model
 
                         "runeA" ->
                             update (EnterRuneSelect RuneCursorA) model
