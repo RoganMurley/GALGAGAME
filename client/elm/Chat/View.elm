@@ -7,8 +7,8 @@ import Chat.Types exposing (Model)
 import Dict
 import Ease
 import Game.Types exposing (Context)
-import Html exposing (Html, div, input, text)
-import Html.Attributes exposing (autofocus, class, classList, id, style, value)
+import Html exposing (Html, a, div, input, text)
+import Html.Attributes exposing (autofocus, class, classList, href, id, style, value)
 import Html.Events exposing (on, onClick, onInput)
 import Math.Vector2 exposing (vec2)
 import Math.Vector3 exposing (vec3)
@@ -35,7 +35,12 @@ htmlView model =
               <|
                 case model.messages of
                     [] ->
-                        [ div [ class "chatbox__empty" ] [ text "It's quiet in here..." ] ]
+                        [ div [ class "chatbox__empty" ]
+                            [ a
+                                [ href "https://discord.gg/SVXXej4" ]
+                                [ text "Join the GALGA community on Discord" ]
+                            ]
+                        ]
 
                     _ ->
                         List.map (\message -> div [] [ text message ]) model.messages
