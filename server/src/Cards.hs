@@ -573,7 +573,7 @@ strangeEnd =
 strangeGlitch :: Card
 strangeGlitch =
   newCard Strange (OtherSuit "GLITCH")
-    "You feel the strangest\nfeeling..."
+    "You feel like something\nis missing..."
     $ \_ -> do
       Beta.null
       Beta.null
