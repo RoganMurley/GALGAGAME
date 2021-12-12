@@ -307,7 +307,7 @@ endTurn which playing time
               newPlayState :: PlayState
               newPlayState = Playing $ newPlaying
                 { playing_model = newModel
-                , playing_replay = replay `Active.add` endRes
+                , playing_replay = replay `Active.add` res `Active.add` endRes
                 , playing_utc = Just time
                 }
               newState = Started newPlayState :: GameState
@@ -380,7 +380,7 @@ resolveAll' playing resolutionCount rewrite = do
         Ended w m finalReplay gen -> do
           let endRes = [resolveAnim $ GameEnd w]
           tell endRes
-          return (Ended w m (finalReplay `Active.add` endRes) gen)
+          return $ Ended w m (finalReplay `Active.add` endRes) gen
     Nothing ->
       return . Playing $ playing
         { playing_model = modelA
