@@ -10,7 +10,7 @@ import Player (other)
 import Safe (headMay)
 import Stack (diasporaFromStack, diasporaLength)
 import StackCard (StackCard(..), changeOwner, cardMap)
-import Transmutation (Transmutation(..))
+import Transmutation (Transmutation(..), transmuteToCard)
 import Util (many, manyIndexed, shuffle)
 
 import qualified Data.Map as Map
@@ -363,7 +363,7 @@ alchemyCoin :: Card
 alchemyCoin =
   newCard Alchemy Coin
     "Change card in next socket\nto STRANGE GOLD (Draw 2)"
-    $ \_ -> transmuteHead (\(StackCard o (Card { card_statuses })) -> StackCard o (strangeGold { card_statuses = card_statuses }))
+    $ \_ -> transmuteHead (transmuteToCard strangeGold)
 
 
 strangeGold :: Card
@@ -428,11 +428,8 @@ morphSword =
       transmute $
         \_ stackCard ->
           case stackCard of
-            StackCard owner (Card{ card_suit, card_aspect = Morph, card_statuses }) ->
-              if card_suit /= Sword then
-                Just $ Transmutation stackCard (StackCard owner (morphSword { card_statuses = card_statuses } ))
-                  else
-                    Nothing
+            StackCard _ (Card{ card_suit = Sword, card_aspect = Morph }) ->
+              Just $ Transmutation stackCard (transmuteToCard morphSword stackCard)
             _ ->
               Nothing
 
@@ -447,11 +444,8 @@ morphWand =
       transmute $
         \_ stackCard ->
           case stackCard of
-            StackCard owner (Card{ card_suit, card_aspect = Morph, card_statuses  }) ->
-              if card_suit /= Wand then
-                Just $ Transmutation stackCard (StackCard owner (morphWand { card_statuses = card_statuses } ))
-                  else
-                    Nothing
+            StackCard _ (Card{ card_suit = Wand, card_aspect = Morph }) ->
+              Just $ Transmutation stackCard (transmuteToCard morphWand stackCard)
             _ ->
               Nothing
 
@@ -465,11 +459,8 @@ morphGrail =
       transmute $
         \_ stackCard ->
           case stackCard of
-            StackCard owner (Card{ card_suit, card_aspect = Morph, card_statuses }) ->
-              if card_suit /= Grail then
-                Just $ Transmutation stackCard (StackCard owner (morphGrail { card_statuses = card_statuses } ))
-                  else
-                    Nothing
+            StackCard _ (Card{ card_suit = Grail, card_aspect = Morph }) ->
+              Just $ Transmutation stackCard (transmuteToCard morphGrail stackCard)
             _ ->
               Nothing
 
@@ -480,18 +471,23 @@ morphCoin =
     "The next card becomes a MORPH card"
     $ \_ -> do
       transmuteHead $
-        \stackCard@(StackCard{ stackcard_owner, stackcard_card}) ->
-          case card_suit stackcard_card of
-            Sword ->
-              StackCard stackcard_owner (morphSword { card_statuses = card_statuses stackcard_card })
-            Wand ->
-              StackCard stackcard_owner (morphWand { card_statuses = card_statuses stackcard_card })
-            Grail ->
-              StackCard stackcard_owner (morphGrail { card_statuses = card_statuses stackcard_card })
-            Coin ->
-              StackCard stackcard_owner (morphCoin { card_statuses = card_statuses stackcard_card })
-            OtherSuit _ ->
-              stackCard
+        \stackCard ->
+          let
+            targetCard :: Card
+            targetCard =
+              case card_suit . stackcard_card $ stackCard of
+                Sword ->
+                  morphSword
+                Wand ->
+                  morphWand
+                Grail ->
+                  morphGrail
+                Coin ->
+                  morphCoin
+                OtherSuit _ ->
+                  strangeGlitch
+          in
+            transmuteToCard targetCard stackCard
 
 
 -- Abyss
@@ -555,7 +551,7 @@ feverCoin =
   newCard Fever Coin
     "Change card in next socket\nto STRANGE DREAM (Heal for 13)"
     $ \_ ->
-      transmuteHead (\(StackCard o (Card { card_statuses })) -> StackCard o (strangeDream { card_statuses = card_statuses }))
+      transmuteHead (transmuteToCard strangeDream)
 
 
 strangeDream :: Card
@@ -572,6 +568,18 @@ strangeEnd =
   newCard Strange (OtherSuit "END")
     "You're out of cards,\nhurt yourself for 10"
     $ \w -> hurt 10 w Slash
+
+
+strangeGlitch :: Card
+strangeGlitch =
+  newCard Strange (OtherSuit "GLITCH")
+    "You feel the strangest\nfeeling..."
+    $ \_ -> do
+      Beta.null
+      Beta.null
+      Beta.null
+      discardStack (\i _ -> i == 0)
+      raw $ Alpha.setHold True
 
 
 swords :: [Card]
@@ -651,6 +659,7 @@ others =
   , strangeGold
   , strangeDream
   , strangeEnd
+  , strangeGlitch
   ]
 
 
