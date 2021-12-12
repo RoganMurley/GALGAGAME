@@ -320,7 +320,7 @@ mirrorWand =
 mirrorGrail :: Card
 mirrorGrail =
   newCard Mirror Grail
-    "Card in next socket\nactivates twice"
+    "Double the number of times\ncard in next socket activates"
     $ \_ -> do
       raw $ Alpha.modStackHead $ cardMap (addStatus StatusEcho)
       Beta.null
