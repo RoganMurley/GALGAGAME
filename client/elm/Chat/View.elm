@@ -8,7 +8,7 @@ import Dict
 import Ease
 import Game.Types exposing (Context)
 import Html exposing (Html, a, div, input, text)
-import Html.Attributes exposing (autofocus, class, classList, href, id, style, value)
+import Html.Attributes exposing (autofocus, class, classList, href, id, style, target, value)
 import Html.Events exposing (on, onClick, onInput)
 import Math.Vector2 exposing (vec2)
 import Math.Vector3 exposing (vec3)
@@ -37,7 +37,7 @@ htmlView model =
                     [] ->
                         [ div [ class "chatbox__empty" ]
                             [ a
-                                [ href "https://discord.gg/SVXXej4" ]
+                                [ href "https://discord.gg/SVXXej4", target "_blank" ]
                                 [ text "Join the GALGA community on Discord" ]
                             ]
                         ]
