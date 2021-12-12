@@ -1,6 +1,7 @@
 module Command where
 
 import Data.Aeson (eitherDecode)
+import Data.Maybe (fromMaybe)
 import Data.Monoid ((<>))
 import Data.String.Conversions (cs)
 import Data.Text (Text)
@@ -72,15 +73,19 @@ parse name msg =
 
 
 toChat :: Command -> Text
-toChat (SpectateCommand name) =
-  "chat:" <> name <> " started spectating"
-toChat (PlayCommand name) =
-  "chat:" <> name <> " started playing"
-toChat (LeaveCommand name) =
-  "chat:" <> name <> " disconnected"
-toChat (ChatCommand name message) =
-  "chat:" <> name <> ": " <> message
-toChat (ErrorCommand err) =
-  "error:" <> err
-toChat _ =
-  "chat:" <> "Command cannot be processed to text :/"
+toChat = fromMaybe "error: unknown chat command" . toChatMaybe
+
+
+toChatMaybe :: Command -> Maybe Text
+toChatMaybe (SpectateCommand name) =
+  Just $ "chat:" <> name <> " started spectating"
+toChatMaybe (PlayCommand name) =
+  Just $ "chat:" <> name <> " started playing"
+toChatMaybe (LeaveCommand name) =
+  Just $ "chat:" <> name <> " disconnected"
+toChatMaybe (ChatCommand name message) =
+  Just $ "chat:" <> name <> ": " <> message
+toChatMaybe (ErrorCommand err) =
+  Just $ "error:" <> err
+toChatMaybe _ =
+  Nothing

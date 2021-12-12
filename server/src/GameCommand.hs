@@ -133,7 +133,7 @@ concede which (Started (Playing playing)) extraRes =
     gen = Alpha.evalI model Alpha.getGen :: Gen
     winner = Just $ other which :: Maybe WhichPlayer
     res = extraRes ++ [resolveAnim $ GameEnd winner] :: [ResolveData]
-    newReplay = Active.add replay res :: Active.Replay
+    newReplay = replay `Active.add` res :: Active.Replay
     newPlayState = Ended winner model newReplay gen :: PlayState
     finalReplay = Final.finalise newReplay newPlayState :: Final.Replay
   in
@@ -199,7 +199,7 @@ nextSelectState deckModel turn startProgram gen (mUserPa, mUserPb) time timeLimi
             playstate :: PlayState
             playstate = Playing $ PlayingR
               { playing_model = newModel
-              , playing_replay = Active.add replay res
+              , playing_replay = replay `Active.add` res
               , playing_utc = Just time
               , playing_timeLimit = timeLimit
               }
@@ -368,8 +368,8 @@ resolveAll' playing resolutionCount rewrite = do
   let replay = playing_replay playing
   let (modelA, _, resA) = Beta.execute model preProgram :: (Model, String, [ResolveData])
   tell resA
-  let mStackCard = Alpha.evalI modelA (wheel_0 <$> Alpha.getStack)
-  case mStackCard of
+  let activeCard = Alpha.evalI modelA (wheel_0 <$> Alpha.getStack)
+  case activeCard of
     Just stackCard -> do
       let (modelB, _, resB) = Beta.execute modelA (cardProgram stackCard) :: (Model, String, [ResolveData])
       tell resB
@@ -482,7 +482,7 @@ godMode mUser str which time playing =
             (m, _, res) = Beta.execute model program :: (Model, String, [ResolveData])
             newPlayState = Playing $ playing
               { playing_model = m
-              , playing_replay = Active.add replay res
+              , playing_replay = replay `Active.add` res
               }
           in
             Right (

@@ -92,7 +92,11 @@ actPlay cmd which roomVar username = do
 actSpec :: Command -> TVar Room -> App ()
 actSpec cmd roomVar = do
   room <- liftIO . atomically $ readTVar roomVar
-  Room.broadcast (Command.toChat cmd) room
+  case Command.toChatMaybe cmd of
+    Just msg ->
+      Room.broadcast msg room
+    Nothing ->
+      return ()
 
 
 syncClient :: Client -> WhichPlayer -> GameState -> App ()
