@@ -428,9 +428,9 @@ morphSword =
       transmute $
         \_ stackCard ->
           case stackCard of
-            StackCard owner (Card{ card_suit, card_aspect = Morph }) ->
+            StackCard owner (Card{ card_suit, card_aspect = Morph, card_statuses }) ->
               if card_suit /= Sword then
-                Just $ Transmutation stackCard (StackCard owner morphSword)
+                Just $ Transmutation stackCard (StackCard owner (morphSword { card_statuses = card_statuses } ))
                   else
                     Nothing
             _ ->
@@ -447,9 +447,9 @@ morphWand =
       transmute $
         \_ stackCard ->
           case stackCard of
-            StackCard owner (Card{ card_suit, card_aspect = Morph }) ->
+            StackCard owner (Card{ card_suit, card_aspect = Morph, card_statuses  }) ->
               if card_suit /= Wand then
-                Just $ Transmutation stackCard (StackCard owner morphWand)
+                Just $ Transmutation stackCard (StackCard owner (morphWand { card_statuses = card_statuses } ))
                   else
                     Nothing
             _ ->
@@ -465,9 +465,9 @@ morphGrail =
       transmute $
         \_ stackCard ->
           case stackCard of
-            StackCard owner (Card{ card_suit, card_aspect = Morph }) ->
+            StackCard owner (Card{ card_suit, card_aspect = Morph, card_statuses }) ->
               if card_suit /= Grail then
-                Just $ Transmutation stackCard (StackCard owner morphGrail)
+                Just $ Transmutation stackCard (StackCard owner (morphGrail { card_statuses = card_statuses } ))
                   else
                     Nothing
             _ ->
