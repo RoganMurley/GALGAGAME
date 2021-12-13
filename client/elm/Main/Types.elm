@@ -28,6 +28,7 @@ type alias InputFlags =
     , pixelRatio : Float
     , initialVolume : Int
     , initialScaling : Float
+    , visits : Int
     }
 
 
@@ -43,6 +44,7 @@ type alias Flags =
     , pixelRatio : Float
     , scaling : Float
     , visibility : Visibility
+    , visits : Int
     }
 
 

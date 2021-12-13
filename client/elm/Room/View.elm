@@ -35,7 +35,7 @@ view model settings notifications flags assets =
 
                 Lobby lobby ->
                     Html.map (Main.RoomMsg << LobbyMsg) <|
-                        Lobby.view lobby
+                        Lobby.view flags lobby
 
                 Connected connected ->
                     Connected.htmlView connected flags

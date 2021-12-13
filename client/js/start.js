@@ -16,6 +16,14 @@ if (initialScaling === null) {
   initialScaling = 1;
 }
 
+var visits = localStorage.getItem("visits");
+if (visits === null) {
+  visits = 1;
+} else {
+  visits++;
+}
+localStorage.setItem('visits', visits);
+
 var app = Elm.Main.init({
   flags: {
     hostname: hostname,
@@ -27,6 +35,7 @@ var app = Elm.Main.init({
     pixelRatio: window.devicePixelRatio,
     initialVolume: parseFloat(initialVolume, 10),
     initialScaling: parseFloat(initialScaling, 10),
+    visits: visits,
   },
 });
 
