@@ -33,6 +33,9 @@ docker-compose -f docker-compose.prod.yml build
 echo "Booting compose..."
 docker-compose -f docker-compose.prod.yml up -d
 
+echo "Notifying users..."
+./scripts/systemMessage "🔔 Server restarting for update, you may lose connection 🔔" || true
+
 echo "Flipping floating IP..."
 ./scripts/flip $name
 
