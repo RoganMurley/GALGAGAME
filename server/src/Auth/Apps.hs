@@ -97,8 +97,8 @@ loginTimeout :: Seconds
 loginTimeout = 3600 * 24 * 7
 
 
-getToken :: WS.PendingConnection -> Maybe Token
-getToken pending = snd <$> find (((==) loginCookieName) . fst) cookies
+getToken :: WS.PendingConnection -> Text -> Maybe Token
+getToken pending cookieName = snd <$> find (((==) cookieName) . fst) cookies
   where
     cookies :: [(Text, Text)]
     cookies = case cookieString of

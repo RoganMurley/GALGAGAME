@@ -5,6 +5,7 @@ import Control.Concurrent.Chan (Chan)
 import Control.Monad.IO.Class (liftIO)
 import Control.Monad.Trans.Reader (ReaderT, asks, runReaderT)
 import Data.Pool (Pool, createPool, withResource)
+import Data.Text (Text)
 import Database.Beam.Postgres (Pg, runBeamPostgres)
 import System.Log.Logger (Priority)
 
@@ -20,6 +21,7 @@ data ConnectInfoConfig = ConnectInfoConfig
   { connectInfoConfig_redis      :: Redis.ConnectInfo
   , connectInfoConfig_postgres   :: Postgres.ConnectInfo
   , connectInfoConfig_loggerChan :: Chan (Priority, String)
+  , connectInfoConfig_apiKey     :: Text
   }
 
 
@@ -27,16 +29,20 @@ data Config = Config
   { redisConn    :: Redis.Connection
   , postgresPool :: Pool Postgres.Connection
   , loggerChan   :: Chan (Priority, String)
+  , apiKey       :: Text
   }
 
 
 runApp :: ConnectInfoConfig -> App a -> IO a
-runApp (ConnectInfoConfig redisInfo postgresInfo loggerChan) app =
+runApp config app =
   do
+    let redisInfo = connectInfoConfig_redis config
+    let postgresInfo = connectInfoConfig_postgres config
+    let loggerChan = connectInfoConfig_loggerChan config
+    let apiKey = connectInfoConfig_apiKey config
     redisConn <- Redis.connect redisInfo
     postgresPool <- createPool (connectPostgres postgresInfo) Postgres.close 1 0.5 10
-    let config = Config redisConn postgresPool loggerChan
-    runReaderT app config
+    runReaderT app $ Config redisConn postgresPool loggerChan apiKey
 
 
 connectPostgres :: Postgres.ConnectInfo -> IO Postgres.Connection
@@ -70,3 +76,7 @@ getTokenConn = asks redisConn
 
 getLoggerChan :: App (Chan (Priority, String))
 getLoggerChan = asks loggerChan
+
+
+getApiKey :: App Text
+getApiKey = asks apiKey

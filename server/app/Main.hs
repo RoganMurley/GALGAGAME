@@ -12,6 +12,7 @@ import Control.Monad.IO.Class (liftIO)
 import Control.Monad.Trans.Class (lift)
 import Control.Monad.Trans.Maybe (runMaybeT)
 import Data.Time.Clock (NominalDiffTime)
+import Data.Maybe (fromMaybe)
 import Data.Monoid ((<>))
 import Data.String.Conversions (cs)
 import Data.Text (Text)
@@ -33,7 +34,7 @@ import Player (WhichPlayer(..), other)
 import Scenario (Scenario(..))
 import Start (startProgram)
 import Stats.Stats (Experience)
-import User (User(..), getUsername, getUserFromToken, isSuperuser)
+import User (User(..), getUsername, getUserFromTokens, isSuperuser)
 import Util (Gen, getGen, shuffle, split)
 
 import qualified DSL.Beta as Beta
@@ -84,10 +85,17 @@ main = do
     postgresDatabase <- lookupEnv "POSTGRES_DATABASE"
     let postgresVars = (postgresHost, postgresPort, postgresUser, postgresPassword, postgresDatabase)
 
-    let connectInfoConfig = ConnectInfoConfig (redisConnectInfo redisVars) (postgresConnectInfo postgresVars) loggerChan
+    apiKey <- cs <$> fromMaybe "fake-api-key" <$> lookupEnv "GALGA_API_KEY"
 
-    authApp   <- runApp connectInfoConfig $ Auth.app connectInfoConfig
-    state     <- atomically $ newTVar Server.initState
+    let connectInfoConfig = ConnectInfoConfig
+                              { connectInfoConfig_redis      = redisConnectInfo redisVars
+                              , connectInfoConfig_postgres   = postgresConnectInfo postgresVars
+                              , connectInfoConfig_loggerChan = loggerChan
+                              , connectInfoConfig_apiKey     = apiKey
+                              }
+
+    authApp <- runApp connectInfoConfig $ Auth.app connectInfoConfig
+    state <- atomically $ newTVar Server.initState
 
     Log.infoIO "Starting up!"
 
@@ -111,8 +119,10 @@ wsApp :: TVar Server.State -> ConnectInfoConfig -> WS.ServerApp
 wsApp state connectInfoConfig pending =
   runApp connectInfoConfig $ do
     connection <- liftIO $ WS.acceptRequest pending
-    msg        <- liftIO $ WS.receiveData connection
-    user       <- getUserFromToken $ Auth.getToken pending
+    msg <- liftIO $ WS.receiveData connection
+    let loginToken = Auth.getToken pending Auth.loginCookieName
+    let apiToken = Auth.getToken pending "api-key"
+    user <- getUserFromTokens loginToken apiToken
     liftIO $ WS.forkPingThread connection 30
     begin connection msg user state
 

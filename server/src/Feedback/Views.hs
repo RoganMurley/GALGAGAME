@@ -9,14 +9,14 @@ import Network.HTTP.Types.Status (created201)
 import Web.Scotty (ActionM, json, param, status)
 import Web.Scotty.Cookie (getCookie)
 
-import Auth.Apps (checkAuth, loginCookieName)
+import Auth.Apps (checkAuth)
 import Feedback.Apps (saveFeedback)
 
 
 feedbackView :: ConnectInfoConfig -> ActionM ()
 feedbackView config = do
   body <- param "body"
-  token <- getCookie loginCookieName
+  token <- getCookie "login"
   mUsername <- lift . runApp config $ checkAuth token
   liftIO $ runApp config $ saveFeedback (cs <$> mUsername) body
   json $ object []
