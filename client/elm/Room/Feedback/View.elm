@@ -13,7 +13,7 @@ view model =
     let
         formFieldClass : FormFieldClass Field Msg
         formFieldClass =
-            { getFieldPlaceholder = always "What I love / hate about GALGA is..."
+            { getFieldPlaceholder = always "What I love/hate about GALGA is..."
             , getFieldLabel = always Nothing
             , getFormFieldType = always TextAreaType
             , getExtraAttrs = always [ autofocus True ]

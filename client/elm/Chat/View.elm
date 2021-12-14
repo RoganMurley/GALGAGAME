@@ -10,16 +10,39 @@ import Game.Types exposing (Context)
 import Html exposing (Html, a, div, input, text)
 import Html.Attributes exposing (autofocus, class, classList, href, id, style, target, value)
 import Html.Events exposing (on, onClick, onInput)
+import Main.Types exposing (Flags)
 import Math.Vector2 exposing (vec2)
 import Math.Vector3 exposing (vec3)
+import Maybe
+import Random
+import Random.List
 import Render.Primitives
 import Render.Uniforms exposing (uniColourMag)
 import Util exposing (px)
 import WebGL
 
 
-htmlView : Model -> Html Msg
-htmlView model =
+htmlView : Flags -> Model -> Html Msg
+htmlView { seed } model =
+    let
+        promos : List (Html Msg)
+        promos =
+            [ a
+                [ href "https://discord.gg/SVXXej4", target "_blank" ]
+                [ text "Join the GALGA community on Discord" ]
+            , a
+                [ href "/feedback", target "_blank" ]
+                [ text "Let me know what you love/hate about GALGA" ]
+            ]
+
+        promo =
+            Maybe.withDefault (text "") <|
+                Tuple.first <|
+                    Tuple.first <|
+                        Random.step
+                            (Random.List.choose promos)
+                            (Random.initialSeed seed)
+    in
     if model.visible then
         div
             [ classList
@@ -35,11 +58,7 @@ htmlView model =
               <|
                 case model.messages of
                     [] ->
-                        [ div [ class "chatbox__empty" ]
-                            [ a
-                                [ href "https://discord.gg/SVXXej4", target "_blank" ]
-                                [ text "Join the GALGA community on Discord" ]
-                            ]
+                        [ div [ class "chatbox__empty" ] [ promo ]
                         ]
 
                     _ ->
