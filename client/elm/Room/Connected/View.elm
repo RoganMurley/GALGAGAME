@@ -4,7 +4,7 @@ import Assets.Types as Assets
 import Browser.Events exposing (Visibility(..))
 import Chat.View as Chat
 import Connected.Messages as Connected
-import Connected.Types exposing (Model, Players)
+import Connected.Types exposing (Model)
 import GameState.Types exposing (GameState(..))
 import GameState.View as GameState
 import Html exposing (Html, button, div, h1, input, text)
@@ -13,6 +13,7 @@ import Html.Events exposing (onClick)
 import Main.Messages exposing (Msg(..))
 import Main.Types exposing (Flags)
 import PlayState.Types exposing (PlayState(..))
+import Players exposing (Players)
 import Render.Types as Render
 import Room.Messages as Room
 import WebGL

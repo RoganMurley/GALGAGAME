@@ -33,6 +33,7 @@ import Mouse exposing (MouseState(..), Position)
 import PlayState.Decoders as PlayState
 import PlayState.Messages as PlayState exposing (Msg(..), PlayingOnly(..), TurnOnly(..))
 import PlayState.Types as PlayState exposing (PlayState(..), ResolveOutcomeInput)
+import Players exposing (Players)
 import Ports exposing (websocketSend)
 import Resolvable.State as Resolvable
 import Resolvable.Types as Resolvable
@@ -464,8 +465,8 @@ resolveOutcome mState { initial, resDiffList, finalState } =
     carry state newState
 
 
-mouseDown : Flags -> Assets.Model -> GameType -> Mode -> Position -> PlayState -> ( PlayState, Cmd Main.Msg )
-mouseDown { dimensions, mouse } assets _ mode { x, y } state =
+mouseDown : Flags -> Assets.Model -> GameType -> Mode -> Players -> Position -> PlayState -> ( PlayState, Cmd Main.Msg )
+mouseDown { dimensions, mouse } assets _ mode players { x, y } state =
     let
         pos =
             vec2 (toFloat x) (toFloat y)
@@ -550,10 +551,14 @@ mouseDown { dimensions, mouse } assets _ mode { x, y } state =
                                             Cmd.none
 
                                 "continue" ->
-                                    message
-                                        << Main.RoomMsg
-                                    <|
-                                        Room.StartGame Mode.Playing Nothing
+                                    if Players.shouldRematch players then
+                                        playMsg <| PlayState.PlayingOnly PlayState.Rematch
+
+                                    else
+                                        message
+                                            << Main.RoomMsg
+                                        <|
+                                            Room.StartGame Mode.Playing Nothing
 
                                 _ ->
                                     Cmd.none

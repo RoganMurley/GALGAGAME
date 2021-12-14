@@ -18,6 +18,7 @@ import Mode exposing (Mode)
 import Mouse exposing (Position)
 import PlayState.State as PlayState
 import PlayState.Types exposing (PlayState)
+import Players exposing (Players)
 import Ports exposing (log)
 import Waiting.State as Waiting
 
@@ -96,8 +97,8 @@ update msg state flags mode _ assets =
                     ( state, log "Expected a Selecting state" )
 
 
-mouseDown : Position -> GameState -> Flags -> Mode -> GameType -> Assets.Model -> ( GameState, Cmd Main.Msg )
-mouseDown mousePos state flags mode gameType assets =
+mouseDown : Position -> GameState -> Flags -> Mode -> GameType -> Players -> Assets.Model -> ( GameState, Cmd Main.Msg )
+mouseDown mousePos state flags mode gameType players assets =
     case state of
         Selecting selecting ->
             let
@@ -109,7 +110,7 @@ mouseDown mousePos state flags mode gameType assets =
         Started playState ->
             let
                 ( newPlayState, cmd ) =
-                    PlayState.mouseDown flags assets gameType mode mousePos playState
+                    PlayState.mouseDown flags assets gameType mode players mousePos playState
             in
             ( Started newPlayState, cmd )
 

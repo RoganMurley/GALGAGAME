@@ -1,9 +1,10 @@
-module Connected.Types exposing (Model, Players)
+module Connected.Types exposing (Model)
 
 import Chat.Types as Chat
 import GameState.Types exposing (GameState)
 import GameType exposing (GameType)
 import Mode exposing (Mode)
+import Players exposing (Players)
 
 
 type alias Model =
@@ -17,10 +18,4 @@ type alias Model =
     , chat : Chat.Model
     , heartbeatTick : Float
     , connectionLost : Bool
-    }
-
-
-type alias Players =
-    { pa : Maybe String
-    , pb : Maybe String
     }

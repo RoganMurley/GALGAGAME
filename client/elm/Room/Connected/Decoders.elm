@@ -1,20 +1,7 @@
-module Connected.Decoders exposing (decodeDamageOutcome, decodePlayers)
+module Connected.Decoders exposing (decodeDamageOutcome)
 
-import Connected.Types exposing (Players)
 import Hover exposing (HoverDamage)
-import Json.Decode as Json exposing (Decoder, index, maybe, string)
-
-
-decodePlayers : String -> Result Json.Error Players
-decodePlayers msg =
-    Json.decodeString playersDecoder msg
-
-
-playersDecoder : Decoder Players
-playersDecoder =
-    Json.map2 Players
-        (index 0 <| maybe string)
-        (index 1 <| maybe string)
+import Json.Decode as Json exposing (Decoder, index)
 
 
 decodeDamageOutcome : String -> Result Json.Error ( HoverDamage, HoverDamage )

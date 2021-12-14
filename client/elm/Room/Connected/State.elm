@@ -4,9 +4,9 @@ import Assets.Types as Assets
 import Audio.State exposing (playSound)
 import Chat.Messages as Chat
 import Chat.State as Chat
-import Connected.Decoders exposing (decodeDamageOutcome, decodePlayers)
+import Connected.Decoders exposing (decodeDamageOutcome)
 import Connected.Messages exposing (Msg(..))
-import Connected.Types exposing (Model, Players)
+import Connected.Types exposing (Model)
 import GameState.Messages as GameState
 import GameState.State as GameState
 import GameState.Types exposing (GameState(..))
@@ -19,6 +19,7 @@ import Main.Types exposing (Flags)
 import Mode exposing (Mode(..))
 import Mouse
 import PlayState.Messages as PlayState
+import Players exposing (Players)
 import Ports exposing (log, websocketSend)
 import Settings.Messages as Settings
 import Stats exposing (decodeStatChange)
@@ -191,7 +192,7 @@ receive flags assets ({ mode, gameType } as model) msg =
             let
                 newPlayers : Result Json.Error Players
                 newPlayers =
-                    decodePlayers content
+                    Players.decode content
             in
             case newPlayers of
                 Ok p ->
@@ -290,6 +291,6 @@ mouseDown : Flags -> Assets.Model -> Model -> Mouse.Position -> ( Model, Cmd Mai
 mouseDown flags assets model pos =
     let
         ( game, cmd ) =
-            GameState.mouseDown pos model.game flags model.mode model.gameType assets
+            GameState.mouseDown pos model.game flags model.mode model.gameType model.players assets
     in
     ( { model | game = game }, cmd )
