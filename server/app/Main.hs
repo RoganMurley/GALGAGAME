@@ -281,7 +281,8 @@ beginQueue state client roomVar = do
       Log.info $ printf "<%s>: Joining existing quickplay room" clientName
       beginPlay state client existingRoom
     Nothing -> do
-      Log.info $ printf "<%s>: Creating new quickplay room" clientName
+      room <- liftIO . readTVarIO $ roomVar
+      Log.info $ printf "<%s>: Creating new quickplay room [%s]" clientName (Room.getName room)
       finally
         (do
           asyncQueueCpuFallback state client roomVar
