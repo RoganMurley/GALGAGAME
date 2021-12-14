@@ -25,10 +25,11 @@ type Msg
     | MousePosition Mouse.Position
     | MouseDown Mouse.Position
     | MouseUp Mouse.Position
+    | NotificationsMsg Notifications.Msg
     | Receive String
+    | Reload
     | Resize Int Int
     | RoomMsg Room.Msg
-    | NotificationsMsg Notifications.Msg
     | SelectAllInput String
     | Send String
     | SettingsMsg Settings.Msg

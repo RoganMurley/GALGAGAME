@@ -110,14 +110,17 @@ titleView _ { players } =
     name players.pb ++ " vs " ++ name players.pa
 
 
-errorView : Bool -> Bool -> Html a
+errorView : Bool -> Bool -> Html Msg
 errorView errored connectionLost =
     case ( errored, connectionLost ) of
         ( True, _ ) ->
             div [ class "connected-error" ] [ text "Something went wrong" ]
 
         ( _, True ) ->
-            div [ class "connection-lost" ] [ h1 [] [ text "CONNECTION LOST" ] ]
+            div [ class "connection-lost" ]
+                [ h1 [] [ text "CONNECTION LOST" ]
+                , button [ class "menu-button", onClick Reload ] [ text "RECONNECT" ]
+                ]
 
         _ ->
             text ""

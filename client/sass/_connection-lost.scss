@@ -2,14 +2,15 @@
   width: 100vw;
   height: 100vh;
   opacity: 0.95;
-  background-color: red;
-  color: #00061f;
+  background-color: #00061f;
   position: absolute;
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-direction: column;
 
   h1 {
+    color: #f5f25e;
     font-size: 4rem;
     width: 100%;
     text-align: center;

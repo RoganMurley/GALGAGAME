@@ -146,6 +146,9 @@ update msg ({ assets, room, notifications, settings, flags } as model) =
             in
             ( { model | room = newRoom, notifications = newNotifications }, cmd )
 
+        Reload ->
+            ( model, Browser.Navigation.reload )
+
         RoomMsg roomMsg ->
             let
                 ( newRoom, cmd ) =
