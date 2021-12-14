@@ -363,25 +363,26 @@ play which client roomVar outcomes = do
       EndEncounterCommand ->
         mzero -- Exit the loop, the encounter is over.
       _ ->
-        lift $ actPlay command which roomVar username
+        lift $ actPlay command which roomVar username (Room.getName room)
   finalRoom <- liftIO $ readTVarIO roomVar
   return $ isWinner which $ Room.getState finalRoom
 
 
 computerPlay :: WhichPlayer -> TVar Room -> App ()
 computerPlay which roomVar = do
-  _ <- runMaybeT . forever $ loop
+  roomName <- liftIO $ Room.getName <$> readTVarIO roomVar
+  _ <- runMaybeT . forever $ loop roomName
   Log.info $ printf "AI signing off"
   return ()
   where
-    loop :: MaybeT App ()
-    loop = do
+    loop :: Text -> MaybeT App ()
+    loop roomName = do
       lift $ threadDelay 1000000
       gen <- liftIO $ getGen
       command <- lift $ chooseComputerCommand which roomVar gen
       case command of
         Just c -> do
-          lift $ actPlay c which roomVar "CPU"
+          lift $ actPlay c which roomVar "CPU" roomName
           lift $ threadDelay 10000
         Nothing ->
           return ()

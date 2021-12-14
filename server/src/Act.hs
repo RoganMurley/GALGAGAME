@@ -60,9 +60,9 @@ roomUpdate cmd which time roomVar =
           Right ((Room.setState room) <$> newState, outcomes)
 
 
-actPlay :: Command -> WhichPlayer -> TVar Room -> Text -> App ()
-actPlay cmd which roomVar username = do
-  Log.info $ printf "<%s>: %s" username (show cmd)
+actPlay :: Command -> WhichPlayer -> TVar Room -> Text -> Text -> App ()
+actPlay cmd which roomVar username roomName = do
+  Log.info $ printf "<%s@%s>: %s" username roomName (show cmd)
   case trans cmd of
     Just command -> do
       time <- liftIO getCurrentTime
