@@ -10,9 +10,14 @@ init =
     let
         defaultMaxLife =
             50
+
+        defaultDeck =
+            36
     in
     { hand = []
     , otherHand = 0
+    , deck = defaultDeck
+    , otherDeck = defaultDeck
     , stack = Stack.init
     , turn = PlayerA
     , life = defaultMaxLife

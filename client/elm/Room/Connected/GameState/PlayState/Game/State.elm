@@ -8,8 +8,8 @@ import Buttons.State as Buttons
 import Buttons.Types as Buttons exposing (ButtonType(..), Buttons)
 import Card.Types exposing (Card)
 import Chat.Types as Chat
-import Collision exposing (hitTest3d)
-import Game.Types as Game exposing (Context, Entities, Feedback, HandEntity, StackEntity)
+import Collision exposing (hitTest, hitTest3d)
+import Game.Types as Game exposing (Context, Entities, Feedback, Focus(..), HandEntity, PlayerEntity, StackEntity)
 import Hand.Entities as Hand
 import Hand.State exposing (maxHandLength)
 import Holding.State as Holding
@@ -17,6 +17,7 @@ import Holding.Types exposing (Holding(..))
 import Hover exposing (Hover(..), HoverBase, HoverDamage(..), HoverSelf)
 import List.Extra as List
 import Main.Types exposing (Flags)
+import Math.Vector2 exposing (Vec2, vec2)
 import Math.Vector3 exposing (Vec3, vec3)
 import Maybe.Extra as Maybe
 import Model.State as Model
@@ -37,7 +38,7 @@ import WhichPlayer.Types exposing (WhichPlayer(..))
 gameInit : Model -> Game.Model
 gameInit model =
     { res = Resolvable.init model []
-    , focus = Nothing
+    , focus = NoFocus
     , hover = NoHover
     , otherHover = NoHover
     , entities = entitiesInit
@@ -117,6 +118,7 @@ entitiesInit =
     , hand = []
     , otherHand = []
     , wheel = []
+    , players = []
     }
 
 
@@ -148,6 +150,9 @@ tick { dimensions, mouse } dt model chat =
         hoverStack =
             getHoverStack model ctx.mouseRay
 
+        focusPlayer =
+            getFocusPlayer model (Mouse.getVec ctx.mouse)
+
         ( hover, hoverMsg ) =
             hoverUpdate model.hover hoverHand hoverStack holding dt
 
@@ -155,7 +160,7 @@ tick { dimensions, mouse } dt model chat =
             hoverTick model.otherHover dt
 
         focus =
-            getFocus ctx hoverHand hoverStack model.holding
+            getFocus ctx hoverHand hoverStack model.holding focusPlayer
 
         feedback =
             feedbackTick model.feedback dt
@@ -176,6 +181,7 @@ tick { dimensions, mouse } dt model chat =
                     , hand = Hand.entities model.hover holding ctx
                     , otherHand = Hand.otherEntities model.otherHover ctx
                     , wheel = Stack.wheelEntities ctx
+                    , players = playerEntities ctx
                     }
                 , focus = focus
                 , feedback = feedback
@@ -298,8 +304,21 @@ getHoverStack { entities } mRay =
             )
 
 
-getFocus : Context -> Maybe HandEntity -> Maybe StackEntity -> Holding -> Maybe StackCard
-getFocus { anim, model } hoverHand hoverStack holding =
+getFocusPlayer : Game.Model -> Maybe Vec2 -> Maybe WhichPlayer
+getFocusPlayer { entities } mMousePos =
+    case mMousePos of
+        Just mousePos ->
+            List.find
+                (\entity -> hitTest mousePos entity.scale entity)
+                entities.players
+                |> Maybe.map .which
+
+        Nothing ->
+            Nothing
+
+
+getFocus : Context -> Maybe HandEntity -> Maybe StackEntity -> Holding -> Maybe WhichPlayer -> Focus
+getFocus { anim, model } hoverHand hoverStack holding player =
     let
         hoverCard =
             Maybe.or
@@ -308,18 +327,32 @@ getFocus { anim, model } hoverHand hoverStack holding =
 
         stackCard =
             model.stack.wheel0
+
+        cardFocus : Maybe StackCard -> Focus
+        cardFocus mStackCard =
+            case mStackCard of
+                Just sc ->
+                    FocusCard sc
+
+                Nothing ->
+                    NoFocus
     in
     case holding of
         NoHolding ->
             case anim of
                 Animation.Play _ _ _ _ ->
-                    Nothing
+                    NoFocus
 
                 _ ->
-                    Maybe.or stackCard hoverCard
+                    case player of
+                        Just which ->
+                            FocusPlayer which
+
+                        Nothing ->
+                            cardFocus <| Maybe.or stackCard hoverCard
 
         Holding { card } ->
-            Just { card = card, owner = PlayerA }
+            FocusCard { card = card, owner = PlayerA }
 
 
 feedbackTick : List Feedback -> Float -> List Feedback
@@ -439,3 +472,40 @@ hold card handIndex ray dmg game =
     { game
         | holding = Holding.init card handIndex ray dmg
     }
+
+
+playerEntities : Context -> List PlayerEntity
+playerEntities ctx =
+    let
+        { anim, w, h, radius } =
+            ctx
+
+        scale =
+            0.15 * radius
+
+        ( xOffset, yOffset ) =
+            ( 0.65 * radius, 0.875 * radius )
+
+        shake =
+            Animation.animShake anim PlayerA ctx.tick
+
+        otherShake =
+            Animation.animShake anim PlayerB ctx.tick
+    in
+    [ { scale = scale
+      , position =
+            Math.Vector2.add
+                (vec2 (w * 0.5 + xOffset) (h * 0.5 - yOffset))
+                (vec2 shake shake)
+      , rotation = 0
+      , which = PlayerA
+      }
+    , { scale = scale
+      , position =
+            Math.Vector2.add
+                (vec2 (w * 0.5 - xOffset) (h * 0.5 - yOffset))
+                (vec2 -otherShake otherShake)
+      , rotation = 0
+      , which = PlayerB
+      }
+    ]

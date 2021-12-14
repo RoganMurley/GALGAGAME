@@ -10,9 +10,11 @@ import WhichPlayer.Decoders as WhichPlayer
 decoder : Decoder Model
 decoder =
     Json.map8 (<|)
-        (Json.map2 Model
+        (Json.map4 Model
             (field "handPA" <| list Card.decoder)
             (field "handPB" int)
+            (field "deckPA" int)
+            (field "deckPB" int)
         )
         (field "stack" Stack.decoder)
         (field "turn" WhichPlayer.decoder)

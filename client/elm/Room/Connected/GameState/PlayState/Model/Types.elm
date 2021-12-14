@@ -8,6 +8,8 @@ import WhichPlayer.Types exposing (WhichPlayer)
 type alias Model =
     { hand : Hand
     , otherHand : Int
+    , deck : Int
+    , otherDeck : Int
     , stack : Stack
     , turn : WhichPlayer
     , life : Life

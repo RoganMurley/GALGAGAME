@@ -59,6 +59,8 @@ instance ToJSON Model where
       , "lifePB"    .= pmodel_life model_pb
       , "maxLifePA" .= pmodel_maxLife model_pa
       , "maxLifePB" .= pmodel_maxLife model_pb
+      , "deckPA"    .= length (pmodel_deck model_pa)
+      , "deckPB"    .= length (pmodel_deck model_pb)
       , "rot"       .= model_rot
       ]
 

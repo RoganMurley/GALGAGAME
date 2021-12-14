@@ -1,4 +1,4 @@
-module Game.Types exposing (Context, Entities, Feedback, HandEntity, Model, OtherHandEntity, StackEntity, WheelEntity)
+module Game.Types exposing (Context, Entities, Feedback, Focus(..), HandEntity, Model, OtherHandEntity, PlayerEntity, StackEntity, WheelEntity)
 
 import Animation.Types exposing (Anim)
 import Buttons.Types exposing (Buttons)
@@ -21,7 +21,7 @@ import WhichPlayer.Types exposing (WhichPlayer)
 
 type alias Model =
     { res : Resolvable.Model
-    , focus : Maybe StackCard
+    , focus : Focus
     , hover : HoverSelf
     , otherHover : HoverOther
     , entities : Entities
@@ -79,12 +79,25 @@ type alias WheelEntity =
     Game.Entity3D {}
 
 
+type alias PlayerEntity =
+    Game.Entity
+        { which : WhichPlayer
+        }
+
+
 type alias Entities =
     { stack : List StackEntity
     , hand : List HandEntity
     , otherHand : List OtherHandEntity
     , wheel : List WheelEntity
+    , players : List PlayerEntity
     }
+
+
+type Focus
+    = NoFocus
+    | FocusCard StackCard
+    | FocusPlayer WhichPlayer
 
 
 

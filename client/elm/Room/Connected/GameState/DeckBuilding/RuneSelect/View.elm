@@ -3,7 +3,7 @@ module RuneSelect.View exposing (view)
 import Card.View as Card
 import Colour
 import Font.View as Font
-import Game.Types exposing (Context)
+import Game.Types exposing (Context, Focus(..))
 import Math.Matrix4 exposing (makeRotate, makeScale3)
 import Math.Vector2 exposing (vec2)
 import Math.Vector3 exposing (vec3)
@@ -53,9 +53,9 @@ focusView rune focus ({ w, h, textures } as ctx) =
             List.concat
                 [ focusImageView
                     (vec3 0 0.3 0)
-                    (Just focusCard)
+                    (FocusCard focusCard)
                     ctx
-                , focusTextView (vec2 0 (-h * 0.1)) (Just focusCard) ctx
+                , focusTextView (vec2 0 (-h * 0.1)) (FocusCard focusCard) ctx
                 ]
 
         _ ->

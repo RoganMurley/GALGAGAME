@@ -15,7 +15,7 @@ import Font.State as Font
 import Font.Types as Font
 import Font.View as Font
 import Game.State exposing (contextInit)
-import Game.Types as Game exposing (Context, Feedback)
+import Game.Types as Game exposing (Context, Feedback, Focus(..), PlayerEntity)
 import Hand.View as Hand
 import Holding.Types exposing (Holding(..))
 import Holding.View as Holding
@@ -51,7 +51,7 @@ view { w, h } game chat assets =
     List.concat <|
         List.map ((|>) ctx)
             [ Background.radialView vfx
-            , lifeOrbView
+            , lifeOrbView entities.players
             , Wave.view
             , Stack.wheelBgView entities.wheel
             , Stack.view entities.stack
@@ -71,7 +71,7 @@ view { w, h } game chat assets =
             ]
 
 
-focusImageView : Vec3 -> Maybe StackCard -> Context -> List WebGL.Entity
+focusImageView : Vec3 -> Focus -> Context -> List WebGL.Entity
 focusImageView originVec focus ({ anim, tick } as ctx) =
     case anim of
         Mill _ _ _ ->
@@ -88,7 +88,7 @@ focusImageView originVec focus ({ anim, tick } as ctx) =
 
         _ ->
             case focus of
-                Just { card, owner } ->
+                FocusCard { card, owner } ->
                     let
                         shake =
                             0.01 * (Animation.animShake anim PlayerA tick + Animation.animShake anim PlayerB tick)
@@ -107,8 +107,8 @@ focusImageView originVec focus ({ anim, tick } as ctx) =
                     []
 
 
-lifeOrbView : Context -> List WebGL.Entity
-lifeOrbView ({ w, h, radius, model, anim, animDamage, tick } as ctx) =
+lifeOrbView : List PlayerEntity -> Context -> List WebGL.Entity
+lifeOrbView entities ({ w, h, radius, model, anim, animDamage, tick } as ctx) =
     let
         progress =
             Ease.outQuad (tick / animMaxTick anim)
@@ -134,25 +134,6 @@ lifeOrbView ({ w, h, radius, model, anim, animDamage, tick } as ctx) =
                 (finalOtherLifePercentage - (otherLifeChange / toFloat model.otherMaxLife) * finalOtherLifePercentage)
                 finalOtherLifePercentage
 
-        shake =
-            Animation.animShake anim PlayerA tick
-
-        otherShake =
-            Animation.animShake anim PlayerB tick
-
-        ( xOffset, yOffset ) =
-            ( 0.65 * radius, 0.875 * radius )
-
-        pos =
-            Math.Vector2.add
-                (vec2 (w * 0.5 + xOffset) (h * 0.5 - yOffset))
-                (vec2 shake shake)
-
-        otherPos =
-            Math.Vector2.add
-                (vec2 (w * 0.5 - xOffset) (h * 0.5 - yOffset))
-                (vec2 -otherShake otherShake)
-
         textScale =
             0.00035 * radius
 
@@ -161,64 +142,55 @@ lifeOrbView ({ w, h, radius, model, anim, animDamage, tick } as ctx) =
 
         otherLife =
             floor <| toFloat model.otherMaxLife * finalOtherLifePercentage
-    in
-    [ Render.Primitives.fullCircle <|
-        uniColourMag ctx
-            (Colour.background PlayerA)
-            1.0
-            { scale = 0.15 * radius
-            , position = pos
-            , rotation = 0
-            }
-    , Render.Primitives.fullCircle <|
-        uniColourMag ctx
-            (Colour.card PlayerA)
-            lifePercentage
-            { scale = 0.15 * radius
-            , position = pos
-            , rotation = 0
-            }
-    , Render.Primitives.fullCircle <|
-        uniColourMag ctx
-            (Colour.background PlayerB)
-            1.0
-            { scale = 0.15 * radius
-            , position = otherPos
-            , rotation = 0
-            }
-    , Render.Primitives.fullCircle <|
-        uniColourMag ctx
-            (Colour.card PlayerB)
-            otherLifePercentage
-            { scale = 0.15 * radius
-            , position = otherPos
-            , rotation = 0
-            }
-    ]
-        ++ List.concat
-            [ Font.view "Futura"
-                (String.fromInt life)
-                { x = Math.Vector2.getX pos
-                , y = Math.Vector2.getY pos
-                , scaleX = textScale
-                , scaleY = textScale
-                , color = Colour.yellow
-                }
-                ctx
-            , Font.view "Futura"
-                (String.fromInt otherLife)
-                { x = Math.Vector2.getX otherPos
-                , y = Math.Vector2.getY otherPos
-                , scaleX = textScale
-                , scaleY = textScale
-                , color = Colour.yellow
-                }
-                ctx
+
+        eachView : PlayerEntity -> List WebGL.Entity
+        eachView { which, position, scale, rotation } =
+            [ Render.Primitives.fullCircle <|
+                uniColourMag ctx
+                    (Colour.background which)
+                    1.0
+                    { scale = scale
+                    , position = position
+                    , rotation = 0
+                    }
+            , Render.Primitives.fullCircle <|
+                uniColourMag ctx
+                    (Colour.card which)
+                    (case which of
+                        PlayerA ->
+                            lifePercentage
+
+                        PlayerB ->
+                            otherLifePercentage
+                    )
+                    { scale = scale
+                    , position = position
+                    , rotation = 0
+                    }
             ]
+                ++ Font.view "Futura"
+                    (String.fromInt
+                        (case which of
+                            PlayerA ->
+                                life
+
+                            PlayerB ->
+                                otherLife
+                        )
+                    )
+                    { x = Math.Vector2.getX position
+                    , y = Math.Vector2.getY position
+                    , scaleX = textScale
+                    , scaleY = textScale
+                    , color = Colour.yellow
+                    }
+                    ctx
+    in
+    List.concat <| List.map eachView entities
 
 
-focusTextView : Vec2 -> Maybe StackCard -> Context -> List WebGL.Entity
-focusTextView originVec focus ({ w, h, anim, radius, tick } as ctx) =
+focusTextView : Vec2 -> Focus -> Context -> List WebGL.Entity
+focusTextView originVec focus ({ w, h, anim, model, radius, tick } as ctx) =
     case anim of
         Mill _ _ _ ->
             []
@@ -233,23 +205,20 @@ focusTextView originVec focus ({ w, h, anim, radius, tick } as ctx) =
             []
 
         _ ->
+            let
+                shake =
+                    Animation.animShake anim PlayerA tick + Animation.animShake anim PlayerB tick
+
+                origin =
+                    Math.Vector2.toRecord originVec
+            in
             case focus of
-                Nothing ->
-                    []
-
-                Just { card } ->
-                    let
-                        shake =
-                            Animation.animShake anim PlayerA tick + Animation.animShake anim PlayerB tick
-
-                        origin =
-                            Math.Vector2.toRecord originVec
-                    in
+                FocusCard { card } ->
                     List.concat
                         [ Font.view "Futura"
                             card.name
                             { x = origin.x + 0.5 * w + shake
-                            , y = origin.y + 0.5 * h + radius * 0.15 + shake
+                            , y = origin.y + 0.5 * h + shake
                             , scaleX = 0.00025 * radius
                             , scaleY = 0.00025 * radius
                             , color = vec3 (244 / 255) (241 / 255) (94 / 255)
@@ -258,13 +227,52 @@ focusTextView originVec focus ({ w, h, anim, radius, tick } as ctx) =
                         , Font.view "Futura"
                             card.desc
                             { x = origin.x + 0.5 * w + shake
-                            , y = origin.y + 0.5 * h + radius * 0.3 + shake
+                            , y = origin.y + 0.5 * h + shake
                             , scaleX = 0.00012 * radius
                             , scaleY = 0.00012 * radius
                             , color = Colour.white
                             }
                             ctx
                         ]
+
+                FocusPlayer which ->
+                    let
+                        life =
+                            case which of
+                                PlayerA ->
+                                    model.life
+
+                                PlayerB ->
+                                    model.otherLife
+
+                        cardsLeft =
+                            case which of
+                                PlayerA ->
+                                    model.deck
+
+                                PlayerB ->
+                                    model.otherDeck
+
+                        text =
+                            String.join "\n"
+                                [ "LIFE: " ++ String.fromInt life
+                                , "DECK: " ++ String.fromInt cardsLeft
+                                ]
+                    in
+                    List.concat
+                        [ Font.view "Futura"
+                            text
+                            { x = origin.x + 0.5 * w + shake
+                            , y = origin.y + 0.5 * h - radius * 0.15 + shake
+                            , scaleX = 0.00025 * radius
+                            , scaleY = 0.00025 * radius
+                            , color = vec3 (244 / 255) (241 / 255) (94 / 255)
+                            }
+                            ctx
+                        ]
+
+                _ ->
+                    []
 
 
 damageView : HoverSelf -> Holding -> Context -> List WebGL.Entity
@@ -361,7 +369,7 @@ damageView hover holding ({ w, h, radius, resolving, animDamage, tick, anim } as
         ]
 
 
-turnView : Maybe StackCard -> Bool -> Maybe Float -> Context -> List WebGL.Entity
+turnView : Focus -> Bool -> Maybe Float -> Context -> List WebGL.Entity
 turnView focus passed timeLeft ctx =
     let
         { anim, model, tick, w, h, radius } =
@@ -377,7 +385,7 @@ turnView focus passed timeLeft ctx =
         ( Mill _ _ _, _, _ ) ->
             []
 
-        ( NullAnim, Nothing, False ) ->
+        ( NullAnim, NoFocus, False ) ->
             if timeLeftProgress > 0 then
                 case timeLeft of
                     Just t ->
