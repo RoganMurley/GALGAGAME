@@ -13,7 +13,7 @@ view model =
     let
         formFieldClass : FormFieldClass Field Msg
         formFieldClass =
-            { getFieldPlaceholder = always "Humans will read this..."
+            { getFieldPlaceholder = always "What I love / hate about GALGA is..."
             , getFieldLabel = always Nothing
             , getFormFieldType = always TextAreaType
             , getExtraAttrs = always [ autofocus True ]
@@ -22,19 +22,17 @@ view model =
             }
     in
     div []
-        [ div [ class "menu-button", class "feedback-box" ]
+        [ div [ class "feedback-box" ]
             (case model.submitState of
                 Submitted ->
-                    [ h1 [] [ text "Thank you for your feedback!" ]
-
-                    --, button [ onClick Continue ] [ text "Continue" ]
-                    ]
+                    [ h1 [] [ text "Thank you for your feedback!" ] ]
 
                 _ ->
                     [ formInputView formFieldClass [] Body
                     , button
                         [ onClick Submit
                         , disabled <| model.submitState == Submitting
+                        , class "menu-button"
                         ]
                         [ text "SUBMIT FEEDBACK" ]
                     , div [ class "error" ] [ text model.error ]
