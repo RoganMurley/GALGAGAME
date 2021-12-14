@@ -15,7 +15,6 @@ import Data.Time.Clock (NominalDiffTime)
 import Data.Maybe (fromMaybe)
 import Data.Monoid ((<>))
 import Data.String.Conversions (cs)
-import Data.Text (Text)
 import Text.Printf (printf)
 import Network.Wai (Application)
 import Network.Wai.Handler.WebSockets
@@ -57,6 +56,9 @@ import qualified Log
 
 import qualified Room
 import Room (Room)
+
+import qualified Data.Text as Text
+import Data.Text (Text)
 
 import qualified Replay.Final
 
@@ -297,7 +299,8 @@ beginQueue state client roomVar = do
   gen <- liftIO getGen
   guid <- liftIO GUID.genText
   let scenario = makeScenario gen PrefixQueue
-  newRoomVar <- liftIO . atomically $ Server.getOrCreateRoom guid WaitQuickplay gen scenario state
+  let roomName = Text.take 8 guid
+  newRoomVar <- liftIO . atomically $ Server.getOrCreateRoom roomName WaitQuickplay gen scenario state
   beginQueue state client newRoomVar
 
 

@@ -4,7 +4,7 @@ module DSL.Beta.Interpreters where
 
 import Bounce (CardBounce(..))
 import Card (Card)
-import CardAnim (Damage, cardAnimDamage)
+import CardAnim (Damage, Hurt, cardAnimDamage)
 import Control.Monad (when)
 import Control.Monad.Free (Free(..), foldFree, liftF)
 import Data.Foldable (foldl')
@@ -14,6 +14,7 @@ import Data.Monoid ((<>))
 import Discard (CardDiscard(..), isDiscard)
 import DSL.Beta.DSL
 import DSL.Util (toLeft, toRight)
+import Life (Life)
 import Model (Model, gameover, maxHandLength)
 import ModelDiff (ModelDiff)
 import Player (WhichPlayer(..))
@@ -67,11 +68,11 @@ basicAnim anim alphaProgram = toLeft alphaProgram <* (toRight . liftF $ anim)
 
 animI :: DSL a -> (Alpha.Program a -> AlphaAnimProgram a)
 animI (Null _)              = basicAnim $ Anim.Null ()
-animI (Hurt d w h _)        = basicAnim $ Anim.Hurt w d h ()
 animI (Rotate _)            = basicAnim $ Anim.Rotate ()
 animI (Windup _)            = basicAnim $ Anim.Windup ()
 animI (RawAnim r _)         = basicAnim $ Anim.Raw r ()
 animI (GetGen _)            = basicAnim $ Anim.GetGen ()
+animI (Hurt d w h _)        = damageAnim d w h
 animI (Heal _ w _)          = healAnim w
 animI (AddToHand w c  _)    = addToHandAnim w c
 animI (Draw w d t _)        = drawAnim w d t
@@ -86,13 +87,20 @@ animI (Mill w t _)          = millAnim w t
 animI _                     = toLeft
 
 
+damageAnim :: Life -> WhichPlayer -> Hurt -> Alpha.Program a -> AlphaAnimProgram a
+damageAnim d w h alpha = do
+  final <- toLeft alpha
+  when (d > 0) $ toRight . liftF $ Anim.Hurt w d h ()
+  return final
+
+
 healAnim :: WhichPlayer -> Alpha.Program a -> AlphaAnimProgram a
 healAnim w alpha = do
   oldLife <- toLeft $ Alpha.getLife w
   final <- toLeft alpha
   newLife <- toLeft $ Alpha.getLife w
   let lifeChange = newLife - oldLife
-  toRight . liftF $ Anim.Heal w lifeChange ()
+  when (lifeChange > 0) $ toRight . liftF $ Anim.Heal w lifeChange ()
   return final
 
 
