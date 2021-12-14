@@ -34,7 +34,7 @@ import Player (WhichPlayer(..), other)
 import Scenario (Scenario(..))
 import Start (startProgram)
 import Stats.Stats (Experience)
-import User (User(..), getUsername, getUserFromTokens, isSuperuser)
+import User (User(..), getUsername, getUserFromCookies, isSuperuser)
 import Util (Gen, getGen, shuffle, split)
 
 import qualified DSL.Beta as Beta
@@ -120,9 +120,7 @@ wsApp state connectInfoConfig pending =
   runApp connectInfoConfig $ do
     connection <- liftIO $ WS.acceptRequest pending
     msg <- liftIO $ WS.receiveData connection
-    let loginToken = Auth.getToken pending Auth.loginCookieName
-    let apiToken = Auth.getToken pending "api-key"
-    user <- getUserFromTokens loginToken apiToken
+    user <- getUserFromCookies $ Auth.getCookies pending
     liftIO $ WS.forkPingThread connection 30
     begin connection msg user state
 
@@ -283,7 +281,8 @@ beginQueue state client roomVar = do
       Log.info $ printf "<%s>: Joining existing quickplay room" clientName
       beginPlay state client existingRoom
     Nothing -> do
-      Log.info $ printf "<%s>: Creating new quickplay room" clientName
+      room <- liftIO . readTVarIO $ roomVar
+      Log.info $ printf "<%s>: Creating new quickplay room [%s]" clientName (Room.getName room)
       finally
         (do
           asyncQueueCpuFallback state client roomVar

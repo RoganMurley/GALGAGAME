@@ -8,6 +8,8 @@ import Schema (GalgagameDb(..), galgagameDb)
 import qualified Auth.Apps as Auth
 import qualified Auth.Schema as Auth
 
+import qualified Data.Map as Map
+
 
 data User = User Auth.User | CpuUser Text | GuestUser | ServiceUser
   deriving (Show)
@@ -27,11 +29,13 @@ getQueryUsername GuestUser   = Nothing
 getQueryUsername ServiceUser = Nothing
 
 
-getUserFromTokens :: Maybe Auth.Token -> Maybe Auth.Token -> App User
-getUserFromTokens mLoginToken mApiToken = do
+getUserFromCookies :: Auth.Cookies -> App User
+getUserFromCookies cookies = do
+  let mLoginToken = Map.lookup Auth.loginCookieName cookies
   mUsername <- Auth.checkAuth mLoginToken
   case mUsername of
     Nothing -> do
+      let mApiToken = Map.lookup "api-key" cookies
       apiKey <- getApiKey
       if Just apiKey == mApiToken then
         return ServiceUser

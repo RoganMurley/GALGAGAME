@@ -25,7 +25,7 @@ htmlView { chat, game, roomID, players, errored } flags =
         , errorView errored
         , Html.map
             (RoomMsg << Room.ConnectedMsg << Connected.ChatMsg)
-            (Chat.htmlView chat)
+            (Chat.htmlView flags chat)
         ]
 
 
