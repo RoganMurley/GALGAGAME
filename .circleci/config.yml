@@ -35,10 +35,10 @@ jobs:
                    sudo /usr/bin/python3 -m pip install requests==2.18.4
       - run:
           name: Get websocat
-          command: wget https://github.com/vi/websocat/releases/download/v1.9.0/websocat_linux64 && chmod +x websocat_linux64
+          command: wget https://github.com/vi/websocat/releases/download/v1.9.0/websocat_linux64; chmod +x websocat_linux64;
       - run:
           name: Notify users
-          command: ./scripts/systemMessage "🔔 Server update scheduled in ~30 minutes 🔔"
+          command: if [ $CIRCLE_BRANCH == 'master' ]; then ./scripts/systemMessage "🔔 Server update scheduled in ~30 minutes 🔔"; fi
       - run:
           name: Deploy
           command: if [ $CIRCLE_BRANCH == 'master' ]; then ./scripts/decryptSecrets && ./scripts/deploy; fi
