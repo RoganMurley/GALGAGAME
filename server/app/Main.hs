@@ -28,7 +28,6 @@ import Config (App, ConnectInfoConfig(..), runApp)
 import Database (postgresConnectInfo, redisConnectInfo)
 import GameState (GameState(..), PlayState(..), PlayingR(..), WaitType(..), isWinner)
 import Model (Turn)
-import Negotiation (Prefix(..), Request(..), parseRequest, parsePrefix)
 import Outcome (Outcome)
 import Player (WhichPlayer(..), other)
 import Scenario (Scenario(..))
@@ -50,6 +49,9 @@ import Client (Client(..), ClientConnection(..))
 
 import qualified Command
 import Command (Command(..))
+
+import qualified Negotiation
+import Negotiation (Prefix(..), Request(..))
 
 import qualified Log
 
@@ -135,11 +137,11 @@ begin :: WS.Connection -> Text -> User -> TVar Server.State -> App ()
 begin conn request user state = do
   let username = getUsername user :: Text
   Log.info $ printf "<%s>: New connection" username
-  case parseRequest request of
-    Just (RoomRequest roomName) -> do
+  case Negotiation.parseRequest request of
+    Right (RoomRequest roomName) -> do
       Log.info $ printf "<%s>: Requesting room [%s]" username roomName
       msg <- liftIO $ WS.receiveData conn
-      case parsePrefix msg of
+      case Negotiation.parsePrefix msg of
         Nothing ->
           connectionFail conn $ printf "<%s>: Connection protocol failure" msg
         Just prefix -> do
@@ -150,14 +152,14 @@ begin conn request user state = do
           let scenario = makeScenario gen prefix
           roomVar <- liftIO . atomically $ Server.getOrCreateRoom roomName (prefixWaitType prefix) gen scenario state
           beginPrefix prefix state client roomVar
-    Just (PlayReplayRequest replayId) -> do
+    Right (PlayReplayRequest replayId) -> do
       mReplay <- Replay.Final.load replayId
       case mReplay of
         Just replay ->
           liftIO $ WS.sendTextData conn ("replay:" <> replay)
         Nothing ->
           liftIO $ WS.sendTextData conn ("replayNotFound:" :: Text)
-    Just (SystemMessageRequest systemMessage) ->
+    Right (SystemMessageRequest systemMessage) ->
       case User.isSuperuser user of
         True -> do
           Log.info $ printf ("System message received: " <> cs systemMessage)
@@ -171,8 +173,11 @@ begin conn request user state = do
           Log.info $ printf ("System message success")
         False ->
           Log.error $ printf "Illegal system message"
-    Nothing ->
-      connectionFail conn $ printf "<%s>: Bad request %s" (show username) request
+    Left Negotiation.ConnectionLostError -> do
+      Log.warning $ printf "<%s>: Connection was lost, informing client" username
+      liftIO $ WS.sendTextData conn ("connectionLost:" :: Text)
+    Left (Negotiation.UnknownError err) ->
+      connectionFail conn $ printf "<%s>: %s" username err
 
 
 beginPrefix :: Prefix -> TVar Server.State -> Client -> TVar Room -> App ()

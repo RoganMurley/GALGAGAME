@@ -7,22 +7,23 @@ import Connected.Messages as Connected
 import Connected.Types exposing (Model, Players)
 import GameState.Types exposing (GameState(..))
 import GameState.View as GameState
-import Html exposing (Html, button, div, input, text)
+import Html exposing (Html, button, div, h1, input, text)
 import Html.Attributes exposing (class, classList, id, readonly, type_, value)
 import Html.Events exposing (onClick)
 import Main.Messages exposing (Msg(..))
 import Main.Types exposing (Flags)
 import PlayState.Types exposing (PlayState(..))
+import Render.Types as Render
 import Room.Messages as Room
 import WebGL
 
 
 htmlView : Model -> Flags -> Html Msg
-htmlView { chat, game, roomID, players, errored } flags =
+htmlView { chat, game, roomID, players, errored, connectionLost } flags =
     div []
         [ playersView players
         , GameState.htmlView game roomID flags
-        , errorView errored
+        , errorView errored connectionLost
         , Html.map
             (RoomMsg << Room.ConnectedMsg << Connected.ChatMsg)
             (Chat.htmlView flags chat)
@@ -31,7 +32,11 @@ htmlView { chat, game, roomID, players, errored } flags =
 
 webglView : Model -> Flags -> Assets.Model -> List WebGL.Entity
 webglView { chat, game } flags assets =
-    GameState.webglView game chat (GameState.paramsFromFlags flags) assets
+    let
+        params =
+            GameState.paramsFromFlags flags
+    in
+    GameState.webglView game chat params assets
 
 
 playersView : Players -> Html Msg
@@ -105,10 +110,14 @@ titleView _ { players } =
     name players.pb ++ " vs " ++ name players.pa
 
 
-errorView : Bool -> Html a
-errorView errored =
-    if errored then
-        div [ class "connected-error" ] [ text "Something went wrong" ]
+errorView : Bool -> Bool -> Html a
+errorView errored connectionLost =
+    case ( errored, connectionLost ) of
+        ( True, _ ) ->
+            div [ class "connected-error" ] [ text "Something went wrong" ]
 
-    else
-        text ""
+        ( _, True ) ->
+            div [ class "connection-lost" ] [ h1 [] [ text "CONNECTION LOST" ] ]
+
+        _ ->
+            text ""

@@ -43,6 +43,7 @@ init mode gameType roomID =
     , errored = False
     , chat = Chat.init
     , heartbeatTick = 0
+    , connectionLost = False
     }
 
 
@@ -81,27 +82,31 @@ update flags assets msg ({ chat, game, mode, gameType } as model) =
 
 tick : Flags -> Model -> Float -> ( Model, Cmd Msg )
 tick flags model dt =
-    let
-        chat =
-            Chat.tick flags model.chat dt
+    if model.connectionLost then
+        ( model, Cmd.none )
 
-        ( game, msg ) =
-            GameState.tick flags model.game model.chat model.gameType dt
+    else
+        let
+            chat =
+                Chat.tick flags model.chat dt
 
-        newTick =
-            model.tick + dt
+            ( game, msg ) =
+                GameState.tick flags model.game model.chat model.gameType dt
 
-        ( newHeartbeatTick, heartbeatCmds ) =
-            if model.heartbeatTick <= 0 then
-                ( heartbeatInterval, [ Ports.websocketSend "heartbeat:" ] )
+            newTick =
+                model.tick + dt
 
-            else
-                ( model.heartbeatTick - dt, [] )
+            ( newHeartbeatTick, heartbeatCmds ) =
+                if model.heartbeatTick <= 0 then
+                    ( heartbeatInterval, [ Ports.websocketSend "heartbeat:" ] )
 
-        cmd =
-            Cmd.batch (Cmd.map GameStateMsg msg :: heartbeatCmds)
-    in
-    ( { model | chat = chat, game = game, tick = newTick, heartbeatTick = newHeartbeatTick }, cmd )
+                else
+                    ( model.heartbeatTick - dt, [] )
+
+            cmd =
+                Cmd.batch (Cmd.map GameStateMsg msg :: heartbeatCmds)
+        in
+        ( { model | chat = chat, game = game, tick = newTick, heartbeatTick = newHeartbeatTick }, cmd )
 
 
 receive : Flags -> Assets.Model -> Model -> String -> ( Model, Cmd Main.Msg )
@@ -261,6 +266,9 @@ receive flags assets ({ mode, gameType } as model) msg =
 
                 Nothing ->
                     ( model, log <| "Unable to parse timeLeft value: " ++ content )
+
+        "connectionLost" ->
+            ( { model | connectionLost = True }, Cmd.none )
 
         _ ->
             ( { model | errored = False }, log <| "Error decoding message from server: " ++ msg )

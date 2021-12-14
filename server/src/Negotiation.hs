@@ -1,5 +1,6 @@
 module Negotiation where
 
+import Data.Monoid ((<>))
 import Data.String.Conversions (cs)
 import Data.Text (Text)
 import Safe (readMay)
@@ -12,21 +13,28 @@ data Request =
   | SystemMessageRequest Text
 
 
-parseRequest :: Text -> Maybe Request
+data Error =
+    ConnectionLostError
+  | UnknownError Text
+
+
+parseRequest :: Text -> Either Error Request
 parseRequest msg =
   case breakAt ":" msg of
     ("room", name) ->
-      Just . RoomRequest $ name
+      Right . RoomRequest $ name
     ("playReplay", replayIdText) ->
       case readMay $ cs replayIdText of
         Just replayId ->
-          Just . PlayReplayRequest $ replayId
+          Right . PlayReplayRequest $ replayId
         Nothing ->
-          Nothing
+          Left . UnknownError $ "Unable to parse replay ID"
     ("systemMessage", message) ->
-      Just . SystemMessageRequest $ message
+      Right . SystemMessageRequest $ message
+    ("heartbeat", _) ->
+      Left ConnectionLostError
     _ ->
-      Nothing
+      Left . UnknownError $ "Unknown request " <> msg
 
 
 parsePrefix :: Text -> Maybe Prefix
