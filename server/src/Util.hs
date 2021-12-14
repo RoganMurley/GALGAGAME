@@ -134,3 +134,13 @@ indexedFilter f xs = fmap snd $ filter (uncurry f) (zip [0..] xs)
 
 tupleMap2 :: (a -> b) -> (a, a) -> (b, b)
 tupleMap2 f (x, y) = (f x, f y)
+
+
+to2Tuple :: [a] -> (a, a)
+to2Tuple (x : y : _) = (x, y)
+to2Tuple _ = error "Not enough values in list to make 2-tuple"
+
+
+to3Tuple :: [a] -> (a, a, a)
+to3Tuple (x : y : z : _) = (x, y, z)
+to3Tuple _ = error "Not enough values in list to make 3-tuple"

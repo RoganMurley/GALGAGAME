@@ -34,7 +34,7 @@ import Scenario (Scenario(..))
 import Start (startProgram)
 import Stats.Stats (Experience)
 import User (User(..), getUsername, getUserFromCookies, isSuperuser)
-import Util (Gen, getGen, shuffle, split)
+import Util (Gen, getGen, shuffle, split, to3Tuple)
 
 import qualified DSL.Beta as Beta
 
@@ -409,15 +409,8 @@ chooseComputerCommand which room gen = do
     trans EndAction          = EndTurnCommand
     trans (PlayAction index) = PlayCardCommand index
     randomChoice :: DeckBuilding.CharacterChoice
-    randomChoice =
-      DeckBuilding.CharacterChoice
-        (DeckBuilding.rune_name (randomRune genB))
-        (DeckBuilding.rune_name (randomRune genC))
-        (DeckBuilding.rune_name (randomRune genD))
-    (genA, genB) = split gen
-    (genC, genD) = split genA
-    randomRune :: Gen -> DeckBuilding.Rune
-    randomRune g = head $ shuffle g DeckBuilding.allRunes
+    randomChoice = DeckBuilding.CharacterChoice a b c
+    (a, b, c) = to3Tuple $ DeckBuilding.rune_name <$> shuffle gen DeckBuilding.mainRunes
 
 
 disconnect :: Client -> TVar Room -> TVar Server.State -> App (Server.State)
