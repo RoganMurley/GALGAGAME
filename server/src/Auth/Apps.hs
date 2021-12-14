@@ -22,8 +22,17 @@ import Stats.Schema as Schema
 import qualified Network.WebSockets as WS
 import qualified Database.Redis as R
 
+import Data.Map (Map)
+import qualified Data.Map as Map
+
 import Data.Text (Text)
 import qualified Data.Text.Encoding as T
+
+
+type Token    = Text
+type Username = Text
+type Seconds  = Integer
+type Cookies  = Map Text Text
 
 
 saveSession :: ByteString -> Token -> App ()
@@ -76,17 +85,9 @@ checkPassword username password = do
   return $
     case Schema.userPasshash <$> user of
       Just hashedPassword ->
-        if validatePassword (cs hashedPassword) password then
-          True
-        else
-          False
+        validatePassword (cs hashedPassword) password
       Nothing ->
         False
-
-
-type Token    = Text
-type Username = Text
-type Seconds  = Integer
 
 
 loginCookieName :: Text
@@ -97,19 +98,19 @@ loginTimeout :: Seconds
 loginTimeout = 3600 * 24 * 7
 
 
-getToken :: WS.PendingConnection -> Text -> Maybe Token
-getToken pending cookieName = snd <$> find (((==) cookieName) . fst) cookies
+getCookies :: WS.PendingConnection -> Cookies
+getCookies pending = Map.fromList cookiesList
   where
-    cookies :: [(Text, Text)]
-    cookies = case cookieString of
+    cookieHeaders :: WS.Headers
+    cookieHeaders = WS.requestHeaders . WS.pendingRequest $ pending
+    cookieString :: Maybe ByteString
+    cookieString = snd <$> find (((==) "Cookie") . fst) cookieHeaders
+    cookiesList :: [(Text, Text)]
+    cookiesList = case cookieString of
       Just str ->
         parseCookiesText str
       Nothing ->
         []
-    cookieString :: Maybe ByteString
-    cookieString = snd <$> find (((==) "Cookie") . fst) cookieHeaders
-    cookieHeaders :: WS.Headers
-    cookieHeaders = WS.requestHeaders . WS.pendingRequest $ pending
 
 
 legalName :: ByteString -> Maybe Text
