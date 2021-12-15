@@ -200,6 +200,14 @@ discardHand :: WhichPlayer -> (Int -> Card -> Bool) -> Program ()
 discardHand w f = modHand w $ indexedFilter (\i c -> not $ f i (anyCard c))
 
 
+reveal :: WhichPlayer -> (Int -> Card -> Bool) -> Program ()
+reveal w f = modHand w $ \h -> fmap revealer $ zip [0..] h
+  where
+    revealer :: (Int, HandCard) -> HandCard
+    revealer (i, HandCard c)      = if f i c then KnownHandCard c else HandCard c
+    revealer (_, KnownHandCard c) = KnownHandCard c
+
+
 rotate :: Program ()
 rotate = do
   modStack Stack.rotate

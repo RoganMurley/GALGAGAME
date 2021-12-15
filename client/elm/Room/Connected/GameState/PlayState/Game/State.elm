@@ -183,7 +183,7 @@ tick { dimensions, mouse } dt model chat =
                 , entities =
                     { stack = Stack.entities ctx
                     , hand = Hand.entities model.hover holding ctx
-                    , otherHand = Hand.otherEntities model.hover ctx
+                    , otherHand = Hand.otherEntities model.hover model.otherHover ctx
                     , wheel = Stack.wheelEntities ctx
                     , players = playerEntities ctx
                     }
@@ -320,7 +320,7 @@ getHoverOtherHand { entities } mRay =
         |> Maybe.andThen
             (\ray ->
                 List.find
-                    (hitTest3d ray 0.15)
+                    (hitTest3d ray 0.1)
                 <|
                     List.reverse entities.otherHand
             )

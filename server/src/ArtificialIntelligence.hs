@@ -7,10 +7,9 @@ import Data.String.Conversions (cs)
 import Data.Time.Clock.POSIX (posixSecondsToUTCTime)
 import DSL.Alpha
 
-import Card (Card)
 import GameCommand (GameCommand(..), resolveAll, update)
 import GameState
-import HandCard (anyCard)
+import HandCard (HandCard(..))
 import Mirror (mirror)
 import Model
 import Player (WhichPlayer(..), other)
@@ -49,7 +48,7 @@ evalState w (Playing playing) = evalModel model
       evalI m $ do
         life <- getLife which
         hand <- getHand which
-        return (life + 7 * (length hand) + (sum . (fmap (biasHand . anyCard)) $ hand))
+        return (life + 7 * (length hand) + (sum . (fmap biasHand) $ hand))
 
 
 toCommand :: Action -> GameCommand
@@ -122,7 +121,6 @@ winningEnd which model
 
 -- Some cards entail soft advantages/disadvantages that the AI can't handle.
 -- We manually set biases for these cards.
-biasHand :: Card -> Weight
-biasHand c
-  | c == Cards.strangeSpore = -9
-  | otherwise               = 0
+biasHand :: HandCard -> Weight
+biasHand (HandCard c)      = if c == Cards.strangeSpore then -7 else 0
+biasHand (KnownHandCard c) = biasHand (HandCard c) - 2

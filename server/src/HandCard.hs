@@ -47,3 +47,8 @@ reveal (KnownHandCard c) = KnownHandCard c
 hide :: HandCard -> HandCard
 hide (HandCard c) = HandCard c
 hide (KnownHandCard c) = HandCard c
+
+
+isRevealed :: HandCard -> Bool
+isRevealed (HandCard _) = False
+isRevealed (KnownHandCard _) = True

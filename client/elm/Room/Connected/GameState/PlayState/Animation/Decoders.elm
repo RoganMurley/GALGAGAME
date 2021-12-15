@@ -60,6 +60,9 @@ decoder =
                 "pass" ->
                     passDecoder
 
+                "reveal" ->
+                    revealDecoder
+
                 "getGen" ->
                     succeed GetGen
 
@@ -217,6 +220,13 @@ discardHandDecoder =
     Json.map2 DiscardHand
         (field "player" WhichPlayer.decoder)
         (field "discard" <| list cardDiscardDecoder)
+
+
+revealDecoder : Decoder Anim
+revealDecoder =
+    Json.map2 Reveal
+        (field "player" WhichPlayer.decoder)
+        (field "reveal" <| list bool)
 
 
 moveStackDecoder : Decoder Anim

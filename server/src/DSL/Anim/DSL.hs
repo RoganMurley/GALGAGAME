@@ -27,6 +27,7 @@ data DSL a
   | Bounce (Wheel (Maybe CardBounce)) a
   | DiscardStack (Wheel Bool) a
   | DiscardHand WhichPlayer [CardDiscard] a
+  | Reveal WhichPlayer [Bool] a
   | MoveStack (Wheel (Maybe Int)) Int a
   | Pass WhichPlayer a
   | GetGen a

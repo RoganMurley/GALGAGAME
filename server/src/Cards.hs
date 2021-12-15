@@ -6,13 +6,13 @@ import Card (Aspect(..), Card(..), Suit(..), Status(..), addStatus, cardName, ne
 import Data.Map (Map)
 import Data.Maybe (fromMaybe)
 import Data.Text (Text)
-import HandCard (HandCard(..), anyCard)
+import HandCard (HandCard(..), anyCard, isRevealed)
 import Player (other)
 import Safe (headMay)
 import Stack (diasporaFromStack, diasporaLength)
 import StackCard (StackCard(..), changeOwner, cardMap)
 import Transmutation (Transmutation(..), transmuteToCard)
-import Util (many, manyIndexed, shuffle)
+import Util (many, manyIndexed, randomBetween, shuffle)
 
 import qualified Data.Map as Map
 
@@ -254,6 +254,47 @@ bloodCoin =
       raw $ Alpha.modStackHead $ cardMap (addStatus StatusNegate)
       Beta.null
 
+
+-- SEEING
+seeingSword :: Card
+seeingSword =
+  newCard Seeing Sword
+    "Hurt for 6 and reveal\na card in their hand"
+    $ \w -> do
+      hurt 6 (other w) Slash
+      handLen <- length <$> getHand (other w)
+      g <- getGen
+      let targetIndex = randomBetween g 0 (handLen - 1)
+      reveal (other w) (\i _ -> i == targetIndex)
+
+
+seeingWand :: Card
+seeingWand =
+  newCard Seeing Wand
+    "Hurt for 9 for each revealed\ncard in their hand"
+    $ \w -> do
+      hand <- getHand (other w)
+      let count = length $ filter isRevealed hand
+      hurt (count * 9) (other w) Slash
+
+
+seeingGrail :: Card
+seeingGrail =
+  newCard Seeing Grail
+    "Heal for 7 and reveal\na card in their hand"
+    $ \w -> do
+      heal 7 w
+      handLen <- length <$> getHand (other w)
+      g <- getGen
+      let targetIndex = randomBetween g 0 (handLen - 1)
+      reveal (other w) (\i _ -> i == targetIndex)
+
+
+seeingCoin :: Card
+seeingCoin =
+  newCard Seeing Coin
+    "Return all cards on the wheel to hand"
+    $ \_ -> bounce (\i _ -> i > 0)
 
 -- Mirage
 mirageSword :: Card
@@ -598,6 +639,7 @@ swords =
   , tideSword
   , abyssSword
   , feverSword
+  , seeingSword
   ]
 
 
@@ -616,6 +658,7 @@ wands =
   , tideWand
   , abyssWand
   , feverWand
+  , seeingWand
   ]
 
 
@@ -634,6 +677,7 @@ grails =
   , tideGrail
   , abyssGrail
   , feverGrail
+  , seeingGrail
   ]
 
 
@@ -651,6 +695,7 @@ coins =
   , morphCoin
   , tideCoin
   , feverCoin
+  , seeingCoin
   ]
 
 

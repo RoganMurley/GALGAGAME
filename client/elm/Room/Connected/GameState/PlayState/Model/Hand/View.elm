@@ -61,6 +61,30 @@ otherView otherHandEntities ctx =
                                 _ ->
                                     Card.view ctx knownEntity
 
+                        Reveal PlayerB reveal ->
+                            case Array.get i <| Array.fromList reveal of
+                                Just True ->
+                                    let
+                                        startCard =
+                                            { owner = PlayerB
+                                            , card =
+                                                { name = ""
+                                                , desc = ""
+                                                , imgURL = "invisible.png"
+                                                , statuses = []
+                                                }
+                                            }
+
+                                        endCard =
+                                            { owner = PlayerB
+                                            , card = card
+                                            }
+                                    in
+                                    Card.transmutingView ctx startCard endCard knownEntity
+
+                                _ ->
+                                    Card.view ctx knownEntity
+
                         _ ->
                             Card.view ctx knownEntity
 

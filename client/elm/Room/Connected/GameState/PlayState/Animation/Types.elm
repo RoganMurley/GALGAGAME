@@ -23,6 +23,7 @@ type Anim
     | DiscardStack (Wheel Bool)
     | DiscardHand WhichPlayer (List CardDiscard)
     | MoveStack (Wheel (Maybe Int)) Int
+    | Reveal WhichPlayer (List Bool)
     | Pass WhichPlayer
     | HandFullPass
     | Finding

@@ -36,6 +36,10 @@ randomChoice :: Gen -> [a] -> a
 randomChoice gen xs = head $ shuffle gen xs
 
 
+randomBetween :: Gen -> Int -> Int -> Int
+randomBetween (Gen g) low high = fst $ R.randomR (low, high) g
+
+
 deleteIndex :: Int -> [a] -> [a]
 deleteIndex n xs =
   ys ++ tail zs

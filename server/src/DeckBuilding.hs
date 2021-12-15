@@ -185,11 +185,12 @@ mainRunes =
   , tideRune
   , heavenRune
   , shroomRune
-  , mirageRune
+  -- , mirageRune
   , mirrorRune
   , dualityRune
   , alchemyRune
   , morphRune
+  , seeingRune
   , feverRune
   ]
 
@@ -199,6 +200,7 @@ allRunes =
   [ bloodRune
   , crownRune
   , abyssRune
+  , mirageRune
   ]
 
 
@@ -248,6 +250,14 @@ mirageRune =
     "MIRAGE"
     "cards/mirage/coin.png"
     (Cards.mirageSword, Cards.mirageWand, Cards.mirageGrail, Cards.mirageCoin)
+
+
+seeingRune :: Rune
+seeingRune =
+  Rune
+    "SEEING"
+    "cards/seeing/coin.png"
+    (Cards.seeingSword, Cards.seeingWand, Cards.seeingGrail, Cards.seeingCoin)
 
 
 mirrorRune :: Rune

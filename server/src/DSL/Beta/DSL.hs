@@ -31,6 +31,7 @@ data DSL n
   | DiscardHand WhichPlayer (Int -> Card -> Bool) n
   | MoveStack (Int -> StackCard -> Maybe Int) Int n
   | Mill WhichPlayer Float n
+  | Reveal WhichPlayer (Int -> Card -> Bool) n
   | GetDeck WhichPlayer (Deck -> n)
   | GetHand WhichPlayer (Hand -> n)
   | GetLife WhichPlayer (Life -> n)

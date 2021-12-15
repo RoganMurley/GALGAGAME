@@ -223,9 +223,21 @@ entities hover holding ({ anim, model, progress } as ctx) =
     mainEntities ++ extraEntities
 
 
-otherEntities : HoverSelf -> Context -> List OtherHandEntity
-otherEntities hover ({ anim, model, progress } as ctx) =
+otherEntities : HoverSelf -> HoverOther -> Context -> List OtherHandEntity
+otherEntities hoverSelf hoverOther ({ anim, model, progress } as ctx) =
     let
+        hover : Hover {}
+        hover =
+            case ( hoverSelf, hoverOther ) of
+                ( HoverOtherHand { index, tick }, _ ) ->
+                    HoverOtherHand { index = index, tick = tick }
+
+                ( _, HoverHand { index, tick } ) ->
+                    HoverOtherHand { index = index, tick = tick }
+
+                _ ->
+                    NoHover
+
         -- DRY with PlayerA entities
         finalHand =
             case anim of

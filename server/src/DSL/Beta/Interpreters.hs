@@ -50,6 +50,7 @@ alphaI (Free (DiscardStack f n))    = Alpha.discardStack f         >>  alphaI n
 alphaI (Free (DiscardHand w f n))   = Alpha.discardHand w f        >>  alphaI n
 alphaI (Free (MoveStack f _ n))     = Alpha.moveStack f            >>  alphaI n
 alphaI (Free (Mill w _ n))          = Alpha.mill w                 >>  alphaI n
+alphaI (Free (Reveal w f n))        = Alpha.reveal w f             >>  alphaI n
 alphaI (Free (GetGen f))            = Alpha.getGen                 >>= alphaI . f
 alphaI (Free (GetRot f))            = Alpha.getRot                 >>= alphaI . f
 alphaI (Free (GetLife w f))         = Alpha.getLife w              >>= alphaI . f
@@ -85,6 +86,7 @@ animI (DiscardStack f _)    = discardStackAnim f
 animI (DiscardHand w f _)   = discardHandAnim w f
 animI (MoveStack f t _)     = moveStackAnim f t
 animI (Mill w t _)          = millAnim w t
+animI (Reveal w f _)        = revealAnim w f
 animI _                     = toLeft
 
 
@@ -283,6 +285,15 @@ getHandDiscards w f = do
         else
           NoDiscard finalHandIndex : getDiscards' (handIndex + 1) (finalHandIndex + 1) rest
       getDiscards' _ _ [] = []
+
+
+revealAnim :: WhichPlayer -> (Int -> Card -> Bool) -> Alpha.Program a -> AlphaAnimProgram a
+revealAnim w f alpha = do
+  hand <- toLeft $ Alpha.getHand w
+  let reveals = uncurry f <$> zip [0..] (anyCard <$> hand)
+  final <- toLeft alpha
+  toRight . liftF $ Anim.Reveal w reveals ()
+  return final
 
 
 getStackDiscards :: (Int -> StackCard -> Bool) -> Alpha.Program (Wheel Bool)

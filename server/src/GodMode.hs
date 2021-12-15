@@ -7,7 +7,7 @@ import Safe (readMay)
 
 import CardAnim (Hurt(..))
 import Cards (cardsByName)
-import HandCard (HandCard(..), hide, reveal)
+import HandCard (HandCard(..), hide)
 import Player (WhichPlayer(..), other)
 import Util (Err, breakAt)
 
@@ -64,9 +64,7 @@ parse which msg =
           Nothing ->
             ParseError ("Cannot parse " <> content <> " to int" :: Err)
       "reveal" ->
-        ParsedProgram $ do
-          Beta.raw $ Alpha.modHand (other which) (fmap reveal)
-          Beta.null
+        ParsedProgram $ Beta.reveal (other which) (const . const $ True)
       "hide" ->
         ParsedProgram $ do
           Beta.raw $ Alpha.modHand (other which) (fmap hide)

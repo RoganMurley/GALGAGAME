@@ -10,9 +10,10 @@ import rev from 'gulp-rev';
 import yargs from 'yargs';
 
 
-const { production } = yargs.argv;
+const { debug, production } = yargs.argv;
 const minifyJs = production ? uglify : identity;
 const minifyCss = production ? minify : identity;
+const optimize = !debug;
 
 
 const dir = {
@@ -24,7 +25,7 @@ const dir = {
 // ELM
 gulp.task('elm', () => {
   return gulp.src('elm/Main.elm')
-    .pipe(elm.make({filetype: 'js', optimize: true}))
+    .pipe(elm.make({filetype: 'js', optimize}))
     .pipe(minifyJs())
     .pipe(gulp.dest(dir.build));
 });

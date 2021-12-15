@@ -1,4 +1,4 @@
-module Hover exposing (Hover(..), HoverBase, HoverDamage(..), HoverOther, HoverSelf, HoverStack, damageDecoder, decodeHoverOther, encodeHoverSelf, getDmg)
+module Hover exposing (Hover(..), HoverBase, HoverDamage(..), HoverOther, HoverSelf, HoverStack, damageDecoder, decodeHoverOther, encodeHoverSelf, getDmg, map)
 
 import Json.Decode exposing (Decoder)
 import Json.Encode
@@ -98,7 +98,12 @@ decodeHoverOther msg =
                 [ Json.Decode.map
                     (\index -> HoverHand { index = index, tick = 0 })
                   <|
-                    Json.Decode.field "hand" Json.Decode.int
+                    Json.Decode.field "hand"
+                        Json.Decode.int
+                , Json.Decode.map
+                    (\index -> HoverOtherHand { index = index, tick = 0 })
+                  <|
+                    Json.Decode.field "otherHand" Json.Decode.int
                 , Json.Decode.map
                     (\index -> HoverStack { index = index, tick = 0 })
                   <|
@@ -107,3 +112,19 @@ decodeHoverOther msg =
                 ]
     in
     Json.Decode.decodeString hoverDecoder msg
+
+
+map : (HoverBase a -> HoverBase b) -> Hover a -> Hover b
+map f hover =
+    case hover of
+        HoverHand h ->
+            HoverHand <| f h
+
+        HoverOtherHand h ->
+            HoverOtherHand <| f h
+
+        HoverStack h ->
+            HoverStack <| f h
+
+        NoHover ->
+            NoHover

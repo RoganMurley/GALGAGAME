@@ -63,6 +63,7 @@ data Aspect
   | Morph
   | Abyss
   | Fever
+  | Seeing
   | Strange
   | OtherAspect Text
   deriving (Eq, Generic, NFData, Ord, Show)
@@ -110,10 +111,11 @@ mainAspects =
   , Blaze
   , Shroom
   , Alchemy
-  , Mirage
+  --, Mirage
   , Mirror
   , Duality
   , Morph
+  , Seeing
   ]
 
 
@@ -132,6 +134,7 @@ allAspects =
   , Morph
   , Fever
   , Strange
+  , Seeing
   ]
 
 

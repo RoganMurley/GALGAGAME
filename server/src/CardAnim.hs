@@ -31,6 +31,7 @@ data CardAnim
   | DiscardHand WhichPlayer [CardDiscard]
   | MoveStack (Wheel (Maybe Int)) Int
   | Pass WhichPlayer
+  | Reveal WhichPlayer [Bool]
   | Timeout
   | GetGen
   deriving (Show, Eq, Generic, NFData)
@@ -122,6 +123,12 @@ instance ToJSON CardAnim where
     [ "name"   .= ("pass" :: Text)
     , "player" .= w
     ]
+  toJSON (Reveal w r) =
+    object
+    [ "name"    .= ("reveal" :: Text)
+    , "player"  .= w
+    , "reveal" .= r
+    ]
   toJSON GetGen =
     object
     [ "name"   .= ("getGen" :: Text)
@@ -147,6 +154,7 @@ instance Mirror CardAnim where
   mirror (Bounce b)        = Bounce b
   mirror (DiscardStack d)  = DiscardStack d
   mirror (DiscardHand w d) = DiscardHand (other w) d
+  mirror (Reveal w r)      = Reveal (other w) r
   mirror (MoveStack m t)   = MoveStack m t
   mirror (Pass w)          = Pass (other w)
   mirror GetGen            = GetGen
