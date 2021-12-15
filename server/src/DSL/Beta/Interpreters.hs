@@ -14,7 +14,7 @@ import Data.Monoid ((<>))
 import Discard (CardDiscard(..), isDiscard)
 import DSL.Beta.DSL
 import DSL.Util (toLeft, toRight)
-import HandCard (HandCard(..), anyCard)
+import HandCard (HandCard(..), anyCard, isRevealed)
 import Life (Life)
 import Model (Model, gameover, maxHandLength)
 import ModelDiff (ModelDiff)
@@ -23,6 +23,7 @@ import ResolveData (ResolveData(..))
 import Safe (headMay)
 import StackCard (StackCard(..))
 import Transmutation
+import Util (xor)
 import Wheel
 
 import qualified DSL.Alpha as Alpha
@@ -290,9 +291,11 @@ getHandDiscards w f = do
 revealAnim :: WhichPlayer -> (Int -> Card -> Bool) -> Alpha.Program a -> AlphaAnimProgram a
 revealAnim w f alpha = do
   hand <- toLeft $ Alpha.getHand w
-  let reveals = uncurry f <$> zip [0..] (anyCard <$> hand)
+  let initialReveals = isRevealed <$> hand :: [Bool]
+  let reveals = uncurry f <$> zip [0..] (anyCard <$> hand) :: [Bool]
   final <- toLeft alpha
-  toRight . liftF $ Anim.Reveal w reveals ()
+  let activity = any id $ (uncurry xor) <$> zip initialReveals reveals :: Bool
+  when activity (toRight . liftF $ Anim.Reveal w reveals ())
   return final
 
 

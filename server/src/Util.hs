@@ -148,3 +148,7 @@ to2Tuple _ = error "Not enough values in list to make 2-tuple"
 to3Tuple :: [a] -> (a, a, a)
 to3Tuple (x : y : z : _) = (x, y, z)
 to3Tuple _ = error "Not enough values in list to make 3-tuple"
+
+
+xor :: Bool -> Bool -> Bool
+xor a b = a /= b

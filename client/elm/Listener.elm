@@ -106,6 +106,9 @@ animSfx anim =
         Rotate _ ->
             Just "rotate.mp3"
 
+        Reveal _ _ ->
+            Just "reveal.mp3"
+
         Windup _ ->
             Just "windup.mp3"
 

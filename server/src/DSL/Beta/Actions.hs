@@ -63,13 +63,13 @@ reversal = do
 
 revealRandomCard :: WhichPlayer -> Program ()
 revealRandomCard w = do
-  hand <- getHand (other w)
+  hand <- getHand w
   let indexed = zip [0..] hand :: [(Int, HandCard)]
   let hidden = filter (\(_, c) -> not (isRevealed c)) indexed  :: [(Int, HandCard)]
   case length hidden > 0 of
     True -> do
       g <- getGen
       let targetIndex = fst $ randomChoice g hidden
-      reveal (other w) (\i _ -> i == targetIndex)
+      reveal w (\i _ -> i == targetIndex)
     False ->
       return ()
