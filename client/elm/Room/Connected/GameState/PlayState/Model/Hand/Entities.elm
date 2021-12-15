@@ -1,7 +1,7 @@
 module Hand.Entities exposing (entities, handCardPosition, handCardRotation, handOrigin, otherEntities, playPosition)
 
 import Animation.State as Animation
-import Animation.Types exposing (Anim(..), Bounce, CardDiscard(..), HandBounce)
+import Animation.Types exposing (Anim(..), Bounce, CardDiscard(..), HandBounce, KnowableCard(..))
 import Array
 import Card.State as Card
 import Card.Types exposing (Card)
@@ -150,7 +150,7 @@ entities hover holding ({ anim, model, progress } as ctx) =
                         Nothing ->
                             []
 
-                Play PlayerA card i mStartPos ->
+                Play PlayerA knowableCard i mStartPos ->
                     let
                         startPos =
                             Maybe.withDefault
@@ -170,6 +170,14 @@ entities hover holding ({ anim, model, progress } as ctx) =
 
                         scale =
                             Card.scale
+
+                        card =
+                            case knowableCard of
+                                KnownCard c ->
+                                    c
+
+                                UnknownCard c ->
+                                    c
                     in
                     [ { position = pos
                       , rotation = rot
@@ -215,10 +223,11 @@ entities hover holding ({ anim, model, progress } as ctx) =
     mainEntities ++ extraEntities
 
 
-otherEntities : HoverOther -> Context -> List (Game.Entity3D {})
+otherEntities : HoverOther -> Context -> List OtherHandEntity
 otherEntities hover ({ anim, model, progress } as ctx) =
     let
-        finalN =
+        -- DRY with PlayerA entities
+        finalHand =
             case anim of
                 Bounce bounces ->
                     let
@@ -226,21 +235,30 @@ otherEntities hover ({ anim, model, progress } as ctx) =
                         playerBounces =
                             Animation.getPlayerBounceCards PlayerB bounces model.stack
                     in
-                    model.otherHand + List.length playerBounces
+                    model.otherHand ++ List.map (Just << .card) playerBounces
 
                 _ ->
                     model.otherHand
 
-        n =
+        ( hand, drawingCard ) =
             case anim of
                 Draw PlayerB _ ->
-                    finalN - 1
+                    ( List.take (List.length finalHand - 1) finalHand
+                    , Maybe.join <| List.head <| List.reverse finalHand
+                    )
 
-                Bounce _ ->
-                    model.otherHand
+                Bounce bounces ->
+                    let
+                        playerBounces : List HandBounce
+                        playerBounces =
+                            Animation.getPlayerBounceCards PlayerB bounces model.stack
+                    in
+                    ( List.take (List.length finalHand - List.length playerBounces) finalHand
+                    , Nothing
+                    )
 
                 _ ->
-                    finalN
+                    ( finalHand, Nothing )
 
         indexModifier : Int -> Int
         indexModifier =
@@ -256,8 +274,14 @@ otherEntities hover ({ anim, model, progress } as ctx) =
                 _ ->
                     identity
 
-        entity : Int -> OtherHandEntity
-        entity finalI =
+        n =
+            List.length hand
+
+        finalN =
+            List.length finalHand
+
+        entity : ( Int, Maybe Card ) -> OtherHandEntity
+        entity ( finalI, mCard ) =
             let
                 i =
                     indexModifier finalI
@@ -272,11 +296,12 @@ otherEntities hover ({ anim, model, progress } as ctx) =
                     (Quaternion.zRotation (handCardRotation PlayerB i n))
                     (Quaternion.zRotation (handCardRotation PlayerB finalI finalN))
             , scale = Card.scale
+            , mCard = mCard
             }
 
         mainEntities : List OtherHandEntity
         mainEntities =
-            List.map entity (List.range 0 (n - 1))
+            List.map entity <| List.indexedMap (\a b -> ( a, b )) hand
 
         extraEntities : List OtherHandEntity
         extraEntities =
@@ -292,10 +317,11 @@ otherEntities hover ({ anim, model, progress } as ctx) =
                                 Quaternion.identity
                                 (Quaternion.zRotation (handCardRotation PlayerB n (n + 1)))
                       , scale = Card.scale
+                      , mCard = drawingCard
                       }
                     ]
 
-                Play PlayerB _ i _ ->
+                Play PlayerB knowableCard i _ ->
                     [ { position =
                             interp progress
                                 (handCardPosition ctx PlayerB i n hover)
@@ -306,6 +332,13 @@ otherEntities hover ({ anim, model, progress } as ctx) =
                                 (Quaternion.zRotation (handCardRotation PlayerB i n))
                                 (Quaternion.xRotation (-0.35 * pi))
                       , scale = Card.scale
+                      , mCard =
+                            case knowableCard of
+                                KnownCard card ->
+                                    Just card
+
+                                UnknownCard _ ->
+                                    Nothing
                       }
                     ]
 
@@ -315,8 +348,8 @@ otherEntities hover ({ anim, model, progress } as ctx) =
                         playerBounces =
                             Animation.getPlayerBounceCards PlayerB bounces model.stack
 
-                        makeBounceEntity : HandBounce -> Game.Entity3D {}
-                        makeBounceEntity { stackIndex, handIndex } =
+                        makeBounceEntity : HandBounce -> OtherHandEntity
+                        makeBounceEntity { stackIndex, handIndex, card } =
                             let
                                 stackEntity =
                                     Stack.Entities.stackEntity ctx stackIndex
@@ -331,6 +364,7 @@ otherEntities hover ({ anim, model, progress } as ctx) =
                                     stackEntity.rotation
                                     (Quaternion.zRotation (handCardRotation PlayerB handIndex finalN))
                             , scale = Card.scale
+                            , mCard = Just card
                             }
                     in
                     List.map makeBounceEntity playerBounces

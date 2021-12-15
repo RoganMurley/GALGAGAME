@@ -5,6 +5,7 @@ import Card (Card(..))
 import Control.DeepSeq (NFData(..))
 import Data.Aeson (ToJSON(..), (.=), object)
 import GHC.Generics (Generic)
+import HandCard (HandCard, anyCard, knownCard)
 import Life (Life)
 import Mirror (Mirror(..))
 import Player (WhichPlayer(..), other)
@@ -34,7 +35,7 @@ data PlayerModel = PlayerModel
   deriving (Eq, Generic, NFData, Show)
 
 
-type Hand = [Card]
+type Hand = [HandCard]
 
 
 type Deck = [Card]
@@ -53,8 +54,8 @@ instance ToJSON Model where
       [
         "turn"      .= model_turn
       , "stack"     .= model_stack
-      , "handPA"    .= pmodel_hand model_pa
-      , "handPB"    .= length (pmodel_hand model_pb)
+      , "handPA"    .= (anyCard <$> pmodel_hand model_pa)
+      , "handPB"    .= (knownCard <$> pmodel_hand model_pb)
       , "lifePA"    .= pmodel_life model_pa
       , "lifePB"    .= pmodel_life model_pb
       , "maxLifePA" .= pmodel_maxLife model_pa

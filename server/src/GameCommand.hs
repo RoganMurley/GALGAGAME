@@ -13,6 +13,7 @@ import Data.String.Conversions (cs)
 import Data.Text (Text)
 import DeckBuilding (CharacterChoice, ChosenCharacter(..), DeckBuilding(..), choiceToCharacter, initDeckBuilding, selectCharacter)
 import GameState (GameState(..), PlayState(..), PlayingR(..), initModel)
+import HandCard (HandCard, anyCard)
 import Model (Hand, Passes(..), Model(..), Turn)
 import Outcome (HoverState(..), Outcome)
 import Player (WhichPlayer(..), other)
@@ -283,7 +284,7 @@ playCard index which playing time
       Alpha.evalI model $ do
         h <- Alpha.getHand which
         t <- Alpha.getTurn
-        let c = atMay hand index :: Maybe Card
+        let c = atMay hand index :: Maybe HandCard
         return (h, t, c)
 
 
@@ -435,9 +436,10 @@ hoverCard (HoverHand i) which playing =
     model = playing_model playing :: Model
   in
     case atMay hand i of
-      Just card ->
+      Just handCard ->
         Right (Nothing, [ Outcome.Encodable $ Outcome.Hover which (HoverHand i) hoverDamage ])
         where
+          card = anyCard handCard
           newModel = Alpha.modI model $ do
             Alpha.modHand which (deleteIndex i)
             Alpha.modStack (\s -> (Stack.windup s) { wheel_0 = Just $ StackCard which card })

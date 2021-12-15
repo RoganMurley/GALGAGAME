@@ -9,6 +9,7 @@ import Data.Maybe (fromMaybe)
 import Data.Monoid (Monoid)
 import Data.Semigroup ((<>), Semigroup)
 import GHC.Generics (Generic)
+import HandCard (anyCard, knownCard)
 import Life (Life)
 import Mirror (Mirror(..))
 import Model (Hand, Deck, Model(..), Passes, PlayerModel(..), Turn)
@@ -49,8 +50,8 @@ instance ToJSON ModelDiff where
     object . (omitNull) $
       [ "turn"      .= modeldiff_turn
       , "stack"     .= modeldiff_stack
-      , "handPA"    .= pmodeldiff_hand modeldiff_pa
-      , "handPB"    .= (length <$> pmodeldiff_hand modeldiff_pb)
+      , "handPA"    .= ((fmap anyCard) <$> pmodeldiff_hand modeldiff_pa)
+      , "handPB"    .= ((fmap knownCard) <$> pmodeldiff_hand modeldiff_pb)
       , "lifePA"    .= pmodeldiff_life modeldiff_pa
       , "lifePB"    .= pmodeldiff_life modeldiff_pb
       , "maxLifePA" .= pmodeldiff_maxLife modeldiff_pa

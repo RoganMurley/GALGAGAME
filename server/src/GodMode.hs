@@ -7,6 +7,7 @@ import Safe (readMay)
 
 import CardAnim (Hurt(..))
 import Cards (cardsByName)
+import HandCard (HandCard(..))
 import Player (WhichPlayer(..), other)
 import Util (Err, breakAt)
 
@@ -48,7 +49,7 @@ parse which msg =
       "card" ->
         case Map.lookup content cardsByName of
           Just card ->
-            ParsedProgram $ Beta.addToHand which card
+            ParsedProgram $ Beta.addToHand which (HandCard card)
           Nothing ->
             ParseError ("Unknown card: " <> content :: Err)
       "windup" ->

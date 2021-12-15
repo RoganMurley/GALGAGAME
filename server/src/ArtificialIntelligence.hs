@@ -10,6 +10,7 @@ import DSL.Alpha
 import Card (Card)
 import GameCommand (GameCommand(..), resolveAll, update)
 import GameState
+import HandCard (anyCard)
 import Mirror (mirror)
 import Model
 import Player (WhichPlayer(..), other)
@@ -48,7 +49,7 @@ evalState w (Playing playing) = evalModel model
       evalI m $ do
         life <- getLife which
         hand <- getHand which
-        return (life + 7 * (length hand) + (sum . (fmap biasHand) $ hand))
+        return (life + 7 * (length hand) + (sum . (fmap (biasHand . anyCard)) $ hand))
 
 
 toCommand :: Action -> GameCommand

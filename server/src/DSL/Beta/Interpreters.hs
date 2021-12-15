@@ -14,6 +14,7 @@ import Data.Monoid ((<>))
 import Discard (CardDiscard(..), isDiscard)
 import DSL.Beta.DSL
 import DSL.Util (toLeft, toRight)
+import HandCard (HandCard(..), anyCard)
 import Life (Life)
 import Model (Model, gameover, maxHandLength)
 import ModelDiff (ModelDiff)
@@ -39,7 +40,7 @@ alphaI (Free (Hurt d w _ n))        = Alpha.hurt d w               >>  alphaI n
 alphaI (Free (Heal h w n))          = Alpha.heal h w               >>  alphaI n
 alphaI (Free (Draw w d _ n))        = Alpha.draw w d               >>  alphaI n
 alphaI (Free (AddToHand w c n))     = Alpha.addToHand w c          >>  alphaI n
-alphaI (Free (Play w c i n))        = Alpha.play w c i             >>  alphaI n
+alphaI (Free (Play w c i n))        = Alpha.play w (anyCard c) i   >>  alphaI n
 alphaI (Free (Transmute f n))       = Alpha.transmute f            >>  alphaI n
 alphaI (Free (TransmuteActive f n)) = Alpha.transmuteActive f      >>  alphaI n
 alphaI (Free (Rotate n))            = Alpha.rotate                 >>  alphaI n
@@ -123,17 +124,17 @@ millAnim w t alpha = do
   return final
 
 
-addToHandAnim :: WhichPlayer -> Card -> Alpha.Program a -> AlphaAnimProgram a
+addToHandAnim :: WhichPlayer -> HandCard -> Alpha.Program a -> AlphaAnimProgram a
 addToHandAnim w c alpha = do
   handLength <- length <$> toLeft (Alpha.getHand w)
   final <- toLeft alpha
   if (handLength < maxHandLength)
     then toRight . liftF $ Anim.Draw w 1 ()
-    else toRight . liftF $ Anim.Mill w c 1 ()
+    else toRight . liftF $ Anim.Mill w (anyCard c) 1 ()
   return final
 
 
-playAnim :: WhichPlayer -> Card -> Int -> Alpha.Program a -> AlphaAnimProgram a
+playAnim :: WhichPlayer -> HandCard -> Int -> Alpha.Program a -> AlphaAnimProgram a
 playAnim w c i alpha = do
   final <- toLeft alpha
   toRight . liftF $ Anim.Play w c i ()
@@ -273,7 +274,7 @@ discardHandAnim w f alpha = do
 getHandDiscards :: WhichPlayer -> (Int -> Card -> Bool) -> Alpha.Program [CardDiscard]
 getHandDiscards w f = do
   hand <- Alpha.getHand w
-  return $ getDiscards' 0 0 $ uncurry f <$> zip [0..] hand
+  return $ getDiscards' 0 0 $ (\(index, card) -> f index (anyCard card)) <$> zip [0..] hand
     where
       getDiscards' :: Int -> Int -> [Bool] -> [CardDiscard]
       getDiscards' handIndex finalHandIndex (doDiscard:rest) =

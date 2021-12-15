@@ -7,6 +7,7 @@ import Control.Monad.Free (MonadFree, liftF)
 import Control.Monad.Free.TH (makeFree)
 import Data.List (partition)
 import DSL.Alpha.DSL (DSL(..), Program)
+import HandCard (HandCard(..), anyCard)
 import Player (WhichPlayer(..), other)
 import Life (Life)
 import Model (Deck, Hand, Passes(..), Turn, maxHandLength)
@@ -107,7 +108,7 @@ swapTurn = do
   modPasses incPasses
 
 
-addToHand :: WhichPlayer -> Card -> Program ()
+addToHand :: WhichPlayer -> HandCard -> Program ()
 addToHand w c = modHand w (\h -> h ++ [c])
 
 
@@ -123,9 +124,9 @@ draw w d = do
   case headMay deck of
     Just card -> do
       modDeck d tailSafe
-      addToHand w card
+      addToHand w (HandCard card)
     Nothing ->
-      addToHand w strangeEnd
+      addToHand w (KnownHandCard strangeEnd)
 
 
 transmute :: (Int -> StackCard -> Maybe Transmutation) -> Program ()
@@ -164,8 +165,8 @@ bounce f = do
   modStack $ Stack.diasporaFilter (\i c -> not $ f i c)
   let bouncing = indexedFilter f stackCards
   let (paBouncing, pbBouncing) = partition (isOwner PlayerA) bouncing
-  modHand PlayerA $ \h -> h ++ (stackcard_card <$> paBouncing)
-  modHand PlayerB $ \h -> h ++ (stackcard_card <$> pbBouncing)
+  modHand PlayerA $ \h -> h ++ (KnownHandCard . stackcard_card <$> paBouncing)
+  modHand PlayerB $ \h -> h ++ (KnownHandCard . stackcard_card <$> pbBouncing)
 
 
 moveStack :: (Int -> StackCard -> Maybe Int) -> Program ()
@@ -196,7 +197,7 @@ discardStack f = modStack $ Stack.diasporaFilter (\i c -> not $ f i c)
 
 
 discardHand :: WhichPlayer -> (Int -> Card -> Bool) -> Program ()
-discardHand w f = modHand w $ indexedFilter (\i c -> not $ f i c)
+discardHand w f = modHand w $ indexedFilter (\i c -> not $ f i (anyCard c))
 
 
 rotate :: Program ()

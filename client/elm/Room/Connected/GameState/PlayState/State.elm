@@ -1,6 +1,6 @@
 module PlayState.State exposing (carry, get, map, mouseDown, mouseUp, resolveOutcomeStr, tick, update)
 
-import Animation.Types exposing (Anim(..))
+import Animation.Types exposing (Anim(..), KnowableCard(..))
 import Assets.State as Assets
 import Assets.Types as Assets
 import Audio.State exposing (playSound)
@@ -257,7 +257,7 @@ updateTurnOnly msg state { audio } =
                                 resDiffList : List Resolvable.ResolveDiffData
                                 resDiffList =
                                     [ { diff = playDiff
-                                      , anim = Play PlayerA card index (Just pos)
+                                      , anim = Play PlayerA (KnownCard card) index (Just pos)
                                       , animDamage = ( 0, 0 )
                                       }
                                     , { diff = windupDiff

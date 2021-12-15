@@ -1,4 +1,4 @@
-module Animation.Types exposing (Anim(..), Bounce(..), CardDiscard(..), HandBounce, Hurt(..), Transmutation(..))
+module Animation.Types exposing (Anim(..), Bounce(..), CardDiscard(..), HandBounce, Hurt(..), KnowableCard(..), Transmutation(..))
 
 import Card.Types exposing (Card)
 import Math.Vector3 exposing (Vec3)
@@ -12,7 +12,7 @@ type Anim
     | Hurt WhichPlayer Int Hurt
     | Heal WhichPlayer Int
     | Draw WhichPlayer Float
-    | Play WhichPlayer Card Int (Maybe Vec3)
+    | Play WhichPlayer KnowableCard Int (Maybe Vec3)
     | Transmute (Wheel (Maybe Transmutation))
     | Mill WhichPlayer Card Float
     | GameStart WhichPlayer
@@ -48,6 +48,11 @@ type CardDiscard
 
 type Transmutation
     = Transmutation StackCard StackCard
+
+
+type KnowableCard
+    = KnownCard Card
+    | UnknownCard Card
 
 
 type alias HandBounce =

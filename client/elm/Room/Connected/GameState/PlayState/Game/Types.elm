@@ -70,7 +70,9 @@ type alias HandEntity =
 
 
 type alias OtherHandEntity =
-    Game.Entity3D {}
+    Game.Entity3D
+        { mCard : Maybe Card
+        }
 
 
 type alias WheelEntity =

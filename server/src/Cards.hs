@@ -6,6 +6,7 @@ import Card (Aspect(..), Card(..), Suit(..), Status(..), addStatus, cardName, ne
 import Data.Map (Map)
 import Data.Maybe (fromMaybe)
 import Data.Text (Text)
+import HandCard (HandCard(..), anyCard)
 import Player (other)
 import Safe (headMay)
 import Stack (diasporaFromStack, diasporaLength)
@@ -65,7 +66,7 @@ tideSword =
     "Hurt for 3, add a copy of this card\nto your hand"
     $ \w -> do
       hurt 3 (other w) Slash
-      addToHand w tideSword
+      addToHand w (KnownHandCard tideSword)
 
 
 tideWand :: Card
@@ -191,8 +192,8 @@ shroomGrail =
   newCard Shroom Grail
     ("Give them 2 STRANGE SPOREs\n(Hurt yourself for 4)")
     $ \w -> do
-      addToHand (other w) strangeSpore
-      addToHand (other w) strangeSpore
+      addToHand (other w) (KnownHandCard strangeSpore)
+      addToHand (other w) (KnownHandCard strangeSpore)
 
 
 strangeSpore :: Card
@@ -285,7 +286,7 @@ mirageGrail =
       let mCopyCard = headMay . (shuffle gen) $ hand
       case mCopyCard of
         Just copyCard -> do
-          let stackCard = StackCard{ stackcard_card = copyCard, stackcard_owner = w }
+          let stackCard = StackCard{ stackcard_card = anyCard copyCard, stackcard_owner = w }
           transmuteActive (\_ -> Just stackCard)
           Beta.null
         Nothing ->

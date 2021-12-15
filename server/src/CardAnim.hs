@@ -8,6 +8,7 @@ import Data.Aeson (ToJSON(..), (.=), object)
 import Data.Text (Text)
 import Discard (CardDiscard)
 import GHC.Generics (Generic)
+import HandCard (HandCard)
 import Life (Life)
 import Mirror (Mirror(..))
 import Player (WhichPlayer(..), other)
@@ -19,7 +20,7 @@ data CardAnim
   = Heal WhichPlayer Life
   | Draw WhichPlayer Float
   | Hurt WhichPlayer Life Hurt
-  | Play WhichPlayer Card Int
+  | Play WhichPlayer HandCard Int
   | Transmute (Wheel (Maybe Transmutation))
   | Mill WhichPlayer Card Float
   | GameEnd (Maybe WhichPlayer)

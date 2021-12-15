@@ -1,7 +1,7 @@
 module Model.Diff exposing (Diff, decoder, initDiff, merge)
 
 import Card.Decoders as Card
-import Hand.Types exposing (Hand)
+import Hand.Types exposing (Hand, OtherHand)
 import Json.Decode as Json exposing (Decoder, field, int, list, maybe)
 import Model.Types exposing (Life, Model)
 import Stack.Decoders as Stack
@@ -12,7 +12,7 @@ import WhichPlayer.Types exposing (WhichPlayer)
 
 type alias Diff =
     { hand : Maybe Hand
-    , otherHand : Maybe Int
+    , otherHand : Maybe OtherHand
     , stack : Maybe Stack
     , turn : Maybe WhichPlayer
     , life : Maybe Life
@@ -25,7 +25,7 @@ decoder : Decoder Diff
 decoder =
     Json.map7 Diff
         (maybe <| field "handPA" <| list Card.decoder)
-        (maybe <| field "handPB" int)
+        (maybe <| field "handPB" <| list (maybe Card.decoder))
         (maybe <| field "stack" Stack.decoder)
         (maybe <| field "turn" WhichPlayer.decoder)
         (maybe <| field "lifePA" int)

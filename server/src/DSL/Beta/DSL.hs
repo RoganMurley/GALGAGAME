@@ -3,6 +3,7 @@ module DSL.Beta.DSL where
 import Card (Card)
 import CardAnim (CardAnim, Hurt)
 import Control.Monad.Free (Free(..))
+import HandCard (HandCard)
 import Life (Life)
 import Model (Deck, Hand, Model)
 import Player (WhichPlayer(..))
@@ -19,8 +20,8 @@ data DSL n
   | Hurt Life WhichPlayer Hurt n
   | Heal Life WhichPlayer n
   | Draw WhichPlayer WhichPlayer Float n
-  | AddToHand WhichPlayer Card n
-  | Play WhichPlayer Card Int n
+  | AddToHand WhichPlayer HandCard n
+  | Play WhichPlayer HandCard Int n
   | Transmute (Int -> StackCard -> Maybe Transmutation) n
   | TransmuteActive (StackCard -> Maybe StackCard) n
   | Rotate n

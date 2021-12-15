@@ -15,7 +15,7 @@ init =
             36
     in
     { hand = []
-    , otherHand = 0
+    , otherHand = []
     , deck = defaultDeck
     , otherDeck = defaultDeck
     , stack = Stack.init

@@ -98,7 +98,7 @@ statusView ctx entity status =
             []
 
 
-backView : Context -> Game.Entity3D {} -> List WebGL.Entity
+backView : Context -> Game.Entity3D a -> List WebGL.Entity
 backView { camera3d, perspective, textures } { position, rotation, scale } =
     Texture.with2 textures "cardBack.png" "cardOutline.png" <|
         \backTexture outlineTexture ->
@@ -218,7 +218,7 @@ transmutingView ctx stackCard finalStackCard entity =
                 ++ (List.concat <| List.map (statusView ctx entity) stackCard.card.statuses)
 
 
-backDissolvingView : Context -> Game.Entity3D {} -> List WebGL.Entity
+backDissolvingView : Context -> Game.Entity3D a -> List WebGL.Entity
 backDissolvingView { perspective, camera3d, progress, textures } { position, rotation, scale } =
     Texture.with3 textures "cardOutline.png" "cardBack.png" "noise.png" <|
         \outlineTexture backTexture noise ->

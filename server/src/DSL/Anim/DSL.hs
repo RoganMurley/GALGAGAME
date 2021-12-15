@@ -5,6 +5,7 @@ import Control.Monad.Free (Free(..))
 import Card (Card)
 import CardAnim (CardAnim, Hurt)
 import Discard (CardDiscard)
+import HandCard (HandCard)
 import Life (Life)
 import Player (WhichPlayer)
 import Transmutation (Transmutation)
@@ -17,7 +18,7 @@ data DSL a
   | Hurt WhichPlayer Life Hurt a
   | Heal WhichPlayer Life a
   | Draw WhichPlayer Float a
-  | Play WhichPlayer Card Int a
+  | Play WhichPlayer HandCard Int a
   | Transmute (Wheel (Maybe Transmutation)) a
   | Mill WhichPlayer Card Float a
   | GameEnd (Maybe WhichPlayer) a

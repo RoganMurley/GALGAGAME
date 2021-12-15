@@ -8,7 +8,7 @@ import Card.Types as Card
 import Card.View as Card
 import Ease
 import Game.Entity as Game
-import Game.Types exposing (Context)
+import Game.Types exposing (Context, HandEntity, OtherHandEntity)
 import Math.Vector3 exposing (vec3)
 import Quaternion
 import Util exposing (interp)
@@ -16,7 +16,7 @@ import WebGL
 import WhichPlayer.Types exposing (WhichPlayer(..))
 
 
-view : List (Card.Entity { index : Int }) -> Context -> List WebGL.Entity
+view : List HandEntity -> Context -> List WebGL.Entity
 view handEntities ctx =
     let
         cardView i =
@@ -36,21 +36,46 @@ view handEntities ctx =
         List.indexedMap cardView handEntities
 
 
-otherView : List (Game.Entity3D {}) -> Context -> List WebGL.Entity
+otherView : List OtherHandEntity -> Context -> List WebGL.Entity
 otherView otherHandEntities ctx =
     let
-        cardView i =
-            case ctx.anim of
-                DiscardHand PlayerB discards ->
-                    case Array.get i <| Array.fromList discards of
-                        Just CardDiscard ->
-                            Card.backDissolvingView ctx
+        -- DRY with hand view
+        cardView i entity =
+            case entity.mCard of
+                Just card ->
+                    let
+                        knownEntity =
+                            { position = entity.position
+                            , scale = entity.scale
+                            , rotation = entity.rotation
+                            , card = card
+                            , owner = PlayerB
+                            }
+                    in
+                    case ctx.anim of
+                        DiscardHand PlayerB discards ->
+                            case Array.get i <| Array.fromList discards of
+                                Just CardDiscard ->
+                                    Card.dissolvingView ctx knownEntity
+
+                                _ ->
+                                    Card.view ctx knownEntity
 
                         _ ->
-                            Card.backView ctx
+                            Card.view ctx knownEntity
 
-                _ ->
-                    Card.backView ctx
+                Nothing ->
+                    case ctx.anim of
+                        DiscardHand PlayerB discards ->
+                            case Array.get i <| Array.fromList discards of
+                                Just CardDiscard ->
+                                    Card.backDissolvingView ctx entity
+
+                                _ ->
+                                    Card.backView ctx entity
+
+                        _ ->
+                            Card.backView ctx entity
     in
     List.concat <|
         List.indexedMap cardView otherHandEntities
