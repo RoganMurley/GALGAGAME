@@ -425,7 +425,7 @@ handCardRotation which i count =
             magnitude
 
         PlayerB ->
-            -magnitude
+            pi - magnitude
 
 
 handCardPosition : Context -> WhichPlayer -> Int -> Int -> Hover a -> Vec3

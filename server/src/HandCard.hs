@@ -37,3 +37,8 @@ anyCard (KnownHandCard card) = card
 knownCard :: HandCard -> Maybe Card
 knownCard (KnownHandCard card) = Just card
 knownCard _ = Nothing
+
+
+reveal :: HandCard -> HandCard
+reveal (HandCard c) = (KnownHandCard c)
+reveal (KnownHandCard c) = (KnownHandCard c)

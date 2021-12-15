@@ -7,11 +7,12 @@ import Safe (readMay)
 
 import CardAnim (Hurt(..))
 import Cards (cardsByName)
-import HandCard (HandCard(..))
+import HandCard (HandCard(..), reveal)
 import Player (WhichPlayer(..), other)
 import Util (Err, breakAt)
 
 import qualified Data.Map as Map
+import qualified DSL.Alpha as Alpha
 import qualified DSL.Beta as Beta
 
 
@@ -62,5 +63,9 @@ parse which msg =
             ParsedTimeLimit t
           Nothing ->
             ParseError ("Cannot parse " <> content <> " to int" :: Err)
+      "reveal" ->
+        ParsedProgram $ do
+          Beta.raw $ Alpha.modHand (other which) (fmap reveal)
+          Beta.null
       _ ->
         ParseError ("Unknown commandment: " <> command :: Err)
