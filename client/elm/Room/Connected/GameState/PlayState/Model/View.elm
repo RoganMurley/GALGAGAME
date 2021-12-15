@@ -15,7 +15,7 @@ import Font.State as Font
 import Font.Types as Font
 import Font.View as Font
 import Game.State exposing (contextInit)
-import Game.Types as Game exposing (Context, Feedback, Focus(..), PlayerEntity)
+import Game.Types as Game exposing (Context, Focus(..), PlayerEntity)
 import Hand.View as Hand
 import Holding.Types exposing (Holding(..))
 import Holding.View as Holding
@@ -30,6 +30,7 @@ import Render.Primitives
 import Render.Shaders
 import Render.Types as Render
 import Render.Uniforms exposing (uniColourMag)
+import Ripple.View as Ripple
 import Stack.Entities exposing (wheelZ)
 import Stack.Types exposing (StackCard)
 import Stack.View as Stack
@@ -42,7 +43,7 @@ import WhichPlayer.Types exposing (WhichPlayer(..))
 view : Render.Params -> Game.Model -> Chat.Model -> Assets.Model -> List WebGL.Entity
 view { w, h } game chat assets =
     let
-        { res, hover, focus, entities, passed, feedback, vfx, buttons, holding, timeLeft } =
+        { res, hover, focus, entities, passed, ripples, vfx, buttons, holding, timeLeft } =
             game
 
         ctx =
@@ -66,7 +67,7 @@ view { w, h } game chat assets =
             , Chat.notifyView chat buttons
             , timeLeftView timeLeft
             , Endgame.animView
-            , feedbackView feedback
+            , Ripple.view ripples
             , Holding.view holding
             ]
 
@@ -543,29 +544,6 @@ turnView focus passed timeLeft ctx =
 
         _ ->
             []
-
-
-feedbackView : List Feedback -> Context -> List WebGL.Entity
-feedbackView feedback ctx =
-    List.map
-        (\f ->
-            let
-                alpha =
-                    Ease.inQuint (f.progress / 1000)
-
-                scale =
-                    ctx.radius * 0.0005 * (1000 - f.progress)
-            in
-            Render.Primitives.circle <|
-                uniColourMag ctx
-                    Colour.white
-                    alpha
-                    { scale = scale
-                    , position = f.pos
-                    , rotation = 0
-                    }
-        )
-        feedback
 
 
 timeLeftView : Maybe Float -> Context -> List WebGL.Entity

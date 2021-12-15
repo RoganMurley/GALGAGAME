@@ -1,4 +1,4 @@
-module Game.Types exposing (Context, Entities, Feedback, Focus(..), HandEntity, Model, OtherHandEntity, PlayerEntity, StackEntity, WheelEntity)
+module Game.Types exposing (Context, Entities, Focus(..), HandEntity, Model, OtherHandEntity, PlayerEntity, StackEntity, WheelEntity)
 
 import Animation.Types exposing (Anim)
 import Buttons.Types exposing (Buttons)
@@ -9,10 +9,10 @@ import Game.Entity as Game
 import Holding.Types exposing (Holding)
 import Hover exposing (HoverOther, HoverSelf)
 import Math.Matrix4 exposing (Mat4)
-import Math.Vector2 exposing (Vec2)
 import Model.Types as Model
 import Mouse exposing (MouseState(..))
 import Resolvable.Types as Resolvable
+import Ripple.Types exposing (Ripple)
 import Stack.Types exposing (StackCard)
 import Texture.Types as Texture
 import Vfx.Types as Vfx
@@ -26,7 +26,7 @@ type alias Model =
     , otherHover : HoverOther
     , entities : Entities
     , passed : Bool
-    , feedback : List Feedback
+    , ripples : List Ripple
     , vfx : Vfx.Model
     , buttons : Buttons
     , holding : Holding
@@ -98,13 +98,3 @@ type Focus
     = NoFocus
     | FocusCard StackCard
     | FocusPlayer WhichPlayer
-
-
-
--- Feedback
-
-
-type alias Feedback =
-    { progress : Float
-    , pos : Vec2
-    }

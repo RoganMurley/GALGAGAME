@@ -38,6 +38,7 @@ import Ports exposing (websocketSend)
 import Resolvable.State as Resolvable
 import Resolvable.Types as Resolvable
 import Result
+import Ripple.State as Ripple
 import Room.Messages as Room
 import Util exposing (message)
 import Wheel.State as Wheel
@@ -109,7 +110,7 @@ update msg state mode assets =
                     ( state, Cmd.none )
 
         ClickFeedback pos ->
-            ( map (\game -> { game | feedback = { progress = 1000, pos = pos } :: game.feedback }) state, Cmd.none )
+            ( map (Ripple.add pos) state, Cmd.none )
 
         ServerTimeLeft timeLeft ->
             ( map (\game -> { game | timeLeft = Just timeLeft }) state, Cmd.none )

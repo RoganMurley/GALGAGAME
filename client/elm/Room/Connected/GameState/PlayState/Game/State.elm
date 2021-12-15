@@ -9,7 +9,7 @@ import Buttons.Types as Buttons exposing (ButtonType(..), Buttons)
 import Card.Types exposing (Card)
 import Chat.Types as Chat
 import Collision exposing (hitTest, hitTest3d)
-import Game.Types as Game exposing (Context, Entities, Feedback, Focus(..), HandEntity, PlayerEntity, StackEntity)
+import Game.Types as Game exposing (Context, Entities, Focus(..), HandEntity, PlayerEntity, StackEntity)
 import Hand.Entities as Hand
 import Hand.State exposing (maxHandLength)
 import Holding.State as Holding
@@ -27,6 +27,8 @@ import PlayState.Messages as PlayState
 import Render.Uniforms as Uniforms
 import Resolvable.State as Resolvable exposing (activeAnim, activeAnimDamage, activeModel, resolving)
 import Resolvable.Types as Resolvable
+import Ripple.State as Ripple
+import Ripple.Types exposing (Ripple)
 import Stack.Entities as Stack
 import Stack.Types exposing (StackCard)
 import Unproject
@@ -43,7 +45,7 @@ gameInit model =
     , otherHover = NoHover
     , entities = entitiesInit
     , passed = False
-    , feedback = []
+    , ripples = []
     , vfx = Vfx.init
     , buttons = Buttons.empty
     , holding = NoHolding
@@ -162,8 +164,8 @@ tick { dimensions, mouse } dt model chat =
         focus =
             getFocus ctx hoverHand hoverStack model.holding focusPlayer
 
-        feedback =
-            feedbackTick model.feedback dt
+        ripples =
+            Ripple.tick model.ripples dt
 
         holding =
             Holding.tick model.holding ctx.mouseRay dt
@@ -184,7 +186,7 @@ tick { dimensions, mouse } dt model chat =
                     , players = playerEntities ctx
                     }
                 , focus = focus
-                , feedback = feedback
+                , ripples = ripples
                 , vfx = Vfx.tick dt model.vfx timeLeft ctx
                 , buttons = buttonEntities model.passed mouse dt model.buttons chat ctx
                 , holding = holding
@@ -353,24 +355,6 @@ getFocus { anim, model } hoverHand hoverStack holding player =
 
         Holding { card } ->
             FocusCard { card = card, owner = PlayerA }
-
-
-feedbackTick : List Feedback -> Float -> List Feedback
-feedbackTick feedback dt =
-    Maybe.values <|
-        List.map
-            (\f ->
-                let
-                    progress =
-                        f.progress - dt
-                in
-                if progress < 0 then
-                    Nothing
-
-                else
-                    Just { f | progress = progress }
-            )
-            feedback
 
 
 buttonEntities : Bool -> MouseState -> Float -> Buttons -> Chat.Model -> Context -> Buttons
