@@ -43,7 +43,7 @@ import WhichPlayer.Types exposing (WhichPlayer(..))
 view : Render.Params -> Game.Model -> Chat.Model -> Assets.Model -> List WebGL.Entity
 view { w, h } game chat assets =
     let
-        { res, hover, focus, entities, passed, ripples, vfx, buttons, holding, timeLeft } =
+        { res, hover, focus, entities, passed, vfx, buttons, holding, timeLeft } =
             game
 
         ctx =
@@ -67,7 +67,6 @@ view { w, h } game chat assets =
             , Chat.notifyView chat buttons
             , timeLeftView timeLeft
             , Endgame.animView
-            , Ripple.view ripples
             , Holding.view holding
             ]
 

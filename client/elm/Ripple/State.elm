@@ -5,9 +5,9 @@ import Maybe.Extra as Maybe
 import Ripple.Types exposing (Ripple)
 
 
-add : Vec2 -> { a | ripples : List Ripple } -> { a | ripples : List Ripple }
-add pos model =
-    { model | ripples = { progress = 1000, pos = pos } :: model.ripples }
+add : Vec2 -> List Ripple -> List Ripple
+add pos ripples =
+    { progress = 1000, pos = pos } :: ripples
 
 
 tick : List Ripple -> Float -> List Ripple

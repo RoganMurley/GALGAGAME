@@ -16,8 +16,8 @@ type Msg
     | GotoReplay String
     | GotoComputerGame
     | StatChange StatChange
-    | ClickFeedback Vec2
     | ServerTimeLeft Float
+    | NoOp
 
 
 type PlayingOnly

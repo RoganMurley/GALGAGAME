@@ -109,11 +109,11 @@ update msg state mode assets =
                 _ ->
                     ( state, Cmd.none )
 
-        ClickFeedback pos ->
-            ( map (Ripple.add pos) state, Cmd.none )
-
         ServerTimeLeft timeLeft ->
             ( map (\game -> { game | timeLeft = Just timeLeft }) state, Cmd.none )
+
+        NoOp ->
+            ( state, Cmd.none )
 
 
 updatePlayingOnly : PlayingOnly -> PlayState -> Mode.Mode -> Assets.Model -> ( PlayState, Cmd Main.Msg )
@@ -481,7 +481,7 @@ mouseDown { dimensions, mouse } assets _ mode players { x, y } state =
                     PlayingOnly <| TurnOnly <| HoldCard card index ctx.mouseRay
 
                 Nothing ->
-                    ClickFeedback pos
+                    NoOp
 
         ( newPlayState, newMsg ) =
             update

@@ -15,6 +15,7 @@ import Main.Types exposing (Flags)
 import PlayState.Types exposing (PlayState(..))
 import Players exposing (Players)
 import Render.Types as Render
+import Ripple.View as Ripple
 import Room.Messages as Room
 import WebGL
 
@@ -32,12 +33,15 @@ htmlView { chat, game, roomID, players, errored, connectionLost } flags =
 
 
 webglView : Model -> Flags -> Assets.Model -> List WebGL.Entity
-webglView { chat, game } flags assets =
+webglView { chat, game, ripples } flags assets =
     let
         params =
             GameState.paramsFromFlags flags
     in
-    GameState.webglView game chat params assets
+    List.concat
+        [ GameState.webglView game chat params assets
+        , Ripple.view ripples params assets
+        ]
 
 
 playersView : Players -> Html Msg

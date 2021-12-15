@@ -5,6 +5,7 @@ import GameState.Types exposing (GameState)
 import GameType exposing (GameType)
 import Mode exposing (Mode)
 import Players exposing (Players)
+import Ripple.Types exposing (Ripple)
 
 
 type alias Model =
@@ -18,4 +19,5 @@ type alias Model =
     , chat : Chat.Model
     , heartbeatTick : Float
     , connectionLost : Bool
+    , ripples : List Ripple
     }

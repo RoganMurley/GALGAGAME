@@ -1,16 +1,24 @@
 module Ripple.View exposing (view)
 
+import Assets.Types as Assets
 import Colour
 import Ease
+import Game.State exposing (bareContextInit)
 import Game.Types exposing (Context)
+import Mouse exposing (MouseState(..))
 import Render.Primitives
+import Render.Types as Render
 import Render.Uniforms exposing (uniColourMag)
 import Ripple.Types exposing (Ripple)
 import WebGL
 
 
-view : List Ripple -> Context -> List WebGL.Entity
-view ripples ctx =
+view : List Ripple -> Render.Params -> Assets.Model -> List WebGL.Entity
+view ripples { w, h } assets =
+    let
+        ctx =
+            bareContextInit ( w, h ) assets NoMouse
+    in
     List.map
         (\{ progress, pos } ->
             let

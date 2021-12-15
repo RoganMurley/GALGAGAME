@@ -16,11 +16,13 @@ import Json.Decode as Json
 import Keyboard exposing (Key(..))
 import Main.Messages as Main
 import Main.Types exposing (Flags)
+import Math.Vector2 exposing (vec2)
 import Mode exposing (Mode(..))
 import Mouse
 import PlayState.Messages as PlayState
 import Players exposing (Players)
 import Ports exposing (log, websocketSend)
+import Ripple.State as Ripple
 import Settings.Messages as Settings
 import Stats exposing (decodeStatChange)
 import Util exposing (message, splitOnColon)
@@ -45,6 +47,7 @@ init mode gameType roomID =
     , chat = Chat.init
     , heartbeatTick = 0
     , connectionLost = False
+    , ripples = []
     }
 
 
@@ -97,17 +100,28 @@ tick flags model dt =
             newTick =
                 model.tick + dt
 
-            ( newHeartbeatTick, heartbeatCmds ) =
+            ( heartbeatTick, heartbeatCmds ) =
                 if model.heartbeatTick <= 0 then
                     ( heartbeatInterval, [ Ports.websocketSend "heartbeat:" ] )
 
                 else
                     ( model.heartbeatTick - dt, [] )
 
+            ripples =
+                Ripple.tick model.ripples dt
+
             cmd =
                 Cmd.batch (Cmd.map GameStateMsg msg :: heartbeatCmds)
         in
-        ( { model | chat = chat, game = game, tick = newTick, heartbeatTick = newHeartbeatTick }, cmd )
+        ( { model
+            | chat = chat
+            , game = game
+            , heartbeatTick = heartbeatTick
+            , tick = newTick
+            , ripples = ripples
+          }
+        , cmd
+        )
 
 
 receive : Flags -> Assets.Model -> Model -> String -> ( Model, Cmd Main.Msg )
@@ -292,5 +306,10 @@ mouseDown flags assets model pos =
     let
         ( game, cmd ) =
             GameState.mouseDown pos model.game flags model.mode model.gameType model.players assets
+
+        ripples =
+            Ripple.add
+                (vec2 (toFloat pos.x) (toFloat pos.y))
+                model.ripples
     in
-    ( { model | game = game }, cmd )
+    ( { model | game = game, ripples = ripples }, cmd )

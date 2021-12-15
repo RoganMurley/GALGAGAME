@@ -45,7 +45,6 @@ gameInit model =
     , otherHover = NoHover
     , entities = entitiesInit
     , passed = False
-    , ripples = []
     , vfx = Vfx.init
     , buttons = Buttons.empty
     , holding = NoHolding
@@ -164,9 +163,6 @@ tick { dimensions, mouse } dt model chat =
         focus =
             getFocus ctx hoverHand hoverStack model.holding focusPlayer
 
-        ripples =
-            Ripple.tick model.ripples dt
-
         holding =
             Holding.tick model.holding ctx.mouseRay dt
 
@@ -186,7 +182,6 @@ tick { dimensions, mouse } dt model chat =
                     , players = playerEntities ctx
                     }
                 , focus = focus
-                , ripples = ripples
                 , vfx = Vfx.tick dt model.vfx timeLeft ctx
                 , buttons = buttonEntities model.passed mouse dt model.buttons chat ctx
                 , holding = holding

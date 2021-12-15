@@ -12,7 +12,6 @@ import Math.Matrix4 exposing (Mat4)
 import Model.Types as Model
 import Mouse exposing (MouseState(..))
 import Resolvable.Types as Resolvable
-import Ripple.Types exposing (Ripple)
 import Stack.Types exposing (StackCard)
 import Texture.Types as Texture
 import Vfx.Types as Vfx
@@ -26,7 +25,6 @@ type alias Model =
     , otherHover : HoverOther
     , entities : Entities
     , passed : Bool
-    , ripples : List Ripple
     , vfx : Vfx.Model
     , buttons : Buttons
     , holding : Holding
