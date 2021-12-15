@@ -40,5 +40,10 @@ knownCard _ = Nothing
 
 
 reveal :: HandCard -> HandCard
-reveal (HandCard c) = (KnownHandCard c)
-reveal (KnownHandCard c) = (KnownHandCard c)
+reveal (HandCard c) = KnownHandCard c
+reveal (KnownHandCard c) = KnownHandCard c
+
+
+hide :: HandCard -> HandCard
+hide (HandCard c) = HandCard c
+hide (KnownHandCard c) = HandCard c

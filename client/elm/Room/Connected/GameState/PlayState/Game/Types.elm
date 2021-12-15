@@ -72,6 +72,7 @@ type alias HandEntity =
 type alias OtherHandEntity =
     Game.Entity3D
         { mCard : Maybe Card
+        , index : Int
         }
 
 

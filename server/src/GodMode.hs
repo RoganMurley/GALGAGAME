@@ -7,7 +7,7 @@ import Safe (readMay)
 
 import CardAnim (Hurt(..))
 import Cards (cardsByName)
-import HandCard (HandCard(..), reveal)
+import HandCard (HandCard(..), hide, reveal)
 import Player (WhichPlayer(..), other)
 import Util (Err, breakAt)
 
@@ -66,6 +66,10 @@ parse which msg =
       "reveal" ->
         ParsedProgram $ do
           Beta.raw $ Alpha.modHand (other which) (fmap reveal)
+          Beta.null
+      "hide" ->
+        ParsedProgram $ do
+          Beta.raw $ Alpha.modHand (other which) (fmap hide)
           Beta.null
       _ ->
         ParseError ("Unknown commandment: " <> command :: Err)

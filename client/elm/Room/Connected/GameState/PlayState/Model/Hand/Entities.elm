@@ -9,7 +9,7 @@ import Game.Entity as Game
 import Game.Types exposing (Context, HandEntity, OtherHandEntity)
 import Holding.State as Holding
 import Holding.Types exposing (Holding(..))
-import Hover exposing (Hover(..), HoverOther, HoverSelf)
+import Hover exposing (Hover(..), HoverDamage(..), HoverOther, HoverSelf)
 import Math.Vector3 exposing (Vec3, vec3)
 import Maybe.Extra as Maybe
 import Quaternion
@@ -223,7 +223,7 @@ entities hover holding ({ anim, model, progress } as ctx) =
     mainEntities ++ extraEntities
 
 
-otherEntities : HoverOther -> Context -> List OtherHandEntity
+otherEntities : HoverSelf -> Context -> List OtherHandEntity
 otherEntities hover ({ anim, model, progress } as ctx) =
     let
         -- DRY with PlayerA entities
@@ -297,6 +297,7 @@ otherEntities hover ({ anim, model, progress } as ctx) =
                     (Quaternion.zRotation (handCardRotation PlayerB finalI finalN))
             , scale = Card.scale
             , mCard = mCard
+            , index = finalI
             }
 
         mainEntities : List OtherHandEntity
@@ -318,6 +319,7 @@ otherEntities hover ({ anim, model, progress } as ctx) =
                                 (Quaternion.zRotation (handCardRotation PlayerB n (n + 1)))
                       , scale = Card.scale
                       , mCard = drawingCard
+                      , index = n
                       }
                     ]
 
@@ -339,6 +341,7 @@ otherEntities hover ({ anim, model, progress } as ctx) =
 
                                 UnknownCard _ ->
                                     Nothing
+                      , index = i
                       }
                     ]
 
@@ -365,6 +368,7 @@ otherEntities hover ({ anim, model, progress } as ctx) =
                                     (Quaternion.zRotation (handCardRotation PlayerB handIndex finalN))
                             , scale = Card.scale
                             , mCard = Just card
+                            , index = handIndex
                             }
                     in
                     List.map makeBounceEntity playerBounces
@@ -455,10 +459,17 @@ handCardPosition ctx which index count hover =
                     toFloat count
 
                 hoverY =
-                    case hover of
-                        HoverHand hoverHand ->
+                    case ( which, hover ) of
+                        ( PlayerA, HoverHand hoverHand ) ->
                             if index == hoverHand.index then
                                 interpFloat (hoverHand.tick / 70) 0 -10
+
+                            else
+                                0
+
+                        ( PlayerB, HoverOtherHand hoverOtherHand ) ->
+                            if index == hoverOtherHand.index then
+                                interpFloat (hoverOtherHand.tick / 70) 0 -10
 
                             else
                                 0

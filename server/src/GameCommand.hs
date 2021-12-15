@@ -13,7 +13,7 @@ import Data.String.Conversions (cs)
 import Data.Text (Text)
 import DeckBuilding (CharacterChoice, ChosenCharacter(..), DeckBuilding(..), choiceToCharacter, initDeckBuilding, selectCharacter)
 import GameState (GameState(..), PlayState(..), PlayingR(..), initModel)
-import HandCard (HandCard, anyCard)
+import HandCard (HandCard(..), anyCard)
 import Model (Hand, Passes(..), Model(..), Turn)
 import Outcome (HoverState(..), Outcome)
 import Player (WhichPlayer(..), other)
@@ -446,6 +446,22 @@ hoverCard (HoverHand i) which playing =
           damage = Beta.damageNumbersI newModel $ card_eff (applyStatuses card) which
           hoverDamage = tupleMap2 Outcome.damageToHoverDamage damage
       Nothing ->
+        ignore
+hoverCard (HoverOtherHand i) which playing =
+  let
+    hand = Alpha.evalI model $ Alpha.getHand (other which) :: Hand
+    model = playing_model playing :: Model
+  in
+    case atMay hand i of
+      Just (KnownHandCard card) ->
+        Right (Nothing, [ Outcome.Encodable $ Outcome.Hover which (HoverOtherHand i) hoverDamage ])
+        where
+          newModel = Alpha.modI model $ do
+            Alpha.modHand (other which) (deleteIndex i)
+            Alpha.modStack (\s -> (Stack.windup s) { wheel_0 = Just $ StackCard (other which) card })
+          damage = Beta.damageNumbersI newModel $ card_eff (applyStatuses card) (other which)
+          hoverDamage = tupleMap2 Outcome.damageToHoverDamage damage
+      _ ->
         ignore
 hoverCard (HoverStack i) which playing =
   let

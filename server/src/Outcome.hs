@@ -32,7 +32,11 @@ data Encodable =
 type Index = Int
 
 
-data HoverState = HoverHand Index | HoverStack Index | NoHover
+data HoverState =
+    HoverHand Index
+  | HoverOtherHand Index
+  | HoverStack Index
+  | NoHover
   deriving (Eq, Show)
 
 
@@ -66,6 +70,8 @@ instance ToJSON Encodable where
 instance ToJSON HoverState where
   toJSON (HoverHand index) =
     object [ "hand" .= index ]
+  toJSON (HoverOtherHand index) =
+    object [ "otherHand" .= index ]
   toJSON (HoverStack index) =
     object [ "stack" .= index ]
   toJSON NoHover =
@@ -74,7 +80,9 @@ instance ToJSON HoverState where
 
 instance FromJSON HoverState where
   parseJSON (Object v) =
-    (HoverHand <$> v .: "hand") <|> (HoverStack <$> v .: "stack")
+    (HoverHand <$> v .: "hand")
+    <|> (HoverOtherHand <$> v .: "otherHand")
+    <|> (HoverStack <$> v .: "stack")
   parseJSON Null = pure NoHover
   parseJSON _ = fail "Not a valid HoverState"
 

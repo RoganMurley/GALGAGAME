@@ -9,7 +9,7 @@ import Buttons.Types as Buttons exposing (ButtonType(..), Buttons)
 import Card.Types exposing (Card)
 import Chat.Types as Chat
 import Collision exposing (hitTest, hitTest3d)
-import Game.Types as Game exposing (Context, Entities, Focus(..), HandEntity, PlayerEntity, StackEntity)
+import Game.Types as Game exposing (Context, Entities, Focus(..), HandEntity, OtherHandEntity, PlayerEntity, StackEntity)
 import Hand.Entities as Hand
 import Hand.State exposing (maxHandLength)
 import Holding.State as Holding
@@ -123,11 +123,14 @@ entitiesInit =
     }
 
 
-hoverInit : Maybe Int -> Maybe Int -> HoverBase a -> Hover a
-hoverInit handIndex stackIndex base =
-    case ( handIndex, stackIndex ) of
-        ( Just index, _ ) ->
+hoverInit : Maybe Int -> Maybe Int -> Maybe Int -> HoverBase a -> Hover a
+hoverInit handIndex otherHandIndex stackIndex base =
+    case ( ( handIndex, otherHandIndex ), stackIndex ) of
+        ( ( Just index, _ ), _ ) ->
             HoverHand { base | index = index }
+
+        ( ( _, Just index ), _ ) ->
+            HoverOtherHand { base | index = index }
 
         ( _, Just index ) ->
             HoverStack { base | index = index }
@@ -148,6 +151,9 @@ tick { dimensions, mouse } dt model chat =
         hoverHand =
             getHoverHand model ctx.mouseRay
 
+        hoverOtherHand =
+            getHoverOtherHand model ctx.mouseRay
+
         hoverStack =
             getHoverStack model ctx.mouseRay
 
@@ -155,13 +161,13 @@ tick { dimensions, mouse } dt model chat =
             getFocusPlayer model (Mouse.getVec ctx.mouse)
 
         ( hover, hoverMsg ) =
-            hoverUpdate model.hover hoverHand hoverStack holding dt
+            hoverUpdate model.hover hoverHand hoverOtherHand hoverStack holding dt
 
         otherHover =
             hoverTick model.otherHover dt
 
         focus =
-            getFocus ctx hoverHand hoverStack model.holding focusPlayer
+            getFocus ctx hoverHand hoverOtherHand hoverStack model.holding focusPlayer
 
         holding =
             Holding.tick model.holding ctx.mouseRay dt
@@ -177,7 +183,7 @@ tick { dimensions, mouse } dt model chat =
                 , entities =
                     { stack = Stack.entities ctx
                     , hand = Hand.entities model.hover holding ctx
-                    , otherHand = Hand.otherEntities model.otherHover ctx
+                    , otherHand = Hand.otherEntities model.hover ctx
                     , wheel = Stack.wheelEntities ctx
                     , players = playerEntities ctx
                     }
@@ -195,6 +201,9 @@ getHoverIndex : Hover a -> Maybe Int
 getHoverIndex hover =
     case hover of
         HoverHand { index } ->
+            Just index
+
+        HoverOtherHand { index } ->
             Just index
 
         HoverStack { index } ->
@@ -219,6 +228,9 @@ hoverTick hover dt =
         HoverHand hoverHand ->
             HoverHand <| baseTick hoverHand
 
+        HoverOtherHand hoverOtherHand ->
+            HoverOtherHand <| baseTick hoverOtherHand
+
         HoverStack hoverStack ->
             HoverStack <| baseTick hoverStack
 
@@ -226,33 +238,42 @@ hoverTick hover dt =
             NoHover
 
 
-hoverUpdate : HoverSelf -> Maybe HandEntity -> Maybe StackEntity -> Holding -> Float -> ( HoverSelf, Cmd PlayState.Msg )
-hoverUpdate oldHover handEntity stackEntity holding dt =
+hoverUpdate : HoverSelf -> Maybe HandEntity -> Maybe OtherHandEntity -> Maybe StackEntity -> Holding -> Float -> ( HoverSelf, Cmd PlayState.Msg )
+hoverUpdate oldHover handEntity otherHandEntity stackEntity holding dt =
     let
         hoverHandIndex =
             Maybe.map .index handEntity
+
+        hoverOtherHandIndex =
+            Maybe.map .index otherHandEntity
 
         hoverStackIndex =
             Maybe.map .index stackEntity
 
         hoverIndex =
-            Maybe.or hoverHandIndex hoverStackIndex
+            List.foldr Maybe.or
+                Nothing
+                [ hoverHandIndex, hoverStackIndex, hoverOtherHandIndex ]
 
         oldHoverIndex =
             getHoverIndex oldHover
-
-        newHover =
-            hoverTick oldHover dt
     in
     case holding of
         NoHolding ->
             if hoverIndex == oldHoverIndex then
-                ( newHover, Cmd.none )
+                ( hoverTick oldHover dt, Cmd.none )
 
             else
                 let
                     freshHover =
-                        hoverInit hoverHandIndex hoverStackIndex { index = 0, tick = 0, dmg = ( HoverDamage 0, HoverDamage 0 ) }
+                        hoverInit
+                            hoverHandIndex
+                            hoverOtherHandIndex
+                            hoverStackIndex
+                            { index = 0
+                            , tick = 0
+                            , dmg = ( HoverDamage 0, HoverDamage 0 )
+                            }
                 in
                 ( freshHover
                 , message <|
@@ -271,6 +292,9 @@ hoverDamage hover dmg =
         HoverHand hoverHand ->
             HoverHand { hoverHand | dmg = dmg }
 
+        HoverOtherHand hoverOtherHand ->
+            HoverOtherHand { hoverOtherHand | dmg = dmg }
+
         HoverStack hoverStack ->
             HoverStack { hoverStack | dmg = dmg }
 
@@ -287,6 +311,27 @@ getHoverHand { entities } mRay =
                     (hitTest3d ray 0.1)
                 <|
                     List.reverse entities.hand
+            )
+
+
+getHoverOtherHand : Game.Model -> Maybe { origin : Vec3, direction : Vec3 } -> Maybe OtherHandEntity
+getHoverOtherHand { entities } mRay =
+    mRay
+        |> Maybe.andThen
+            (\ray ->
+                List.find
+                    (hitTest3d ray 0.15)
+                <|
+                    List.reverse entities.otherHand
+            )
+        |> Maybe.andThen
+            (\entity ->
+                case entity.mCard of
+                    Just _ ->
+                        Just entity
+
+                    Nothing ->
+                        Nothing
             )
 
 
@@ -314,13 +359,22 @@ getFocusPlayer { entities } mMousePos =
             Nothing
 
 
-getFocus : Context -> Maybe HandEntity -> Maybe StackEntity -> Holding -> Maybe WhichPlayer -> Focus
-getFocus { anim, model } hoverHand hoverStack holding player =
+getFocus : Context -> Maybe HandEntity -> Maybe OtherHandEntity -> Maybe StackEntity -> Holding -> Maybe WhichPlayer -> Focus
+getFocus { anim, model } hoverHand hoverOtherHand hoverStack holding player =
     let
         hoverCard =
-            Maybe.or
-                (Maybe.map (\{ card, owner } -> { owner = owner, card = card }) hoverStack)
-                (Maybe.map (\{ card } -> { owner = PlayerA, card = card }) hoverHand)
+            List.foldr
+                Maybe.or
+                Nothing
+                [ Maybe.map (\{ card, owner } -> { owner = owner, card = card }) hoverStack
+                , Maybe.map (\{ card } -> { owner = PlayerA, card = card }) hoverHand
+                , case Maybe.join <| Maybe.map .mCard hoverOtherHand of
+                    Just card ->
+                        Just { card = card, owner = PlayerB }
+
+                    Nothing ->
+                        Nothing
+                ]
 
         stackCard =
             model.stack.wheel0

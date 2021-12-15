@@ -26,6 +26,7 @@ type alias HoverBase a =
 
 type Hover a
     = HoverHand (HoverBase a)
+    | HoverOtherHand (HoverBase a)
     | HoverStack (HoverBase a)
     | NoHover
 
@@ -39,6 +40,9 @@ getDmg : HoverSelf -> ( HoverDamage, HoverDamage )
 getDmg hover =
     case hover of
         HoverHand { dmg } ->
+            dmg
+
+        HoverOtherHand { dmg } ->
             dmg
 
         HoverStack { dmg } ->
@@ -72,6 +76,9 @@ encodeHoverSelf hover =
             case hover of
                 HoverHand { index } ->
                     Json.Encode.object [ ( "hand", Json.Encode.int index ) ]
+
+                HoverOtherHand { index } ->
+                    Json.Encode.object [ ( "otherHand", Json.Encode.int index ) ]
 
                 HoverStack { index } ->
                     Json.Encode.object [ ( "stack", Json.Encode.int index ) ]
