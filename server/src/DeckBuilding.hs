@@ -190,7 +190,7 @@ mainRunes =
   , dualityRune
   , alchemyRune
   , morphRune
-  , seeingRune
+  , seerRune
   , feverRune
   ]
 
@@ -252,12 +252,12 @@ mirageRune =
     (Cards.mirageSword, Cards.mirageWand, Cards.mirageGrail, Cards.mirageCoin)
 
 
-seeingRune :: Rune
-seeingRune =
+seerRune :: Rune
+seerRune =
   Rune
-    "SEEING"
-    "cards/seeing/coin.png"
-    (Cards.seeingSword, Cards.seeingWand, Cards.seeingGrail, Cards.seeingCoin)
+    "SEER"
+    "cards/seer/coin.png"
+    (Cards.seerSword, Cards.seerWand, Cards.seerGrail, Cards.seerCoin)
 
 
 mirrorRune :: Rune

@@ -63,7 +63,7 @@ data Aspect
   | Morph
   | Abyss
   | Fever
-  | Seeing
+  | Seer
   | Strange
   | OtherAspect Text
   deriving (Eq, Generic, NFData, Ord, Show)
@@ -115,7 +115,7 @@ mainAspects =
   , Mirror
   , Duality
   , Morph
-  , Seeing
+  , Seer
   ]
 
 
@@ -134,7 +134,7 @@ allAspects =
   , Morph
   , Fever
   , Strange
-  , Seeing
+  , Seer
   ]
 
 

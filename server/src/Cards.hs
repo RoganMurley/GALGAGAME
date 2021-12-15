@@ -255,19 +255,19 @@ bloodCoin =
       Beta.null
 
 
--- SEEING
-seeingSword :: Card
-seeingSword =
-  newCard Seeing Sword
+-- SEER
+seerSword :: Card
+seerSword =
+  newCard Seer Sword
     "Hurt for 6 and reveal\na card in their hand"
     $ \w -> do
       hurt 6 (other w) Slash
       revealRandomCard (other w)
 
 
-seeingWand :: Card
-seeingWand =
-  newCard Seeing Wand
+seerWand :: Card
+seerWand =
+  newCard Seer Wand
     "Hurt for 9 for each revealed\ncard in their hand"
     $ \w -> do
       hand <- getHand (other w)
@@ -275,18 +275,18 @@ seeingWand =
       hurt (count * 9) (other w) Slash
 
 
-seeingGrail :: Card
-seeingGrail =
-  newCard Seeing Grail
+seerGrail :: Card
+seerGrail =
+  newCard Seer Grail
     "Heal for 7 and reveal\na card in their hand"
     $ \w -> do
       heal 7 w
       revealRandomCard (other w)
 
 
-seeingCoin :: Card
-seeingCoin =
-  newCard Seeing Coin
+seerCoin :: Card
+seerCoin =
+  newCard Seer Coin
     "Return all cards on the wheel to hand"
     $ \_ -> bounce (\i _ -> i > 0)
 
@@ -633,7 +633,7 @@ swords =
   , tideSword
   , abyssSword
   , feverSword
-  , seeingSword
+  , seerSword
   ]
 
 
@@ -652,7 +652,7 @@ wands =
   , tideWand
   , abyssWand
   , feverWand
-  , seeingWand
+  , seerWand
   ]
 
 
@@ -671,7 +671,7 @@ grails =
   , tideGrail
   , abyssGrail
   , feverGrail
-  , seeingGrail
+  , seerGrail
   ]
 
 
@@ -689,7 +689,7 @@ coins =
   , morphCoin
   , tideCoin
   , feverCoin
-  , seeingCoin
+  , seerCoin
   ]
 
 
