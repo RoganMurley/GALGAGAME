@@ -1,10 +1,10 @@
 module Hand.Types exposing (Hand, OtherHand)
 
-import Card.Types exposing (Card)
+import Card.Types exposing (Card, KnowableCard)
 
 
 type alias Hand =
-    List Card
+    List KnowableCard
 
 
 type alias OtherHand =

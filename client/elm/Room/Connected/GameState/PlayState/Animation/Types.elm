@@ -1,6 +1,6 @@
-module Animation.Types exposing (Anim(..), Bounce(..), CardDiscard(..), HandBounce, Hurt(..), KnowableCard(..), Transmutation(..))
+module Animation.Types exposing (Anim(..), Bounce(..), CardDiscard(..), HandBounce, Hurt(..), Transmutation(..))
 
-import Card.Types exposing (Card)
+import Card.Types exposing (Card, KnowableCard)
 import Math.Vector3 exposing (Vec3)
 import Stack.Types exposing (StackCard)
 import Wheel.Types exposing (Wheel)
@@ -49,11 +49,6 @@ type CardDiscard
 
 type Transmutation
     = Transmutation StackCard StackCard
-
-
-type KnowableCard
-    = KnownCard Card
-    | UnknownCard Card
 
 
 type alias HandBounce =

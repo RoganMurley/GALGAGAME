@@ -1,4 +1,4 @@
-module Card.Types exposing (Card, Entity)
+module Card.Types exposing (Card, Entity, KnowableCard(..))
 
 import Game.Entity as Game
 import Status.Types exposing (Status)
@@ -11,6 +11,11 @@ type alias Card =
     , imgURL : String
     , statuses : List Status
     }
+
+
+type KnowableCard
+    = KnownCard Card
+    | UnknownCard Card
 
 
 type alias Entity a =

@@ -1,10 +1,10 @@
 module Hand.Entities exposing (entities, handCardPosition, handCardRotation, handOrigin, otherEntities, playPosition)
 
 import Animation.State as Animation
-import Animation.Types exposing (Anim(..), Bounce, CardDiscard(..), HandBounce, KnowableCard(..))
+import Animation.Types exposing (Anim(..), Bounce, CardDiscard(..), HandBounce)
 import Array
-import Card.State as Card
-import Card.Types exposing (Card)
+import Card.State as Card exposing (getCard, isRevealed)
+import Card.Types exposing (Card, KnowableCard(..))
 import Game.Entity as Game
 import Game.Types exposing (Context, HandEntity, OtherHandEntity)
 import Holding.State as Holding
@@ -39,7 +39,7 @@ entities hover holding ({ anim, model, progress } as ctx) =
                         playerBounces =
                             Animation.getPlayerBounceCards PlayerA bounces model.stack
                     in
-                    model.hand ++ List.map .card playerBounces
+                    model.hand ++ List.map (KnownCard << .card) playerBounces
 
                 _ ->
                     model.hand
@@ -87,9 +87,15 @@ entities hover holding ({ anim, model, progress } as ctx) =
         holdingIndex =
             Holding.getHandIndex holding
 
-        entity : ( Int, Card ) -> Maybe HandEntity
-        entity ( finalI, card ) =
+        entity : ( Int, KnowableCard ) -> Maybe HandEntity
+        entity ( finalI, knowableCard ) =
             let
+                card =
+                    getCard knowableCard
+
+                revealed =
+                    isRevealed knowableCard
+
                 i =
                     indexModifier finalI
 
@@ -114,19 +120,27 @@ entities hover holding ({ anim, model, progress } as ctx) =
                     , card = card
                     , owner = PlayerA
                     , index = finalI
+                    , revealed = revealed
                     }
 
         mainEntities : List HandEntity
         mainEntities =
-            Maybe.values <| List.map entity <| List.indexedMap (\a b -> ( a, b )) hand
+            Maybe.values <|
+                List.map entity <|
+                    List.indexedMap
+                        (\a b -> ( a, b ))
+                        hand
 
         extraEntities : List HandEntity
         extraEntities =
             case anim of
                 Draw PlayerA _ ->
                     case drawingCard of
-                        Just card ->
+                        Just knowableCard ->
                             let
+                                card =
+                                    getCard knowableCard
+
                                 pos =
                                     interp progress
                                         (vec3 -1 -1 -1)
@@ -144,6 +158,7 @@ entities hover holding ({ anim, model, progress } as ctx) =
                               , card = card
                               , owner = PlayerA
                               , index = n
+                              , revealed = False
                               }
                             ]
 
@@ -172,12 +187,10 @@ entities hover holding ({ anim, model, progress } as ctx) =
                             Card.scale
 
                         card =
-                            case knowableCard of
-                                KnownCard c ->
-                                    c
+                            getCard knowableCard
 
-                                UnknownCard c ->
-                                    c
+                        revealed =
+                            isRevealed knowableCard
                     in
                     [ { position = pos
                       , rotation = rot
@@ -185,6 +198,7 @@ entities hover holding ({ anim, model, progress } as ctx) =
                       , card = card
                       , owner = PlayerA
                       , index = i
+                      , revealed = revealed
                       }
                     ]
 
@@ -213,6 +227,7 @@ entities hover holding ({ anim, model, progress } as ctx) =
                                     stackEntity.rotation
                                     (Quaternion.zRotation (handCardRotation PlayerA handIndex finalN))
                             , scale = Card.scale
+                            , revealed = True
                             }
                     in
                     List.map makeBounceEntity playerBounces

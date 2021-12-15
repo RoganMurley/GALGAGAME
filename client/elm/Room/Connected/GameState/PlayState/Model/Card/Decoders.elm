@@ -1,7 +1,7 @@
-module Card.Decoders exposing (decoder)
+module Card.Decoders exposing (decoder, knowableCardDecoder)
 
-import Card.Types exposing (Card)
-import Json.Decode as Json exposing (Decoder, field, list, string)
+import Card.Types exposing (Card, KnowableCard(..))
+import Json.Decode as Json exposing (Decoder, bool, field, list, string)
 import Status.Decoders as Status
 
 
@@ -12,3 +12,20 @@ decoder =
         (field "desc" string)
         (field "imageURL" string)
         (field "statuses" <| list Status.decoder)
+
+
+knowableCardDecoder : Decoder KnowableCard
+knowableCardDecoder =
+    let
+        getDecoder : Bool -> Decoder KnowableCard
+        getDecoder known =
+            Json.map
+                (if known then
+                    KnownCard
+
+                 else
+                    UnknownCard
+                )
+                (field "card" decoder)
+    in
+    field "known" bool |> Json.andThen getDecoder

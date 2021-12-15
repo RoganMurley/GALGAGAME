@@ -24,7 +24,7 @@ type alias Diff =
 decoder : Decoder Diff
 decoder =
     Json.map7 Diff
-        (maybe <| field "handPA" <| list Card.decoder)
+        (maybe <| field "handPA" <| list Card.knowableCardDecoder)
         (maybe <| field "handPB" <| list (maybe Card.decoder))
         (maybe <| field "stack" Stack.decoder)
         (maybe <| field "turn" WhichPlayer.decoder)

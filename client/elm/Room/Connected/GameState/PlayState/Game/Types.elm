@@ -66,6 +66,7 @@ type alias HandEntity =
         { card : Card
         , index : Int
         , owner : WhichPlayer
+        , revealed : Bool
         }
 
 

@@ -1,7 +1,7 @@
 module Animation.Decoders exposing (decoder)
 
-import Animation.Types exposing (Anim(..), Bounce(..), CardDiscard(..), Hurt(..), KnowableCard(..), Transmutation(..))
-import Card.Decoders as Card
+import Animation.Types exposing (Anim(..), Bounce(..), CardDiscard(..), Hurt(..), Transmutation(..))
+import Card.Decoders as Card exposing (knowableCardDecoder)
 import Json.Decode as Json exposing (Decoder, bool, fail, field, float, int, list, maybe, null, oneOf, string, succeed)
 import Stack.Decoders as Stack
 import Wheel.Decoders as Wheel
@@ -240,20 +240,3 @@ passDecoder : Decoder Anim
 passDecoder =
     Json.map Pass
         (field "player" WhichPlayer.decoder)
-
-
-knowableCardDecoder : Decoder KnowableCard
-knowableCardDecoder =
-    let
-        getDecoder : Bool -> Decoder KnowableCard
-        getDecoder known =
-            Json.map
-                (if known then
-                    KnownCard
-
-                 else
-                    UnknownCard
-                )
-                (field "card" Card.decoder)
-    in
-    field "known" bool |> Json.andThen getDecoder

@@ -19,18 +19,19 @@ import WhichPlayer.Types exposing (WhichPlayer(..))
 view : List HandEntity -> Context -> List WebGL.Entity
 view handEntities ctx =
     let
-        cardView i =
-            case ctx.anim of
-                DiscardHand PlayerA discards ->
-                    case Array.get i <| Array.fromList discards of
-                        Just CardDiscard ->
-                            Card.dissolvingView ctx
+        cardView i entity =
+            List.concat <|
+                case ctx.anim of
+                    DiscardHand PlayerA discards ->
+                        case Array.get i <| Array.fromList discards of
+                            Just CardDiscard ->
+                                [ Card.dissolvingView ctx entity ]
 
-                        _ ->
-                            Card.view ctx
+                            _ ->
+                                [ Card.view ctx entity, Card.revealedView ctx entity ]
 
-                _ ->
-                    Card.view ctx
+                    _ ->
+                        [ Card.view ctx entity, Card.revealedView ctx entity ]
     in
     List.concat <|
         List.indexedMap cardView handEntities

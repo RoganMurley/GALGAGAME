@@ -1,11 +1,13 @@
 module PlayState.State exposing (carry, get, map, mouseDown, mouseUp, resolveOutcomeStr, tick, update)
 
-import Animation.Types exposing (Anim(..), KnowableCard(..))
+import Animation.Types exposing (Anim(..))
 import Assets.State as Assets
 import Assets.Types as Assets
 import Audio.State exposing (playSound)
 import Browser.Navigation
 import Buttons.State as Buttons
+import Card.State exposing (getCard, isRevealed)
+import Card.Types exposing (Card, KnowableCard(..))
 import Chat.Messages as Chat
 import Chat.Types as Chat
 import Collision exposing (hitTest3d)
@@ -213,7 +215,7 @@ updateTurnOnly msg state { audio } =
                         let
                             isCardInHandAfterResolution : Bool
                             isCardInHandAfterResolution =
-                                Just card == List.getAt index game.res.final.hand
+                                Just card == Maybe.map getCard (List.getAt index game.res.final.hand)
 
                             isPremovable : Bool
                             isPremovable =
@@ -257,7 +259,7 @@ updateTurnOnly msg state { audio } =
                                 resDiffList : List Resolvable.ResolveDiffData
                                 resDiffList =
                                     [ { diff = playDiff
-                                      , anim = Play PlayerA (KnownCard card) index (Just pos)
+                                      , anim = Play PlayerA (UnknownCard card) index (Just pos)
                                       , animDamage = ( 0, 0 )
                                       }
                                     , { diff = windupDiff

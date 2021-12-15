@@ -42,6 +42,7 @@ library
                      , GameCommand
                      , GameState
                      , GodMode
+                     , HandCard
                      , Life
                      , Log
                      , Mirror

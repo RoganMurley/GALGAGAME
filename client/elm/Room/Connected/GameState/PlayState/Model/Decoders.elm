@@ -11,7 +11,7 @@ decoder : Decoder Model
 decoder =
     Json.map8 (<|)
         (Json.map4 Model
-            (field "handPA" <| list Card.decoder)
+            (field "handPA" <| list Card.knowableCardDecoder)
             (field "handPB" <| list (maybe Card.decoder))
             (field "deckPA" int)
             (field "deckPB" int)

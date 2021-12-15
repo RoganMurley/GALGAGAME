@@ -1,4 +1,4 @@
-module Card.View exposing (backDissolvingView, backView, dissolvingView, transmutingView, view)
+module Card.View exposing (backDissolvingView, backView, dissolvingView, revealedView, transmutingView, view)
 
 import Animation.Types exposing (Anim(..))
 import Card.Types as Card
@@ -95,6 +95,34 @@ statusView ctx entity status =
                     ]
 
         _ ->
+            []
+
+
+revealedView : Context -> Card.Entity { a | revealed : Bool } -> List WebGL.Entity
+revealedView ctx entity =
+    let
+        { camera3d, perspective, textures } =
+            ctx
+
+        { position, rotation, scale, revealed } =
+            entity
+    in
+    case revealed of
+        True ->
+            Texture.with textures "revealed.png" <|
+                \texture ->
+                    [ Render.Primitives.quad Render.Shaders.fragment <|
+                        { rotation = Quaternion.makeRotate rotation
+                        , scale = makeScale scale
+                        , color = vec3 1 1 1
+                        , pos = position
+                        , perspective = perspective
+                        , camera = camera3d
+                        , texture = texture
+                        }
+                    ]
+
+        False ->
             []
 
 
