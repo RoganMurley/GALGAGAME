@@ -228,8 +228,9 @@ cardAnimDamage anim =
       Hurt w d _ ->
           wrap w (-d)
 
-      GetGen ->
-          ( DamageUncertain 0, DamageUncertain 0)
+      -- Temporarily disabled. Replace with a specific uncertainty anim.
+      -- GetGen ->
+      --     ( DamageUncertain 0, DamageUncertain 0)
 
       _ ->
           ( DamageCertain 0, DamageCertain 0 )

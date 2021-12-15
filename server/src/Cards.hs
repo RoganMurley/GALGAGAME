@@ -12,7 +12,7 @@ import Safe (headMay)
 import Stack (diasporaFromStack, diasporaLength)
 import StackCard (StackCard(..), changeOwner, cardMap)
 import Transmutation (Transmutation(..), transmuteToCard)
-import Util (many, manyIndexed, randomBetween, shuffle)
+import Util (many, manyIndexed, shuffle)
 
 import qualified Data.Map as Map
 
@@ -262,10 +262,7 @@ seeingSword =
     "Hurt for 6 and reveal\na card in their hand"
     $ \w -> do
       hurt 6 (other w) Slash
-      handLen <- length <$> getHand (other w)
-      g <- getGen
-      let targetIndex = randomBetween g 0 (handLen - 1)
-      reveal (other w) (\i _ -> i == targetIndex)
+      revealRandomCard (other w)
 
 
 seeingWand :: Card
@@ -284,10 +281,7 @@ seeingGrail =
     "Heal for 7 and reveal\na card in their hand"
     $ \w -> do
       heal 7 w
-      handLen <- length <$> getHand (other w)
-      g <- getGen
-      let targetIndex = randomBetween g 0 (handLen - 1)
-      reveal (other w) (\i _ -> i == targetIndex)
+      revealRandomCard (other w)
 
 
 seeingCoin :: Card

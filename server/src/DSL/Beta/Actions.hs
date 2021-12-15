@@ -6,11 +6,12 @@ import Control.Monad.Free (MonadFree, liftF)
 import Control.Monad.Free.TH (makeFree)
 import Data.Map (Map)
 import DSL.Beta.DSL (DSL(..), Program)
+import HandCard (HandCard, isRevealed)
 import Life (Life)
 import Player (WhichPlayer(..), other)
 import StackCard (StackCard(..))
 import Transmutation (Transmutation(..))
-import Util (shuffle, split)
+import Util (randomChoice, shuffle, split)
 
 import qualified Data.Map as Map
 import qualified DSL.Alpha as Alpha
@@ -58,3 +59,17 @@ reversal = do
   let reversedIs = reverse diasporaIs :: [Int]
   let diasporaMap = Map.fromList $ zip diasporaIs reversedIs :: Map Int Int
   moveStack (\i _ -> Map.lookup i diasporaMap) 750
+
+
+revealRandomCard :: WhichPlayer -> Program ()
+revealRandomCard w = do
+  hand <- getHand (other w)
+  let indexed = zip [0..] hand :: [(Int, HandCard)]
+  let hidden = filter (\(_, c) -> not (isRevealed c)) indexed  :: [(Int, HandCard)]
+  case length hidden > 0 of
+    True -> do
+      g <- getGen
+      let targetIndex = fst $ randomChoice g hidden
+      reveal (other w) (\i _ -> i == targetIndex)
+    False ->
+      return ()
