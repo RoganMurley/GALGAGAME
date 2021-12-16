@@ -1,6 +1,7 @@
 module ArtificialIntelligence where
 
 import Control.Monad.Trans.Writer (runWriter)
+import Data.Maybe (isJust)
 import Data.List (maximumBy)
 import Data.Ord (comparing)
 import Data.String.Conversions (cs)
@@ -14,10 +15,10 @@ import Mirror (mirror)
 import Model
 import Player (WhichPlayer(..), other)
 import Scenario (Scenario(..))
-import Stack (diasporaLength)
 import Util (Err, Gen)
 
 import qualified Cards
+import qualified Stack
 
 
 type Weight = Int
@@ -39,7 +40,7 @@ evalState w (Playing playing) = evalModel model
     model = playing_model playing
     evalModel :: Model -> Weight
     evalModel m
-      | (diasporaLength $ evalI m $ getStack) > 0 =
+      | isJust . (\s -> Stack.get s 1) $ evalI m $ getStack =
         (evalState w) . fst . runWriter $ resolveAll $ playingFromModel m
       | otherwise =
           (evalPlayer w m) - (evalPlayer (other w) m)
