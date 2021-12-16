@@ -45,6 +45,7 @@ library
                      , HandCard
                      , Life
                      , Log
+                     , Metrics
                      , Mirror
                      , Model
                      , ModelDiff
@@ -86,6 +87,7 @@ library
                      , bytestring
                      , containers
                      , cookie
+                     , datadog
                      , deepseq
                      , free
                      , guid
@@ -128,6 +130,7 @@ executable galgagame
   build-depends:       base
                      , aeson
                      , cookie
+                     , datadog
                      , guid
                      , hedis
                      , hslogger

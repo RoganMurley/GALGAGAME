@@ -68,6 +68,8 @@ import qualified Auth.Apps as Auth
 import qualified Auth.Views as Auth
 import qualified Data.GUID as GUID
 
+import qualified Metrics
+
 
 main :: IO ()
 main = do
@@ -91,11 +93,15 @@ main = do
 
     apiKey <- cs <$> fromMaybe "fake-api-key" <$> lookupEnv "GALGA_API_KEY"
 
+    datadogKey <- lookupEnv "DD_API_KEY"
+    datadogAppKey <- lookupEnv "DD_APP_KEY"
+
     let connectInfoConfig = ConnectInfoConfig
                               { connectInfoConfig_redis      = redisConnectInfo redisVars
                               , connectInfoConfig_postgres   = postgresConnectInfo postgresVars
                               , connectInfoConfig_loggerChan = loggerChan
                               , connectInfoConfig_apiKey     = apiKey
+                              , connectInfoConfig_datadog    = (cs <$> datadogAppKey, cs <$> datadogKey)
                               }
 
     authApp <- runApp connectInfoConfig $ Auth.app connectInfoConfig
@@ -141,6 +147,7 @@ begin conn request user state = do
   Log.info $ printf "<%s>: New connection" username
   case Negotiation.parseRequest request of
     Right (RoomRequest roomName) -> do
+      Metrics.incr "request.room"
       Log.info $ printf "<%s>: Requesting room [%s]" username roomName
       msg <- liftIO $ WS.receiveData conn
       case Negotiation.parsePrefix msg of
@@ -153,15 +160,18 @@ begin conn request user state = do
           let client = Client user (PlayerConnection conn) guid
           let scenario = makeScenario gen prefix
           roomVar <- liftIO . atomically $ Server.getOrCreateRoom roomName (prefixWaitType prefix) gen scenario state
+          prefixMetric prefix
           beginPrefix prefix state client roomVar
     Right (PlayReplayRequest replayId) -> do
+      Metrics.incr "request.replay"
       mReplay <- Replay.Final.load replayId
       case mReplay of
-        Just replay ->
+        Just replay -> do
           liftIO $ WS.sendTextData conn ("replay:" <> replay)
-        Nothing ->
+        Nothing -> do
           liftIO $ WS.sendTextData conn ("replayNotFound:" :: Text)
-    Right (SystemMessageRequest systemMessage) ->
+    Right (SystemMessageRequest systemMessage) -> do
+      Metrics.incr "request.systemMessage"
       case User.isSuperuser user of
         True -> do
           Log.info $ printf ("System message received: " <> cs systemMessage)
@@ -176,9 +186,11 @@ begin conn request user state = do
         False ->
           Log.error $ printf "Illegal system message"
     Left Negotiation.ConnectionLostError -> do
+      Metrics.incr "error.connectionLost"
       Log.warning $ printf "<%s>: Connection was lost, informing client" username
       liftIO $ WS.sendTextData conn ("connectionLost:" :: Text)
-    Left (Negotiation.UnknownError err) ->
+    Left (Negotiation.UnknownError err) -> do
+      Metrics.incr "error.unknown"
       connectionFail conn $ printf "<%s>: %s" username err
 
 
@@ -187,6 +199,13 @@ beginPrefix PrefixPlay  s c r = beginPlay s c r
 beginPrefix PrefixSpec  s c r = beginSpec s c r
 beginPrefix PrefixQueue s c r = beginQueue s c r
 beginPrefix PrefixCpu   s c r = beginComputer "CPU" s c r >> return ()
+
+
+prefixMetric :: Prefix -> App ()
+prefixMetric PrefixPlay  = Metrics.incr "begin.play"
+prefixMetric PrefixSpec  = Metrics.incr "begin.spec"
+prefixMetric PrefixQueue = Metrics.incr "begin.queue"
+prefixMetric PrefixCpu   = Metrics.incr "begin.cpu"
 
 
 prefixWaitType :: Prefix -> WaitType
@@ -230,6 +249,7 @@ makeScenario gen prefix =
 
 beginPlay :: TVar Server.State -> Client -> TVar Room -> App ()
 beginPlay state client roomVar = do
+  Metrics.incr "begin.play"
   Log.info $ printf "<%s>: Begin playing" (show $ Client.name client)
   added <- liftIO $  atomically $ addPlayerClient client roomVar
   case added of
@@ -247,6 +267,7 @@ beginPlay state client roomVar = do
 
 beginSpec :: TVar Server.State -> Client -> TVar Room -> App ()
 beginSpec state client roomVar = do
+  Metrics.incr "begin.spec"
   Log.info $ printf "<%s>: Begin spectating" (show $ Client.name client)
   finally
     (spectate client roomVar)
@@ -255,6 +276,7 @@ beginSpec state client roomVar = do
 
 beginComputer :: Text -> TVar Server.State -> Client -> TVar Room -> App Bool
 beginComputer cpuName state client roomVar = do
+  Metrics.incr "begin.cpu"
   Log.info $ printf "<%s>: Begin AI game" (show $ Client.name client)
   cpuGuid <- liftIO GUID.genText
   (computer, added) <- liftIO . atomically $ do
@@ -280,6 +302,7 @@ beginComputer cpuName state client roomVar = do
 
 beginQueue :: TVar Server.State -> Client -> TVar Room -> App ()
 beginQueue state client roomVar = do
+  Metrics.incr "begin.quickplay"
   let clientName = show (Client.name client)
   Log.info $ printf "<%s>: Begin quickplay game" clientName
   roomM <- liftIO . atomically $ Server.queue roomVar state
@@ -311,9 +334,11 @@ asyncQueueCpuFallback state client roomVar = do
     cpuGuid <- liftIO GUID.genText
     result <- liftIO $ atomically (transaction cpuGuid)
     case result of
-      Left toLog ->
+      Left toLog -> do
+        Metrics.incr "quickplay.human"
         Log.info toLog
       Right _ -> do
+        Metrics.incr "quickplay.cpu"
         newRoom <- liftIO $ readTVarIO roomVar
         let gameState = Room.getState newRoom
         syncClient client PlayerA gameState
