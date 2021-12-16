@@ -88,6 +88,41 @@ packages:
       sha256: e999ae7690fc1e13bb471bc1ead6d7a5c245843d17862d3d27f7f0f752513257
   original:
     hackage: Only-0.1@sha256:f92f5da97e647451f1ee7f5bf44914fb75062d08ccd3f36b2000d649c63d13aa
+- completed:
+    hackage: datadog-0.2.5.0@sha256:f2976b034191b7850bdcb4ee90edf2654ce4170e11fa2df07fdca83dd3570037,3176
+    pantry-tree:
+      size: 1488
+      sha256: 31bbc38532d2b81017a451ecb8f323f2c443235cd3bcd99710404dbe70216007
+  original:
+    hackage: datadog-0.2.5.0@sha256:f2976b034191b7850bdcb4ee90edf2654ce4170e11fa2df07fdca83dd3570037,3176
+- completed:
+    hackage: buffer-builder-0.2.4.7@sha256:bb0eb6f7f0cc3a749d2c5c291ed1a25799078f086956fa3c4650ed720a8b9f82,5223
+    pantry-tree:
+      size: 1155
+      sha256: da7d113cbc09cf1dbbe1d461a380fdf529aee59c15442845c5be8b564d1ef9a7
+  original:
+    hackage: buffer-builder-0.2.4.7@sha256:bb0eb6f7f0cc3a749d2c5c291ed1a25799078f086956fa3c4650ed720a8b9f82,5223
+- completed:
+    hackage: unliftio-0.2.20@sha256:93cebd01b5fe2c2c028e0785b1fe8ec42b3d30d869e7848034bb4b7b5894dc24,3318
+    pantry-tree:
+      size: 2423
+      sha256: d2effa7737d7ce2918815158ce00c6562f7ce3f55b69d35d507da285b5ad8543
+  original:
+    hackage: unliftio-0.2.20@sha256:93cebd01b5fe2c2c028e0785b1fe8ec42b3d30d869e7848034bb4b7b5894dc24,3318
+- completed:
+    hackage: async-2.2.4@sha256:b83dec34a53520de84c6dd3dc7aae45d22409b46eb471c478b98108215a370f0,3095
+    pantry-tree:
+      size: 501
+      sha256: 08b8a9f8d2e27d51b04fb9c14f65e1209c7f24160d2a4557963900edb2c0f07d
+  original:
+    hackage: async-2.2.4@sha256:b83dec34a53520de84c6dd3dc7aae45d22409b46eb471c478b98108215a370f0,3095
+- completed:
+    hackage: unliftio-core-0.2.0.1@sha256:f9abcdd3f3d28e4840563efb7b8760d2de9b5707bcd6f53a87f6a0d77bb5a9f7,1082
+    pantry-tree:
+      size: 328
+      sha256: 9955bc1336dd07c94928892f1a97aed6e5fe63a4242f089a0efd2e95174490ea
+  original:
+    hackage: unliftio-core-0.2.0.1@sha256:f9abcdd3f3d28e4840563efb7b8760d2de9b5707bcd6f53a87f6a0d77bb5a9f7,1082
 snapshots:
 - completed:
     size: 420375
