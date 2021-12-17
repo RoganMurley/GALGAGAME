@@ -6,7 +6,7 @@ COPY . /opt/build
 RUN cd /opt/build && stack install --system-ghc
 
 FROM ubuntu:20.04
-RUN apt-get update && apt-get install postgresql-client
+RUN apt-get update -y && apt-get install postgresql-client -y
 RUN mkdir -p /opt/galgagame
 WORKDIR /opt/galgagame
 COPY --from=build /root/.local/bin/galgagame /opt/galgagame/galgagame
