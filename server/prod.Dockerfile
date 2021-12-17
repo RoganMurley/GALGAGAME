@@ -5,8 +5,8 @@ RUN cd /opt/build && stack install --only-dependencies --system-ghc
 COPY . /opt/build
 RUN cd /opt/build && stack install --system-ghc
 
-FROM alpine:3.7
-RUN apk update && apk add gmp && apk add postgresql-client && apk add libc6-compat && apk add libgcc
+FROM ubuntu:20.04
+RUN apt-get update && apt-get install postgresql-client
 RUN mkdir -p /opt/galgagame
 WORKDIR /opt/galgagame
 COPY --from=build /root/.local/bin/galgagame /opt/galgagame/galgagame
