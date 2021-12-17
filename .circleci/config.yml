@@ -38,7 +38,7 @@ jobs:
           command: wget https://github.com/vi/websocat/releases/download/v1.9.0/websocat_linux64; chmod +x websocat_linux64;
       - run:
           name: Notify users
-          command: if [ $CIRCLE_BRANCH == 'master' ]; then ./scripts/systemMessage "🔔 Server update scheduled in ~30 minutes 🔔"; fi
+          command: if [ $CIRCLE_BRANCH == 'master' ]; then ./scripts/systemMessage "🔔 Server update scheduled in ~30 minutes 🔔" || true; fi
       - run:
           name: Deploy
           command: if [ $CIRCLE_BRANCH == 'master' ]; then ./scripts/decryptSecrets && ./scripts/deploy; fi
