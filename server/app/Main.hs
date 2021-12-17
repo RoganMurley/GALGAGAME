@@ -249,7 +249,6 @@ makeScenario gen prefix =
 
 beginPlay :: TVar Server.State -> Client -> TVar Room -> App ()
 beginPlay state client roomVar = do
-  Metrics.incr "begin.play"
   Log.info $ printf "<%s>: Begin playing" (show $ Client.name client)
   added <- liftIO $  atomically $ addPlayerClient client roomVar
   case added of
@@ -267,7 +266,6 @@ beginPlay state client roomVar = do
 
 beginSpec :: TVar Server.State -> Client -> TVar Room -> App ()
 beginSpec state client roomVar = do
-  Metrics.incr "begin.spec"
   Log.info $ printf "<%s>: Begin spectating" (show $ Client.name client)
   finally
     (spectate client roomVar)
@@ -276,7 +274,6 @@ beginSpec state client roomVar = do
 
 beginComputer :: Text -> TVar Server.State -> Client -> TVar Room -> App Bool
 beginComputer cpuName state client roomVar = do
-  Metrics.incr "begin.cpu"
   Log.info $ printf "<%s>: Begin AI game" (show $ Client.name client)
   cpuGuid <- liftIO GUID.genText
   (computer, added) <- liftIO . atomically $ do
@@ -302,7 +299,6 @@ beginComputer cpuName state client roomVar = do
 
 beginQueue :: TVar Server.State -> Client -> TVar Room -> App ()
 beginQueue state client roomVar = do
-  Metrics.incr "begin.quickplay"
   let clientName = show (Client.name client)
   Log.info $ printf "<%s>: Begin quickplay game" clientName
   roomM <- liftIO . atomically $ Server.queue roomVar state
