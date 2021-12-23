@@ -7,7 +7,7 @@ import Control.Monad.Free (foldFree)
 import Control.Monad.Trans.Writer (Writer, runWriter, tell)
 import Data.Time.Clock (NominalDiffTime, UTCTime, diffUTCTime)
 import Data.Foldable (toList)
-import Data.Maybe (fromMaybe)
+import Data.Maybe (fromMaybe, isJust)
 import Data.Monoid ((<>))
 import Data.String.Conversions (cs)
 import Data.Text (Text)
@@ -240,27 +240,35 @@ playCard index which playing time
             Beta.play which c index
             Beta.windup
             Beta.raw $ Alpha.setHold True
-          (newModel, _, res) = Beta.execute model $ foldFree Beta.betaI program
-          (result, newRes) = runWriter $ resolveAll playing
-            { playing_model = newModel
-            , playing_replay = replay `Active.add` res
+          (modelA, _, resA) = Beta.execute model $ foldFree Beta.betaI program
+          (result, resB) = runWriter $ resolveAll playing
+            { playing_model = modelA
+            , playing_replay = replay `Active.add` resA
             }
+          isWheelFull :: Bool
+          isWheelFull = Alpha.evalI modelA $ do
+            stack <- Alpha.getStack
+            return $ foldr (&&) True (isJust <$> stack)
         in
           case result of
             Playing newPlaying ->
               let
+                modelB = playing_model newPlaying
+                -- If the wheel is full, end the round.
+                postProgram = if isWheelFull then roundEndProgram else return ()
+                (modelC, _, resC) = Beta.execute modelB $ foldFree Beta.betaI postProgram
                 newPlayState :: PlayState
                 newPlayState = Playing $ newPlaying
-                  { playing_model = playing_model newPlaying
-                  , playing_replay = playing_replay newPlaying `Active.add` newRes
+                  { playing_model = modelC
+                  , playing_replay = playing_replay newPlaying `Active.add` resB `Active.add` resC
                   , playing_utc = Just time
                   }
               in
-              -- The player who played the card does that animation clientside, so only send the rest.
+              -- The player who played the card does that animation clientside, so don't send resA.
               Right (
                 Just . Started $ newPlayState,
-                [ Outcome.Encodable $ Outcome.Resolve (res ++ newRes) model    newPlayState (Just which)
-                , Outcome.Encodable $ Outcome.Resolve newRes          newModel newPlayState (Just (other which))
+                [ Outcome.Encodable $ Outcome.Resolve (resA ++ resB ++ resC) model  newPlayState (Just which)
+                , Outcome.Encodable $ Outcome.Resolve (resB ++ resC)         modelA newPlayState (Just (other which))
                 ]
               )
             Ended w m newReplay g ->
@@ -271,8 +279,8 @@ playCard index which playing time
               in
                 Right (
                   Just newState,
-                  [ Outcome.Encodable $ Outcome.Resolve (res ++ newRes) model    newPlayState (Just which)
-                  , Outcome.Encodable $ Outcome.Resolve newRes          newModel newPlayState (Just (other which))
+                  [ Outcome.Encodable $ Outcome.Resolve (resA ++ resB) model  newPlayState (Just which)
+                  , Outcome.Encodable $ Outcome.Resolve resB           modelA newPlayState (Just (other which))
                   , Outcome.HandleExperience w
                   , Outcome.SaveReplay finalReplay
                   ]
