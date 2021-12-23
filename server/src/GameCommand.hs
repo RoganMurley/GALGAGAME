@@ -298,12 +298,6 @@ endTurn which playing time
         case runWriter $ resolveAll playing of
           (Playing newPlaying, res) ->
             let
-              roundEndProgram :: Beta.Program ()
-              roundEndProgram = do
-                Beta.raw Alpha.swapTurn
-                Beta.raw Alpha.resetPasses
-                Beta.draw PlayerA PlayerA 1
-                Beta.draw PlayerB PlayerB 1
               (newModel, _, endRes) = Beta.execute (playing_model newPlaying) $ foldFree Beta.betaI roundEndProgram
               newPlayState :: PlayState
               newPlayState = Playing $ newPlaying
@@ -320,7 +314,7 @@ endTurn which playing time
           (Ended w m newReplay g, res) ->
             let
               newPlayState = Ended w m newReplay g :: PlayState
-              newState     = Started newPlayState  :: GameState
+              newState = Started newPlayState :: GameState
               finalReplay = Final.finalise newReplay newPlayState :: Final.Replay
             in
               Right (
@@ -540,3 +534,11 @@ heartbeat currentTime playing =
 getUser :: WhichPlayer -> (Maybe User, Maybe User) -> Maybe User
 getUser PlayerA (ua, _) = ua
 getUser PlayerB (_, ub) = ub
+
+
+roundEndProgram :: Beta.Program ()
+roundEndProgram = do
+  Beta.raw Alpha.swapTurn
+  Beta.raw Alpha.resetPasses
+  Beta.draw PlayerA PlayerA 1
+  Beta.draw PlayerB PlayerB 1

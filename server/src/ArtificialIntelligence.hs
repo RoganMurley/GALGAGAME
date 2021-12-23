@@ -7,15 +7,16 @@ import Data.Ord (comparing)
 import Data.String.Conversions (cs)
 import Data.Time.Clock.POSIX (posixSecondsToUTCTime)
 import DSL.Alpha
+import DSL.Beta (alphaI)
 
-import GameCommand (GameCommand(..), resolveAll, update)
+import GameCommand (GameCommand(..), resolveAll, roundEndProgram, update)
 import GameState
 import HandCard (HandCard(..))
 import Mirror (mirror)
 import Model
 import Player (WhichPlayer(..), other)
 import Scenario (Scenario(..))
-import Util (Err, Gen)
+import Util (Err, Gen, maybeToEither)
 
 import qualified Cards
 import qualified Stack
@@ -82,19 +83,11 @@ postulateAction which model gen scenario action =
   let
     command = toCommand action :: GameCommand
     state = Started . Playing $ playingFromModel (modI model $ setGen gen) :: GameState
-    result = update command which state scenario (Nothing, Nothing) (posixSecondsToUTCTime 0)
   in
-    case result of
-      Left err ->
-        Left err
-      Right (Just s, _) ->
-        case s of
-          Started started ->
-            Right started
-          _ ->
-            Left "Invalid gamestate to postulate an action upon"
-      _ ->
-        Left "Unwrapping error"
+    update command which state scenario (Nothing, Nothing) (posixSecondsToUTCTime 0)
+      >>= maybeToEither "Gamestate not returned from postulation" . fst
+      >>= maybeToEither "Gamestate is not a playing state" . playStateFromGameState
+      >>= Right . mapModelPlayState ((flip modI) (alphaI roundEndProgram)) -- Account for the draw from the start of the next round.
 
 
 chooseAction :: Gen -> WhichPlayer -> Model -> Scenario -> Maybe Action

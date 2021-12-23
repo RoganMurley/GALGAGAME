@@ -152,3 +152,8 @@ to3Tuple _ = error "Not enough values in list to make 3-tuple"
 
 xor :: Bool -> Bool -> Bool
 xor a b = a /= b
+
+
+maybeToEither :: a -> Maybe b -> Either a b
+maybeToEither _ (Just b) = Right b
+maybeToEither a Nothing  = Left a

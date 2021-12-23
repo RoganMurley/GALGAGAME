@@ -116,3 +116,13 @@ playingFromModel model = PlayingR
   , playing_utc = Nothing
   , playing_timeLimit = 0
   }
+
+
+playStateFromGameState :: GameState -> Maybe PlayState
+playStateFromGameState (Started started) = Just started
+playStateFromGameState _                 = Nothing
+
+
+mapModelPlayState :: (Model -> Model) -> PlayState -> PlayState
+mapModelPlayState f (Playing playing) = Playing $ playing { playing_model = f (playing_model playing) }
+mapModelPlayState _ playState         = playState
