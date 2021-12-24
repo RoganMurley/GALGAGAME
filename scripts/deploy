@@ -4,7 +4,10 @@ name=$1
 set -e
 
 if [ $# -eq 0 ]; then
-    name=$(git rev-parse HEAD)
+    hash=$(git rev-parse HEAD)
+    shorthash=${hash:0:8}
+    timestamp=$(date +%s)
+    name="$shorthash-$timestamp"
 fi
 
 echo "Building client..."
@@ -19,11 +22,11 @@ popd
 docker save -o .images/game-galgagame game-galgagame
 
 echo "Provisioning instance..."
-docker-machine create --driver=digitalocean --digitalocean-access-token=$DIGITALOCEAN_ACCESS_TOKEN --digitalocean-region=sfo2 --digitalocean-image=ubuntu-20-04-x64 --digitalocean-tags=ring-of-worlds --engine-install-url "https://releases.rancher.com/install-docker/19.03.9.sh" $name
-eval "$(docker-machine env $name)"
+docker-machine create --driver=digitalocean --digitalocean-access-token="$DIGITALOCEAN_ACCESS_TOKEN" --digitalocean-region=sfo2 --digitalocean-image=ubuntu-20-04-x64 --digitalocean-tags=ring-of-worlds --engine-install-url "https://releases.rancher.com/install-docker/19.03.9.sh" "$name"
+eval "$(docker-machine env "$name")"
 
 echo "Copying image to server..."
-docker-machine scp .images/game-galgagame $name:game-galgagame
+docker-machine scp .images/game-galgagame "$name":game-galgagame
 docker load -i .images/game-galgagame
 
 echo "Building server..."
@@ -37,9 +40,9 @@ echo "Notifying users..."
 ./scripts/systemMessage "🔔 Server restarting for update, you may lose connection 🔔" || true
 
 echo "Flipping floating IP..."
-./scripts/flip $name
+./scripts/flip "$name"
 
 echo "Purging other droplets"
-./scripts/purgeOtherDroplets $name
+./scripts/purgeOtherDroplets "$name"
 
 echo "SUCCESS!"
