@@ -1,2 +1,2 @@
 #!/bin/bash
-echo "systemMessage: $1" | ./websocat_linux64 wss://www.galgagame.com/game/ -H="Cookie: api-key=$GALGA_API_KEY"
+echo "systemMessage: $1" | ./websocat_linux64 wss://www.galgagame.com/game -H="Cookie: api-key=$GALGA_API_KEY"

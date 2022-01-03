@@ -179,7 +179,7 @@ window.requestFullscreen = function () {
 var websocketMessageQueue = [];
 
 function createSocket() {
-  var socket = new WebSocket("wss://" + hostname + portProtocol + "/game/");
+  var socket = new WebSocket("wss://" + hostname + portProtocol + "/game");
 
   socket.addEventListener('open', function (event) {
     websocketMessageQueue.forEach(function (input) {socket.send(input)});
