@@ -33,9 +33,6 @@ documentView viewFunc =
 initFull : InputFlags -> Url -> Browser.Navigation.Key -> ( Model, Cmd Msg )
 initFull inputFlags url key =
     let
-        ( model, cmd ) =
-            init flags url inputFlags.initialVolume
-
         flags : Flags
         flags =
             { hostname = inputFlags.hostname
@@ -52,6 +49,4 @@ initFull inputFlags url key =
             , visibility = Visible
             }
     in
-    ( model
-    , Cmd.batch [ cmd, message GetAuth ]
-    )
+    init flags url inputFlags.initialVolume

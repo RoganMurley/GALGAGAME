@@ -67,7 +67,7 @@ update model msg flags =
             ( model
             , Cmd.batch
                 [ Browser.Navigation.pushUrl flags.key model.nextUrl
-                , message Main.GetAuth
+                , message <| Main.SetUsername model.username.value
                 , -- Reconnect so that the ws connection has our login cookie
                   websocketReconnect ()
                 ]

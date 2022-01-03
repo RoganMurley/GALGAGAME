@@ -22,7 +22,7 @@ import qualified Data.GUID as GUID
 import Data.Text (Text)
 import qualified Data.Text as T
 
-import Auth.Apps (checkAuth, checkPassword, deleteToken, legalName, legalPassword, loginCookieName, saveSession, saveUser)
+import Auth.Apps (checkAuth, checkPassword, deleteToken, legalName, legalPassword, sessionCookieName, saveSession, saveUser)
 import Feedback.Views (feedbackView)
 
 
@@ -39,7 +39,7 @@ app config = do
 
 meView :: ConnectInfoConfig -> ActionM ()
 meView config = do
-  token     <- getCookie loginCookieName
+  token     <- getCookie sessionCookieName
   usernameM <- lift . runApp config $ checkAuth token
   case usernameM of
     Just username -> do
@@ -67,11 +67,11 @@ loginView config = do
 
 logoutView :: ConnectInfoConfig -> ActionM ()
 logoutView config = do
-  token <- getCookie loginCookieName
+  token <- getCookie sessionCookieName
   case token of
     Just t -> do
       lift $ runApp config $ deleteToken t
-      deleteCookie loginCookieName
+      deleteCookie sessionCookieName
     Nothing ->
       return ()
   json $ object []
@@ -124,11 +124,19 @@ createSession :: ConnectInfoConfig -> ByteString -> ActionM ()
 createSession config username = do
   token <- cs <$> lift GUID.genText
   lift $ runApp config $ saveSession username token
-  let cookie = (makeSimpleCookie loginCookieName token) {
-    setCookieMaxAge = Just (secondsToDiffTime (60 * 60 * 24 * 356 * 10)),
+  let maxAge = secondsToDiffTime (60 * 60 * 24 * 356 * 10)
+  let sessionCookie = (makeSimpleCookie sessionCookieName token) {
+    setCookieMaxAge = Just maxAge,
     setCookieSecure = True,
     setCookieHttpOnly = True,
     setCookiePath = Just "/",
     setCookieSameSite = Just sameSiteStrict
   }
-  setCookie cookie
+  let userCookie = (makeSimpleCookie "user" (cs username)) {
+    setCookieMaxAge = Just maxAge,
+    setCookieSecure = True,
+    setCookiePath = Just "/",
+    setCookieSameSite = Just sameSiteStrict
+  }
+  setCookie sessionCookie
+  setCookie userCookie

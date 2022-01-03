@@ -193,6 +193,13 @@ update msg ({ assets, room, notifications, settings, flags } as model) =
             , Ports.scaling newScaling
             )
 
+        SetUsername username ->
+            let
+                newFlags =
+                    { flags | username = Just username }
+            in
+            ( { model | flags = newFlags }, Cmd.none )
+
         SetVolume volumeType volume ->
             let
                 newVolume =
@@ -267,27 +274,6 @@ update msg ({ assets, room, notifications, settings, flags } as model) =
             ( { model | room = newRoom }
             , newCmd
             )
-
-        GetAuth ->
-            ( model
-            , Http.send GetAuthCallback <|
-                Http.get
-                    (authLocation flags ++ "/me")
-                    (Json.maybe Login.authDecoder)
-            )
-
-        GetAuthCallback (Ok username) ->
-            let
-                newFlags : Flags
-                newFlags =
-                    { flags | username = username }
-            in
-            ( { model | flags = newFlags }
-            , Lobby.skipLobbyCmd username
-            )
-
-        GetAuthCallback (Err _) ->
-            ( model, Cmd.none )
 
         TouchPosition position ->
             let
@@ -400,62 +386,62 @@ locationUpdate model url =
                 randomRoomID : String
                 randomRoomID =
                     generate Room.Generators.roomID model.flags.seed
-            in
-            case playRoute of
-                Routing.ComputerPlay ->
-                    ( { model
-                        | room =
-                            Room.Lobby <|
-                                Lobby.init
-                                    randomRoomID
-                                    GameType.ComputerGame
-                                    Playing
-                      }
-                    , Lobby.skipLobbyCmd username
-                    )
 
-                Routing.CustomPlay mRoomID ->
-                    let
-                        roomID : String
-                        roomID =
-                            case mRoomID of
-                                Just r ->
-                                    r
-
-                                Nothing ->
-                                    randomRoomID
-
-                        lobbyModel : Main.Model
-                        lobbyModel =
+                newModel : Main.Model
+                newModel =
+                    case playRoute of
+                        Routing.ComputerPlay ->
                             { model
                                 | room =
                                     Room.Lobby <|
                                         Lobby.init
-                                            roomID
-                                            GameType.CustomGame
+                                            randomRoomID
+                                            GameType.ComputerGame
                                             Playing
                             }
-                    in
-                    case model.room of
-                        -- Annoying stateful bit, fix me.
-                        -- WILL cause bugs.
-                        Room.Connected _ ->
-                            ( model, Lobby.skipLobbyCmd username )
 
-                        _ ->
-                            ( lobbyModel, Lobby.skipLobbyCmd username )
+                        Routing.CustomPlay mRoomID ->
+                            let
+                                roomID : String
+                                roomID =
+                                    case mRoomID of
+                                        Just r ->
+                                            r
 
-                Routing.QuickPlay ->
-                    ( { model
-                        | room =
-                            Room.Lobby <|
-                                Lobby.init
-                                    randomRoomID
-                                    GameType.QuickplayGame
-                                    Playing
-                      }
-                    , Lobby.skipLobbyCmd username
-                    )
+                                        Nothing ->
+                                            randomRoomID
+
+                                lobbyModel : Main.Model
+                                lobbyModel =
+                                    { model
+                                        | room =
+                                            Room.Lobby <|
+                                                Lobby.init
+                                                    roomID
+                                                    GameType.CustomGame
+                                                    Playing
+                                    }
+                            in
+                            case model.room of
+                                -- Annoying stateful bit, fix me.
+                                -- WILL cause bugs.
+                                Room.Connected _ ->
+                                    model
+
+                                _ ->
+                                    lobbyModel
+
+                        Routing.QuickPlay ->
+                            { model
+                                | room =
+                                    Room.Lobby <|
+                                        Lobby.init
+                                            randomRoomID
+                                            GameType.QuickplayGame
+                                            Playing
+                            }
+            in
+            ( newModel, Lobby.skipLobbyCmd username )
 
         Routing.Spec roomID ->
             ( { model

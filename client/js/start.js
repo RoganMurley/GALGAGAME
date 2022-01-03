@@ -24,6 +24,10 @@ if (visits === null) {
 }
 localStorage.setItem('visits', visits);
 
+var cookies = document.cookie.split('; ');
+var userCookie = cookies.find(row => row.startsWith('user='));
+var username = userCookie ? userCookie.split('=')[1] : null;
+
 var app = Elm.Main.init({
   flags: {
     hostname: hostname,
@@ -31,7 +35,7 @@ var app = Elm.Main.init({
     seed: new Date().getTime(),
     dimensions: [ window.innerWidth, window.innerHeight ],
     time: 0,
-    username: null,
+    username: username,
     pixelRatio: window.devicePixelRatio,
     initialVolume: parseFloat(initialVolume, 10),
     initialScaling: parseFloat(initialScaling, 10),

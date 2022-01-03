@@ -89,8 +89,8 @@ checkPassword username password = do
         False
 
 
-loginCookieName :: Text
-loginCookieName = "login"
+sessionCookieName :: Text
+sessionCookieName = "login"
 
 
 getCookies :: WS.PendingConnection -> Cookies

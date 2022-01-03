@@ -17,8 +17,6 @@ type Msg
     = AssetsMsg Assets.Msg
     | CopyInput String
     | Frame Float
-    | GetAuth
-    | GetAuthCallback (Result Http.Error (Maybe String))
     | KeyPress Key
     | Logout
     | LogoutCallback (Result Http.Error ())
@@ -34,6 +32,7 @@ type Msg
     | Send String
     | SettingsMsg Settings.Msg
     | SetScaling Float
+    | SetUsername String
     | SetVolume VolumeType Int
     | TouchPosition (Maybe Mouse.Position)
     | UrlChange Url

@@ -10,28 +10,33 @@ import Main.Types exposing (Flags)
 
 
 view : Flags -> Model -> Html Msg
-view { visits } { error, gameType } =
-    div []
-        [ div [ class "connecting-box" ]
-            [ h1 [] [ text <| gameTypeToString gameType ]
-            , div
-                []
-                [ div [ class "input-group" ] <|
-                    [ div
-                        [ class "login-buttons" ]
-                        [ button
-                            [ onClick <| GotoSignup, class "menu-button" ]
-                            [ text "SIGNUP & PLAY" ]
-                        , button
-                            [ onClick <| GotoLogin, class "menu-button" ]
-                            [ text "LOGIN & PLAY" ]
+view { username, visits } { error, gameType } =
+    case username of
+        Nothing ->
+            div []
+                [ div [ class "connecting-box" ]
+                    [ h1 [] [ text <| gameTypeToString gameType ]
+                    , div
+                        []
+                        [ div [ class "input-group" ] <|
+                            [ div
+                                [ class "login-buttons" ]
+                                [ button
+                                    [ onClick <| GotoSignup, class "menu-button" ]
+                                    [ text "SIGNUP & PLAY" ]
+                                , button
+                                    [ onClick <| GotoLogin, class "menu-button" ]
+                                    [ text "LOGIN & PLAY" ]
+                                ]
+                            ]
+                                ++ guestLoginView visits
+                        , div [ class "error" ] [ text error ]
                         ]
                     ]
-                        ++ guestLoginView visits
-                , div [ class "error" ] [ text error ]
                 ]
-            ]
-        ]
+
+        Just _ ->
+            text ""
 
 
 guestLoginView : Int -> List (Html Msg)

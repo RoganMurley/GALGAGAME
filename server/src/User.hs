@@ -31,7 +31,7 @@ getQueryUsername ServiceUser = Nothing
 
 getUserFromCookies :: Auth.Cookies -> App User
 getUserFromCookies cookies = do
-  let mLoginToken = Map.lookup Auth.loginCookieName cookies
+  let mLoginToken = Map.lookup Auth.sessionCookieName cookies
   mUsername <- Auth.checkAuth mLoginToken
   case mUsername of
     Nothing -> do
