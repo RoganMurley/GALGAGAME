@@ -25,7 +25,7 @@ if (visits === null) {
 localStorage.setItem('visits', visits);
 
 var cookies = document.cookie.split('; ');
-var userCookie = cookies.find(row => row.startsWith('user='));
+var userCookie = cookies.find(function (row) {return row.startsWith('user=');});
 var username = userCookie ? userCookie.split('=')[1] : null;
 
 var app = Elm.Main.init({
