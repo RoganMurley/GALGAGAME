@@ -40,7 +40,6 @@ saveSession username token = do
   let tokenBytestring = cs token :: ByteString
   runRedis $ do
     _ <- R.set tokenBytestring username
-    _ <- R.expire tokenBytestring loginTimeout
     return ()
 
 
@@ -92,10 +91,6 @@ checkPassword username password = do
 
 loginCookieName :: Text
 loginCookieName = "login"
-
-
-loginTimeout :: Seconds
-loginTimeout = 3600 * 24 * 7
 
 
 getCookies :: WS.PendingConnection -> Cookies

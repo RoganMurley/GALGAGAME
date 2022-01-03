@@ -22,7 +22,7 @@ import qualified Data.GUID as GUID
 import Data.Text (Text)
 import qualified Data.Text as T
 
-import Auth.Apps (checkAuth, checkPassword, deleteToken, legalName, legalPassword, loginCookieName, loginTimeout, saveSession, saveUser)
+import Auth.Apps (checkAuth, checkPassword, deleteToken, legalName, legalPassword, loginCookieName, saveSession, saveUser)
 import Feedback.Views (feedbackView)
 
 
@@ -125,7 +125,7 @@ createSession config username = do
   token <- cs <$> lift GUID.genText
   lift $ runApp config $ saveSession username token
   let cookie = (makeSimpleCookie loginCookieName token) {
-    setCookieMaxAge = Just (secondsToDiffTime loginTimeout),
+    setCookieMaxAge = Just (secondsToDiffTime (60 * 60 * 24 * 356 * 10)),
     setCookieSecure = True,
     setCookieHttpOnly = True,
     setCookiePath = Just "/",
