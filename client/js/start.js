@@ -11,6 +11,14 @@ if (initialVolume === null) {
 }
 setVolume(initialVolume);
 
+
+var initialMusicVolume = localStorage.getItem("musicVolume");
+if (initialMusicVolume === null) {
+  initialMusicVolume = 100;
+}
+var musicVolume;
+setMusicVolume(initialMusicVolume);
+
 var initialScaling = localStorage.getItem("scaling");
 if (initialScaling === null) {
   initialScaling = 1;
@@ -37,6 +45,7 @@ var app = Elm.Main.init({
     time: 0,
     username: username,
     pixelRatio: window.devicePixelRatio,
+    initialMusicVolume: parseFloat(musicVolume, 10),
     initialVolume: parseFloat(initialVolume, 10),
     initialScaling: parseFloat(initialScaling, 10),
     visits: visits,
@@ -53,6 +62,7 @@ app.ports.copyInput.subscribe(function (elementId) {
 })
 
 var playedSounds = {};
+var music = [];
 app.ports.playAudio.subscribe(function (input) {
   var src = input.name;
   var loop = input.loop;
@@ -70,6 +80,10 @@ app.ports.playAudio.subscribe(function (input) {
     loop: loop,
     volume: volume
   });
+  if (loop) {
+    music.push(sound);
+    setMusicVolume(musicVolume);
+  }
   sound.play();
 });
 
@@ -78,12 +92,27 @@ app.ports.loadAudio.subscribe(function (src) {
 });
 
 function setVolume(v) {
-  Howler.volume(Math.pow(v / 100, 4));
+  Howler.volume(v / 100);
 };
 
 app.ports.volume.subscribe(function (input) {
   setVolume(input);
   localStorage.setItem('volume', input);
+});
+
+function setMusicVolume(v) {
+  musicVolume = v;
+  if (!music) {
+    return;
+  }
+  music.forEach(function (howl) {
+    howl.volume(musicVolume / 100);
+  });
+};
+
+app.ports.musicVolume.subscribe(function (input) {
+  setMusicVolume(input);
+  localStorage.setItem('musicVolume', input);
 });
 
 app.ports.scaling.subscribe(function (input) {

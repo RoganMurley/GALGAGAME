@@ -7,6 +7,7 @@ import Dict exposing (Dict)
 import Main.Messages as Main
 import Manifest.Types exposing (Manifest)
 import Ports
+import Settings.Types as Settings
 import Util exposing (message)
 
 
@@ -63,9 +64,14 @@ playSoundWith { sounds } name options =
     Ports.playAudio { name = revName, once = once, loop = loop, vol = vol }
 
 
-setVolume : Int -> Cmd msg
-setVolume =
-    Ports.volume
+setVolume : Settings.VolumeType -> Int -> Cmd msg
+setVolume volumeType =
+    case volumeType of
+        Settings.Sfx ->
+            Ports.volume
+
+        Settings.Music ->
+            Ports.musicVolume
 
 
 fetch : Manifest -> List (Cmd Main.Msg)

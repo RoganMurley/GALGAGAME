@@ -41,8 +41,8 @@ import Url.Parser exposing (parse)
 import Util exposing (authLocation)
 
 
-init : Flags -> Url -> Int -> ( Main.Model, Cmd Msg )
-init flags url initialVolume =
+init : Flags -> Url -> Int -> Int -> ( Main.Model, Cmd Msg )
+init flags url initialVolume initialMusicVolume =
     let
         fetchManifest =
             List.map (Cmd.map (AssetsMsg << Assets.ManifestMsg)) Manifest.fetch
@@ -51,7 +51,7 @@ init flags url initialVolume =
             locationUpdate
                 { room = Room.init
                 , flags = flags
-                , settings = Settings.init initialVolume
+                , settings = Settings.init initialVolume initialMusicVolume
                 , assets = Assets.init
                 , notifications = Notifications.init
                 }
@@ -207,9 +207,6 @@ update msg ({ assets, room, notifications, settings, flags } as model) =
 
                 newSettings =
                     case volumeType of
-                        Settings.Master ->
-                            { settings | masterVolume = newVolume }
-
                         Settings.Music ->
                             { settings | musicVolume = newVolume }
 
@@ -217,7 +214,7 @@ update msg ({ assets, room, notifications, settings, flags } as model) =
                             { settings | sfxVolume = newVolume }
             in
             ( { model | settings = newSettings }
-            , setVolume newVolume
+            , setVolume volumeType newVolume
             )
 
         Logout ->

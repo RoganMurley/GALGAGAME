@@ -26,6 +26,7 @@ type alias InputFlags =
     , dimensions : ( Int, Int )
     , username : Maybe String
     , pixelRatio : Float
+    , initialMusicVolume : Int
     , initialVolume : Int
     , initialScaling : Float
     , visits : Int

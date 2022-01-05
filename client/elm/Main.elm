@@ -49,4 +49,4 @@ initFull inputFlags url key =
             , visibility = Visible
             }
     in
-    init flags url inputFlags.initialVolume
+    init flags url inputFlags.initialVolume inputFlags.initialMusicVolume

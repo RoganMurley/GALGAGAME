@@ -3,7 +3,6 @@ module Settings.Types exposing (ModalState(..), Model, VolumeType(..))
 
 type alias Model =
     { modalState : ModalState
-    , masterVolume : Int
     , musicVolume : Int
     , sfxVolume : Int
     , gameSpeed : Float
@@ -11,8 +10,7 @@ type alias Model =
 
 
 type VolumeType
-    = Master
-    | Music
+    = Music
     | Sfx
 
 

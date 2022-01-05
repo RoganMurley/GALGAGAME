@@ -10,7 +10,7 @@ import Settings.Types exposing (ModalState(..), Model, VolumeType(..))
 
 
 view : Model -> Flags -> List (Html Main.Msg) -> Html Main.Msg
-view { modalState, masterVolume } { scaling } nestedViews =
+view { modalState, musicVolume, sfxVolume } { scaling } nestedViews =
     let
         settingsStyle =
             case modalState of
@@ -38,15 +38,28 @@ view { modalState, masterVolume } { scaling } nestedViews =
                 ]
                 [ h1 [] [ text "SETTINGS" ]
                 , label [ class "settings-label" ]
-                    [ text <| "Volume (" ++ String.fromInt masterVolume ++ "%)"
+                    [ text <| "SFX Volume (" ++ String.fromInt sfxVolume ++ "%)"
                     , input
                         [ class "settings-slider"
                         , type_ "range"
                         , H.min "0"
                         , H.max "100"
-                        , value <| String.fromInt masterVolume
+                        , value <| String.fromInt sfxVolume
                         , onInput
-                            (\v -> Main.SetVolume Master <| Maybe.withDefault 0 (String.toInt v))
+                            (\v -> Main.SetVolume Sfx <| Maybe.withDefault 0 (String.toInt v))
+                        ]
+                        []
+                    ]
+                , label [ class "settings-label" ]
+                    [ text <| "Music Volume (" ++ String.fromInt musicVolume ++ "%)"
+                    , input
+                        [ class "settings-slider"
+                        , type_ "range"
+                        , H.min "0"
+                        , H.max "100"
+                        , value <| String.fromInt musicVolume
+                        , onInput
+                            (\v -> Main.SetVolume Music <| Maybe.withDefault 0 (String.toInt v))
                         ]
                         []
                     ]
