@@ -113,8 +113,10 @@ heavenWand =
 heavenGrail :: Card
 heavenGrail =
   newCard Heaven Grail
-    "Return all of your cards\non the wheel to hand"
-    $ \w -> bounce (\i (StackCard o _) -> i > 0 && w == o)
+    "Discard your hand, then return\nall of your cards on the wheel\nto hand"
+    $ \w -> do
+      discardHand w (\_ _ -> True)
+      bounce (\i (StackCard o _) -> i > 0 && w == o)
 
 
 heavenCoin :: Card
@@ -278,9 +280,9 @@ seerWand =
 seerGrail :: Card
 seerGrail =
   newCard Seer Grail
-    "Heal for 7 and reveal\na card in their hand"
+    "Draw a card and reveal\na card in their hand"
     $ \w -> do
-      heal 7 w
+      draw w w 1
       revealRandomCard (other w)
 
 
