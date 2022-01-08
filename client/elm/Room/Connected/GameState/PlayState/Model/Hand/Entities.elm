@@ -5,7 +5,6 @@ import Animation.Types exposing (Anim(..), Bounce, CardDiscard(..), HandBounce)
 import Array
 import Card.State as Card exposing (getCard, isRevealed)
 import Card.Types exposing (Card, KnowableCard(..))
-import Game.Entity as Game
 import Game.Types exposing (Context, HandEntity, OtherHandEntity)
 import Holding.State as Holding
 import Holding.Types exposing (Holding(..))

@@ -6,8 +6,8 @@ import Assets.Types as Assets
 import Audio.State exposing (playSound)
 import Browser.Navigation
 import Buttons.State as Buttons
-import Card.State exposing (getCard, isRevealed)
-import Card.Types exposing (Card, KnowableCard(..))
+import Card.State exposing (getCard)
+import Card.Types exposing (KnowableCard(..))
 import Chat.Messages as Chat
 import Chat.Types as Chat
 import Collision exposing (hitTest3d)
@@ -40,7 +40,6 @@ import Ports exposing (websocketSend)
 import Resolvable.State as Resolvable
 import Resolvable.Types as Resolvable
 import Result
-import Ripple.State as Ripple
 import Room.Messages as Room
 import Util exposing (message)
 import Wheel.State as Wheel

@@ -10,7 +10,6 @@ import Main.Types exposing (Flags, InputFlags, Model)
 import Main.View exposing (titleView, view)
 import Mouse exposing (MouseState(..))
 import Url exposing (Url)
-import Util exposing (message)
 
 
 main : Program InputFlags Model Msg

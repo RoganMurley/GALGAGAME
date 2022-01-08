@@ -20,7 +20,7 @@ import Hand.View as Hand
 import Holding.Types exposing (Holding(..))
 import Holding.View as Holding
 import Hover exposing (Hover(..), HoverDamage(..), HoverSelf)
-import Math.Matrix4 exposing (makeRotate, makeScale3)
+import Math.Matrix4 exposing (makeScale3)
 import Math.Vector2 exposing (Vec2, vec2)
 import Math.Vector3 exposing (Vec3, vec3)
 import Model.Wave as Wave
@@ -30,9 +30,7 @@ import Render.Primitives
 import Render.Shaders
 import Render.Types as Render
 import Render.Uniforms exposing (uniColourMag)
-import Ripple.View as Ripple
 import Stack.Entities exposing (wheelZ)
-import Stack.Types exposing (StackCard)
 import Stack.View as Stack
 import TimeLimit
 import Util exposing (interpFloat)
@@ -108,7 +106,7 @@ focusImageView originVec focus ({ anim, tick } as ctx) =
 
 
 lifeOrbView : List PlayerEntity -> Context -> List WebGL.Entity
-lifeOrbView entities ({ w, h, radius, model, anim, animDamage, tick } as ctx) =
+lifeOrbView entities ({ radius, model, anim, animDamage, tick } as ctx) =
     let
         progress =
             Ease.outQuad (tick / animMaxTick anim)
@@ -144,7 +142,7 @@ lifeOrbView entities ({ w, h, radius, model, anim, animDamage, tick } as ctx) =
             floor <| toFloat model.otherMaxLife * finalOtherLifePercentage
 
         eachView : PlayerEntity -> List WebGL.Entity
-        eachView { which, position, scale, rotation } =
+        eachView { which, position, scale } =
             [ Render.Primitives.fullCircle <|
                 uniColourMag ctx
                     (Colour.background which)

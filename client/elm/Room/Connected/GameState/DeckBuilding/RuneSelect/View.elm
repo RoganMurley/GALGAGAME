@@ -4,7 +4,7 @@ import Card.View as Card
 import Colour
 import Font.View as Font
 import Game.Types exposing (Context, Focus(..))
-import Math.Matrix4 exposing (makeRotate, makeScale3)
+import Math.Matrix4 exposing (makeScale3)
 import Math.Vector2 exposing (vec2)
 import Math.Vector3 exposing (vec3)
 import Model.View exposing (focusImageView, focusTextView)

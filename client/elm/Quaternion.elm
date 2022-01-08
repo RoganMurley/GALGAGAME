@@ -3,7 +3,7 @@ module Quaternion exposing (Quaternion, add, angle, axis, identity, lerp, make, 
 -- Based on https://package.elm-lang.org/packages/nphollon/geo3d/2.1.1/Quaternion
 
 import Math.Matrix4 exposing (Mat4)
-import Math.Vector3 exposing (Vec3, normalize, vec3)
+import Math.Vector3 exposing (Vec3, vec3)
 
 
 type alias Quaternion =

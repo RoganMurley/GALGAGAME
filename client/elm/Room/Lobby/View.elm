@@ -19,7 +19,7 @@ view { username, visits } { error, gameType } =
                     , div
                         []
                         [ div [ class "input-group" ] <|
-                            [ div
+                             div
                                 [ class "login-buttons" ]
                                 [ button
                                     [ onClick <| GotoSignup, class "menu-button" ]
@@ -28,8 +28,8 @@ view { username, visits } { error, gameType } =
                                     [ onClick <| GotoLogin, class "menu-button" ]
                                     [ text "LOGIN & PLAY" ]
                                 ]
-                            ]
-                                ++ guestLoginView visits
+                            
+                                :: guestLoginView visits
                         , div [ class "error" ] [ text error ]
                         ]
                     ]

@@ -4,7 +4,6 @@ import Assets.Types as Assets
 import Colour
 import Ease
 import Game.State exposing (bareContextInit)
-import Game.Types exposing (Context)
 import Mouse exposing (MouseState(..))
 import Render.Primitives
 import Render.Types as Render

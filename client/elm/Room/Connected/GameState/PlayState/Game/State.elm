@@ -27,8 +27,6 @@ import PlayState.Messages as PlayState
 import Render.Uniforms as Uniforms
 import Resolvable.State as Resolvable exposing (activeAnim, activeAnimDamage, activeModel, resolving)
 import Resolvable.Types as Resolvable
-import Ripple.State as Ripple
-import Ripple.Types exposing (Ripple)
 import Stack.Entities as Stack
 import Stack.Types exposing (StackCard)
 import Unproject

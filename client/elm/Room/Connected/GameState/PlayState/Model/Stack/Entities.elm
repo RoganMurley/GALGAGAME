@@ -4,7 +4,6 @@ import Animation.Types exposing (Anim(..), Bounce(..), CardDiscard(..))
 import Card.State as Card
 import Game.Entity as Game
 import Game.Types exposing (Context, StackEntity, WheelEntity)
-import Math.Matrix4 exposing (rotate)
 import Math.Vector3 exposing (Vec3, vec3)
 import Maybe.Extra as Maybe
 import Quaternion exposing (Quaternion)

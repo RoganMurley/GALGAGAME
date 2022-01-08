@@ -56,8 +56,8 @@ update ({ gameType, mode } as model) msg flags =
             in
             ( model
             , Cmd.batch <|
-                [ message <| Main.Send <| prefix ]
-                    ++ joinRoomCmd
+                (message <| Main.Send <| prefix)
+                    :: joinRoomCmd
             )
 
         JoinRoomErr error ->

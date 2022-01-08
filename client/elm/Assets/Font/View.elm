@@ -48,7 +48,7 @@ view fontName text entity { camera2d, ortho, fonts, textures } =
                         charView : Int -> Float -> Maybe FontChar -> FontChar -> ( Float, List WebGL.Entity ) -> ( Float, List WebGL.Entity )
                         charView lineNum lineWidth mPrevFontChar fontChar ( offset, entities ) =
                             let
-                                { x, y, width, height, originX, originY, advance, char } =
+                                { x, y, width, height, originX, originY, advance } =
                                     fontChar
 
                                 n =

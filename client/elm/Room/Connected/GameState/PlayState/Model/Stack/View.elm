@@ -4,7 +4,7 @@ import Animation.Types exposing (Anim(..), Bounce(..), CardDiscard(..), Transmut
 import Card.View as Card
 import Colour
 import Game.Types exposing (Context, StackEntity, WheelEntity)
-import Math.Matrix4 exposing (makeRotate, makeScale)
+import Math.Matrix4 exposing (makeScale)
 import Maybe.Extra as Maybe
 import Quaternion
 import Render.Primitives

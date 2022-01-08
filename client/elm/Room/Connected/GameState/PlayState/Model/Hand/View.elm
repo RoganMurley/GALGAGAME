@@ -7,7 +7,6 @@ import Card.State as Card
 import Card.Types as Card
 import Card.View as Card
 import Ease
-import Game.Entity as Game
 import Game.Types exposing (Context, HandEntity, OtherHandEntity)
 import Math.Vector3 exposing (vec3)
 import Quaternion

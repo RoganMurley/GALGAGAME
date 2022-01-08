@@ -14,7 +14,6 @@ import Main.Messages exposing (Msg(..))
 import Main.Types exposing (Flags)
 import PlayState.Types exposing (PlayState(..))
 import Players exposing (Players)
-import Render.Types as Render
 import Ripple.View as Ripple
 import Room.Messages as Room
 import WebGL

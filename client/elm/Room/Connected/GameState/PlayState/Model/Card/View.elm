@@ -5,7 +5,7 @@ import Card.Types as Card
 import Colour
 import Game.Entity as Game
 import Game.Types exposing (Context)
-import Math.Matrix4 exposing (makeRotate, makeScale)
+import Math.Matrix4 exposing (makeScale)
 import Math.Vector3 as Vector3 exposing (vec3)
 import Quaternion
 import Render.Primitives
@@ -107,22 +107,20 @@ revealedView ctx entity =
         { position, rotation, scale, revealed } =
             entity
     in
-    case revealed of
-        True ->
-            Texture.with textures "revealed.png" <|
-                \texture ->
-                    [ Render.Primitives.quad Render.Shaders.fragment <|
-                        { rotation = Quaternion.makeRotate rotation
-                        , scale = makeScale scale
-                        , color = vec3 1 1 1
-                        , pos = position
-                        , perspective = perspective
-                        , camera = camera3d
-                        , texture = texture
-                        }
-                    ]
-
-        False ->
+    if revealed then
+        Texture.with textures "revealed.png" <|
+            \texture ->
+                [ Render.Primitives.quad Render.Shaders.fragment <|
+                    { rotation = Quaternion.makeRotate rotation
+                    , scale = makeScale scale
+                    , color = vec3 1 1 1
+                    , pos = position
+                    , perspective = perspective
+                    , camera = camera3d
+                    , texture = texture
+                    }
+                ]
+        else
             []
 
 

@@ -10,3 +10,4 @@ prod.env
 .DS_Store
 .images/game-ringofworlds
 .images/game-galgagame
+.vscode/settings.json
