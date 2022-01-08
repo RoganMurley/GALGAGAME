@@ -3,3 +3,7 @@ openssl req -x509 -out client/ssl/www.galgagame.com.ca-bundle -keyout client/ssl
   -newkey rsa:2048 -nodes -sha256 \
   -subj '/CN=www.galgagame.com' -extensions EXT -config <( \
    printf "[dn]\nCN=www.galgagame.com\n[req]\ndistinguished_name = dn\n[EXT]\nsubjectAltName=DNS:www.galgagame.com\nkeyUsage=digitalSignature\nextendedKeyUsage=serverAuth")
+openssl req -x509 -out client/ssl/www.ringofworlds.com.ca-bundle -keyout client/ssl/www.ringofworlds.com.key \
+  -newkey rsa:2048 -nodes -sha256 \
+  -subj '/CN=www.ringofworlds.com' -extensions EXT -config <( \
+   printf "[dn]\nCN=www.ringofworlds.com\n[req]\ndistinguished_name = dn\n[EXT]\nsubjectAltName=DNS:www.ringofworlds.com\nkeyUsage=digitalSignature\nextendedKeyUsage=serverAuth")
