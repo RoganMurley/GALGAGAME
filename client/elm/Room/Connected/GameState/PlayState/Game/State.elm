@@ -323,14 +323,7 @@ getHoverOtherHand { entities } mRay =
                     List.reverse entities.otherHand
             )
         |> Maybe.andThen
-            (\entity ->
-                case entity.mCard of
-                    Just _ ->
-                        Just entity
-
-                    Nothing ->
-                        Nothing
-            )
+            (\entity -> Maybe.map (always entity) entity.mCard)
 
 
 getHoverStack : Game.Model -> Maybe { origin : Vec3, direction : Vec3 } -> Maybe StackEntity
@@ -346,15 +339,14 @@ getHoverStack { entities } mRay =
 
 getFocusPlayer : Game.Model -> Maybe Vec2 -> Maybe WhichPlayer
 getFocusPlayer { entities } mMousePos =
-    case mMousePos of
-        Just mousePos ->
-            List.find
-                (\entity -> hitTest mousePos entity.scale entity)
-                entities.players
-                |> Maybe.map .which
-
-        Nothing ->
-            Nothing
+    mMousePos
+        |> Maybe.andThen
+            (\mousePos ->
+                List.find
+                    (\entity -> hitTest mousePos entity.scale entity)
+                    entities.players
+                    |> Maybe.map .which
+            )
 
 
 getFocus : Context -> Maybe HandEntity -> Maybe OtherHandEntity -> Maybe StackEntity -> Holding -> Maybe WhichPlayer -> Focus
@@ -366,12 +358,10 @@ getFocus { anim, model } hoverHand hoverOtherHand hoverStack holding player =
                 Nothing
                 [ Maybe.map (\{ card, owner } -> { owner = owner, card = card }) hoverStack
                 , Maybe.map (\{ card } -> { owner = PlayerA, card = card }) hoverHand
-                , case Maybe.join <| Maybe.map .mCard hoverOtherHand of
-                    Just card ->
-                        Just { card = card, owner = PlayerB }
-
-                    Nothing ->
-                        Nothing
+                , hoverOtherHand
+                    |> Maybe.andThen .mCard
+                    |> Maybe.andThen
+                        (\card -> Just { card = card, owner = PlayerB })
                 ]
 
         stackCard =
