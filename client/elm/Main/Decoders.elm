@@ -6,7 +6,7 @@ import Keyboard exposing (Key(..))
 
 keyDecoder : Decoder Key
 keyDecoder =
-    Json.field "key" Decode.string <|
+    Json.field "key" Json.string <|
         Json.andThen
             (\s ->
                 case s of
