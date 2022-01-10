@@ -2,7 +2,7 @@ module Cards where
 
 import Control.Monad (when)
 import CardAnim (Hurt(..))
-import Card (Aspect(..), Card(..), Suit(..), Status(..), addStatus, cardName, newCard, removeStatus)
+import Card (Aspect(..), Card(..), Suit(..), Status(..), addStatus, cardName, newCard)
 import Data.Map (Map)
 import Data.Maybe (fromMaybe)
 import Data.Text (Text)
@@ -139,11 +139,11 @@ emptySword =
 emptyWand :: Card
 emptyWand =
   newCard Empty Wand
-    "Discard your hand, then hurt\nfor 4 for each card\ndiscarded"
+    "Discard your hand, hurt\nfor 5 for each card discarded"
     $ \w -> do
       handSize <- length <$> getHand w
       discardHand w (\_ _ -> True)
-      hurt (4 * handSize) (other w) Slash
+      hurt (5 * handSize) (other w) Slash
 
 
 emptyGrail :: Card
