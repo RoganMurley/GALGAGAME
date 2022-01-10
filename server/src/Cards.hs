@@ -2,7 +2,7 @@ module Cards where
 
 import Control.Monad (when)
 import CardAnim (Hurt(..))
-import Card (Aspect(..), Card(..), Suit(..), Status(..), addStatus, cardName, newCard)
+import Card (Aspect(..), Card(..), Suit(..), Status(..), addStatus, cardName, newCard, removeStatus)
 import Data.Map (Map)
 import Data.Maybe (fromMaybe)
 import Data.Text (Text)
