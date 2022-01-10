@@ -2,7 +2,7 @@ module Cards where
 
 import Control.Monad (when)
 import CardAnim (Hurt(..))
-import Card (Aspect(..), Card(..), Suit(..), Status(..), addStatus, cardName, newCard)
+import Card (Aspect(..), Card(..), Suit(..), Status(..), addStatus, cardName, newCard, removeStatus)
 import Data.Map (Map)
 import Data.Maybe (fromMaybe)
 import Data.Text (Text)
@@ -63,10 +63,11 @@ blazeCoin =
 tideSword :: Card
 tideSword =
   newCard Tide Sword
-    "Hurt for 3, add a copy of this card\nto your hand"
+    "Hurt for 3, return this card\nto hand"
     $ \w -> do
       hurt 3 (other w) Slash
-      addToHand w (KnownHandCard tideSword)
+      raw $ Alpha.modStackActive $ cardMap (removeStatus StatusEcho)
+      bounce (\i _ -> i == 0)
 
 
 tideWand :: Card
@@ -113,15 +114,60 @@ heavenWand =
 heavenGrail :: Card
 heavenGrail =
   newCard Heaven Grail
-    "Discard your hand, then return\nall of your cards on the wheel\nto hand"
+    "Heal for 2, return this card\nto hand"
     $ \w -> do
-      discardHand w (\_ _ -> True)
-      bounce (\i (StackCard o _) -> i > 0 && w == o)
+      heal 2 w
+      raw $ Alpha.modStackActive $ cardMap (removeStatus StatusEcho)
+      bounce (\i _ -> i == 0)
 
 
 heavenCoin :: Card
 heavenCoin =
   newCard Heaven Coin
+    "Return all of your cards on the\nwheel to hand"
+    $ \w -> bounce (\i (StackCard o _) -> i > 0 && w == o)
+
+
+-- Empty
+emptySword :: Card
+emptySword =
+  newCard Empty Sword
+    "Hurt for 4, then\ndraw a card"
+    $ \w -> do
+      hurt 4 (other w) Slash
+      draw w w 1
+
+
+emptyWand :: Card
+emptyWand =
+  newCard Empty Wand
+    "Discard your hand, then hurt\nfor 4 for each card\ndiscarded"
+    $ \w -> do
+      handSize <- length <$> getHand w
+      discardHand w (\_ _ -> True)
+      hurt (4 * handSize) (other w) Slash
+
+
+emptyGrail :: Card
+emptyGrail =
+  newCard Empty Grail
+    "Become a copy of a random card\nin your hand"
+    $ \w -> do
+      gen <- getGen
+      hand <- getHand w
+      let mCopyCard = headMay . (shuffle gen) $ hand
+      case mCopyCard of
+        Just copyCard -> do
+          let stackCard = StackCard{ stackcard_card = anyCard copyCard, stackcard_owner = w }
+          transmuteActive (\_ -> Just stackCard)
+          Beta.null
+        Nothing ->
+         return ()
+
+
+emptyCoin :: Card
+emptyCoin =
+  newCard Empty Coin
     "Discard all cards on the wheel"
     $ \_ -> discardStack (\i _ -> i > 0)
 
@@ -635,6 +681,7 @@ swords =
   , tideSword
   , abyssSword
   , feverSword
+  , emptySword
   , seerSword
   ]
 
@@ -654,6 +701,7 @@ wands =
   , tideWand
   , abyssWand
   , feverWand
+  , emptyWand
   , seerWand
   ]
 
@@ -673,6 +721,7 @@ grails =
   , tideGrail
   , abyssGrail
   , feverGrail
+  , emptyGrail
   , seerGrail
   ]
 
@@ -691,6 +740,7 @@ coins =
   , morphCoin
   , tideCoin
   , feverCoin
+  , emptyCoin
   , seerCoin
   ]
 

@@ -192,6 +192,7 @@ mainRunes =
   , morphRune
   , seerRune
   , feverRune
+  , emptyRune
   ]
 
 allRunes :: [Rune]
@@ -312,6 +313,13 @@ feverRune =
     "FEVER"
     "cards/fever/coin.png"
     (Cards.feverSword, Cards.feverWand, Cards.feverGrail, Cards.feverCoin)
+
+emptyRune :: Rune
+emptyRune =
+  Rune
+    "EMPTY"
+    "cards/empty/coin.png"
+    (Cards.emptySword, Cards.emptyWand, Cards.emptyGrail, Cards.emptyCoin)
 
 
 characterCards :: Character -> Deck
