@@ -2,14 +2,14 @@ module Cards where
 
 import Control.Monad (when)
 import CardAnim (Hurt(..))
-import Card (Aspect(..), Card(..), Suit(..), Status(..), addStatus, cardName, newCard, removeStatus)
+import Card (Aspect(..), Card(..), Suit(..), Status(..), addStatus, cardName, newCard)
 import Data.Map (Map)
 import Data.Maybe (fromMaybe)
 import Data.Text (Text)
 import HandCard (HandCard(..), anyCard, isRevealed)
 import Player (other)
 import Safe (headMay)
-import Stack (diasporaFromStack, diasporaLength)
+import Stack (diasporaLength)
 import StackCard (StackCard(..), changeOwner, cardMap)
 import Transmutation (Transmutation(..), transmuteToCard)
 import Util (many, manyIndexed, shuffle)
@@ -336,50 +336,6 @@ seerCoin =
     "Return all cards on the wheel to hand"
     $ \_ -> bounce (\i _ -> i > 0)
 
--- Mirage
-mirageSword :: Card
-mirageSword =
-  newCard Mirage Sword
-    "Hurt for 4, then draw 1"
-    $ \w -> do
-      hurt 4 (other w) Slash
-      draw w w 1
-
-
-mirageWand :: Card
-mirageWand =
-  newCard Mirage Wand
-    "Hurt for 8 for each MIRAGE WAND\non the wheel"
-    $ \w -> do
-      diaspora <- diasporaFromStack <$> getStack
-      let isMirageWand = \(Card{ card_aspect, card_suit }) -> card_aspect == Mirage && card_suit == Wand
-      let count = length . filter (\(_, StackCard{ stackcard_card }) -> isMirageWand stackcard_card) $ diaspora
-      hurt (count * 8) (other w) Slash
-
-
-mirageGrail :: Card
-mirageGrail =
-  newCard Mirage Grail
-    "Become a copy of a random card\nin your hand"
-    $ \w -> do
-      gen <- getGen
-      hand <- getHand w
-      let mCopyCard = headMay . (shuffle gen) $ hand
-      case mCopyCard of
-        Just copyCard -> do
-          let stackCard = StackCard{ stackcard_card = anyCard copyCard, stackcard_owner = w }
-          transmuteActive (\_ -> Just stackCard)
-          Beta.null
-        Nothing ->
-         return ()
-
-
-mirageCoin :: Card
-mirageCoin =
-  newCard Mirage Coin
-    "Return all cards on the wheel to hand"
-    $ \_ -> bounce (\i _ -> i > 0)
-
 
 -- Mirror
 mirrorSword :: Card
@@ -670,7 +626,6 @@ swords =
   , heavenSword
   , shroomSword
   , bloodSword
-  , mirageSword
   , mirrorSword
   , dualitySword
   , alchemySword
@@ -690,7 +645,6 @@ wands =
   , heavenWand
   , shroomWand
   , bloodWand
-  , mirageWand
   , mirrorWand
   , dualityWand
   , alchemyWand
@@ -710,7 +664,6 @@ grails =
   , heavenGrail
   , shroomGrail
   , bloodGrail
-  , mirageGrail
   , mirrorGrail
   , dualityGrail
   , alchemyGrail
@@ -730,7 +683,6 @@ coins =
   , heavenCoin
   , shroomCoin
   , bloodCoin
-  , mirageCoin
   , mirrorCoin
   , dualityCoin
   , alchemyCoin

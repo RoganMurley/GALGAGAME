@@ -185,7 +185,6 @@ mainRunes =
   , tideRune
   , heavenRune
   , shroomRune
-  -- , mirageRune
   , mirrorRune
   , dualityRune
   , alchemyRune
@@ -201,7 +200,6 @@ allRunes =
   [ bloodRune
   , crownRune
   , abyssRune
-  , mirageRune
   ]
 
 
@@ -243,14 +241,6 @@ bloodRune =
     "BLOOD"
     "cards/blood/coin.png"
     (Cards.bloodSword, Cards.bloodWand, Cards.bloodGrail, Cards.bloodCoin)
-
-
-mirageRune :: Rune
-mirageRune =
-  Rune
-    "MIRAGE"
-    "cards/mirage/coin.png"
-    (Cards.mirageSword, Cards.mirageWand, Cards.mirageGrail, Cards.mirageCoin)
 
 
 seerRune :: Rune

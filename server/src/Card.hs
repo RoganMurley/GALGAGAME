@@ -55,7 +55,6 @@ data Aspect
   | Blaze
   | Shroom
   | Alchemy
-  | Mirage
   | Mirror
   | Duality
   | Blood
@@ -112,7 +111,6 @@ mainAspects =
   , Blaze
   , Shroom
   , Alchemy
-  --, Mirage
   , Mirror
   , Duality
   , Morph
@@ -128,7 +126,6 @@ allAspects =
   , Blaze
   , Shroom
   , Alchemy
-  , Mirage
   , Mirror
   , Duality
   , Blood
