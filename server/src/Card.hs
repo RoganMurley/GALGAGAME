@@ -55,7 +55,6 @@ data Aspect
   | Blaze
   | Shroom
   | Alchemy
-  | Mirage
   | Mirror
   | Duality
   | Blood
@@ -63,6 +62,7 @@ data Aspect
   | Morph
   | Abyss
   | Fever
+  | Empty
   | Seer
   | Strange
   | OtherAspect Text
@@ -111,10 +111,10 @@ mainAspects =
   , Blaze
   , Shroom
   , Alchemy
-  --, Mirage
   , Mirror
   , Duality
   , Morph
+  , Empty
   , Seer
   ]
 
@@ -126,13 +126,13 @@ allAspects =
   , Blaze
   , Shroom
   , Alchemy
-  , Mirage
   , Mirror
   , Duality
   , Blood
   , Crown
   , Morph
   , Fever
+  , Empty
   , Strange
   , Seer
   ]
@@ -152,3 +152,11 @@ newCard aspect suit desc eff = Card aspect suit desc eff []
 
 addStatus :: Status -> Card -> Card
 addStatus status card = card { card_statuses = status : card_statuses card }
+
+
+removeStatus :: Status -> Card -> Card
+removeStatus status card = card { card_statuses = filter ((/=) status) (card_statuses card) }
+
+
+removeStatuses :: Card -> Card
+removeStatuses card = card { card_statuses = [] }

@@ -59,6 +59,16 @@ modPasses :: (Passes -> Passes) -> Program ()
 modPasses f = getPasses >>= (setPasses . f)
 
 
+modStackActive :: (StackCard -> StackCard) -> Program ()
+modStackActive f = do
+  stack <- getStack
+  case wheel_0 stack of
+    Just c ->
+      setStack $ stack { wheel_0 = Just (f c) }
+    Nothing ->
+      return ()
+
+
 modStackHead :: (StackCard -> StackCard) -> Program ()
 modStackHead f = do
   stack <- getStack

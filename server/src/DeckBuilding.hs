@@ -185,13 +185,13 @@ mainRunes =
   , tideRune
   , heavenRune
   , shroomRune
-  -- , mirageRune
   , mirrorRune
   , dualityRune
   , alchemyRune
   , morphRune
   , seerRune
   , feverRune
+  , emptyRune
   ]
 
 allRunes :: [Rune]
@@ -200,7 +200,6 @@ allRunes =
   [ bloodRune
   , crownRune
   , abyssRune
-  , mirageRune
   ]
 
 
@@ -242,14 +241,6 @@ bloodRune =
     "BLOOD"
     "cards/blood/coin.png"
     (Cards.bloodSword, Cards.bloodWand, Cards.bloodGrail, Cards.bloodCoin)
-
-
-mirageRune :: Rune
-mirageRune =
-  Rune
-    "MIRAGE"
-    "cards/mirage/coin.png"
-    (Cards.mirageSword, Cards.mirageWand, Cards.mirageGrail, Cards.mirageCoin)
 
 
 seerRune :: Rune
@@ -312,6 +303,13 @@ feverRune =
     "FEVER"
     "cards/fever/coin.png"
     (Cards.feverSword, Cards.feverWand, Cards.feverGrail, Cards.feverCoin)
+
+emptyRune :: Rune
+emptyRune =
+  Rune
+    "EMPTY"
+    "cards/empty/coin.png"
+    (Cards.emptySword, Cards.emptyWand, Cards.emptyGrail, Cards.emptyCoin)
 
 
 characterCards :: Character -> Deck

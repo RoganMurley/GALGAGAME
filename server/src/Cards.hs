@@ -2,14 +2,14 @@ module Cards where
 
 import Control.Monad (when)
 import CardAnim (Hurt(..))
-import Card (Aspect(..), Card(..), Suit(..), Status(..), addStatus, cardName, newCard)
+import Card (Aspect(..), Card(..), Suit(..), Status(..), addStatus, cardName, newCard, removeStatus)
 import Data.Map (Map)
 import Data.Maybe (fromMaybe)
 import Data.Text (Text)
 import HandCard (HandCard(..), anyCard, isRevealed)
 import Player (other)
 import Safe (headMay)
-import Stack (diasporaFromStack, diasporaLength)
+import Stack (diasporaLength)
 import StackCard (StackCard(..), changeOwner, cardMap)
 import Transmutation (Transmutation(..), transmuteToCard)
 import Util (many, manyIndexed, shuffle)
@@ -63,10 +63,10 @@ blazeCoin =
 tideSword :: Card
 tideSword =
   newCard Tide Sword
-    "Hurt for 3, add a copy of this card\nto your hand"
+    "Hurt for 3, return this card\nto hand"
     $ \w -> do
       hurt 3 (other w) Slash
-      addToHand w (KnownHandCard tideSword)
+      bounce (\i _ -> i == 0)
 
 
 tideWand :: Card
@@ -113,15 +113,59 @@ heavenWand =
 heavenGrail :: Card
 heavenGrail =
   newCard Heaven Grail
-    "Discard your hand, then return\nall of your cards on the wheel\nto hand"
+    "Heal for 2, return this card\nto hand"
     $ \w -> do
-      discardHand w (\_ _ -> True)
-      bounce (\i (StackCard o _) -> i > 0 && w == o)
+      heal 2 w
+      bounce (\i _ -> i == 0)
 
 
 heavenCoin :: Card
 heavenCoin =
   newCard Heaven Coin
+    "Return all of your cards on the\nwheel to hand"
+    $ \w -> bounce (\i (StackCard o _) -> i > 0 && w == o)
+
+
+-- Empty
+emptySword :: Card
+emptySword =
+  newCard Empty Sword
+    "Hurt for 4, then\ndraw a card"
+    $ \w -> do
+      hurt 4 (other w) Slash
+      draw w w 1
+
+
+emptyWand :: Card
+emptyWand =
+  newCard Empty Wand
+    "Discard your hand, then hurt\nfor 5 for each card\ndiscarded"
+    $ \w -> do
+      handSize <- length <$> getHand w
+      discardHand w (\_ _ -> True)
+      hurt (5 * handSize) (other w) Slash
+
+
+emptyGrail :: Card
+emptyGrail =
+  newCard Empty Grail
+    "Become a copy of a random card\nin your hand"
+    $ \w -> do
+      gen <- getGen
+      hand <- getHand w
+      let mCopyCard = headMay . (shuffle gen) $ hand
+      case mCopyCard of
+        Just copyCard -> do
+          let stackCard = StackCard{ stackcard_card = anyCard copyCard, stackcard_owner = w }
+          transmuteActive (\_ -> Just stackCard)
+          Beta.null
+        Nothing ->
+         return ()
+
+
+emptyCoin :: Card
+emptyCoin =
+  newCard Empty Coin
     "Discard all cards on the wheel"
     $ \_ -> discardStack (\i _ -> i > 0)
 
@@ -289,50 +333,6 @@ seerGrail =
 seerCoin :: Card
 seerCoin =
   newCard Seer Coin
-    "Return all cards on the wheel to hand"
-    $ \_ -> bounce (\i _ -> i > 0)
-
--- Mirage
-mirageSword :: Card
-mirageSword =
-  newCard Mirage Sword
-    "Hurt for 4, then draw 1"
-    $ \w -> do
-      hurt 4 (other w) Slash
-      draw w w 1
-
-
-mirageWand :: Card
-mirageWand =
-  newCard Mirage Wand
-    "Hurt for 8 for each MIRAGE WAND\non the wheel"
-    $ \w -> do
-      diaspora <- diasporaFromStack <$> getStack
-      let isMirageWand = \(Card{ card_aspect, card_suit }) -> card_aspect == Mirage && card_suit == Wand
-      let count = length . filter (\(_, StackCard{ stackcard_card }) -> isMirageWand stackcard_card) $ diaspora
-      hurt (count * 8) (other w) Slash
-
-
-mirageGrail :: Card
-mirageGrail =
-  newCard Mirage Grail
-    "Become a copy of a random card\nin your hand"
-    $ \w -> do
-      gen <- getGen
-      hand <- getHand w
-      let mCopyCard = headMay . (shuffle gen) $ hand
-      case mCopyCard of
-        Just copyCard -> do
-          let stackCard = StackCard{ stackcard_card = anyCard copyCard, stackcard_owner = w }
-          transmuteActive (\_ -> Just stackCard)
-          Beta.null
-        Nothing ->
-         return ()
-
-
-mirageCoin :: Card
-mirageCoin =
-  newCard Mirage Coin
     "Return all cards on the wheel to hand"
     $ \_ -> bounce (\i _ -> i > 0)
 
@@ -626,7 +626,6 @@ swords =
   , heavenSword
   , shroomSword
   , bloodSword
-  , mirageSword
   , mirrorSword
   , dualitySword
   , alchemySword
@@ -635,6 +634,7 @@ swords =
   , tideSword
   , abyssSword
   , feverSword
+  , emptySword
   , seerSword
   ]
 
@@ -645,7 +645,6 @@ wands =
   , heavenWand
   , shroomWand
   , bloodWand
-  , mirageWand
   , mirrorWand
   , dualityWand
   , alchemyWand
@@ -654,6 +653,7 @@ wands =
   , tideWand
   , abyssWand
   , feverWand
+  , emptyWand
   , seerWand
   ]
 
@@ -664,7 +664,6 @@ grails =
   , heavenGrail
   , shroomGrail
   , bloodGrail
-  , mirageGrail
   , mirrorGrail
   , dualityGrail
   , alchemyGrail
@@ -673,6 +672,7 @@ grails =
   , tideGrail
   , abyssGrail
   , feverGrail
+  , emptyGrail
   , seerGrail
   ]
 
@@ -683,7 +683,6 @@ coins =
   , heavenCoin
   , shroomCoin
   , bloodCoin
-  , mirageCoin
   , mirrorCoin
   , dualityCoin
   , alchemyCoin
@@ -691,6 +690,7 @@ coins =
   , morphCoin
   , tideCoin
   , feverCoin
+  , emptyCoin
   , seerCoin
   ]
 
