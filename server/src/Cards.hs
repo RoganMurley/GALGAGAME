@@ -139,11 +139,11 @@ emptySword =
 emptyWand :: Card
 emptyWand =
   newCard Empty Wand
-    "Discard your hand, then hurt\nfor 4 for each card\ndiscarded"
+    "Discard your hand, then hurt\nfor 5 for each card\ndiscarded"
     $ \w -> do
       handSize <- length <$> getHand w
       discardHand w (\_ _ -> True)
-      hurt (4 * handSize) (other w) Slash
+      hurt (5 * handSize) (other w) Slash
 
 
 emptyGrail :: Card
