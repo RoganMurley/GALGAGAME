@@ -1,10 +1,12 @@
-module Replay.State exposing (getReplay, init, receive, tick, update)
+module Replay.State exposing (getReplay, init, mouseDown, receive, tick, update)
 
+import Assets.Types as Assets
 import Chat.State as Chat
 import GameType exposing (GameType(..))
 import Json.Decode as Json
 import Main.Messages as Main
 import Main.Types exposing (Flags)
+import Mouse
 import PlayState.Decoders as PlayState
 import PlayState.State as PlayState
 import PlayState.Types exposing (PlayState(..))
@@ -20,6 +22,7 @@ import Util exposing (message, splitOnColon)
 init : Replay.Model
 init =
     { replay = Nothing
+    , started = False
     }
 
 
@@ -62,16 +65,27 @@ getReplay replayId =
 
 tick : Flags -> Replay.Model -> Float -> Replay.Model
 tick flags model dt =
-    let
-        replay =
-            Maybe.map
-                (\r ->
-                    { r
-                        | state =
-                            Tuple.first <| PlayState.tick flags r.state Chat.init CustomGame dt
-                        , tick = r.tick + dt
-                    }
-                )
-                model.replay
-    in
-    { model | replay = replay }
+    if model.started then
+        let
+            replay =
+                Maybe.map
+                    (\r ->
+                        { r
+                            | state =
+                                Tuple.first <| PlayState.tick flags r.state Chat.init CustomGame dt
+                            , tick = r.tick + dt
+                        }
+                    )
+                    model.replay
+        in
+        { model | replay = replay }
+
+    else
+        model
+
+
+mouseDown : Flags -> Assets.Model -> Replay.Model -> Mouse.Position -> ( Replay.Model, Cmd Main.Msg )
+mouseDown _ _ model _ =
+    -- Require a click to play a replay so that audio can be played.
+    -- If we don't do that the sounds may all play at once later.
+    ( { model | started = True }, Cmd.none )

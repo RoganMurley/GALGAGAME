@@ -257,17 +257,15 @@ focusTextView originVec focus ({ w, h, anim, model, radius, tick } as ctx) =
                                 , "DECK: " ++ String.fromInt cardsLeft
                                 ]
                     in
-                    List.concat
-                        [ Font.view "Futura"
-                            text
-                            { x = origin.x + 0.5 * w + shake
-                            , y = origin.y + 0.5 * h - radius * 0.05 + shake
-                            , scaleX = 0.00025 * radius
-                            , scaleY = 0.00025 * radius
-                            , color = vec3 (244 / 255) (241 / 255) (94 / 255)
-                            }
-                            ctx
-                        ]
+                    Font.view "Futura"
+                        text
+                        { x = origin.x + 0.5 * w + shake
+                        , y = origin.y + 0.5 * h - radius * 0.05 + shake
+                        , scaleX = 0.00025 * radius
+                        , scaleY = 0.00025 * radius
+                        , color = vec3 (244 / 255) (241 / 255) (94 / 255)
+                        }
+                        ctx
 
                 _ ->
                     []
