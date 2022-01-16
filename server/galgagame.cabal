@@ -43,6 +43,9 @@ library
                      , GameState
                      , GodMode
                      , HandCard
+                     , League.Apps
+                     , League.Schema
+                     , League.Views
                      , Life
                      , Log
                      , Metrics
