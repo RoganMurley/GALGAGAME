@@ -9,7 +9,8 @@ var initialVolume = localStorage.getItem("volume");
 if (initialVolume === null) {
   initialVolume = 100;
 }
-setVolume(initialVolume);
+var sfxVolume;
+setSfxVolume(initialVolume);
 
 
 var initialMusicVolume = localStorage.getItem("musicVolume");
@@ -78,7 +79,7 @@ app.ports.playAudio.subscribe(function (input) {
   var sound = new Howl({
     src: [src],
     loop: loop,
-    volume: volume
+    volume: volume * sfxVolume
   });
   if (loop) {
     music.push(sound);
@@ -91,12 +92,12 @@ app.ports.loadAudio.subscribe(function (src) {
   new Howl({ src: [src] });
 });
 
-function setVolume(v) {
-  Howler.volume(v / 100);
+function setSfxVolume(v) {
+  sfxVolume = v / 100;
 };
 
 app.ports.volume.subscribe(function (input) {
-  setVolume(input);
+  setSfxVolume(input);
   localStorage.setItem('volume', input);
 });
 

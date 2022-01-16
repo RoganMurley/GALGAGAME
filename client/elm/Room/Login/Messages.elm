@@ -8,3 +8,4 @@ type Msg
     = Input Field String
     | Submit
     | SubmitCallback (Result Http.Error (Maybe LoginError))
+    | SetNextUrl String

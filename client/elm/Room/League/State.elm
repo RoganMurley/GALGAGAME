@@ -1,5 +1,6 @@
 module League.State exposing (init, receive, update)
 
+import Browser.Navigation
 import Form exposing (Error(..))
 import Http
 import Json.Decode exposing (maybe)
@@ -7,10 +8,11 @@ import Keyboard exposing (Key(..))
 import League.Decoders exposing (leagueErrorDecoder)
 import League.Messages exposing (Msg(..))
 import League.Types exposing (Model, SubmitState(..))
+import Login.Messages as Login
 import Main.Messages as Main
 import Main.Types exposing (Flags)
 import Room.Messages as Room
-import Util exposing (authLocation)
+import Util exposing (authLocation, message)
 
 
 init : Model
@@ -66,8 +68,16 @@ update model msg flags =
                 404 ->
                     ( { model | submitState = NotSubmitted }, Cmd.none )
 
+                401 ->
+                    ( model
+                    , Cmd.batch
+                        [ message <| Main.RoomMsg <| Room.LoginMsg <| Login.SetNextUrl "/league"
+                        , Browser.Navigation.pushUrl flags.key "/login"
+                        ]
+                    )
+
                 _ ->
-                    ( { model | submitState = NotSubmitted, error = "Error connecting to server" }
+                    ( { model | submitState = Waiting, error = "Error connecting to server" }
                     , Cmd.none
                     )
 

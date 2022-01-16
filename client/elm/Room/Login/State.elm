@@ -21,7 +21,7 @@ init nextUrl =
     , password = initFormField
     , error = ""
     , submitting = False
-    , nextUrl = Maybe.withDefault "/" nextUrl
+    , nextUrl = Maybe.withDefault "/play" nextUrl
     }
 
 
@@ -89,6 +89,11 @@ update model msg flags =
                       }
                     , Cmd.none
                     )
+
+        SetNextUrl url ->
+            ( { model | nextUrl = url }
+            , Cmd.none
+            )
 
 
 keyPress : Key -> Cmd Main.Msg

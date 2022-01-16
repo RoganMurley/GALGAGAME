@@ -239,6 +239,13 @@ mouseDown flags assets model pos =
             in
             ( Connected newConnected, cmd )
 
+        Replay replay ->
+            let
+                ( newReplay, cmd ) =
+                    Replay.mouseDown flags assets replay pos
+            in
+            ( Replay newReplay, cmd )
+
         _ ->
             ( model, Cmd.none )
 

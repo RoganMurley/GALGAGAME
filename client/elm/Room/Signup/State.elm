@@ -24,7 +24,7 @@ init nextUrl =
     , contactable = initFormField
     , error = ""
     , submitting = False
-    , nextUrl = Maybe.withDefault "/" nextUrl
+    , nextUrl = Maybe.withDefault "/play" nextUrl
     }
 
 
@@ -66,8 +66,8 @@ update model msg flags =
         SubmitCallback (Ok Nothing) ->
             ( model
             , Cmd.batch
-                [ Browser.Navigation.pushUrl flags.key model.nextUrl
-                , message <| Main.SetUsername model.username.value
+                [ message <| Main.SetUsername model.username.value
+                , Browser.Navigation.pushUrl flags.key model.nextUrl
                 , -- Reconnect so that the ws connection has our login cookie
                   websocketReconnect ()
                 ]
