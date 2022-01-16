@@ -1,53 +1,51 @@
 module Auth.Views where
 
-import Config (App, ConnectInfoConfig(..), runApp)
+import Auth.Apps (checkAuth, checkPassword, deleteToken, legalName, legalPassword, saveSession, saveUser, sessionCookieName)
+import Config (App, ConnectInfoConfig (..), runApp)
 import Control.Monad.IO.Class (liftIO)
 import Control.Monad.Trans.Class (lift)
 import Crypto.BCrypt (hashPasswordUsingPolicy, slowerBcryptHashingPolicy)
-import Data.Aeson ((.=), object)
+import Data.Aeson (object, (.=))
 import Data.ByteString (ByteString)
+import qualified Data.GUID as GUID
 import Data.Monoid ((<>))
 import Data.String.Conversions (cs)
+import Data.Text (Text)
+import qualified Data.Text as T
 import Data.Time.Clock (secondsToDiffTime)
+import Feedback.Views (feedbackView)
+import League.Views (leagueCheckView, leagueView)
 import Network.HTTP.Types.Status
 import Network.Wai (Application)
+import System.Log.Logger (Priority (DEBUG), debugM, infoM, setLevel, updateGlobalLogger)
+import Text.Printf (printf)
 import Web.Cookie (sameSiteStrict, setCookieHttpOnly, setCookieMaxAge, setCookiePath, setCookieSameSite, setCookieSecure)
 import Web.Scotty
 import Web.Scotty.Cookie (deleteCookie, getCookie, makeSimpleCookie, setCookie)
-import System.Log.Logger (Priority(DEBUG), debugM, infoM, setLevel, updateGlobalLogger)
-import Text.Printf (printf)
-
-import qualified Data.GUID as GUID
-
-import Data.Text (Text)
-import qualified Data.Text as T
-
-import Auth.Apps (checkAuth, checkPassword, deleteToken, legalName, legalPassword, sessionCookieName, saveSession, saveUser)
-import Feedback.Views (feedbackView)
-
 
 app :: ConnectInfoConfig -> App Application
 app config = do
   liftIO $ updateGlobalLogger "scotty" $ setLevel DEBUG
-  liftIO $ scottyApp $ do
-    get  "/auth/me"       $ meView       config
-    post "/auth/login"    $ loginView    config
-    post "/auth/logout"   $ logoutView   config
-    post "/auth/register" $ registerView config
-    post "/auth/feedback" $ feedbackView config
-
+  liftIO $
+    scottyApp $ do
+      get "/auth/me" $ meView config
+      post "/auth/login" $ loginView config
+      post "/auth/logout" $ logoutView config
+      post "/auth/register" $ registerView config
+      post "/auth/feedback" $ feedbackView config
+      post "/auth/league" $ leagueView config
+      get "/auth/league" $ leagueCheckView config
 
 meView :: ConnectInfoConfig -> ActionM ()
 meView config = do
-  token     <- getCookie sessionCookieName
+  token <- getCookie sessionCookieName
   usernameM <- lift . runApp config $ checkAuth token
   case usernameM of
     Just username -> do
-      json $ object [ "username" .= username ]
+      json $ object ["username" .= username]
     Nothing -> do
       json $ object []
   status ok200
-
 
 loginView :: ConnectInfoConfig -> ActionM ()
 loginView config = do
@@ -61,9 +59,8 @@ loginView config = do
       status ok200
     False -> do
       lift $ infoM "auth" $ printf "Username not found: %s" (show username)
-      json $ object [ "error" .= ("Wrong username or password" :: Text) ]
+      json $ object ["error" .= ("Wrong username or password" :: Text)]
       status unauthorized401
-
 
 logoutView :: ConnectInfoConfig -> ActionM ()
 logoutView config = do
@@ -77,29 +74,27 @@ logoutView config = do
   json $ object []
   status ok200
 
-
 registerView :: ConnectInfoConfig -> ActionM ()
 registerView config =
   do
-    email          <- param "email"
-    usernameRaw    <- param "username"
-    password       <- param "password"
+    email <- param "email"
+    usernameRaw <- param "username"
+    password <- param "password"
     contactableRaw <- param "contactable"
-    let username    = cs . T.toLower $ usernameRaw :: ByteString
+    let username = cs . T.toLower $ usernameRaw :: ByteString
     let contactable = parseContactable contactableRaw :: Bool
     createUser config email username password contactable
   where
     parseContactable :: ByteString -> Bool
     parseContactable "on" = True
-    parseContactable _    = False
+    parseContactable _ = False
 
-
-createUser :: ConnectInfoConfig -> ByteString -> ByteString -> ByteString  -> Bool -> ActionM ()
+createUser :: ConnectInfoConfig -> ByteString -> ByteString -> ByteString -> Bool -> ActionM ()
 createUser config email username password contactable =
   case legalName username *> legalPassword password of
     Just err -> do
       liftIO $ debugM "auth" $ "Creating user " <> cs username <> "error: " <> cs err
-      json $ object [ "error" .= err ]
+      json $ object ["error" .= err]
       status badRequest400
     Nothing -> do
       p <- liftIO $ hashPasswordUsingPolicy slowerBcryptHashingPolicy password
@@ -113,30 +108,31 @@ createUser config email username password contactable =
               status created201
             False -> do
               lift $ debugM "auth" ("Registration: user " <> (cs username) <> " already exists")
-              json $ object [ "error" .= ("Username already exists" :: Text) ]
+              json $ object ["error" .= ("Username already exists" :: Text)]
               status conflict409
         Nothing -> do
           liftIO $ debugM "auth" "Password hashing error"
           status internalServerError500
-
 
 createSession :: ConnectInfoConfig -> ByteString -> ActionM ()
 createSession config username = do
   token <- cs <$> lift GUID.genText
   lift $ runApp config $ saveSession username token
   let maxAge = secondsToDiffTime (60 * 60 * 24 * 356 * 10)
-  let sessionCookie = (makeSimpleCookie sessionCookieName token) {
-    setCookieMaxAge = Just maxAge,
-    setCookieSecure = True,
-    setCookieHttpOnly = True,
-    setCookiePath = Just "/",
-    setCookieSameSite = Just sameSiteStrict
-  }
-  let userCookie = (makeSimpleCookie "user" (cs username)) {
-    setCookieMaxAge = Just maxAge,
-    setCookieSecure = True,
-    setCookiePath = Just "/",
-    setCookieSameSite = Just sameSiteStrict
-  }
+  let sessionCookie =
+        (makeSimpleCookie sessionCookieName token)
+          { setCookieMaxAge = Just maxAge,
+            setCookieSecure = True,
+            setCookieHttpOnly = True,
+            setCookiePath = Just "/",
+            setCookieSameSite = Just sameSiteStrict
+          }
+  let userCookie =
+        (makeSimpleCookie "user" (cs username))
+          { setCookieMaxAge = Just maxAge,
+            setCookieSecure = True,
+            setCookiePath = Just "/",
+            setCookieSameSite = Just sameSiteStrict
+          }
   setCookie sessionCookie
   setCookie userCookie

@@ -18,6 +18,7 @@ route =
         , map Login loginRoute
         , map Signup signupRoute
         , map Feedback feedbackRoute
+        , map League leagueRoute
         ]
 
 
@@ -55,3 +56,8 @@ replayRoute =
 feedbackRoute : Parser a a
 feedbackRoute =
     s "feedback"
+
+
+leagueRoute : Parser a a
+leagueRoute =
+    s "league"

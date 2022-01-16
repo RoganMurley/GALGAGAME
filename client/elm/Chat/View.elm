@@ -33,6 +33,9 @@ htmlView { seed } model =
             , a
                 [ href "/feedback", target "_blank" ]
                 [ text "Let me know what you love/hate about GALGA" ]
+            , a
+                [ href "/league", target "_blank" ]
+                [ text "Join the GALGA league" ]
             ]
 
         promo =

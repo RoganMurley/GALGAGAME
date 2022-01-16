@@ -1,0 +1,58 @@
+.league-box {
+  color: #f4f15e;
+  height: 100vh;
+  display: flex;
+  font-family: 'Futura', sans-serif;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  text-align: center;
+
+  textarea {
+    font-weight: 600;
+
+    border-radius: 5px;
+    width: 80vw;
+    height: 140px;
+
+    margin-bottom: 8px;
+    padding-left: 10px;
+
+    &[type='checkbox'] {
+      width: inherit;
+    }
+  }
+
+  .form-good {
+    color: inherit;
+    border-color: inherit;
+  }
+
+  label {
+    display: block;
+    color: #fff;
+    height: 32px;
+    line-height: 32px;
+    padding-left: 8px;
+  }
+
+  .error {
+    font-family: sans-serif;
+    display: block;
+    color: #ff3232;
+    font-size: 30px;
+    font-weight: 600;
+    text-align: center;
+    margin-top: 20px;
+    height: 40px;
+  }
+
+  h1 {
+    color: #f4f15e;
+    font-family: sans-serif;
+  }
+
+  .menu-button {
+    margin-top: 12px;
+  }
+}

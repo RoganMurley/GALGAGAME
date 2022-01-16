@@ -13,6 +13,8 @@ import GameType
 import Http
 import Json.Decode as Json
 import Keyboard
+import League.Messages as League
+import League.State as League
 import Listener exposing (listen)
 import Lobby.State as Lobby
 import Login.Decoders as Login
@@ -38,7 +40,7 @@ import Settings.Types as Settings
 import Signup.State as Signup
 import Url exposing (Url)
 import Url.Parser exposing (parse)
-import Util exposing (authLocation)
+import Util exposing (authLocation, message)
 
 
 init : Flags -> Url -> Int -> Int -> ( Main.Model, Cmd Msg )
@@ -485,6 +487,15 @@ locationUpdate model url =
                         Feedback.init nextPath
               }
             , Cmd.none
+            )
+
+        Routing.League ->
+            ( { model
+                | room =
+                    Room.League <|
+                        League.init
+              }
+            , message <| Main.RoomMsg <| Room.LeagueMsg <| League.CheckState
             )
 
 

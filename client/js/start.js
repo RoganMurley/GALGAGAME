@@ -3,7 +3,7 @@
 var params = new URLSearchParams(window.location.search);
 var hostname = window.location.hostname;
 var httpPort = window.location.port;
-var portProtocol = httpPort ?  ":" + httpPort : "";
+var portProtocol = httpPort ? ":" + httpPort : "";
 
 var initialVolume = localStorage.getItem("volume");
 if (initialVolume === null) {
@@ -33,7 +33,7 @@ if (visits === null) {
 localStorage.setItem('visits', visits);
 
 var cookies = document.cookie.split('; ');
-var userCookie = cookies.find(function (row) {return row.startsWith('user=');});
+var userCookie = cookies.find(function (row) { return row.startsWith('user='); });
 var username = userCookie ? userCookie.split('=')[1] : null;
 
 var app = Elm.Main.init({
@@ -41,7 +41,7 @@ var app = Elm.Main.init({
     hostname: hostname,
     httpPort: httpPort,
     seed: new Date().getTime(),
-    dimensions: [ window.innerWidth, window.innerHeight ],
+    dimensions: [window.innerWidth, window.innerHeight],
     time: 0,
     username: username,
     pixelRatio: window.devicePixelRatio,
@@ -88,7 +88,7 @@ app.ports.playAudio.subscribe(function (input) {
 });
 
 app.ports.loadAudio.subscribe(function (src) {
-  new Howl({src: [src]});
+  new Howl({ src: [src] });
 });
 
 function setVolume(v) {
@@ -215,7 +215,7 @@ function createSocket() {
   var socket = new WebSocket("wss://" + hostname + portProtocol + "/game");
 
   socket.addEventListener('open', function (event) {
-    websocketMessageQueue.forEach(function (input) {socket.send(input)});
+    websocketMessageQueue.forEach(function (input) { socket.send(input) });
     websocketMessageQueue = [];
   });
 

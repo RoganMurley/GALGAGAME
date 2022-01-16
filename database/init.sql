@@ -26,3 +26,10 @@ CREATE TABLE feedback (
   user__username TEXT REFERENCES users,
   created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
+
+CREATE TABLE league (
+  id SERIAL PRIMARY KEY,
+  user__username TEXT NOT NULL REFERENCES users,
+  created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE (user__username)
+);

@@ -6,6 +6,7 @@ import Browser.Navigation
 import Connected.State as Connected
 import Feedback.State as Feedback
 import GameType exposing (GameType(..))
+import League.State as League
 import Lobby.State as Lobby
 import Login.State as Login
 import Main.Messages as Main
@@ -107,6 +108,18 @@ update model msg assets flags =
                 _ ->
                     ( model, Cmd.none )
 
+        LeagueMsg leagueMsg ->
+            case model of
+                League league ->
+                    let
+                        ( newLeague, cmd ) =
+                            League.update league leagueMsg flags
+                    in
+                    ( League newLeague, cmd )
+
+                _ ->
+                    ( model, Cmd.none )
+
         StartGame mode messageRoomID ->
             case model of
                 Lobby lobby ->
@@ -166,6 +179,9 @@ receive flags assets str model =
         Feedback feedback ->
             ( Feedback feedback, Feedback.receive str )
 
+        League league ->
+            ( League league, League.receive str )
+
 
 tick : Flags -> Model -> Float -> ( Model, Cmd Msg )
 tick flags room dt =
@@ -194,6 +210,9 @@ tick flags room dt =
 
         Feedback feedback ->
             ( Feedback feedback, Cmd.none )
+
+        League league ->
+            ( League league, Cmd.none )
 
 
 mouseUp : Flags -> Assets.Model -> Model -> Mouse.Position -> ( Model, Cmd Main.Msg )

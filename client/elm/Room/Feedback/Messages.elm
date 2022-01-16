@@ -1,12 +1,11 @@
 module Feedback.Messages exposing (Msg(..))
 
-import Feedback.Types exposing (Field)
+import Feedback.Types exposing (FeedbackError, Field)
 import Http
-import Login.Types exposing (LoginError)
 
 
 type Msg
     = Input Field String
     | Submit
-    | SubmitCallback (Result Http.Error (Maybe LoginError))
+    | SubmitCallback (Result Http.Error (Maybe FeedbackError))
     | Continue

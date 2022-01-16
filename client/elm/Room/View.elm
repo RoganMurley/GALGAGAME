@@ -8,6 +8,7 @@ import Feedback.View as Feedback
 import GameState.View as GameState
 import Html as Html exposing (Html, div)
 import Html.Attributes exposing (class, height, width)
+import League.View as League
 import Lobby.View as Lobby
 import Login.View as Login
 import Main.Messages as Main
@@ -54,6 +55,10 @@ view model settings notifications flags assets =
                 Feedback feedback ->
                     Html.map (Main.RoomMsg << FeedbackMsg) <|
                         Feedback.view feedback
+
+                League league ->
+                    Html.map (Main.RoomMsg << LeagueMsg) <|
+                        League.view league
     in
     div []
         [ Html.map Main.NotificationsMsg <| Notifications.view notifications
