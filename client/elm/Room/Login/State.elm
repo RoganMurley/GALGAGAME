@@ -55,10 +55,10 @@ update model msg flags =
         SubmitCallback (Ok Nothing) ->
             ( model
             , Cmd.batch
-                [ Browser.Navigation.pushUrl flags.key model.nextUrl
-                , message <| Main.SetUsername model.username.value
-                , -- Reconnect so that the ws connection has our login cookie
+                [ -- Reconnect so that the ws connection has our login cookie
                   websocketReconnect ()
+                , message <| Main.SetUsername model.username.value
+                , Browser.Navigation.pushUrl flags.key model.nextUrl
                 ]
             )
 

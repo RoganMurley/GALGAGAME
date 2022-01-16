@@ -13,15 +13,16 @@ import Data.String.Conversions (cs)
 import Data.Text (Text)
 import qualified Data.Text as T
 import Data.Time.Clock (secondsToDiffTime)
+import Data.Time.Clock.POSIX (posixSecondsToUTCTime)
 import Feedback.Views (feedbackView)
 import League.Views (leagueCheckView, leagueView)
 import Network.HTTP.Types.Status
 import Network.Wai (Application)
 import System.Log.Logger (Priority (DEBUG), debugM, infoM, setLevel, updateGlobalLogger)
 import Text.Printf (printf)
-import Web.Cookie (sameSiteStrict, setCookieHttpOnly, setCookieMaxAge, setCookiePath, setCookieSameSite, setCookieSecure)
+import Web.Cookie (sameSiteStrict, setCookieExpires, setCookieHttpOnly, setCookieMaxAge, setCookiePath, setCookieSameSite, setCookieSecure)
 import Web.Scotty
-import Web.Scotty.Cookie (deleteCookie, getCookie, makeSimpleCookie, setCookie)
+import Web.Scotty.Cookie (getCookie, makeSimpleCookie, setCookie)
 
 app :: ConnectInfoConfig -> App Application
 app config = do
@@ -52,22 +53,26 @@ loginView config = do
   username <- cs . T.toLower <$> param "username"
   password <- param "password"
   result <- lift $ runApp config $ checkPassword username password
-  case result of
-    True -> do
-      createSession config username
-      json $ object []
-      status ok200
-    False -> do
-      lift $ infoM "auth" $ printf "Username not found: %s" (show username)
-      json $ object ["error" .= ("Wrong username or password" :: Text)]
-      status unauthorized401
+  if result
+    then
+      ( do
+          createSession config username
+          json $ object []
+          status ok200
+      )
+    else
+      ( do
+          lift $ infoM "auth" $ printf "Username not found: %s" (show username)
+          json $ object ["error" .= ("Wrong username or password" :: Text)]
+          status unauthorized401
+      )
 
 logoutView :: ConnectInfoConfig -> ActionM ()
 logoutView config = do
   token <- getCookie sessionCookieName
   lift $ infoM "auth" $ printf "Logging out"
   case token of
-    Just t -> do
+    Just t ->
       lift $ runApp config $ deleteToken t
     Nothing ->
       return ()
@@ -103,15 +108,19 @@ createUser config email username password contactable =
       case p of
         Just hashedPassword -> do
           success <- liftIO $ runApp config $ saveUser email username hashedPassword contactable
-          case success of
-            True -> do
-              createSession config username
-              json $ object []
-              status created201
-            False -> do
-              lift $ debugM "auth" ("Registration: user " <> (cs username) <> " already exists")
-              json $ object ["error" .= ("Username already exists" :: Text)]
-              status conflict409
+          if success
+            then
+              ( do
+                  createSession config username
+                  json $ object []
+                  status created201
+              )
+            else
+              ( do
+                  lift $ debugM "auth" ("Registration: user " <> cs username <> " already exists")
+                  json $ object ["error" .= ("Username already exists" :: Text)]
+                  status conflict409
+              )
         Nothing -> do
           liftIO $ debugM "auth" "Password hashing error"
           status internalServerError500
@@ -138,3 +147,14 @@ createSession config username = do
           }
   setCookie sessionCookie
   setCookie userCookie
+
+-- Firefox doesn't delete cookies with different parameters, so the default Scotty implementation of deleteCookie won't work.
+deleteCookie :: Text -> ActionM ()
+deleteCookie name =
+  setCookie $
+    (makeSimpleCookie name "")
+      { setCookieExpires = Just $ posixSecondsToUTCTime 0,
+        setCookieSecure = True,
+        setCookiePath = Just "/",
+        setCookieSameSite = Just sameSiteStrict
+      }

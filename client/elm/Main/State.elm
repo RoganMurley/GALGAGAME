@@ -27,7 +27,7 @@ import Math.Vector2 exposing (vec2)
 import Mode exposing (Mode(..))
 import Mouse exposing (MouseState(..))
 import Notifications.State as Notifications
-import Ports exposing (analytics, copyInput, godModeCommand, mouseDown, mouseMove, mouseUp, reload, selectAllInput, touch, websocketListen, websocketReconnect, websocketSend)
+import Ports exposing (analytics, copyInput, godModeCommand, log, mouseDown, mouseMove, mouseUp, reload, selectAllInput, touch, websocketListen, websocketReconnect, websocketSend)
 import Replay.State as Replay
 import Room.Generators exposing (generate)
 import Room.Messages as Room
@@ -232,7 +232,7 @@ update msg ({ assets, room, notifications, settings, flags } as model) =
             ( model, reload () )
 
         LogoutCallback (Err _) ->
-            ( model, Cmd.none )
+            ( model, log "Error logging in" )
 
         MousePosition pos ->
             let
