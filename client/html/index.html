@@ -1,277 +1,321 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5, user-scalable=1">
-    <meta charset="utf-8">
-    <meta name="description" content="Innovative Multiplayer Digital Card Game">
-    <title>GALGA</title>
-    <link rel="stylesheet" href="https://use.typekit.net/myn3frc.css">
-    <link rel="apple-touch-icon" sizes="57x57" href="/favicons/apple-icon-57x57.png">
-    <link rel="apple-touch-icon" sizes="60x60" href="/favicons/apple-icon-60x60.png">
-    <link rel="apple-touch-icon" sizes="72x72" href="/favicons/apple-icon-72x72.png">
-    <link rel="apple-touch-icon" sizes="76x76" href="/favicons/apple-icon-76x76.png">
-    <link rel="apple-touch-icon" sizes="114x114" href="/favicons/apple-icon-114x114.png">
-    <link rel="apple-touch-icon" sizes="120x120" href="/favicons/apple-icon-120x120.png">
-    <link rel="apple-touch-icon" sizes="144x144" href="/favicons/apple-icon-144x144.png">
-    <link rel="apple-touch-icon" sizes="152x152" href="/favicons/apple-icon-152x152.png">
-    <link rel="apple-touch-icon" sizes="180x180" href="/favicons/apple-icon-180x180.png">
-    <link rel="icon" type="image/png" sizes="192x192"  href="/favicons/android-icon-192x192.png">
-    <link rel="icon" type="image/png" sizes="32x32" href="/favicons/favicon-32x32.png">
-    <link rel="icon" type="image/png" sizes="96x96" href="/favicons/favicon-96x96.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="/favicons/favicon-16x16.png">
-    <link rel="manifest" href="/favicons/manifest.json">
-    <meta name="msapplication-TileColor" content="#ffffff">
-    <meta name="msapplication-TileImage" content="/favicons/ms-icon-144x144.png">
-    <meta name="theme-color" content="#ffffff">
 
-    <meta property="og:title" content="GALGA">
-    <meta property="og:description" content="Innovative Multiplayer Digital Card Game">
-    <meta property="og:image" content="https://www.galgagame.com/img/landing/screenshot-gameplay-2.png">
-    <meta property="og:url" content="https://www.galgagame.com">
-    <meta property="twitter:title" content="GALGA">
-    <meta property="twitter:description" content="Innovative Multiplayer Digital Card Game">
-    <meta property="twitter:image" content="https://www.galgagame.com/img/landing/screenshot-gameplay-2.png">
-    <meta property="twitter:card" content="summary_large_image">
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5, user-scalable=1">
+  <meta charset="utf-8">
+  <meta name="description" content="Innovative Multiplayer Digital Card Game">
+  <title>GALGA</title>
+  <link rel="stylesheet" href="https://use.typekit.net/myn3frc.css">
+  <link rel="apple-touch-icon" sizes="57x57" href="/favicons/apple-icon-57x57.png">
+  <link rel="apple-touch-icon" sizes="60x60" href="/favicons/apple-icon-60x60.png">
+  <link rel="apple-touch-icon" sizes="72x72" href="/favicons/apple-icon-72x72.png">
+  <link rel="apple-touch-icon" sizes="76x76" href="/favicons/apple-icon-76x76.png">
+  <link rel="apple-touch-icon" sizes="114x114" href="/favicons/apple-icon-114x114.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="/favicons/apple-icon-120x120.png">
+  <link rel="apple-touch-icon" sizes="144x144" href="/favicons/apple-icon-144x144.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="/favicons/apple-icon-152x152.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/favicons/apple-icon-180x180.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/favicons/android-icon-192x192.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicons/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/favicons/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicons/favicon-16x16.png">
+  <link rel="manifest" href="/favicons/manifest.json">
+  <meta name="msapplication-TileColor" content="#ffffff">
+  <meta name="msapplication-TileImage" content="/favicons/ms-icon-144x144.png">
+  <meta name="theme-color" content="#ffffff">
 
-    <style>
-      body {
-        font-family: "futura-pt", sans-serif;
-        margin: 0;
-        overflow-x: hidden;
-        width: 100vw;
-      }
+  <meta property="og:title" content="GALGA">
+  <meta property="og:description" content="Innovative Multiplayer Digital Card Game">
+  <meta property="og:image" content="https://www.galgagame.com/img/landing/screenshot-gameplay-2.png">
+  <meta property="og:url" content="https://www.galgagame.com">
+  <meta property="twitter:title" content="GALGA">
+  <meta property="twitter:description" content="Innovative Multiplayer Digital Card Game">
+  <meta property="twitter:image" content="https://www.galgagame.com/img/landing/screenshot-gameplay-2.png">
+  <meta property="twitter:card" content="summary_large_image">
+
+  <style>
+    body {
+      font-family: "futura-pt", sans-serif;
+      margin: 0;
+      overflow-x: hidden;
+      width: 100vw;
+    }
+
+    .know {
+      font-size: 60px;
+      margin-top: 0;
+      margin-bottom: 12px;
+    }
+
+    .content {
+      align-items: center;
+      color: #000050;
+      display: flex;
+      font-size: 18px;
+      margin: 16px;
+      max-width: 400px;
+    }
+
+    .cta {
+      background-color: #f5f25e;
+      border: #f5f25e 3px solid;
+      border-radius: 20px;
+      color: #000050;
+      font-weight: 900;
+      padding: 7px;
+      text-decoration: unset;
+    }
+
+    .cta:hover {
+      color: #f5f25e;
+      background-color: #000050;
+      border: #f5f25e 3px solid;
+    }
+
+    .cta-header-wrapper {
+      margin: 16px 8px 0 0;
+    }
+
+    .victory {
+      font-size: 32px;
+      margin-bottom: 38px;
+      margin-top: 42px;
+    }
+
+    .final {
+      align-items: center;
+      background-color: #f5f25e;
+      border-top: #000050 solid 40px;
+      display: flex;
+      flex-direction: column;
+      height: 160px;
+      justify-content: center;
+    }
+
+    .final-cta {
+      background-color: #000050;
+      border: #000050 12px solid;
+      border-radius: 60px;
+      color: #fff;
+      font-size: 2.5rem;
+      font-weight: 900;
+      padding: 12px;
+      text-decoration: unset;
+    }
+
+    .final-cta:hover {
+      color: #000050;
+      background-color: #f5f25e;
+      border: #000050 12px solid;
+    }
+
+    .footer-link {
+      align-items: center;
+      color: #f5f25e;
+      display: flex;
+      margin: 0 8px;
+      min-height: 48px;
+    }
+
+    .footer {
+      align-items: center;
+      background: #000050;
+      color: #f5f25e;
+      display: flex;
+    }
+
+    .hero {
+      background-color: #000050;
+      color: #fff;
+      display: flex;
+    }
+
+    .hero-image {
+      align-items: center;
+      display: flex;
+    }
+
+    .hero-image img {
+      margin: auto;
+      width: 400px;
+      max-width: 100vw;
+    }
+
+    .hero-text {
+      margin-bottom: 48px;
+      margin-left: 40px;
+      margin-top: 32px;
+      max-width: 600px;
+    }
+
+    .content-row {
+      align-items: center;
+      display: flex;
+      margin: 16px 0;
+    }
+
+    .screenshot {
+      width: 300px;
+      margin: 0 50px;
+    }
+
+    .spacer {
+      flex: 1;
+    }
+
+    .sticky-header {
+      background-color: #000050;
+      display: flex;
+      height: 60px;
+      opacity: 0.95;
+      position: sticky;
+      top: 0;
+    }
+
+    .sticky-header-bg {
+      background-color: #000050;
+      height: 60px;
+      position: absolute;
+      top: 0;
+      width: 100%;
+    }
+
+    .title {
+      color: #f5f25e;
+      font-weight: 900;
+      margin: 0;
+      padding: 9px;
+    }
+
+    .video-row {
+      display: flex;
+      align-items: center;
+    }
+
+    .video-frame {
+      margin: auto;
+      padding-top: 24px;
+    }
+
+    @media (max-width: 600px) {
       .know {
-        font-size: 60px;
-        margin-top: 0;
-        margin-bottom: 12px;
-      }
-      .content {
-        align-items: center;
-        color: #000050;
-        display: flex;
-        font-size: 18px;
-        margin: 16px;
-        max-width: 400px;
-      }
-      .cta {
-        background-color: #f5f25e;
-        border: #f5f25e 3px solid;
-        border-radius: 20px;
-        color: #000050;
-        font-weight: 900;
-        padding: 7px;
-        text-decoration: unset;
-      }
-      .cta:hover {
-        color: #f5f25e;
-        background-color: #000050;
-        border: #f5f25e 3px solid;
-      }
-      .cta-header-wrapper {
-        margin: 16px 8px 0 0;
-      }
-      .victory {
-        font-size: 32px;
-        margin-bottom: 38px;
-        margin-top: 42px;
-      }
-      .final {
-        align-items: center;
-        background-color: #f5f25e;
-        border-top: #000050 solid 40px;
-        display: flex;
-        flex-direction: column;
-        height: 160px;
-        justify-content: center;
-      }
-      .final-cta {
-        background-color: #000050;
-        border: #000050 12px solid;
-        border-radius: 60px;
-        color: #fff;
-        font-size: 2.5rem;
-        font-weight: 900;
-        padding: 12px;
-        text-decoration: unset;
-      }
-      .final-cta:hover {
-        color: #000050;
-        background-color: #f5f25e;
-        border: #000050 12px solid;
-      }
-      .footer-link {
-        align-items: center;
-        color: #f5f25e;
-        display: flex;
-        margin: 0 8px;
-        min-height: 48px;
-      }
-      .footer {
-        align-items: center;
-        background: #000050;
-        color: #f5f25e;
-        display: flex;
-      }
-      .hero {
-        background-color: #000050;
-        color: #fff;
-        display: flex;
-      }
-      .hero-image {
-        align-items: center;
-        display: flex;
-      }
-      .hero-image img {
-        margin: auto;
-        width: 400px;
-        max-width: 100vw;
-      }
-      .hero-text {
-        margin-bottom: 48px;
-        margin-left: 40px;
-        margin-top: 32px;
-        max-width: 600px;
-      }
-      .content-row {
-        align-items: center;
-        display: flex;
-        margin: 16px 0;
-      }
-      .screenshot {
-        width: 300px;
-        margin: 0 50px;
-      }
-      .spacer {
-        flex: 1;
-      }
-      .sticky-header {
-        background-color: #000050;
-        display: flex;
-        height: 60px;
-        opacity: 0.95;
-        position: sticky;
-        top: 0;
-      }
-      .sticky-header-bg {
-        background-color: #000050;
-        height: 60px;
-        position: absolute;
-        top: 0;
-        width: 100%;
-      }
-      .title {
-        color: #f5f25e;
-        font-weight: 900;
-        margin: 0;
-        padding: 9px;
+        font-size: 62px;
       }
 
-      @media (max-width: 600px) {
-        .know {
-          font-size: 62px;
-        }
-        .victory {
-          font-size: 24px;
-        }
-        .content-row {
-          flex-direction: column;
-        }
-        .content-row.content-row-a {
-          flex-direction: column-reverse;;
-        }
-        .footer {
-          flex-direction: column;
-        }
-        .hero {
-          flex-direction: column;
-        }
-        .hero-text {
-          order: 1;
-        }
-        .screenshot {
-          margin: auto;
-        }
+      .victory {
+        font-size: 24px;
       }
-    </style>
-  </head>
-  <body>
-    <div class="sticky-header-bg"></div>
-    <div class="sticky-header">
-      <h1 class="title">GALGA</h1>
-      <div class="spacer"></div>
-      <div class="cta-header-wrapper">
-        <a class="cta" href="/play">PLAY FOR FREE</a>
-      </div>
+
+      .content-row {
+        flex-direction: column;
+      }
+
+      .content-row.content-row-a {
+        flex-direction: column-reverse;
+        ;
+      }
+
+      .footer {
+        flex-direction: column;
+      }
+
+      .hero {
+        flex-direction: column;
+      }
+
+      .hero-text {
+        order: 1;
+      }
+
+      .screenshot {
+        margin: auto;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="sticky-header-bg"></div>
+  <div class="sticky-header">
+    <h1 class="title">GALGA</h1>
+    <div class="spacer"></div>
+    <div class="cta-header-wrapper">
+      <a class="cta" href="/play">PLAY FOR FREE</a>
     </div>
-    <div class="hero">
-      <div class="spacer"></div>
-      <div class="hero-text">
-        <h2 class="know">INNOVATIVE DIGITAL CARD GAME</h2>
-        <h3 class="victory">Deep gameplay, handcrafted with love</h3>
-        <a class="cta" href="/play">PLAY FOR FREE IN MY BROWSER</a>
-      </div>
-      <div class="hero-image">
-        <img alt="Hero image" src="/img/landing/hero.png" width="400" height="400">
-      </div>
-      <div class="spacer"></div>
+  </div>
+  <div class="hero">
+    <div class="spacer"></div>
+    <div class="hero-text">
+      <h2 class="know">INNOVATIVE DIGITAL CARD GAME</h2>
+      <h3 class="victory">Deep gameplay, handcrafted with love</h3>
+      <a class="cta" href="/play">PLAY FOR FREE IN MY BROWSER</a>
     </div>
-    <div class="content-row content-row-a">
-      <div class="spacer"></div>
-      <div class="content">
-        GALGA is a multiplayer digital card game in which your greatest enemy is your own hubris. Are you up to the challenge?
-      </div>
-      <div class="content">
-        <img alt="Screenshot of GALGA gameplay" class="screenshot" src="/img/landing/screenshot-gameplay.png" width="300" height="164">
-      </div>
-      <div class="spacer"></div>
+    <div class="hero-image">
+      <img alt="Hero image" src="/img/landing/hero.png" width="400" height="400">
     </div>
-    <div class="content-row content-row-b">
-      <div class="spacer"></div>
-      <div class="content">
-        <img alt="Screenshot of GALGA character select" class="screenshot" src="/img/landing/screenshot-gameplay-3.png" width="300" height="164">
-      </div>
-      <div class="content">
-        Play cards on the wheel to decide your fate. But beware: the more cards on the wheel, the more dangerous they become.
-      </div>
-      <div class="spacer"></div>
+    <div class="spacer"></div>
+  </div>
+  <div class="video-row">
+    <iframe width="560" height="315" src="https://www.youtube.com/embed/PavWJHJHbc8" class="video-frame"
+      title="YouTube video player" frameborder="0"
+      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+      allowfullscreen></iframe>
+  </div>
+  <div class="content-row content-row-a">
+    <div class="spacer"></div>
+    <div class="content">
+      GALGA is a multiplayer digital card game in which your greatest enemy is your own hubris. Are you up to the
+      challenge?
     </div>
-    <!-- <div class="content-row content-row-a">
-      <div class="spacer"></div>
-      <div class="content">
-        If "Hearthstone", "Yu-Gi-Oh!" and "Magic: The Gathering" had a baby, it might looks something like this.
-      </div>
-      <div class="content">
-        <img alt="A screenshot of GALGA" class="screenshot" src="/img/landing/screenshot-char-select.png" width="300" height="164">
-      </div>
-      <div class="spacer"></div>
-    </div> -->
-    <div class="content-row content-row-a">
-      <div class="spacer"></div>
-      <div class="content">
-        GALGA is a handcrafted game made with love. I hope you have as much fun playing it as I have making it!
-      </div>
-      <div class="content">
-        <img alt="A screenshot of GALGA" class="screenshot" src="/img/landing/screenshot-gameplay-2.png" width="300" height="164">
-      </div>
-      <div class="spacer"></div>
+    <div class="content">
+      <img alt="Screenshot of GALGA gameplay" class="screenshot" src="/img/landing/screenshot-gameplay.png" width="300"
+        height="164">
     </div>
-    <div class="final">
-      <div class="spacer"></div>
-      <a class="final-cta" href="/play">PLAY FOR FREE</a>
-      <div class="spacer"></div>
+    <div class="spacer"></div>
+  </div>
+  <div class="content-row content-row-b">
+    <div class="spacer"></div>
+    <div class="content">
+      <img alt="Screenshot of GALGA character select" class="screenshot" src="/img/landing/screenshot-gameplay-3.png"
+        width="300" height="164">
     </div>
-    <div class="footer">
-      <a class="footer-link" href="https://github.com/RoganMurley/">Find me on GitHub</a>
-      <a class="footer-link" href="https://discord.gg/SVXXej4">Join the Discord</a>
-      <div class="spacer"></div>
-      <a class="footer-link" href="https://www.roganmurley.com">A Rogan Murley Game</a>
+    <div class="content">
+      Play cards on the wheel to decide your fate. But beware: the more cards on the wheel, the more dangerous they
+      become.
     </div>
-    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-111390905-1"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-      gtag('config', 'UA-111390905-1');
-    </script>
-  </body>
+    <div class="spacer"></div>
+  </div>
+  <div class="content-row content-row-a">
+    <div class="spacer"></div>
+    <div class="content">
+      GALGA is a handcrafted game made with love. I hope you have as much fun playing it as I have making it!
+    </div>
+    <div class="content">
+      <img alt="A screenshot of GALGA" class="screenshot" src="/img/landing/screenshot-gameplay-2.png" width="300"
+        height="164">
+    </div>
+    <div class="spacer"></div>
+  </div>
+  <div class="final">
+    <div class="spacer"></div>
+    <a class="final-cta" href="/play">PLAY FOR FREE</a>
+    <div class="spacer"></div>
+  </div>
+  <div class="footer">
+    <a class="footer-link" href="https://github.com/RoganMurley/">Find me on GitHub</a>
+    <a class="footer-link" href="https://discord.gg/SVXXej4">Join the Discord</a>
+    <a class="footer-link" href="/league">Play in the League</a>
+    <div class="spacer"></div>
+    <a class="footer-link" href="https://www.roganmurley.com">A Rogan Murley Game</a>
+  </div>
+  <script async src="https://www.googletagmanager.com/gtag/js?id=UA-111390905-1"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag() { dataLayer.push(arguments); }
+    gtag('js', new Date());
+    gtag('config', 'UA-111390905-1');
+  </script>
+</body>
+
 </html>
