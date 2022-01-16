@@ -1,8 +1,8 @@
 module League.View exposing (view)
 
 import Form exposing (Error(..), FormFieldType(..))
-import Html exposing (Html, button, div, h1, p, text)
-import Html.Attributes exposing (class, disabled)
+import Html exposing (Html, a, button, div, h1, p, text)
+import Html.Attributes exposing (class, disabled, href)
 import Html.Events exposing (onClick)
 import League.Messages exposing (Msg(..))
 import League.Types exposing (Model, SubmitState(..))
@@ -20,6 +20,7 @@ view model =
                     [ h1 [] [ text "GALGA LEAGUE" ]
                     , p []
                         [ text "You have joined the league! We'll be in touch :)" ]
+                    , a [ href "/play/quickplay" ] [ text "In the meantime, go play!" ]
                     ]
 
                 _ ->
