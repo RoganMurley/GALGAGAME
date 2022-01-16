@@ -1,8 +1,8 @@
 module Login.View exposing (logoutView, view)
 
 import Form exposing (FormFieldClass, FormFieldType(..), ValidationResult, formInputView)
-import Html exposing (Attribute, Html, button, div, text)
-import Html.Attributes exposing (autofocus, class, disabled)
+import Html exposing (Attribute, Html, a, button, div, text)
+import Html.Attributes exposing (autofocus, class, disabled, href)
 import Html.Events exposing (onClick)
 import Login.Messages exposing (Msg(..))
 import Login.State exposing (validator)
@@ -46,6 +46,7 @@ view model =
                 , class "menu-button"
                 ]
                 [ text "LOGIN" ]
+            , a [ class "signup-link", href "/signup" ] [ text "No account? Signup!" ]
             , div [ class "error" ] [ text model.error ]
             ]
         ]

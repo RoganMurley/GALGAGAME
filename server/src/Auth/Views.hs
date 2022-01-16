@@ -65,12 +65,14 @@ loginView config = do
 logoutView :: ConnectInfoConfig -> ActionM ()
 logoutView config = do
   token <- getCookie sessionCookieName
+  lift $ infoM "auth" $ printf "Logging out"
   case token of
     Just t -> do
       lift $ runApp config $ deleteToken t
-      deleteCookie sessionCookieName
     Nothing ->
       return ()
+  deleteCookie sessionCookieName
+  deleteCookie "user"
   json $ object []
   status ok200
 
