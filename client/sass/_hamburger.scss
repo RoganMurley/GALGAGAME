@@ -1,0 +1,18 @@
+.hamburger-menu {
+    position: absolute;
+    background-color: #f5f25e;
+    color: #000050;
+    padding: 24px;
+    border-radius: 5px;
+
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+
+    top: 0;
+    right: 0;
+
+    @media (max-width: 900px) {
+      width: 100%;
+    }
+}

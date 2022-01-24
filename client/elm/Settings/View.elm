@@ -1,6 +1,6 @@
 module Settings.View exposing (view)
 
-import Html exposing (Html, div, h1, img, input, label, text)
+import Html exposing (Html, button, div, h1, img, input, label, text)
 import Html.Attributes as H exposing (class, src, style, type_, value)
 import Html.Events exposing (onClick, onInput)
 import Main.Messages as Main
@@ -17,16 +17,30 @@ view { modalState, musicVolume, sfxVolume } { scaling } nestedViews =
                 Closed ->
                     style "display" "none"
 
-                Open ->
+                ModalOpen ->
+                    style "" ""
+
+                MenuOpen ->
+                    style "display" "none"
+
+        menuStyle =
+            case modalState of
+                Closed ->
+                    style "display" "none"
+
+                ModalOpen ->
+                    style "display" "none"
+
+                MenuOpen ->
                     style "" ""
     in
     div [ class "settings-layer" ]
         [ img
             [ class "settings-icon"
-            , src "/img/icon/settings.svg"
+            , src "/img/icon/hamburger.svg"
             , onClick <|
                 Main.SettingsMsg <|
-                    Settings.ToggleSettings
+                    Settings.OpenMenu
             ]
             []
         , div
@@ -77,62 +91,54 @@ view { modalState, musicVolume, sfxVolume } { scaling } nestedViews =
                         ]
                         []
                     ]
-
-                -- , label [ class "settings-label" ]
-                --     [ text <| "Game Speed (" ++ String.fromFloat gameSpeed ++ ")"
-                --     , input
-                --         [ class "settings-slider"
-                --         , type_ "range"
-                --         , H.min "0.1"
-                --         , H.max "2"
-                --         , H.step "0.01"
-                --         , value <| String.fromFloat gameSpeed
-                --         , onInput
-                --             (\s ->
-                --                 Main.SettingsMsg <|
-                --                     Settings.SetGameSpeed <|
-                --                         Maybe.withDefault 1 (String.toFloat s)
-                --             )
-                --         ]
-                --         []
-                --     ]
-                -- , label [ class "settings-volume" ]
-                --     [ text "Music Volume"
-                --     , input
-                --         [ class "settings-slider"
-                --         , type_ "range"
-                --         , H.min "0"
-                --         , H.max "100"
-                --         , value <| String.fromInt musicVolume
-                --         , onInput
-                --             (\v -> Main.SetVolume Music <| Maybe.withDefault 0 (String.toInt v))
-                --         ]
-                --         []
-                --     ]
-                -- , label [ class "settings-volume" ]
-                --     [ text "SFX Volume"
-                --     , input
-                --         [ class "settings-slider"
-                --         , type_ "range"
-                --         , H.min "0"
-                --         , H.max "100"
-                --         , value <| String.fromInt sfxVolume
-                --         , onInput
-                --             (\v -> Main.SetVolume Sfx <| Maybe.withDefault 0 (String.toInt v))
-                --         ]
-                --         []
-                -- ]
                 , div [] <|
-                    -- onclick hack here as fullscreen requires user interaction.
                     List.concat
-                        -- onclick was broken in elm 0.19
-                        [ -- [ [ button
-                          --         [ class "settings-button", attribute "onclick" "window.requestFullscreen()" ]
-                          --         [ text "Fullscreen" ]
-                          --   ]
-                          -- , nestedViews
-                          nestedViews
+                        [ nestedViews
                         ]
                 ]
+            ]
+        , div [ class "hamburger-menu", menuStyle ]
+            [ label [ class "settings-label" ]
+                [ text <| "SFX Volume (" ++ String.fromInt sfxVolume ++ "%)"
+                , input
+                    [ class "settings-slider"
+                    , type_ "range"
+                    , H.min "0"
+                    , H.max "100"
+                    , value <| String.fromInt sfxVolume
+                    , onInput
+                        (\v -> Main.SetVolume Sfx <| Maybe.withDefault 0 (String.toInt v))
+                    ]
+                    []
+                ]
+            , label [ class "settings-label" ]
+                [ text <| "Music Volume (" ++ String.fromInt musicVolume ++ "%)"
+                , input
+                    [ class "settings-slider"
+                    , type_ "range"
+                    , H.min "0"
+                    , H.max "100"
+                    , value <| String.fromInt musicVolume
+                    , onInput
+                        (\v -> Main.SetVolume Music <| Maybe.withDefault 0 (String.toInt v))
+                    ]
+                    []
+                ]
+            , label [ class "settings-label" ]
+                [ text <| "Quality (" ++ String.fromFloat scaling ++ ")"
+                , input
+                    [ class "settings-slider"
+                    , type_ "range"
+                    , H.min "0"
+                    , H.max "2"
+                    , H.step "0.1"
+                    , value <| String.fromFloat scaling
+                    , onInput
+                        (\s -> Main.SetScaling <| Maybe.withDefault 1 (String.toFloat s))
+                    ]
+                    []
+                ]
+            , button [] [ text "Play with a friend" ]
+            , button [] [ text "Sign Up / Log In" ]
             ]
         ]

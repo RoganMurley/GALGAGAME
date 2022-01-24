@@ -15,5 +15,6 @@ type VolumeType
 
 
 type ModalState
-    = Open
-    | Closed
+    = Closed
+    | ModalOpen
+    | MenuOpen

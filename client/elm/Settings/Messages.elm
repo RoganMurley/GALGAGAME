@@ -3,6 +3,7 @@ module Settings.Messages exposing (Msg(..))
 
 type Msg
     = ToggleSettings
-    | CloseSettings
+    | Close
     | OpenSettings
+    | OpenMenu
     | SetGameSpeed Float

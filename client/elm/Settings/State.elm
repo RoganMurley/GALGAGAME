@@ -21,14 +21,20 @@ update msg m =
                 Closed ->
                     openModal m
 
-                Open ->
-                    closeModal m
+                ModalOpen ->
+                    close m
+
+                MenuOpen ->
+                    close m
 
         OpenSettings ->
             openModal m
 
-        CloseSettings ->
-            closeModal m
+        Close ->
+            close m
+
+        OpenMenu ->
+            openMenu m
 
         SetGameSpeed gameSpeed ->
             { m | gameSpeed = gameSpeed }
@@ -36,9 +42,14 @@ update msg m =
 
 openModal : Model -> Model
 openModal m =
-    { m | modalState = Open }
+    { m | modalState = ModalOpen }
 
 
-closeModal : Model -> Model
-closeModal m =
+openMenu : Model -> Model
+openMenu m =
+    { m | modalState = MenuOpen }
+
+
+close : Model -> Model
+close m =
     { m | modalState = Closed }

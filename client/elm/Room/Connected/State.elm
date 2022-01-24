@@ -78,7 +78,7 @@ update flags assets msg ({ chat, game, mode, gameType } as model) =
             , Cmd.batch
                 [ message <|
                     Main.SettingsMsg <|
-                        Settings.CloseSettings
+                        Settings.Close
                 , websocketSend "concede:"
                 ]
             )
