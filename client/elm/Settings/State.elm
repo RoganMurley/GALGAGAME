@@ -16,20 +16,6 @@ init volume musicVolume =
 update : Msg -> Model -> Model
 update msg m =
     case msg of
-        ToggleSettings ->
-            case m.modalState of
-                Closed ->
-                    openModal m
-
-                ModalOpen ->
-                    close m
-
-                MenuOpen ->
-                    close m
-
-        OpenSettings ->
-            openModal m
-
         Close ->
             close m
 
@@ -38,11 +24,6 @@ update msg m =
 
         SetGameSpeed gameSpeed ->
             { m | gameSpeed = gameSpeed }
-
-
-openModal : Model -> Model
-openModal m =
-    { m | modalState = ModalOpen }
 
 
 openMenu : Model -> Model
