@@ -118,7 +118,7 @@ gameTypeToString gameType =
             "CPU ROOM"
 
         QuickplayGame ->
-            "QUICKPLAY"
+            "GALGA"
 
 
 skipLobbyCmd : Maybe String -> Cmd Main.Msg

@@ -386,11 +386,6 @@ locationUpdate model url =
             parse Routing.route url |> Maybe.withDefault Routing.default
     in
     case route of
-        Routing.Home ->
-            ( { model | room = Room.init }
-            , websocketReconnect ()
-            )
-
         Routing.Play playRoute ->
             let
                 username : Maybe String

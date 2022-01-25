@@ -2,8 +2,7 @@ module Routing.Types exposing (PlayRoute(..), Route(..))
 
 
 type Route
-    = Home
-    | Play PlayRoute
+    = Play PlayRoute
     | Spec String
     | Replay String
     | Login
