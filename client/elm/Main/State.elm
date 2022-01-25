@@ -322,9 +322,6 @@ update msg ({ assets, room, notifications, settings, flags } as model) =
             in
             ( { model | assets = newAssets }, cmd )
 
-        NoOp ->
-            ( model, Cmd.none )
-
         VisibilityChange visibility ->
             let
                 newRoom =
@@ -345,6 +342,24 @@ update msg ({ assets, room, notifications, settings, flags } as model) =
                             Cmd.none
             in
             ( { model | room = newRoom, flags = newFlags }, cmd )
+
+        GotoLogin ->
+            ( { model | settings = Settings.close settings }
+            , Browser.Navigation.pushUrl flags.key "/login"
+            )
+
+        GotoSignup ->
+            ( { model | settings = Settings.close settings }
+            , Browser.Navigation.pushUrl flags.key "/signup"
+            )
+
+        GotoCustomGame ->
+            ( { model | settings = Settings.close settings }
+            , Browser.Navigation.pushUrl flags.key "/play/custom"
+            )
+
+        NoOp ->
+            ( model, Cmd.none )
 
 
 locationUpdate : Main.Model -> Url -> ( Main.Model, Cmd Msg )

@@ -35,8 +35,7 @@ view model settings notifications flags assets =
                         Menu.view
 
                 Lobby lobby ->
-                    Html.map (Main.RoomMsg << LobbyMsg) <|
-                        Lobby.view flags lobby
+                    Lobby.view flags lobby
 
                 Connected connected ->
                     Connected.htmlView connected flags
@@ -73,7 +72,7 @@ settingsView model flags =
     let
         baseViews : List (Html Main.Msg)
         baseViews =
-            Login.logoutView flags
+            Login.loginoutView flags
     in
     case model of
         Connected connected ->

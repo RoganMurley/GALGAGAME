@@ -76,16 +76,6 @@ update ({ gameType, mode } as model) msg flags =
                     ]
                 )
 
-        GotoLogin ->
-            ( model
-            , Browser.Navigation.pushUrl flags.key "/login"
-            )
-
-        GotoSignup ->
-            ( model
-            , Browser.Navigation.pushUrl flags.key "/signup"
-            )
-
 
 receive : String -> Cmd Main.Msg
 receive msg =

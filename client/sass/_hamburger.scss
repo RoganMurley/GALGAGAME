@@ -14,5 +14,37 @@
 
     @media (max-width: 900px) {
       width: 100%;
+      top: auto;
+      right: auto;
     }
+}
+
+.hamburger-button {
+  margin: 5px;
+
+  color: #000050;
+
+  font-size: 14px;
+  font-weight: 900;
+  font-family: sans-serif;
+
+  background-color: rgba(0, 0, 0, 0);
+
+  border-color: #000050;
+  border-radius: 5px;
+  border-width: 3px;
+  width: 200px;
+
+  &:hover {
+    color: #f5f25e;
+    background-color: #000050;
+    cursor: pointer; cursor: hand;
+  }
+
+  &:disabled {
+    color: #59583a;
+    background-color: #7955484d;
+    cursor: not-allowed;
+  }
+
 }

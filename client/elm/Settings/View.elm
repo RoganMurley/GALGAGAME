@@ -33,16 +33,31 @@ view { modalState, musicVolume, sfxVolume } { scaling } nestedViews =
 
                 MenuOpen ->
                     style "" ""
+
+        settingsIcon =
+            case modalState of
+                MenuOpen ->
+                    img
+                        [ class "settings-icon"
+                        , src "/img/icon/close.svg"
+                        , onClick <|
+                            Main.SettingsMsg <|
+                                Settings.Close
+                        ]
+                        []
+
+                _ ->
+                    img
+                        [ class "settings-icon"
+                        , src "/img/icon/hamburger.svg"
+                        , onClick <|
+                            Main.SettingsMsg <|
+                                Settings.OpenMenu
+                        ]
+                        []
     in
     div [ class "settings-layer" ]
-        [ img
-            [ class "settings-icon"
-            , src "/img/icon/hamburger.svg"
-            , onClick <|
-                Main.SettingsMsg <|
-                    Settings.OpenMenu
-            ]
-            []
+        [ settingsIcon
         , div
             [ settingsStyle
             , class "settings-open"
@@ -97,7 +112,7 @@ view { modalState, musicVolume, sfxVolume } { scaling } nestedViews =
                         ]
                 ]
             ]
-        , div [ class "hamburger-menu", menuStyle ]
+        , div [ class "hamburger-menu", menuStyle ] <|
             [ label [ class "settings-label" ]
                 [ text <| "SFX Volume (" ++ String.fromInt sfxVolume ++ "%)"
                 , input
@@ -138,7 +153,11 @@ view { modalState, musicVolume, sfxVolume } { scaling } nestedViews =
                     ]
                     []
                 ]
-            , button [] [ text "Play with a friend" ]
-            , button [] [ text "Sign Up / Log In" ]
+            , button
+                [ class "hamburger-button"
+                , onClick Main.GotoCustomGame
+                ]
+                [ text "PLAY WITH FRIEND" ]
             ]
+                ++ nestedViews
         ]

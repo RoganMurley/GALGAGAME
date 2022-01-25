@@ -1,4 +1,4 @@
-module Login.View exposing (logoutView, view)
+module Login.View exposing (loginoutView, view)
 
 import Form exposing (FormFieldClass, FormFieldType(..), ValidationResult, formInputView)
 import Html exposing (Attribute, Html, a, button, div, text)
@@ -52,17 +52,29 @@ view model =
         ]
 
 
-logoutView : Flags -> List (Html Main.Msg)
-logoutView { username } =
+loginoutView : Flags -> List (Html Main.Msg)
+loginoutView { username } =
     case username of
         Just _ ->
             [ button
-                [ class "settings-button", class "menu-button", onClick Main.Logout ]
+                [ class "hamburger-button"
+                , onClick Main.Logout
+                ]
                 [ text "LOGOUT" ]
             ]
 
         Nothing ->
-            []
+            [ button
+                [ class "hamburger-button"
+                , onClick Main.GotoSignup
+                ]
+                [ text "SIGNUP" ]
+            , button
+                [ class "hamburger-button"
+                , onClick Main.GotoLogin
+                ]
+                [ text "LOGIN" ]
+            ]
 
 
 getFieldPlaceholder : Field -> String

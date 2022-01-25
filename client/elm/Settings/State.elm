@@ -1,4 +1,4 @@
-module Settings.State exposing (init, update)
+module Settings.State exposing (close, init, update)
 
 import Settings.Messages exposing (Msg(..))
 import Settings.Types exposing (ModalState(..), Model, VolumeType(..))

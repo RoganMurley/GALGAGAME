@@ -16,8 +16,8 @@
   transition: transform 0.11s ease-in;
 
   &:hover {
-    -webkit-transform: rotate(6deg);
-    transform: rotate(6deg);
+    -webkit-transform: scale(1.14);
+    transform: scale(1.14);
   }
 }
 
@@ -72,12 +72,13 @@
 
 .settings-input {
   font-family: monospace;
+  font-weight: 600;
   text-align: center;
-  width: 80%;
+  width: 100%;
 
-  border-color: antiquewhite;
+  border-color: #000050;
   border-radius: 5px;
-  background-color: wheat;
+  background-color: rgba(0, 0, 0, 0);
   height: 26px;
 
   margin-top: 16px;
@@ -109,6 +110,7 @@
 
 .settings-label {
   flex: 1;
-  font-family: monospace;
+  font-family: sans-serif;
+  font-weight: 700;
   font-size: 1.2rem;
 }

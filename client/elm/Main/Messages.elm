@@ -5,6 +5,7 @@ import Browser exposing (UrlRequest)
 import Browser.Events exposing (Visibility)
 import Http
 import Keyboard exposing (Key)
+import Lobby.Messages exposing (Msg(..))
 import Mouse
 import Notifications.Messages as Notifications
 import Room.Messages as Room
@@ -38,5 +39,8 @@ type Msg
     | UrlChange Url
     | UrlRequest UrlRequest
     | GodCommand String
-    | NoOp
     | VisibilityChange Visibility
+    | GotoLogin
+    | GotoSignup
+    | GotoCustomGame
+    | NoOp
