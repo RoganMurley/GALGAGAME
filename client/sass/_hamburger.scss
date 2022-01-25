@@ -13,7 +13,7 @@
     right: 0;
 
     @media (max-width: 900px) {
-      width: 100%;
+      width: calc(100% - 48px);
       top: auto;
       right: auto;
     }
