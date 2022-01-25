@@ -64,7 +64,7 @@ concedeView state =
         Started (Playing _) ->
             [ button
                 [ classList
-                    [ ( "settings-button", True )
+                    [ ( "hamburger-button", True )
                     , ( "settings-concede", True )
                     ]
                 , onClick Connected.Concede
