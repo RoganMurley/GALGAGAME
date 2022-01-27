@@ -17,11 +17,14 @@ jobs:
           name: Setup npm
           command: curl -sL https://deb.nodesource.com/setup_12.x | sudo -E bash - &&
                    sudo apt-get update &&
-                   sudo apt-get install nodejs
+                   sudo apt-get install nodejs &&
+                   mkdir ~/.npm-global &&
+                   npm config set prefix '~/.npm-global' &&
+                   export PATH=~/.npm-global/bin:$PATH
       - run:
           name: Setup Client
           command: cd client &&
-                   sudo npm install -g gulp@4.0.0 gulp-cli@2.0.1 elm@0.19.1-5 elm-analyse@0.16.5 &&
+                   npm install -g gulp@4.0.0 gulp-cli@2.0.1 elm@0.19.1-5 elm-analyse@0.16.5 &&
                    npm install &&
                    gulp build
                    # Temp disable elm-analyse due to circleci issues with
