@@ -104,7 +104,7 @@ view { modalState, musicVolume, sfxVolume } { scaling } nestedViews =
                 [ class "hamburger-button"
                 , onClick Main.GotoCustomGame
                 ]
-                [ text "PLAY WITH FRIEND" ]
+                [ text "PLAY WITH A FRIEND" ]
             ]
                 ++ nestedViews
         ]

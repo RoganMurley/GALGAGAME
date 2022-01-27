@@ -7,7 +7,6 @@ import Json.Decode exposing (maybe)
 import Keyboard exposing (Key(..))
 import Main.Messages as Main
 import Main.Types exposing (Flags)
-import Ports exposing (websocketReconnect)
 import Regex exposing (Regex)
 import Room.Messages as Room
 import Signup.Decoders exposing (signupErrorDecoder)
@@ -67,9 +66,7 @@ update model msg flags =
             ( model
             , Cmd.batch
                 [ message <| Main.SetUsername model.username.value
-                , Browser.Navigation.pushUrl flags.key model.nextUrl
-                , -- Reconnect so that the ws connection has our login cookie
-                  websocketReconnect ()
+                , Browser.Navigation.load model.nextUrl
                 ]
             )
 

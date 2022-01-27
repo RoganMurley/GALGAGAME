@@ -10,7 +10,6 @@ import Login.Messages exposing (Msg(..))
 import Login.Types exposing (Field(..), Model)
 import Main.Messages as Main
 import Main.Types exposing (Flags)
-import Ports exposing (websocketReconnect)
 import Room.Messages as Room
 import Util exposing (authLocation, message)
 
@@ -55,10 +54,8 @@ update model msg flags =
         SubmitCallback (Ok Nothing) ->
             ( model
             , Cmd.batch
-                [ -- Reconnect so that the ws connection has our login cookie
-                  websocketReconnect ()
-                , message <| Main.SetUsername model.username.value
-                , Browser.Navigation.pushUrl flags.key model.nextUrl
+                [ message <| Main.SetUsername model.username.value
+                , Browser.Navigation.load model.nextUrl
                 ]
             )
 

@@ -355,7 +355,7 @@ update msg ({ assets, room, notifications, settings, flags } as model) =
 
         GotoCustomGame ->
             ( { model | settings = Settings.close settings }
-            , Browser.Navigation.pushUrl flags.key "/play/custom"
+            , Browser.Navigation.load "/play/custom"
             )
 
         NoOp ->
