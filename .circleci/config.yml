@@ -8,7 +8,7 @@ jobs:
       - restore_cache:
           name: Restore Cached NPM Dependencies
           keys:
-            - npm-{{ checksum "client/package.json" }}
+            - npm-{{ checksum "client/package.json" }}-1
       - restore_cache:
           name: Restore Cached Elm Dependencies
           keys:
@@ -52,7 +52,7 @@ jobs:
           command: if [ $CIRCLE_BRANCH == 'master' ]; then ./scripts/decryptSecrets && ./scripts/deploy; fi
       - save_cache:
           name: Cache NPM Dependencies
-          key: npm-{{ checksum "client/package.json" }}
+          key: npm-{{ checksum "client/package.json" }}-1
           paths:
             - "./client/node-modules"
       - save_cache:
