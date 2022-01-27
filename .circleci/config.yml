@@ -14,6 +14,10 @@ jobs:
           keys:
             - elm-0.19.1-{{ checksum "client/elm.json" }}
       - run:
+          name: Setup npm
+          command: sudo apt-get update &&
+                   sudo apt-get install node npm
+      - run:
           name: Setup Client
           command: cd client &&
                    npm install -g gulp@4.0.0 gulp-cli@2.0.1 elm@0.19.1-5 elm-analyse@0.16.5 &&
