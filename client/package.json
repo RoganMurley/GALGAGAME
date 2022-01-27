@@ -29,5 +29,6 @@
   },
   "author": "",
   "license": "",
-  "homepage": "https://galgagame.com"
+  "homepage": "https://galgagame.com",
+  "cachebuster: "1"
 }
