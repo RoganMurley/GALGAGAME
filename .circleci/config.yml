@@ -12,7 +12,7 @@ jobs:
       - restore_cache:
           name: Restore Cached Elm Dependencies
           keys:
-            - elm-0.19.1-{{ checksum "client/elm.json" }}
+            - elm-0.19.1-{{ checksum "client/elm.json" }}-1
       - run:
           name: Setup npm
           command: curl -sL https://deb.nodesource.com/setup_12.x | sudo -E bash - &&
@@ -57,7 +57,7 @@ jobs:
             - "./client/node-modules"
       - save_cache:
           name: Cache Elm Dependencies
-          key: elm-0.19.1-{{ checksum "client/elm.json" }}
+          key: elm-0.19.1-{{ checksum "client/elm.json" }}-1
           paths:
             - "~/.elm"
             - "./client/elm-stuff"
