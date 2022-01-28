@@ -1,7 +1,7 @@
 .chatbox {
   background: #f5f25e;
   border-radius: 5px;
-  color: #000050;
+  color: $navy;
   cursor: grab;
   display: flex;
   flex-direction: column;
@@ -37,10 +37,10 @@
   }
 
   &__input {
-    color: #000050;
+    color: $navy;
     background: #fff;
     border-radius: 5px;
-    border-color: #000050;
+    border-color: $navy;
     font-family: "futura-pt", sans-serif;
   }
 
