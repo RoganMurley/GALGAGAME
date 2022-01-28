@@ -57,7 +57,7 @@ loginoutView { username } =
     case username of
         Just _ ->
             [ button
-                [ class "hamburger-button"
+                [ class "settings-button"
                 , onClick Main.Logout
                 ]
                 [ text "LOGOUT" ]
@@ -65,12 +65,12 @@ loginoutView { username } =
 
         Nothing ->
             [ button
-                [ class "hamburger-button"
+                [ class "settings-button"
                 , onClick Main.GotoSignup
                 ]
                 [ text "SIGNUP" ]
             , button
-                [ class "hamburger-button"
+                [ class "settings-button"
                 , onClick Main.GotoLogin
                 ]
                 [ text "LOGIN" ]

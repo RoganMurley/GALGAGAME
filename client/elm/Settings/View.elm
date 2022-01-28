@@ -36,7 +36,7 @@ view { modalState, musicVolume, sfxVolume } { scaling } nestedViews =
                         , src "/img/icon/close.svg"
                         , onClick <|
                             Main.SettingsMsg <|
-                                Settings.Close
+                                Settings.CloseMenu
                         ]
                         []
 
@@ -55,13 +55,13 @@ view { modalState, musicVolume, sfxVolume } { scaling } nestedViews =
         [ div
             [ class "settings-close-background"
             , closeStyle
-            , onClick <| Main.SettingsMsg Settings.Close
+            , onClick <| Main.SettingsMsg Settings.CloseMenu
             ]
             []
         , settingsIcon
-        , div [ class "hamburger-menu", menuStyle ] <|
+        , div [ class "settings-menu", menuStyle ] <|
             [ label [ class "settings-label" ]
-                [ text <| "SFX Volume (" ++ String.fromInt sfxVolume ++ "%)"
+                [ text <| "Sound Effect Volume (" ++ String.fromInt sfxVolume ++ "%)"
                 , input
                     [ class "settings-slider"
                     , type_ "range"
@@ -101,7 +101,7 @@ view { modalState, musicVolume, sfxVolume } { scaling } nestedViews =
                     []
                 ]
             , button
-                [ class "hamburger-button"
+                [ class "settings-button"
                 , onClick Main.GotoCustomGame
                 ]
                 [ text "PLAY WITH A FRIEND" ]

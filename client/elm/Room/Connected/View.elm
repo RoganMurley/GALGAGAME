@@ -63,10 +63,8 @@ concedeView state =
     case state of
         Started (Playing _) ->
             [ button
-                [ classList
-                    [ ( "hamburger-button", True )
-                    , ( "settings-concede", True )
-                    ]
+                [ class "settings-button"
+                , class "settings-concede"
                 , onClick Connected.Concede
                 ]
                 [ text "CONCEDE" ]

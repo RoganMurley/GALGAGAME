@@ -16,7 +16,7 @@ init volume musicVolume =
 update : Msg -> Model -> Model
 update msg m =
     case msg of
-        Close ->
+        CloseMenu ->
             close m
 
         OpenMenu ->
