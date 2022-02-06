@@ -202,7 +202,7 @@ updatePlayingOnly msg state mode assets =
                                             100
 
                                         Just ( _, t ) ->
-                                            t * t
+                                            max (t + 100) 1000
 
                                 newGame =
                                     { game | vfx = { vfx | tickle = Just ( index, mag ) } }
