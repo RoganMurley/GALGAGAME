@@ -193,11 +193,13 @@ bounceDecoder =
                 (field "stackIndex" int)
                 (field "handIndex" int)
     in
-    Json.map Bounce <|
-        field "bounce" <|
+    Json.map2 Bounce
+        (field "bounce" <|
             Wheel.decoder <|
                 maybe <|
                     oneOf [ bounceDiscardDecoder, bounceIndexDecoder ]
+        )
+        (field "timeModifier" float)
 
 
 cardDiscardDecoder : Decoder CardDiscard

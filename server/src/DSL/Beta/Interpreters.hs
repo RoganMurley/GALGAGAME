@@ -46,7 +46,7 @@ alphaI (Free (Transmute f n))       = Alpha.transmute f            >>  alphaI n
 alphaI (Free (TransmuteActive f n)) = Alpha.transmuteActive f      >>  alphaI n
 alphaI (Free (Rotate n))            = Alpha.rotate                 >>  alphaI n
 alphaI (Free (Windup n))            = Alpha.windup                 >>  alphaI n
-alphaI (Free (Bounce f n))          = Alpha.bounce f               >>  alphaI n
+alphaI (Free (Bounce f _ n))        = Alpha.bounce f               >>  alphaI n
 alphaI (Free (DiscardStack f n))    = Alpha.discardStack f         >>  alphaI n
 alphaI (Free (DiscardHand w f n))   = Alpha.discardHand w f        >>  alphaI n
 alphaI (Free (MoveStack f _ n))     = Alpha.moveStack f            >>  alphaI n
@@ -82,7 +82,7 @@ animI (Draw w d t _)        = drawAnim w d t
 animI (Play w c i _)        = playAnim w c i
 animI (Transmute f _)       = transmuteAnim f
 animI (TransmuteActive f _) = transmuteActiveAnim f
-animI (Bounce f _)          = bounceAnim f
+animI (Bounce f t _)        = bounceAnim f t
 animI (DiscardStack f _)    = discardStackAnim f
 animI (DiscardHand w f _)   = discardHandAnim w f
 animI (MoveStack f t _)     = moveStackAnim f t
@@ -175,11 +175,11 @@ transmuteActiveAnim f alpha = do
       return final
 
 
-bounceAnim :: (Int -> StackCard -> Bool) -> Alpha.Program a -> AlphaAnimProgram a
-bounceAnim f alpha = do
+bounceAnim :: (Int -> StackCard -> Bool) -> Float -> Alpha.Program a -> AlphaAnimProgram a
+bounceAnim f t alpha = do
   bounces <- toLeft $ getBounces f
   let activity = any isJust bounces
-  when activity (toRight . liftF $ Anim.Bounce bounces ())
+  when activity (toRight . liftF $ Anim.Bounce bounces t ())
   final <- toLeft alpha
   when activity (toRight . liftF $ Anim.Null ())
   return final

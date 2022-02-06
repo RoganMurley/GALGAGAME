@@ -51,8 +51,8 @@ animMaxTick anim =
             Windup _ ->
                 400.0
 
-            Bounce _ ->
-                750.0
+            Bounce _ timeModifier ->
+                timeModifier * 750.0
 
             DiscardStack _ ->
                 750.0

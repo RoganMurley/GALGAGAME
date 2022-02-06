@@ -1,16 +1,15 @@
 module DSL.Anim.DSL where
 
 import Bounce (CardBounce)
-import Control.Monad.Free (Free(..))
 import Card (Card)
 import CardAnim (CardAnim, Hurt)
+import Control.Monad.Free (Free (..))
 import Discard (CardDiscard)
 import HandCard (HandCard)
 import Life (Life)
 import Player (WhichPlayer)
 import Transmutation (Transmutation)
 import Wheel (Wheel)
-
 
 data DSL a
   = Null a
@@ -24,7 +23,7 @@ data DSL a
   | GameEnd (Maybe WhichPlayer) a
   | Rotate a
   | Windup a
-  | Bounce (Wheel (Maybe CardBounce)) a
+  | Bounce (Wheel (Maybe CardBounce)) Float a
   | DiscardStack (Wheel Bool) a
   | DiscardHand WhichPlayer [CardDiscard] a
   | Reveal WhichPlayer [Bool] a

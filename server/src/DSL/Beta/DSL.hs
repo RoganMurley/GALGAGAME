@@ -2,18 +2,16 @@ module DSL.Beta.DSL where
 
 import Card (Card)
 import CardAnim (CardAnim, Hurt)
-import Control.Monad.Free (Free(..))
+import Control.Monad.Free (Free (..))
+import qualified DSL.Alpha.DSL as Alpha
 import HandCard (HandCard)
 import Life (Life)
 import Model (Deck, Hand, Model)
-import Player (WhichPlayer(..))
+import Player (WhichPlayer (..))
 import Stack (Stack)
 import StackCard (StackCard)
 import Transmutation (Transmutation)
 import Util (Gen)
-
-import qualified DSL.Alpha.DSL as Alpha
-
 
 data DSL n
   = Raw (Alpha.Program ()) n
@@ -26,7 +24,7 @@ data DSL n
   | TransmuteActive (StackCard -> Maybe StackCard) n
   | Rotate n
   | Windup n
-  | Bounce (Int -> StackCard -> Bool) n
+  | Bounce (Int -> StackCard -> Bool) Float n
   | DiscardStack (Int -> StackCard -> Bool) n
   | DiscardHand WhichPlayer (Int -> Card -> Bool) n
   | MoveStack (Int -> StackCard -> Maybe Int) Int n

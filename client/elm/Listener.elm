@@ -100,7 +100,7 @@ animSfx anim =
         HandFullPass ->
             Just "evilTick.mp3"
 
-        Bounce _ ->
+        Bounce _ _ ->
             Just "bounce.mp3"
 
         Rotate _ ->

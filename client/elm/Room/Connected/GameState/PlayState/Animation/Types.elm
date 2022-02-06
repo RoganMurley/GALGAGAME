@@ -19,7 +19,7 @@ type Anim
     | GameEnd (Maybe WhichPlayer)
     | Rotate WhichPlayer
     | Windup WhichPlayer
-    | Bounce (Wheel (Maybe Bounce))
+    | Bounce (Wheel (Maybe Bounce)) Float
     | DiscardStack (Wheel Bool)
     | DiscardHand WhichPlayer (List CardDiscard)
     | MoveStack (Wheel (Maybe Int)) Int

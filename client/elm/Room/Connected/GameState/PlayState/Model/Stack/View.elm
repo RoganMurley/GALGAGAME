@@ -27,7 +27,7 @@ view entities ctx =
                         _ ->
                             Card.view ctx entity
 
-                Bounce bounces ->
+                Bounce bounces _ ->
                     case Wheel.get entity.index bounces |> Maybe.join of
                         Just (BounceIndex _ _) ->
                             []

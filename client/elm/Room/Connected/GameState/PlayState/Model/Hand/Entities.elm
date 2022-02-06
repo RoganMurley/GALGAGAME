@@ -32,7 +32,7 @@ entities hover holding ({ anim, model, progress } as ctx) =
     let
         finalHand =
             case anim of
-                Bounce bounces ->
+                Bounce bounces _ ->
                     let
                         playerBounces : List HandBounce
                         playerBounces =
@@ -50,7 +50,7 @@ entities hover holding ({ anim, model, progress } as ctx) =
                     , List.head <| List.reverse finalHand
                     )
 
-                Bounce bounces ->
+                Bounce bounces _ ->
                     let
                         playerBounces : List HandBounce
                         playerBounces =
@@ -201,7 +201,7 @@ entities hover holding ({ anim, model, progress } as ctx) =
                       }
                     ]
 
-                Bounce bounces ->
+                Bounce bounces _ ->
                     let
                         playerBounces : List HandBounce
                         playerBounces =
@@ -255,7 +255,7 @@ otherEntities hoverSelf hoverOther ({ anim, model, progress } as ctx) =
         -- DRY with PlayerA entities
         finalHand =
             case anim of
-                Bounce bounces ->
+                Bounce bounces _ ->
                     let
                         playerBounces : List HandBounce
                         playerBounces =
@@ -273,7 +273,7 @@ otherEntities hoverSelf hoverOther ({ anim, model, progress } as ctx) =
                     , Maybe.join <| List.head <| List.reverse finalHand
                     )
 
-                Bounce bounces ->
+                Bounce bounces _ ->
                     let
                         playerBounces : List HandBounce
                         playerBounces =
@@ -371,7 +371,7 @@ otherEntities hoverSelf hoverOther ({ anim, model, progress } as ctx) =
                       }
                     ]
 
-                Bounce bounces ->
+                Bounce bounces _ ->
                     let
                         playerBounces : List HandBounce
                         playerBounces =
