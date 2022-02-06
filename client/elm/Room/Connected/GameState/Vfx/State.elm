@@ -10,7 +10,9 @@ import Wheel.State as Wheel
 
 init : Model
 init =
-    { depth = 0 }
+    { depth = 0
+    , boogie = 0
+    }
 
 
 tick : Float -> Model -> Maybe Float -> Context -> Model
@@ -25,5 +27,8 @@ tick dt model timeLeft ctx =
 
         depth =
             model.depth + 10 + 100 * dt * Ease.inSine risk
+
+        boogie =
+            model.boogie + dt + dt * Ease.inSine risk
     in
-    { model | depth = depth }
+    { model | depth = depth, boogie = boogie }

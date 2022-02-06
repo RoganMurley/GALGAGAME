@@ -128,7 +128,7 @@ wheelEntities ctx =
 wheelEntity : Context -> Float -> Float -> Float -> WheelEntity
 wheelEntity ctx distance i finalI =
     let
-        { anim, progress } =
+        { anim, progress, vfx } =
             ctx
 
         rotateProgress : Float
@@ -144,7 +144,9 @@ wheelEntity ctx distance i finalI =
                     0
 
         z =
-            wheelZ ctx
+            0.05
+                * sin (i + vfx.boogie * 0.001)
+                + wheelZ ctx
 
         position : Vec3
         position =

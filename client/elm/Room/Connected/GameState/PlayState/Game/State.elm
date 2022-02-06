@@ -32,6 +32,7 @@ import Stack.Types exposing (StackCard)
 import Unproject
 import Util exposing (message)
 import Vfx.State as Vfx
+import Vfx.Types as Vfx
 import WhichPlayer.Types exposing (WhichPlayer(..))
 
 
@@ -50,8 +51,8 @@ gameInit model =
     }
 
 
-contextInit : ( Int, Int ) -> Resolvable.Model -> Assets.Model -> MouseState -> Context
-contextInit ( width, height ) res { textures, fonts } mouseState =
+contextInit : ( Int, Int ) -> Resolvable.Model -> Assets.Model -> MouseState -> Vfx.Model -> Context
+contextInit ( width, height ) res { textures, fonts } mouseState vfx =
     let
         coords =
             { w =
@@ -99,6 +100,7 @@ contextInit ( width, height ) res { textures, fonts } mouseState =
     , ortho = ortho
     , camera2d = Uniforms.camera2d
     , camera3d = Uniforms.camera3d
+    , vfx = vfx
     }
 
 
@@ -108,7 +110,7 @@ bareContextInit dimensions assets mouseState =
         res =
             Resolvable.init Model.init []
     in
-    contextInit dimensions res assets mouseState
+    contextInit dimensions res assets mouseState Vfx.init
 
 
 entitiesInit : Entities
@@ -144,7 +146,7 @@ tick { dimensions, mouse } dt model chat =
             Resolvable.tick dt model.res
 
         ctx =
-            contextInit dimensions res Assets.init mouse
+            contextInit dimensions res Assets.init mouse model.vfx
 
         hoverHand =
             getHoverHand model ctx.mouseRay

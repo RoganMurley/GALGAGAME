@@ -45,7 +45,7 @@ view { w, h } game chat assets =
             game
 
         ctx =
-            contextInit ( w, h ) res assets NoMouse
+            contextInit ( w, h ) res assets NoMouse vfx
     in
     List.concat <|
         List.map ((|>) ctx)

@@ -50,6 +50,7 @@ type alias Context =
     , ortho : Mat4
     , camera2d : Mat4
     , camera3d : Mat4
+    , vfx : Vfx.Model
     }
 
 
