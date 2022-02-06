@@ -7,6 +7,7 @@ import Endgame.View as Endgame
 import Model.View as Model
 import PlayState.Types exposing (PlayState(..))
 import Render.Types as Render
+import Resolvable.State exposing (resolving)
 import WebGL
 
 
@@ -17,11 +18,7 @@ webglView playState chat params assets =
             Model.view params game chat assets
 
         Ended { winner, game, buttons } ->
-            let
-                resolving =
-                    not <| List.isEmpty game.res.resList
-            in
             List.concat
                 [ Model.view params game chat assets
-                , Endgame.view params assets winner resolving buttons
+                , Endgame.view params assets winner (resolving game.res) buttons
                 ]

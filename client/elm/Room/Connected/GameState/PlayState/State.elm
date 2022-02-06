@@ -37,7 +37,7 @@ import PlayState.Messages as PlayState exposing (Msg(..), PlayingOnly(..), TurnO
 import PlayState.Types as PlayState exposing (PlayState(..), ResolveOutcomeInput)
 import Players exposing (Players)
 import Ports exposing (websocketSend)
-import Resolvable.State as Resolvable
+import Resolvable.State as Resolvable exposing (resolving)
 import Resolvable.Types as Resolvable
 import Result
 import Room.Messages as Room
@@ -575,35 +575,39 @@ mouseDown { dimensions, mouse } assets _ mode players { x, y } state =
                             Cmd.none
 
                 Ended { buttons, replayId } ->
-                    case Buttons.hit buttons pos of
-                        Just ( key, _ ) ->
-                            case key of
-                                "playAgain" ->
-                                    playMsg <| PlayState.PlayingOnly PlayState.Rematch
+                    if resolving game.res then
+                        Cmd.none
 
-                                "watchReplay" ->
-                                    case replayId of
-                                        Just r ->
-                                            playMsg <| PlayState.GotoReplay r
-
-                                        Nothing ->
-                                            Cmd.none
-
-                                "continue" ->
-                                    if Players.shouldRematch players then
+                    else
+                        case Buttons.hit buttons pos of
+                            Just ( key, _ ) ->
+                                case key of
+                                    "playAgain" ->
                                         playMsg <| PlayState.PlayingOnly PlayState.Rematch
 
-                                    else
-                                        message
-                                            << Main.RoomMsg
-                                        <|
-                                            Room.StartGame Mode.Playing Nothing
+                                    "watchReplay" ->
+                                        case replayId of
+                                            Just r ->
+                                                playMsg <| PlayState.GotoReplay r
 
-                                _ ->
-                                    Cmd.none
+                                            Nothing ->
+                                                Cmd.none
 
-                        Nothing ->
-                            Cmd.none
+                                    "continue" ->
+                                        if Players.shouldRematch players then
+                                            playMsg <| PlayState.PlayingOnly PlayState.Rematch
+
+                                        else
+                                            message
+                                                << Main.RoomMsg
+                                            <|
+                                                Room.StartGame Mode.Playing Nothing
+
+                                    _ ->
+                                        Cmd.none
+
+                            Nothing ->
+                                Cmd.none
     in
     ( newPlayState
     , Cmd.batch
