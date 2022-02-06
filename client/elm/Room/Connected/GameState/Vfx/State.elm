@@ -12,6 +12,7 @@ init : Model
 init =
     { depth = 0
     , boogie = 0
+    , tickle = Nothing
     }
 
 
@@ -30,5 +31,21 @@ tick dt model timeLeft ctx =
 
         boogie =
             model.boogie + dt + dt * Ease.inSine risk
+
+        tickle =
+            case model.tickle of
+                Nothing ->
+                    Nothing
+
+                Just ( index, t ) ->
+                    if t - dt <= 0 then
+                        Nothing
+
+                    else
+                        Just ( index, t - dt )
     in
-    { model | depth = depth, boogie = boogie }
+    { model
+        | depth = depth
+        , boogie = boogie
+        , tickle = tickle
+    }

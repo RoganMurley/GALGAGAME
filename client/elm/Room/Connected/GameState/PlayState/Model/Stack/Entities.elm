@@ -56,7 +56,7 @@ entities ctx =
 stackCardEntity : Context -> Int -> StackCard -> StackEntity
 stackCardEntity ctx finalIndex { card, owner } =
     let
-        entity : Game.Entity3D {}
+        entity : WheelEntity
         entity =
             stackEntity ctx finalIndex
     in
@@ -69,7 +69,7 @@ stackCardEntity ctx finalIndex { card, owner } =
     }
 
 
-stackEntity : Context -> Int -> Game.Entity3D {}
+stackEntity : Context -> Int -> WheelEntity
 stackEntity ctx finalIndex =
     let
         { anim, progress } =
@@ -144,9 +144,21 @@ wheelEntity ctx distance i finalI =
                     0
 
         z =
-            0.05
-                * sin (i + vfx.boogie * 0.001)
+            (0.05 * sin (i + vfx.boogie * 0.001))
                 + wheelZ ctx
+
+        tickle : Float
+        tickle =
+            case vfx.tickle of
+                Nothing ->
+                    0
+
+                Just ( tickleIndex, mag ) ->
+                    if tickleIndex == floor i then
+                        mag
+
+                    else
+                        0
 
         position : Vec3
         position =
@@ -163,10 +175,12 @@ wheelEntity ctx distance i finalI =
         rotation =
             baseRotation
                 |> Quaternion.rotate (Quaternion.zRotation -ringRotation)
+                |> Quaternion.rotate (Quaternion.zRotation (tickle * 0.01))
     in
     { position = position
     , rotation = rotation
     , scale = Card.scale
+    , index = floor i
     }
 
 

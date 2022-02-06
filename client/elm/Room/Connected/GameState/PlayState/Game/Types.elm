@@ -79,7 +79,9 @@ type alias OtherHandEntity =
 
 
 type alias WheelEntity =
-    Game.Entity3D {}
+    Game.Entity3D
+        { index : Int
+        }
 
 
 type alias PlayerEntity =

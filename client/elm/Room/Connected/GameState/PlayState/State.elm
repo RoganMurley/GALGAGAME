@@ -189,6 +189,31 @@ updatePlayingOnly msg state mode assets =
                 TurnOnly turnOnly ->
                     updateTurnOnly turnOnly state assets
 
+                TickleWheel index ->
+                    case state of
+                        Playing { game } ->
+                            let
+                                { vfx } =
+                                    game
+
+                                mag =
+                                    case vfx.tickle of
+                                        Nothing ->
+                                            100
+
+                                        Just ( _, t ) ->
+                                            t * t
+
+                                newGame =
+                                    { game | vfx = { vfx | tickle = Just ( index, mag ) } }
+                            in
+                            ( Playing { game = newGame }, playSound assets.audio "sfx/draw.mp3" )
+
+                        _ ->
+                            ( state
+                            , Cmd.none
+                            )
+
 
 updateTurnOnly : TurnOnly -> PlayState -> Assets.Model -> ( PlayState, Cmd Main.Msg )
 updateTurnOnly msg state { audio } =
@@ -482,7 +507,12 @@ mouseDown { dimensions, mouse } assets _ mode players { x, y } state =
                     PlayingOnly <| TurnOnly <| HoldCard card index ctx.mouseRay
 
                 Nothing ->
-                    NoOp
+                    case mWheelEntity of
+                        Just { index } ->
+                            PlayingOnly <| TickleWheel index
+
+                        Nothing ->
+                            NoOp
 
         ( newPlayState, newMsg ) =
             update
@@ -499,6 +529,13 @@ mouseDown { dimensions, mouse } assets _ mode players { x, y } state =
                 |> Maybe.andThen
                     (\ray ->
                         List.find (hitTest3d ray 0.1) <| List.reverse game.entities.hand
+                    )
+
+        mWheelEntity =
+            ctx.mouseRay
+                |> Maybe.andThen
+                    (\ray ->
+                        List.find (hitTest3d ray 0.1) <| List.reverse game.entities.wheel
                     )
 
         -- Endgame

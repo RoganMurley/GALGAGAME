@@ -24,6 +24,7 @@ type PlayingOnly
     | TurnOnly TurnOnly
     | HoverCard HoverSelf
     | IllegalPass
+    | TickleWheel Int
 
 
 type TurnOnly
