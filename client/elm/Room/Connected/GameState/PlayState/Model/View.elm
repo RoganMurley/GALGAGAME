@@ -558,6 +558,7 @@ timeLeftView timeLeft ({ perspective, camera3d } as ctx) =
                     , perspective = perspective
                     , camera = camera3d
                     , mag = timeLimitProgress
+                    , thickness = 0.1
                     }
                 ]
 

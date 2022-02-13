@@ -1,44 +1,36 @@
 module Act where
 
+import Client (Client (..))
+import qualified Client
+import Command (Command (..))
+import qualified Command
 import Config (App)
 import Control.Concurrent.STM.TVar (TVar, readTVar)
 import Control.Monad (forM_, when)
 import Control.Monad.IO.Class (liftIO)
 import Control.Monad.STM (STM, atomically)
 import Data.Aeson (encode)
-import Data.Time.Clock (UTCTime, getCurrentTime)
+import Data.Maybe (fromMaybe)
 import Data.Monoid ((<>))
 import Data.String.Conversions (cs)
 import Data.Text (Text)
-import GameCommand (GameCommand(..), update)
-import GameState (GameState(..), PlayState)
+import Data.Time.Clock (UTCTime, getCurrentTime)
+import GameCommand (GameCommand (..), update)
+import GameState (GameState (..), PlayState)
+import qualified Log
 import Mirror (mirror)
 import Model (Model)
-import Player (WhichPlayer(..), other)
-import ResolveData (ResolveData(..))
-import Scenario (Scenario(..))
+import Outcome (Outcome)
+import qualified Outcome
+import Player (WhichPlayer (..), other)
+import qualified Replay.Final
+import ResolveData (ResolveData (..))
+import Room (Room)
+import qualified Room
+import Scenario (Scenario (..))
+import qualified Stats.Stats as Stats
 import Text.Printf (printf)
 import Util (Err, modReturnTVar)
-
-
-import qualified Command
-import Command (Command(..))
-
-import qualified Client
-import Client (Client(..))
-
-import qualified Log
-
-import qualified Outcome
-import Outcome (Outcome)
-
-import qualified Replay.Final
-
-import qualified Room
-import Room (Room)
-
-import qualified Stats.Stats as Stats
-
 
 roomUpdate :: GameCommand -> WhichPlayer -> UTCTime -> TVar Room -> STM (Room, Either Err [Outcome])
 roomUpdate cmd which time roomVar =
@@ -59,7 +51,6 @@ roomUpdate cmd which time roomVar =
         Right (newState, outcomes) ->
           Right ((Room.setState room) <$> newState, outcomes)
 
-
 actPlay :: Command -> WhichPlayer -> TVar Room -> Text -> Text -> App ()
 actPlay cmd which roomVar username roomName = do
   Log.info $ printf "<%s@%s>: %s" username roomName (show cmd)
@@ -77,17 +68,16 @@ actPlay cmd which roomVar username roomName = do
       actSpec cmd roomVar
   where
     trans :: Command -> Maybe GameCommand
-    trans EndTurnCommand             = Just EndTurn
-    trans (PlayCardCommand index)    = Just (PlayCard index)
-    trans (HoverCardCommand hover)   = Just (HoverCard hover)
-    trans RematchCommand             = Just Rematch
-    trans ConcedeCommand             = Just Concede
+    trans EndTurnCommand = Just EndTurn
+    trans (PlayCardCommand index) = Just (PlayCard index)
+    trans (HoverCardCommand hover) = Just (HoverCard hover)
+    trans RematchCommand = Just Rematch
+    trans ConcedeCommand = Just Concede
     trans (ChatCommand name content) = Just (Chat name content)
     trans (SelectCharacterCommand c) = Just (SelectCharacter c)
-    trans (GodModeCommand msg)       = Just (God msg)
-    trans HeartbeatCommand           = Just Heartbeat
-    trans _                          = Nothing
-
+    trans (GodModeCommand msg) = Just (God msg)
+    trans HeartbeatCommand = Just Heartbeat
+    trans _ = Nothing
 
 actSpec :: Command -> TVar Room -> App ()
 actSpec cmd roomVar = do
@@ -98,7 +88,6 @@ actSpec cmd roomVar = do
     Nothing ->
       return ()
 
-
 syncClient :: Client -> WhichPlayer -> GameState -> App ()
 syncClient client which game =
   case which of
@@ -106,7 +95,6 @@ syncClient client which game =
       Client.send (("sync:" <>) . cs . encode $ game) client
     PlayerB ->
       Client.send (("sync:" <>) . cs . encode . mirror $ game) client
-
 
 syncRoomClients :: Room -> App ()
 syncRoomClients room = do
@@ -118,17 +106,15 @@ syncRoomClients room = do
     syncMsgPa = ("sync:" <>) . cs . encode $ game :: Text
     syncMsgPb = ("sync:" <>) . cs . encode . mirror $ game :: Text
 
-
 syncPlayersRoom :: Room -> App ()
 syncPlayersRoom room = do
   Room.sendExcluding PlayerB syncMsgPa room
-  Room.sendToPlayer  PlayerB syncMsgPb room
+  Room.sendToPlayer PlayerB syncMsgPb room
   where
     syncMsgPa :: Text
     syncMsgPa = ("syncPlayers:" <>) . cs . encode $ Room.players room
     syncMsgPb :: Text
     syncMsgPb = ("syncPlayers:" <>) . cs . encode . mirror $ Room.players room
-
 
 resolveRoomClients :: [ResolveData] -> Model -> PlayState -> Maybe WhichPlayer -> Room -> App ()
 resolveRoomClients res initial final exclude room = do
@@ -143,9 +129,8 @@ resolveRoomClients res initial final exclude room = do
     mirrorOutcome :: Outcome.Encodable
     mirrorOutcome = Outcome.Resolve (mirror <$> res) (mirror initial) (mirror final) (other <$> exclude)
 
-
-handleExperience :: WhichPlayer -> Maybe WhichPlayer -> Room -> App ()
-handleExperience which winner room = do
+handleExperience :: WhichPlayer -> Maybe Stats.Experience -> Maybe WhichPlayer -> Room -> App ()
+handleExperience which forceXp winner room = do
   -- Change this to be a transaction!
   -- Save usernames all game.
   let scenario = Room.getScenario room
@@ -153,7 +138,8 @@ handleExperience which winner room = do
   case mUsername of
     Just username -> do
       initialXp <- Stats.load username
-      let xpDelta = if Just which == winner then scenario_xpWin scenario else scenario_xpLoss scenario
+      let xpDeltaRaw = if Just which == winner then scenario_xpWin scenario else scenario_xpLoss scenario
+      let xpDelta = fromMaybe xpDeltaRaw forceXp
       Stats.increase username xpDelta
       let statChange = Stats.statChange initialXp xpDelta
       Log.info $ printf "Xp change for %s: %s" username (show statChange)
@@ -179,6 +165,6 @@ actOutcome room (Outcome.SaveReplay replay) = do
   Log.info "Saving replay..."
   replayId <- Replay.Final.save replay
   Room.broadcast ("replaySaved:" <> (cs . show $ replayId)) room
-actOutcome room (Outcome.HandleExperience winner) = do
-  handleExperience PlayerA winner room
-  handleExperience PlayerB winner room
+actOutcome room (Outcome.HandleExperience winner force) = do
+  handleExperience PlayerA force winner room
+  handleExperience PlayerB force winner room

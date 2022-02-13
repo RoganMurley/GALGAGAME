@@ -177,20 +177,21 @@ fullCircleFragment =
     |]
 
 
-donutFragment : Shader {} (Uniforms { mag : Float }) { vcoord : Vec2 }
+donutFragment : Shader {} (Uniforms { mag : Float, thickness : Float }) { vcoord : Vec2 }
 donutFragment =
     [glsl|
         precision mediump float;
 
         uniform vec3 color;
         uniform float mag;
+        uniform float thickness;
 
         varying vec2 vcoord;
 
         void main ()
         {
             float radius = .9;
-            float radiusInner = .8;
+            float radiusInner = .9 - thickness;
             float dist = dot(2. * vcoord - 1., 2. * vcoord - 1.);
             float angle = atan(2. * vcoord.x - 1., 2. * vcoord.y - 1.);
             float intensity = step(dist, radius) - step(dist, radiusInner);

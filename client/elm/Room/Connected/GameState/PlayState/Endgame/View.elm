@@ -156,7 +156,7 @@ xpView stats tick maxTick ctx =
             currentXp - Stats.levelAt currentXp
 
         end =
-            Stats.nextLevelAt currentXp
+            Stats.nextLevelAt currentXp - Stats.levelAt currentXp
 
         progress =
             Ease.outQuad <|
@@ -168,26 +168,66 @@ xpView stats tick maxTick ctx =
 
         color =
             vec3 (244 / 255) (241 / 255) (94 / 255)
+
+        colorDark =
+            vec3 (40 / 255) (20 / 255) (20 / 255)
+
+        donutEntities =
+            [ Render.Primitives.donut
+                { rotation = makeRotate 0 (vec3 0 0 1)
+                , scale = makeScale3 -(0.51 * radius) (0.51 * radius) 1
+                , color = color
+                , pos = vec3 (w * 0.5) (h * 0.5) 0
+                , perspective = ortho
+                , camera = camera2d
+                , mag = 0
+                , thickness = 0.415
+                }
+            , Render.Primitives.donut
+                { rotation = makeRotate 0 (vec3 0 0 1)
+                , scale = makeScale3 -(0.5 * radius) (0.5 * radius) 1
+                , color = vec3 (0 / 255) (0 / 255) (81 / 255)
+                , pos = vec3 (w * 0.5) (h * 0.5) 0
+                , perspective = ortho
+                , camera = camera2d
+                , mag = 0
+                , thickness = 0.4
+                }
+            , Render.Primitives.donut
+                { rotation = makeRotate 0 (vec3 0 0 1)
+                , scale = makeScale3 -(0.5 * radius) (0.5 * radius) 1
+                , color = color
+                , pos = vec3 (w * 0.5) (h * 0.5) 0
+                , perspective = ortho
+                , camera = camera2d
+                , mag = 1 - (start / end)
+                , thickness = 0.4
+                }
+            ]
+
+        textEntities =
+            Font.view
+                "Futura"
+                ("LEVEL " ++ String.fromInt (Stats.levelFromExperience currentXp))
+                { x = (w * 0.5) - (0.008 * radius)
+                , y = h * 0.5
+                , scaleX = 0.00035 * radius
+                , scaleY = 0.00035 * radius
+                , color = colorDark
+                }
+                ctx
+                ++ Font.view
+                    "Futura"
+                    ("LEVEL " ++ String.fromInt (Stats.levelFromExperience currentXp))
+                    { x = w * 0.5
+                    , y = h * 0.5
+                    , scaleX = 0.00035 * radius
+                    , scaleY = 0.00035 * radius
+                    , color = color
+                    }
+                    ctx
     in
-    Render.Primitives.donut
-        { rotation = makeRotate 0 (vec3 0 0 1)
-        , scale = makeScale3 -(0.5 * radius) (0.5 * radius) 1
-        , color = color
-        , pos = vec3 (w * 0.5) (h * 0.5) 0
-        , perspective = ortho
-        , camera = camera2d
-        , mag = 1 - (start / end)
-        }
-        :: Font.view
-            "Futura"
-            ("Level " ++ String.fromInt (Stats.levelFromExperience currentXp))
-            { x = w * 0.5
-            , y = h * 0.5
-            , scaleX = 0.0005 * radius
-            , scaleY = 0.0005 * radius
-            , color = color
-            }
-            ctx
+    donutEntities ++ textEntities
 
 
 buttonEntities : Render.Params -> Buttons -> GameType -> Float -> MouseState -> Buttons

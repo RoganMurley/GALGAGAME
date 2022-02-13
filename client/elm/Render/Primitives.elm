@@ -37,7 +37,7 @@ fullCircle =
         Render.Meshes.quad
 
 
-donut : Uniforms { mag : Float } -> Entity
+donut : Uniforms { mag : Float, thickness : Float } -> Entity
 donut =
     entity
         Render.Shaders.donutFragment

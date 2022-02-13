@@ -72,8 +72,8 @@ fromStatChange stats =
     , aftermath =
         [ Winner
         , Aftermath.StatChange initialStats 500
-        , Aftermath.StatChange stats 1800
-        , Aftermath.StatChange finalStats 500
+        , Aftermath.StatChange stats 1000
+        , Aftermath.StatChange finalStats 1500
         ]
     }
 
