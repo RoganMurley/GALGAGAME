@@ -26,6 +26,7 @@ import Main.Messages as Main
 import Main.Types exposing (Flags)
 import Math.Vector2 exposing (vec2)
 import Math.Vector3
+import Maybe.Extra as Maybe
 import Mode exposing (Mode)
 import Model.Decoders as Model
 import Model.Diff exposing (Diff, initDiff)
@@ -41,6 +42,7 @@ import Resolvable.State as Resolvable exposing (resolving)
 import Resolvable.Types as Resolvable
 import Result
 import Room.Messages as Room
+import Stats
 import Util exposing (message)
 import Wheel.State as Wheel
 import WhichPlayer.Types exposing (WhichPlayer(..))
@@ -373,7 +375,7 @@ tick flags state chat gameType dt =
             , msg
             )
 
-        Ended ({ game, buttons } as ended) ->
+        Ended ({ game, buttons, xp } as ended) ->
             let
                 ( newGame, msg ) =
                     Game.tick flags dt game chat
@@ -390,12 +392,22 @@ tick flags state chat gameType dt =
                     }
 
                 newButtons =
-                    Endgame.buttonEntities params buttons gameType dt flags.mouse
+                    if resolving game.res || Maybe.isJust xp then
+                        Buttons.empty
+
+                    else
+                        Endgame.buttonEntities
+                            params
+                            buttons
+                            gameType
+                            dt
+                            flags.mouse
             in
             ( Ended
                 { ended
                     | game = newGame
                     , buttons = newButtons
+                    , xp = Stats.tick dt (resolving game.res) xp
                 }
             , msg
             )
@@ -575,39 +587,35 @@ mouseDown { dimensions, mouse } assets _ mode players { x, y } state =
                             Cmd.none
 
                 Ended { buttons, replayId } ->
-                    if resolving game.res then
-                        Cmd.none
+                    case Buttons.hit buttons pos of
+                        Just ( key, _ ) ->
+                            case key of
+                                "playAgain" ->
+                                    playMsg <| PlayState.PlayingOnly PlayState.Rematch
 
-                    else
-                        case Buttons.hit buttons pos of
-                            Just ( key, _ ) ->
-                                case key of
-                                    "playAgain" ->
+                                "watchReplay" ->
+                                    case replayId of
+                                        Just r ->
+                                            playMsg <| PlayState.GotoReplay r
+
+                                        Nothing ->
+                                            Cmd.none
+
+                                "continue" ->
+                                    if Players.shouldRematch players then
                                         playMsg <| PlayState.PlayingOnly PlayState.Rematch
 
-                                    "watchReplay" ->
-                                        case replayId of
-                                            Just r ->
-                                                playMsg <| PlayState.GotoReplay r
+                                    else
+                                        message
+                                            << Main.RoomMsg
+                                        <|
+                                            Room.StartGame Mode.Playing Nothing
 
-                                            Nothing ->
-                                                Cmd.none
+                                _ ->
+                                    Cmd.none
 
-                                    "continue" ->
-                                        if Players.shouldRematch players then
-                                            playMsg <| PlayState.PlayingOnly PlayState.Rematch
-
-                                        else
-                                            message
-                                                << Main.RoomMsg
-                                            <|
-                                                Room.StartGame Mode.Playing Nothing
-
-                                    _ ->
-                                        Cmd.none
-
-                            Nothing ->
-                                Cmd.none
+                        Nothing ->
+                            Cmd.none
     in
     ( newPlayState
     , Cmd.batch

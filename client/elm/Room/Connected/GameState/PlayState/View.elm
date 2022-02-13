@@ -17,8 +17,8 @@ webglView playState chat params assets =
         Playing { game } ->
             Model.view params game chat assets
 
-        Ended { winner, game, buttons } ->
+        Ended { winner, game, buttons, xp } ->
             List.concat
                 [ Model.view params game chat assets
-                , Endgame.view params assets winner (resolving game.res) buttons
+                , Endgame.view params assets winner (resolving game.res) xp buttons
                 ]
