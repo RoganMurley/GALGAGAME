@@ -1,10 +1,10 @@
 module PlayState.Types exposing (PlayState(..), ResolveOutcomeInput)
 
+import Aftermath.Types as Aftermath
 import Buttons.Types exposing (Buttons)
 import Game.Types as Game
 import Model.Types exposing (Model)
 import Resolvable.Types as Resolvable
-import Stats exposing (StatChange)
 import WhichPlayer.Types exposing (WhichPlayer)
 
 
@@ -14,7 +14,7 @@ type PlayState
         { game : Game.Model
         , winner : Maybe WhichPlayer
         , replayId : Maybe String
-        , xp : Maybe StatChange
+        , aftermath : Aftermath.Model
         , buttons : Buttons
         }
 

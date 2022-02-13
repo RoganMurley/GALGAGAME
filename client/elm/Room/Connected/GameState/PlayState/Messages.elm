@@ -16,6 +16,7 @@ type Msg
     | GotoComputerGame
     | StatChange StatChange
     | ServerTimeLeft Float
+    | SkipAftermath
     | NoOp
 
 

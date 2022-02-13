@@ -1,5 +1,6 @@
 module PlayState.State exposing (carry, get, map, mouseDown, mouseUp, resolveOutcomeStr, tick, update)
 
+import Aftermath.State as Aftermath
 import Animation.Types exposing (Anim(..))
 import Assets.State as Assets
 import Assets.Types as Assets
@@ -107,13 +108,21 @@ update msg state mode assets =
         StatChange statChange ->
             case state of
                 Ended ended ->
-                    ( Ended { ended | xp = Just statChange }, Cmd.none )
+                    ( Ended { ended | aftermath = Aftermath.fromStatChange statChange }, Cmd.none )
 
                 _ ->
                     ( state, Cmd.none )
 
         ServerTimeLeft timeLeft ->
             ( map (\game -> { game | timeLeft = Just timeLeft }) state, Cmd.none )
+
+        SkipAftermath ->
+            case state of
+                Ended ended ->
+                    ( Ended { ended | aftermath = Aftermath.skip ended.aftermath }, Cmd.none )
+
+                _ ->
+                    ( state, Cmd.none )
 
         NoOp ->
             ( state, Cmd.none )
@@ -375,7 +384,7 @@ tick flags state chat gameType dt =
             , msg
             )
 
-        Ended ({ game, buttons, xp } as ended) ->
+        Ended ({ game, buttons, aftermath } as ended) ->
             let
                 ( newGame, msg ) =
                     Game.tick flags dt game chat
@@ -392,7 +401,7 @@ tick flags state chat gameType dt =
                     }
 
                 newButtons =
-                    if resolving game.res || Maybe.isJust xp then
+                    if resolving game.res || Aftermath.aftermathing aftermath then
                         Buttons.empty
 
                     else
@@ -407,7 +416,12 @@ tick flags state chat gameType dt =
                 { ended
                     | game = newGame
                     , buttons = newButtons
-                    , xp = Stats.tick dt (resolving game.res) xp
+                    , aftermath =
+                        if resolving game.res then
+                            aftermath
+
+                        else
+                            Aftermath.tick dt aftermath
                 }
             , msg
             )
@@ -616,11 +630,26 @@ mouseDown { dimensions, mouse } assets _ mode players { x, y } state =
 
                         Nothing ->
                             Cmd.none
+
+        endstateMsg =
+            case state of
+                Ended _ ->
+                    message
+                        << Main.RoomMsg
+                        << Room.ConnectedMsg
+                        << Connected.GameStateMsg
+                        << GameState.PlayStateMsg
+                    <|
+                        PlayState.SkipAftermath
+
+                _ ->
+                    Cmd.none
     in
     ( newPlayState
     , Cmd.batch
         [ newMsg
         , buttonMsg
+        , endstateMsg
         ]
     )
 

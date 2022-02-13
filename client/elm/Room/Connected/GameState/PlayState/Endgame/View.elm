@@ -1,5 +1,7 @@
 module Endgame.View exposing (animView, buttonEntities, view)
 
+import Aftermath.State as Aftermath
+import Aftermath.Types as Aftermath exposing (Aftermath(..))
 import Animation.Types exposing (Anim(..))
 import Assets.State as Assets
 import Assets.Types as Assets
@@ -115,8 +117,8 @@ animView ctx =
             []
 
 
-view : Render.Params -> Assets.Model -> Maybe WhichPlayer -> Bool -> Maybe StatChange -> Buttons -> List WebGL.Entity
-view { w, h } assets winner resolving mStats buttons =
+view : Render.Params -> Assets.Model -> Maybe WhichPlayer -> Bool -> Aftermath.Model -> Buttons -> List WebGL.Entity
+view { w, h } assets winner resolving aftermath buttons =
     let
         ctx =
             bareContextInit ( w, h ) assets NoMouse
@@ -125,65 +127,67 @@ view { w, h } assets winner resolving mStats buttons =
         []
 
     else
-        List.concat
-            [ backgroundView { ctx | anim = GameEnd winner, progress = 1 }
-            , xpView mStats ctx
-            , Buttons.view buttons ctx
-            ]
+        List.concat <|
+            case Aftermath.active aftermath of
+                Just Aftermath.Winner ->
+                    [ animView { ctx | anim = GameEnd winner, progress = 1 } ]
+
+                Just (Aftermath.StatChange stats t) ->
+                    [ backgroundView { ctx | anim = GameEnd winner, progress = 1 }
+                    , xpView stats aftermath.tick t ctx
+                    ]
+
+                Nothing ->
+                    [ backgroundView { ctx | anim = GameEnd winner, progress = 1 }
+                    , Buttons.view buttons ctx
+                    ]
 
 
-xpView : Maybe StatChange -> Context -> List WebGL.Entity
-xpView mStats ctx =
+xpView : StatChange -> Float -> Float -> Context -> List WebGL.Entity
+xpView stats tick maxTick ctx =
     let
+        { initialXp, finalXp } =
+            stats
+
         { camera2d, ortho, w, h, radius } =
             ctx
+
+        start =
+            currentXp - Stats.levelAt currentXp
+
+        end =
+            Stats.nextLevelAt currentXp
+
+        progress =
+            Ease.outQuad <|
+                clamp 0 1 <|
+                    (tick / maxTick)
+
+        currentXp =
+            interpFloat progress initialXp finalXp
+
+        color =
+            vec3 (244 / 255) (241 / 255) (94 / 255)
     in
-    case mStats of
-        Just { initialXp, tick, finalXp } ->
-            let
-                start =
-                    currentXp - Stats.levelAt currentXp
-
-                end =
-                    Stats.nextLevelAt currentXp
-
-                startTick =
-                    800
-
-                maxTick =
-                    1000
-
-                progress =
-                    Ease.outQuad (max 0 (min 1 ((tick - startTick) / maxTick)))
-
-                currentXp =
-                    interpFloat progress initialXp finalXp
-
-                color =
-                    vec3 (244 / 255) (241 / 255) (94 / 255)
-            in
-            Render.Primitives.donut
-                { rotation = makeRotate 0 (vec3 0 0 1)
-                , scale = makeScale3 -(0.5 * radius) (0.5 * radius) 1
-                , color = color
-                , pos = vec3 (w * 0.5) (h * 0.5) 0
-                , perspective = ortho
-                , camera = camera2d
-                , mag = 1 - (start / end)
-                }
-                :: Font.view
-                    "Futura"
-                    ("Level " ++ String.fromInt (Stats.levelFromExperience currentXp))
-                    { x = w * 0.5
-                    , y = h * 0.5
-                    , scaleX = 0.0005 * radius
-                    , scaleY = 0.0005 * radius
-                    , color = color
-                    }
-                    ctx
-
-        Nothing ->
-            []
+    Render.Primitives.donut
+        { rotation = makeRotate 0 (vec3 0 0 1)
+        , scale = makeScale3 -(0.5 * radius) (0.5 * radius) 1
+        , color = color
+        , pos = vec3 (w * 0.5) (h * 0.5) 0
+        , perspective = ortho
+        , camera = camera2d
+        , mag = 1 - (start / end)
+        }
+        :: Font.view
+            "Futura"
+            ("Level " ++ String.fromInt (Stats.levelFromExperience currentXp))
+            { x = w * 0.5
+            , y = h * 0.5
+            , scaleX = 0.0005 * radius
+            , scaleY = 0.0005 * radius
+            , color = color
+            }
+            ctx
 
 
 buttonEntities : Render.Params -> Buttons -> GameType -> Float -> MouseState -> Buttons

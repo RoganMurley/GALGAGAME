@@ -1,4 +1,4 @@
-module Stats exposing (Experience, Level, StatChange, decodeStatChange, levelAt, levelFromExperience, levelToExperience, nextLevelAt, tick)
+module Stats exposing (Experience, Level, StatChange, decodeStatChange, levelAt, levelFromExperience, levelToExperience, nextLevelAt)
 
 import Json.Decode as Json exposing (Decoder, field, float)
 
@@ -12,8 +12,7 @@ type alias Experience =
 
 
 type alias StatChange =
-    { tick : Float
-    , initialXp : Experience
+    { initialXp : Experience
     , finalXp : Experience
     }
 
@@ -48,28 +47,8 @@ decodeStatChange msg =
     let
         decoder : Decoder StatChange
         decoder =
-            Json.map2 (StatChange 0)
+            Json.map2 StatChange
                 (field "initialExperience" float)
                 (field "finalExperience" float)
     in
     Json.decodeString decoder msg
-
-
-tick : Float -> Bool -> Maybe StatChange -> Maybe StatChange
-tick dt resolving mStats =
-    mStats
-        |> Maybe.andThen
-            (\stats ->
-                let
-                    newTick =
-                        stats.tick + dt
-                in
-                if resolving then
-                    Just stats
-
-                else if newTick < 2500 then
-                    Just { stats | tick = newTick }
-
-                else
-                    Nothing
-            )
