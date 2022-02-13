@@ -57,20 +57,19 @@ decodeStatChange msg =
 
 tick : Float -> Bool -> Maybe StatChange -> Maybe StatChange
 tick dt resolving mStats =
-    case mStats of
-        Just stats ->
-            let
-                newTick =
-                    stats.tick + dt
-            in
-            if resolving then
-                Just stats
+    mStats
+        |> Maybe.andThen
+            (\stats ->
+                let
+                    newTick =
+                        stats.tick + dt
+                in
+                if resolving then
+                    Just stats
 
-            else if newTick < 2500 then
-                Just { stats | tick = newTick }
+                else if newTick < 2500 then
+                    Just { stats | tick = newTick }
 
-            else
-                Nothing
-
-        Nothing ->
-            Nothing
+                else
+                    Nothing
+            )
