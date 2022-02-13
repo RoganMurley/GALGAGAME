@@ -508,10 +508,12 @@ morphSword =
     $ \w -> do
       hurt 7 (other w) Slash
       transmute $
-        \_ stackCard ->
+        \i stackCard ->
           case stackCard of
             StackCard _ (Card {card_aspect = Morph}) ->
-              Just $ Transmutation stackCard (transmuteToCard morphSword stackCard)
+              if i == 0
+                then Nothing
+                else Just $ Transmutation stackCard (transmuteToCard morphSword stackCard)
             _ ->
               Nothing
 
@@ -525,10 +527,12 @@ morphWand =
       len <- diasporaLength <$> getStack
       hurt (len * 3) (other w) Slash
       transmute $
-        \_ stackCard ->
+        \i stackCard ->
           case stackCard of
             StackCard _ (Card {card_aspect = Morph}) ->
-              Just $ Transmutation stackCard (transmuteToCard morphWand stackCard)
+              if i == 0
+                then Nothing
+                else Just $ Transmutation stackCard (transmuteToCard morphWand stackCard)
             _ ->
               Nothing
 
@@ -541,10 +545,12 @@ morphGrail =
     $ \w -> do
       heal 8 w
       transmute $
-        \_ stackCard ->
+        \i stackCard ->
           case stackCard of
             StackCard _ (Card {card_aspect = Morph}) ->
-              Just $ Transmutation stackCard (transmuteToCard morphGrail stackCard)
+              if i == 0
+                then Nothing
+                else Just $ Transmutation stackCard (transmuteToCard morphGrail stackCard)
             _ ->
               Nothing
 
