@@ -168,29 +168,33 @@ updatePlayingOnly msg state mode assets =
                 IllegalPass ->
                     case state of
                         Playing { game } ->
-                            let
-                                -- Construct the ResolveData clientside to avoid latency.
-                                newState : PlayState
-                                newState =
-                                    resolveOutcome
-                                        (Just state)
-                                        { initial = initial, resDiffList = resDiffList, finalState = state }
+                            if resolving game.res then
+                                ( state, Cmd.none )
 
-                                initial : Model
-                                initial =
-                                    game.res.final
+                            else
+                                let
+                                    -- Construct the ResolveData clientside to avoid latency.
+                                    newState : PlayState
+                                    newState =
+                                        resolveOutcome
+                                            (Just state)
+                                            { initial = initial, resDiffList = resDiffList, finalState = state }
 
-                                resDiffList : List Resolvable.ResolveDiffData
-                                resDiffList =
-                                    [ { diff = initDiff
-                                      , anim = HandFullPass
-                                      , animDamage = ( 0, 0 )
-                                      }
-                                    ]
-                            in
-                            ( newState
-                            , Cmd.none
-                            )
+                                    initial : Model
+                                    initial =
+                                        game.res.final
+
+                                    resDiffList : List Resolvable.ResolveDiffData
+                                    resDiffList =
+                                        [ { diff = initDiff
+                                          , anim = HandFullPass
+                                          , animDamage = ( 0, 0 )
+                                          }
+                                        ]
+                                in
+                                ( newState
+                                , Cmd.none
+                                )
 
                         _ ->
                             ( state
