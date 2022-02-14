@@ -75,10 +75,11 @@ tideWand =
   newCard
     Tide
     Wand
-    "Hurt for 3 for each other card\non the wheel"
+    "Hurt for 3 for each other card\non the wheel, then draw 1"
     $ \w -> do
       len <- diasporaLength <$> getStack
       hurt (len * 3) (other w) Slash
+      draw w w 1
 
 tideGrail :: Card
 tideGrail =
