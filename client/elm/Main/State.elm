@@ -27,7 +27,7 @@ import Math.Vector2 exposing (vec2)
 import Mode exposing (Mode(..))
 import Mouse exposing (MouseState(..))
 import Notifications.State as Notifications
-import Ports exposing (analytics, copyInput, godModeCommand, log, mouseDown, mouseMove, mouseUp, reload, selectAllInput, touch, websocketListen, websocketReconnect, websocketSend)
+import Ports exposing (analytics, copyInput, godModeCommand, log, mouseDown, mouseMove, mouseUp, reload, selectAllInput, touch, websocketListen, websocketSend)
 import Replay.State as Replay
 import Room.Generators exposing (generate)
 import Room.Messages as Room

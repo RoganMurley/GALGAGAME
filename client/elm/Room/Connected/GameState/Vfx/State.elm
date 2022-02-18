@@ -33,16 +33,15 @@ tick dt model timeLeft ctx =
             model.boogie + dt + dt * Ease.inSine risk
 
         tickle =
-            case model.tickle of
-                Nothing ->
-                    Nothing
-
-                Just ( index, t ) ->
+            Maybe.andThen
+                (\( index, t ) ->
                     if t - dt <= 0 then
                         Nothing
 
                     else
                         Just ( index, t - dt )
+                )
+                model.tickle
     in
     { model
         | depth = depth

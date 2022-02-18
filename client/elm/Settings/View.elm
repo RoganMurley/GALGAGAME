@@ -1,7 +1,7 @@
 module Settings.View exposing (view)
 
-import Html exposing (Html, button, div, h1, img, input, label, text)
-import Html.Attributes as H exposing (class, classList, src, style, type_, value)
+import Html exposing (Html, button, div, img, input, label, text)
+import Html.Attributes as H exposing (class, src, style, type_, value)
 import Html.Events exposing (onClick, onInput)
 import Main.Messages as Main
 import Main.Types exposing (Flags)

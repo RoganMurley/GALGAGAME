@@ -1,6 +1,5 @@
 module Lobby.State exposing (gameTypeToString, init, receive, skipLobbyCmd, update)
 
-import Browser.Navigation
 import GameType exposing (GameType(..))
 import Lobby.Messages exposing (Msg(..))
 import Lobby.Types exposing (LoginState(..), Model)
@@ -29,7 +28,7 @@ init roomID gameType mode =
 
 
 update : Model -> Msg -> Flags -> ( Model, Cmd Main.Msg )
-update ({ gameType, mode } as model) msg flags =
+update ({ gameType, mode } as model) msg _ =
     case msg of
         JoinRoom ->
             let
