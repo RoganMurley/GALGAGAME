@@ -25,14 +25,19 @@ levellingConstant =
     0.1
 
 
+exponentConstant : Float
+exponentConstant =
+    1.8
+
+
 levelFromExperience : Experience -> Level
 levelFromExperience xp =
-    1 + (floor <| levellingConstant * sqrt xp)
+    1 + (floor <| levellingConstant * (xp ^ (1 / exponentConstant)))
 
 
 levelToExperience : Level -> Experience
 levelToExperience level =
-    ((toFloat level - 1) / levellingConstant) ^ 2
+    ((toFloat level - 1) / levellingConstant) ^ exponentConstant
 
 
 nextLevelAt : Experience -> Experience
