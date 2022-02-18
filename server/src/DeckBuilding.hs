@@ -12,7 +12,6 @@ import Mirror (Mirror (..))
 import Model (Deck)
 import Player (WhichPlayer (..))
 import Stats.Stats (Experience, levelToExperience)
-import Util (Gen, shuffle)
 
 -- Rune
 data Rune = Rune
@@ -63,7 +62,7 @@ instance ToJSON ChosenCharacter where
   toJSON (ChosenCharacter character) =
     object ["chosen" .= character]
 
-data UnchosenCharacter = UnchosenCharacter Character
+data UnchosenCharacter = UnchosenCharacter (Maybe Character)
   deriving (Eq, Show)
 
 instance ToJSON UnchosenCharacter where
@@ -304,11 +303,3 @@ characterCards Character {character_choice} =
           <$> [rune_cards runeA, rune_cards runeB, rune_cards runeC] >>= replicate 3
     Right deck ->
       deck
-
-randomRunes :: Gen -> (Rune, Rune, Rune)
-randomRunes gen =
-  case shuffle gen mainRunes of
-    runeA : runeB : runeC : _ ->
-      (runeA, runeB, runeC)
-    _ ->
-      error "not enough runes to randomise"

@@ -171,10 +171,10 @@ tick flags state chat gameType dt =
                 ctx =
                     bareContextInit flags.dimensions Assets.init flags.mouse
 
-                newSelecting =
+                ( newSelecting, cmd ) =
                     DeckBuilding.tick ctx dt chat selecting
             in
-            ( Selecting newSelecting, Cmd.none )
+            ( Selecting newSelecting, Cmd.map SelectingMsg cmd )
 
         Started playState ->
             let

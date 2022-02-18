@@ -1,4 +1,4 @@
-module Carousel exposing (Carousel, backward, forward, init)
+module Carousel exposing (Carousel, backward, forward, init, toList)
 
 
 type alias Carousel a =
@@ -48,3 +48,8 @@ backward { previous, selected, remaining } =
                 , selected = selected
                 , remaining = []
                 }
+
+
+toList : Carousel a -> List a
+toList { previous, selected, remaining } =
+    previous ++ selected :: remaining

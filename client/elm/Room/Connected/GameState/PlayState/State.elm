@@ -43,7 +43,6 @@ import Resolvable.State as Resolvable exposing (resolving)
 import Resolvable.Types as Resolvable
 import Result
 import Room.Messages as Room
-import Stats
 import Util exposing (message)
 import Wheel.State as Wheel
 import WhichPlayer.Types exposing (WhichPlayer(..))

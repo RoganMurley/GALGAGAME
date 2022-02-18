@@ -10,7 +10,7 @@ import Math.Vector3 exposing (vec3)
 import Mouse exposing (MouseState(..))
 import RuneSelect.Entities as RuneSelect
 import RuneSelect.Messages exposing (Msg(..))
-import RuneSelect.Types exposing (Model)
+import RuneSelect.Types exposing (Model, Rune)
 
 
 update : Msg -> Model -> Model

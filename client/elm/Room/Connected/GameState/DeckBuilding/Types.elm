@@ -7,7 +7,7 @@ import Vfx.Types as Vfx
 
 
 type alias Model =
-    { character : Character
+    { character : Maybe Character
     , runes : List Rune
     , runeSelect : Maybe RuneSelect.Model
     , ready : Bool
@@ -24,7 +24,7 @@ type alias Character =
 
 type ChoosingCharacter
     = ChosenCharacter Character
-    | UnchosenCharacter Character
+    | UnchosenCharacter (Maybe Character)
 
 
 type alias RuneChoice =

@@ -14,6 +14,7 @@ import GameState.Messages as GameState
 import Main.Messages as Main
 import Math.Vector2 exposing (vec2)
 import Math.Vector3 exposing (vec3)
+import Maybe.Extra as Maybe
 import Mouse exposing (Position)
 import Players exposing (Players)
 import Ports exposing (log)
@@ -27,7 +28,7 @@ import Util exposing (message)
 import Vfx.State as Vfx
 
 
-init : Bool -> Character -> List Rune -> Model
+init : Bool -> Maybe Character -> List Rune -> Model
 init ready character runes =
     { character = character
     , runes = runes
@@ -40,7 +41,7 @@ init ready character runes =
 
 
 update : Msg -> Model -> Players -> ( Model, Cmd Main.Msg )
-update msg ({ character } as model) players =
+update msg model players =
     case msg of
         Select selectCharacter ->
             let
@@ -53,51 +54,68 @@ update msg ({ character } as model) players =
             ( { model | ready = True }, cmd )
 
         EnterRuneSelect cursor ->
-            case getRuneFromCursor cursor character of
-                Just rune ->
-                    let
-                        excludedRunes : List Rune
-                        excludedRunes =
-                            List.filterMap identity <|
-                                [ Just rune
-                                , getRuneFromCursor (nextCursor cursor) character
-                                , getRuneFromCursor (nextCursor (nextCursor cursor)) character
-                                ]
+            case model.character of
+                Just character ->
+                    case getRuneFromCursor cursor character of
+                        Just rune ->
+                            let
+                                excludedRunes : List Rune
+                                excludedRunes =
+                                    List.filterMap identity <|
+                                        [ Just rune
+                                        , getRuneFromCursor (nextCursor cursor) character
+                                        , getRuneFromCursor (nextCursor (nextCursor cursor)) character
+                                        ]
 
-                        xp =
-                            Maybe.map .xp players.pa
-                                |> Maybe.withDefault 0
+                                xp =
+                                    Maybe.map .xp players.pa
+                                        |> Maybe.withDefault 0
 
-                        runeSelect : RuneSelect.Model
-                        runeSelect =
-                            { cursor = cursor
-                            , carousel =
-                                Carousel.init
-                                    rune
-                                <|
-                                    List.filter (\r -> r.xp <= xp) <|
-                                        List.filter (\r -> not (List.member r excludedRunes))
-                                            model.runes
-                            , entities = []
-                            , hover = Nothing
-                            , buttons = Buttons.empty
-                            }
-                    in
-                    ( { model | runeSelect = Just runeSelect }, Cmd.none )
+                                runeSelect : RuneSelect.Model
+                                runeSelect =
+                                    { cursor = cursor
+                                    , carousel =
+                                        Carousel.init
+                                            rune
+                                        <|
+                                            List.filter (\r -> r.xp <= xp) <|
+                                                List.filter (\r -> not (List.member r excludedRunes))
+                                                    model.runes
+                                    , entities = []
+                                    , hover = Nothing
+                                    , buttons = Buttons.empty
+                                    }
+                            in
+                            ( { model | runeSelect = Just runeSelect }, Cmd.none )
+
+                        Nothing ->
+                            ( model, Cmd.none )
+
+                _ ->
+                    ( model, Cmd.none )
+
+        ConfirmRune cursor rune ->
+            case model.character of
+                Just character ->
+                    ( { model
+                        | character = Just <| setRuneFromCursor cursor rune character
+                        , runeSelect = Nothing
+                      }
+                    , Cmd.none
+                    )
 
                 Nothing ->
                     ( model, Cmd.none )
 
-        ConfirmRune cursor rune ->
-            ( { model
-                | character = setRuneFromCursor cursor rune character
-                , runeSelect = Nothing
-              }
-            , Cmd.none
-            )
-
         RandomRunes ->
             let
+                xp =
+                    Maybe.map .xp players.pa
+                        |> Maybe.withDefault 0
+
+                legalRunes =
+                    List.filter (\rune -> rune.xp <= xp) model.runes
+
                 randomizer : List Rune -> Main.Msg
                 randomizer runes =
                     Main.RoomMsg <|
@@ -114,18 +132,19 @@ update msg ({ character } as model) players =
                                                     ++ String.fromInt (List.length runes)
                                                     ++ " runes"
             in
-            ( model, Random.generate (randomizer << Tuple.first) (Random.choices 3 model.runes) )
+            ( model, Random.generate (randomizer << Tuple.first) (Random.choices 3 legalRunes) )
 
         SetRunes runeA runeB runeC ->
             ( { model
                 | character =
-                    { choice =
-                        Just
-                            { runeA = runeA
-                            , runeB = runeB
-                            , runeC = runeC
-                            }
-                    }
+                    Just
+                        { choice =
+                            Just
+                                { runeA = runeA
+                                , runeB = runeB
+                                , runeC = runeC
+                                }
+                        }
               }
             , Cmd.none
             )
@@ -142,24 +161,35 @@ update msg ({ character } as model) players =
             ( model, log str )
 
 
-tick : Context -> Float -> Chat.Model -> Model -> Model
+tick : Context -> Float -> Chat.Model -> Model -> ( Model, Cmd Msg )
 tick ctx dt chat model =
     let
         newRuneSelect =
             Maybe.map (RuneSelect.tick ctx dt) model.runeSelect
-    in
-    { model
-        | runeSelect = newRuneSelect
-        , bounceTick = model.bounceTick + dt
-        , vfx = Vfx.tick dt model.vfx Nothing ctx
-        , buttons =
-            case model.runeSelect of
-                Just runeSelect ->
-                    RuneSelect.buttons ctx dt runeSelect
+
+        msg =
+            case model.character of
+                Just _ ->
+                    Cmd.none
 
                 Nothing ->
-                    characterButtons ctx dt chat model
-    }
+                    message RandomRunes
+
+        newModel =
+            { model
+                | runeSelect = newRuneSelect
+                , bounceTick = model.bounceTick + dt
+                , vfx = Vfx.tick dt model.vfx Nothing ctx
+                , buttons =
+                    case model.runeSelect of
+                        Just runeSelect ->
+                            RuneSelect.buttons ctx dt runeSelect
+
+                        Nothing ->
+                            characterButtons ctx dt chat model
+            }
+    in
+    ( newModel, msg )
 
 
 characterButtons : Context -> Float -> Chat.Model -> Model -> Buttons
@@ -229,7 +259,7 @@ characterButtons { radius, w, h, mouse } dt chat { ready, buttons, character } =
                     , disabled = False
                     }
                 ]
-                    ++ (case character.choice of
+                    ++ (case Maybe.map .choice character |> Maybe.join of
                             Nothing ->
                                 []
 
@@ -336,7 +366,12 @@ mouseDown { x, y } players model =
                 Just ( key, _ ) ->
                     case key of
                         "ready" ->
-                            update (Select model.character) model players
+                            case model.character of
+                                Just character ->
+                                    update (Select character) model players
+
+                                Nothing ->
+                                    ( model, Cmd.none )
 
                         "toggleChat" ->
                             ( model

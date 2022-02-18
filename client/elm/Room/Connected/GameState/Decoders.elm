@@ -29,7 +29,7 @@ selectingDecoder =
             Selecting <|
                 case choosingCharacter of
                     ChosenCharacter character ->
-                        DeckBuilding.init True character runes
+                        DeckBuilding.init True (Just character) runes
 
                     UnchosenCharacter character ->
                         DeckBuilding.init False character runes

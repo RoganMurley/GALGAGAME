@@ -1,129 +1,113 @@
 module Main where
 
-import Control.Concurrent.Lifted (fork, killThread, threadDelay)
-import Control.Monad (forM_)
-import Control.Monad.STM (STM, atomically)
+import Act (actOutcome, actPlay, actSpec, syncClient, syncPlayersRoom)
+import ArtificialIntelligence (Action (..), chooseAction)
+import qualified Auth.Apps as Auth
+import qualified Auth.Views as Auth
+import Client (Client (..), ClientConnection (..))
+import qualified Client
+import Command (Command (..))
+import qualified Command
+import Config (App, ConnectInfoConfig (..), runApp)
 import Control.Concurrent.Chan (newChan)
+import Control.Concurrent.Lifted (fork, killThread, threadDelay)
 import Control.Concurrent.STM.TVar (TVar, newTVar, readTVar, readTVarIO)
-import Control.Monad.Trans.Maybe (MaybeT)
 import Control.Exception.Lifted (finally)
-import Control.Monad (forever, mzero, when)
+import Control.Monad (forM_, forever, mzero, when)
 import Control.Monad.IO.Class (liftIO)
+import Control.Monad.STM (STM, atomically)
 import Control.Monad.Trans.Class (lift)
-import Control.Monad.Trans.Maybe (runMaybeT)
-import Data.Time.Clock (NominalDiffTime)
+import Control.Monad.Trans.Maybe (MaybeT, runMaybeT)
+import qualified DSL.Beta as Beta
+import qualified Data.GUID as GUID
 import Data.Maybe (fromMaybe)
 import Data.Monoid ((<>))
 import Data.String.Conversions (cs)
-import Text.Printf (printf)
-import Network.Wai (Application)
-import Network.Wai.Handler.WebSockets
-import Network.Wai.Handler.Warp (run)
-import System.Environment (lookupEnv)
-
-import Act (actOutcome, actPlay, actSpec, syncPlayersRoom, syncClient)
-import ArtificialIntelligence (Action(..), chooseAction)
-import Config (App, ConnectInfoConfig(..), runApp)
+import Data.Text (Text)
+import qualified Data.Text as Text
+import Data.Time.Clock (NominalDiffTime)
 import Database (postgresConnectInfo, redisConnectInfo)
-import GameState (GameState(..), PlayState(..), PlayingR(..), WaitType(..), isWinner)
+import DeckBuilding (ChosenCharacter (..), UnchosenCharacter (..))
+import qualified DeckBuilding
+import GameState (GameState (..), PlayState (..), PlayingR (..), WaitType (..), isWinner)
+import qualified Log
+import qualified Metrics
 import Model (Turn)
+import Negotiation (Prefix (..), Request (..))
+import qualified Negotiation
+import Network.Wai (Application)
+import Network.Wai.Handler.Warp (run)
+import Network.Wai.Handler.WebSockets
+import qualified Network.WebSockets as WS
 import Outcome (Outcome)
-import Player (WhichPlayer(..), other)
-import Scenario (Scenario(..))
+import Player (WhichPlayer (..), other)
+import qualified Replay.Final
+import Room (Room)
+import qualified Room
+import Scenario (Scenario (..))
+import Server (addComputerClient, addPlayerClient, addSpecClient)
+import qualified Server
 import Start (startProgram)
 import Stats.Stats (Experience)
-import User (User(..), getUsername, getUserFromCookies, isSuperuser)
-import Util (Gen, getGen, shuffle, split, to3Tuple)
-
-import qualified DSL.Beta as Beta
-
-import qualified Server
-import Server (addComputerClient, addPlayerClient, addSpecClient)
-
-import qualified DeckBuilding
-import DeckBuilding (Character(..), ChosenCharacter(..), UnchosenCharacter(..))
-
-import qualified Client
-import Client (Client(..), ClientConnection(..))
-
-import qualified Command
-import Command (Command(..))
-
-import qualified Negotiation
-import Negotiation (Prefix(..), Request(..))
-
-import qualified Log
-
-import qualified Room
-import Room (Room)
-
-import qualified Data.Text as Text
-import Data.Text (Text)
-
-import qualified Replay.Final
-
-import qualified Network.WebSockets as WS
-
-import qualified Auth.Apps as Auth
-import qualified Auth.Views as Auth
-import qualified Data.GUID as GUID
-
-import qualified Metrics
-
+import System.Environment (lookupEnv)
+import Text.Printf (printf)
+import User (User (..), getUserFromCookies, getUsername, isSuperuser)
+import Util (Gen, getGen, shuffle, to3Tuple)
 
 main :: IO ()
 main = do
   Log.setup
   loggerChan <- newChan
   loggerThreadID <- Log.forkLogger loggerChan
-  finally (do
-    -- If we're on production, these env vars will be present.
-    -- Defined in `prod.env` secret.
-    redisHost     <- lookupEnv "REDIS_HOST"
-    redisPort     <- lookupEnv "REDIS_PORT"
-    redisPassword <- lookupEnv "REDIS_PASSWORD"
-    let redisVars = (redisHost, redisPort, redisPassword)
+  finally
+    ( do
+        -- If we're on production, these env vars will be present.
+        -- Defined in `prod.env` secret.
+        redisHost <- lookupEnv "REDIS_HOST"
+        redisPort <- lookupEnv "REDIS_PORT"
+        redisPassword <- lookupEnv "REDIS_PASSWORD"
+        let redisVars = (redisHost, redisPort, redisPassword)
 
-    postgresHost     <- lookupEnv "POSTGRES_HOST"
-    postgresPort     <- lookupEnv "POSTGRES_PORT"
-    postgresUser     <- lookupEnv "POSTGRES_USER"
-    postgresPassword <- lookupEnv "POSTGRES_PASSWORD"
-    postgresDatabase <- lookupEnv "POSTGRES_DATABASE"
-    let postgresVars = (postgresHost, postgresPort, postgresUser, postgresPassword, postgresDatabase)
+        postgresHost <- lookupEnv "POSTGRES_HOST"
+        postgresPort <- lookupEnv "POSTGRES_PORT"
+        postgresUser <- lookupEnv "POSTGRES_USER"
+        postgresPassword <- lookupEnv "POSTGRES_PASSWORD"
+        postgresDatabase <- lookupEnv "POSTGRES_DATABASE"
+        let postgresVars = (postgresHost, postgresPort, postgresUser, postgresPassword, postgresDatabase)
 
-    apiKey <- cs <$> fromMaybe "fake-api-key" <$> lookupEnv "GALGA_API_KEY"
+        apiKey <- cs <$> fromMaybe "fake-api-key" <$> lookupEnv "GALGA_API_KEY"
 
-    datadogKey <- lookupEnv "DD_API_KEY"
-    datadogAppKey <- lookupEnv "DD_APP_KEY"
+        datadogKey <- lookupEnv "DD_API_KEY"
+        datadogAppKey <- lookupEnv "DD_APP_KEY"
 
-    let connectInfoConfig = ConnectInfoConfig
-                              { connectInfoConfig_redis      = redisConnectInfo redisVars
-                              , connectInfoConfig_postgres   = postgresConnectInfo postgresVars
-                              , connectInfoConfig_loggerChan = loggerChan
-                              , connectInfoConfig_apiKey     = apiKey
-                              , connectInfoConfig_datadog    = (cs <$> datadogAppKey, cs <$> datadogKey)
-                              }
+        let connectInfoConfig =
+              ConnectInfoConfig
+                { connectInfoConfig_redis = redisConnectInfo redisVars,
+                  connectInfoConfig_postgres = postgresConnectInfo postgresVars,
+                  connectInfoConfig_loggerChan = loggerChan,
+                  connectInfoConfig_apiKey = apiKey,
+                  connectInfoConfig_datadog = (cs <$> datadogAppKey, cs <$> datadogKey)
+                }
 
-    authApp <- runApp connectInfoConfig $ Auth.app connectInfoConfig
-    state <- atomically $ newTVar Server.initState
+        authApp <- runApp connectInfoConfig $ Auth.app connectInfoConfig
+        state <- atomically $ newTVar Server.initState
 
-    Log.infoIO "Starting up!"
+        Log.infoIO "Starting up!"
 
-    run 9160 $ waiApp state connectInfoConfig authApp
-    ) (-- Cleanup loose threads. Useful when developing with repl.
+        run 9160 $ waiApp state connectInfoConfig authApp
+    )
+    ( -- Cleanup loose threads. Useful when developing with repl.
       do
         Log.infoIO "Cleaning up!"
         killThread loggerThreadID
     )
 
-
 waiApp :: TVar Server.State -> ConnectInfoConfig -> Application -> Application
 waiApp state connectInfoConfig backupApp =
   websocketsOr
     WS.defaultConnectionOptions
-      (wsApp state connectInfoConfig)
-      backupApp
-
+    (wsApp state connectInfoConfig)
+    backupApp
 
 wsApp :: TVar Server.State -> ConnectInfoConfig -> WS.ServerApp
 wsApp state connectInfoConfig pending =
@@ -134,12 +118,10 @@ wsApp state connectInfoConfig pending =
     liftIO $ WS.forkPingThread connection 30
     begin connection msg user state
 
-
 connectionFail :: WS.Connection -> String -> App ()
 connectionFail conn str = do
   Log.warning str
   liftIO $ WS.sendTextData conn . Command.toChat . ErrorCommand $ cs str
-
 
 begin :: WS.Connection -> Text -> User -> TVar Server.State -> App ()
 begin conn request user state = do
@@ -176,10 +158,11 @@ begin conn request user state = do
         True -> do
           Log.info $ printf ("System message received: " <> cs systemMessage)
           roomVars <- liftIO . atomically $ Server.getAllRooms state
-          forM_ roomVars (
-            \roomVar -> do
-              room <- liftIO $ readTVarIO roomVar
-              fork $ Room.broadcast ("systemMessage:" <> systemMessage) room
+          forM_
+            roomVars
+            ( \roomVar -> do
+                room <- liftIO $ readTVarIO roomVar
+                fork $ Room.broadcast ("systemMessage:" <> systemMessage) room
             )
           liftIO $ WS.sendTextData conn ("systemMessageSuccess:" :: Text)
           Log.info $ printf ("System message success")
@@ -193,43 +176,38 @@ begin conn request user state = do
       Metrics.incr "error.unknown"
       connectionFail conn $ printf "<%s>: %s" username err
 
-
 beginPrefix :: Prefix -> TVar Server.State -> Client -> TVar Room -> App ()
-beginPrefix PrefixPlay  s c r = beginPlay s c r
-beginPrefix PrefixSpec  s c r = beginSpec s c r
+beginPrefix PrefixPlay s c r = beginPlay s c r
+beginPrefix PrefixSpec s c r = beginSpec s c r
 beginPrefix PrefixQueue s c r = beginQueue s c r
-beginPrefix PrefixCpu   s c r = beginComputer "CPU" s c r >> return ()
-
+beginPrefix PrefixCpu s c r = beginComputer "CPU" s c r >> return ()
 
 prefixMetric :: Prefix -> App ()
-prefixMetric PrefixPlay  = Metrics.incr "begin.play"
-prefixMetric PrefixSpec  = Metrics.incr "begin.spec"
+prefixMetric PrefixPlay = Metrics.incr "begin.play"
+prefixMetric PrefixSpec = Metrics.incr "begin.spec"
 prefixMetric PrefixQueue = Metrics.incr "begin.queue"
-prefixMetric PrefixCpu   = Metrics.incr "begin.cpu"
-
+prefixMetric PrefixCpu = Metrics.incr "begin.cpu"
 
 prefixWaitType :: Prefix -> WaitType
 prefixWaitType PrefixQueue = WaitQuickplay
-prefixWaitType _           = WaitCustom
-
+prefixWaitType _ = WaitCustom
 
 makeScenario :: Gen -> Prefix -> Scenario
-makeScenario gen prefix =
-  Scenario {
-    scenario_turn = turn
-  , scenario_characterPa = characterPa
-  , scenario_characterPb = characterPb
-  , scenario_prog = prog
-  , scenario_xpWin = xpWin
-  , scenario_xpLoss = xpLoss
-  , scenario_timeLimit = timeLimit
-  }
+makeScenario _ prefix =
+  Scenario
+    { scenario_turn = turn,
+      scenario_characterPa = characterPa,
+      scenario_characterPb = characterPb,
+      scenario_prog = prog,
+      scenario_xpWin = xpWin,
+      scenario_xpLoss = xpLoss,
+      scenario_timeLimit = timeLimit
+    }
   where
-    (genA, genB) = split gen
     characterPa :: Either UnchosenCharacter ChosenCharacter
-    characterPa = Left . UnchosenCharacter $ Character (Left $ DeckBuilding.randomRunes genA) 50
+    characterPa = Left $ UnchosenCharacter Nothing
     characterPb :: Either UnchosenCharacter ChosenCharacter
-    characterPb = Left . UnchosenCharacter $ Character (Left $ DeckBuilding.randomRunes genB) 50
+    characterPb = Left $ UnchosenCharacter Nothing
     turn :: Turn
     turn =
       case prefix of
@@ -246,23 +224,21 @@ makeScenario gen prefix =
     timeLimit :: NominalDiffTime
     timeLimit = fromIntegral (60 :: Integer)
 
-
 beginPlay :: TVar Server.State -> Client -> TVar Room -> App ()
 beginPlay state client roomVar = do
   Log.info $ printf "<%s>: Begin playing" (show $ Client.name client)
-  added <- liftIO $  atomically $ addPlayerClient client roomVar
+  added <- liftIO $ atomically $ addPlayerClient client roomVar
   case added of
     Nothing -> do
       Log.info $ printf "<%s>: Room is full" (show $ Client.name client)
       Client.send (Command.toChat $ ErrorCommand "room is full") client
     Just (which, outcomes) ->
       finally
-        (do
-          _ <- play which client roomVar outcomes
-          return ()
+        ( do
+            _ <- play which client roomVar outcomes
+            return ()
         )
         (disconnect client roomVar state)
-
 
 beginSpec :: TVar Server.State -> Client -> TVar Room -> App ()
 beginSpec state client roomVar = do
@@ -270,7 +246,6 @@ beginSpec state client roomVar = do
   finally
     (spectate client roomVar)
     (disconnect client roomVar state)
-
 
 beginComputer :: Text -> TVar Server.State -> Client -> TVar Room -> App Bool
 beginComputer cpuName state client roomVar = do
@@ -287,15 +262,14 @@ beginComputer cpuName state client roomVar = do
       return False
     Just (computerClient, (which, outcomes)) ->
       finally
-        (do
-          _ <- fork (computerPlay (other which) roomVar)
-          play which client roomVar outcomes
+        ( do
+            _ <- fork (computerPlay (other which) roomVar)
+            play which client roomVar outcomes
         )
-        (do
-          _ <- disconnect computerClient roomVar state
-          (disconnect client roomVar state)
+        ( do
+            _ <- disconnect computerClient roomVar state
+            (disconnect client roomVar state)
         )
-
 
 beginQueue :: TVar Server.State -> Client -> TVar Room -> App ()
 beginQueue state client roomVar = do
@@ -310,9 +284,9 @@ beginQueue state client roomVar = do
       room <- liftIO . readTVarIO $ roomVar
       Log.info $ printf "<%s>: Creating new quickplay room [%s]" clientName (Room.getName room)
       finally
-        (do
-          asyncQueueCpuFallback state client roomVar
-          beginPlay state client roomVar
+        ( do
+            asyncQueueCpuFallback state client roomVar
+            beginPlay state client roomVar
         )
         (disconnectComputers roomVar state)
   gen <- liftIO getGen
@@ -321,7 +295,6 @@ beginQueue state client roomVar = do
   let roomName = Text.take 8 guid
   newRoomVar <- liftIO . atomically $ Server.getOrCreateRoom roomName WaitQuickplay gen scenario state
   beginQueue state client newRoomVar
-
 
 asyncQueueCpuFallback :: TVar Server.State -> Client -> TVar Room -> App ()
 asyncQueueCpuFallback state client roomVar = do
@@ -357,7 +330,6 @@ asyncQueueCpuFallback state client roomVar = do
             Nothing ->
               return $ Left "Failed to add CPU"
 
-
 spectate :: Client -> TVar Room -> App ()
 spectate client roomVar = do
   room <- liftIO . atomically $ addSpecClient client roomVar
@@ -369,7 +341,6 @@ spectate client roomVar = do
     msg <- lift $ Client.receive client
     lift $ actSpec (Command.parse (Client.name client) msg) roomVar
   return ()
-
 
 play :: WhichPlayer -> Client -> TVar Room -> [Outcome] -> App Bool
 play which client roomVar outcomes = do
@@ -390,7 +361,6 @@ play which client roomVar outcomes = do
         lift $ actPlay command which roomVar username (Room.getName room)
   finalRoom <- liftIO $ readTVarIO roomVar
   return $ isWinner which $ Room.getState finalRoom
-
 
 computerPlay :: WhichPlayer -> TVar Room -> App ()
 computerPlay which roomVar = do
@@ -414,16 +384,14 @@ computerPlay which roomVar = do
       room <- liftIO $ readTVarIO roomVar
       when (Room.empty room) mzero
 
-
 chooseComputerCommand :: WhichPlayer -> TVar Room -> Gen -> App (Maybe Command)
 chooseComputerCommand which room gen = do
   r <- liftIO $ readTVarIO room
   case Room.getState r of
     Selecting deckModel _ _ ->
-      if DeckBuilding.isReady deckModel which then
-        return Nothing
-          else
-            return . Just . SelectCharacterCommand $ randomChoice
+      if DeckBuilding.isReady deckModel which
+        then return Nothing
+        else return . Just . SelectCharacterCommand $ randomChoice
     Started (Playing playing) -> do
       let model = playing_model playing
       return $ trans <$> chooseAction gen which model (Room.getScenario r)
@@ -431,29 +399,28 @@ chooseComputerCommand which room gen = do
       return Nothing
   where
     trans :: Action -> Command
-    trans EndAction          = EndTurnCommand
+    trans EndAction = EndTurnCommand
     trans (PlayAction index) = PlayCardCommand index
     randomChoice :: DeckBuilding.CharacterChoice
     randomChoice = DeckBuilding.CharacterChoice a b c
     (a, b, c) = to3Tuple $ DeckBuilding.rune_name <$> shuffle gen DeckBuilding.mainRunes
-
 
 disconnect :: Client -> TVar Room -> TVar Server.State -> App (Server.State)
 disconnect client roomVar state = do
   room <- liftIO . atomically $ Server.removeClient client roomVar
   Room.broadcast (Command.toChat . LeaveCommand $ Client.name client) room
   syncPlayersRoom room
-  if Room.empty room then
-    (do
-      Log.info $ printf "<%s>: Room is empty, deleting room" (show $ Client.name client)
-      liftIO $ atomically $ Server.deleteRoom (Room.getName room) state
-    )
-      else
-        (do
+  if Room.empty room
+    then
+      ( do
+          Log.info $ printf "<%s>: Room is empty, deleting room" (show $ Client.name client)
+          liftIO $ atomically $ Server.deleteRoom (Room.getName room) state
+      )
+    else
+      ( do
           Log.info $ printf "<%s>: Room is not empty, retaining room" (show $ Client.name client)
           liftIO $ readTVarIO state
-        )
-
+      )
 
 disconnectComputers :: TVar Room -> TVar Server.State -> App ()
 disconnectComputers roomVar state = do

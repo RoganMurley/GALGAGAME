@@ -9,7 +9,7 @@ choosingCharacter : Decoder ChoosingCharacter
 choosingCharacter =
     Json.oneOf
         [ Json.map ChosenCharacter (field "chosen" character)
-        , Json.map UnchosenCharacter (field "unchosen" character)
+        , Json.map UnchosenCharacter (field "unchosen" (maybe character))
         ]
 
 
