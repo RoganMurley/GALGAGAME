@@ -1,16 +1,17 @@
 module RuneSelect.Decoders exposing (rune, runeCards)
 
 import Card.Decoders as Card
-import Json.Decode as Json exposing (Decoder, field, index, string)
+import Json.Decode as Json exposing (Decoder, field, index, int, string)
 import RuneSelect.Types exposing (Rune, RuneCards)
 
 
 rune : Decoder Rune
 rune =
-    Json.map3 Rune
+    Json.map4 Rune
         (field "name" string)
         (field "img_url" string)
         (field "cards" runeCards)
+        (field "xp" int)
 
 
 runeCards : Decoder RuneCards

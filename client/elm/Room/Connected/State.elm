@@ -57,7 +57,7 @@ keyPress { chat } keycode =
 
 
 update : Flags -> Assets.Model -> Msg -> Model -> ( Model, Cmd Main.Msg )
-update flags assets msg ({ chat, game, mode, gameType } as model) =
+update flags assets msg ({ chat, game, mode, gameType, players } as model) =
     case msg of
         ChatMsg chatMsg ->
             let
@@ -69,7 +69,7 @@ update flags assets msg ({ chat, game, mode, gameType } as model) =
         GameStateMsg gameMsg ->
             let
                 ( newGame, cmd ) =
-                    GameState.update gameMsg game flags mode gameType assets
+                    GameState.update gameMsg game flags mode gameType players assets
             in
             ( { model | game = newGame }, cmd )
 
@@ -125,10 +125,13 @@ tick flags model dt =
 
 
 receive : Flags -> Assets.Model -> Model -> String -> ( Model, Cmd Main.Msg )
-receive flags assets ({ mode, gameType } as model) msg =
+receive flags assets model msg =
     let
         ( command, content ) =
             splitOnColon msg
+
+        { mode, gameType, players } =
+            model
     in
     case command of
         "sync" ->
@@ -140,6 +143,7 @@ receive flags assets ({ mode, gameType } as model) msg =
                         flags
                         mode
                         gameType
+                        players
                         assets
             in
             ( { model | game = newGame }, cmd )
@@ -157,6 +161,7 @@ receive flags assets ({ mode, gameType } as model) msg =
                                 flags
                                 mode
                                 gameType
+                                players
                                 assets
                     in
                     ( { model | game = newGame }
@@ -182,6 +187,7 @@ receive flags assets ({ mode, gameType } as model) msg =
                                 flags
                                 mode
                                 gameType
+                                players
                                 assets
                     in
                     ( { model | game = newGame }, cmd )
@@ -198,6 +204,7 @@ receive flags assets ({ mode, gameType } as model) msg =
                         flags
                         mode
                         gameType
+                        players
                         assets
             in
             ( { model | game = newGame }, cmd )
@@ -226,6 +233,7 @@ receive flags assets ({ mode, gameType } as model) msg =
                         flags
                         mode
                         gameType
+                        players
                         assets
             in
             ( { model | game = newGame }, cmd )
@@ -243,6 +251,7 @@ receive flags assets ({ mode, gameType } as model) msg =
                                 flags
                                 mode
                                 gameType
+                                players
                                 assets
                     in
                     ( { model | game = newGame }, cmd )
@@ -271,6 +280,7 @@ receive flags assets ({ mode, gameType } as model) msg =
                                 flags
                                 mode
                                 gameType
+                                players
                                 assets
 
                         -- Attempt to align the heartbeat with timeLeft

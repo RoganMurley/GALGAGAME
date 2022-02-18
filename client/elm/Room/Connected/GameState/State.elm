@@ -23,8 +23,8 @@ import Ports exposing (log)
 import Waiting.State as Waiting
 
 
-update : Msg -> GameState -> Flags -> Mode -> GameType -> Assets.Model -> ( GameState, Cmd Main.Msg )
-update msg state flags mode _ assets =
+update : Msg -> GameState -> Flags -> Mode -> GameType -> Players -> Assets.Model -> ( GameState, Cmd Main.Msg )
+update msg state flags mode _ players assets =
     case msg of
         PlayStateMsg playStateMsg ->
             case state of
@@ -89,7 +89,7 @@ update msg state flags mode _ assets =
                 Selecting m ->
                     let
                         ( newModel, cmd ) =
-                            DeckBuilding.update selectMsg m
+                            DeckBuilding.update selectMsg m players
                     in
                     ( Selecting newModel, cmd )
 
@@ -103,7 +103,7 @@ mouseDown mousePos state flags mode gameType players assets =
         Selecting selecting ->
             let
                 ( newSelecting, cmd ) =
-                    DeckBuilding.mouseDown mousePos selecting
+                    DeckBuilding.mouseDown mousePos players selecting
             in
             ( Selecting newSelecting, cmd )
 

@@ -18,6 +18,7 @@ type alias Rune =
     { name : String
     , imgURL : String
     , cards : RuneCards
+    , xp : Int
     }
 
 

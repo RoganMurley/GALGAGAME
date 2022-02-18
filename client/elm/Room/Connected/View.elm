@@ -13,7 +13,7 @@ import Html.Events exposing (onClick)
 import Main.Messages exposing (Msg(..))
 import Main.Types exposing (Flags)
 import PlayState.Types exposing (PlayState(..))
-import Players exposing (Players)
+import Players exposing (Player, Players)
 import Ripple.View as Ripple
 import Room.Messages as Room
 import WebGL
@@ -46,11 +46,11 @@ webglView { chat, game, ripples } flags assets =
 playersView : Players -> Html Msg
 playersView { pa, pb } =
     let
-        playerView : Maybe String -> Bool -> Html msg
-        playerView mName isMe =
+        playerView : Maybe Player -> Bool -> Html msg
+        playerView player isMe =
             div
                 [ classList [ ( "player-name ", True ), ( "me", isMe ) ] ]
-                [ text <| Maybe.withDefault "" mName ]
+                [ text <| Maybe.withDefault "" <| Maybe.map .name player ]
     in
     div [ class "player-layer" ]
         [ playerView pa True
@@ -105,9 +105,9 @@ specMenuView { hostname, httpPort } { roomID } =
 titleView : Flags -> Model -> String
 titleView _ { players } =
     let
-        name : Maybe String -> String
-        name mName =
-            String.toUpper <| Maybe.withDefault "???" mName
+        name : Maybe Player -> String
+        name player =
+            String.toUpper <| Maybe.withDefault "???" <| Maybe.map .name player
     in
     name players.pb ++ " vs " ++ name players.pa
 

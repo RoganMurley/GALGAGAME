@@ -15,6 +15,7 @@ import Main.Messages as Main
 import Math.Vector2 exposing (vec2)
 import Math.Vector3 exposing (vec3)
 import Mouse exposing (Position)
+import Players exposing (Players)
 import Ports exposing (log)
 import Random
 import Random.List as Random
@@ -38,8 +39,8 @@ init ready character runes =
     }
 
 
-update : Msg -> Model -> ( Model, Cmd Main.Msg )
-update msg ({ character } as model) =
+update : Msg -> Model -> Players -> ( Model, Cmd Main.Msg )
+update msg ({ character } as model) players =
     case msg of
         Select selectCharacter ->
             let
@@ -63,13 +64,20 @@ update msg ({ character } as model) =
                                 , getRuneFromCursor (nextCursor (nextCursor cursor)) character
                                 ]
 
+                        xp =
+                            Maybe.map .xp players.pa
+                                |> Maybe.withDefault 0
+
                         runeSelect : RuneSelect.Model
                         runeSelect =
                             { cursor = cursor
                             , carousel =
                                 Carousel.init
                                     rune
-                                    (List.filter (\r -> not (List.member r excludedRunes)) model.runes)
+                                <|
+                                    List.filter (\r -> r.xp <= xp) <|
+                                        List.filter (\r -> not (List.member r excludedRunes))
+                                            model.runes
                             , entities = []
                             , hover = Nothing
                             , buttons = Buttons.empty
@@ -316,8 +324,8 @@ nextCursor cursor =
             RuneCursorA
 
 
-mouseDown : Position -> Model -> ( Model, Cmd Main.Msg )
-mouseDown { x, y } model =
+mouseDown : Position -> Players -> Model -> ( Model, Cmd Main.Msg )
+mouseDown { x, y } players model =
     let
         pos =
             vec2 (toFloat x) (toFloat y)
@@ -328,7 +336,7 @@ mouseDown { x, y } model =
                 Just ( key, _ ) ->
                     case key of
                         "ready" ->
-                            update (Select model.character) model
+                            update (Select model.character) model players
 
                         "toggleChat" ->
                             ( model
@@ -340,16 +348,16 @@ mouseDown { x, y } model =
                             )
 
                         "random" ->
-                            update RandomRunes model
+                            update RandomRunes model players
 
                         "runeA" ->
-                            update (EnterRuneSelect RuneCursorA) model
+                            update (EnterRuneSelect RuneCursorA) model players
 
                         "runeB" ->
-                            update (EnterRuneSelect RuneCursorB) model
+                            update (EnterRuneSelect RuneCursorB) model players
 
                         "runeC" ->
-                            update (EnterRuneSelect RuneCursorC) model
+                            update (EnterRuneSelect RuneCursorC) model players
 
                         _ ->
                             ( model, Cmd.none )
@@ -362,15 +370,15 @@ mouseDown { x, y } model =
                 Just ( key, _ ) ->
                     case key of
                         "nextRune" ->
-                            update (RuneSelectMsg RuneSelect.NextRune) model
+                            update (RuneSelectMsg RuneSelect.NextRune) model players
 
                         "prevRune" ->
-                            update (RuneSelectMsg RuneSelect.PreviousRune) model
+                            update (RuneSelectMsg RuneSelect.PreviousRune) model players
 
                         "selectRune" ->
                             case model.runeSelect of
                                 Just { cursor, carousel } ->
-                                    update (ConfirmRune cursor carousel.selected) model
+                                    update (ConfirmRune cursor carousel.selected) model players
 
                                 Nothing ->
                                     ( model, Cmd.none )

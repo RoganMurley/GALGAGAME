@@ -24,7 +24,17 @@ htmlView { replay } =
     case replay of
         Just { usernamePa, usernamePb } ->
             playersView
-                { pa = Just usernamePa, pb = Just usernamePb }
+                { pa =
+                    Just
+                        { name = usernamePa
+                        , xp = 0
+                        }
+                , pb =
+                    Just
+                        { name = usernamePb
+                        , xp = 0
+                        }
+                }
 
         Nothing ->
             text ""
