@@ -1,30 +1,29 @@
-{-# LANGUAGE TemplateHaskell, FlexibleContexts #-}
+{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE TemplateHaskell #-}
+
 module DSL.Beta.Actions where
 
-import CardAnim (Hurt(..))
+import CardAnim (Hurt (..))
 import Control.Monad.Free (MonadFree, liftF)
 import Control.Monad.Free.TH (makeFree)
+import qualified DSL.Alpha as Alpha
+import DSL.Beta.DSL (DSL (..), Program)
 import Data.Map (Map)
-import DSL.Beta.DSL (DSL(..), Program)
+import qualified Data.Map as Map
 import HandCard (HandCard, isRevealed)
 import Life (Life)
-import Player (WhichPlayer(..), other)
-import StackCard (StackCard(..))
-import Transmutation (Transmutation(..))
+import Player (WhichPlayer (..), other)
+import qualified Stack
+import StackCard (StackCard (..))
+import Transmutation (Transmutation (..))
 import Util (randomChoice, shuffle, split)
 
-import qualified Data.Map as Map
-import qualified DSL.Alpha as Alpha
-import qualified Stack
-
 makeFree ''DSL
-
 
 lifesteal :: Life -> WhichPlayer -> Program ()
 lifesteal d w = do
   hurt d w Slash
   heal d (other w)
-
 
 refreshGen :: Program ()
 refreshGen =
@@ -33,14 +32,12 @@ refreshGen =
     let (newGen, _) = split gen
     Alpha.setGen newGen
 
-
 transmuteHead :: (StackCard -> StackCard) -> Program ()
 transmuteHead f = transmute transmuter
   where
     transmuter :: Int -> StackCard -> Maybe Transmutation
     transmuter 1 sc = Just $ Transmutation sc (f sc)
-    transmuter _ _  = Nothing
-
+    transmuter _ _ = Nothing
 
 confound :: Program ()
 confound = do
@@ -51,7 +48,6 @@ confound = do
   let diasporaMap = Map.fromList $ zip diasporaIs shuffledIs :: Map Int Int
   moveStack (\i _ -> Map.lookup i diasporaMap) 750
 
-
 reversal :: Program ()
 reversal = do
   diaspora <- Stack.diasporaFromStack <$> getStack
@@ -60,12 +56,11 @@ reversal = do
   let diasporaMap = Map.fromList $ zip diasporaIs reversedIs :: Map Int Int
   moveStack (\i _ -> Map.lookup i diasporaMap) 750
 
-
 revealRandomCard :: WhichPlayer -> Program ()
 revealRandomCard w = do
   hand <- getHand w
-  let indexed = zip [0..] hand :: [(Int, HandCard)]
-  let hidden = filter (\(_, c) -> not (isRevealed c)) indexed  :: [(Int, HandCard)]
+  let indexed = zip [0 ..] hand :: [(Int, HandCard)]
+  let hidden = filter (\(_, c) -> not (isRevealed c)) indexed :: [(Int, HandCard)]
   case length hidden > 0 of
     True -> do
       g <- getGen

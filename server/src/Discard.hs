@@ -1,8 +1,10 @@
-{-# LANGUAGE DeriveGeneric, DeriveAnyClass #-}
+{-# LANGUAGE DeriveAnyClass #-}
+{-# LANGUAGE DeriveGeneric #-}
+
 module Discard where
 
-import Control.DeepSeq (NFData(..))
-import Data.Aeson (ToJSON(..), (.=), object)
+import Control.DeepSeq (NFData (..))
+import Data.Aeson (ToJSON (..), object, (.=))
 import GHC.Generics (Generic)
 
 data CardDiscard = NoDiscard Int | CardDiscard
@@ -10,12 +12,11 @@ data CardDiscard = NoDiscard Int | CardDiscard
 
 instance ToJSON CardDiscard where
   toJSON (NoDiscard finalIndex) =
-    object [
-      "finalIndex" .= finalIndex
-    ]
+    object
+      [ "finalIndex" .= finalIndex
+      ]
   toJSON CardDiscard = "discard"
-
 
 isDiscard :: CardDiscard -> Bool
 isDiscard CardDiscard = True
-isDiscard _           = False
+isDiscard _ = False

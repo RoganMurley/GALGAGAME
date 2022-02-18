@@ -1,39 +1,35 @@
 module Auth.Apps where
 
-import Prelude hiding (length)
-
+import Auth.Schema as Schema
 import Config (App, runBeam, runBeamIntegrity, runRedis)
 import Control.Exception (throw)
 import Control.Monad.IO.Class (liftIO)
 import Crypto.BCrypt (validatePassword)
 import Data.ByteString (ByteString, length)
 import Data.List (find)
-import Database.PostgreSQL.Simple.Errors (ConstraintViolation(..))
-import Data.String.Conversions (cs)
-import Database.Beam ((==.), all_, filter_, insert, insertValues, runInsert, runSelectReturningOne, select, val_)
-import Web.Cookie (parseCookiesText)
-import Schema (GalgagameDb(..), galgagameDb)
-import System.Log.Logger (errorM)
-import Text.Printf (printf)
-
-import Auth.Schema as Schema
-import Stats.Schema as Schema
-
-import qualified Network.WebSockets as WS
-import qualified Database.Redis as R
-
 import Data.Map (Map)
 import qualified Data.Map as Map
-
+import Data.String.Conversions (cs)
 import Data.Text (Text)
 import qualified Data.Text.Encoding as T
+import Database.Beam (all_, filter_, insert, insertValues, runInsert, runSelectReturningOne, select, val_, (==.))
+import Database.PostgreSQL.Simple.Errors (ConstraintViolation (..))
+import qualified Database.Redis as R
+import qualified Network.WebSockets as WS
+import Schema (GalgagameDb (..), galgagameDb)
+import Stats.Schema as Schema
+import System.Log.Logger (errorM)
+import Text.Printf (printf)
+import Web.Cookie (parseCookiesText)
+import Prelude hiding (length)
 
+type Token = Text
 
-type Token    = Text
 type Username = Text
-type Seconds  = Integer
-type Cookies  = Map Text Text
 
+type Seconds = Integer
+
+type Cookies = Map Text Text
 
 saveSession :: ByteString -> Token -> App ()
 saveSession username token = do
@@ -42,9 +38,8 @@ saveSession username token = do
     _ <- R.set tokenBytestring username
     return ()
 
-
 checkAuth :: Maybe Token -> App (Maybe Username)
-checkAuth Nothing      = return Nothing
+checkAuth Nothing = return Nothing
 checkAuth (Just token) = do
   result <- runRedis $ R.get $ T.encodeUtf8 token
   case result of
@@ -54,19 +49,17 @@ checkAuth (Just token) = do
       liftIO $ errorM "auth" $ printf "Database connection error %s" (show err)
       return $ Nothing
 
-
 deleteToken :: Token -> App ()
 deleteToken token = do
   _ <- runRedis $ R.del [T.encodeUtf8 token]
   return ()
 
-
 saveUser :: ByteString -> ByteString -> ByteString -> Bool -> App Bool
 saveUser email username hashedPassword contactable = do
   let user = Schema.User (cs email) (cs username) (cs hashedPassword) contactable False
   let stat = Schema.Stats (Schema.UserId $ cs username) 0
-  userResult <- runBeamIntegrity $ runInsert $ insert (users galgagameDb) $ insertValues [ user ]
-  statsResult <- runBeamIntegrity $ runInsert $ insert (stats galgagameDb) $ insertValues [ stat ]
+  userResult <- runBeamIntegrity $ runInsert $ insert (users galgagameDb) $ insertValues [user]
+  statsResult <- runBeamIntegrity $ runInsert $ insert (stats galgagameDb) $ insertValues [stat]
   case userResult <* statsResult of
     Right _ ->
       return True
@@ -75,12 +68,14 @@ saveUser email username hashedPassword contactable = do
     Left err ->
       throw err
 
-
 checkPassword :: ByteString -> ByteString -> App Bool
 checkPassword username password = do
-  user <- runBeam $ runSelectReturningOne $
-    select $ filter_ (\row -> Schema.userUsername row ==. val_ (cs username)) $
-      all_ $ users galgagameDb
+  user <-
+    runBeam $
+      runSelectReturningOne $
+        select $
+          filter_ (\row -> Schema.userUsername row ==. val_ (cs username)) $
+            all_ $ users galgagameDb
   return $
     case Schema.userPasshash <$> user of
       Just hashedPassword ->
@@ -88,10 +83,8 @@ checkPassword username password = do
       Nothing ->
         False
 
-
 sessionCookieName :: Text
 sessionCookieName = "login"
-
 
 getCookies :: WS.PendingConnection -> Cookies
 getCookies pending = Map.fromList cookiesList
@@ -107,15 +100,13 @@ getCookies pending = Map.fromList cookiesList
       Nothing ->
         []
 
-
 legalName :: ByteString -> Maybe Text
 legalName n
-  | length n < 3  = Just "Username too short"
+  | length n < 3 = Just "Username too short"
   | length n > 12 = Just "Username too long"
-  | otherwise     = Nothing
-
+  | otherwise = Nothing
 
 legalPassword :: ByteString -> Maybe Text
 legalPassword p
-  | length p < 8  = Just "Password too short"
-  | otherwise     = Nothing
+  | length p < 8 = Just "Password too short"
+  | otherwise = Nothing

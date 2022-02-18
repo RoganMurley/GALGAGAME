@@ -1,17 +1,16 @@
 module DSL.Alpha.DSL where
 
 import Control.Monad.Free (Free)
-import Player (WhichPlayer)
-import Util (Gen)
 import Life (Life)
 import Model (Deck, Hand, Model, Passes, Turn)
+import Player (WhichPlayer)
 import Stack (Stack)
+import Util (Gen)
 
-
-data DSL n =
-    GetGen (Gen -> n)
+data DSL n
+  = GetGen (Gen -> n)
   | GetDeck WhichPlayer (Deck -> n)
-  | GetHand WhichPlayer (Hand-> n)
+  | GetHand WhichPlayer (Hand -> n)
   | GetLife WhichPlayer (Life -> n)
   | GetMaxLife WhichPlayer (Life -> n)
   | GetPasses (Passes -> n)
@@ -30,6 +29,5 @@ data DSL n =
   | SetRot Int n
   | SetHold Bool n
   deriving (Functor)
-
 
 type Program = Free DSL

@@ -1,8 +1,10 @@
-{-# LANGUAGE DeriveGeneric, DeriveAnyClass #-}
+{-# LANGUAGE DeriveAnyClass #-}
+{-# LANGUAGE DeriveGeneric #-}
+
 module Bounce where
 
-import Control.DeepSeq (NFData(..))
-import Data.Aeson (ToJSON(..), (.=), object)
+import Control.DeepSeq (NFData (..))
+import Data.Aeson (ToJSON (..), object, (.=))
 import GHC.Generics (Generic)
 
 data CardBounce = BounceDiscard | BounceIndex Int Int
@@ -11,7 +13,7 @@ data CardBounce = BounceDiscard | BounceIndex Int Int
 instance ToJSON CardBounce where
   toJSON BounceDiscard = "bounceDiscard"
   toJSON (BounceIndex stackIndex handIndex) =
-    object [
-      "handIndex"  .= handIndex
-    , "stackIndex" .= stackIndex
-    ]
+    object
+      [ "handIndex" .= handIndex,
+        "stackIndex" .= stackIndex
+      ]

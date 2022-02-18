@@ -1,17 +1,14 @@
 module Start where
 
 import Control.Monad (replicateM_)
-import Model (Turn, maxHandLength)
-import Player (WhichPlayer(..))
-
 import qualified DSL.Beta as Beta
-
+import Model (Turn, maxHandLength)
+import Player (WhichPlayer (..))
 
 initHandLength :: WhichPlayer -> Turn -> Int
 initHandLength which first
   | which == first = maxHandLength
-  | otherwise      = maxHandLength - 1
-
+  | otherwise = maxHandLength - 1
 
 startProgram :: Turn -> Beta.Program ()
 startProgram turn = do

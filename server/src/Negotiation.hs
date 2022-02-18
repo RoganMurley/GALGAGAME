@@ -6,17 +6,14 @@ import Data.Text (Text)
 import Safe (readMay)
 import Util (breakAt)
 
-
-data Request =
-    RoomRequest Text
+data Request
+  = RoomRequest Text
   | PlayReplayRequest Int
   | SystemMessageRequest Text
 
-
-data Error =
-    ConnectionLostError
+data Error
+  = ConnectionLostError
   | UnknownError Text
-
 
 parseRequest :: Text -> Either Error Request
 parseRequest msg =
@@ -36,20 +33,18 @@ parseRequest msg =
     _ ->
       Left . UnknownError $ "Unknown request " <> msg
 
-
 parsePrefix :: Text -> Maybe Prefix
 parsePrefix msg =
   case breakAt ":" msg of
-    ("spectate", _)     -> Just PrefixSpec
-    ("play", _)         -> Just PrefixPlay
+    ("spectate", _) -> Just PrefixSpec
+    ("play", _) -> Just PrefixPlay
     ("playComputer", _) -> Just PrefixCpu
-    ("queue", _)        -> Just PrefixQueue
-    _                   -> Nothing
+    ("queue", _) -> Just PrefixQueue
+    _ -> Nothing
 
-
-data Prefix =
-    PrefixSpec
+data Prefix
+  = PrefixSpec
   | PrefixPlay
   | PrefixCpu
   | PrefixQueue
-  deriving Show
+  deriving (Show)

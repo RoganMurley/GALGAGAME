@@ -1,16 +1,13 @@
 module Metrics where
 
+import Config (App, getDatadogCreds)
 import Control.Monad.IO.Class (liftIO)
 import Data.Aeson (encode)
 import Data.String.Conversions (cs)
 import Data.Text (Text)
 import Data.Time.Clock.POSIX (getPOSIXTime)
-import Network.Datadog (Metric(..), MetricPoints(..), sendMetrics, series, withDatadog)
-
-import Config (App, getDatadogCreds)
-
 import qualified Log
-
+import Network.Datadog (Metric (..), MetricPoints (..), sendMetrics, series, withDatadog)
 
 incr :: Text -> App ()
 incr name = do

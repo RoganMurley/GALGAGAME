@@ -2,20 +2,18 @@ module Database where
 
 import Data.Maybe (fromMaybe)
 import Data.String.Conversions (cs)
-import Safe (readMay)
 import Data.Word (Word16)
-
-import qualified Database.Redis as Redis
 import qualified Database.PostgreSQL.Simple as Postgres
-
+import qualified Database.Redis as Redis
+import Safe (readMay)
 
 redisConnectInfo :: (Maybe String, Maybe String, Maybe String) -> Redis.ConnectInfo
 redisConnectInfo (host, portString, password) =
   Redis.defaultConnectInfo
-    { Redis.connectAuth     = cs <$> password
-    , Redis.connectHost     = fromMaybe defaultHost host
-    , Redis.connectPort     = fromMaybe defaultPort port
-    , Redis.connectDatabase = 0
+    { Redis.connectAuth = cs <$> password,
+      Redis.connectHost = fromMaybe defaultHost host,
+      Redis.connectPort = fromMaybe defaultPort port,
+      Redis.connectDatabase = 0
     }
   where
     defaultHost :: Redis.HostName
@@ -25,15 +23,14 @@ redisConnectInfo (host, portString, password) =
     port :: Maybe Redis.PortID
     port = Redis.PortNumber <$> (portString >>= readMay)
 
-
 postgresConnectInfo :: (Maybe String, Maybe String, Maybe String, Maybe String, Maybe String) -> Postgres.ConnectInfo
 postgresConnectInfo (host, portString, user, password, database) =
   Postgres.defaultConnectInfo
-    { Postgres.connectHost     = fromMaybe defaultHost host
-    , Postgres.connectPort     = fromMaybe defaultPort port
-    , Postgres.connectUser     = fromMaybe defaultUser user
-    , Postgres.connectPassword = fromMaybe defaultPassword password
-    , Postgres.connectDatabase = fromMaybe defaultDatabase database
+    { Postgres.connectHost = fromMaybe defaultHost host,
+      Postgres.connectPort = fromMaybe defaultPort port,
+      Postgres.connectUser = fromMaybe defaultUser user,
+      Postgres.connectPassword = fromMaybe defaultPassword password,
+      Postgres.connectDatabase = fromMaybe defaultDatabase database
     }
   where
     defaultHost :: String

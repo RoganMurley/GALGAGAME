@@ -1,24 +1,21 @@
 module Feedback.Apps where
 
-import Data.ByteString (ByteString)
-import Database.Beam (default_, insert, insertExpressions, runInsert, val_)
-import Data.String.Conversions (cs)
-
-import Config (App, runBeam)
-import Schema (GalgagameDb(..), galgagameDb)
-
 import qualified Auth.Schema
+import Config (App, runBeam)
+import Data.ByteString (ByteString)
+import Data.String.Conversions (cs)
+import Database.Beam (default_, insert, insertExpressions, runInsert, val_)
 import Feedback.Schema as Schema
-
+import Schema (GalgagameDb (..), galgagameDb)
 
 saveFeedback :: Maybe ByteString -> ByteString -> App ()
 saveFeedback mUsername body =
   runBeam $
     runInsert $
       insert (feedback galgagameDb) $
-        insertExpressions [
-          Schema.Feedback
-            default_
-            (val_ $ Auth.Schema.UserId $ cs <$> mUsername)
-            (val_ $ cs body)
-        ]
+        insertExpressions
+          [ Schema.Feedback
+              default_
+              (val_ $ Auth.Schema.UserId $ cs <$> mUsername)
+              (val_ $ cs body)
+          ]

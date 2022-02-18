@@ -1,6 +1,6 @@
 {-# LANGUAGE FlexibleInstances #-}
-module Mirror where
 
+module Mirror where
 
 class Mirror a where
   mirror :: a -> a
@@ -10,11 +10,8 @@ class Mirror a where
     mirror . mirror $ a == a
 -}
 
-
-
 instance Mirror () where
   mirror = id
-
 
 instance Mirror (a, a) where
   mirror (x, y) = (y, x)

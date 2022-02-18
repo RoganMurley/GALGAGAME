@@ -1,40 +1,36 @@
 module ArtificialIntelligence where
 
+import qualified Cards
 import Control.Monad.Trans.Writer (runWriter)
-import Data.Maybe (isJust)
+import DSL.Alpha
+import DSL.Beta (alphaI)
 import Data.List (maximumBy)
+import Data.Maybe (isJust)
 import Data.Ord (comparing)
 import Data.String.Conversions (cs)
 import Data.Time.Clock.POSIX (posixSecondsToUTCTime)
-import DSL.Alpha
-import DSL.Beta (alphaI)
-
-import GameCommand (GameCommand(..), resolveAll, roundEndProgram, update)
+import GameCommand (GameCommand (..), resolveAll, roundEndProgram, update)
 import GameState
-import HandCard (HandCard(..))
+import HandCard (HandCard (..))
 import Mirror (mirror)
 import Model
-import Player (WhichPlayer(..), other)
-import Scenario (Scenario(..))
+import Player (WhichPlayer (..), other)
+import Scenario (Scenario (..))
+import qualified Stack
 import Util (Err, Gen, maybeToEither)
 
-import qualified Cards
-import qualified Stack
-
-
 type Weight = Int
+
 data Action = PlayAction Int | EndAction
   deriving (Show)
 
-
 evalResult :: WhichPlayer -> Either Err PlayState -> Weight
 evalResult w (Right state) = evalState w state
-evalResult _ (Left err)    = error (cs err)
-
+evalResult _ (Left err) = error (cs err)
 
 evalState :: WhichPlayer -> PlayState -> Weight
-evalState w (Ended (Just winner) _ _ _)                    = if winner == w then 100 else -200
-evalState _ (Ended Nothing _  _ _)                         = 50
+evalState w (Ended (Just winner) _ _ _) = if winner == w then 100 else -200
+evalState _ (Ended Nothing _ _ _) = 50
 evalState w (Playing playing) = evalModel model
   where
     model :: Model
@@ -44,7 +40,7 @@ evalState w (Playing playing) = evalModel model
       | isJust . (\s -> Stack.get s 1) $ evalI m $ getStack =
         (evalState w) . fst . runWriter $ resolveAll $ playingFromModel m
       | otherwise =
-          (evalPlayer w m) - (evalPlayer (other w) m)
+        (evalPlayer w m) - (evalPlayer (other w) m)
     evalPlayer :: WhichPlayer -> Model -> Weight
     evalPlayer which m =
       evalI m $ do
@@ -52,11 +48,9 @@ evalState w (Playing playing) = evalModel model
         hand <- getHand which
         return (life + 7 * (length hand) + (sum . (fmap biasHand) $ hand))
 
-
 toCommand :: Action -> GameCommand
 toCommand (PlayAction i) = PlayCard i
-toCommand EndAction      = EndTurn
-
+toCommand EndAction = EndTurn
 
 possibleActions :: WhichPlayer -> Model -> [Action]
 possibleActions which model = endAction ++ (PlayAction <$> xs)
@@ -71,50 +65,44 @@ possibleActions which model = endAction ++ (PlayAction <$> xs)
     handLength :: Int
     handLength = length $ evalI m $ getHand PlayerA
     xs :: [Int]
-    xs = [ x | x <- [0..maxHandLength], x < handLength]
+    xs = [x | x <- [0 .. maxHandLength], x < handLength]
     endAction :: [Action]
     endAction
       | handLength == maxHandLength = []
-      | otherwise = [ EndAction ]
-
+      | otherwise = [EndAction]
 
 postulateAction :: WhichPlayer -> Model -> Gen -> Scenario -> Action -> Either Err PlayState
 postulateAction which model gen scenario action =
-  let
-    command = toCommand action :: GameCommand
-    state = Started . Playing $ playingFromModel (modI model $ setGen gen) :: GameState
-  in
-    update command which state scenario (Nothing, Nothing) (posixSecondsToUTCTime 0)
-      >>= maybeToEither "Gamestate not returned from postulation" . fst
-      >>= maybeToEither "Gamestate is not a playing state" . playStateFromGameState
-      >>= Right . mapModelPlayState ((flip modI) (alphaI roundEndProgram)) -- Account for the draw from the start of the next round.
-
+  let command = toCommand action :: GameCommand
+      state = Started . Playing $ playingFromModel (modI model $ setGen gen) :: GameState
+   in update command which state scenario (Nothing, Nothing) (posixSecondsToUTCTime 0)
+        >>= maybeToEither "Gamestate not returned from postulation" . fst
+        >>= maybeToEither "Gamestate is not a playing state" . playStateFromGameState
+        >>= Right . mapModelPlayState ((flip modI) (alphaI roundEndProgram)) -- Account for the draw from the start of the next round.
 
 chooseAction :: Gen -> WhichPlayer -> Model -> Scenario -> Maybe Action
 chooseAction gen which model scenario
-  | turn /= which          = Nothing
+  | turn /= which = Nothing
   | winningEnd which model = Just EndAction
-  | otherwise              = Just $ maximumBy comparison $ possibleActions which model
+  | otherwise = Just $ maximumBy comparison $ possibleActions which model
   where
     turn :: Turn
     turn = evalI model getTurn
     comparison :: Action -> Action -> Ordering
     comparison = comparing $ (evalResult which) . (postulateAction which model gen scenario)
 
-
 winningEnd :: WhichPlayer -> Model -> Bool
 winningEnd which model
   | evalI model $ handFull which = False
-  | otherwise                      =
+  | otherwise =
     -- If ending the turn now would win, do it! We don't care about heuristics
     -- when we have a sure bet :)
     case fst . runWriter $ resolveAll (playingFromModel model) of
-      Ended (Just winner) _ _ _  -> winner == which
-      _                          -> False
-
+      Ended (Just winner) _ _ _ -> winner == which
+      _ -> False
 
 -- Some cards entail soft advantages/disadvantages that the AI can't handle.
 -- We manually set biases for these cards.
 biasHand :: HandCard -> Weight
-biasHand (HandCard c)      = if c == Cards.strangeSpore then -7 else 0
+biasHand (HandCard c) = if c == Cards.strangeSpore then -7 else 0
 biasHand (KnownHandCard c) = biasHand (HandCard c) - 2
