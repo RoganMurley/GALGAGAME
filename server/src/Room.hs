@@ -4,6 +4,8 @@ import Client (Client)
 import qualified Client
 import Config (App)
 import Control.Monad (forM_)
+import Control.Monad.IO.Class (liftIO)
+import Control.Monad.STM (atomically)
 import Data.Maybe (maybeToList)
 import Data.Text (Text)
 import Data.Time.Clock.POSIX (posixSecondsToUTCTime)
@@ -13,7 +15,7 @@ import GameState (GameState (..), WaitType (..), initState)
 import Outcome (Outcome (..))
 import Player (WhichPlayer (..), other)
 import Scenario (Scenario (..))
-import User (User)
+import User (GameUser (..), User (..), usersToGameUsers)
 import Util (Gen)
 
 type Name = Text
@@ -143,8 +145,9 @@ getUsers room = (userPa, userPb)
     userPa = Client.user <$> clientA :: Maybe User
     userPb = Client.user <$> clientB :: Maybe User
 
-players :: Room -> (Player, Player)
-players Room {room_pa, room_pb} = (room_pa, room_pb)
+getGameUsers :: Room -> App (Maybe GameUser, Maybe GameUser)
+getGameUsers room =
+  liftIO . atomically . usersToGameUsers $ getUsers room
 
 -- Sending messages.
 broadcast :: Text -> Room -> App ()

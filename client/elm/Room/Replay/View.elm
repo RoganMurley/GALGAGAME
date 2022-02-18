@@ -70,7 +70,7 @@ notStartedView params assets =
     List.concat
         [ Background.webglView params assets NullAnim
         , Font.view "Futura"
-            "CLICK TO\nPLAY"
+            "CLICK TO\nWATCH"
             { x = 0.5 * w
             , y = 0.5 * h - radius * 0.05
             , scaleX = 0.00045 * radius

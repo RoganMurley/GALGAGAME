@@ -30,7 +30,7 @@ import Stack (Stack)
 import qualified Stack
 import StackCard (StackCard (..))
 import StatusEff (applyStatuses)
-import User (User (..), getExperience, getQueryUsername, getUsername, isSuperuser)
+import User (GameUser (..), User (..), gameusersToUsers, getQueryUsername, getUser, getUsername, isSuperuser)
 import Util (Err, Gen, deleteIndex, split, times, tupleMap2)
 import Wheel (Wheel (..))
 
@@ -46,7 +46,7 @@ data GameCommand
   | God Text
   deriving (Show)
 
-update :: GameCommand -> WhichPlayer -> GameState -> Scenario -> (Maybe User, Maybe User) -> UTCTime -> Either Err (Maybe GameState, [Outcome])
+update :: GameCommand -> WhichPlayer -> GameState -> Scenario -> (Maybe GameUser, Maybe GameUser) -> UTCTime -> Either Err (Maybe GameState, [Outcome])
 update (Chat username msg) _ _ _ _ _ = chat username msg
 update cmd which state scenario users time =
   case state of
@@ -55,7 +55,7 @@ update cmd which state scenario users time =
         Heartbeat ->
           ignore
         _ ->
-          Left ("Unknown command " <> (cs $ show cmd) <> " on a waiting GameState")
+          Left ("Unknown command " <> cs (show cmd) <> " on a waiting GameState")
     Selecting selectModel turn gen ->
       case cmd of
         SelectCharacter character ->
@@ -63,7 +63,7 @@ update cmd which state scenario users time =
         Heartbeat ->
           ignore
         _ ->
-          Left ("Unknown command " <> (cs $ show cmd) <> " on a selecting GameState")
+          Left ("Unknown command " <> cs (show cmd) <> " on a selecting GameState")
     Started playState ->
       case playState of
         Playing playing ->
@@ -81,7 +81,7 @@ update cmd which state scenario users time =
             God str ->
               godMode (getUser which users) str which time playing
             _ ->
-              Left ("Unknown command " <> (cs $ show cmd) <> " on a Playing GameState")
+              Left ("Unknown command " <> cs (show cmd) <> " on a Playing GameState")
         Ended winner _ _ gen ->
           case cmd of
             Rematch ->
@@ -91,14 +91,14 @@ update cmd which state scenario users time =
             Heartbeat ->
               ignore
             _ ->
-              Left ("Unknown command " <> (cs $ show cmd) <> " on an Ended GameState")
+              Left ("Unknown command " <> cs (show cmd) <> " on an Ended GameState")
 
 ignore :: Either Err (Maybe GameState, [Outcome])
 ignore = Right (Nothing, [])
 
 rematch ::
   (Maybe WhichPlayer, Gen) ->
-  (Maybe User, Maybe User) ->
+  (Maybe GameUser, Maybe GameUser) ->
   Scenario ->
   UTCTime ->
   Either Err (Maybe GameState, [Outcome])
@@ -107,7 +107,15 @@ rematch (winner, gen) users scenario time =
       turn = fromMaybe PlayerA winner
       startProgram = scenario_prog scenario
       timeLimit = scenario_timeLimit scenario
-      (newState, outcomes) = nextSelectState deckModel turn startProgram (fst $ split gen) users time timeLimit
+      (newState, outcomes) =
+        nextSelectState
+          deckModel
+          turn
+          startProgram
+          (fst $ split gen)
+          (gameusersToUsers users)
+          time
+          timeLimit
    in Right (Just newState, outcomes)
 
 chat :: Text -> Text -> Either Err (Maybe GameState, [Outcome])
@@ -144,19 +152,27 @@ select ::
   Turn ->
   Scenario ->
   Gen ->
-  (Maybe User, Maybe User) ->
+  (Maybe GameUser, Maybe GameUser) ->
   UTCTime ->
   Either Err (Maybe GameState, [Outcome])
 select which choice deckModel turn scenario gen users time =
-  let user = if which == PlayerA then fst users else snd users
-      xp = maybe 0 getExperience user
+  let user = getUser which users
+      xp = maybe 0 gameuser_xp user
    in case choiceToCharacter choice xp of
         Right character ->
           let newDeckModel :: DeckBuilding
               newDeckModel = selectCharacter deckModel which character
               startProgram = scenario_prog scenario
               timeLimit = scenario_timeLimit scenario
-              (newState, outcomes) = nextSelectState newDeckModel turn startProgram gen users time timeLimit
+              (newState, outcomes) =
+                nextSelectState
+                  newDeckModel
+                  turn
+                  startProgram
+                  gen
+                  (gameusersToUsers users)
+                  time
+                  timeLimit
            in Right (Just newState, outcomes)
         Left err ->
           Left err
@@ -176,8 +192,8 @@ nextSelectState deckModel turn startProgram gen (mUserPa, mUserPb) time timeLimi
         case deckModel of
           DeckBuilding (Right (ChosenCharacter ca)) (Right (ChosenCharacter cb)) ->
             let model = initModel turn ca cb gen :: Model
-                displayUsernamePa = fromMaybe "" $ getUsername <$> mUserPa :: Text
-                displayUsernamePb = fromMaybe "" $ getUsername <$> mUserPb :: Text
+                displayUsernamePa = maybe "" getUsername mUserPa :: Text
+                displayUsernamePb = maybe "" getUsername mUserPb :: Text
                 queryUsernamePa = fromMaybe "" $ join $ getQueryUsername <$> mUserPa :: Text
                 queryUsernamePb = fromMaybe "" $ join $ getQueryUsername <$> mUserPb :: Text
                 usernamesPa = (displayUsernamePa, queryUsernamePa)
@@ -458,11 +474,11 @@ hoverCard NoHover which _ =
   let hoverDamage = tupleMap2 Outcome.damageToHoverDamage (0, 0)
    in Right (Nothing, [Outcome.Encodable $ Outcome.Hover which NoHover hoverDamage])
 
-godMode :: Maybe User -> Text -> WhichPlayer -> UTCTime -> PlayingR -> Either Err (Maybe GameState, [Outcome])
+godMode :: Maybe GameUser -> Text -> WhichPlayer -> UTCTime -> PlayingR -> Either Err (Maybe GameState, [Outcome])
 godMode mUser str which time playing =
   let model = playing_model playing :: Model
       replay = playing_replay playing :: Active.Replay
-   in if fromMaybe False $ isSuperuser <$> mUser
+   in if maybe False (isSuperuser . gameuser_user) mUser
         then case GodMode.parse which str of
           GodMode.ParsedProgram betaProgram ->
             let program = foldFree Beta.betaI $ betaProgram :: Beta.AlphaLogAnimProgram ()
@@ -507,10 +523,6 @@ heartbeat currentTime playing =
    in if delta > timeLimit
         then concede which (Started . Playing $ playing) res
         else Right (Nothing, [Outcome.Encodable $ Outcome.Heartbeat timeLeft])
-
-getUser :: WhichPlayer -> (Maybe User, Maybe User) -> Maybe User
-getUser PlayerA (ua, _) = ua
-getUser PlayerB (_, ub) = ub
 
 roundEndProgram :: Beta.Program ()
 roundEndProgram = do

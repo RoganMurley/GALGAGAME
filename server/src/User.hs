@@ -3,23 +3,31 @@ module User where
 import qualified Auth.Apps as Auth
 import qualified Auth.Schema as Auth
 import Config (App, getApiKey, runBeam)
+import Control.Concurrent.STM (newTVarIO)
+import Control.Concurrent.STM.TVar (TVar, readTVar, writeTVar)
+import Control.Monad.IO.Class (liftIO)
+import Control.Monad.STM (STM)
 import Data.Aeson (ToJSON (..), object, (.=))
 import qualified Data.Map as Map
 import Data.Text (Text)
+import Data.Traversable (forM)
 import Database.Beam (all_, filter_, runSelectReturningOne, select, val_, (==.))
+import Player (WhichPlayer (..))
 import Schema (GalgagameDb (..), galgagameDb)
 import Stats.Stats (Experience, levelToExperience)
 import qualified Stats.Stats as Stats
 
-data User = User Auth.User Experience | CpuUser Text | GuestUser | ServiceUser
-  deriving (Show)
+data User
+  = User Auth.User (TVar Experience)
+  | CpuUser Text
+  | GuestUser
+  | ServiceUser
 
-instance ToJSON User where
-  toJSON user =
-    object
-      [ "name" .= getUsername user,
-        "xp" .= getExperience user
-      ]
+instance Show User where
+  show (User u _) = show u
+  show (CpuUser _) = "CpuUser"
+  show GuestUser = "GuestUser"
+  show ServiceUser = "ServiceUser"
 
 getUsername :: User -> Text
 getUsername (User user _) = Auth.userUsername user
@@ -33,10 +41,14 @@ getQueryUsername (CpuUser _) = Nothing
 getQueryUsername GuestUser = Nothing
 getQueryUsername ServiceUser = Nothing
 
-getExperience :: User -> Experience
-getExperience (User _ xp) = xp
-getExperience (CpuUser _) = levelToExperience 20
-getExperience _ = 0
+getExperience :: User -> STM Experience
+getExperience (User _ xp) = readTVar xp
+getExperience (CpuUser _) = return $ levelToExperience 99
+getExperience _ = return 0
+
+setExperience :: Experience -> User -> STM ()
+setExperience xp (User _ xpVar) = writeTVar xpVar xp
+setExperience _ _ = return ()
 
 getUserFromCookies :: Auth.Cookies -> App User
 getUserFromCookies cookies = do
@@ -57,9 +69,10 @@ getUserFromCookies cookies = do
               filter_ (\row -> Auth.userUsername row ==. val_ username) $
                 all_ $ users galgagameDb
       xp <- Stats.load username
+      xpVar <- liftIO $ newTVarIO xp
       case mUser of
         Just user ->
-          return $ User user xp
+          return $ User user xpVar
         Nothing ->
           return GuestUser
 
@@ -68,3 +81,39 @@ isSuperuser ServiceUser = True
 isSuperuser (User user _) = Auth.userSuperuser user
 isSuperuser (CpuUser _) = False
 isSuperuser GuestUser = False
+
+-- GameUser
+data GameUser = GameUser
+  { gameuser_xp :: Experience,
+    gameuser_user :: User
+  }
+  deriving (Show)
+
+instance ToJSON GameUser where
+  toJSON GameUser {gameuser_user, gameuser_xp} =
+    object
+      [ "name" .= getUsername gameuser_user,
+        "xp" .= gameuser_xp
+      ]
+
+toGameUser :: User -> STM GameUser
+toGameUser user = do
+  xp <- getExperience user
+  return $
+    GameUser
+      { gameuser_user = user,
+        gameuser_xp = xp
+      }
+
+getUser :: WhichPlayer -> (Maybe GameUser, Maybe GameUser) -> Maybe GameUser
+getUser PlayerA (ua, _) = ua
+getUser PlayerB (_, ub) = ub
+
+gameusersToUsers :: (Maybe GameUser, Maybe GameUser) -> (Maybe User, Maybe User)
+gameusersToUsers (ua, ub) = (gameuser_user <$> ua, gameuser_user <$> ub)
+
+usersToGameUsers :: (Maybe User, Maybe User) -> STM (Maybe GameUser, Maybe GameUser)
+usersToGameUsers (mUserA, mUserB) = do
+  a <- forM mUserA toGameUser
+  b <- forM mUserB toGameUser
+  return (a, b)

@@ -2,7 +2,6 @@ module Client where
 
 import Config (App)
 import Control.Monad.IO.Class (liftIO)
-import Data.Aeson (ToJSON (..))
 import Data.Text (Text)
 import Network.WebSockets (Connection, receiveData, sendTextData)
 import User (User (..), getQueryUsername, getUsername)
@@ -25,8 +24,8 @@ data Client = Client
 instance Eq Client where
   Client {client_guid = a} == Client {client_guid = b} = a == b
 
-instance ToJSON Client where
-  toJSON Client {client_user} = toJSON client_user
+-- instance ToJSON Client where
+--   toJSON Client {client_user} = toJSON client_user
 
 user :: Client -> User
 user = client_user
@@ -49,7 +48,7 @@ send _ _ = return ()
 
 receive :: Client -> App Text
 receive (Client _ (PlayerConnection conn) _) = liftIO $ receiveData conn
-receive _ = return ("")
+receive _ = return ""
 
 cpuClient :: Text -> Text -> Client
 cpuClient username = Client (CpuUser username) ComputerConnection

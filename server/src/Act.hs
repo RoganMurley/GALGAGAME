@@ -5,7 +5,7 @@ import qualified Client
 import Command (Command (..))
 import qualified Command
 import Config (App)
-import Control.Concurrent.STM.TVar (TVar, readTVar)
+import Control.Concurrent.STM.TVar (TVar, readTVar, writeTVar)
 import Control.Monad (forM_, when)
 import Control.Monad.IO.Class (liftIO)
 import Control.Monad.STM (STM, atomically)
@@ -30,26 +30,32 @@ import qualified Room
 import Scenario (Scenario (..))
 import qualified Stats.Stats as Stats
 import Text.Printf (printf)
-import Util (Err, modReturnTVar)
+import User (GameUser (..), User (..), getQueryUsername, setExperience, usersToGameUsers)
+import Util (Err)
 
 roomUpdate :: GameCommand -> WhichPlayer -> UTCTime -> TVar Room -> STM (Room, Either Err [Outcome])
-roomUpdate cmd which time roomVar =
-  modReturnTVar roomVar $ \room ->
-    case updateRoom room of
-      Left err ->
-        (room, (room, Left err))
-      Right (Nothing, o) ->
-        (room, (room, Right o))
-      Right (Just r, o) ->
-        (r, (r, Right o))
+roomUpdate cmd which time roomVar = do
+  room <- readTVar roomVar
+  users <- usersToGameUsers $ Room.getUsers room
+  let (newRoom, result) =
+        ( case updateRoom room users of
+            Left err ->
+              (room, (room, Left err))
+            Right (Nothing, o) ->
+              (room, (room, Right o))
+            Right (Just r, o) ->
+              (r, (r, Right o))
+        )
+  writeTVar roomVar newRoom
+  return result
   where
-    updateRoom :: Room -> Either Err (Maybe Room, [Outcome])
-    updateRoom room =
-      case update cmd which (Room.getState room) (Room.getScenario room) (Room.getUsers room) time of
+    updateRoom :: Room -> (Maybe GameUser, Maybe GameUser) -> Either Err (Maybe Room, [Outcome])
+    updateRoom room users =
+      case update cmd which (Room.getState room) (Room.getScenario room) users time of
         Left err ->
           Left err
         Right (newState, outcomes) ->
-          Right ((Room.setState room) <$> newState, outcomes)
+          Right (Room.setState room <$> newState, outcomes)
 
 actPlay :: Command -> WhichPlayer -> TVar Room -> Text -> Text -> App ()
 actPlay cmd which roomVar username roomName = do
@@ -108,13 +114,11 @@ syncRoomClients room = do
 
 syncPlayersRoom :: Room -> App ()
 syncPlayersRoom room = do
+  users <- Room.getGameUsers room
+  let syncMsgPa = ("syncPlayers:" <>) . cs . encode $ users
+  let syncMsgPb = ("syncPlayers:" <>) . cs . encode . mirror $ users
   Room.sendExcluding PlayerB syncMsgPa room
   Room.sendToPlayer PlayerB syncMsgPb room
-  where
-    syncMsgPa :: Text
-    syncMsgPa = ("syncPlayers:" <>) . cs . encode $ Room.players room
-    syncMsgPb :: Text
-    syncMsgPb = ("syncPlayers:" <>) . cs . encode . mirror $ Room.players room
 
 resolveRoomClients :: [ResolveData] -> Model -> PlayState -> Maybe WhichPlayer -> Room -> App ()
 resolveRoomClients res initial final exclude room = do
@@ -134,7 +138,8 @@ handleExperience which forceXp winner room = do
   -- Change this to be a transaction!
   -- Save usernames all game.
   let scenario = Room.getScenario room
-  let mUsername = Room.getPlayerClient which room >>= Client.queryUsername :: Maybe Text
+  let mUser = Client.user <$> Room.getPlayerClient which room :: Maybe User
+  let mUsername = mUser >>= getQueryUsername :: Maybe Text
   case mUsername of
     Just username -> do
       initialXp <- Stats.load username
@@ -144,6 +149,8 @@ handleExperience which forceXp winner room = do
       let statChange = Stats.statChange initialXp xpDelta
       Log.info $ printf "Xp change for %s: %s" username (show statChange)
       Room.sendToPlayer which (("xp:" <>) . cs . encode $ statChange) room
+      forM_ mUser (liftIO . atomically . setExperience (initialXp + xpDelta))
+      syncPlayersRoom room
     Nothing -> do
       Log.info "There's nobody here to gain that sweet xp :("
       return ()
