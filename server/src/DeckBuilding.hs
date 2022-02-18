@@ -5,7 +5,9 @@ import qualified Cards
 import Data.Aeson (FromJSON (..), ToJSON (..), object, withObject, (.:), (.=))
 import Data.Either (isRight)
 import Data.List (find)
+import Data.Monoid ((<>))
 import Data.Set as Set
+import Data.String.Conversions (cs)
 import Data.Text (Text)
 import Life (Life, initMaxLife)
 import Mirror (Mirror (..))
@@ -135,8 +137,8 @@ instance FromJSON CharacterChoice where
           <*> o .: "rune_b"
           <*> o .: "rune_c"
 
-choiceToCharacter :: CharacterChoice -> Either Text Character
-choiceToCharacter CharacterChoice {choice_ra, choice_rb, choice_rc} =
+choiceToCharacter :: CharacterChoice -> Experience -> Either Text Character
+choiceToCharacter CharacterChoice {choice_ra, choice_rb, choice_rc} xp =
   let uniqueChoices :: Bool
       uniqueChoices = Set.size (Set.fromList [choice_ra, choice_rb, choice_rc]) == 3
       makeCharacter :: Rune -> Rune -> Rune -> Character
@@ -145,16 +147,18 @@ choiceToCharacter CharacterChoice {choice_ra, choice_rb, choice_rc} =
    in if uniqueChoices
         then
           makeCharacter
-            <$> getRune choice_ra
-            <*> getRune choice_rb
-            <*> getRune choice_rc
+            <$> getRune choice_ra xp
+            <*> getRune choice_rb xp
+            <*> getRune choice_rc xp
         else Left "Rune choices were not unique"
 
-getRune :: Text -> Either Text Rune
-getRune name =
+getRune :: Text -> Experience -> Either Text Rune
+getRune name xp =
   case find (\Rune {rune_name} -> rune_name == name) mainRunes of
     Just rune ->
-      Right rune
+      if rune_xp rune <= xp
+        then Right rune
+        else Left $ "Locked rune, " <> cs (show (rune_xp rune)) <> ">" <> cs (show xp)
     Nothing ->
       Left "Invalid rune name"
 

@@ -8,7 +8,7 @@ import qualified Data.Map as Map
 import Data.Text (Text)
 import Database.Beam (all_, filter_, runSelectReturningOne, select, val_, (==.))
 import Schema (GalgagameDb (..), galgagameDb)
-import Stats.Stats (Experience)
+import Stats.Stats (Experience, levelToExperience)
 import qualified Stats.Stats as Stats
 
 data User = User Auth.User Experience | CpuUser Text | GuestUser | ServiceUser
@@ -35,6 +35,7 @@ getQueryUsername ServiceUser = Nothing
 
 getExperience :: User -> Experience
 getExperience (User _ xp) = xp
+getExperience (CpuUser _) = levelToExperience 20
 getExperience _ = 0
 
 getUserFromCookies :: Auth.Cookies -> App User

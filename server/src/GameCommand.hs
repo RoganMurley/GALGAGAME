@@ -30,7 +30,7 @@ import Stack (Stack)
 import qualified Stack
 import StackCard (StackCard (..))
 import StatusEff (applyStatuses)
-import User (User (..), getQueryUsername, getUsername, isSuperuser)
+import User (User (..), getExperience, getQueryUsername, getUsername, isSuperuser)
 import Util (Err, Gen, deleteIndex, split, times, tupleMap2)
 import Wheel (Wheel (..))
 
@@ -148,16 +148,18 @@ select ::
   UTCTime ->
   Either Err (Maybe GameState, [Outcome])
 select which choice deckModel turn scenario gen users time =
-  case choiceToCharacter choice of
-    Right character ->
-      let newDeckModel :: DeckBuilding
-          newDeckModel = selectCharacter deckModel which character
-          startProgram = scenario_prog scenario
-          timeLimit = scenario_timeLimit scenario
-          (newState, outcomes) = nextSelectState newDeckModel turn startProgram gen users time timeLimit
-       in Right (Just newState, outcomes)
-    Left err ->
-      Left err
+  let user = if which == PlayerA then fst users else snd users
+      xp = maybe 0 getExperience user
+   in case choiceToCharacter choice xp of
+        Right character ->
+          let newDeckModel :: DeckBuilding
+              newDeckModel = selectCharacter deckModel which character
+              startProgram = scenario_prog scenario
+              timeLimit = scenario_timeLimit scenario
+              (newState, outcomes) = nextSelectState newDeckModel turn startProgram gen users time timeLimit
+           in Right (Just newState, outcomes)
+        Left err ->
+          Left err
 
 nextSelectState ::
   DeckBuilding ->
