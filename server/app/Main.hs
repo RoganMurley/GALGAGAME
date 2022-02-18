@@ -48,7 +48,7 @@ import Scenario (Scenario (..))
 import Server (addComputerClient, addPlayerClient, addSpecClient)
 import qualified Server
 import Start (startProgram)
-import Stats.Stats (Experience)
+import Stats.Experience (Experience)
 import System.Environment (lookupEnv)
 import Text.Printf (printf)
 import User (User (..), getUserFromCookies, getUsername, isSuperuser)

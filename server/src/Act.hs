@@ -28,6 +28,7 @@ import ResolveData (ResolveData (..))
 import Room (Room)
 import qualified Room
 import Scenario (Scenario (..))
+import Stats.Experience (Experience)
 import qualified Stats.Stats as Stats
 import Text.Printf (printf)
 import User (GameUser (..), User (..), getQueryUsername, setExperience, usersToGameUsers)
@@ -133,7 +134,7 @@ resolveRoomClients res initial final exclude room = do
     mirrorOutcome :: Outcome.Encodable
     mirrorOutcome = Outcome.Resolve (mirror <$> res) (mirror initial) (mirror final) (other <$> exclude)
 
-handleExperience :: WhichPlayer -> Maybe Stats.Experience -> Maybe WhichPlayer -> Room -> App ()
+handleExperience :: WhichPlayer -> Maybe Experience -> Maybe WhichPlayer -> Room -> App ()
 handleExperience which forceXp winner room = do
   -- Change this to be a transaction!
   -- Save usernames all game.

@@ -8,6 +8,7 @@ import Assets.Types as Assets
 import Buttons.State as Buttons
 import Buttons.Types as Buttons exposing (ButtonType(..), Buttons)
 import Buttons.View as Buttons
+import Colour
 import Ease
 import Font.View as Font
 import Game.State exposing (bareContextInit)
@@ -16,10 +17,13 @@ import GameType exposing (GameType(..))
 import Math.Matrix4 exposing (makeRotate, makeScale3)
 import Math.Vector3 exposing (vec3)
 import Mouse exposing (MouseState(..))
+import Quaternion
 import Render.Primitives
 import Render.Shaders
 import Render.Types as Render
-import Stats as Stats exposing (StatChange)
+import RuneSelect.Types exposing (Rune)
+import Stats as Stats
+import Texture.State as Texture
 import Util exposing (interpFloat)
 import WebGL
 import WhichPlayer.Types exposing (WhichPlayer(..))
@@ -137,13 +141,18 @@ view { w, h } assets winner resolving aftermath buttons =
                     , xpView stats aftermath.tick t ctx
                     ]
 
+                Just (Aftermath.Unlock rune) ->
+                    [ backgroundView { ctx | anim = GameEnd winner, progress = 1 }
+                    , unlockView ctx aftermath.tick rune
+                    ]
+
                 Nothing ->
                     [ backgroundView { ctx | anim = GameEnd winner, progress = 1 }
                     , Buttons.view buttons ctx
                     ]
 
 
-xpView : StatChange -> Float -> Float -> Context -> List WebGL.Entity
+xpView : { initialXp : Float, finalXp : Float } -> Float -> Float -> Context -> List WebGL.Entity
 xpView stats tick maxTick ctx =
     let
         { initialXp, finalXp } =
@@ -228,6 +237,85 @@ xpView stats tick maxTick ctx =
                     ctx
     in
     donutEntities ++ textEntities
+
+
+unlockView : Context -> Float -> Rune -> List WebGL.Entity
+unlockView ctx _ rune =
+    let
+        { textures, w, h, radius } =
+            ctx
+
+        { a, b, c, d } =
+            rune.cards
+
+        eachView imgURL { rot, x, y, scale } =
+            Texture.with textures imgURL <|
+                \texture ->
+                    [ Render.Primitives.quad Render.Shaders.fragment <|
+                        { rotation = Quaternion.makeRotate <| Quaternion.zRotation rot
+                        , scale = makeScale3 scale scale 1
+                        , color = Colour.white
+                        , pos = vec3 x y (4 + 3 * (h / w))
+                        , perspective = ctx.perspective
+                        , camera = ctx.camera3d
+                        , texture = texture
+                        }
+                    ]
+    in
+    List.concat
+        [ -- SWORD
+          eachView a.imgURL
+            { rot = -0.25 * pi
+            , scale = 1
+            , x = 1.5
+            , y = 0.7
+            }
+
+        -- WAND
+        , eachView b.imgURL
+            { rot = 0
+            , scale = 1
+            , x = -1.5
+            , y = 0.7
+            }
+
+        -- CUP
+        , eachView c.imgURL
+            { rot = 0
+            , scale = 0.7
+            , x = 0
+            , y = 0
+            }
+
+        -- COIN
+        , eachView d.imgURL
+            { rot = 0
+            , scale = 0.8
+            , x = 0
+            , y = 1.4
+            }
+            ++ Font.view
+                "Futura"
+                (rune.name ++ "\nUNLOCKED")
+                { x = w * 0.5
+                , y = h * 0.65
+                , scaleX = 0.00035 * radius
+                , scaleY = 0.00035 * radius
+                , color =
+                    vec3 (40 / 255) (20 / 255) (20 / 255)
+                }
+                ctx
+            ++ Font.view
+                "Futura"
+                (rune.name ++ "\nUNLOCKED")
+                { x = (w * 0.5) - (0.008 * radius)
+                , y = h * 0.65
+                , scaleX = 0.00035 * radius
+                , scaleY = 0.00035 * radius
+                , color = Colour.yellow
+                }
+                ctx
+        ]
 
 
 buttonEntities : Render.Params -> Buttons -> GameType -> Float -> MouseState -> Buttons

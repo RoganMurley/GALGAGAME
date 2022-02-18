@@ -1,7 +1,6 @@
 module Aftermath.Types exposing (Aftermath(..), Model)
 
-import Stats exposing (StatChange)
-import WhichPlayer.Types exposing (WhichPlayer)
+import RuneSelect.Types exposing (Rune)
 
 
 type alias Model =
@@ -12,4 +11,5 @@ type alias Model =
 
 type Aftermath
     = Winner
-    | StatChange StatChange Float
+    | StatChange { initialXp : Float, finalXp : Float } Float
+    | Unlock Rune

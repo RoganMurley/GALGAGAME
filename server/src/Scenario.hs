@@ -4,7 +4,7 @@ import qualified DSL.Beta as Beta
 import Data.Time.Clock (NominalDiffTime)
 import DeckBuilding (ChosenCharacter, UnchosenCharacter)
 import Model (Turn)
-import Stats.Stats (Experience)
+import Stats.Experience (Experience)
 
 data Scenario = Scenario
   { scenario_characterPa :: Either UnchosenCharacter ChosenCharacter,

@@ -10,7 +10,7 @@ import Model (Model)
 import Player (WhichPlayer)
 import qualified Replay.Final as Final
 import ResolveData (ResolveData)
-import Stats.Stats (Experience)
+import Stats.Experience (Experience)
 
 data Outcome
   = Sync

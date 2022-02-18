@@ -1,4 +1,4 @@
-module RuneSelect.View exposing (view)
+module RuneSelect.View exposing (focusView, view)
 
 import Card.View as Card
 import Colour

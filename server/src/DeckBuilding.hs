@@ -13,7 +13,7 @@ import Life (Life, initMaxLife)
 import Mirror (Mirror (..))
 import Model (Deck)
 import Player (WhichPlayer (..))
-import Stats.Stats (Experience, levelToExperience)
+import Stats.Experience (Experience, levelToExperience)
 
 -- Rune
 data Rune = Rune

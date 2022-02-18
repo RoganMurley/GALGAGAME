@@ -30,6 +30,9 @@ maxTick aftermath =
         Aftermath.StatChange _ t ->
             t
 
+        Aftermath.Unlock _ ->
+            999999999999999999
+
 
 tick : Float -> Model -> Model
 tick dt model =
@@ -63,6 +66,11 @@ fromStatChange stats =
             , finalXp = stats.initialXp
             }
 
+        midStats =
+            { initialXp = stats.initialXp
+            , finalXp = stats.finalXp
+            }
+
         finalStats =
             { initialXp = stats.finalXp
             , finalXp = stats.finalXp
@@ -72,9 +80,10 @@ fromStatChange stats =
     , aftermath =
         [ Winner
         , Aftermath.StatChange initialStats 500
-        , Aftermath.StatChange stats 1000
+        , Aftermath.StatChange midStats 1000
         , Aftermath.StatChange finalStats 1500
         ]
+            ++ List.map Aftermath.Unlock stats.unlocks
     }
 
 

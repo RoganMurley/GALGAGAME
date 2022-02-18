@@ -14,7 +14,7 @@ import Data.Traversable (forM)
 import Database.Beam (all_, filter_, runSelectReturningOne, select, val_, (==.))
 import Player (WhichPlayer (..))
 import Schema (GalgagameDb (..), galgagameDb)
-import Stats.Stats (Experience, levelToExperience)
+import Stats.Experience (Experience, levelToExperience)
 import qualified Stats.Stats as Stats
 
 data User
