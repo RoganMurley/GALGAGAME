@@ -68,6 +68,7 @@ library
                      , Start
                      , Stats.Schema
                      , Stats.Stats
+                     , Stats.Experience
                      , StatusEff
                      , Transmutation
                      , Wheel
