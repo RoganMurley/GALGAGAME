@@ -8,6 +8,7 @@ import uglify from 'gulp-uglify';
 import minify from 'gulp-minify-css';
 import inline from 'gulp-inline-source';
 import identity from 'gulp-identity';
+import rename from 'gulp-rename';
 import rev from 'gulp-rev';
 import yargs from 'yargs';
 
@@ -55,9 +56,16 @@ var handlebarOpts = {
 
 gulp.task('html', () => {
   const manifest = JSON.parse(fs.readFileSync(`${dir.build}/js-manifest.json`, 'utf8'));
-  return gulp.src('html/**/*.html')
+  return gulp.src('html/**/*')
     .pipe(inline({ compress: production }))
     .pipe(handlebars(manifest, handlebarOpts))
+    .pipe(rename(path => {
+      return {
+        dirname: path.dirname,
+        basename: path.basename,
+        extname: '.html'
+      };
+    }))
     .pipe(gulp.dest(dir.build));
 });
 
@@ -89,7 +97,7 @@ gulp.task('watch', () => {
   gulp.watch('sass/**/*.scss', gulp.series('sass'));
   gulp.watch(`${dir.dev}/**`, gulp.series('copy'));
   gulp.watch("node_modules/**", gulp.series('copyDeps'));
-  gulp.watch(`html/*.html`, gulp.series('html'));
+  gulp.watch(`html/*`, gulp.series('html'));
   gulp.watch(`js/start.js`, gulp.series('html'));
 });
 
