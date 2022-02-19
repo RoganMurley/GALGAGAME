@@ -11,6 +11,7 @@
     "gulp": "^4.0.2",
     "gulp-elm": "^0.8.1",
     "gulp-filter": "^7.0.0",
+    "gulp-compile-handlebars": "^0.6.1",
     "gulp-identity": "^0.1.0",
     "gulp-inline-source": "^3.2.0",
     "gulp-minify-css": "^1.2.4",

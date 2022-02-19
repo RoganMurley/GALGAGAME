@@ -1,6 +1,8 @@
+import fs from 'fs';
 import gulp from 'gulp';
 import elm from 'gulp-elm';
 import filter from 'gulp-filter';
+import handlebars from 'gulp-compile-handlebars';
 import sass from 'gulp-sass';
 import uglify from 'gulp-uglify';
 import minify from 'gulp-minify-css';
@@ -21,12 +23,14 @@ const dir = {
   build: 'static/build'
 };
 
-
 // ELM
 gulp.task('elm', () => {
   return gulp.src('elm/Main.elm')
-    .pipe(elm.make({filetype: 'js', optimize}))
+    .pipe(elm.make({ filetype: 'js', optimize }))
     .pipe(minifyJs())
+    .pipe(rev())
+    .pipe(gulp.dest(dir.build))
+    .pipe(rev.manifest('js-manifest.json'))
     .pipe(gulp.dest(dir.build));
 });
 
@@ -41,9 +45,19 @@ gulp.task('sass', () => {
 
 
 // HTML
+var handlebarOpts = {
+  helpers: {
+    assetPath: function (path, context) {
+      return ['./', context.data.root[path]].join('');
+    }
+  }
+};
+
 gulp.task('html', () => {
+  const manifest = JSON.parse(fs.readFileSync(`${dir.build}/js-manifest.json`, 'utf8'));
   return gulp.src('html/**/*.html')
     .pipe(inline({ compress: production }))
+    .pipe(handlebars(manifest, handlebarOpts))
     .pipe(gulp.dest(dir.build));
 });
 
@@ -68,14 +82,14 @@ gulp.task('copyDeps', () => {
 
 
 // DEFAULT
-gulp.task('build', gulp.parallel('elm', 'sass', 'html', 'copy', 'copyDeps'));
+gulp.task('build', gulp.parallel(gulp.series('elm', 'html'), 'sass', 'copy', 'copyDeps'));
 
 gulp.task('watch', () => {
   gulp.watch('elm/**/*.elm', gulp.series('elm'));
   gulp.watch('sass/**/*.scss', gulp.series('sass'));
   gulp.watch(`${dir.dev}/**`, gulp.series('copy'));
   gulp.watch("node_modules/**", gulp.series('copyDeps'));
-  gulp.watch(`html/index.html`, gulp.series('html'));
+  gulp.watch(`html/*.html`, gulp.series('html'));
   gulp.watch(`js/start.js`, gulp.series('html'));
 });
 
