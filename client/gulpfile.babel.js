@@ -47,6 +47,7 @@ gulp.task('sass', () => {
 
 // HTML
 var handlebarOpts = {
+  batch: ['./html/partials'],
   helpers: {
     assetPath: function (path, context) {
       return ['./', context.data.root[path]].join('');
@@ -56,10 +57,13 @@ var handlebarOpts = {
 
 gulp.task('html', () => {
   const manifest = JSON.parse(fs.readFileSync(`${dir.build}/js-manifest.json`, 'utf8'));
-  return gulp.src('html/**/*')
+  return gulp.src('html/*.hbs')
     .pipe(inline({ compress: production }))
     .pipe(handlebars(manifest, handlebarOpts))
     .pipe(rename(path => {
+      if (path.extname === '.html') {
+        return;
+      }
       return {
         dirname: path.dirname,
         basename: path.basename,
@@ -97,7 +101,7 @@ gulp.task('watch', () => {
   gulp.watch('sass/**/*.scss', gulp.series('sass'));
   gulp.watch(`${dir.dev}/**`, gulp.series('copy'));
   gulp.watch("node_modules/**", gulp.series('copyDeps'));
-  gulp.watch(`html/*`, gulp.series('html'));
+  gulp.watch(`html/*.hbs`, gulp.series('html'));
   gulp.watch(`js/start.js`, gulp.series('html'));
 });
 
