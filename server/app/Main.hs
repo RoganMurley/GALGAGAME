@@ -29,6 +29,7 @@ import Data.Time.Clock (NominalDiffTime)
 import Database (postgresConnectInfo, redisConnectInfo)
 import DeckBuilding (ChosenCharacter (..), UnchosenCharacter (..))
 import qualified DeckBuilding
+import Encounter (updateRoomEncounter)
 import GameState (GameState (..), PlayState (..), PlayingR (..), WaitType (..), isWinner)
 import qualified Log
 import qualified Metrics
@@ -322,6 +323,8 @@ asyncQueueCpuFallback state client roomVar = do
         True -> do
           return $ Left "No CPU needed for queue, rejoice"
         False -> do
+          xp <- Client.xp client
+          updateRoomEncounter roomVar xp
           added <- addComputerClient "CPU" guid roomVar
           case added of
             Just computerClient -> do

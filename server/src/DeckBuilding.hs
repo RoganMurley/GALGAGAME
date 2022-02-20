@@ -57,7 +57,7 @@ instance ToJSON Character where
       [ "choice" .= (Nothing :: Maybe (Rune, Rune, Rune))
       ]
 
-data ChosenCharacter = ChosenCharacter Character
+data ChosenCharacter = ChosenCharacter (Maybe Character)
   deriving (Eq, Show)
 
 instance ToJSON ChosenCharacter where
@@ -103,13 +103,13 @@ selectCharacter deckModel which character =
   case which of
     PlayerA ->
       DeckBuilding
-        { deckbuilding_pa = Right . ChosenCharacter $ character,
+        { deckbuilding_pa = Right . ChosenCharacter . Just $ character,
           deckbuilding_pb = deckbuilding_pb deckModel
         }
     PlayerB ->
       DeckBuilding
         { deckbuilding_pa = deckbuilding_pa deckModel,
-          deckbuilding_pb = Right . ChosenCharacter $ character
+          deckbuilding_pb = Right . ChosenCharacter . Just $ character
         }
 
 isReady :: DeckBuilding -> WhichPlayer -> Bool

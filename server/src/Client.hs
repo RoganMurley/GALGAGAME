@@ -2,9 +2,11 @@ module Client where
 
 import Config (App)
 import Control.Monad.IO.Class (liftIO)
+import Control.Monad.STM (STM)
 import Data.Text (Text)
 import Network.WebSockets (Connection, receiveData, sendTextData)
-import User (User (..), getQueryUsername, getUsername)
+import Stats.Experience (Experience)
+import User (User (..), getExperience, getQueryUsername, getUsername)
 
 data ClientConnection
   = PlayerConnection Connection
@@ -56,3 +58,6 @@ cpuClient username = Client (CpuUser username) ComputerConnection
 isCpu :: Client -> Bool
 isCpu (Client _ ComputerConnection _) = True
 isCpu _ = False
+
+xp :: Client -> STM Experience
+xp = getExperience . user

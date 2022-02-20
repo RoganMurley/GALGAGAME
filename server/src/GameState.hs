@@ -8,6 +8,7 @@ import Data.Aeson (ToJSON (..), object, (.=))
 import Data.Time.Clock (NominalDiffTime, UTCTime)
 import DeckBuilding (Character (..), DeckBuilding, characterCards)
 import GHC.Generics (Generic)
+import Life (initMaxLife)
 import Mirror (Mirror (..))
 import Model (Deck, Model (..), Passes (..), PlayerModel (..), Turn)
 import Player (WhichPlayer (..), other)
@@ -77,20 +78,22 @@ instance Mirror GameState where
 initState :: WaitType -> Gen -> GameState
 initState = Waiting
 
-initModel :: Turn -> Character -> Character -> Gen -> Model
+initModel :: Turn -> Maybe Character -> Maybe Character -> Gen -> Model
 initModel turn ca cb gen =
   Model turn Stack.init pm_a pm_b NoPass gen 0 False
   where
     (genPA, genPB) = split gen :: (Gen, Gen)
     -- PlayerA
     deckPA = shuffle genPA (buildDeck ca) :: Deck
-    pm_a = PlayerModel [] deckPA (character_maxLife ca) (character_maxLife ca) :: PlayerModel
+    lifePA = maybe initMaxLife character_maxLife ca
+    pm_a = PlayerModel [] deckPA lifePA lifePA :: PlayerModel
     -- PlayerB
     deckPB = shuffle genPB (buildDeck cb) :: Deck
-    pm_b = PlayerModel [] deckPB (character_maxLife cb) (character_maxLife cb) :: PlayerModel
+    lifePB = maybe initMaxLife character_maxLife cb
+    pm_b = PlayerModel [] deckPB lifePB lifePB :: PlayerModel
 
-buildDeck :: Character -> Deck
-buildDeck = characterCards
+buildDeck :: Maybe Character -> Deck
+buildDeck = maybe [] characterCards
 
 isWinner :: WhichPlayer -> GameState -> Bool
 isWinner which (Started (Ended (Just winner) _ _ _)) = which == winner

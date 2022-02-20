@@ -36,6 +36,7 @@ library
                      , DSL.Log
                      , DSL.Util
                      , Ease
+                     , Encounter
                      , Feedback.Apps
                      , Feedback.Schema
                      , Feedback.Views
