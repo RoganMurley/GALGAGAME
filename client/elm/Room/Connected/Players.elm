@@ -20,13 +20,13 @@ shouldRematch { pa, pb } =
     -- Need to switch this to a proper datatype, not a name match.
     case ( pa, pb ) of
         ( Just { name }, _ ) ->
-            name /= "CPU"
+            name == "CPU"
 
         ( _, Just { name } ) ->
-            name /= "CPU"
+            name == "CPU"
 
         _ ->
-            False
+            True
 
 
 decode : String -> Result Json.Error Players
