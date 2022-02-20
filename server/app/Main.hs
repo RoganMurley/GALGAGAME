@@ -20,6 +20,7 @@ import Control.Monad.Trans.Class (lift)
 import Control.Monad.Trans.Maybe (MaybeT, runMaybeT)
 import qualified DSL.Beta as Beta
 import qualified Data.GUID as GUID
+import qualified Data.Map as Map
 import Data.Maybe (fromMaybe)
 import Data.Monoid ((<>))
 import Data.String.Conversions (cs)
@@ -113,11 +114,21 @@ waiApp state connectInfoConfig backupApp =
 wsApp :: TVar Server.State -> ConnectInfoConfig -> WS.ServerApp
 wsApp state connectInfoConfig pending =
   runApp connectInfoConfig $ do
-    connection <- liftIO $ WS.acceptRequest pending
+    let cookies = Auth.getCookies pending
+    (acceptReq, cid) <- customAcceptRequest cookies
+    connection <- liftIO $ WS.acceptRequestWith pending acceptReq
     msg <- liftIO $ WS.receiveData connection
-    user <- getUserFromCookies $ Auth.getCookies pending
+    user <- getUserFromCookies cookies cid
     liftIO $ WS.forkPingThread connection 30
     begin connection msg user state
+
+customAcceptRequest :: Auth.Cookies -> App (Text, AcceptRequest)
+customAcceptRequest cookies = do
+  newCid <- liftIO GUID.genText
+  let cid = fromMaybe newCid (Map.lookup Auth.cidCookieName cookies)
+  let headers = [("Cookie", Auth.cidCookieName <> ":" <> cid)]
+  let acceptReq = defaultAcceptRequest {acceptHeaders = headers}
+  return (cid, acceptReq)
 
 connectionFail :: WS.Connection -> String -> App ()
 connectionFail conn str = do

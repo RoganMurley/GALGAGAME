@@ -3,8 +3,8 @@ module User where
 import qualified Auth.Apps as Auth
 import qualified Auth.Schema as Auth
 import Config (App, getApiKey, runBeam)
-import Control.Concurrent.STM (newTVarIO)
-import Control.Concurrent.STM.TVar (TVar, readTVar, writeTVar)
+import Control.Concurrent.STM (newTVarIO, readTVar)
+import Control.Concurrent.STM.TVar (TVar, writeTVar)
 import Control.Monad.IO.Class (liftIO)
 import Control.Monad.STM (STM)
 import Data.Aeson (ToJSON (..), object, (.=))
@@ -20,38 +20,40 @@ import qualified Stats.Stats as Stats
 data User
   = User Auth.User (TVar Experience)
   | CpuUser Text
-  | GuestUser
+  | GuestUser Text (TVar Experience)
   | ServiceUser
 
 instance Show User where
   show (User u _) = show u
   show (CpuUser _) = "CpuUser"
-  show GuestUser = "GuestUser"
+  show (GuestUser cid _) = "GuestUser" ++ show cid
   show ServiceUser = "ServiceUser"
 
 getUsername :: User -> Text
 getUsername (User user _) = Auth.userUsername user
 getUsername (CpuUser name) = name
-getUsername GuestUser = "guest"
+getUsername (GuestUser _ _) = "guest"
 getUsername ServiceUser = "service"
 
 getQueryUsername :: User -> Maybe Text
 getQueryUsername (User user xp) = Just . getUsername $ User user xp
 getQueryUsername (CpuUser _) = Nothing
-getQueryUsername GuestUser = Nothing
+getQueryUsername (GuestUser _ _) = Nothing
 getQueryUsername ServiceUser = Nothing
 
 getExperience :: User -> STM Experience
 getExperience (User _ xp) = readTVar xp
 getExperience (CpuUser _) = return $ levelToExperience 99
+getExperience (GuestUser _ xp) = readTVar xp
 getExperience _ = return 0
 
 setExperience :: Experience -> User -> STM ()
 setExperience xp (User _ xpVar) = writeTVar xpVar xp
+setExperience xp (GuestUser _ xpVar) = writeTVar xpVar xp
 setExperience _ _ = return ()
 
-getUserFromCookies :: Auth.Cookies -> App User
-getUserFromCookies cookies = do
+getUserFromCookies :: Auth.Cookies -> Text -> App User
+getUserFromCookies cookies cid = do
   let mLoginToken = Map.lookup Auth.sessionCookieName cookies
   mUsername <- Auth.checkAuth mLoginToken
   case mUsername of
@@ -60,7 +62,12 @@ getUserFromCookies cookies = do
       apiKey <- getApiKey
       if Just apiKey == mApiToken
         then return ServiceUser
-        else return GuestUser
+        else
+          ( do
+              xp <- Stats.loadGuest cid
+              xpVar <- liftIO $ newTVarIO xp
+              return $ GuestUser cid xpVar
+          )
     Just username -> do
       mUser <-
         runBeam $
@@ -74,13 +81,13 @@ getUserFromCookies cookies = do
         Just user ->
           return $ User user xpVar
         Nothing ->
-          return GuestUser
+          return $ GuestUser cid xpVar
 
 isSuperuser :: User -> Bool
 isSuperuser ServiceUser = True
 isSuperuser (User user _) = Auth.userSuperuser user
 isSuperuser (CpuUser _) = False
-isSuperuser GuestUser = False
+isSuperuser (GuestUser _ _) = False
 
 -- GameUser
 data GameUser = GameUser

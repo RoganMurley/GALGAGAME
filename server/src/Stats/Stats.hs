@@ -1,12 +1,17 @@
 module Stats.Stats where
 
 import qualified Auth.Schema
-import Config (App, runBeam)
+import Config (App, runBeam, runRedis)
 import Data.Aeson (ToJSON (..), object, (.=))
 import Data.Maybe (fromMaybe)
+import Data.Monoid ((<>))
+import Data.String.Conversions (cs)
 import Data.Text (Text)
 import Database.Beam (all_, current_, filter_, runSelectReturningOne, runUpdate, select, update, val_, (<-.), (==.))
+import qualified Database.Redis as R
 import DeckBuilding (Rune (..), mainRunes)
+import qualified Log
+import Safe (readMay)
 import Schema (GalgagameDb (..), galgagameDb)
 import Stats.Experience (Experience)
 import qualified Stats.Schema
@@ -19,7 +24,7 @@ load username = do
         select $
           filter_ (\row -> Stats.Schema.statsUser row ==. val_ (Auth.Schema.UserId username)) $
             all_ $ stats galgagameDb
-  return $ fromMaybe 0 $ Stats.Schema.statsExperience <$> result
+  return $ maybe 0 Stats.Schema.statsExperience result
 
 increase :: Text -> Experience -> App ()
 increase username xp = do
@@ -29,6 +34,16 @@ increase username xp = do
         (stats galgagameDb)
         (\row -> [Stats.Schema.statsExperience row <-. current_ (Stats.Schema.statsExperience row) + val_ xp])
         (\row -> Stats.Schema.statsUser row ==. val_ (Auth.Schema.UserId username))
+
+loadGuest :: Text -> App Experience
+loadGuest cid = do
+  result <- runRedis (R.get (cs cid))
+  case result of
+    Left err -> do
+      Log.error $ "loadGuest failed with " <> cs (show err)
+      return 0
+    Right got ->
+      return $ fromMaybe 0 (got >>= readMay . cs)
 
 data StatChange = StatChange
   { statChange_initialExperience :: Experience,

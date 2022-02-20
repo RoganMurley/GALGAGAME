@@ -92,13 +92,9 @@ getCookies pending = Map.fromList cookiesList
     cookieHeaders :: WS.Headers
     cookieHeaders = WS.requestHeaders . WS.pendingRequest $ pending
     cookieString :: Maybe ByteString
-    cookieString = snd <$> find (((==) "Cookie") . fst) cookieHeaders
+    cookieString = snd <$> find ((==) "Cookie" . fst) cookieHeaders
     cookiesList :: [(Text, Text)]
-    cookiesList = case cookieString of
-      Just str ->
-        parseCookiesText str
-      Nothing ->
-        []
+    cookiesList = maybe [] parseCookiesText cookieString
 
 legalName :: ByteString -> Maybe Text
 legalName n
@@ -110,3 +106,6 @@ legalPassword :: ByteString -> Maybe Text
 legalPassword p
   | length p < 8 = Just "Password too short"
   | otherwise = Nothing
+
+cidCookieName :: Text
+cidCookieName = "cid"
