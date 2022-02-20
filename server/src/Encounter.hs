@@ -6,7 +6,7 @@ import qualified DSL.Beta as Beta
 import DeckBuilding (ChosenCharacter (..))
 import Room (Room (..))
 import Scenario (Scenario (..))
-import Start (tutorialProgram)
+import qualified Start
 import Stats.Experience (Experience, levelToExperience)
 import Util (modTVar)
 
@@ -21,11 +21,12 @@ updateRoomEncounter roomVar experience =
           scenario
             { scenario_prog = p,
               scenario_characterPa = Right . ChosenCharacter $ Nothing,
-              scenario_characterPb = Right . ChosenCharacter $ Nothing
+              scenario_characterPb = Right . ChosenCharacter $ Nothing,
+              scenario_timeLimit = 9999999999999999999
             }
         Nothing ->
           scenario
     prog :: Experience -> Maybe (Beta.Program ())
     prog xp
-      | xp < levelToExperience 2 = Just tutorialProgram
+      | xp < levelToExperience 2 = Just Start.tutorialProgram
       | otherwise = Nothing

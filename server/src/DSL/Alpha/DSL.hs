@@ -23,6 +23,7 @@ data DSL n
   | SetDeck WhichPlayer Deck n
   | SetHand WhichPlayer Hand n
   | SetLife WhichPlayer Life n
+  | SetMaxLife WhichPlayer Life n
   | SetPasses Passes n
   | SetStack Stack n
   | SetTurn Turn n
