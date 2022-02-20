@@ -97,7 +97,7 @@ gulp.task('copyDeps', () => {
 gulp.task('build', gulp.parallel(gulp.series('elm', 'html'), 'sass', 'copy', 'copyDeps'));
 
 gulp.task('watch', () => {
-  gulp.watch('elm/**/*.elm', gulp.series('elm'));
+  gulp.watch('elm/**/*.elm', gulp.series('elm', 'html'));
   gulp.watch('sass/**/*.scss', gulp.series('sass'));
   gulp.watch(`${dir.dev}/**`, gulp.series('copy'));
   gulp.watch("node_modules/**", gulp.series('copyDeps'));
