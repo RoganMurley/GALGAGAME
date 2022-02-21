@@ -50,7 +50,7 @@ var handlebarOpts = {
   batch: ['./html/partials'],
   helpers: {
     assetPath: function (path, context) {
-      return ['./', context.data.root[path]].join('');
+      return ['/', context.data.root[path]].join('');
     }
   }
 };
