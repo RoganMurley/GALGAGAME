@@ -134,6 +134,7 @@ executable galgagame
   ghc-options:         -threaded -rtsopts -with-rtsopts=-N -Wall -Werror -Wcompat -Wincomplete-record-updates -Wincomplete-uni-patterns -Wredundant-constraints -O2
   build-depends:       base
                      , aeson
+                     , containers
                      , cookie
                      , datadog
                      , guid
