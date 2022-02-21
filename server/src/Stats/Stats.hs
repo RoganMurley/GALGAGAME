@@ -1,6 +1,5 @@
 module Stats.Stats where
 
-import qualified Auth.Apps as Auth
 import qualified Auth.Schema
 import Config (App, runBeam, runRedis)
 import Data.Aeson (ToJSON (..), object, (.=))
@@ -34,7 +33,8 @@ loadUser username = do
 
 loadGuest :: Text -> App Experience
 loadGuest cid = do
-  result <- runRedis (R.get (cs cid))
+  let key = "guestStats__" <> cid
+  result <- runRedis (R.get (cs key))
   case result of
     Left err -> do
       Log.error $ "loadGuest failed with " <> cs (show err)
@@ -58,9 +58,10 @@ increaseUser username xp = do
 
 increaseGuest :: Text -> Experience -> App ()
 increaseGuest cid xp = do
+  let key = "guestStats__" <> cid
   _ <-
     runRedis $
-      R.set (cs cid) (cs $ show xp)
+      R.set (cs key) (cs $ show xp)
   return ()
 
 data StatChange = StatChange
