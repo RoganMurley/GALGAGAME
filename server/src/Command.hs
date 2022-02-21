@@ -2,7 +2,6 @@ module Command where
 
 import Data.Aeson (eitherDecode)
 import Data.Maybe (fromMaybe)
-import Data.Monoid ((<>))
 import Data.String.Conversions (cs)
 import Data.Text (Text)
 import DeckBuilding (CharacterChoice)

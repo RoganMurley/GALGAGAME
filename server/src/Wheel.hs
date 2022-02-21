@@ -5,7 +5,6 @@ module Wheel where
 
 import Control.DeepSeq (NFData (..))
 import Data.Aeson (ToJSON (..), object, (.=))
-import Data.Semigroup (Semigroup, (<>))
 import GHC.Generics (Generic)
 import Mirror (Mirror (..))
 

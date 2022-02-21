@@ -19,47 +19,61 @@ packages:
   original:
     hackage: scotty-cookie-0.1.0.3
 - completed:
-    hackage: beam-core-0.7.2.2@sha256:4eb3e12584c01d2218845581322c7632295d9e76c565c25d4010549d55d16dbb,4837
+    hackage: beam-core-0.9.2.1@sha256:33b9a2bf40f4b3408a2c7b58d001d7cf133aa1e2c95b5c5d782838c6b989cf24,5282
     pantry-tree:
-      size: 2269
-      sha256: d93b018abf9b0892b91381401ec6ebc84499b24e24053d2ecca89d643146636d
+      size: 2705
+      sha256: 7b3445376c7505a048dfadbedfb33a8fba120f3f506e2ccb5a0300852d0fb360
   original:
-    hackage: beam-core-0.7.2.2@sha256:4eb3e12584c01d2218845581322c7632295d9e76c565c25d4010549d55d16dbb
+    hackage: beam-core-0.9.2.1
 - completed:
-    hackage: beam-postgres-0.3.2.2@sha256:950cda1e10dfedbc8649e6551adbd31995c2f95f07bc63ed4d8135d03cdfbce2,3176
+    hackage: beam-postgres-0.5.2.1@sha256:5ba4fecca3a210790aa858e32469d126995c25f08dc89df267cf987301c2269f,4392
     pantry-tree:
-      size: 904
-      sha256: 1f6e12c6b0e51945705b6eadde12a9a99ee69415bd80df59a9abbdd2f4ea4978
+      size: 1693
+      sha256: e665908580c2527887e40d9f504a1a1c6c923148698617f70e14bcf2658ee080
   original:
-    hackage: beam-postgres-0.3.2.2@sha256:950cda1e10dfedbc8649e6551adbd31995c2f95f07bc63ed4d8135d03cdfbce2
+    hackage: beam-postgres-0.5.2.1
 - completed:
-    hackage: beam-migrate-0.3.2.1@sha256:fb9d918e43f296c507cf94823aed4bc2790e4b7a0c407eaa027118d980350fbe,4974
+    hackage: beam-migrate-0.5.1.2@sha256:e385a2ddb213398aca38a4f15334613057552b83a467a81c0dc3562c49a59884,4923
     pantry-tree:
-      size: 1720
-      sha256: ec9468c7532c90fb3c1abca8d35ab62716f71fbcfd0cb99c41958bcb0a6289f0
+      size: 1721
+      sha256: a536b7c320720222256895d2ebe27fef547514e4ddc6cc1e971b1286c4974155
   original:
-    hackage: beam-migrate-0.3.2.1@sha256:fb9d918e43f296c507cf94823aed4bc2790e4b7a0c407eaa027118d980350fbe
+    hackage: beam-migrate-0.5.1.2
 - completed:
-    hackage: haskell-src-exts-1.20.3@sha256:eb9a0a02e422f64e793fe077e445e930bc365b7f7ce92ce6983475c72f8b3785,4467
+    hackage: dependent-sum-0.7.1.0@sha256:2943074c14ba06401d5bf47aeb71ed3a3f68da4d3db3ae4ca9ac02f35458fc34,2147
     pantry-tree:
-      size: 92343
-      sha256: c14945db7232a46e974a3467d881e7929d4940fb947ccecb8e210cebba7abe1b
+      size: 290
+      sha256: 64370d3d5a86df30b4460e55d980074fe7577eef0385101a31da8e2de50b8813
   original:
-    hackage: haskell-src-exts-1.20.3@sha256:eb9a0a02e422f64e793fe077e445e930bc365b7f7ce92ce6983475c72f8b3785
+    hackage: dependent-sum-0.7.1.0
 - completed:
-    hackage: vector-sized-1.0.4.0@sha256:d5cdea82b87ff7a5158d784e6869866e6a2c258f0a035279e0168b55350a723f,1541
+    hackage: indexed-list-literals-0.2.1.3@sha256:31d0fbbc2484576cd9677a7b7760964cfee25827a0acbf5a6e6e6fcd9e191686,2371
     pantry-tree:
-      size: 883
-      sha256: df1a334ad761dc1e1a5c0f44e3f2322d3fe9b89e8e0d80dfd89e309ddd33a064
+      size: 342
+      sha256: ae1ba8991bab1a4d7b5b3a71169f02cecba56da07f53b7e882aea79356194156
   original:
-    hackage: vector-sized-1.0.4.0@sha256:d5cdea82b87ff7a5158d784e6869866e6a2c258f0a035279e0168b55350a723f
+    hackage: indexed-list-literals-0.2.1.3
 - completed:
-    hackage: dependent-sum-0.4@sha256:40c705604f52374fb72616e10234635104a626ede737ddde899777b719df120b,1907
+    hackage: pqueue-1.4.1.4@sha256:6c8ca63f67241a3b57ed063c9f72d70dbbb6a1115d735e49481bfaecd241b661,1867
     pantry-tree:
-      size: 565
-      sha256: 6c0cb5e52d35c04c3a561b342d41d0bfb20cd8a5e83ab39d93ab1a25aba50888
+      size: 886
+      sha256: 279e6c8c50be080b8eed7925036d4c247e176b9c26966554573d4cd69e24d8ce
   original:
-    hackage: dependent-sum-0.4@sha256:40c705604f52374fb72616e10234635104a626ede737ddde899777b719df120b
+    hackage: pqueue-1.4.1.4
+- completed:
+    hackage: vector-sized-1.5.0@sha256:6b827805784b52ee9845ab5c930f627e6e27b6dea2354f6fc46295e63ccdb2ed,1758
+    pantry-tree:
+      size: 1302
+      sha256: c4010995ed0fbe9094142af691198f5b28a98b1ae0f7938b0d8a6e3fcf9769f1
+  original:
+    hackage: vector-sized-1.5.0
+- completed:
+    hackage: haskell-src-exts-1.23.1@sha256:339841f4a6710e915a0bac8df18d8a454c11d626131aee4d05b6be150b7f863e,4577
+    pantry-tree:
+      size: 97804
+      sha256: 572aeb73c927ca9b4df7b9a32345dfdc1ba72b7d4af1c38dc12cd6bc2843d88f
+  original:
+    hackage: haskell-src-exts-1.23.1
 - completed:
     hackage: finite-typelits-0.1.4.2@sha256:d243523297c0526d32e9b7de98e04b79a4227577ddb25d3fecd7981439de243c,720
     pantry-tree:
@@ -67,20 +81,6 @@ packages:
       sha256: a893d5f2acc17ea0b1f51dbad3eb1d206bed9d041b66284551b3ee3166595a4f
   original:
     hackage: finite-typelits-0.1.4.2@sha256:d243523297c0526d32e9b7de98e04b79a4227577ddb25d3fecd7981439de243c
-- completed:
-    hackage: indexed-list-literals-0.2.1.2@sha256:0760e2a86605b5557af7180d4d50e317d75a5a92ca12aaabb6948ce97b7a94ac,2373
-    pantry-tree:
-      size: 341
-      sha256: 4e54f8d033a1f46333274ea3d1b9785c9e4fd225dcddc988c7a41353d9959cd5
-  original:
-    hackage: indexed-list-literals-0.2.1.2@sha256:0760e2a86605b5557af7180d4d50e317d75a5a92ca12aaabb6948ce97b7a94ac
-- completed:
-    hackage: pqueue-1.4.1.2@sha256:5409f92bb55df02a965c10008683b8c7337d9229e152b7b0e3de88af6ba8659d,2104
-    pantry-tree:
-      size: 848
-      sha256: a8619c12d0a1219c31d53c26ea568f9a99ee50d239b177267e6a19750ae44440
-  original:
-    hackage: pqueue-1.4.1.2@sha256:5409f92bb55df02a965c10008683b8c7337d9229e152b7b0e3de88af6ba8659d
 - completed:
     hackage: Only-0.1@sha256:f92f5da97e647451f1ee7f5bf44914fb75062d08ccd3f36b2000d649c63d13aa,1373
     pantry-tree:
@@ -125,7 +125,7 @@ packages:
     hackage: unliftio-core-0.2.0.1@sha256:f9abcdd3f3d28e4840563efb7b8760d2de9b5707bcd6f53a87f6a0d77bb5a9f7,1082
 snapshots:
 - completed:
-    size: 420375
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/7/0.yaml
-    sha256: 4856e097c0c66c60855b81d0b1bea42ce53b58df210abea1a9942ee6e34f944d
-  original: lts-7.0
+    size: 590102
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/18/26.yaml
+    sha256: e76d109964d9335abb412e22139c5bce3078be290ac6d90b8ecea6cc009bb198
+  original: lts-18.26

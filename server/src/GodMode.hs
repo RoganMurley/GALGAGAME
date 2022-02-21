@@ -5,7 +5,6 @@ import Cards (cardsByName)
 import qualified DSL.Alpha as Alpha
 import qualified DSL.Beta as Beta
 import qualified Data.Map as Map
-import Data.Monoid ((<>))
 import Data.String.Conversions (cs)
 import Data.Text (Text)
 import HandCard (HandCard (..), hide)

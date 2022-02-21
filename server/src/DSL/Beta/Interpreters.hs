@@ -10,7 +10,6 @@ import Control.Monad.Free (Free(..), foldFree, liftF)
 import Data.Foldable (foldl')
 import Data.Functor.Sum (Sum(..))
 import Data.Maybe (fromMaybe, isJust)
-import Data.Monoid ((<>))
 import Discard (CardDiscard(..), isDiscard)
 import DSL.Beta.DSL
 import DSL.Util (toLeft, toRight)

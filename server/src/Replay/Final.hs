@@ -3,9 +3,10 @@ module Replay.Final where
 import qualified Auth.Schema
 import Config (App, runBeam)
 import Data.Aeson (ToJSON (..), encode, object, (.=))
+import Data.Int (Int64)
 import Data.String.Conversions (cs)
 import Data.Text (Text)
-import Database.Beam (all_, default_, filter_, insertExpressions, runSelectReturningOne, select, val_, (==.))
+import Database.Beam (all_, default_, filter_, insert, insertExpressions, runSelectReturningOne, select, val_, (==.))
 import Database.Beam.Backend.SQL.BeamExtensions (runInsertReturningList)
 import GameState (PlayState)
 import Mirror (Mirror (..))
@@ -48,23 +49,24 @@ getUsername which (Replay (Active.Replay _ _ (_, pa) (_, pb)) _) =
         s ->
           Just s
 
-save :: Replay -> App Int
+save :: Replay -> App Int64
 save replay = do
   let playerA = getUsername PlayerA replay
   let playerB = getUsername PlayerB replay
   result <-
     runBeam $
-      runInsertReturningList (replays galgagameDb) $
-        insertExpressions
-          [ Replay.Schema.Replay
-              default_
-              (val_ $ cs $ encode replay)
-              (val_ $ Auth.Schema.UserId playerA)
-              (val_ $ Auth.Schema.UserId playerB)
-          ]
+      runInsertReturningList $
+        insert (replays galgagameDb) $
+          insertExpressions
+            [ Replay.Schema.Replay
+                default_
+                (val_ $ cs $ encode replay)
+                (val_ $ Auth.Schema.UserId playerA)
+                (val_ $ Auth.Schema.UserId playerB)
+            ]
   return $ head $ Replay.Schema.replayId <$> result
 
-load :: Int -> App (Maybe Text)
+load :: Int64 -> App (Maybe Text)
 load replayId = do
   result <-
     runBeam $

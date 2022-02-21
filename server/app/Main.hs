@@ -11,7 +11,7 @@ import qualified Command
 import Config (App, ConnectInfoConfig (..), runApp)
 import Control.Concurrent.Chan (newChan)
 import Control.Concurrent.Lifted (fork, killThread, threadDelay)
-import Control.Concurrent.STM.TVar (TVar, newTVar, readTVar, readTVarIO)
+import Control.Concurrent.STM.TVar (TVar, newTVarIO, readTVar, readTVarIO)
 import Control.Exception.Lifted (finally)
 import Control.Monad (forM_, forever, mzero, when)
 import Control.Monad.IO.Class (liftIO)
@@ -22,7 +22,6 @@ import qualified DSL.Beta as Beta
 import qualified Data.GUID as GUID
 import qualified Data.Map as Map
 import Data.Maybe (fromMaybe)
-import Data.Monoid ((<>))
 import Data.String.Conversions (cs)
 import Data.Text (Text)
 import qualified Data.Text as Text
@@ -77,7 +76,7 @@ main = do
         postgresDatabase <- lookupEnv "POSTGRES_DATABASE"
         let postgresVars = (postgresHost, postgresPort, postgresUser, postgresPassword, postgresDatabase)
 
-        apiKey <- cs <$> fromMaybe "fake-api-key" <$> lookupEnv "GALGA_API_KEY"
+        apiKey <- cs . fromMaybe "fake-api-key" <$> lookupEnv "GALGA_API_KEY"
 
         datadogKey <- lookupEnv "DD_API_KEY"
         datadogAppKey <- lookupEnv "DD_APP_KEY"
@@ -92,7 +91,7 @@ main = do
                 }
 
         authApp <- runApp connectInfoConfig $ Auth.app connectInfoConfig
-        state <- atomically $ newTVar Server.initState
+        state <- newTVarIO Server.initState
 
         Log.infoIO "Starting up!"
 
@@ -105,30 +104,33 @@ main = do
     )
 
 waiApp :: TVar Server.State -> ConnectInfoConfig -> Application -> Application
-waiApp state connectInfoConfig backupApp =
+waiApp state connectInfoConfig =
   websocketsOr
     WS.defaultConnectionOptions
     (wsApp state connectInfoConfig)
-    backupApp
 
 wsApp :: TVar Server.State -> ConnectInfoConfig -> WS.ServerApp
-wsApp state connectInfoConfig pending =
-  runApp connectInfoConfig $ do
-    let cookies = Auth.getCookies pending
-    (acceptReq, cid) <- customAcceptRequest cookies
-    connection <- liftIO $ WS.acceptRequestWith pending acceptReq
-    msg <- liftIO $ WS.receiveData connection
-    user <- getUserFromCookies cookies cid
-    liftIO $ WS.forkPingThread connection 30
-    begin connection msg user state
+wsApp state connectInfoConfig pending = do
+  let cookies = Auth.getCookies pending
+  (acceptReq, cid) <- customAcceptRequest cookies
+  connection <- WS.acceptRequestWith pending acceptReq
+  WS.withPingThread
+    connection
+    30
+    (return ())
+    ( runApp connectInfoConfig $ do
+        msg <- liftIO $ WS.receiveData connection
+        user <- getUserFromCookies cookies cid
+        begin connection msg user state
+    )
 
-customAcceptRequest :: Auth.Cookies -> App (Text, AcceptRequest)
+customAcceptRequest :: Auth.Cookies -> IO (WS.AcceptRequest, Text)
 customAcceptRequest cookies = do
-  newCid <- liftIO GUID.genText
+  newCid <- GUID.genText
   let cid = fromMaybe newCid (Map.lookup Auth.cidCookieName cookies)
-  let headers = [("Cookie", Auth.cidCookieName <> ":" <> cid)]
-  let acceptReq = defaultAcceptRequest {acceptHeaders = headers}
-  return (cid, acceptReq)
+  let headers = [("Set-Cookie", cs $ Auth.cidCookieName <> "=" <> cid)]
+  let acceptReq = WS.defaultAcceptRequest {WS.acceptHeaders = headers}
+  return (acceptReq, cs cid)
 
 connectionFail :: WS.Connection -> String -> App ()
 connectionFail conn str = do
@@ -158,7 +160,7 @@ begin conn request user state = do
           beginPrefix prefix state client roomVar
     Right (PlayReplayRequest replayId) -> do
       Metrics.incr "request.replay"
-      mReplay <- Replay.Final.load replayId
+      mReplay <- Replay.Final.load (fromIntegral replayId)
       case mReplay of
         Just replay -> do
           liftIO $ WS.sendTextData conn ("replay:" <> replay)
@@ -166,20 +168,21 @@ begin conn request user state = do
           liftIO $ WS.sendTextData conn ("replayNotFound:" :: Text)
     Right (SystemMessageRequest systemMessage) -> do
       Metrics.incr "request.systemMessage"
-      case User.isSuperuser user of
-        True -> do
-          Log.info $ printf ("System message received: " <> cs systemMessage)
-          roomVars <- liftIO . atomically $ Server.getAllRooms state
-          forM_
-            roomVars
-            ( \roomVar -> do
-                room <- liftIO $ readTVarIO roomVar
-                fork $ Room.broadcast ("systemMessage:" <> systemMessage) room
-            )
-          liftIO $ WS.sendTextData conn ("systemMessageSuccess:" :: Text)
-          Log.info $ printf ("System message success")
-        False ->
-          Log.error $ printf "Illegal system message"
+      if User.isSuperuser user
+        then
+          ( do
+              Log.info $ printf ("System message received: " <> cs systemMessage)
+              roomVars <- liftIO . atomically $ Server.getAllRooms state
+              forM_
+                roomVars
+                ( \roomVar -> do
+                    room <- liftIO $ readTVarIO roomVar
+                    fork $ Room.broadcast ("systemMessage:" <> systemMessage) room
+                )
+              liftIO $ WS.sendTextData conn ("systemMessageSuccess:" :: Text)
+              Log.info $ printf "System message success"
+          )
+        else Log.error $ printf "Illegal system message"
     Left Negotiation.ConnectionLostError -> do
       Metrics.incr "error.connectionLost"
       Log.warning $ printf "<%s>: Connection was lost, informing client" username

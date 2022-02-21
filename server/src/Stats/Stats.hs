@@ -4,7 +4,6 @@ import qualified Auth.Schema
 import Config (App, runBeam, runRedis)
 import Data.Aeson (ToJSON (..), object, (.=))
 import Data.Maybe (fromMaybe)
-import Data.Monoid ((<>))
 import Data.String.Conversions (cs)
 import Data.Text (Text)
 import Database.Beam (all_, current_, filter_, runSelectReturningOne, runUpdate, select, update, val_, (<-.), (==.))
@@ -32,7 +31,7 @@ increase username xp = do
     runUpdate $
       update
         (stats galgagameDb)
-        (\row -> [Stats.Schema.statsExperience row <-. current_ (Stats.Schema.statsExperience row) + val_ xp])
+        (\row -> Stats.Schema.statsExperience row <-. current_ (Stats.Schema.statsExperience row) + val_ xp)
         (\row -> Stats.Schema.statsUser row ==. val_ (Auth.Schema.UserId username))
 
 loadGuest :: Text -> App Experience
