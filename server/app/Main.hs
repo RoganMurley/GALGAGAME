@@ -283,7 +283,7 @@ beginComputer cpuName state client roomVar = do
         )
         ( do
             _ <- disconnect computerClient roomVar state
-            (disconnect client roomVar state)
+            disconnect client roomVar state
         )
 
 beginQueue :: TVar Server.State -> Client -> TVar Room -> App ()
@@ -333,19 +333,23 @@ asyncQueueCpuFallback state client roomVar = do
     transaction :: Text -> STM (Either String Client)
     transaction guid = do
       room <- readTVar roomVar
-      case Room.full room of
-        True -> do
-          return $ Left "No CPU needed for queue, rejoice"
-        False -> do
-          xp <- Client.xp client
-          updateRoomEncounter roomVar xp
-          added <- addComputerClient "CPU" guid roomVar
-          case added of
-            Just computerClient -> do
-              Server.dequeue state
-              return $ Right computerClient
-            Nothing ->
-              return $ Left "Failed to add CPU"
+      if Room.full room
+        then
+          ( do
+              return $ Left "No CPU needed for queue, rejoice"
+          )
+        else
+          ( do
+              xp <- Client.xp client
+              updateRoomEncounter roomVar xp
+              added <- addComputerClient "CPU" guid roomVar
+              case added of
+                Just computerClient -> do
+                  Server.dequeue state
+                  return $ Right computerClient
+                Nothing ->
+                  return $ Left "Failed to add CPU"
+          )
 
 spectate :: Client -> TVar Room -> App ()
 spectate client roomVar = do
