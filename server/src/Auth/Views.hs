@@ -1,6 +1,6 @@
 module Auth.Views where
 
-import Auth.Apps (checkAuth, checkPassword, deleteToken, legalName, legalPassword, saveSession, saveUser, sessionCookieName)
+import Auth.Apps (checkAuth, checkPassword, cidCookieName, deleteToken, legalName, legalPassword, saveSession, saveUser, sessionCookieName)
 import Config (App, ConnectInfoConfig (..), runApp)
 import Control.Monad.IO.Class (liftIO)
 import Control.Monad.Trans.Class (lift)
@@ -76,6 +76,7 @@ logoutView config = do
     Nothing ->
       return ()
   deleteCookie sessionCookieName
+  deleteCookie cidCookieName
   deleteCookie "user"
   json $ object []
   status ok200

@@ -12,7 +12,7 @@ import Room.Messages exposing (Msg(..))
 
 
 view : Flags -> Model -> Html Main.Msg
-view { username, visits } { error, gameType } =
+view { username } { error, gameType } =
     case username of
         Nothing ->
             div []
@@ -30,7 +30,7 @@ view { username, visits } { error, gameType } =
                                     [ onClick GotoLogin, class "menu-button" ]
                                     [ text "LOGIN & PLAY" ]
                                 ]
-                                :: guestLoginView visits
+                                :: guestLoginView
                         , div [ class "error" ] [ text error ]
                         ]
                     ]
@@ -40,15 +40,11 @@ view { username, visits } { error, gameType } =
             text ""
 
 
-guestLoginView : Int -> List (Html Main.Msg)
-guestLoginView visits =
-    if visits < 5 then
-        [ div [ class "vertical-rule" ] []
-        , div [ class "horizontal-rule" ] []
-        , button
-            [ onClick <| RoomMsg <| LobbyMsg JoinRoom, class "menu-button" ]
-            [ text "PLAY AS GUEST" ]
-        ]
-
-    else
-        []
+guestLoginView : List (Html Main.Msg)
+guestLoginView =
+    [ div [ class "vertical-rule" ] []
+    , div [ class "horizontal-rule" ] []
+    , button
+        [ onClick <| RoomMsg <| LobbyMsg JoinRoom, class "menu-button" ]
+        [ text "PLAY AS GUEST" ]
+    ]

@@ -30,7 +30,7 @@ import Scenario (Scenario (..))
 import Stats.Experience (Experience)
 import qualified Stats.Stats as Stats
 import Text.Printf (printf)
-import User (GameUser (..), User (..), getQueryUsername, setExperience, usersToGameUsers)
+import User (GameUser (..), User (..), getUsername, setExperience, usersToGameUsers)
 import Util (Err)
 
 roomUpdate :: GameCommand -> WhichPlayer -> UTCTime -> TVar Room -> STM (Room, Either Err [Outcome])
@@ -139,20 +139,18 @@ handleExperience which forceXp winner room = do
   -- Save usernames all game.
   let scenario = Room.getScenario room
   let mUser = Client.user <$> Room.getPlayerClient which room :: Maybe User
-  let mUsername = mUser >>= getQueryUsername :: Maybe Text
-  case mUsername of
-    Just username -> do
-      initialXp <- Stats.load username
+  case mUser of
+    Just user -> do
       let xpDeltaRaw = if Just which == winner then scenario_xpWin scenario else scenario_xpLoss scenario
       let xpDelta = fromMaybe xpDeltaRaw forceXp
-      Stats.increase username xpDelta
+      initialXp <- Stats.load user
       let statChange = Stats.statChange initialXp xpDelta
-      Log.info $ printf "Xp change for %s: %s" username (show statChange)
+      Stats.increase user xpDelta
+      Log.info $ printf "Xp change for %s: %s" (getUsername user) (show statChange)
       Room.sendToPlayer which (("xp:" <>) . cs . encode $ statChange) room
-      forM_ mUser (liftIO . atomically . setExperience (initialXp + xpDelta))
+      liftIO . atomically $ setExperience (initialXp + xpDelta) user
       syncPlayersRoom room
-    Nothing -> do
-      Log.info "There's nobody here to gain that sweet xp :("
+    Nothing ->
       return ()
 
 actOutcome :: Room -> Outcome -> App ()

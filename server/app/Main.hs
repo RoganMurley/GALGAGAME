@@ -128,7 +128,7 @@ customAcceptRequest :: Auth.Cookies -> IO (WS.AcceptRequest, Text)
 customAcceptRequest cookies = do
   newCid <- GUID.genText
   let cid = fromMaybe newCid (Map.lookup Auth.cidCookieName cookies)
-  let headers = [("Set-Cookie", cs $ Auth.cidCookieName <> "=" <> cid)]
+  let headers = [("Set-Cookie", cs $ Auth.cidCookieName <> "=" <> cid <> "; Path=/; Secure; SameSite=Strict")]
   let acceptReq = WS.defaultAcceptRequest {WS.acceptHeaders = headers}
   return (acceptReq, cs cid)
 

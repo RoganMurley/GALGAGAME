@@ -9,6 +9,7 @@ import Control.Monad.IO.Class (liftIO)
 import Control.Monad.STM (STM)
 import Data.Aeson (ToJSON (..), object, (.=))
 import qualified Data.Map as Map
+import Data.String.Conversions (cs)
 import Data.Text (Text)
 import Data.Traversable (forM)
 import Database.Beam (all_, filter_, runSelectReturningOne, select, val_, (==.))
@@ -64,7 +65,7 @@ getUserFromCookies cookies cid = do
         then return ServiceUser
         else
           ( do
-              xp <- Stats.loadGuest cid
+              xp <- Stats.loadGuest (cs cid)
               xpVar <- liftIO $ newTVarIO xp
               return $ GuestUser cid xpVar
           )
@@ -75,7 +76,7 @@ getUserFromCookies cookies cid = do
             select $
               filter_ (\row -> Auth.userUsername row ==. val_ username) $
                 all_ $ users galgagameDb
-      xp <- Stats.load username
+      xp <- Stats.loadUser username
       xpVar <- liftIO $ newTVarIO xp
       case mUser of
         Just user ->
