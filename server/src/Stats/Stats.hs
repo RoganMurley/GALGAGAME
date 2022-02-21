@@ -27,7 +27,7 @@ increase username xp = do
     runUpdate $
       update
         (stats galgagameDb)
-        (\row -> [Stats.Schema.statsExperience row <-. current_ (Stats.Schema.statsExperience row) + val_ xp])
+        (\row -> Stats.Schema.statsExperience row <-. current_ (Stats.Schema.statsExperience row) + val_ xp)
         (\row -> Stats.Schema.statsUser row ==. val_ (Auth.Schema.UserId username))
 
 data StatChange = StatChange

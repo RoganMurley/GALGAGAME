@@ -16,7 +16,6 @@ redisConnectInfo (host, portString, password) =
       Redis.connectDatabase = 0
     }
   where
-    defaultHost :: Redis.HostName
     defaultHost = "redis"
     defaultPort :: Redis.PortID
     defaultPort = Redis.PortNumber 6379

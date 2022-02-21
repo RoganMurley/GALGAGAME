@@ -9,7 +9,6 @@ import qualified DSL.Alpha as Alpha
 import qualified DSL.Beta as Beta
 import Data.Foldable (toList)
 import Data.Maybe (fromMaybe, isJust)
-import Data.Monoid ((<>))
 import Data.String.Conversions (cs)
 import Data.Text (Text)
 import Data.Time.Clock (NominalDiffTime, UTCTime, diffUTCTime)

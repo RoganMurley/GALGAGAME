@@ -63,12 +63,6 @@ getGen = Gen <$> R.newStdGen
 mkGen :: Int -> Gen
 mkGen n = Gen . R.mkStdGen $ n
 
-genToSeed :: Gen -> String
-genToSeed (Gen gen) = show gen
-
-seedToGen :: String -> Gen
-seedToGen seed = Gen $ read seed
-
 random :: Gen -> Float
 random (Gen gen) = fst $ R.random gen
 

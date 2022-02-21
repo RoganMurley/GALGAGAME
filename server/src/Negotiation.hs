@@ -1,6 +1,5 @@
 module Negotiation where
 
-import Data.Monoid ((<>))
 import Data.String.Conversions (cs)
 import Data.Text (Text)
 import Safe (readMay)

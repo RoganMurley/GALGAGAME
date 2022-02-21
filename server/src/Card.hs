@@ -6,7 +6,6 @@ module Card where
 import Control.DeepSeq (NFData (..))
 import {-# SOURCE #-} qualified DSL.Beta.DSL as Beta
 import Data.Aeson (ToJSON (..), defaultOptions, genericToEncoding, object, (.=))
-import Data.Monoid ((<>))
 import Data.String.Conversions (cs)
 import Data.Text (Text, toLower, toUpper)
 import GHC.Generics (Generic)

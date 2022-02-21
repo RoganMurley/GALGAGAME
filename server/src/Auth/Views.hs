@@ -8,7 +8,6 @@ import Crypto.BCrypt (hashPasswordUsingPolicy, slowerBcryptHashingPolicy)
 import Data.Aeson (object, (.=))
 import Data.ByteString (ByteString)
 import qualified Data.GUID as GUID
-import Data.Monoid ((<>))
 import Data.String.Conversions (cs)
 import Data.Text (Text)
 import qualified Data.Text as T

@@ -21,7 +21,6 @@ import Control.Monad.Trans.Maybe (MaybeT, runMaybeT)
 import qualified DSL.Beta as Beta
 import qualified Data.GUID as GUID
 import Data.Maybe (fromMaybe)
-import Data.Monoid ((<>))
 import Data.String.Conversions (cs)
 import Data.Text (Text)
 import qualified Data.Text as Text
@@ -111,13 +110,17 @@ waiApp state connectInfoConfig backupApp =
     backupApp
 
 wsApp :: TVar Server.State -> ConnectInfoConfig -> WS.ServerApp
-wsApp state connectInfoConfig pending =
-  runApp connectInfoConfig $ do
-    connection <- liftIO $ WS.acceptRequest pending
-    msg <- liftIO $ WS.receiveData connection
-    user <- getUserFromCookies $ Auth.getCookies pending
-    liftIO $ WS.forkPingThread connection 30
-    begin connection msg user state
+wsApp state connectInfoConfig pending = do
+  connection <- WS.acceptRequest pending
+  WS.withPingThread
+    connection
+    30
+    (return ())
+    ( runApp connectInfoConfig $ do
+        msg <- liftIO $ WS.receiveData connection
+        user <- getUserFromCookies $ Auth.getCookies pending
+        begin connection msg user state
+    )
 
 connectionFail :: WS.Connection -> String -> App ()
 connectionFail conn str = do
@@ -147,7 +150,7 @@ begin conn request user state = do
           beginPrefix prefix state client roomVar
     Right (PlayReplayRequest replayId) -> do
       Metrics.incr "request.replay"
-      mReplay <- Replay.Final.load replayId
+      mReplay <- Replay.Final.load (fromIntegral replayId)
       case mReplay of
         Just replay -> do
           liftIO $ WS.sendTextData conn ("replay:" <> replay)

@@ -10,7 +10,7 @@ module Stats.Schema where
 
 import Auth.Schema (UserT)
 import Data.Int (Int64)
-import Database.Beam (Beamable, Columnar, Generic, Identity, PrimaryKey (..), Table)
+import Database.Beam (Beamable, Columnar, Generic, Identity, PrimaryKey, Table (..))
 
 data StatsT f = Stats
   { statsUser :: PrimaryKey UserT f,

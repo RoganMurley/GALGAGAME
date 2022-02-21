@@ -9,7 +9,7 @@
 module Auth.Schema where
 
 import Data.Text (Text)
-import Database.Beam (Beamable, Columnar, Generic, Identity, PrimaryKey (..), Table)
+import Database.Beam (Beamable, Columnar, Generic, Identity, PrimaryKey, Table (..))
 
 data UserT f = User
   { userEmail :: Columnar f Text,

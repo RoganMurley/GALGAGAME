@@ -5,7 +5,6 @@ import qualified Cards
 import Data.Aeson (FromJSON (..), ToJSON (..), object, withObject, (.:), (.=))
 import Data.Either (isRight)
 import Data.List (find)
-import Data.Monoid ((<>))
 import Data.Set as Set
 import Data.String.Conversions (cs)
 import Data.Text (Text)
