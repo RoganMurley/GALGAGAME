@@ -1,28 +1,19 @@
 module Stats.Stats where
 
 import qualified Auth.Schema
-import Config (App, runBeam, runRedis)
+import Config (App, runBeam)
 import Data.Aeson (ToJSON (..), object, (.=))
-import Data.Maybe (fromMaybe)
-import Data.String.Conversions (cs)
-import Data.Text (Text)
-import Database.Beam (all_, current_, filter_, runSelectReturningOne, runUpdate, select, update, val_, (<-.), (==.))
-import qualified Database.Redis as R
+import Database.Beam (all_, current_, filter_, insertValues, primaryKey, runInsert, runSelectReturningOne, runUpdate, select, update, val_, (<-.), (==.))
+import qualified Database.Beam.Postgres.Full as Postgres
 import DeckBuilding (Rune (..), mainRunes)
-import qualified Log
-import Safe (readMay)
 import Schema (GalgagameDb (..), galgagameDb)
 import Stats.Experience (Experience)
 import qualified Stats.Schema
 import {-# SOURCE #-} User (User (..))
 
 load :: User -> App Experience
-load (User user _) = loadUser $ Auth.Schema.userUsername user
-load (GuestUser cid _) = loadGuest cid
-load _ = return 0
-
-loadUser :: Text -> App Experience
-loadUser username = do
+load (User user _) = do
+  let username = Auth.Schema.userUsername user
   result <-
     runBeam $
       runSelectReturningOne $
@@ -30,39 +21,40 @@ loadUser username = do
           filter_ (\row -> Stats.Schema.statsUser row ==. val_ (Auth.Schema.UserId username)) $
             all_ $ stats galgagameDb
   return $ maybe 0 Stats.Schema.statsExperience result
-
-loadGuest :: Text -> App Experience
-loadGuest cid = do
-  let key = "guestStats__" <> cid
-  result <- runRedis (R.get (cs key))
-  case result of
-    Left err -> do
-      Log.error $ "loadGuest failed with " <> cs (show err)
-      return 0
-    Right got ->
-      return $ fromMaybe 0 (got >>= readMay . cs)
+load (GuestUser cid _) = do
+  result <-
+    runBeam $
+      runSelectReturningOne $
+        select $
+          filter_ (\row -> Stats.Schema.statsguestCid row ==. val_ cid) $
+            all_ $ statsguest galgagameDb
+  return $ maybe 0 Stats.Schema.statsguestExperience result
+load _ = return 0
 
 increase :: User -> Experience -> App ()
-increase (User user _) xp = increaseUser (Auth.Schema.userUsername user) xp
-increase (GuestUser cid _) xp = increaseGuest cid xp
-increase _ _ = return ()
-
-increaseUser :: Text -> Experience -> App ()
-increaseUser username xp = do
+increase (User user _) xp = do
+  let username = Auth.Schema.userUsername user
   runBeam $
     runUpdate $
       update
         (stats galgagameDb)
         (\row -> Stats.Schema.statsExperience row <-. current_ (Stats.Schema.statsExperience row) + val_ xp)
         (\row -> Stats.Schema.statsUser row ==. val_ (Auth.Schema.UserId username))
-
-increaseGuest :: Text -> Experience -> App ()
-increaseGuest cid xp = do
-  let key = "guestStats__" <> cid
-  _ <-
-    runRedis $
-      R.set (cs key) (cs $ show xp)
-  return ()
+increase (GuestUser cid _) xp = do
+  let val = Stats.Schema.Statsguest cid xp
+  runBeam $
+    runInsert $
+      Postgres.insertOnConflict
+        (statsguest galgagameDb)
+        (insertValues [val])
+        (Postgres.conflictingFields primaryKey)
+        ( Postgres.onConflictUpdateSet
+            ( \row old ->
+                Stats.Schema.statsguestExperience row
+                  <-. Stats.Schema.statsguestExperience old + val_ xp
+            )
+        )
+increase _ _ = return ()
 
 data StatChange = StatChange
   { statChange_initialExperience :: Experience,

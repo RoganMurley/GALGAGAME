@@ -13,12 +13,13 @@ import Database.Beam (Database, DatabaseSettings, Generic, TableEntity, defaultD
 import Feedback.Schema (FeedbackT)
 import League.Schema (LeagueT)
 import Replay.Schema (ReplayT)
-import Stats.Schema (StatsT)
+import Stats.Schema (StatsT, StatsguestT)
 
 data GalgagameDb f = GalgagameDb
   { replays :: f (TableEntity ReplayT),
     users :: f (TableEntity UserT),
     stats :: f (TableEntity StatsT),
+    statsguest :: f (TableEntity StatsguestT),
     feedback :: f (TableEntity FeedbackT),
     league :: f (TableEntity LeagueT)
   }

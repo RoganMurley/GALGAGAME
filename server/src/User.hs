@@ -3,13 +3,12 @@ module User where
 import qualified Auth.Apps as Auth
 import qualified Auth.Schema as Auth
 import Config (App, getApiKey, runBeam)
-import Control.Concurrent.STM (newTVarIO, readTVar)
+import Control.Concurrent.STM (atomically, newTVarIO, readTVar)
 import Control.Concurrent.STM.TVar (TVar, writeTVar)
 import Control.Monad.IO.Class (liftIO)
 import Control.Monad.STM (STM)
 import Data.Aeson (ToJSON (..), object, (.=))
 import qualified Data.Map as Map
-import Data.String.Conversions (cs)
 import Data.Text (Text)
 import Data.Traversable (forM)
 import Database.Beam (all_, filter_, runSelectReturningOne, select, val_, (==.))
@@ -57,6 +56,7 @@ getUserFromCookies :: Auth.Cookies -> Text -> App User
 getUserFromCookies cookies cid = do
   let mLoginToken = Map.lookup Auth.sessionCookieName cookies
   mUsername <- Auth.checkAuth mLoginToken
+  xpVar <- liftIO $ newTVarIO 0
   case mUsername of
     Nothing -> do
       let mApiToken = Map.lookup "api-key" cookies
@@ -65,22 +65,24 @@ getUserFromCookies cookies cid = do
         then return ServiceUser
         else
           ( do
-              xp <- Stats.loadGuest (cs cid)
-              xpVar <- liftIO $ newTVarIO xp
-              return $ GuestUser cid xpVar
+              let user = GuestUser cid xpVar
+              xp <- Stats.load user
+              liftIO . atomically $ writeTVar xpVar xp
+              return user
           )
     Just username -> do
-      mUser <-
+      mAuthUser <-
         runBeam $
           runSelectReturningOne $
             select $
               filter_ (\row -> Auth.userUsername row ==. val_ username) $
                 all_ $ users galgagameDb
-      xp <- Stats.loadUser username
-      xpVar <- liftIO $ newTVarIO xp
-      case mUser of
-        Just user ->
-          return $ User user xpVar
+      case mAuthUser of
+        Just authUser -> do
+          let user = User authUser xpVar
+          xp <- Stats.load user
+          liftIO . atomically $ writeTVar xpVar xp
+          return user
         Nothing ->
           return $ GuestUser cid xpVar
 

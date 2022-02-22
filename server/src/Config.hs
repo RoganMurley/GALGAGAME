@@ -55,7 +55,7 @@ runApp config app =
         redisConn
         postgresPool
         loggerChan
-        ((uncurry DD.readWriteCredentials) <$> ddCreds)
+        (uncurry DD.readWriteCredentials <$> ddCreds)
         apiKey
 
 connectPostgres :: Postgres.ConnectInfo -> IO Postgres.Connection
@@ -65,6 +65,18 @@ runBeam :: Pg a -> App a
 runBeam beam = do
   pool <- asks postgresPool
   withResource pool $ \conn -> liftIO $ runBeamPostgres conn beam
+
+runBeamTransaction :: Pg a -> App a
+runBeamTransaction beam = do
+  pool <- asks postgresPool
+  withResource pool $
+    \conn ->
+      ( do
+          liftIO $ Postgres.begin conn
+          result <- liftIO $ runBeamPostgres conn beam
+          liftIO $ Postgres.commit conn
+          return result
+      )
 
 runBeamIntegrity :: Pg a -> App (Either Postgres.ConstraintViolation a)
 runBeamIntegrity beam = do
