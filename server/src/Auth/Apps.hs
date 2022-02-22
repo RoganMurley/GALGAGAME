@@ -18,6 +18,7 @@ import qualified Database.Redis as R
 import qualified Network.WebSockets as WS
 import Schema (GalgagameDb (..), galgagameDb)
 import Stats.Schema as Schema
+import qualified Stats.Stats as Stats
 import System.Log.Logger (errorM)
 import Text.Printf (printf)
 import Web.Cookie (parseCookiesText)
@@ -54,10 +55,11 @@ deleteToken token = do
   _ <- runRedis $ R.del [T.encodeUtf8 token]
   return ()
 
-saveUser :: ByteString -> ByteString -> ByteString -> Bool -> App Bool
-saveUser email username hashedPassword contactable = do
+saveUser :: ByteString -> ByteString -> ByteString -> Bool -> Maybe Text -> App Bool
+saveUser email username hashedPassword contactable cid = do
   let user = Schema.User (cs email) (cs username) (cs hashedPassword) contactable False
-  let stat = Schema.Stats (Schema.UserId $ cs username) 0
+  xp <- Stats.loadByCid cid
+  let stat = Schema.Stats (Schema.UserId $ cs username) xp
   userResult <- runBeamIntegrity $ runInsert $ insert (users galgagameDb) $ insertValues [user]
   statsResult <- runBeamIntegrity $ runInsert $ insert (stats galgagameDb) $ insertValues [stat]
   case userResult <* statsResult of

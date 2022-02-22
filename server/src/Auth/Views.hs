@@ -104,10 +104,11 @@ createUser config email username password contactable =
       json $ object ["error" .= err]
       status badRequest400
     Nothing -> do
+      cid <- getCookie cidCookieName
       p <- liftIO $ hashPasswordUsingPolicy slowerBcryptHashingPolicy password
       case p of
         Just hashedPassword -> do
-          success <- liftIO $ runApp config $ saveUser email username hashedPassword contactable
+          success <- liftIO $ runApp config $ saveUser email username hashedPassword contactable cid
           if success
             then
               ( do

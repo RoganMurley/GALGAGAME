@@ -3,6 +3,7 @@ module Stats.Stats where
 import qualified Auth.Schema
 import Config (App, runBeam)
 import Data.Aeson (ToJSON (..), object, (.=))
+import Data.Text (Text)
 import Database.Beam (all_, current_, filter_, insertValues, primaryKey, runInsert, runSelectReturningOne, runUpdate, select, update, val_, (<-.), (==.))
 import qualified Database.Beam.Postgres.Full as Postgres
 import DeckBuilding (Rune (..), mainRunes)
@@ -21,7 +22,11 @@ load (User user _) = do
           filter_ (\row -> Stats.Schema.statsUser row ==. val_ (Auth.Schema.UserId username)) $
             all_ $ stats galgagameDb
   return $ maybe 0 Stats.Schema.statsExperience result
-load (GuestUser cid _) = do
+load (GuestUser cid _) = loadByCid $ Just cid
+load _ = return 0
+
+loadByCid :: Maybe Text -> App Experience
+loadByCid (Just cid) = do
   result <-
     runBeam $
       runSelectReturningOne $
@@ -29,7 +34,7 @@ load (GuestUser cid _) = do
           filter_ (\row -> Stats.Schema.statsguestCid row ==. val_ cid) $
             all_ $ statsguest galgagameDb
   return $ maybe 0 Stats.Schema.statsguestExperience result
-load _ = return 0
+loadByCid Nothing = return 0
 
 increase :: User -> Experience -> App ()
 increase (User user _) xp = do
@@ -49,9 +54,9 @@ increase (GuestUser cid _) xp = do
         (insertValues [val])
         (Postgres.conflictingFields primaryKey)
         ( Postgres.onConflictUpdateSet
-            ( \row old ->
+            ( \row _ ->
                 Stats.Schema.statsguestExperience row
-                  <-. Stats.Schema.statsguestExperience old + val_ xp
+                  <-. current_ (Stats.Schema.statsguestExperience row) + val_ xp
             )
         )
 increase _ _ = return ()
