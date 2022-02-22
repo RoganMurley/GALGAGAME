@@ -85,7 +85,12 @@ runBeamIntegrity beam = do
     liftIO $
       catchJust
         Postgres.constraintViolation
-        (runBeamPostgres conn beam >>= return . Right)
+        ( do
+            liftIO $ Postgres.begin conn
+            result <- runBeamPostgres conn beam
+            liftIO $ Postgres.commit conn
+            return . Right $ result
+        )
         (return . Left)
 
 runRedis :: Redis.Redis a -> App a
