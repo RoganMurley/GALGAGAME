@@ -146,9 +146,8 @@ transmuteActive f =
 bounce :: (Int -> StackCard -> Bool) -> Program ()
 bounce f = do
   diaspora <- Stack.diasporaFromStack <$> getStack
-  let stackCards = fmap snd diaspora :: [StackCard]
+  let bouncing = snd <$> filter (uncurry f) diaspora
   modStack $ Stack.diasporaFilter (\i c -> not $ f i c)
-  let bouncing = indexedFilter f stackCards
   let (paBouncing, pbBouncing) = partition (isOwner PlayerA) bouncing
   modHand PlayerA $ \h -> h ++ (KnownHandCard . stackcard_card <$> paBouncing)
   modHand PlayerB $ \h -> h ++ (KnownHandCard . stackcard_card <$> pbBouncing)
