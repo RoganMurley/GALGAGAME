@@ -31,16 +31,14 @@ update model msg flags =
 
         Submit ->
             ( { model | submitState = Submitting, error = "" }
-            , Http.send
-                (Main.RoomMsg << Room.FeedbackMsg << SubmitCallback)
-              <|
-                Http.post
-                    (authLocation flags ++ "/feedback")
-                    (Http.multipartBody
+            , Http.post
+                { url = authLocation flags ++ "/feedback"
+                , body =
+                    Http.multipartBody
                         [ Http.stringPart "body" model.body.value
                         ]
-                    )
-                    (maybe feedbackErrorDecoder)
+                , expect = Http.expectJson (Main.RoomMsg << Room.FeedbackMsg << SubmitCallback) (maybe feedbackErrorDecoder)
+                }
             )
 
         SubmitCallback (Ok (Just { error })) ->

@@ -27,13 +27,15 @@ update model msg flags =
     case msg of
         Submit ->
             ( { model | submitState = Submitting, error = "" }
-            , Http.send
-                (Main.RoomMsg << Room.LeagueMsg << SubmitCallback)
-              <|
-                Http.post
-                    (authLocation flags ++ "/league")
-                    Http.emptyBody
-                    (maybe leagueErrorDecoder)
+            , Http.post
+                { url =
+                    authLocation flags ++ "/league"
+                , body = Http.emptyBody
+                , expect =
+                    Http.expectJson
+                        (Main.RoomMsg << Room.LeagueMsg << SubmitCallback)
+                        (maybe leagueErrorDecoder)
+                }
             )
 
         SubmitCallback (Ok (Just { error })) ->
@@ -52,19 +54,20 @@ update model msg flags =
 
         CheckState ->
             ( { model | submitState = Waiting, error = "" }
-            , Http.send
-                (Main.RoomMsg << Room.LeagueMsg << CheckStateCallback)
-              <|
-                Http.get
-                    (authLocation flags ++ "/league")
-                    (maybe leagueErrorDecoder)
+            , Http.get
+                { url = authLocation flags ++ "/league"
+                , expect =
+                    Http.expectJson
+                        (Main.RoomMsg << Room.LeagueMsg << CheckStateCallback)
+                        (maybe leagueErrorDecoder)
+                }
             )
 
         CheckStateCallback (Ok _) ->
             ( { model | submitState = Submitted }, Cmd.none )
 
-        CheckStateCallback (Err (Http.BadStatus response)) ->
-            case response.status.code of
+        CheckStateCallback (Err (Http.BadStatus status)) ->
+            case status of
                 404 ->
                     ( { model | submitState = NotSubmitted }, Cmd.none )
 

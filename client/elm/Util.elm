@@ -104,11 +104,11 @@ httpErrorToString err =
         Http.NetworkError ->
             "NetworkError"
 
-        Http.BadStatus response ->
-            "BadStatus " ++ String.fromInt response.status.code
+        Http.BadStatus status ->
+            "BadStatus: " ++ String.fromInt status
 
-        Http.BadPayload debug response ->
-            "BadPayload " ++ debug ++ " " ++ response.body
+        Http.BadBody str ->
+            "BadBody: " ++ str
 
 
 foldlWithPrev : (Maybe a -> a -> b -> b) -> b -> List a -> b

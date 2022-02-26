@@ -49,16 +49,22 @@ update msg m =
 fetch : List (Cmd Msg)
 fetch =
     let
-        loader : Assets.Loader Manifest Http.Error
+        loader : Assets.Loader Manifest Assets.FetchError
         loader { path } =
-            Http.toTask <|
-                Http.get path Manifest.decoder
+            Http.task
+                { method = "get"
+                , headers = []
+                , url = path
+                , body = Http.emptyBody
+                , resolver = Http.stringResolver <| Assets.resolver Manifest.decoder
+                , timeout = Nothing
+                }
 
-        handler : Assets.Handler Manifest Http.Error Msg
+        handler : Assets.Handler Manifest Assets.FetchError Msg
         handler result =
             case result of
-                Err _ ->
-                    ManifestError "HTTP error"
+                Err err ->
+                    ManifestError <| Assets.fetchErrorToString err
 
                 Ok textures ->
                     ManifestLoaded textures

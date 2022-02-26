@@ -7,10 +7,10 @@ import Font.Decoders as Font
 import Font.Messages exposing (Msg(..))
 import Font.Types exposing (Font, FontChar, FontPath, Model)
 import Http
+import Json.Decode as Json
 import Main.Messages as Main
 import Manifest.Types exposing (Manifest)
 import Ports exposing (log)
-import Util exposing (httpErrorToString)
 
 
 init : Model
@@ -36,16 +36,22 @@ save model name font =
 fetch : Manifest -> List (Cmd Msg)
 fetch manifest =
     let
-        loader : Assets.Loader Font Http.Error
+        loader : Assets.Loader Font Assets.FetchError
         loader { path } =
-            Http.toTask <|
-                Http.get path Font.decoder
+            Http.task
+                { method = "get"
+                , headers = []
+                , url = path
+                , body = Http.emptyBody
+                , resolver = Http.stringResolver <| Assets.resolver Font.decoder
+                , timeout = Nothing
+                }
 
-        handler : Assets.Handler Font Http.Error Msg
+        handler : Assets.Handler Font Assets.FetchError Msg
         handler result =
             case result of
                 Err err ->
-                    FontError <| httpErrorToString err
+                    FontError <| Assets.fetchErrorToString err
 
                 Ok textures ->
                     FontLoaded textures

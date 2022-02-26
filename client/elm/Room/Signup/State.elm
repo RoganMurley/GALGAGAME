@@ -44,19 +44,18 @@ update model msg flags =
 
         Submit ->
             ( { model | submitting = True, error = "" }
-            , Http.send
-                (Main.RoomMsg << Room.SignupMsg << SubmitCallback)
-              <|
-                Http.post
-                    (authLocation flags ++ "/register")
-                    (Http.multipartBody
+            , Http.post
+                { url = authLocation flags ++ "/register"
+                , body =
+                    Http.multipartBody
                         [ Http.stringPart "email" model.email.value
                         , Http.stringPart "username" model.username.value
                         , Http.stringPart "password" model.password.value
                         , Http.stringPart "contactable" model.contactable.value
                         ]
-                    )
-                    (maybe signupErrorDecoder)
+                , expect =
+                    Http.expectJson (Main.RoomMsg << Room.SignupMsg << SubmitCallback) (maybe signupErrorDecoder)
+                }
             )
 
         SubmitCallback (Ok (Just { error })) ->
@@ -72,8 +71,8 @@ update model msg flags =
 
         SubmitCallback (Err httpError) ->
             case httpError of
-                Http.BadStatus { status } ->
-                    case status.code of
+                Http.BadStatus status ->
+                    case status of
                         409 ->
                             ( { model
                                 | error = "Account with that username already exists"
@@ -84,7 +83,7 @@ update model msg flags =
 
                         _ ->
                             ( { model
-                                | error = status.message
+                                | error = String.fromInt status
                                 , submitting = False
                               }
                             , Cmd.none

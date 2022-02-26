@@ -35,17 +35,18 @@ update model msg flags =
 
         Submit ->
             ( { model | submitting = True, error = "" }
-            , Http.send
-                (Main.RoomMsg << Room.LoginMsg << SubmitCallback)
-              <|
-                Http.post
-                    (authLocation flags ++ "/login")
-                    (Http.multipartBody
+            , Http.post
+                { url = authLocation flags ++ "/login"
+                , body =
+                    Http.multipartBody
                         [ Http.stringPart "username" model.username.value
                         , Http.stringPart "password" model.password.value
                         ]
-                    )
-                    (maybe loginErrorDecoder)
+                , expect =
+                    Http.expectJson
+                        (Main.RoomMsg << Room.LoginMsg << SubmitCallback)
+                        (maybe loginErrorDecoder)
+                }
             )
 
         SubmitCallback (Ok (Just { error })) ->
@@ -61,8 +62,8 @@ update model msg flags =
 
         SubmitCallback (Err httpError) ->
             case httpError of
-                Http.BadStatus { status } ->
-                    case status.code of
+                Http.BadStatus status ->
+                    case status of
                         401 ->
                             ( { model
                                 | error = "Incorrect username/password"
@@ -73,7 +74,7 @@ update model msg flags =
 
                         _ ->
                             ( { model
-                                | error = status.message
+                                | error = String.fromInt status
                                 , submitting = False
                               }
                             , Cmd.none

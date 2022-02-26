@@ -1,7 +1,9 @@
-module Assets.Types exposing (Handler, Loader, Model, Path)
+module Assets.Types exposing (FetchError(..), Handler, Loader, Model, Path)
 
 import Audio.Types as Audio
 import Font.Types as Font
+import Http
+import Json.Decode as Json
 import Manifest.Types exposing (Manifest)
 import Task exposing (Task)
 import Texture.Types as Texture
@@ -27,3 +29,8 @@ type alias Loader loadable error =
 
 type alias Handler loadable error msg =
     Result error ( String, loadable ) -> msg
+
+
+type FetchError
+    = FetchHTTPError Http.Error
+    | FetchDecodeError Json.Error

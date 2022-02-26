@@ -221,11 +221,13 @@ update msg ({ assets, room, notifications, settings, flags } as model) =
 
         Logout ->
             ( model
-            , Http.send LogoutCallback <|
-                Http.post
-                    (authLocation flags ++ "/logout")
+            , Http.post
+                { url =
+                    authLocation flags ++ "/logout"
+                , body =
                     Http.emptyBody
-                    (Json.succeed ())
+                , expect = Http.expectWhatever LogoutCallback
+                }
             )
 
         LogoutCallback (Ok _) ->
