@@ -16,17 +16,14 @@ type alias Player =
 
 
 shouldRematch : Players -> Bool
-shouldRematch { pa, pb } =
+shouldRematch { pb } =
     -- Need to switch this to a proper datatype, not a name match.
-    case ( pa, pb ) of
-        ( Just { name }, _ ) ->
-            name == "CPU"
-
-        ( _, Just { name } ) ->
-            name == "CPU"
+    case pb of
+        Just { name } ->
+            name /= "CPU"
 
         _ ->
-            True
+            False
 
 
 decode : String -> Result Json.Error Players
