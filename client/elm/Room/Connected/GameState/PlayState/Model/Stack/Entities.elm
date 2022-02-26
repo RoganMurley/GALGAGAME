@@ -143,7 +143,7 @@ wheelEntity ctx distance i finalI =
                     0
 
         z =
-            (0.05 * sin (interpFloat progress i finalI + vfx.boogie * 0.001))
+            (0.07 * sin (interpFloat progress i finalI + vfx.boogie * 0.001))
                 + wheelZ ctx
 
         tickle : Float
