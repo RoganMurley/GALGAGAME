@@ -4,12 +4,14 @@
 module DSL.Beta.Actions where
 
 import CardAnim (Hurt (..))
+import Control.Monad (forM_, when)
 import Control.Monad.Free (MonadFree, liftF)
 import Control.Monad.Free.TH (makeFree)
 import qualified DSL.Alpha as Alpha
 import DSL.Beta.DSL (DSL (..), Program)
 import Data.Map (Map)
 import qualified Data.Map as Map
+import qualified Ease
 import HandCard (HandCard, isRevealed)
 import Life (Life)
 import Player (WhichPlayer (..), other)
@@ -17,6 +19,7 @@ import qualified Stack
 import StackCard (StackCard (..))
 import Transmutation (Transmutation (..))
 import Util (randomChoice, shuffle, split)
+import Prelude hiding (null)
 
 makeFree ''DSL
 
@@ -41,12 +44,19 @@ transmuteHead f = transmute transmuter
 
 confound :: Program ()
 confound = do
-  gen <- getGen
-  stack <- getStack
-  let diasporaIs = drop 1 $ fst <$> Stack.diasporaFromStack stack :: [Int]
-  let shuffledIs = shuffle gen diasporaIs :: [Int]
-  let diasporaMap = Map.fromList $ zip diasporaIs shuffledIs :: Map Int Int
-  moveStack (\i _ -> Map.lookup i diasporaMap) 750
+  initialGen <- getGen
+  let n = randomChoice initialGen [3 .. 5] :: Int
+  forM_ [0 .. n] $ \x -> do
+    gen <- getGen
+    stack <- getStack
+    let diasporaIs = drop 1 $ fst <$> Stack.diasporaFromStack stack :: [Int]
+    when (length diasporaIs > 1) $ do
+      let shuffledIs = shuffle gen diasporaIs :: [Int]
+      let diasporaMap = Map.fromList $ zip diasporaIs shuffledIs :: Map Int Int
+      let time = 50 * Ease.inQuint (fromIntegral x / fromIntegral n)
+      moveStack (\i _ -> Map.lookup i diasporaMap) (100 + floor time)
+    refreshGen
+  null
 
 reversal :: Program ()
 reversal = do
