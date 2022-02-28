@@ -1,6 +1,7 @@
 import fs from 'fs';
 import gulp from 'gulp';
 import elm from 'gulp-elm';
+import file from 'gulp-file';
 import filter from 'gulp-filter';
 import handlebars from 'gulp-compile-handlebars';
 import sass from 'gulp-sass';
@@ -12,27 +13,37 @@ import rename from 'gulp-rename';
 import rev from 'gulp-rev';
 import yargs from 'yargs';
 
+const dir = {
+  dev: 'static/dev',
+  build: 'static/build'
+};
 
 const { debug, production } = yargs.argv;
 const minifyJs = production ? uglify : identity;
 const minifyCss = production ? minify : identity;
 const optimize = !debug;
 
-
-const dir = {
-  dev: 'static/dev',
-  build: 'static/build'
-};
+let revJs;
+if (production) {
+  revJs = x => (
+    x.pipe(rev())
+      .pipe(gulp.dest(dir.build))
+      .pipe(rev.manifest('js-manifest.json'))
+  );
+} else {
+  revJs = x => (
+    x.pipe(file('js-manifest.json', '{"Main.js": "Main.js"}'))
+      .pipe(gulp.dest(dir.build))
+  );
+}
 
 // ELM
 gulp.task('elm', () => {
-  return gulp.src('elm/Main.elm')
-    .pipe(elm.make({ filetype: 'js', optimize }))
-    .pipe(minifyJs())
-    .pipe(rev())
-    .pipe(gulp.dest(dir.build))
-    .pipe(rev.manifest('js-manifest.json'))
-    .pipe(gulp.dest(dir.build));
+  return revJs(
+    gulp.src('elm/Main.elm')
+      .pipe(elm.make({ filetype: 'js', optimize }))
+      .pipe(minifyJs())
+  ).pipe(gulp.dest(dir.build));
 });
 
 
