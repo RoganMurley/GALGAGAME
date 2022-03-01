@@ -69,3 +69,10 @@
     }
   }
 }
+
+.chatbox-close-mobile {
+  @media (max-width: 600px) {
+    width: 100vw;
+    height: 100vh;
+  }
+}

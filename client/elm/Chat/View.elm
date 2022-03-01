@@ -9,7 +9,7 @@ import Ease
 import Game.Types exposing (Context)
 import Html exposing (Html, a, div, input, text)
 import Html.Attributes exposing (autofocus, class, classList, href, id, style, target, value)
-import Html.Events exposing (on, onClick, onInput)
+import Html.Events exposing (on, onClick, onInput, onMouseDown)
 import Main.Types exposing (Flags)
 import Math.Vector2 exposing (vec2)
 import Math.Vector3 exposing (vec3)
@@ -47,28 +47,35 @@ htmlView { seed } model =
                             (Random.initialSeed seed)
     in
     if model.visible then
-        div
-            [ classList
-                [ ( "chatbox", True )
-                , ( "chatbox--drag", model.drag /= Nothing )
-                ]
-            , style "top" (toFloat model.pos.y |> px)
-            , style "left" (toFloat model.pos.x |> px)
-            , on "mousedown" chatDragEventDecoder
-            ]
+        div []
             [ div
-                [ class "chatbox__messages" ]
-              <|
-                case model.messages of
-                    [] ->
-                        [ div [ class "chatbox__empty" ] [ promo ]
-                        ]
+                [ class "chatbox-close-mobile"
+                , onMouseDown ToggleVisibility
+                ]
+                []
+            , div
+                [ classList
+                    [ ( "chatbox", True )
+                    , ( "chatbox--drag", model.drag /= Nothing )
+                    ]
+                , style "top" (toFloat model.pos.y |> px)
+                , style "left" (toFloat model.pos.x |> px)
+                , on "mousedown" chatDragEventDecoder
+                ]
+                [ div
+                    [ class "chatbox__messages" ]
+                  <|
+                    case model.messages of
+                        [] ->
+                            [ div [ class "chatbox__empty" ] [ promo ]
+                            ]
 
-                    _ ->
-                        List.map (\message -> div [] [ text message ]) model.messages
-            , input [ class "chatbox__input", id "chat-input", autofocus True, onInput SetInput, value model.input ] []
-            , div [ class "chatbox__close", onClick ToggleVisibility ]
-                [ text "x"
+                        _ ->
+                            List.map (\message -> div [] [ text message ]) model.messages
+                , input [ class "chatbox__input", id "chat-input", autofocus True, onInput SetInput, value model.input ] []
+                , div [ class "chatbox__close", onClick ToggleVisibility ]
+                    [ text "x"
+                    ]
                 ]
             ]
 
