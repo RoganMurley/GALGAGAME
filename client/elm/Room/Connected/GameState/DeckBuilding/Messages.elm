@@ -12,4 +12,5 @@ type Msg
     | RuneSelectMsg RuneSelect.Msg
     | RandomRunes
     | SetRunes Rune Rune Rune
+    | LoadSavedCharacter (Maybe String)
     | Error String

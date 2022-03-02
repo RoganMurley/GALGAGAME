@@ -6,18 +6,21 @@ import Carousel
 import Chat.Messages as Chat
 import Chat.Types as Chat
 import Connected.Messages as Connected
+import DeckBuilding.Decoders as Decoders
 import DeckBuilding.Encoders exposing (encodeCharacter)
 import DeckBuilding.Messages exposing (Msg(..))
 import DeckBuilding.Types exposing (Character, Model)
 import Game.Types exposing (Context)
 import GameState.Messages as GameState
+import Json.Decode as Json
+import List.Extra as List
 import Main.Messages as Main
 import Math.Vector2 exposing (vec2)
 import Math.Vector3 exposing (vec3)
 import Maybe.Extra as Maybe
 import Mouse exposing (Position)
 import Players exposing (Players)
-import Ports exposing (log)
+import Ports exposing (getSavedCharacter, log, saveCharacter)
 import Random
 import Random.List as Random
 import Room.Messages as Room
@@ -40,18 +43,29 @@ init ready character runes =
     }
 
 
+selectingMsg : Msg -> Main.Msg
+selectingMsg =
+    Main.RoomMsg
+        << Room.ConnectedMsg
+        << Connected.GameStateMsg
+        << GameState.SelectingMsg
+
+
 update : Msg -> Model -> Players -> ( Model, Cmd Main.Msg )
 update msg model players =
     case msg of
         Select selectCharacter ->
             let
-                cmd =
+                selectCmd =
                     Util.message <|
                         Main.Send <|
                             "selectCharacter:"
                                 ++ encodeCharacter selectCharacter
+
+                saveCmd =
+                    saveCharacter <| encodeCharacter selectCharacter
             in
-            ( { model | ready = True }, cmd )
+            ( { model | ready = True }, Cmd.batch [ selectCmd, saveCmd ] )
 
         EnterRuneSelect cursor ->
             case model.character of
@@ -118,19 +132,16 @@ update msg model players =
 
                 randomizer : List Rune -> Main.Msg
                 randomizer runes =
-                    Main.RoomMsg <|
-                        Room.ConnectedMsg <|
-                            Connected.GameStateMsg <|
-                                GameState.SelectingMsg <|
-                                    case runes of
-                                        runeA :: runeB :: runeC :: _ ->
-                                            SetRunes runeA runeB runeC
+                    selectingMsg <|
+                        case runes of
+                            runeA :: runeB :: runeC :: _ ->
+                                SetRunes runeA runeB runeC
 
-                                        _ ->
-                                            Error <|
-                                                "Rune randomizer failed because there were only "
-                                                    ++ String.fromInt (List.length runes)
-                                                    ++ " runes"
+                            _ ->
+                                Error <|
+                                    "Rune randomizer failed because there were only "
+                                        ++ String.fromInt (List.length runes)
+                                        ++ " runes"
             in
             ( model, Random.generate (randomizer << Tuple.first) (Random.choices 3 legalRunes) )
 
@@ -157,6 +168,45 @@ update msg model players =
                 Nothing ->
                     ( model, log "RuneSelect message not on a RuneSelect game state" )
 
+        LoadSavedCharacter saved ->
+            let
+                fallbackMsg =
+                    message <| selectingMsg RandomRunes
+            in
+            case saved of
+                Nothing ->
+                    ( model, Cmd.batch [ fallbackMsg, log "No saved character" ] )
+
+                Just json ->
+                    ( model
+                    , case Json.decodeString Decoders.runeNames json of
+                        Ok { a, b, c } ->
+                            let
+                                mRuneA =
+                                    List.find (\r -> r.name == a) model.runes
+
+                                mRuneB =
+                                    List.find (\r -> r.name == b) model.runes
+
+                                mRuneC =
+                                    List.find (\r -> r.name == c) model.runes
+                            in
+                            case [ mRuneA, mRuneB, mRuneC ] of
+                                [ Just runeA, Just runeB, Just runeC ] ->
+                                    message <|
+                                        selectingMsg <|
+                                            SetRunes runeA runeB runeC
+
+                                _ ->
+                                    Cmd.none
+
+                        Err err ->
+                            Cmd.batch
+                                [ fallbackMsg
+                                , log <| Json.errorToString err
+                                ]
+                    )
+
         Error str ->
             ( model, log str )
 
@@ -173,7 +223,7 @@ tick ctx dt chat model =
                     Cmd.none
 
                 Nothing ->
-                    message RandomRunes
+                    getSavedCharacter ()
 
         newModel =
             { model

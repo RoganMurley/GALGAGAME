@@ -139,6 +139,15 @@ app.ports.setTitle.subscribe(function (input) {
   document.title = input;
 });
 
+app.ports.saveCharacter.subscribe(function (input) {
+  localStorage.setItem("savedCharacter", input);
+});
+
+app.ports.getSavedCharacter.subscribe(function () {
+  var saved = localStorage.getItem("savedCharacter");
+  app.ports.loadSavedCharacter.send(saved);
+});
+
 var touched = false;
 
 function handleMouseDown(e) {

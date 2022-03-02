@@ -1,4 +1,4 @@
-port module Ports exposing (analytics, copyInput, godModeCommand, loadAudio, log, mouseDown, mouseMove, mouseUp, musicVolume, playAudio, reload, scaling, selectAllInput, setTitle, touch, volume, websocketListen, websocketReconnect, websocketSend)
+port module Ports exposing (analytics, copyInput, getSavedCharacter, godModeCommand, loadAudio, loadSavedCharacter, log, mouseDown, mouseMove, mouseUp, musicVolume, playAudio, reload, saveCharacter, scaling, selectAllInput, setTitle, touch, volume, websocketListen, websocketReconnect, websocketSend)
 
 import Audio.Types exposing (PlayAudioMessage)
 import Mouse
@@ -41,6 +41,15 @@ port websocketSend : String -> Cmd msg
 
 
 port setTitle : String -> Cmd msg
+
+
+port saveCharacter : String -> Cmd msg
+
+
+port getSavedCharacter : () -> Cmd msg
+
+
+port loadSavedCharacter : (Maybe String -> msg) -> Sub msg
 
 
 port mouseDown : (Mouse.Position -> msg) -> Sub msg

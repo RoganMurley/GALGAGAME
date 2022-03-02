@@ -6,8 +6,11 @@ import Audio.State exposing (setVolume)
 import Browser
 import Browser.Events exposing (Visibility(..))
 import Browser.Navigation
+import Connected.Messages as Connected
 import Connected.State as Connected
+import DeckBuilding.Messages as DeckBuilding
 import Feedback.State as Feedback
+import GameState.Messages as GameState
 import GameState.Types exposing (GameState(..))
 import GameType
 import Http
@@ -27,7 +30,7 @@ import Math.Vector2 exposing (vec2)
 import Mode exposing (Mode(..))
 import Mouse exposing (MouseState(..))
 import Notifications.State as Notifications
-import Ports exposing (analytics, copyInput, godModeCommand, log, mouseDown, mouseMove, mouseUp, reload, selectAllInput, touch, websocketListen, websocketSend)
+import Ports exposing (analytics, copyInput, godModeCommand, loadSavedCharacter, log, mouseDown, mouseMove, mouseUp, reload, selectAllInput, touch, websocketListen, websocketSend)
 import Replay.State as Replay
 import Room.Generators exposing (generate)
 import Room.Messages as Room
@@ -524,4 +527,11 @@ subscriptions _ =
         , touch TouchPosition
         , Browser.Events.onKeyPress (Json.map KeyPress Keyboard.keyDecoder)
         , godModeCommand GodCommand
+        , loadSavedCharacter
+            (RoomMsg
+                << Room.ConnectedMsg
+                << Connected.GameStateMsg
+                << GameState.SelectingMsg
+                << DeckBuilding.LoadSavedCharacter
+            )
         ]
