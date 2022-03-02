@@ -27,7 +27,7 @@ import Data.Text (Text)
 import qualified Data.Text as Text
 import Data.Time.Clock (NominalDiffTime)
 import Database (postgresConnectInfo, redisConnectInfo)
-import DeckBuilding (ChosenCharacter (..), UnchosenCharacter (..))
+import DeckBuilding (ChosenCharacter (..), Rune (..), UnchosenCharacter (..))
 import qualified DeckBuilding
 import Encounter (updateRoomEncounter)
 import GameState (GameState (..), PlayState (..), PlayingR (..), WaitType (..), isWinner)
@@ -49,7 +49,7 @@ import Scenario (Scenario (..))
 import Server (addComputerClient, addPlayerClient, addSpecClient)
 import qualified Server
 import Start (startProgram)
-import Stats.Experience (Experience)
+import Stats.Experience (Experience, nextLevelExperience)
 import System.Environment (lookupEnv)
 import Text.Printf (printf)
 import User (User (..), getUserFromCookies, getUsername, isSuperuser)
@@ -267,7 +267,8 @@ beginComputer cpuName state client roomVar = do
   Log.info $ printf "<%s>: Begin AI game" (show $ Client.name client)
   cpuGuid <- liftIO GUID.genText
   (computer, added) <- liftIO . atomically $ do
-    computerAdded <- addComputerClient cpuName cpuGuid roomVar
+    xp <- Client.xp client
+    computerAdded <- addComputerClient cpuName cpuGuid xp roomVar
     playerAdded <- addPlayerClient client roomVar
     return (computerAdded, playerAdded)
   case (,) <$> computer <*> added of
@@ -278,7 +279,7 @@ beginComputer cpuName state client roomVar = do
     Just (computerClient, (which, outcomes)) ->
       finally
         ( do
-            _ <- fork (computerPlay (other which) roomVar)
+            _ <- fork (computerPlay (other which) roomVar computerClient)
             play which client roomVar outcomes
         )
         ( do
@@ -321,13 +322,13 @@ asyncQueueCpuFallback state client roomVar = do
       Left toLog -> do
         Metrics.incr "quickplay.human"
         Log.info toLog
-      Right _ -> do
+      Right cpuClient -> do
         Metrics.incr "quickplay.cpu"
         newRoom <- liftIO $ readTVarIO roomVar
         let gameState = Room.getState newRoom
         syncClient client PlayerA gameState
         syncPlayersRoom newRoom
-        computerPlay PlayerB roomVar
+        computerPlay PlayerB roomVar cpuClient
   return ()
   where
     transaction :: Text -> STM (Either String Client)
@@ -342,7 +343,7 @@ asyncQueueCpuFallback state client roomVar = do
           ( do
               xp <- Client.xp client
               updateRoomEncounter roomVar xp
-              added <- addComputerClient "CPU" guid roomVar
+              added <- addComputerClient "CPU" guid (nextLevelExperience xp) roomVar
               case added of
                 Just computerClient -> do
                   Server.dequeue state
@@ -383,18 +384,19 @@ play which client roomVar outcomes = do
   finalRoom <- liftIO $ readTVarIO roomVar
   return $ isWinner which $ Room.getState finalRoom
 
-computerPlay :: WhichPlayer -> TVar Room -> App ()
-computerPlay which roomVar = do
+computerPlay :: WhichPlayer -> TVar Room -> Client -> App ()
+computerPlay which roomVar client = do
   roomName <- liftIO $ Room.getName <$> readTVarIO roomVar
-  _ <- runMaybeT . forever $ loop roomName
+  xp <- liftIO $ atomically $ Client.xp client
+  _ <- runMaybeT . forever $ loop roomName xp
   Log.info $ printf "AI signing off"
   return ()
   where
-    loop :: Text -> MaybeT App ()
-    loop roomName = do
+    loop :: Text -> Experience -> MaybeT App ()
+    loop roomName xp = do
       lift $ threadDelay 1000000
-      gen <- liftIO $ getGen
-      command <- lift $ chooseComputerCommand which roomVar gen
+      gen <- liftIO getGen
+      command <- lift $ chooseComputerCommand which roomVar gen xp
       case command of
         Just c -> do
           lift $ actPlay c which roomVar "CPU" roomName
@@ -405,8 +407,8 @@ computerPlay which roomVar = do
       room <- liftIO $ readTVarIO roomVar
       when (Room.empty room) mzero
 
-chooseComputerCommand :: WhichPlayer -> TVar Room -> Gen -> App (Maybe Command)
-chooseComputerCommand which room gen = do
+chooseComputerCommand :: WhichPlayer -> TVar Room -> Gen -> Experience -> App (Maybe Command)
+chooseComputerCommand which room gen xp = do
   r <- liftIO $ readTVarIO room
   case Room.getState r of
     Selecting deckModel _ _ ->
@@ -422,11 +424,13 @@ chooseComputerCommand which room gen = do
     trans :: Action -> Command
     trans EndAction = EndTurnCommand
     trans (PlayAction index) = PlayCardCommand index
+    elligibleRunes :: [Rune]
+    elligibleRunes = filter (\rune -> rune_xp rune <= xp) DeckBuilding.mainRunes
     randomChoice :: DeckBuilding.CharacterChoice
     randomChoice = DeckBuilding.CharacterChoice a b c
-    (a, b, c) = to3Tuple $ DeckBuilding.rune_name <$> shuffle gen DeckBuilding.mainRunes
+    (a, b, c) = to3Tuple $ DeckBuilding.rune_name <$> shuffle gen elligibleRunes
 
-disconnect :: Client -> TVar Room -> TVar Server.State -> App (Server.State)
+disconnect :: Client -> TVar Room -> TVar Server.State -> App Server.State
 disconnect client roomVar state = do
   room <- liftIO . atomically $ Server.removeClient client roomVar
   Room.broadcast (Command.toChat . LeaveCommand $ Client.name client) room

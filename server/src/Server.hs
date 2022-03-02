@@ -12,6 +12,7 @@ import Player (WhichPlayer (..))
 import Room (Room)
 import qualified Room
 import Scenario (Scenario (..))
+import Stats.Experience (Experience)
 import Util (Gen, modReadTVar, modReturnTVar, modTVar)
 import Prelude hiding (lookup, putStrLn)
 
@@ -89,8 +90,8 @@ addPlayerClient client roomVar =
       Nothing ->
         (room, Nothing)
 
-addComputerClient :: Text -> Text -> TVar Room -> STM (Maybe Client)
-addComputerClient name guid room =
+addComputerClient :: Text -> Text -> Experience -> TVar Room -> STM (Maybe Client)
+addComputerClient name guid xp room =
   modReturnTVar room $ \r ->
     case Room.addPlayer client r of
       Just (r', _, _) ->
@@ -98,7 +99,7 @@ addComputerClient name guid room =
       Nothing ->
         (r, Nothing)
   where
-    client = Client.cpuClient name guid :: Client
+    client = Client.cpuClient name guid xp :: Client
 
 removeClient :: Client -> TVar Room -> STM (Room)
 removeClient client roomVar =

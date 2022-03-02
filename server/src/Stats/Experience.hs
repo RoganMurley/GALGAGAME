@@ -17,3 +17,6 @@ levelFromExperience xp = 1 + (floor $ levellingConstant * (fromIntegral xp) ** (
 
 levelToExperience :: Level -> Experience
 levelToExperience level = floor $ (fromIntegral (level - 1) / levellingConstant) ** exponentConstant
+
+nextLevelExperience :: Experience -> Experience
+nextLevelExperience xp = levelToExperience (levelFromExperience xp + 1)

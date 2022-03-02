@@ -14,36 +14,36 @@ import Data.Traversable (forM)
 import Database.Beam (all_, filter_, runSelectReturningOne, select, val_, (==.))
 import Player (WhichPlayer (..))
 import Schema (GalgagameDb (..), galgagameDb)
-import Stats.Experience (Experience, levelToExperience)
+import Stats.Experience (Experience)
 import qualified Stats.Stats as Stats
 
 data User
   = User Auth.User (TVar Experience)
-  | CpuUser Text
+  | CpuUser Text Experience
   | GuestUser Text (TVar Experience)
   | ServiceUser
 
 instance Show User where
   show (User u _) = show u
-  show (CpuUser _) = "CpuUser"
+  show (CpuUser _ _) = "CpuUser"
   show (GuestUser cid _) = "GuestUser" ++ show cid
   show ServiceUser = "ServiceUser"
 
 getUsername :: User -> Text
 getUsername (User user _) = Auth.userUsername user
-getUsername (CpuUser name) = name
+getUsername (CpuUser name _) = name
 getUsername (GuestUser _ _) = "guest"
 getUsername ServiceUser = "service"
 
 getQueryUsername :: User -> Maybe Text
 getQueryUsername (User user xp) = Just . getUsername $ User user xp
-getQueryUsername (CpuUser _) = Nothing
+getQueryUsername (CpuUser _ _) = Nothing
 getQueryUsername (GuestUser _ _) = Nothing
 getQueryUsername ServiceUser = Nothing
 
 getExperience :: User -> STM Experience
 getExperience (User _ xp) = readTVar xp
-getExperience (CpuUser _) = return $ levelToExperience 99
+getExperience (CpuUser _ xp) = return xp
 getExperience (GuestUser _ xp) = readTVar xp
 getExperience _ = return 0
 
@@ -89,7 +89,7 @@ getUserFromCookies cookies cid = do
 isSuperuser :: User -> Bool
 isSuperuser ServiceUser = True
 isSuperuser (User user _) = Auth.userSuperuser user
-isSuperuser (CpuUser _) = False
+isSuperuser (CpuUser _ _) = False
 isSuperuser (GuestUser _ _) = False
 
 -- GameUser

@@ -7,6 +7,6 @@ import Stats.Experience (Experience)
 
 data User
   = User Auth.User (TVar Experience)
-  | CpuUser Text
+  | CpuUser Text Experience
   | GuestUser Text (TVar Experience)
   | ServiceUser
