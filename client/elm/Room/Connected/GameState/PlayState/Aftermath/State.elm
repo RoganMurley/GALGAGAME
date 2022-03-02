@@ -1,6 +1,8 @@
-module Aftermath.State exposing (active, aftermathing, fromStatChange, init, maxTick, skip, tick)
+module Aftermath.State exposing (active, aftermathing, fromStatChange, init, maxTick, saveUnlocks, skip, tick)
 
 import Aftermath.Types as Aftermath exposing (Aftermath(..), Model)
+import Main.Messages as Main
+import Ports exposing (saveUnlock)
 import Stats exposing (StatChange)
 
 
@@ -93,3 +95,13 @@ skip model =
         | aftermath = List.drop 1 model.aftermath
         , tick = 0
     }
+
+
+saveUnlocks : StatChange -> Cmd Main.Msg
+saveUnlocks { unlocks } =
+    case unlocks of
+        unlock :: _ ->
+            saveUnlock unlock.name
+
+        _ ->
+            Cmd.none

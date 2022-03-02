@@ -107,7 +107,9 @@ update msg state mode assets =
         StatChange statChange ->
             case state of
                 Ended ended ->
-                    ( Ended { ended | aftermath = Aftermath.fromStatChange statChange }, Cmd.none )
+                    ( Ended { ended | aftermath = Aftermath.fromStatChange statChange }
+                    , Aftermath.saveUnlocks statChange
+                    )
 
                 _ ->
                     ( state, Cmd.none )

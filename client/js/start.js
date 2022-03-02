@@ -141,11 +141,17 @@ app.ports.setTitle.subscribe(function (input) {
 
 app.ports.saveCharacter.subscribe(function (input) {
   localStorage.setItem("savedCharacter", input);
+  localStorage.removeItem("unlock");
 });
 
 app.ports.getSavedCharacter.subscribe(function () {
   var saved = localStorage.getItem("savedCharacter");
-  app.ports.loadSavedCharacter.send(saved);
+  var unlock = localStorage.getItem("unlock");
+  app.ports.loadSavedCharacter.send([saved, unlock]);
+});
+
+app.ports.saveUnlock.subscribe(function (input) {
+  localStorage.setItem("unlock", input);
 });
 
 var touched = false;

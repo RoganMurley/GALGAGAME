@@ -168,8 +168,12 @@ update msg model players =
                 Nothing ->
                     ( model, log "RuneSelect message not on a RuneSelect game state" )
 
-        LoadSavedCharacter saved ->
+        LoadSavedCharacter ( saved, unlock ) ->
             let
+                xp =
+                    Maybe.map .xp players.pa
+                        |> Maybe.withDefault 0
+
                 fallbackMsg =
                     message <| selectingMsg RandomRunes
             in
@@ -182,14 +186,17 @@ update msg model players =
                     , case Json.decodeString Decoders.runeNames json of
                         Ok { a, b, c } ->
                             let
+                                aOrUnlock =
+                                    Maybe.withDefault a unlock
+
                                 mRuneA =
-                                    List.find (\r -> r.name == a) model.runes
+                                    List.find (\r -> r.name == aOrUnlock && r.xp <= xp) model.runes
 
                                 mRuneB =
-                                    List.find (\r -> r.name == b) model.runes
+                                    List.find (\r -> r.name == b && r.xp <= xp) model.runes
 
                                 mRuneC =
-                                    List.find (\r -> r.name == c) model.runes
+                                    List.find (\r -> r.name == c && r.xp <= xp) model.runes
                             in
                             case [ mRuneA, mRuneB, mRuneC ] of
                                 [ Just runeA, Just runeB, Just runeC ] ->
@@ -198,7 +205,10 @@ update msg model players =
                                             SetRunes runeA runeB runeC
 
                                 _ ->
-                                    Cmd.none
+                                    Cmd.batch
+                                        [ fallbackMsg
+                                        , log "bad saved character"
+                                        ]
 
                         Err err ->
                             Cmd.batch
