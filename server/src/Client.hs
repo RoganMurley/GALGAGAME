@@ -53,7 +53,7 @@ receive (Client _ (PlayerConnection conn) _) = liftIO $ receiveData conn
 receive _ = return ""
 
 cpuClient :: Text -> Text -> Experience -> Client
-cpuClient username guid xp = Client (CpuUser username xp) ComputerConnection guid
+cpuClient usernameIn guidIn xpIn = Client (CpuUser usernameIn xpIn) ComputerConnection guidIn
 
 isCpu :: Client -> Bool
 isCpu (Client _ ComputerConnection _) = True
