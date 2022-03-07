@@ -466,7 +466,7 @@ locationUpdate model url =
                             GameType.CustomGame
                             Spectating
               }
-            , Cmd.none
+            , Lobby.skipLobbyCmd model.flags.username
             )
 
         Routing.Replay replayID ->
