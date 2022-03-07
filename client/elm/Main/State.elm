@@ -463,7 +463,7 @@ locationUpdate model url =
                     Room.Lobby <|
                         Lobby.init
                             roomID
-                            GameType.ComputerGame
+                            GameType.CustomGame
                             Spectating
               }
             , Cmd.none
