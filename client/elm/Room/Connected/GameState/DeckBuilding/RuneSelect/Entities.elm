@@ -23,23 +23,27 @@ entities _ model =
       , scale = Card.scale
       , card = rune.cards.b
       , owner = PlayerA
+      , revealed = False
       }
     , { position = vec3 -0.3 -0.3 0
       , rotation = rotation
       , scale = Card.scale
       , card = rune.cards.a
       , owner = PlayerA
+      , revealed = False
       }
     , { position = vec3 0.1 -0.3 0
       , rotation = rotation
       , scale = Card.scale
       , card = rune.cards.c
       , owner = PlayerA
+      , revealed = False
       }
     , { position = vec3 0.3 -0.3 0
       , rotation = rotation
       , scale = Card.scale
       , card = rune.cards.d
       , owner = PlayerA
+      , revealed = False
       }
     ]

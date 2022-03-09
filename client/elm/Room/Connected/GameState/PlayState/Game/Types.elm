@@ -59,6 +59,7 @@ type alias StackEntity =
         { card : Card
         , index : Int
         , owner : WhichPlayer
+        , revealed : Bool
         }
 
 

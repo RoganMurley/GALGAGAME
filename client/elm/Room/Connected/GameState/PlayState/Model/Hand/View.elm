@@ -50,6 +50,7 @@ otherView otherHandEntities ctx =
                             , rotation = entity.rotation
                             , card = card
                             , owner = PlayerB
+                            , revealed = False
                             }
                     in
                     case ctx.anim of
@@ -140,6 +141,7 @@ millView ({ progress, tick, anim } as ctx) =
                             Quaternion.identity
                             (Quaternion.zRotation (-sign * 0.05 * pi))
                     , scale = Card.scale
+                    , revealed = False
                     }
             in
             Card.dissolvingView

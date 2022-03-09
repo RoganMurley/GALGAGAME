@@ -23,4 +23,5 @@ type alias Entity a =
         { a
             | card : Card
             , owner : WhichPlayer
+            , revealed : Bool
         }

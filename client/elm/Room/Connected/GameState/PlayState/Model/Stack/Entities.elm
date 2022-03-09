@@ -65,6 +65,7 @@ stackCardEntity ctx finalIndex { card, owner } =
     , position = entity.position
     , rotation = entity.rotation
     , scale = entity.scale
+    , revealed = False
     }
 
 

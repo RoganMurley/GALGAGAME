@@ -97,6 +97,7 @@ focusImageView originVec focus ({ anim, tick } as ctx) =
                             , position = Math.Vector3.add originVec (vec3 shake shake shake)
                             , card = card
                             , owner = owner
+                            , revealed = False
                             }
                     in
                     Card.view ctx entity

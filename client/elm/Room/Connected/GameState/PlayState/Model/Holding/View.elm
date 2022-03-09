@@ -21,4 +21,5 @@ view holding ctx =
                 , scale = Card.scale
                 , card = card
                 , owner = PlayerA
+                , revealed = False
                 }

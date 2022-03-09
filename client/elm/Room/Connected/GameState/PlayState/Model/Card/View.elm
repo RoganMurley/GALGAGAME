@@ -67,30 +67,6 @@ view ctx entity =
                                 }
                             ]
                    )
-                ++ (let
-                        url =
-                            "cards/tide/coin.png"
-
-                        targetPos =
-                            Vector3.add position diff
-
-                        diff =
-                            Matrix4.transform (Quaternion.makeRotate rotation)
-                                (vec3 (Vector3.getX scale * 0.4) (Vector3.getY scale * 0.8) 0)
-                    in
-                    Texture.with textures url <|
-                        \texture ->
-                            [ Render.Primitives.quad shader <|
-                                { rotation = Quaternion.makeRotate rotation
-                                , scale = makeScale <| Vector3.scale 0.2 scale
-                                , color = Colour.white
-                                , pos = targetPos
-                                , perspective = perspective
-                                , camera = camera3d
-                                , texture = texture
-                                }
-                            ]
-                   )
                 ++ (List.concat <| List.map (statusView ctx entity) card.statuses)
 
 
@@ -100,8 +76,24 @@ statusView ctx entity status =
         { camera3d, perspective, textures } =
             ctx
 
-        { position, rotation, scale } =
+        { position, rotation, scale, revealed } =
             entity
+
+        horizontalOffset =
+            if revealed then
+                0
+
+            else
+                0.5
+
+        offset =
+            Matrix4.transform
+                (Quaternion.makeRotate rotation)
+                (vec3
+                    (Vector3.getX scale * horizontalOffset)
+                    (Vector3.getY scale * 0.85)
+                    0
+                )
     in
     case status of
         StatusBlighted ->
@@ -109,9 +101,9 @@ statusView ctx entity status =
                 \texture ->
                     [ Render.Primitives.quad Render.Shaders.fragment <|
                         { rotation = Quaternion.makeRotate rotation
-                        , scale = makeScale scale
+                        , scale = makeScale <| Vector3.scale 0.27 scale
                         , color = vec3 1 1 1
-                        , pos = position
+                        , pos = Vector3.add position offset
                         , perspective = perspective
                         , camera = camera3d
                         , texture = texture
