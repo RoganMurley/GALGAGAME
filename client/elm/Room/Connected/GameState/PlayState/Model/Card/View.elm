@@ -5,7 +5,7 @@ import Card.Types as Card
 import Colour
 import Game.Entity as Game
 import Game.Types exposing (Context)
-import Math.Matrix4 exposing (makeScale)
+import Math.Matrix4 as Matrix4 exposing (makeScale)
 import Math.Vector3 as Vector3 exposing (vec3)
 import Quaternion
 import Render.Primitives
@@ -67,6 +67,30 @@ view ctx entity =
                                 }
                             ]
                    )
+                ++ (let
+                        url =
+                            "cards/tide/coin.png"
+
+                        targetPos =
+                            Vector3.add position diff
+
+                        diff =
+                            Matrix4.transform (Quaternion.makeRotate rotation)
+                                (vec3 (Vector3.getX scale * 0.4) (Vector3.getY scale * 0.8) 0)
+                    in
+                    Texture.with textures url <|
+                        \texture ->
+                            [ Render.Primitives.quad shader <|
+                                { rotation = Quaternion.makeRotate rotation
+                                , scale = makeScale <| Vector3.scale 0.2 scale
+                                , color = Colour.white
+                                , pos = targetPos
+                                , perspective = perspective
+                                , camera = camera3d
+                                , texture = texture
+                                }
+                            ]
+                   )
                 ++ (List.concat <| List.map (statusView ctx entity) card.statuses)
 
 
@@ -120,8 +144,9 @@ revealedView ctx entity =
                     , texture = texture
                     }
                 ]
-        else
-            []
+
+    else
+        []
 
 
 backView : Context -> Game.Entity3D a -> List WebGL.Entity
