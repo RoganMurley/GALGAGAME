@@ -373,16 +373,21 @@ locationUpdate model url =
         nextPath : Maybe String
         nextPath =
             case model.room of
-                Room.Lobby { gameType, roomID } ->
-                    case gameType of
-                        GameType.CustomGame ->
-                            Just <| "/play/custom/" ++ roomID
+                Room.Lobby { gameType, mode, roomID } ->
+                    case mode of
+                        Playing ->
+                            case gameType of
+                                GameType.CustomGame ->
+                                    Just <| "/play/custom/" ++ roomID
 
-                        GameType.ComputerGame ->
-                            Just "/play/computer"
+                                GameType.ComputerGame ->
+                                    Just "/play/computer"
 
-                        GameType.QuickplayGame ->
-                            Just "/play/quickplay"
+                                GameType.QuickplayGame ->
+                                    Just "/play/quickplay"
+
+                        Spectating ->
+                            Just <| "/spec/" ++ roomID
 
                 _ ->
                     Nothing

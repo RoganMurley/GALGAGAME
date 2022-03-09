@@ -12,6 +12,7 @@ import Login.State as Login
 import Main.Messages as Main
 import Main.Types exposing (Flags)
 import Menu.State as Menu
+import Mode exposing (Mode(..))
 import Mouse
 import Replay.State as Replay
 import Room.Messages exposing (Msg(..))
@@ -128,8 +129,8 @@ update model msg assets flags =
                             Maybe.withDefault lobby.roomID messageRoomID
                     in
                     ( Connected <| Connected.init mode lobby.gameType roomID
-                    , case lobby.gameType of
-                        GameType.CustomGame ->
+                    , case ( lobby.gameType, mode ) of
+                        ( GameType.CustomGame, Playing ) ->
                             Browser.Navigation.pushUrl flags.key <|
                                 "/play/custom/"
                                     ++ roomID
