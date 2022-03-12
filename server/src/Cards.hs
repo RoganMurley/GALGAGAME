@@ -15,6 +15,7 @@ import HandCard (HandCard (..), anyCard, isRevealed)
 import Player (other)
 import Safe (headMay)
 import Stack (diasporaLength)
+import qualified Stack
 import StackCard (StackCard (..), cardMap, changeOwner)
 import Transmutation (Transmutation (..), transmuteToCard)
 import Util (many, manyIndexed, shuffle)
@@ -164,12 +165,16 @@ emptyGrail =
     $ \w -> do
       gen <- getGen
       hand <- getHand w
-      let mCopyCard = headMay . (shuffle gen) $ hand
+      stack <- getStack
+      let mCopyCard = headMay . shuffle gen $ hand
       case mCopyCard of
-        Just copyCard -> do
-          let stackCard = StackCard {stackcard_card = anyCard copyCard, stackcard_owner = w}
-          transmuteActive (\_ -> Just stackCard)
-          Beta.null
+        Just copyCard ->
+          case Stack.get stack 0 of
+            Just selfCard -> do
+              transmuteActive (\_ -> Just $ transmuteToCard (anyCard copyCard) selfCard)
+              Beta.null
+            Nothing ->
+              return ()
         Nothing ->
           return ()
 
@@ -255,7 +260,7 @@ shroomGrail =
   newCard
     Shroom
     Grail
-    ("Give them 2 STRANGE SPOREs\n(Hurt yourself for 4)")
+    "Give them 2 STRANGE SPOREs\n(Hurt yourself for 4)"
     $ \w -> do
       addToHand (other w) (KnownHandCard strangeSpore)
       addToHand (other w) (KnownHandCard strangeSpore)
@@ -481,7 +486,7 @@ crownGrail =
     $ \w -> do
       gen <- getGen
       hand <- getHand (other w)
-      let mCard = headMay . (shuffle gen) $ zip [0 ..] hand
+      let mCard = headMay . shuffle gen $ zip [0 ..] hand
       case mCard of
         Just (index, c) -> do
           Beta.play (other w) c index
