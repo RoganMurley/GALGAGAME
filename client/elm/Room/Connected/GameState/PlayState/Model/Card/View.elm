@@ -11,6 +11,7 @@ import Quaternion
 import Render.Primitives
 import Render.Shaders
 import Stack.Types exposing (StackCard)
+import Status.State as Status
 import Status.Types exposing (Status(..))
 import Texture.State as Texture
 import WebGL
@@ -67,7 +68,7 @@ view ctx entity =
                                 }
                             ]
                    )
-                ++ (List.concat <| List.indexedMap (statusView ctx entity) card.statuses)
+                ++ (List.concat <| List.indexedMap (statusView ctx entity) (Status.collapse card.statuses))
 
 
 statusView : Context -> Card.Entity a -> Int -> Status -> List WebGL.Entity
@@ -284,7 +285,7 @@ transmutingView ctx stackCard finalStackCard entity =
                 , time = progress
                 }
             ]
-                ++ (List.concat <| List.indexedMap (statusView ctx entity) stackCard.card.statuses)
+                ++ (List.concat <| List.indexedMap (statusView ctx entity) (Status.collapse stackCard.card.statuses))
 
 
 backDissolvingView : Context -> Game.Entity3D a -> List WebGL.Entity
