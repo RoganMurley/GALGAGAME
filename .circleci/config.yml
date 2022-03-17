@@ -2,7 +2,7 @@ version: 2
 jobs:
   build:
     machine:
-      image: circleci/classic:edge
+      image: ubuntu-2004:202111-02
     steps:
       - checkout
       - restore_cache:
