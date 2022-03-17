@@ -39,6 +39,9 @@ error str = do
   chan <- getLoggerChan
   liftIO $ writeChan chan (ERROR, str)
 
+errorChan :: Chan (Priority, String) -> String -> IO ()
+errorChan chan str = writeChan chan (ERROR, str)
+
 debugIO :: String -> IO ()
 debugIO str = debugM namespace $ "DEBUG | " ++ str
 

@@ -30,6 +30,7 @@ import Database (postgresConnectInfo, redisConnectInfo)
 import DeckBuilding (ChosenCharacter (..), Rune (..), UnchosenCharacter (..))
 import qualified DeckBuilding
 import Encounter (updateRoomEncounter)
+import GHC.Conc (setUncaughtExceptionHandler)
 import GameState (GameState (..), PlayState (..), PlayingR (..), WaitType (..), isWinner)
 import qualified Log
 import qualified Metrics
@@ -37,7 +38,7 @@ import Model (Turn)
 import Negotiation (Prefix (..), Request (..))
 import qualified Negotiation
 import Network.Wai (Application)
-import Network.Wai.Handler.Warp (run)
+import qualified Network.Wai.Handler.Warp as Warp
 import Network.Wai.Handler.WebSockets
 import qualified Network.WebSockets as WS
 import Outcome (Outcome)
@@ -60,6 +61,8 @@ main = do
   Log.setup
   loggerChan <- newChan
   loggerThreadID <- Log.forkLogger loggerChan
+  let exceptionHandler = (Log.errorChan loggerChan . show)
+  setUncaughtExceptionHandler exceptionHandler
   finally
     ( do
         -- If we're on production, these env vars will be present.
@@ -95,7 +98,10 @@ main = do
 
         Log.infoIO "Starting up!"
 
-        run 9160 $ waiApp state connectInfoConfig authApp
+        let warpSettings =
+              Warp.setOnException (const exceptionHandler) $
+                Warp.setPort 9160 Warp.defaultSettings
+        Warp.runSettings warpSettings $ waiApp state connectInfoConfig authApp
     )
     ( -- Cleanup loose threads. Useful when developing with repl.
       do
