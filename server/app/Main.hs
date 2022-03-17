@@ -166,6 +166,7 @@ begin conn request user state = do
           beginPrefix prefix state client roomVar
     Right (PlayReplayRequest replayId) -> do
       Metrics.incr "request.replay"
+      Log.info $ printf "<%s>: watching replay %s" username (show replayId)
       mReplay <- Replay.Final.load (fromIntegral replayId)
       case mReplay of
         Just replay -> do
