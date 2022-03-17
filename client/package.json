@@ -1,7 +1,7 @@
 {
   "name": "galgagame",
   "version": "1.0.0",
-  "description": "",
+  "description": "cachebuster",
   "main": "gulpfile.js",
   "dependencies": {},
   "devDependencies": {
