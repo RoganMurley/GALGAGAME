@@ -16,10 +16,7 @@ jobs:
       - run:
           name: Setup npm
           command: curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.35.3/install.sh | bash &&
-                   nvm install 12.22.5 &&
-                   mkdir ~/.npm-global &&
-                   npm config set prefix '~/.npm-global' &&
-                   echo 'PATH=~/.npm-global/bin:$PATH' >> $BASH_ENV
+                   nvm install 12.22.5
       - run:
           name: Setup Client
           command: cd client &&
