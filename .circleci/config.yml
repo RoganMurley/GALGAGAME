@@ -20,6 +20,7 @@ jobs:
       - run:
           name: Setup Client
           command: cd client &&
+                   nvm use 12.22.5 &&
                    npm install -g gulp@4.0.0 gulp-cli@2.0.1 elm@0.19.1-5 elm-analyse@0.16.5 &&
                    npm install &&
                    gulp build
