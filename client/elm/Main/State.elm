@@ -384,7 +384,7 @@ locationUpdate model url =
                                     Just <| "/play/computer/" ++ roomID
 
                                 GameType.QuickplayGame ->
-                                    Just "/play/quickplay"
+                                    Just <| "/play/quickplay/" ++ roomID
 
                         Spectating ->
                             Just <| "/spec/" ++ roomID
@@ -445,8 +445,8 @@ locationUpdate model url =
                         Routing.CustomPlay mRoomID ->
                             makeModel mRoomID GameType.CustomGame
 
-                        Routing.QuickPlay ->
-                            makeModel Nothing GameType.QuickplayGame
+                        Routing.QuickPlay mRoomID ->
+                            makeModel mRoomID GameType.QuickplayGame
             in
             ( newModel, Lobby.skipLobbyCmd username )
 

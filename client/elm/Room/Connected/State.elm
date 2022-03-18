@@ -2,6 +2,7 @@ module Connected.State exposing (init, keyPress, mouseDown, mouseUp, receive, ti
 
 import Assets.Types as Assets
 import Audio.State exposing (playSound)
+import Browser.Navigation
 import Chat.Messages as Chat
 import Chat.State as Chat
 import Connected.Decoders exposing (decodeDamageOutcome)
@@ -296,7 +297,15 @@ receive flags assets model msg =
             ( { model | connectionLost = True }, Cmd.none )
 
         "room" ->
-            ( { model | roomID = content }, Cmd.none )
+            let
+                roomID =
+                    content
+            in
+            ( { model | roomID = roomID }
+            , Browser.Navigation.pushUrl flags.key <|
+                "/play/quickplay/"
+                    ++ roomID
+            )
 
         _ ->
             ( { model | errored = False }, log <| "Error decoding message from server: " ++ msg )

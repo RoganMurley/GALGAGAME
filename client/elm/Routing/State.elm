@@ -6,7 +6,7 @@ import Url.Parser exposing ((</>), Parser, map, oneOf, s, string)
 
 default : Route
 default =
-    Play QuickPlay
+    Play <| QuickPlay Nothing
 
 
 route : Parser (Route -> a) a
@@ -30,7 +30,8 @@ playRoute =
                 , map (ComputerPlay Nothing) <| s "computer"
                 , map (CustomPlay << Just) <| s "custom" </> string
                 , map (CustomPlay Nothing) <| s "custom"
-                , map QuickPlay <| s "quickplay"
+                , map (QuickPlay << Just) <| s "quickplay" </> string
+                , map (QuickPlay Nothing) <| s "quickplay"
                 ]
 
 
