@@ -135,6 +135,11 @@ update model msg assets flags =
                                 "/play/custom/"
                                     ++ roomID
 
+                        ( GameType.ComputerGame, Playing ) ->
+                            Browser.Navigation.pushUrl flags.key <|
+                                "/play/computer/"
+                                    ++ roomID
+
                         _ ->
                             Cmd.none
                     )

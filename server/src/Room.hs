@@ -15,7 +15,7 @@ import GameState (GameState (..), WaitType (..), initState)
 import Outcome (Outcome (..))
 import Player (WhichPlayer (..), other)
 import Scenario (Scenario (..))
-import User (GameUser (..), User (..), isHuman, usersToGameUsers)
+import User (GameUser (..), User (..), isCpu, isHuman, usersToGameUsers)
 import Util (Gen)
 
 type Name = Text
@@ -173,3 +173,8 @@ noHumans :: Room -> Bool
 noHumans room =
   let (a, b) = getUsers room
    in not $ any isHuman (maybeToList a ++ maybeToList b)
+
+noCpus :: Room -> Bool
+noCpus room =
+  let (a, b) = getUsers room
+   in not $ any isCpu (maybeToList a ++ maybeToList b)

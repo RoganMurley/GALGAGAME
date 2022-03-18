@@ -26,7 +26,8 @@ playRoute : Parser (PlayRoute -> a) a
 playRoute =
     s "play"
         </> oneOf
-                [ map ComputerPlay <| s "computer"
+                [ map (ComputerPlay << Just) <| s "computer" </> string
+                , map (ComputerPlay Nothing) <| s "computer"
                 , map (CustomPlay << Just) <| s "custom" </> string
                 , map (CustomPlay Nothing) <| s "custom"
                 , map QuickPlay <| s "quickplay"

@@ -30,7 +30,7 @@ initState = State empty Nothing
 -- GETTING / DELETING ROOMS
 getRoom :: Room.Name -> TVar State -> STM (Maybe (TVar Room))
 getRoom name state =
-  (lookup name) . state_rooms <$> readTVar state
+  lookup name . state_rooms <$> readTVar state
 
 createRoom :: Room.Name -> TVar Room -> TVar State -> STM (TVar Room)
 createRoom name roomVar state =
@@ -93,11 +93,13 @@ addPlayerClient client roomVar =
 addComputerClient :: Text -> Text -> Experience -> TVar Room -> STM (Maybe Client)
 addComputerClient name guid xp room =
   modReturnTVar room $ \r ->
-    case Room.addPlayer client r of
-      Just (r', _, _) ->
-        (r', Just client)
-      Nothing ->
-        (r, Nothing)
+    if Room.noCpus r
+      then case Room.addPlayer client r of
+        Just (r', _, _) ->
+          (r', Just client)
+        Nothing ->
+          (r, Nothing)
+      else (r, Nothing)
   where
     client = Client.cpuClient name guid xp :: Client
 

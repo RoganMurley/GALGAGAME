@@ -279,18 +279,21 @@ beginComputer cpuName state client roomVar = do
     computerAdded <- addComputerClient cpuName cpuGuid xp roomVar
     playerAdded <- addPlayerClient client roomVar
     return (computerAdded, playerAdded)
-  case (,) <$> computer <*> added of
+  case added of
+    Just (which, outcomes) -> do
+      case computer of
+        Just computerClient -> do
+          _ <- fork (computerPlay (other which) roomVar state computerClient)
+          return ()
+        Nothing ->
+          return ()
+      finally
+        (play which client roomVar outcomes)
+        (disconnect client roomVar state)
     Nothing -> do
       Log.info $ printf "<%s>: Room is full" (show $ Client.name client)
       Client.send (Command.toChat $ ErrorCommand "Room is full") client
       return False
-    Just (computerClient, (which, outcomes)) ->
-      finally
-        ( do
-            _ <- fork (computerPlay (other which) roomVar state computerClient)
-            play which client roomVar outcomes
-        )
-        (disconnect client roomVar state)
 
 beginQueue :: TVar Server.State -> Client -> TVar Room -> App ()
 beginQueue state client roomVar = do
@@ -416,11 +419,11 @@ computerPlay which roomVar state client = do
       -- Break out if the room's been empty for ~1 minute.
       iterations <- get
       let timeout = 60
-      when
-        (iterations > 0)
-        ( lift . lift . Log.debug $
-            printf "<cpu@%s> CPU quitting in %d seconds" roomName (timeout - iterations)
-        )
+      -- when
+      --   (iterations > 0)
+      --   ( lift . lift . Log.debug $
+      --       printf "<cpu@%s> CPU quitting in %d seconds" roomName (timeout - iterations)
+      --   )
       when (iterations > timeout) mzero
 
 chooseComputerCommand :: WhichPlayer -> TVar Room -> Gen -> Experience -> App (Maybe Command)

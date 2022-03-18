@@ -381,7 +381,7 @@ locationUpdate model url =
                                     Just <| "/play/custom/" ++ roomID
 
                                 GameType.ComputerGame ->
-                                    Just "/play/computer"
+                                    Just <| "/play/computer/" ++ roomID
 
                                 GameType.QuickplayGame ->
                                     Just "/play/quickplay"
@@ -406,59 +406,47 @@ locationUpdate model url =
                 randomRoomID =
                     generate Room.Generators.roomID model.flags.seed
 
+                makeModel : Maybe String -> GameType.GameType -> Main.Model
+                makeModel mRoomID gameType =
+                    let
+                        roomID : String
+                        roomID =
+                            case mRoomID of
+                                Just r ->
+                                    r
+
+                                Nothing ->
+                                    randomRoomID
+
+                        lobbyModel : Main.Model
+                        lobbyModel =
+                            { model
+                                | room =
+                                    Room.Lobby <|
+                                        Lobby.init
+                                            roomID
+                                            gameType
+                                            Playing
+                            }
+                    in
+                    case model.room of
+                        Room.Connected _ ->
+                            model
+
+                        _ ->
+                            lobbyModel
+
                 newModel : Main.Model
                 newModel =
                     case playRoute of
-                        Routing.ComputerPlay ->
-                            { model
-                                | room =
-                                    Room.Lobby <|
-                                        Lobby.init
-                                            randomRoomID
-                                            GameType.ComputerGame
-                                            Playing
-                            }
+                        Routing.ComputerPlay mRoomID ->
+                            makeModel mRoomID GameType.ComputerGame
 
                         Routing.CustomPlay mRoomID ->
-                            let
-                                roomID : String
-                                roomID =
-                                    case mRoomID of
-                                        Just r ->
-                                            r
-
-                                        Nothing ->
-                                            randomRoomID
-
-                                lobbyModel : Main.Model
-                                lobbyModel =
-                                    { model
-                                        | room =
-                                            Room.Lobby <|
-                                                Lobby.init
-                                                    roomID
-                                                    GameType.CustomGame
-                                                    Playing
-                                    }
-                            in
-                            case model.room of
-                                -- Annoying stateful bit, fix me.
-                                -- WILL cause bugs.
-                                Room.Connected _ ->
-                                    model
-
-                                _ ->
-                                    lobbyModel
+                            makeModel mRoomID GameType.CustomGame
 
                         Routing.QuickPlay ->
-                            { model
-                                | room =
-                                    Room.Lobby <|
-                                        Lobby.init
-                                            randomRoomID
-                                            GameType.QuickplayGame
-                                            Playing
-                            }
+                            makeModel Nothing GameType.QuickplayGame
             in
             ( newModel, Lobby.skipLobbyCmd username )
 

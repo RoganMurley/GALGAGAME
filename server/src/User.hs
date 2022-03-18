@@ -98,6 +98,12 @@ isHuman (User _ _) = True
 isHuman (CpuUser _ _) = False
 isHuman (GuestUser _ _) = True
 
+isCpu :: User -> Bool
+isCpu ServiceUser = False
+isCpu (User _ _) = False
+isCpu (CpuUser _ _) = True
+isCpu (GuestUser _ _) = False
+
 -- GameUser
 data GameUser = GameUser
   { gameuser_xp :: Experience,
