@@ -6,7 +6,7 @@ import Lobby.Types exposing (LoginState(..), Model)
 import Main.Messages as Main
 import Main.Types exposing (Flags)
 import Mode exposing (Mode(..))
-import Ports exposing (websocketReconnect)
+import Ports exposing (log, websocketReconnect)
 import Room.Messages as Room
 import Util exposing (message, splitOnColon)
 
@@ -75,6 +75,11 @@ update ({ gameType, mode } as model) msg _ =
                     ]
                 )
 
+        SetRoom str ->
+            ( { model | roomID = str }
+            , Cmd.none
+            )
+
 
 receive : String -> Cmd Main.Msg
 receive msg =
@@ -100,11 +105,20 @@ receive msg =
                         JoinRoomErr <|
                             content
 
+        "room" ->
+            message <|
+                Main.RoomMsg <|
+                    Room.LobbyMsg <|
+                        SetRoom content
+
         _ ->
             -- Defer other messages.
-            message <|
-                Main.Receive <|
-                    msg
+            Cmd.batch
+                [ message <|
+                    Main.Receive <|
+                        msg
+                , log <| "Deferring lobby message " ++ msg
+                ]
 
 
 gameTypeToString : GameType -> String

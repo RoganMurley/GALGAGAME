@@ -295,6 +295,9 @@ receive flags assets model msg =
         "connectionLost" ->
             ( { model | connectionLost = True }, Cmd.none )
 
+        "room" ->
+            ( { model | roomID = content }, Cmd.none )
+
         _ ->
             ( { model | errored = False }, log <| "Error decoding message from server: " ++ msg )
 

@@ -254,7 +254,7 @@ beginPlay state client roomVar = do
   case added of
     Nothing -> do
       Log.info $ printf "<%s>: Room is full" (show $ Client.name client)
-      Client.send (Command.toChat $ ErrorCommand "room is full") client
+      Client.send (Command.toChat $ ErrorCommand "Room is full") client
     Just (which, outcomes) ->
       finally
         ( do
@@ -299,11 +299,16 @@ beginQueue state client roomVar = do
   roomM <- liftIO . atomically $ Server.queue roomVar state
   case roomM of
     Just existingRoom -> do
-      Log.info $ printf "<%s>: Joining existing quickplay room" clientName
+      room <- liftIO $ readTVarIO existingRoom
+      let roomName = Room.getName room
+      Log.info $ printf "<%s>: Joining existing quickplay room [%s]" clientName roomName
+      Client.send ("room:" <> roomName) client
       beginPlay state client existingRoom
     Nothing -> do
       room <- liftIO . readTVarIO $ roomVar
-      Log.info $ printf "<%s>: Creating new quickplay room [%s]" clientName (Room.getName room)
+      let roomName = Room.getName room
+      Log.info $ printf "<%s>: Creating new quickplay room [%s]" clientName roomName
+      Client.send ("room:" <> roomName) client
       asyncQueueCpuFallback state client roomVar
       beginPlay state client roomVar
   gen <- liftIO getGen
@@ -408,10 +413,15 @@ computerPlay which roomVar state client = do
       if Room.noHumans room
         then modify' (1 +)
         else put 0
-      -- Break out if the room's been empty for ~2 minutes iterations.
+      -- Break out if the room's been empty for ~1 minute.
       iterations <- get
-      lift . lift . Log.info $ printf "AI iterations %d" iterations
-      when (iterations > 2 * 60) mzero
+      let timeout = 60
+      when
+        (iterations > 0)
+        ( lift . lift . Log.debug $
+            printf "<cpu@%s> CPU quitting in %d seconds" roomName (timeout - iterations)
+        )
+      when (iterations > timeout) mzero
 
 chooseComputerCommand :: WhichPlayer -> TVar Room -> Gen -> Experience -> App (Maybe Command)
 chooseComputerCommand which room gen xp = do
