@@ -18,6 +18,7 @@ import Control.Monad.IO.Class (liftIO)
 import Control.Monad.STM (STM, atomically)
 import Control.Monad.Trans.Class (lift)
 import Control.Monad.Trans.Maybe (MaybeT, runMaybeT)
+import Control.Monad.Trans.State (StateT, get, modify', put, runStateT)
 import qualified DSL.Beta as Beta
 import qualified Data.GUID as GUID
 import qualified Data.Map as Map
@@ -61,7 +62,7 @@ main = do
   Log.setup
   loggerChan <- newChan
   loggerThreadID <- Log.forkLogger loggerChan
-  let exceptionHandler = (Log.errorChan loggerChan . show)
+  let exceptionHandler = Log.errorChan loggerChan . show
   setUncaughtExceptionHandler exceptionHandler
   finally
     ( do
@@ -286,13 +287,10 @@ beginComputer cpuName state client roomVar = do
     Just (computerClient, (which, outcomes)) ->
       finally
         ( do
-            _ <- fork (computerPlay (other which) roomVar computerClient)
+            _ <- fork (computerPlay (other which) roomVar state computerClient)
             play which client roomVar outcomes
         )
-        ( do
-            _ <- disconnect computerClient roomVar state
-            disconnect client roomVar state
-        )
+        (disconnect client roomVar state)
 
 beginQueue :: TVar Server.State -> Client -> TVar Room -> App ()
 beginQueue state client roomVar = do
@@ -306,12 +304,8 @@ beginQueue state client roomVar = do
     Nothing -> do
       room <- liftIO . readTVarIO $ roomVar
       Log.info $ printf "<%s>: Creating new quickplay room [%s]" clientName (Room.getName room)
-      finally
-        ( do
-            asyncQueueCpuFallback state client roomVar
-            beginPlay state client roomVar
-        )
-        (disconnectComputers roomVar state)
+      asyncQueueCpuFallback state client roomVar
+      beginPlay state client roomVar
   gen <- liftIO getGen
   guid <- liftIO GUID.genText
   let scenario = makeScenario gen PrefixQueue
@@ -335,7 +329,7 @@ asyncQueueCpuFallback state client roomVar = do
         let gameState = Room.getState newRoom
         syncClient client PlayerA gameState
         syncPlayersRoom newRoom
-        computerPlay PlayerB roomVar cpuClient
+        computerPlay PlayerB roomVar state cpuClient
   return ()
   where
     transaction :: Text -> STM (Either String Client)
@@ -391,28 +385,33 @@ play which client roomVar outcomes = do
   finalRoom <- liftIO $ readTVarIO roomVar
   return $ isWinner which $ Room.getState finalRoom
 
-computerPlay :: WhichPlayer -> TVar Room -> Client -> App ()
-computerPlay which roomVar client = do
+computerPlay :: WhichPlayer -> TVar Room -> TVar Server.State -> Client -> App ()
+computerPlay which roomVar state client = do
   roomName <- liftIO $ Room.getName <$> readTVarIO roomVar
   xp <- liftIO $ atomically $ Client.xp client
-  _ <- runMaybeT . forever $ loop roomName xp
+  _ <- runMaybeT (runStateT (forever (loop roomName xp)) 0)
   Log.info $ printf "AI signing off"
+  _ <- disconnect client roomVar state
   return ()
   where
-    loop :: Text -> Experience -> MaybeT App ()
+    loop :: Text -> Experience -> StateT Int (MaybeT App) ()
     loop roomName xp = do
-      lift $ threadDelay 1000000
+      lift . lift $ threadDelay (1 * 1000000)
       gen <- liftIO getGen
-      command <- lift $ chooseComputerCommand which roomVar gen xp
+      command <- lift . lift $ chooseComputerCommand which roomVar gen xp
       case command of
         Just c -> do
-          lift $ actPlay c which roomVar "CPU" roomName
-          lift $ threadDelay 10000
+          lift . lift $ actPlay c which roomVar "CPU" roomName
         Nothing ->
           return ()
-      -- Break out if the room's empty.
       room <- liftIO $ readTVarIO roomVar
-      when (Room.empty room) mzero
+      if Room.noHumans room
+        then modify' (1 +)
+        else put 0
+      -- Break out if the room's been empty for ~2 minutes iterations.
+      iterations <- get
+      lift . lift . Log.info $ printf "AI iterations %d" iterations
+      when (iterations > 2 * 60) mzero
 
 chooseComputerCommand :: WhichPlayer -> TVar Room -> Gen -> Experience -> App (Maybe Command)
 chooseComputerCommand which room gen xp = do

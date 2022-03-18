@@ -15,7 +15,7 @@ import GameState (GameState (..), WaitType (..), initState)
 import Outcome (Outcome (..))
 import Player (WhichPlayer (..), other)
 import Scenario (Scenario (..))
-import User (GameUser (..), User (..), usersToGameUsers)
+import User (GameUser (..), User (..), isHuman, usersToGameUsers)
 import Util (Gen)
 
 type Name = Text
@@ -56,8 +56,8 @@ setState room state = room {room_state = state}
 
 getClients :: Room -> [Client]
 getClients room =
-  (maybeToList (getPlayerClient PlayerA room))
-    ++ (maybeToList (getPlayerClient PlayerB room))
+  maybeToList (getPlayerClient PlayerA room)
+    ++ maybeToList (getPlayerClient PlayerB room)
     ++ getSpecs room
 
 getPlayerClient :: WhichPlayer -> Room -> Maybe Client
@@ -168,3 +168,8 @@ sendExcluding :: WhichPlayer -> Text -> Room -> App ()
 sendExcluding which msg room = do
   sendToSpecs msg room
   sendToPlayer (other which) msg room
+
+noHumans :: Room -> Bool
+noHumans room =
+  let (a, b) = getUsers room
+   in not $ any isHuman (maybeToList a ++ maybeToList b)

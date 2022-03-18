@@ -92,6 +92,12 @@ isSuperuser (User user _) = Auth.userSuperuser user
 isSuperuser (CpuUser _ _) = False
 isSuperuser (GuestUser _ _) = False
 
+isHuman :: User -> Bool
+isHuman ServiceUser = False
+isHuman (User _ _) = True
+isHuman (CpuUser _ _) = False
+isHuman (GuestUser _ _) = True
+
 -- GameUser
 data GameUser = GameUser
   { gameuser_xp :: Experience,
