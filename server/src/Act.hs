@@ -112,13 +112,15 @@ syncRoomClients room = do
     syncMsgPa = ("sync:" <>) . cs . encode $ game :: Text
     syncMsgPb = ("sync:" <>) . cs . encode . mirror $ game :: Text
 
-syncPlayersRoom :: Room -> App ()
-syncPlayersRoom room = do
+syncRoomMetadata :: Room -> App ()
+syncRoomMetadata room = do
   users <- Room.getGameUsers room
   let syncMsgPa = ("syncPlayers:" <>) . cs . encode $ users
   let syncMsgPb = ("syncPlayers:" <>) . cs . encode . mirror $ users
   Room.sendExcluding PlayerB syncMsgPa room
   Room.sendToPlayer PlayerB syncMsgPb room
+  let tagMsg = ("syncTags:" <>) . cs . encode $ scenario_tags $ Room.getScenario room
+  Room.broadcast tagMsg room
 
 resolveRoomClients :: [ResolveData] -> Model -> PlayState -> Maybe WhichPlayer -> Room -> App ()
 resolveRoomClients res initial final exclude room = do
@@ -149,7 +151,7 @@ handleExperience which forceXp winner room = do
       Log.info $ printf "Xp change for %s: %s" (getUsername user) (show statChange)
       Room.sendToPlayer which (("xp:" <>) . cs . encode $ statChange) room
       liftIO . atomically $ setExperience (initialXp + xpDelta) user
-      syncPlayersRoom room
+      syncRoomMetadata room
     Nothing ->
       return ()
 

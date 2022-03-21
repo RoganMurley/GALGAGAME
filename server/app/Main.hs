@@ -1,6 +1,6 @@
 module Main where
 
-import Act (actOutcome, actPlay, actSpec, syncClient, syncPlayersRoom)
+import Act (actOutcome, actPlay, actSpec, syncClient, syncRoomMetadata)
 import ArtificialIntelligence (Action (..), chooseAction)
 import qualified Auth.Apps as Auth
 import qualified Auth.Views as Auth
@@ -224,7 +224,8 @@ makeScenario _ prefix =
       scenario_prog = prog,
       scenario_xpWin = xpWin,
       scenario_xpLoss = xpLoss,
-      scenario_timeLimit = timeLimit
+      scenario_timeLimit = timeLimit,
+      scenario_tags = []
     }
   where
     characterPa :: Either UnchosenCharacter ChosenCharacter
@@ -336,7 +337,7 @@ asyncQueueCpuFallback state client roomVar = do
         newRoom <- liftIO $ readTVarIO roomVar
         let gameState = Room.getState newRoom
         syncClient client PlayerA gameState
-        syncPlayersRoom newRoom
+        syncRoomMetadata newRoom
         computerPlay PlayerB roomVar state cpuClient
   return ()
   where
@@ -367,7 +368,7 @@ spectate client roomVar = do
   Client.send ("acceptSpec:" :: Text) client
   Room.broadcast (Command.toChat (SpectateCommand (Client.name client))) room
   syncClient client PlayerA (Room.getState room)
-  syncPlayersRoom room
+  syncRoomMetadata room
   _ <- runMaybeT . forever $ do
     msg <- lift $ Client.receive client
     lift $ actSpec (Command.parse (Client.name client) msg) roomVar
@@ -377,7 +378,7 @@ play :: WhichPlayer -> Client -> TVar Room -> [Outcome] -> App Bool
 play which client roomVar outcomes = do
   Client.send ("acceptPlay:" :: Text) client
   room <- liftIO $ readTVarIO roomVar
-  syncPlayersRoom room
+  syncRoomMetadata room
   let gameState = Room.getState room
   syncClient client which gameState
   forM_ outcomes (actOutcome room)
@@ -453,7 +454,7 @@ disconnect :: Client -> TVar Room -> TVar Server.State -> App Server.State
 disconnect client roomVar state = do
   room <- liftIO . atomically $ Server.removeClient client roomVar
   Room.broadcast (Command.toChat . LeaveCommand $ Client.name client) room
-  syncPlayersRoom room
+  syncRoomMetadata room
   if Room.empty room
     then
       ( do
