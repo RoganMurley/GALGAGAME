@@ -20,7 +20,11 @@ import Util (Gen)
 
 type Name = Text
 
-type Player = Maybe Client
+data Player
+  = ConnectedPlayer Client
+  | DisconnectedPlayer User
+  | NoPlayer
+  deriving (Show)
 
 type Spectators = [Client]
 
@@ -37,8 +41,8 @@ data Room = Room
 new :: WaitType -> Gen -> Name -> Scenario -> Room
 new wait gen name scenario =
   Room
-    { room_pa = Nothing,
-      room_pb = Nothing,
+    { room_pa = NoPlayer,
+      room_pb = NoPlayer,
       room_specs = [],
       room_name = name,
       room_state = initState wait gen,
@@ -61,8 +65,8 @@ getClients room =
     ++ getSpecs room
 
 getPlayerClient :: WhichPlayer -> Room -> Maybe Client
-getPlayerClient PlayerA = room_pa
-getPlayerClient PlayerB = room_pb
+getPlayerClient PlayerA = clientFromPlayer . room_pa
+getPlayerClient PlayerB = clientFromPlayer . room_pb
 
 getSpecs :: Room -> [Client]
 getSpecs = room_specs
@@ -84,13 +88,18 @@ addPlayer client room =
       let (newRoom, outcomes) = roomSetup $ setClient w c r
        in (newRoom, outcomes, w)
     freeSlot :: Room -> Maybe WhichPlayer
-    freeSlot Room {room_pa = Nothing} = Just PlayerA
-    freeSlot Room {room_pb = Nothing} = Just PlayerB
-    freeSlot _ = Nothing
+    freeSlot r
+      | isSlotValid (room_pa r) client = Just PlayerA
+      | isSlotValid (room_pb r) client = Just PlayerB
+      | otherwise = Nothing
+    isSlotValid :: Player -> Client -> Bool
+    isSlotValid (DisconnectedPlayer user) c = Client.user c == user
+    isSlotValid (ConnectedPlayer _) _ = False
+    isSlotValid NoPlayer _ = True
 
 setClient :: WhichPlayer -> Client -> Room -> Room
-setClient PlayerA client room = room {room_pa = Just client}
-setClient PlayerB client room = room {room_pb = Just client}
+setClient PlayerA client room = room {room_pa = ConnectedPlayer client}
+setClient PlayerB client room = room {room_pb = ConnectedPlayer client}
 
 modScenario :: (Scenario -> Scenario) -> Room -> Room
 modScenario f room = room {room_scenario = f (room_scenario room)}
@@ -113,11 +122,13 @@ roomSetup room =
    in (if full room then newRoom else room, outcomes)
 
 full :: Room -> Bool
-full Room {room_pa = (Just _), room_pb = (Just _)} = True
+full Room {room_pa = (ConnectedPlayer _), room_pb = (ConnectedPlayer _)} = True
 full _ = False
 
 empty :: Room -> Bool
-empty Room {room_pa = Nothing, room_pb = Nothing, room_specs = []} = True
+empty Room {room_pa = ConnectedPlayer _} = False
+empty Room {room_pb = ConnectedPlayer _} = False
+empty Room {room_specs = []} = True -- Neither player is connected, and no spectators
 empty _ = False
 
 removeClient :: Client -> Room -> Room
@@ -131,11 +142,11 @@ removeClient client room@Room {room_pa = pa, room_pb = pb, room_specs = specs} =
     newSpecs :: Spectators
     newSpecs = filter (/= client) specs
     newPlayer :: Player -> Player
-    newPlayer Nothing = Nothing
-    newPlayer (Just c) =
+    newPlayer (ConnectedPlayer c) =
       if c == client
-        then Nothing
-        else Just c
+        then DisconnectedPlayer (Client.user client)
+        else ConnectedPlayer c
+    newPlayer player = player
 
 getUsers :: Room -> (Maybe User, Maybe User)
 getUsers room = (userPa, userPb)
@@ -178,3 +189,8 @@ noCpus :: Room -> Bool
 noCpus room =
   let (a, b) = getUsers room
    in not $ any isCpu (maybeToList a ++ maybeToList b)
+
+-- Player
+clientFromPlayer :: Player -> Maybe Client
+clientFromPlayer (ConnectedPlayer client) = Just client
+clientFromPlayer _ = Nothing

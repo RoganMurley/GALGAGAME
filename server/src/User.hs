@@ -29,6 +29,13 @@ instance Show User where
   show (GuestUser cid _) = "GuestUser" ++ show cid
   show ServiceUser = "ServiceUser"
 
+instance Eq User where
+  (==) (User u1 _) (User u2 _) = Auth.userUsername u1 == Auth.userUsername u2
+  (==) (CpuUser _ _) (CpuUser _ _) = True
+  (==) (GuestUser cid1 _) (GuestUser cid2 _) = cid1 == cid2
+  (==) ServiceUser ServiceUser = True
+  (==) _ _ = False
+
 getUsername :: User -> Text
 getUsername (User user _) = Auth.userUsername user
 getUsername (CpuUser name _) = name
