@@ -49,6 +49,7 @@ init mode gameType roomID =
     , heartbeatTick = 0
     , connectionLost = False
     , ripples = []
+    , tags = []
     }
 
 
@@ -219,6 +220,19 @@ receive flags assets model msg =
             case newPlayers of
                 Ok p ->
                     ( { model | players = p }, Cmd.none )
+
+                Err err ->
+                    ( model, log <| Json.errorToString err )
+
+        "syncTags" ->
+            let
+                newTags : Result Json.Error (List String)
+                newTags =
+                    Json.decodeString (Json.list Json.string) content
+            in
+            case newTags of
+                Ok t ->
+                    ( { model | tags = t }, Cmd.none )
 
                 Err err ->
                     ( model, log <| Json.errorToString err )

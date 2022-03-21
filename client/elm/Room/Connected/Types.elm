@@ -20,4 +20,5 @@ type alias Model =
     , heartbeatTick : Float
     , connectionLost : Bool
     , ripples : List Ripple
+    , tags : List String
     }
