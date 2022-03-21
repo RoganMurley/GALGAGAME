@@ -83,7 +83,7 @@ webglView { bounceTick, waitType } params assets =
                 WaitQuickplay ->
                     Font.view
                         "Futura"
-                        "SCRYING FOR\nOPPONENT..."
+                        "FINDING\nOPPONENT..."
                         { x = w * 0.5 - 0.003 * size
                         , y = h * 0.4
                         , scaleX = 0.0001 * size + 0.003 * sin (bounceTick * 0.005)
