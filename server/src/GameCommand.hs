@@ -256,14 +256,14 @@ playCard index which playing time
               Playing newPlaying ->
                 let modelB = playing_model newPlaying
                     -- If the wheel is full, end the round.
-                    postProgram = if isWheelFull then roundEndProgram else return ()
+                    postProgram = when isWheelFull roundEndProgram
                     (modelC, _, resC) = Beta.execute modelB $ foldFree Beta.betaI postProgram
                     newPlayState :: PlayState
                     newPlayState =
                       Playing $
                         newPlaying
                           { playing_model = modelC,
-                            playing_replay = playing_replay newPlaying `Active.add` resB `Active.add` resC,
+                            playing_replay = playing_replay newPlaying `Active.add` resC,
                             playing_utc = Just time
                           }
                  in -- The player who played the card does that animation clientside, so don't send resA.
