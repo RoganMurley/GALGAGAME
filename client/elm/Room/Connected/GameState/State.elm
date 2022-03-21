@@ -17,9 +17,10 @@ import Main.Types exposing (Flags)
 import Mode exposing (Mode)
 import Mouse exposing (Position)
 import PlayState.State as PlayState
-import PlayState.Types exposing (PlayState)
+import PlayState.Types exposing (PlayState(..))
 import Players exposing (Players)
 import Ports exposing (log)
+import Tutorial
 import Waiting.State as Waiting
 
 
@@ -71,7 +72,7 @@ update msg state flags mode _ players assets =
                 Err err ->
                     ( state, log <| Json.errorToString err )
 
-        Sync str ->
+        Sync str tags ->
             let
                 result : Result Json.Error GameState
                 result =
@@ -79,7 +80,7 @@ update msg state flags mode _ players assets =
             in
             case result of
                 Ok newState ->
-                    ( carry state newState, Cmd.none )
+                    ( applyTags tags <| carry state newState, Cmd.none )
 
                 Err err ->
                     ( state, log <| Json.errorToString err )
@@ -138,11 +139,22 @@ carry old new =
         Selecting { character, runes, runeSelect, ready, bounceTick, vfx, buttons } ->
             case new of
                 Selecting selecting ->
-                    Selecting { selecting | character = character, runes = runes, runeSelect = runeSelect, ready = ready, bounceTick = bounceTick, vfx = vfx, buttons = buttons }
+                    Selecting
+                        { selecting
+                            | character = character
+                            , runes = runes
+                            , runeSelect = runeSelect
+                            , ready = ready
+                            , bounceTick = bounceTick
+                            , vfx = vfx
+                            , buttons = buttons
+                        }
 
                 Started started ->
                     Started <|
-                        PlayState.map (\game -> { game | vfx = vfx }) started
+                        PlayState.map
+                            (\game -> { game | vfx = vfx })
+                            started
 
                 _ ->
                     new
@@ -182,3 +194,26 @@ tick flags state chat gameType dt =
                     PlayState.tick flags playState chat gameType dt
             in
             ( Started newState, Cmd.map PlayStateMsg cmd )
+
+
+applyTags : List String -> GameState -> GameState
+applyTags tags state =
+    if List.any ((==) "tutorial") tags then
+        case state of
+            Started (Playing playState) ->
+                let
+                    { game } =
+                        playState
+
+                    newGame =
+                        { game | tutorial = Tutorial.begin }
+                in
+                Started <|
+                    Playing
+                        { playState | game = newGame }
+
+            _ ->
+                state
+
+    else
+        state

@@ -29,6 +29,7 @@ import Resolvable.State as Resolvable exposing (activeAnim, activeAnimDamage, ac
 import Resolvable.Types as Resolvable
 import Stack.Entities as Stack
 import Stack.Types exposing (StackCard)
+import Tutorial
 import Unproject
 import Util exposing (message)
 import Vfx.State as Vfx
@@ -48,6 +49,7 @@ gameInit model =
     , buttons = Buttons.empty
     , holding = NoHolding
     , timeLeft = Nothing
+    , tutorial = Tutorial.init
     }
 
 

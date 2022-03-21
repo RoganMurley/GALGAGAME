@@ -336,8 +336,8 @@ asyncQueueCpuFallback state client roomVar = do
         Metrics.incr "quickplay.cpu"
         newRoom <- liftIO $ readTVarIO roomVar
         let gameState = Room.getState newRoom
-        syncClient client PlayerA gameState
         syncRoomMetadata newRoom
+        syncClient client PlayerA gameState
         computerPlay PlayerB roomVar state cpuClient
   return ()
   where

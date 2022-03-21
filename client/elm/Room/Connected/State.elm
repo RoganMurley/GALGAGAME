@@ -132,7 +132,7 @@ receive flags assets model msg =
         ( command, content ) =
             splitOnColon msg
 
-        { mode, gameType, players } =
+        { mode, gameType, players, tags } =
             model
     in
     case command of
@@ -140,7 +140,7 @@ receive flags assets model msg =
             let
                 ( newGame, cmd ) =
                     GameState.update
-                        (GameState.Sync content)
+                        (GameState.Sync content tags)
                         model.game
                         flags
                         mode

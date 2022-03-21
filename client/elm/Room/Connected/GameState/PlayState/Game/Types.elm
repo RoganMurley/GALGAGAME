@@ -14,6 +14,7 @@ import Mouse exposing (MouseState(..))
 import Resolvable.Types as Resolvable
 import Stack.Types exposing (StackCard)
 import Texture.Types as Texture
+import Tutorial
 import Vfx.Types as Vfx
 import WhichPlayer.Types exposing (WhichPlayer)
 
@@ -29,6 +30,7 @@ type alias Model =
     , buttons : Buttons
     , holding : Holding
     , timeLeft : Maybe Float
+    , tutorial : Tutorial.Model
     }
 
 

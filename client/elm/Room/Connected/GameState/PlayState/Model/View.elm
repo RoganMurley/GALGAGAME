@@ -33,6 +33,7 @@ import Render.Uniforms exposing (uniColourMag)
 import Stack.Entities exposing (wheelZ)
 import Stack.View as Stack
 import TimeLimit
+import Tutorial
 import Util exposing (interpFloat)
 import WebGL
 import WhichPlayer.Types exposing (WhichPlayer(..))
@@ -59,7 +60,7 @@ view { w, h } game chat assets =
             , Hand.otherView entities.otherHand
             , Hand.millView
             , damageView hover holding
-            , turnView focus passed timeLeft
+            , turnView focus passed game.tutorial timeLeft
             , focusTextView (vec2 0 0) focus
             , Buttons.view buttons
             , Chat.notifyView chat buttons
@@ -366,8 +367,8 @@ damageView hover holding ({ w, h, radius, resolving, animDamage, tick, anim } as
         ]
 
 
-turnView : Focus -> Bool -> Maybe Float -> Context -> List WebGL.Entity
-turnView focus passed timeLeft ctx =
+turnView : Focus -> Bool -> Tutorial.Model -> Maybe Float -> Context -> List WebGL.Entity
+turnView focus passed tutorial timeLeft ctx =
     let
         { anim, model, tick, w, h, radius } =
             ctx
@@ -419,28 +420,32 @@ turnView focus passed timeLeft ctx =
             else
                 case model.turn of
                     PlayerA ->
-                        List.concat
-                            [ Font.view
-                                "Futura"
-                                "YOUR TURN"
-                                { x = w * 0.5 - 0.003 * size
-                                , y = h * 0.5
-                                , scaleX = 0.0001 * size + 0.003 * sin (tick * 0.005)
-                                , scaleY = 0.0001 * size + 0.003 * sin (tick * 0.007)
-                                , color = vec3 (20 / 255) (20 / 255) (20 / 255)
-                                }
-                                ctx
-                            , Font.view
-                                "Futura"
-                                "YOUR TURN"
-                                { x = w * 0.5
-                                , y = h * 0.5
-                                , scaleX = 0.0001 * size + 0.003 * sin (tick * 0.005)
-                                , scaleY = 0.0001 * size + 0.003 * sin (tick * 0.007)
-                                , color = vec3 (244 / 255) (241 / 255) (94 / 255)
-                                }
-                                ctx
-                            ]
+                        if Tutorial.isActive tutorial then
+                            tutorialView tutorial ctx
+
+                        else
+                            List.concat
+                                [ Font.view
+                                    "Futura"
+                                    "YOUR TURN"
+                                    { x = w * 0.5 - 0.003 * size
+                                    , y = h * 0.5
+                                    , scaleX = 0.0001 * size + 0.003 * sin (tick * 0.005)
+                                    , scaleY = 0.0001 * size + 0.003 * sin (tick * 0.007)
+                                    , color = vec3 (20 / 255) (20 / 255) (20 / 255)
+                                    }
+                                    ctx
+                                , Font.view
+                                    "Futura"
+                                    "YOUR TURN"
+                                    { x = w * 0.5
+                                    , y = h * 0.5
+                                    , scaleX = 0.0001 * size + 0.003 * sin (tick * 0.005)
+                                    , scaleY = 0.0001 * size + 0.003 * sin (tick * 0.007)
+                                    , color = vec3 (244 / 255) (241 / 255) (94 / 255)
+                                    }
+                                    ctx
+                                ]
 
                     PlayerB ->
                         List.concat
@@ -533,6 +538,68 @@ turnView focus passed timeLeft ctx =
                     , y = h * 0.5
                     , scaleX = 0.00015 * size + 0.003 * sin (tick * 0.005)
                     , scaleY = 0.00015 * size + 0.003 * sin (tick * 0.007)
+                    , color = vec3 (244 / 255) (241 / 255) (94 / 255)
+                    }
+                    ctx
+                ]
+
+        _ ->
+            []
+
+
+tutorialView : Tutorial.Model -> Context -> List WebGL.Entity
+tutorialView tutorial ctx =
+    let
+        { tick, w, h, radius } =
+            ctx
+
+        size =
+            radius * 3
+    in
+    case tutorial.step of
+        Just Tutorial.DragACard ->
+            List.concat
+                [ Font.view
+                    "Futura"
+                    "DRAG A CARD"
+                    { x = w * 0.5 - 0.003 * size
+                    , y = h * 0.5
+                    , scaleX = 0.0001 * size + 0.003 * sin (tick * 0.005)
+                    , scaleY = 0.0001 * size + 0.003 * sin (tick * 0.007)
+                    , color = vec3 (20 / 255) (20 / 255) (20 / 255)
+                    }
+                    ctx
+                , Font.view
+                    "Futura"
+                    "DRAG A CARD"
+                    { x = w * 0.5
+                    , y = h * 0.5
+                    , scaleX = 0.0001 * size + 0.003 * sin (tick * 0.005)
+                    , scaleY = 0.0001 * size + 0.003 * sin (tick * 0.007)
+                    , color = vec3 (244 / 255) (241 / 255) (94 / 255)
+                    }
+                    ctx
+                ]
+
+        Just Tutorial.PressGo ->
+            List.concat
+                [ Font.view
+                    "Futura"
+                    "PRESS GO"
+                    { x = w * 0.5 - 0.003 * size
+                    , y = h * 0.5
+                    , scaleX = 0.0001 * size + 0.003 * sin (tick * 0.005)
+                    , scaleY = 0.0001 * size + 0.003 * sin (tick * 0.007)
+                    , color = vec3 (20 / 255) (20 / 255) (20 / 255)
+                    }
+                    ctx
+                , Font.view
+                    "Futura"
+                    "PRESS GO"
+                    { x = w * 0.5
+                    , y = h * 0.5
+                    , scaleX = 0.0001 * size + 0.003 * sin (tick * 0.005)
+                    , scaleY = 0.0001 * size + 0.003 * sin (tick * 0.007)
                     , color = vec3 (244 / 255) (241 / 255) (94 / 255)
                     }
                     ctx

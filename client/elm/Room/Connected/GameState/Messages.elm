@@ -8,4 +8,8 @@ type Msg
     = PlayStateMsg PlayState.Msg
     | ResolveOutcome String
     | SelectingMsg DeckBuilding.Msg
-    | Sync String
+    | Sync String Tags
+
+
+type alias Tags =
+    List String

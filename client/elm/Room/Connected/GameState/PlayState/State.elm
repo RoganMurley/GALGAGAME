@@ -43,6 +43,7 @@ import Resolvable.State as Resolvable exposing (resolving)
 import Resolvable.Types as Resolvable
 import Result
 import Room.Messages as Room
+import Tutorial
 import Util exposing (message)
 import Wheel.State as Wheel
 import WhichPlayer.Types exposing (WhichPlayer(..))
@@ -244,7 +245,7 @@ updateTurnOnly msg state { audio } =
                             newState =
                                 Playing { game = { game | passed = True } }
                         in
-                        ( newState
+                        ( newState |> tutorialAction Tutorial.ActionPressGo
                         , Cmd.batch
                             [ websocketSend "end:"
                             , playSound audio "sfx/endTurn.mp3"
@@ -324,7 +325,7 @@ updateTurnOnly msg state { audio } =
                                     in
                                     { game | res = { resolvedRes | resList = [] } }
                             in
-                            ( newState
+                            ( newState |> tutorialAction Tutorial.ActionDragACard
                             , websocketSend <| "play:" ++ String.fromInt index
                             )
 
@@ -468,6 +469,7 @@ carry old new =
                 , vfx = get .vfx old
                 , buttons = get .buttons old
                 , holding = get .holding old
+                , tutorial = get .tutorial old
             }
         )
         new
@@ -693,3 +695,14 @@ mouseUp _ assets _ mode _ state =
                     ( state, Cmd.none )
     in
     ( newPlayState, cmd )
+
+
+tutorialAction : Tutorial.Action -> PlayState -> PlayState
+tutorialAction action state =
+    map
+        (\game ->
+            { game
+                | tutorial = Tutorial.takeAction action game.tutorial
+            }
+        )
+        state
