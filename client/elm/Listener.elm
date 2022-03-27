@@ -1,11 +1,14 @@
 module Listener exposing (animSfx, listen)
 
+import Aftermath.State as Aftermath
+import Aftermath.Types as Aftermath
 import Animation.Types exposing (Anim(..), Hurt(..))
 import Audio.State exposing (playSoundWith)
 import Audio.Types as Audio exposing (SoundOption(..))
 import GameState.Types exposing (GameState(..))
 import Main.Messages exposing (Msg)
 import PlayState.State as PlayState
+import PlayState.Types exposing (PlayState(..))
 import Resolvable.State exposing (activeAnim, tickStart)
 import Resolvable.Types as Resolvable
 import WhichPlayer.Types exposing (WhichPlayer(..))
@@ -36,7 +39,10 @@ listen sounds state tick =
     else
         case state of
             Started playstate ->
-                modelListen <| PlayState.get .res playstate
+                Cmd.batch
+                    [ modelListen <| PlayState.get .res playstate
+                    , aftermathListen sounds playstate
+                    ]
 
             _ ->
                 Cmd.none
@@ -117,3 +123,37 @@ animSfx anim =
 
         _ ->
             Nothing
+
+
+aftermathListen : Audio.Model -> PlayState -> Cmd Msg
+aftermathListen sounds playstate =
+    let
+        play : String -> Cmd Msg
+        play url =
+            playSoundWith
+                sounds
+                ("sfx/" ++ url)
+                [ Volume 0.5 ]
+    in
+    case playstate of
+        Ended { aftermath } ->
+            case Aftermath.active aftermath of
+                Just (Aftermath.StatChange { initialXp, finalXp } _) ->
+                    if aftermath.tick == 0 && initialXp /= finalXp then
+                        play "xp.mp3"
+
+                    else
+                        Cmd.none
+
+                Just (Aftermath.Unlock _) ->
+                    if aftermath.tick == 0 then
+                        play "unlock.mp3"
+
+                    else
+                        Cmd.none
+
+                _ ->
+                    Cmd.none
+
+        _ ->
+            Cmd.none
