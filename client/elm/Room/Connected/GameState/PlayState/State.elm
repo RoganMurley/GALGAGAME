@@ -248,7 +248,7 @@ updateTurnOnly msg state { audio } =
                         ( newState |> tutorialAction Tutorial.ActionPressGo
                         , Cmd.batch
                             [ websocketSend "end:"
-                            , playSound audio "sfx/endTurn.mp3"
+                            , playSound audio "sfx/click.mp3"
                             ]
                         )
 

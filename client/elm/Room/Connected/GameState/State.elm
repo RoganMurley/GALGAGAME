@@ -90,7 +90,7 @@ update msg state flags mode _ players assets =
                 Selecting m ->
                     let
                         ( newModel, cmd ) =
-                            DeckBuilding.update selectMsg m players
+                            DeckBuilding.update selectMsg m assets players
                     in
                     ( Selecting newModel, cmd )
 
@@ -104,7 +104,7 @@ mouseDown mousePos state flags mode gameType players assets =
         Selecting selecting ->
             let
                 ( newSelecting, cmd ) =
-                    DeckBuilding.mouseDown mousePos players selecting
+                    DeckBuilding.mouseDown mousePos players assets selecting
             in
             ( Selecting newSelecting, cmd )
 

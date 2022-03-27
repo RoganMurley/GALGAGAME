@@ -1,5 +1,7 @@
 module DeckBuilding.State exposing (getRuneFromCursor, init, mouseDown, nextCursor, tick, update)
 
+import Assets.Types as Assets
+import Audio.State exposing (playSound)
 import Buttons.State as Buttons
 import Buttons.Types as Buttons exposing (ButtonType(..), Buttons)
 import Carousel
@@ -51,8 +53,8 @@ selectingMsg =
         << GameState.SelectingMsg
 
 
-update : Msg -> Model -> Players -> ( Model, Cmd Main.Msg )
-update msg model players =
+update : Msg -> Model -> Assets.Model -> Players -> ( Model, Cmd Main.Msg )
+update msg model ({ audio } as assets) players =
     case msg of
         Select selectCharacter ->
             let
@@ -65,7 +67,13 @@ update msg model players =
                 saveCmd =
                     saveCharacter <| encodeCharacter selectCharacter
             in
-            ( { model | ready = True }, Cmd.batch [ selectCmd, saveCmd ] )
+            ( { model | ready = True }
+            , Cmd.batch
+                [ selectCmd
+                , saveCmd
+                , playSound audio "sfx/click.mp3"
+                ]
+            )
 
         EnterRuneSelect cursor ->
             case model.character of
@@ -100,7 +108,9 @@ update msg model players =
                                     , buttons = Buttons.empty
                                     }
                             in
-                            ( { model | runeSelect = Just runeSelect }, Cmd.none )
+                            ( { model | runeSelect = Just runeSelect }
+                            , playSound audio "sfx/click.mp3"
+                            )
 
                         Nothing ->
                             ( model, Cmd.none )
@@ -115,7 +125,7 @@ update msg model players =
                         | character = Just <| setRuneFromCursor cursor rune character
                         , runeSelect = Nothing
                       }
-                    , Cmd.none
+                    , playSound audio "sfx/click.mp3"
                     )
 
                 Nothing ->
@@ -163,7 +173,11 @@ update msg model players =
         RuneSelectMsg runeSelectMsg ->
             case model.runeSelect of
                 Just runeSelect ->
-                    ( { model | runeSelect = Just <| RuneSelect.update runeSelectMsg runeSelect }, Cmd.none )
+                    let
+                        ( newRoomSelect, cmd ) =
+                            RuneSelect.update runeSelectMsg runeSelect assets
+                    in
+                    ( { model | runeSelect = Just newRoomSelect }, cmd )
 
                 Nothing ->
                     ( model, log "RuneSelect message not on a RuneSelect game state" )
@@ -414,8 +428,8 @@ nextCursor cursor =
             RuneCursorA
 
 
-mouseDown : Position -> Players -> Model -> ( Model, Cmd Main.Msg )
-mouseDown { x, y } players model =
+mouseDown : Position -> Players -> Assets.Model -> Model -> ( Model, Cmd Main.Msg )
+mouseDown { x, y } players assets model =
     let
         pos =
             vec2 (toFloat x) (toFloat y)
@@ -428,7 +442,7 @@ mouseDown { x, y } players model =
                         "ready" ->
                             case model.character of
                                 Just character ->
-                                    update (Select character) model players
+                                    update (Select character) model assets players
 
                                 Nothing ->
                                     ( model, Cmd.none )
@@ -443,16 +457,25 @@ mouseDown { x, y } players model =
                             )
 
                         "random" ->
-                            update RandomRunes model players
+                            let
+                                ( newModel, newMsg ) =
+                                    update RandomRunes model assets players
+                            in
+                            ( newModel
+                            , Cmd.batch
+                                [ newMsg
+                                , playSound assets.audio "sfx/click.mp3"
+                                ]
+                            )
 
                         "runeA" ->
-                            update (EnterRuneSelect RuneCursorA) model players
+                            update (EnterRuneSelect RuneCursorA) model assets players
 
                         "runeB" ->
-                            update (EnterRuneSelect RuneCursorB) model players
+                            update (EnterRuneSelect RuneCursorB) model assets players
 
                         "runeC" ->
-                            update (EnterRuneSelect RuneCursorC) model players
+                            update (EnterRuneSelect RuneCursorC) model assets players
 
                         _ ->
                             ( model, Cmd.none )
@@ -465,15 +488,15 @@ mouseDown { x, y } players model =
                 Just ( key, _ ) ->
                     case key of
                         "nextRune" ->
-                            update (RuneSelectMsg RuneSelect.NextRune) model players
+                            update (RuneSelectMsg RuneSelect.NextRune) model assets players
 
                         "prevRune" ->
-                            update (RuneSelectMsg RuneSelect.PreviousRune) model players
+                            update (RuneSelectMsg RuneSelect.PreviousRune) model assets players
 
                         "selectRune" ->
                             case model.runeSelect of
                                 Just { cursor, carousel } ->
-                                    update (ConfirmRune cursor carousel.selected) model players
+                                    update (ConfirmRune cursor carousel.selected) model assets players
 
                                 Nothing ->
                                     ( model, Cmd.none )

@@ -1,11 +1,14 @@
 module RuneSelect.State exposing (buttons, tick, update)
 
+import Assets.Types as Assets
+import Audio.State exposing (playSound)
 import Buttons.State as Buttons
 import Buttons.Types as Buttons exposing (ButtonType(..), Buttons)
 import Carousel
 import Collision
 import Game.Types exposing (Context)
 import List.Extra as List
+import Main.Messages as Main
 import Math.Vector3 exposing (vec3)
 import Mouse exposing (MouseState(..))
 import RuneSelect.Entities as RuneSelect
@@ -13,8 +16,8 @@ import RuneSelect.Messages exposing (Msg(..))
 import RuneSelect.Types exposing (Model)
 
 
-update : Msg -> Model -> Model
-update msg model =
+update : Msg -> Model -> Assets.Model -> ( Model, Cmd Main.Msg )
+update msg model { audio } =
     case msg of
         NextRune ->
             let
@@ -24,7 +27,12 @@ update msg model =
                         (\b -> { b | hover = 0 })
                         model.buttons
             in
-            { model | carousel = Carousel.forward model.carousel, buttons = newButtons }
+            ( { model
+                | carousel = Carousel.forward model.carousel
+                , buttons = newButtons
+              }
+            , playSound audio "sfx/click.mp3"
+            )
 
         PreviousRune ->
             let
@@ -34,7 +42,12 @@ update msg model =
                         (\b -> { b | hover = 0 })
                         model.buttons
             in
-            { model | carousel = Carousel.backward model.carousel, buttons = newButtons }
+            ( { model
+                | carousel = Carousel.backward model.carousel
+                , buttons = newButtons
+              }
+            , playSound audio "sfx/click.mp3"
+            )
 
 
 tick : Context -> Float -> Model -> Model

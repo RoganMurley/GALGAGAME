@@ -130,7 +130,10 @@ update msg model { audio } =
                 , notify = False
                 , pos = { x = 0, y = 0 }
               }
-            , cmd
+            , Cmd.batch
+                [ playSound audio "sfx/click.mp3"
+                , cmd
+                ]
             )
 
         SetInput input ->
