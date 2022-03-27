@@ -322,6 +322,12 @@ beginQueue state client roomVar = do
   newRoomVar <- liftIO . atomically $ Server.getOrCreateRoom roomName WaitQuickplay gen scenario state
   beginQueue state client newRoomVar
 
+data QueueCpuResult
+  = QueueCpuNotNeeded
+  | QueueCpuReconnect
+  | QueueCpuFailed
+  deriving (Show, Eq)
+
 asyncQueueCpuFallback :: TVar Server.State -> Client -> TVar Room -> App ()
 asyncQueueCpuFallback state client roomVar = do
   _ <- fork $ do
@@ -329,11 +335,18 @@ asyncQueueCpuFallback state client roomVar = do
     cpuGuid <- liftIO GUID.genText
     result <- liftIO $ atomically (transaction cpuGuid)
     case result of
-      Left toLog -> do
+      Left QueueCpuNotNeeded -> do
         Metrics.incr "quickplay.human"
-        Log.info toLog
+        Log.info "Humans playing, no CPU needed"
+      Left QueueCpuReconnect -> do
+        Metrics.incr "quickplay.reconnect"
+        Log.info "Reconnecting, no CPU needed"
+      Left QueueCpuFailed -> do
+        Metrics.incr "quickplay.fail"
+        Log.info "Failed to add CPU"
       Right cpuClient -> do
         Metrics.incr "quickplay.cpu"
+        Log.info $ printf "New CPU joining room"
         newRoom <- liftIO $ readTVarIO roomVar
         let gameState = Room.getState newRoom
         syncRoomMetadata newRoom
@@ -341,11 +354,15 @@ asyncQueueCpuFallback state client roomVar = do
         computerPlay PlayerB roomVar state cpuClient
   return ()
   where
-    transaction :: Text -> STM (Either String Client)
+    transaction :: Text -> STM (Either QueueCpuResult Client)
     transaction guid = do
       room <- readTVar roomVar
       if Room.full room
-        then return $ Left "No CPU needed for queue, rejoice"
+        then
+          return . Left $
+            if Room.noCpus room
+              then QueueCpuNotNeeded
+              else QueueCpuReconnect
         else
           ( do
               xp <- Client.xp client
@@ -356,7 +373,7 @@ asyncQueueCpuFallback state client roomVar = do
                   Server.dequeue state
                   return $ Right computerClient
                 Nothing ->
-                  return $ Left "Failed to add CPU"
+                  return $ Left QueueCpuFailed
           )
 
 spectate :: Client -> TVar Room -> App ()
@@ -396,7 +413,7 @@ computerPlay which roomVar state client = do
   roomName <- liftIO $ Room.getName <$> readTVarIO roomVar
   xp <- liftIO $ atomically $ Client.xp client
   _ <- runMaybeT (runStateT (forever (loop roomName xp)) 0)
-  Log.info $ printf "AI signing off"
+  Log.info $ printf "<%s@%s>AI signing off" (Client.name client) roomName
   _ <- disconnect client roomVar state
   return ()
   where
