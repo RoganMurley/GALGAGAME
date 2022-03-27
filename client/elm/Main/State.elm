@@ -393,7 +393,8 @@ locationUpdate model url =
                     Nothing
 
         route =
-            parse Routing.route url |> Maybe.withDefault Routing.default
+            parse Routing.route url
+                |> Maybe.withDefault Routing.default
     in
     case route of
         Routing.Play playRoute ->
@@ -418,23 +419,29 @@ locationUpdate model url =
                                 Nothing ->
                                     randomRoomID
 
-                        lobbyModel : Main.Model
-                        lobbyModel =
-                            { model
-                                | room =
-                                    Room.Lobby <|
-                                        Lobby.init
-                                            roomID
-                                            gameType
-                                            Playing
-                            }
+                        joinAttempts : Int
+                        joinAttempts =
+                            case model.room of
+                                Room.Lobby lobby ->
+                                    lobby.joinAttempts
+
+                                _ ->
+                                    0
                     in
                     case model.room of
                         Room.Connected _ ->
                             model
 
                         _ ->
-                            lobbyModel
+                            { model
+                                | room =
+                                    Room.Lobby <|
+                                        Lobby.init
+                                            roomID
+                                            joinAttempts
+                                            gameType
+                                            Playing
+                            }
 
                 newModel : Main.Model
                 newModel =
@@ -456,6 +463,7 @@ locationUpdate model url =
                     Room.Lobby <|
                         Lobby.init
                             roomID
+                            0
                             GameType.CustomGame
                             Spectating
               }

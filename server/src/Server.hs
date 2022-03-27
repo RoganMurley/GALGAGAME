@@ -48,11 +48,11 @@ getOrCreateRoom name wait gen scenario state = do
     Just r ->
       return r
 
-deleteRoom :: Room.Name -> TVar State -> STM (State)
+deleteRoom :: Room.Name -> TVar State -> STM State
 deleteRoom name state =
   modReadTVar state $ \(State s qs) -> State (delete name s) qs
 
-getAllRooms :: TVar State -> STM ([TVar Room])
+getAllRooms :: TVar State -> STM [TVar Room]
 getAllRooms state = elems . state_rooms <$> readTVar state
 
 -- QUEUEING
@@ -64,7 +64,7 @@ queue roomVar state = do
       dequeue state
       return $ Just existingRoomVar
     Nothing -> do
-      _ <- modTVar state (\(State s _) -> (State s (Just roomVar)))
+      _ <- modTVar state (\(State s _) -> State s (Just roomVar))
       return Nothing
 
 dequeue :: TVar State -> STM ()

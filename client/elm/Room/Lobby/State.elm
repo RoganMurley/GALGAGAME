@@ -17,10 +17,10 @@ maxJoinAttempts =
     2
 
 
-init : String -> GameType -> Mode -> Model
-init roomID gameType mode =
+init : String -> Int -> GameType -> Mode -> Model
+init roomID joinAttempts gameType mode =
     { roomID = roomID
-    , joinAttempts = 0
+    , joinAttempts = joinAttempts
     , error = ""
     , gameType = gameType
     , mode = mode
@@ -29,9 +29,9 @@ init roomID gameType mode =
 
 
 update : Model -> Msg -> Flags -> ( Model, Cmd Main.Msg )
-update ({ gameType, mode } as model) msg flags =
+update ({ gameType, mode, joinAttempts } as model) msg flags =
     case msg of
-        JoinRoom ->
+        JoinRoom force ->
             let
                 prefix : String
                 prefix =
@@ -53,26 +53,28 @@ update ({ gameType, mode } as model) msg flags =
                 joinRoomCmd : List (Cmd Main.Msg)
                 joinRoomCmd =
                     [ message <| Main.Send <| "room:" ++ model.roomID ]
+
+                newMsg =
+                    Cmd.batch <|
+                        if joinAttempts > 0 && not force then
+                            []
+
+                        else
+                            message (Main.Send prefix) :: joinRoomCmd
             in
-            ( model
-            , Cmd.batch <|
-                (message <| Main.Send <| prefix)
-                    :: joinRoomCmd
+            ( { model | joinAttempts = joinAttempts + 1 }
+            , newMsg
             )
 
         JoinRoomErr error ->
-            let
-                joinAttempts =
-                    model.joinAttempts + 1
-            in
             if joinAttempts >= maxJoinAttempts then
-                ( { model | error = error, joinAttempts = joinAttempts }, Cmd.none )
+                ( { model | error = error }, Cmd.none )
 
             else
-                ( { model | joinAttempts = joinAttempts }
+                ( model
                 , Cmd.batch
                     [ websocketReconnect ()
-                    , message <| Main.RoomMsg <| Room.LobbyMsg <| JoinRoom
+                    , message <| Main.RoomMsg <| Room.LobbyMsg <| JoinRoom True
                     ]
                 )
 
@@ -143,8 +145,8 @@ skipLobbyCmd username =
         Just _ ->
             message <|
                 Main.RoomMsg <|
-                    Room.LobbyMsg
-                        JoinRoom
+                    Room.LobbyMsg <|
+                        JoinRoom False
 
         Nothing ->
             Cmd.none

@@ -43,7 +43,7 @@ view { username } { error, gameType, mode } =
                             , div [ class "vertical-rule" ] []
                             , div [ class "horizontal-rule" ] []
                             , button
-                                [ onClick <| RoomMsg <| LobbyMsg JoinRoom, class "menu-button" ]
+                                [ onClick <| RoomMsg <| LobbyMsg <| JoinRoom False, class "menu-button" ]
                                 [ text <| modeText ++ " AS GUEST" ]
                             ]
                         , div [ class "error" ] [ text error ]

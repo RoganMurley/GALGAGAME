@@ -305,13 +305,13 @@ beginQueue state client roomVar = do
     Just existingRoom -> do
       room <- liftIO $ readTVarIO existingRoom
       let roomName = Room.getName room
-      Log.info $ printf "<%s>: Joining existing quickplay room [%s]" clientName roomName
+      Log.info $ printf "<%s>: Joining quickplay room from queue [%s]" clientName roomName
       Client.send ("room:" <> roomName) client
       beginPlay state client existingRoom
     Nothing -> do
       room <- liftIO . readTVarIO $ roomVar
       let roomName = Room.getName room
-      Log.info $ printf "<%s>: Creating new quickplay room [%s]" clientName roomName
+      Log.info $ printf "<%s>: Using default quickplay room [%s]" clientName roomName
       Client.send ("room:" <> roomName) client
       asyncQueueCpuFallback state client roomVar
       beginPlay state client roomVar
@@ -345,10 +345,7 @@ asyncQueueCpuFallback state client roomVar = do
     transaction guid = do
       room <- readTVar roomVar
       if Room.full room
-        then
-          ( do
-              return $ Left "No CPU needed for queue, rejoice"
-          )
+        then return $ Left "No CPU needed for queue, rejoice"
         else
           ( do
               xp <- Client.xp client
