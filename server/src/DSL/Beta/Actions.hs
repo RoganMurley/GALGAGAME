@@ -64,7 +64,7 @@ reversal = do
   let diasporaIs = drop 1 $ fst <$> diaspora :: [Int]
   let reversedIs = reverse diasporaIs :: [Int]
   let diasporaMap = Map.fromList $ zip diasporaIs reversedIs :: Map Int Int
-  moveStack (\i _ -> Map.lookup i diasporaMap) 750
+  moveStack (\i _ -> Map.lookup i diasporaMap) 500
 
 revealRandomCard :: WhichPlayer -> Program ()
 revealRandomCard w = do
