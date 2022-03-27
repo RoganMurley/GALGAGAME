@@ -579,6 +579,9 @@ mouseDown { dimensions, mouse } assets _ mode players { x, y } state =
                 << Connected.GameStateMsg
                 << GameState.PlayStateMsg
 
+        { audio } =
+            assets
+
         buttonMsg =
             case state of
                 Playing _ ->
@@ -612,25 +615,34 @@ mouseDown { dimensions, mouse } assets _ mode players { x, y } state =
                         Just ( key, _ ) ->
                             case key of
                                 "playAgain" ->
-                                    playMsg <| PlayState.PlayingOnly PlayState.Rematch
+                                    Cmd.batch
+                                        [ playMsg <| PlayState.PlayingOnly PlayState.Rematch
+                                        , playSound audio "sfx/click.mp3"
+                                        ]
 
                                 "watchReplay" ->
                                     case replayId of
                                         Just r ->
-                                            playMsg <| PlayState.GotoReplay r
+                                            Cmd.batch
+                                                [ playMsg <| PlayState.GotoReplay r
+                                                , playSound audio "sfx/click.mp3"
+                                                ]
 
                                         Nothing ->
                                             Cmd.none
 
                                 "continue" ->
-                                    if Players.shouldRematch players then
-                                        playMsg <| PlayState.PlayingOnly PlayState.Rematch
+                                    Cmd.batch
+                                        [ if Players.shouldRematch players then
+                                            playMsg <| PlayState.PlayingOnly PlayState.Rematch
 
-                                    else
-                                        message
-                                            << Main.RoomMsg
-                                        <|
-                                            Room.StartGame Mode.Playing Nothing
+                                          else
+                                            message
+                                                << Main.RoomMsg
+                                            <|
+                                                Room.StartGame Mode.Playing Nothing
+                                        , playSound audio "sfx/click.mp3"
+                                        ]
 
                                 _ ->
                                     Cmd.none
