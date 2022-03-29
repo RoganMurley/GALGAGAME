@@ -142,8 +142,8 @@ emptySword =
   newCard
     Empty
     Sword
-    "Hurt for 8"
-    $ \w -> hurt 8 (other w) Slash
+    "Hurt for 6"
+    $ \w -> hurt 6 (other w) Slash
 
 emptyWand :: Card
 emptyWand =
@@ -358,11 +358,12 @@ seerGrail =
   newCard
     Seer
     Grail
-    "Draw 2 cards and reveal\na card in their hand"
+    "Reveal a card in their hand, then\ndraw for each revealed\ncard in their hand"
     $ \w -> do
-      draw w w 1
-      draw w w 1
       revealRandomCard (other w)
+      hand <- getHand (other w)
+      let count = length $ filter isRevealed hand
+      many count $ draw w w 1
 
 seerCoin :: Card
 seerCoin =
