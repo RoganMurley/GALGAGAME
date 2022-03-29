@@ -298,6 +298,9 @@ beginComputer cpuName state client roomVar = do
 
 beginQueue :: TVar Server.State -> Client -> TVar Room -> App ()
 beginQueue state client roomVar = do
+  -- If you join an existing room, what happens to the input one? Is it left there?
+  -- Rooms are not properly dequeued.
+  -- If the user exits at the wrong time the room might stay in the queue.
   let clientName = show (Client.name client)
   Log.info $ printf "<%s>: Begin quickplay game" clientName
   roomM <- liftIO . atomically $ Server.queue roomVar state
@@ -359,10 +362,13 @@ asyncQueueCpuFallback state client roomVar = do
       room <- readTVar roomVar
       if Room.full room
         then
-          return . Left $
-            if Room.noCpus room
-              then QueueCpuNotNeeded
-              else QueueCpuReconnect
+          if Room.noCpus room
+            then return $ Left QueueCpuNotNeeded
+            else
+              ( do
+                  Server.dequeue state
+                  return $ Left QueueCpuReconnect
+              )
         else
           ( do
               xp <- Client.xp client
