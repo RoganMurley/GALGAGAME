@@ -1,4 +1,4 @@
-import qualified MirrorSpec
+-- import qualified MirrorSpec
 import qualified StackSpec
 import Test.Tasty (defaultMain, testGroup)
 
@@ -7,6 +7,7 @@ main =
   defaultMain $
     testGroup
       "Tests"
-      [ MirrorSpec.tests,
+      [
+      -- [ MirrorSpec.tests,
         StackSpec.tests
       ]

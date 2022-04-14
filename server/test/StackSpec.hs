@@ -1,27 +1,28 @@
 module StackSpec where
 
 import qualified Cards
+import GameState (initModel)
+import Model (Model(..))
 import Player (WhichPlayer (..))
-import Stack (Stack)
 import qualified Stack
 import StackCard (StackCard (..))
 import Test.Tasty (TestTree, testGroup)
-import Test.Tasty.HUnit (testCase, (@?=))
-import Wheel (Wheel (..))
-import qualified Wheel
+import Test.Tasty.HUnit (Assertion, testCase, (@?=))
+import Util (mkGen)
+
+import qualified DSL.Alpha as Alpha
 
 tests :: TestTree
 tests =
   testGroup
     "Stack"
-    []
+    [testCase "moveStack" testMoveStack]
 
-stack :: Stack
-stack = Stack.stackFromList [stackCard, stackCard, stackCard, stackCard]
+testMoveStack :: Assertion
+testMoveStack = actual @?= expected
   where
-    stackCard :: StackCard
-    stackCard =
-      StackCard
-        { stackcard_owner = PlayerA,
-          stackcard_card = Cards.blazeSword
-        }
+    stack = Stack.set Stack.init 1 (Just $ StackCard { stackcard_owner = PlayerA, stackcard_card = Cards.blazeSword })
+    model = (initModel PlayerA Nothing Nothing (mkGen 0)) {model_stack = stack}
+    prog = Alpha.moveStack (\i _ -> Just (i + 1))
+    actual = model_stack $ Alpha.modI model prog
+    expected = Stack.windup stack

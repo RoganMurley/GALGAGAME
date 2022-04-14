@@ -182,7 +182,8 @@ allRunes =
   mainRunes
     ++ [ bloodRune,
          crownRune,
-         abyssRune
+         abyssRune,
+         liminalRune
        ]
 
 tideRune :: Rune
@@ -272,6 +273,14 @@ morphRune =
     "cards/morph/coin.png"
     (Cards.morphSword, Cards.morphWand, Cards.morphGrail, Cards.morphCoin)
     (levelToExperience 8)
+
+liminalRune :: Rune
+liminalRune =
+  Rune
+    "LIMINAL"
+    "cards/liminal/coin.png"
+    (Cards.liminalSword, Cards.liminalWand, Cards.liminalGrail, Cards.liminalCoin)
+    (levelToExperience 0)
 
 bloodRune :: Rune
 bloodRune =

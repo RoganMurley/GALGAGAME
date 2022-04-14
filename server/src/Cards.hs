@@ -665,6 +665,56 @@ strangeDream =
     $ \w -> do
       heal 13 w
 
+-- Liminal
+liminalSword :: Card
+liminalSword =
+  newCard
+    Liminal
+    Sword
+    "Hurt for 7"
+    $ \w ->
+      hurt 7 (other w) Slash
+
+liminalWand :: Card
+liminalWand =
+  newCard
+    Liminal
+    Wand
+    "Hurt for 8 for each Liminal WAND\non the wheel"
+    $ \w -> do
+      stack <- getStack
+      let wheelCards = stackcard_card . snd <$> Stack.diasporaFromStack stack
+      let len = length $ filter (\Card {card_aspect, card_suit} -> card_aspect == Liminal && card_suit == Wand) wheelCards
+      hurt (len * 8) (other w) Slash
+
+liminalGrail :: Card
+liminalGrail =
+  newCard
+    Liminal
+    Grail
+    "Play your own copy of the card in next socket\ninto the previous socket"
+    $ \w -> do
+      stack <- getStack
+      raw $ do
+        let mPrevCard = Stack.get stack 11
+        let mNextCard = Stack.get stack 1
+        case (mPrevCard, mNextCard) of
+          (Nothing, Just nextCard) -> do
+            let copiedCard = nextCard {stackcard_owner = w}
+            let newStack = Stack.set stack 11 (Just copiedCard)
+            Alpha.setStack newStack
+          _ ->
+            return ()
+      Beta.null
+
+liminalCoin :: Card
+liminalCoin =
+  newCard
+    Liminal
+    Coin
+    "Move card in next socket into\nthe previous socket"
+    $ \_ -> moveStack (\i _ -> if i == 1 then Just (-1) else Nothing) 400
+
 -- Other
 strangeEnd :: Card
 strangeEnd =
@@ -702,7 +752,8 @@ swords =
     abyssSword,
     feverSword,
     emptySword,
-    seerSword
+    seerSword,
+    liminalSword
   ]
 
 wands :: [Card]
@@ -720,7 +771,8 @@ wands =
     abyssWand,
     feverWand,
     emptyWand,
-    seerWand
+    seerWand,
+    liminalWand
   ]
 
 grails :: [Card]
@@ -738,7 +790,8 @@ grails =
     abyssGrail,
     feverGrail,
     emptyGrail,
-    seerGrail
+    seerGrail,
+    liminalGrail
   ]
 
 coins :: [Card]
@@ -755,7 +808,8 @@ coins =
     tideCoin,
     feverCoin,
     emptyCoin,
-    seerCoin
+    seerCoin,
+    liminalCoin
   ]
 
 others :: [Card]
