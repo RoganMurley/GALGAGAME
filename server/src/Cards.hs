@@ -166,12 +166,13 @@ emptyGrail =
       gen <- getGen
       hand <- getHand w
       stack <- getStack
-      let mCopyCard = headMay . shuffle gen $ hand
+      let mCopyCard = headMay . shuffle gen $ zip [0..] hand
       case mCopyCard of
-        Just copyCard ->
+        Just (index, copyCard) ->
           case Stack.get stack 0 of
             Just selfCard -> do
               transmuteActive (\_ -> Just $ transmuteToCard (anyCard copyCard) selfCard)
+              raw $ Alpha.reveal w (\i _ -> i == index)
               Beta.null
             Nothing ->
               return ()

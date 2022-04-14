@@ -169,7 +169,6 @@ actOutcome room (Outcome.Encodable (Outcome.Resolve models initial final exclude
 actOutcome room (Outcome.Encodable (Outcome.Heartbeat timeLeft)) =
   Room.broadcast ("timeLeft:" <> cs (show (1000 * realToFrac timeLeft :: Float))) room
 actOutcome room (Outcome.SaveReplay replay) = do
-  Log.info $ printf "<%s>: Saving replay..." (Room.getName room)
   replayId <- Replay.Final.save replay
   Log.info $ printf "<%s>: Replay saved with ID %d" (Room.getName room) replayId
   Room.broadcast ("replaySaved:" <> (cs . show $ replayId)) room
