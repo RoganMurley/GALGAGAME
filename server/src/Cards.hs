@@ -666,34 +666,35 @@ strangeDream =
     $ \w -> do
       heal 13 w
 
--- Liminal
-liminalSword :: Card
-liminalSword =
+-- Comet
+cometSword :: Card
+cometSword =
   newCard
-    Liminal
+    Comet
     Sword
     "Hurt for 7"
     $ \w ->
       hurt 7 (other w) Slash
 
-liminalWand :: Card
-liminalWand =
+cometWand :: Card
+cometWand =
   newCard
-    Liminal
+    Comet
     Wand
-    "Hurt for 8 for each Liminal WAND\non the wheel"
+    "Hurt for 6 for each other card\nyou own on the wheel"
     $ \w -> do
       stack <- getStack
-      let wheelCards = stackcard_card . snd <$> Stack.diasporaFromStack stack
-      let len = length $ filter (\Card {card_aspect, card_suit} -> card_aspect == Liminal && card_suit == Wand) wheelCards
-      hurt (len * 8) (other w) Slash
+      let diaspora = Stack.diasporaFromStack stack
+      let ownCards = filter (w ==) $ stackcard_owner . snd <$> filter (\(i, _) -> i > 0) diaspora
+      let mag = length ownCards
+      hurt (mag * 6) (other w) Slash
 
-liminalGrail :: Card
-liminalGrail =
+cometGrail :: Card
+cometGrail =
   newCard
-    Liminal
+    Comet
     Grail
-    "Play your own copy of the card in next socket\ninto the previous socket"
+    "Play your own copy of card in\nnext socket into previous\nsocket"
     $ \w -> do
       stack <- getStack
       raw $ do
@@ -708,10 +709,10 @@ liminalGrail =
             return ()
       Beta.null
 
-liminalCoin :: Card
-liminalCoin =
+cometCoin :: Card
+cometCoin =
   newCard
-    Liminal
+    Comet
     Coin
     "Move card in next socket into\nthe previous socket"
     $ \_ -> moveStack (\i _ -> if i == 1 then Just (-1) else Nothing) 400
@@ -754,7 +755,7 @@ swords =
     feverSword,
     emptySword,
     seerSword,
-    liminalSword
+    cometSword
   ]
 
 wands :: [Card]
@@ -773,7 +774,7 @@ wands =
     feverWand,
     emptyWand,
     seerWand,
-    liminalWand
+    cometWand
   ]
 
 grails :: [Card]
@@ -792,7 +793,7 @@ grails =
     feverGrail,
     emptyGrail,
     seerGrail,
-    liminalGrail
+    cometGrail
   ]
 
 coins :: [Card]
@@ -810,7 +811,7 @@ coins =
     feverCoin,
     emptyCoin,
     seerCoin,
-    liminalCoin
+    cometCoin
   ]
 
 others :: [Card]

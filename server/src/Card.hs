@@ -58,7 +58,7 @@ data Aspect
   | Abyss
   | Fever
   | Empty
-  | Liminal
+  | Comet
   | Seer
   | Strange
   | OtherAspect Text
@@ -107,7 +107,7 @@ mainAspects =
     Morph,
     Empty,
     Seer,
-    Liminal
+    Comet
   ]
 
 allAspects :: [Aspect]
@@ -126,7 +126,7 @@ allAspects =
     Empty,
     Strange,
     Seer,
-    Liminal
+    Comet
   ]
 
 data Status = StatusEcho | StatusBlighted | StatusNegate
