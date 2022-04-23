@@ -4,7 +4,7 @@ module DSL.Beta.Interpreters where
 
 import Bounce (CardBounce(..))
 import Card (Card)
-import CardAnim (Damage, Hurt, cardAnimDamage)
+import CardAnim (Damage, Hurt, TimeModifier(..), cardAnimDamage)
 import Control.Monad (when)
 import Control.Monad.Free (Free(..), foldFree, liftF)
 import Data.Foldable (foldl')
@@ -107,18 +107,18 @@ healAnim w alpha = do
   return final
 
 
-drawAnim :: WhichPlayer -> WhichPlayer -> Float -> Alpha.Program a -> AlphaAnimProgram a
+drawAnim :: WhichPlayer -> WhichPlayer -> TimeModifier -> Alpha.Program a -> AlphaAnimProgram a
 drawAnim w d t alpha = do
   nextCard <- headMay <$> toLeft (Alpha.getDeck d)
   handLength <- length <$> toLeft (Alpha.getHand w)
   final <- toLeft alpha
   if (handLength < maxHandLength)
     then toRight . liftF $ Anim.Draw w t ()
-    else toRight . liftF $ Anim.Mill w (fromMaybe strangeEnd nextCard) 1 ()
+    else toRight . liftF $ Anim.Mill w (fromMaybe strangeEnd nextCard) (TimeModifierOutQuint 1) ()
   return final
 
 
-millAnim :: WhichPlayer -> Float -> Alpha.Program a -> AlphaAnimProgram a
+millAnim :: WhichPlayer -> TimeModifier -> Alpha.Program a -> AlphaAnimProgram a
 millAnim w t alpha = do
   nextCard <- headMay <$> toLeft (Alpha.getDeck w)
   final <- toLeft alpha
@@ -131,8 +131,8 @@ addToHandAnim w c alpha = do
   handLength <- length <$> toLeft (Alpha.getHand w)
   final <- toLeft alpha
   if (handLength < maxHandLength)
-    then toRight . liftF $ Anim.Draw w 1 ()
-    else toRight . liftF $ Anim.Mill w (anyCard c) 1 ()
+    then toRight . liftF $ Anim.Draw w (TimeModifierOutQuint 1) ()
+    else toRight . liftF $ Anim.Mill w (anyCard c) (TimeModifierOutQuint 1) ()
   return final
 
 
@@ -174,7 +174,7 @@ transmuteActiveAnim f alpha = do
       return final
 
 
-bounceAnim :: (Int -> StackCard -> Bool) -> Float -> Alpha.Program a -> AlphaAnimProgram a
+bounceAnim :: (Int -> StackCard -> Bool) -> TimeModifier -> Alpha.Program a -> AlphaAnimProgram a
 bounceAnim f t alpha = do
   bounces <- toLeft $ getBounces f
   let activity = any isJust bounces
@@ -184,12 +184,12 @@ bounceAnim f t alpha = do
   return final
 
 
-moveStackAnim :: (Int -> StackCard -> Maybe Int) -> Int -> Alpha.Program a -> AlphaAnimProgram a
-moveStackAnim f time alpha = do
+moveStackAnim :: (Int -> StackCard -> Maybe Int) -> TimeModifier -> Alpha.Program a -> AlphaAnimProgram a
+moveStackAnim f t alpha = do
   stack <- toLeft Alpha.getStack
   let moves = Stack.diasporaMap f stack
   let activity = any isJust moves
-  when activity (toRight . liftF $ Anim.MoveStack moves time ())
+  when activity (toRight . liftF $ Anim.MoveStack moves t ())
   final <- toLeft alpha
   when activity (toRight . liftF $ Anim.Null ())
   return final

@@ -19,18 +19,18 @@ import Wheel (Wheel)
 
 data CardAnim
   = Heal WhichPlayer Life
-  | Draw WhichPlayer Float
+  | Draw WhichPlayer TimeModifier
   | Hurt WhichPlayer Life Hurt
   | Play WhichPlayer HandCard Int
   | Transmute (Wheel (Maybe Transmutation))
-  | Mill WhichPlayer Card Float
+  | Mill WhichPlayer Card TimeModifier
   | GameEnd (Maybe WhichPlayer)
   | Rotate
   | Windup
-  | Bounce (Wheel (Maybe CardBounce)) Float
+  | Bounce (Wheel (Maybe CardBounce)) TimeModifier
   | DiscardStack (Wheel Bool)
   | DiscardHand WhichPlayer [CardDiscard]
-  | MoveStack (Wheel (Maybe Int)) Int
+  | MoveStack (Wheel (Maybe Int)) TimeModifier
   | Pass WhichPlayer
   | Reveal WhichPlayer [Bool]
   | Timeout
@@ -177,6 +177,29 @@ type ShaderName = Text
 
 data Damage = DamageCertain Life | DamageUncertain Life
   deriving (Eq, Generic, NFData, Show)
+
+data TimeModifier
+  = TimeModifierLinear Float
+  | TimeModifierOutQuad Float
+  | TimeModifierOutQuint Float
+  deriving (Eq, Generic, NFData, Show)
+
+instance ToJSON TimeModifier where
+  toJSON (TimeModifierLinear t) =
+    object
+      [ "ease" .= ("linear" :: Text),
+        "t" .= t
+      ]
+  toJSON (TimeModifierOutQuint t) =
+    object
+      [ "ease" .= ("outQuint" :: Text),
+        "t" .= t
+      ]
+  toJSON (TimeModifierOutQuad t) =
+    object
+      [ "ease" .= ("outQuad" :: Text),
+        "t" .= t
+      ]
 
 instance ToJSON Damage where
   toJSON (DamageCertain a) = toJSON a

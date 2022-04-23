@@ -1,7 +1,7 @@
 module Cards where
 
 import Card (Aspect (..), Card (..), Status (..), Suit (..), addStatus, cardName, newCard)
-import CardAnim (Hurt (..))
+import CardAnim (Hurt (..), TimeModifier (..))
 import Control.Monad (when)
 import qualified DSL.Alpha as Alpha
 import DSL.Beta
@@ -47,8 +47,8 @@ blazeGrail =
     "Discard your hand, then draw 2"
     $ \w -> do
       discardHand w (\_ _ -> True)
-      draw w w 1
-      draw w w 1
+      draw w w (TimeModifierOutQuint 1)
+      draw w w (TimeModifierOutQuint 1)
 
 blazeCoin :: Card
 blazeCoin =
@@ -56,9 +56,7 @@ blazeCoin =
     Blaze
     Coin
     "Shuffle the order of all other\ncards on the wheel"
-    $ \_ -> do
-      confound
-      Beta.null
+    $ \_ -> confound
 
 -- Tide
 tideSword :: Card
@@ -69,7 +67,7 @@ tideSword =
     "Hurt for 3, return this card\nto hand"
     $ \w -> do
       hurt 3 (other w) Slash
-      bounce (\i _ -> i == 0) 0.6
+      bounce (\i _ -> i == 0) (TimeModifierOutQuint 0.6)
 
 tideWand :: Card
 tideWand =
@@ -80,7 +78,7 @@ tideWand =
     $ \w -> do
       len <- diasporaLength <$> getStack
       hurt (len * 3) (other w) Slash
-      draw w w 1
+      draw w w (TimeModifierLinear 1)
 
 tideGrail :: Card
 tideGrail =
@@ -126,7 +124,7 @@ heavenGrail =
     "Heal for 2, return this card\nto hand"
     $ \w -> do
       heal 2 w
-      bounce (\i _ -> i == 0) 0.6
+      bounce (\i _ -> i == 0) (TimeModifierOutQuint 0.6)
 
 heavenCoin :: Card
 heavenCoin =
@@ -134,7 +132,7 @@ heavenCoin =
     Heaven
     Coin
     "Return all of your cards on the\nwheel to hand"
-    $ \w -> bounce (\i (StackCard o _) -> i > 0 && w == o) 1
+    $ \w -> bounce (\i (StackCard o _) -> i > 0 && w == o) (TimeModifierOutQuint 1)
 
 -- Empty
 emptySword :: Card
@@ -166,7 +164,7 @@ emptyGrail =
       gen <- getGen
       hand <- getHand w
       stack <- getStack
-      let mCopyCard = headMay . shuffle gen $ zip [0..] hand
+      let mCopyCard = headMay . shuffle gen $ zip [0 ..] hand
       case mCopyCard of
         Just (index, copyCard) ->
           case Stack.get stack 0 of
@@ -315,9 +313,9 @@ bloodGrail =
     "Pay 4 life to draw 3"
     $ \w -> do
       hurt 4 w Slash
-      draw w w 1
-      draw w w 1
-      draw w w 1
+      draw w w (TimeModifierOutQuint 1)
+      draw w w (TimeModifierOutQuint 1)
+      draw w w (TimeModifierOutQuint 1)
 
 bloodCoin :: Card
 bloodCoin =
@@ -364,7 +362,7 @@ seerGrail =
       revealRandomCard (other w)
       hand <- getHand (other w)
       let count = length $ filter isRevealed hand
-      many count $ draw w w 1
+      many count $ draw w w (TimeModifierOutQuint 1)
 
 seerCoin :: Card
 seerCoin =
@@ -372,7 +370,7 @@ seerCoin =
     Seer
     Coin
     "Return all cards on the wheel to hand"
-    $ \_ -> bounce (\i _ -> i > 0) 1
+    $ \_ -> bounce (\i _ -> i > 0) (TimeModifierOutQuint 1)
 
 -- Mirror
 mirrorSword :: Card
@@ -456,8 +454,8 @@ strangeGold =
     (OtherSuit "GOLD")
     "Draw 2"
     $ \w -> do
-      draw w w 1
-      draw w w 1
+      draw w w (TimeModifierOutQuint 1)
+      draw w w (TimeModifierOutQuint 1)
 
 -- Crown
 crownSword :: Card
@@ -595,7 +593,7 @@ abyssSword =
     "Discard 5 from their deck"
     $ \w -> do
       let mag = 5
-      manyIndexed mag $ \i -> mill (other w) (1 * (Ease.outQuad 0.5 * (fromIntegral i / fromIntegral mag)))
+      manyIndexed mag $ \i -> mill (other w) $ TimeModifierOutQuint $ 1 * (Ease.outQuad 0.5 * (fromIntegral i / fromIntegral mag))
 
 abyssWand :: Card
 abyssWand =
@@ -606,7 +604,7 @@ abyssWand =
     $ \w -> do
       len <- diasporaLength <$> getStack
       let mag = 3 * len
-      manyIndexed mag $ \i -> mill (other w) (1 * (Ease.outQuad 0.5 * (fromIntegral i / fromIntegral mag)))
+      manyIndexed mag $ \i -> mill (other w) $ TimeModifierOutQuint $ 1 * (Ease.outQuad 0.5 * (fromIntegral i / fromIntegral mag))
 
 abyssGrail :: Card
 abyssGrail =
@@ -617,8 +615,8 @@ abyssGrail =
     $ \w -> do
       discardHand w (\_ _ -> True)
       discardHand (other w) (\_ _ -> True)
-      many 5 $ draw w w 0.4
-      many 5 $ draw (other w) (other w) 0.4
+      many 5 $ draw w w (TimeModifierOutQuint 0.4)
+      many 5 $ draw (other w) (other w) (TimeModifierOutQuint 0.4)
 
 -- Fever
 feverSword :: Card
@@ -715,7 +713,7 @@ cometCoin =
     Comet
     Coin
     "Move card in next socket into\nthe previous socket"
-    $ \_ -> moveStack (\i _ -> if i == 1 then Just (-1) else Nothing) 400
+    $ \_ -> moveStack (\i _ -> if i == 1 then Just (-1) else Nothing) (TimeModifierOutQuint 400)
 
 -- Other
 strangeEnd :: Card

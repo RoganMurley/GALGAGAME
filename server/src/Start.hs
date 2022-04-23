@@ -1,5 +1,6 @@
 module Start where
 
+import CardAnim (TimeModifier (..))
 import qualified Cards
 import Control.Monad (replicateM_)
 import qualified DSL.Alpha as Alpha
@@ -14,8 +15,8 @@ initHandLength which first
 
 startProgram :: Turn -> Beta.Program ()
 startProgram turn = do
-  replicateM_ (initHandLength PlayerA turn) (Beta.draw PlayerA PlayerA 0.25)
-  replicateM_ (initHandLength PlayerB turn) (Beta.draw PlayerB PlayerB 0.25)
+  replicateM_ (initHandLength PlayerA turn) (Beta.draw PlayerA PlayerA (TimeModifierOutQuint 0.25))
+  replicateM_ (initHandLength PlayerB turn) (Beta.draw PlayerB PlayerB (TimeModifierOutQuint 0.25))
 
 tutorialProgram :: Beta.Program ()
 tutorialProgram = do
@@ -31,8 +32,8 @@ tutorialProgram = do
     Alpha.setMaxLife PlayerB 20
     Alpha.setLife PlayerB 20
   Beta.null
-  replicateM_ 5 (Beta.draw PlayerA PlayerA 0.25)
-  replicateM_ 5 (Beta.draw PlayerB PlayerB 0.25)
+  replicateM_ 5 (Beta.draw PlayerA PlayerA (TimeModifierOutQuint 0.25))
+  replicateM_ 5 (Beta.draw PlayerB PlayerB (TimeModifierOutQuint 0.25))
 
 puzzle :: Beta.Program ()
 puzzle = do
@@ -45,5 +46,5 @@ puzzle = do
     Alpha.setMaxLife PlayerB 15
     Alpha.setTurn PlayerB
   Beta.null
-  replicateM_ 4 (Beta.draw PlayerA PlayerA 0.25)
-  replicateM_ 5 (Beta.draw PlayerB PlayerB 0.25)
+  replicateM_ 4 (Beta.draw PlayerA PlayerA (TimeModifierOutQuint 0.25))
+  replicateM_ 5 (Beta.draw PlayerB PlayerB (TimeModifierOutQuint 0.25))

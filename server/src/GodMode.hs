@@ -1,6 +1,6 @@
 module GodMode where
 
-import CardAnim (Hurt (..))
+import CardAnim (Hurt (..), TimeModifier (..))
 import Cards (cardsByName)
 import qualified DSL.Alpha as Alpha
 import qualified DSL.Beta as Beta
@@ -41,7 +41,7 @@ parse which msg =
             Nothing ->
               ParseError ("Cannot parse " <> content <> " to int" :: Err)
         "draw" ->
-          ParsedProgram $ Beta.draw which which 0.1
+          ParsedProgram $ Beta.draw which which (TimeModifierOutQuint 0.1)
         "card" ->
           case Map.lookup content cardsByName of
             Just card ->

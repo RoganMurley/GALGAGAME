@@ -1,7 +1,8 @@
 module Animation.Decoders exposing (decoder)
 
-import Animation.Types exposing (Anim(..), Bounce(..), CardDiscard(..), Hurt(..), Transmutation(..))
+import Animation.Types exposing (Anim(..), Bounce(..), CardDiscard(..), Hurt(..), TimingModifier, Transmutation(..))
 import Card.Decoders as Card exposing (knowableCardDecoder)
+import Ease
 import Json.Decode as Json exposing (Decoder, bool, fail, field, float, int, list, maybe, null, oneOf, string, succeed)
 import Stack.Decoders as Stack
 import Wheel.Decoders as Wheel
@@ -127,7 +128,7 @@ drawDecoder : Decoder Anim
 drawDecoder =
     Json.map2 Draw
         (field "player" WhichPlayer.decoder)
-        (field "timeModifier" float)
+        (field "timeModifier" timingModifierDecoder)
 
 
 playDecoder : Decoder Anim
@@ -159,7 +160,7 @@ millDecoder =
     Json.map3 Mill
         (field "player" WhichPlayer.decoder)
         (field "card" Card.decoder)
-        (field "timeModifier" float)
+        (field "timeModifier" timingModifierDecoder)
 
 
 gameEndDecoder : Decoder Anim
@@ -199,7 +200,7 @@ bounceDecoder =
                 maybe <|
                     oneOf [ bounceDiscardDecoder, bounceIndexDecoder ]
         )
-        (field "timeModifier" float)
+        (field "timeModifier" timingModifierDecoder)
 
 
 cardDiscardDecoder : Decoder CardDiscard
@@ -235,10 +236,33 @@ moveStackDecoder : Decoder Anim
 moveStackDecoder =
     Json.map2 MoveStack
         (field "moves" <| Wheel.decoder <| maybe int)
-        (field "time" int)
+        (field "time" timingModifierDecoder)
 
 
 passDecoder : Decoder Anim
 passDecoder =
     Json.map Pass
         (field "player" WhichPlayer.decoder)
+
+
+timingModifierDecoder : Decoder TimingModifier
+timingModifierDecoder =
+    let
+        easingDecoder : String -> Decoder Ease.Easing
+        easingDecoder name =
+            case name of
+                "linear" ->
+                    Json.succeed Ease.linear
+
+                "outQuad" ->
+                    Json.succeed Ease.outQuad
+
+                "outQuint" ->
+                    Json.succeed Ease.outQuint
+
+                _ ->
+                    Json.fail <| "Unknown easing name " ++ name
+    in
+    Json.map2 TimingModifier
+        (field "ease" (string |> Json.andThen easingDecoder))
+        (field "t" float)

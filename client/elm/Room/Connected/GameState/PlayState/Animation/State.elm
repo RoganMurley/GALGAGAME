@@ -1,6 +1,6 @@
 module Animation.State exposing (animMaxTick, animShake, getPlayerBounceCards, progress)
 
-import Animation.Types exposing (Anim(..), Bounce(..), HandBounce)
+import Animation.Types exposing (Anim(..), Bounce(..), HandBounce, TimingModifier)
 import Ease
 import Stack.Types exposing (Stack, StackCard)
 import Wheel.State as Wheel
@@ -34,13 +34,13 @@ animMaxTick anim =
     1.2
         * (case anim of
             Draw _ timeModifier ->
-                timeModifier * 250.0
+                timeModifier.mod * 250.0
 
             Play _ _ _ _ ->
                 300.0
 
             Mill _ _ timeModifier ->
-                timeModifier * 500.0
+                timeModifier.mod * 500.0
 
             GameEnd _ ->
                 1250.0
@@ -52,7 +52,7 @@ animMaxTick anim =
                 400.0
 
             Bounce _ timeModifier ->
-                timeModifier * 750.0
+                timeModifier.mod * 750.0
 
             DiscardStack _ ->
                 750.0
@@ -66,8 +66,8 @@ animMaxTick anim =
             Heal _ _ ->
                 400.0
 
-            MoveStack _ time ->
-                toFloat time
+            MoveStack _ timeModifier ->
+                timeModifier.mod * 1.0
 
             GetGen ->
                 1
@@ -90,14 +90,23 @@ progress anim tick =
         easingFunction : Float -> Float
         easingFunction =
             case anim of
+                Draw _ timeModifier ->
+                    timeModifier.ease
+
+                Bounce _ timeModifier ->
+                    timeModifier.ease
+
                 Hurt _ _ _ ->
                     Ease.outQuint
 
                 Heal _ _ ->
                     Ease.outQuint
 
-                Mill _ _ _ ->
-                    Ease.outQuint
+                Mill _ _ timingModifier ->
+                    timingModifier.ease
+
+                MoveStack _ timeModifier ->
+                    timeModifier.ease
 
                 Rotate _ ->
                     Ease.inQuad

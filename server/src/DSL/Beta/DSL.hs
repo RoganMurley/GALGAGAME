@@ -1,7 +1,7 @@
 module DSL.Beta.DSL where
 
 import Card (Card)
-import CardAnim (CardAnim, Hurt)
+import CardAnim (CardAnim, Hurt, TimeModifier)
 import Control.Monad.Free (Free (..))
 import qualified DSL.Alpha.DSL as Alpha
 import HandCard (HandCard)
@@ -17,18 +17,18 @@ data DSL n
   = Raw (Alpha.Program ()) n
   | Hurt Life WhichPlayer Hurt n
   | Heal Life WhichPlayer n
-  | Draw WhichPlayer WhichPlayer Float n
+  | Draw WhichPlayer WhichPlayer TimeModifier n
   | AddToHand WhichPlayer HandCard n
   | Play WhichPlayer HandCard Int n
   | Transmute (Int -> StackCard -> Maybe Transmutation) n
   | TransmuteActive (StackCard -> Maybe StackCard) n
   | Rotate n
   | Windup n
-  | Bounce (Int -> StackCard -> Bool) Float n
+  | Bounce (Int -> StackCard -> Bool) TimeModifier n
   | DiscardStack (Int -> StackCard -> Bool) n
   | DiscardHand WhichPlayer (Int -> Card -> Bool) n
-  | MoveStack (Int -> StackCard -> Maybe Int) Int n
-  | Mill WhichPlayer Float n
+  | MoveStack (Int -> StackCard -> Maybe Int) TimeModifier n
+  | Mill WhichPlayer TimeModifier n
   | Reveal WhichPlayer (Int -> Card -> Bool) n
   | GetDeck WhichPlayer (Deck -> n)
   | GetHand WhichPlayer (Hand -> n)

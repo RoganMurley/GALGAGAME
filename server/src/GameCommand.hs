@@ -1,7 +1,7 @@
 module GameCommand where
 
 import Card (Card (..))
-import CardAnim (CardAnim (..))
+import CardAnim (CardAnim (..), TimeModifier (..))
 import Control.Monad (join, when)
 import Control.Monad.Free (foldFree)
 import Control.Monad.Trans.Writer (Writer, runWriter, tell)
@@ -527,5 +527,5 @@ roundEndProgram :: Beta.Program ()
 roundEndProgram = do
   Beta.raw Alpha.swapTurn
   Beta.raw Alpha.resetPasses
-  Beta.draw PlayerA PlayerA 1
-  Beta.draw PlayerB PlayerB 1
+  Beta.draw PlayerA PlayerA (TimeModifierOutQuint 1)
+  Beta.draw PlayerB PlayerB (TimeModifierOutQuint 1)
