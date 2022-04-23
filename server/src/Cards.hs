@@ -67,7 +67,7 @@ tideSword =
     "Hurt for 3, return this card\nto hand"
     $ \w -> do
       hurt 3 (other w) Slash
-      bounce (\i _ -> i == 0) (TimeModifierOutQuint 0.6)
+      bounce (\i _ -> i == 0) (TimeModifierOutQuad 0.4)
 
 tideWand :: Card
 tideWand =
@@ -124,7 +124,7 @@ heavenGrail =
     "Heal for 2, return this card\nto hand"
     $ \w -> do
       heal 2 w
-      bounce (\i _ -> i == 0) (TimeModifierOutQuint 0.6)
+      bounce (\i _ -> i == 0) (TimeModifierOutQuad 0.4)
 
 heavenCoin :: Card
 heavenCoin =
