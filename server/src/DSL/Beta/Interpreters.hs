@@ -21,15 +21,16 @@ import Player (WhichPlayer(..))
 import ResolveData (ResolveData(..))
 import Safe (headMay)
 import StackCard (StackCard(..))
-import Transmutation
+import Transmutation (Transmutation(..), removeTransmuteToSelf)
 import Util (xor)
-import Wheel
+import Wheel (Wheel(..))
 
 import qualified DSL.Alpha as Alpha
 import qualified DSL.Anim as Anim
 import qualified DSL.Log as Log
 import qualified ModelDiff
 import qualified Stack
+import qualified Wheel
 
 import {-# SOURCE #-} Cards (strangeEnd)
 
@@ -146,7 +147,7 @@ playAnim w c i alpha = do
 transmuteAnim :: (Int -> StackCard -> Maybe Transmutation) -> Alpha.Program a -> AlphaAnimProgram a
 transmuteAnim f alpha = do
   stack <- toLeft Alpha.getStack
-  let transmutations = Stack.diasporaMap f stack
+  let transmutations = removeTransmuteToSelf <$> Stack.diasporaMap f stack
   let activity = any isJust transmutations
   when activity (toRight . liftF $ Anim.Transmute transmutations ())
   final <- toLeft alpha

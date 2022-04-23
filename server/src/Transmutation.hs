@@ -29,3 +29,10 @@ transmuteToCard targetCard stackCard =
     { stackcard_owner = stackcard_owner stackCard,
       stackcard_card = targetCard {card_statuses = card_statuses . stackcard_card $ stackCard}
     }
+
+removeTransmuteToSelf :: Maybe Transmutation -> Maybe Transmutation
+removeTransmuteToSelf (Just (Transmutation ca cb)) =
+  if ca == cb
+    then Nothing
+    else Just (Transmutation ca cb)
+removeTransmuteToSelf Nothing = Nothing
