@@ -358,24 +358,8 @@ updateTurnOnly msg state { audio } =
                                             Main.Send <|
                                                 "hover:"
                                                     ++ encodeHoverSelf (HoverHand { index = index, tick = 0, dmg = ( HoverDamage 0, HoverDamage 0 ) })
-
-                            audioMsg =
-                                if String.contains "SWORD" card.name then
-                                    playSound audio "sfx/holdSword.mp3"
-
-                                else if String.contains "WAND" card.name then
-                                    playSound audio "sfx/holdWand.mp3"
-
-                                else if String.contains "GRAIL" card.name then
-                                    playSound audio "sfx/holdGrail.mp3"
-
-                                else if String.contains "COIN" card.name then
-                                    playSound audio "sfx/holdCoin.mp3"
-
-                                else
-                                    Cmd.none
                         in
-                        ( newState, Cmd.batch [ newMsg, audioMsg ] )
+                        ( newState, newMsg )
 
                     UnholdCard ->
                         let

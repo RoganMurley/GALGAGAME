@@ -56,7 +56,9 @@ blazeCoin =
     Blaze
     Coin
     "Shuffle the order of all other\ncards on the wheel"
-    $ const confound
+    $ \_ -> do
+      confound
+      Beta.null
 
 -- Tide
 tideSword :: Card
