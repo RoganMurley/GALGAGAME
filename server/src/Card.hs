@@ -12,8 +12,8 @@ import GHC.Generics (Generic)
 import Player (WhichPlayer (..))
 
 instance Eq Card where
-  (Card a1 s1 _ _ _) == (Card a2 s2 _ _ _) =
-    a1 == a2 && s1 == s2
+  (Card a1 s1 _ _ st1) == (Card a2 s2 _ _ st2) =
+    a1 == a2 && s1 == s2 && st1 == st2
 
 instance Show Card where
   show card = cs $ cardName card
@@ -129,7 +129,7 @@ allAspects =
     Comet
   ]
 
-data Status = StatusEcho | StatusBlighted | StatusNegate
+data Status = StatusEcho | StatusBlighted
   deriving (Eq, Generic, NFData, Ord, Show)
 
 instance ToJSON Status where
@@ -142,7 +142,7 @@ addStatus :: Status -> Card -> Card
 addStatus status card = card {card_statuses = status : card_statuses card}
 
 removeStatus :: Status -> Card -> Card
-removeStatus status card = card {card_statuses = filter ((/=) status) (card_statuses card)}
+removeStatus status card = card {card_statuses = filter (status /=) (card_statuses card)}
 
 removeStatuses :: Card -> Card
 removeStatuses card = card {card_statuses = []}

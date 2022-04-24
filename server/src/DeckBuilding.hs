@@ -174,14 +174,14 @@ mainRunes =
     morphRune,
     seerRune,
     feverRune,
-    emptyRune
+    emptyRune,
+    bloodRune
   ]
 
 allRunes :: [Rune]
 allRunes =
   mainRunes
-    ++ [ bloodRune,
-         crownRune,
+    ++ [ crownRune,
          abyssRune,
          cometRune
        ]
@@ -274,20 +274,20 @@ morphRune =
     (Cards.morphSword, Cards.morphWand, Cards.morphGrail, Cards.morphCoin)
     (levelToExperience 8)
 
-cometRune :: Rune
-cometRune =
-  Rune
-    "COMET"
-    "cards/comet/coin.png"
-    (Cards.cometSword, Cards.cometWand, Cards.cometGrail, Cards.cometCoin)
-    (levelToExperience 0)
-
 bloodRune :: Rune
 bloodRune =
   Rune
     "BLOOD"
     "cards/blood/coin.png"
     (Cards.bloodSword, Cards.bloodWand, Cards.bloodGrail, Cards.bloodCoin)
+    (levelToExperience 9)
+
+cometRune :: Rune
+cometRune =
+  Rune
+    "COMET"
+    "cards/comet/coin.png"
+    (Cards.cometSword, Cards.cometWand, Cards.cometGrail, Cards.cometCoin)
     0
 
 crownRune :: Rune

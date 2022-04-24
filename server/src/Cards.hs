@@ -312,9 +312,9 @@ bloodGrail =
   newCard
     Blood
     Grail
-    "Pay 4 life to draw 3"
+    "Pay 8 life to draw 3"
     $ \w -> do
-      hurt 4 w Slash
+      hurt 8 w Slash
       draw w w (TimeModifierOutQuint 1)
       draw w w (TimeModifierOutQuint 1)
       draw w w (TimeModifierOutQuint 1)
@@ -324,12 +324,19 @@ bloodCoin =
   newCard
     Blood
     Coin
-    "Pay half your life to negate\ncard in next socket"
+    "Pay half your life to change card in\nnext socket to STRANGE REMAINS\n(Do nothing)"
     $ \w -> do
       l <- getLife w
       hurt (l `quot` 2) w Slash
-      raw $ Alpha.modStackHead $ cardMap (addStatus StatusNegate)
-      Beta.null
+      transmuteHead (transmuteToCard strangeRemains)
+
+strangeRemains :: Card
+strangeRemains =
+  newCard
+    Strange
+    (OtherSuit "REMAINS")
+    "Do nothing"
+    $ \_ -> return ()
 
 -- SEER
 seerSword :: Card
