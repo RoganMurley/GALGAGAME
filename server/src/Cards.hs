@@ -324,18 +324,18 @@ bloodCoin =
   newCard
     Blood
     Coin
-    "Pay half your life to change card in\nnext socket to STRANGE REMAINS\n(Do nothing)"
+    "Pay half your life to change card in\nnext socket to a card that\ndoes nothing"
     $ \w -> do
       l <- getLife w
       hurt (l `quot` 2) w Slash
-      transmuteHead (transmuteToCard strangeRemains)
+      transmuteHead (transmuteToCard strangeLiquid)
 
-strangeRemains :: Card
-strangeRemains =
+strangeLiquid :: Card
+strangeLiquid =
   newCard
     Strange
-    (OtherSuit "REMAINS")
-    "Do nothing"
+    (OtherSuit "LIQUID")
+    ""
     $ \_ -> return ()
 
 -- SEER
