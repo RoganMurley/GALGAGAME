@@ -80,7 +80,7 @@ tideWand =
     $ \w -> do
       len <- diasporaLength <$> getStack
       hurt (len * 3) (other w) Slash
-      draw w w (TimeModifierLinear 1)
+      draw w w (TimeModifierOutQuad 1)
 
 tideGrail :: Card
 tideGrail =
@@ -291,7 +291,7 @@ bloodSword =
     Sword
     "Pay 4 life to hurt for 12"
     $ \w -> do
-      hurt 4 w Slash
+      hurt 4 w Curse
       hurt 12 (other w) Slash
 
 bloodWand :: Card
@@ -299,23 +299,20 @@ bloodWand =
   newCard
     Blood
     Wand
-    "Both player's life becomes that\nof the weakest"
+    "Pay 8 life to hurt for 5 for each\nother card on the wheel"
     $ \w -> do
-      lifePa <- getLife w
-      lifePb <- getLife (other w)
-      if (lifePa > lifePb)
-        then (hurt (lifePa - lifePb) w Slash)
-        else (hurt (lifePb - lifePa) (other w) Slash)
+      hurt 8 w Curse
+      len <- diasporaLength <$> getStack
+      hurt (len * 5) (other w) Slash
 
 bloodGrail :: Card
 bloodGrail =
   newCard
     Blood
     Grail
-    "Pay 8 life to draw 3"
+    "Pay 4 life to draw 2"
     $ \w -> do
-      hurt 8 w Slash
-      draw w w (TimeModifierOutQuint 1)
+      hurt 4 w Curse
       draw w w (TimeModifierOutQuint 1)
       draw w w (TimeModifierOutQuint 1)
 
@@ -324,19 +321,12 @@ bloodCoin =
   newCard
     Blood
     Coin
-    "Pay half your life to change card in\nnext socket to a card that\ndoes nothing"
+    "Pay half your life to move card\nin next socket to your hand"
     $ \w -> do
       l <- getLife w
-      hurt (l `quot` 2) w Slash
-      transmuteHead (transmuteToCard strangeLiquid)
-
-strangeLiquid :: Card
-strangeLiquid =
-  newCard
-    Strange
-    (OtherSuit "LIQUID")
-    ""
-    $ \_ -> return ()
+      hurt (l `quot` 2) w Curse
+      transmuteHead (\(StackCard _ c) -> StackCard w c)
+      bounce (\i _ -> i == 1) (TimeModifierOutQuad 0.4)
 
 -- SEER
 seerSword :: Card
