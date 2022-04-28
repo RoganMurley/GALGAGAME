@@ -230,11 +230,14 @@ dissolvingView ctx { position, rotation, scale, card, owner } =
 transmutingView : Context -> StackCard -> StackCard -> Card.Entity a -> List WebGL.Entity
 transmutingView ctx stackCard finalStackCard entity =
     let
-        { position, rotation, scale } =
+        { position, rotation } =
             entity
 
         { perspective, camera3d, progress, textures } =
             ctx
+
+        scale =
+            Vector3.scale (1 + 0.1 * sin (progress * pi)) entity.scale
     in
     Texture.with4 textures stackCard.card.imgURL finalStackCard.card.imgURL "cardOutline.png" "cardBack.png" <|
         \texture finalTexture outlineTexture backTexture ->
