@@ -224,6 +224,10 @@ fragmentTransmute =
             } else {
                 gl_FragColor = vec4(finalColor, 1.) * texture2D(finalTexture, vcoord);
             }
+            float shouldWipe = step(abs(time - vcoord.x), .1);
+            if (shouldWipe == 1. && gl_FragColor.a > 0.) {
+                gl_FragColor = vec4(244. / 255., 241. / 255., 94. / 255., 1.);
+            }
         }
 
     |]
