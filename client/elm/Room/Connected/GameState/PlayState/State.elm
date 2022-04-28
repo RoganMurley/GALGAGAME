@@ -653,13 +653,17 @@ mouseDown { dimensions, mouse } assets _ mode players { x, y } state =
         endstateMsg =
             case state of
                 Ended _ ->
-                    message
-                        << Main.RoomMsg
-                        << Room.ConnectedMsg
-                        << Connected.GameStateMsg
-                        << GameState.PlayStateMsg
-                    <|
-                        PlayState.SkipAftermath
+                    if resolving game.res then
+                        Cmd.none
+
+                    else
+                        message
+                            << Main.RoomMsg
+                            << Room.ConnectedMsg
+                            << Connected.GameStateMsg
+                            << GameState.PlayStateMsg
+                        <|
+                            PlayState.SkipAftermath
 
                 _ ->
                     Cmd.none
