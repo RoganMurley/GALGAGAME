@@ -1,6 +1,6 @@
 module Animation.State exposing (animMaxTick, animShake, getPlayerBounceCards, progress)
 
-import Animation.Types exposing (Anim(..), Bounce(..), HandBounce, TimingModifier)
+import Animation.Types exposing (Anim(..), Bounce(..), HandBounce)
 import Ease
 import Stack.Types exposing (Stack, StackCard)
 import Wheel.State as Wheel

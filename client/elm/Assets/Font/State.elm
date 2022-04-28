@@ -7,7 +7,6 @@ import Font.Decoders as Font
 import Font.Messages exposing (Msg(..))
 import Font.Types exposing (Font, FontChar, FontPath, Model)
 import Http
-import Json.Decode as Json
 import Main.Messages as Main
 import Manifest.Types exposing (Manifest)
 import Ports exposing (log)

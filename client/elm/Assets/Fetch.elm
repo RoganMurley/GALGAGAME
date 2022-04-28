@@ -1,7 +1,6 @@
 module Assets.Fetch exposing (fetch, fetchErrorToString, resolver)
 
 import Assets.Types exposing (FetchError(..), Handler, Loader, Path)
-import Font.Decoders as Font
 import Http
 import Json.Decode as Json
 import Task
@@ -30,10 +29,10 @@ resolver decoder response =
         Http.NetworkError_ ->
             Err <| FetchHTTPError <| Http.NetworkError
 
-        Http.BadStatus_ metadata body ->
+        Http.BadStatus_ metadata _ ->
             Err <| FetchHTTPError <| Http.BadStatus metadata.statusCode
 
-        Http.GoodStatus_ metadata body ->
+        Http.GoodStatus_ _ body ->
             case Json.decodeString decoder body of
                 Err err ->
                     Err <| FetchDecodeError err
