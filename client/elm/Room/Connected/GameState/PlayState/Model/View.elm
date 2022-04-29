@@ -52,7 +52,7 @@ view { w, h } game chat assets =
     List.concat <|
         List.map ((|>) ctx)
             [ Background.radialView vfx
-            , tutorialArrowView game.tutorial
+            , tutorialArrowView game.tutorial focus hover
             , lifeOrbView entities.players
             , Wave.view
             , Stack.wheelBgView entities.wheel
@@ -611,10 +611,10 @@ tutorialView tutorial ctx =
             []
 
 
-tutorialArrowView : Tutorial.Model -> Context -> List WebGL.Entity
-tutorialArrowView tutorial ctx =
+tutorialArrowView : Tutorial.Model -> Focus -> HoverSelf -> Context -> List WebGL.Entity
+tutorialArrowView tutorial focus hover ctx =
     let
-        { camera3d, perspective, textures, radius } =
+        { camera3d, perspective, textures, radius, resolving } =
             ctx
 
         scale =
@@ -638,20 +638,29 @@ tutorialArrowView tutorial ctx =
                 ]
 
         Just Tutorial.PressGo ->
-            List.concat
-                [ Texture.with textures "arrow.png" <|
-                    \texture ->
-                        [ Render.Primitives.quad Render.Shaders.fragment
-                            { texture = texture
-                            , rotation = Quaternion.makeRotate <| Quaternion.zRotation (0.75 * pi)
-                            , scale = makeScale3 scale scale 1
-                            , color = Colour.white
-                            , pos = vec3 0 0 0
-                            , perspective = perspective
-                            , camera = camera3d
-                            }
-                        ]
-                ]
+            case ( focus, hover ) of
+                ( NoFocus, NoHover ) ->
+                    if resolving then
+                        []
+
+                    else
+                        List.concat
+                            [ Texture.with textures "arrow.png" <|
+                                \texture ->
+                                    [ Render.Primitives.quad Render.Shaders.fragment
+                                        { texture = texture
+                                        , rotation = Quaternion.makeRotate <| Quaternion.zRotation (0.75 * pi)
+                                        , scale = makeScale3 scale scale 1
+                                        , color = Colour.white
+                                        , pos = vec3 0 0 0
+                                        , perspective = perspective
+                                        , camera = camera3d
+                                        }
+                                    ]
+                            ]
+
+                _ ->
+                    []
 
         _ ->
             []
