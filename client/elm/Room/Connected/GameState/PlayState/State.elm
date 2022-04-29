@@ -689,7 +689,7 @@ mouseUp _ assets _ mode _ state =
                     Just <|
                         PlayingOnly <|
                             TurnOnly <|
-                                if Math.Vector3.getY pos > -0.15 then
+                                if Math.Vector3.getY pos > -0.2 then
                                     PlayCard card handIndex pos
 
                                 else
