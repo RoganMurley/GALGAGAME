@@ -32,6 +32,7 @@ import Render.Types as Render
 import Render.Uniforms exposing (uniColourMag)
 import Stack.Entities exposing (wheelZ)
 import Stack.View as Stack
+import Texture.State as Texture
 import TimeLimit
 import Tutorial
 import Util exposing (interpFloat)
@@ -51,6 +52,7 @@ view { w, h } game chat assets =
     List.concat <|
         List.map ((|>) ctx)
             [ Background.radialView vfx
+            , tutorialArrowView game.tutorial
             , lifeOrbView entities.players
             , Wave.view
             , Stack.wheelBgView entities.wheel
@@ -550,7 +552,7 @@ turnView focus passed tutorial timeLeft ctx =
 tutorialView : Tutorial.Model -> Context -> List WebGL.Entity
 tutorialView tutorial ctx =
     let
-        { tick, w, h, radius } =
+        { w, h, radius, tick } =
             ctx
 
         size =
@@ -603,6 +605,52 @@ tutorialView tutorial ctx =
                     , color = vec3 (244 / 255) (241 / 255) (94 / 255)
                     }
                     ctx
+                ]
+
+        _ ->
+            []
+
+
+tutorialArrowView : Tutorial.Model -> Context -> List WebGL.Entity
+tutorialArrowView tutorial ctx =
+    let
+        { camera3d, perspective, textures, radius } =
+            ctx
+
+        scale =
+            0.0007 * radius
+    in
+    case tutorial.step of
+        Just Tutorial.DragACard ->
+            List.concat
+                [ Texture.with textures "arrow.png" <|
+                    \texture ->
+                        [ Render.Primitives.quad Render.Shaders.fragment
+                            { texture = texture
+                            , rotation = Quaternion.makeRotate Quaternion.identity
+                            , scale = makeScale3 scale scale 1
+                            , color = Colour.white
+                            , pos = vec3 0 0 0
+                            , perspective = perspective
+                            , camera = camera3d
+                            }
+                        ]
+                ]
+
+        Just Tutorial.PressGo ->
+            List.concat
+                [ Texture.with textures "arrow.png" <|
+                    \texture ->
+                        [ Render.Primitives.quad Render.Shaders.fragment
+                            { texture = texture
+                            , rotation = Quaternion.makeRotate <| Quaternion.zRotation (0.75 * pi)
+                            , scale = makeScale3 scale scale 1
+                            , color = Colour.white
+                            , pos = vec3 0 0 0
+                            , perspective = perspective
+                            , camera = camera3d
+                            }
+                        ]
                 ]
 
         _ ->

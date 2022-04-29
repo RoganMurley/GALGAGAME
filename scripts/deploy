@@ -1,5 +1,5 @@
 #!/bin/bash
-
+echo $DIGITALOCEAN_ACCESS_TOKEN
 name=$1
 set -e
 
