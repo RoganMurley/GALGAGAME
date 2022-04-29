@@ -44,8 +44,8 @@ transmuteHead f = transmute transmuter
 confound :: Program ()
 confound = do
   initialGen <- getGen
-  let n = randomChoice initialGen [0 .. 3] :: Int
-  forM_ [0 .. n] $ const shuffleMovingEveryCard
+  let n = randomChoice initialGen [1 .. 4] :: Int
+  forM_ [1 .. n] $ const shuffleMovingEveryCard
   where
     -- Shuffle, guaranteeing that every card is moved.
     -- Not truly random, but good enough because we do it a random
