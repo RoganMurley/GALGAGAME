@@ -14,6 +14,7 @@ import qualified Data.Text as T
 import Data.Time.Clock (secondsToDiffTime)
 import Data.Time.Clock.POSIX (posixSecondsToUTCTime)
 import Feedback.Views (feedbackView)
+import Leaderboard.Views (leaderboardView)
 import League.Views (leagueCheckView, leagueView)
 import Network.HTTP.Types.Status
 import Network.Wai (Application)
@@ -35,6 +36,7 @@ app config = do
       post "/auth/feedback" $ feedbackView config
       post "/auth/league" $ leagueView config
       get "/auth/league" $ leagueCheckView config
+      get "/auth/leaderboard" $ leaderboardView config
 
 meView :: ConnectInfoConfig -> ActionM ()
 meView config = do

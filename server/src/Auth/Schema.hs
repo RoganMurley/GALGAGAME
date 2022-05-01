@@ -28,6 +28,10 @@ deriving instance Show User
 
 deriving instance Eq User
 
+deriving instance Show UserId
+
+deriving instance Eq UserId
+
 instance Beamable UserT
 
 instance Beamable (PrimaryKey UserT)

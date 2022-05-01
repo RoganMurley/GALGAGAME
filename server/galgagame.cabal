@@ -44,6 +44,8 @@ library
                      , GameState
                      , GodMode
                      , HandCard
+                     , Leaderboard.Apps
+                     , Leaderboard.Views
                      , League.Apps
                      , League.Schema
                      , League.Views
