@@ -299,11 +299,12 @@ bloodWand =
   newCard
     Blood
     Wand
-    "Pay 8 life to hurt for 5 for each\nother card on the wheel"
+    "Pay half your life to hurt for\nhalf your life"
     $ \w -> do
-      hurt 8 w Curse
-      len <- diasporaLength <$> getStack
-      hurt (len * 5) (other w) Slash
+      l <- getLife w
+      let dmg = l `quot` 2
+      hurt dmg w Curse
+      hurt dmg (other w) Slash
 
 bloodGrail :: Card
 bloodGrail =
