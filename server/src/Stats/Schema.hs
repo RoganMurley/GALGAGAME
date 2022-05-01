@@ -8,10 +8,10 @@
 
 module Stats.Schema where
 
-import Auth.Schema (UserId, UserT)
+import Auth.Schema (UserT)
 import Data.Int (Int64)
 import Data.Text (Text)
-import Database.Beam (Beamable, Columnar, Generic, Identity, LensFor(..), PrimaryKey, Table (..))
+import Database.Beam (Beamable, Columnar, Generic, Identity, PrimaryKey, Table (..))
 
 -- Stats
 data StatsT f = Stats
