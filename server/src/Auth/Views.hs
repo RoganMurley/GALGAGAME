@@ -29,14 +29,14 @@ app config = do
   liftIO $ updateGlobalLogger "scotty" $ setLevel DEBUG
   liftIO $
     scottyApp $ do
-      get "/auth/me" $ meView config
-      post "/auth/login" $ loginView config
-      post "/auth/logout" $ logoutView config
-      post "/auth/register" $ registerView config
-      post "/auth/feedback" $ feedbackView config
-      post "/auth/league" $ leagueView config
-      get "/auth/league" $ leagueCheckView config
-      get "/auth/leaderboard" $ leaderboardView config
+      get "/api/me" $ meView config
+      post "/api/login" $ loginView config
+      post "/api/logout" $ logoutView config
+      post "/api/register" $ registerView config
+      post "/api/feedback" $ feedbackView config
+      post "/api/league" $ leagueView config
+      get "/api/league" $ leagueCheckView config
+      get "/api/leaderboard" $ leaderboardView config
 
 meView :: ConnectInfoConfig -> ActionM ()
 meView config = do

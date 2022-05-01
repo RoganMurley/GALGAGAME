@@ -43,7 +43,7 @@ import Settings.Types as Settings
 import Signup.State as Signup
 import Url exposing (Url)
 import Url.Parser exposing (parse)
-import Util exposing (authLocation, message)
+import Util exposing (apiLocation, message)
 
 
 init : Flags -> Url -> Int -> Int -> ( Main.Model, Cmd Msg )
@@ -226,7 +226,7 @@ update msg ({ assets, room, notifications, settings, flags } as model) =
             ( model
             , Http.post
                 { url =
-                    authLocation flags ++ "/logout"
+                    apiLocation flags ++ "/logout"
                 , body =
                     Http.emptyBody
                 , expect = Http.expectWhatever LogoutCallback

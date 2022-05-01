@@ -12,7 +12,7 @@ import Room.Messages as Room
 import Signup.Decoders exposing (signupErrorDecoder)
 import Signup.Messages exposing (Msg(..))
 import Signup.Types exposing (Field(..), Model)
-import Util exposing (authLocation, message)
+import Util exposing (apiLocation, message)
 
 
 init : Maybe String -> Model
@@ -45,7 +45,7 @@ update model msg flags =
         Submit ->
             ( { model | submitting = True, error = "" }
             , Http.post
-                { url = authLocation flags ++ "/register"
+                { url = apiLocation flags ++ "/register"
                 , body =
                     Http.multipartBody
                         [ Http.stringPart "email" model.email.value

@@ -11,7 +11,7 @@ import Login.Types exposing (Field(..), Model)
 import Main.Messages as Main
 import Main.Types exposing (Flags)
 import Room.Messages as Room
-import Util exposing (authLocation, message)
+import Util exposing (apiLocation, message)
 
 
 init : Maybe String -> Model
@@ -36,7 +36,7 @@ update model msg flags =
         Submit ->
             ( { model | submitting = True, error = "" }
             , Http.post
-                { url = authLocation flags ++ "/login"
+                { url = apiLocation flags ++ "/login"
                 , body =
                     Http.multipartBody
                         [ Http.stringPart "username" model.username.value

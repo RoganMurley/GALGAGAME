@@ -1,4 +1,4 @@
-module Util exposing (authLocation, curry, foldlWithPrev, httpErrorToString, interp, interp2D, interpFloat, message, portProtocol, px, splitOnColon, to3d, uncurry, zip)
+module Util exposing (apiLocation, curry, foldlWithPrev, httpErrorToString, interp, interp2D, interpFloat, message, portProtocol, px, splitOnColon, to3d, uncurry, zip)
 
 import Http
 import Main.Types exposing (Flags)
@@ -33,9 +33,9 @@ baseLocation { hostname, httpPort } =
     "https://" ++ hostname ++ portProtocol httpPort
 
 
-authLocation : Flags -> String
-authLocation flags =
-    baseLocation flags ++ "/auth"
+apiLocation : Flags -> String
+apiLocation flags =
+    baseLocation flags ++ "/api"
 
 
 splitOnColon : String -> ( String, String )

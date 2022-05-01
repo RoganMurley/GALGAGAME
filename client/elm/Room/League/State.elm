@@ -12,7 +12,7 @@ import Login.Messages as Login
 import Main.Messages as Main
 import Main.Types exposing (Flags)
 import Room.Messages as Room
-import Util exposing (authLocation, message)
+import Util exposing (apiLocation, message)
 
 
 init : Model
@@ -29,7 +29,7 @@ update model msg flags =
             ( { model | submitState = Submitting, error = "" }
             , Http.post
                 { url =
-                    authLocation flags ++ "/league"
+                    apiLocation flags ++ "/league"
                 , body = Http.emptyBody
                 , expect =
                     Http.expectJson
@@ -55,7 +55,7 @@ update model msg flags =
         CheckState ->
             ( { model | submitState = Waiting, error = "" }
             , Http.get
-                { url = authLocation flags ++ "/league"
+                { url = apiLocation flags ++ "/league"
                 , expect =
                     Http.expectJson
                         (Main.RoomMsg << Room.LeagueMsg << CheckStateCallback)

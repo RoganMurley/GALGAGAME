@@ -11,7 +11,7 @@ import Keyboard exposing (Key(..))
 import Main.Messages as Main
 import Main.Types exposing (Flags)
 import Room.Messages as Room
-import Util exposing (authLocation)
+import Util exposing (apiLocation)
 
 
 init : Maybe String -> Model
@@ -32,7 +32,7 @@ update model msg flags =
         Submit ->
             ( { model | submitState = Submitting, error = "" }
             , Http.post
-                { url = authLocation flags ++ "/feedback"
+                { url = apiLocation flags ++ "/feedback"
                 , body =
                     Http.multipartBody
                         [ Http.stringPart "body" model.body.value
