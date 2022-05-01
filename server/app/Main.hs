@@ -493,3 +493,17 @@ disconnectComputers roomVar state = do
   let clients = Room.getClients room
   let computerClients = filter Client.isCpu clients
   forM_ computerClients (\client -> disconnect client roomVar state)
+
+runRepl :: App a -> IO a
+runRepl app = do
+  Log.setup
+  loggerChan <- newChan
+  let connectInfoConfig =
+        ConnectInfoConfig
+          { connectInfoConfig_redis = redisConnectInfo (Nothing, Nothing, Nothing),
+            connectInfoConfig_postgres = postgresConnectInfo (Nothing, Nothing, Nothing, Nothing, Nothing),
+            connectInfoConfig_loggerChan = loggerChan,
+            connectInfoConfig_apiKey = "fake-api-key",
+            connectInfoConfig_datadog = (Nothing, Nothing)
+          }
+  runApp connectInfoConfig app
