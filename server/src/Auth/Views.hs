@@ -15,6 +15,7 @@ import Data.Time.Clock (secondsToDiffTime)
 import Data.Time.Clock.POSIX (posixSecondsToUTCTime)
 import Feedback.Views (feedbackView)
 import Leaderboard.Views (leaderboardView)
+import Profile.Views (profileView)
 import League.Views (leagueCheckView, leagueView)
 import Network.HTTP.Types.Status
 import Network.Wai (Application)
@@ -37,6 +38,7 @@ app config = do
       post "/api/league" $ leagueView config
       get "/api/league" $ leagueCheckView config
       get "/api/leaderboard" $ leaderboardView config
+      get "/api/profile/:username" $ profileView config
 
 meView :: ConnectInfoConfig -> ActionM ()
 meView config = do
