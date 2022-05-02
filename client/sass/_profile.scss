@@ -25,4 +25,37 @@
     .username {
         text-transform: uppercase;
     }
+
+    .button {
+        margin: 5px;
+
+        color: $navy;
+
+        font-size: 14px;
+        font-weight: 900;
+        font-family: sans-serif;
+
+        background-color: rgba(0, 0, 0, 0);
+
+        border-color: $navy;
+        border-radius: 5px;
+        border-width: 3px;
+        border-style: solid;
+        width: 100%;
+        text-decoration: none;
+        text-align: center;
+
+        padding: 5px;
+
+        &:hover {
+            color: #f5f25e;
+            background-color: $navy;
+            cursor: pointer;
+            cursor: hand;
+        }
+    }
+
+    .replays {
+        margin-bottom: 16px;
+    }
 }

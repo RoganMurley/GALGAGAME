@@ -20,8 +20,9 @@ view { profile, error } =
                                 ++ String.fromFloat xp
                                 ++ " XP"
                         ]
+                    , div [ class "replays" ] <| List.map profileReplayView replays
+                    , a [ class "button", href "/leaderboard" ] [ text "VIEW LEADERBOARD" ]
                     ]
-                        ++ List.map profileReplayView replays
                 ]
 
             Nothing ->
