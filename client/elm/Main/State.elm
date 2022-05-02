@@ -176,7 +176,16 @@ update msg ({ assets, room, notifications, settings, flags } as model) =
         UrlRequest urlRequest ->
             case urlRequest of
                 Browser.Internal url ->
-                    update (UrlChange url) model
+                    let
+                        ( newModel, cmd ) =
+                            update (UrlChange url) model
+                    in
+                    ( newModel
+                    , Cmd.batch
+                        [ Browser.Navigation.pushUrl flags.key <| Url.toString url
+                        , cmd
+                        ]
+                    )
 
                 Browser.External url ->
                     ( model, Browser.Navigation.load url )
@@ -187,7 +196,10 @@ update msg ({ assets, room, notifications, settings, flags } as model) =
                     locationUpdate model location
             in
             ( newModel
-            , Cmd.batch [ cmd, analytics () ]
+            , Cmd.batch
+                [ cmd
+                , analytics ()
+                ]
             )
 
         SetScaling scaling ->
