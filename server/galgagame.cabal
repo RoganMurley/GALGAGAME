@@ -45,6 +45,7 @@ library
                      , GodMode
                      , HandCard
                      , Leaderboard.Apps
+                     , Leaderboard.Leaderboard
                      , Leaderboard.Views
                      , League.Apps
                      , League.Schema

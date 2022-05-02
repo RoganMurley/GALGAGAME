@@ -1,14 +1,12 @@
 module Leaderboard.Apps where
 
 import Config (App, runBeam)
-import Data.Text (Text)
 import Database.Beam (all_, desc_, limit_, orderBy_, runSelectReturningList, select)
+import Leaderboard.Leaderboard (Leaderboard(..), entryFromStats)
 import Schema (GalgagameDb (..), galgagameDb)
-import Auth.Schema (PrimaryKey(UserId))
-import Stats.Experience (Experience)
 import qualified Stats.Schema
 
-loadLeaderboard :: App [(Text, Experience)]
+loadLeaderboard :: App Leaderboard
 loadLeaderboard = do
   result <-
     runBeam $
@@ -18,4 +16,4 @@ loadLeaderboard = do
             orderBy_ (desc_ . Stats.Schema.statsExperience) $
               all_ $
                 stats galgagameDb
-  return $ (\row -> ((\(UserId username) -> username) . Stats.Schema.statsUser $ row, Stats.Schema.statsExperience row)) <$> result
+  return . Leaderboard $ entryFromStats <$> result
