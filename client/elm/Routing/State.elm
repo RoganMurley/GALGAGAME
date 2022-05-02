@@ -19,6 +19,7 @@ route =
         , map Signup signupRoute
         , map Feedback feedbackRoute
         , map League leagueRoute
+        , map Leaderboard leaderboardRoute
         ]
 
 
@@ -63,3 +64,8 @@ feedbackRoute =
 leagueRoute : Parser a a
 leagueRoute =
     s "league"
+
+
+leaderboardRoute : Parser a a
+leaderboardRoute =
+    s "leaderboard"

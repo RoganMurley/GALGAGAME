@@ -2,6 +2,7 @@ module Room.Types exposing (Model(..))
 
 import Connected.Types as Connected
 import Feedback.Types as Feedback
+import Leaderboard.Types as Leaderboard
 import League.Types as League
 import Lobby.Types as Lobby
 import Login.Types as Login
@@ -18,3 +19,4 @@ type Model
     | Signup Signup.Model
     | Feedback Feedback.Model
     | League League.Model
+    | Leaderboard Leaderboard.Model

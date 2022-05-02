@@ -9,6 +9,7 @@ type Route
     | Signup
     | Feedback
     | League
+    | Leaderboard
 
 
 type PlayRoute

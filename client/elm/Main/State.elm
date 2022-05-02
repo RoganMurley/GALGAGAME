@@ -16,6 +16,8 @@ import GameType
 import Http
 import Json.Decode as Json
 import Keyboard
+import Leaderboard.Messages as Leaderboard
+import Leaderboard.State as Leaderboard
 import League.Messages as League
 import League.State as League
 import Listener exposing (listen)
@@ -512,6 +514,15 @@ locationUpdate model url =
                         League.init
               }
             , message <| Main.RoomMsg <| Room.LeagueMsg <| League.CheckState
+            )
+
+        Routing.Leaderboard ->
+            ( { model
+                | room =
+                    Room.Leaderboard <|
+                        Leaderboard.init
+              }
+            , message <| Main.RoomMsg <| Room.LeaderboardMsg <| Leaderboard.Load
             )
 
 
