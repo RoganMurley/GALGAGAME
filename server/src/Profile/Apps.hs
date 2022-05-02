@@ -39,13 +39,13 @@ loadProfileReplays username = do
     runBeam $
       runSelectReturningList $
         select $
-          filter_ (\row ->
-            (getPlayerA row ==. val_ (Auth.Schema.UserId (Just username))) ||.
-            (getPlayerB row ==. val_ (Auth.Schema.UserId (Just username)))
-          ) $
             limit_ 10  $
               orderBy_ (desc_ . getCreated) $
-                columnSubset $ all_ $ replays galgagameDb
+                filter_ (\row ->
+                  (getPlayerA row ==. val_ (Auth.Schema.UserId (Just username))) ||.
+                  (getPlayerB row ==. val_ (Auth.Schema.UserId (Just username)))
+                ) $
+                  columnSubset $ all_ $ replays galgagameDb
   return $ profileReplayFromReplay <$> result
 
 -- Profile
