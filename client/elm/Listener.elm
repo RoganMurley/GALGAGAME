@@ -136,7 +136,7 @@ aftermathListen sounds playstate =
                 [ Volume 0.5 ]
     in
     case playstate of
-        Ended { aftermath, game } ->
+        Ended { aftermath } ->
             case Aftermath.active aftermath of
                 Just (Aftermath.StatChange { initialXp, finalXp } _) ->
                     if aftermath.tick == 0 && initialXp /= finalXp then

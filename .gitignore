@@ -11,3 +11,4 @@ prod.env
 .images/game-ringofworlds
 .images/game-galgagame
 .vscode/settings.json
+websocat_linux64
