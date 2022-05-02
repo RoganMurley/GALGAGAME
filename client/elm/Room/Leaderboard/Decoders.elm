@@ -15,7 +15,8 @@ decoder =
             , level = levelFromExperience xp
             }
     in
-    list <|
-        Json.map2 makeEntry
-            (field "name" string)
-            (field "xp" float)
+    field "leaderboard" <|
+        list <|
+            Json.map2 makeEntry
+                (field "name" string)
+                (field "xp" float)

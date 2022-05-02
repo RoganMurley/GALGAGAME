@@ -9,6 +9,7 @@
 @import "form";
 @import "feedback";
 @import "input-group";
+@import "leaderboard";
 @import "league";
 @import "login";
 @import "menu";
@@ -22,8 +23,7 @@
 html {
   height: 100%;
 
-  @media
-  (-webkit-min-device-pixel-ratio: 2),
+  @media (-webkit-min-device-pixel-ratio: 2),
   (min-resolution: 192dpi) {
     font-size: 13px !important;
   }
@@ -50,12 +50,15 @@ body {
 
   margin: 0;
 
-  -webkit-user-select: none; /* Chrome/Safari */
-  -moz-user-select: none; /* Firefox */
-  -ms-user-select: none; /* IE10+ */
+  -webkit-user-select: none;
+  /* Chrome/Safari */
+  -moz-user-select: none;
+  /* Firefox */
+  -ms-user-select: none;
+  /* IE10+ */
 
   // iOS hack
-  > div {
+  >div {
     width: 100%;
     height: 100%;
   }

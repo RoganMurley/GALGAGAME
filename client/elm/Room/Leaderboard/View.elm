@@ -8,21 +8,23 @@ import Leaderboard.Types exposing (Entry, Model)
 view : Model -> Html a
 view { entries } =
     let
-        entryView : Entry -> Html a
-        entryView { name, xp, level } =
+        entryView : Int -> Entry -> Html a
+        entryView i { name, xp, level } =
             tr []
-                [ td [] [ text name ]
-                , td [] [ text <| String.fromInt (floor xp) ++ "xp" ]
-                , td [] [ text <| "Level " ++ String.fromInt level ]
+                [ td [] [ text <| String.fromInt (i + 1) ]
+                , td [ class "username" ] [ text name ]
+                , td [] [ text <| String.fromInt level ]
+                , td [] [ text <| String.fromInt (floor xp) ]
                 ]
     in
-    div []
+    div [ class "leaderboard-box" ]
         [ table []
             (tr []
-                [ th [] [ text "Username" ]
-                , th [] [ text "Xp" ]
+                [ th [] [ text "Rank" ]
+                , th [] [ text "Username" ]
                 , th [] [ text "Level" ]
+                , th [] [ text "Experience" ]
                 ]
-                :: List.map entryView entries
+                :: List.indexedMap entryView entries
             )
         ]

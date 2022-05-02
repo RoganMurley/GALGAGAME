@@ -23,7 +23,7 @@ update model msg flags =
         Load ->
             ( model
             , Http.get
-                { url = apiLocation flags ++ "/league"
+                { url = apiLocation flags ++ "/leaderboard"
                 , expect =
                     Http.expectJson
                         (Main.RoomMsg << Room.LeaderboardMsg << LoadCallback)

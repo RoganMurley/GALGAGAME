@@ -1,0 +1,42 @@
+@import "theme";
+
+.leaderboard-box {
+    height: 100vh;
+    display: flex;
+    font-family: 'Futura', sans-serif;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    text-align: center;
+
+    table {
+        background-color: $yellow;
+        color: $navy;
+        padding: 12px;
+        border-radius: 25px;
+
+        width: 60vw;
+
+        @media (max-width: 1279px) {
+            width: 95vw;
+        }
+
+        td {
+            padding: 4px;
+            margin: 0;
+        }
+
+        tr:nth-child(even) {
+            background: $yellow;
+        }
+
+        tr:nth-child(odd) {
+            background: #e3e04f;
+        }
+    }
+
+    .username {
+        font-weight: 900;
+        text-transform: uppercase;
+    }
+}
