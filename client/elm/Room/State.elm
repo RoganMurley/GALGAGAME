@@ -15,6 +15,7 @@ import Main.Types exposing (Flags)
 import Menu.State as Menu
 import Mode exposing (Mode(..))
 import Mouse
+import Profile.State as Profile
 import Replay.State as Replay
 import Room.Messages exposing (Msg(..))
 import Room.Types exposing (Model(..))
@@ -134,6 +135,18 @@ update model msg assets flags =
                 _ ->
                     ( model, Cmd.none )
 
+        ProfileMsg profileMsg ->
+            case model of
+                Profile profile ->
+                    let
+                        ( newProfile, cmd ) =
+                            Profile.update profile profileMsg flags
+                    in
+                    ( Profile newProfile, cmd )
+
+                _ ->
+                    ( model, Cmd.none )
+
         StartGame mode messageRoomID ->
             case model of
                 Lobby lobby ->
@@ -204,6 +217,9 @@ receive flags assets str model =
         Leaderboard league ->
             ( Leaderboard league, Cmd.none )
 
+        Profile profile ->
+            ( Profile profile, Cmd.none )
+
 
 tick : Flags -> Model -> Float -> ( Model, Cmd Msg )
 tick flags room dt =
@@ -238,6 +254,9 @@ tick flags room dt =
 
         Leaderboard leaderboard ->
             ( Leaderboard leaderboard, Cmd.none )
+
+        Profile profile ->
+            ( Profile profile, Cmd.none )
 
 
 mouseUp : Flags -> Assets.Model -> Model -> Mouse.Position -> ( Model, Cmd Main.Msg )

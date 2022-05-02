@@ -8,6 +8,7 @@ import Lobby.Messages as Lobby
 import Login.Messages as Login
 import Menu.Messages as Menu
 import Mode exposing (Mode)
+import Profile.Messages as Profile
 import Replay.Messages as Replay
 import Signup.Messages as Signup
 
@@ -22,4 +23,5 @@ type Msg
     | FeedbackMsg Feedback.Msg
     | LeagueMsg League.Msg
     | LeaderboardMsg Leaderboard.Msg
+    | ProfileMsg Profile.Msg
     | StartGame Mode (Maybe String)

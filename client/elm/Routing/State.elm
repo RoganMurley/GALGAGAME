@@ -20,6 +20,7 @@ route =
         , map Feedback feedbackRoute
         , map League leagueRoute
         , map Leaderboard leaderboardRoute
+        , map Profile profileRoute
         ]
 
 
@@ -69,3 +70,8 @@ leagueRoute =
 leaderboardRoute : Parser a a
 leaderboardRoute =
     s "leaderboard"
+
+
+profileRoute : Parser (String -> a) a
+profileRoute =
+    s "profile" </> string

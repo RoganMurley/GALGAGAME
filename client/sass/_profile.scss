@@ -1,0 +1,28 @@
+@import "theme";
+
+.profile-box {
+    height: 100vh;
+    display: flex;
+    font-family: 'Futura', sans-serif;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    text-align: center;
+
+    .profile {
+        background-color: $yellow;
+        color: $navy;
+        padding: 12px;
+        border-radius: 25px;
+
+        width: 60vw;
+
+        @media (max-width: 1279px) {
+            width: 95vw;
+        }
+    }
+
+    .username {
+        text-transform: uppercase;
+    }
+}

@@ -17,6 +17,7 @@ import Main.Types exposing (Flags)
 import Menu.View as Menu
 import Notifications.Types as Notifications
 import Notifications.View as Notifications
+import Profile.View as Profile
 import Replay.View as Replay
 import Room.Messages exposing (Msg(..))
 import Room.Types exposing (Model(..))
@@ -62,6 +63,9 @@ view model settings notifications flags assets =
 
                 Leaderboard leaderboard ->
                     Leaderboard.view leaderboard
+
+                Profile profile ->
+                    Profile.view profile
     in
     div []
         [ Html.map Main.NotificationsMsg <| Notifications.view notifications

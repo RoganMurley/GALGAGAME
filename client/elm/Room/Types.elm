@@ -6,6 +6,7 @@ import Leaderboard.Types as Leaderboard
 import League.Types as League
 import Lobby.Types as Lobby
 import Login.Types as Login
+import Profile.Types as Profile
 import Replay.Types as Replay
 import Signup.Types as Signup
 
@@ -20,3 +21,4 @@ type Model
     | Feedback Feedback.Model
     | League League.Model
     | Leaderboard Leaderboard.Model
+    | Profile Profile.Model

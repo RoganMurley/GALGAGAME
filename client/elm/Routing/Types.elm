@@ -10,6 +10,7 @@ type Route
     | Feedback
     | League
     | Leaderboard
+    | Profile String
 
 
 type PlayRoute
