@@ -60,6 +60,7 @@ save replay = do
           insertExpressions
             [ Replay.Schema.Replay
                 default_
+                default_
                 (val_ $ cs $ encode replay)
                 (val_ $ Auth.Schema.UserId playerA)
                 (val_ $ Auth.Schema.UserId playerB)
