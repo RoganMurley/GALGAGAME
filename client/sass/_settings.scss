@@ -16,7 +16,8 @@
   width: 2rem;
   height: 2rem;
 
-  cursor: pointer; cursor: hand;
+  cursor: pointer;
+  cursor: hand;
 
   -webkit-transition: -webkit-transform 0.11s ease-in;
   transition: transform 0.11s ease-in;
@@ -44,8 +45,10 @@
 .settings-concede {
   color: #f00;
   border-color: #f00;
+
   &:hover {
-    background-color: #f00;;
+    background-color: #f00;
+    ;
   }
 }
 
@@ -54,10 +57,12 @@
 
   width: 350px;
 
-  cursor: move; /* fallback if grab cursor is unsupported */
+  cursor: move;
+  /* fallback if grab cursor is unsupported */
   cursor: grab;
   cursor: -moz-grab;
   cursor: -webkit-grab;
+
   &:active {
     cursor: grabbing;
     cursor: -moz-grabbing;
@@ -73,24 +78,24 @@
 }
 
 .settings-menu {
-    position: absolute;
-    background-color: #f5f25e;
-    color: $navy;
-    padding: 24px;
-    border-radius: 5px;
+  position: absolute;
+  background-color: #f5f25e;
+  color: $navy;
+  padding: 24px;
+  border-radius: 5px;
 
-    display: flex;
-    align-items: center;
-    flex-direction: column;
+  display: flex;
+  align-items: center;
+  flex-direction: column;
 
-    top: 0;
-    right: 0;
+  top: 0;
+  right: 0;
 
-    @media (max-width: 900px) {
-      width: calc(100% - 48px);
-      top: auto;
-      right: auto;
-    }
+  @media (max-width: 900px) {
+    width: calc(100% - 48px);
+    top: auto;
+    right: auto;
+  }
 }
 
 .settings-button {
@@ -112,7 +117,8 @@
   &:hover {
     color: #f5f25e;
     background-color: $navy;
-    cursor: pointer; cursor: hand;
+    cursor: pointer;
+    cursor: hand;
   }
 
   &:disabled {
@@ -120,5 +126,12 @@
     background-color: #7955484d;
     cursor: not-allowed;
   }
+}
 
+.profile-link {
+  border-width: 3px;
+  border-style: solid;
+  text-decoration: none;
+  text-align: center;
+  width: calc(100% - 6px);
 }

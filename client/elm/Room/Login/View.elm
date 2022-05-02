@@ -2,7 +2,7 @@ module Login.View exposing (loginoutView, view)
 
 import Form exposing (FormFieldClass, FormFieldType(..), ValidationResult, formInputView)
 import Html exposing (Attribute, Html, a, button, div, text)
-import Html.Attributes exposing (autofocus, class, disabled, href)
+import Html.Attributes exposing (autofocus, class, disabled, href, target)
 import Html.Events exposing (onClick)
 import Login.Messages exposing (Msg(..))
 import Login.State exposing (validator)
@@ -55,8 +55,15 @@ view model =
 loginoutView : Flags -> List (Html Main.Msg)
 loginoutView { username } =
     case username of
-        Just _ ->
-            [ button
+        Just u ->
+            [ a
+                [ class "settings-button"
+                , class "profile-link"
+                , target "_blank"
+                , href <| "/profile/" ++ u
+                ]
+                [ text "VIEW PROFILE" ]
+            , button
                 [ class "settings-button"
                 , onClick Main.Logout
                 ]
