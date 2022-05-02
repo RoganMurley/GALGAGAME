@@ -5,14 +5,16 @@ import Data.Aeson ((.=), ToJSON(..), object)
 import Database.Beam ((||.), (==.), all_, desc_, filter_, limit_, orderBy_, runSelectReturningList, runSelectReturningOne, select, val_)
 import Data.Int (Int64)
 import Data.Text (Text)
-import Auth.Schema (PrimaryKey(UserId))
+import Data.Time (LocalTime)
+import Auth.Schema (PrimaryKey(UserId), UserId)
 import Stats.Experience (Experience)
 import Schema (GalgagameDb (..), galgagameDb)
 import Stats.Schema (Stats, StatsT(..))
-import Replay.Schema (Replay, ReplayT(..))
+import Replay.Schema (ReplayT(..))
 
 loadProfile :: Text -> App (Maybe Profile)
 loadProfile username = do
+  -- TODO - parallelise these DB calls
   statsResult <-
     runBeam $
       runSelectReturningOne $
@@ -24,17 +26,26 @@ loadProfile username = do
 
 loadProfileReplays :: Text -> App [ProfileReplay]
 loadProfileReplays username = do
+  let columnSubset = fmap (\r ->
+                      ( replayId r
+                      , replayCreated r
+                      , replayPlayerA r
+                      , replayPlayerB r)
+                      )
+  let getCreated = \(_, x, _, _) -> x
+  let getPlayerA = \(_, _, x, _) -> x
+  let getPlayerB = \(_, _, _, x) -> x
   result <-
     runBeam $
       runSelectReturningList $
         select $
-          filter_ (\row -> 
-            (replayPlayerA row ==. val_ (Auth.Schema.UserId (Just username))) ||.
-            (replayPlayerB row ==. val_ (Auth.Schema.UserId (Just username)))
+          filter_ (\row ->
+            (getPlayerA row ==. val_ (Auth.Schema.UserId (Just username))) ||.
+            (getPlayerB row ==. val_ (Auth.Schema.UserId (Just username)))
           ) $
             limit_ 10  $
-              orderBy_ (desc_ . Replay.Schema.replayCreated) $
-                all_ $ replays galgagameDb
+              orderBy_ (desc_ . getCreated) $
+                columnSubset $ all_ $ replays galgagameDb
   return $ profileReplayFromReplay <$> result
 
 -- Profile
@@ -75,14 +86,15 @@ instance ToJSON ProfileReplay where
         "id" .= profileReplay_id
       ]
 
-profileReplayFromReplay :: Replay -> ProfileReplay
-profileReplayFromReplay Replay {replayPlayerA, replayPlayerB, replayId} =
+profileReplayFromReplay :: (Int64, LocalTime, Maybe UserId, Maybe UserId) -> ProfileReplay
+profileReplayFromReplay (replayId, _, replayPlayerA, replayPlayerB) =
   let
+    fromPk :: UserId -> Text
     fromPk (UserId username) = username
   in
     ProfileReplay
-      { profileReplay_pa = fromPk replayPlayerA
-      , profileReplay_pb = fromPk replayPlayerB
+      { profileReplay_pa = fromPk <$> replayPlayerA
+      , profileReplay_pb = fromPk <$> replayPlayerB
       , profileReplay_id = replayId
       }
 

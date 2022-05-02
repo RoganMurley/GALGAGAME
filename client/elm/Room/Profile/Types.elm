@@ -1,4 +1,4 @@
-module Profile.Types exposing (Model, Profile)
+module Profile.Types exposing (Model, Profile, ProfileReplay)
 
 
 type alias Model =
@@ -11,4 +11,12 @@ type alias Profile =
     { name : String
     , xp : Float
     , level : Int
+    , replays : List ProfileReplay
+    }
+
+
+type alias ProfileReplay =
+    { id : Int
+    , pa : Maybe String
+    , pb : Maybe String
     }

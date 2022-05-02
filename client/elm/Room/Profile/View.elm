@@ -1,16 +1,16 @@
 module Profile.View exposing (view)
 
-import Html exposing (Html, div, h1, h2, text)
-import Html.Attributes exposing (class)
-import Profile.Types exposing (Model)
+import Html exposing (Html, a, div, h1, h2, span, text)
+import Html.Attributes exposing (class, href)
+import Profile.Types exposing (Model, ProfileReplay)
 
 
 view : Model -> Html a
 view { profile, error } =
     div [ class "profile-box" ] <|
         case profile of
-            Just { name, level, xp } ->
-                [ div [ class "profile" ]
+            Just { name, level, xp, replays } ->
+                [ div [ class "profile" ] <|
                     [ h1 [ class "username" ] [ text name ]
                     , h2 []
                         [ text <|
@@ -21,7 +21,27 @@ view { profile, error } =
                                 ++ " XP"
                         ]
                     ]
+                        ++ List.map profileReplayView replays
                 ]
 
             Nothing ->
                 [ div [ class "error" ] [ text error ] ]
+
+
+profileReplayView : ProfileReplay -> Html a
+profileReplayView { pa, pb, id } =
+    let
+        usernamePa =
+            Maybe.withDefault "???" pa
+
+        usernamePb =
+            Maybe.withDefault "???" pb
+    in
+    div []
+        [ a
+            [ href <| "/replay/" ++ String.fromInt id ]
+            [ span [ class "username" ] [ text usernamePa ]
+            , text " vs "
+            , span [ class "username" ] [ text usernamePb ]
+            ]
+        ]
