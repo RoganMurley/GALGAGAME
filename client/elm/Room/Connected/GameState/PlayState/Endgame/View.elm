@@ -184,7 +184,7 @@ xpView stats tick maxTick ctx =
         donutEntities =
             [ Render.Primitives.donut
                 { rotation = makeRotate 0 (vec3 0 0 1)
-                , scale = makeScale3 -(0.51 * radius) (0.51 * radius) 1
+                , scale = makeScale3 -(0.62 * radius) (0.62 * radius) 1
                 , color = color
                 , pos = vec3 (w * 0.5) (h * 0.5) 0
                 , perspective = ortho
@@ -194,7 +194,7 @@ xpView stats tick maxTick ctx =
                 }
             , Render.Primitives.donut
                 { rotation = makeRotate 0 (vec3 0 0 1)
-                , scale = makeScale3 -(0.5 * radius) (0.5 * radius) 1
+                , scale = makeScale3 -(0.6 * radius) (0.6 * radius) 1
                 , color = vec3 (0 / 255) (0 / 255) (81 / 255)
                 , pos = vec3 (w * 0.5) (h * 0.5) 0
                 , perspective = ortho
@@ -204,7 +204,7 @@ xpView stats tick maxTick ctx =
                 }
             , Render.Primitives.donut
                 { rotation = makeRotate 0 (vec3 0 0 1)
-                , scale = makeScale3 -(0.5 * radius) (0.5 * radius) 1
+                , scale = makeScale3 -(0.6 * radius) (0.6 * radius) 1
                 , color = color
                 , pos = vec3 (w * 0.5) (h * 0.5) 0
                 , perspective = ortho
