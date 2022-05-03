@@ -614,7 +614,7 @@ tutorialView tutorial ctx =
 tutorialArrowView : Tutorial.Model -> Focus -> HoverSelf -> Context -> List WebGL.Entity
 tutorialArrowView tutorial focus hover ctx =
     let
-        { camera3d, perspective, model, textures, radius, resolving } =
+        { camera3d, perspective, textures, radius, resolving } =
             ctx
 
         scale =
@@ -640,7 +640,7 @@ tutorialArrowView tutorial focus hover ctx =
         Just Tutorial.PressGo ->
             case ( focus, hover ) of
                 ( NoFocus, NoHover ) ->
-                    if resolving && model.turn == PlayerA then
+                    if resolving then
                         []
 
                     else
