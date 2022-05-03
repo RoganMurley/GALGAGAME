@@ -24,6 +24,8 @@ import Text.Printf (printf)
 import Web.Cookie (parseCookiesText)
 import Prelude hiding (length)
 
+import qualified Data.Text as T
+
 type Token = Text
 
 type Username = Text
@@ -105,16 +107,29 @@ getCookies pending = Map.fromList cookiesList
     cookiesList :: [(Text, Text)]
     cookiesList = maybe [] parseCookiesText cookieString
 
-legalName :: ByteString -> Maybe Text
-legalName n
-  | length n < 3 = Just "Username too short"
-  | length n > 12 = Just "Username too long"
-  | otherwise = Nothing
+legalName :: ByteString -> Either Text ()
+legalName name
+  | length name < 3 = Left "Username too short"
+  | length name > 12 = Left "Username too long"
+  | invalidNameChars name = Left "Username contains invalid characters"
+  | otherwise = Right ()
 
-legalPassword :: ByteString -> Maybe Text
+invalidNameChars :: ByteString -> Bool
+invalidNameChars nameRaw =
+  let
+    name = cs nameRaw :: Text
+    sanitizedName = T.filter validChars name :: Text
+    validChars :: Char -> Bool
+    validChars char =
+      elem char $
+        ['a' .. 'z'] ++ ['A' .. 'Z'] ++ ['0' .. '9'] ++ ['_', '-', '.', '#']
+  in
+    T.length name /= T.length sanitizedName
+
+legalPassword :: ByteString -> Either Text ()
 legalPassword p
-  | length p < 8 = Just "Password too short"
-  | otherwise = Nothing
+  | length p < 8 = Left "Password too short"
+  | otherwise = Right ()
 
 cidCookieName :: Text
 cidCookieName = "cid"

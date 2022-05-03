@@ -103,11 +103,11 @@ registerView config =
 createUser :: ConnectInfoConfig -> ByteString -> ByteString -> ByteString -> Bool -> ActionM ()
 createUser config email username password contactable =
   case legalName username *> legalPassword password of
-    Just err -> do
+    Left err -> do
       liftIO $ debugM "auth" $ "Creating user " <> cs username <> "error: " <> cs err
       json $ object ["error" .= err]
       status badRequest400
-    Nothing -> do
+    Right () -> do
       cid <- getCookie cidCookieName
       p <- liftIO $ hashPasswordUsingPolicy slowerBcryptHashingPolicy password
       case p of
