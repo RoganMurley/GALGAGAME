@@ -19,6 +19,7 @@ type alias Model =
 
 type alias Character =
     { choice : Maybe RuneChoice
+    , pop : Float
     }
 
 

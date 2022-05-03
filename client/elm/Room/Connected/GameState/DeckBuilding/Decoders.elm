@@ -15,7 +15,12 @@ choosingCharacter =
 
 character : Decoder Character
 character =
-    Json.map Character
+    let
+        makeCharacter : Maybe RuneChoice -> Character
+        makeCharacter choice =
+            Character choice 0
+    in
+    Json.map makeCharacter
         (field "choice" <| maybe runeChoice)
 
 

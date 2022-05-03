@@ -165,6 +165,7 @@ update msg model ({ audio } as assets) players =
                                 , runeB = runeB
                                 , runeC = runeC
                                 }
+                        , pop = 0
                         }
               }
             , Cmd.none
@@ -261,16 +262,30 @@ tick ctx dt chat model =
 
                         Nothing ->
                             characterButtons ctx dt chat model
+                , character = Maybe.map (characterTick dt) model.character
             }
     in
     ( newModel, msg )
 
 
+maxPop : Float
+maxPop =
+    100
+
+
+characterTick : Float -> Character -> Character
+characterTick dt character =
+    { character | pop = min maxPop <| character.pop + dt }
+
+
 characterButtons : Context -> Float -> Chat.Model -> Model -> Buttons
 characterButtons { radius, w, h, mouse } dt chat { ready, buttons, character } =
     let
+        runePop =
+            Maybe.withDefault 0 <| Maybe.map .pop character
+
         runeScale =
-            radius * 0.3
+            radius * (0.3 + 0.03 * sin (pi * runePop / maxPop))
 
         triangleSide =
             radius * 0.27
