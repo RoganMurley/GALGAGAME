@@ -6,6 +6,7 @@ import PlayState.Types exposing (PlayState)
 type alias Model =
     { replay : Maybe Replay
     , started : Bool
+    , error : String
     }
 
 

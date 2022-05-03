@@ -9,7 +9,8 @@ import Font.View as Font
 import Game.State exposing (bareContextInit)
 import GameState.Types exposing (GameState(..))
 import GameState.View as GameState
-import Html exposing (Html, text)
+import Html exposing (Html, div, text)
+import Html.Attributes exposing (class)
 import Main.Messages as Main
 import Main.Types exposing (Flags)
 import Math.Vector3 exposing (vec3)
@@ -20,7 +21,7 @@ import WebGL
 
 
 htmlView : Model -> Html Main.Msg
-htmlView { replay } =
+htmlView { replay, error } =
     case replay of
         Just { usernamePa, usernamePb } ->
             playersView
@@ -37,7 +38,7 @@ htmlView { replay } =
                 }
 
         Nothing ->
-            text ""
+            div [ class "error" ] [ text error ]
 
 
 webglView : Model -> Flags -> Assets.Model -> List WebGL.Entity

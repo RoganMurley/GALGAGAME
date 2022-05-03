@@ -23,6 +23,7 @@ init : Replay.Model
 init =
     { replay = Nothing
     , started = False
+    , error = ""
     }
 
 
@@ -39,6 +40,12 @@ receive msg =
                     Room.ReplayMsg <|
                         SetReplay content
 
+        "replayNotFound" ->
+            message <|
+                Main.RoomMsg <|
+                    Room.ReplayMsg <|
+                        ReplayNotFound
+
         _ ->
             Cmd.none
 
@@ -52,7 +59,14 @@ update model msg =
                     ( { model | replay = Just replay }, Cmd.none )
 
                 Err err ->
-                    ( model, log <| Json.errorToString err )
+                    let
+                        errorStr =
+                            Json.errorToString err
+                    in
+                    ( { model | error = errorStr }, log errorStr )
+
+        ReplayNotFound ->
+            ( { model | error = "Replay not found" }, Cmd.none )
 
 
 getReplay : String -> Cmd Main.Msg
