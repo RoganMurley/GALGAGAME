@@ -185,8 +185,27 @@ usernameValidator =
 
             else
                 []
+
+        valid : Validator Model Field
+        valid { username } =
+            if not (Regex.contains validUsername username.value) then
+                [ { field = Username
+                  , error = Error "Invalid username"
+                  , touched = username.touched
+                  }
+                ]
+
+            else
+                []
+
+        validUsername : Regex
+        validUsername =
+            Maybe.withDefault Regex.never <|
+                Regex.fromStringWith
+                    { caseInsensitive = False, multiline = False }
+                    "^[a-zA-Z0-9\\-\\_\\.#]*$"
     in
-    batchValidators [ required, tooShort, tooLong ]
+    batchValidators [ required, tooShort, tooLong, valid ]
 
 
 passwordValidator : Validator Model Field
