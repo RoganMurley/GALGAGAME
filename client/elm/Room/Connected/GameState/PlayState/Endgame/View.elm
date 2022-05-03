@@ -334,49 +334,35 @@ buttonEntities renderParams buttons gameType dt mouseState =
             vec3 (244 / 255) (241 / 255) (94 / 255)
 
         buttonWidth =
-            0.12 * max w h
+            0.2 * max w h
 
         buttonHeight =
-            0.02 * max w h
+            0.04 * max w h
+
+        key =
+            case gameType of
+                QuickplayGame ->
+                    "continue"
+
+                _ ->
+                    "playAgain"
     in
     Buttons.fromList <|
         List.map (\f -> f dt mouseState buttons)
-            (case gameType of
-                QuickplayGame ->
-                    [ Buttons.entity
-                        "continue"
-                        { x = 0.5 * w
-                        , y = 0.5 * h
-                        , width = buttonWidth
-                        , height = buttonHeight
-                        , btn =
-                            TextButton
-                                { font = "Futura"
-                                , text = "Continue?"
-                                , textColor = textColor
-                                , bgColor = bgColor
-                                , options = [ Buttons.HoverText "Continue!" ]
-                                }
-                        , disabled = False
+            [ Buttons.entity
+                key
+                { x = 0.5 * w
+                , y = 0.5 * h
+                , width = buttonWidth
+                , height = buttonHeight
+                , btn =
+                    TextButton
+                        { font = "Futura"
+                        , text = "Play Again?"
+                        , textColor = textColor
+                        , bgColor = bgColor
+                        , options = [ Buttons.HoverText "Play Again!" ]
                         }
-                    ]
-
-                _ ->
-                    [ Buttons.entity
-                        "playAgain"
-                        { x = 0.5 * w
-                        , y = 0.5 * h
-                        , width = buttonWidth
-                        , height = buttonHeight
-                        , btn =
-                            TextButton
-                                { font = "Futura"
-                                , text = "Play Again?"
-                                , textColor = textColor
-                                , bgColor = bgColor
-                                , options = [ Buttons.HoverText "Play Again!" ]
-                                }
-                        , disabled = False
-                        }
-                    ]
-            )
+                , disabled = False
+                }
+            ]
