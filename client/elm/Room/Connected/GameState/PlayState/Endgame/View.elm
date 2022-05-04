@@ -321,11 +321,11 @@ unlockView ctx _ rune =
 buttonEntities : Render.Params -> Buttons -> GameType -> Float -> MouseState -> Buttons
 buttonEntities renderParams buttons gameType dt mouseState =
     let
-        w =
-            toFloat renderParams.w
+        ctx =
+            bareContextInit ( renderParams.w, renderParams.h ) Assets.init mouseState
 
-        h =
-            toFloat renderParams.h
+        { w, h, radius } =
+            ctx
 
         textColor =
             vec3 (0 / 255) (0 / 255) (80 / 255)
@@ -334,10 +334,10 @@ buttonEntities renderParams buttons gameType dt mouseState =
             vec3 (244 / 255) (241 / 255) (94 / 255)
 
         buttonWidth =
-            0.2 * max w h
+            0.5 * radius
 
         buttonHeight =
-            0.04 * max w h
+            0.1 * radius
 
         key =
             case gameType of
