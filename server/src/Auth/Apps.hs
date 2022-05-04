@@ -11,6 +11,7 @@ import Data.Map (Map)
 import qualified Data.Map as Map
 import Data.String.Conversions (cs)
 import Data.Text (Text)
+import qualified Data.Text as T
 import qualified Data.Text.Encoding as T
 import Database.Beam (all_, delete, filter_, insert, insertValues, runDelete, runInsert, runSelectReturningOne, select, val_, (==.))
 import Database.PostgreSQL.Simple.Errors (ConstraintViolation (..))
@@ -23,8 +24,6 @@ import System.Log.Logger (errorM)
 import Text.Printf (printf)
 import Web.Cookie (parseCookiesText)
 import Prelude hiding (length)
-
-import qualified Data.Text as T
 
 type Token = Text
 
@@ -116,15 +115,13 @@ legalName name
 
 invalidNameChars :: ByteString -> Bool
 invalidNameChars nameRaw =
-  let
-    name = cs nameRaw :: Text
-    sanitizedName = T.filter validChars name :: Text
-    validChars :: Char -> Bool
-    validChars char =
-      elem char $
-        ['a' .. 'z'] ++ ['A' .. 'Z'] ++ ['0' .. '9'] ++ ['_', '-', '.', '#']
-  in
-    T.length name /= T.length sanitizedName
+  let name = cs nameRaw :: Text
+      sanitizedName = T.filter validChars name :: Text
+      validChars :: Char -> Bool
+      validChars char =
+        elem char $
+          ['a' .. 'z'] ++ ['A' .. 'Z'] ++ ['0' .. '9'] ++ ['_', '-', '.']
+   in T.length name /= T.length sanitizedName
 
 legalPassword :: ByteString -> Either Text ()
 legalPassword p

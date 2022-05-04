@@ -190,7 +190,7 @@ usernameValidator =
         valid { username } =
             if not (Regex.contains validUsername username.value) then
                 [ { field = Username
-                  , error = Error "Invalid username"
+                  , error = Error "Illegal characters"
                   , touched = username.touched
                   }
                 ]
@@ -203,7 +203,7 @@ usernameValidator =
             Maybe.withDefault Regex.never <|
                 Regex.fromStringWith
                     { caseInsensitive = False, multiline = False }
-                    "^[a-zA-Z0-9\\-\\_\\.#]*$"
+                    "^[a-zA-Z0-9\\-\\_\\.]*$"
     in
     batchValidators [ required, tooShort, tooLong, valid ]
 
