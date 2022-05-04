@@ -1,4 +1,5 @@
 CREATE TABLE users (
+  id SERIAL,
   email TEXT,
   username TEXT PRIMARY KEY,
   passhash TEXT,
