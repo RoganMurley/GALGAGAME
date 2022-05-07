@@ -14,10 +14,10 @@ UPDATE replays SET player_b__id = users.id FROM users WHERE users.username = rep
 
 -- Drop unique constraints
 ALTER TABLE stats DROP CONSTRAINT stats_user__username_key;
-ALTER TABLE feedback DROP CONSTRAINT feedback_user__username_key;
+--ALTER TABLE feedback DROP CONSTRAINT feedback_user__username_key;
 ALTER TABLE league DROP CONSTRAINT league_user__username_key;
-ALTER TABLE replays DROP CONSTRAINT replay_player_a__id_key;
-ALTER TABLE replays DROP CONSTRAINT replay_player_b__id_key;
+--ALTER TABLE replays DROP CONSTRAINT replay_player_a__id_key;
+--ALTER TABLE replays DROP CONSTRAINT replay_player_b__id_key;
 
 -- Drop foreign keys.
 ALTER TABLE stats DROP CONSTRAINT stats_user__username_fkey;
