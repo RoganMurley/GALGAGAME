@@ -39,12 +39,14 @@ loadProfileReplays userId = do
               ( replayId r,
                 replayCreated r,
                 replayPlayerA r,
-                replayPlayerB r
+                replayPlayerB r,
+                replayDisplayUsernameA r,
+                replayDisplayUsernameB r
               )
           )
-  let getCreated = \(_, x, _, _) -> x
-  let getPlayerA = \(_, _, x, _) -> x
-  let getPlayerB = \(_, _, _, x) -> x
+  let getCreated = \(_, x, _, _, _, _) -> x
+  let getPlayerA = \(_, _, x, _, _, _) -> x
+  let getPlayerB = \(_, _, _, x, _, _) -> x
   result <-
     runBeam $
       runSelectReturningList $
@@ -85,29 +87,32 @@ profileFromStats username xp =
 
 -- ProfileReplay
 data ProfileReplay = ProfileReplay
-  { profileReplay_pa :: Maybe Int64,
-    profileReplay_pb :: Maybe Int64,
+  { profileReplay_pa :: Maybe Text,
+    profileReplay_pb :: Maybe Text,
     profileReplay_id :: Int64
   }
   deriving (Eq, Show)
 
 instance ToJSON ProfileReplay where
-  toJSON ProfileReplay {profileReplay_pa, profileReplay_pb, profileReplay_id} =
-    object
-      [ "pa" .= profileReplay_pa,
-        "pb" .= profileReplay_pb,
-        "id" .= profileReplay_id
-      ]
+  toJSON
+    ProfileReplay
+      { profileReplay_pa,
+        profileReplay_pb,
+        profileReplay_id
+      } =
+      object
+        [ "pa" .= profileReplay_pa,
+          "pb" .= profileReplay_pb,
+          "id" .= profileReplay_id
+        ]
 
-profileReplayFromReplay :: (Int64, LocalTime, Maybe UserId, Maybe UserId) -> ProfileReplay
-profileReplayFromReplay (replayId, _, replayPlayerA, replayPlayerB) =
-  let fromPk :: UserId -> Int64
-      fromPk (UserId uid) = uid
-   in ProfileReplay
-        { profileReplay_pa = fromPk <$> replayPlayerA,
-          profileReplay_pb = fromPk <$> replayPlayerB,
-          profileReplay_id = replayId
-        }
+profileReplayFromReplay :: (Int64, LocalTime, Maybe UserId, Maybe UserId, Maybe Text, Maybe Text) -> ProfileReplay
+profileReplayFromReplay (replayId, _, _, _, displayUsernamePa, displayUsernamePb) =
+  ProfileReplay
+    { profileReplay_id = replayId,
+      profileReplay_pa = displayUsernamePa,
+      profileReplay_pb = displayUsernamePb
+    }
 
 hydrateReplays :: [ProfileReplay] -> Profile -> Profile
 hydrateReplays replays profile =

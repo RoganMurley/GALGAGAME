@@ -26,7 +26,9 @@ CREATE TABLE replays (
   replay TEXT,
   player_a__id INTEGER REFERENCES users,
   player_b__id INTEGER REFERENCES users,
-  created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+  created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  display_username_a TEXT,
+  display_username_b TEXT
 );
 CREATE INDEX replays_player_a__id ON replays(player_a__id);
 CREATE INDEX replays_player_b__id ON replays(player_b__id);

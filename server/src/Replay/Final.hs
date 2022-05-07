@@ -35,8 +35,8 @@ instance Mirror Replay where
 finalise :: Active.Replay -> PlayState -> Replay
 finalise = Replay
 
-getUserId :: WhichPlayer -> Replay -> Maybe Int64
-getUserId which (Replay (Active.Replay _ _ (_, pa) (_, pb)) _) =
+getReplayUser :: WhichPlayer -> Replay -> Active.ReplayUser
+getReplayUser which (Replay (Active.Replay _ _ pa pb) _) =
   case which of
     PlayerA ->
       pa
@@ -45,8 +45,8 @@ getUserId which (Replay (Active.Replay _ _ (_, pa) (_, pb)) _) =
 
 save :: Replay -> App Int64
 save replay = do
-  let playerA = getUserId PlayerA replay
-  let playerB = getUserId PlayerB replay
+  let (displayUsernamePa, playerA) = getReplayUser PlayerA replay
+  let (displayUsernamePb, playerB) = getReplayUser PlayerB replay
   result <-
     runBeam $
       runInsertReturningList $
@@ -58,6 +58,8 @@ save replay = do
                 (val_ $ cs $ encode replay)
                 (val_ $ Auth.Schema.UserId playerA)
                 (val_ $ Auth.Schema.UserId playerB)
+                (val_ $ Just displayUsernamePa)
+                (val_ $ Just displayUsernamePb)
             ]
   return $ head $ Replay.Schema.replayId <$> result
 

@@ -19,7 +19,9 @@ data ReplayT f = Replay
     replayCreated :: Columnar f LocalTime,
     replayReplay :: Columnar f Text,
     replayPlayerA :: PrimaryKey UserT (Nullable f),
-    replayPlayerB :: PrimaryKey UserT (Nullable f)
+    replayPlayerB :: PrimaryKey UserT (Nullable f),
+    replayDisplayUsernameA :: Columnar (Nullable f) Text,
+    replayDisplayUsernameB :: Columnar (Nullable f) Text
   }
   deriving (Generic)
 
