@@ -13,7 +13,8 @@ import Data.String.Conversions (cs)
 import Data.Text (Text)
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as T
-import Database.Beam (all_, delete, filter_, insert, insertValues, runDelete, runInsert, runSelectReturningOne, select, val_, (==.))
+import Database.Beam (all_, default_, delete, filter_, insert, insertExpressions, insertValues, runDelete, runInsert, runSelectReturningOne, select, val_, (==.))
+import Database.Beam.Backend.SQL.BeamExtensions (runInsertReturningList)
 import Database.PostgreSQL.Simple.Errors (ConstraintViolation (..))
 import qualified Database.Redis as R
 import qualified Network.WebSockets as WS
@@ -58,11 +59,21 @@ deleteToken token = do
 
 saveUser :: ByteString -> ByteString -> ByteString -> Bool -> Maybe Text -> App Bool
 saveUser email username hashedPassword contactable mCid = do
-  let user = Schema.User (cs email) (cs username) (cs hashedPassword) contactable False
   xp <- Stats.loadByCid mCid
-  let stat = Schema.Stats (Schema.UserId $ cs username) xp
   result <- runBeamIntegrity $ do
-    userResult <- runInsert $ insert (users galgagameDb) $ insertValues [user]
+    [userResult] <-
+      runInsertReturningList $
+        insert (users galgagameDb) $
+          insertExpressions
+            [ Schema.User
+                default_
+                (val_ (cs email))
+                (val_ (cs username))
+                (val_ (cs hashedPassword))
+                (val_ contactable)
+                (val_ False)
+            ]
+    let stat = Schema.Stats (Schema.UserId $ userId userResult) xp
     _ <- runInsert $ insert (stats galgagameDb) $ insertValues [stat]
     case mCid of
       Just cid ->
@@ -73,7 +84,7 @@ saveUser email username hashedPassword contactable mCid = do
   case result of
     Right _ ->
       return True
-    Left (UniqueViolation "users_pkey") ->
+    Left (UniqueViolation "users_username_unique") ->
       return False
     Left err ->
       throw err

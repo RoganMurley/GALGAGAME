@@ -8,6 +8,7 @@ import Control.Concurrent.STM.TVar (TVar, writeTVar)
 import Control.Monad.IO.Class (liftIO)
 import Control.Monad.STM (STM)
 import Data.Aeson (ToJSON (..), object, (.=))
+import Data.Int (Int64)
 import qualified Data.Map as Map
 import Data.Text (Text)
 import Data.Traversable (forM)
@@ -47,6 +48,12 @@ getQueryUsername (User user xp) = Just . getUsername $ User user xp
 getQueryUsername (CpuUser _ _) = Nothing
 getQueryUsername (GuestUser _ _) = Nothing
 getQueryUsername ServiceUser = Nothing
+
+getUserId :: User -> Maybe Int64
+getUserId (User user _) = Just $ Auth.userId user
+getUserId (CpuUser _ _) = Nothing
+getUserId (GuestUser _ _) = Nothing
+getUserId ServiceUser = Nothing
 
 getExperience :: User -> STM Experience
 getExperience (User _ xp) = readTVar xp

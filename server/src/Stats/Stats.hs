@@ -3,6 +3,7 @@ module Stats.Stats where
 import qualified Auth.Schema
 import Config (App, runBeam)
 import Data.Aeson (ToJSON (..), object, (.=))
+import Data.Int (Int64)
 import Data.Text (Text)
 import Database.Beam (all_, current_, filter_, insertValues, primaryKey, runInsert, runSelectReturningOne, runUpdate, select, update, val_, (<-.), (==.))
 import qualified Database.Beam.Postgres.Full as Postgres
@@ -14,12 +15,12 @@ import {-# SOURCE #-} User (User (..))
 
 load :: User -> App Experience
 load (User user _) = do
-  let username = Auth.Schema.userUsername user
+  let userId = Auth.Schema.userId user :: Int64
   result <-
     runBeam $
       runSelectReturningOne $
         select $
-          filter_ (\row -> Stats.Schema.statsUser row ==. val_ (Auth.Schema.UserId username)) $
+          filter_ (\row -> Stats.Schema.statsUser row ==. val_ (Auth.Schema.UserId userId)) $
             all_ $ stats galgagameDb
   return $ maybe 0 Stats.Schema.statsExperience result
 load (GuestUser cid _) = loadByCid $ Just cid
@@ -38,13 +39,13 @@ loadByCid Nothing = return 0
 
 increase :: User -> Experience -> App ()
 increase (User user _) xp = do
-  let username = Auth.Schema.userUsername user
+  let userId = Auth.Schema.userId user :: Int64
   runBeam $
     runUpdate $
       update
         (stats galgagameDb)
         (\row -> Stats.Schema.statsExperience row <-. current_ (Stats.Schema.statsExperience row) + val_ xp)
-        (\row -> Stats.Schema.statsUser row ==. val_ (Auth.Schema.UserId username))
+        (\row -> Stats.Schema.statsUser row ==. val_ (Auth.Schema.UserId userId))
 increase (GuestUser cid _) xp = do
   let val = Stats.Schema.Statsguest cid xp
   runBeam $

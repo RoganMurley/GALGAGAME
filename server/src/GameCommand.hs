@@ -2,12 +2,13 @@ module GameCommand where
 
 import Card (Card (..))
 import CardAnim (CardAnim (..), TimeModifier (..))
-import Control.Monad (join, when)
+import Control.Monad (when)
 import Control.Monad.Free (foldFree)
 import Control.Monad.Trans.Writer (Writer, runWriter, tell)
 import qualified DSL.Alpha as Alpha
 import qualified DSL.Beta as Beta
 import Data.Foldable (toList)
+import Data.Int (Int64)
 import Data.Maybe (fromMaybe, isJust)
 import Data.String.Conversions (cs)
 import Data.Text (Text)
@@ -29,7 +30,7 @@ import Stack (Stack)
 import qualified Stack
 import StackCard (StackCard (..))
 import StatusEff (applyStatuses)
-import User (GameUser (..), User (..), gameusersToUsers, getQueryUsername, getUser, getUsername, isSuperuser)
+import User (GameUser (..), User (..), gameusersToUsers, getUser, getUserId, getUsername, isSuperuser)
 import Util (Err, Gen, deleteIndex, split, times, tupleMap2)
 import Wheel (Wheel (..))
 
@@ -193,11 +194,11 @@ nextSelectState deckModel turn startProgram gen (mUserPa, mUserPb) time timeLimi
             let model = initModel turn ca cb gen :: Model
                 displayUsernamePa = maybe "" getUsername mUserPa :: Text
                 displayUsernamePb = maybe "" getUsername mUserPb :: Text
-                queryUsernamePa = fromMaybe "" $ join $ getQueryUsername <$> mUserPa :: Text
-                queryUsernamePb = fromMaybe "" $ join $ getQueryUsername <$> mUserPb :: Text
-                usernamesPa = (displayUsernamePa, queryUsernamePa)
-                usernamesPb = (displayUsernamePb, queryUsernamePb)
-                replay = Active.init model usernamesPa usernamesPb :: Active.Replay
+                userIdPa = getUserId =<< mUserPa :: Maybe Int64
+                userIdPb = getUserId =<< mUserPb :: Maybe Int64
+                replayUserPa = (displayUsernamePa, userIdPa)
+                replayUserPb = (displayUsernamePb, userIdPb)
+                replay = Active.init model replayUserPa replayUserPb :: Active.Replay
                 (newModel, _, res) = Beta.execute model $ foldFree Beta.betaI startProgram
                 playstate :: PlayState
                 playstate =

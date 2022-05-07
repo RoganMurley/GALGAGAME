@@ -1,7 +1,7 @@
 CREATE TABLE users (
-  id SERIAL,
+  id SERIAL PRIMARY KEY,
   email TEXT,
-  username TEXT PRIMARY KEY,
+  username TEXT UNIQUE,
   passhash TEXT,
   superuser BOOLEAN NOT NULL DEFAULT FALSE,
   contactable BOOLEAN NOT NULL DEFAULT FALSE,
@@ -9,7 +9,7 @@ CREATE TABLE users (
 );
 
 CREATE TABLE stats (
-  user__username TEXT REFERENCES users UNIQUE,
+  user__id INTEGER REFERENCES users UNIQUE,
   experience BIGINT DEFAULT 0,
   created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
@@ -23,21 +23,21 @@ CREATE TABLE statsguest (
 CREATE TABLE replays (
   id SERIAL PRIMARY KEY,
   replay TEXT,
-  player_a__username TEXT REFERENCES users,
-  player_b__username TEXT REFERENCES users,
+  player_a__id INTEGER REFERENCES users,
+  player_b__id INTEGER REFERENCES users,
   created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE feedback (
   id SERIAL PRIMARY KEY,
   body TEXT,
-  user__username TEXT REFERENCES users,
+  user__id INTEGER REFERENCES users,
   created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE league (
   id SERIAL PRIMARY KEY,
-  user__username TEXT NOT NULL REFERENCES users,
+  user__id INTEGER NOT NULL REFERENCES users,
   created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   UNIQUE (user__username)
 );

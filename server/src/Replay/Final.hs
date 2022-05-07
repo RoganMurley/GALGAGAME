@@ -35,24 +35,18 @@ instance Mirror Replay where
 finalise :: Active.Replay -> PlayState -> Replay
 finalise = Replay
 
-getUsername :: WhichPlayer -> Replay -> Maybe Text
-getUsername which (Replay (Active.Replay _ _ (_, pa) (_, pb)) _) =
-  let textUsername =
-        case which of
-          PlayerA ->
-            pa
-          PlayerB ->
-            pb
-   in case textUsername of
-        "" ->
-          Nothing
-        s ->
-          Just s
+getUserId :: WhichPlayer -> Replay -> Maybe Int64
+getUserId which (Replay (Active.Replay _ _ (_, pa) (_, pb)) _) =
+  case which of
+    PlayerA ->
+      pa
+    PlayerB ->
+      pb
 
 save :: Replay -> App Int64
 save replay = do
-  let playerA = getUsername PlayerA replay
-  let playerB = getUsername PlayerB replay
+  let playerA = getUserId PlayerA replay
+  let playerB = getUserId PlayerB replay
   result <-
     runBeam $
       runInsertReturningList $

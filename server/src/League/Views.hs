@@ -1,35 +1,34 @@
 module League.Views where
 
-import Auth.Apps (checkAuth)
+import Auth.Schema (UserT (..))
 import Config (ConnectInfoConfig, runApp)
 import Control.Monad.IO.Class (liftIO)
-import Control.Monad.Trans.Class (lift)
 import Data.Aeson (object)
-import Data.String.Conversions (cs)
 import League.Apps (checkLeague, saveLeague)
 import Network.HTTP.Types.Status (created201, notFound404, ok200, unauthorized401)
+import qualified User
 import Web.Scotty (ActionM, json, status)
-import Web.Scotty.Cookie (getCookie)
+import Web.Scotty.Cookie (getCookies)
 
 leagueView :: ConnectInfoConfig -> ActionM ()
 leagueView config = do
-  token <- getCookie "login"
-  mUsername <- lift . runApp config $ checkAuth token
-  case mUsername of
-    Nothing -> status unauthorized401
-    Just username -> do
-      liftIO $ runApp config $ saveLeague (cs username)
+  cookies <- getCookies
+  user <- liftIO $ runApp config $ User.getUserFromCookies cookies ""
+  case user of
+    User.User u _ -> do
+      liftIO $ runApp config $ saveLeague (userId u)
       json $ object []
       status created201
+    _ ->
+      status unauthorized401
 
 leagueCheckView :: ConnectInfoConfig -> ActionM ()
 leagueCheckView config = do
-  token <- getCookie "login"
-  mUsername <- lift . runApp config $ checkAuth token
-  case mUsername of
-    Nothing -> status unauthorized401
-    Just username -> do
-      exists <- liftIO $ runApp config $ checkLeague (cs username)
+  cookies <- getCookies
+  user <- liftIO $ runApp config $ User.getUserFromCookies cookies ""
+  case user of
+    User.User u _ -> do
+      exists <- liftIO $ runApp config $ checkLeague (userId u)
       if exists
         then
           ( do
@@ -37,3 +36,5 @@ leagueCheckView config = do
               status ok200
           )
         else status notFound404
+    _ ->
+      status unauthorized401

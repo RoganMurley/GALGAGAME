@@ -1,21 +1,26 @@
 module Feedback.Views where
 
-import Auth.Apps (checkAuth)
+import Auth.Schema (UserT (..))
 import Config (ConnectInfoConfig, runApp)
 import Control.Monad.IO.Class (liftIO)
-import Control.Monad.Trans.Class (lift)
 import Data.Aeson (object)
-import Data.String.Conversions (cs)
 import Feedback.Apps (saveFeedback)
 import Network.HTTP.Types.Status (created201)
+import qualified User
 import Web.Scotty (ActionM, json, param, status)
-import Web.Scotty.Cookie (getCookie)
+import Web.Scotty.Cookie (getCookies)
 
 feedbackView :: ConnectInfoConfig -> ActionM ()
 feedbackView config = do
   body <- param "body"
-  token <- getCookie "login"
-  mUsername <- lift . runApp config $ checkAuth token
-  liftIO $ runApp config $ saveFeedback (cs <$> mUsername) body
+  cookies <- getCookies
+  user <- liftIO $ runApp config $ User.getUserFromCookies cookies ""
+  let mUid =
+        case user of
+          User.User u _ ->
+            Just $ userId u
+          _ ->
+            Nothing
+  liftIO $ runApp config $ saveFeedback mUid body
   json $ object []
   status created201

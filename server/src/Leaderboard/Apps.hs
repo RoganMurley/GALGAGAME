@@ -1,19 +1,18 @@
 module Leaderboard.Apps where
 
 import Config (App, runBeam)
-import Database.Beam (all_, desc_, limit_, orderBy_, runSelectReturningList, select)
-import Leaderboard.Leaderboard (Leaderboard(..), entryFromStats)
+import Database.Beam (all_, desc_, leftJoin_, limit_, orderBy_, references_, runSelectReturningList, select)
+import Leaderboard.Leaderboard (Leaderboard (..), entryFromStats)
 import Schema (GalgagameDb (..), galgagameDb)
-import qualified Stats.Schema
+import Stats.Schema (StatsT (..))
 
 loadLeaderboard :: App Leaderboard
 loadLeaderboard = do
   result <-
     runBeam $
       runSelectReturningList $
-        select $
-          limit_ 10  $
-            orderBy_ (desc_ . Stats.Schema.statsExperience) $
-              all_ $
-                stats galgagameDb
+        select $ do
+          stats <- limit_ 10 $ orderBy_ (desc_ . statsExperience) $ all_ $ stats galgagameDb
+          user <- leftJoin_ (all_ (users galgagameDb)) (\user -> statsUser stats `references_` user)
+          pure (stats, user)
   return . Leaderboard $ entryFromStats <$> result

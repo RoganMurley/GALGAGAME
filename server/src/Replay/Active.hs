@@ -4,6 +4,7 @@
 module Replay.Active where
 
 import Control.DeepSeq (NFData (..))
+import Data.Int (Int64)
 import Data.Text (Text)
 import GHC.Generics (Generic)
 import Life (initMaxLife)
@@ -17,16 +18,16 @@ import Util (mkGen)
 data Replay = Replay
   { replay_model :: Model,
     replay_res :: [ResolveData],
-    replay_pa :: Usernames,
-    replay_pb :: Usernames
+    replay_pa :: ReplayUser,
+    replay_pb :: ReplayUser
   }
   deriving (Eq, Generic, NFData, Show)
 
-type Usernames = (DisplayUsername, QueryUsername)
-
 type DisplayUsername = Text
 
-type QueryUsername = Text
+type UserId = Maybe Int64
+
+type ReplayUser = (DisplayUsername, UserId)
 
 instance Mirror Replay where
   mirror (Replay m ms pa pb) = Replay (mirror m) (mirror <$> ms) pb pa
@@ -34,7 +35,7 @@ instance Mirror Replay where
 add :: Replay -> [ResolveData] -> Replay
 add (Replay m xs pa pb) ys = Replay m (xs ++ ys) pa pb
 
-init :: Model -> Usernames -> Usernames -> Replay
+init :: Model -> ReplayUser -> ReplayUser -> Replay
 init model pa pb =
   Replay
     { replay_model = model,
@@ -48,6 +49,6 @@ null =
   Replay
     { replay_model = Model PlayerA Stack.init (PlayerModel [] [] 0 initMaxLife) (PlayerModel [] [] 0 initMaxLife) NoPass (mkGen 0) 0 False,
       replay_res = [],
-      replay_pa = ("", ""),
-      replay_pb = ("", "")
+      replay_pa = ("", Nothing),
+      replay_pb = ("", Nothing)
     }
