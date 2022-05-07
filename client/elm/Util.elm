@@ -1,4 +1,4 @@
-module Util exposing (apiLocation, curry, foldlWithPrev, httpErrorToString, interp, interp2D, interpFloat, message, portProtocol, px, splitOnColon, to3d, uncurry, zip)
+module Util exposing (apiLocation, curry, foldlWithPrev, httpErrorToString, interp, interp2D, interpFloat, maybeListToListMaybe, message, portProtocol, px, splitOnColon, to3d, uncurry, zip)
 
 import Http
 import Main.Types exposing (Flags)
@@ -128,3 +128,13 @@ foldlWithPrev =
                     state
     in
     f Nothing
+
+
+maybeListToListMaybe : Int -> Maybe (List a) -> List (Maybe a)
+maybeListToListMaybe len mList =
+    case mList of
+        Just list ->
+            List.map Just list
+
+        Nothing ->
+            List.repeat len Nothing

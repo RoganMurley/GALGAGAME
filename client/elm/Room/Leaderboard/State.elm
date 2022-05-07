@@ -13,7 +13,7 @@ import Util exposing (apiLocation)
 init : Model
 init =
     { error = ""
-    , entries = []
+    , entries = Nothing
     }
 
 
@@ -32,7 +32,7 @@ update model msg flags =
             )
 
         LoadCallback (Ok entries) ->
-            ( { model | entries = entries }, Cmd.none )
+            ( { model | entries = Just entries }, Cmd.none )
 
         LoadCallback (Err err) ->
             let

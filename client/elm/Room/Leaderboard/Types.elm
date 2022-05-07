@@ -2,7 +2,7 @@ module Leaderboard.Types exposing (Entry, Model)
 
 
 type alias Model =
-    { entries : List Entry
+    { entries : Maybe (List Entry)
     , error : String
     }
 
