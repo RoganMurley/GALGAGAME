@@ -61,10 +61,24 @@
     }
 
     .replay {
-        height: 16px;
+        height: 20px;
+        width: 100%;
     }
 
     .replays {
-        margin-bottom: 16px;
+        margin: auto;
+        width: 80%;
+
+        tr:nth-child(even) {
+            background: $yellow;
+        }
+
+        tr:nth-child(odd) {
+            background: #e3e04f;
+        }
+    }
+
+    .view-leaderboard-spacer {
+        height: 12px;
     }
 }

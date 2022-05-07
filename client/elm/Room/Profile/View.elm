@@ -1,6 +1,6 @@
 module Profile.View exposing (view)
 
-import Html exposing (Html, a, div, h1, h2, span, text)
+import Html exposing (Html, a, div, h1, h2, span, table, td, text, tr)
 import Html.Attributes exposing (class, href)
 import Profile.Types exposing (Model, ProfileReplay)
 import Util exposing (maybeListToListMaybe)
@@ -35,7 +35,8 @@ view model =
                 [ div [ class "profile" ] <|
                     [ h1 [ class "username" ] [ nameHtml ]
                     , h2 [ class "level" ] [ levelHtml ]
-                    , div [ class "replays" ] replaysHtmlList
+                    , table [ class "replays" ] replaysHtmlList
+                    , div [ class "view-leaderboard-spacer" ] []
                     , a [ class "button", href "/leaderboard" ] [ text "VIEW LEADERBOARD" ]
                     ]
                 ]
@@ -55,14 +56,16 @@ profileReplayView mReplay =
                 usernamePb =
                     Maybe.withDefault "???" pb
             in
-            div [ class "replay" ]
-                [ a
-                    [ href <| "/replay/" ++ String.fromInt id ]
-                    [ span [ class "username" ] [ text usernamePa ]
-                    , text " vs "
-                    , span [ class "username" ] [ text usernamePb ]
+            tr []
+                [ td [ class "replay" ]
+                    [ a
+                        [ href <| "/replay/" ++ String.fromInt id ]
+                        [ span [ class "username" ] [ text usernamePa ]
+                        , text " vs "
+                        , span [ class "username" ] [ text usernamePb ]
+                        ]
                     ]
                 ]
 
         Nothing ->
-            div [ class "replay" ] []
+            tr [] [ td [ class "replay" ] [] ]
