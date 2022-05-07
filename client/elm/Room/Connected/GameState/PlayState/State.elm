@@ -115,6 +115,19 @@ update msg state mode assets =
                 _ ->
                     ( state, Cmd.none )
 
+        SetLeaderboard leaderboard ->
+            case state of
+                Ended ended ->
+                    ( Ended
+                        { ended
+                            | aftermath = Aftermath.fromLeaderboard ended.aftermath leaderboard
+                        }
+                    , Cmd.none
+                    )
+
+                _ ->
+                    ( state, Cmd.none )
+
         ServerTimeLeft timeLeft ->
             ( map (\game -> { game | timeLeft = Just timeLeft }) state, Cmd.none )
 

@@ -16,6 +16,7 @@ import Data.Text (Text)
 import Data.Time.Clock (UTCTime, getCurrentTime)
 import GameCommand (GameCommand (..), update)
 import GameState (GameState (..), PlayState)
+import qualified Leaderboard.Apps as Leaderboard
 import qualified Log
 import Mirror (mirror)
 import Model (Model)
@@ -138,12 +139,14 @@ resolveRoomClients res initial final exclude room = do
 handleExperience :: WhichPlayer -> Maybe Experience -> Maybe WhichPlayer -> Room -> App ()
 handleExperience which forceXp winner room = do
   -- Change this to be a transaction!
-  -- Save usernames all game.
   let scenario = Room.getScenario room
   let mUser = Client.user <$> Room.getPlayerClient which room :: Maybe User
   case mUser of
     Just user -> do
-      let xpDeltaRaw = if Just which == winner then scenario_xpWin scenario else scenario_xpLoss scenario
+      let xpDeltaRaw =
+            if Just which == winner
+              then scenario_xpWin scenario
+              else scenario_xpLoss scenario
       let xpDelta = fromMaybe xpDeltaRaw forceXp
       initialXp <- Stats.load user
       let statChange = Stats.statChange initialXp xpDelta
@@ -152,6 +155,8 @@ handleExperience which forceXp winner room = do
       Room.sendToPlayer which (("xp:" <>) . cs . encode $ statChange) room
       liftIO . atomically $ setExperience (initialXp + xpDelta) user
       syncRoomMetadata room
+      leaderboard <- Leaderboard.load
+      Room.sendToPlayer which (("leaderboard:" <>) . cs . encode $ leaderboard) room
     Nothing ->
       return ()
 

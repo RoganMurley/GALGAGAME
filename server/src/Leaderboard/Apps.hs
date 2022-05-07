@@ -6,8 +6,8 @@ import Leaderboard.Leaderboard (Leaderboard (..), entryFromStats)
 import Schema (GalgagameDb (..), galgagameDb)
 import Stats.Schema (StatsT (..))
 
-loadLeaderboard :: App Leaderboard
-loadLeaderboard = do
+load :: App Leaderboard
+load = do
   result <-
     runBeam $
       runSelectReturningList $

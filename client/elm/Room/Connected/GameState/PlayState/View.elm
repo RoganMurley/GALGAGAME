@@ -1,9 +1,11 @@
-module PlayState.View exposing (webglView)
+module PlayState.View exposing (htmlView, webglView)
 
 import Animation.Types exposing (Anim(..))
 import Assets.Types as Assets
 import Chat.Types as Chat
 import Endgame.View as Endgame
+import Html exposing (Html, text)
+import Main.Types exposing (Flags)
 import Model.View as Model
 import PlayState.Types exposing (PlayState(..))
 import Render.Types as Render
@@ -22,3 +24,13 @@ webglView playState chat params assets =
                 [ Model.view params game chat assets
                 , Endgame.view params assets winner (resolving game.res) aftermath buttons
                 ]
+
+
+htmlView : PlayState -> Flags -> Html a
+htmlView playstate flags =
+    case playstate of
+        Playing _ ->
+            text ""
+
+        Ended { game, aftermath } ->
+            Endgame.htmlView aftermath flags (resolving game.res)

@@ -25,8 +25,8 @@ htmlView state roomID flags =
         Selecting _ ->
             text ""
 
-        Started _ ->
-            text ""
+        Started started ->
+            PlayState.htmlView started flags
 
 
 webglView : GameState -> Chat.Model -> Render.Params -> Assets.Model -> List WebGL.Entity

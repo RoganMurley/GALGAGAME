@@ -15,6 +15,7 @@ import GameType exposing (GameType)
 import Hover exposing (decodeHoverOther)
 import Json.Decode as Json
 import Keyboard exposing (Key(..))
+import Leaderboard.Decoders as Leaderboard
 import Main.Messages as Main
 import Main.Types exposing (Flags)
 import Math.Vector2 exposing (vec2)
@@ -261,6 +262,27 @@ receive flags assets model msg =
                             GameState.update
                                 (GameState.PlayStateMsg <|
                                     PlayState.StatChange statChange
+                                )
+                                model.game
+                                flags
+                                mode
+                                gameType
+                                players
+                                assets
+                    in
+                    ( { model | game = newGame }, cmd )
+
+                Err err ->
+                    ( model, log <| Json.errorToString err )
+
+        "leaderboard" ->
+            case Json.decodeString Leaderboard.decoder content of
+                Ok leaderboard ->
+                    let
+                        ( newGame, cmd ) =
+                            GameState.update
+                                (GameState.PlayStateMsg <|
+                                    PlayState.SetLeaderboard leaderboard
                                 )
                                 model.game
                                 flags

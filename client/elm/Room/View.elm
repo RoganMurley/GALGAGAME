@@ -62,7 +62,7 @@ view model settings notifications flags assets =
                         League.view league
 
                 Leaderboard leaderboard ->
-                    Leaderboard.view leaderboard
+                    Leaderboard.view leaderboard True
 
                 Profile profile ->
                     Profile.view profile

@@ -3,6 +3,7 @@ module PlayState.Messages exposing (Msg(..), PlayingOnly(..), TurnOnly(..))
 import Card.Types exposing (Card)
 import Collision
 import Hover exposing (HoverDamage, HoverOther, HoverSelf)
+import Leaderboard.Types exposing (Leaderboard)
 import Math.Vector3 exposing (Vec3)
 import Stats exposing (StatChange)
 
@@ -15,6 +16,7 @@ type Msg
     | GotoReplay String
     | GotoComputerGame
     | StatChange StatChange
+    | SetLeaderboard Leaderboard
     | ServerTimeLeft Float
     | SkipAftermath
     | NoOp

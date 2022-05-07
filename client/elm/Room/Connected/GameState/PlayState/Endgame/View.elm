@@ -1,4 +1,4 @@
-module Endgame.View exposing (animView, buttonEntities, view)
+module Endgame.View exposing (animView, buttonEntities, htmlView, view)
 
 import Aftermath.State as Aftermath
 import Aftermath.Types as Aftermath exposing (Aftermath(..))
@@ -14,6 +14,9 @@ import Font.View as Font
 import Game.State exposing (bareContextInit)
 import Game.Types exposing (Context)
 import GameType exposing (GameType(..))
+import Html exposing (Html, text)
+import Leaderboard.View as Leaderboard
+import Main.Types exposing (Flags)
 import Math.Matrix4 exposing (makeRotate, makeScale3)
 import Math.Vector3 exposing (vec3)
 import Mouse exposing (MouseState(..))
@@ -145,6 +148,9 @@ view { w, h } assets winner resolving aftermath buttons =
                     [ backgroundView { ctx | anim = GameEnd winner, progress = 1 }
                     , unlockView ctx aftermath.tick rune
                     ]
+
+                Just (Aftermath.Leaderboard _) ->
+                    [ backgroundView { ctx | anim = GameEnd winner, progress = 1 } ]
 
                 Nothing ->
                     [ backgroundView { ctx | anim = GameEnd winner, progress = 1 }
@@ -366,3 +372,17 @@ buttonEntities renderParams buttons gameType dt mouseState =
                 , disabled = False
                 }
             ]
+
+
+htmlView : Aftermath.Model -> Flags -> Bool -> Html a
+htmlView aftermath flags resolving =
+    if resolving then
+        text ""
+
+    else
+        case Aftermath.active aftermath of
+            Just (Aftermath.Leaderboard leaderboard) ->
+                Leaderboard.view { entries = Just leaderboard, error = "" } False
+
+            _ ->
+                text ""

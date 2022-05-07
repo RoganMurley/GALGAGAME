@@ -6,12 +6,19 @@ import Leaderboard.Types exposing (Entry, Model)
 import Util exposing (maybeListToListMaybe)
 
 
-view : Model -> Html a
-view { entries } =
+view : Model -> Bool -> Html a
+view { entries } detailed =
     let
         entryView : Int -> Maybe Entry -> Html a
         entryView i mEntry =
             let
+                usernameTag =
+                    if detailed then
+                        a
+
+                    else
+                        div
+
                 { usernameHtml, levelHtml, xpHtml } =
                     case mEntry of
                         Just { name, xp, level } ->
@@ -19,20 +26,20 @@ view { entries } =
                                 profileUrl =
                                     "/profile/" ++ name
                             in
-                            { usernameHtml = a [ class "username", href profileUrl ] [ text name ]
+                            { usernameHtml = usernameTag [ class "username", href profileUrl ] [ text name ]
                             , levelHtml = text <| String.fromInt level
                             , xpHtml = text <| String.fromInt (floor xp)
                             }
 
                         Nothing ->
-                            { usernameHtml = a [ class "username" ] []
+                            { usernameHtml = usernameTag [ class "username" ] []
                             , levelHtml = text ""
                             , xpHtml = text ""
                             }
             in
             tr []
                 [ td [ class "leaderboard-rank" ] [ text <| String.fromInt (i + 1) ]
-                , td [] [ usernameHtml ]
+                , td [ class "leaderboard-name" ] [ usernameHtml ]
                 , td [] [ levelHtml ]
                 , td [] [ xpHtml ]
                 ]
@@ -41,9 +48,9 @@ view { entries } =
         [ table []
             (tr []
                 [ th [ class "leaderboard-rank" ] [ text "Rank" ]
-                , th [] [ text "Username" ]
+                , th [ class "leaderboard-name" ] [ text "Username" ]
                 , th [] [ text "Level" ]
-                , th [] [ text "Experience" ]
+                , th [] [ text "XP" ]
                 ]
                 :: List.indexedMap entryView (maybeListToListMaybe 10 entries)
             )

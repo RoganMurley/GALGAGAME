@@ -1,10 +1,14 @@
-module Leaderboard.Types exposing (Entry, Model)
+module Leaderboard.Types exposing (Entry, Leaderboard, Model)
 
 
 type alias Model =
-    { entries : Maybe (List Entry)
+    { entries : Maybe Leaderboard
     , error : String
     }
+
+
+type alias Leaderboard =
+    List Entry
 
 
 type alias Entry =

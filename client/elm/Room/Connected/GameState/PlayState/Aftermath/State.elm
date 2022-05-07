@@ -1,6 +1,7 @@
-module Aftermath.State exposing (active, aftermathing, fromStatChange, init, maxTick, saveUnlocks, skip, tick)
+module Aftermath.State exposing (active, aftermathing, fromLeaderboard, fromStatChange, init, maxTick, saveUnlocks, skip, tick)
 
 import Aftermath.Types as Aftermath exposing (Aftermath(..), Model)
+import Leaderboard.Types exposing (Leaderboard)
 import Main.Messages as Main
 import Ports exposing (saveUnlock)
 import Stats exposing (StatChange)
@@ -31,6 +32,9 @@ maxTick aftermath =
 
         Aftermath.StatChange _ t ->
             t
+
+        Aftermath.Leaderboard _ ->
+            4000
 
         Aftermath.Unlock _ ->
             999999999999999999
@@ -86,6 +90,13 @@ fromStatChange stats =
         , Aftermath.StatChange finalStats 1500
         ]
             ++ List.map Aftermath.Unlock stats.unlocks
+    }
+
+
+fromLeaderboard : Model -> Leaderboard -> Model
+fromLeaderboard model leaderboard =
+    { tick = 0
+    , aftermath = model.aftermath ++ [ Aftermath.Leaderboard leaderboard ]
     }
 
 
