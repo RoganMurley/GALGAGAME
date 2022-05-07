@@ -13,6 +13,7 @@ CREATE TABLE stats (
   experience BIGINT DEFAULT 0,
   created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
+CREATE INDEX stats_user__id ON stats(user__id);
 
 CREATE TABLE statsguest (
   cid TEXT PRIMARY KEY,
@@ -27,6 +28,9 @@ CREATE TABLE replays (
   player_b__id INTEGER REFERENCES users,
   created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
+CREATE INDEX replays_player_a__id ON replays(player_a__id);
+CREATE INDEX replays_player_b__id ON replays(player_b__id);
+CREATE INDEX replays_created ON replays(created DESC);
 
 CREATE TABLE feedback (
   id SERIAL PRIMARY KEY,
