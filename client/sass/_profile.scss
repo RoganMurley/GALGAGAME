@@ -23,7 +23,12 @@
     }
 
     .username {
+        height: 36px;
         text-transform: uppercase;
+    }
+
+    .level {
+        height: 28px;
     }
 
     .button {
@@ -53,6 +58,10 @@
             cursor: pointer;
             cursor: hand;
         }
+    }
+
+    .replay {
+        height: 16px;
     }
 
     .replays {

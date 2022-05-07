@@ -134,7 +134,11 @@ maybeListToListMaybe : Int -> Maybe (List a) -> List (Maybe a)
 maybeListToListMaybe len mList =
     case mList of
         Just list ->
-            List.map Just list
+            let
+                remainder =
+                    List.repeat (max 0 (len - List.length list)) Nothing
+            in
+            List.map Just list ++ remainder
 
         Nothing ->
             List.repeat len Nothing
