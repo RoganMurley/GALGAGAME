@@ -1,8 +1,9 @@
 module Leaderboard.Leaderboard where
 
-import Auth.Schema (User, UserT (..))
+import Auth.Schema (PrimaryKey (UserId), User, UserId, UserT (..))
 import Data.Aeson (ToJSON (..), object, (.=))
 import Data.Int (Int32, Int64)
+import Data.List (sortBy)
 import Data.Text (Text)
 import Stats.Experience (Experience)
 import Stats.Schema (Stats, StatsT (..))
@@ -48,12 +49,23 @@ entryFromDb ((Stats {statsExperience = xp}, mUser), rank) =
     Nothing ->
       Nothing
 
-hydrateIsMe :: User.User -> Leaderboard -> Leaderboard
-hydrateIsMe user (Leaderboard entries) =
-  let hydrateEntry :: User.User -> Entry -> Entry
-      hydrateEntry u entry =
-        entry
-          { entry_is_me =
-              User.getUserId u == Just (entry_user_id entry)
-          }
-   in Leaderboard $ hydrateEntry user <$> entries
+entryFromStats :: User.User -> (Stats, Int32) -> Entry
+entryFromStats user (Stats {statsExperience = xp, statsUser = userId}, rank) =
+  let fromPk :: UserId -> Int64
+      fromPk (UserId uid) = uid
+   in Entry
+        { entry_name = User.getUsername user,
+          entry_xp = xp,
+          entry_user_id = fromPk userId,
+          entry_rank = rank,
+          entry_is_me = Just (fromPk userId) == User.getUserId user
+        }
+
+hydrateWithMe :: Entry -> Leaderboard -> Leaderboard
+hydrateWithMe entry (Leaderboard entries) =
+  Leaderboard $
+    sortBy (\a b -> compare (entry_rank a) (entry_rank b)) $
+      (++) [entry] $
+        filter
+          (\e -> entry_user_id e /= entry_user_id entry)
+          entries

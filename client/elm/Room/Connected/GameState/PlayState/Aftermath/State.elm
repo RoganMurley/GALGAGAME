@@ -34,7 +34,7 @@ maxTick aftermath =
             t
 
         Aftermath.Leaderboard _ ->
-            4000
+            999999999999999999
 
         Aftermath.Unlock _ ->
             999999999999999999

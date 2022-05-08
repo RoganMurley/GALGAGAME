@@ -17,7 +17,6 @@ import Data.Time.Clock (UTCTime, getCurrentTime)
 import GameCommand (GameCommand (..), update)
 import GameState (GameState (..), PlayState)
 import qualified Leaderboard.Apps as Leaderboard
-import qualified Leaderboard.Leaderboard as Leaderboard
 import qualified Log
 import Mirror (mirror)
 import Model (Model)
@@ -167,14 +166,14 @@ handleLeaderboard room = do
   -- PlayerA
   case mUserPa of
     Just userPa -> do
-      let leaderboardPa = Leaderboard.hydrateIsMe userPa leaderboard
+      leaderboardPa <- Leaderboard.loadWithMe userPa (Just leaderboard)
       Room.sendToPlayer PlayerA (leaderboardMsg leaderboardPa) room
     Nothing ->
       return ()
   -- PlayerB
   case mUserPb of
     Just userPb -> do
-      let leaderboardPb = Leaderboard.hydrateIsMe userPb leaderboard
+      leaderboardPb <- Leaderboard.loadWithMe userPb (Just leaderboard)
       Room.sendToPlayer PlayerB (leaderboardMsg leaderboardPb) room
     Nothing ->
       return ()
