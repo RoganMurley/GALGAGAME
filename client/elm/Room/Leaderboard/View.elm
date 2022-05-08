@@ -9,8 +9,8 @@ import Util exposing (maybeListToListMaybe)
 view : Model -> Bool -> Html a
 view { entries } detailed =
     let
-        entryView : Int -> Maybe Entry -> Html a
-        entryView i mEntry =
+        entryView : Maybe Entry -> Html a
+        entryView mEntry =
             let
                 usernameTag =
                     if detailed then
@@ -19,9 +19,9 @@ view { entries } detailed =
                     else
                         div
 
-                { usernameHtml, levelHtml, xpHtml, isMeClass } =
+                { usernameHtml, levelHtml, xpHtml, rankHtml, isMeClass } =
                     case mEntry of
-                        Just { name, xp, level, isMe } ->
+                        Just { name, xp, level, rank, isMe } ->
                             let
                                 profileUrl =
                                     "/profile/" ++ name
@@ -29,6 +29,7 @@ view { entries } detailed =
                             { usernameHtml = usernameTag [ class "username", href profileUrl ] [ text name ]
                             , levelHtml = text <| String.fromInt level
                             , xpHtml = text <| String.fromInt (floor xp)
+                            , rankHtml = text <| String.fromInt rank
                             , isMeClass =
                                 if isMe then
                                     "leaderboard-me"
@@ -38,14 +39,15 @@ view { entries } detailed =
                             }
 
                         Nothing ->
-                            { usernameHtml = usernameTag [ class "username" ] []
+                            { rankHtml = text ""
+                            , usernameHtml = usernameTag [ class "username" ] []
                             , levelHtml = text ""
                             , xpHtml = text ""
                             , isMeClass = ""
                             }
             in
             tr [ class isMeClass ]
-                [ td [ class "leaderboard-rank" ] [ text <| String.fromInt (i + 1) ]
+                [ td [ class "leaderboard-rank" ] [ rankHtml ]
                 , td [ class "leaderboard-name" ] [ usernameHtml ]
                 , td [] [ levelHtml ]
                 , td [] [ xpHtml ]
@@ -59,6 +61,6 @@ view { entries } detailed =
                 , th [] [ text "Level" ]
                 , th [] [ text "XP" ]
                 ]
-                :: List.indexedMap entryView (maybeListToListMaybe 10 entries)
+                :: List.map entryView (maybeListToListMaybe 10 entries)
             )
         ]
