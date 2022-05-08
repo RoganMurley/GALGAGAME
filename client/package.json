@@ -19,6 +19,7 @@
     "gulp-rename": "^2.0.0",
     "gulp-rev": "^9.0.0",
     "gulp-sass": "^4.0.2",
+    "gulp-touch-cmd": "0.0.1",
     "gulp-uglify": "^3.0.1",
     "howler": "^2.0.15",
     "yargs": "^12.0.2"

@@ -11,6 +11,7 @@ import inline from 'gulp-inline-source';
 import identity from 'gulp-identity';
 import rename from 'gulp-rename';
 import rev from 'gulp-rev';
+import touch from 'gulp-touch-cmd';
 import yargs from 'yargs';
 
 const dir = {
@@ -81,7 +82,8 @@ gulp.task('html', () => {
         extname: '.html'
       };
     }))
-    .pipe(gulp.dest(dir.build));
+    .pipe(gulp.dest(dir.build))
+    .pipe(touch()); // https://github.com/gulpjs/gulp/issues/2193
 });
 
 
