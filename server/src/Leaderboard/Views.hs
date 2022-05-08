@@ -12,6 +12,6 @@ leaderboardView :: ConnectInfoConfig -> ActionM ()
 leaderboardView config = do
   cookies <- getCookies
   user <- lift $ runApp config $ User.getUserFromCookies cookies ""
-  leaderboard <- lift $ runApp config $ Leaderboard.load user
+  leaderboard <- lift $ runApp config $ Leaderboard.loadWithMe user
   json leaderboard
   status ok200

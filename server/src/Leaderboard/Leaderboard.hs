@@ -2,6 +2,7 @@ module Leaderboard.Leaderboard where
 
 import Auth.Schema (User, UserT (..))
 import Data.Aeson (ToJSON (..), object, (.=))
+import Data.Int (Int64)
 import Data.Text (Text)
 import Stats.Experience (Experience)
 import Stats.Schema (Stats, StatsT (..))
@@ -17,6 +18,7 @@ instance ToJSON Leaderboard where
 data Entry = Entry
   { entry_name :: Text,
     entry_xp :: Experience,
+    entry_user_id :: Int64,
     entry_is_me :: Bool
   }
   deriving (Eq, Show)
@@ -29,14 +31,26 @@ instance ToJSON Entry where
         "is_me" .= entry_is_me
       ]
 
-entryFromStats :: User.User -> (Stats, Maybe User) -> Entry
-entryFromStats gameuser (Stats {statsExperience = xp}, mUser) =
+entryFromStats :: (Stats, Maybe User) -> Maybe Entry
+entryFromStats (Stats {statsExperience = xp}, mUser) =
   case mUser of
     Just User {userId, userUsername} ->
-      Entry
-        { entry_name = userUsername,
-          entry_xp = xp,
-          entry_is_me = Just userId == User.getUserId gameuser
-        }
+      Just $
+        Entry
+          { entry_name = userUsername,
+            entry_xp = xp,
+            entry_user_id = userId,
+            entry_is_me = False
+          }
     Nothing ->
-      Entry {entry_name = "???", entry_xp = xp, entry_is_me = False}
+      Nothing
+
+hydrateIsMe :: User.User -> Leaderboard -> Leaderboard
+hydrateIsMe user (Leaderboard entries) =
+  let hydrateEntry :: User.User -> Entry -> Entry
+      hydrateEntry u entry =
+        entry
+          { entry_is_me =
+              User.getUserId u == Just (entry_user_id entry)
+          }
+   in Leaderboard $ hydrateEntry user <$> entries

@@ -17,6 +17,7 @@ import Data.Time.Clock (UTCTime, getCurrentTime)
 import GameCommand (GameCommand (..), update)
 import GameState (GameState (..), PlayState)
 import qualified Leaderboard.Apps as Leaderboard
+import qualified Leaderboard.Leaderboard as Leaderboard
 import qualified Log
 import Mirror (mirror)
 import Model (Model)
@@ -31,7 +32,7 @@ import Scenario (Scenario (..))
 import Stats.Experience (Experience)
 import qualified Stats.Stats as Stats
 import Text.Printf (printf)
-import User (GameUser (..), User (..), getUsername, setExperience, usersToGameUsers)
+import User (GameUser (..), User (..), gameusersToUsers, getUsername, setExperience, usersToGameUsers)
 import Util (Err)
 
 roomUpdate :: GameCommand -> WhichPlayer -> UTCTime -> TVar Room -> STM (Room, Either Err [Outcome])
@@ -155,8 +156,26 @@ handleExperience which forceXp winner room = do
       Room.sendToPlayer which (("xp:" <>) . cs . encode $ statChange) room
       liftIO . atomically $ setExperience (initialXp + xpDelta) user
       syncRoomMetadata room
-      leaderboard <- Leaderboard.load user
-      Room.sendToPlayer which (("leaderboard:" <>) . cs . encode $ leaderboard) room
+    Nothing ->
+      return ()
+
+handleLeaderboard :: Room -> App ()
+handleLeaderboard room = do
+  leaderboard <- Leaderboard.load
+  let leaderboardMsg = ("leaderboard:" <>) . cs . encode
+  (mUserPa, mUserPb) <- gameusersToUsers <$> Room.getGameUsers room
+  -- PlayerA
+  case mUserPa of
+    Just userPa -> do
+      let leaderboardPa = Leaderboard.hydrateIsMe userPa leaderboard
+      Room.sendToPlayer PlayerA (leaderboardMsg leaderboardPa) room
+    Nothing ->
+      return ()
+  -- PlayerB
+  case mUserPb of
+    Just userPb -> do
+      let leaderboardPb = Leaderboard.hydrateIsMe userPb leaderboard
+      Room.sendToPlayer PlayerB (leaderboardMsg leaderboardPb) room
     Nothing ->
       return ()
 
@@ -180,3 +199,4 @@ actOutcome room (Outcome.SaveReplay replay) = do
 actOutcome room (Outcome.HandleExperience winner force) = do
   handleExperience PlayerA force winner room
   handleExperience PlayerB force winner room
+  handleLeaderboard room
