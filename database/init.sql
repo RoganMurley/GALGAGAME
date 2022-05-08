@@ -14,6 +14,7 @@ CREATE TABLE stats (
   created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 CREATE INDEX stats_user__id ON stats(user__id);
+CREATE INDEX experience ON stats(experience DESC);
 
 CREATE TABLE statsguest (
   cid TEXT PRIMARY KEY,
