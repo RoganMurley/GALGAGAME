@@ -18,14 +18,18 @@ import Prelude hiding (lookup, putStrLn)
 
 data State = State
   { state_rooms :: Map Room.Name (TVar Room),
-    state_matching :: Maybe (TVar Room)
+    state_matching :: MatchingQueue
   }
 
 instance Show State where
   show state = show . keys $ state_rooms state
 
 initState :: State
-initState = State empty Nothing
+initState =
+  State
+    { state_rooms = empty,
+      state_matching = []
+    }
 
 -- GETTING / DELETING ROOMS
 getRoom :: Room.Name -> TVar State -> STM (Maybe (TVar Room))
@@ -56,20 +60,28 @@ getAllRooms :: TVar State -> STM [TVar Room]
 getAllRooms state = elems . state_rooms <$> readTVar state
 
 -- QUEUEING
-queue :: TVar Room -> TVar State -> STM (Maybe (TVar Room))
-queue roomVar state = do
-  match <- state_matching <$> readTVar state
-  case match of
-    Just existingRoomVar -> do
-      dequeue state
+type MatchingQueue = [(Text, TVar Room)]
+
+queue :: Text -> TVar Room -> TVar State -> STM (Maybe (TVar Room))
+queue queueId roomVar state = do
+  matching <- state_matching <$> readTVar state
+  case matching of
+    (_, existingRoomVar) : _ -> do
+      dequeue queueId state
       return $ Just existingRoomVar
-    Nothing -> do
-      _ <- modTVar state (\(State s _) -> State s (Just roomVar))
+    _ -> do
+      _ <- modTVar state (\s -> s {state_matching = (queueId, roomVar) : matching})
       return Nothing
 
-dequeue :: TVar State -> STM ()
-dequeue state = do
-  modTVar state (\(State s _) -> State s Nothing)
+dequeue :: Text -> TVar State -> STM ()
+dequeue queueId state = do
+  modTVar
+    state
+    ( \s ->
+        s
+          { state_matching = filter (\(qid, _) -> qid /= queueId) $ state_matching s
+          }
+    )
   return ()
 
 modScenario :: (Scenario -> Scenario) -> TVar Room -> STM Room

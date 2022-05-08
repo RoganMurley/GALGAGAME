@@ -298,32 +298,37 @@ beginComputer cpuName state client roomVar = do
 
 beginQueue :: TVar Server.State -> Client -> TVar Room -> App ()
 beginQueue state client roomVar = do
-  -- If you join an existing room, what happens to the input one? Is it left there?
-  -- Rooms are not properly dequeued.
-  -- If the user exits at the wrong time the room might stay in the queue.
   let clientName = show (Client.name client)
   Log.info $ printf "<%s>: Begin quickplay game" clientName
-  roomM <- liftIO . atomically $ Server.queue roomVar state
-  case roomM of
-    Just existingRoom -> do
-      room <- liftIO $ readTVarIO existingRoom
-      let roomName = Room.getName room
-      Log.info $ printf "<%s>: Joining quickplay room from queue [%s]" clientName roomName
-      Client.send ("room:" <> roomName) client
-      beginPlay state client existingRoom
-    Nothing -> do
-      room <- liftIO . readTVarIO $ roomVar
-      let roomName = Room.getName room
-      Log.info $ printf "<%s>: Using default quickplay room [%s]" clientName roomName
-      Client.send ("room:" <> roomName) client
-      asyncQueueCpuFallback state client roomVar
-      beginPlay state client roomVar
-  gen <- liftIO getGen
-  guid <- liftIO GUID.genText
-  let scenario = makeScenario gen PrefixQueue
-  let roomName = Text.take 8 guid
-  newRoomVar <- liftIO . atomically $ Server.getOrCreateRoom roomName WaitQuickplay gen scenario state
-  beginQueue state client newRoomVar
+  queueId <- liftIO GUID.genText
+  finally
+    ( do
+        roomM <- liftIO . atomically $ Server.queue queueId roomVar state
+        case roomM of
+          Just existingRoom -> do
+            room <- liftIO $ readTVarIO existingRoom
+            let roomName = Room.getName room
+            Log.info $ printf "<%s>: Joining quickplay room from queue [%s]" clientName roomName
+            Client.send ("room:" <> roomName) client
+            beginPlay state client existingRoom
+          Nothing -> do
+            room <- liftIO . readTVarIO $ roomVar
+            let roomName = Room.getName room
+            Log.info $ printf "<%s>: Using default quickplay room [%s]" clientName roomName
+            Client.send ("room:" <> roomName) client
+            asyncQueueCpuFallback state client roomVar queueId
+            beginPlay state client roomVar
+        gen <- liftIO getGen
+        guid <- liftIO GUID.genText
+        let scenario = makeScenario gen PrefixQueue
+        let roomName = Text.take 8 guid
+        newRoomVar <- liftIO . atomically $ Server.getOrCreateRoom roomName WaitQuickplay gen scenario state
+        beginQueue state client newRoomVar
+    )
+    ( do
+        -- If the client leaves, remove them from the queue.
+        liftIO . atomically $ Server.dequeue queueId state
+    )
 
 data QueueCpuResult
   = QueueCpuNotNeeded
@@ -331,8 +336,8 @@ data QueueCpuResult
   | QueueCpuFailed
   deriving (Show, Eq)
 
-asyncQueueCpuFallback :: TVar Server.State -> Client -> TVar Room -> App ()
-asyncQueueCpuFallback state client roomVar = do
+asyncQueueCpuFallback :: TVar Server.State -> Client -> TVar Room -> Text -> App ()
+asyncQueueCpuFallback state client roomVar queueId = do
   _ <- fork $ do
     threadDelay (4 * 1000000)
     cpuGuid <- liftIO GUID.genText
@@ -366,7 +371,7 @@ asyncQueueCpuFallback state client roomVar = do
             then return $ Left QueueCpuNotNeeded
             else
               ( do
-                  Server.dequeue state
+                  Server.dequeue queueId state
                   return $ Left QueueCpuReconnect
               )
         else
@@ -376,7 +381,7 @@ asyncQueueCpuFallback state client roomVar = do
               added <- addComputerClient "CPU" guid (nextLevelExperience xp) roomVar
               case added of
                 Just computerClient -> do
-                  Server.dequeue state
+                  Server.dequeue queueId state
                   return $ Right computerClient
                 Nothing ->
                   return $ Left QueueCpuFailed
