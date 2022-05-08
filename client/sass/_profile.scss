@@ -61,8 +61,13 @@
     }
 
     .replay {
+        font-weight: 600;
         height: 20px;
         width: 100%;
+
+        a {
+            color: $navy;
+        }
     }
 
     .replays {

@@ -15,4 +15,5 @@ type alias Entry =
     { name : String
     , xp : Float
     , level : Int
+    , isMe : Bool
     }

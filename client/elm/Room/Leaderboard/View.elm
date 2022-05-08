@@ -19,9 +19,9 @@ view { entries } detailed =
                     else
                         div
 
-                { usernameHtml, levelHtml, xpHtml } =
+                { usernameHtml, levelHtml, xpHtml, isMeClass } =
                     case mEntry of
-                        Just { name, xp, level } ->
+                        Just { name, xp, level, isMe } ->
                             let
                                 profileUrl =
                                     "/profile/" ++ name
@@ -29,15 +29,22 @@ view { entries } detailed =
                             { usernameHtml = usernameTag [ class "username", href profileUrl ] [ text name ]
                             , levelHtml = text <| String.fromInt level
                             , xpHtml = text <| String.fromInt (floor xp)
+                            , isMeClass =
+                                if isMe then
+                                    "leaderboard-me"
+
+                                else
+                                    ""
                             }
 
                         Nothing ->
                             { usernameHtml = usernameTag [ class "username" ] []
                             , levelHtml = text ""
                             , xpHtml = text ""
+                            , isMeClass = ""
                             }
             in
-            tr []
+            tr [ class isMeClass ]
                 [ td [ class "leaderboard-rank" ] [ text <| String.fromInt (i + 1) ]
                 , td [ class "leaderboard-name" ] [ usernameHtml ]
                 , td [] [ levelHtml ]

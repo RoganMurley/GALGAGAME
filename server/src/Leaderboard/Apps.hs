@@ -5,9 +5,10 @@ import Database.Beam (all_, desc_, leftJoin_, limit_, orderBy_, references_, run
 import Leaderboard.Leaderboard (Leaderboard (..), entryFromStats)
 import Schema (GalgagameDb (..), galgagameDb)
 import Stats.Schema (StatsT (..))
+import qualified User
 
-load :: App Leaderboard
-load = do
+load :: User.User -> App Leaderboard
+load gameuser = do
   result <-
     runBeam $
       runSelectReturningList $
@@ -15,4 +16,4 @@ load = do
           stats <- limit_ 10 $ orderBy_ (desc_ . statsExperience) $ all_ $ stats galgagameDb
           user <- leftJoin_ (all_ (users galgagameDb)) (\user -> statsUser stats `references_` user)
           pure (stats, user)
-  return . Leaderboard $ entryFromStats <$> result
+  return . Leaderboard $ entryFromStats gameuser <$> result

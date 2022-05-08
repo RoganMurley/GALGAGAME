@@ -155,7 +155,7 @@ handleExperience which forceXp winner room = do
       Room.sendToPlayer which (("xp:" <>) . cs . encode $ statChange) room
       liftIO . atomically $ setExperience (initialXp + xpDelta) user
       syncRoomMetadata room
-      leaderboard <- Leaderboard.load
+      leaderboard <- Leaderboard.load user
       Room.sendToPlayer which (("leaderboard:" <>) . cs . encode $ leaderboard) room
     Nothing ->
       return ()

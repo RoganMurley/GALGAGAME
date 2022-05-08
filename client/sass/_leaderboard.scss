@@ -22,6 +22,10 @@
             width: 95vw;
         }
 
+        a {
+            color: $navy;
+        }
+
         td {
             padding: 4px;
             margin: 0;
@@ -33,6 +37,16 @@
 
         tr:nth-child(odd) {
             background: #e3e04f;
+        }
+
+        tr.leaderboard-me {
+            background: $navy;
+            color: $yellow;
+            font-weight: 900;
+
+            .username {
+                color: $yellow;
+            }
         }
     }
 

@@ -4,10 +4,14 @@ import Config (ConnectInfoConfig, runApp)
 import Control.Monad.Trans.Class (lift)
 import qualified Leaderboard.Apps as Leaderboard
 import Network.HTTP.Types.Status (ok200)
+import qualified User
 import Web.Scotty (ActionM, json, status)
+import Web.Scotty.Cookie (getCookies)
 
 leaderboardView :: ConnectInfoConfig -> ActionM ()
 leaderboardView config = do
-  leaderboard <- lift $ runApp config Leaderboard.load
+  cookies <- getCookies
+  user <- lift $ runApp config $ User.getUserFromCookies cookies ""
+  leaderboard <- lift $ runApp config $ Leaderboard.load user
   json leaderboard
   status ok200
