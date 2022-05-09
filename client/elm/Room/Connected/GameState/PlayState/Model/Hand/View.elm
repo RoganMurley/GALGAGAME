@@ -8,17 +8,23 @@ import Card.Types as Card
 import Card.View as Card
 import Ease
 import Game.Types exposing (Context, HandEntity, OtherHandEntity)
+import Hand.Entities exposing (applyHoverVector)
 import Math.Vector3 exposing (vec3)
 import Quaternion
 import Util exposing (interp)
 import WebGL
+import Wheel.State exposing (apply)
 import WhichPlayer.Types exposing (WhichPlayer(..))
 
 
 view : List HandEntity -> Context -> List WebGL.Entity
 view handEntities ctx =
     let
-        cardView i entity =
+        cardView i handEntity =
+            let
+                entity =
+                    applyHoverVector handEntity
+            in
             List.concat <|
                 case ctx.anim of
                     DiscardHand PlayerA discards ->

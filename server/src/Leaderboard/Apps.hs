@@ -6,7 +6,7 @@ import qualified Auth.Schema
 import Config (App, runBeam)
 import Data.Int (Int32)
 import Data.Maybe (catMaybes)
-import Database.Beam (all_, as_, desc_, filter_, frame_, leftJoin_, limit_, noBounds_, noPartition_, orderBy_, orderPartitionBy_, over_, rank_, references_, runSelectReturningList, runSelectReturningOne, select, val_, withWindow_, (==.))
+import Database.Beam (QExpr, all_, as_, desc_, filter_, frame_, leftJoin_, limit_, noBounds_, noPartition_, orderBy_, orderPartitionBy_, over_, rank_, references_, runSelectReturningList, runSelectReturningOne, select, val_, withWindow_, (==.))
 import Leaderboard.Leaderboard (Leaderboard (..))
 import qualified Leaderboard.Leaderboard as Leaderboard
 import Schema (GalgagameDb (..), galgagameDb)
@@ -22,7 +22,7 @@ load = do
       runSelectReturningList $
         select $
           withWindow_
-            (\(stats, _) -> frame_ noPartition_ (orderPartitionBy_ (desc_ $ statsExperience stats)) noBounds_)
+            (\(stats, _) -> frame_ (noPartition_ :: Maybe (QExpr be s Integer)) (orderPartitionBy_ (desc_ $ statsExperience stats)) noBounds_)
             (\row window -> (row, as_ @Int32 rank_ `over_` window))
             ( do
                 stats <- limit_ 10 $ orderBy_ (desc_ . statsExperience) $ all_ $ stats galgagameDb
@@ -42,7 +42,7 @@ loadUserEntry user = do
               filter_
                 (\(row, _) -> statsUser row ==. val_ (Auth.Schema.UserId userId))
                 ( withWindow_
-                    (\row -> frame_ noPartition_ (orderPartitionBy_ (desc_ $ statsExperience row)) noBounds_)
+                    (\row -> frame_ (noPartition_ :: Maybe (QExpr be s Integer)) (orderPartitionBy_ (desc_ $ statsExperience row)) noBounds_)
                     (\row window -> (row, as_ @Int32 rank_ `over_` window))
                     (all_ $ stats galgagameDb)
                 )

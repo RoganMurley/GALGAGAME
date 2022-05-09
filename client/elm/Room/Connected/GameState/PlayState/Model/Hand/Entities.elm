@@ -1,7 +1,7 @@
-module Hand.Entities exposing (entities, handCardPosition, handCardRotation, handOrigin, otherEntities, playPosition)
+module Hand.Entities exposing (applyHoverVector, entities, handCardPosition, handCardRotation, handOrigin, otherEntities, playPosition)
 
 import Animation.State as Animation
-import Animation.Types exposing (Anim(..), Bounce, CardDiscard(..), HandBounce)
+import Animation.Types exposing (Anim(..), CardDiscard(..), HandBounce)
 import Array
 import Card.State as Card exposing (getCard, isRevealed)
 import Card.Types exposing (Card, KnowableCard(..))
@@ -98,10 +98,16 @@ entities hover holding ({ anim, model, progress } as ctx) =
                 i =
                     indexModifier finalI
 
+                initialPos =
+                    handCardPosition ctx PlayerA i n hover
+
+                finalPos =
+                    handCardPosition ctx PlayerA finalI finalN hover
+
                 pos =
                     interp progress
-                        (handCardPosition ctx PlayerA i n hover)
-                        (handCardPosition ctx PlayerA finalI finalN hover)
+                        initialPos.position
+                        finalPos.position
 
                 rot =
                     Quaternion.lerp progress
@@ -120,6 +126,7 @@ entities hover holding ({ anim, model, progress } as ctx) =
                     , owner = PlayerA
                     , index = finalI
                     , revealed = revealed
+                    , hoverVector = initialPos.hoverVector
                     }
 
         mainEntities : List HandEntity
@@ -143,7 +150,7 @@ entities hover holding ({ anim, model, progress } as ctx) =
                                 pos =
                                     interp progress
                                         (vec3 -1 -1 -1)
-                                        (handCardPosition ctx PlayerA n (n + 1) hover)
+                                        (.position <| handCardPosition ctx PlayerA n (n + 1) hover)
 
                                 rot =
                                     Quaternion.lerp
@@ -158,6 +165,7 @@ entities hover holding ({ anim, model, progress } as ctx) =
                               , owner = PlayerA
                               , index = n
                               , revealed = False
+                              , hoverVector = vec3 0 0 0
                               }
                             ]
 
@@ -168,7 +176,7 @@ entities hover holding ({ anim, model, progress } as ctx) =
                     let
                         startPos =
                             Maybe.withDefault
-                                (handCardPosition ctx PlayerA i n hover)
+                                (.position <| handCardPosition ctx PlayerA i n hover)
                                 mStartPos
 
                         pos =
@@ -198,6 +206,7 @@ entities hover holding ({ anim, model, progress } as ctx) =
                       , owner = PlayerA
                       , index = i
                       , revealed = revealed
+                      , hoverVector = vec3 0 0 0
                       }
                     ]
 
@@ -219,7 +228,7 @@ entities hover holding ({ anim, model, progress } as ctx) =
                             , position =
                                 interp progress
                                     stackEntity.position
-                                    (handCardPosition ctx PlayerA handIndex finalN hover)
+                                    (.position <| handCardPosition ctx PlayerA handIndex finalN hover)
                             , rotation =
                                 Quaternion.lerp
                                     progress
@@ -227,6 +236,7 @@ entities hover holding ({ anim, model, progress } as ctx) =
                                     (Quaternion.zRotation (handCardRotation PlayerA handIndex finalN))
                             , scale = Card.scale
                             , revealed = True
+                            , hoverVector = vec3 0 0 0
                             }
                     in
                     List.map makeBounceEntity playerBounces
@@ -314,8 +324,8 @@ otherEntities hoverSelf hoverOther ({ anim, model, progress } as ctx) =
             in
             { position =
                 interp progress
-                    (handCardPosition ctx PlayerB i n hover)
-                    (handCardPosition ctx PlayerB finalI finalN hover)
+                    (.position <| applyHoverVector <| handCardPosition ctx PlayerB i n hover)
+                    (.position <| applyHoverVector <| handCardPosition ctx PlayerB finalI finalN hover)
             , rotation =
                 Quaternion.lerp
                     progress
@@ -337,7 +347,7 @@ otherEntities hoverSelf hoverOther ({ anim, model, progress } as ctx) =
                     [ { position =
                             interp progress
                                 (vec3 -1 1 -1)
-                                (handCardPosition ctx PlayerB n (n + 1) hover)
+                                (.position <| handCardPosition ctx PlayerB n (n + 1) hover)
                       , rotation =
                             Quaternion.lerp
                                 progress
@@ -352,7 +362,7 @@ otherEntities hoverSelf hoverOther ({ anim, model, progress } as ctx) =
                 Play PlayerB knowableCard i _ ->
                     [ { position =
                             interp progress
-                                (handCardPosition ctx PlayerB i n hover)
+                                (.position <| handCardPosition ctx PlayerB i n hover)
                                 (playPosition ctx)
                       , rotation =
                             Quaternion.lerp
@@ -386,7 +396,7 @@ otherEntities hoverSelf hoverOther ({ anim, model, progress } as ctx) =
                             { position =
                                 interp progress
                                     stackEntity.position
-                                    (handCardPosition ctx PlayerB handIndex finalN hover)
+                                    (.position <| handCardPosition ctx PlayerB handIndex finalN hover)
                             , rotation =
                                 Quaternion.lerp
                                     progress
@@ -458,7 +468,7 @@ handCardRotation which i count =
             pi - magnitude
 
 
-handCardPosition : Context -> WhichPlayer -> Int -> Int -> Hover a -> Vec3
+handCardPosition : Context -> WhichPlayer -> Int -> Int -> Hover a -> { position : Vec3, hoverVector : Vec3 }
 handCardPosition ctx which index count hover =
     let
         sign =
@@ -468,6 +478,9 @@ handCardPosition ctx which index count hover =
 
                 PlayerB ->
                     -1
+
+        scale =
+            -0.004
 
         x =
             toFloat index * (width + spacing)
@@ -483,25 +496,6 @@ handCardPosition ctx which index count hover =
 
                 c =
                     toFloat count
-
-                hoverY =
-                    case ( which, hover ) of
-                        ( PlayerA, HoverHand hoverHand ) ->
-                            if index == hoverHand.index then
-                                interpFloat (hoverHand.tick / 70) 0 -10
-
-                            else
-                                0
-
-                        ( PlayerB, HoverOtherHand hoverOtherHand ) ->
-                            if index == hoverOtherHand.index then
-                                interpFloat (hoverOtherHand.tick / 70) 0 -10
-
-                            else
-                                0
-
-                        _ ->
-                            0
 
                 discardY =
                     case ctx.anim of
@@ -523,11 +517,33 @@ handCardPosition ctx which index count hover =
                 baseY =
                     abs <| 4 * (toFloat <| ceiling (i - (c * 0.5)))
             in
-            sign * (baseY + hoverY + discardY)
+            sign * (baseY + discardY)
+
+        hoverY =
+            case ( which, hover ) of
+                ( PlayerA, HoverHand hoverHand ) ->
+                    if index == hoverHand.index then
+                        interpFloat (hoverHand.tick / 70) 0 -10
+
+                    else
+                        0
+
+                ( PlayerB, HoverOtherHand hoverOtherHand ) ->
+                    if index == hoverOtherHand.index then
+                        interpFloat (hoverOtherHand.tick / 70) 0 -10
+
+                    else
+                        0
+
+                _ ->
+                    0
     in
-    vec3 -x (-0.004 * y) 0
-        |> Math.Vector3.add
-            (handOrigin ctx which count)
+    { position =
+        vec3 -x (scale * y) 0
+            |> Math.Vector3.add
+                (handOrigin ctx which count)
+    , hoverVector = vec3 0 (sign * scale * hoverY) 0
+    }
 
 
 playPosition : Context -> Vec3
@@ -537,3 +553,8 @@ playPosition ctx =
             Stack.Entities.wheelEntity ctx (Stack.Entities.baseDistance ctx) 0 0
     in
     entity.position
+
+
+applyHoverVector : { a | position : Vec3, hoverVector : Vec3 } -> { a | position : Vec3, hoverVector : Vec3 }
+applyHoverVector entity =
+    { entity | position = Math.Vector3.add entity.position entity.hoverVector }

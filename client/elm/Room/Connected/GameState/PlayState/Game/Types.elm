@@ -9,6 +9,7 @@ import Game.Entity as Game
 import Holding.Types exposing (Holding)
 import Hover exposing (HoverOther, HoverSelf)
 import Math.Matrix4 exposing (Mat4)
+import Math.Vector3 exposing (Vec3)
 import Model.Types as Model
 import Mouse exposing (MouseState(..))
 import Resolvable.Types as Resolvable
@@ -71,6 +72,7 @@ type alias HandEntity =
         , index : Int
         , owner : WhichPlayer
         , revealed : Bool
+        , hoverVector : Vec3
         }
 
 
