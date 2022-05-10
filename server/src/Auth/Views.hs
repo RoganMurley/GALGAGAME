@@ -15,10 +15,11 @@ import Data.Time.Clock (secondsToDiffTime)
 import Data.Time.Clock.POSIX (posixSecondsToUTCTime)
 import Feedback.Views (feedbackView)
 import Leaderboard.Views (leaderboardView)
-import Profile.Views (profileView)
 import League.Views (leagueCheckView, leagueView)
 import Network.HTTP.Types.Status
 import Network.Wai (Application)
+import Profile.Views (profileView)
+import Replay.Views (replayView)
 import System.Log.Logger (Priority (DEBUG), debugM, infoM, setLevel, updateGlobalLogger)
 import Text.Printf (printf)
 import Web.Cookie (sameSiteStrict, setCookieExpires, setCookieHttpOnly, setCookieMaxAge, setCookiePath, setCookieSameSite, setCookieSecure)
@@ -39,6 +40,7 @@ app config = do
       get "/api/league" $ leagueCheckView config
       get "/api/leaderboard" $ leaderboardView config
       get "/api/profile/:username" $ profileView config
+      get "/api/replay/:replayId" $ replayView config
 
 meView :: ConnectInfoConfig -> ActionM ()
 meView config = do

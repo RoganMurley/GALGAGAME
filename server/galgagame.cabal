@@ -63,6 +63,7 @@ library
                      , Profile.Views
                      , Replay.Active
                      , Replay.Final
+                     , Replay.Views
                      , Replay.Schema
                      , ResolveData
                      , Room
