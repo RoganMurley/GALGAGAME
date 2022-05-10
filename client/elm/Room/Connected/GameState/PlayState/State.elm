@@ -405,8 +405,21 @@ tick flags state chat gameType dt =
 
         Ended ({ game, buttons, aftermath } as ended) ->
             let
+                disableMouse : Flags -> Flags
+                disableMouse f =
+                    { f | mouse = NoMouse }
+
                 ( newGame, msg ) =
-                    Game.tick flags dt game chat
+                    Game.tick
+                        (if resolving game.res then
+                            flags
+
+                         else
+                            disableMouse flags
+                        )
+                        dt
+                        game
+                        chat
 
                 ( w, h ) =
                     flags.dimensions
