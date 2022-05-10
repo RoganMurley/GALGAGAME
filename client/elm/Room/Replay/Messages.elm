@@ -1,6 +1,9 @@
 module Replay.Messages exposing (Msg(..))
 
+import Http
+import Replay.Types exposing (Replay)
+
 
 type Msg
-    = SetReplay String
-    | ReplayNotFound
+    = Load String
+    | LoadCallback (Result Http.Error Replay)

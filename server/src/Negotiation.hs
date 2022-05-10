@@ -1,13 +1,10 @@
 module Negotiation where
 
-import Data.String.Conversions (cs)
 import Data.Text (Text)
-import Safe (readMay)
 import Util (breakAt)
 
 data Request
   = RoomRequest Text
-  | PlayReplayRequest Int
   | SystemMessageRequest Text
 
 data Error
@@ -19,12 +16,6 @@ parseRequest msg =
   case breakAt ":" msg of
     ("room", name) ->
       Right . RoomRequest $ name
-    ("playReplay", replayIdText) ->
-      case readMay $ cs replayIdText of
-        Just replayId ->
-          Right . PlayReplayRequest $ replayId
-        Nothing ->
-          Left . UnknownError $ "Unable to parse replay ID"
     ("systemMessage", message) ->
       Right . SystemMessageRequest $ message
     ("heartbeat", _) ->

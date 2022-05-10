@@ -44,7 +44,6 @@ import Network.Wai.Handler.WebSockets
 import qualified Network.WebSockets as WS
 import Outcome (Outcome)
 import Player (WhichPlayer (..), other)
-import qualified Replay.Final
 import Room (Room)
 import qualified Room
 import Scenario (Scenario (..))
@@ -165,15 +164,6 @@ begin conn request user state = do
           roomVar <- liftIO . atomically $ Server.getOrCreateRoom roomName (prefixWaitType prefix) gen scenario state
           prefixMetric prefix
           beginPrefix prefix state client roomVar
-    Right (PlayReplayRequest replayId) -> do
-      Metrics.incr "request.replay"
-      Log.info $ printf "<%s>: watching replay %s" username (show replayId)
-      mReplay <- Replay.Final.load (fromIntegral replayId)
-      case mReplay of
-        Just replay -> do
-          liftIO $ WS.sendTextData conn ("replay:" <> replay)
-        Nothing -> do
-          liftIO $ WS.sendTextData conn ("replayNotFound:" :: Text)
     Right (SystemMessageRequest systemMessage) -> do
       Metrics.incr "request.systemMessage"
       if User.isSuperuser user

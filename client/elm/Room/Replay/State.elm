@@ -1,22 +1,21 @@
-module Replay.State exposing (getReplay, init, mouseDown, receive, tick, update)
+module Replay.State exposing (init, mouseDown, tick, update)
 
 import Assets.Types as Assets
 import Chat.State as Chat
 import GameType exposing (GameType(..))
-import Json.Decode as Json
+import Http
 import Main.Messages as Main
 import Main.Types exposing (Flags)
 import Mouse
 import PlayState.Decoders as PlayState
 import PlayState.State as PlayState
 import PlayState.Types exposing (PlayState(..))
-import Ports exposing (log)
 import Replay.Decoders exposing (replayDecoder)
 import Replay.Messages exposing (Msg(..))
 import Replay.Types as Replay
 import Room.Messages as Room
 import Tuple
-import Util exposing (message, splitOnColon)
+import Util exposing (apiLocation)
 
 
 init : Replay.Model
@@ -27,54 +26,39 @@ init =
     }
 
 
-receive : String -> Cmd Main.Msg
-receive msg =
-    let
-        ( command, content ) =
-            splitOnColon msg
-    in
-    case command of
-        "replay" ->
-            message <|
-                Main.RoomMsg <|
-                    Room.ReplayMsg <|
-                        SetReplay content
-
-        "replayNotFound" ->
-            message <|
-                Main.RoomMsg <|
-                    Room.ReplayMsg <|
-                        ReplayNotFound
-
-        _ ->
-            Cmd.none
-
-
-update : Replay.Model -> Msg -> ( Replay.Model, Cmd Main.Msg )
-update model msg =
+update : Replay.Model -> Msg -> Flags -> ( Replay.Model, Cmd Main.Msg )
+update model msg flags =
     case msg of
-        SetReplay replayStr ->
-            case Json.decodeString replayDecoder replayStr of
-                Ok replay ->
-                    ( { model | replay = Just replay }, Cmd.none )
+        Load replayId ->
+            ( model
+            , Http.get
+                { url = apiLocation flags ++ "/replay/" ++ replayId
+                , expect =
+                    Http.expectJson
+                        (Main.RoomMsg << Room.ReplayMsg << LoadCallback)
+                        replayDecoder
+                }
+            )
 
-                Err err ->
-                    let
-                        errorStr =
-                            Json.errorToString err
-                    in
-                    ( { model | error = errorStr }, log errorStr )
+        LoadCallback (Ok replay) ->
+            ( { model | replay = Just replay }, Cmd.none )
 
-        ReplayNotFound ->
-            ( { model | error = "Replay not found" }, Cmd.none )
+        LoadCallback (Err err) ->
+            let
+                error =
+                    case err of
+                        Http.BadStatus 404 ->
+                            "Replay not found"
 
+                        Http.BadStatus status ->
+                            "Error connecting to server (status: " ++ String.fromInt status ++ ")"
 
-getReplay : String -> Cmd Main.Msg
-getReplay replayId =
-    message <|
-        Main.Send <|
-            "playReplay:"
-                ++ replayId
+                        _ ->
+                            "Error connecting to server"
+            in
+            ( { model | error = error }
+            , Cmd.none
+            )
 
 
 tick : Flags -> Replay.Model -> Float -> Replay.Model

@@ -35,6 +35,7 @@ import Notifications.State as Notifications
 import Ports exposing (analytics, copyInput, godModeCommand, loadSavedCharacter, log, mouseDown, mouseMove, mouseUp, reload, selectAllInput, touch, websocketListen, websocketSend)
 import Profile.Messages as Profile
 import Profile.State as Profile
+import Replay.Messages as Replay
 import Replay.State as Replay
 import Room.Generators exposing (generate)
 import Room.Messages as Room
@@ -486,12 +487,12 @@ locationUpdate model url =
             , Lobby.skipLobbyCmd model.flags.username
             )
 
-        Routing.Replay replayID ->
+        Routing.Replay replayId ->
             ( { model
                 | room =
                     Room.Replay Replay.init
               }
-            , Replay.getReplay replayID
+            , message <| Main.RoomMsg <| Room.ReplayMsg <| Replay.Load replayId
             )
 
         Routing.Login ->

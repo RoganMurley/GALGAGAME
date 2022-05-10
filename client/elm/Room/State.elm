@@ -80,7 +80,7 @@ update model msg assets flags =
                 Replay replay ->
                     let
                         ( newReplay, cmd ) =
-                            Replay.update replay replayMsg
+                            Replay.update replay replayMsg flags
                     in
                     ( Replay newReplay, cmd )
 
@@ -200,7 +200,7 @@ receive flags assets str model =
             ( Connected newConnected, cmd )
 
         Replay replay ->
-            ( Replay replay, Replay.receive str )
+            ( Replay replay, Cmd.none )
 
         Login login ->
             ( Login login, Login.receive str )
