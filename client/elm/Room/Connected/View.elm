@@ -38,7 +38,7 @@ webglView { chat, game, ripples } flags assets =
             GameState.paramsFromFlags flags
     in
     List.concat
-        [ GameState.webglView game chat params assets
+        [ GameState.webglView game chat params assets False
         , Ripple.view ripples params assets
         ]
 

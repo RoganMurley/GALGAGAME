@@ -13,8 +13,8 @@ import Resolvable.State exposing (resolving)
 import WebGL
 
 
-webglView : PlayState -> Chat.Model -> Render.Params -> Assets.Model -> List WebGL.Entity
-webglView playState chat params assets =
+webglView : PlayState -> Chat.Model -> Render.Params -> Assets.Model -> Bool -> List WebGL.Entity
+webglView playState chat params assets isReplay =
     case playState of
         Playing { game } ->
             Model.view params game chat assets
@@ -22,7 +22,7 @@ webglView playState chat params assets =
         Ended { winner, game, buttons, aftermath } ->
             List.concat
                 [ Model.view params game chat assets
-                , Endgame.view params assets winner (resolving game.res) aftermath buttons
+                , Endgame.view params assets winner (resolving game.res) aftermath buttons isReplay
                 ]
 
 

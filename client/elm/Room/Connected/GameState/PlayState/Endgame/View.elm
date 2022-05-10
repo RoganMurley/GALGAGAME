@@ -32,6 +32,52 @@ import WebGL
 import WhichPlayer.Types exposing (WhichPlayer(..))
 
 
+view :
+    Render.Params
+    -> Assets.Model
+    -> Maybe WhichPlayer
+    -> Bool
+    -> Aftermath.Model
+    -> Buttons
+    -> Bool
+    -> List WebGL.Entity
+view { w, h } assets winner resolving aftermath buttons isReplay =
+    let
+        ctx =
+            bareContextInit ( w, h ) assets NoMouse
+    in
+    if resolving then
+        []
+
+    else
+        List.concat <|
+            case Aftermath.active aftermath of
+                Just Aftermath.Winner ->
+                    [ animView { ctx | anim = GameEnd winner, progress = 1 } ]
+
+                Just (Aftermath.StatChange stats t) ->
+                    [ backgroundView { ctx | anim = GameEnd winner, progress = 1 }
+                    , xpView stats aftermath.tick t ctx
+                    ]
+
+                Just (Aftermath.Unlock rune) ->
+                    [ backgroundView { ctx | anim = GameEnd winner, progress = 1 }
+                    , unlockView ctx aftermath.tick rune
+                    ]
+
+                Just (Aftermath.Leaderboard _) ->
+                    [ backgroundView { ctx | anim = GameEnd winner, progress = 1 } ]
+
+                Nothing ->
+                    if isReplay then
+                        [ animView { ctx | anim = GameEnd winner, progress = 1 } ]
+
+                    else
+                        [ backgroundView { ctx | anim = GameEnd winner, progress = 1 }
+                        , Buttons.view buttons ctx
+                        ]
+
+
 backgroundView : Context -> List WebGL.Entity
 backgroundView ctx =
     let
@@ -122,40 +168,6 @@ animView ctx =
 
         _ ->
             []
-
-
-view : Render.Params -> Assets.Model -> Maybe WhichPlayer -> Bool -> Aftermath.Model -> Buttons -> List WebGL.Entity
-view { w, h } assets winner resolving aftermath buttons =
-    let
-        ctx =
-            bareContextInit ( w, h ) assets NoMouse
-    in
-    if resolving then
-        []
-
-    else
-        List.concat <|
-            case Aftermath.active aftermath of
-                Just Aftermath.Winner ->
-                    [ animView { ctx | anim = GameEnd winner, progress = 1 } ]
-
-                Just (Aftermath.StatChange stats t) ->
-                    [ backgroundView { ctx | anim = GameEnd winner, progress = 1 }
-                    , xpView stats aftermath.tick t ctx
-                    ]
-
-                Just (Aftermath.Unlock rune) ->
-                    [ backgroundView { ctx | anim = GameEnd winner, progress = 1 }
-                    , unlockView ctx aftermath.tick rune
-                    ]
-
-                Just (Aftermath.Leaderboard _) ->
-                    [ backgroundView { ctx | anim = GameEnd winner, progress = 1 } ]
-
-                Nothing ->
-                    [ backgroundView { ctx | anim = GameEnd winner, progress = 1 }
-                    , Buttons.view buttons ctx
-                    ]
 
 
 xpView : { initialXp : Float, finalXp : Float } -> Float -> Float -> Context -> List WebGL.Entity

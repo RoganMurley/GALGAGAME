@@ -29,8 +29,8 @@ htmlView state roomID flags =
             PlayState.htmlView started flags
 
 
-webglView : GameState -> Chat.Model -> Render.Params -> Assets.Model -> List WebGL.Entity
-webglView state chat params assets =
+webglView : GameState -> Chat.Model -> Render.Params -> Assets.Model -> Bool -> List WebGL.Entity
+webglView state chat params assets isReplay =
     case state of
         Waiting waiting ->
             Waiting.webglView waiting params assets
@@ -39,7 +39,7 @@ webglView state chat params assets =
             DeckBuilding.webglView params selecting assets
 
         Started started ->
-            PlayState.webglView started chat params assets
+            PlayState.webglView started chat params assets isReplay
 
 
 paramsFromFlags : Flags -> Render.Params

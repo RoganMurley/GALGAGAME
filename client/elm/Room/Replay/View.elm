@@ -51,6 +51,7 @@ webglView { replay, started } flags assets =
                     Chat.init
                     (GameState.paramsFromFlags flags)
                     assets
+                    True
 
             else
                 notStartedView (GameState.paramsFromFlags flags) assets
