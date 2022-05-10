@@ -161,12 +161,12 @@ emptyGrail =
   newCard
     Empty
     Grail
-    "Become a copy of a random card\nin your hand"
+    "Become a copy of an unrevealed\ncard in your hand"
     $ \w -> do
       gen <- getGen
       hand <- getHand w
       stack <- getStack
-      let mCopyCard = headMay . shuffle gen $ zip [0 ..] hand
+      let mCopyCard = headMay . filter (\(_, c) -> not $ isRevealed c) . shuffle gen $ zip [0 ..] hand
       case mCopyCard of
         Just (index, copyCard) ->
           case Stack.get stack 0 of
