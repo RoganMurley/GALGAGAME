@@ -399,8 +399,7 @@ mirrorGrail =
     Grail
     "Double the number of times card\nin next socket activates"
     $ \_ -> do
-      raw $ Alpha.modStackHead $ cardMap (addStatus StatusEcho)
-      Beta.null
+      transmuteHead (cardMap (addStatus StatusEcho))
 
 mirrorCoin :: Card
 mirrorCoin =
