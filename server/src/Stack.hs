@@ -52,7 +52,7 @@ diasporaFromStack stack =
   catMaybes $ fmap combine $ zip [0 ..] $ toList stack
   where
     combine :: (Int, Maybe StackCard) -> Maybe (Int, StackCard)
-    combine (i, (Just sc)) = Just (i, sc)
+    combine (i, Just sc) = Just (i, sc)
     combine (_, Nothing) = Nothing
 
 stackFromDiaspora :: [(Int, StackCard)] -> Stack

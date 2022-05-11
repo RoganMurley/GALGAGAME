@@ -3,13 +3,15 @@
 
 module DSL.Alpha.Actions where
 
+import Bounce (CardBounce (..))
 import Card (Card)
 import {-# SOURCE #-} Cards (strangeEnd)
 import Control.Applicative ((<|>))
 import Control.Monad.Free (MonadFree, liftF)
 import Control.Monad.Free.TH (makeFree)
 import DSL.Alpha.DSL (DSL (..), Program)
-import Data.List (partition)
+import Data.Foldable (toList)
+import Data.Maybe (catMaybes)
 import HandCard (HandCard (..), anyCard)
 import Life (Life)
 import Model (Deck, Hand, Passes (..), Turn, maxHandLength)
@@ -118,14 +120,13 @@ draw w d = do
     Nothing ->
       addToHand w (KnownHandCard strangeEnd)
 
-transmute :: (Int -> StackCard -> Maybe Transmutation) -> Program ()
-transmute f =
+transmute :: Wheel (Maybe Transmutation) -> Program ()
+transmute transmutations =
   let combiner :: Maybe Transmutation -> Maybe StackCard -> Maybe StackCard
       combiner (Just (Transmutation _ finalStackCard)) (Just _) = Just finalStackCard
       combiner _ stackCard = stackCard
    in do
         stack <- getStack
-        let transmutations = Stack.diasporaMap f stack
         setStack (combiner <$> transmutations <*> stack)
 
 transmuteActive :: (StackCard -> Maybe StackCard) -> Program ()
@@ -143,17 +144,28 @@ transmuteActive f =
       Nothing ->
         return ()
 
-bounce :: (Int -> StackCard -> Bool) -> Program ()
-bounce f = do
-  diaspora <- Stack.diasporaFromStack <$> getStack
-  let bouncing = snd <$> filter (uncurry f) diaspora
-  modStack $ Stack.diasporaFilter (\i c -> not $ f i c)
-  let (paBouncing, pbBouncing) = partition (isOwner PlayerA) bouncing
-  modHand PlayerA $ \h -> h ++ (KnownHandCard . stackcard_card <$> paBouncing)
-  modHand PlayerB $ \h -> h ++ (KnownHandCard . stackcard_card <$> pbBouncing)
+bounce :: Wheel (Maybe CardBounce) -> Program ()
+bounce bounces = do
+  stack <- getStack
+  -- Remove bounced/discarded cards
+  setStack $ remove <$> bounces <*> stack
+  -- PlayerA
+  let paBounceCards = catMaybes . toList $ playerBounce PlayerA <$> bounces <*> stack
+  modHand PlayerA $ \h -> h ++ (KnownHandCard . stackcard_card <$> paBounceCards)
+  -- PlayerB
+  let pbBounceCards = catMaybes . toList $ playerBounce PlayerB <$> bounces <*> stack
+  modHand PlayerB $ \h -> h ++ (KnownHandCard . stackcard_card <$> pbBounceCards)
+  where
+    remove :: Maybe CardBounce -> Maybe StackCard -> Maybe StackCard
+    remove (Just _) _ = Nothing
+    remove Nothing mStackCard = mStackCard
 
-moveStack :: (Int -> StackCard -> Maybe Int) -> Program ()
-moveStack f =
+    playerBounce :: WhichPlayer -> Maybe CardBounce -> Maybe StackCard -> Maybe StackCard
+    playerBounce w (Just (BounceIndex _ _)) (Just sc) = if isOwner w sc then Just sc else Nothing
+    playerBounce _ _ _ = Nothing
+
+moveStack :: Wheel (Maybe Int) -> Program ()
+moveStack moves =
   let -- Stack with moved cards at their targets.
       targetReduce :: (Maybe Int, Maybe StackCard) -> Stack -> Stack
       targetReduce (Just i, mStackCard) stack = Stack.set stack (i `mod` 12) mStackCard
@@ -163,7 +175,6 @@ moveStack f =
       invertMaybe Nothing = Just ()
    in do
         stack <- getStack
-        let moves = Stack.diasporaMap f stack
         -- Stack with moved cards at their targets.
         let targets = foldr targetReduce Stack.init ((,) <$> moves <*> stack) :: Stack
         -- Stack with static cards only.
@@ -172,8 +183,14 @@ moveStack f =
         let newStack = (<|>) <$> targets <*> statics :: Stack
         setStack newStack
 
-discardStack :: (Int -> StackCard -> Bool) -> Program ()
-discardStack f = modStack $ Stack.diasporaFilter (\i c -> not $ f i c)
+discardStack :: Wheel Bool -> Program ()
+discardStack discards =
+  let f :: Bool -> Maybe StackCard -> Maybe StackCard
+      f False mStackCard = mStackCard
+      f True _ = Nothing
+   in modStack $ \stack -> f <$> discards <*> stack
+
+-- modStack $ Stack.diasporaFilter (\i c -> not $ f i c)
 
 discardHand :: WhichPlayer -> (Int -> Card -> Bool) -> Program ()
 discardHand w f = modHand w $ indexedFilter (\i c -> not $ f i (anyCard c))

@@ -7,7 +7,6 @@ import Card (Card)
 import CardAnim (Damage, Hurt, TimeModifier(..), cardAnimDamage)
 import Control.Monad (when)
 import Control.Monad.Free (Free(..), foldFree, liftF)
-import Data.Foldable (foldl')
 import Data.Functor.Sum (Sum(..))
 import Data.Maybe (fromMaybe, isJust)
 import Discard (CardDiscard(..), isDiscard)
@@ -29,7 +28,6 @@ import qualified DSL.Alpha as Alpha
 import qualified DSL.Anim as Anim
 import qualified DSL.Log as Log
 import qualified ModelDiff
-import qualified Stack
 import qualified Wheel
 
 import {-# SOURCE #-} Cards (strangeEnd)
@@ -42,14 +40,14 @@ alphaI (Free (Heal h w n))          = Alpha.heal h w               >>  alphaI n
 alphaI (Free (Draw w d _ n))        = Alpha.draw w d               >>  alphaI n
 alphaI (Free (AddToHand w c n))     = Alpha.addToHand w c          >>  alphaI n
 alphaI (Free (Play w c i n))        = Alpha.play w (anyCard c) i   >>  alphaI n
-alphaI (Free (Transmute f n))       = Alpha.transmute f            >>  alphaI n
+alphaI (Free (Transmute' t n))      = Alpha.transmute t            >>  alphaI n
 alphaI (Free (TransmuteActive f n)) = Alpha.transmuteActive f      >>  alphaI n
 alphaI (Free (Rotate n))            = Alpha.rotate                 >>  alphaI n
 alphaI (Free (Windup n))            = Alpha.windup                 >>  alphaI n
-alphaI (Free (Bounce f _ n))        = Alpha.bounce f               >>  alphaI n
-alphaI (Free (DiscardStack f n))    = Alpha.discardStack f         >>  alphaI n
+alphaI (Free (Bounce' f _ n))       = Alpha.bounce f               >>  alphaI n
+alphaI (Free (DiscardStack' f n))   = Alpha.discardStack f         >>  alphaI n
 alphaI (Free (DiscardHand w f n))   = Alpha.discardHand w f        >>  alphaI n
-alphaI (Free (MoveStack f _ n))     = Alpha.moveStack f            >>  alphaI n
+alphaI (Free (MoveStack' f _ n))    = Alpha.moveStack f            >>  alphaI n
 alphaI (Free (Mill w _ n))          = Alpha.mill w                 >>  alphaI n
 alphaI (Free (Reveal w f n))        = Alpha.reveal w f             >>  alphaI n
 alphaI (Free (GetGen f))            = Alpha.getGen                 >>= alphaI . f
@@ -80,12 +78,12 @@ animI (Heal _ w _)          = healAnim w
 animI (AddToHand w c  _)    = addToHandAnim w c
 animI (Draw w d t _)        = drawAnim w d t
 animI (Play w c i _)        = playAnim w c i
-animI (Transmute f _)       = transmuteAnim f
+animI (Transmute' t _)      = transmuteAnim t
 animI (TransmuteActive f _) = transmuteActiveAnim f
-animI (Bounce f t _)        = bounceAnim f t
-animI (DiscardStack f _)    = discardStackAnim f
+animI (Bounce' b t _)       = bounceAnim b t
+animI (DiscardStack' d _)   = discardStackAnim d
 animI (DiscardHand w f _)   = discardHandAnim w f
-animI (MoveStack f t _)     = moveStackAnim f t
+animI (MoveStack' m t _)    = moveStackAnim m t
 animI (Mill w t _)          = millAnim w t
 animI (Reveal w f _)        = revealAnim w f
 animI _                     = toLeft
@@ -144,10 +142,9 @@ playAnim w c i alpha = do
   return final
 
 
-transmuteAnim :: (Int -> StackCard -> Maybe Transmutation) -> Alpha.Program a -> AlphaAnimProgram a
-transmuteAnim f alpha = do
-  stack <- toLeft Alpha.getStack
-  let transmutations = removeTransmuteToSelf <$> Stack.diasporaMap f stack
+transmuteAnim :: Wheel (Maybe Transmutation) -> Alpha.Program a -> AlphaAnimProgram a
+transmuteAnim transmutationsRaw alpha = do
+  let transmutations = removeTransmuteToSelf <$> transmutationsRaw
   let activity = any isJust transmutations
   when activity (toRight . liftF $ Anim.Transmute transmutations ())
   final <- toLeft alpha
@@ -175,9 +172,8 @@ transmuteActiveAnim f alpha = do
       return final
 
 
-bounceAnim :: (Int -> StackCard -> Bool) -> TimeModifier -> Alpha.Program a -> AlphaAnimProgram a
-bounceAnim f t alpha = do
-  bounces <- toLeft $ getBounces f
+bounceAnim :: Wheel (Maybe CardBounce) -> TimeModifier -> Alpha.Program a -> AlphaAnimProgram a
+bounceAnim bounces t alpha = do
   let activity = any isJust bounces
   when activity (toRight . liftF $ Anim.Bounce bounces t ())
   final <- toLeft alpha
@@ -185,10 +181,8 @@ bounceAnim f t alpha = do
   return final
 
 
-moveStackAnim :: (Int -> StackCard -> Maybe Int) -> TimeModifier -> Alpha.Program a -> AlphaAnimProgram a
-moveStackAnim f t alpha = do
-  stack <- toLeft Alpha.getStack
-  let moves = Stack.diasporaMap f stack
+moveStackAnim :: Wheel (Maybe Int) -> TimeModifier -> Alpha.Program a -> AlphaAnimProgram a
+moveStackAnim moves t alpha = do
   let activity = any isJust moves
   when activity (toRight . liftF $ Anim.MoveStack moves t ())
   final <- toLeft alpha
@@ -196,67 +190,8 @@ moveStackAnim f t alpha = do
   return final
 
 
-
-data BounceState = BounceState
-  { stackIndex :: Int
-  , handAIndex :: Int
-  , handBIndex :: Int
-  , bounces    :: Wheel (Maybe CardBounce)
-  } deriving (Show)
-
-
-getBounces :: (Int -> StackCard -> Bool) -> Alpha.Program (Wheel (Maybe CardBounce))
-getBounces f = do
-  stack <- Alpha.getStack
-  handALen <- length <$> Alpha.getHand PlayerA
-  handBLen <- length <$> Alpha.getHand PlayerB
-  let startState = (BounceState{
-    stackIndex = 0,
-    handAIndex = handALen,
-    handBIndex = handBLen,
-    bounces = Wheel.init $ const Nothing
-  })
-  let BounceState{ bounces } = foldl' reduce startState stack
-  return bounces
-  where
-    next :: BounceState -> BounceState
-    next state@(BounceState{ stackIndex, bounces }) = (
-      state
-        { stackIndex = stackIndex + 1
-        , bounces = Wheel.back bounces
-        }
-      )
-    reduce :: BounceState -> Maybe StackCard -> BounceState
-    reduce state Nothing = next state
-    reduce state@(BounceState{ stackIndex, handAIndex, handBIndex, bounces }) (Just stackCard) =
-      next $
-        if f stackIndex stackCard then
-          case stackcard_owner stackCard of
-            PlayerA ->
-              if handAIndex >= maxHandLength then
-                (state { bounces = bounces { wheel_0 = Just BounceDiscard } })
-              else
-                (state
-                  { handAIndex = handAIndex + 1
-                  , bounces = bounces { wheel_0 = Just (BounceIndex stackIndex handAIndex) }
-                  }
-                )
-            PlayerB ->
-              if handBIndex >= maxHandLength then
-                (state{ bounces = bounces { wheel_0 = Just BounceDiscard } })
-              else
-                (state
-                  { handBIndex = handBIndex + 1
-                  , bounces = bounces { wheel_0 = Just (BounceIndex stackIndex handBIndex) }
-                  }
-                )
-        else
-          state
-
-
-discardStackAnim :: (Int -> StackCard -> Bool) -> Alpha.Program a -> AlphaAnimProgram a
-discardStackAnim f alpha = do
-  discards <- toLeft $ getStackDiscards f
+discardStackAnim :: Wheel Bool -> Alpha.Program a -> AlphaAnimProgram a
+discardStackAnim discards alpha = do
   let activity = any id discards
   when activity (toRight . liftF $ Anim.DiscardStack discards ())
   final <- toLeft alpha
@@ -297,13 +232,6 @@ revealAnim w f alpha = do
   let activity = any id $ (uncurry xor) <$> zip initialReveals reveals :: Bool
   when activity (toRight . liftF $ Anim.Reveal w reveals ())
   return final
-
-
-getStackDiscards :: (Int -> StackCard -> Bool) -> Alpha.Program (Wheel Bool)
-getStackDiscards f = do
-  stack <- Alpha.getStack
-  let discarder = \i c -> Just $ f i c
-  return $ fromMaybe False <$> Stack.diasporaMap discarder stack
 
 
 type AlphaAnimProgram = Free (Sum Alpha.DSL Anim.DSL)
