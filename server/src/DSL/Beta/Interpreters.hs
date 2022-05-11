@@ -20,7 +20,7 @@ import Player (WhichPlayer(..))
 import ResolveData (ResolveData(..))
 import Safe (headMay)
 import StackCard (StackCard(..))
-import Transmutation (Transmutation(..), removeTransmuteToSelf)
+import Transmutation (Transmutation(..))
 import Util (xor)
 import Wheel (Wheel(..))
 
@@ -143,8 +143,7 @@ playAnim w c i alpha = do
 
 
 transmuteAnim :: Wheel (Maybe Transmutation) -> Alpha.Program a -> AlphaAnimProgram a
-transmuteAnim transmutationsRaw alpha = do
-  let transmutations = removeTransmuteToSelf <$> transmutationsRaw
+transmuteAnim transmutations alpha = do
   let activity = any isJust transmutations
   when activity (toRight . liftF $ Anim.Transmute transmutations ())
   final <- toLeft alpha

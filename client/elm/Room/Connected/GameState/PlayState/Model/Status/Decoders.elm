@@ -16,6 +16,9 @@ decoder =
                 "StatusEcho" ->
                     Json.succeed StatusEcho
 
+                "StatusFragile" ->
+                    Json.succeed StatusFragile
+
                 _ ->
                     Json.fail <| "Unknown status " ++ str
     in

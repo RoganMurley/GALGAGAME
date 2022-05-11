@@ -175,7 +175,8 @@ mainRunes =
     seerRune,
     feverRune,
     emptyRune,
-    bloodRune
+    bloodRune,
+    glassRune
   ]
 
 allRunes :: [Rune]
@@ -281,6 +282,14 @@ bloodRune =
     "cards/blood/coin.png"
     (Cards.bloodSword, Cards.bloodWand, Cards.bloodGrail, Cards.bloodCoin)
     (levelToExperience 9)
+
+glassRune :: Rune
+glassRune =
+  Rune
+    "GLASS"
+    "cards/glass/coin.png"
+    (Cards.glassSword, Cards.glassWand, Cards.glassGrail, Cards.glassCoin)
+    (levelToExperience 10)
 
 cometRune :: Rune
 cometRune =

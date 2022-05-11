@@ -4,25 +4,29 @@
 module DSL.Beta.Actions where
 
 import Bounce (BounceState (..), CardBounce (..))
+import Card (Status (..), hasStatus)
 import CardAnim (Hurt (..), TimeModifier (..))
 import Control.Monad (forM_, when)
 import Control.Monad.Free (MonadFree, liftF)
 import Control.Monad.Free.TH (makeFree)
 import qualified DSL.Alpha as Alpha
 import DSL.Beta.DSL (DSL (..), Program)
-import Data.Foldable (foldl')
+import Data.Foldable (foldl', toList)
 import Data.Map (Map)
 import qualified Data.Map as Map
-import Data.Maybe (fromMaybe)
+import Data.Maybe (catMaybes, fromMaybe, isJust)
+import Data.Set (Set)
+import qualified Data.Set as Set
 import HandCard (HandCard, isRevealed)
 import Life (Life)
 import Model (maxHandLength)
 import Player (WhichPlayer (..), other)
+import Stack (Stack)
 import qualified Stack
-import StackCard (StackCard (..))
-import Transmutation (Transmutation (..))
+import StackCard (StackCard (..), isOwner)
+import Transmutation (Transmutation (..), removeTransmuteToSelf)
 import Util (randomChoice, shuffle, split)
-import Wheel (Wheel (..))
+import Wheel (Wheel (..), indexWheel)
 import qualified Wheel
 import Prelude hiding (null)
 
@@ -31,12 +35,26 @@ makeFree ''DSL
 transmute :: (Int -> StackCard -> Maybe Transmutation) -> Program ()
 transmute f = do
   stack <- getStack
-  transmute' $ Stack.diasporaMap f stack
+  let transmutations = removeTransmuteToSelf <$> Stack.diasporaMap f stack
+  transmute' transmutations
+  discardStack' ((&&) <$> isFragile stack <*> (isJust <$> transmutations))
 
 bounce :: (Int -> StackCard -> Bool) -> TimeModifier -> Program ()
 bounce f t = do
+  stack <- getStack
   bounces <- getBounces f
   bounce' bounces t
+  let paTargets = catMaybes . toList $ playerBounce PlayerA <$> bounces <*> stack
+  discardHand PlayerA (\i _ -> i `elem` paTargets)
+  let pbTargets = catMaybes . toList $ playerBounce PlayerB <$> bounces <*> stack
+  discardHand PlayerB (\i _ -> i `elem` pbTargets)
+  where
+    playerBounce :: WhichPlayer -> Maybe CardBounce -> Maybe StackCard -> Maybe Int
+    playerBounce w (Just (BounceIndex _ targetIndex)) (Just sc) =
+      if isOwner w sc && hasStatus StatusFragile (stackcard_card sc)
+        then Just targetIndex
+        else Nothing
+    playerBounce _ _ _ = Nothing
 
 getBounces :: (Int -> StackCard -> Bool) -> Program (Wheel (Maybe CardBounce))
 getBounces f = do
@@ -55,7 +73,7 @@ getBounces f = do
   return bounces
   where
     next :: BounceState -> BounceState
-    next state@(BounceState {stackIndex, bounces}) =
+    next state@BounceState {stackIndex, bounces} =
       ( state
           { stackIndex = stackIndex + 1,
             bounces = Wheel.back bounces
@@ -63,7 +81,7 @@ getBounces f = do
       )
     reduce :: BounceState -> Maybe StackCard -> BounceState
     reduce state Nothing = next state
-    reduce state@(BounceState {stackIndex, handAIndex, handBIndex, bounces}) (Just stackCard) =
+    reduce state@BounceState {stackIndex, handAIndex, handBIndex, bounces} (Just stackCard) =
       next $
         if f stackIndex stackCard
           then case stackcard_owner stackCard of
@@ -101,7 +119,28 @@ getStackDiscards f = do
 moveStack :: (Int -> StackCard -> Maybe Int) -> TimeModifier -> Program ()
 moveStack f t = do
   stack <- getStack
-  moveStack' (Stack.diasporaMap f stack) t
+  let moves = removeMoveToSelf <$> indexWheel <*> Stack.diasporaMap f stack
+  moveStack' moves t
+  movedStack <- getStack
+  let targets = foldl' reduce Set.empty moves
+  discardStack' ((&&) <$> isFragile movedStack <*> ((`Set.member` targets) <$> indexWheel))
+  where
+    reduce :: Set Int -> Maybe Int -> Set Int
+    reduce set (Just i) = Set.insert i set
+    reduce set Nothing = set
+
+    removeMoveToSelf :: Int -> Maybe Int -> Maybe Int
+    removeMoveToSelf origin (Just target) =
+      if origin == target then Nothing else Just target
+    removeMoveToSelf _ Nothing = Nothing
+
+isFragile :: Stack -> Wheel Bool
+isFragile stack =
+  let hasFragileStatus :: StackCard -> Bool
+      hasFragileStatus sc = hasStatus StatusFragile $ stackcard_card sc
+   in fmap
+        (maybe False hasFragileStatus)
+        stack
 
 lifesteal :: Life -> WhichPlayer -> Program ()
 lifesteal d w = do
@@ -126,7 +165,7 @@ confound :: Program ()
 confound = do
   initialGen <- getGen
   let n = randomChoice initialGen [1 .. 4] :: Int
-  forM_ [1 .. n] $ const shuffleMovingEveryCard
+  forM_ [0 .. n] $ const shuffleMovingEveryCard
   where
     -- Shuffle, guaranteeing that every card is moved.
     -- Not truly random, but good enough because we do it a random

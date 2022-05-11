@@ -21,6 +21,7 @@ applyStatuses card =
 statusEff :: Status -> (Beta.Program () -> Beta.Program ())
 statusEff StatusEcho = \eff -> eff >> eff
 statusEff StatusBlighted = hoistFree blightedRewrite
+statusEff StatusFragile = id
 
 blightedRewrite :: Beta.DSL a -> Beta.DSL a
 blightedRewrite (Heal l w n) = Hurt l w Curse n

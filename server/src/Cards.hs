@@ -1,6 +1,6 @@
 module Cards where
 
-import Card (Aspect (..), Card (..), Status (..), Suit (..), addStatus, cardName, newCard)
+import Card (Aspect (..), Card (..), Status (..), Suit (..), addStatus, cardName, hasStatus, newCard)
 import CardAnim (Hurt (..), TimeModifier (..))
 import Control.Monad (when)
 import qualified DSL.Alpha as Alpha
@@ -637,7 +637,12 @@ feverGrail =
     Grail
     "Healing becomes hurting for all\nother cards on the wheel"
     $ \_ ->
-      transmute (\i sc -> if i > 0 then Just (Transmutation sc (cardMap (addStatus StatusBlighted) sc)) else Nothing)
+      transmute
+        ( \i sc ->
+            if i > 0
+              then Just (Transmutation sc (cardMap (addStatus StatusBlighted) sc))
+              else Nothing
+        )
 
 feverCoin :: Card
 feverCoin =
@@ -656,6 +661,53 @@ strangeDream =
     "Heal for 13"
     $ \w -> do
       heal 13 w
+
+-- Glass
+glassSword :: Card
+glassSword =
+  addStatus StatusFragile $
+    newCard
+      Glass
+      Sword
+      "Hurt for 10.\nThis card is fragile."
+      $ \w -> hurt 10 (other w) Slash
+
+glassWand :: Card
+glassWand =
+  addStatus StatusFragile $
+    newCard
+      Glass
+      Wand
+      "Hurt for 6 for each other card\non the wheel. This card\nis fragile."
+      $ \w -> do
+        len <- diasporaLength <$> getStack
+        hurt (len * 6) (other w) Slash
+
+glassGrail :: Card
+glassGrail =
+  addStatus StatusFragile $
+    newCard
+      Glass
+      Grail
+      "Draw 2.\nThis card is fragile."
+      $ \w -> do
+        draw w w (TimeModifierOutQuint 1)
+        draw w w (TimeModifierOutQuint 1)
+
+glassCoin :: Card
+glassCoin =
+  addStatus StatusFragile $
+    newCard
+      Glass
+      Coin
+      "All other cards on the wheel\nbecome fragile. This card\nis fragile."
+      $ \_ ->
+        transmute
+          ( \i sc ->
+              if i > 0 && not (hasStatus StatusFragile $ stackcard_card sc)
+                then Just (Transmutation sc (cardMap (addStatus StatusFragile) sc))
+                else Nothing
+          )
 
 -- Comet
 cometSword :: Card
@@ -746,6 +798,7 @@ swords =
     feverSword,
     emptySword,
     seerSword,
+    glassSword,
     cometSword
   ]
 
@@ -765,6 +818,7 @@ wands =
     feverWand,
     emptyWand,
     seerWand,
+    glassWand,
     cometWand
   ]
 
@@ -784,6 +838,7 @@ grails =
     feverGrail,
     emptyGrail,
     seerGrail,
+    glassGrail,
     cometGrail
   ]
 
@@ -802,6 +857,7 @@ coins =
     feverCoin,
     emptyCoin,
     seerCoin,
+    glassCoin,
     cometCoin
   ]
 

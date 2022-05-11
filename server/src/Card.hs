@@ -59,6 +59,7 @@ data Aspect
   | Fever
   | Empty
   | Comet
+  | Glass
   | Seer
   | Strange
   | OtherAspect Text
@@ -107,6 +108,7 @@ mainAspects =
     Morph,
     Empty,
     Seer,
+    Glass,
     Comet
   ]
 
@@ -129,7 +131,7 @@ allAspects =
     Comet
   ]
 
-data Status = StatusEcho | StatusBlighted
+data Status = StatusEcho | StatusBlighted | StatusFragile
   deriving (Eq, Generic, NFData, Ord, Show)
 
 instance ToJSON Status where
@@ -146,3 +148,6 @@ removeStatus status card = card {card_statuses = filter (status /=) (card_status
 
 removeStatuses :: Card -> Card
 removeStatuses card = card {card_statuses = []}
+
+hasStatus :: Status -> Card -> Bool
+hasStatus status card = elem status $ card_statuses card
