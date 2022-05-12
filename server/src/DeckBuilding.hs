@@ -56,14 +56,14 @@ instance ToJSON Character where
       [ "choice" .= (Nothing :: Maybe (Rune, Rune, Rune))
       ]
 
-data ChosenCharacter = ChosenCharacter (Maybe Character)
+newtype ChosenCharacter = ChosenCharacter (Maybe Character)
   deriving (Eq, Show)
 
 instance ToJSON ChosenCharacter where
   toJSON (ChosenCharacter character) =
     object ["chosen" .= character]
 
-data UnchosenCharacter = UnchosenCharacter (Maybe Character)
+newtype UnchosenCharacter = UnchosenCharacter (Maybe Character)
   deriving (Eq, Show)
 
 instance ToJSON UnchosenCharacter where
@@ -73,42 +73,48 @@ instance ToJSON UnchosenCharacter where
 -- DeckBuilding
 data DeckBuilding = DeckBuilding
   { deckbuilding_pa :: Either UnchosenCharacter ChosenCharacter,
-    deckbuilding_pb :: Either UnchosenCharacter ChosenCharacter
+    deckbuilding_runes_pa :: [Rune],
+    deckbuilding_pb :: Either UnchosenCharacter ChosenCharacter,
+    deckbuilding_runes_pb :: [Rune]
   }
   deriving (Eq, Show)
 
 instance ToJSON DeckBuilding where
-  toJSON DeckBuilding {deckbuilding_pa} =
+  toJSON DeckBuilding {deckbuilding_pa, deckbuilding_runes_pa} =
     case deckbuilding_pa of
       Left unchosen ->
         object
           [ "character" .= unchosen,
-            "all_runes" .= mainRunes
+            "all_runes" .= deckbuilding_runes_pa
           ]
       Right chosen ->
         object
           [ "character" .= chosen,
-            "all_runes" .= mainRunes
+            "all_runes" .= deckbuilding_runes_pa
           ]
 
 instance Mirror DeckBuilding where
-  mirror (DeckBuilding pa pb) = DeckBuilding pb pa
+  mirror (DeckBuilding pa runesPa pb runesPb) = DeckBuilding pb runesPb pa runesPa
 
-initDeckBuilding :: Either UnchosenCharacter ChosenCharacter -> Either UnchosenCharacter ChosenCharacter -> DeckBuilding
-initDeckBuilding = DeckBuilding
+initDeckBuilding :: (Bool, Bool) -> Either UnchosenCharacter ChosenCharacter -> Either UnchosenCharacter ChosenCharacter -> DeckBuilding
+initDeckBuilding (paSuper, pbSuper) choicePa choicePb =
+  DeckBuilding
+    { deckbuilding_pa = choicePa,
+      deckbuilding_runes_pa = if paSuper then superRunes else mainRunes,
+      deckbuilding_pb = choicePb,
+      deckbuilding_runes_pb = if pbSuper then superRunes else mainRunes
+    }
 
 selectCharacter :: DeckBuilding -> WhichPlayer -> Character -> DeckBuilding
 selectCharacter deckModel which character =
   case which of
     PlayerA ->
-      DeckBuilding
-        { deckbuilding_pa = Right . ChosenCharacter . Just $ character,
-          deckbuilding_pb = deckbuilding_pb deckModel
+      deckModel
+        { deckbuilding_pa = Right . ChosenCharacter . Just $ character
         }
     PlayerB ->
-      DeckBuilding
-        { deckbuilding_pa = deckbuilding_pa deckModel,
-          deckbuilding_pb = Right . ChosenCharacter . Just $ character
+      deckModel
+        { deckbuilding_pb = Right . ChosenCharacter . Just $ character
         }
 
 isReady :: DeckBuilding -> WhichPlayer -> Bool
@@ -118,6 +124,10 @@ isReady deckModel which =
       isRight $ deckbuilding_pa deckModel
     PlayerB ->
       isRight $ deckbuilding_pb deckModel
+
+getSelectableRunes :: WhichPlayer -> DeckBuilding -> [Rune]
+getSelectableRunes PlayerA = deckbuilding_runes_pa
+getSelectableRunes PlayerB = deckbuilding_runes_pb
 
 -- CharacterChoice
 data CharacterChoice = CharacterChoice
@@ -136,8 +146,8 @@ instance FromJSON CharacterChoice where
           <*> o .: "rune_b"
           <*> o .: "rune_c"
 
-choiceToCharacter :: CharacterChoice -> Experience -> Either Text Character
-choiceToCharacter CharacterChoice {choice_ra, choice_rb, choice_rc} xp =
+choiceToCharacter :: CharacterChoice -> [Rune] -> Experience -> Either Text Character
+choiceToCharacter CharacterChoice {choice_ra, choice_rb, choice_rc} runes xp =
   let uniqueChoices :: Bool
       uniqueChoices = Set.size (Set.fromList [choice_ra, choice_rb, choice_rc]) == 3
       makeCharacter :: Rune -> Rune -> Rune -> Character
@@ -146,14 +156,14 @@ choiceToCharacter CharacterChoice {choice_ra, choice_rb, choice_rc} xp =
    in if uniqueChoices
         then
           makeCharacter
-            <$> getRune choice_ra xp
-            <*> getRune choice_rb xp
-            <*> getRune choice_rc xp
+            <$> getRune choice_ra runes xp
+            <*> getRune choice_rb runes xp
+            <*> getRune choice_rc runes xp
         else Left "Rune choices were not unique"
 
-getRune :: Text -> Experience -> Either Text Rune
-getRune name xp =
-  case find (\Rune {rune_name} -> rune_name == name) mainRunes of
+getRune :: Text -> [Rune] -> Experience -> Either Text Rune
+getRune name runes xp =
+  case find (\Rune {rune_name} -> rune_name == name) runes of
     Just rune ->
       if rune_xp rune <= xp
         then Right rune
@@ -175,13 +185,16 @@ mainRunes =
     seerRune,
     feverRune,
     emptyRune,
-    bloodRune,
-    glassRune
+    bloodRune
   ]
+
+superRunes :: [Rune]
+superRunes = mainRunes ++ [glassRune]
 
 allRunes :: [Rune]
 allRunes =
   mainRunes
+    ++ superRunes
     ++ [ crownRune,
          abyssRune,
          cometRune
@@ -289,7 +302,7 @@ glassRune =
     "GLASS"
     "cards/glass/coin.png"
     (Cards.glassSword, Cards.glassWand, Cards.glassGrail, Cards.glassCoin)
-    (levelToExperience 10)
+    (levelToExperience 1)
 
 cometRune :: Rune
 cometRune =

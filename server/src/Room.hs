@@ -15,7 +15,7 @@ import GameState (GameState (..), WaitType (..), initState)
 import Outcome (Outcome (..))
 import Player (WhichPlayer (..), other)
 import Scenario (Scenario (..))
-import User (GameUser (..), User (..), isCpu, isHuman, usersToGameUsers)
+import User (GameUser (..), User (..), isCpu, isHuman, isSuperuser, usersToGameUsers)
 import Util (Gen)
 
 type Name = Text
@@ -110,7 +110,14 @@ roomSetup room =
         case getState room of
           Waiting _ gen ->
             let scenario = getScenario room
-                deckBuildingModel = initDeckBuilding (scenario_characterPa scenario) (scenario_characterPb scenario)
+                (userPa, userPb) = getUsers room
+                superPa = maybe False isSuperuser userPa
+                superPb = maybe False isSuperuser userPb
+                deckBuildingModel =
+                  initDeckBuilding
+                    (superPa, superPb)
+                    (scenario_characterPa scenario)
+                    (scenario_characterPb scenario)
                 turn = scenario_turn scenario
                 startProgram = scenario_prog scenario
                 timeLimit = scenario_timeLimit scenario

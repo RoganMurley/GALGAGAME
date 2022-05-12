@@ -13,7 +13,7 @@ import Data.Maybe (fromMaybe, isJust)
 import Data.String.Conversions (cs)
 import Data.Text (Text)
 import Data.Time.Clock (NominalDiffTime, UTCTime, diffUTCTime)
-import DeckBuilding (CharacterChoice, ChosenCharacter (..), DeckBuilding (..), choiceToCharacter, initDeckBuilding, selectCharacter)
+import DeckBuilding (CharacterChoice, ChosenCharacter (..), DeckBuilding (..), choiceToCharacter, getSelectableRunes, initDeckBuilding, selectCharacter)
 import GameState (GameState (..), PlayState (..), PlayingR (..), initModel)
 import qualified GodMode
 import HandCard (HandCard (..), anyCard)
@@ -102,8 +102,15 @@ rematch ::
   Scenario ->
   UTCTime ->
   Either Err (Maybe GameState, [Outcome])
-rematch (winner, gen) users scenario time =
-  let deckModel = initDeckBuilding (scenario_characterPa scenario) (scenario_characterPb scenario)
+rematch (winner, gen) gameusers scenario time =
+  let (userPa, userPb) = gameusersToUsers gameusers
+      superPa = maybe False isSuperuser userPa
+      superPb = maybe False isSuperuser userPb
+      deckModel =
+        initDeckBuilding
+          (superPa, superPb)
+          (scenario_characterPa scenario)
+          (scenario_characterPb scenario)
       turn = fromMaybe PlayerA winner
       startProgram = scenario_prog scenario
       timeLimit = scenario_timeLimit scenario
@@ -113,7 +120,7 @@ rematch (winner, gen) users scenario time =
           turn
           startProgram
           (fst $ split gen)
-          (gameusersToUsers users)
+          (userPa, userPb)
           time
           timeLimit
    in Right (Just newState, outcomes)
@@ -158,7 +165,8 @@ select ::
 select which choice deckModel turn scenario gen users time =
   let user = getUser which users
       xp = maybe 0 gameuser_xp user
-   in case choiceToCharacter choice xp of
+      runes = getSelectableRunes which deckModel
+   in case choiceToCharacter choice runes xp of
         Right character ->
           let newDeckModel :: DeckBuilding
               newDeckModel = selectCharacter deckModel which character
@@ -190,7 +198,7 @@ nextSelectState deckModel turn startProgram gen (mUserPa, mUserPb) time timeLimi
   let result :: Maybe ([ResolveData], Model, PlayState)
       result =
         case deckModel of
-          DeckBuilding (Right (ChosenCharacter ca)) (Right (ChosenCharacter cb)) ->
+          DeckBuilding (Right (ChosenCharacter ca)) _ (Right (ChosenCharacter cb)) _ ->
             let model = initModel turn ca cb gen :: Model
                 displayUsernamePa = maybe "" getUsername mUserPa :: Text
                 displayUsernamePb = maybe "" getUsername mUserPb :: Text
