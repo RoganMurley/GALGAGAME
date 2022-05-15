@@ -19,7 +19,6 @@ import ModelDiff (ModelDiff)
 import Player (WhichPlayer(..))
 import ResolveData (ResolveData(..))
 import Safe (headMay)
-import StackCard (StackCard(..))
 import Transmutation (Transmutation(..))
 import Util (xor)
 import Wheel (Wheel(..))
@@ -34,33 +33,33 @@ import {-# SOURCE #-} Cards (strangeEnd)
 
 
 alphaI :: Program a -> Alpha.Program a
-alphaI (Free (Raw p n))             = p                            >>  alphaI n
-alphaI (Free (Hurt d w _ n))        = Alpha.hurt d w               >>  alphaI n
-alphaI (Free (Heal h w n))          = Alpha.heal h w               >>  alphaI n
-alphaI (Free (Draw w d _ n))        = Alpha.draw w d               >>  alphaI n
-alphaI (Free (AddToHand w c n))     = Alpha.addToHand w c          >>  alphaI n
-alphaI (Free (Play w c i n))        = Alpha.play w (anyCard c) i   >>  alphaI n
-alphaI (Free (Transmute' t n))      = Alpha.transmute t            >>  alphaI n
-alphaI (Free (TransmuteActive f n)) = Alpha.transmuteActive f      >>  alphaI n
-alphaI (Free (Rotate n))            = Alpha.rotate                 >>  alphaI n
-alphaI (Free (Windup n))            = Alpha.windup                 >>  alphaI n
-alphaI (Free (Bounce' f _ n))       = Alpha.bounce f               >>  alphaI n
-alphaI (Free (DiscardStack' f n))   = Alpha.discardStack f         >>  alphaI n
-alphaI (Free (DiscardHand w f n))   = Alpha.discardHand w f        >>  alphaI n
-alphaI (Free (MoveStack' f _ n))    = Alpha.moveStack f            >>  alphaI n
-alphaI (Free (Mill w _ n))          = Alpha.mill w                 >>  alphaI n
-alphaI (Free (Reveal w f n))        = Alpha.reveal w f             >>  alphaI n
-alphaI (Free (GetGen f))            = Alpha.getGen                 >>= alphaI . f
-alphaI (Free (GetRot f))            = Alpha.getRot                 >>= alphaI . f
-alphaI (Free (GetLife w f))         = Alpha.getLife w              >>= alphaI . f
-alphaI (Free (GetHand w f))         = Alpha.getHand w              >>= alphaI . f
-alphaI (Free (GetDeck w f))         = Alpha.getDeck w              >>= alphaI . f
-alphaI (Free (GetStack f))          = Alpha.getStack               >>= alphaI . f
-alphaI (Free (GetHold f))           = Alpha.getHold                >>= alphaI . f
-alphaI (Free (GetModel f))          = Alpha.getModel               >>= alphaI . f
-alphaI (Free (RawAnim _ n))         = alphaI n
-alphaI (Free (Null n))              = alphaI n
-alphaI (Pure x)                     = Pure x
+alphaI (Free (Raw p n))              = p                            >>  alphaI n
+alphaI (Free (Hurt d w _ n))         = Alpha.hurt d w               >>  alphaI n
+alphaI (Free (Heal h w n))           = Alpha.heal h w               >>  alphaI n
+alphaI (Free (Draw w d _ n))         = Alpha.draw w d               >>  alphaI n
+alphaI (Free (AddToHand w c n))      = Alpha.addToHand w c          >>  alphaI n
+alphaI (Free (Play w c i n))         = Alpha.play w (anyCard c) i   >>  alphaI n
+alphaI (Free (Transmute' t n))       = Alpha.transmute t            >>  alphaI n
+alphaI (Free (TransmuteActive' t n)) = Alpha.transmuteActive t      >>  alphaI n
+alphaI (Free (Rotate n))             = Alpha.rotate                 >>  alphaI n
+alphaI (Free (Windup n))             = Alpha.windup                 >>  alphaI n
+alphaI (Free (Bounce' f _ n))        = Alpha.bounce f               >>  alphaI n
+alphaI (Free (DiscardStack' f n))    = Alpha.discardStack f         >>  alphaI n
+alphaI (Free (DiscardHand w f n))    = Alpha.discardHand w f        >>  alphaI n
+alphaI (Free (MoveStack' f _ n))     = Alpha.moveStack f            >>  alphaI n
+alphaI (Free (Mill w _ n))           = Alpha.mill w                 >>  alphaI n
+alphaI (Free (Reveal w f n))         = Alpha.reveal w f             >>  alphaI n
+alphaI (Free (GetGen f))             = Alpha.getGen                 >>= alphaI . f
+alphaI (Free (GetRot f))             = Alpha.getRot                 >>= alphaI . f
+alphaI (Free (GetLife w f))          = Alpha.getLife w              >>= alphaI . f
+alphaI (Free (GetHand w f))          = Alpha.getHand w              >>= alphaI . f
+alphaI (Free (GetDeck w f))          = Alpha.getDeck w              >>= alphaI . f
+alphaI (Free (GetStack f))           = Alpha.getStack               >>= alphaI . f
+alphaI (Free (GetHold f))            = Alpha.getHold                >>= alphaI . f
+alphaI (Free (GetModel f))           = Alpha.getModel               >>= alphaI . f
+alphaI (Free (RawAnim _ n))          = alphaI n
+alphaI (Free (Null n))               = alphaI n
+alphaI (Pure x)                      = Pure x
 
 
 basicAnim :: Anim.DSL () -> Alpha.Program a -> AlphaAnimProgram a
@@ -68,25 +67,25 @@ basicAnim anim alphaProgram = toLeft alphaProgram <* (toRight . liftF $ anim)
 
 
 animI :: DSL a -> (Alpha.Program a -> AlphaAnimProgram a)
-animI (Null _)              = basicAnim $ Anim.Null ()
-animI (Rotate _)            = basicAnim $ Anim.Rotate ()
-animI (Windup _)            = basicAnim $ Anim.Windup ()
-animI (RawAnim r _)         = basicAnim $ Anim.Raw r ()
-animI (GetGen _)            = basicAnim $ Anim.GetGen ()
-animI (Hurt d w h _)        = damageAnim d w h
-animI (Heal _ w _)          = healAnim w
-animI (AddToHand w c  _)    = addToHandAnim w c
-animI (Draw w d t _)        = drawAnim w d t
-animI (Play w c i _)        = playAnim w c i
-animI (Transmute' t _)      = transmuteAnim t
-animI (TransmuteActive f _) = transmuteActiveAnim f
-animI (Bounce' b t _)       = bounceAnim b t
-animI (DiscardStack' d _)   = discardStackAnim d
-animI (DiscardHand w f _)   = discardHandAnim w f
-animI (MoveStack' m t _)    = moveStackAnim m t
-animI (Mill w t _)          = millAnim w t
-animI (Reveal w f _)        = revealAnim w f
-animI _                     = toLeft
+animI (Null _)               = basicAnim $ Anim.Null ()
+animI (Rotate _)             = basicAnim $ Anim.Rotate ()
+animI (Windup _)             = basicAnim $ Anim.Windup ()
+animI (RawAnim r _)          = basicAnim $ Anim.Raw r ()
+animI (GetGen _)             = basicAnim $ Anim.GetGen ()
+animI (Hurt d w h _)         = damageAnim d w h
+animI (Heal _ w _)           = healAnim w
+animI (AddToHand w c  _)     = addToHandAnim w c
+animI (Draw w d t _)         = drawAnim w d t
+animI (Play w c i _)         = playAnim w c i
+animI (Transmute' t _)       = transmuteAnim t
+animI (TransmuteActive' t _) = transmuteActiveAnim t
+animI (Bounce' b t _)        = bounceAnim b t
+animI (DiscardStack' d _)    = discardStackAnim d
+animI (DiscardHand w f _)    = discardHandAnim w f
+animI (MoveStack' m t _)     = moveStackAnim m t
+animI (Mill w t _)           = millAnim w t
+animI (Reveal w f _)         = revealAnim w f
+animI _                      = toLeft
 
 
 damageAnim :: Life -> WhichPlayer -> Hurt -> Alpha.Program a -> AlphaAnimProgram a
@@ -151,24 +150,12 @@ transmuteAnim transmutations alpha = do
   return final
 
 
-transmuteActiveAnim :: (StackCard -> Maybe StackCard) -> Alpha.Program a -> AlphaAnimProgram a
-transmuteActiveAnim f alpha = do
-  stack <- toLeft Alpha.getStack
-  let mActiveCard = wheel_0 stack
-  case mActiveCard of
-    Just activeCard ->
-      case f activeCard of
-        Just finalCard -> do
-          let transmutations = Wheel.init (\i -> if i == 0 then Just (Transmutation activeCard finalCard) else Nothing)
-          final <- toLeft alpha
-          toRight . liftF $ Anim.Transmute transmutations ()
-          return final
-        Nothing -> do
-          final <- toLeft alpha
-          return final
-    Nothing -> do
-      final <- toLeft alpha
-      return final
+transmuteActiveAnim :: Transmutation -> Alpha.Program a -> AlphaAnimProgram a
+transmuteActiveAnim transmutation alpha = do
+  let transmutations = Wheel.init (\i -> if i == 0 then Just transmutation else Nothing)
+  final <- toLeft alpha
+  toRight . liftF $ Anim.Transmute transmutations ()
+  return final
 
 
 bounceAnim :: Wheel (Maybe CardBounce) -> TimeModifier -> Alpha.Program a -> AlphaAnimProgram a

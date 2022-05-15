@@ -39,6 +39,25 @@ transmute f = do
   transmute' transmutations
   discardStack' ((&&) <$> isFragile stack <*> (isJust <$> transmutations))
 
+transmuteActive :: (StackCard -> Maybe StackCard) -> Program ()
+transmuteActive f = do
+  stack <- getStack
+  let mActiveCard = wheel_0 stack
+  case mActiveCard of
+    Just activeCard ->
+      case f activeCard of
+        Just finalCard ->
+          case removeTransmuteToSelf . Just $ Transmutation activeCard finalCard of
+            Just transmutation -> do
+              transmuteActive' transmutation
+              when (hasFragileStatus activeCard) $ discardStack' (Wheel.init (0 ==))
+            Nothing ->
+              return ()
+        Nothing ->
+          return ()
+    Nothing ->
+      return ()
+
 bounce :: (Int -> StackCard -> Bool) -> TimeModifier -> Program ()
 bounce f t = do
   stack <- getStack
@@ -135,12 +154,12 @@ moveStack f t = do
     removeMoveToSelf _ Nothing = Nothing
 
 isFragile :: Stack -> Wheel Bool
-isFragile stack =
-  let hasFragileStatus :: StackCard -> Bool
-      hasFragileStatus sc = hasStatus StatusFragile $ stackcard_card sc
-   in fmap
-        (maybe False hasFragileStatus)
-        stack
+isFragile =
+  fmap
+    (maybe False hasFragileStatus)
+
+hasFragileStatus :: StackCard -> Bool
+hasFragileStatus sc = hasStatus StatusFragile $ stackcard_card sc
 
 lifesteal :: Life -> WhichPlayer -> Program ()
 lifesteal d w = do
