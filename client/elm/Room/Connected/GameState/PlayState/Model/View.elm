@@ -630,7 +630,7 @@ tutorialArrowView tutorial focus hover ctx =
                             , rotation = Quaternion.makeRotate Quaternion.identity
                             , scale = makeScale3 scale scale 1
                             , color = Colour.white
-                            , pos = vec3 0 0 0
+                            , pos = vec3 0 -0.4 0
                             , perspective = perspective
                             , camera = camera3d
                             }
