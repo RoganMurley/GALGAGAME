@@ -12,7 +12,7 @@ import Data.Maybe (fromMaybe, isJust)
 import Discard (CardDiscard(..), isDiscard)
 import DSL.Beta.DSL
 import DSL.Util (toLeft, toRight)
-import HandCard (HandCard(..), anyCard, isRevealed)
+import HandCard (HandCard(..), anyCard, knownCard, isRevealed)
 import Life (Life)
 import Model (Model, gameover, maxHandLength)
 import ModelDiff (ModelDiff)
@@ -189,23 +189,22 @@ discardHandAnim :: WhichPlayer -> (Int -> Card -> Bool) -> Alpha.Program a -> Al
 discardHandAnim w f alpha = do
   discards <- toLeft $ getHandDiscards w f
   let activity = any isDiscard discards
-  when activity (toRight . liftF $ Anim.DiscardHand w discards ())
   final <- toLeft alpha
-  when activity (toRight . liftF $ Anim.Null ())
+  when activity (toRight . liftF $ Anim.DiscardHand w discards ())
   return final
 
 
 getHandDiscards :: WhichPlayer -> (Int -> Card -> Bool) -> Alpha.Program [CardDiscard]
 getHandDiscards w f = do
   hand <- Alpha.getHand w
-  return $ getDiscards' 0 0 $ (\(index, card) -> f index (anyCard card)) <$> zip [0..] hand
+  return $ getDiscards' 0 0 hand
     where
-      getDiscards' :: Int -> Int -> [Bool] -> [CardDiscard]
-      getDiscards' handIndex finalHandIndex (doDiscard:rest) =
-        if doDiscard then
-          CardDiscard : getDiscards' (handIndex + 1) finalHandIndex rest
+      getDiscards' :: Int -> Int -> [HandCard] -> [CardDiscard]
+      getDiscards' handIndex finalHandIndex (card:rest) =
+        if f handIndex $ anyCard card then
+          CardDiscard card : getDiscards' (handIndex + 1) finalHandIndex rest
         else
-          NoDiscard finalHandIndex : getDiscards' (handIndex + 1) (finalHandIndex + 1) rest
+          NoDiscard (knownCard card) finalHandIndex : getDiscards' (handIndex + 1) (finalHandIndex + 1) rest
       getDiscards' _ _ [] = []
 
 

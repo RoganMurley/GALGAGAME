@@ -46,13 +46,9 @@ transmuteActive f = do
   case mActiveCard of
     Just activeCard ->
       case f activeCard of
-        Just finalCard ->
-          case removeTransmuteToSelf . Just $ Transmutation activeCard finalCard of
-            Just transmutation -> do
-              transmuteActive' transmutation
-              when (hasFragileStatus activeCard) $ discardStack' (Wheel.init (0 ==))
-            Nothing ->
-              return ()
+        Just finalCard -> do
+          transmuteActive' $ Transmutation activeCard finalCard
+          when (hasFragileStatus activeCard) $ discardStack' (Wheel.init (0 ==))
         Nothing ->
           return ()
     Nothing ->

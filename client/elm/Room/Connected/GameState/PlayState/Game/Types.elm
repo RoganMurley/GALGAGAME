@@ -71,6 +71,7 @@ type alias HandEntity =
         { card : Card
         , index : Int
         , owner : WhichPlayer
+        , discarding : Bool
         , revealed : Bool
         , hoverVector : Vec3
         }
@@ -80,6 +81,7 @@ type alias OtherHandEntity =
     Game.Entity3D
         { mCard : Maybe Card
         , index : Int
+        , discarding : Bool
         }
 
 

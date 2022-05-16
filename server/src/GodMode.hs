@@ -49,9 +49,9 @@ parse which msg =
             Nothing ->
               ParseError ("Unknown card: " <> content :: Err)
         "windup" ->
-          ParsedProgram $ Beta.windup
+          ParsedProgram Beta.windup
         "rotate" ->
-          ParsedProgram $ Beta.rotate
+          ParsedProgram Beta.rotate
         "timeLimit" ->
           case readMay $ cs content of
             Just t ->
@@ -68,6 +68,18 @@ parse which msg =
           case readMay $ cs content of
             Just xp ->
               ParsedXp xp
+            Nothing ->
+              ParseError ("Cannot parse " <> content <> " to int" :: Err)
+        "discard" ->
+          case readMay $ cs content of
+            Just index ->
+              ParsedProgram $ Beta.discardHand PlayerA (\i _ -> i == index)
+            Nothing ->
+              ParseError ("Cannot parse " <> content <> " to int" :: Err)
+        "discardThem" ->
+          case readMay $ cs content of
+            Just index ->
+              ParsedProgram $ Beta.discardHand PlayerB (\i _ -> i == index)
             Nothing ->
               ParseError ("Cannot parse " <> content <> " to int" :: Err)
         _ ->

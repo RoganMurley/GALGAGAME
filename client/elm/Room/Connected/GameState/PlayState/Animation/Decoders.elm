@@ -205,10 +205,24 @@ bounceDecoder =
 
 cardDiscardDecoder : Decoder CardDiscard
 cardDiscardDecoder =
-    oneOf
-        [ Json.map NoDiscard <| field "finalIndex" int
-        , Json.map (always CardDiscard) <| constDecoder "discard"
-        ]
+    let
+        getDecoder : String -> Decoder CardDiscard
+        getDecoder s =
+            case s of
+                "NoDiscard" ->
+                    Json.map2 NoDiscard
+                        (field "card" <| maybe Card.decoder)
+                        (field "finalIndex" int)
+
+                "CardDiscard" ->
+                    Json.map CardDiscard <|
+                        field "card" knowableCardDecoder
+
+                _ ->
+                    Json.fail <| "Unknown discard " ++ s
+    in
+    field "discard" string
+        |> Json.andThen getDecoder
 
 
 discardStackDecoder : Decoder Anim

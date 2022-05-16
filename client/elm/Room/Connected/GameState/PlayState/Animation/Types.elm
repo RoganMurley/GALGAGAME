@@ -43,8 +43,8 @@ type Bounce
 
 
 type CardDiscard
-    = NoDiscard Int
-    | CardDiscard
+    = NoDiscard (Maybe Card) Int
+    | CardDiscard KnowableCard
 
 
 type Transmutation
