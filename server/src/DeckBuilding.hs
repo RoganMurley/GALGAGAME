@@ -185,11 +185,12 @@ mainRunes =
     seerRune,
     feverRune,
     emptyRune,
-    bloodRune
+    bloodRune,
+    glassRune
   ]
 
 superRunes :: [Rune]
-superRunes = mainRunes ++ [glassRune]
+superRunes = mainRunes
 
 allRunes :: [Rune]
 allRunes =
@@ -302,7 +303,7 @@ glassRune =
     "GLASS"
     "cards/glass/coin.png"
     (Cards.glassSword, Cards.glassWand, Cards.glassGrail, Cards.glassCoin)
-    (levelToExperience 1)
+    (levelToExperience 10)
 
 cometRune :: Rune
 cometRune =

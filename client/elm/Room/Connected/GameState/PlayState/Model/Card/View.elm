@@ -121,7 +121,7 @@ statusView ctx entity i status =
                 \texture ->
                     [ Render.Primitives.quad Render.Shaders.fragment <|
                         { rotation = Quaternion.makeRotate rotation
-                        , scale = makeScale <| Vector3.scale 0.27 scale
+                        , scale = makeScale <| Vector3.scale 0.3 scale
                         , color = vec3 1 1 1
                         , pos = Vector3.add position offset
                         , perspective = perspective
