@@ -13,39 +13,33 @@ import Math.Vector3 exposing (vec3)
 import Quaternion
 import Util exposing (interp)
 import WebGL
-import Wheel.State exposing (apply)
 import WhichPlayer.Types exposing (WhichPlayer(..))
 
 
 view : List HandEntity -> Context -> List WebGL.Entity
 view handEntities ctx =
     let
-        cardView i handEntity =
+        cardView handEntity =
             let
                 entity =
                     applyHoverVector handEntity
             in
-            List.concat <|
-                case ctx.anim of
-                    DiscardHand PlayerA discards ->
-                        case Array.get i <| Array.fromList discards of
-                            Just CardDiscard ->
-                                [ Card.dissolvingView ctx entity ]
+            if handEntity.discarding then
+                List.concat
+                    [ Card.dissolvingView ctx entity ]
 
-                            _ ->
-                                [ Card.view ctx entity, Card.revealedView ctx entity ]
-
-                    _ ->
-                        [ Card.view ctx entity, Card.revealedView ctx entity ]
+            else
+                List.concat
+                    [ Card.view ctx entity, Card.revealedView ctx entity ]
     in
     List.concat <|
-        List.indexedMap cardView handEntities
+        List.map cardView handEntities
 
 
 otherView : List OtherHandEntity -> Context -> List WebGL.Entity
 otherView otherHandEntities ctx =
     let
-        -- DRY with hand view
+        -- Make DRY with hand view
         cardView i entity =
             case entity.mCard of
                 Just card ->
@@ -57,17 +51,10 @@ otherView otherHandEntities ctx =
                             , card = card
                             , owner = PlayerB
                             , revealed = False
+                            , discarding = False
                             }
                     in
                     case ctx.anim of
-                        DiscardHand PlayerB discards ->
-                            case Array.get i <| Array.fromList discards of
-                                Just CardDiscard ->
-                                    Card.dissolvingView ctx knownEntity
-
-                                _ ->
-                                    Card.view ctx knownEntity
-
                         Reveal PlayerB reveal ->
                             case Array.get i <| Array.fromList reveal of
                                 Just True ->
@@ -93,20 +80,19 @@ otherView otherHandEntities ctx =
                                     Card.view ctx knownEntity
 
                         _ ->
-                            Card.view ctx knownEntity
+                            if entity.discarding then
+                                Card.dissolvingView ctx { knownEntity | discarding = True }
+
+                            else
+                                List.concat
+                                    [ Card.view ctx knownEntity, Card.revealedView ctx knownEntity ]
 
                 Nothing ->
-                    case ctx.anim of
-                        DiscardHand PlayerB discards ->
-                            case Array.get i <| Array.fromList discards of
-                                Just CardDiscard ->
-                                    Card.backDissolvingView ctx entity
+                    if entity.discarding then
+                        Card.backDissolvingView ctx entity
 
-                                _ ->
-                                    Card.backView ctx entity
-
-                        _ ->
-                            Card.backView ctx entity
+                    else
+                        Card.backView ctx entity
     in
     List.concat <|
         List.indexedMap cardView otherHandEntities

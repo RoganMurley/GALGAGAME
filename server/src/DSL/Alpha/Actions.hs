@@ -129,20 +129,10 @@ transmute transmutations =
         stack <- getStack
         setStack (combiner <$> transmutations <*> stack)
 
-transmuteActive :: (StackCard -> Maybe StackCard) -> Program ()
-transmuteActive f =
-  do
-    stack <- getStack
-    case wheel_0 stack of
-      Just activeCard ->
-        case f activeCard of
-          Just finalStackCard -> do
-            setStack (stack {wheel_0 = Just finalStackCard})
-            setHold True
-          Nothing ->
-            return ()
-      Nothing ->
-        return ()
+transmuteActive :: Transmutation -> Program ()
+transmuteActive (Transmutation _ finalCard) = do
+  modStack (\stack -> stack {wheel_0 = Just finalCard})
+  setHold True
 
 bounce :: Wheel (Maybe CardBounce) -> Program ()
 bounce bounces = do

@@ -678,10 +678,10 @@ glassWand =
     newCard
       Glass
       Wand
-      "Hurt for 6 for each other card\non the wheel. This card\nis fragile."
+      "Hurt for 5 for each card in your hand.\nThis card is fragile."
       $ \w -> do
-        len <- diasporaLength <$> getStack
-        hurt (len * 6) (other w) Slash
+        len <- length <$> getHand w
+        hurt (len * 5) (other w) Slash
 
 glassGrail :: Card
 glassGrail =
@@ -689,17 +689,6 @@ glassGrail =
     newCard
       Glass
       Grail
-      "Draw 2.\nThis card is fragile."
-      $ \w -> do
-        draw w w (TimeModifierOutQuint 1)
-        draw w w (TimeModifierOutQuint 1)
-
-glassCoin :: Card
-glassCoin =
-  addStatus StatusFragile $
-    newCard
-      Glass
-      Coin
       "All other cards on the wheel\nbecome fragile. This card\nis fragile."
       $ \_ ->
         transmute
@@ -708,6 +697,16 @@ glassCoin =
                 then Just (Transmutation sc (cardMap (addStatus StatusFragile) sc))
                 else Nothing
           )
+
+glassCoin :: Card
+glassCoin =
+  addStatus StatusFragile $
+    newCard
+      Glass
+      Coin
+      "Discard cards in the next 2 sockets.\nThis card is fragile."
+      $ \_ ->
+        discardStack (\i _ -> (i > 0) && (i < 3))
 
 -- Comet
 cometSword :: Card

@@ -10,7 +10,6 @@ import Life (Life)
 import Model (Deck, Hand, Model)
 import Player (WhichPlayer (..))
 import Stack (Stack)
-import StackCard (StackCard)
 import Transmutation (Transmutation)
 import Util (Gen)
 import Wheel (Wheel)
@@ -22,14 +21,14 @@ data DSL n
   | Draw WhichPlayer WhichPlayer TimeModifier n
   | AddToHand WhichPlayer HandCard n
   | Play WhichPlayer HandCard Int n
-  | Transmute' (Wheel (Maybe Transmutation)) n -- (Int -> StackCard -> Maybe Transmutation)
-  | TransmuteActive (StackCard -> Maybe StackCard) n
+  | Transmute' (Wheel (Maybe Transmutation)) n
+  | TransmuteActive' Transmutation n
   | Rotate n
   | Windup n
-  | Bounce' (Wheel (Maybe CardBounce)) TimeModifier n -- (Int -> StackCard -> Bool)
-  | DiscardStack' (Wheel Bool) n -- Int -> StackCard -> Bool
+  | Bounce' (Wheel (Maybe CardBounce)) TimeModifier n
+  | DiscardStack' (Wheel Bool) n
   | DiscardHand WhichPlayer (Int -> Card -> Bool) n
-  | MoveStack' (Wheel (Maybe Int)) TimeModifier n -- (Int -> StackCard -> Maybe Int)
+  | MoveStack' (Wheel (Maybe Int)) TimeModifier n
   | Mill WhichPlayer TimeModifier n
   | Reveal WhichPlayer (Int -> Card -> Bool) n
   | GetDeck WhichPlayer (Deck -> n)

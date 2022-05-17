@@ -5,6 +5,7 @@ import Animation.Types exposing (Anim(..), CardDiscard(..), HandBounce)
 import Array
 import Card.State as Card exposing (getCard, isRevealed)
 import Card.Types exposing (Card, KnowableCard(..))
+import Dict
 import Game.Types exposing (Context, HandEntity, OtherHandEntity)
 import Holding.State as Holding
 import Holding.Types exposing (Holding(..))
@@ -74,6 +75,31 @@ entities hover holding ({ anim, model, progress } as ctx) =
                         else
                             i
 
+                DiscardHand PlayerA discards ->
+                    let
+                        posDict =
+                            Dict.fromList <|
+                                List.filterMap
+                                    (\( i, discard ) ->
+                                        case discard of
+                                            NoDiscard _ targetI ->
+                                                Just ( targetI, i )
+
+                                            CardDiscard _ ->
+                                                Nothing
+                                    )
+                                <|
+                                    List.indexedMap Tuple.pair
+                                        discards
+                    in
+                    \i ->
+                        case Dict.get i posDict of
+                            Just targetI ->
+                                targetI
+
+                            Nothing ->
+                                i
+
                 _ ->
                     Basics.identity
 
@@ -126,6 +152,7 @@ entities hover holding ({ anim, model, progress } as ctx) =
                     , owner = PlayerA
                     , index = finalI
                     , revealed = revealed
+                    , discarding = False
                     , hoverVector = initialPos.hoverVector
                     }
 
@@ -165,6 +192,7 @@ entities hover holding ({ anim, model, progress } as ctx) =
                               , owner = PlayerA
                               , index = n
                               , revealed = False
+                              , discarding = False
                               , hoverVector = vec3 0 0 0
                               }
                             ]
@@ -206,6 +234,7 @@ entities hover holding ({ anim, model, progress } as ctx) =
                       , owner = PlayerA
                       , index = i
                       , revealed = revealed
+                      , discarding = False
                       , hoverVector = vec3 0 0 0
                       }
                     ]
@@ -236,10 +265,49 @@ entities hover holding ({ anim, model, progress } as ctx) =
                                     (Quaternion.zRotation (handCardRotation PlayerA handIndex finalN))
                             , scale = Card.scale
                             , revealed = True
+                            , discarding = False
                             , hoverVector = vec3 0 0 0
                             }
                     in
                     List.map makeBounceEntity playerBounces
+
+                DiscardHand PlayerA discards ->
+                    let
+                        cardDiscards =
+                            List.filterMap
+                                (\( index, discard ) ->
+                                    case discard of
+                                        NoDiscard _ _ ->
+                                            Nothing
+
+                                        CardDiscard card ->
+                                            Just ( index, card )
+                                )
+                            <|
+                                List.indexedMap Tuple.pair
+                                    discards
+
+                        makeDiscardEntity : ( Int, KnowableCard ) -> HandEntity
+                        makeDiscardEntity ( index, card ) =
+                            let
+                                initialPosition =
+                                    .position <| handCardPosition ctx PlayerA index (n + List.length cardDiscards) hover
+
+                                finalPosition =
+                                    Math.Vector3.add initialPosition (vec3 0 0.1 0.05)
+                            in
+                            { owner = PlayerA
+                            , card = getCard card
+                            , index = index
+                            , position = interp progress initialPosition finalPosition
+                            , rotation = Quaternion.zRotation (handCardRotation PlayerA index (n + List.length cardDiscards))
+                            , scale = Card.scale
+                            , revealed = True
+                            , discarding = True
+                            , hoverVector = vec3 0 0 0
+                            }
+                    in
+                    List.map makeDiscardEntity cardDiscards
 
                 _ ->
                     []
@@ -307,6 +375,31 @@ otherEntities hoverSelf hoverOther ({ anim, model, progress } as ctx) =
                         else
                             i
 
+                DiscardHand PlayerB discards ->
+                    let
+                        posDict =
+                            Dict.fromList <|
+                                List.filterMap
+                                    (\( i, discard ) ->
+                                        case discard of
+                                            NoDiscard _ targetI ->
+                                                Just ( targetI, i )
+
+                                            CardDiscard _ ->
+                                                Nothing
+                                    )
+                                <|
+                                    List.indexedMap Tuple.pair
+                                        discards
+                    in
+                    \i ->
+                        case Dict.get i posDict of
+                            Just targetI ->
+                                targetI
+
+                            Nothing ->
+                                i
+
                 _ ->
                     identity
 
@@ -333,6 +426,7 @@ otherEntities hoverSelf hoverOther ({ anim, model, progress } as ctx) =
                     (Quaternion.zRotation (handCardRotation PlayerB finalI finalN))
             , scale = Card.scale
             , mCard = mCard
+            , discarding = False
             , index = finalI
             }
 
@@ -355,6 +449,7 @@ otherEntities hoverSelf hoverOther ({ anim, model, progress } as ctx) =
                                 (Quaternion.zRotation (handCardRotation PlayerB n (n + 1)))
                       , scale = Card.scale
                       , mCard = drawingCard
+                      , discarding = False
                       , index = n
                       }
                     ]
@@ -378,6 +473,7 @@ otherEntities hoverSelf hoverOther ({ anim, model, progress } as ctx) =
                                 UnknownCard _ ->
                                     Nothing
                       , index = i
+                      , discarding = False
                       }
                     ]
 
@@ -403,11 +499,47 @@ otherEntities hoverSelf hoverOther ({ anim, model, progress } as ctx) =
                                     stackEntity.rotation
                                     (Quaternion.zRotation (handCardRotation PlayerB handIndex finalN))
                             , scale = Card.scale
+                            , discarding = False
                             , mCard = Just card
                             , index = handIndex
                             }
                     in
                     List.map makeBounceEntity playerBounces
+
+                DiscardHand PlayerB discards ->
+                    let
+                        cardDiscards =
+                            List.filterMap
+                                (\( index, discard ) ->
+                                    case discard of
+                                        NoDiscard _ _ ->
+                                            Nothing
+
+                                        CardDiscard card ->
+                                            Just ( index, card )
+                                )
+                            <|
+                                List.indexedMap Tuple.pair
+                                    discards
+
+                        makeDiscardEntity : ( Int, KnowableCard ) -> OtherHandEntity
+                        makeDiscardEntity ( index, card ) =
+                            let
+                                initialPosition =
+                                    .position <| handCardPosition ctx PlayerB index (n + List.length cardDiscards) hover
+
+                                finalPosition =
+                                    Math.Vector3.add initialPosition (vec3 0 -0.1 0.05)
+                            in
+                            { index = index
+                            , position = interp progress initialPosition finalPosition
+                            , rotation = Quaternion.zRotation (handCardRotation PlayerB index (n + List.length cardDiscards))
+                            , scale = Card.scale
+                            , mCard = Nothing
+                            , discarding = True
+                            }
+                    in
+                    List.map makeDiscardEntity cardDiscards
 
                 _ ->
                     []
@@ -497,27 +629,10 @@ handCardPosition ctx which index count hover =
                 c =
                     toFloat count
 
-                discardY =
-                    case ctx.anim of
-                        DiscardHand w discards ->
-                            if w /= which then
-                                0
-
-                            else
-                                case Array.get index <| Array.fromList discards of
-                                    Just CardDiscard ->
-                                        -10 * ctx.progress
-
-                                    _ ->
-                                        0
-
-                        _ ->
-                            0
-
                 baseY =
                     abs <| 4 * (toFloat <| ceiling (i - (c * 0.5)))
             in
-            sign * (baseY + discardY)
+            sign * baseY
 
         hoverY =
             case ( which, hover ) of
