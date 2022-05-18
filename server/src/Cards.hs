@@ -9,6 +9,7 @@ import qualified DSL.Beta as Beta
 import Data.Map (Map)
 import qualified Data.Map as Map
 import Data.Maybe (fromMaybe)
+import qualified Data.Set as Set
 import Data.Text (Text)
 import qualified Ease
 import HandCard (HandCard (..), anyCard, isRevealed)
@@ -20,7 +21,7 @@ import StackCard (StackCard (..), cardMap, changeOwner)
 import Transmutation (Transmutation (..), transmuteToCard)
 import Util (many, manyIndexed, shuffle)
 
--- Blaze
+-- BLAZE
 blazeSword :: Card
 blazeSword =
   newCard
@@ -60,7 +61,7 @@ blazeCoin =
       confound
       Beta.null
 
--- Tide
+-- TIDE
 tideSword :: Card
 tideSword =
   newCard
@@ -99,7 +100,7 @@ tideCoin =
     $ \_ -> do
       discardStack (\i _ -> (i > 0) && (i < 4))
 
--- Heaven
+-- HEAVEN
 heavenSword :: Card
 heavenSword =
   newCard
@@ -136,7 +137,7 @@ heavenCoin =
     "Return all of your cards on the\nwheel to hand"
     $ \w -> bounce (\i (StackCard o _) -> i > 0 && w == o) (TimeModifierOutQuint 1)
 
--- Empty
+-- EMPTY
 emptySword :: Card
 emptySword =
   newCard
@@ -187,7 +188,7 @@ emptyCoin =
     "Discard all cards on the wheel"
     $ \_ -> discardStack (\i _ -> i > 0)
 
--- Duality
+-- DUALITY
 dualitySword :: Card
 dualitySword =
   newCard
@@ -237,7 +238,7 @@ dualityCoin =
       when (paLife < pbLife) (transmuteHead (\(StackCard _ c) -> StackCard w c))
       when (paLife == pbLife) Beta.null
 
--- Shroom
+-- SHROOM
 shroomSword :: Card
 shroomSword =
   newCard
@@ -283,7 +284,7 @@ shroomCoin =
     "Reverse the order of all other\ncards on the wheel"
     $ const reversal
 
--- Blood
+-- BLOOD
 bloodSword :: Card
 bloodSword =
   newCard
@@ -372,7 +373,7 @@ seerCoin =
     "Return all cards on the wheel to hand"
     $ \_ -> bounce (\i _ -> i > 0) (TimeModifierOutQuint 1)
 
--- Mirror
+-- MIRROR
 mirrorSword :: Card
 mirrorSword =
   newCard
@@ -411,7 +412,7 @@ mirrorCoin =
       transmute $
         \i stackCard -> if i > 0 then Just $ Transmutation stackCard (changeOwner stackCard) else Nothing
 
--- Alchemy
+-- ALCHEMY
 alchemySword :: Card
 alchemySword =
   newCard
@@ -455,53 +456,6 @@ strangeGold =
     $ \w -> do
       draw w w (TimeModifierOutQuint 1)
       draw w w (TimeModifierOutQuint 1)
-
--- Crown
-crownSword :: Card
-crownSword =
-  newCard
-    Crown
-    Sword
-    "Hurt for 10"
-    $ \w -> hurt 10 (other w) Slash
-
-crownWand :: Card
-crownWand =
-  newCard
-    Crown
-    Wand
-    "Discard your hand, then hurt\nfor 5 for each card discarded"
-    $ \w -> do
-      handSize <- length <$> getHand w
-      discardHand w (\_ _ -> True)
-      hurt (5 * handSize) (other w) Slash
-
-crownGrail :: Card
-crownGrail =
-  newCard
-    Crown
-    Grail
-    "Your opponent is forced to\nplay a random card"
-    $ \w -> do
-      gen <- getGen
-      hand <- getHand (other w)
-      let mCard = headMay . shuffle gen $ zip [0 ..] hand
-      case mCard of
-        Just (index, c) -> do
-          Beta.play (other w) c index
-          Beta.windup
-        Nothing ->
-          Beta.null
-
-crownCoin :: Card
-crownCoin =
-  newCard
-    Crown
-    Coin
-    "Discard next card for each\ncard in your hand"
-    $ \w -> do
-      handLen <- length <$> getHand w
-      discardStack $ \i _ -> (i /= 0) && (i < handLen + 1)
 
 -- Morph
 morphSword :: Card
@@ -577,7 +531,7 @@ morphCoin =
                     strangeGlitch
            in transmuteToCard targetCard stackCard
 
--- Abyss
+-- ABYSS
 abyssSword :: Card
 abyssSword =
   newCard
@@ -611,7 +565,7 @@ abyssGrail =
       many 5 $ draw w w (TimeModifierOutQuint 0.4)
       many 5 $ draw (other w) (other w) (TimeModifierOutQuint 0.4)
 
--- Fever
+-- FEVER
 feverSword :: Card
 feverSword =
   newCard
@@ -662,7 +616,7 @@ strangeDream =
     $ \w -> do
       heal 13 w
 
--- Glass
+-- GLASS
 glassSword :: Card
 glassSword =
   addStatus StatusFragile $
@@ -708,7 +662,7 @@ glassCoin =
       $ \_ ->
         discardStack (\i _ -> (i > 0) && (i < 3))
 
--- Comet
+-- COMET
 cometSword :: Card
 cometSword =
   newCard
@@ -723,13 +677,13 @@ cometWand =
   newCard
     Comet
     Wand
-    "Hurt for 6 for each other card\nyou own on the wheel"
+    "Hurt for 7 for each unique card suit\namong other cards on the wheel"
     $ \w -> do
       stack <- getStack
-      let diaspora = Stack.diasporaFromStack stack
-      let ownCards = filter (w ==) $ stackcard_owner . snd <$> filter (\(i, _) -> i > 0) diaspora
-      let mag = length ownCards
-      hurt (mag * 6) (other w) Slash
+      let otherStackCards = snd <$> filter (\(i, _) -> i > 0) (Stack.diasporaFromStack stack)
+      let suits = Set.fromList $ card_suit . stackcard_card <$> otherStackCards
+      let mag = Set.size suits
+      hurt (mag * 7) (other w) Slash
 
 cometGrail :: Card
 cometGrail =
@@ -759,7 +713,7 @@ cometCoin =
     "Move card in next socket into\nthe previous socket"
     $ \_ -> moveStack (\i _ -> if i == 1 then Just (-1) else Nothing) (TimeModifierOutQuint 400)
 
--- Other
+-- Other cards
 strangeEnd :: Card
 strangeEnd =
   newCard
@@ -781,6 +735,7 @@ strangeGlitch =
       discardStack (\i _ -> i == 0)
       raw $ Alpha.setHold True
 
+-- Aggregations
 swords :: [Card]
 swords =
   [ blazeSword,
@@ -790,7 +745,6 @@ swords =
     mirrorSword,
     dualitySword,
     alchemySword,
-    crownSword,
     morphSword,
     tideSword,
     abyssSword,
@@ -810,7 +764,6 @@ wands =
     mirrorWand,
     dualityWand,
     alchemyWand,
-    crownWand,
     morphWand,
     tideWand,
     abyssWand,
@@ -830,7 +783,6 @@ grails =
     mirrorGrail,
     dualityGrail,
     alchemyGrail,
-    crownGrail,
     morphGrail,
     tideGrail,
     abyssGrail,
@@ -850,7 +802,6 @@ coins =
     mirrorCoin,
     dualityCoin,
     alchemyCoin,
-    crownCoin,
     morphCoin,
     tideCoin,
     feverCoin,

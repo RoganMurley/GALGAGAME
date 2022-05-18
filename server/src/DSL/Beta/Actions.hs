@@ -143,7 +143,7 @@ moveStack f t = do
   discardStack' ((&&) <$> isFragile movedStack <*> ((`Set.member` targets) <$> indexWheel))
   where
     reduce :: Set Int -> Maybe Int -> Set Int
-    reduce set (Just i) = Set.insert i set
+    reduce set (Just i) = Set.insert (i `mod` 12) set
     reduce set Nothing = set
 
     removeMoveToSelf :: Int -> Maybe Int -> Maybe Int

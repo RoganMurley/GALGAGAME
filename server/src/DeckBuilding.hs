@@ -190,16 +190,12 @@ mainRunes =
   ]
 
 superRunes :: [Rune]
-superRunes = mainRunes
+superRunes = mainRunes ++ [cometRune]
 
 allRunes :: [Rune]
 allRunes =
-  mainRunes
-    ++ superRunes
-    ++ [ crownRune,
-         abyssRune,
-         cometRune
-       ]
+  superRunes
+    ++ [abyssRune]
 
 tideRune :: Rune
 tideRune =
@@ -311,15 +307,7 @@ cometRune =
     "COMET"
     "cards/comet/coin.png"
     (Cards.cometSword, Cards.cometWand, Cards.cometGrail, Cards.cometCoin)
-    0
-
-crownRune :: Rune
-crownRune =
-  Rune
-    "CROWN"
-    "cards/crown/coin.png"
-    (Cards.crownSword, Cards.crownWand, Cards.crownGrail, Cards.crownCoin)
-    0
+    (levelToExperience 11)
 
 abyssRune :: Rune
 abyssRune =
