@@ -21,6 +21,7 @@ import HandCard (HandCard, isRevealed)
 import Life (Life)
 import Model (maxHandLength)
 import Player (WhichPlayer (..), other)
+import Safe (headDef, lastDef)
 import Stack (Stack)
 import qualified Stack
 import StackCard (StackCard (..), isOwner)
@@ -197,10 +198,11 @@ confound = do
         do
           let shuffledIs = shuffle gen diasporaIs :: [Int]
           let diasporaMap = Map.fromList $ zip diasporaIs shuffledIs :: Map Int Int
+          let time = (1 + lastDef 0 diasporaIs - headDef 0 diasporaIs) * 20
           refreshGen
           if anyElemsSame shuffledIs diasporaIs
             then shuffleMovingEveryCard
-            else moveStack (\i _ -> Map.lookup i diasporaMap) (TimeModifierOutQuad (fromIntegral len * 20))
+            else moveStack (\i _ -> Map.lookup i diasporaMap) (TimeModifierOutQuad $ fromIntegral time)
     -- Check if any list elements are at the same position
     anyElemsSame :: Eq a => [a] -> [a] -> Bool
     anyElemsSame xs ys = foldr (\(x, y) prev -> x == y || prev) False $ zip xs ys
