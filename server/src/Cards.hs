@@ -677,7 +677,7 @@ cometWand =
   newCard
     Comet
     Wand
-    "Hurt for 7 for each unique card suit\namong other cards on the wheel"
+    "Hurt for 7 for each other suit\non the wheel"
     $ \w -> do
       stack <- getStack
       let otherStackCards = snd <$> filter (\(i, _) -> i > 0) (Stack.diasporaFromStack stack)

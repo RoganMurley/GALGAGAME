@@ -101,6 +101,7 @@ library
                      , datadog
                      , deepseq
                      , free
+                     , freer-simple
                      , guid
                      , hedis
                      , hslogger
