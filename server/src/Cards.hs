@@ -17,7 +17,7 @@ import Player (other)
 import Safe (headMay)
 import Stack (diasporaLength)
 import qualified Stack
-import StackCard (StackCard (..), cardMap, changeOwner)
+import StackCard (StackCard (..), cardMap, changeOwner, isOwner)
 import Transmutation (Transmutation (..), transmuteToCard)
 import Util (many, manyIndexed, shuffle)
 
@@ -623,8 +623,8 @@ glassSword =
     newCard
       Glass
       Sword
-      "Hurt for 10.\nThis card is fragile."
-      $ \w -> hurt 10 (other w) Slash
+      "Hurt for 7.\nThis card is fragile."
+      $ \w -> hurt 7 (other w) Slash
 
 glassWand :: Card
 glassWand =
@@ -632,10 +632,10 @@ glassWand =
     newCard
       Glass
       Wand
-      "Hurt for 5 for each card in your hand.\nThis card is fragile."
+      "Hurt for 4 for each card in your hand.\nThis card is fragile."
       $ \w -> do
         len <- length <$> getHand w
-        hurt (len * 5) (other w) Slash
+        hurt (len * 4) (other w) Slash
 
 glassGrail :: Card
 glassGrail =
@@ -658,9 +658,9 @@ glassCoin =
     newCard
       Glass
       Coin
-      "Discard cards in the next 2 sockets.\nThis card is fragile."
-      $ \_ ->
-        discardStack (\i _ -> (i > 0) && (i < 3))
+      "Discard all their cards on the wheel.\nThis card is fragile."
+      $ \w ->
+        discardStack (\i sc -> (i > 0) && isOwner (other w) sc)
 
 -- COMET
 cometSword :: Card
