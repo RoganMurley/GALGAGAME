@@ -209,6 +209,9 @@ document.body.addEventListener('touchstart', handleTouch, false);
 document.body.addEventListener('touchmove', handleTouch, false);
 document.body.addEventListener('touchend', handleTouchEnd, false);
 
+// Prevent context menu issues on Chrome iOS.
+document.addEventListener('contextmenu', function (event) { event.preventDefault() });
+
 window.god = app.ports.godModeCommand.send;
 
 window.requestFullscreen = function () {
