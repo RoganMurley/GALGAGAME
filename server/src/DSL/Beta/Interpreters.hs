@@ -214,29 +214,29 @@ betaI = reinterpret (\x -> animI x $ execAlpha $ alphaI x)
 
 execute :: ∀ a . Model -> Eff '[ExecDSL] a -> (Model, [ResolveData])
 execute initialModel prog =
-    (\(finalModel, _, finalResReversed)-> (finalModel, reverse finalResReversed)) result
+    (\(finalModel, _, finalResReversed, _)-> (finalModel, reverse finalResReversed)) result
     where
-    initialState :: (Model, ModelDiff, [ResolveData])
-    initialState = (initialModel, mempty, [])
-    part_a :: Eff '[S.State (Model, ModelDiff, [ResolveData])] a
+    initialState :: (Model, ModelDiff, [ResolveData], Bool)
+    initialState = (initialModel, mempty, [], False)
+    part_a :: Eff '[S.State (Model, ModelDiff, [ResolveData], Bool)] a
     part_a = reinterpret go prog
-    part_b :: Eff '[] (Model, ModelDiff, [ResolveData])
+    part_b :: Eff '[] (Model, ModelDiff, [ResolveData], Bool)
     part_b = execState initialState part_a
-    result :: (Model, ModelDiff, [ResolveData])
+    result :: (Model, ModelDiff, [ResolveData], Bool)
     result = run part_b
-    go :: (Member (S.State (Model, ModelDiff, [ResolveData])) effs) => ∀ b . ExecDSL b -> Eff effs b
+    go :: (Member (S.State (Model, ModelDiff, [ResolveData], Bool)) effs) => ∀ b . ExecDSL b -> Eff effs b
     go (ExecAlpha alpha) = do
-      (model, diff, res :: [ResolveData]) <- S.get
+      (model, diff, res :: [ResolveData], terminated) <- S.get
       let (newDiff, next) = Alpha.alphaEffI model alpha
       let newModel = ModelDiff.update model newDiff
-      when (not $ gameover model) (S.put (newModel, diff <> newDiff, res))
+      when (not terminated) $ S.put (newModel, diff <> newDiff, res, terminated)
       return next
     go (ExecAnim anim) = do
-      (model :: Model, diff :: ModelDiff, res :: [ResolveData]) <- S.get
+      (model :: Model, diff :: ModelDiff, res :: [ResolveData], terminated :: Bool) <- S.get
       let cardAnim = Anim.animate anim
       let damage = fromMaybe (0, 0) $ cardAnimDamage <$> cardAnim
       let newRes = ResolveData diff cardAnim damage : res
-      when (not $ gameover model) (S.put (model :: Model, mempty :: ModelDiff, newRes :: [ResolveData]))
+      when (not terminated) (S.put (model :: Model, mempty :: ModelDiff, newRes :: [ResolveData], terminated || gameover model))
       return $ Anim.next anim
 
 
