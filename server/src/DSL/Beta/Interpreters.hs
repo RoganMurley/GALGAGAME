@@ -9,7 +9,7 @@ import Card (Card)
 import CardAnim (Damage, Hurt, TimeModifier (..), cardAnimDamage)
 import {-# SOURCE #-} Cards (strangeEnd)
 import Control.Monad (when)
-import Control.Monad.Freer (Eff, Member, Members, interpose, interpret, raise, reinterpret, interpretWith, reinterpret2, run, send, subsume, translate)
+import Control.Monad.Freer (Eff, Member, Members, interpose, interpret, interpretWith, raise, reinterpret, reinterpret2, reinterpret3, run, send, subsume, translate)
 import Control.Monad.Freer.Internal (handleRelay)
 import Control.Monad.Freer.State as S
 import qualified DSL.Alpha as Alpha
@@ -58,12 +58,14 @@ alphaI GetModel = Alpha.getModel
 alphaI (RawAnim _) = return ()
 alphaI Null = return ()
 
-type AlphaAnimProgram a = Eff '[Alpha.DSL, Anim.DSL] a
+data ExecDSL n where
+  ExecAlpha :: Alpha.DSL a -> ExecDSL a
+  ExecAnim :: Anim.DSL a -> ExecDSL a
 
-basicAnim :: Anim.DSL () -> AlphaAnimProgram a -> AlphaAnimProgram a
-basicAnim anim alpha = alpha <* send anim
+basicAnim :: Anim.DSL () -> Eff '[ExecDSL] a -> Eff '[ExecDSL] a
+basicAnim anim alpha = alpha <* (send . ExecAnim $ anim)
 
-animI :: DSL a -> (AlphaAnimProgram a -> AlphaAnimProgram a)
+animI :: DSL a -> Eff '[ExecDSL] a -> Eff '[ExecDSL] a
 animI Null = basicAnim Anim.Null
 animI Rotate = basicAnim Anim.Rotate
 animI Windup = basicAnim Anim.Windup
@@ -84,109 +86,109 @@ animI (Mill w t) = millAnim w t
 animI (Reveal w f) = revealAnim w f
 animI _ = id
 
-raiseAnim :: Anim.Program a -> AlphaAnimProgram a
-raiseAnim = reinterpret2 send
+execAnim :: Anim.Program a -> Eff '[ExecDSL] a
+execAnim = reinterpret (send . ExecAnim)
 
-raiseAlpha :: Alpha.Program a -> AlphaAnimProgram a
-raiseAlpha = reinterpret2 send
+execAlpha :: Alpha.Program a -> Eff '[ExecDSL] a
+execAlpha = reinterpret (send . ExecAlpha)
 
-damageAnim :: Life -> WhichPlayer -> Hurt -> AlphaAnimProgram a -> AlphaAnimProgram a
+damageAnim :: Life -> WhichPlayer -> Hurt -> Eff '[ExecDSL] a -> Eff '[ExecDSL] a
 damageAnim d w h alpha = do
   final <- alpha
-  when (d > 0) $ Anim.hurt w d h
+  when (d > 0) $ execAnim $ Anim.hurt w d h
   return final
 
-healAnim :: WhichPlayer -> AlphaAnimProgram a -> AlphaAnimProgram a
+healAnim :: WhichPlayer -> Eff '[ExecDSL] a -> Eff '[ExecDSL] a
 healAnim w alpha = do
-  oldLife <- Alpha.getLife w
+  oldLife <- execAlpha $ Alpha.getLife w
   final <- alpha
-  newLife <- Alpha.getLife w
+  newLife <- execAlpha $ Alpha.getLife w
   let lifeChange = newLife - oldLife
-  when (lifeChange > 0) $ Anim.heal w lifeChange
+  when (lifeChange > 0) $ execAnim $ Anim.heal w lifeChange
   return final
 
-drawAnim :: WhichPlayer -> WhichPlayer -> TimeModifier -> AlphaAnimProgram a -> AlphaAnimProgram a
+drawAnim :: WhichPlayer -> WhichPlayer -> TimeModifier -> Eff '[ExecDSL] a -> Eff '[ExecDSL] a
 drawAnim w d t alpha = do
-  nextCard <- headMay <$> Alpha.getDeck d
-  handLength <- length <$> Alpha.getHand w
+  nextCard <- execAlpha $ headMay <$> Alpha.getDeck d
+  handLength <- execAlpha $ length <$> Alpha.getHand w
   final <- alpha
   if handLength < maxHandLength
-    then Anim.draw w t
-    else Anim.mill w (fromMaybe strangeEnd nextCard) (TimeModifierOutQuint 1)
+    then execAnim $ Anim.draw w t
+    else execAnim $ Anim.mill w (fromMaybe strangeEnd nextCard) (TimeModifierOutQuint 1)
   return final
 
-millAnim :: WhichPlayer -> TimeModifier -> AlphaAnimProgram a -> AlphaAnimProgram a
+millAnim :: WhichPlayer -> TimeModifier -> Eff '[ExecDSL] a -> Eff '[ExecDSL] a
 millAnim w t alpha = do
-  nextCard <- headMay <$> Alpha.getDeck w
+  nextCard <- execAlpha $ headMay <$> Alpha.getDeck w
   final <- alpha
-  Anim.mill w (fromMaybe strangeEnd nextCard) t
+  execAnim $ Anim.mill w (fromMaybe strangeEnd nextCard) t
   return final
 
-addToHandAnim :: WhichPlayer -> HandCard -> AlphaAnimProgram a -> AlphaAnimProgram a
+addToHandAnim :: WhichPlayer -> HandCard -> Eff '[ExecDSL] a -> Eff '[ExecDSL] a
 addToHandAnim w c alpha = do
-  handLength <- length <$> Alpha.getHand w
+  handLength <- execAlpha $ length <$> Alpha.getHand w
   final <- alpha
   if handLength < maxHandLength
-    then Anim.draw w (TimeModifierOutQuint 1)
-    else Anim.mill w (anyCard c) (TimeModifierOutQuint 1)
+    then execAnim $ Anim.draw w (TimeModifierOutQuint 1)
+    else execAnim $ Anim.mill w (anyCard c) (TimeModifierOutQuint 1)
   return final
 
-playAnim :: WhichPlayer -> HandCard -> Int -> AlphaAnimProgram a -> AlphaAnimProgram a
+playAnim :: WhichPlayer -> HandCard -> Int -> Eff '[ExecDSL] a -> Eff '[ExecDSL] a
 playAnim w c i alpha = do
   final <- alpha
-  Anim.play w c i
+  execAnim $ Anim.play w c i
   return final
 
-transmuteAnim :: Wheel (Maybe Transmutation) -> AlphaAnimProgram a -> AlphaAnimProgram a
+transmuteAnim :: Wheel (Maybe Transmutation) -> Eff '[ExecDSL] a -> Eff '[ExecDSL] a
 transmuteAnim transmutations alpha = do
   let activity = any isJust transmutations
-  when activity (Anim.transmute transmutations)
+  when activity (execAnim $ Anim.transmute transmutations)
   final <- alpha
-  when activity Anim.null
+  when activity (execAnim Anim.null)
   return final
 
-transmuteActiveAnim :: Transmutation -> AlphaAnimProgram a -> AlphaAnimProgram a
+transmuteActiveAnim :: Transmutation -> Eff '[ExecDSL] a -> Eff '[ExecDSL] a
 transmuteActiveAnim transmutation alpha = do
   let transmutations = Wheel.init (\i -> if i == 0 then Just transmutation else Nothing)
   final <- alpha
-  Anim.transmute transmutations
+  execAnim $ Anim.transmute transmutations
   return final
 
-bounceAnim :: Wheel (Maybe CardBounce) -> TimeModifier -> AlphaAnimProgram a -> AlphaAnimProgram a
+bounceAnim :: Wheel (Maybe CardBounce) -> TimeModifier -> Eff '[ExecDSL] a -> Eff '[ExecDSL] a
 bounceAnim bounces t alpha = do
   let activity = any isJust bounces
-  when activity (Anim.bounce bounces t)
+  when activity (execAnim $ Anim.bounce bounces t)
   final <- alpha
-  when activity Anim.null
+  when activity (execAnim Anim.null)
   return final
 
-moveStackAnim :: Wheel (Maybe Int) -> TimeModifier -> AlphaAnimProgram a -> AlphaAnimProgram a
+moveStackAnim :: Wheel (Maybe Int) -> TimeModifier -> Eff '[ExecDSL] a -> Eff '[ExecDSL] a
 moveStackAnim moves t alpha = do
   let activity = any isJust moves
-  when activity (Anim.moveStack moves t)
+  when activity (execAnim $ Anim.moveStack moves t)
   final <- alpha
-  when activity Anim.null
+  when activity (execAnim Anim.null)
   return final
 
-discardStackAnim :: Wheel Bool -> AlphaAnimProgram a -> AlphaAnimProgram a
+discardStackAnim :: Wheel Bool -> Eff '[ExecDSL] a -> Eff '[ExecDSL] a
 discardStackAnim discards alpha = do
   let activity = any id discards
-  when activity (Anim.discardStack discards)
+  when activity (execAnim $ Anim.discardStack discards)
   final <- alpha
-  when activity Anim.null
+  when activity (execAnim Anim.null)
   return final
 
-discardHandAnim :: WhichPlayer -> (Int -> Card -> Bool) -> AlphaAnimProgram a -> AlphaAnimProgram a
+discardHandAnim :: WhichPlayer -> (Int -> Card -> Bool) -> Eff '[ExecDSL] a -> Eff '[ExecDSL] a
 discardHandAnim w f alpha = do
   discards <- getHandDiscards w f
   let activity = any isDiscard discards
   final <- alpha
-  when activity (Anim.discardHand w discards)
+  when activity (execAnim $ Anim.discardHand w discards)
   return final
 
-getHandDiscards :: WhichPlayer -> (Int -> Card -> Bool) -> AlphaAnimProgram [CardDiscard]
+getHandDiscards :: WhichPlayer -> (Int -> Card -> Bool) -> Eff '[ExecDSL] [CardDiscard]
 getHandDiscards w f = do
-  hand <- Alpha.getHand w
+  hand <- execAlpha $ Alpha.getHand w
   return $ getDiscards' 0 0 hand
   where
     getDiscards' :: Int -> Int -> [HandCard] -> [CardDiscard]
@@ -196,45 +198,30 @@ getHandDiscards w f = do
         else NoDiscard (knownCard card) finalHandIndex : getDiscards' (handIndex + 1) (finalHandIndex + 1) rest
     getDiscards' _ _ [] = []
 
-revealAnim :: WhichPlayer -> (Int -> Card -> Bool) -> AlphaAnimProgram a -> AlphaAnimProgram a
+revealAnim :: WhichPlayer -> (Int -> Card -> Bool) -> Eff '[ExecDSL] a -> Eff '[ExecDSL] a
 revealAnim w f alpha = do
-  hand <- Alpha.getHand w
+  hand <- execAlpha $ Alpha.getHand w
   let initialReveals = isRevealed <$> hand :: [Bool]
   let reveals = uncurry f <$> zip [0 ..] (anyCard <$> hand) :: [Bool]
   final <- alpha
   let activity = any id $ uncurry xor <$> zip initialReveals reveals :: Bool
-  when activity (Anim.reveal w reveals)
+  when activity (execAnim $ Anim.reveal w reveals)
   return final
 
+betaI :: ∀ a . Program a -> Eff '[ExecDSL] a
+betaI = reinterpret (\x -> animI x $ execAlpha $ alphaI x)
 
-betaI :: ∀ a . Program a -> AlphaAnimProgram a
-betaI = reinterpret2 (\x -> animI x $ raiseAlpha $ alphaI x)
-
-data ExecDSL n where
-  ExecAlpha :: Alpha.DSL a -> ExecDSL a
-  ExecAnim :: Anim.DSL a -> ExecDSL a
-
-execute :: ∀ a . Model -> AlphaAnimProgram a -> (Model, [ResolveData])
-execute initialModel prog = (initialModel, []) 
+execute :: ∀ a . Model -> Eff '[ExecDSL] a -> (Model, [ResolveData])
+execute initialModel prog = (\(finalModel, _, finalRes)-> (finalModel, finalRes)) result
     where
-    execProg :: Eff '[ExecDSL, Alpha.DSL, Anim.DSL] a
-    execProg = interpose toExecAnim $ interpose toExecAlpha $ reinterpret2 send prog
     initialState :: (Model, ModelDiff, [ResolveData])
     initialState = (initialModel, mempty, [])
-    part_a :: Eff '[S.State (Model, ModelDiff, [ResolveData]), Alpha.DSL, Anim.DSL] a
-    part_a = reinterpret go execProg
-    part_b :: Eff '[Alpha.DSL, Anim.DSL] (Model, ModelDiff, [ResolveData])
+    part_a :: Eff '[S.State (Model, ModelDiff, [ResolveData])] a
+    part_a = reinterpret go prog
+    part_b :: Eff '[] (Model, ModelDiff, [ResolveData])
     part_b = execState initialState part_a
-    part_c :: Eff '[Anim.DSL] (Model, ModelDiff, [ResolveData])
-    part_c = interpret dropAlpha part_b
-    part_d :: Eff '[] (Model, ModelDiff, [ResolveData])
-    part_d = interpret dropAnim
     result :: (Model, ModelDiff, [ResolveData])
-    result = run part_d
-    toExecAlpha :: (Member ExecDSL effs) => Alpha.DSL b -> Eff effs b
-    toExecAlpha = send . ExecAlpha
-    toExecAnim :: (Member ExecDSL effs) => Anim.DSL b -> Eff effs b
-    toExecAnim = send . ExecAnim
+    result = run part_b
     go :: (Member (S.State (Model, ModelDiff, [ResolveData])) effs) => ∀ b . ExecDSL b -> Eff effs b
     go (ExecAlpha alpha) = do
       (model, diff, res :: [ResolveData]) <- S.get
@@ -247,7 +234,6 @@ execute initialModel prog = (initialModel, [])
       (model :: Model, diff :: ModelDiff, res :: [ResolveData]) <- S.get
       let cardAnim = Anim.animate anim
       let damage = fromMaybe (0, 0) $ cardAnimDamage <$> cardAnim
-      let resolveData = ResolveData diff cardAnim damage
-      let newRes = res ++ [resolveData]
-      S.put (model :: Model, mempty :: ModelDiff, res :: [ResolveData])
+      let newRes = res ++ [ResolveData diff cardAnim damage]
+      S.put (model :: Model, mempty :: ModelDiff, newRes :: [ResolveData])
       return $ Anim.next anim
