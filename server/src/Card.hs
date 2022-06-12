@@ -141,7 +141,11 @@ newCard :: Aspect -> Suit -> Text -> (WhichPlayer -> Beta.Program ()) -> Card
 newCard aspect suit desc eff = Card aspect suit desc eff []
 
 addStatus :: Status -> Card -> Card
-addStatus status card = card {card_statuses = status : card_statuses card}
+addStatus status card =
+  let statuses = card_statuses card
+   in if length statuses < 6
+        then card {card_statuses = status : card_statuses card}
+        else card
 
 removeStatus :: Status -> Card -> Card
 removeStatus status card = card {card_statuses = filter (status /=) (card_statuses card)}

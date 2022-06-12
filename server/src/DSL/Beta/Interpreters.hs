@@ -213,7 +213,8 @@ betaI :: ∀ a . Program a -> Eff '[ExecDSL] a
 betaI = reinterpret (\x -> animI x $ execAlpha $ alphaI x)
 
 execute :: ∀ a . Model -> Eff '[ExecDSL] a -> (Model, [ResolveData])
-execute initialModel prog = (\(finalModel, _, finalRes)-> (finalModel, finalRes)) result
+execute initialModel prog =
+    (\(finalModel, _, finalResReversed)-> (finalModel, reverse finalResReversed)) result
     where
     initialState :: (Model, ModelDiff, [ResolveData])
     initialState = (initialModel, mempty, [])
@@ -228,15 +229,14 @@ execute initialModel prog = (\(finalModel, _, finalRes)-> (finalModel, finalRes)
       (model, diff, res :: [ResolveData]) <- S.get
       let (newDiff, next) = Alpha.alphaEffI model alpha
       let newModel = ModelDiff.update model newDiff
-      S.put (newModel, diff <> newDiff, res)
+      when (not $ gameover model) (S.put (newModel, diff <> newDiff, res))
       return next
     go (ExecAnim anim) = do
-      -- newNext = if gameover model then return () else next anim
       (model :: Model, diff :: ModelDiff, res :: [ResolveData]) <- S.get
       let cardAnim = Anim.animate anim
       let damage = fromMaybe (0, 0) $ cardAnimDamage <$> cardAnim
-      let newRes = res ++ [ResolveData diff cardAnim damage]
-      S.put (model :: Model, mempty :: ModelDiff, newRes :: [ResolveData])
+      let newRes = ResolveData diff cardAnim damage : res
+      when (not $ gameover model) (S.put (model :: Model, mempty :: ModelDiff, newRes :: [ResolveData]))
       return $ Anim.next anim
 
 
