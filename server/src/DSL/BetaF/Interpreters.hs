@@ -9,7 +9,8 @@ import Card (Card)
 import CardAnim (Damage, Hurt, TimeModifier (..), cardAnimDamage)
 import {-# SOURCE #-} Cards (strangeEnd)
 import Control.Monad (when)
-import Control.Monad.Freer (Eff, Members, interpose, raise, reinterpret, reinterpret2, run, send, subsume)
+import Control.Monad.Freer (Eff, Member, Members, interpose, interpret, raise, reinterpret, interpretWith, reinterpret2, run, send, subsume, translate)
+import Control.Monad.Freer.State as S
 import qualified DSL.AlphaF as Alpha
 import qualified DSL.AnimF as Anim
 import DSL.BetaF.DSL
@@ -61,26 +62,26 @@ type AlphaAnimProgram a = Eff '[Alpha.DSL, Anim.DSL] a
 basicAnim :: Anim.DSL () -> AlphaAnimProgram a -> AlphaAnimProgram a
 basicAnim anim alpha = alpha <* send anim
 
--- animI :: DSL a -> (AlphaAnimProgram a -> AlphaAnimProgram a)
--- animI Null = basicAnim Anim.Null
--- animI Rotate = basicAnim Anim.Rotate
--- animI Windup = basicAnim Anim.Windup
--- animI (RawAnim r) = basicAnim $ Anim.Raw r
--- animI GetGen = basicAnim $ Anim.GetGen
--- animI (Hurt d w h) = damageAnim d w h
--- animI (Heal _ w) = healAnim w
--- animI (AddToHand w c) = addToHandAnim w c
--- animI (Draw w d t) = drawAnim w d t
--- animI (Play w c i) = playAnim w c i
--- animI (Transmute' t) = transmuteAnim t
--- animI (TransmuteActive' t) = transmuteActiveAnim t
--- animI (Bounce' b t) = bounceAnim b t
--- animI (DiscardStack' d) = discardStackAnim d
--- animI (DiscardHand w f) = discardHandAnim w f
--- animI (MoveStack' m t) = moveStackAnim m t
--- animI (Mill w t) = millAnim w t
--- animI (Reveal w f) = revealAnim w f
--- animI _ = return ()
+animI :: DSL a -> (AlphaAnimProgram a -> AlphaAnimProgram a)
+animI Null = basicAnim Anim.Null
+animI Rotate = basicAnim Anim.Rotate
+animI Windup = basicAnim Anim.Windup
+animI (RawAnim r) = basicAnim $ Anim.Raw r
+animI GetGen = basicAnim Anim.GetGen
+animI (Hurt d w h) = damageAnim d w h
+animI (Heal _ w) = healAnim w
+animI (AddToHand w c) = addToHandAnim w c
+animI (Draw w d t) = drawAnim w d t
+animI (Play w c i) = playAnim w c i
+animI (Transmute' t) = transmuteAnim t
+animI (TransmuteActive' t) = transmuteActiveAnim t
+animI (Bounce' b t) = bounceAnim b t
+animI (DiscardStack' d) = discardStackAnim d
+animI (DiscardHand w f) = discardHandAnim w f
+animI (MoveStack' m t) = moveStackAnim m t
+animI (Mill w t) = millAnim w t
+animI (Reveal w f) = revealAnim w f
+animI _ = id
 
 raiseAnim :: Anim.Program a -> AlphaAnimProgram a
 raiseAnim = reinterpret2 send
@@ -203,3 +204,45 @@ revealAnim w f alpha = do
   let activity = any id $ uncurry xor <$> zip initialReveals reveals :: Bool
   when activity (Anim.reveal w reveals)
   return final
+
+
+betaI :: ∀ a . Program a -> AlphaAnimProgram a
+betaI = reinterpret2 (\x -> animI x $ raiseAlpha $ alphaI x)
+
+data ExecDSL n where
+  ExecAlpha :: Alpha.DSL a -> ExecDSL a
+  ExecAnim :: Anim.DSL a -> ExecDSL a
+
+execute :: ∀ a . Model -> AlphaAnimProgram a -> (Model, [ResolveData])
+execute initialModel prog = (initialModel, []) 
+    where
+    execProg :: Eff '[ExecDSL, Alpha.DSL, Anim.DSL] a
+    execProg = interpose toExecAnim $ interpose toExecAlpha $ reinterpret2 send prog
+    initialState :: (Model, ModelDiff, [ResolveData])
+    initialState = (initialModel, mempty, [])
+    part_a :: Eff '[S.State (Model, ModelDiff, [ResolveData]), Alpha.DSL, Anim.DSL] a
+    part_a = reinterpret go execProg
+    -- part_b :: Eff '[Alpha.DSL, Anim.DSL] (Model, ModelDiff, [ResolveData])
+    -- part_b = execState initialState $ part_a
+    -- result :: (Model, ModelDiff, [ResolveData])
+    -- result = run part_b
+    toExecAlpha :: (Member ExecDSL effs) => Alpha.DSL b -> Eff effs b
+    toExecAlpha = send . ExecAlpha
+    toExecAnim :: (Member ExecDSL effs) => Anim.DSL b -> Eff effs b
+    toExecAnim = send . ExecAnim
+    go :: (Member (S.State (Model, ModelDiff, [ResolveData])) effs) => ∀ b . ExecDSL b -> Eff effs b
+    go (ExecAlpha alpha) = do
+      (model, diff, res :: [ResolveData]) <- S.get
+      let (newDiff, next) = Alpha.alphaEffI model alpha
+      let newModel = ModelDiff.update model newDiff
+      S.put (newModel, diff <> newDiff, res)
+      return next
+    go (ExecAnim anim) = do
+      -- newNext = if gameover model then return () else next anim
+      (model :: Model, diff :: ModelDiff, res :: [ResolveData]) <- S.get
+      let cardAnim = Anim.animate anim
+      let damage = fromMaybe (0, 0) $ cardAnimDamage <$> cardAnim
+      let resolveData = ResolveData diff cardAnim damage
+      let newRes = res ++ [resolveData]
+      S.put (model :: Model, mempty :: ModelDiff, res :: [ResolveData])
+      return $ Anim.next anim

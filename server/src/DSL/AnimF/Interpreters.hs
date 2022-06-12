@@ -25,3 +25,23 @@ animate (MoveStack m t) = Just $ CardAnim.MoveStack m t
 animate (Reveal w r) = Just $ CardAnim.Reveal w r
 animate (Pass w) = Just $ CardAnim.Pass w
 animate GetGen = Just CardAnim.GetGen
+
+next :: DSL a -> a
+next Null = ()
+next Raw {} = ()
+next Hurt {} = ()
+next Heal {} = ()
+next (Draw _ _) = ()
+next Play {} = ()
+next Transmute {} = ()
+next Mill {} = ()
+next GameEnd {} = ()
+next Rotate = ()
+next Windup = ()
+next Bounce {} = ()
+next DiscardStack {} = ()
+next DiscardHand {} = ()
+next MoveStack {} = ()
+next Reveal {} = ()
+next Pass {} = ()
+next GetGen = ()
