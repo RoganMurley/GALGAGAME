@@ -1,8 +1,11 @@
+{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE GADTs #-}
+
 module StatusEff where
 
 import Card (Card (..), Status (..))
 import CardAnim (Hurt (..))
-import Control.Monad.Free (hoistFree)
+import Control.Monad.Freer (reinterpret, send)
 import DSL.Beta (DSL (..))
 import qualified DSL.Beta as Beta
 
@@ -20,9 +23,9 @@ applyStatuses card =
 
 statusEff :: Status -> (Beta.Program () -> Beta.Program ())
 statusEff StatusEcho = \eff -> eff >> eff
-statusEff StatusBlighted = hoistFree blightedRewrite
+statusEff StatusBlighted = reinterpret blightedRewrite
 statusEff StatusFragile = id
 
-blightedRewrite :: Beta.DSL a -> Beta.DSL a
-blightedRewrite (Heal l w n) = Hurt l w Curse n
-blightedRewrite dsl = dsl
+blightedRewrite :: Beta.DSL a -> Beta.Program a
+blightedRewrite (Heal l w) = send $ Hurt l w Curse
+blightedRewrite dsl = send $ dsl

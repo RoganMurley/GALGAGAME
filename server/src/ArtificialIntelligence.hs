@@ -1,6 +1,7 @@
 module ArtificialIntelligence where
 
 import qualified Cards
+import Control.Monad.Freer (reinterpret)
 import Control.Monad.Trans.Writer (runWriter)
 import DSL.Alpha
 import DSL.Beta (alphaI)
@@ -37,7 +38,7 @@ evalState w (Playing playing) = evalModel model
     model = playing_model playing
     evalModel :: Model -> Weight
     evalModel m
-      | isJust . (\s -> Stack.get s 1) $ evalI m $ getStack =
+      | isJust . (\s -> Stack.get s 1) $ evalI m getStack =
         (evalState w) . fst . runWriter $ resolveAll $ playingFromModel m
       | otherwise =
         (evalPlayer w m) - (evalPlayer (other w) m)
@@ -78,7 +79,7 @@ postulateAction which model gen scenario action =
    in update command which state scenario (Nothing, Nothing) (posixSecondsToUTCTime 0)
         >>= maybeToEither "Gamestate not returned from postulation" . fst
         >>= maybeToEither "Gamestate is not a playing state" . playStateFromGameState
-        >>= Right . mapModelPlayState ((flip modI) (alphaI roundEndProgram)) -- Account for the draw from the start of the next round.
+        >>= Right . mapModelPlayState ((flip modI) (reinterpret alphaI roundEndProgram)) -- Account for the draw from the start of the next round.
 
 chooseAction :: Gen -> WhichPlayer -> Model -> Scenario -> Maybe Action
 chooseAction gen which model scenario

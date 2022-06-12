@@ -9,8 +9,7 @@ import Card (Card)
 import CardAnim (Damage, Hurt, TimeModifier (..), cardAnimDamage)
 import {-# SOURCE #-} Cards (strangeEnd)
 import Control.Monad (when)
-import Control.Monad.Freer (Eff, Member, Members, interpose, interpret, interpretWith, raise, reinterpret, reinterpret2, reinterpret3, run, send, subsume, translate)
-import Control.Monad.Freer.Internal (handleRelay)
+import Control.Monad.Freer (Eff, Member, reinterpret, run, send)
 import Control.Monad.Freer.State as S
 import qualified DSL.Alpha as Alpha
 import qualified DSL.Anim as Anim
@@ -61,6 +60,8 @@ alphaI Null = return ()
 data ExecDSL n where
   ExecAlpha :: Alpha.DSL a -> ExecDSL a
   ExecAnim :: Anim.DSL a -> ExecDSL a
+
+type ExecProgram a = Eff '[ExecDSL] a
 
 basicAnim :: Anim.DSL () -> Eff '[ExecDSL] a -> Eff '[ExecDSL] a
 basicAnim anim alpha = alpha <* (send . ExecAnim $ anim)
@@ -237,3 +238,14 @@ execute initialModel prog = (\(finalModel, _, finalRes)-> (finalModel, finalRes)
       let newRes = res ++ [ResolveData diff cardAnim damage]
       S.put (model :: Model, mempty :: ModelDiff, newRes :: [ResolveData])
       return $ Anim.next anim
+
+
+damageNumbersI :: Model -> Program () -> (Damage, Damage)
+damageNumbersI model program =
+  let
+    (_, resolveData) = execute model $ betaI program
+    damage = resolveData_animDamage <$> resolveData :: [(Damage, Damage)]
+    damagePa = sum $ fst <$> damage :: Damage
+    damagePb = sum $ snd <$> damage :: Damage
+  in
+    (damagePa, damagePb)

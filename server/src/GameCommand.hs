@@ -3,7 +3,6 @@ module GameCommand where
 import Card (Card (..))
 import CardAnim (CardAnim (..), TimeModifier (..))
 import Control.Monad (when)
-import Control.Monad.Free (foldFree)
 import Control.Monad.Trans.Writer (Writer, runWriter, tell)
 import qualified DSL.Alpha as Alpha
 import qualified DSL.Beta as Beta
@@ -207,7 +206,7 @@ nextSelectState deckModel turn startProgram gen (mUserPa, mUserPb) time timeLimi
                 replayUserPa = (displayUsernamePa, userIdPa)
                 replayUserPb = (displayUsernamePb, userIdPb)
                 replay = Active.init model replayUserPa replayUserPb :: Active.Replay
-                (newModel, _, res) = Beta.execute model $ foldFree Beta.betaI startProgram
+                (newModel, res) = Beta.execute model $ Beta.betaI startProgram
                 playstate :: PlayState
                 playstate =
                   Playing $
@@ -249,7 +248,7 @@ playCard index which playing time
               Beta.play which c index
               Beta.windup
               Beta.raw $ Alpha.setHold True
-            (modelA, _, resA) = Beta.execute model $ foldFree Beta.betaI program
+            (modelA, resA) = Beta.execute model $ Beta.betaI program
             (result, resB) =
               runWriter $
                 resolveAll
@@ -266,7 +265,7 @@ playCard index which playing time
                 let modelB = playing_model newPlaying
                     -- If the wheel is full, end the round.
                     postProgram = when isWheelFull roundEndProgram
-                    (modelC, _, resC) = Beta.execute modelB $ foldFree Beta.betaI postProgram
+                    (modelC, resC) = Beta.execute modelB $ Beta.betaI postProgram
                     newPlayState :: PlayState
                     newPlayState =
                       Playing $
@@ -313,7 +312,7 @@ endTurn which playing time
       OnePass ->
         case runWriter $ resolveAll playing of
           (Playing newPlaying, res) ->
-            let (newModel, _, endRes) = Beta.execute (playing_model newPlaying) $ foldFree Beta.betaI roundEndProgram
+            let (newModel, endRes) = Beta.execute (playing_model newPlaying) $ Beta.betaI roundEndProgram
                 newPlayState :: PlayState
                 newPlayState =
                   Playing $
@@ -343,7 +342,7 @@ endTurn which playing time
             endTurnProgram = do
               Beta.raw Alpha.swapTurn
               Beta.rawAnim $ Pass which
-            (newModel, _, res) = Beta.execute model $ foldFree Beta.betaI endTurnProgram
+            (newModel, res) = Beta.execute model $ Beta.betaI endTurnProgram
             newPlayState :: PlayState
             newPlayState =
               Playing $
@@ -373,12 +372,12 @@ resolveAll' :: PlayingR -> Int -> (Card -> Card) -> Writer [ResolveData] PlaySta
 resolveAll' playing resolutionCount rewrite = do
   let model = playing_model playing
   let replay = playing_replay playing
-  let (modelA, _, resA) = Beta.execute model preProgram :: (Model, String, [ResolveData])
+  let (modelA, resA) = Beta.execute model preProgram :: (Model, [ResolveData])
   tell resA
   let activeCard = Alpha.evalI modelA (wheel_0 <$> Alpha.getStack)
   case activeCard of
     Just stackCard -> do
-      let (modelB, _, resB) = Beta.execute modelA (cardProgram stackCard) :: (Model, String, [ResolveData])
+      let (modelB, resB) = Beta.execute modelA (cardProgram stackCard) :: (Model, [ResolveData])
       tell resB
       let newReplay = replay `Active.add` resA `Active.add` resB
       case checkWin (playing {playing_model = modelB, playing_replay = newReplay}) of
@@ -399,16 +398,16 @@ resolveAll' playing resolutionCount rewrite = do
     isFinite = resolutionCount < 20
     nextResolutionCount :: Int
     nextResolutionCount = if isFinite then resolutionCount + 1 else 0
-    preProgram :: Beta.AlphaLogAnimProgram ()
+    preProgram :: Beta.ExecProgram ()
     preProgram =
-      foldFree Beta.betaI $ do
+      Beta.betaI $ do
         holding <- Beta.getHold
         when (not holding) Beta.rotate
         Beta.raw (Alpha.setHold False)
         Beta.refreshGen
-    cardProgram :: StackCard -> Beta.AlphaLogAnimProgram ()
+    cardProgram :: StackCard -> Beta.ExecProgram ()
     cardProgram StackCard {stackcard_card, stackcard_owner} =
-      foldFree Beta.betaI $ do
+      Beta.betaI $ do
         let eff = card_eff (rewrite . applyStatuses $ stackcard_card)
         when isFinite $ eff stackcard_owner
         holding <- Beta.getHold
@@ -489,8 +488,8 @@ godMode mUser str which time playing =
    in if maybe False (isSuperuser . gameuser_user) mUser
         then case GodMode.parse which str of
           GodMode.ParsedProgram betaProgram ->
-            let program = foldFree Beta.betaI $ betaProgram :: Beta.AlphaLogAnimProgram ()
-                (m, _, res) = Beta.execute model program :: (Model, String, [ResolveData])
+            let program = Beta.betaI betaProgram :: Beta.ExecProgram ()
+                (m, res) = Beta.execute model program :: (Model, [ResolveData])
                 newPlayState =
                   Playing $
                     playing
@@ -527,7 +526,7 @@ heartbeat currentTime playing =
       delta = diffUTCTime currentTime previousTime :: NominalDiffTime
       which = model_turn model :: WhichPlayer
       timeLeft = timeLimit - delta :: NominalDiffTime
-      (_, _, res) = Beta.execute model $ foldFree Beta.betaI (Beta.rawAnim Timeout)
+      (_, res) = Beta.execute model $ Beta.betaI (Beta.rawAnim Timeout)
    in if delta > timeLimit
         then concede which (Started . Playing $ playing) res
         else Right (Nothing, [Outcome.Encodable $ Outcome.Heartbeat timeLeft])
