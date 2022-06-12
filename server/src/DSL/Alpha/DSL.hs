@@ -1,34 +1,36 @@
+{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE GADTs #-}
+
 module DSL.Alpha.DSL where
 
-import Control.Monad.Free (Free)
+import Control.Monad.Freer (Eff)
 import Life (Life)
 import Model (Deck, Hand, Model, Passes, Turn)
 import Player (WhichPlayer)
 import Stack (Stack)
 import Util (Gen)
 
-data DSL n
-  = GetGen (Gen -> n)
-  | GetDeck WhichPlayer (Deck -> n)
-  | GetHand WhichPlayer (Hand -> n)
-  | GetLife WhichPlayer (Life -> n)
-  | GetMaxLife WhichPlayer (Life -> n)
-  | GetPasses (Passes -> n)
-  | GetStack (Stack -> n)
-  | GetTurn (Turn -> n)
-  | GetRot (Int -> n)
-  | GetHold (Bool -> n)
-  | GetModel (Model -> n)
-  | SetGen Gen n
-  | SetDeck WhichPlayer Deck n
-  | SetHand WhichPlayer Hand n
-  | SetLife WhichPlayer Life n
-  | SetMaxLife WhichPlayer Life n
-  | SetPasses Passes n
-  | SetStack Stack n
-  | SetTurn Turn n
-  | SetRot Int n
-  | SetHold Bool n
-  deriving (Functor)
+data DSL n where
+  GetGen :: DSL Gen
+  GetDeck :: WhichPlayer -> DSL Deck
+  GetHand :: WhichPlayer -> DSL Hand
+  GetLife :: WhichPlayer -> DSL Life
+  GetMaxLife :: WhichPlayer -> DSL Life
+  GetPasses :: DSL Passes
+  GetStack :: DSL Stack
+  GetTurn :: DSL Turn
+  GetRot :: DSL Int
+  GetHold :: DSL Bool
+  GetModel :: DSL Model
+  SetGen :: Gen -> DSL ()
+  SetDeck :: WhichPlayer -> Deck -> DSL ()
+  SetHand :: WhichPlayer -> Hand -> DSL ()
+  SetLife :: WhichPlayer -> Life -> DSL ()
+  SetMaxLife :: WhichPlayer -> Life -> DSL ()
+  SetPasses :: Passes -> DSL ()
+  SetStack :: Stack -> DSL ()
+  SetTurn :: Turn -> DSL ()
+  SetRot :: Int -> DSL ()
+  SetHold :: Bool -> DSL ()
 
-type Program = Free DSL
+type Program = Eff '[DSL]

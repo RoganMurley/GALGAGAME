@@ -1,9 +1,12 @@
+{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE GADTs #-}
+
 module DSL.Beta.DSL where
 
 import Bounce (CardBounce)
 import Card (Card)
 import CardAnim (CardAnim, Hurt, TimeModifier)
-import Control.Monad.Free (Free (..))
+import Control.Monad.Freer (Eff)
 import qualified DSL.Alpha.DSL as Alpha
 import HandCard (HandCard)
 import Life (Life)
@@ -14,33 +17,32 @@ import Transmutation (Transmutation)
 import Util (Gen)
 import Wheel (Wheel)
 
-data DSL n
-  = Raw (Alpha.Program ()) n
-  | Hurt Life WhichPlayer Hurt n
-  | Heal Life WhichPlayer n
-  | Draw WhichPlayer WhichPlayer TimeModifier n
-  | AddToHand WhichPlayer HandCard n
-  | Play WhichPlayer HandCard Int n
-  | Transmute' (Wheel (Maybe Transmutation)) n
-  | TransmuteActive' Transmutation n
-  | Rotate n
-  | Windup n
-  | Bounce' (Wheel (Maybe CardBounce)) TimeModifier n
-  | DiscardStack' (Wheel Bool) n
-  | DiscardHand WhichPlayer (Int -> Card -> Bool) n
-  | MoveStack' (Wheel (Maybe Int)) TimeModifier n
-  | Mill WhichPlayer TimeModifier n
-  | Reveal WhichPlayer (Int -> Card -> Bool) n
-  | GetDeck WhichPlayer (Deck -> n)
-  | GetHand WhichPlayer (Hand -> n)
-  | GetLife WhichPlayer (Life -> n)
-  | GetGen (Gen -> n)
-  | GetStack (Stack -> n)
-  | GetRot (Int -> n)
-  | GetHold (Bool -> n)
-  | GetModel (Model -> n)
-  | RawAnim CardAnim n
-  | Null n
-  deriving (Functor)
+data DSL n where
+  Raw :: Alpha.Program () -> DSL ()
+  Hurt :: Life -> WhichPlayer -> Hurt -> DSL ()
+  Heal :: Life -> WhichPlayer -> DSL ()
+  Draw :: WhichPlayer -> WhichPlayer -> TimeModifier -> DSL ()
+  AddToHand :: WhichPlayer -> HandCard -> DSL ()
+  Play :: WhichPlayer -> HandCard -> Int -> DSL ()
+  Transmute' :: Wheel (Maybe Transmutation) -> DSL ()
+  TransmuteActive' :: Transmutation -> DSL ()
+  Rotate :: DSL ()
+  Windup :: DSL ()
+  Bounce' :: Wheel (Maybe CardBounce) -> TimeModifier -> DSL ()
+  DiscardStack' :: Wheel Bool -> DSL ()
+  DiscardHand :: WhichPlayer -> (Int -> Card -> Bool) -> DSL ()
+  MoveStack' :: Wheel (Maybe Int) -> TimeModifier -> DSL ()
+  Mill :: WhichPlayer -> TimeModifier -> DSL ()
+  Reveal :: WhichPlayer -> (Int -> Card -> Bool) -> DSL ()
+  GetDeck :: WhichPlayer -> DSL Deck
+  GetHand :: WhichPlayer -> DSL Hand
+  GetLife :: WhichPlayer -> DSL Life
+  GetGen :: DSL Gen
+  GetStack :: DSL Stack
+  GetRot :: DSL Int
+  GetHold :: DSL Bool
+  GetModel :: DSL Model
+  RawAnim :: CardAnim -> DSL ()
+  Null :: DSL ()
 
-type Program = Free DSL
+type Program = Eff '[DSL]

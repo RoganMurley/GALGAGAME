@@ -33,8 +33,6 @@ library
                      , DSL.Alpha
                      , DSL.Anim
                      , DSL.Beta
-                     , DSL.Log
-                     , DSL.Util
                      , Ease
                      , Encounter
                      , Feedback.Apps

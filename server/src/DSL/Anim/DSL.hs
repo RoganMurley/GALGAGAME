@@ -1,9 +1,12 @@
+{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE GADTs #-}
+
 module DSL.Anim.DSL where
 
 import Bounce (CardBounce)
 import Card (Card)
 import CardAnim (CardAnim, Hurt, TimeModifier)
-import Control.Monad.Free (Free (..))
+import Control.Monad.Freer (Eff)
 import Discard (CardDiscard)
 import HandCard (HandCard)
 import Life (Life)
@@ -11,25 +14,24 @@ import Player (WhichPlayer)
 import Transmutation (Transmutation)
 import Wheel (Wheel)
 
-data DSL a
-  = Null a
-  | Raw CardAnim a
-  | Hurt WhichPlayer Life Hurt a
-  | Heal WhichPlayer Life a
-  | Draw WhichPlayer TimeModifier a
-  | Play WhichPlayer HandCard Int a
-  | Transmute (Wheel (Maybe Transmutation)) a
-  | Mill WhichPlayer Card TimeModifier a
-  | GameEnd (Maybe WhichPlayer) a
-  | Rotate a
-  | Windup a
-  | Bounce (Wheel (Maybe CardBounce)) TimeModifier a
-  | DiscardStack (Wheel Bool) a
-  | DiscardHand WhichPlayer [CardDiscard] a
-  | Reveal WhichPlayer [Bool] a
-  | MoveStack (Wheel (Maybe Int)) TimeModifier a
-  | Pass WhichPlayer a
-  | GetGen a
-  deriving (Functor)
+data DSL n where
+  Null :: DSL ()
+  Raw :: CardAnim -> DSL ()
+  Hurt :: WhichPlayer -> Life -> Hurt -> DSL ()
+  Heal :: WhichPlayer -> Life -> DSL ()
+  Draw :: WhichPlayer -> TimeModifier -> DSL ()
+  Play :: WhichPlayer -> HandCard -> Int -> DSL ()
+  Transmute :: Wheel (Maybe Transmutation) -> DSL ()
+  Mill :: WhichPlayer -> Card -> TimeModifier -> DSL ()
+  GameEnd :: Maybe WhichPlayer -> DSL ()
+  Rotate :: DSL ()
+  Windup :: DSL ()
+  Bounce :: Wheel (Maybe CardBounce) -> TimeModifier -> DSL ()
+  DiscardStack :: Wheel Bool -> DSL ()
+  DiscardHand :: WhichPlayer -> [CardDiscard] -> DSL ()
+  Reveal :: WhichPlayer -> [Bool] -> DSL ()
+  MoveStack :: Wheel (Maybe Int) -> TimeModifier -> DSL ()
+  Pass :: WhichPlayer -> DSL ()
+  GetGen :: DSL ()
 
-type Program a = Free DSL a
+type Program = Eff '[DSL]

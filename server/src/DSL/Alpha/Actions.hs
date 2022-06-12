@@ -7,9 +7,8 @@ import Bounce (CardBounce (..))
 import Card (Card)
 import {-# SOURCE #-} Cards (strangeEnd)
 import Control.Applicative ((<|>))
-import Control.Monad.Free (MonadFree, liftF)
-import Control.Monad.Free.TH (makeFree)
-import DSL.Alpha.DSL (DSL (..), Program)
+import Control.Monad.Freer.TH (makeEffect)
+import DSL.Alpha.DSL (DSL, Program)
 import Data.Foldable (toList)
 import Data.Maybe (catMaybes)
 import HandCard (HandCard (..), anyCard)
@@ -24,7 +23,7 @@ import Transmutation (Transmutation (..))
 import Util (deleteIndex, indexedFilter)
 import Wheel (Wheel (..))
 
-makeFree ''DSL
+makeEffect ''DSL
 
 modifier :: (WhichPlayer -> Program a) -> (WhichPlayer -> a -> Program ()) -> WhichPlayer -> (a -> a) -> Program ()
 modifier getter setter w f = do
@@ -200,7 +199,7 @@ rotate = do
 windup :: Program ()
 windup = do
   modStack Stack.windup
-  modRot ((+) 1)
+  modRot (1 +)
 
 mill :: WhichPlayer -> Program ()
 mill w = modDeck w tailSafe

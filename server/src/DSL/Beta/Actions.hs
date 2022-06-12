@@ -7,10 +7,9 @@ import Bounce (BounceState (..), CardBounce (..))
 import Card (Status (..), hasStatus)
 import CardAnim (Hurt (..), TimeModifier (..))
 import Control.Monad (forM_, when)
-import Control.Monad.Free (MonadFree, liftF)
-import Control.Monad.Free.TH (makeFree)
+import Control.Monad.Freer.TH (makeEffect)
 import qualified DSL.Alpha as Alpha
-import DSL.Beta.DSL (DSL (..), Program)
+import DSL.Beta.DSL (DSL, Program)
 import Data.Foldable (foldl', toList)
 import Data.Map (Map)
 import qualified Data.Map as Map
@@ -31,7 +30,7 @@ import Wheel (Wheel (..), indexWheel)
 import qualified Wheel
 import Prelude hiding (null)
 
-makeFree ''DSL
+makeEffect ''DSL
 
 transmute :: (Int -> StackCard -> Maybe Transmutation) -> Program ()
 transmute f = do
