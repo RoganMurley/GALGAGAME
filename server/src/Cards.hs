@@ -719,9 +719,16 @@ myriadSword =
   newCard
     Myriad
     Sword
-    "Hurt for 7"
-    $ \w ->
-      hurt 7 (other w) Slash
+    "Hurt for 1 eight times"
+    $ \w -> do
+      hurt 1 (other w) Slash
+      hurt 1 (other w) Slash
+      hurt 1 (other w) Slash
+      hurt 1 (other w) Slash
+      hurt 1 (other w) Slash
+      hurt 1 (other w) Slash
+      hurt 1 (other w) Slash
+      hurt 1 (other w) Slash
 
 myriadWand :: Card
 myriadWand =
@@ -740,12 +747,17 @@ myriadGrail =
   newCard
     Myriad
     Grail
-    "Hurt for 6 for each MYRIAD GRAIL\non the wheel"
+    "Cards in your hand become copies of\ncard in next socket"
     $ \w -> do
       stack <- getStack
-      let cards = fmap (\(_, sc) -> stackcard_card sc) (Stack.diasporaFromStack stack)
-      let mag = length $ filter (\Card {card_aspect, card_suit} -> (card_aspect == Myriad) && (card_suit == Grail)) cards
-      heal (6 * mag) w
+      let mNextStackCard = Stack.get stack 1
+      case mNextStackCard of
+        Just nextStackCard -> do
+          hand <- getHand w
+          raw $ Alpha.setHand w $ fmap (\c -> KnownHandCard $ (stackcard_card nextStackCard) {card_statuses = card_statuses (anyCard c)}) hand
+          Beta.null
+        Nothing ->
+          return ()
 
 myriadCoin :: Card
 myriadCoin =
