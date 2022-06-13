@@ -713,6 +713,57 @@ cometCoin =
     "Move card in next socket into\nthe previous socket"
     $ \_ -> moveStack (\i _ -> if i == 1 then Just (-1) else Nothing) (TimeModifierOutQuint 400)
 
+-- LEGION
+myriadSword :: Card
+myriadSword =
+  newCard
+    Myriad
+    Sword
+    "Hurt for 7"
+    $ \w ->
+      hurt 7 (other w) Slash
+
+myriadWand :: Card
+myriadWand =
+  newCard
+    Myriad
+    Wand
+    "Hurt for 8 for each MYRIAD WAND\non the wheel"
+    $ \w -> do
+      stack <- getStack
+      let cards = fmap (\(_, sc) -> stackcard_card sc) (Stack.diasporaFromStack stack)
+      let mag = length $ filter (\Card {card_aspect, card_suit} -> (card_aspect == Myriad) && (card_suit == Wand)) cards
+      hurt (8 * mag) (other w) Slash
+
+myriadGrail :: Card
+myriadGrail =
+  newCard
+    Myriad
+    Grail
+    "Hurt for 6 for each MYRIAD GRAIL\non the wheel"
+    $ \w -> do
+      stack <- getStack
+      let cards = fmap (\(_, sc) -> stackcard_card sc) (Stack.diasporaFromStack stack)
+      let mag = length $ filter (\Card {card_aspect, card_suit} -> (card_aspect == Myriad) && (card_suit == Grail)) cards
+      heal (6 * mag) w
+
+myriadCoin :: Card
+myriadCoin =
+  newCard
+    Myriad
+    Coin
+    "All other cards on the wheel become\na copy of the card in next socket"
+    $ \_ -> do
+      stack <- getStack
+      let mNextStackCard = Stack.get stack 1
+      case mNextStackCard of
+        Just nextStackCard ->
+          transmute $
+            \i stackCard ->
+              if i > 0 then Just $ Transmutation stackCard (nextStackCard {stackcard_owner = stackcard_owner stackCard}) else Nothing
+        Nothing ->
+          return ()
+
 -- Other cards
 strangeEnd :: Card
 strangeEnd =
@@ -752,7 +803,8 @@ swords =
     emptySword,
     seerSword,
     glassSword,
-    cometSword
+    cometSword,
+    myriadSword
   ]
 
 wands :: [Card]
@@ -771,7 +823,8 @@ wands =
     emptyWand,
     seerWand,
     glassWand,
-    cometWand
+    cometWand,
+    myriadWand
   ]
 
 grails :: [Card]
@@ -790,7 +843,8 @@ grails =
     emptyGrail,
     seerGrail,
     glassGrail,
-    cometGrail
+    cometGrail,
+    myriadGrail
   ]
 
 coins :: [Card]
@@ -808,7 +862,8 @@ coins =
     emptyCoin,
     seerCoin,
     glassCoin,
-    cometCoin
+    cometCoin,
+    myriadCoin
   ]
 
 others :: [Card]

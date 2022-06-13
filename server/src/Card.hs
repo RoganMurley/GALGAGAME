@@ -55,6 +55,7 @@ data Aspect
   | Blood
   | Crown
   | Morph
+  | Myriad
   | Abyss
   | Fever
   | Empty
