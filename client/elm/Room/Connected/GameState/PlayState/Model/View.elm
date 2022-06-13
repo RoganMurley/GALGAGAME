@@ -64,6 +64,7 @@ view { w, h } game chat assets =
             , damageView hover holding
             , turnView focus passed game.tutorial timeLeft
             , focusTextView (vec2 0 0) focus
+            , activePointerView
             , Buttons.view buttons
             , Chat.notifyView chat buttons
             , timeLeftView timeLeft
@@ -692,3 +693,24 @@ timeLeftView timeLeft ({ perspective, camera3d } as ctx) =
 
         Nothing ->
             []
+
+
+activePointerView : Context -> List WebGL.Entity
+activePointerView ctx =
+    let
+        { w, h, radius, ortho, camera2d } =
+            ctx
+
+        scale =
+            0.05 * radius
+    in
+    [ Render.Primitives.triangle Render.Shaders.matte <|
+        { color = Colour.yellow
+        , pos = vec3 (w * 0.5) (h * 0.5 - 0.93 * radius) 0
+        , rotation = Quaternion.makeRotate <| Quaternion.zRotation (-0.25 * pi)
+        , alpha = 1
+        , scale = makeScale3 scale scale 1
+        , perspective = ortho
+        , camera = camera2d
+        }
+    ]
