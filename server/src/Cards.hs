@@ -747,15 +747,14 @@ myriadGrail =
   newCard
     Myriad
     Grail
-    "Cards in your hand become copies of\ncard in next socket"
+    "Draw 2 copies of card in next socket "
     $ \w -> do
       stack <- getStack
       let mNextStackCard = Stack.get stack 1
       case mNextStackCard of
         Just nextStackCard -> do
-          hand <- getHand w
-          raw $ Alpha.setHand w $ fmap (\c -> KnownHandCard $ (stackcard_card nextStackCard) {card_statuses = card_statuses (anyCard c)}) hand
-          Beta.null
+          addToHand w (KnownHandCard $ stackcard_card nextStackCard)
+          addToHand w (KnownHandCard $ stackcard_card nextStackCard)
         Nothing ->
           return ()
 
