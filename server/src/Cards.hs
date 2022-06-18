@@ -719,9 +719,8 @@ myriadSword =
   newCard
     Myriad
     Sword
-    "Hurt for 1 eight times"
+    "Hurt for 1 seven times"
     $ \w -> do
-      hurt 1 (other w) Slash
       hurt 1 (other w) Slash
       hurt 1 (other w) Slash
       hurt 1 (other w) Slash
