@@ -64,6 +64,7 @@ view { w, h } game chat assets =
             , damageView hover holding
             , turnView focus passed game.tutorial timeLeft
             , focusTextView (vec2 0 0) focus
+            , activePointerView
             , Buttons.view buttons
             , Chat.notifyView chat buttons
             , timeLeftView timeLeft
@@ -692,3 +693,46 @@ timeLeftView timeLeft ({ perspective, camera3d } as ctx) =
 
         Nothing ->
             []
+
+
+activePointerView : Context -> List WebGL.Entity
+activePointerView ctx =
+    let
+        { anim, w, h, tick, radius, ortho, camera2d } =
+            ctx
+
+        scale =
+            0.05 * radius
+
+        maxTick =
+            Animation.animMaxTick anim
+
+        rot =
+            case anim of
+                Rotate _ ->
+                    let
+                        p =
+                            10 * max 0 ((Ease.inBounce << Ease.inQuad <| tick / maxTick) - 0.9)
+                    in
+                    -0.25 * pi + p * (0.07 * pi)
+
+                Windup _ ->
+                    let
+                        p =
+                            10 * (0 + (min 1 <| max 0 ((Ease.outElastic << Ease.inQuad <| tick / maxTick) - 0.9)))
+                    in
+                    -0.25 * pi - p * (0.01 * pi)
+
+                _ ->
+                    -0.25 * pi
+    in
+    [ Render.Primitives.triangle Render.Shaders.matte <|
+        { color = Colour.yellow
+        , pos = vec3 (w * 0.5) (h * 0.5 - 0.93 * radius) 0
+        , rotation = Quaternion.makeRotate <| Quaternion.zRotation rot
+        , alpha = 1
+        , scale = makeScale3 scale scale 1
+        , perspective = ortho
+        , camera = camera2d
+        }
+    ]

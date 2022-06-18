@@ -1,4 +1,4 @@
-module Render.Primitives exposing (circle, donut, entity, fullCircle, quad)
+module Render.Primitives exposing (circle, donut, entity, fullCircle, quad, triangle)
 
 import Math.Vector2 exposing (Vec2)
 import Render.Meshes
@@ -21,6 +21,13 @@ quad fragment =
     entity
         fragment
         Render.Meshes.quad
+
+
+triangle : Shader {} (Uniforms u) { vcoord : Vec2 } -> Uniforms u -> Entity
+triangle fragment =
+    entity
+        fragment
+        Render.Meshes.triangle
 
 
 circle : Uniforms { mag : Float } -> Entity
