@@ -719,15 +719,8 @@ myriadSword =
   newCard
     Myriad
     Sword
-    "Hurt for 1 seven times"
-    $ \w -> do
-      hurt 1 (other w) Slash
-      hurt 1 (other w) Slash
-      hurt 1 (other w) Slash
-      hurt 1 (other w) Slash
-      hurt 1 (other w) Slash
-      hurt 1 (other w) Slash
-      hurt 1 (other w) Slash
+    "Hurt for 7"
+    $ \w -> hurt 7 (other w) Slash
 
 myriadWand :: Card
 myriadWand =

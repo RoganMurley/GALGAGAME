@@ -186,11 +186,12 @@ mainRunes =
     feverRune,
     emptyRune,
     bloodRune,
-    glassRune
+    glassRune,
+    myriadRune
   ]
 
 superRunes :: [Rune]
-superRunes = mainRunes ++ [cometRune, myriadRune]
+superRunes = mainRunes ++ [cometRune]
 
 allRunes :: [Rune]
 allRunes = superRunes ++ [abyssRune]
@@ -299,20 +300,20 @@ glassRune =
     (Cards.glassSword, Cards.glassWand, Cards.glassGrail, Cards.glassCoin)
     (levelToExperience 10)
 
-cometRune :: Rune
-cometRune =
-  Rune
-    "COMET"
-    "cards/comet/coin.png"
-    (Cards.cometSword, Cards.cometWand, Cards.cometGrail, Cards.cometCoin)
-    (levelToExperience 11)
-
 myriadRune :: Rune
 myriadRune =
   Rune
     "MYRIAD"
     "cards/myriad/coin.png"
     (Cards.myriadSword, Cards.myriadWand, Cards.myriadGrail, Cards.myriadCoin)
+    (levelToExperience 11)
+
+cometRune :: Rune
+cometRune =
+  Rune
+    "COMET"
+    "cards/comet/coin.png"
+    (Cards.cometSword, Cards.cometWand, Cards.cometGrail, Cards.cometCoin)
     (levelToExperience 12)
 
 abyssRune :: Rune
