@@ -10,7 +10,6 @@ import Control.Monad (forM_, when)
 import Control.Monad.IO.Class (liftIO)
 import Control.Monad.STM (STM, atomically)
 import Data.Aeson (encode)
-import Data.Maybe (fromMaybe)
 import Data.String.Conversions (cs)
 import Data.Text (Text)
 import Data.Time.Clock (UTCTime, getCurrentTime)
@@ -28,10 +27,10 @@ import ResolveData (ResolveData (..))
 import Room (Room)
 import qualified Room
 import Scenario (Scenario (..))
-import Stats.Experience (Experience)
+import Stats.Progress (Progress (..))
 import qualified Stats.Stats as Stats
 import Text.Printf (printf)
-import User (GameUser (..), User (..), gameusersToUsers, getUsername, setExperience, usersToGameUsers)
+import User (GameUser (..), User (..), gameusersToUsers, getUsername, setProgress, usersToGameUsers)
 import Util (Err)
 
 roomUpdate :: GameCommand -> WhichPlayer -> UTCTime -> TVar Room -> STM (Room, Either Err [Outcome])
@@ -136,24 +135,26 @@ resolveRoomClients res initial final exclude room = do
     mirrorOutcome :: Outcome.Encodable
     mirrorOutcome = Outcome.Resolve (mirror <$> res) (mirror initial) (mirror final) (other <$> exclude)
 
-handleExperience :: WhichPlayer -> Maybe Experience -> Maybe WhichPlayer -> Room -> App ()
-handleExperience which forceXp winner room = do
+handleExperience :: WhichPlayer -> Maybe WhichPlayer -> Room -> App ()
+handleExperience which winner room = do
   -- Change this to be a transaction!
   let scenario = Room.getScenario room
   let mUser = Client.user <$> Room.getPlayerClient which room :: Maybe User
   case mUser of
     Just user -> do
-      let xpDeltaRaw =
+      let progressChange =
             if Just which == winner
-              then scenario_xpWin scenario
-              else scenario_xpLoss scenario
-      let xpDelta = fromMaybe xpDeltaRaw forceXp
-      initialXp <- Stats.load user
+              then scenario_progressWin scenario
+              else scenario_progressLoss scenario
+      let xpDelta = progress_xp progressChange
+      progress <- Stats.load user
+      let initialXp = progress_xp progress
       let statChange = Stats.statChange initialXp xpDelta
-      Stats.increase user xpDelta
+      let newProgress = progress {progress_xp = initialXp + xpDelta}
+      Stats.updateProgress user newProgress
       Log.info $ printf "Xp change for %s: %s" (getUsername user) (show statChange)
       Room.sendToPlayer which (("xp:" <>) . cs . encode $ statChange) room
-      liftIO . atomically $ setExperience (initialXp + xpDelta) user
+      liftIO . atomically $ setProgress newProgress user
       syncRoomMetadata room
     Nothing ->
       return ()
@@ -195,7 +196,7 @@ actOutcome room (Outcome.SaveReplay replay) = do
   replayId <- Replay.Final.save replay
   Log.info $ printf "<%s>: Replay saved with ID %d" (Room.getName room) replayId
   Room.broadcast ("replaySaved:" <> (cs . show $ replayId)) room
-actOutcome room (Outcome.HandleExperience winner force) = do
-  handleExperience PlayerA force winner room
-  handleExperience PlayerB force winner room
+actOutcome room (Outcome.HandleExperience winner) = do
+  handleExperience PlayerA winner room
+  handleExperience PlayerB winner room
   handleLeaderboard room

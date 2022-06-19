@@ -15,7 +15,6 @@ import Util (Err, breakAt)
 data Parsed
   = ParsedProgram (Beta.Program ())
   | ParsedTimeLimit Int
-  | ParsedXp Int
   | ParseError Err
 
 parse :: WhichPlayer -> Text -> Parsed
@@ -64,12 +63,6 @@ parse which msg =
           ParsedProgram $ do
             Beta.raw $ Alpha.modHand (other which) (fmap hide)
             Beta.null
-        "xp" ->
-          case readMay $ cs content of
-            Just xp ->
-              ParsedXp xp
-            Nothing ->
-              ParseError ("Cannot parse " <> content <> " to int" :: Err)
         "discard" ->
           case readMay $ cs content of
             Just index ->

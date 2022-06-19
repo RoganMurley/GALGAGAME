@@ -13,6 +13,7 @@ import Room (Room)
 import qualified Room
 import Scenario (Scenario (..))
 import Stats.Experience (Experience)
+import Stats.Progress (makeCpuProgress)
 import Util (Gen, modReadTVar, modReturnTVar, modTVar)
 import Prelude hiding (lookup, putStrLn)
 
@@ -113,8 +114,8 @@ addComputerClient name guid xp room =
           (r, Nothing)
       else (r, Nothing)
   where
-    client = Client.cpuClient name guid xp :: Client
+    client = Client.cpuClient name guid (makeCpuProgress xp) :: Client
 
-removeClient :: Client -> TVar Room -> STM (Room)
+removeClient :: Client -> TVar Room -> STM Room
 removeClient client roomVar =
   modReadTVar roomVar $ Room.removeClient client

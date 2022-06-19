@@ -71,9 +71,10 @@ library
                      , Stack
                      , StackCard
                      , Start
+                     , Stats.Experience
+                     , Stats.Progress
                      , Stats.Schema
                      , Stats.Stats
-                     , Stats.Experience
                      , StatusEff
                      , Transmutation
                      , Wheel

@@ -2,18 +2,21 @@ module Stats.Stats where
 
 import qualified Auth.Schema
 import Config (App, runBeam)
-import Data.Aeson (ToJSON (..), object, (.=))
+import Data.Aeson (ToJSON (..), decode, encode, object, (.=))
 import Data.Int (Int64)
+import Data.Maybe (fromMaybe)
+import Data.String.Conversions (cs)
 import Data.Text (Text)
-import Database.Beam (all_, current_, filter_, insertValues, primaryKey, runInsert, runSelectReturningOne, runUpdate, select, update, val_, (<-.), (==.))
+import Database.Beam (all_, filter_, insertValues, primaryKey, runInsert, runSelectReturningOne, runUpdate, select, update, val_, (<-.), (==.))
 import qualified Database.Beam.Postgres.Full as Postgres
 import DeckBuilding (Rune (..), mainRunes)
 import Schema (GalgagameDb (..), galgagameDb)
 import Stats.Experience (Experience)
+import Stats.Progress (Progress (..), fromPartial, initialProgress)
 import qualified Stats.Schema
 import {-# SOURCE #-} User (User (..))
 
-load :: User -> App Experience
+load :: User -> App Progress
 load (User user _) = do
   let userId = Auth.Schema.userId user :: Int64
   result <-
@@ -22,11 +25,21 @@ load (User user _) = do
         select $
           filter_ (\row -> Stats.Schema.statsUser row ==. val_ (Auth.Schema.UserId userId)) $
             all_ $ stats galgagameDb
-  return $ maybe 0 Stats.Schema.statsExperience result
+  let progress =
+        result
+          >>= ( \r ->
+                  let xp = Stats.Schema.statsExperience r
+                      partial =
+                        Stats.Schema.statsProgress r
+                          >>= return . cs
+                          >>= decode
+                   in fromPartial <$> partial <*> Just xp
+              )
+  return $ fromMaybe initialProgress progress
 load (GuestUser cid _) = loadByCid $ Just cid
-load _ = return 0
+load _ = return initialProgress
 
-loadByCid :: Maybe Text -> App Experience
+loadByCid :: Maybe Text -> App Progress
 loadByCid (Just cid) = do
   result <-
     runBeam $
@@ -34,20 +47,38 @@ loadByCid (Just cid) = do
         select $
           filter_ (\row -> Stats.Schema.statsguestCid row ==. val_ cid) $
             all_ $ statsguest galgagameDb
-  return $ maybe 0 Stats.Schema.statsguestExperience result
-loadByCid Nothing = return 0
+  let progress =
+        result
+          >>= ( \r ->
+                  let xp = Stats.Schema.statsguestExperience r
+                      partial =
+                        Stats.Schema.statsguestProgress r
+                          >>= return . cs
+                          >>= decode
+                   in fromPartial <$> partial <*> Just xp
+              )
+  return $ fromMaybe initialProgress progress
+loadByCid Nothing = return initialProgress
 
-increase :: User -> Experience -> App ()
-increase (User user _) xp = do
+updateProgress :: User -> Progress -> App ()
+updateProgress (User user _) progress = do
   let userId = Auth.Schema.userId user :: Int64
+  let xp = progress_xp progress :: Experience
   runBeam $
     runUpdate $
       update
         (stats galgagameDb)
-        (\row -> Stats.Schema.statsExperience row <-. current_ (Stats.Schema.statsExperience row) + val_ xp)
+        ( \row ->
+            mconcat
+              [ Stats.Schema.statsExperience row <-. val_ xp,
+                Stats.Schema.statsProgress row <-. val_ (Just . cs $ encode progress)
+              ]
+        )
         (\row -> Stats.Schema.statsUser row ==. val_ (Auth.Schema.UserId userId))
-increase (GuestUser cid _) xp = do
-  let val = Stats.Schema.Statsguest cid xp
+updateProgress (GuestUser cid _) progress = do
+  let xp = progress_xp progress :: Experience
+  let encodedProgress = Just . cs $ encode progress
+  let val = Stats.Schema.Statsguest cid xp encodedProgress
   runBeam $
     runInsert $
       Postgres.insertOnConflict
@@ -56,11 +87,13 @@ increase (GuestUser cid _) xp = do
         (Postgres.conflictingFields primaryKey)
         ( Postgres.onConflictUpdateSet
             ( \row _ ->
-                Stats.Schema.statsguestExperience row
-                  <-. current_ (Stats.Schema.statsguestExperience row) + val_ xp
+                mconcat
+                  [ Stats.Schema.statsguestExperience row <-. val_ xp,
+                    Stats.Schema.statsguestProgress row <-. val_ encodedProgress
+                  ]
             )
         )
-increase _ _ = return ()
+updateProgress _ _ = return ()
 
 data StatChange = StatChange
   { statChange_initialExperience :: Experience,

@@ -1,0 +1,2 @@
+ALTER TABLE stats ADD COLUMN progress TEXT NOT NULL;
+ALTER TABLE statsguest ADD COLUMN progress TEXT NOT NULL;

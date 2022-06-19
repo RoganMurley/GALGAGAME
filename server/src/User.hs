@@ -15,13 +15,13 @@ import Data.Traversable (forM)
 import Database.Beam (all_, filter_, runSelectReturningOne, select, val_, (==.))
 import Player (WhichPlayer (..))
 import Schema (GalgagameDb (..), galgagameDb)
-import Stats.Experience (Experience)
+import Stats.Progress (Progress (..), initialProgress)
 import qualified Stats.Stats as Stats
 
 data User
-  = User Auth.User (TVar Experience)
-  | CpuUser Text Experience
-  | GuestUser Text (TVar Experience)
+  = User Auth.User (TVar Progress)
+  | CpuUser Text Progress
+  | GuestUser Text (TVar Progress)
   | ServiceUser
 
 instance Show User where
@@ -55,22 +55,22 @@ getUserId (CpuUser _ _) = Nothing
 getUserId (GuestUser _ _) = Nothing
 getUserId ServiceUser = Nothing
 
-getExperience :: User -> STM Experience
-getExperience (User _ xp) = readTVar xp
-getExperience (CpuUser _ xp) = return xp
-getExperience (GuestUser _ xp) = readTVar xp
-getExperience _ = return 0
+getProgress :: User -> STM Progress
+getProgress (User _ progressVar) = readTVar progressVar
+getProgress (CpuUser _ progress) = return progress
+getProgress (GuestUser _ progressVar) = readTVar progressVar
+getProgress _ = return initialProgress
 
-setExperience :: Experience -> User -> STM ()
-setExperience xp (User _ xpVar) = writeTVar xpVar xp
-setExperience xp (GuestUser _ xpVar) = writeTVar xpVar xp
-setExperience _ _ = return ()
+setProgress :: Progress -> User -> STM ()
+setProgress progress (User _ progressVar) = writeTVar progressVar progress
+setProgress progress (GuestUser _ progressVar) = writeTVar progressVar progress
+setProgress _ _ = return ()
 
 getUserFromCookies :: Auth.Cookies -> Text -> App User
 getUserFromCookies cookies cid = do
   let mLoginToken = Map.lookup Auth.sessionCookieName cookies
   mUsername <- Auth.checkAuth mLoginToken
-  xpVar <- liftIO $ newTVarIO 0
+  progressVar <- liftIO $ newTVarIO initialProgress
   case mUsername of
     Nothing -> do
       let mApiToken = Map.lookup "api-key" cookies
@@ -79,9 +79,9 @@ getUserFromCookies cookies cid = do
         then return ServiceUser
         else
           ( do
-              let user = GuestUser cid xpVar
-              xp <- Stats.load user
-              liftIO . atomically $ writeTVar xpVar xp
+              let user = GuestUser cid progressVar
+              progress <- Stats.load user
+              liftIO . atomically $ writeTVar progressVar progress
               return user
           )
     Just username -> do
@@ -93,12 +93,12 @@ getUserFromCookies cookies cid = do
                 all_ $ users galgagameDb
       case mAuthUser of
         Just authUser -> do
-          let user = User authUser xpVar
-          xp <- Stats.load user
-          liftIO . atomically $ writeTVar xpVar xp
+          let user = User authUser progressVar
+          progress <- Stats.load user
+          liftIO . atomically $ writeTVar progressVar progress
           return user
         Nothing ->
-          return $ GuestUser cid xpVar
+          return $ GuestUser cid progressVar
 
 isSuperuser :: User -> Bool
 isSuperuser ServiceUser = True
@@ -120,25 +120,25 @@ isCpu (GuestUser _ _) = False
 
 -- GameUser
 data GameUser = GameUser
-  { gameuser_xp :: Experience,
+  { gameuser_progress :: Progress,
     gameuser_user :: User
   }
   deriving (Show)
 
 instance ToJSON GameUser where
-  toJSON GameUser {gameuser_user, gameuser_xp} =
+  toJSON GameUser {gameuser_user, gameuser_progress} =
     object
       [ "name" .= getUsername gameuser_user,
-        "xp" .= gameuser_xp
+        "xp" .= progress_xp gameuser_progress
       ]
 
 toGameUser :: User -> STM GameUser
 toGameUser user = do
-  xp <- getExperience user
+  progress <- getProgress user
   return $
     GameUser
       { gameuser_user = user,
-        gameuser_xp = xp
+        gameuser_progress = progress
       }
 
 getUser :: WhichPlayer -> (Maybe GameUser, Maybe GameUser) -> Maybe GameUser

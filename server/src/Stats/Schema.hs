@@ -11,12 +11,13 @@ module Stats.Schema where
 import Auth.Schema (UserT)
 import Data.Int (Int64)
 import Data.Text (Text)
-import Database.Beam (Beamable, Columnar, Generic, Identity, PrimaryKey, Table (..))
+import Database.Beam (Beamable, Columnar, Generic, Identity, Nullable, PrimaryKey, Table (..))
 
 -- Stats
 data StatsT f = Stats
   { statsUser :: PrimaryKey UserT f,
-    statsExperience :: Columnar f Int64
+    statsExperience :: Columnar f Int64,
+    statsProgress :: Columnar (Nullable f) Text
   }
   deriving (Generic)
 
@@ -35,7 +36,8 @@ instance Table StatsT where
 -- StatsGuest
 data StatsguestT f = Statsguest
   { statsguestCid :: Columnar f Text,
-    statsguestExperience :: Columnar f Int64
+    statsguestExperience :: Columnar f Int64,
+    statsguestProgress :: Columnar (Nullable f) Text
   }
   deriving (Generic)
 

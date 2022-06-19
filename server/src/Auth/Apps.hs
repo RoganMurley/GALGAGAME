@@ -5,6 +5,7 @@ import Config (App, runBeam, runBeamIntegrity, runRedis)
 import Control.Exception (throw)
 import Control.Monad.IO.Class (liftIO)
 import Crypto.BCrypt (validatePassword)
+import Data.Aeson (encode)
 import Data.ByteString (ByteString, length)
 import Data.List (find)
 import Data.Map (Map)
@@ -19,6 +20,7 @@ import Database.PostgreSQL.Simple.Errors (ConstraintViolation (..))
 import qualified Database.Redis as R
 import qualified Network.WebSockets as WS
 import Schema (GalgagameDb (..), galgagameDb)
+import Stats.Progress (Progress (..))
 import Stats.Schema as Schema
 import qualified Stats.Stats as Stats
 import System.Log.Logger (errorM)
@@ -59,7 +61,7 @@ deleteToken token = do
 
 saveUser :: ByteString -> ByteString -> ByteString -> Bool -> Maybe Text -> App Bool
 saveUser email username hashedPassword contactable mCid = do
-  xp <- Stats.loadByCid mCid
+  progress <- Stats.loadByCid mCid
   result <- runBeamIntegrity $ do
     [userResult] <-
       runInsertReturningList $
@@ -73,7 +75,8 @@ saveUser email username hashedPassword contactable mCid = do
                 (val_ contactable)
                 (val_ False)
             ]
-    let stat = Schema.Stats (Schema.UserId $ userId userResult) xp
+    let xp = progress_xp progress
+    let stat = Schema.Stats (Schema.UserId $ userId userResult) xp (Just . cs $ encode progress)
     _ <- runInsert $ insert (stats galgagameDb) $ insertValues [stat]
     case mCid of
       Just cid ->

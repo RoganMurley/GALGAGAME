@@ -28,6 +28,7 @@ import Scenario (Scenario (..))
 import Stack (Stack)
 import qualified Stack
 import StackCard (StackCard (..))
+import Stats.Progress (initialProgress)
 import StatusEff (applyStatuses)
 import User (GameUser (..), User (..), gameusersToUsers, getUser, getUserId, getUsername, isSuperuser)
 import Util (Err, Gen, deleteIndex, split, times, tupleMap2)
@@ -144,7 +145,7 @@ concede which (Started (Playing playing)) extraRes =
    in Right
         ( Just . Started $ newPlayState,
           [ Outcome.Encodable $ Outcome.Resolve res model newPlayState Nothing,
-            Outcome.HandleExperience winner Nothing,
+            Outcome.HandleExperience winner,
             Outcome.SaveReplay finalReplay
           ]
         )
@@ -163,9 +164,9 @@ select ::
   Either Err (Maybe GameState, [Outcome])
 select which choice deckModel turn scenario gen users time =
   let user = getUser which users
-      xp = maybe 0 gameuser_xp user
+      progress = maybe initialProgress gameuser_progress user
       runes = getSelectableRunes which deckModel
-   in case choiceToCharacter choice runes xp of
+   in case choiceToCharacter choice runes progress of
         Right character ->
           let newDeckModel :: DeckBuilding
               newDeckModel = selectCharacter deckModel which character
@@ -289,7 +290,7 @@ playCard index which playing time
                       ( Just newState,
                         [ Outcome.Encodable $ Outcome.Resolve (resA ++ resB) model newPlayState (Just which),
                           Outcome.Encodable $ Outcome.Resolve resB modelA newPlayState (Just (other which)),
-                          Outcome.HandleExperience w Nothing,
+                          Outcome.HandleExperience w,
                           Outcome.SaveReplay finalReplay
                         ]
                       )
@@ -333,7 +334,7 @@ endTurn which playing time
              in Right
                   ( Just newState,
                     [ Outcome.Encodable $ Outcome.Resolve res model newPlayState Nothing,
-                      Outcome.HandleExperience w Nothing,
+                      Outcome.HandleExperience w,
                       Outcome.SaveReplay finalReplay
                     ]
                   )
@@ -508,11 +509,6 @@ godMode mUser str which time playing =
                       playing_timeLimit = fromIntegral timeLimit
                     },
                 [Outcome.Encodable $ Outcome.Heartbeat $ fromIntegral timeLimit]
-              )
-          GodMode.ParsedXp xp ->
-            Right
-              ( Nothing,
-                [Outcome.HandleExperience Nothing (Just $ fromIntegral xp)]
               )
           GodMode.ParseError err ->
             Left err

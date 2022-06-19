@@ -10,12 +10,11 @@ import Model (Model)
 import Player (WhichPlayer)
 import qualified Replay.Final as Final
 import ResolveData (ResolveData)
-import Stats.Experience (Experience)
 
 data Outcome
   = Sync
   | SaveReplay Final.Replay
-  | HandleExperience (Maybe WhichPlayer) (Maybe Experience)
+  | HandleExperience (Maybe WhichPlayer)
   | Encodable Encodable
   deriving (Eq, Show)
 

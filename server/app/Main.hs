@@ -51,6 +51,7 @@ import Server (addComputerClient, addPlayerClient, addSpecClient)
 import qualified Server
 import Start (startProgram)
 import Stats.Experience (Experience, nextLevelExperience)
+import Stats.Progress (Progress (..))
 import System.Environment (lookupEnv)
 import Text.Printf (printf)
 import User (User (..), getUserFromCookies, getUsername, isSuperuser)
@@ -212,8 +213,8 @@ makeScenario _ prefix =
       scenario_characterPa = characterPa,
       scenario_characterPb = characterPb,
       scenario_prog = prog,
-      scenario_xpWin = xpWin,
-      scenario_xpLoss = xpLoss,
+      scenario_progressWin = progressWin,
+      scenario_progressLoss = progressLoss,
       scenario_timeLimit = timeLimit,
       scenario_tags = []
     }
@@ -231,10 +232,10 @@ makeScenario _ prefix =
           PlayerA
     prog :: Beta.Program ()
     prog = startProgram turn
-    xpWin :: Experience
-    xpWin = 100
-    xpLoss :: Experience
-    xpLoss = 70
+    progressWin :: Progress
+    progressWin = Progress 100 [] []
+    progressLoss :: Progress
+    progressLoss = Progress 70 [] []
     timeLimit :: NominalDiffTime
     timeLimit = fromIntegral (60 :: Integer)
 
@@ -266,7 +267,8 @@ beginComputer cpuName state client roomVar = do
   Log.info $ printf "<%s>: Begin AI game" (show $ Client.name client)
   cpuGuid <- liftIO GUID.genText
   (computer, added) <- liftIO . atomically $ do
-    xp <- Client.xp client
+    progress <- Client.progress client
+    let xp = progress_xp progress
     computerAdded <- addComputerClient cpuName cpuGuid xp roomVar
     playerAdded <- addPlayerClient client roomVar
     return (computerAdded, playerAdded)
@@ -366,7 +368,8 @@ asyncQueueCpuFallback state client roomVar queueId = do
               )
         else
           ( do
-              xp <- Client.xp client
+              progress <- Client.progress client
+              let xp = progress_xp progress
               updateRoomEncounter roomVar xp
               added <- addComputerClient "CPU" guid (nextLevelExperience xp) roomVar
               case added of
@@ -412,7 +415,8 @@ play which client roomVar outcomes = do
 computerPlay :: WhichPlayer -> TVar Room -> TVar Server.State -> Client -> App ()
 computerPlay which roomVar state client = do
   roomName <- liftIO $ Room.getName <$> readTVarIO roomVar
-  xp <- liftIO $ atomically $ Client.xp client
+  progress <- liftIO $ atomically $ Client.progress client
+  let xp = progress_xp progress
   _ <- runMaybeT (runStateT (forever (loop roomName xp)) 0)
   Log.info $ printf "<%s@%s>AI signing off" (Client.name client) roomName
   _ <- disconnect client roomVar state

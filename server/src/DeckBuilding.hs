@@ -5,6 +5,8 @@ import qualified Cards
 import Data.Aeson (FromJSON (..), ToJSON (..), object, withObject, (.:), (.=))
 import Data.Either (isRight)
 import Data.List (find)
+import Data.Map (Map)
+import qualified Data.Map as Map
 import Data.Set as Set
 import Data.String.Conversions (cs)
 import Data.Text (Text)
@@ -13,6 +15,7 @@ import Mirror (Mirror (..))
 import Model (Deck)
 import Player (WhichPlayer (..))
 import Stats.Experience (Experience, levelToExperience)
+import {-# SOURCE #-} Stats.Progress (Progress, getXp)
 
 -- Rune
 data Rune = Rune
@@ -146,9 +149,11 @@ instance FromJSON CharacterChoice where
           <*> o .: "rune_b"
           <*> o .: "rune_c"
 
-choiceToCharacter :: CharacterChoice -> [Rune] -> Experience -> Either Text Character
-choiceToCharacter CharacterChoice {choice_ra, choice_rb, choice_rc} runes xp =
-  let uniqueChoices :: Bool
+choiceToCharacter :: CharacterChoice -> [Rune] -> Progress -> Either Text Character
+choiceToCharacter CharacterChoice {choice_ra, choice_rb, choice_rc} runes progress =
+  let xp :: Experience
+      xp = getXp progress
+      uniqueChoices :: Bool
       uniqueChoices = Set.size (Set.fromList [choice_ra, choice_rb, choice_rc]) == 3
       makeCharacter :: Rune -> Rune -> Rune -> Character
       makeCharacter choicePa choicePb choicePc =
@@ -333,3 +338,9 @@ characterCards Character {character_choice} =
           <$> [rune_cards runeA, rune_cards runeB, rune_cards runeC] >>= replicate 3
     Right deck ->
       deck
+
+runesByName :: Map Text Rune
+runesByName = Map.fromList $ fmap (\rune -> (rune_name rune, rune)) allRunes
+
+getRuneByName :: Text -> Maybe Rune
+getRuneByName name = Map.lookup name runesByName

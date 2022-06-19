@@ -5,8 +5,8 @@ import Control.Monad.IO.Class (liftIO)
 import Control.Monad.STM (STM)
 import Data.Text (Text)
 import Network.WebSockets (Connection, receiveData, sendTextData)
-import Stats.Experience (Experience)
-import User (User (..), getExperience, getQueryUsername, getUsername)
+import Stats.Progress (Progress (..))
+import User (User (..), getProgress, getQueryUsername, getUsername)
 
 data ClientConnection
   = PlayerConnection Connection
@@ -52,12 +52,12 @@ receive :: Client -> App Text
 receive (Client _ (PlayerConnection conn) _) = liftIO $ receiveData conn
 receive _ = return ""
 
-cpuClient :: Text -> Text -> Experience -> Client
-cpuClient usernameIn guidIn xpIn = Client (CpuUser usernameIn xpIn) ComputerConnection guidIn
+cpuClient :: Text -> Text -> Progress -> Client
+cpuClient usernameIn guidIn progressIn = Client (CpuUser usernameIn progressIn) ComputerConnection guidIn
 
 isCpu :: Client -> Bool
 isCpu (Client _ ComputerConnection _) = True
 isCpu _ = False
 
-xp :: Client -> STM Experience
-xp = getExperience . user
+progress :: Client -> STM Progress
+progress = getProgress . user

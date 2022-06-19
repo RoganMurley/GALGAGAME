@@ -11,6 +11,7 @@ CREATE TABLE users (
 CREATE TABLE stats (
   user__id INTEGER REFERENCES users UNIQUE,
   experience BIGINT DEFAULT 0,
+  progress TEXT,
   created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 CREATE INDEX stats_user__id ON stats(user__id);
@@ -19,6 +20,7 @@ CREATE INDEX experience ON stats(experience DESC);
 CREATE TABLE statsguest (
   cid TEXT PRIMARY KEY,
   experience BIGINT DEFAULT 0,
+  progress TEXT,
   created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
