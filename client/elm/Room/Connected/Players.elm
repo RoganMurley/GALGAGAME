@@ -1,6 +1,7 @@
 module Players exposing (Player, Players, decode, shouldRematch)
 
-import Json.Decode as Json exposing (Decoder, field, index, int, maybe, string)
+import Json.Decode as Json exposing (Decoder, field, index, int, list, maybe, string)
+import Set exposing (Set)
 
 
 type alias Players =
@@ -12,6 +13,7 @@ type alias Players =
 type alias Player =
     { name : String
     , xp : Int
+    , unlocks : Set String
     }
 
 
@@ -40,6 +42,12 @@ decoder =
 
 playerDecoder : Decoder Player
 playerDecoder =
-    Json.map2 Player
+    let
+        makePlayer : String -> Int -> List String -> Player
+        makePlayer name xp unlocks =
+            Player name xp (Set.fromList unlocks)
+    in
+    Json.map3 makePlayer
         (field "name" string)
         (field "xp" int)
+        (field "unlocks" <| list string)

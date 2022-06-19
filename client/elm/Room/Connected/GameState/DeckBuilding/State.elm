@@ -29,6 +29,7 @@ import Room.Messages as Room
 import RuneSelect.Messages as RuneSelect
 import RuneSelect.State as RuneSelect
 import RuneSelect.Types as RuneSelect exposing (Rune, RuneCursor(..))
+import Set exposing (Set)
 import Util exposing (message)
 import Vfx.State as Vfx
 
@@ -81,28 +82,33 @@ update msg model ({ audio } as assets) players =
                     case getRuneFromCursor cursor character of
                         Just rune ->
                             let
-                                excludedRunes : List Rune
-                                excludedRunes =
-                                    List.filterMap identity <|
-                                        [ Just rune
-                                        , getRuneFromCursor (nextCursor cursor) character
-                                        , getRuneFromCursor (nextCursor (nextCursor cursor)) character
-                                        ]
+                                unlockedRuneNames : Set String
+                                unlockedRuneNames =
+                                    Maybe.map .unlocks players.pa
+                                        |> Maybe.withDefault Set.empty
 
-                                xp =
-                                    Maybe.map .xp players.pa
-                                        |> Maybe.withDefault 0
+                                excludedRuneNames : Set String
+                                excludedRuneNames =
+                                    Set.fromList <|
+                                        List.map .name <|
+                                            List.filterMap identity <|
+                                                [ Just rune
+                                                , getRuneFromCursor (nextCursor cursor) character
+                                                , getRuneFromCursor (nextCursor (nextCursor cursor)) character
+                                                ]
+
+                                carouselRuneNames : Set String
+                                carouselRuneNames =
+                                    Set.diff unlockedRuneNames excludedRuneNames
 
                                 runeSelect : RuneSelect.Model
                                 runeSelect =
                                     { cursor = cursor
                                     , carousel =
-                                        Carousel.init
-                                            rune
-                                        <|
-                                            List.filter (\r -> r.xp <= xp) <|
-                                                List.filter (\r -> not (List.member r excludedRunes))
-                                                    model.runes
+                                        Carousel.init rune <|
+                                            List.filter
+                                                (\r -> Set.member r.name carouselRuneNames)
+                                                model.runes
                                     , entities = []
                                     , hover = Nothing
                                     , buttons = Buttons.empty
@@ -133,12 +139,16 @@ update msg model ({ audio } as assets) players =
 
         RandomRunes ->
             let
-                xp =
-                    Maybe.map .xp players.pa
-                        |> Maybe.withDefault 0
+                unlockedRuneNames : Set String
+                unlockedRuneNames =
+                    Maybe.map .unlocks players.pa
+                        |> Maybe.withDefault Set.empty
 
+                legalRunes : List Rune
                 legalRunes =
-                    List.filter (\rune -> rune.xp <= xp) model.runes
+                    List.filter
+                        (\rune -> Set.member rune.name unlockedRuneNames)
+                        model.runes
 
                 randomizer : List Rune -> Main.Msg
                 randomizer runes =

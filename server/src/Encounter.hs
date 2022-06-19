@@ -3,6 +3,7 @@ module Encounter where
 import Control.Concurrent.STM.TVar (TVar)
 import Control.Monad.STM (STM)
 import qualified Data.Set as Set
+import Data.Time (NominalDiffTime)
 import DeckBuilding (ChosenCharacter (..))
 import Room (Room (..))
 import Scenario (Scenario (..))
@@ -25,6 +26,7 @@ updateRoomEncounter roomVar progress =
 encounterScenario :: Progress -> Scenario -> Scenario
 encounterScenario progress scenario
   | Set.notMember EventTutorial events = tutorialScenario scenario
+  | Set.notMember EventPuzzle events = puzzleScenario scenario
   | otherwise = scenario
   where
     events = progress_events progress
@@ -35,7 +37,27 @@ tutorialScenario scenario@Scenario {scenario_progressWin} =
     { scenario_prog = Start.tutorialProgram,
       scenario_characterPa = Right . ChosenCharacter $ Nothing,
       scenario_characterPb = Right . ChosenCharacter $ Nothing,
-      scenario_timeLimit = 9999999999999999999,
+      scenario_timeLimit = noTimeLimit,
       scenario_tags = ["tutorial"],
-      scenario_progressWin = scenario_progressWin {progress_events = Set.singleton EventTutorial}
+      scenario_progressWin =
+        scenario_progressWin
+          { progress_events = Set.singleton EventTutorial
+          }
     }
+
+puzzleScenario :: Scenario -> Scenario
+puzzleScenario scenario@Scenario {scenario_progressWin} =
+  scenario
+    { scenario_prog = Start.puzzle,
+      scenario_characterPa = Right . ChosenCharacter $ Nothing,
+      scenario_characterPb = Right . ChosenCharacter $ Nothing,
+      scenario_timeLimit = noTimeLimit,
+      scenario_tags = ["puzzle"],
+      scenario_progressWin =
+        scenario_progressWin
+          { progress_events = Set.singleton EventPuzzle
+          }
+    }
+
+noTimeLimit :: NominalDiffTime
+noTimeLimit = 9999999999999999999

@@ -8,14 +8,13 @@ import Data.List (find)
 import Data.Map (Map)
 import qualified Data.Map as Map
 import Data.Set as Set
-import Data.String.Conversions (cs)
 import Data.Text (Text)
 import Life (Life, initMaxLife)
 import Mirror (Mirror (..))
 import Model (Deck)
 import Player (WhichPlayer (..))
 import Stats.Experience (Experience, levelToExperience)
-import {-# SOURCE #-} Stats.Progress (Progress, getXp)
+import Stats.Progress (Progress (..), isUnlocked)
 
 -- Rune
 data Rune = Rune
@@ -39,6 +38,9 @@ instance ToJSON Rune where
       ]
 
 type RuneCards = (Card, Card, Card, Card)
+
+getRuneName :: Rune -> Text
+getRuneName Rune {rune_name} = rune_name
 
 -- Character
 data Character = Character
@@ -154,9 +156,7 @@ instance FromJSON CharacterChoice where
 
 choiceToCharacter :: CharacterChoice -> [Rune] -> Progress -> Either Text Character
 choiceToCharacter CharacterChoice {choice_ra, choice_rb, choice_rc} runes progress =
-  let xp :: Experience
-      xp = getXp progress
-      uniqueChoices :: Bool
+  let uniqueChoices :: Bool
       uniqueChoices = Set.size (Set.fromList [choice_ra, choice_rb, choice_rc]) == 3
       makeCharacter :: Rune -> Rune -> Rune -> Character
       makeCharacter choicePa choicePb choicePc =
@@ -164,18 +164,18 @@ choiceToCharacter CharacterChoice {choice_ra, choice_rb, choice_rc} runes progre
    in if uniqueChoices
         then
           makeCharacter
-            <$> getRune choice_ra runes xp
-            <*> getRune choice_rb runes xp
-            <*> getRune choice_rc runes xp
+            <$> getRune choice_ra runes progress
+            <*> getRune choice_rb runes progress
+            <*> getRune choice_rc runes progress
         else Left "Rune choices were not unique"
 
-getRune :: Text -> [Rune] -> Experience -> Either Text Rune
-getRune name runes xp =
+getRune :: Text -> [Rune] -> Progress -> Either Text Rune
+getRune name runes progress =
   case find (\Rune {rune_name} -> rune_name == name) runes of
     Just rune ->
-      if rune_xp rune <= xp
+      if isUnlocked rune progress
         then Right rune
-        else Left $ "Locked rune, " <> cs (show (rune_xp rune)) <> ">" <> cs (show xp)
+        else Left $ "Locked rune"
     Nothing ->
       Left "Invalid rune name"
 

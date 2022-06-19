@@ -23,6 +23,7 @@ import qualified DSL.Beta as Beta
 import qualified Data.GUID as GUID
 import qualified Data.Map as Map
 import Data.Maybe (fromMaybe)
+import qualified Data.Set as Set
 import Data.String.Conversions (cs)
 import Data.Text (Text)
 import qualified Data.Text as Text
@@ -50,7 +51,6 @@ import Scenario (Scenario (..))
 import Server (addComputerClient, addPlayerClient, addSpecClient)
 import qualified Server
 import Start (startProgram)
-import Stats.Experience (Experience, nextLevelExperience)
 import Stats.Progress (Progress (..), initialProgress)
 import System.Environment (lookupEnv)
 import Text.Printf (printf)
@@ -268,8 +268,7 @@ beginComputer cpuName state client roomVar = do
   cpuGuid <- liftIO GUID.genText
   (computer, added) <- liftIO . atomically $ do
     progress <- Client.progress client
-    let xp = progress_xp progress
-    computerAdded <- addComputerClient cpuName cpuGuid xp roomVar
+    computerAdded <- addComputerClient cpuName cpuGuid progress roomVar
     playerAdded <- addPlayerClient client roomVar
     return (computerAdded, playerAdded)
   case added of
@@ -370,8 +369,7 @@ asyncQueueCpuFallback state client roomVar queueId = do
           ( do
               progress <- Client.progress client
               updateRoomEncounter roomVar progress
-              let xp = progress_xp progress
-              added <- addComputerClient "CPU" guid (nextLevelExperience xp) roomVar
+              added <- addComputerClient "CPU" guid progress roomVar
               case added of
                 Just computerClient -> do
                   Server.dequeue queueId state
@@ -416,17 +414,16 @@ computerPlay :: WhichPlayer -> TVar Room -> TVar Server.State -> Client -> App (
 computerPlay which roomVar state client = do
   roomName <- liftIO $ Room.getName <$> readTVarIO roomVar
   progress <- liftIO $ atomically $ Client.progress client
-  let xp = progress_xp progress
-  _ <- runMaybeT (runStateT (forever (loop roomName xp)) 0)
+  _ <- runMaybeT (runStateT (forever (loop roomName progress)) 0)
   Log.info $ printf "<%s@%s>AI signing off" (Client.name client) roomName
   _ <- disconnect client roomVar state
   return ()
   where
-    loop :: Text -> Experience -> StateT Int (MaybeT App) ()
-    loop roomName xp = do
+    loop :: Text -> Progress -> StateT Int (MaybeT App) ()
+    loop roomName progress = do
       lift . lift $ threadDelay (1 * 1000000)
       gen <- liftIO getGen
-      command <- lift . lift $ chooseComputerCommand which roomVar gen xp
+      command <- lift . lift $ chooseComputerCommand which roomVar gen progress
       case command of
         Just c -> do
           lift . lift $ actPlay c which roomVar "CPU" roomName
@@ -446,8 +443,8 @@ computerPlay which roomVar state client = do
       --   )
       when (iterations > timeout) mzero
 
-chooseComputerCommand :: WhichPlayer -> TVar Room -> Gen -> Experience -> App (Maybe Command)
-chooseComputerCommand which room gen xp = do
+chooseComputerCommand :: WhichPlayer -> TVar Room -> Gen -> Progress -> App (Maybe Command)
+chooseComputerCommand which room gen progress = do
   r <- liftIO $ readTVarIO room
   case Room.getState r of
     Selecting deckModel _ _ ->
@@ -464,7 +461,7 @@ chooseComputerCommand which room gen xp = do
     trans EndAction = EndTurnCommand
     trans (PlayAction index) = PlayCardCommand index
     elligibleRunes :: [Rune]
-    elligibleRunes = filter (\rune -> rune_xp rune <= xp) DeckBuilding.mainRunes
+    elligibleRunes = Set.toList $ progress_unlocks progress
     randomChoice :: DeckBuilding.CharacterChoice
     randomChoice = DeckBuilding.CharacterChoice a b c
     (a, b, c) = to3Tuple $ DeckBuilding.rune_name <$> shuffle gen elligibleRunes

@@ -24,7 +24,7 @@ tutorialProgram = do
     let makeDeck = take 25 . cycle
     let deckA = makeDeck [Cards.blazeSword, Cards.blazeWand, Cards.blazeGrail, Cards.blazeCoin]
     Alpha.setDeck PlayerA deckA
-    Alpha.setMaxLife PlayerA 20
+    Alpha.setMaxLife PlayerA 50
     Alpha.setLife PlayerA 50
 
     let deckB = makeDeck [Cards.alchemySword, Cards.alchemyWand, Cards.alchemyGrail, Cards.alchemyCoin]
@@ -43,7 +43,9 @@ puzzle = do
     let deckB = take 25 $ cycle [Cards.mirrorSword, Cards.mirrorSword, Cards.mirrorSword, Cards.mirrorWand, Cards.mirrorCoin]
     Alpha.setDeck PlayerB deckB
     Alpha.setMaxLife PlayerA 15
+    Alpha.setLife PlayerA 15
     Alpha.setMaxLife PlayerB 15
+    Alpha.setLife PlayerB 15
     Alpha.setTurn PlayerB
   Beta.null
   replicateM_ 4 (Beta.draw PlayerA PlayerA (TimeModifierOutQuint 0.25))

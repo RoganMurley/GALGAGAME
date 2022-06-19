@@ -17,6 +17,7 @@ import Math.Vector3 exposing (vec3)
 import Mouse
 import Render.Types as Render
 import Replay.Types exposing (Model)
+import Set
 import WebGL
 
 
@@ -29,11 +30,13 @@ htmlView { replay, error } =
                     Just
                         { name = usernamePa
                         , xp = 0
+                        , unlocks = Set.empty
                         }
                 , pb =
                     Just
                         { name = usernamePb
                         , xp = 0
+                        , unlocks = Set.empty
                         }
                 }
 

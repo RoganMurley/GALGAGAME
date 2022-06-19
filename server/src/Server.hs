@@ -12,8 +12,7 @@ import Player (WhichPlayer (..))
 import Room (Room)
 import qualified Room
 import Scenario (Scenario (..))
-import Stats.Experience (Experience)
-import Stats.Progress (makeCpuProgress)
+import Stats.Progress (Progress)
 import Util (Gen, modReadTVar, modReturnTVar, modTVar)
 import Prelude hiding (lookup, putStrLn)
 
@@ -103,8 +102,8 @@ addPlayerClient client roomVar =
       Nothing ->
         (room, Nothing)
 
-addComputerClient :: Text -> Text -> Experience -> TVar Room -> STM (Maybe Client)
-addComputerClient name guid xp room =
+addComputerClient :: Text -> Text -> Progress -> TVar Room -> STM (Maybe Client)
+addComputerClient name guid progress room =
   modReturnTVar room $ \r ->
     if Room.noCpus r
       then case Room.addPlayer client r of
@@ -114,7 +113,7 @@ addComputerClient name guid xp room =
           (r, Nothing)
       else (r, Nothing)
   where
-    client = Client.cpuClient name guid (makeCpuProgress xp) :: Client
+    client = Client.cpuClient name guid progress :: Client
 
 removeClient :: Client -> TVar Room -> STM Room
 removeClient client roomVar =
