@@ -22,20 +22,25 @@ data Progress = Progress
 instance ToJSON Progress where
   toJSON progress = toJSON $ toPartial progress
 
-initialProgress :: Progress
-initialProgress =
+noProgress :: Progress
+noProgress =
   Progress
     { progress_xp = 0,
-      progress_unlocks =
-        Set.fromList $
-          catMaybes
-            [ getRuneByName "HEAVEN",
-              getRuneByName "TIDE",
-              getRuneByName "SHROOM",
-              getRuneByName "BLAZE"
-            ],
+      progress_unlocks = Set.empty,
       progress_events = Set.empty
     }
+
+initialProgress :: Progress
+initialProgress = noProgress {progress_unlocks = unlocks}
+  where
+    unlocks =
+      Set.fromList $
+        catMaybes
+          [ getRuneByName "HEAVEN",
+            getRuneByName "TIDE",
+            getRuneByName "SHROOM",
+            getRuneByName "BLAZE"
+          ]
 
 getXp :: Progress -> Experience
 getXp = progress_xp

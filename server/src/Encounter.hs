@@ -4,7 +4,7 @@ import Control.Concurrent.STM.TVar (TVar)
 import Control.Monad.STM (STM)
 import qualified Data.Set as Set
 import Data.Time (NominalDiffTime)
-import DeckBuilding (Character (..), ChosenCharacter (..), Rune (..), UnchosenCharacter (..), mirrorRune, alchemyRune, emptyRune, dualityRune, seerRune, feverRune, morphRune, bloodRune, glassRune, myriadRune)
+import DeckBuilding (Character (..), ChosenCharacter (..), Rune (..), UnchosenCharacter (..), blazeRune, mirrorRune, heavenRune, shroomRune, tideRune, mirrorRune, alchemyRune, emptyRune, dualityRune, seerRune, feverRune, morphRune, bloodRune, glassRune, myriadRune)
 import Room (Room (..))
 import Scenario (Scenario (..))
 import qualified Start
@@ -66,8 +66,8 @@ unlockMirrorScenario scenario@Scenario {scenario_progressWin} =
         Right . ChosenCharacter $
           Just $
             Character
-              (Left (mirrorRune, mirrorRune, mirrorRune))
-              20,
+              (Left (mirrorRune, tideRune, heavenRune))
+              50,
       scenario_progressWin =
         scenario_progressWin
           { progress_unlocks = Set.singleton mirrorRune
@@ -82,8 +82,8 @@ unlockAlchemyScenario scenario@Scenario {scenario_progressWin} =
         Right . ChosenCharacter $
           Just $
             Character
-              (Left (alchemyRune, alchemyRune, alchemyRune))
-              20,
+              (Left (alchemyRune, mirrorRune, shroomRune))
+              50,
       scenario_progressWin =
         scenario_progressWin
           { progress_unlocks = Set.singleton alchemyRune
@@ -98,8 +98,8 @@ unlockEmptyScenario scenario@Scenario {scenario_progressWin} =
         Right . ChosenCharacter $
           Just $
             Character
-              (Left (emptyRune, emptyRune, emptyRune))
-              20,
+              (Left (emptyRune, mirrorRune, tideRune))
+              50,
       scenario_progressWin =
         scenario_progressWin
           { progress_unlocks = Set.singleton emptyRune
@@ -114,8 +114,8 @@ unlockDualityScenario scenario@Scenario {scenario_progressWin} =
         Right . ChosenCharacter $
           Just $
             Character
-              (Left (dualityRune, dualityRune, dualityRune))
-              20,
+              (Left (dualityRune, mirrorRune, tideRune))
+              50,
       scenario_progressWin =
         scenario_progressWin
           { progress_unlocks = Set.singleton dualityRune
@@ -130,8 +130,8 @@ unlockSeerScenario scenario@Scenario {scenario_progressWin} =
         Right . ChosenCharacter $
           Just $
             Character
-              (Left (seerRune, seerRune, seerRune))
-              20,
+              (Left (seerRune, shroomRune, heavenRune))
+              50,
       scenario_progressWin =
         scenario_progressWin
           { progress_unlocks = Set.singleton seerRune
@@ -146,8 +146,8 @@ unlockFeverScenario scenario@Scenario {scenario_progressWin} =
         Right . ChosenCharacter $
           Just $
             Character
-              (Left (feverRune, feverRune, feverRune))
-              20,
+              (Left (feverRune, dualityRune, heavenRune))
+              50,
       scenario_progressWin =
         scenario_progressWin
           { progress_unlocks = Set.singleton feverRune
@@ -162,8 +162,8 @@ unlockMorphScenario scenario@Scenario {scenario_progressWin} =
         Right . ChosenCharacter $
           Just $
             Character
-              (Left (morphRune, morphRune, morphRune))
-              20,
+              (Left (morphRune, dualityRune, emptyRune))
+              50,
       scenario_progressWin =
         scenario_progressWin
           { progress_unlocks = Set.singleton morphRune
@@ -178,8 +178,8 @@ unlockBloodScenario scenario@Scenario {scenario_progressWin} =
         Right . ChosenCharacter $
           Just $
             Character
-              (Left (bloodRune, bloodRune, bloodRune))
-              20,
+              (Left (bloodRune, blazeRune, shroomRune))
+              50,
       scenario_progressWin =
         scenario_progressWin
           { progress_unlocks = Set.singleton bloodRune
@@ -194,8 +194,8 @@ unlockGlassScenario scenario@Scenario {scenario_progressWin} =
         Right . ChosenCharacter $
           Just $
             Character
-              (Left (glassRune, glassRune, glassRune))
-              20,
+              (Left (glassRune, seerRune, feverRune))
+              50,
       scenario_progressWin =
         scenario_progressWin
           { progress_unlocks = Set.singleton glassRune
@@ -210,8 +210,8 @@ unlockMyriadScenario scenario@Scenario {scenario_progressWin} =
         Right . ChosenCharacter $
           Just $
             Character
-              (Left (myriadRune, myriadRune, myriadRune))
-              20,
+              (Left (myriadRune, glassRune, mirrorRune))
+              50,
       scenario_progressWin =
         scenario_progressWin
           { progress_unlocks = Set.singleton myriadRune
