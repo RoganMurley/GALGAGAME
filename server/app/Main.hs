@@ -51,7 +51,7 @@ import Server (addComputerClient, addPlayerClient, addSpecClient)
 import qualified Server
 import Start (startProgram)
 import Stats.Experience (Experience, nextLevelExperience)
-import Stats.Progress (Progress (..))
+import Stats.Progress (Progress (..), initialProgress)
 import System.Environment (lookupEnv)
 import Text.Printf (printf)
 import User (User (..), getUserFromCookies, getUsername, isSuperuser)
@@ -233,9 +233,9 @@ makeScenario _ prefix =
     prog :: Beta.Program ()
     prog = startProgram turn
     progressWin :: Progress
-    progressWin = Progress 100 [] []
+    progressWin = initialProgress {progress_xp = 100}
     progressLoss :: Progress
-    progressLoss = Progress 70 [] []
+    progressLoss = initialProgress {progress_xp = 70}
     timeLimit :: NominalDiffTime
     timeLimit = fromIntegral (60 :: Integer)
 
@@ -369,8 +369,8 @@ asyncQueueCpuFallback state client roomVar queueId = do
         else
           ( do
               progress <- Client.progress client
+              updateRoomEncounter roomVar progress
               let xp = progress_xp progress
-              updateRoomEncounter roomVar xp
               added <- addComputerClient "CPU" guid (nextLevelExperience xp) roomVar
               case added of
                 Just computerClient -> do

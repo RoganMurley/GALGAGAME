@@ -27,7 +27,7 @@ import ResolveData (ResolveData (..))
 import Room (Room)
 import qualified Room
 import Scenario (Scenario (..))
-import Stats.Progress (Progress (..))
+import Stats.Progress (Progress (..), updateProgress)
 import qualified Stats.Stats as Stats
 import Text.Printf (printf)
 import User (GameUser (..), User (..), gameusersToUsers, getUsername, setProgress, usersToGameUsers)
@@ -135,8 +135,8 @@ resolveRoomClients res initial final exclude room = do
     mirrorOutcome :: Outcome.Encodable
     mirrorOutcome = Outcome.Resolve (mirror <$> res) (mirror initial) (mirror final) (other <$> exclude)
 
-handleExperience :: WhichPlayer -> Maybe WhichPlayer -> Room -> App ()
-handleExperience which winner room = do
+handleProgress :: WhichPlayer -> Maybe WhichPlayer -> Room -> App ()
+handleProgress which winner room = do
   -- Change this to be a transaction!
   let scenario = Room.getScenario room
   let mUser = Client.user <$> Room.getPlayerClient which room :: Maybe User
@@ -150,7 +150,7 @@ handleExperience which winner room = do
       progress <- Stats.load user
       let initialXp = progress_xp progress
       let statChange = Stats.statChange initialXp xpDelta
-      let newProgress = progress {progress_xp = initialXp + xpDelta}
+      let newProgress = updateProgress progress progressChange
       Stats.updateProgress user newProgress
       Log.info $ printf "Xp change for %s: %s" (getUsername user) (show statChange)
       Room.sendToPlayer which (("xp:" <>) . cs . encode $ statChange) room
@@ -196,7 +196,7 @@ actOutcome room (Outcome.SaveReplay replay) = do
   replayId <- Replay.Final.save replay
   Log.info $ printf "<%s>: Replay saved with ID %d" (Room.getName room) replayId
   Room.broadcast ("replaySaved:" <> (cs . show $ replayId)) room
-actOutcome room (Outcome.HandleExperience winner) = do
-  handleExperience PlayerA winner room
-  handleExperience PlayerB winner room
+actOutcome room (Outcome.HandleProgress winner) = do
+  handleProgress PlayerA winner room
+  handleProgress PlayerB winner room
   handleLeaderboard room

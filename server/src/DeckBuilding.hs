@@ -26,6 +26,9 @@ data Rune = Rune
   }
   deriving (Eq, Show)
 
+instance Ord Rune where
+  a `compare` b = rune_name a `compare` rune_name b
+
 instance ToJSON Rune where
   toJSON Rune {rune_name, rune_img, rune_cards, rune_xp} =
     object

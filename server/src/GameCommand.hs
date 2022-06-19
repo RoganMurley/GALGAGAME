@@ -145,7 +145,7 @@ concede which (Started (Playing playing)) extraRes =
    in Right
         ( Just . Started $ newPlayState,
           [ Outcome.Encodable $ Outcome.Resolve res model newPlayState Nothing,
-            Outcome.HandleExperience winner,
+            Outcome.HandleProgress winner,
             Outcome.SaveReplay finalReplay
           ]
         )
@@ -290,7 +290,7 @@ playCard index which playing time
                       ( Just newState,
                         [ Outcome.Encodable $ Outcome.Resolve (resA ++ resB) model newPlayState (Just which),
                           Outcome.Encodable $ Outcome.Resolve resB modelA newPlayState (Just (other which)),
-                          Outcome.HandleExperience w,
+                          Outcome.HandleProgress w,
                           Outcome.SaveReplay finalReplay
                         ]
                       )
@@ -334,7 +334,7 @@ endTurn which playing time
              in Right
                   ( Just newState,
                     [ Outcome.Encodable $ Outcome.Resolve res model newPlayState Nothing,
-                      Outcome.HandleExperience w,
+                      Outcome.HandleProgress w,
                       Outcome.SaveReplay finalReplay
                     ]
                   )
