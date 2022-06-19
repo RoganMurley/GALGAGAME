@@ -149,7 +149,8 @@ handleProgress which winner room = do
       let xpDelta = progress_xp progressChange
       progress <- Stats.load user
       let initialXp = progress_xp progress
-      let statChange = Stats.statChange initialXp xpDelta
+      let newUnlocks = progress_unlocks progressChange
+      let statChange = Stats.statChange initialXp xpDelta newUnlocks
       let newProgress = updateProgress progress progressChange
       Stats.updateProgress user newProgress
       Log.info $ printf "Xp change for %s: %s" (getUsername user) (show statChange)

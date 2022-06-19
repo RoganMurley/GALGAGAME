@@ -4,10 +4,11 @@ import Control.Concurrent.STM.TVar (TVar)
 import Control.Monad.STM (STM)
 import qualified Data.Set as Set
 import Data.Time (NominalDiffTime)
-import DeckBuilding (ChosenCharacter (..))
+import DeckBuilding (Character (..), ChosenCharacter (..), Rune (..), UnchosenCharacter (..), mirrorRune, alchemyRune, emptyRune, dualityRune, seerRune, feverRune, morphRune, bloodRune, glassRune, myriadRune)
 import Room (Room (..))
 import Scenario (Scenario (..))
 import qualified Start
+-- import Stats.Experience (levelToExperience)
 import Stats.Progress (Event (..), Progress (..))
 import Util (modTVar)
 
@@ -26,10 +27,22 @@ updateRoomEncounter roomVar progress =
 encounterScenario :: Progress -> Scenario -> Scenario
 encounterScenario progress scenario
   | Set.notMember EventTutorial events = tutorialScenario scenario
-  | Set.notMember EventPuzzle events = puzzleScenario scenario
+  | Set.notMember mirrorRune unlocks && xp >= rune_xp mirrorRune = unlockMirrorScenario scenario
+  | Set.notMember alchemyRune unlocks && xp >= rune_xp alchemyRune = unlockAlchemyScenario scenario
+  | Set.notMember emptyRune unlocks && xp >= rune_xp emptyRune = unlockEmptyScenario scenario
+  | Set.notMember dualityRune unlocks && xp >= rune_xp dualityRune = unlockDualityScenario scenario
+  | Set.notMember seerRune unlocks && xp >= rune_xp seerRune = unlockSeerScenario scenario
+  | Set.notMember feverRune unlocks && xp >= rune_xp feverRune = unlockFeverScenario scenario
+  | Set.notMember morphRune unlocks && xp >= rune_xp morphRune = unlockMorphScenario scenario
+  | Set.notMember bloodRune unlocks && xp >= rune_xp bloodRune = unlockBloodScenario scenario
+  | Set.notMember glassRune unlocks && xp >= rune_xp glassRune = unlockGlassScenario scenario
+  | Set.notMember myriadRune unlocks && xp >= rune_xp myriadRune = unlockMyriadScenario scenario
+  -- | Set.notMember EventPuzzle events && xp >= levelToExperience 9 = puzzleScenario scenario
   | otherwise = scenario
   where
+    xp = progress_xp progress
     events = progress_events progress
+    unlocks = progress_unlocks progress
 
 tutorialScenario :: Scenario -> Scenario
 tutorialScenario scenario@Scenario {scenario_progressWin} =
@@ -42,6 +55,166 @@ tutorialScenario scenario@Scenario {scenario_progressWin} =
       scenario_progressWin =
         scenario_progressWin
           { progress_events = Set.singleton EventTutorial
+          }
+    }
+
+unlockMirrorScenario :: Scenario -> Scenario
+unlockMirrorScenario scenario@Scenario {scenario_progressWin} =
+  scenario
+    { scenario_characterPa = Left . UnchosenCharacter $ Nothing,
+      scenario_characterPb =
+        Right . ChosenCharacter $
+          Just $
+            Character
+              (Left (mirrorRune, mirrorRune, mirrorRune))
+              20,
+      scenario_progressWin =
+        scenario_progressWin
+          { progress_unlocks = Set.singleton mirrorRune
+          }
+    }
+
+unlockAlchemyScenario :: Scenario -> Scenario
+unlockAlchemyScenario scenario@Scenario {scenario_progressWin} =
+  scenario
+    { scenario_characterPa = Left . UnchosenCharacter $ Nothing,
+      scenario_characterPb =
+        Right . ChosenCharacter $
+          Just $
+            Character
+              (Left (alchemyRune, alchemyRune, alchemyRune))
+              20,
+      scenario_progressWin =
+        scenario_progressWin
+          { progress_unlocks = Set.singleton alchemyRune
+          }
+    }
+
+unlockEmptyScenario :: Scenario -> Scenario
+unlockEmptyScenario scenario@Scenario {scenario_progressWin} =
+  scenario
+    { scenario_characterPa = Left . UnchosenCharacter $ Nothing,
+      scenario_characterPb =
+        Right . ChosenCharacter $
+          Just $
+            Character
+              (Left (emptyRune, emptyRune, emptyRune))
+              20,
+      scenario_progressWin =
+        scenario_progressWin
+          { progress_unlocks = Set.singleton emptyRune
+          }
+    }
+
+unlockDualityScenario :: Scenario -> Scenario
+unlockDualityScenario scenario@Scenario {scenario_progressWin} =
+  scenario
+    { scenario_characterPa = Left . UnchosenCharacter $ Nothing,
+      scenario_characterPb =
+        Right . ChosenCharacter $
+          Just $
+            Character
+              (Left (dualityRune, dualityRune, dualityRune))
+              20,
+      scenario_progressWin =
+        scenario_progressWin
+          { progress_unlocks = Set.singleton dualityRune
+          }
+    }
+
+unlockSeerScenario :: Scenario -> Scenario
+unlockSeerScenario scenario@Scenario {scenario_progressWin} =
+  scenario
+    { scenario_characterPa = Left . UnchosenCharacter $ Nothing,
+      scenario_characterPb =
+        Right . ChosenCharacter $
+          Just $
+            Character
+              (Left (seerRune, seerRune, seerRune))
+              20,
+      scenario_progressWin =
+        scenario_progressWin
+          { progress_unlocks = Set.singleton seerRune
+          }
+    }
+
+unlockFeverScenario :: Scenario -> Scenario
+unlockFeverScenario scenario@Scenario {scenario_progressWin} =
+  scenario
+    { scenario_characterPa = Left . UnchosenCharacter $ Nothing,
+      scenario_characterPb =
+        Right . ChosenCharacter $
+          Just $
+            Character
+              (Left (feverRune, feverRune, feverRune))
+              20,
+      scenario_progressWin =
+        scenario_progressWin
+          { progress_unlocks = Set.singleton feverRune
+          }
+    }
+
+unlockMorphScenario :: Scenario -> Scenario
+unlockMorphScenario scenario@Scenario {scenario_progressWin} =
+  scenario
+    { scenario_characterPa = Left . UnchosenCharacter $ Nothing,
+      scenario_characterPb =
+        Right . ChosenCharacter $
+          Just $
+            Character
+              (Left (morphRune, morphRune, morphRune))
+              20,
+      scenario_progressWin =
+        scenario_progressWin
+          { progress_unlocks = Set.singleton morphRune
+          }
+    }
+
+unlockBloodScenario :: Scenario -> Scenario
+unlockBloodScenario scenario@Scenario {scenario_progressWin} =
+  scenario
+    { scenario_characterPa = Left . UnchosenCharacter $ Nothing,
+      scenario_characterPb =
+        Right . ChosenCharacter $
+          Just $
+            Character
+              (Left (bloodRune, bloodRune, bloodRune))
+              20,
+      scenario_progressWin =
+        scenario_progressWin
+          { progress_unlocks = Set.singleton bloodRune
+          }
+    }
+
+unlockGlassScenario :: Scenario -> Scenario
+unlockGlassScenario scenario@Scenario {scenario_progressWin} =
+  scenario
+    { scenario_characterPa = Left . UnchosenCharacter $ Nothing,
+      scenario_characterPb =
+        Right . ChosenCharacter $
+          Just $
+            Character
+              (Left (glassRune, glassRune, glassRune))
+              20,
+      scenario_progressWin =
+        scenario_progressWin
+          { progress_unlocks = Set.singleton glassRune
+          }
+    }
+
+unlockMyriadScenario :: Scenario -> Scenario
+unlockMyriadScenario scenario@Scenario {scenario_progressWin} =
+  scenario
+    { scenario_characterPa = Left . UnchosenCharacter $ Nothing,
+      scenario_characterPb =
+        Right . ChosenCharacter $
+          Just $
+            Character
+              (Left (myriadRune, myriadRune, myriadRune))
+              20,
+      scenario_progressWin =
+        scenario_progressWin
+          { progress_unlocks = Set.singleton myriadRune
           }
     }
 

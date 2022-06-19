@@ -5,11 +5,12 @@ import Config (App, runBeam)
 import Data.Aeson (ToJSON (..), decode, encode, object, (.=))
 import Data.Int (Int64)
 import Data.Maybe (fromMaybe)
+import Data.Set (Set)
 import Data.String.Conversions (cs)
 import Data.Text (Text)
 import Database.Beam (all_, filter_, insertValues, primaryKey, runInsert, runSelectReturningOne, runUpdate, select, update, val_, (<-.), (==.))
 import qualified Database.Beam.Postgres.Full as Postgres
-import DeckBuilding (Rune (..), mainRunes)
+import DeckBuilding (Rune (..))
 import Schema (GalgagameDb (..), galgagameDb)
 import Stats.Experience (Experience)
 import Stats.Progress (Progress (..), fromPartial, initialProgress)
@@ -97,30 +98,28 @@ updateProgress _ _ = return ()
 
 data StatChange = StatChange
   { statChange_initialExperience :: Experience,
-    statChange_finalExperience :: Experience
+    statChange_finalExperience :: Experience,
+    statChange_newUnlocks :: Set Rune
   }
   deriving (Show, Eq)
 
 instance ToJSON StatChange where
   toJSON
-    s@StatChange
+    StatChange
       { statChange_initialExperience,
-        statChange_finalExperience
+        statChange_finalExperience,
+        statChange_newUnlocks
       } =
       object
         [ "initialExperience" .= statChange_initialExperience,
           "finalExperience" .= statChange_finalExperience,
-          "unlocks" .= newUnlocks s
+          "unlocks" .= statChange_newUnlocks
         ]
 
-statChange :: Experience -> Experience -> StatChange
-statChange xp delta =
+statChange :: Experience -> Experience -> Set Rune -> StatChange
+statChange xp delta newUnlocks =
   StatChange
     { statChange_initialExperience = xp,
-      statChange_finalExperience = xp + delta
+      statChange_finalExperience = xp + delta,
+      statChange_newUnlocks = newUnlocks
     }
-
-newUnlocks :: StatChange -> [Rune]
-newUnlocks StatChange {statChange_initialExperience, statChange_finalExperience} =
-  filter (\rune -> statChange_finalExperience >= rune_xp rune) $
-    filter (\rune -> statChange_initialExperience < rune_xp rune) mainRunes
