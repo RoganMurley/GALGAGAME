@@ -9,6 +9,7 @@ import DeckBuilding (ChosenCharacter (..))
 import Room (Room (..))
 import Scenario (Scenario (..))
 import qualified Start
+import Stats.Experience (levelToExperience)
 import Stats.Progress (Event (..), Progress (..))
 import Util (Gen, modTVar, random)
 
@@ -35,6 +36,7 @@ encounterScenario progress gen scenario
   | otherwise = scenario {scenario_tags = [cs $ show x]}
   where
     events = progress_events progress
+    xp = progress_xp progress
     x = random gen
 
 tutorial0Scenario :: Scenario -> Scenario

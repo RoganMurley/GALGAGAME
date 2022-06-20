@@ -4,7 +4,6 @@ import qualified Auth.Schema
 import Config (App, runBeam)
 import Data.Aeson (ToJSON (..), decode, encode, object, (.=))
 import Data.Int (Int64)
-import Data.Maybe (fromMaybe)
 import Data.Set (Set)
 import qualified Data.Set as Set
 import Data.String.Conversions (cs)
@@ -18,7 +17,7 @@ import Stats.Progress (Progress (..), fromPartial, initialProgress)
 import qualified Stats.Schema
 import {-# SOURCE #-} User (User (..))
 
-load :: User -> App Progress
+load :: User -> App (Maybe Progress)
 load (User user _) = do
   let userId = Auth.Schema.userId user :: Int64
   result <-
@@ -37,11 +36,11 @@ load (User user _) = do
                           >>= decode
                    in fromPartial <$> partial <*> Just xp
               )
-  return $ fromMaybe initialProgress progress
+  return progress
 load (GuestUser cid _) = loadByCid $ Just cid
-load _ = return initialProgress
+load _ = return . Just $ initialProgress
 
-loadByCid :: Maybe Text -> App Progress
+loadByCid :: Maybe Text -> App (Maybe Progress)
 loadByCid (Just cid) = do
   result <-
     runBeam $
@@ -59,8 +58,8 @@ loadByCid (Just cid) = do
                           >>= decode
                    in fromPartial <$> partial <*> Just xp
               )
-  return $ fromMaybe initialProgress progress
-loadByCid Nothing = return initialProgress
+  return progress
+loadByCid Nothing = return . Just $ initialProgress
 
 updateProgress :: User -> Progress -> App ()
 updateProgress (User user _) progress = do
