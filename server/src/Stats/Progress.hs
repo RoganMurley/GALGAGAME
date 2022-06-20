@@ -103,7 +103,7 @@ fromPartial PartialProgress {partialprogress_unlocks, partialprogress_events} xp
     }
 
 -- Events
-data Event = EventTutorial | EventPuzzle
+data Event = EventTutorial Int | EventPuzzle
   deriving (Eq, Generic, Ord, Show)
 
 instance ToJSON Event where

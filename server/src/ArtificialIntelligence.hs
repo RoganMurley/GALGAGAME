@@ -84,7 +84,7 @@ postulateAction which model gen scenario action =
 chooseAction :: Gen -> WhichPlayer -> Model -> Scenario -> Maybe Action
 chooseAction gen which model scenario
   | turn /= which = Nothing
-  | "tutorial" `elem` scenario_tags scenario = chooseActionPassive which model
+  | "passive" `elem` scenario_tags scenario = chooseActionPassive which model
   | winningEnd which model = Just EndAction
   | otherwise = Just $ maximumBy comparison $ possibleActions which model
   where

@@ -139,3 +139,7 @@ hydrateUnlocks progress =
         filter
           (\rune -> xp >= rune_xp rune)
           mainRunes
+
+isXpChange :: StatChange -> Bool
+isXpChange StatChange {statChange_initialExperience, statChange_finalExperience} =
+  statChange_initialExperience /= statChange_finalExperience

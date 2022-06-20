@@ -18,16 +18,29 @@ startProgram turn = do
   replicateM_ (initHandLength PlayerA turn) (Beta.draw PlayerA PlayerA (TimeModifierOutQuint 0.25))
   replicateM_ (initHandLength PlayerB turn) (Beta.draw PlayerB PlayerB (TimeModifierOutQuint 0.25))
 
-tutorialProgram :: Beta.Program ()
-tutorialProgram = do
+tutorial0Program :: Beta.Program ()
+tutorial0Program = do
   Beta.raw $ do
     let makeDeck = take 25 . cycle
     let deckA = makeDeck [Cards.blazeSword, Cards.blazeGrail, Cards.blazeSword]
     Alpha.setDeck PlayerA deckA
+    Alpha.setMaxLife PlayerA 15
+    Alpha.setLife PlayerA 15
     Alpha.setMaxLife PlayerB 15
     Alpha.setLife PlayerB 15
   Beta.null
   Beta.draw PlayerA PlayerA (TimeModifierOutQuint 0.25)
+
+tutorial1Program :: Beta.Program ()
+tutorial1Program = do
+  Beta.raw $ do
+    let makeDeck = take 25 . cycle
+    let deckA = makeDeck [Cards.blazeSword, Cards.blazeGrail, Cards.blazeWand]
+    Alpha.setDeck PlayerA deckA
+    Alpha.setMaxLife PlayerB 50
+    Alpha.setLife PlayerB 50
+  Beta.null
+  replicateM_ 5 (Beta.draw PlayerA PlayerA (TimeModifierOutQuint 0.25))
 
 puzzle :: Beta.Program ()
 puzzle = do

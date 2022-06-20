@@ -27,9 +27,11 @@ import ResolveData (ResolveData (..))
 import Room (Room)
 import qualified Room
 import Scenario (Scenario (..))
+import Stats.Experience (levelToExperience)
+import Stats.Progress (Progress (..))
 import qualified Stats.Stats as Stats
 import Text.Printf (printf)
-import User (GameUser (..), User (..), gameusersToUsers, getUsername, setProgress, usersToGameUsers)
+import User (GameUser (..), User (..), getUsername, setProgress, usersToGameUsers)
 import Util (Err)
 
 roomUpdate :: GameCommand -> WhichPlayer -> UTCTime -> TVar Room -> STM (Room, Either Err [Outcome])
@@ -150,7 +152,10 @@ handleProgress which winner room = do
       let statChange = Stats.statChange progress finalProgress
       Stats.updateProgress user finalProgress
       Log.info $ printf "Xp change for %s: %s" (getUsername user) (show statChange)
-      Room.sendToPlayer which (("xp:" <>) . cs . encode $ statChange) room
+      when
+        (Stats.isXpChange statChange)
+        ( Room.sendToPlayer which (("xp:" <>) . cs . encode $ statChange) room
+        )
       liftIO . atomically $ setProgress finalProgress user
       syncRoomMetadata room
     Nothing ->
@@ -160,19 +165,31 @@ handleLeaderboard :: Room -> App ()
 handleLeaderboard room = do
   leaderboard <- Leaderboard.load
   let leaderboardMsg = ("leaderboard:" <>) . cs . encode
-  (mUserPa, mUserPb) <- gameusersToUsers <$> Room.getGameUsers room
+  (mUserPa, mUserPb) <- Room.getGameUsers room
   -- PlayerA
   case mUserPa of
     Just userPa -> do
-      leaderboardPa <- Leaderboard.loadWithMe userPa (Just leaderboard)
-      Room.sendToPlayer PlayerA (leaderboardMsg leaderboardPa) room
+      let progress = gameuser_progress userPa
+      let user = gameuser_user userPa
+      when
+        (progress_xp progress >= levelToExperience 2)
+        ( do
+            leaderboardPa <- Leaderboard.loadWithMe user (Just leaderboard)
+            Room.sendToPlayer PlayerA (leaderboardMsg leaderboardPa) room
+        )
     Nothing ->
       return ()
   -- PlayerB
   case mUserPb of
     Just userPb -> do
-      leaderboardPb <- Leaderboard.loadWithMe userPb (Just leaderboard)
-      Room.sendToPlayer PlayerB (leaderboardMsg leaderboardPb) room
+      let progress = gameuser_progress userPb
+      let user = gameuser_user userPb
+      when
+        (progress_xp progress >= levelToExperience 2)
+        ( do
+            leaderboardPb <- Leaderboard.loadWithMe user (Just leaderboard)
+            Room.sendToPlayer PlayerB (leaderboardMsg leaderboardPb) room
+        )
     Nothing ->
       return ()
 

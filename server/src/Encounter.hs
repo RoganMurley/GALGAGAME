@@ -25,25 +25,45 @@ updateRoomEncounter roomVar progress =
 
 encounterScenario :: Progress -> Scenario -> Scenario
 encounterScenario progress scenario
-  | Set.notMember EventTutorial events = tutorialScenario scenario
+  | Set.notMember (EventTutorial 0) events = tutorial0Scenario scenario
+  | Set.notMember (EventTutorial 1) events = tutorial1Scenario scenario
   -- | Set.notMember EventPuzzle events && xp >= levelToExperience 9 = puzzleScenario scenario
   | otherwise = scenario
   where
     events = progress_events progress
 
-tutorialScenario :: Scenario -> Scenario
-tutorialScenario scenario@Scenario {scenario_progressWin} =
+tutorial0Scenario :: Scenario -> Scenario
+tutorial0Scenario scenario@Scenario {scenario_progressWin, scenario_progressLoss} =
   scenario
-    { scenario_prog = Start.tutorialProgram,
+    { scenario_prog = Start.tutorial0Program,
       scenario_roundEndProg = Start.tutorialRoundEndProgram,
       scenario_characterPa = Right . ChosenCharacter $ Nothing,
       scenario_characterPb = Right . ChosenCharacter $ Nothing,
       scenario_timeLimit = noTimeLimit,
-      scenario_tags = ["tutorial"],
+      scenario_tags = ["tutorial", "passive"],
       scenario_progressWin =
         scenario_progressWin
-          { progress_events = Set.singleton EventTutorial
-          }
+          { progress_events = Set.singleton (EventTutorial 0)
+          , progress_xp = 0
+          },
+      scenario_progressLoss = scenario_progressLoss { progress_xp = 0 }
+    }
+
+tutorial1Scenario :: Scenario -> Scenario
+tutorial1Scenario scenario@Scenario {scenario_progressWin, scenario_progressLoss} =
+  scenario
+    { scenario_prog = Start.tutorial1Program,
+      scenario_roundEndProg = Start.tutorialRoundEndProgram,
+      scenario_characterPa = Right . ChosenCharacter $ Nothing,
+      scenario_characterPb = Right . ChosenCharacter $ Nothing,
+      scenario_timeLimit = noTimeLimit,
+      scenario_tags = ["passive"],
+      scenario_progressWin =
+        scenario_progressWin
+          { progress_events = Set.singleton (EventTutorial 1)
+          , progress_xp = 0
+          },
+      scenario_progressLoss = scenario_progressLoss { progress_xp = 0 }
     }
 
 puzzleScenario :: Scenario -> Scenario
