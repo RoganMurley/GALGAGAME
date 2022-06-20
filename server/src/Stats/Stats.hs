@@ -128,8 +128,14 @@ statChange initial final =
           statChange_newUnlocks = newUnlocks
         }
 
-newUnlocksFromXp :: Experience -> Experience -> Set Rune
-newUnlocksFromXp initialXp finalXp =
-  Set.fromList $
-    filter (\rune -> finalXp >= rune_xp rune) $
-      filter (\rune -> initialXp < rune_xp rune) mainRunes
+hydrateUnlocks :: Progress -> Progress
+hydrateUnlocks progress =
+  progress {progress_unlocks = Set.union unlocks newUnlocks}
+  where
+    unlocks = progress_unlocks progress
+    xp = progress_xp progress
+    newUnlocks =
+      Set.fromList $
+        filter
+          (\rune -> xp >= rune_xp rune)
+          mainRunes

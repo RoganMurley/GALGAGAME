@@ -27,7 +27,6 @@ import ResolveData (ResolveData (..))
 import Room (Room)
 import qualified Room
 import Scenario (Scenario (..))
-import Stats.Progress (Progress (..))
 import qualified Stats.Stats as Stats
 import Text.Printf (printf)
 import User (GameUser (..), User (..), gameusersToUsers, getUsername, setProgress, usersToGameUsers)
@@ -147,15 +146,7 @@ handleProgress which winner room = do
             if Just which == winner
               then scenario_progressWin scenario
               else scenario_progressLoss scenario
-      let progressUpdated = progress <> progressUpdate
-      let progressUnlocks =
-            mempty
-              { progress_unlocks =
-                  Stats.newUnlocksFromXp
-                    (progress_xp progress)
-                    (progress_xp progressUpdated)
-              }
-      let finalProgress = progressUpdated <> progressUnlocks
+      let finalProgress = Stats.hydrateUnlocks (progress <> progressUpdate)
       let statChange = Stats.statChange progress finalProgress
       Stats.updateProgress user finalProgress
       Log.info $ printf "Xp change for %s: %s" (getUsername user) (show statChange)
