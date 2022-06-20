@@ -6,11 +6,12 @@ import Data.Aeson (ToJSON (..), decode, encode, object, (.=))
 import Data.Int (Int64)
 import Data.Maybe (fromMaybe)
 import Data.Set (Set)
+import qualified Data.Set as Set
 import Data.String.Conversions (cs)
 import Data.Text (Text)
 import Database.Beam (all_, filter_, insertValues, primaryKey, runInsert, runSelectReturningOne, runUpdate, select, update, val_, (<-.), (==.))
 import qualified Database.Beam.Postgres.Full as Postgres
-import DeckBuilding (Rune (..))
+import DeckBuilding (Rune (..), mainRunes)
 import Schema (GalgagameDb (..), galgagameDb)
 import Stats.Experience (Experience)
 import Stats.Progress (Progress (..), fromPartial, initialProgress)
@@ -116,10 +117,19 @@ instance ToJSON StatChange where
           "unlocks" .= statChange_newUnlocks
         ]
 
-statChange :: Experience -> Experience -> Set Rune -> StatChange
-statChange xp delta newUnlocks =
-  StatChange
-    { statChange_initialExperience = xp,
-      statChange_finalExperience = xp + delta,
-      statChange_newUnlocks = newUnlocks
-    }
+statChange :: Progress -> Progress -> StatChange
+statChange initial final =
+  let initialUnlocks = progress_unlocks initial
+      finalUnlocks = progress_unlocks final
+      newUnlocks = Set.difference finalUnlocks initialUnlocks
+   in StatChange
+        { statChange_initialExperience = progress_xp initial,
+          statChange_finalExperience = progress_xp final,
+          statChange_newUnlocks = newUnlocks
+        }
+
+newUnlocksFromXp :: Experience -> Experience -> Set Rune
+newUnlocksFromXp initialXp finalXp =
+  Set.fromList $
+    filter (\rune -> finalXp >= rune_xp rune) $
+      filter (\rune -> initialXp < rune_xp rune) mainRunes

@@ -142,20 +142,25 @@ handleProgress which winner room = do
   let mUser = Client.user <$> Room.getPlayerClient which room :: Maybe User
   case mUser of
     Just user -> do
-      let progressChange =
+      progress <- Stats.load user
+      let progressUpdate =
             if Just which == winner
               then scenario_progressWin scenario
               else scenario_progressLoss scenario
-      let xpDelta = progress_xp progressChange
-      progress <- Stats.load user
-      let initialXp = progress_xp progress
-      let newUnlocks = progress_unlocks progressChange
-      let statChange = Stats.statChange initialXp xpDelta newUnlocks
-      let newProgress = progress <> progressChange
-      Stats.updateProgress user newProgress
+      let progressUpdated = progress <> progressUpdate
+      let progressUnlocks =
+            mempty
+              { progress_unlocks =
+                  Stats.newUnlocksFromXp
+                    (progress_xp progress)
+                    (progress_xp progressUpdated)
+              }
+      let finalProgress = progressUpdated <> progressUnlocks
+      let statChange = Stats.statChange progress finalProgress
+      Stats.updateProgress user finalProgress
       Log.info $ printf "Xp change for %s: %s" (getUsername user) (show statChange)
       Room.sendToPlayer which (("xp:" <>) . cs . encode $ statChange) room
-      liftIO . atomically $ setProgress newProgress user
+      liftIO . atomically $ setProgress finalProgress user
       syncRoomMetadata room
     Nothing ->
       return ()
