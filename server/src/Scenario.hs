@@ -12,6 +12,7 @@ data Scenario = Scenario
     scenario_characterPb :: Either UnchosenCharacter ChosenCharacter,
     scenario_turn :: Turn,
     scenario_prog :: Beta.Program (),
+    scenario_roundEndProg :: Beta.Program (),
     scenario_progressWin :: Progress,
     scenario_progressLoss :: Progress,
     scenario_timeLimit :: NominalDiffTime,
@@ -19,5 +20,5 @@ data Scenario = Scenario
   }
 
 instance Show Scenario where
-  show (Scenario characterPa characterPb turn _ progressWin progressLoss timeLimit tags) =
+  show (Scenario characterPa characterPb turn _ _ progressWin progressLoss timeLimit tags) =
     "Scenario: " ++ show (characterPa, characterPb, turn, progressWin, progressLoss, timeLimit, tags)

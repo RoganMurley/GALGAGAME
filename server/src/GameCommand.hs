@@ -1,7 +1,7 @@
 module GameCommand where
 
 import Card (Card (..))
-import CardAnim (CardAnim (..), TimeModifier (..))
+import CardAnim (CardAnim (..))
 import Control.Monad (when)
 import Control.Monad.Trans.Writer (Writer, runWriter, tell)
 import qualified DSL.Alpha as Alpha
@@ -69,9 +69,9 @@ update cmd which state scenario users time =
         Playing playing ->
           case cmd of
             EndTurn ->
-              endTurn which playing time
+              endTurn which playing scenario time
             PlayCard index ->
-              playCard index which playing time
+              playCard index which playing scenario time
             HoverCard hover ->
               hoverCard hover which playing
             Concede ->
@@ -236,8 +236,8 @@ nextSelectState deckModel turn startProgram gen (mUserPa, mUserPb) time timeLimi
             [Outcome.Encodable $ Outcome.Resolve res model playstate Nothing]
    in (state, outcomes)
 
-playCard :: Int -> WhichPlayer -> PlayingR -> UTCTime -> Either Err (Maybe GameState, [Outcome])
-playCard index which playing time
+playCard :: Int -> WhichPlayer -> PlayingR -> Scenario -> UTCTime -> Either Err (Maybe GameState, [Outcome])
+playCard index which playing scenario time
   | turn /= which = Left "You can't play a card when it's not your turn"
   | otherwise =
     case card of
@@ -265,7 +265,7 @@ playCard index which playing time
               Playing newPlaying ->
                 let modelB = playing_model newPlaying
                     -- If the wheel is full, end the round.
-                    postProgram = when isWheelFull roundEndProgram
+                    postProgram = when isWheelFull (scenario_roundEndProg scenario)
                     (modelC, resC) = Beta.execute modelB $ Beta.betaI postProgram
                     newPlayState :: PlayState
                     newPlayState =
@@ -304,8 +304,8 @@ playCard index which playing time
         let c = atMay hand index :: Maybe HandCard
         return (h, t, c)
 
-endTurn :: WhichPlayer -> PlayingR -> UTCTime -> Either Err (Maybe GameState, [Outcome])
-endTurn which playing time
+endTurn :: WhichPlayer -> PlayingR -> Scenario -> UTCTime -> Either Err (Maybe GameState, [Outcome])
+endTurn which playing scenario time
   | turn /= which = Left "You can't end the turn when it's not your turn"
   | full = Left "You can't end the turn when your hand is full"
   | otherwise =
@@ -313,7 +313,7 @@ endTurn which playing time
       OnePass ->
         case runWriter $ resolveAll playing of
           (Playing newPlaying, res) ->
-            let (newModel, endRes) = Beta.execute (playing_model newPlaying) $ Beta.betaI roundEndProgram
+            let (newModel, endRes) = Beta.execute (playing_model newPlaying) $ Beta.betaI (scenario_roundEndProg scenario)
                 newPlayState :: PlayState
                 newPlayState =
                   Playing $
@@ -526,10 +526,3 @@ heartbeat currentTime playing =
    in if delta > timeLimit
         then concede which (Started . Playing $ playing) res
         else Right (Nothing, [Outcome.Encodable $ Outcome.Heartbeat timeLeft])
-
-roundEndProgram :: Beta.Program ()
-roundEndProgram = do
-  Beta.raw Alpha.swapTurn
-  Beta.raw Alpha.resetPasses
-  Beta.draw PlayerA PlayerA (TimeModifierOutQuint 1)
-  Beta.draw PlayerB PlayerB (TimeModifierOutQuint 1)

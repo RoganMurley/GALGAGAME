@@ -198,6 +198,7 @@ tick { dimensions, mouse } dt model chat =
                         dt
                         model.buttons
                         chat
+                        model.tutorial
                         ctx
                 , holding = holding
                 , timeLeft = timeLeft
@@ -405,8 +406,8 @@ getFocus { anim, model } hoverHand hoverOtherHand hoverStack holding player =
             FocusCard { card = card, owner = PlayerA }
 
 
-buttonEntities : Bool -> MouseState -> Float -> Buttons -> Chat.Model -> Context -> Buttons
-buttonEntities passed mouseState dt buttons chat { w, h, model, radius, resolving } =
+buttonEntities : Bool -> MouseState -> Float -> Buttons -> Chat.Model -> Tutorial.Model -> Context -> Buttons
+buttonEntities passed mouseState dt buttons chat tutorial { w, h, model, radius, resolving } =
     let
         handFull =
             List.length model.hand == maxHandLength
@@ -415,7 +416,11 @@ buttonEntities passed mouseState dt buttons chat { w, h, model, radius, resolvin
             model.turn == PlayerA
 
         disabled =
-            handFull || not yourTurn || passed || resolving
+            handFull
+                || not yourTurn
+                || passed
+                || resolving
+                || (tutorial.step == Just Tutorial.DragACard)
 
         x =
             w * 0.5 + 0.65 * radius

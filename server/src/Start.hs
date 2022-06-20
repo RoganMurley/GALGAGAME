@@ -22,18 +22,12 @@ tutorialProgram :: Beta.Program ()
 tutorialProgram = do
   Beta.raw $ do
     let makeDeck = take 25 . cycle
-    let deckA = makeDeck [Cards.blazeSword, Cards.blazeWand, Cards.blazeGrail, Cards.blazeCoin]
+    let deckA = makeDeck [Cards.blazeSword, Cards.blazeGrail, Cards.blazeSword]
     Alpha.setDeck PlayerA deckA
-    Alpha.setMaxLife PlayerA 50
-    Alpha.setLife PlayerA 50
-
-    let deckB = makeDeck [Cards.alchemySword, Cards.alchemyWand, Cards.alchemyGrail, Cards.alchemyCoin]
-    Alpha.setDeck PlayerB deckB
-    Alpha.setMaxLife PlayerB 20
-    Alpha.setLife PlayerB 20
+    Alpha.setMaxLife PlayerB 15
+    Alpha.setLife PlayerB 15
   Beta.null
-  replicateM_ 5 (Beta.draw PlayerA PlayerA (TimeModifierOutQuint 0.25))
-  replicateM_ 5 (Beta.draw PlayerB PlayerB (TimeModifierOutQuint 0.25))
+  Beta.draw PlayerA PlayerA (TimeModifierOutQuint 0.25)
 
 puzzle :: Beta.Program ()
 puzzle = do
@@ -50,3 +44,16 @@ puzzle = do
   Beta.null
   replicateM_ 4 (Beta.draw PlayerA PlayerA (TimeModifierOutQuint 0.25))
   replicateM_ 5 (Beta.draw PlayerB PlayerB (TimeModifierOutQuint 0.25))
+
+roundEndProgram :: Beta.Program ()
+roundEndProgram = do
+  Beta.raw Alpha.swapTurn
+  Beta.raw Alpha.resetPasses
+  Beta.draw PlayerA PlayerA (TimeModifierOutQuint 1)
+  Beta.draw PlayerB PlayerB (TimeModifierOutQuint 1)
+
+tutorialRoundEndProgram :: Beta.Program ()
+tutorialRoundEndProgram = do
+  Beta.raw Alpha.swapTurn
+  Beta.raw Alpha.resetPasses
+  Beta.draw PlayerA PlayerA (TimeModifierOutQuint 1)

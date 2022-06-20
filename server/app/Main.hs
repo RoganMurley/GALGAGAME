@@ -50,7 +50,7 @@ import qualified Room
 import Scenario (Scenario (..))
 import Server (addComputerClient, addPlayerClient, addSpecClient)
 import qualified Server
-import Start (startProgram)
+import Start (roundEndProgram, startProgram)
 import Stats.Progress (Progress (..))
 import System.Environment (lookupEnv)
 import Text.Printf (printf)
@@ -213,6 +213,7 @@ makeScenario _ prefix =
       scenario_characterPa = characterPa,
       scenario_characterPb = characterPb,
       scenario_prog = prog,
+      scenario_roundEndProg = roundEndProg,
       scenario_progressWin = progressWin,
       scenario_progressLoss = progressLoss,
       scenario_timeLimit = timeLimit,
@@ -232,6 +233,8 @@ makeScenario _ prefix =
           PlayerA
     prog :: Beta.Program ()
     prog = startProgram turn
+    roundEndProg :: Beta.Program ()
+    roundEndProg = roundEndProgram
     progressWin :: Progress
     progressWin = mempty {progress_xp = 100}
     progressLoss :: Progress

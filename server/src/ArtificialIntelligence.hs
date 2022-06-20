@@ -10,7 +10,7 @@ import Data.Maybe (isJust)
 import Data.Ord (comparing)
 import Data.String.Conversions (cs)
 import Data.Time.Clock.POSIX (posixSecondsToUTCTime)
-import GameCommand (GameCommand (..), resolveAll, roundEndProgram, update)
+import GameCommand (GameCommand (..), resolveAll, update)
 import GameState
 import HandCard (HandCard (..))
 import Mirror (mirror)
@@ -79,7 +79,7 @@ postulateAction which model gen scenario action =
    in update command which state scenario (Nothing, Nothing) (posixSecondsToUTCTime 0)
         >>= maybeToEither "Gamestate not returned from postulation" . fst
         >>= maybeToEither "Gamestate is not a playing state" . playStateFromGameState
-        >>= Right . mapModelPlayState (`modI` reinterpret alphaI roundEndProgram) -- Account for the draw from the start of the next round.
+        >>= Right . mapModelPlayState (`modI` reinterpret alphaI (scenario_roundEndProg scenario)) -- Account for the draw from the start of the next round.
 
 chooseAction :: Gen -> WhichPlayer -> Model -> Scenario -> Maybe Action
 chooseAction gen which model scenario

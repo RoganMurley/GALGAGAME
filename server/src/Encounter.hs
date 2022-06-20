@@ -8,7 +8,6 @@ import DeckBuilding (ChosenCharacter (..))
 import Room (Room (..))
 import Scenario (Scenario (..))
 import qualified Start
--- import Stats.Experience (levelToExperience)
 import Stats.Progress (Event (..), Progress (..))
 import Util (modTVar)
 
@@ -36,6 +35,7 @@ tutorialScenario :: Scenario -> Scenario
 tutorialScenario scenario@Scenario {scenario_progressWin} =
   scenario
     { scenario_prog = Start.tutorialProgram,
+      scenario_roundEndProg = Start.tutorialRoundEndProgram,
       scenario_characterPa = Right . ChosenCharacter $ Nothing,
       scenario_characterPb = Right . ChosenCharacter $ Nothing,
       scenario_timeLimit = noTimeLimit,
