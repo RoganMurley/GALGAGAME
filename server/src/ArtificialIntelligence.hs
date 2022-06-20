@@ -38,16 +38,16 @@ evalState w (Playing playing) = evalModel model
     model = playing_model playing
     evalModel :: Model -> Weight
     evalModel m
-      | isJust . (\s -> Stack.get s 1) $ evalI m getStack =
-        (evalState w) . fst . runWriter $ resolveAll $ playingFromModel m
+      | isJust . (`Stack.get` 1) $ evalI m getStack =
+        evalState w . fst . runWriter $ resolveAll $ playingFromModel m
       | otherwise =
-        (evalPlayer w m) - (evalPlayer (other w) m)
+        evalPlayer w m - evalPlayer (other w) m
     evalPlayer :: WhichPlayer -> Model -> Weight
     evalPlayer which m =
       evalI m $ do
         life <- getLife which
         hand <- getHand which
-        return (life + 7 * (length hand) + (sum . (fmap biasHand) $ hand))
+        return (life + 7 * length hand + (sum . fmap biasHand $ hand))
 
 toCommand :: Action -> GameCommand
 toCommand (PlayAction i) = PlayCard i
@@ -79,18 +79,19 @@ postulateAction which model gen scenario action =
    in update command which state scenario (Nothing, Nothing) (posixSecondsToUTCTime 0)
         >>= maybeToEither "Gamestate not returned from postulation" . fst
         >>= maybeToEither "Gamestate is not a playing state" . playStateFromGameState
-        >>= Right . mapModelPlayState ((flip modI) (reinterpret alphaI roundEndProgram)) -- Account for the draw from the start of the next round.
+        >>= Right . mapModelPlayState (`modI` reinterpret alphaI roundEndProgram) -- Account for the draw from the start of the next round.
 
 chooseAction :: Gen -> WhichPlayer -> Model -> Scenario -> Maybe Action
 chooseAction gen which model scenario
   | turn /= which = Nothing
+  | "tutorial" `elem` scenario_tags scenario = chooseActionPassive which model
   | winningEnd which model = Just EndAction
   | otherwise = Just $ maximumBy comparison $ possibleActions which model
   where
     turn :: Turn
     turn = evalI model getTurn
     comparison :: Action -> Action -> Ordering
-    comparison = comparing $ (evalResult which) . (postulateAction which model gen scenario)
+    comparison = comparing $ evalResult which . postulateAction which model gen scenario
 
 winningEnd :: WhichPlayer -> Model -> Bool
 winningEnd which model
@@ -107,3 +108,10 @@ winningEnd which model
 biasHand :: HandCard -> Weight
 biasHand (HandCard c) = if c == Cards.strangeSpore then -7 else 0
 biasHand (KnownHandCard c) = biasHand (HandCard c) - 2
+
+chooseActionPassive :: WhichPlayer -> Model -> Maybe Action
+chooseActionPassive which model =
+  let hand = evalI model $ getHand which
+   in if length hand == maxHandLength
+        then Just (PlayAction 0)
+        else Just EndAction
