@@ -27,7 +27,7 @@ import ResolveData (ResolveData (..))
 import Room (Room)
 import qualified Room
 import Scenario (Scenario (..))
-import Stats.Progress (Progress (..), updateProgress)
+import Stats.Progress (Progress (..))
 import qualified Stats.Stats as Stats
 import Text.Printf (printf)
 import User (GameUser (..), User (..), gameusersToUsers, getUsername, setProgress, usersToGameUsers)
@@ -151,7 +151,7 @@ handleProgress which winner room = do
       let initialXp = progress_xp progress
       let newUnlocks = progress_unlocks progressChange
       let statChange = Stats.statChange initialXp xpDelta newUnlocks
-      let newProgress = updateProgress progress progressChange
+      let newProgress = progress <> progressChange
       Stats.updateProgress user newProgress
       Log.info $ printf "Xp change for %s: %s" (getUsername user) (show statChange)
       Room.sendToPlayer which (("xp:" <>) . cs . encode $ statChange) room

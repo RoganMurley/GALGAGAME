@@ -51,7 +51,7 @@ import Scenario (Scenario (..))
 import Server (addComputerClient, addPlayerClient, addSpecClient)
 import qualified Server
 import Start (startProgram)
-import Stats.Progress (Progress (..), noProgress)
+import Stats.Progress (Progress (..))
 import System.Environment (lookupEnv)
 import Text.Printf (printf)
 import User (User (..), getUserFromCookies, getUsername, isSuperuser)
@@ -233,9 +233,9 @@ makeScenario _ prefix =
     prog :: Beta.Program ()
     prog = startProgram turn
     progressWin :: Progress
-    progressWin = noProgress {progress_xp = 100}
+    progressWin = mempty {progress_xp = 100}
     progressLoss :: Progress
-    progressLoss = noProgress {progress_xp = 70}
+    progressLoss = mempty {progress_xp = 70}
     timeLimit :: NominalDiffTime
     timeLimit = fromIntegral (60 :: Integer)
 

@@ -22,16 +22,25 @@ data Progress = Progress
 instance ToJSON Progress where
   toJSON progress = toJSON $ toPartial progress
 
-noProgress :: Progress
-noProgress =
-  Progress
-    { progress_xp = 0,
-      progress_unlocks = Set.empty,
-      progress_events = Set.empty
-    }
+instance Semigroup Progress where
+  a <> b =
+    Progress
+      { progress_xp = progress_xp a + progress_xp b,
+        progress_unlocks = progress_unlocks a <> progress_unlocks b,
+        progress_events = progress_events a <> progress_events b
+      }
+
+instance Monoid Progress where
+  mappend = (<>)
+  mempty =
+    Progress
+      { progress_xp = 0,
+        progress_unlocks = Set.empty,
+        progress_events = Set.empty
+      }
 
 initialProgress :: Progress
-initialProgress = noProgress {progress_unlocks = unlocks}
+initialProgress = mempty {progress_unlocks = unlocks}
   where
     unlocks =
       Set.fromList $
@@ -44,14 +53,6 @@ initialProgress = noProgress {progress_unlocks = unlocks}
 
 getXp :: Progress -> Experience
 getXp = progress_xp
-
-updateProgress :: Progress -> Progress -> Progress
-updateProgress a b =
-  Progress
-    { progress_xp = progress_xp a + progress_xp b,
-      progress_unlocks = Set.union (progress_unlocks a) (progress_unlocks b),
-      progress_events = Set.union (progress_events a) (progress_events b)
-    }
 
 isUnlocked :: Rune -> Progress -> Bool
 isUnlocked rune progress =
