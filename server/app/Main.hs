@@ -335,7 +335,8 @@ asyncQueueCpuFallback state client roomVar queueId = do
   _ <- fork $ do
     threadDelay (4 * 1000000)
     cpuGuid <- liftIO GUID.genText
-    result <- liftIO $ atomically (transaction cpuGuid)
+    gen <- liftIO getGen
+    result <- liftIO $ atomically (transaction cpuGuid gen)
     case result of
       Left QueueCpuNotNeeded -> do
         Metrics.incr "quickplay.human"
@@ -356,8 +357,8 @@ asyncQueueCpuFallback state client roomVar queueId = do
         computerPlay PlayerB roomVar state cpuClient
   return ()
   where
-    transaction :: Text -> STM (Either QueueCpuResult Client)
-    transaction guid = do
+    transaction :: Text -> Gen -> STM (Either QueueCpuResult Client)
+    transaction guid gen = do
       room <- readTVar roomVar
       if Room.full room
         then
@@ -371,7 +372,7 @@ asyncQueueCpuFallback state client roomVar queueId = do
         else
           ( do
               progress <- Client.progress client
-              updateRoomEncounter roomVar progress
+              updateRoomEncounter roomVar progress gen
               added <- addComputerClient "CPU" guid progress roomVar
               case added of
                 Just computerClient -> do
