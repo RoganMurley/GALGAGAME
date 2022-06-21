@@ -67,7 +67,7 @@ tutorial1Scenario scenario@Scenario {scenario_progressWin, scenario_progressLoss
       scenario_tags = ["passive"],
       scenario_progressWin =
         scenario_progressWin
-          { progress_events = Set.singleton (EventTutorial 1),
+          { progress_events = Set.fromList [EventTutorial 1, EventTutorialComplete],
             progress_xp = 0
           },
       scenario_progressLoss = scenario_progressLoss {progress_xp = 0}

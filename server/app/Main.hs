@@ -51,11 +51,11 @@ import Scenario (Scenario (..))
 import Server (addComputerClient, addPlayerClient, addSpecClient)
 import qualified Server
 import Start (roundEndProgram, startProgram)
-import Stats.Progress (Progress (..))
+import Stats.Progress (Progress (..), isTutorialProgress)
 import System.Environment (lookupEnv)
 import Text.Printf (printf)
 import User (User (..), getUserFromCookies, getUsername, isSuperuser)
-import Util (Gen, getGen, shuffle, to3Tuple)
+import Util (Gen, forkDelay, getGen, shuffle, to3Tuple)
 
 main :: IO ()
 main = do
@@ -295,9 +295,14 @@ beginQueue state client roomVar = do
   let clientName = show (Client.name client)
   Log.info $ printf "<%s>: Begin quickplay game" clientName
   queueId <- liftIO GUID.genText
+  progress <- liftIO $ atomically $ Client.progress client
+  let isTutorial = isTutorialProgress progress
   finally
     ( do
-        roomM <- liftIO . atomically $ Server.queue queueId roomVar state
+        roomM <-
+          if isTutorial
+            then liftIO . atomically $ Server.queue queueId roomVar state
+            else return Nothing
         case roomM of
           Just existingRoom -> do
             room <- liftIO $ readTVarIO existingRoom
@@ -310,7 +315,8 @@ beginQueue state client roomVar = do
             let roomName = Room.getName room
             Log.info $ printf "<%s>: Using default quickplay room [%s]" clientName roomName
             Client.send ("room:" <> roomName) client
-            asyncQueueCpuFallback state client roomVar queueId
+            let delay = if isTutorial then 0 else 4 * 1000000
+            forkDelay delay (queueCpuFallback state client roomVar queueId)
             beginPlay state client roomVar
         gen <- liftIO getGen
         guid <- liftIO GUID.genText
@@ -330,32 +336,29 @@ data QueueCpuResult
   | QueueCpuFailed
   deriving (Show, Eq)
 
-asyncQueueCpuFallback :: TVar Server.State -> Client -> TVar Room -> Text -> App ()
-asyncQueueCpuFallback state client roomVar queueId = do
-  _ <- fork $ do
-    threadDelay (4 * 1000000)
-    cpuGuid <- liftIO GUID.genText
-    gen <- liftIO getGen
-    result <- liftIO $ atomically (transaction cpuGuid gen)
-    case result of
-      Left QueueCpuNotNeeded -> do
-        Metrics.incr "quickplay.human"
-        Log.info "Humans playing, no CPU needed"
-      Left QueueCpuReconnect -> do
-        Metrics.incr "quickplay.reconnect"
-        Log.info "Reconnecting, no CPU needed"
-      Left QueueCpuFailed -> do
-        Metrics.incr "quickplay.fail"
-        Log.info "Failed to add CPU"
-      Right cpuClient -> do
-        Metrics.incr "quickplay.cpu"
-        Log.info $ printf "New CPU joining room"
-        newRoom <- liftIO $ readTVarIO roomVar
-        let gameState = Room.getState newRoom
-        syncRoomMetadata newRoom
-        syncClient client PlayerA gameState
-        computerPlay PlayerB roomVar state cpuClient
-  return ()
+queueCpuFallback :: TVar Server.State -> Client -> TVar Room -> Text -> App ()
+queueCpuFallback state client roomVar queueId = do
+  cpuGuid <- liftIO GUID.genText
+  gen <- liftIO getGen
+  result <- liftIO $ atomically (transaction cpuGuid gen)
+  case result of
+    Left QueueCpuNotNeeded -> do
+      Metrics.incr "quickplay.human"
+      Log.info "Humans playing, no CPU needed"
+    Left QueueCpuReconnect -> do
+      Metrics.incr "quickplay.reconnect"
+      Log.info "Reconnecting, no CPU needed"
+    Left QueueCpuFailed -> do
+      Metrics.incr "quickplay.fail"
+      Log.info "Failed to add CPU"
+    Right cpuClient -> do
+      Metrics.incr "quickplay.cpu"
+      Log.info $ printf "New CPU joining room"
+      newRoom <- liftIO $ readTVarIO roomVar
+      let gameState = Room.getState newRoom
+      syncRoomMetadata newRoom
+      syncClient client PlayerA gameState
+      computerPlay PlayerB roomVar state cpuClient
   where
     transaction :: Text -> Gen -> STM (Either QueueCpuResult Client)
     transaction guid gen = do

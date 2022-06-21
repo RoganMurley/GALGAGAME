@@ -1,9 +1,13 @@
+{-# LANGUAGE FlexibleContexts #-}
+
 module Util where
 
+import Control.Concurrent.Lifted (fork, threadDelay)
 import Control.Concurrent.STM (STM)
 import Control.Concurrent.STM.TVar (TVar, readTVar, writeTVar)
 import Control.DeepSeq (NFData (..))
-import Control.Monad (replicateM_)
+import Control.Monad (replicateM_, when)
+import Control.Monad.Trans.Control (MonadBaseControl)
 import Data.Text (Text)
 import qualified Data.Text as T
 import qualified System.Random as R
@@ -20,7 +24,7 @@ many :: Monad m => Int -> m a -> m ()
 many = replicateM_
 
 manyIndexed :: Monad m => Int -> (Int -> m a) -> m ()
-manyIndexed i f = if i > 0 then f i >> manyIndexed (i - 1) f else return ()
+manyIndexed i f = when (i > 0) $ f i >> manyIndexed (i - 1) f
 
 shuffle :: Gen -> [a] -> [a]
 shuffle _ [] = []
@@ -119,3 +123,10 @@ xor a b = a /= b
 maybeToEither :: a -> Maybe b -> Either a b
 maybeToEither _ (Just b) = Right b
 maybeToEither a Nothing = Left a
+
+forkDelay :: MonadBaseControl IO m => Int -> m () -> m ()
+forkDelay delay action = do
+  _ <- fork $ do
+    threadDelay delay
+    action
+  return ()

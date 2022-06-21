@@ -61,6 +61,10 @@ isUnlocked rune progress =
 unlockNames :: Progress -> [Text]
 unlockNames Progress {progress_unlocks} = getRuneName <$> Set.toList progress_unlocks
 
+isTutorialProgress :: Progress -> Bool
+isTutorialProgress Progress {progress_events} =
+  not $ Set.member EventTutorialComplete progress_events
+
 -- Partial progress for saving to JSON
 data PartialProgress = PartialProgress
   { partialprogress_unlocks :: Set Rune,
@@ -103,7 +107,7 @@ fromPartial PartialProgress {partialprogress_unlocks, partialprogress_events} xp
     }
 
 -- Events
-data Event = EventTutorial Int | EventPuzzle
+data Event = EventTutorial Int | EventTutorialComplete | EventPuzzle
   deriving (Eq, Generic, Ord, Show)
 
 instance ToJSON Event where

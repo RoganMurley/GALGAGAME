@@ -106,6 +106,7 @@ library
                      , hslogger
                      , http-types
                      , lifted-base
+                     , monad-control
                      , postgresql-simple
                      , random
                      , random-shuffle
