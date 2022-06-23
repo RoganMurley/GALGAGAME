@@ -315,8 +315,8 @@ beginQueue state client roomVar = do
             let roomName = Room.getName room
             Log.info $ printf "<%s>: Using default quickplay room [%s]" clientName roomName
             Client.send ("room:" <> roomName) client
-            let delay = if isTutorial then 0 else 4 * 1000000
-            forkDelay delay (queueCpuFallback state client roomVar queueId)
+            let delay = if isTutorial then 1 else 4
+            forkDelay (delay * 1000000) (queueCpuFallback state client roomVar queueId)
             beginPlay state client roomVar
         gen <- liftIO getGen
         guid <- liftIO GUID.genText

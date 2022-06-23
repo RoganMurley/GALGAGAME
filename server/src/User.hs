@@ -10,7 +10,6 @@ import Control.Monad.STM (STM)
 import Data.Aeson (ToJSON (..), object, (.=))
 import Data.Int (Int64)
 import qualified Data.Map as Map
-import Data.Maybe (fromMaybe)
 import Data.Text (Text)
 import Data.Traversable (forM)
 import Database.Beam (all_, filter_, runSelectReturningOne, select, val_, (==.))
@@ -81,7 +80,7 @@ getUserFromCookies cookies cid = do
         else
           ( do
               let user = GuestUser cid progressVar
-              progress <- fromMaybe initialProgress <$> Stats.load user
+              progress <- Stats.load user
               liftIO . atomically $ writeTVar progressVar progress
               return user
           )
@@ -95,7 +94,7 @@ getUserFromCookies cookies cid = do
       case mAuthUser of
         Just authUser -> do
           let user = User authUser progressVar
-          progress <- fromMaybe initialProgress <$> Stats.load user
+          progress <- Stats.load user
           liftIO . atomically $ writeTVar progressVar progress
           return user
         Nothing ->

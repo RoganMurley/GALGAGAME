@@ -10,7 +10,6 @@ import Data.ByteString (ByteString, length)
 import Data.List (find)
 import Data.Map (Map)
 import qualified Data.Map as Map
-import Data.Maybe (fromMaybe)
 import Data.String.Conversions (cs)
 import Data.Text (Text)
 import qualified Data.Text as T
@@ -21,7 +20,7 @@ import Database.PostgreSQL.Simple.Errors (ConstraintViolation (..))
 import qualified Database.Redis as R
 import qualified Network.WebSockets as WS
 import Schema (GalgagameDb (..), galgagameDb)
-import Stats.Progress (Progress (..), initialProgress)
+import Stats.Progress (Progress (..))
 import Stats.Schema as Schema
 import qualified Stats.Stats as Stats
 import System.Log.Logger (errorM)
@@ -62,7 +61,7 @@ deleteToken token = do
 
 saveUser :: ByteString -> ByteString -> ByteString -> Bool -> Maybe Text -> App Bool
 saveUser email username hashedPassword contactable mCid = do
-  progress <- fromMaybe initialProgress <$> Stats.loadByCid mCid
+  progress <- Stats.loadByCid mCid
   result <- runBeamIntegrity $ do
     [userResult] <-
       runInsertReturningList $

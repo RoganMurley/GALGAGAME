@@ -10,7 +10,7 @@ import Room (Room (..))
 import Scenario (Scenario (..))
 import qualified Start
 import Stats.Experience (levelToExperience)
-import Stats.Progress (Event (..), Progress (..))
+import Stats.Progress (Progress (..))
 import Util (Gen, modTVar, random)
 
 updateRoomEncounter :: TVar Room -> Progress -> Gen -> STM ()
@@ -27,9 +27,9 @@ updateRoomEncounter roomVar progress gen =
 
 encounterScenario :: Progress -> Gen -> Scenario -> Scenario
 encounterScenario progress gen scenario
-  | Set.notMember (EventTutorial 0) events = tutorial0Scenario scenario
-  | Set.notMember (EventTutorial 1) events = tutorial1Scenario scenario
-  | Set.notMember EventPuzzle events
+  | Set.notMember "tutorial-0" events = tutorial0Scenario scenario
+  | Set.notMember "tutorial-1" events = tutorial1Scenario scenario
+  | Set.notMember "tutorial-puzzle-morph" events
       && xp >= levelToExperience 9
       && x > 0.95 =
     puzzleScenario scenario
@@ -50,7 +50,7 @@ tutorial0Scenario scenario@Scenario {scenario_progressWin, scenario_progressLoss
       scenario_tags = ["tutorial", "passive"],
       scenario_progressWin =
         scenario_progressWin
-          { progress_events = Set.singleton (EventTutorial 0),
+          { progress_events = Set.singleton "tutorial-0",
             progress_xp = 0
           },
       scenario_progressLoss = scenario_progressLoss {progress_xp = 0}
@@ -67,7 +67,7 @@ tutorial1Scenario scenario@Scenario {scenario_progressWin, scenario_progressLoss
       scenario_tags = ["passive"],
       scenario_progressWin =
         scenario_progressWin
-          { progress_events = Set.fromList [EventTutorial 1, EventTutorialComplete],
+          { progress_events = Set.fromList ["tutorial-1", "tutorial-complete"],
             progress_xp = 0
           },
       scenario_progressLoss = scenario_progressLoss {progress_xp = 0}
@@ -83,7 +83,7 @@ puzzleScenario scenario@Scenario {scenario_progressWin} =
       scenario_tags = ["puzzle"],
       scenario_progressWin =
         scenario_progressWin
-          { progress_events = Set.singleton EventPuzzle
+          { progress_events = Set.singleton "tutorial-puzzle-morph"
           }
     }
 

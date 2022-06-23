@@ -2,20 +2,20 @@
 
 module Stats.Progress where
 
-import Data.Aeson (FromJSON (..), ToJSON (..), defaultOptions, genericToEncoding, object, withObject, (.:), (.=))
+import Data.Aeson (FromJSON (..), ToJSON (..), object, withObject, (.:), (.=))
 import Data.Maybe (catMaybes)
 import Data.Set (Set)
 import qualified Data.Set as Set
+import Data.String.Conversions (cs)
 import Data.Text (Text)
 import {-# SOURCE #-} DeckBuilding (Rune, getRuneByName, getRuneName)
-import GHC.Generics
 import Stats.Experience (Experience)
 
 -- Progress
 data Progress = Progress
   { progress_xp :: Experience,
     progress_unlocks :: Set Rune,
-    progress_events :: Set Event
+    progress_events :: Set Text
   }
   deriving (Show)
 
@@ -63,54 +63,42 @@ unlockNames Progress {progress_unlocks} = getRuneName <$> Set.toList progress_un
 
 isTutorialProgress :: Progress -> Bool
 isTutorialProgress Progress {progress_events} =
-  not $ Set.member EventTutorialComplete progress_events
+  not $ Set.member "tutorial-complete" progress_events
 
 -- Partial progress for saving to JSON
 data PartialProgress = PartialProgress
-  { partialprogress_unlocks :: Set Rune,
-    partialprogress_events :: Set Event
+  { partialprogress_unlocks :: [Text],
+    partialprogress_events :: [Text]
   }
 
 instance ToJSON PartialProgress where
   toJSON p =
     object
-      [ "unlocks" .= (getRuneName <$> Set.toList (partialprogress_unlocks p)),
+      [ "unlocks" .= partialprogress_unlocks p,
         "events" .= partialprogress_events p
       ]
 
 instance FromJSON PartialProgress where
   parseJSON =
     withObject "PartialProgress" $ \o ->
-      loadProgress
+      PartialProgress
         <$> o .: "unlocks"
         <*> o .: "events"
-    where
-      loadProgress :: [Text] -> [Event] -> PartialProgress
-      loadProgress runeNames events =
-        PartialProgress
-          (Set.fromList $ catMaybes $ getRuneByName <$> runeNames)
-          (Set.fromList events)
 
 toPartial :: Progress -> PartialProgress
 toPartial Progress {progress_unlocks, progress_events} =
   PartialProgress
-    { partialprogress_unlocks = progress_unlocks,
-      partialprogress_events = progress_events
+    { partialprogress_unlocks = getRuneName <$> Set.toList progress_unlocks,
+      partialprogress_events = Set.toList progress_events
     }
 
 fromPartial :: PartialProgress -> Experience -> Progress
 fromPartial PartialProgress {partialprogress_unlocks, partialprogress_events} xp =
   Progress
     { progress_xp = xp,
-      progress_unlocks = partialprogress_unlocks,
-      progress_events = partialprogress_events
+      progress_unlocks = unlocks,
+      progress_events = events
     }
-
--- Events
-data Event = EventTutorial Int | EventTutorialComplete | EventPuzzle
-  deriving (Eq, Generic, Ord, Show)
-
-instance ToJSON Event where
-  toEncoding = genericToEncoding defaultOptions
-
-instance FromJSON Event
+  where
+    unlocks = Set.fromList $ catMaybes $ getRuneByName . cs <$> partialprogress_unlocks
+    events = Set.fromList partialprogress_events
