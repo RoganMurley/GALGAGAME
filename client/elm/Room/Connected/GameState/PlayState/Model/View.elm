@@ -380,7 +380,7 @@ turnView focus passed tutorial timeLeft ctx =
             radius * 3
 
         timeLeftProgress =
-            Maybe.withDefault 0 (Maybe.map TimeLimit.progress timeLeft)
+            Maybe.withDefault 0 (Maybe.map (TimeLimit.progress 20) timeLeft)
     in
     case ( anim, focus, passed ) of
         ( Mill _ _ _, _, _ ) ->
@@ -673,7 +673,7 @@ timeLeftView timeLeft ({ perspective, camera3d } as ctx) =
         Just t ->
             let
                 timeLimitProgress =
-                    TimeLimit.progress t
+                    TimeLimit.progress 20 t
             in
             if timeLimitProgress > 0 then
                 [ Render.Primitives.quad Render.Shaders.donutFragment <|

@@ -2,6 +2,7 @@ module Resolvable.State exposing (activeAnim, activeAnimDamage, activeModel, ini
 
 import Animation.State as Animation
 import Animation.Types exposing (Anim(..))
+import Ease
 import List.Extra as List
 import Model.Diff as Model
 import Model.Types as Model
@@ -58,7 +59,8 @@ tick dt model =
 
     else
         { model
-            | tick = model.tick + dt
+            | tick =
+                model.tick + dt
         }
 
 

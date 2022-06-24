@@ -24,7 +24,7 @@ tick dt model timeLeft ctx =
                 + timeLeftProgress
 
         timeLeftProgress =
-            Maybe.withDefault 0 (Maybe.map TimeLimit.progress timeLeft)
+            Maybe.withDefault 0 (Maybe.map (TimeLimit.progress 20) timeLeft)
 
         depth =
             model.depth + 10 + 100 * dt * Ease.inSine risk

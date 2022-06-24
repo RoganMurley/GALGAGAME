@@ -33,6 +33,7 @@ encounterScenario progress gen scenario
       && xp >= levelToExperience 9
       && x > 0.95 =
     puzzleScenario scenario
+  -- | True = turboScenario scenario
   | otherwise = scenario {scenario_tags = [cs $ show x]}
   where
     events = progress_events progress
@@ -85,6 +86,13 @@ puzzleScenario scenario@Scenario {scenario_progressWin} =
         scenario_progressWin
           { progress_events = Set.singleton "tutorial-puzzle-morph"
           }
+    }
+
+turboScenario :: Scenario -> Scenario
+turboScenario scenario@Scenario {} =
+  scenario
+    { scenario_timeLimit = 10,
+      scenario_tags = ["turbo"]
     }
 
 noTimeLimit :: NominalDiffTime

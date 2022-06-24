@@ -18,6 +18,7 @@ type alias Model =
     , errored : Bool
     , chat : Chat.Model
     , heartbeatTick : Float
+    , heartbeatInterval : Float
     , connectionLost : Bool
     , ripples : List Ripple
     , tags : List String

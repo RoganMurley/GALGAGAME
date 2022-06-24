@@ -32,11 +32,6 @@ import Waiting.State as Waiting
 import Waiting.Types exposing (WaitType(..))
 
 
-heartbeatInterval : Float
-heartbeatInterval =
-    10 * 1000
-
-
 init : Mode -> GameType -> String -> Model
 init mode gameType roomID =
     { game = Waiting <| Waiting.init WaitQuickplay
@@ -48,6 +43,7 @@ init mode gameType roomID =
     , errored = False
     , chat = Chat.init
     , heartbeatTick = 0
+    , heartbeatInterval = 10 * 1000
     , connectionLost = False
     , ripples = []
     , tags = []
@@ -105,7 +101,7 @@ tick flags model dt =
 
             ( heartbeatTick, heartbeatCmds ) =
                 if model.heartbeatTick <= 0 then
-                    ( heartbeatInterval, [ Ports.websocketSend "heartbeat:" ] )
+                    ( model.heartbeatInterval, [ Ports.websocketSend "heartbeat:" ] )
 
                 else
                     ( model.heartbeatTick - dt, [] )
@@ -230,10 +226,18 @@ receive flags assets model msg =
                 newTags : Result Json.Error (List String)
                 newTags =
                     Json.decodeString (Json.list Json.string) content
+
+                intervalFromTags : List String -> Float
+                intervalFromTags t =
+                    if List.any ((==) "turbo") t then
+                        500
+
+                    else
+                        10 * 1000
             in
             case newTags of
                 Ok t ->
-                    ( { model | tags = t }, Cmd.none )
+                    ( { model | tags = t, heartbeatInterval = intervalFromTags t }, Cmd.none )
 
                 Err err ->
                     ( model, log <| Json.errorToString err )

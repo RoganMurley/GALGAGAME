@@ -3,12 +3,7 @@ module TimeLimit exposing (progress)
 import Ease
 
 
-warningSeconds : Float
-warningSeconds =
-    20
-
-
-progress : Float -> Float
-progress t =
+progress : Float -> Float -> Float
+progress warningSeconds t =
     Ease.inOutSine
         (1 - (clamp 0 (warningSeconds * 1000) t / (warningSeconds * 1000)))
