@@ -560,7 +560,7 @@ tutorialView tutorial ctx =
             radius * 3
     in
     case tutorial.step of
-        Just Tutorial.DragACard ->
+        Just (Tutorial.StageA Tutorial.DragACard) ->
             List.concat
                 [ Font.view
                     "Futura"
@@ -584,7 +584,7 @@ tutorialView tutorial ctx =
                     ctx
                 ]
 
-        Just Tutorial.PressGo ->
+        Just (Tutorial.StageA Tutorial.PressGo) ->
             List.concat
                 [ Font.view
                     "Futura"
@@ -622,7 +622,7 @@ tutorialArrowView tutorial focus hover ctx =
             0.0007 * radius
     in
     case tutorial.step of
-        Just Tutorial.DragACard ->
+        Just (Tutorial.StageA Tutorial.DragACard) ->
             List.concat
                 [ Texture.with textures "arrow.png" <|
                     \texture ->
@@ -638,7 +638,7 @@ tutorialArrowView tutorial focus hover ctx =
                         ]
                 ]
 
-        Just Tutorial.PressGo ->
+        Just (Tutorial.StageA Tutorial.PressGo) ->
             case ( focus, hover ) of
                 ( NoFocus, NoHover ) ->
                     if resolving then

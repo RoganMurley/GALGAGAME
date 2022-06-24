@@ -8,8 +8,13 @@ type Action
     | ActionPressGo
 
 
+type Stage
+    = StageA Step
+    | StageB
+
+
 type alias Model =
-    { step : Maybe Step }
+    { step : Maybe Stage }
 
 
 type Step
@@ -20,11 +25,11 @@ type Step
 
 takeAction : Action -> Model -> Model
 takeAction action model =
-    case Maybe.map (takeActionStep action) model.step of
-        Just newStep ->
-            { model | step = newStep }
+    case model.step of
+        Just (StageA step) ->
+            { model | step = Maybe.map StageA (takeActionStep action step) }
 
-        Nothing ->
+        _ ->
             model
 
 
@@ -35,7 +40,7 @@ takeActionStep action step =
             Just PressGo
 
         ( ActionPressGo, PressGo ) ->
-            Nothing
+            Just Finished
 
         _ ->
             Just step
@@ -46,9 +51,14 @@ init =
     { step = Nothing }
 
 
-begin : Model
-begin =
-    { step = Just DragACard }
+beginStageA : Model
+beginStageA =
+    { step = Just <| StageA DragACard }
+
+
+beginStageB : Model
+beginStageB =
+    { step = Just StageB }
 
 
 isActive : Model -> Bool

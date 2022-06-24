@@ -48,7 +48,7 @@ tutorial0Scenario scenario@Scenario {scenario_progressWin, scenario_progressLoss
       scenario_characterPa = Right . ChosenCharacter $ Nothing,
       scenario_characterPb = Right . ChosenCharacter $ Nothing,
       scenario_timeLimit = noTimeLimit,
-      scenario_tags = ["tutorial", "passive"],
+      scenario_tags = ["tutorial-0", "passive"],
       scenario_progressWin =
         scenario_progressWin
           { progress_events = Set.singleton "tutorial-0",
@@ -65,7 +65,7 @@ tutorial1Scenario scenario@Scenario {scenario_progressWin, scenario_progressLoss
       scenario_characterPa = Right . ChosenCharacter $ Nothing,
       scenario_characterPb = Right . ChosenCharacter $ Nothing,
       scenario_timeLimit = noTimeLimit,
-      scenario_tags = ["passive"],
+      scenario_tags = ["tutorial-1", "passive"],
       scenario_progressWin =
         scenario_progressWin
           { progress_events = Set.fromList ["tutorial-1", "tutorial-complete"],

@@ -2,12 +2,12 @@ module Resolvable.State exposing (activeAnim, activeAnimDamage, activeModel, ini
 
 import Animation.State as Animation
 import Animation.Types exposing (Anim(..))
-import Ease
 import List.Extra as List
 import Model.Diff as Model
 import Model.Types as Model
 import Resolvable.Types as Resolvable
 import Util exposing (zip)
+import WhichPlayer.Types exposing (WhichPlayer(..))
 
 
 init : Model.Model -> List Resolvable.ResolveData -> Resolvable.Model

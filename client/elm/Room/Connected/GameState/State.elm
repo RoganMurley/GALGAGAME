@@ -197,8 +197,13 @@ tick flags state chat gameType dt =
 
 
 applyTags : List String -> GameState -> GameState
-applyTags tags state =
-    if List.any ((==) "tutorial") tags then
+applyTags tags =
+    applyTagsTutorial0 tags >> applyTagsTutorial1 tags
+
+
+applyTagsTutorial0 : List String -> GameState -> GameState
+applyTagsTutorial0 tags state =
+    if List.any ((==) "tutorial-0") tags then
         case state of
             Started (Playing playState) ->
                 let
@@ -206,7 +211,30 @@ applyTags tags state =
                         playState
 
                     newGame =
-                        { game | tutorial = Tutorial.begin }
+                        { game | tutorial = Tutorial.beginStageA }
+                in
+                Started <|
+                    Playing
+                        { playState | game = newGame }
+
+            _ ->
+                state
+
+    else
+        state
+
+
+applyTagsTutorial1 : List String -> GameState -> GameState
+applyTagsTutorial1 tags state =
+    if List.any ((==) "tutorial-1") tags then
+        case state of
+            Started (Playing playState) ->
+                let
+                    { game } =
+                        playState
+
+                    newGame =
+                        { game | tutorial = Tutorial.beginStageB }
                 in
                 Started <|
                     Playing

@@ -503,7 +503,7 @@ carry old new =
 
 resolveOutcomeStr : String -> Maybe PlayState -> Result Json.Error PlayState
 resolveOutcomeStr str mState =
-    Result.map (resolveOutcome mState) <|
+    Result.map (\r -> resolveOutcome mState r) <|
         Json.decodeString PlayState.resolveOutcomeInputDecoder str
 
 
@@ -531,7 +531,8 @@ resolveOutcome mState { initial, resDiffList, finalState } =
 
         resList : List Resolvable.ResolveData
         resList =
-            Resolvable.resDiffToData initial resDiffList
+            pruneTutorialAnims <|
+                Resolvable.resDiffToData initial resDiffList
 
         model : Model
         model =
@@ -547,6 +548,28 @@ resolveOutcome mState { initial, resDiffList, finalState } =
         newState : PlayState
         newState =
             map (\game -> { game | res = res }) finalState
+
+        pruneTutorialAnims : List Resolvable.ResolveData -> List Resolvable.ResolveData
+        pruneTutorialAnims =
+            case mState of
+                Just (Playing { game }) ->
+                    case game.tutorial.step of
+                        Just _ ->
+                            List.filter
+                                (\{ anim } ->
+                                    case anim of
+                                        Pass PlayerB ->
+                                            False
+
+                                        _ ->
+                                            True
+                                )
+
+                        Nothing ->
+                            identity
+
+                _ ->
+                    identity
     in
     carry state newState
 

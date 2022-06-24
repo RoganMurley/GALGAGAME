@@ -420,7 +420,7 @@ buttonEntities passed mouseState dt buttons chat tutorial { w, h, model, radius,
                 || not yourTurn
                 || passed
                 || resolving
-                || (tutorial.step == Just Tutorial.DragACard)
+                || (tutorial.step == Just (Tutorial.StageA Tutorial.DragACard))
 
         x =
             w * 0.5 + 0.65 * radius
@@ -430,9 +430,17 @@ buttonEntities passed mouseState dt buttons chat tutorial { w, h, model, radius,
 
         scale =
             0.12 * radius
+
+        showChat =
+            case tutorial.step of
+                Just _ ->
+                    False
+
+                Nothing ->
+                    True
     in
-    Buttons.fromList
-        [ if not disabled then
+    Buttons.fromList <|
+        (if not disabled then
             Buttons.entity
                 "go"
                 { x = x
@@ -453,7 +461,7 @@ buttonEntities passed mouseState dt buttons chat tutorial { w, h, model, radius,
                 mouseState
                 buttons
 
-          else
+         else
             Buttons.entity
                 (if handFull then
                     "goHandFull"
@@ -478,30 +486,36 @@ buttonEntities passed mouseState dt buttons chat tutorial { w, h, model, radius,
                 dt
                 mouseState
                 buttons
-        , Buttons.entity "toggleChat"
-            { x = w * 0.5 - 0.65 * radius
-            , y = y
-            , width = scale
-            , height = scale
-            , btn =
-                TextButton
-                    { font = "Futura"
-                    , text =
-                        if chat.visible then
-                            "chatClose"
+        )
+            :: (if showChat then
+                    [ Buttons.entity "toggleChat"
+                        { x = w * 0.5 - 0.65 * radius
+                        , y = y
+                        , width = scale
+                        , height = scale
+                        , btn =
+                            TextButton
+                                { font = "Futura"
+                                , text =
+                                    if chat.visible then
+                                        "chatClose"
 
-                        else
-                            "chat"
-                    , textColor = vec3 (0 / 255) (0 / 255) (0 / 255)
-                    , bgColor = vec3 (244 / 255) (241 / 255) (94 / 255)
-                    , options = [ Buttons.Circular, Buttons.IsIcon ]
-                    }
-            , disabled = False
-            }
-            dt
-            mouseState
-            buttons
-        ]
+                                    else
+                                        "chat"
+                                , textColor = vec3 (0 / 255) (0 / 255) (0 / 255)
+                                , bgColor = vec3 (244 / 255) (241 / 255) (94 / 255)
+                                , options = [ Buttons.Circular, Buttons.IsIcon ]
+                                }
+                        , disabled = False
+                        }
+                        dt
+                        mouseState
+                        buttons
+                    ]
+
+                else
+                    []
+               )
 
 
 hold : Card -> Int -> Maybe Collision.Ray -> ( HoverDamage, HoverDamage ) -> Game.Model -> Game.Model
