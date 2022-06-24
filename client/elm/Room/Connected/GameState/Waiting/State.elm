@@ -7,6 +7,7 @@ init : WaitType -> Model
 init waitType =
     { waitType = waitType
     , bounceTick = 0
+    , seed = Nothing
     }
 
 

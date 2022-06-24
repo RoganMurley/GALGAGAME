@@ -12,6 +12,8 @@ import Main.Messages as Main
 import Main.Types exposing (Flags)
 import Math.Vector3 exposing (vec3)
 import Mouse exposing (MouseState(..))
+import Random
+import Random.List as Random
 import Render.Types as Render
 import Waiting.Types exposing (Model, WaitType(..))
 import WebGL
@@ -65,7 +67,7 @@ htmlView { waitType } { httpPort, hostname } roomID =
 
 
 webglView : Model -> Render.Params -> Assets.Model -> List WebGL.Entity
-webglView { bounceTick, waitType } params assets =
+webglView { bounceTick, waitType, seed } params assets =
     let
         ctx =
             bareContextInit ( params.w, params.h ) assets NoMouse
@@ -75,15 +77,33 @@ webglView { bounceTick, waitType } params assets =
 
         size =
             1.4 * max w h
+
+        textMessages =
+            [ "ALIGNING\nFATES..."
+            , "RESOLVING\nPROPHECIES..."
+            , "BRANCHING\nDESTINIES..."
+            ]
+
+        mWaitingMessage =
+            case seed of
+                Just s ->
+                    Tuple.first <|
+                        Tuple.first <|
+                            Random.step
+                                (Random.choose textMessages)
+                                s
+
+                Nothing ->
+                    Nothing
     in
     List.concat
         [ Background.webglView params assets Finding
         ]
-        ++ (case waitType of
-                WaitQuickplay ->
+        ++ (case ( waitType, mWaitingMessage ) of
+                ( WaitQuickplay, Just waitingMessage ) ->
                     Font.view
                         "Futura"
-                        "FINDING\nOPPONENT..."
+                        waitingMessage
                         { x = w * 0.5 - 0.003 * size
                         , y = h * 0.4
                         , scaleX = 0.0001 * size + 0.003 * sin (bounceTick * 0.005)

@@ -20,6 +20,7 @@ import PlayState.State as PlayState
 import PlayState.Types exposing (PlayState(..))
 import Players exposing (Players)
 import Ports exposing (log)
+import Random
 import Tutorial
 import Waiting.State as Waiting
 
@@ -80,7 +81,7 @@ update msg state flags mode _ players assets =
             in
             case result of
                 Ok newState ->
-                    ( applyTags tags <| carry state newState, Cmd.none )
+                    ( hydrateSeed flags.seed <| applyTags tags <| carry state newState, Cmd.none )
 
                 Err err ->
                     ( state, log <| Json.errorToString err )
@@ -245,3 +246,13 @@ applyTagsTutorial1 tags state =
 
     else
         state
+
+
+hydrateSeed : Int -> GameState -> GameState
+hydrateSeed seed state =
+    case state of
+        Waiting waiting ->
+            Waiting { waiting | seed = Just <| Random.initialSeed seed }
+
+        _ ->
+            state
