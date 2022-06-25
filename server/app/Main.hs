@@ -318,17 +318,17 @@ beginQueue state client roomVar = do
             let delay = if isTutorial then 1 else 4
             forkDelay (delay * 1000000) (queueCpuFallback state client roomVar queueId)
             beginPlay state client roomVar
-        gen <- liftIO getGen
-        guid <- liftIO GUID.genText
-        let scenario = makeScenario gen PrefixQueue
-        let roomName = Text.take 8 guid
-        newRoomVar <- liftIO . atomically $ Server.getOrCreateRoom roomName WaitQuickplay gen scenario state
-        beginQueue state client newRoomVar
     )
     ( do
         -- If the client leaves, remove them from the queue.
         liftIO . atomically $ Server.dequeue queueId state
     )
+  gen <- liftIO getGen
+  guid <- liftIO GUID.genText
+  let scenario = makeScenario gen PrefixQueue
+  let roomName = Text.take 8 guid
+  newRoomVar <- liftIO . atomically $ Server.getOrCreateRoom roomName WaitQuickplay gen scenario state
+  beginQueue state client newRoomVar
 
 data QueueCpuResult
   = QueueCpuNotNeeded
