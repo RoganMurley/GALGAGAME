@@ -51,6 +51,7 @@ gameInit model =
     , timeLeft = Nothing
     , tutorial = Tutorial.init
     , passive = False
+    , cpu = False
     }
 
 

@@ -33,6 +33,7 @@ type alias Model =
     , timeLeft : Maybe Float
     , tutorial : Tutorial.Model
     , passive : Bool
+    , cpu : Bool
     }
 
 

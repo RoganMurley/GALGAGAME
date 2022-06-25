@@ -497,6 +497,7 @@ carry old new =
                 , holding = get .holding old
                 , tutorial = get .tutorial old
                 , passive = get .passive old
+                , cpu = get .cpu old
             }
         )
         new
@@ -554,7 +555,7 @@ resolveOutcome mState { initial, resDiffList, finalState } =
         prunePassiveAnims =
             case mState of
                 Just (Playing { game }) ->
-                    if Debug.log "passive" game.passive then
+                    if game.passive then
                         List.filter
                             (\r ->
                                 case r.anim of

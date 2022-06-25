@@ -20,8 +20,9 @@ updateRoomEncounter roomVar progress gen =
     ( \room ->
         room
           { room_scenario =
-              encounterScenario progress gen $
-                room_scenario room
+              markCpu $ 
+                encounterScenario progress gen $
+                  room_scenario room
           }
     )
 
@@ -89,11 +90,16 @@ puzzleScenario scenario@Scenario {scenario_progressWin} =
     }
 
 turboScenario :: Scenario -> Scenario
-turboScenario scenario@Scenario {} =
+turboScenario scenario =
   scenario
     { scenario_timeLimit = 10,
       scenario_tags = ["turbo"]
     }
+
+markCpu :: Scenario -> Scenario
+markCpu scenario@Scenario {scenario_tags} =
+  scenario
+    { scenario_tags = "cpu" : scenario_tags}
 
 noTimeLimit :: NominalDiffTime
 noTimeLimit = 9999999999999999999

@@ -206,6 +206,7 @@ applyTags tags state =
         [ applyTagsTutorial0
         , applyTagsTutorial1
         , applyTagsPassive
+        , applyTagsCpu
         ]
 
 
@@ -228,6 +229,13 @@ applyTagsPassive =
     applyTagGame
         "passive"
         (\game -> { game | passive = True })
+
+
+applyTagsCpu : List String -> GameState -> GameState
+applyTagsCpu =
+    applyTagGame
+        "cpu"
+        (\game -> { game | cpu = True })
 
 
 applyTagGame : String -> (Game.Model -> Game.Model) -> (List String -> GameState -> GameState)
