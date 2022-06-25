@@ -52,7 +52,7 @@ tutorial0Scenario scenario@Scenario {scenario_progressWin, scenario_progressLoss
       scenario_progressWin =
         scenario_progressWin
           { progress_events = Set.singleton "tutorial-0",
-            progress_xp = 0
+            progress_xp = 20
           },
       scenario_progressLoss = scenario_progressLoss {progress_xp = 0}
     }
@@ -69,7 +69,7 @@ tutorial1Scenario scenario@Scenario {scenario_progressWin, scenario_progressLoss
       scenario_progressWin =
         scenario_progressWin
           { progress_events = Set.fromList ["tutorial-1", "tutorial-complete"],
-            progress_xp = 0
+            progress_xp = 20
           },
       scenario_progressLoss = scenario_progressLoss {progress_xp = 0}
     }
