@@ -32,6 +32,7 @@ type alias Model =
     , holding : Holding
     , timeLeft : Maybe Float
     , tutorial : Tutorial.Model
+    , passive : Bool
     }
 
 

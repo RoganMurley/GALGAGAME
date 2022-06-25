@@ -50,6 +50,7 @@ gameInit model =
     , holding = NoHolding
     , timeLeft = Nothing
     , tutorial = Tutorial.init
+    , passive = False
     }
 
 

@@ -496,6 +496,7 @@ carry old new =
                 , buttons = get .buttons old
                 , holding = get .holding old
                 , tutorial = get .tutorial old
+                , passive = get .passive old
             }
         )
         new
@@ -531,7 +532,7 @@ resolveOutcome mState { initial, resDiffList, finalState } =
 
         resList : List Resolvable.ResolveData
         resList =
-            pruneTutorialAnims <|
+            prunePassiveAnims <|
                 Resolvable.resDiffToData initial resDiffList
 
         model : Model
@@ -549,24 +550,23 @@ resolveOutcome mState { initial, resDiffList, finalState } =
         newState =
             map (\game -> { game | res = res }) finalState
 
-        pruneTutorialAnims : List Resolvable.ResolveData -> List Resolvable.ResolveData
-        pruneTutorialAnims =
+        prunePassiveAnims : List Resolvable.ResolveData -> List Resolvable.ResolveData
+        prunePassiveAnims =
             case mState of
                 Just (Playing { game }) ->
-                    case game.tutorial.step of
-                        Just _ ->
-                            List.filter
-                                (\{ anim } ->
-                                    case anim of
-                                        Pass PlayerB ->
-                                            False
+                    if Debug.log "passive" game.passive then
+                        List.filter
+                            (\r ->
+                                case r.anim of
+                                    Pass PlayerB ->
+                                        False
 
-                                        _ ->
-                                            True
-                                )
+                                    _ ->
+                                        True
+                            )
 
-                        Nothing ->
-                            identity
+                    else
+                        identity
 
                 _ ->
                     identity

@@ -63,4 +63,12 @@ beginStageB =
 
 isActive : Model -> Bool
 isActive { step } =
-    Maybe.isJust step
+    case step of
+        Just (StageA Finished) ->
+            False
+
+        Just (StageA _) ->
+            True
+
+        _ ->
+            False

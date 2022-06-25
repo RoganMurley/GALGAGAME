@@ -11,6 +11,7 @@ import Html.Events exposing (onClick)
 import Main.Messages as Main
 import Main.Types exposing (Flags)
 import Math.Vector3 exposing (vec3)
+import Maybe.Extra as Maybe
 import Mouse exposing (MouseState(..))
 import Random
 import Random.List as Random
@@ -85,16 +86,16 @@ webglView { bounceTick, waitType, seed } params assets =
             ]
 
         mWaitingMessage =
-            case seed of
-                Just s ->
-                    Tuple.first <|
+            Maybe.join <|
+                Maybe.map
+                    (\s ->
                         Tuple.first <|
-                            Random.step
-                                (Random.choose textMessages)
-                                s
-
-                Nothing ->
-                    Nothing
+                            Tuple.first <|
+                                Random.step
+                                    (Random.choose textMessages)
+                                    s
+                    )
+                    seed
     in
     List.concat
         [ Background.webglView params assets Finding

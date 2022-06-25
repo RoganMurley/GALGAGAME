@@ -62,7 +62,7 @@ view { w, h } game chat assets =
             , Hand.otherView entities.otherHand
             , Hand.millView
             , damageView hover holding
-            , turnView focus passed game.tutorial timeLeft
+            , turnView focus passed game.tutorial game.passive timeLeft
             , focusTextView (vec2 0 0) focus
             , activePointerView
             , Buttons.view buttons
@@ -370,8 +370,8 @@ damageView hover holding ({ w, h, radius, resolving, animDamage, tick, anim } as
         ]
 
 
-turnView : Focus -> Bool -> Tutorial.Model -> Maybe Float -> Context -> List WebGL.Entity
-turnView focus passed tutorial timeLeft ctx =
+turnView : Focus -> Bool -> Tutorial.Model -> Bool -> Maybe Float -> Context -> List WebGL.Entity
+turnView focus passed tutorial passive timeLeft ctx =
     let
         { anim, model, tick, w, h, radius } =
             ctx
@@ -451,28 +451,32 @@ turnView focus passed tutorial timeLeft ctx =
                                 ]
 
                     PlayerB ->
-                        List.concat
-                            [ Font.view
-                                "Futura"
-                                "THEIR TURN"
-                                { x = w * 0.5 - 0.003 * size
-                                , y = h * 0.5
-                                , scaleX = 0.0001 * size + 0.003 * sin (tick * 0.005)
-                                , scaleY = 0.0001 * size + 0.003 * sin (tick * 0.007)
-                                , color = vec3 (20 / 255) (20 / 255) (20 / 255)
-                                }
-                                ctx
-                            , Font.view
-                                "Futura"
-                                "THEIR TURN"
-                                { x = w * 0.5
-                                , y = h * 0.5
-                                , scaleX = 0.0001 * size + 0.003 * sin (tick * 0.005)
-                                , scaleY = 0.0001 * size + 0.003 * sin (tick * 0.007)
-                                , color = vec3 (244 / 255) (241 / 255) (94 / 255)
-                                }
-                                ctx
-                            ]
+                        if passive then
+                            []
+
+                        else
+                            List.concat
+                                [ Font.view
+                                    "Futura"
+                                    "THEIR TURN"
+                                    { x = w * 0.5 - 0.003 * size
+                                    , y = h * 0.5
+                                    , scaleX = 0.0001 * size + 0.003 * sin (tick * 0.005)
+                                    , scaleY = 0.0001 * size + 0.003 * sin (tick * 0.007)
+                                    , color = vec3 (20 / 255) (20 / 255) (20 / 255)
+                                    }
+                                    ctx
+                                , Font.view
+                                    "Futura"
+                                    "THEIR TURN"
+                                    { x = w * 0.5
+                                    , y = h * 0.5
+                                    , scaleX = 0.0001 * size + 0.003 * sin (tick * 0.005)
+                                    , scaleY = 0.0001 * size + 0.003 * sin (tick * 0.007)
+                                    , color = vec3 (244 / 255) (241 / 255) (94 / 255)
+                                    }
+                                    ctx
+                                ]
 
         ( Pass _, _, _ ) ->
             List.concat

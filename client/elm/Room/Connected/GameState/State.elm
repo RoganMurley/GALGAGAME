@@ -7,6 +7,7 @@ import Browser.Events exposing (Visibility(..))
 import Chat.Types as Chat
 import DeckBuilding.State as DeckBuilding
 import Game.State exposing (bareContextInit)
+import Game.Types as Game
 import GameState.Decoders exposing (stateDecoder)
 import GameState.Messages exposing (Msg(..))
 import GameState.Types exposing (GameState(..))
@@ -198,54 +199,52 @@ tick flags state chat gameType dt =
 
 
 applyTags : List String -> GameState -> GameState
-applyTags tags =
-    applyTagsTutorial0 tags >> applyTagsTutorial1 tags
+applyTags tags state =
+    List.foldr
+        (\f -> f tags)
+        state
+        [ applyTagsTutorial0
+        , applyTagsTutorial1
+        , applyTagsPassive
+        ]
 
 
 applyTagsTutorial0 : List String -> GameState -> GameState
-applyTagsTutorial0 tags state =
-    if List.any ((==) "tutorial-0") tags then
-        case state of
-            Started (Playing playState) ->
-                let
-                    { game } =
-                        playState
-
-                    newGame =
-                        { game | tutorial = Tutorial.beginStageA }
-                in
-                Started <|
-                    Playing
-                        { playState | game = newGame }
-
-            _ ->
-                state
-
-    else
-        state
+applyTagsTutorial0 =
+    applyTagGame
+        "tutorial-0"
+        (\game -> { game | tutorial = Tutorial.beginStageA })
 
 
 applyTagsTutorial1 : List String -> GameState -> GameState
-applyTagsTutorial1 tags state =
-    if List.any ((==) "tutorial-1") tags then
-        case state of
-            Started (Playing playState) ->
-                let
-                    { game } =
-                        playState
+applyTagsTutorial1 =
+    applyTagGame
+        "tutorial-1"
+        (\game -> { game | tutorial = Tutorial.beginStageB })
 
-                    newGame =
-                        { game | tutorial = Tutorial.beginStageB }
-                in
-                Started <|
-                    Playing
-                        { playState | game = newGame }
 
-            _ ->
-                state
+applyTagsPassive : List String -> GameState -> GameState
+applyTagsPassive =
+    applyTagGame
+        "passive"
+        (\game -> { game | passive = True })
 
-    else
-        state
+
+applyTagGame : String -> (Game.Model -> Game.Model) -> (List String -> GameState -> GameState)
+applyTagGame tag f =
+    \tags state ->
+        if List.any ((==) tag) tags then
+            case state of
+                Started (Playing playState) ->
+                    Started <|
+                        Playing
+                            { playState | game = f playState.game }
+
+                _ ->
+                    state
+
+        else
+            state
 
 
 hydrateSeed : Int -> GameState -> GameState
