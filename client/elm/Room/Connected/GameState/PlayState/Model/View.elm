@@ -43,7 +43,7 @@ import WhichPlayer.Types exposing (WhichPlayer(..))
 view : Render.Params -> Game.Model -> Chat.Model -> Assets.Model -> List WebGL.Entity
 view { w, h } game chat assets =
     let
-        { res, hover, focus, entities, passed, vfx, buttons, holding, timeLeft } =
+        { res, hover, focus, entities, passed, vfx, passive, buttons, holding, timeLeft, tutorial } =
             game
 
         ctx =
@@ -52,8 +52,8 @@ view { w, h } game chat assets =
     List.concat <|
         List.map ((|>) ctx)
             [ Background.radialView vfx
-            , tutorialArrowView game.tutorial focus hover
-            , lifeOrbView entities.players
+            , tutorialArrowView tutorial focus hover
+            , lifeOrbView entities.players tutorial
             , Wave.view
             , Stack.wheelBgView entities.wheel
             , Stack.view entities.stack
@@ -62,7 +62,7 @@ view { w, h } game chat assets =
             , Hand.otherView entities.otherHand
             , Hand.millView
             , damageView hover holding
-            , turnView focus passed game.tutorial game.passive timeLeft
+            , turnView focus passed tutorial passive timeLeft
             , focusTextView (vec2 0 0) focus
             , activePointerView
             , Buttons.view buttons
@@ -110,8 +110,8 @@ focusImageView originVec focus ({ anim, tick } as ctx) =
                     []
 
 
-lifeOrbView : List PlayerEntity -> Context -> List WebGL.Entity
-lifeOrbView entities ({ radius, model, anim, animDamage, tick } as ctx) =
+lifeOrbView : List PlayerEntity -> Tutorial.Model -> Context -> List WebGL.Entity
+lifeOrbView entities tutorial ({ radius, model, anim, animDamage, tick } as ctx) =
     let
         progress =
             Ease.outQuad (tick / animMaxTick anim)
@@ -188,8 +188,19 @@ lifeOrbView entities ({ radius, model, anim, animDamage, tick } as ctx) =
                     , color = Colour.yellow
                     }
                     ctx
+
+        tutorialFilter : PlayerEntity -> Bool
+        tutorialFilter { which } =
+            (which == PlayerB)
+                || (case tutorial.step of
+                        Just _ ->
+                            False
+
+                        _ ->
+                            True
+                   )
     in
-    List.concat <| List.map eachView entities
+    List.concat <| List.map eachView <| List.filter tutorialFilter entities
 
 
 focusTextView : Vec2 -> Focus -> Context -> List WebGL.Entity
