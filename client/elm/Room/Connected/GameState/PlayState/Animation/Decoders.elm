@@ -70,6 +70,9 @@ decoder =
                 "timeout" ->
                     succeed Timeout
 
+                "announce" ->
+                    announceDecoder
+
                 _ ->
                     Json.fail <| "Unknown anim name " ++ animName
     in
@@ -280,3 +283,10 @@ timingModifierDecoder =
     Json.map2 TimingModifier
         (field "ease" (string |> Json.andThen easingDecoder))
         (field "t" float)
+
+
+announceDecoder : Decoder Anim
+announceDecoder =
+    Json.map2 Announce
+        (field "text" string)
+        (field "time" timingModifierDecoder)

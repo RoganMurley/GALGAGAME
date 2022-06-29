@@ -34,6 +34,7 @@ data CardAnim
   | Pass WhichPlayer
   | Reveal WhichPlayer [Bool]
   | Timeout
+  | Announce Text TimeModifier
   | GetGen
   deriving (Show, Eq, Generic, NFData)
 
@@ -140,6 +141,13 @@ instance ToJSON CardAnim where
       [ "name" .= ("timeout" :: Text),
         "player" .= PlayerA
       ]
+  toJSON (Announce a t) =
+    object
+      [ "name" .= ("announce" :: Text),
+        "text" .= a,
+        "time" .= t,
+        "player" .= PlayerA
+      ]
 
 instance Mirror CardAnim where
   mirror (Hurt w d h) = Hurt (other w) d h
@@ -159,6 +167,7 @@ instance Mirror CardAnim where
   mirror (Pass w) = Pass (other w)
   mirror GetGen = GetGen
   mirror Timeout = Timeout
+  mirror (Announce a t) = Announce a t
 
 data Hurt
   = Slash

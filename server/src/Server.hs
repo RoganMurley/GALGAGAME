@@ -102,13 +102,13 @@ addPlayerClient client roomVar =
       Nothing ->
         (room, Nothing)
 
-addComputerClient :: Text -> Text -> Progress -> TVar Room -> STM (Maybe Client)
+addComputerClient :: Text -> Text -> Progress -> TVar Room -> STM (Maybe (Client, [Outcome]))
 addComputerClient name guid progress room =
   modReturnTVar room $ \r ->
     if Room.noCpus r
       then case Room.addPlayer client r of
-        Just (r', _, _) ->
-          (r', Just client)
+        Just (r', outcomes, _) ->
+          (r', Just (client, outcomes))
         Nothing ->
           (r, Nothing)
       else (r, Nothing)

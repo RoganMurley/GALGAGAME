@@ -24,6 +24,7 @@ animate (DiscardHand w d) = Just $ CardAnim.DiscardHand w d
 animate (MoveStack m t) = Just $ CardAnim.MoveStack m t
 animate (Reveal w r) = Just $ CardAnim.Reveal w r
 animate (Pass w) = Just $ CardAnim.Pass w
+animate (Announce a t) = Just $ CardAnim.Announce a t
 animate GetGen = Just CardAnim.GetGen
 
 next :: DSL a -> a
@@ -44,4 +45,5 @@ next DiscardHand {} = ()
 next MoveStack {} = ()
 next Reveal {} = ()
 next Pass {} = ()
+next Announce {} = ()
 next GetGen = ()

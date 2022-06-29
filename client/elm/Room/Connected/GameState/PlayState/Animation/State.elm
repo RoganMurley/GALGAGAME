@@ -75,6 +75,9 @@ animMaxTick anim =
             Timeout ->
                 2000
 
+            Announce _ timeModifier ->
+                timeModifier.mod * 400
+
             _ ->
                 400.0
           )
@@ -113,6 +116,9 @@ progress anim tick =
 
                 Windup _ ->
                     Ease.outBounce
+
+                Announce _ _ ->
+                    Ease.outExpo
 
                 _ ->
                     Ease.outQuint

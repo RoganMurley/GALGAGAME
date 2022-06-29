@@ -10,7 +10,7 @@ import Control.Monad.STM (STM)
 import Data.Aeson (ToJSON (..), object, (.=))
 import Data.Int (Int64)
 import qualified Data.Map as Map
-import Data.Text (Text)
+import Data.Text (Text, toUpper)
 import Data.Traversable (forM)
 import Database.Beam (all_, filter_, runSelectReturningOne, select, val_, (==.))
 import Player (WhichPlayer (..))
@@ -154,3 +154,6 @@ usersToGameUsers (mUserA, mUserB) = do
   a <- forM mUserA toGameUser
   b <- forM mUserB toGameUser
   return (a, b)
+
+usersToUsernames :: (Maybe User, Maybe User) -> Maybe (Text, Text)
+usersToUsernames (mPa, mPb) = (\pa pb -> (toUpper $ getUsername pa, toUpper $ getUsername pb)) <$> mPa <*> mPb

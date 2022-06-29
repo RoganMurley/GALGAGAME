@@ -30,7 +30,7 @@ import qualified Stack
 import StackCard (StackCard (..))
 import Stats.Progress (initialProgress)
 import StatusEff (applyStatuses)
-import User (GameUser (..), User (..), gameusersToUsers, getUser, getUserId, getUsername, isSuperuser)
+import User (GameUser (..), User (..), gameusersToUsers, getUser, getUserId, getUsername, isSuperuser, usersToUsernames)
 import Util (Err, Gen, deleteIndex, split, times, tupleMap2)
 import Wheel (Wheel (..))
 
@@ -103,7 +103,8 @@ rematch ::
   UTCTime ->
   Either Err (Maybe GameState, [Outcome])
 rematch (winner, gen) gameusers scenario time =
-  let (userPa, userPb) = gameusersToUsers gameusers
+  let users = gameusersToUsers gameusers
+      (userPa, userPb) = users
       superPa = maybe False isSuperuser userPa
       superPb = maybe False isSuperuser userPb
       deckModel =
@@ -118,7 +119,7 @@ rematch (winner, gen) gameusers scenario time =
         nextSelectState
           deckModel
           turn
-          startProgram
+          (startProgram (usersToUsernames users))
           (fst $ split gen)
           (userPa, userPb)
           time
@@ -162,8 +163,9 @@ select ::
   (Maybe GameUser, Maybe GameUser) ->
   UTCTime ->
   Either Err (Maybe GameState, [Outcome])
-select which choice deckModel turn scenario gen users time =
-  let user = getUser which users
+select which choice deckModel turn scenario gen gameusers time =
+  let users = gameusersToUsers gameusers
+      user = getUser which gameusers
       progress = maybe initialProgress gameuser_progress user
       runes = getSelectableRunes which deckModel
    in case choiceToCharacter choice runes progress of
@@ -176,9 +178,9 @@ select which choice deckModel turn scenario gen users time =
                 nextSelectState
                   newDeckModel
                   turn
-                  startProgram
+                  (startProgram (usersToUsernames users))
                   gen
-                  (gameusersToUsers users)
+                  users
                   time
                   timeLimit
            in Right (Just newState, outcomes)

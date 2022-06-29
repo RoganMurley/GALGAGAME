@@ -70,6 +70,7 @@ view { w, h } game chat assets =
             , timeLeftView timeLeft
             , Endgame.animView
             , Holding.view holding
+            , announceView
             ]
 
 
@@ -397,6 +398,9 @@ turnView focus passed tutorial passive timeLeft ctx =
         ( Mill _ _ _, _, _ ) ->
             []
 
+        ( Announce _ _, _, _ ) ->
+            []
+
         ( NullAnim, NoFocus, False ) ->
             if timeLeftProgress > 0 then
                 case timeLeft of
@@ -565,6 +569,44 @@ turnView focus passed tutorial passive timeLeft ctx =
             []
 
 
+announceView : Context -> List WebGL.Entity
+announceView ctx =
+    let
+        { anim, w, h, tick, progress, radius } =
+            ctx
+
+        size =
+            progress * radius * 3
+    in
+    case anim of
+        Announce announcement _ ->
+            List.concat
+                [ Font.view
+                    "Futura"
+                    announcement
+                    { x = w * 0.5 - 0.003 * size
+                    , y = h * 0.5
+                    , scaleX = 0.0001 * size + 0.003 * sin (tick * 0.005)
+                    , scaleY = 0.0001 * size + 0.003 * sin (tick * 0.007)
+                    , color = vec3 (20 / 255) (20 / 255) (20 / 255)
+                    }
+                    ctx
+                , Font.view
+                    "Futura"
+                    announcement
+                    { x = w * 0.5
+                    , y = h * 0.5
+                    , scaleX = 0.0001 * size + 0.003 * sin (tick * 0.005)
+                    , scaleY = 0.0001 * size + 0.003 * sin (tick * 0.007)
+                    , color = vec3 (244 / 255) (241 / 255) (94 / 255)
+                    }
+                    ctx
+                ]
+
+        _ ->
+            []
+
+
 tutorialView : Tutorial.Model -> Context -> List WebGL.Entity
 tutorialView tutorial ctx =
     let
@@ -630,56 +672,61 @@ tutorialView tutorial ctx =
 tutorialArrowView : Tutorial.Model -> Focus -> HoverSelf -> Context -> List WebGL.Entity
 tutorialArrowView tutorial focus hover ctx =
     let
-        { camera3d, perspective, textures, radius, resolving } =
+        { anim, camera3d, perspective, textures, radius, resolving } =
             ctx
 
         scale =
             0.0007 * radius
     in
-    case tutorial.step of
-        Just (Tutorial.StageA Tutorial.DragACard) ->
-            List.concat
-                [ Texture.with textures "arrow.png" <|
-                    \texture ->
-                        [ Render.Primitives.quad Render.Shaders.fragment
-                            { texture = texture
-                            , rotation = Quaternion.makeRotate Quaternion.identity
-                            , scale = makeScale3 scale scale 1
-                            , color = Colour.white
-                            , pos = vec3 0 -0.4 0
-                            , perspective = perspective
-                            , camera = camera3d
-                            }
+    case anim of
+        Announce _ _ ->
+            []
+
+        _ ->
+            case tutorial.step of
+                Just (Tutorial.StageA Tutorial.DragACard) ->
+                    List.concat
+                        [ Texture.with textures "arrow.png" <|
+                            \texture ->
+                                [ Render.Primitives.quad Render.Shaders.fragment
+                                    { texture = texture
+                                    , rotation = Quaternion.makeRotate Quaternion.identity
+                                    , scale = makeScale3 scale scale 1
+                                    , color = Colour.white
+                                    , pos = vec3 0 -0.4 0
+                                    , perspective = perspective
+                                    , camera = camera3d
+                                    }
+                                ]
                         ]
-                ]
 
-        Just (Tutorial.StageA Tutorial.PressGo) ->
-            case ( focus, hover ) of
-                ( NoFocus, NoHover ) ->
-                    if resolving then
-                        []
+                Just (Tutorial.StageA Tutorial.PressGo) ->
+                    case ( focus, hover ) of
+                        ( NoFocus, NoHover ) ->
+                            if resolving then
+                                []
 
-                    else
-                        List.concat
-                            [ Texture.with textures "arrow.png" <|
-                                \texture ->
-                                    [ Render.Primitives.quad Render.Shaders.fragment
-                                        { texture = texture
-                                        , rotation = Quaternion.makeRotate <| Quaternion.zRotation (0.75 * pi)
-                                        , scale = makeScale3 scale scale 1
-                                        , color = Colour.white
-                                        , pos = vec3 0 0 0
-                                        , perspective = perspective
-                                        , camera = camera3d
-                                        }
+                            else
+                                List.concat
+                                    [ Texture.with textures "arrow.png" <|
+                                        \texture ->
+                                            [ Render.Primitives.quad Render.Shaders.fragment
+                                                { texture = texture
+                                                , rotation = Quaternion.makeRotate <| Quaternion.zRotation (0.75 * pi)
+                                                , scale = makeScale3 scale scale 1
+                                                , color = Colour.white
+                                                , pos = vec3 0 0 0
+                                                , perspective = perspective
+                                                , camera = camera3d
+                                                }
+                                            ]
                                     ]
-                            ]
+
+                        _ ->
+                            []
 
                 _ ->
                     []
-
-        _ ->
-            []
 
 
 timeLeftView : Maybe Float -> Context -> List WebGL.Entity

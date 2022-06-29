@@ -122,7 +122,7 @@ roomSetup room =
                 startProgram = scenario_prog scenario
                 timeLimit = scenario_timeLimit scenario
                 users = Room.getUsers room
-                (state, newOutcomes) = nextSelectState deckBuildingModel turn startProgram gen users (posixSecondsToUTCTime 0) timeLimit
+                (state, newOutcomes) = nextSelectState deckBuildingModel turn (startProgram Nothing) gen users (posixSecondsToUTCTime 0) timeLimit
              in (room {room_state = state}, newOutcomes)
           _ ->
             (room, [])

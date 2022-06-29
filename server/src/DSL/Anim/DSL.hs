@@ -7,6 +7,7 @@ import Bounce (CardBounce)
 import Card (Card)
 import CardAnim (CardAnim, Hurt, TimeModifier)
 import Control.Monad.Freer (Eff)
+import Data.Text (Text)
 import Discard (CardDiscard)
 import HandCard (HandCard)
 import Life (Life)
@@ -33,5 +34,6 @@ data DSL n where
   MoveStack :: Wheel (Maybe Int) -> TimeModifier -> DSL ()
   Pass :: WhichPlayer -> DSL ()
   GetGen :: DSL ()
+  Announce :: Text -> TimeModifier -> DSL ()
 
 type Program = Eff '[DSL]

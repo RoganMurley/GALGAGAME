@@ -29,6 +29,7 @@ type Anim
     | Finding
     | GetGen
     | Timeout
+    | Announce String TimingModifier
 
 
 type Hurt

@@ -231,7 +231,7 @@ makeScenario _ prefix =
           PlayerB
         _ ->
           PlayerA
-    prog :: Beta.Program ()
+    prog :: Maybe (Text, Text) -> Beta.Program ()
     prog = startProgram turn
     roundEndProg :: Beta.Program ()
     roundEndProg = roundEndProgram
@@ -277,8 +277,8 @@ beginComputer cpuName state client roomVar = do
   case added of
     Just (which, outcomes) -> do
       case computer of
-        Just computerClient -> do
-          _ <- fork (computerPlay (other which) roomVar state computerClient)
+        Just (computerClient, computerOutcomes) -> do
+          _ <- fork (computerPlay (other which) roomVar state computerClient computerOutcomes)
           return ()
         Nothing ->
           return ()
@@ -301,8 +301,8 @@ beginQueue state client roomVar = do
     ( do
         roomM <-
           if isTutorial
-            then liftIO . atomically $ Server.queue queueId roomVar state
-            else return Nothing
+            then return Nothing
+            else liftIO . atomically $ Server.queue queueId roomVar state
         case roomM of
           Just existingRoom -> do
             room <- liftIO $ readTVarIO existingRoom
@@ -351,16 +351,16 @@ queueCpuFallback state client roomVar queueId = do
     Left QueueCpuFailed -> do
       Metrics.incr "quickplay.fail"
       Log.info "Failed to add CPU"
-    Right cpuClient -> do
+    Right (cpuClient, outcomes) -> do
       Metrics.incr "quickplay.cpu"
       Log.info $ printf "New CPU joining room"
       newRoom <- liftIO $ readTVarIO roomVar
       let gameState = Room.getState newRoom
       syncRoomMetadata newRoom
       syncClient client PlayerA gameState
-      computerPlay PlayerB roomVar state cpuClient
+      computerPlay PlayerB roomVar state cpuClient outcomes
   where
-    transaction :: Text -> Gen -> STM (Either QueueCpuResult Client)
+    transaction :: Text -> Gen -> STM (Either QueueCpuResult (Client, [Outcome]))
     transaction guid gen = do
       room <- readTVar roomVar
       if Room.full room
@@ -378,9 +378,9 @@ queueCpuFallback state client roomVar queueId = do
               updateRoomEncounter roomVar progress gen
               added <- addComputerClient "CPU" guid progress roomVar
               case added of
-                Just computerClient -> do
+                Just (computerClient, outcomes) -> do
                   Server.dequeue queueId state
-                  return $ Right computerClient
+                  return $ Right (computerClient, outcomes)
                 Nothing ->
                   return $ Left QueueCpuFailed
           )
@@ -417,10 +417,12 @@ play which client roomVar outcomes = do
   finalRoom <- liftIO $ readTVarIO roomVar
   return $ isWinner which $ Room.getState finalRoom
 
-computerPlay :: WhichPlayer -> TVar Room -> TVar Server.State -> Client -> App ()
-computerPlay which roomVar state client = do
-  roomName <- liftIO $ Room.getName <$> readTVarIO roomVar
+computerPlay :: WhichPlayer -> TVar Room -> TVar Server.State -> Client -> [Outcome] -> App ()
+computerPlay which roomVar state client outcomes = do
+  room <- liftIO $readTVarIO roomVar
+  let roomName = Room.getName room
   progress <- liftIO $ atomically $ Client.progress client
+  forM_ outcomes (actOutcome room)
   _ <- runMaybeT (runStateT (forever (loop roomName progress)) 0)
   Log.info $ printf "<%s@%s>AI signing off" (Client.name client) roomName
   _ <- disconnect client roomVar state

@@ -11,7 +11,7 @@ data Scenario = Scenario
   { scenario_characterPa :: Either UnchosenCharacter ChosenCharacter,
     scenario_characterPb :: Either UnchosenCharacter ChosenCharacter,
     scenario_turn :: Turn,
-    scenario_prog :: Beta.Program (),
+    scenario_prog :: Maybe (Text, Text) -> Beta.Program (),
     scenario_roundEndProg :: Beta.Program (),
     scenario_progressWin :: Progress,
     scenario_progressLoss :: Progress,
