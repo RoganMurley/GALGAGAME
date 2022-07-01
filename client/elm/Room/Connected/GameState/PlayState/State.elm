@@ -559,7 +559,7 @@ resolveOutcome mState { initial, resDiffList, finalState } =
                         List.filter
                             (\r ->
                                 case r.anim of
-                                    Pass PlayerB ->
+                                    Pass _ ->
                                         False
 
                                     _ ->

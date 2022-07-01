@@ -205,6 +205,7 @@ applyTags tags state =
         state
         [ applyTagsTutorial0
         , applyTagsTutorial1
+        , applyTagsTutorial2
         , applyTagsPassive
         , applyTagsCpu
         ]
@@ -214,13 +215,20 @@ applyTagsTutorial0 : List String -> GameState -> GameState
 applyTagsTutorial0 =
     applyTagGame
         "tutorial-0"
-        (\game -> { game | tutorial = Tutorial.beginStageA })
+        (\game -> { game | tutorial = Tutorial.beginStageBasic })
 
 
 applyTagsTutorial1 : List String -> GameState -> GameState
 applyTagsTutorial1 =
     applyTagGame
         "tutorial-1"
+        (\game -> { game | tutorial = Tutorial.beginStageA })
+
+
+applyTagsTutorial2 : List String -> GameState -> GameState
+applyTagsTutorial2 =
+    applyTagGame
+        "tutorial-2"
         (\game -> { game | tutorial = Tutorial.beginStageB })
 
 

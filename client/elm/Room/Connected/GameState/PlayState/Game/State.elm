@@ -422,7 +422,6 @@ buttonEntities passed mouseState dt buttons chat tutorial { w, h, model, radius,
                 || not yourTurn
                 || passed
                 || resolving
-                || (tutorial.step == Just (Tutorial.StageA Tutorial.DragACard))
 
         x =
             w * 0.5 + 0.65 * radius

@@ -1,7 +1,5 @@
 module Tutorial exposing (..)
 
-import Maybe.Extra as Maybe
-
 
 type Action
     = ActionDragACard
@@ -9,7 +7,8 @@ type Action
 
 
 type Stage
-    = StageA Step
+    = StageBasic Int
+    | StageA Int
     | StageB
 
 
@@ -17,33 +16,40 @@ type alias Model =
     { step : Maybe Stage }
 
 
-type Step
-    = DragACard
-    | PressGo
-    | Finished
-
-
 takeAction : Action -> Model -> Model
 takeAction action model =
     case model.step of
+        Just (StageBasic step) ->
+            let
+                newStep : Int
+                newStep =
+                    case action of
+                        ActionPressGo ->
+                            step + 1
+
+                        _ ->
+                            step
+            in
+            { model | step = Just (StageBasic newStep) }
+
         Just (StageA step) ->
-            { model | step = Maybe.map StageA (takeActionStep action step) }
+            let
+                newStep : Int
+                newStep =
+                    case ( action, step ) of
+                        ( ActionPressGo, 0 ) ->
+                            step + 1
+
+                        ( ActionDragACard, 1 ) ->
+                            step + 1
+
+                        _ ->
+                            step
+            in
+            { model | step = Just (StageA newStep) }
 
         _ ->
             model
-
-
-takeActionStep : Action -> Step -> Maybe Step
-takeActionStep action step =
-    case ( action, step ) of
-        ( ActionDragACard, DragACard ) ->
-            Just PressGo
-
-        ( ActionPressGo, PressGo ) ->
-            Just Finished
-
-        _ ->
-            Just step
 
 
 init : Model
@@ -51,9 +57,14 @@ init =
     { step = Nothing }
 
 
+beginStageBasic : Model
+beginStageBasic =
+    { step = Just (StageBasic 0) }
+
+
 beginStageA : Model
 beginStageA =
-    { step = Just <| StageA DragACard }
+    { step = Just (StageA 0) }
 
 
 beginStageB : Model
@@ -64,10 +75,10 @@ beginStageB =
 isActive : Model -> Bool
 isActive { step } =
     case step of
-        Just (StageA Finished) ->
-            False
-
         Just (StageA _) ->
+            True
+
+        Just (StageBasic _) ->
             True
 
         _ ->

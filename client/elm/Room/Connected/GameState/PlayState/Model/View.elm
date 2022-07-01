@@ -52,7 +52,6 @@ view { w, h } game chat assets =
     List.concat <|
         List.map ((|>) ctx)
             [ Background.radialView vfx
-            , tutorialArrowView tutorial focus hover
             , lifeOrbView entities.players tutorial
             , Wave.view
             , Stack.wheelBgView entities.wheel
@@ -68,6 +67,7 @@ view { w, h } game chat assets =
             , Buttons.view buttons
             , Chat.notifyView chat buttons
             , timeLeftView timeLeft
+            , tutorialArrowView tutorial focus hover
             , Endgame.animView
             , Holding.view holding
             , announceView
@@ -78,6 +78,9 @@ focusImageView : Vec3 -> Focus -> Context -> List WebGL.Entity
 focusImageView originVec focus ({ anim, tick } as ctx) =
     case anim of
         Mill _ _ _ ->
+            []
+
+        Announce _ _ ->
             []
 
         Pass _ ->
@@ -208,6 +211,9 @@ focusTextView : Vec2 -> Focus -> Context -> List WebGL.Entity
 focusTextView originVec focus ({ w, h, anim, model, radius, tick } as ctx) =
     case anim of
         Mill _ _ _ ->
+            []
+
+        Announce _ _ ->
             []
 
         Pass _ ->
@@ -617,7 +623,7 @@ tutorialView tutorial ctx =
             radius * 3
     in
     case tutorial.step of
-        Just (Tutorial.StageA Tutorial.DragACard) ->
+        Just (Tutorial.StageA 1) ->
             List.concat
                 [ Font.view
                     "Futura"
@@ -641,11 +647,15 @@ tutorialView tutorial ctx =
                     ctx
                 ]
 
-        Just (Tutorial.StageA Tutorial.PressGo) ->
+        Just (Tutorial.StageBasic 0) ->
+            let
+                text =
+                    "PRESS GO"
+            in
             List.concat
                 [ Font.view
                     "Futura"
-                    "PRESS GO"
+                    text
                     { x = w * 0.5 - 0.003 * size
                     , y = h * 0.5
                     , scaleX = 0.0001 * size + 0.003 * sin (tick * 0.005)
@@ -655,7 +665,7 @@ tutorialView tutorial ctx =
                     ctx
                 , Font.view
                     "Futura"
-                    "PRESS GO"
+                    text
                     { x = w * 0.5
                     , y = h * 0.5
                     , scaleX = 0.0001 * size + 0.003 * sin (tick * 0.005)
@@ -683,47 +693,47 @@ tutorialArrowView tutorial focus hover ctx =
             []
 
         _ ->
-            case tutorial.step of
-                Just (Tutorial.StageA Tutorial.DragACard) ->
-                    List.concat
-                        [ Texture.with textures "arrow.png" <|
-                            \texture ->
-                                [ Render.Primitives.quad Render.Shaders.fragment
-                                    { texture = texture
-                                    , rotation = Quaternion.makeRotate Quaternion.identity
-                                    , scale = makeScale3 scale scale 1
-                                    , color = Colour.white
-                                    , pos = vec3 0 -0.4 0
-                                    , perspective = perspective
-                                    , camera = camera3d
-                                    }
-                                ]
-                        ]
+            case ( focus, hover ) of
+                ( NoFocus, NoHover ) ->
+                    if resolving then
+                        []
 
-                Just (Tutorial.StageA Tutorial.PressGo) ->
-                    case ( focus, hover ) of
-                        ( NoFocus, NoHover ) ->
-                            if resolving then
-                                []
-
-                            else
+                    else
+                        case tutorial.step of
+                            Just (Tutorial.StageA 1) ->
                                 List.concat
                                     [ Texture.with textures "arrow.png" <|
                                         \texture ->
                                             [ Render.Primitives.quad Render.Shaders.fragment
                                                 { texture = texture
-                                                , rotation = Quaternion.makeRotate <| Quaternion.zRotation (0.75 * pi)
+                                                , rotation = Quaternion.makeRotate Quaternion.identity
                                                 , scale = makeScale3 scale scale 1
                                                 , color = Colour.white
-                                                , pos = vec3 0 0 0
+                                                , pos = vec3 0 -0.4 0
                                                 , perspective = perspective
                                                 , camera = camera3d
                                                 }
                                             ]
                                     ]
 
-                        _ ->
-                            []
+                            Just (Tutorial.StageBasic 0) ->
+                                List.concat
+                                    [ Texture.with textures "arrow.png" <|
+                                        \texture ->
+                                            [ Render.Primitives.quad Render.Shaders.fragment
+                                                { texture = texture
+                                                , rotation = Quaternion.makeRotate <| Quaternion.zRotation (0.8 * pi)
+                                                , scale = makeScale3 scale scale 1
+                                                , color = Colour.white
+                                                , pos = vec3 (-radius * 0.0004) (-radius * 0.0004) 0
+                                                , perspective = perspective
+                                                , camera = camera3d
+                                                }
+                                            ]
+                                    ]
+
+                            _ ->
+                                []
 
                 _ ->
                     []
