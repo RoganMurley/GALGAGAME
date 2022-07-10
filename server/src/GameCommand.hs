@@ -497,7 +497,7 @@ godMode mUser str which time playing =
             let program = Beta.betaI betaProgram :: Beta.ExecProgram ()
                 (m, res) = Beta.execute model program :: (Model, [ResolveData])
                 newPlayState =
-                  Playing $
+                  checkWin $
                     playing
                       { playing_model = m,
                         playing_replay = replay `Active.add` res
