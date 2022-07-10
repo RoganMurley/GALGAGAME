@@ -9,7 +9,7 @@ import Data.Text (Text)
 import GHC.Generics (Generic)
 import Life (initMaxLife)
 import Mirror (Mirror (..))
-import Model (Model (Model), Passes (NoPass), PlayerModel (PlayerModel))
+import Model (Model (Model), Passes (NoPass), PlayerModel (PlayerModel), miscInit)
 import Player (WhichPlayer (PlayerA))
 import ResolveData (ResolveData (..))
 import qualified Stack
@@ -47,7 +47,7 @@ init model pa pb =
 null :: Replay
 null =
   Replay
-    { replay_model = Model PlayerA Stack.init (PlayerModel [] [] 0 initMaxLife) (PlayerModel [] [] 0 initMaxLife) NoPass (mkGen 0) 0 False,
+    { replay_model = Model PlayerA Stack.init (PlayerModel [] [] 0 initMaxLife) (PlayerModel [] [] 0 initMaxLife) NoPass (mkGen 0) 0 False miscInit,
       replay_res = [],
       replay_pa = ("", Nothing),
       replay_pb = ("", Nothing)

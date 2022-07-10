@@ -29,6 +29,7 @@ alphaEffI m GetStack = (mempty, model_stack m)
 alphaEffI m GetTurn = (mempty, model_turn m)
 alphaEffI m GetRot = (mempty, model_rot m)
 alphaEffI m GetHold = (mempty, model_hold m)
+alphaEffI m GetMisc = (mempty, model_misc m)
 alphaEffI m (GetDeck w) = (mempty, pmodel_deck $ getPmodel w m)
 alphaEffI m (GetHand w) = (mempty, pmodel_hand $ getPmodel w m)
 alphaEffI m (GetLife w) = (mempty, pmodel_life $ getPmodel w m)
@@ -44,6 +45,7 @@ alphaEffI _ dsl@(SetStack _) = (diffI dsl mempty, ())
 alphaEffI _ dsl@(SetTurn _) = (diffI dsl mempty, ())
 alphaEffI _ dsl@(SetRot _) = (diffI dsl mempty, ())
 alphaEffI _ dsl@(SetHold _) = (diffI dsl mempty, ())
+alphaEffI _ dsl@(SetMisc _) = (diffI dsl mempty, ())
 
 modI :: Model -> Program () -> Model
 modI m p = fst $ effI m p
@@ -68,6 +70,7 @@ diffI (SetStack s) diff = diff {modeldiff_stack = Just s}
 diffI (SetTurn t) diff = diff {modeldiff_turn = Just t}
 diffI (SetRot r) diff = diff {modeldiff_rot = Just r}
 diffI (SetHold h) diff = diff {modeldiff_hold = Just h}
+diffI (SetMisc m) diff = diff {modeldiff_misc = Just m}
 diffI GetGen diff = diff
 diffI (GetDeck _) diff = diff
 diffI (GetHand _) diff = diff
@@ -78,4 +81,5 @@ diffI GetStack diff = diff
 diffI GetTurn diff = diff
 diffI GetRot diff = diff
 diffI GetHold diff = diff
+diffI GetMisc diff = diff
 diffI GetModel diff = diff

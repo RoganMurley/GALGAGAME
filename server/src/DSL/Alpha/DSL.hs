@@ -5,7 +5,7 @@ module DSL.Alpha.DSL where
 
 import Control.Monad.Freer (Eff)
 import Life (Life)
-import Model (Deck, Hand, Model, Passes, Turn)
+import Model (Deck, Hand, Misc, Model, Passes, Turn)
 import Player (WhichPlayer)
 import Stack (Stack)
 import Util (Gen)
@@ -21,6 +21,7 @@ data DSL n where
   GetTurn :: DSL Turn
   GetRot :: DSL Int
   GetHold :: DSL Bool
+  GetMisc :: DSL Misc
   GetModel :: DSL Model
   SetGen :: Gen -> DSL ()
   SetDeck :: WhichPlayer -> Deck -> DSL ()
@@ -32,5 +33,6 @@ data DSL n where
   SetTurn :: Turn -> DSL ()
   SetRot :: Int -> DSL ()
   SetHold :: Bool -> DSL ()
+  SetMisc :: Misc -> DSL ()
 
 type Program = Eff '[DSL]

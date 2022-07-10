@@ -22,7 +22,8 @@ data Model = Model
     model_passes :: Passes,
     model_gen :: Gen,
     model_rot :: Int,
-    model_hold :: Bool
+    model_hold :: Bool,
+    model_misc :: Misc
   }
   deriving (Eq, Generic, NFData, Show)
 
@@ -69,7 +70,8 @@ instance Mirror Model where
         model_passes = model_passes m,
         model_gen = model_gen m,
         model_rot = model_rot m,
-        model_hold = model_hold m
+        model_hold = model_hold m,
+        model_misc = model_misc m
       }
 
 maxHandLength :: Int
@@ -91,3 +93,18 @@ gameover model = lifePA <= 0 || lifePB <= 0
   where
     lifePA = pmodel_life $ model_pa model :: Life
     lifePB = pmodel_life $ model_pb model :: Life
+
+-- Misc
+data Misc = Misc
+  { misc_noDraws :: Int
+  }
+  deriving (Eq, Generic, NFData, Show)
+
+miscInit :: Misc
+miscInit =
+  Misc
+    { misc_noDraws = 0
+    }
+
+incrNoDraws :: Misc -> Misc
+incrNoDraws misc = misc {misc_noDraws = misc_noDraws misc + 1}

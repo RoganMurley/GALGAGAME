@@ -10,7 +10,7 @@ import DeckBuilding (Character (..), DeckBuilding, characterCards)
 import GHC.Generics (Generic)
 import Life (initMaxLife)
 import Mirror (Mirror (..))
-import Model (Deck, Model (..), Passes (..), PlayerModel (..), Turn)
+import Model (Deck, Model (..), Passes (..), PlayerModel (..), Turn, miscInit)
 import Player (WhichPlayer (..), other)
 import qualified Replay.Active as Active
 import qualified Stack
@@ -80,7 +80,7 @@ initState = Waiting
 
 initModel :: Turn -> Maybe Character -> Maybe Character -> Gen -> Model
 initModel turn ca cb gen =
-  Model turn Stack.init pm_a pm_b NoPass gen 0 False
+  Model turn Stack.init pm_a pm_b NoPass gen 0 False miscInit
   where
     (genPA, genPB) = split gen :: (Gen, Gen)
     -- PlayerA

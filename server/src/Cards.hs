@@ -10,6 +10,7 @@ import Data.Map (Map)
 import qualified Data.Map as Map
 import Data.Maybe (fromMaybe)
 import qualified Data.Set as Set
+import Data.String.Conversions (cs)
 import Data.Text (Text)
 import qualified Ease
 import HandCard (HandCard (..), anyCard, isRevealed)
@@ -768,13 +769,14 @@ myriadCoin =
           return ()
 
 -- Other cards
-strangeEnd :: Card
-strangeEnd =
-  newCard
-    Strange
-    (OtherSuit "END")
-    "You're out of cards,\nhurt yourself for 10"
-    $ \w -> hurt 10 w Slash
+strangeEnd :: Int -> Card
+strangeEnd noDraws =
+  let dmg = max 1024 (2 ^ noDraws) :: Int
+   in newCard
+        Strange
+        (OtherSuit "END")
+        ("You're out of cards,\nhurt yourself for " <> cs (show dmg))
+        $ \w -> hurt dmg w Slash
 
 strangeGlitch :: Card
 strangeGlitch =
@@ -874,7 +876,6 @@ others =
   [ strangeSpore,
     strangeGold,
     strangeDream,
-    strangeEnd,
     strangeGlitch
   ]
 
