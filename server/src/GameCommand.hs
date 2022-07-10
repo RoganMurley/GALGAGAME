@@ -16,7 +16,7 @@ import DeckBuilding (CharacterChoice, ChosenCharacter (..), DeckBuilding (..), c
 import GameState (GameState (..), PlayState (..), PlayingR (..), initModel)
 import qualified GodMode
 import HandCard (HandCard (..), anyCard)
-import Model (Hand, Model (..), Passes (..), Turn)
+import Model (Hand, Misc (..), Model (..), Passes (..), Turn)
 import Outcome (HoverState (..), Outcome)
 import qualified Outcome
 import Player (WhichPlayer (..), other)
@@ -271,7 +271,7 @@ playCard index which playing scenario time
                     (modelC, resC) = Beta.execute modelB $ Beta.betaI postProgram
                     newPlayState :: PlayState
                     newPlayState =
-                      Playing $
+                      checkWin $
                         newPlaying
                           { playing_model = modelC,
                             playing_replay = playing_replay newPlaying `Active.add` resC,
@@ -318,7 +318,7 @@ endTurn which playing scenario time
             let (newModel, endRes) = Beta.execute (playing_model newPlaying) $ Beta.betaI (scenario_roundEndProg scenario)
                 newPlayState :: PlayState
                 newPlayState =
-                  Playing $
+                  checkWin $
                     newPlaying
                       { playing_model = newModel,
                         playing_replay = replay `Active.add` res `Active.add` endRes,
@@ -418,6 +418,8 @@ resolveAll' playing resolutionCount rewrite = do
 
 checkWin :: PlayingR -> PlayState
 checkWin playing
+  | isJust forceWin =
+    Ended forceWin model replay gen
   | lifePA <= 0 && lifePB <= 0 =
     Ended Nothing model replay gen
   | lifePB <= 0 =
@@ -429,12 +431,13 @@ checkWin playing
   where
     model = playing_model playing :: Model
     replay = playing_replay playing :: Active.Replay
-    (gen, lifePA, lifePB) =
+    (gen, lifePA, lifePB, forceWin) =
       Alpha.evalI model $ do
         g <- Alpha.getGen
         la <- Alpha.getLife PlayerA
         lb <- Alpha.getLife PlayerB
-        return (g, la, lb)
+        fw <- misc_forceWin <$> Alpha.getMisc
+        return (g, la, lb, fw)
 
 hoverCard :: HoverState -> WhichPlayer -> PlayingR -> Either Err (Maybe GameState, [Outcome])
 hoverCard (HoverHand i) which playing =

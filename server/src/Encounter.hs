@@ -12,6 +12,7 @@ import qualified Start
 import Stats.Experience (levelToExperience)
 import Stats.Progress (Progress (..))
 import Util (Gen, modTVar, random)
+import Player (WhichPlayer(..))
 
 updateRoomEncounter :: TVar Room -> Progress -> Gen -> STM ()
 updateRoomEncounter roomVar progress gen =
@@ -114,6 +115,7 @@ puzzleScenario :: Scenario -> Scenario
 puzzleScenario scenario@Scenario {scenario_progressWin} =
   scenario
     { scenario_prog = Start.puzzle,
+      scenario_roundEndProg = Start.defeatRoundEndProgram PlayerA,
       scenario_characterPa = Right . ChosenCharacter $ Nothing,
       scenario_characterPb = Right . ChosenCharacter $ Nothing,
       scenario_timeLimit = noTimeLimit,

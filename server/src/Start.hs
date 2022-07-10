@@ -6,8 +6,8 @@ import Control.Monad (replicateM_)
 import qualified DSL.Alpha as Alpha
 import qualified DSL.Beta as Beta
 import Data.Text (Text)
-import Model (Turn, maxHandLength)
-import Player (WhichPlayer (..))
+import Model (Turn, maxHandLength, setForceWin)
+import Player (WhichPlayer (..), other)
 import StackCard (StackCard (..))
 import Wheel (Wheel (..))
 
@@ -95,17 +95,17 @@ puzzle :: Maybe (Text, Text) -> Beta.Program ()
 puzzle _ = do
   Beta.raw $ do
     let deckA = take 5 $ cycle [Cards.morphSword, Cards.morphWand, Cards.morphCoin, Cards.morphGrail]
+    let deckB = []
     Alpha.setDeck PlayerA deckA
-    let deckB = take 25 $ cycle [Cards.mirrorSword, Cards.mirrorSword, Cards.mirrorSword, Cards.mirrorWand, Cards.mirrorCoin]
     Alpha.setDeck PlayerB deckB
-    Alpha.setMaxLife PlayerA 15
-    Alpha.setLife PlayerA 15
-    Alpha.setMaxLife PlayerB 15
-    Alpha.setLife PlayerB 15
+    Alpha.setMaxLife PlayerA 25
+    Alpha.setLife PlayerA 25
+    Alpha.setMaxLife PlayerB 25
+    Alpha.setLife PlayerB 25
     Alpha.setTurn PlayerB
   Beta.rawAnim $ Announce "MORPH PUZZLE" (TimeModifierLinear 3)
-  replicateM_ 4 (Beta.draw PlayerA PlayerA (TimeModifierOutQuint 0.25))
-  replicateM_ 5 (Beta.draw PlayerB PlayerB (TimeModifierOutQuint 0.25))
+  Beta.rawAnim $ Announce "WIN THIS\nROUND" (TimeModifierLinear 3)
+  replicateM_ 4 (Beta.draw PlayerA PlayerA (TimeModifierOutQuint 1))
 
 roundEndProgram :: Beta.Program ()
 roundEndProgram = do
@@ -124,3 +124,8 @@ noDrawRoundEndProgram :: Beta.Program ()
 noDrawRoundEndProgram = do
   Beta.raw Alpha.swapTurn
   Beta.raw Alpha.resetPasses
+
+defeatRoundEndProgram :: WhichPlayer -> Beta.Program ()
+defeatRoundEndProgram w = do
+  Beta.raw $ Alpha.modMisc (setForceWin (other w))
+  Beta.rawAnim $ GameEnd (Just $ other w)
