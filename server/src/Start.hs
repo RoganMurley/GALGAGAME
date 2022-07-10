@@ -72,9 +72,24 @@ tutorial2Program _ = do
     let makeDeck = take 25 . cycle
     let deckA = makeDeck [Cards.blazeSword, Cards.blazeGrail, Cards.blazeWand]
     Alpha.setDeck PlayerA deckA
-    Alpha.setMaxLife PlayerB 50
-    Alpha.setLife PlayerB 50
+    Alpha.setMaxLife PlayerB 20
+    Alpha.setLife PlayerB 20
   replicateM_ 5 (Beta.draw PlayerA PlayerA (TimeModifierOutQuint 0.25))
+
+tutorial3Program :: Maybe (Text, Text) -> Beta.Program ()
+tutorial3Program _ = do
+  Beta.raw $ do
+    let makeDeck = take 25 . cycle
+    let deckA = makeDeck [Cards.blazeSword, Cards.blazeGrail, Cards.blazeWand]
+    Alpha.setDeck PlayerA deckA
+    Alpha.setMaxLife PlayerA 20
+    Alpha.setLife PlayerA 20
+    let deckB = makeDeck [Cards.tideSword, Cards.tideGrail, Cards.tideWand, Cards.tideCoin]
+    Alpha.setDeck PlayerB deckB
+    Alpha.setMaxLife PlayerB 20
+    Alpha.setLife PlayerB 20
+  replicateM_ 5 (Beta.draw PlayerA PlayerA (TimeModifierOutQuint 0.25))
+  replicateM_ 6 (Beta.draw PlayerB PlayerB (TimeModifierOutQuint 0.25))
 
 puzzle :: Maybe (Text, Text) -> Beta.Program ()
 puzzle _ = do

@@ -376,10 +376,10 @@ buttonEntities renderParams buttons gameType dt mouseState =
                 , btn =
                     TextButton
                         { font = "Futura"
-                        , text = "Next?"
+                        , text = "NEXT?"
                         , textColor = textColor
                         , bgColor = bgColor
-                        , options = [ Buttons.HoverText "Next!" ]
+                        , options = [ Buttons.HoverText "NEXT!" ]
                         }
                 , disabled = False
                 }
