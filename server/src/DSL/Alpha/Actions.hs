@@ -6,7 +6,7 @@ module DSL.Alpha.Actions where
 
 import Bounce (CardBounce (..))
 import Card (Card)
-import {-# SOURCE #-} Cards (strangeEnd)
+import {-# SOURCE #-} Cards (getEndCard)
 import Control.Applicative ((<|>))
 import Control.Monad.Freer.TH (makeEffect)
 import DSL.Alpha.DSL (DSL, Program)
@@ -122,7 +122,7 @@ draw w d = do
       addToHand w (HandCard card)
     Nothing -> do
       noDraws <- misc_noDraws <$> getMisc
-      addToHand w (KnownHandCard (strangeEnd noDraws))
+      addToHand w (KnownHandCard (getEndCard noDraws))
       modMisc incrNoDraws
 
 transmute :: Wheel (Maybe Transmutation) -> Program ()

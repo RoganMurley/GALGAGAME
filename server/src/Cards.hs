@@ -1,8 +1,8 @@
 module Cards where
 
-import Card (Aspect (..), Card (..), Status (..), Suit (..), addStatus, cardName, hasStatus, newCard)
+import Card (Aspect (..), Card (..), Status (..), Suit (..), addStatus, cardName, hasStatus, newCard, wipAspects)
 import CardAnim (Hurt (..), TimeModifier (..))
-import Control.Monad (when)
+import Control.Monad (replicateM_, when)
 import qualified DSL.Alpha as Alpha
 import DSL.Beta
 import qualified DSL.Beta as Beta
@@ -769,6 +769,11 @@ myriadCoin =
           return ()
 
 -- Other cards
+getEndCard :: Int -> Card
+getEndCard noDraws
+  | noDraws > 10 = strangeStart
+  | otherwise = strangeEnd noDraws
+
 strangeEnd :: Int -> Card
 strangeEnd noDraws =
   let dmg = max 1024 (2 ^ noDraws) :: Int
@@ -778,16 +783,37 @@ strangeEnd noDraws =
         ("You're out of cards,\nhurt yourself for " <> cs (show dmg))
         $ \w -> hurt dmg w Slash
 
+strangeStart :: Card
+strangeStart =
+  newCard
+    Strange
+    (OtherSuit "START")
+    "The cycle continues..."
+    $ \w -> do
+      gen <- getGen
+      let deckA = shuffle gen (filter (\Card {card_aspect} -> card_aspect `notElem` wipAspects) allCards)
+      let deckB = shuffle gen deckA
+      raw
+        ( do
+            Alpha.setDeck w deckA
+            Alpha.setDeck (other w) deckB
+        )
+      discardHand w (\_ _ -> True)
+      discardHand (other w) (\_ _ -> True)
+      replicateM_ 5 (Beta.draw w w (TimeModifierOutQuint 1))
+      replicateM_ 5 (Beta.draw (other w) (other w) (TimeModifierOutQuint 1))
+
 strangeGlitch :: Card
 strangeGlitch =
   newCard
     Strange
     (OtherSuit "GLITCH")
     "You feel like something\nis missing..."
-    $ \_ -> do
+    $ \w -> do
       Beta.null
       Beta.null
       Beta.null
+      Beta.draw w w (TimeModifierOutQuint 1)
       discardStack (\i _ -> i == 0)
       raw $ Alpha.setHold True
 
@@ -874,6 +900,7 @@ coins =
 others :: [Card]
 others =
   [ strangeSpore,
+    strangeStart,
     strangeGold,
     strangeDream,
     strangeGlitch

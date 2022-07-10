@@ -83,35 +83,12 @@ aspectText aspect =
       cs $ show aspect
 
 cardName :: Card -> Text
-cardName (Card {card_aspect, card_suit}) = toUpper $ aspectText card_aspect <> " " <> suitText card_suit
+cardName Card {card_aspect, card_suit} =
+  toUpper $ aspectText card_aspect <> " " <> suitText card_suit
 
 cardImgUrl :: Aspect -> Suit -> Text
 cardImgUrl aspect suit =
   toLower $ "cards/" <> aspectText aspect <> "/" <> suitText suit <> ".png"
-
-elementalAspects :: [Aspect]
-elementalAspects =
-  [ Heaven,
-    Tide,
-    Shroom,
-    Blaze
-  ]
-
-mainAspects :: [Aspect]
-mainAspects =
-  [ Heaven,
-    Tide,
-    Blaze,
-    Shroom,
-    Alchemy,
-    Mirror,
-    Duality,
-    Morph,
-    Empty,
-    Seer,
-    Glass,
-    Comet
-  ]
 
 allAspects :: [Aspect]
 allAspects =
@@ -125,12 +102,19 @@ allAspects =
     Blood,
     Crown,
     Morph,
+    Myriad,
+    Abyss,
     Fever,
     Empty,
-    Strange,
+    Comet,
+    Myriad,
+    Glass,
     Seer,
-    Comet
+    Strange
   ]
+
+wipAspects :: [Aspect]
+wipAspects = [Comet, Abyss]
 
 data Status = StatusEcho | StatusBlighted | StatusFragile
   deriving (Eq, Generic, NFData, Ord, Show)

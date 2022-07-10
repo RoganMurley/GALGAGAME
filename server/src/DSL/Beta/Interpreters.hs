@@ -7,7 +7,7 @@ module DSL.Beta.Interpreters where
 import Bounce (CardBounce (..))
 import Card (Card)
 import CardAnim (Damage, Hurt, TimeModifier (..), cardAnimDamage)
-import {-# SOURCE #-} Cards (strangeEnd)
+import {-# SOURCE #-} Cards (getEndCard)
 import Control.Monad (when)
 import Control.Monad.Freer (Eff, Member, reinterpret, run, send)
 import Control.Monad.Freer.State as S
@@ -116,7 +116,7 @@ drawAnim w d t alpha = do
   final <- alpha
   if handLength < maxHandLength
     then execAnim $ Anim.draw w t
-    else execAnim $ Anim.mill w (fromMaybe (strangeEnd noDraws) nextCard) (TimeModifierOutQuint 1)
+    else execAnim $ Anim.mill w (fromMaybe (getEndCard noDraws) nextCard) (TimeModifierOutQuint 1)
   return final
 
 millAnim :: WhichPlayer -> TimeModifier -> Eff '[ExecDSL] a -> Eff '[ExecDSL] a
@@ -124,7 +124,7 @@ millAnim w t alpha = do
   nextCard <- execAlpha $ headMay <$> Alpha.getDeck w
   noDraws <- execAlpha $ misc_noDraws <$> Alpha.getMisc
   final <- alpha
-  execAnim $ Anim.mill w (fromMaybe (strangeEnd noDraws) nextCard) t
+  execAnim $ Anim.mill w (fromMaybe (getEndCard noDraws) nextCard) t
   return final
 
 addToHandAnim :: WhichPlayer -> HandCard -> Eff '[ExecDSL] a -> Eff '[ExecDSL] a
