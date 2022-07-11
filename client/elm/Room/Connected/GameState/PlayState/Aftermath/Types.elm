@@ -7,6 +7,7 @@ import RuneSelect.Types exposing (Rune)
 type alias Model =
     { aftermath : List Aftermath
     , tick : Float
+    , autoRematched : Bool
     }
 
 

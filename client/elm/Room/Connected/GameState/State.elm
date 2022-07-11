@@ -34,7 +34,7 @@ update msg state flags mode _ players assets =
                 Started playState ->
                     let
                         ( newPlayState, cmd ) =
-                            PlayState.update playStateMsg playState mode assets
+                            PlayState.update playStateMsg playState mode players assets
                     in
                     ( Started newPlayState, cmd )
 
@@ -121,13 +121,13 @@ mouseDown mousePos state flags mode gameType players assets =
             ( state, Cmd.none )
 
 
-mouseUp : Position -> GameState -> Flags -> Mode -> GameType -> Assets.Model -> ( GameState, Cmd Main.Msg )
-mouseUp pos state flags mode gameType assets =
+mouseUp : Position -> GameState -> Flags -> Mode -> GameType -> Players -> Assets.Model -> ( GameState, Cmd Main.Msg )
+mouseUp pos state flags mode gameType players assets =
     case state of
         Started playState ->
             let
                 ( newPlayState, cmd ) =
-                    PlayState.mouseUp flags assets gameType mode pos playState
+                    PlayState.mouseUp flags assets gameType mode players pos playState
             in
             ( Started newPlayState, cmd )
 

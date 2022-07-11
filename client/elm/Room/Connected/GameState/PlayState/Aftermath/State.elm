@@ -3,14 +3,18 @@ module Aftermath.State exposing (active, aftermathing, fromLeaderboard, fromStat
 import Aftermath.Types as Aftermath exposing (Aftermath(..), Model)
 import Leaderboard.Types exposing (Leaderboard)
 import Main.Messages as Main
+import PlayState.Messages as PlayState
 import Ports exposing (saveUnlock)
 import Stats exposing (StatChange)
+import Tutorial
+import Util exposing (message)
 
 
 init : Model
 init =
     { tick = 0
     , aftermath = []
+    , autoRematched = False
     }
 
 
@@ -40,7 +44,7 @@ maxTick aftermath =
             999999999999999999
 
 
-tick : Float -> Model -> Model
+tick : Float -> Model -> ( Model, Cmd PlayState.Msg )
 tick dt model =
     let
         newTick =
@@ -48,20 +52,40 @@ tick dt model =
     in
     case model.aftermath of
         a :: rest ->
-            if newTick > maxTick a then
-                { tick = 0
-                , aftermath = rest
-                }
+            let
+                newModel =
+                    if newTick > maxTick a then
+                        { model
+                            | tick = 0
+                            , aftermath = rest
+                        }
 
-            else
-                { tick = newTick
-                , aftermath = a :: rest
-                }
+                    else
+                        { model
+                            | tick = newTick
+                            , aftermath = a :: rest
+                        }
+            in
+            ( newModel, Cmd.none )
 
         _ ->
-            { tick = newTick
-            , aftermath = []
-            }
+            let
+                newModel =
+                    { tick = newTick
+                    , aftermath = []
+                    , autoRematched = True
+                    }
+
+                msg =
+                    if model.autoRematched then
+                        Cmd.none
+
+                    else
+                        message <|
+                            PlayState.PlayingOnly
+                                PlayState.Continue
+            in
+            ( newModel, msg )
 
 
 fromStatChange : StatChange -> Model
@@ -90,6 +114,7 @@ fromStatChange stats =
         , Aftermath.StatChange finalStats 1500
         ]
             ++ List.map Aftermath.Unlock stats.unlocks
+    , autoRematched = False
     }
 
 
@@ -97,6 +122,7 @@ fromLeaderboard : Model -> Leaderboard -> Model
 fromLeaderboard model leaderboard =
     { tick = 0
     , aftermath = model.aftermath ++ [ Aftermath.Leaderboard leaderboard ]
+    , autoRematched = False
     }
 
 

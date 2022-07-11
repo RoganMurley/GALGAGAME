@@ -23,7 +23,7 @@ type Msg
 
 
 type PlayingOnly
-    = Rematch
+    = Continue
     | TurnOnly TurnOnly
     | HoverCard HoverSelf
     | IllegalPass

@@ -358,7 +358,7 @@ mouseUp flags assets model pos =
             Chat.mouseUp flags model.chat
 
         ( game, cmd ) =
-            GameState.mouseUp pos model.game flags model.mode model.gameType assets
+            GameState.mouseUp pos model.game flags model.mode model.gameType model.players assets
     in
     ( { model | chat = chat, game = game }, cmd )
 

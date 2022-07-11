@@ -49,11 +49,11 @@ import Wheel.State as Wheel
 import WhichPlayer.Types exposing (WhichPlayer(..))
 
 
-update : Msg -> PlayState -> Mode -> Assets.Model -> ( PlayState, Cmd Main.Msg )
-update msg state mode assets =
+update : Msg -> PlayState -> Mode -> Players -> Assets.Model -> ( PlayState, Cmd Main.Msg )
+update msg state mode players assets =
     case msg of
         PlayingOnly playingOnly ->
-            updatePlayingOnly playingOnly state mode assets
+            updatePlayingOnly playingOnly state mode players assets
 
         HoverOtherOutcome otherHover ->
             case state of
@@ -143,18 +143,26 @@ update msg state mode assets =
             ( state, Cmd.none )
 
 
-updatePlayingOnly : PlayingOnly -> PlayState -> Mode.Mode -> Assets.Model -> ( PlayState, Cmd Main.Msg )
-updatePlayingOnly msg state mode assets =
+updatePlayingOnly : PlayingOnly -> PlayState -> Mode.Mode -> Players -> Assets.Model -> ( PlayState, Cmd Main.Msg )
+updatePlayingOnly msg state mode players assets =
     case mode of
         Mode.Spectating ->
             ( state, Cmd.none )
 
         Mode.Playing ->
             case msg of
-                Rematch ->
+                Continue ->
                     case state of
                         Ended _ ->
-                            ( state, websocketSend "rematch:" )
+                            let
+                                newMsg =
+                                    if Players.shouldRematch players then
+                                        websocketSend "rematch:"
+
+                                    else
+                                        message << Main.RoomMsg <| Room.StartGame Mode.Playing Nothing
+                            in
+                            ( state, newMsg )
 
                         _ ->
                             ( state, Cmd.none )
@@ -455,19 +463,21 @@ tick flags state chat gameType dt =
                             gameType
                             dt
                             flags.mouse
+
+                ( newAftermath, aftermathMsg ) =
+                    if resolving game.res then
+                        ( aftermath, Cmd.none )
+
+                    else
+                        Aftermath.tick dt aftermath
             in
             ( Ended
                 { ended
                     | game = newGame
                     , buttons = newButtons
-                    , aftermath =
-                        if resolving game.res then
-                            aftermath
-
-                        else
-                            Aftermath.tick dt aftermath
+                    , aftermath = newAftermath
                 }
-            , msg
+            , Cmd.batch [ msg, aftermathMsg ]
             )
 
 
@@ -614,6 +624,7 @@ mouseDown { dimensions, mouse } assets _ mode players { x, y } state =
                 msg
                 state
                 mode
+                players
                 assets
 
         ctx =
@@ -678,7 +689,7 @@ mouseDown { dimensions, mouse } assets _ mode players { x, y } state =
                             case key of
                                 "playAgain" ->
                                     Cmd.batch
-                                        [ playMsg <| PlayState.PlayingOnly PlayState.Rematch
+                                        [ playMsg <| PlayState.PlayingOnly PlayState.Continue
                                         , playSound audio "sfx/click.mp3"
                                         ]
 
@@ -695,14 +706,8 @@ mouseDown { dimensions, mouse } assets _ mode players { x, y } state =
 
                                 "continue" ->
                                     Cmd.batch
-                                        [ if Players.shouldRematch players then
-                                            playMsg <| PlayState.PlayingOnly PlayState.Rematch
-
-                                          else
-                                            message
-                                                << Main.RoomMsg
-                                            <|
-                                                Room.StartGame Mode.Playing Nothing
+                                        [ playMsg <|
+                                            PlayState.PlayingOnly PlayState.Continue
                                         , playSound audio "sfx/click.mp3"
                                         ]
 
@@ -739,8 +744,8 @@ mouseDown { dimensions, mouse } assets _ mode players { x, y } state =
     )
 
 
-mouseUp : Flags -> Assets.Model -> GameType -> Mode -> Position -> PlayState -> ( PlayState, Cmd Main.Msg )
-mouseUp _ assets _ mode _ state =
+mouseUp : Flags -> Assets.Model -> GameType -> Mode -> Players -> Position -> PlayState -> ( PlayState, Cmd Main.Msg )
+mouseUp _ assets _ mode players _ state =
     let
         game =
             get identity state
@@ -767,6 +772,7 @@ mouseUp _ assets _ mode _ state =
                         msg
                         state
                         mode
+                        players
                         assets
 
                 Nothing ->
