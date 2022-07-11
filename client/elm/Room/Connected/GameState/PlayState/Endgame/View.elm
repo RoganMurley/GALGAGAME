@@ -387,7 +387,7 @@ buttonEntities renderParams buttons gameType dt mouseState =
 
 
 htmlView : Aftermath.Model -> Flags -> Bool -> Html a
-htmlView aftermath flags resolving =
+htmlView aftermath _ resolving =
     if resolving then
         text ""
 

@@ -4,6 +4,7 @@
     "DebugCrash": false,
     "DebugLog": false,
     "NonStaticRegex": false,
-    "SingleFieldRecord": false
+    "SingleFieldRecord": false,
+    "ExposeAll": false
   }
 }
