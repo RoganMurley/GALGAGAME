@@ -253,10 +253,22 @@ updateTurnOnly msg state { audio } =
                 case msg of
                     EndTurn ->
                         let
+                            newButtons =
+                                Buttons.update
+                                    "go"
+                                    (\b -> { b | hover = 0 })
+                                    game.buttons
+
                             -- Set passed to True to avoid latency.
                             newState : PlayState
                             newState =
-                                Playing { game = { game | passed = True } }
+                                Playing
+                                    { game =
+                                        { game
+                                            | passed = True
+                                            , buttons = newButtons
+                                        }
+                                    }
                         in
                         ( newState |> tutorialAction Tutorial.ActionPressGo
                         , Cmd.batch

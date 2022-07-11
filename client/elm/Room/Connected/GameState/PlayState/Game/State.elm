@@ -451,10 +451,10 @@ buttonEntities passed mouseState dt buttons chat tutorial { w, h, model, radius,
                 , btn =
                     TextButton
                         { font = "Futura"
-                        , text = "GO?"
+                        , text = "go"
                         , textColor = vec3 (0 / 255) (0 / 255) (80 / 255)
                         , bgColor = vec3 (244 / 255) (241 / 255) (94 / 255)
-                        , options = [ Buttons.HoverText "GO!", Buttons.Circular ]
+                        , options = [ Buttons.Circular, Buttons.IsIcon ]
                         }
                 , disabled = disabled
                 }
@@ -477,10 +477,10 @@ buttonEntities passed mouseState dt buttons chat tutorial { w, h, model, radius,
                 , btn =
                     TextButton
                         { font = "Futura"
-                        , text = "GO?"
+                        , text = "go"
                         , textColor = vec3 (0 / 255) (0 / 255) (0 / 255)
                         , bgColor = vec3 (70 / 255) (70 / 255) (70 / 255)
-                        , options = [ Buttons.Circular ]
+                        , options = [ Buttons.Circular, Buttons.IsIcon ]
                         }
                 , disabled = disabled
                 }
@@ -505,7 +505,7 @@ buttonEntities passed mouseState dt buttons chat tutorial { w, h, model, radius,
                                         "chat"
                                 , textColor = vec3 (0 / 255) (0 / 255) (0 / 255)
                                 , bgColor = vec3 (244 / 255) (241 / 255) (94 / 255)
-                                , options = [ Buttons.Circular, Buttons.IsIcon ]
+                                , options = [ Buttons.Circular, Buttons.IsIcon, Buttons.TextScale 0.65 ]
                                 }
                         , disabled = False
                         }

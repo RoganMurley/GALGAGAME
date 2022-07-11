@@ -162,8 +162,16 @@ update msg model ({ audio } as assets) players =
                                     "Rune randomizer failed because there were only "
                                         ++ String.fromInt (List.length runes)
                                         ++ " runes"
+
+                newButtons =
+                    Buttons.update
+                        "random"
+                        (\b -> { b | hover = 0 })
+                        model.buttons
             in
-            ( model, Random.generate (randomizer << Tuple.first) (Random.choices 3 legalRunes) )
+            ( { model | buttons = newButtons }
+            , Random.generate (randomizer << Tuple.first) (Random.choices 3 legalRunes)
+            )
 
         SetRunes runeA runeB runeC ->
             ( { model
@@ -338,7 +346,7 @@ characterButtons { radius, w, h, mouse } dt chat { ready, buttons, character } =
                                     "chat"
                             , textColor = vec3 (0 / 255) (0 / 255) (0 / 255)
                             , bgColor = vec3 (244 / 255) (241 / 255) (94 / 255)
-                            , options = [ Buttons.Circular, Buttons.IsIcon ]
+                            , options = [ Buttons.Circular, Buttons.IsIcon, Buttons.TextScale 0.65 ]
                             }
                     , disabled = False
                     }
@@ -350,10 +358,10 @@ characterButtons { radius, w, h, mouse } dt chat { ready, buttons, character } =
                     , btn =
                         TextButton
                             { font = "Futura"
-                            , text = "?"
+                            , text = "dice"
                             , textColor = vec3 (0 / 255) (0 / 255) (0 / 255)
                             , bgColor = vec3 (244 / 255) (241 / 255) (94 / 255)
-                            , options = [ Buttons.Circular ]
+                            , options = [ Buttons.Circular, Buttons.IsIcon, Buttons.TextScale 1.2 ]
                             }
                     , disabled = False
                     }

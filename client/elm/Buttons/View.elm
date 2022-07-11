@@ -99,11 +99,7 @@ textButtonView button params ctx =
                 ]
 
         additionalTextScale =
-            if circular then
-                0.65
-
-            else
-                1
+            Buttons.getTextScale params
 
         textEntity =
             { x = x

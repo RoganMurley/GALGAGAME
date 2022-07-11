@@ -1,4 +1,4 @@
-module Buttons.State exposing (empty, entity, fromList, get, getHoverText, hit, isCircular, isIcon, update)
+module Buttons.State exposing (empty, entity, fromList, get, getHoverText, getTextScale, hit, isCircular, isIcon, update)
 
 import Buttons.Types exposing (Button, ButtonType(..), Buttons(..), TextButtonOption(..), TextButtonParams)
 import Collision exposing (AABB, hitAABB)
@@ -177,3 +177,23 @@ noHover =
 
                 _ ->
                     False
+
+
+getTextScale : TextButtonParams -> Float
+getTextScale { options } =
+    let
+        reducer : TextButtonOption -> Maybe Float -> Maybe Float
+        reducer option acc =
+            case acc of
+                Just scale ->
+                    Just scale
+
+                Nothing ->
+                    case option of
+                        TextScale scale ->
+                            Just scale
+
+                        _ ->
+                            Nothing
+    in
+    List.foldl reducer Nothing options |> Maybe.withDefault 1

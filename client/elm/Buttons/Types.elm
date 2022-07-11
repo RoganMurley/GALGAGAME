@@ -41,6 +41,7 @@ type alias ImageButtonParams =
 
 type TextButtonOption
     = HoverText String
+    | TextScale Float
     | Circular
     | NoHover
     | IsIcon

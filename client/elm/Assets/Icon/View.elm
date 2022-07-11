@@ -14,10 +14,10 @@ view iconName entity ctx =
                 "?" ->
                     Just "a"
 
-                "zzz" ->
+                "go" ->
                     Just "b"
 
-                "egg" ->
+                "dice" ->
                     Just "c"
 
                 "chat" ->
