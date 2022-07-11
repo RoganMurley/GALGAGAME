@@ -2,7 +2,6 @@ module Hand.Entities exposing (applyHoverVector, entities, handCardPosition, han
 
 import Animation.State as Animation
 import Animation.Types exposing (Anim(..), CardDiscard(..), HandBounce)
-import Array
 import Card.State as Card exposing (getCard, isRevealed)
 import Card.Types exposing (Card, KnowableCard(..))
 import Dict
@@ -523,7 +522,7 @@ otherEntities hoverSelf hoverOther ({ anim, model, progress } as ctx) =
                                     discards
 
                         makeDiscardEntity : ( Int, KnowableCard ) -> OtherHandEntity
-                        makeDiscardEntity ( index, card ) =
+                        makeDiscardEntity ( index, _ ) =
                             let
                                 initialPosition =
                                     .position <| handCardPosition ctx PlayerB index (n + List.length cardDiscards) hover
