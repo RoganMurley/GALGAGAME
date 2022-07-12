@@ -3,18 +3,18 @@ module Waiting.View exposing (htmlView, webglView)
 import Animation.Types exposing (Anim(..))
 import Assets.Types as Assets
 import Background.View as Background
-import Font.View as Font
 import Game.State exposing (bareContextInit)
 import Html exposing (Html, button, div, input, text)
 import Html.Attributes exposing (class, id, readonly, type_, value)
 import Html.Events exposing (onClick)
 import Main.Messages as Main
 import Main.Types exposing (Flags)
+import Math.Matrix4 exposing (makeScale3)
 import Math.Vector3 exposing (vec3)
-import Maybe.Extra as Maybe
 import Mouse exposing (MouseState(..))
-import Random
-import Random.List as Random
+import Quaternion
+import Render.Primitives
+import Render.Shaders
 import Render.Types as Render
 import Waiting.Types exposing (Model, WaitType(..))
 import WebGL
@@ -68,50 +68,62 @@ htmlView { waitType } { httpPort, hostname } roomID =
 
 
 webglView : Model -> Render.Params -> Assets.Model -> List WebGL.Entity
-webglView { bounceTick, waitType, seed } params assets =
+webglView { bounceTick, waitType } params assets =
     let
         ctx =
             bareContextInit ( params.w, params.h ) assets NoMouse
 
-        { w, h } =
+        { w, h, camera2d, ortho, radius } =
             ctx
 
         size =
-            1.4 * max w h
+            radius * 0.7
 
-        textMessages =
-            [ "ALIGNING\nFATES..."
-            , "RESOLVING\nPROPHECIES..."
-            , "BRANCHING\nDESTINIES..."
-            ]
+        rot =
+            0.003 * params.time
 
-        mWaitingMessage =
-            Maybe.join <|
-                Maybe.map
-                    (\s ->
-                        Tuple.first <|
-                            Tuple.first <|
-                                Random.step
-                                    (Random.choose textMessages)
-                                    s
-                    )
-                    seed
+        mag =
+            0.8
+                + (0.18
+                    * sin (bounceTick * 0.002)
+                  )
     in
     List.concat
         [ Background.webglView params assets Finding
         ]
-        ++ (case ( waitType, mWaitingMessage ) of
-                ( WaitQuickplay, Just waitingMessage ) ->
-                    Font.view
-                        "Futura"
-                        waitingMessage
-                        { x = w * 0.5 - 0.003 * size
-                        , y = h * 0.4
-                        , scaleX = 0.0001 * size + 0.003 * sin (bounceTick * 0.005)
-                        , scaleY = 0.0001 * size + 0.003 * sin (bounceTick * 0.007)
-                        , color = vec3 (244 / 255) (241 / 255) (94 / 255)
+        ++ (case waitType of
+                WaitQuickplay ->
+                    [ Render.Primitives.quad Render.Shaders.donutFragment <|
+                        { rotation = Quaternion.makeRotate <| Quaternion.zRotation 0
+                        , scale = makeScale3 size size 1
+                        , color = vec3 (70 / 255) (70 / 255) (200 / 255)
+                        , pos = vec3 (w * 0.5) (h * 0.5) 0
+                        , perspective = ortho
+                        , camera = camera2d
+                        , mag = 0
+                        , thickness = 0.2
                         }
-                        ctx
+                    , Render.Primitives.quad Render.Shaders.donutFragment <|
+                        { rotation = Quaternion.makeRotate <| Quaternion.zRotation rot
+                        , scale = makeScale3 size size 1
+                        , color = vec3 (244 / 255) (241 / 255) (94 / 255)
+                        , pos = vec3 (w * 0.5) (h * 0.5) 0
+                        , perspective = ortho
+                        , camera = camera2d
+                        , mag = mag
+                        , thickness = 0.2
+                        }
+                    , Render.Primitives.quad Render.Shaders.donutFragment <|
+                        { rotation = Quaternion.makeRotate <| Quaternion.zRotation (rot + pi)
+                        , scale = makeScale3 size size 1
+                        , color = vec3 (244 / 255) (241 / 255) (94 / 255)
+                        , pos = vec3 (w * 0.5) (h * 0.5) 0
+                        , perspective = ortho
+                        , camera = camera2d
+                        , mag = mag
+                        , thickness = 0.2
+                        }
+                    ]
 
                 _ ->
                     []
