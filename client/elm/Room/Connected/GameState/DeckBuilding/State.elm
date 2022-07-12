@@ -497,7 +497,7 @@ mouseDown { x, y } players assets model =
                             ( newModel
                             , Cmd.batch
                                 [ newMsg
-                                , playSound assets.audio "sfx/click.mp3"
+                                , playSound assets.audio "sfx/dice.mp3"
                                 ]
                             )
 
