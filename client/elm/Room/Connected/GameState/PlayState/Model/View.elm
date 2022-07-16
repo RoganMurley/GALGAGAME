@@ -650,7 +650,7 @@ tutorialView tutorial ctx =
         Just (Tutorial.StageBasic 0) ->
             let
                 text =
-                    "PRESS GO"
+                    "TURN THE WHEEL"
             in
             List.concat
                 [ Font.view
@@ -682,61 +682,66 @@ tutorialView tutorial ctx =
 tutorialArrowView : Tutorial.Model -> Focus -> HoverSelf -> Context -> List WebGL.Entity
 tutorialArrowView tutorial focus hover ctx =
     let
-        { anim, camera3d, perspective, textures, radius, resolving } =
+        { anim, camera3d, perspective, model, textures, radius, resolving } =
             ctx
 
         scale =
-            0.0007 * radius
+            0.4
     in
-    case anim of
-        Announce _ _ ->
+    case model.turn of
+        PlayerB ->
             []
 
-        _ ->
-            case ( focus, hover ) of
-                ( NoFocus, NoHover ) ->
-                    if resolving then
-                        []
-
-                    else
-                        case tutorial.step of
-                            Just (Tutorial.StageA 1) ->
-                                List.concat
-                                    [ Texture.with textures "arrow.png" <|
-                                        \texture ->
-                                            [ Render.Primitives.quad Render.Shaders.fragment
-                                                { texture = texture
-                                                , rotation = Quaternion.makeRotate Quaternion.identity
-                                                , scale = makeScale3 scale scale 1
-                                                , color = Colour.white
-                                                , pos = vec3 0 -0.4 0
-                                                , perspective = perspective
-                                                , camera = camera3d
-                                                }
-                                            ]
-                                    ]
-
-                            Just (Tutorial.StageBasic 0) ->
-                                List.concat
-                                    [ Texture.with textures "arrow.png" <|
-                                        \texture ->
-                                            [ Render.Primitives.quad Render.Shaders.fragment
-                                                { texture = texture
-                                                , rotation = Quaternion.makeRotate <| Quaternion.zRotation (0.8 * pi)
-                                                , scale = makeScale3 scale scale 1
-                                                , color = Colour.white
-                                                , pos = vec3 (-radius * 0.0004) (-radius * 0.0004) 0
-                                                , perspective = perspective
-                                                , camera = camera3d
-                                                }
-                                            ]
-                                    ]
-
-                            _ ->
-                                []
+        PlayerA ->
+            case anim of
+                Announce _ _ ->
+                    []
 
                 _ ->
-                    []
+                    case ( focus, hover ) of
+                        ( NoFocus, NoHover ) ->
+                            if resolving then
+                                []
+
+                            else
+                                case tutorial.step of
+                                    Just (Tutorial.StageBasic 0) ->
+                                        List.concat
+                                            [ Texture.with textures "arrow.png" <|
+                                                \texture ->
+                                                    [ Render.Primitives.quad Render.Shaders.fragment
+                                                        { texture = texture
+                                                        , rotation = Quaternion.makeRotate <| Quaternion.zRotation (0.8 * pi)
+                                                        , scale = makeScale3 scale scale 1
+                                                        , color = Colour.white
+                                                        , pos = vec3 -0.13 -0.13 0
+                                                        , perspective = perspective
+                                                        , camera = camera3d
+                                                        }
+                                                    ]
+                                            ]
+
+                                    Just (Tutorial.StageA 1) ->
+                                        List.concat
+                                            [ Texture.with textures "arrow.png" <|
+                                                \texture ->
+                                                    [ Render.Primitives.quad Render.Shaders.fragment
+                                                        { texture = texture
+                                                        , rotation = Quaternion.makeRotate Quaternion.identity
+                                                        , scale = makeScale3 scale scale 1
+                                                        , color = Colour.white
+                                                        , pos = vec3 0 -0.5 0
+                                                        , perspective = perspective
+                                                        , camera = camera3d
+                                                        }
+                                                    ]
+                                            ]
+
+                                    _ ->
+                                        []
+
+                        _ ->
+                            []
 
 
 timeLeftView : Maybe Float -> Context -> List WebGL.Entity
