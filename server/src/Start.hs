@@ -9,6 +9,7 @@ import Data.Text (Text)
 import Model (Turn, maxHandLength, setForceWin)
 import Player (WhichPlayer (..), other)
 import StackCard (StackCard (..))
+-- import Util (shuffle, split)
 import Wheel (Wheel (..))
 
 initHandLength :: WhichPlayer -> Turn -> Int
@@ -72,16 +73,6 @@ tutorial2Program _ = do
     let makeDeck = take 25 . cycle
     let deckA = makeDeck [Cards.blazeSword, Cards.blazeGrail, Cards.blazeWand]
     Alpha.setDeck PlayerA deckA
-    Alpha.setMaxLife PlayerB 20
-    Alpha.setLife PlayerB 20
-  replicateM_ 5 (Beta.draw PlayerA PlayerA (TimeModifierOutQuint 0.25))
-
-tutorial3Program :: Maybe (Text, Text) -> Beta.Program ()
-tutorial3Program _ = do
-  Beta.raw $ do
-    let makeDeck = take 25 . cycle
-    let deckA = makeDeck [Cards.blazeSword, Cards.blazeGrail, Cards.blazeWand]
-    Alpha.setDeck PlayerA deckA
     Alpha.setMaxLife PlayerA 20
     Alpha.setLife PlayerA 20
     let deckB = makeDeck [Cards.tideSword, Cards.tideGrail, Cards.tideWand, Cards.tideCoin]
@@ -90,6 +81,72 @@ tutorial3Program _ = do
     Alpha.setLife PlayerB 20
   replicateM_ 5 (Beta.draw PlayerA PlayerA (TimeModifierOutQuint 0.25))
   replicateM_ 6 (Beta.draw PlayerB PlayerB (TimeModifierOutQuint 0.25))
+
+tutorial3Program :: Maybe (Text, Text) -> Beta.Program ()
+tutorial3Program _ = do
+  Beta.raw $ do
+    let makeDeck = take 25 . cycle
+    let deckA =
+          makeDeck
+            [Cards.tideSword, Cards.blazeSword, Cards.tideWand, Cards.tideCoin, Cards.blazeWand, Cards.tideGrail]
+    Alpha.setDeck PlayerA deckA
+    Alpha.setMaxLife PlayerA 20
+    Alpha.setLife PlayerA 20
+    let deckB =
+          makeDeck
+            [ Cards.blazeSword,
+              Cards.blazeGrail,
+              Cards.blazeWand,
+              Cards.blazeCoin,
+              Cards.tideSword,
+              Cards.tideWand,
+              Cards.tideGrail,
+              Cards.tideCoin
+            ]
+    Alpha.setDeck PlayerB deckB
+    Alpha.setMaxLife PlayerB 20
+    Alpha.setLife PlayerB 20
+  replicateM_ 1 (Beta.draw PlayerA PlayerA (TimeModifierOutQuint 0.25))
+  replicateM_ 1 (Beta.draw PlayerB PlayerB (TimeModifierOutQuint 0.25))
+
+-- tutorial3Program :: Maybe (Text, Text) -> Beta.Program ()
+-- tutorial3Program _ = do
+--   Beta.raw $ do
+--     genA <- Alpha.getGen
+--     let makeDeck = \g cs -> shuffle g $ take 25 . cycle $ cs
+--     let deckA =
+--           makeDeck
+--             genA
+--             [ Cards.blazeSword,
+--               Cards.blazeGrail,
+--               Cards.blazeWand,
+--               Cards.blazeCoin,
+--               Cards.tideSword,
+--               Cards.tideWand,
+--               Cards.tideGrail,
+--               Cards.tideCoin
+--             ]
+--     Alpha.setDeck PlayerA deckA
+--     Alpha.setMaxLife PlayerA 20
+--     Alpha.setLife PlayerA 20
+--     let (genB, _) = split genA
+--     let deckB =
+--           makeDeck
+--             genB
+--             [ Cards.blazeSword,
+--               Cards.blazeGrail,
+--               Cards.blazeWand,
+--               Cards.blazeCoin,
+--               Cards.tideSword,
+--               Cards.tideWand,
+--               Cards.tideGrail,
+--               Cards.tideCoin
+--             ]
+--     Alpha.setDeck PlayerB deckB
+--     Alpha.setMaxLife PlayerB 20
+--     Alpha.setLife PlayerB 20
+--   replicateM_ 5 (Beta.draw PlayerA PlayerA (TimeModifierOutQuint 0.25))
+--   replicateM_ 6 (Beta.draw PlayerB PlayerB (TimeModifierOutQuint 0.25))
 
 puzzle :: Maybe (Text, Text) -> Beta.Program ()
 puzzle _ = do

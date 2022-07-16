@@ -102,7 +102,7 @@ tutorial3Scenario scenario@Scenario {scenario_progressWin, scenario_progressLoss
       scenario_characterPa = Right . ChosenCharacter $ Nothing,
       scenario_characterPb = Right . ChosenCharacter $ Nothing,
       scenario_timeLimit = noTimeLimit,
-      scenario_tags = ["tutorial-3", "passive"],
+      scenario_tags = ["tutorial-3"],
       scenario_progressWin =
         scenario_progressWin
           { progress_events = Set.fromList ["tutorial-3", "tutorial-complete"],
