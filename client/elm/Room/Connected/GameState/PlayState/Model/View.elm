@@ -144,12 +144,6 @@ lifeOrbView entities ({ radius, model, anim, animDamage, tick } as ctx) =
         textScale =
             0.00035 * radius
 
-        life =
-            floor <| toFloat model.maxLife * finalLifePercentage
-
-        otherLife =
-            floor <| toFloat model.otherMaxLife * finalOtherLifePercentage
-
         eachView : PlayerEntity -> List WebGL.Entity
         eachView { which, position, scale } =
             [ Render.Primitives.fullCircle <|
@@ -179,10 +173,10 @@ lifeOrbView entities ({ radius, model, anim, animDamage, tick } as ctx) =
                     (String.fromInt
                         (case which of
                             PlayerA ->
-                                life
+                                model.life
 
                             PlayerB ->
-                                otherLife
+                                model.otherLife
                         )
                     )
                     { x = Math.Vector2.getX position
