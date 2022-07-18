@@ -64,6 +64,8 @@ tutorial1Program _ = do
     let makeDeck = take 25 . cycle
     let deckA = makeDeck [Cards.blazeSword, Cards.heavenSword, Cards.mirrorSword]
     Alpha.setDeck PlayerA deckA
+    Alpha.setMaxLife PlayerA 20
+    Alpha.setLife PlayerA 20
     Alpha.setMaxLife PlayerB 20
     Alpha.setLife PlayerB 20
 

@@ -52,7 +52,7 @@ view { w, h } game chat assets =
     List.concat <|
         List.map ((|>) ctx)
             [ Background.radialView vfx
-            , lifeOrbView entities.players tutorial
+            , lifeOrbView entities.players
             , Wave.view
             , Stack.wheelBgView entities.wheel
             , Stack.view entities.stack
@@ -114,8 +114,8 @@ focusImageView originVec focus ({ anim, tick } as ctx) =
                     []
 
 
-lifeOrbView : List PlayerEntity -> Tutorial.Model -> Context -> List WebGL.Entity
-lifeOrbView entities tutorial ({ radius, model, anim, animDamage, tick } as ctx) =
+lifeOrbView : List PlayerEntity -> Context -> List WebGL.Entity
+lifeOrbView entities ({ radius, model, anim, animDamage, tick } as ctx) =
     let
         progress =
             Ease.outQuad (tick / animMaxTick anim)
@@ -192,19 +192,8 @@ lifeOrbView entities tutorial ({ radius, model, anim, animDamage, tick } as ctx)
                     , color = Colour.yellow
                     }
                     ctx
-
-        tutorialFilter : PlayerEntity -> Bool
-        tutorialFilter { which } =
-            (which == PlayerB)
-                || (case tutorial.step of
-                        Just _ ->
-                            False
-
-                        _ ->
-                            True
-                   )
     in
-    List.concat <| List.map eachView <| List.filter tutorialFilter entities
+    List.concat <| List.map eachView entities
 
 
 focusTextView : Vec2 -> Focus -> Context -> List WebGL.Entity
