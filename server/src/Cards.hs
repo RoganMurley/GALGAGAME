@@ -16,7 +16,7 @@ import qualified Ease
 import HandCard (HandCard (..), anyCard, isRevealed)
 import Player (other)
 import Safe (headMay)
-import Stack (diasporaLength)
+import Stack (diasporaFromStack, diasporaLength)
 import qualified Stack
 import StackCard (StackCard (..), cardMap, changeOwner, isOwner)
 import Transmutation (Transmutation (..), transmuteToCard)
@@ -633,10 +633,11 @@ glassWand =
     newCard
       Glass
       Wand
-      "Hurt for 4 for each card in your hand.\nThis card is fragile."
+      "Hurt for 6 for each other\nfragile card on the wheel.\nThis card is fragile."
       $ \w -> do
-        len <- length <$> getHand w
-        hurt (len * 4) (other w) Slash
+        diaspora <- diasporaFromStack <$> getStack
+        let len = length $ filter (\(i, c) -> hasStatus StatusFragile (stackcard_card c) && i > 0) diaspora
+        hurt (len * 6) (other w) Slash
 
 glassGrail :: Card
 glassGrail =
