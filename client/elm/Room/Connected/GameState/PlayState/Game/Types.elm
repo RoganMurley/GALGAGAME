@@ -110,5 +110,11 @@ type alias Entities =
 
 type Focus
     = NoFocus
-    | FocusCard StackCard
+    | FocusCard FocusCardR
     | FocusPlayer WhichPlayer
+
+
+type alias FocusCardR =
+    { stackCard : StackCard
+    , linger : Float
+    }

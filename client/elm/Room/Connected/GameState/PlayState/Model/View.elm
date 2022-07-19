@@ -94,7 +94,7 @@ focusImageView originVec focus ({ anim, tick } as ctx) =
 
         _ ->
             case focus of
-                FocusCard { card, owner } ->
+                FocusCard { stackCard } ->
                     let
                         shake =
                             0.01 * (Animation.animShake anim PlayerA tick + Animation.animShake anim PlayerB tick)
@@ -103,8 +103,8 @@ focusImageView originVec focus ({ anim, tick } as ctx) =
                             { rotation = Quaternion.identity
                             , scale = vec3 0.13 0.13 0.13
                             , position = Math.Vector3.add originVec (vec3 shake shake shake)
-                            , card = card
-                            , owner = owner
+                            , card = stackCard.card
+                            , owner = stackCard.owner
                             , revealed = False
                             }
                     in
@@ -217,10 +217,10 @@ focusTextView originVec focus ({ w, h, anim, model, radius, tick } as ctx) =
                     Math.Vector2.toRecord originVec
             in
             case focus of
-                FocusCard { card } ->
+                FocusCard { stackCard } ->
                     List.concat
                         [ Font.view "Futura"
-                            card.name
+                            stackCard.card.name
                             { x = origin.x + 0.5 * w + shake
                             , y = origin.y + 0.5 * h + radius * 0.15 + shake
                             , scaleX = 0.00025 * radius
@@ -229,7 +229,7 @@ focusTextView originVec focus ({ w, h, anim, model, radius, tick } as ctx) =
                             }
                             ctx
                         , Font.view "Futura"
-                            card.desc
+                            stackCard.card.desc
                             { x = origin.x + 0.5 * w + shake
                             , y = origin.y + 0.5 * h + radius * 0.3 + shake
                             , scaleX = 0.00012 * radius

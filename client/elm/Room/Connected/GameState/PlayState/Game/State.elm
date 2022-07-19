@@ -6,7 +6,8 @@ import Assets.State as Assets
 import Assets.Types as Assets
 import Buttons.State as Buttons
 import Buttons.Types as Buttons exposing (ButtonType(..), Buttons)
-import Card.Types exposing (Card)
+import Card.State exposing (getCard)
+import Card.Types exposing (Card, KnowableCard(..))
 import Chat.Types as Chat
 import Collision exposing (hitTest, hitTest3d)
 import Game.Types as Game exposing (Context, Entities, Focus(..), HandEntity, OtherHandEntity, PlayerEntity, StackEntity)
@@ -171,7 +172,7 @@ tick { dimensions, mouse } dt model chat =
             hoverTick model.otherHover dt
 
         focus =
-            getFocus ctx hoverHand hoverOtherHand hoverStack model.holding focusPlayer
+            getFocus ctx hoverHand hoverOtherHand hoverStack model.holding model.focus focusPlayer dt
 
         holding =
             Holding.tick model.holding ctx.mouseRay dt
@@ -363,8 +364,8 @@ getFocusPlayer { entities } mMousePos =
             )
 
 
-getFocus : Context -> Maybe HandEntity -> Maybe OtherHandEntity -> Maybe StackEntity -> Holding -> Maybe WhichPlayer -> Focus
-getFocus { anim, model } hoverHand hoverOtherHand hoverStack holding player =
+getFocus : Context -> Maybe HandEntity -> Maybe OtherHandEntity -> Maybe StackEntity -> Holding -> Focus -> Maybe WhichPlayer -> Float -> Focus
+getFocus { anim, model } hoverHand hoverOtherHand hoverStack holding oldFocus player dt =
     let
         hoverCard =
             List.foldr
@@ -385,15 +386,37 @@ getFocus { anim, model } hoverHand hoverOtherHand hoverStack holding player =
         cardFocus mStackCard =
             case mStackCard of
                 Just sc ->
-                    FocusCard sc
+                    FocusCard { stackCard = sc, linger = 0 }
 
                 Nothing ->
-                    NoFocus
+                    case oldFocus of
+                        FocusCard f ->
+                            if f.linger > 0 then
+                                FocusCard
+                                    { stackCard = f.stackCard
+                                    , linger = f.linger - dt
+                                    }
+
+                            else
+                                NoFocus
+
+                        _ ->
+                            NoFocus
+
+        maxLinger =
+            3000
     in
     case holding of
         NoHolding ->
             case anim of
-                Animation.Play _ _ _ _ ->
+                Animation.Play PlayerB knowableCard _ _ ->
+                    FocusCard
+                        { stackCard =
+                            { card = getCard knowableCard, owner = PlayerB }
+                        , linger = maxLinger
+                        }
+
+                Animation.Play PlayerA _ _ _ ->
                     NoFocus
 
                 _ ->
@@ -405,7 +428,10 @@ getFocus { anim, model } hoverHand hoverOtherHand hoverStack holding player =
                             cardFocus <| Maybe.or stackCard hoverCard
 
         Holding { card } ->
-            FocusCard { card = card, owner = PlayerA }
+            FocusCard
+                { stackCard = { card = card, owner = PlayerA }
+                , linger = 0
+                }
 
 
 buttonEntities : Bool -> MouseState -> Float -> Buttons -> Chat.Model -> Tutorial.Model -> Context -> Buttons
