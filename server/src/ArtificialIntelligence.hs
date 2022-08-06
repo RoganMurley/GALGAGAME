@@ -22,24 +22,30 @@ import Util (Err, Gen, maybeToEither)
 
 type Weight = Int
 
+data Weightings = Weightings
+  { weightings_life :: Weight,
+    weightings_hand :: Weight
+  }
+  deriving (Show)
+
 data Action = PlayAction Int | EndAction
   deriving (Show)
 
-evalResult :: WhichPlayer -> Either Err PlayState -> Weight
-evalResult w (Right state) = evalState w state
-evalResult _ (Left err) = error (cs err)
+evalResult :: WhichPlayer -> Weightings -> Weightings -> Either Err PlayState -> Weight
+evalResult w weightPa weightPb (Right state) = evalState w weightPa weightPb state
+evalResult _ _ _ (Left err) = error (cs err)
 
-evalState :: WhichPlayer -> PlayState -> Weight
-evalState w (Ended (Just winner) _ _ _) = if winner == w then 100 else -200
-evalState _ (Ended Nothing _ _ _) = 50
-evalState w (Playing playing) = evalModel model
+evalState :: WhichPlayer -> Weightings -> Weightings -> PlayState -> Weight
+evalState w _ _ (Ended (Just winner) _ _ _) = if winner == w then 100 else -200
+evalState _ _ _ (Ended Nothing _ _ _) = 50
+evalState w weightPa weightPb (Playing playing) = evalModel model
   where
     model :: Model
     model = playing_model playing
     evalModel :: Model -> Weight
     evalModel m
       | isJust . (`Stack.get` 1) $ evalI m getStack =
-        evalState w . fst . runWriter $ resolveAll $ playingFromModel m
+        evalState w weightPa weightPb . fst . runWriter $ resolveAll $ playingFromModel m
       | otherwise =
         evalPlayer w m - evalPlayer (other w) m
     evalPlayer :: WhichPlayer -> Model -> Weight
@@ -47,7 +53,13 @@ evalState w (Playing playing) = evalModel model
       evalI m $ do
         life <- getLife which
         hand <- getHand which
-        return (life + 7 * length hand + (sum . fmap biasHand $ hand))
+        return (lifeWeight which * life + handWeight which * length hand + (sum . fmap biasHand $ hand))
+    lifeWeight :: WhichPlayer -> Weight
+    lifeWeight PlayerA = weightings_life weightPa
+    lifeWeight PlayerB = weightings_life weightPb
+    handWeight :: WhichPlayer -> Weight
+    handWeight PlayerA = weightings_hand weightPa
+    handWeight PlayerB = weightings_hand weightPb
 
 toCommand :: Action -> GameCommand
 toCommand (PlayAction i) = PlayCard i
@@ -90,8 +102,15 @@ chooseAction gen which model scenario
   where
     turn :: Turn
     turn = evalI model getTurn
+    weightPa :: Weightings
+    weightPa = Weightings {weightings_hand = 7, weightings_life = 1}
+    weightPb :: Weightings
+    weightPb =
+      if "aggressive" `elem` scenario_tags scenario
+        then Weightings {weightings_hand = 3, weightings_life = 1}
+        else Weightings {weightings_hand = 7, weightings_life = 1}
     comparison :: Action -> Action -> Ordering
-    comparison = comparing $ evalResult which . postulateAction which model gen scenario
+    comparison = comparing $ evalResult which weightPa weightPb . postulateAction which model gen scenario
 
 winningEnd :: WhichPlayer -> Model -> Bool
 winningEnd which model

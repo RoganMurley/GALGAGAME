@@ -25,10 +25,18 @@ takeAction action model =
                 newStep =
                     case action of
                         ActionPressGo ->
-                            step + 1
+                            if step == 0 then
+                                step + 1
 
-                        _ ->
-                            step
+                            else
+                                step
+
+                        ActionDragACard ->
+                            if step == 1 then
+                                step + 1
+
+                            else
+                                step
             in
             { model | step = Just (StageBasic newStep) }
 

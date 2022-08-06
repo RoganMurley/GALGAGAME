@@ -606,30 +606,6 @@ tutorialView tutorial ctx =
             radius * 3
     in
     case tutorial.step of
-        Just (Tutorial.StageA 1) ->
-            List.concat
-                [ Font.view
-                    "Futura"
-                    "DRAG A CARD"
-                    { x = w * 0.5 - 0.003 * size
-                    , y = h * 0.5
-                    , scaleX = 0.0001 * size + 0.003 * sin (tick * 0.005)
-                    , scaleY = 0.0001 * size + 0.003 * sin (tick * 0.007)
-                    , color = vec3 (20 / 255) (20 / 255) (20 / 255)
-                    }
-                    ctx
-                , Font.view
-                    "Futura"
-                    "DRAG A CARD"
-                    { x = w * 0.5
-                    , y = h * 0.5
-                    , scaleX = 0.0001 * size + 0.003 * sin (tick * 0.005)
-                    , scaleY = 0.0001 * size + 0.003 * sin (tick * 0.007)
-                    , color = vec3 (244 / 255) (241 / 255) (94 / 255)
-                    }
-                    ctx
-                ]
-
         Just (Tutorial.StageBasic 0) ->
             let
                 text =
@@ -649,6 +625,30 @@ tutorialView tutorial ctx =
                 , Font.view
                     "Futura"
                     text
+                    { x = w * 0.5
+                    , y = h * 0.5
+                    , scaleX = 0.0001 * size + 0.003 * sin (tick * 0.005)
+                    , scaleY = 0.0001 * size + 0.003 * sin (tick * 0.007)
+                    , color = vec3 (244 / 255) (241 / 255) (94 / 255)
+                    }
+                    ctx
+                ]
+
+        Just (Tutorial.StageBasic 1) ->
+            List.concat
+                [ Font.view
+                    "Futura"
+                    "DRAG A CARD"
+                    { x = w * 0.5 - 0.003 * size
+                    , y = h * 0.5
+                    , scaleX = 0.0001 * size + 0.003 * sin (tick * 0.005)
+                    , scaleY = 0.0001 * size + 0.003 * sin (tick * 0.007)
+                    , color = vec3 (20 / 255) (20 / 255) (20 / 255)
+                    }
+                    ctx
+                , Font.view
+                    "Futura"
+                    "DRAG A CARD"
                     { x = w * 0.5
                     , y = h * 0.5
                     , scaleX = 0.0001 * size + 0.003 * sin (tick * 0.005)
@@ -704,7 +704,7 @@ tutorialArrowView tutorial focus hover ctx =
                                                     ]
                                             ]
 
-                                    Just (Tutorial.StageA 1) ->
+                                    Just (Tutorial.StageBasic 1) ->
                                         List.concat
                                             [ Texture.with textures "arrow.png" <|
                                                 \texture ->

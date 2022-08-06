@@ -8,9 +8,8 @@ import qualified DSL.Beta as Beta
 import Data.Text (Text)
 import Model (Turn, maxHandLength, setForceWin)
 import Player (WhichPlayer (..), other)
-import StackCard (StackCard (..))
+
 -- import Util (shuffle, split)
-import Wheel (Wheel (..))
 
 initHandLength :: WhichPlayer -> Turn -> Int
 initHandLength which first
@@ -31,46 +30,18 @@ startProgram turn mUsernames = do
 tutorial0Program :: Maybe (Text, Text) -> Beta.Program ()
 tutorial0Program _ = do
   Beta.raw $ do
-    Alpha.setMaxLife PlayerB 20
-    Alpha.setLife PlayerB 20
-    Alpha.modStack
-      ( \s ->
-          s
-            { wheel_3 =
-                Just $
-                  StackCard
-                    { stackcard_card = Cards.blazeSword,
-                      stackcard_owner = PlayerA
-                    },
-              wheel_6 =
-                Just $
-                  StackCard
-                    { stackcard_card = Cards.heavenSword,
-                      stackcard_owner = PlayerA
-                    },
-              wheel_9 =
-                Just $
-                  StackCard
-                    { stackcard_card = Cards.mirrorSword,
-                      stackcard_owner = PlayerA
-                    }
-            }
-      )
-  Beta.rawAnim $ Announce "TUTORIAL" (TimeModifierLinear 3)
-
-tutorial1Program :: Maybe (Text, Text) -> Beta.Program ()
-tutorial1Program _ = do
-  Beta.raw $ do
     let makeDeck = take 25 . cycle
-    let deckA = makeDeck [Cards.blazeSword, Cards.heavenSword, Cards.mirrorSword]
+    let deckA = makeDeck [Cards.heavenSword, Cards.heavenGrail, Cards.heavenWand]
     Alpha.setDeck PlayerA deckA
     Alpha.setMaxLife PlayerA 20
     Alpha.setLife PlayerA 20
+    let deckB = makeDeck [Cards.alchemySword, Cards.alchemySword, Cards.alchemyWand, Cards.alchemyGrail]
+    Alpha.setDeck PlayerB deckB
     Alpha.setMaxLife PlayerB 20
     Alpha.setLife PlayerB 20
 
-tutorial2Program :: Maybe (Text, Text) -> Beta.Program ()
-tutorial2Program _ = do
+tutorial1Program :: Maybe (Text, Text) -> Beta.Program ()
+tutorial1Program _ = do
   Beta.raw $ do
     let makeDeck = take 25 . cycle
     let deckA = makeDeck [Cards.blazeSword, Cards.blazeGrail, Cards.blazeWand]
@@ -84,8 +55,8 @@ tutorial2Program _ = do
   replicateM_ 5 (Beta.draw PlayerA PlayerA (TimeModifierOutQuint 0.25))
   replicateM_ 6 (Beta.draw PlayerB PlayerB (TimeModifierOutQuint 0.25))
 
-tutorial3Program :: Maybe (Text, Text) -> Beta.Program ()
-tutorial3Program _ = do
+tutorial2Program :: Maybe (Text, Text) -> Beta.Program ()
+tutorial2Program _ = do
   Beta.raw $ do
     let makeDeck = take 25 . cycle
     let deckA =

@@ -32,7 +32,7 @@ encounterScenario progress gen scenario
   | Set.notMember "tutorial-0" events = tutorial0Scenario scenario
   | Set.notMember "tutorial-1" events = tutorial1Scenario scenario
   | Set.notMember "tutorial-2" events = tutorial2Scenario scenario
-  | Set.notMember "tutorial-3" events = tutorial3Scenario scenario
+  -- | Set.notMember "tutorial-3" events = tutorial3Scenario scenario
   | Set.notMember "tutorial-puzzle-morph" events
       && xp >= levelToExperience 9
       && x > 0.95 =
@@ -48,14 +48,13 @@ tutorial0Scenario :: Scenario -> Scenario
 tutorial0Scenario scenario@Scenario {scenario_progressWin, scenario_progressLoss} =
   scenario
     { scenario_prog = Start.tutorial0Program,
-      scenario_roundEndProg = Start.noDrawRoundEndProgram,
       scenario_characterPa = Right . ChosenCharacter $ Nothing,
       scenario_characterPb = Right . ChosenCharacter $ Nothing,
       scenario_timeLimit = noTimeLimit,
-      scenario_tags = ["tutorial-0", "passive"],
+      scenario_tags = ["tutorial-0", "aggressive"],
       scenario_progressWin =
         scenario_progressWin
-          { progress_events = Set.singleton "tutorial-0",
+          { progress_events = Set.fromList ["tutorial-0"],
             progress_xp = 20
           },
       scenario_progressLoss = scenario_progressLoss {progress_xp = 0}
@@ -69,7 +68,7 @@ tutorial1Scenario scenario@Scenario {scenario_progressWin, scenario_progressLoss
       scenario_characterPa = Right . ChosenCharacter $ Nothing,
       scenario_characterPb = Right . ChosenCharacter $ Nothing,
       scenario_timeLimit = noTimeLimit,
-      scenario_tags = ["tutorial-1", "passive"],
+      scenario_tags = ["tutorial-1"],
       scenario_progressWin =
         scenario_progressWin
           { progress_events = Set.fromList ["tutorial-1"],
@@ -82,30 +81,13 @@ tutorial2Scenario :: Scenario -> Scenario
 tutorial2Scenario scenario@Scenario {scenario_progressWin, scenario_progressLoss} =
   scenario
     { scenario_prog = Start.tutorial2Program,
-      scenario_roundEndProg = Start.passiveRoundEndProgram,
       scenario_characterPa = Right . ChosenCharacter $ Nothing,
       scenario_characterPb = Right . ChosenCharacter $ Nothing,
       scenario_timeLimit = noTimeLimit,
-      scenario_tags = ["tutorial-2", "passive"],
+      scenario_tags = ["tutorial-2"],
       scenario_progressWin =
         scenario_progressWin
-          { progress_events = Set.fromList ["tutorial-2"],
-            progress_xp = 20
-          },
-      scenario_progressLoss = scenario_progressLoss {progress_xp = 0}
-    }
-
-tutorial3Scenario :: Scenario -> Scenario
-tutorial3Scenario scenario@Scenario {scenario_progressWin, scenario_progressLoss} =
-  scenario
-    { scenario_prog = Start.tutorial3Program,
-      scenario_characterPa = Right . ChosenCharacter $ Nothing,
-      scenario_characterPb = Right . ChosenCharacter $ Nothing,
-      scenario_timeLimit = noTimeLimit,
-      scenario_tags = ["tutorial-3"],
-      scenario_progressWin =
-        scenario_progressWin
-          { progress_events = Set.fromList ["tutorial-3", "tutorial-complete"],
+          { progress_events = Set.fromList ["tutorial-2", "tutorial-complete"],
             progress_xp = 20
           },
       scenario_progressLoss = scenario_progressLoss {progress_xp = 0}
