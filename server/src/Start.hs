@@ -6,10 +6,10 @@ import Control.Monad (replicateM_)
 import qualified DSL.Alpha as Alpha
 import qualified DSL.Beta as Beta
 import Data.Text (Text)
+import DeckBuilding (Character (..), blazeRune, characterCards, heavenRune, mirrorRune, shroomRune, tideRune)
 import Model (Turn, maxHandLength, setForceWin)
 import Player (WhichPlayer (..), other)
-
--- import Util (shuffle, split)
+import Util (shuffle, split)
 
 initHandLength :: WhichPlayer -> Turn -> Int
 initHandLength which first
@@ -31,56 +31,40 @@ tutorial0Program :: Maybe (Text, Text) -> Beta.Program ()
 tutorial0Program _ = do
   Beta.raw $ do
     let makeDeck = take 25 . cycle
-    let deckA = makeDeck [Cards.heavenSword, Cards.heavenGrail, Cards.heavenWand]
+    let deckA = makeDeck [Cards.blazeSword, Cards.blazeGrail, Cards.blazeWand, Cards.blazeSword]
     Alpha.setDeck PlayerA deckA
     Alpha.setMaxLife PlayerA 20
     Alpha.setLife PlayerA 20
-    let deckB = makeDeck [Cards.alchemySword, Cards.alchemySword, Cards.alchemyWand, Cards.alchemyGrail]
+    let deckB = makeDeck [Cards.heavenSword, Cards.heavenGrail, Cards.heavenSword, Cards.heavenSword, Cards.heavenWand]
     Alpha.setDeck PlayerB deckB
     Alpha.setMaxLife PlayerB 20
     Alpha.setLife PlayerB 20
 
 tutorial1Program :: Maybe (Text, Text) -> Beta.Program ()
 tutorial1Program _ = do
+  (ga, gb) <- split <$> Beta.getGen
   Beta.raw $ do
-    let makeDeck = take 25 . cycle
-    let deckA = makeDeck [Cards.blazeSword, Cards.blazeGrail, Cards.blazeWand]
+    let deckA = shuffle ga $ characterCards (Character (Left (blazeRune, heavenRune, shroomRune)) 50)
     Alpha.setDeck PlayerA deckA
-    Alpha.setMaxLife PlayerA 20
-    Alpha.setLife PlayerA 20
-    let deckB = makeDeck [Cards.tideSword, Cards.tideGrail, Cards.tideWand, Cards.tideCoin]
+    let deckB = shuffle gb $ characterCards (Character (Left (heavenRune, mirrorRune, tideRune)) 50)
     Alpha.setDeck PlayerB deckB
-    Alpha.setMaxLife PlayerB 20
-    Alpha.setLife PlayerB 20
-  replicateM_ 5 (Beta.draw PlayerA PlayerA (TimeModifierOutQuint 0.25))
-  replicateM_ 6 (Beta.draw PlayerB PlayerB (TimeModifierOutQuint 0.25))
+  replicateM_ 6 (Beta.draw PlayerA PlayerA (TimeModifierOutQuint 0.25))
+  replicateM_ 5 (Beta.draw PlayerB PlayerB (TimeModifierOutQuint 0.25))
 
-tutorial2Program :: Maybe (Text, Text) -> Beta.Program ()
-tutorial2Program _ = do
-  Beta.raw $ do
-    let makeDeck = take 25 . cycle
-    let deckA =
-          makeDeck
-            [Cards.tideSword, Cards.blazeSword, Cards.tideWand, Cards.tideCoin, Cards.blazeWand, Cards.tideGrail]
-    Alpha.setDeck PlayerA deckA
-    Alpha.setMaxLife PlayerA 20
-    Alpha.setLife PlayerA 20
-    let deckB =
-          makeDeck
-            [ Cards.blazeSword,
-              Cards.blazeGrail,
-              Cards.blazeWand,
-              Cards.blazeCoin,
-              Cards.tideSword,
-              Cards.tideWand,
-              Cards.tideGrail,
-              Cards.tideCoin
-            ]
-    Alpha.setDeck PlayerB deckB
-    Alpha.setMaxLife PlayerB 20
-    Alpha.setLife PlayerB 20
-  replicateM_ 1 (Beta.draw PlayerA PlayerA (TimeModifierOutQuint 0.25))
-  replicateM_ 1 (Beta.draw PlayerB PlayerB (TimeModifierOutQuint 0.25))
+-- tutorial2Program :: Maybe (Text, Text) -> Beta.Program ()
+-- tutorial2Program _ = do
+--   Beta.raw $ do
+--     let makeDeck = take 25 . cycle
+--     let deckA = makeDeck [Cards.tideCoin, Cards.heavenSword, Cards.tideSword, Cards.heavenGrail, Cards.heavenWand, Cards.tideWand, Cards.heavenCoin, Cards.heavenSword]
+--     Alpha.setDeck PlayerA deckA
+--     Alpha.setMaxLife PlayerA 50
+--     Alpha.setLife PlayerA 50
+--     let deckB = makeDeck [Cards.mirrorSword, Cards.alchemySword, Cards.mirrorWand, Cards.alchemyWand, Cards.mirrorCoin, Cards.alchemyGrail]
+--     Alpha.setDeck PlayerB deckB
+--     Alpha.setMaxLife PlayerB 50
+--     Alpha.setLife PlayerB 50
+--   replicateM_ 5 (Beta.draw PlayerA PlayerA (TimeModifierOutQuint 0.25))
+--   replicateM_ 6 (Beta.draw PlayerB PlayerB (TimeModifierOutQuint 0.25))
 
 -- tutorial3Program :: Maybe (Text, Text) -> Beta.Program ()
 -- tutorial3Program _ = do

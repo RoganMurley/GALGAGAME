@@ -67,7 +67,7 @@ view { w, h } game chat assets =
             , Buttons.view buttons
             , Chat.notifyView chat buttons
             , timeLeftView timeLeft
-            , tutorialArrowView tutorial focus hover
+            , tutorialArrowView tutorial passed focus hover
             , Endgame.animView
             , Holding.view holding
             , announceView
@@ -482,7 +482,7 @@ turnView focus passed tutorial passive timeLeft ctx =
                                     ctx
                                 ]
 
-        ( Pass _, _, _ ) ->
+        ( Pass PlayerB, _, _ ) ->
             List.concat
                 [ Font.view
                     "Futura"
@@ -662,10 +662,10 @@ tutorialView tutorial ctx =
             []
 
 
-tutorialArrowView : Tutorial.Model -> Focus -> HoverSelf -> Context -> List WebGL.Entity
-tutorialArrowView tutorial focus hover ctx =
+tutorialArrowView : Tutorial.Model -> Bool -> Focus -> HoverSelf -> Context -> List WebGL.Entity
+tutorialArrowView tutorial passed focus hover ctx =
     let
-        { anim, camera3d, perspective, model, textures, radius, resolving } =
+        { anim, camera3d, perspective, model, textures, resolving } =
             ctx
 
         scale =
@@ -680,9 +680,9 @@ tutorialArrowView tutorial focus hover ctx =
                 Announce _ _ ->
                     []
 
-                _ ->
-                    case ( focus, hover ) of
-                        ( NoFocus, NoHover ) ->
+                NullAnim ->
+                    case ( focus, hover, passed ) of
+                        ( NoFocus, NoHover, False ) ->
                             if resolving then
                                 []
 
@@ -725,6 +725,9 @@ tutorialArrowView tutorial focus hover ctx =
 
                         _ ->
                             []
+
+                _ ->
+                    []
 
 
 timeLeftView : Maybe Float -> Context -> List WebGL.Entity

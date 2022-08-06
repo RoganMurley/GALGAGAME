@@ -5,7 +5,7 @@ import Control.Monad.STM (STM)
 import qualified Data.Set as Set
 import Data.String.Conversions (cs)
 import Data.Time (NominalDiffTime)
-import DeckBuilding (ChosenCharacter (..))
+import DeckBuilding (ChosenCharacter (..), heavenRune)
 import Room (Room (..))
 import Scenario (Scenario (..))
 import qualified Start
@@ -31,7 +31,7 @@ encounterScenario :: Progress -> Gen -> Scenario -> Scenario
 encounterScenario progress gen scenario
   | Set.notMember "tutorial-0" events = tutorial0Scenario scenario
   | Set.notMember "tutorial-1" events = tutorial1Scenario scenario
-  | Set.notMember "tutorial-2" events = tutorial2Scenario scenario
+  -- | Set.notMember "tutorial-2" events = tutorial2Scenario scenario
   -- | Set.notMember "tutorial-3" events = tutorial3Scenario scenario
   | Set.notMember "tutorial-puzzle-morph" events
       && xp >= levelToExperience 9
@@ -55,7 +55,8 @@ tutorial0Scenario scenario@Scenario {scenario_progressWin, scenario_progressLoss
       scenario_progressWin =
         scenario_progressWin
           { progress_events = Set.fromList ["tutorial-0"],
-            progress_xp = 20
+            progress_xp = 20,
+            progress_unlocks = Set.fromList [heavenRune]
           },
       scenario_progressLoss = scenario_progressLoss {progress_xp = 0}
     }
@@ -64,11 +65,10 @@ tutorial1Scenario :: Scenario -> Scenario
 tutorial1Scenario scenario@Scenario {scenario_progressWin, scenario_progressLoss} =
   scenario
     { scenario_prog = Start.tutorial1Program,
-      scenario_roundEndProg = Start.passiveRoundEndProgram,
       scenario_characterPa = Right . ChosenCharacter $ Nothing,
       scenario_characterPb = Right . ChosenCharacter $ Nothing,
       scenario_timeLimit = noTimeLimit,
-      scenario_tags = ["tutorial-1"],
+      scenario_tags = ["tutorial-1", "save-only"],
       scenario_progressWin =
         scenario_progressWin
           { progress_events = Set.fromList ["tutorial-1"],
@@ -77,21 +77,21 @@ tutorial1Scenario scenario@Scenario {scenario_progressWin, scenario_progressLoss
       scenario_progressLoss = scenario_progressLoss {progress_xp = 0}
     }
 
-tutorial2Scenario :: Scenario -> Scenario
-tutorial2Scenario scenario@Scenario {scenario_progressWin, scenario_progressLoss} =
-  scenario
-    { scenario_prog = Start.tutorial2Program,
-      scenario_characterPa = Right . ChosenCharacter $ Nothing,
-      scenario_characterPb = Right . ChosenCharacter $ Nothing,
-      scenario_timeLimit = noTimeLimit,
-      scenario_tags = ["tutorial-2"],
-      scenario_progressWin =
-        scenario_progressWin
-          { progress_events = Set.fromList ["tutorial-2", "tutorial-complete"],
-            progress_xp = 20
-          },
-      scenario_progressLoss = scenario_progressLoss {progress_xp = 0}
-    }
+-- tutorial2Scenario :: Scenario -> Scenario
+-- tutorial2Scenario scenario@Scenario {scenario_progressWin, scenario_progressLoss} =
+--   scenario
+--     { scenario_prog = Start.tutorial2Program,
+--       scenario_characterPa = Right . ChosenCharacter $ Nothing,
+--       scenario_characterPb = Right . ChosenCharacter $ Nothing,
+--       scenario_timeLimit = noTimeLimit,
+--       scenario_tags = ["tutorial-2"],
+--       scenario_progressWin =
+--         scenario_progressWin
+--           { progress_events = Set.fromList ["tutorial-2", "tutorial-complete"],
+--             progress_xp = 20
+--           },
+--       scenario_progressLoss = scenario_progressLoss {progress_xp = 0}
+--     }
 
 puzzleScenario :: Scenario -> Scenario
 puzzleScenario scenario@Scenario {scenario_progressWin} =

@@ -97,7 +97,7 @@ tideCoin =
   newCard
     Tide
     Coin
-    "Discard cards in the\nnext 3 sockets"
+    "Discard cards in the\nnext 3 wheel sockets"
     $ \_ -> do
       discardStack (\i _ -> (i > 0) && (i < 4))
 

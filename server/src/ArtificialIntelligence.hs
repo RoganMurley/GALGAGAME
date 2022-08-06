@@ -105,10 +105,10 @@ chooseAction gen which model scenario
     weightPa :: Weightings
     weightPa = Weightings {weightings_hand = 7, weightings_life = 1}
     weightPb :: Weightings
-    weightPb =
-      if "aggressive" `elem` scenario_tags scenario
-        then Weightings {weightings_hand = 3, weightings_life = 1}
-        else Weightings {weightings_hand = 7, weightings_life = 1}
+    weightPb
+      | "aggressive" `elem` scenario_tags scenario = Weightings {weightings_hand = 3, weightings_life = 1}
+      | "save-only" `elem` scenario_tags scenario = Weightings {weightings_hand = 1000, weightings_life = 1}
+      | otherwise = Weightings {weightings_hand = 7, weightings_life = 1}
     comparison :: Action -> Action -> Ordering
     comparison = comparing $ evalResult which weightPa weightPb . postulateAction which model gen scenario
 

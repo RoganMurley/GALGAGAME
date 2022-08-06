@@ -104,6 +104,16 @@ webglView { bounceTick, waitType } params assets =
                         , thickness = 0.2
                         }
                     , Render.Primitives.quad Render.Shaders.donutFragment <|
+                        { rotation = Quaternion.makeRotate <| Quaternion.zRotation pi
+                        , scale = makeScale3 size size 1
+                        , color = vec3 (70 / 255) (70 / 255) (200 / 255)
+                        , pos = vec3 (w * 0.5) (h * 0.5) 0
+                        , perspective = ortho
+                        , camera = camera2d
+                        , mag = 0
+                        , thickness = 0.2
+                        }
+                    , Render.Primitives.quad Render.Shaders.donutFragment <|
                         { rotation = Quaternion.makeRotate <| Quaternion.zRotation rot
                         , scale = makeScale3 size size 1
                         , color = vec3 (244 / 255) (241 / 255) (94 / 255)

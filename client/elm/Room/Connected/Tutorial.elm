@@ -84,10 +84,10 @@ isActive : Model -> Bool
 isActive { step } =
     case step of
         Just (StageA _) ->
-            True
+            False
 
-        Just (StageBasic _) ->
-            True
+        Just (StageBasic i) ->
+            i < 2
 
         _ ->
             False
