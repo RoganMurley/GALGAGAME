@@ -26,6 +26,9 @@ view iconName entity ctx =
                 "chatClose" ->
                     Just "e"
 
+                "pass" ->
+                    Just "f"
+
                 _ ->
                     Nothing
     in

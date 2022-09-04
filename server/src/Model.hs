@@ -44,8 +44,12 @@ type Turn = WhichPlayer
 data Passes = NoPass | OnePass
   deriving (Eq, Generic, NFData, Show)
 
+instance ToJSON Passes where
+  toJSON NoPass = "NoPass"
+  toJSON OnePass = "OnePass"
+
 instance ToJSON Model where
-  toJSON Model {model_turn, model_stack, model_pa, model_pb, model_rot} =
+  toJSON Model {model_turn, model_stack, model_pa, model_pb, model_rot, model_passes} =
     object
       [ "turn" .= model_turn,
         "stack" .= model_stack,
@@ -57,7 +61,8 @@ instance ToJSON Model where
         "maxLifePB" .= pmodel_maxLife model_pb,
         "deckPA" .= length (pmodel_deck model_pa),
         "deckPB" .= length (pmodel_deck model_pb),
-        "rot" .= model_rot
+        "rot" .= model_rot,
+        "pass" .= model_passes
       ]
 
 instance Mirror Model where

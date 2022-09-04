@@ -21,7 +21,7 @@ import Math.Vector2 exposing (Vec2, vec2)
 import Math.Vector3 exposing (Vec3, vec3)
 import Maybe.Extra as Maybe
 import Model.State as Model
-import Model.Types as Model exposing (Model)
+import Model.Types as Model exposing (Model, Pass(..))
 import Mouse exposing (MouseState(..))
 import PlayState.Messages as PlayState
 import Render.Uniforms as Uniforms
@@ -476,6 +476,14 @@ buttonEntities passed mouseState dt buttons chat tutorial { w, h, model, radius,
 
                 Nothing ->
                     True
+
+        goIconText =
+            case model.passes of
+                NoPass ->
+                    "pass"
+
+                OnePass ->
+                    "go"
     in
     Buttons.fromList <|
         (if not disabled then
@@ -488,7 +496,7 @@ buttonEntities passed mouseState dt buttons chat tutorial { w, h, model, radius,
                 , btn =
                     TextButton
                         { font = "Futura"
-                        , text = "go"
+                        , text = goIconText
                         , textColor = vec3 (0 / 255) (0 / 255) (80 / 255)
                         , bgColor = vec3 (244 / 255) (241 / 255) (94 / 255)
                         , options = [ Buttons.Circular, Buttons.IsIcon ]
@@ -514,7 +522,7 @@ buttonEntities passed mouseState dt buttons chat tutorial { w, h, model, radius,
                 , btn =
                     TextButton
                         { font = "Futura"
-                        , text = "go"
+                        , text = goIconText
                         , textColor = vec3 (0 / 255) (0 / 255) (0 / 255)
                         , bgColor = vec3 (70 / 255) (70 / 255) (70 / 255)
                         , options = [ Buttons.Circular, Buttons.IsIcon ]
@@ -540,7 +548,7 @@ buttonEntities passed mouseState dt buttons chat tutorial { w, h, model, radius,
 
                                     else
                                         "chat"
-                                , textColor = vec3 (0 / 255) (0 / 255) (0 / 255)
+                                , textColor = vec3 (0 / 255) (0 / 255) (80 / 255)
                                 , bgColor = vec3 (244 / 255) (241 / 255) (94 / 255)
                                 , options = [ Buttons.Circular, Buttons.IsIcon, Buttons.TextScale 0.65 ]
                                 }

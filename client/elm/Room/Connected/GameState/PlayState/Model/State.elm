@@ -1,6 +1,6 @@
 module Model.State exposing (init)
 
-import Model.Types exposing (Model)
+import Model.Types exposing (Model, Pass(..))
 import Stack.State as Stack
 import WhichPlayer.Types exposing (WhichPlayer(..))
 
@@ -25,4 +25,5 @@ init =
     , maxLife = defaultMaxLife
     , otherMaxLife = defaultMaxLife
     , rot = 0
+    , passes = NoPass
     }

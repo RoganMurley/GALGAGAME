@@ -1,4 +1,4 @@
-module Model.Types exposing (Life, Model)
+module Model.Types exposing (Life, Model, Pass(..))
 
 import Hand.Types exposing (Hand, OtherHand)
 import Stack.Types exposing (Stack)
@@ -17,7 +17,13 @@ type alias Model =
     , maxLife : Life
     , otherMaxLife : Life
     , rot : Int
+    , passes : Pass
     }
+
+
+type Pass
+    = NoPass
+    | OnePass
 
 
 type alias Life =
