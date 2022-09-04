@@ -53,9 +53,9 @@ focusView rune focus ({ w, h, textures } as ctx) =
             List.concat
                 [ focusImageView
                     (vec3 0 0.3 0)
-                    (FocusCard { stackCard = focusCard, linger = 0 })
+                    (FocusCard { stackCard = focusCard })
                     ctx
-                , focusTextView (vec2 0 (-h * 0.1)) (FocusCard { stackCard = focusCard, linger = 0 }) ctx
+                , focusTextView (vec2 0 (-h * 0.1)) (FocusCard { stackCard = focusCard }) ctx
                 ]
 
         _ ->

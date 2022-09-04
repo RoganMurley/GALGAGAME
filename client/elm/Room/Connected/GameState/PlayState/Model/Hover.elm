@@ -28,6 +28,7 @@ type Hover a
     = HoverHand (HoverBase a)
     | HoverOtherHand (HoverBase a)
     | HoverStack (HoverBase a)
+    | HoverAuto (HoverBase a)
     | NoHover
 
 
@@ -46,6 +47,9 @@ getDmg hover =
             dmg
 
         HoverStack { dmg } ->
+            dmg
+
+        HoverAuto { dmg } ->
             dmg
 
         NoHover ->
@@ -82,6 +86,9 @@ encodeHoverSelf hover =
 
                 HoverStack { index } ->
                     Json.Encode.object [ ( "stack", Json.Encode.int index ) ]
+
+                HoverAuto { index } ->
+                    Json.Encode.object [ ( "auto", Json.Encode.int index ) ]
 
                 NoHover ->
                     Json.Encode.null
@@ -125,6 +132,9 @@ map f hover =
 
         HoverStack h ->
             HoverStack <| f h
+
+        HoverAuto h ->
+            HoverAuto <| f h
 
         NoHover ->
             NoHover

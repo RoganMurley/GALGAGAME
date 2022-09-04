@@ -116,5 +116,4 @@ type Focus
 
 type alias FocusCardR =
     { stackCard : StackCard
-    , linger : Float
     }

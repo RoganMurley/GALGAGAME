@@ -289,11 +289,16 @@ damageView hover holding ({ w, h, radius, resolving, animDamage, tick, anim } as
                     dmg
 
         ( damage, otherDamage ) =
-            if resolving then
-                animDamageToHoverDamage animDamage
+            case hover of
+                HoverAuto _ ->
+                    hoverDmg
 
-            else
-                hoverDmg
+                _ ->
+                    if resolving then
+                        animDamageToHoverDamage animDamage
+
+                    else
+                        hoverDmg
 
         animDamageToHoverDamage : ( Float, Float ) -> ( HoverDamage, HoverDamage )
         animDamageToHoverDamage ( a, b ) =

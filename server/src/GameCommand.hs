@@ -470,7 +470,7 @@ hoverCard (HoverOtherHand i) which playing =
         _ ->
           ignore
 hoverCard (HoverStack i) which playing =
-  let stack = Alpha.evalI model $ Alpha.getStack :: Stack
+  let stack = Alpha.evalI model Alpha.getStack :: Stack
       model = playing_model playing :: Model
    in case atMay (toList stack) i of
         Just (Just (StackCard owner card)) ->
@@ -483,6 +483,8 @@ hoverCard (HoverStack i) which playing =
             hoverDamage = tupleMap2 Outcome.damageToHoverDamage damage
         _ ->
           ignore
+hoverCard (HoverAuto i) which playing =
+  hoverCard (HoverStack i) which playing
 hoverCard NoHover which _ =
   let hoverDamage = tupleMap2 Outcome.damageToHoverDamage (0, 0)
    in Right (Nothing, [Outcome.Encodable $ Outcome.Hover which NoHover hoverDamage])

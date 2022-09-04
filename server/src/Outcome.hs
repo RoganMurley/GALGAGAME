@@ -31,6 +31,7 @@ data HoverState
   = HoverHand Index
   | HoverOtherHand Index
   | HoverStack Index
+  | HoverAuto Index
   | NoHover
   deriving (Eq, Show)
 
@@ -65,6 +66,8 @@ instance ToJSON HoverState where
     object ["otherHand" .= index]
   toJSON (HoverStack index) =
     object ["stack" .= index]
+  toJSON (HoverAuto index) =
+    object ["auto" .= index]
   toJSON NoHover =
     Null
 
@@ -73,6 +76,7 @@ instance FromJSON HoverState where
     (HoverHand <$> v .: "hand")
       <|> (HoverOtherHand <$> v .: "otherHand")
       <|> (HoverStack <$> v .: "stack")
+      <|> (HoverAuto <$> v .: "auto")
   parseJSON Null = pure NoHover
   parseJSON _ = fail "Not a valid HoverState"
 

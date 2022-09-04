@@ -128,17 +128,20 @@ entitiesInit =
     }
 
 
-hoverInit : Maybe Int -> Maybe Int -> Maybe Int -> HoverBase a -> Hover a
-hoverInit handIndex otherHandIndex stackIndex base =
-    case ( ( handIndex, otherHandIndex ), stackIndex ) of
-        ( ( Just index, _ ), _ ) ->
-            HoverHand { base | index = index }
+hoverInit : Maybe Int -> Maybe Int -> Maybe Int -> Maybe Int -> HoverBase a -> Hover a
+hoverInit handIndex otherHandIndex stackIndex autoIndex base =
+    case ( ( stackIndex, handIndex ), ( otherHandIndex, autoIndex ) ) of
+        ( ( Just index, _ ), ( _, _ ) ) ->
+            HoverStack { base | index = index }
 
         ( ( _, Just index ), _ ) ->
+            HoverHand { base | index = index }
+
+        ( _, ( Just index, _ ) ) ->
             HoverOtherHand { base | index = index }
 
-        ( _, Just index ) ->
-            HoverStack { base | index = index }
+        ( _, ( _, Just index ) ) ->
+            HoverAuto { base | index = index }
 
         _ ->
             NoHover
@@ -166,13 +169,13 @@ tick { dimensions, mouse } dt model chat =
             getFocusPlayer model (Mouse.getVec ctx.mouse)
 
         ( hover, hoverMsg ) =
-            hoverUpdate model.hover hoverHand hoverOtherHand hoverStack holding dt
+            hoverUpdate model.hover hoverHand hoverOtherHand hoverStack holding ctx.anim dt
 
         otherHover =
             hoverTick model.otherHover dt
 
         focus =
-            getFocus ctx hoverHand hoverOtherHand hoverStack model.holding model.focus focusPlayer dt
+            getFocus ctx hover hoverHand hoverOtherHand hoverStack model.holding focusPlayer
 
         holding =
             Holding.tick model.holding ctx.mouseRay dt
@@ -222,6 +225,9 @@ getHoverIndex hover =
         HoverStack { index } ->
             Just index
 
+        HoverAuto { index } ->
+            Just index
+
         NoHover ->
             Nothing
 
@@ -247,12 +253,15 @@ hoverTick hover dt =
         HoverStack hoverStack ->
             HoverStack <| baseTick hoverStack
 
+        HoverAuto hoverAuto ->
+            HoverAuto { hoverAuto | tick = hoverAuto.tick + dt }
+
         NoHover ->
             NoHover
 
 
-hoverUpdate : HoverSelf -> Maybe HandEntity -> Maybe OtherHandEntity -> Maybe StackEntity -> Holding -> Float -> ( HoverSelf, Cmd PlayState.Msg )
-hoverUpdate oldHover handEntity otherHandEntity stackEntity holding dt =
+hoverUpdate : HoverSelf -> Maybe HandEntity -> Maybe OtherHandEntity -> Maybe StackEntity -> Holding -> Animation.Anim -> Float -> ( HoverSelf, Cmd PlayState.Msg )
+hoverUpdate oldHover handEntity otherHandEntity stackEntity holding anim dt =
     let
         hoverHandIndex =
             Maybe.map .index handEntity
@@ -263,10 +272,27 @@ hoverUpdate oldHover handEntity otherHandEntity stackEntity holding dt =
         hoverStackIndex =
             Maybe.map .index stackEntity
 
+        hoverAutoIndex =
+            case oldHover of
+                HoverAuto hoverAuto ->
+                    if hoverAuto.tick < 5000 then
+                        Just 1
+
+                    else
+                        Nothing
+
+                _ ->
+                    case anim of
+                        Animation.Play PlayerB _ _ _ ->
+                            Just 1
+
+                        _ ->
+                            Nothing
+
         hoverIndex =
             List.foldr Maybe.or
                 Nothing
-                [ hoverHandIndex, hoverStackIndex, hoverOtherHandIndex ]
+                [ hoverHandIndex, hoverStackIndex, hoverOtherHandIndex, hoverAutoIndex ]
 
         oldHoverIndex =
             getHoverIndex oldHover
@@ -283,6 +309,7 @@ hoverUpdate oldHover handEntity otherHandEntity stackEntity holding dt =
                             hoverHandIndex
                             hoverOtherHandIndex
                             hoverStackIndex
+                            hoverAutoIndex
                             { index = 0
                             , tick = 0
                             , dmg = ( HoverDamage 0, HoverDamage 0 )
@@ -310,6 +337,9 @@ hoverDamage hover dmg =
 
         HoverStack hoverStack ->
             HoverStack { hoverStack | dmg = dmg }
+
+        HoverAuto hoverAuto ->
+            HoverAuto { hoverAuto | dmg = dmg }
 
         NoHover ->
             NoHover
@@ -364,8 +394,8 @@ getFocusPlayer { entities } mMousePos =
             )
 
 
-getFocus : Context -> Maybe HandEntity -> Maybe OtherHandEntity -> Maybe StackEntity -> Holding -> Focus -> Maybe WhichPlayer -> Float -> Focus
-getFocus { anim, model } hoverHand hoverOtherHand hoverStack holding oldFocus player dt =
+getFocus : Context -> HoverSelf -> Maybe HandEntity -> Maybe OtherHandEntity -> Maybe StackEntity -> Holding -> Maybe WhichPlayer -> Focus
+getFocus { anim, model } hover hoverHand hoverOtherHand hoverStack holding player =
     let
         hoverCard =
             List.foldr
@@ -377,6 +407,12 @@ getFocus { anim, model } hoverHand hoverOtherHand hoverStack holding oldFocus pl
                     |> Maybe.andThen .mCard
                     |> Maybe.andThen
                         (\card -> Just { card = card, owner = PlayerB })
+                , case hover of
+                    HoverAuto _ ->
+                        Maybe.map (\sc -> { owner = sc.owner, card = sc.card }) model.stack.wheel1
+
+                    _ ->
+                        Nothing
                 ]
 
         stackCard =
@@ -386,36 +422,14 @@ getFocus { anim, model } hoverHand hoverOtherHand hoverStack holding oldFocus pl
         cardFocus mStackCard =
             case mStackCard of
                 Just sc ->
-                    FocusCard { stackCard = sc, linger = 0 }
+                    FocusCard { stackCard = sc }
 
                 Nothing ->
-                    case oldFocus of
-                        FocusCard f ->
-                            if f.linger > 0 then
-                                FocusCard
-                                    { stackCard = f.stackCard
-                                    , linger = f.linger - dt
-                                    }
-
-                            else
-                                NoFocus
-
-                        _ ->
-                            NoFocus
-
-        maxLinger =
-            3000
+                    NoFocus
     in
     case holding of
         NoHolding ->
             case anim of
-                Animation.Play PlayerB knowableCard _ _ ->
-                    FocusCard
-                        { stackCard =
-                            { card = getCard knowableCard, owner = PlayerB }
-                        , linger = maxLinger
-                        }
-
                 Animation.Play PlayerA _ _ _ ->
                     NoFocus
 
@@ -429,9 +443,7 @@ getFocus { anim, model } hoverHand hoverOtherHand hoverStack holding oldFocus pl
 
         Holding { card } ->
             FocusCard
-                { stackCard = { card = card, owner = PlayerA }
-                , linger = 0
-                }
+                { stackCard = { card = card, owner = PlayerA } }
 
 
 buttonEntities : Bool -> MouseState -> Float -> Buttons -> Chat.Model -> Tutorial.Model -> Context -> Buttons
