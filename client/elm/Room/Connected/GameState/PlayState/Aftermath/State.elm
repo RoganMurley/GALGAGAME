@@ -6,7 +6,6 @@ import Main.Messages as Main
 import PlayState.Messages as PlayState
 import Ports exposing (saveUnlock)
 import Stats exposing (StatChange)
-import Tutorial
 import Util exposing (message)
 
 

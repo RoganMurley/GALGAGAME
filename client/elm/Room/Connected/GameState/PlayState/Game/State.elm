@@ -6,7 +6,6 @@ import Assets.State as Assets
 import Assets.Types as Assets
 import Buttons.State as Buttons
 import Buttons.Types as Buttons exposing (ButtonType(..), Buttons)
-import Card.State exposing (getCard)
 import Card.Types exposing (Card, KnowableCard(..))
 import Chat.Types as Chat
 import Collision exposing (hitTest, hitTest3d)
