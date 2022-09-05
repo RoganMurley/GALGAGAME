@@ -190,7 +190,7 @@ mainRunes =
     dualityRune,
     alchemyRune,
     morphRune,
-    seerRune,
+    eyeRune,
     feverRune,
     emptyRune,
     bloodRune,
@@ -268,12 +268,12 @@ dualityRune =
     (Cards.dualitySword, Cards.dualityWand, Cards.dualityGrail, Cards.dualityCoin)
     (levelToExperience 5)
 
-seerRune :: Rune
-seerRune =
+eyeRune :: Rune
+eyeRune =
   Rune
-    "SEER"
-    "cards/seer/coin.png"
-    (Cards.seerSword, Cards.seerWand, Cards.seerGrail, Cards.seerCoin)
+    "EYE"
+    "cards/eye/coin.png"
+    (Cards.eyeSword, Cards.eyeWand, Cards.eyeGrail, Cards.eyeCoin)
     (levelToExperience 6)
 
 feverRune :: Rune

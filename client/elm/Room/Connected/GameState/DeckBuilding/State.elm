@@ -344,7 +344,7 @@ characterButtons { radius, w, h, mouse } dt chat { ready, buttons, character } =
 
                                 else
                                     "chat"
-                            , textColor = vec3 (0 / 255) (0 / 255) (0 / 255)
+                            , textColor = vec3 (0 / 255) (0 / 255) (80 / 255)
                             , bgColor = vec3 (244 / 255) (241 / 255) (94 / 255)
                             , options = [ Buttons.Circular, Buttons.IsIcon, Buttons.TextScale 0.65 ]
                             }
@@ -359,7 +359,7 @@ characterButtons { radius, w, h, mouse } dt chat { ready, buttons, character } =
                         TextButton
                             { font = "Futura"
                             , text = "dice"
-                            , textColor = vec3 (0 / 255) (0 / 255) (0 / 255)
+                            , textColor = vec3 (0 / 255) (0 / 255) (80 / 255)
                             , bgColor = vec3 (244 / 255) (241 / 255) (94 / 255)
                             , options = [ Buttons.Circular, Buttons.IsIcon, Buttons.TextScale 1.2 ]
                             }

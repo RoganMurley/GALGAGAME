@@ -61,7 +61,7 @@ data Aspect
   | Empty
   | Comet
   | Glass
-  | Seer
+  | Eye
   | Strange
   | OtherAspect Text
   deriving (Eq, Generic, NFData, Ord, Show)
@@ -109,7 +109,7 @@ allAspects =
     Comet,
     Myriad,
     Glass,
-    Seer,
+    Eye,
     Strange
   ]
 

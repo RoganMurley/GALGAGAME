@@ -331,21 +331,21 @@ bloodCoin =
       transmuteHead (\(StackCard _ c) -> StackCard w c)
       bounce (\i _ -> i == 1) (TimeModifierOutQuad 0.4)
 
--- SEER
-seerSword :: Card
-seerSword =
+-- EYE
+eyeSword :: Card
+eyeSword =
   newCard
-    Seer
+    Eye
     Sword
     "Hurt for 6 and reveal\na card in their hand"
     $ \w -> do
       hurt 6 (other w) Slash
       revealRandomCard (other w)
 
-seerWand :: Card
-seerWand =
+eyeWand :: Card
+eyeWand =
   newCard
-    Seer
+    Eye
     Wand
     "Reveal a card in their hand, then\nhurt for 7 for each revealed\ncard in their hand"
     $ \w -> do
@@ -354,10 +354,10 @@ seerWand =
       let count = length $ filter isRevealed hand
       hurt (count * 7) (other w) Slash
 
-seerGrail :: Card
-seerGrail =
+eyeGrail :: Card
+eyeGrail =
   newCard
-    Seer
+    Eye
     Grail
     "Reveal a card in their hand, then\ndraw for each revealed\ncard in their hand"
     $ \w -> do
@@ -366,10 +366,10 @@ seerGrail =
       let count = length $ filter isRevealed hand
       many count $ draw w w (TimeModifierOutQuint 1)
 
-seerCoin :: Card
-seerCoin =
+eyeCoin :: Card
+eyeCoin =
   newCard
-    Seer
+    Eye
     Coin
     "Return all cards on the wheel to hand"
     $ \_ -> bounce (\i _ -> i > 0) (TimeModifierOutQuint 1)
@@ -833,7 +833,7 @@ swords =
     abyssSword,
     feverSword,
     emptySword,
-    seerSword,
+    eyeSword,
     glassSword,
     cometSword,
     myriadSword
@@ -853,7 +853,7 @@ wands =
     abyssWand,
     feverWand,
     emptyWand,
-    seerWand,
+    eyeWand,
     glassWand,
     cometWand,
     myriadWand
@@ -873,7 +873,7 @@ grails =
     abyssGrail,
     feverGrail,
     emptyGrail,
-    seerGrail,
+    eyeGrail,
     glassGrail,
     cometGrail,
     myriadGrail
@@ -892,7 +892,7 @@ coins =
     tideCoin,
     feverCoin,
     emptyCoin,
-    seerCoin,
+    eyeCoin,
     glassCoin,
     cometCoin,
     myriadCoin
