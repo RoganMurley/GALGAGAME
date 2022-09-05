@@ -32,7 +32,7 @@ import Mode exposing (Mode)
 import Model.Decoders as Model
 import Model.Diff exposing (Diff, initDiff)
 import Model.State as Model
-import Model.Types exposing (Model)
+import Model.Types exposing (Model, Pass(..))
 import Mouse exposing (MouseState(..), Position)
 import PlayState.Decoders as PlayState
 import PlayState.Messages as PlayState exposing (Msg(..), PlayingOnly(..), TurnOnly(..))
@@ -267,7 +267,7 @@ updateTurnOnly msg state { audio } =
                                     (\b -> { b | hover = 0 })
                                     game.buttons
 
-                            -- Set passed to True to avoid latency.
+                            -- Set passed to true to avoid latency.
                             newState : PlayState
                             newState =
                                 Playing
@@ -305,9 +305,13 @@ updateTurnOnly msg state { audio } =
                                         { initial = initial, resDiffList = resDiffList, finalState = finalState }
                                         |> map (\g -> { g | holding = NoHolding })
 
+                                currentModel : Model
+                                currentModel =
+                                    game.res.final
+
                                 initial : Model
                                 initial =
-                                    game.res.final
+                                    { currentModel | passes = OnePass }
 
                                 { stack } =
                                     initial
