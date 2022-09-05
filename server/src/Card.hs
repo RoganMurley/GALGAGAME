@@ -58,7 +58,7 @@ data Aspect
   | Myriad
   | Abyss
   | Fever
-  | Empty
+  | Void
   | Comet
   | Glass
   | Eye
@@ -105,7 +105,7 @@ allAspects =
     Myriad,
     Abyss,
     Fever,
-    Empty,
+    Void,
     Comet,
     Myriad,
     Glass,

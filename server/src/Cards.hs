@@ -138,19 +138,19 @@ heavenCoin =
     "Return all of your cards on the\nwheel to hand"
     $ \w -> bounce (\i (StackCard o _) -> i > 0 && w == o) (TimeModifierOutQuint 1)
 
--- EMPTY
-emptySword :: Card
-emptySword =
+-- VOID
+voidSword :: Card
+voidSword =
   newCard
-    Empty
+    Void
     Sword
     "Hurt for 6"
     $ \w -> hurt 6 (other w) Slash
 
-emptyWand :: Card
-emptyWand =
+voidWand :: Card
+voidWand =
   newCard
-    Empty
+    Void
     Wand
     "Discard your hand, then hurt\nfor 4 for each card\ndiscarded"
     $ \w -> do
@@ -158,10 +158,10 @@ emptyWand =
       discardHand w (\_ _ -> True)
       hurt (4 * handSize) (other w) Slash
 
-emptyGrail :: Card
-emptyGrail =
+voidGrail :: Card
+voidGrail =
   newCard
-    Empty
+    Void
     Grail
     "Become a copy of an unrevealed\ncard in your hand"
     $ \w -> do
@@ -181,10 +181,10 @@ emptyGrail =
         Nothing ->
           return ()
 
-emptyCoin :: Card
-emptyCoin =
+voidCoin :: Card
+voidCoin =
   newCard
-    Empty
+    Void
     Coin
     "Discard all cards on the wheel"
     $ \_ -> discardStack (\i _ -> i > 0)
@@ -832,7 +832,7 @@ swords =
     tideSword,
     abyssSword,
     feverSword,
-    emptySword,
+    voidSword,
     eyeSword,
     glassSword,
     cometSword,
@@ -852,7 +852,7 @@ wands =
     tideWand,
     abyssWand,
     feverWand,
-    emptyWand,
+    voidWand,
     eyeWand,
     glassWand,
     cometWand,
@@ -872,7 +872,7 @@ grails =
     tideGrail,
     abyssGrail,
     feverGrail,
-    emptyGrail,
+    voidGrail,
     eyeGrail,
     glassGrail,
     cometGrail,
@@ -891,7 +891,7 @@ coins =
     morphCoin,
     tideCoin,
     feverCoin,
-    emptyCoin,
+    voidCoin,
     eyeCoin,
     glassCoin,
     cometCoin,

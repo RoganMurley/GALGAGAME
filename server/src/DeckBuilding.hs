@@ -192,7 +192,7 @@ mainRunes =
     morphRune,
     eyeRune,
     feverRune,
-    emptyRune,
+    voidRune,
     bloodRune,
     glassRune,
     myriadRune
@@ -252,12 +252,12 @@ alchemyRune =
     (Cards.alchemySword, Cards.alchemyWand, Cards.alchemyGrail, Cards.alchemyCoin)
     (levelToExperience 3)
 
-emptyRune :: Rune
-emptyRune =
+voidRune :: Rune
+voidRune =
   Rune
-    "EMPTY"
-    "cards/empty/coin.png"
-    (Cards.emptySword, Cards.emptyWand, Cards.emptyGrail, Cards.emptyCoin)
+    "VOID"
+    "cards/void/coin.png"
+    (Cards.voidSword, Cards.voidWand, Cards.voidGrail, Cards.voidCoin)
     (levelToExperience 4)
 
 dualityRune :: Rune
