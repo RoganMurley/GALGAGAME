@@ -772,12 +772,12 @@ myriadCoin =
 -- Other cards
 getEndCard :: Int -> Card
 getEndCard noDraws
-  | noDraws > 10 = strangeStart
+  | noDraws > 6 = strangeStart
   | otherwise = strangeEnd noDraws
 
 strangeEnd :: Int -> Card
 strangeEnd noDraws =
-  let dmg = max 1024 (2 ^ noDraws) :: Int
+  let dmg = 2 ^ noDraws :: Int
    in newCard
         Strange
         (OtherSuit "END")
