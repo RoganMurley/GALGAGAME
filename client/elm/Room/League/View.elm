@@ -26,7 +26,7 @@ view model =
                 _ ->
                     [ h1 [] [ text "GALGA LEAGUE" ]
                     , p [] [ text "Prove your mastery of the wheel." ]
-                    , p [] [ text "You'll be matched with four other players over four weeks." ]
+                    , p [] [ text "You'll be matched with other players each week for six weeks." ]
                     , p [] [ text "Play best of three matches at times that suit you." ]
                     , p [] [ text "Glory and prizes await!" ]
                     , button
