@@ -262,7 +262,8 @@ playCard index which playing scenario time
             isWheelFull :: Bool
             isWheelFull = Alpha.evalI modelA $ do
               stack <- Alpha.getStack
-              return $ foldr (&&) True (isJust <$> stack)
+              let activeCard = Stack.get stack 0
+              return $ isJust activeCard
          in case result of
               Playing newPlaying ->
                 let modelB = playing_model newPlaying
