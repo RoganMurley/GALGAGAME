@@ -21,7 +21,7 @@ data DSL n where
   Raw :: Alpha.Program () -> DSL ()
   Hurt :: Life -> WhichPlayer -> Hurt -> DSL ()
   Heal :: Life -> WhichPlayer -> DSL ()
-  Draw :: WhichPlayer -> WhichPlayer -> TimeModifier -> DSL ()
+  Draw' :: WhichPlayer -> WhichPlayer -> TimeModifier -> DSL ()
   AddToHand :: WhichPlayer -> HandCard -> DSL ()
   Play :: WhichPlayer -> HandCard -> Int -> DSL ()
   Transmute' :: Wheel (Maybe Transmutation) -> DSL ()

@@ -18,7 +18,7 @@ import Data.Maybe (fromMaybe, isJust)
 import Discard (CardDiscard (..), isDiscard)
 import HandCard (HandCard (..), anyCard, isRevealed, knownCard)
 import Life (Life)
-import Model (Model, Misc(..),gameover, maxHandLength)
+import Model (Model, getNoDraws, gameover, maxHandLength)
 import ModelDiff (ModelDiff)
 import qualified ModelDiff
 import Player (WhichPlayer (..))
@@ -33,7 +33,7 @@ alphaI :: DSL a -> Alpha.Program a
 alphaI (Raw p) = p
 alphaI (Hurt d w _) = Alpha.hurt d w
 alphaI (Heal h w) = Alpha.heal h w
-alphaI (Draw w d _) = Alpha.draw w d
+alphaI (Draw' w d _) = Alpha.draw w d
 alphaI (AddToHand w c) = Alpha.addToHand w c
 alphaI (Play w c i) = Alpha.play w (anyCard c) i
 alphaI (Transmute' t) = Alpha.transmute t
@@ -75,7 +75,7 @@ animI GetGen = basicAnim Anim.GetGen
 animI (Hurt d w h) = damageAnim d w h
 animI (Heal _ w) = healAnim w
 animI (AddToHand w c) = addToHandAnim w c
-animI (Draw w d t) = drawAnim w d t
+animI (Draw' w d t) = drawAnim w d t
 animI (Play w c i) = playAnim w c i
 animI (Transmute' t) = transmuteAnim t
 animI (TransmuteActive' t) = transmuteActiveAnim t
@@ -112,7 +112,7 @@ drawAnim :: WhichPlayer -> WhichPlayer -> TimeModifier -> Eff '[ExecDSL] a -> Ef
 drawAnim w d t alpha = do
   nextCard <- execAlpha $ headMay <$> Alpha.getDeck d
   handLength <- execAlpha $ length <$> Alpha.getHand w
-  noDraws <- execAlpha $ misc_noDraws <$> Alpha.getMisc
+  noDraws <- execAlpha $ getNoDraws w <$> Alpha.getMisc
   final <- alpha
   if handLength < maxHandLength
     then execAnim $ Anim.draw w t
@@ -122,7 +122,7 @@ drawAnim w d t alpha = do
 millAnim :: WhichPlayer -> TimeModifier -> Eff '[ExecDSL] a -> Eff '[ExecDSL] a
 millAnim w t alpha = do
   nextCard <- execAlpha $ headMay <$> Alpha.getDeck w
-  noDraws <- execAlpha $ misc_noDraws <$> Alpha.getMisc
+  noDraws <- execAlpha $ getNoDraws w <$> Alpha.getMisc
   final <- alpha
   execAnim $ Anim.mill w (fromMaybe (getEndCard noDraws) nextCard) t
   return final

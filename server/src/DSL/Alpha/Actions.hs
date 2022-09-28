@@ -14,7 +14,7 @@ import Data.Foldable (toList)
 import Data.Maybe (catMaybes)
 import HandCard (HandCard (..), anyCard)
 import Life (Life)
-import Model (Deck, Hand, Misc (..), Passes (..), Turn, incrNoDraws, maxHandLength)
+import Model (Deck, Hand, Misc (..), Passes (..), Turn, getNoDraws, incrNoDraws, maxHandLength)
 import Player (WhichPlayer (..), other)
 import Safe (headMay, tailSafe)
 import Stack (Stack)
@@ -121,9 +121,9 @@ draw w d = do
       modDeck d tailSafe
       addToHand w (HandCard card)
     Nothing -> do
-      noDraws <- misc_noDraws <$> getMisc
+      noDraws <- getNoDraws w <$> getMisc
       addToHand w (KnownHandCard (getEndCard noDraws))
-      modMisc incrNoDraws
+      modMisc (incrNoDraws w)
 
 transmute :: Wheel (Maybe Transmutation) -> Program ()
 transmute transmutations =

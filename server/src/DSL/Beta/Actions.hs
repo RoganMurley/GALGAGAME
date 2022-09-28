@@ -19,7 +19,7 @@ import Data.Set (Set)
 import qualified Data.Set as Set
 import HandCard (HandCard, isRevealed)
 import Life (Life)
-import Model (maxHandLength)
+import Model (Model (model_misc), getNoDraws, maxHandLength)
 import Player (WhichPlayer (..), other)
 import Safe (headDef, lastDef)
 import Stack (Stack)
@@ -56,6 +56,12 @@ transmuteActive f = do
           return ()
     Nothing ->
       return ()
+
+draw :: WhichPlayer -> WhichPlayer -> TimeModifier -> Program ()
+draw w wd t = do
+  noDraws <- getNoDraws w . model_misc <$> getModel
+  when (noDraws > 10) (discardHand w (\_ _ -> True))
+  draw' w wd t
 
 bounce :: (Int -> StackCard -> Bool) -> TimeModifier -> Program ()
 bounce f t = do

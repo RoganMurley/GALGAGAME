@@ -101,7 +101,8 @@ gameover model = lifePA <= 0 || lifePB <= 0
 
 -- Misc
 data Misc = Misc
-  { misc_noDraws :: Int,
+  { misc_noDrawsPa :: Int,
+    misc_noDrawsPb :: Int,
     misc_forceWin :: Maybe WhichPlayer
   }
   deriving (Eq, Generic, NFData, Show)
@@ -109,12 +110,18 @@ data Misc = Misc
 miscInit :: Misc
 miscInit =
   Misc
-    { misc_noDraws = 0,
+    { misc_noDrawsPa = 0,
+      misc_noDrawsPb = 0,
       misc_forceWin = Nothing
     }
 
-incrNoDraws :: Misc -> Misc
-incrNoDraws misc = misc {misc_noDraws = misc_noDraws misc + 1}
+getNoDraws :: WhichPlayer -> Misc -> Int
+getNoDraws PlayerA = misc_noDrawsPa
+getNoDraws PlayerB = misc_noDrawsPb
+
+incrNoDraws :: WhichPlayer -> Misc -> Misc
+incrNoDraws PlayerA misc = misc {misc_noDrawsPa = misc_noDrawsPa misc + 1}
+incrNoDraws PlayerB misc = misc {misc_noDrawsPb = misc_noDrawsPb misc + 1}
 
 setForceWin :: WhichPlayer -> Misc -> Misc
 setForceWin w misc = misc {misc_forceWin = Just w}
