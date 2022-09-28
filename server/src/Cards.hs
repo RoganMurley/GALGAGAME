@@ -1,6 +1,6 @@
 module Cards where
 
-import Card (Aspect (..), Card (..), Status (..), Suit (..), addStatus, cardName, hasStatus, newCard, wipAspects)
+import Card (Aspect (..), Card (..), Status (..), Suit (..), addRelated, addStatus, cardName, hasStatus, newCard, wipAspects)
 import CardAnim (Hurt (..), TimeModifier (..))
 import Control.Monad (replicateM_, when)
 import qualified DSL.Alpha as Alpha
@@ -260,13 +260,14 @@ shroomWand =
 
 shroomGrail :: Card
 shroomGrail =
-  newCard
-    Shroom
-    Grail
-    "Give them 2 STRANGE SPOREs\n(Hurt yourself for 4)"
-    $ \w -> do
-      addToHand (other w) (KnownHandCard strangeSpore)
-      addToHand (other w) (KnownHandCard strangeSpore)
+  addRelated strangeSpore $
+    newCard
+      Shroom
+      Grail
+      "Give them 2 STRANGE SPOREs\n(Hurt yourself for 4)"
+      $ \w -> do
+        addToHand (other w) (KnownHandCard strangeSpore)
+        addToHand (other w) (KnownHandCard strangeSpore)
 
 strangeSpore :: Card
 strangeSpore =
@@ -442,11 +443,12 @@ alchemyGrail =
 
 alchemyCoin :: Card
 alchemyCoin =
-  newCard
-    Alchemy
-    Coin
-    "Change card in next socket\nto STRANGE GOLD\n(Draw 2)"
-    $ \_ -> transmuteHead (transmuteToCard strangeGold)
+  addRelated strangeGold $
+    newCard
+      Alchemy
+      Coin
+      "Change card in next socket\nto STRANGE GOLD\n(Draw 2)"
+      $ \_ -> transmuteHead (transmuteToCard strangeGold)
 
 strangeGold :: Card
 strangeGold =
@@ -601,12 +603,13 @@ feverGrail =
 
 feverCoin :: Card
 feverCoin =
-  newCard
-    Fever
-    Coin
-    "Change card in next socket to\nSTRANGE DREAM\n(Heal for 13)"
-    $ \_ ->
-      transmuteHead (transmuteToCard strangeDream)
+  addRelated strangeDream $
+    newCard
+      Fever
+      Coin
+      "Change card in next socket to\nSTRANGE DREAM\n(Heal for 13)"
+      $ \_ ->
+        transmuteHead (transmuteToCard strangeDream)
 
 strangeDream :: Card
 strangeDream =
@@ -911,7 +914,7 @@ allCards :: [Card]
 allCards = swords ++ wands ++ grails ++ coins ++ others
 
 cardsByName :: Map Text Card
-cardsByName = Map.fromList $ fmap (\card -> (cardName card, card)) allCards
+cardsByName = Map.fromList $ fmap (\card -> (cardName (card_aspect card) (card_suit card), card)) allCards
 
 cardsByAspect :: Map Aspect [Card]
 cardsByAspect = Map.fromListWith (++) $ fmap (\card -> (card_aspect card, [card])) allCards

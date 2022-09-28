@@ -66,6 +66,7 @@ otherView otherHandEntities ctx =
                                                 , desc = ""
                                                 , imgURL = "invisible.png"
                                                 , statuses = []
+                                                , related = []
                                                 }
                                             }
 

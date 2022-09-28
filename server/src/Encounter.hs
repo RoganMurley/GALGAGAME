@@ -38,7 +38,7 @@ encounterScenario progress gen scenario
       && x > 0.95 =
     puzzleScenario scenario
   -- | True = turboScenario scenario
-  | otherwise = scenario {scenario_tags = [cs $ show x]}
+  | otherwise = scenario {scenario_tags = [cs $ show x, "normal"]}
   where
     events = progress_events progress
     xp = progress_xp progress

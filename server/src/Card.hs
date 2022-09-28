@@ -12,19 +12,20 @@ import GHC.Generics (Generic)
 import Player (WhichPlayer (..))
 
 instance Eq Card where
-  (Card a1 s1 _ _ st1) == (Card a2 s2 _ _ st2) =
-    a1 == a2 && s1 == s2 && st1 == st2
+  (Card a1 s1 _ _ st1 r1) == (Card a2 s2 _ _ st2 r2) =
+    a1 == a2 && s1 == s2 && st1 == st2 && r1 == r2
 
 instance Show Card where
-  show card = cs $ cardName card
+  show card = cs $ cardName (card_aspect card) (card_suit card)
 
 instance ToJSON Card where
   toJSON card =
     object
-      [ "name" .= cardName card,
+      [ "name" .= cardName (card_aspect card) (card_suit card),
         "desc" .= card_desc card,
         "imageURL" .= cardImgUrl (card_aspect card) (card_suit card),
-        "statuses" .= card_statuses card
+        "statuses" .= card_statuses card,
+        "related" .= card_related card
       ]
 
 data Card = Card
@@ -32,7 +33,8 @@ data Card = Card
     card_suit :: Suit,
     card_desc :: Text,
     card_eff :: WhichPlayer -> Beta.Program (),
-    card_statuses :: [Status]
+    card_statuses :: [Status],
+    card_related :: [Related]
   }
   deriving (Generic, NFData)
 
@@ -66,6 +68,21 @@ data Aspect
   | OtherAspect Text
   deriving (Eq, Generic, NFData, Ord, Show)
 
+instance ToJSON Related where
+  toJSON related =
+    object
+      [ "name" .= cardName (related_aspect related) (related_suit related),
+        "desc" .= related_desc related,
+        "imageURL" .= cardImgUrl (related_aspect related) (related_suit related)
+      ]
+
+data Related = Related
+  { related_aspect :: Aspect,
+    related_suit :: Suit,
+    related_desc :: Text
+  }
+  deriving (Eq, Show, Generic, NFData)
+
 suitText :: Suit -> Text
 suitText suit =
   case suit of
@@ -82,9 +99,9 @@ aspectText aspect =
     _ ->
       cs $ show aspect
 
-cardName :: Card -> Text
-cardName Card {card_aspect, card_suit} =
-  toUpper $ aspectText card_aspect <> " " <> suitText card_suit
+cardName :: Aspect -> Suit -> Text
+cardName aspect suit =
+  toUpper $ aspectText aspect <> " " <> suitText suit
 
 cardImgUrl :: Aspect -> Suit -> Text
 cardImgUrl aspect suit =
@@ -123,14 +140,26 @@ instance ToJSON Status where
   toEncoding = genericToEncoding defaultOptions
 
 newCard :: Aspect -> Suit -> Text -> (WhichPlayer -> Beta.Program ()) -> Card
-newCard aspect suit desc eff = Card aspect suit desc eff []
+newCard aspect suit desc eff = Card aspect suit desc eff [] []
 
 addStatus :: Status -> Card -> Card
 addStatus status card =
   let statuses = card_statuses card
    in if length statuses < 6
-        then card {card_statuses = status : card_statuses card}
+        then card {card_statuses = status : statuses}
         else card
+
+addRelated :: Card -> Card -> Card
+addRelated relatedCard card =
+  card {card_related = related : card_related card}
+  where
+    related :: Related
+    related =
+      Related
+        { related_aspect = card_aspect relatedCard,
+          related_suit = card_suit relatedCard,
+          related_desc = card_desc relatedCard
+        }
 
 removeStatus :: Status -> Card -> Card
 removeStatus status card = card {card_statuses = filter (status /=) (card_statuses card)}
