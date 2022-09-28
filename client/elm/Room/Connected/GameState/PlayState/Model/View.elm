@@ -20,7 +20,7 @@ import Hand.View as Hand
 import Holding.Types exposing (Holding(..))
 import Holding.View as Holding
 import Hover exposing (Hover(..), HoverDamage(..), HoverSelf)
-import Math.Matrix4 exposing (makeScale3)
+import Math.Matrix4 exposing (makeRotate, makeScale3)
 import Math.Vector2 exposing (Vec2, vec2)
 import Math.Vector3 exposing (Vec3, vec3)
 import Model.Wave as Wave
@@ -218,6 +218,39 @@ focusTextView originVec focus ({ w, h, anim, model, radius, tick } as ctx) =
             in
             case focus of
                 FocusCard { stackCard } ->
+                    let
+                        relatedEntities =
+                            case stackCard.card.related of
+                                rel :: _ ->
+                                    let
+                                        x =
+                                            origin.x + 0.5 * w + shake
+
+                                        y =
+                                            origin.y + 0.7 * h
+                                    in
+                                    Render.Primitives.quad Render.Shaders.matte
+                                        { rotation = makeRotate pi (vec3 0 0 1)
+                                        , scale = makeScale3 (radius * 0.5) 32 1
+                                        , color = vec3 (244 / 255) (241 / 255) (94 / 255)
+                                        , alpha = 1
+                                        , pos = vec3 x y 0
+                                        , perspective = ctx.ortho
+                                        , camera = ctx.camera2d
+                                        }
+                                        :: Font.view "Futura"
+                                            (rel.name ++ ": " ++ rel.desc)
+                                            { x = x
+                                            , y = y
+                                            , scaleX = 0.0001 * radius
+                                            , scaleY = 0.0001 * radius
+                                            , color = vec3 (0 / 255) (0 / 255) (80 / 255)
+                                            }
+                                            ctx
+
+                                _ ->
+                                    []
+                    in
                     List.concat
                         [ Font.view "Futura"
                             stackCard.card.name
@@ -237,6 +270,7 @@ focusTextView originVec focus ({ w, h, anim, model, radius, tick } as ctx) =
                             , color = Colour.white
                             }
                             ctx
+                        , relatedEntities
                         ]
 
                 FocusPlayer which ->

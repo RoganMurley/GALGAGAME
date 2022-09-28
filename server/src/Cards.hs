@@ -264,7 +264,7 @@ shroomGrail =
     newCard
       Shroom
       Grail
-      "Give them 2 STRANGE SPOREs\n(Hurt yourself for 4)"
+      "Give them 2 STRANGE SPOREs"
       $ \w -> do
         addToHand (other w) (KnownHandCard strangeSpore)
         addToHand (other w) (KnownHandCard strangeSpore)
@@ -447,7 +447,7 @@ alchemyCoin =
     newCard
       Alchemy
       Coin
-      "Change card in next socket\nto STRANGE GOLD\n(Draw 2)"
+      "Change card in next socket\nto STRANGE GOLD"
       $ \_ -> transmuteHead (transmuteToCard strangeGold)
 
 strangeGold :: Card
@@ -607,7 +607,7 @@ feverCoin =
     newCard
       Fever
       Coin
-      "Change card in next socket to\nSTRANGE DREAM\n(Heal for 13)"
+      "Change card in next socket to\nSTRANGE DREAM"
       $ \_ ->
         transmuteHead (transmuteToCard strangeDream)
 
