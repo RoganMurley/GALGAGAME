@@ -14,6 +14,7 @@ import Maybe
 import Mouse
 import Ports
 import Room.Messages as Room
+import String
 import Task
 import Util exposing (message)
 
@@ -87,8 +88,18 @@ update msg model { audio } =
             , Cmd.none
             )
 
-        RecvMessage newMessage ->
+        RecvMessage rawMessage ->
             let
+                newMessage =
+                    case String.split ":" rawMessage of
+                        username :: remainder ->
+                            { username = username
+                            , message = String.join ":" remainder
+                            }
+
+                        _ ->
+                            { username = "???", message = rawMessage }
+
                 messages =
                     newMessage :: model.messages
 

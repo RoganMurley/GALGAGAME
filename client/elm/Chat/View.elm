@@ -7,7 +7,7 @@ import Chat.Types exposing (Model)
 import Dict
 import Ease
 import Game.Types exposing (Context)
-import Html exposing (Html, a, div, input, text)
+import Html exposing (Html, a, div, input, span, text)
 import Html.Attributes exposing (autofocus, class, classList, href, id, style, target, value)
 import Html.Events exposing (on, onClick, onInput, onMouseDown)
 import Main.Types exposing (Flags)
@@ -71,7 +71,14 @@ htmlView { seed } model =
                             ]
 
                         _ ->
-                            List.map (\message -> div [] [ text message ]) model.messages
+                            List.map
+                                (\{ username, message } ->
+                                    div []
+                                        [ span [ class "chatbox__username" ] [ text <| username ++ ": " ]
+                                        , span [ class "chatbox__message" ] [ text message ]
+                                        ]
+                                )
+                                model.messages
                 , input [ class "chatbox__input", id "chat-input", autofocus True, onInput SetInput, value model.input ] []
                 , div [ class "chatbox__close", onClick ToggleVisibility ]
                     [ text "x"

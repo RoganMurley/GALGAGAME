@@ -1,13 +1,19 @@
-module Chat.Types exposing (Model)
+module Chat.Types exposing (ChatMessage, Model)
 
 import Mouse
 
 
 type alias Model =
     { input : String
-    , messages : List String
+    , messages : List ChatMessage
     , visible : Bool
     , notify : Bool
     , pos : Mouse.Position
     , drag : Maybe Mouse.Position
+    }
+
+
+type alias ChatMessage =
+    { username : String
+    , message : String
     }
