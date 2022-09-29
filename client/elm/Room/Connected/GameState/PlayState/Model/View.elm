@@ -231,7 +231,7 @@ focusTextView originVec focus ({ w, h, anim, model, radius, tick } as ctx) =
                                     in
                                     Render.Primitives.quad Render.Shaders.matte
                                         { rotation = makeRotate pi (vec3 0 0 1)
-                                        , scale = makeScale3 (radius * 0.5) 32 1
+                                        , scale = makeScale3 (radius * 0.5) (radius * 0.05) 1
                                         , color = vec3 (244 / 255) (241 / 255) (94 / 255)
                                         , alpha = 1
                                         , pos = vec3 x y 0
