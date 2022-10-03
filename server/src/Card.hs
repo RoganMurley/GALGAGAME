@@ -41,27 +41,24 @@ data Card = Card
 data Suit
   = Sword
   | Wand
-  | Grail
+  | Cup
   | Coin
   | OtherSuit Text
   deriving (Eq, Generic, NFData, Ord, Show)
 
 data Aspect
-  = Heaven
-  | Tide
-  | Blaze
+  = Sky
+  | Water
+  | Fire
   | Shroom
-  | Alchemy
+  | Gold
   | Mirror
-  | Duality
+  | Dual
   | Blood
-  | Crown
-  | Morph
-  | Myriad
-  | Abyss
+  | Clay
+  | Plastic
   | Fever
   | Void
-  | Comet
   | Glass
   | Eye
   | Strange
@@ -109,29 +106,22 @@ cardImgUrl aspect suit =
 
 allAspects :: [Aspect]
 allAspects =
-  [ Heaven,
-    Tide,
-    Blaze,
+  [ Sky,
+    Water,
+    Fire,
     Shroom,
-    Alchemy,
+    Gold,
     Mirror,
-    Duality,
+    Dual,
     Blood,
-    Crown,
-    Morph,
-    Myriad,
-    Abyss,
+    Clay,
+    Plastic,
     Fever,
     Void,
-    Comet,
-    Myriad,
     Glass,
     Eye,
     Strange
   ]
-
-wipAspects :: [Aspect]
-wipAspects = [Comet, Abyss]
 
 data Status = StatusEcho | StatusBlighted | StatusFragile
   deriving (Eq, Generic, NFData, Ord, Show)

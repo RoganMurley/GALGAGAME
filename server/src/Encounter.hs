@@ -5,7 +5,7 @@ import Control.Monad.STM (STM)
 import qualified Data.Set as Set
 import Data.String.Conversions (cs)
 import Data.Time (NominalDiffTime)
-import DeckBuilding (ChosenCharacter (..), heavenRune)
+import DeckBuilding (ChosenCharacter (..), skyRune)
 import Room (Room (..))
 import Scenario (Scenario (..))
 import qualified Start
@@ -56,7 +56,7 @@ tutorial0Scenario scenario@Scenario {scenario_progressWin, scenario_progressLoss
         scenario_progressWin
           { progress_events = Set.fromList ["tutorial-0"],
             progress_xp = 20,
-            progress_unlocks = Set.fromList [heavenRune]
+            progress_unlocks = Set.fromList [skyRune]
           },
       scenario_progressLoss = scenario_progressLoss {progress_xp = 0}
     }

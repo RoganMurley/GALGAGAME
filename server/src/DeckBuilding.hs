@@ -182,50 +182,50 @@ getRune name runes progress =
 -- RUNES
 mainRunes :: [Rune]
 mainRunes =
-  [ blazeRune,
-    tideRune,
-    heavenRune,
+  [ fireRune,
+    waterRune,
+    skyRune,
     shroomRune,
     mirrorRune,
-    dualityRune,
-    alchemyRune,
-    morphRune,
+    dualRune,
+    goldRune,
+    clayRune,
     eyeRune,
     feverRune,
     voidRune,
     bloodRune,
     glassRune,
-    myriadRune
+    plasticRune
   ]
 
 superRunes :: [Rune]
-superRunes = mainRunes ++ [cometRune]
+superRunes = mainRunes
 
 allRunes :: [Rune]
-allRunes = superRunes ++ [abyssRune]
+allRunes = superRunes
 
-tideRune :: Rune
-tideRune =
+waterRune :: Rune
+waterRune =
   Rune
-    "TIDE"
-    "cards/tide/coin.png"
-    (Cards.tideSword, Cards.tideWand, Cards.tideGrail, Cards.tideCoin)
+    "WATER"
+    "cards/water/coin.png"
+    (Cards.waterSword, Cards.waterWand, Cards.waterCup, Cards.waterCoin)
     (levelToExperience 1)
 
-blazeRune :: Rune
-blazeRune =
+fireRune :: Rune
+fireRune =
   Rune
-    "BLAZE"
-    "cards/blaze/coin.png"
-    (Cards.blazeSword, Cards.blazeWand, Cards.blazeGrail, Cards.blazeCoin)
+    "FIRE"
+    "cards/fire/coin.png"
+    (Cards.fireSword, Cards.fireWand, Cards.fireCup, Cards.fireCoin)
     (levelToExperience 1)
 
-heavenRune :: Rune
-heavenRune =
+skyRune :: Rune
+skyRune =
   Rune
-    "HEAVEN"
-    "cards/heaven/coin.png"
-    (Cards.heavenSword, Cards.heavenWand, Cards.heavenGrail, Cards.heavenCoin)
+    "SKY"
+    "cards/sky/coin.png"
+    (Cards.skySword, Cards.skyWand, Cards.skyCup, Cards.skyCoin)
     (levelToExperience 1)
 
 shroomRune :: Rune
@@ -233,7 +233,7 @@ shroomRune =
   Rune
     "SHROOM"
     "cards/shroom/coin.png"
-    (Cards.shroomSword, Cards.shroomWand, Cards.shroomGrail, Cards.shroomCoin)
+    (Cards.shroomSword, Cards.shroomWand, Cards.shroomCup, Cards.shroomCoin)
     (levelToExperience 1)
 
 mirrorRune :: Rune
@@ -241,15 +241,15 @@ mirrorRune =
   Rune
     "MIRROR"
     "cards/mirror/coin.png"
-    (Cards.mirrorSword, Cards.mirrorWand, Cards.mirrorGrail, Cards.mirrorCoin)
+    (Cards.mirrorSword, Cards.mirrorWand, Cards.mirrorCup, Cards.mirrorCoin)
     (levelToExperience 2)
 
-alchemyRune :: Rune
-alchemyRune =
+goldRune :: Rune
+goldRune =
   Rune
-    "ALCHEMY"
-    "cards/alchemy/coin.png"
-    (Cards.alchemySword, Cards.alchemyWand, Cards.alchemyGrail, Cards.alchemyCoin)
+    "GOLD"
+    "cards/gold/coin.png"
+    (Cards.goldSword, Cards.goldWand, Cards.goldCup, Cards.goldCoin)
     (levelToExperience 3)
 
 voidRune :: Rune
@@ -257,15 +257,15 @@ voidRune =
   Rune
     "VOID"
     "cards/void/coin.png"
-    (Cards.voidSword, Cards.voidWand, Cards.voidGrail, Cards.voidCoin)
+    (Cards.voidSword, Cards.voidWand, Cards.voidCup, Cards.voidCoin)
     (levelToExperience 4)
 
-dualityRune :: Rune
-dualityRune =
+dualRune :: Rune
+dualRune =
   Rune
-    "DUALITY"
-    "cards/duality/coin.png"
-    (Cards.dualitySword, Cards.dualityWand, Cards.dualityGrail, Cards.dualityCoin)
+    "DUAL"
+    "cards/dual/coin.png"
+    (Cards.dualSword, Cards.dualWand, Cards.dualCup, Cards.dualCoin)
     (levelToExperience 5)
 
 eyeRune :: Rune
@@ -273,7 +273,7 @@ eyeRune =
   Rune
     "EYE"
     "cards/eye/coin.png"
-    (Cards.eyeSword, Cards.eyeWand, Cards.eyeGrail, Cards.eyeCoin)
+    (Cards.eyeSword, Cards.eyeWand, Cards.eyeCup, Cards.eyeCoin)
     (levelToExperience 6)
 
 feverRune :: Rune
@@ -281,15 +281,15 @@ feverRune =
   Rune
     "FEVER"
     "cards/fever/coin.png"
-    (Cards.feverSword, Cards.feverWand, Cards.feverGrail, Cards.feverCoin)
+    (Cards.feverSword, Cards.feverWand, Cards.feverCup, Cards.feverCoin)
     (levelToExperience 7)
 
-morphRune :: Rune
-morphRune =
+clayRune :: Rune
+clayRune =
   Rune
-    "MORPH"
-    "cards/morph/coin.png"
-    (Cards.morphSword, Cards.morphWand, Cards.morphGrail, Cards.morphCoin)
+    "CLAY"
+    "cards/clay/coin.png"
+    (Cards.claySword, Cards.clayWand, Cards.clayCup, Cards.clayCoin)
     (levelToExperience 8)
 
 bloodRune :: Rune
@@ -297,7 +297,7 @@ bloodRune =
   Rune
     "BLOOD"
     "cards/blood/coin.png"
-    (Cards.bloodSword, Cards.bloodWand, Cards.bloodGrail, Cards.bloodCoin)
+    (Cards.bloodSword, Cards.bloodWand, Cards.bloodCup, Cards.bloodCoin)
     (levelToExperience 9)
 
 glassRune :: Rune
@@ -305,32 +305,16 @@ glassRune =
   Rune
     "GLASS"
     "cards/glass/coin.png"
-    (Cards.glassSword, Cards.glassWand, Cards.glassGrail, Cards.glassCoin)
+    (Cards.glassSword, Cards.glassWand, Cards.glassCup, Cards.glassCoin)
     (levelToExperience 10)
 
-myriadRune :: Rune
-myriadRune =
+plasticRune :: Rune
+plasticRune =
   Rune
-    "MYRIAD"
-    "cards/myriad/coin.png"
-    (Cards.myriadSword, Cards.myriadWand, Cards.myriadGrail, Cards.myriadCoin)
+    "PLASTIC"
+    "cards/plastic/coin.png"
+    (Cards.plasticSword, Cards.plasticWand, Cards.plasticCup, Cards.plasticCoin)
     (levelToExperience 11)
-
-cometRune :: Rune
-cometRune =
-  Rune
-    "COMET"
-    "cards/comet/coin.png"
-    (Cards.cometSword, Cards.cometWand, Cards.cometGrail, Cards.cometCoin)
-    (levelToExperience 12)
-
-abyssRune :: Rune
-abyssRune =
-  Rune
-    "ABYSS"
-    "cards/morph/coin.png"
-    (Cards.abyssSword, Cards.abyssWand, Cards.abyssGrail, Cards.abyssSword)
-    0
 
 characterCards :: Character -> Deck
 characterCards Character {character_choice} =

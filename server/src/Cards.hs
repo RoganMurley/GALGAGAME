@@ -1,6 +1,6 @@
 module Cards where
 
-import Card (Aspect (..), Card (..), Status (..), Suit (..), addRelated, addStatus, cardName, hasStatus, newCard, wipAspects)
+import Card (Aspect (..), Card (..), Status (..), Suit (..), addRelated, addStatus, cardName, hasStatus, newCard)
 import CardAnim (Hurt (..), TimeModifier (..))
 import Control.Monad (replicateM_, when)
 import qualified DSL.Alpha as Alpha
@@ -9,10 +9,8 @@ import qualified DSL.Beta as Beta
 import Data.Map (Map)
 import qualified Data.Map as Map
 import Data.Maybe (fromMaybe)
-import qualified Data.Set as Set
 import Data.String.Conversions (cs)
 import Data.Text (Text)
-import qualified Ease
 import HandCard (HandCard (..), anyCard, isRevealed)
 import Player (other)
 import Safe (headMay)
@@ -20,63 +18,63 @@ import Stack (diasporaFromStack, diasporaLength)
 import qualified Stack
 import StackCard (StackCard (..), cardMap, changeOwner, isOwner)
 import Transmutation (Transmutation (..), transmuteToCard)
-import Util (many, manyIndexed, shuffle)
+import Util (many, shuffle)
 
--- BLAZE
-blazeSword :: Card
-blazeSword =
+-- FIRE
+fireSword :: Card
+fireSword =
   newCard
-    Blaze
+    Fire
     Sword
     "Hurt for 7"
     $ \w -> hurt 7 (other w) Slash
 
-blazeWand :: Card
-blazeWand =
+fireWand :: Card
+fireWand =
   newCard
-    Blaze
+    Fire
     Wand
     "Hurt for 5 for each other card\non the wheel"
     $ \w -> do
       len <- diasporaLength <$> getStack
       hurt (len * 5) (other w) Slash
 
-blazeGrail :: Card
-blazeGrail =
+fireCup :: Card
+fireCup =
   newCard
-    Blaze
-    Grail
+    Fire
+    Cup
     "Discard your hand, then draw 2"
     $ \w -> do
       discardHand w (\_ _ -> True)
       draw w w (TimeModifierOutQuint 1)
       draw w w (TimeModifierOutQuint 1)
 
-blazeCoin :: Card
-blazeCoin =
+fireCoin :: Card
+fireCoin =
   newCard
-    Blaze
+    Fire
     Coin
     "Shuffle the order of all other\ncards on the wheel"
     $ \_ -> do
       confound
       Beta.null
 
--- TIDE
-tideSword :: Card
-tideSword =
+-- WATER
+waterSword :: Card
+waterSword =
   newCard
-    Tide
+    Water
     Sword
     "Hurt for 3, return this card\nto hand"
     $ \w -> do
       hurt 3 (other w) Slash
       bounce (\i _ -> i == 0) (TimeModifierOutQuad 0.4)
 
-tideWand :: Card
-tideWand =
+waterWand :: Card
+waterWand =
   newCard
-    Tide
+    Water
     Wand
     "Hurt for 3 for each other card\non the wheel, then draw 1"
     $ \w -> do
@@ -84,56 +82,56 @@ tideWand =
       hurt (len * 3) (other w) Slash
       draw w w (TimeModifierOutQuad 1)
 
-tideGrail :: Card
-tideGrail =
+waterCup :: Card
+waterCup =
   newCard
-    Tide
-    Grail
+    Water
+    Cup
     "Heal for 8"
     $ \w -> heal 8 w
 
-tideCoin :: Card
-tideCoin =
+waterCoin :: Card
+waterCoin =
   newCard
-    Tide
+    Water
     Coin
     "Discard cards in the\nnext 3 wheel sockets"
     $ \_ -> do
       discardStack (\i _ -> (i > 0) && (i < 4))
 
--- HEAVEN
-heavenSword :: Card
-heavenSword =
+-- SKY
+skySword :: Card
+skySword =
   newCard
-    Heaven
+    Sky
     Sword
     "Hurt for 8"
     $ \w -> hurt 8 (other w) Slash
 
-heavenWand :: Card
-heavenWand =
+skyWand :: Card
+skyWand =
   newCard
-    Heaven
+    Sky
     Wand
     "Hurt for 4 for each other card\non the wheel"
     $ \w -> do
       len <- diasporaLength <$> getStack
       hurt (len * 4) (other w) Slash
 
-heavenGrail :: Card
-heavenGrail =
+skyCup :: Card
+skyCup =
   newCard
-    Heaven
-    Grail
+    Sky
+    Cup
     "Heal for 2, return this card\nto hand"
     $ \w -> do
       heal 2 w
       bounce (\i _ -> i == 0) (TimeModifierOutQuad 0.4)
 
-heavenCoin :: Card
-heavenCoin =
+skyCoin :: Card
+skyCoin =
   newCard
-    Heaven
+    Sky
     Coin
     "Return all of your cards on the\nwheel to hand"
     $ \w -> bounce (\i (StackCard o _) -> i > 0 && w == o) (TimeModifierOutQuint 1)
@@ -158,11 +156,11 @@ voidWand =
       discardHand w (\_ _ -> True)
       hurt (4 * handSize) (other w) Slash
 
-voidGrail :: Card
-voidGrail =
+voidCup :: Card
+voidCup =
   newCard
     Void
-    Grail
+    Cup
     "Become a copy of an unrevealed\ncard in your hand"
     $ \w -> do
       gen <- getGen
@@ -189,19 +187,19 @@ voidCoin =
     "Discard all cards on the wheel"
     $ \_ -> discardStack (\i _ -> i > 0)
 
--- DUALITY
-dualitySword :: Card
-dualitySword =
+-- DUAL
+dualSword :: Card
+dualSword =
   newCard
-    Duality
+    Dual
     Sword
     "Hurt for 9"
     $ \w -> hurt 9 (other w) Slash
 
-dualityWand :: Card
-dualityWand =
+dualWand :: Card
+dualWand =
   newCard
-    Duality
+    Dual
     Wand
     "Hurt weakest player for 15"
     $ \w -> do
@@ -212,11 +210,11 @@ dualityWand =
       when (paLife > pbLife) (hurt dmg (other w) Curse)
       when (paLife == pbLife) Beta.null
 
-dualityGrail :: Card
-dualityGrail =
+dualCup :: Card
+dualCup =
   newCard
-    Duality
-    Grail
+    Dual
+    Cup
     "Heal weakest player for 15"
     $ \w -> do
       let mag = 15
@@ -226,10 +224,10 @@ dualityGrail =
       when (paLife > pbLife) (heal mag (other w))
       when (paLife == pbLife) Beta.null
 
-dualityCoin :: Card
-dualityCoin =
+dualCoin :: Card
+dualCoin =
   newCard
-    Duality
+    Dual
     Coin
     "Change next card's owner\nto weakest player"
     $ \w -> do
@@ -258,12 +256,12 @@ shroomWand =
       len <- diasporaLength <$> getStack
       lifesteal (len * 3) (other w)
 
-shroomGrail :: Card
-shroomGrail =
+shroomCup :: Card
+shroomCup =
   addRelated strangeSpore $
     newCard
       Shroom
-      Grail
+      Cup
       "Give them 2 STRANGE SPOREs"
       $ \w -> do
         addToHand (other w) (KnownHandCard strangeSpore)
@@ -309,11 +307,11 @@ bloodWand =
       hurt dmg w Curse
       hurt dmg (other w) Slash
 
-bloodGrail :: Card
-bloodGrail =
+bloodCup :: Card
+bloodCup =
   newCard
     Blood
-    Grail
+    Cup
     "Pay 4 life to draw 2"
     $ \w -> do
       hurt 4 w Curse
@@ -355,11 +353,11 @@ eyeWand =
       let count = length $ filter isRevealed hand
       hurt (count * 7) (other w) Slash
 
-eyeGrail :: Card
-eyeGrail =
+eyeCup :: Card
+eyeCup =
   newCard
     Eye
-    Grail
+    Cup
     "Reveal a card in their hand, then\ndraw for each revealed\ncard in their hand"
     $ \w -> do
       revealRandomCard (other w)
@@ -395,11 +393,11 @@ mirrorWand =
       len <- length <$> getHand w
       hurt (len * 3) (other w) Slash
 
-mirrorGrail :: Card
-mirrorGrail =
+mirrorCup :: Card
+mirrorCup =
   newCard
     Mirror
-    Grail
+    Cup
     "Double the number of times card\nin next socket activates"
     $ \_ -> do
       transmuteHead (cardMap (addStatus StatusEcho))
@@ -414,108 +412,108 @@ mirrorCoin =
       transmute $
         \i stackCard -> if i > 0 then Just $ Transmutation stackCard (changeOwner stackCard) else Nothing
 
--- ALCHEMY
-alchemySword :: Card
-alchemySword =
+-- GOLD
+goldSword :: Card
+goldSword =
   newCard
-    Alchemy
+    Gold
     Sword
     "Hurt for 6"
     $ \w -> hurt 6 (other w) Slash
 
-alchemyWand :: Card
-alchemyWand =
+goldWand :: Card
+goldWand =
   newCard
-    Alchemy
+    Gold
     Wand
     "Hurt for 3 for each card\nin their hand"
     $ \w -> do
       len <- length <$> getHand (other w)
       hurt (len * 3) (other w) Slash
 
-alchemyGrail :: Card
-alchemyGrail =
+goldCup :: Card
+goldCup =
   newCard
-    Alchemy
-    Grail
+    Gold
+    Cup
     "Heal for 10"
     $ heal 10
 
-alchemyCoin :: Card
-alchemyCoin =
-  addRelated strangeGold $
+goldCoin :: Card
+goldCoin =
+  addRelated strangeSubstance $
     newCard
-      Alchemy
+      Gold
       Coin
-      "Change card in next socket\nto STRANGE GOLD"
-      $ \_ -> transmuteHead (transmuteToCard strangeGold)
+      "Change card in next socket\nto STRANGE SUBSTANCE"
+      $ \_ -> transmuteHead (transmuteToCard strangeSubstance)
 
-strangeGold :: Card
-strangeGold =
+strangeSubstance :: Card
+strangeSubstance =
   newCard
     Strange
-    (OtherSuit "GOLD")
+    (OtherSuit "SUBSTANCE")
     "Draw 2"
     $ \w -> do
       draw w w (TimeModifierOutQuint 1)
       draw w w (TimeModifierOutQuint 1)
 
--- Morph
-morphSword :: Card
-morphSword =
+-- Clay
+claySword :: Card
+claySword =
   newCard
-    Morph
+    Clay
     Sword
-    "Hurt for 7, then all MORPH cards on\nthe wheel become SWORDs"
+    "Hurt for 7, then all CLAY cards on\nthe wheel become SWORDs"
     $ \w -> do
       hurt 7 (other w) Slash
       transmute $
         \_ stackCard ->
           case stackCard of
-            StackCard _ Card {card_aspect = Morph} ->
-              Just $ Transmutation stackCard (transmuteToCard morphSword stackCard)
+            StackCard _ Card {card_aspect = Clay} ->
+              Just $ Transmutation stackCard (transmuteToCard claySword stackCard)
             _ ->
               Nothing
 
-morphWand :: Card
-morphWand =
+clayWand :: Card
+clayWand =
   newCard
-    Morph
+    Clay
     Wand
-    "Hurt for 3 for each card on the wheel,\nthen all MORPH cards on the wheel\nbecome WANDs"
+    "Hurt for 3 for each card on the wheel,\nthen all CLAY cards on the wheel\nbecome WANDs"
     $ \w -> do
       len <- diasporaLength <$> getStack
       hurt (len * 3) (other w) Slash
       transmute $
         \_ stackCard ->
           case stackCard of
-            StackCard _ Card {card_aspect = Morph} ->
-              Just $ Transmutation stackCard (transmuteToCard morphWand stackCard)
+            StackCard _ Card {card_aspect = Clay} ->
+              Just $ Transmutation stackCard (transmuteToCard clayWand stackCard)
             _ ->
               Nothing
 
-morphGrail :: Card
-morphGrail =
+clayCup :: Card
+clayCup =
   newCard
-    Morph
-    Grail
-    "Heal for 8, then all MORPH cards on\nthe wheel become GRAILs"
+    Clay
+    Cup
+    "Heal for 8, then all CLAY cards on\nthe wheel become CUPs"
     $ \w -> do
       heal 8 w
       transmute $
         \_ stackCard ->
           case stackCard of
-            StackCard _ Card {card_aspect = Morph} ->
-              Just $ Transmutation stackCard (transmuteToCard morphGrail stackCard)
+            StackCard _ Card {card_aspect = Clay} ->
+              Just $ Transmutation stackCard (transmuteToCard clayCup stackCard)
             _ ->
               Nothing
 
-morphCoin :: Card
-morphCoin =
+clayCoin :: Card
+clayCoin =
   newCard
-    Morph
+    Clay
     Coin
-    "The next card becomes a MORPH card"
+    "The next card becomes a CLAY card"
     $ \_ -> do
       transmuteHead $
         \stackCard ->
@@ -523,50 +521,16 @@ morphCoin =
               targetCard =
                 case card_suit . stackcard_card $ stackCard of
                   Sword ->
-                    morphSword
+                    claySword
                   Wand ->
-                    morphWand
-                  Grail ->
-                    morphGrail
+                    clayWand
+                  Cup ->
+                    clayCup
                   Coin ->
-                    morphCoin
+                    clayCoin
                   OtherSuit _ ->
-                    strangeGlitch
+                    strangeSnag
            in transmuteToCard targetCard stackCard
-
--- ABYSS
-abyssSword :: Card
-abyssSword =
-  newCard
-    Abyss
-    Sword
-    "Discard 5 from their deck"
-    $ \w -> do
-      let mag = 5
-      manyIndexed mag $ \i -> mill (other w) $ TimeModifierOutQuint $ 1 * (Ease.outQuad 0.5 * (fromIntegral i / fromIntegral mag))
-
-abyssWand :: Card
-abyssWand =
-  newCard
-    Abyss
-    Wand
-    "Discard 3 from their deck\nfor each other card in play"
-    $ \w -> do
-      len <- diasporaLength <$> getStack
-      let mag = 3 * len
-      manyIndexed mag $ \i -> mill (other w) $ TimeModifierOutQuint $ 1 * (Ease.outQuad 0.5 * (fromIntegral i / fromIntegral mag))
-
-abyssGrail :: Card
-abyssGrail =
-  newCard
-    Abyss
-    Grail
-    "Both players discard their hands\nthen draw 5"
-    $ \w -> do
-      discardHand w (\_ _ -> True)
-      discardHand (other w) (\_ _ -> True)
-      many 5 $ draw w w (TimeModifierOutQuint 0.4)
-      many 5 $ draw (other w) (other w) (TimeModifierOutQuint 0.4)
 
 -- FEVER
 feverSword :: Card
@@ -587,11 +551,11 @@ feverWand =
       hurt 15 (other w) Slash
       heal 5 (other w)
 
-feverGrail :: Card
-feverGrail =
+feverCup :: Card
+feverCup =
   newCard
     Fever
-    Grail
+    Cup
     "Healing becomes hurting for all\nother cards on the wheel"
     $ \_ ->
       transmute
@@ -603,19 +567,19 @@ feverGrail =
 
 feverCoin :: Card
 feverCoin =
-  addRelated strangeDream $
+  addRelated strangeSleep $
     newCard
       Fever
       Coin
-      "Change card in next socket to\nSTRANGE DREAM"
+      "Change card in next socket to\nSTRANGE SLEEP"
       $ \_ ->
-        transmuteHead (transmuteToCard strangeDream)
+        transmuteHead (transmuteToCard strangeSleep)
 
-strangeDream :: Card
-strangeDream =
+strangeSleep :: Card
+strangeSleep =
   newCard
     Strange
-    (OtherSuit "DREAM")
+    (OtherSuit "SLEEP")
     "Heal for 13"
     $ \w -> do
       heal 13 w
@@ -642,12 +606,12 @@ glassWand =
         let len = length $ filter (\(_, c) -> hasStatus StatusFragile (stackcard_card c)) diaspora
         hurt (len * 7) (other w) Slash
 
-glassGrail :: Card
-glassGrail =
+glassCup :: Card
+glassCup =
   addStatus StatusFragile $
     newCard
       Glass
-      Grail
+      Cup
       "All other cards on the wheel\nbecome fragile. This card\nis fragile."
       $ \_ ->
         transmute
@@ -667,83 +631,32 @@ glassCoin =
       $ \w ->
         discardStack (\i sc -> (i > 0) && isOwner (other w) sc)
 
--- COMET
-cometSword :: Card
-cometSword =
+-- PLASTIC
+plasticSword :: Card
+plasticSword =
   newCard
-    Comet
-    Sword
-    "Hurt for 7"
-    $ \w ->
-      hurt 7 (other w) Slash
-
-cometWand :: Card
-cometWand =
-  newCard
-    Comet
-    Wand
-    "Hurt for 7 for each other suit\non the wheel"
-    $ \w -> do
-      stack <- getStack
-      let otherStackCards = snd <$> filter (\(i, _) -> i > 0) (Stack.diasporaFromStack stack)
-      let suits = Set.fromList $ card_suit . stackcard_card <$> otherStackCards
-      let mag = Set.size suits
-      hurt (mag * 7) (other w) Slash
-
-cometGrail :: Card
-cometGrail =
-  newCard
-    Comet
-    Grail
-    "Play your own copy of card in\nnext socket into previous\nsocket"
-    $ \w -> do
-      stack <- getStack
-      raw $ do
-        let mPrevCard = Stack.get stack 11
-        let mNextCard = Stack.get stack 1
-        case (mPrevCard, mNextCard) of
-          (Nothing, Just nextCard) -> do
-            let copiedCard = nextCard {stackcard_owner = w}
-            let newStack = Stack.set stack 11 (Just copiedCard)
-            Alpha.setStack newStack
-          _ ->
-            return ()
-      Beta.null
-
-cometCoin :: Card
-cometCoin =
-  newCard
-    Comet
-    Coin
-    "Move card in next socket into\nthe previous socket"
-    $ \_ -> moveStack (\i _ -> if i == 1 then Just (-1) else Nothing) (TimeModifierOutQuint 400)
-
--- LEGION
-myriadSword :: Card
-myriadSword =
-  newCard
-    Myriad
+    Plastic
     Sword
     "Hurt for 7"
     $ \w -> hurt 7 (other w) Slash
 
-myriadWand :: Card
-myriadWand =
+plasticWand :: Card
+plasticWand =
   newCard
-    Myriad
+    Plastic
     Wand
-    "Hurt for 8 for each MYRIAD WAND\non the wheel"
+    "Hurt for 8 for each PLASTIC WAND\non the wheel"
     $ \w -> do
       stack <- getStack
       let cards = fmap (\(_, sc) -> stackcard_card sc) (Stack.diasporaFromStack stack)
-      let mag = length $ filter (\Card {card_aspect, card_suit} -> (card_aspect == Myriad) && (card_suit == Wand)) cards
+      let mag = length $ filter (\Card {card_aspect, card_suit} -> (card_aspect == Plastic) && (card_suit == Wand)) cards
       hurt (8 * mag) (other w) Slash
 
-myriadGrail :: Card
-myriadGrail =
+plasticCup :: Card
+plasticCup =
   newCard
-    Myriad
-    Grail
+    Plastic
+    Cup
     "Draw 2 copies of card in next socket "
     $ \w -> do
       stack <- getStack
@@ -755,10 +668,10 @@ myriadGrail =
         Nothing ->
           return ()
 
-myriadCoin :: Card
-myriadCoin =
+plasticCoin :: Card
+plasticCoin =
   newCard
-    Myriad
+    Plastic
     Coin
     "All other cards on the wheel become\na copy of the card in next socket"
     $ \_ -> do
@@ -776,14 +689,14 @@ myriadCoin =
 getEndCard :: Int -> Card
 getEndCard noDraws
   | noDraws > 10 = strangeStart
-  | otherwise = strangeEnd noDraws
+  | otherwise = strangeStop noDraws
 
-strangeEnd :: Int -> Card
-strangeEnd noDraws =
+strangeStop :: Int -> Card
+strangeStop noDraws =
   let dmg = 2 ^ noDraws :: Int
    in newCard
         Strange
-        (OtherSuit "END")
+        (OtherSuit "STOP")
         ("You're out of cards,\nhurt yourself for " <> cs (show dmg))
         $ \w -> hurt dmg w Slash
 
@@ -795,7 +708,7 @@ strangeStart =
     "The cycle continues..."
     $ \w -> do
       gen <- getGen
-      let deckA = shuffle gen (filter (\Card {card_aspect} -> card_aspect `notElem` wipAspects) allCards)
+      let deckA = shuffle gen allCards
       let deckB = shuffle gen deckA
       raw
         ( do
@@ -807,8 +720,8 @@ strangeStart =
       replicateM_ 5 (Beta.draw w w (TimeModifierOutQuint 1))
       replicateM_ 5 (Beta.draw (other w) (other w) (TimeModifierOutQuint 1))
 
-strangeGlitch :: Card
-strangeGlitch =
+strangeSnag :: Card
+strangeSnag =
   newCard
     Strange
     (OtherSuit "GLITCH")
@@ -824,94 +737,87 @@ strangeGlitch =
 -- Aggregations
 swords :: [Card]
 swords =
-  [ blazeSword,
-    heavenSword,
+  [ fireSword,
+    skySword,
     shroomSword,
     bloodSword,
     mirrorSword,
-    dualitySword,
-    alchemySword,
-    morphSword,
-    tideSword,
-    abyssSword,
+    dualSword,
+    goldSword,
+    claySword,
+    waterSword,
     feverSword,
     voidSword,
     eyeSword,
     glassSword,
-    cometSword,
-    myriadSword
+    plasticSword
   ]
 
 wands :: [Card]
 wands =
-  [ blazeWand,
-    heavenWand,
+  [ fireWand,
+    skyWand,
     shroomWand,
     bloodWand,
     mirrorWand,
-    dualityWand,
-    alchemyWand,
-    morphWand,
-    tideWand,
-    abyssWand,
+    dualWand,
+    goldWand,
+    clayWand,
+    waterWand,
     feverWand,
     voidWand,
     eyeWand,
     glassWand,
-    cometWand,
-    myriadWand
+    plasticWand
   ]
 
-grails :: [Card]
-grails =
-  [ blazeGrail,
-    heavenGrail,
-    shroomGrail,
-    bloodGrail,
-    mirrorGrail,
-    dualityGrail,
-    alchemyGrail,
-    morphGrail,
-    tideGrail,
-    abyssGrail,
-    feverGrail,
-    voidGrail,
-    eyeGrail,
-    glassGrail,
-    cometGrail,
-    myriadGrail
+cups :: [Card]
+cups =
+  [ fireCup,
+    skyCup,
+    shroomCup,
+    bloodCup,
+    mirrorCup,
+    dualCup,
+    goldCup,
+    clayCup,
+    waterCup,
+    feverCup,
+    voidCup,
+    eyeCup,
+    glassCup,
+    plasticCup
   ]
 
 coins :: [Card]
 coins =
-  [ blazeCoin,
-    heavenCoin,
+  [ fireCoin,
+    skyCoin,
     shroomCoin,
     bloodCoin,
     mirrorCoin,
-    dualityCoin,
-    alchemyCoin,
-    morphCoin,
-    tideCoin,
+    dualCoin,
+    goldCoin,
+    clayCoin,
+    waterCoin,
     feverCoin,
     voidCoin,
     eyeCoin,
     glassCoin,
-    cometCoin,
-    myriadCoin
+    plasticCoin
   ]
 
 others :: [Card]
 others =
   [ strangeSpore,
     strangeStart,
-    strangeGold,
-    strangeDream,
-    strangeGlitch
+    strangeSubstance,
+    strangeSleep,
+    strangeSnag
   ]
 
 allCards :: [Card]
-allCards = swords ++ wands ++ grails ++ coins ++ others
+allCards = swords ++ wands ++ cups ++ coins ++ others
 
 cardsByName :: Map Text Card
 cardsByName = Map.fromList $ fmap (\card -> (cardName (card_aspect card) (card_suit card), card)) allCards
