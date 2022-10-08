@@ -103,6 +103,9 @@ update msg state flags mode _ players assets =
 mouseDown : Position -> GameState -> Flags -> Mode -> GameType -> Players -> Assets.Model -> ( GameState, Cmd Main.Msg )
 mouseDown mousePos state flags mode gameType players assets =
     case state of
+        Waiting waiting ->
+            ( Waiting <| Waiting.mouseDown mousePos waiting, Cmd.none )
+
         Selecting selecting ->
             let
                 ( newSelecting, cmd ) =
@@ -116,9 +119,6 @@ mouseDown mousePos state flags mode gameType players assets =
                     PlayState.mouseDown flags assets gameType mode players mousePos playState
             in
             ( Started newPlayState, cmd )
-
-        _ ->
-            ( state, Cmd.none )
 
 
 mouseUp : Position -> GameState -> Flags -> Mode -> GameType -> Players -> Assets.Model -> ( GameState, Cmd Main.Msg )

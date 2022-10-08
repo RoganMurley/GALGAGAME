@@ -68,7 +68,7 @@ htmlView { waitType } { httpPort, hostname } roomID =
 
 
 webglView : Model -> Render.Params -> Assets.Model -> List WebGL.Entity
-webglView { bounceTick, waitType } params assets =
+webglView { bounceTick, bulge, waitType } params assets =
     let
         ctx =
             bareContextInit ( params.w, params.h ) assets NoMouse
@@ -77,7 +77,7 @@ webglView { bounceTick, waitType } params assets =
             ctx
 
         size =
-            radius * 0.7
+            radius * 0.7 + bulge
 
         rot =
             0.003 * params.time
