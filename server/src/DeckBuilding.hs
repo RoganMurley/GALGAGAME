@@ -184,10 +184,10 @@ mainRunes :: [Rune]
 mainRunes =
   [ fireRune,
     waterRune,
-    skyRune,
+    angelRune,
     shroomRune,
     mirrorRune,
-    dualRune,
+    dualityRune,
     goldRune,
     clayRune,
     eyeRune,
@@ -220,12 +220,12 @@ fireRune =
     (Cards.fireSword, Cards.fireWand, Cards.fireCup, Cards.fireCoin)
     (levelToExperience 1)
 
-skyRune :: Rune
-skyRune =
+angelRune :: Rune
+angelRune =
   Rune
-    "SKY"
-    "cards/sky/coin.png"
-    (Cards.skySword, Cards.skyWand, Cards.skyCup, Cards.skyCoin)
+    "ANGEL"
+    "cards/angel/coin.png"
+    (Cards.angelSword, Cards.angelWand, Cards.angelCup, Cards.angelCoin)
     (levelToExperience 1)
 
 shroomRune :: Rune
@@ -260,12 +260,12 @@ voidRune =
     (Cards.voidSword, Cards.voidWand, Cards.voidCup, Cards.voidCoin)
     (levelToExperience 4)
 
-dualRune :: Rune
-dualRune =
+dualityRune :: Rune
+dualityRune =
   Rune
-    "DUAL"
-    "cards/dual/coin.png"
-    (Cards.dualSword, Cards.dualWand, Cards.dualCup, Cards.dualCoin)
+    "DUALITY"
+    "cards/duality/coin.png"
+    (Cards.dualitySword, Cards.dualityWand, Cards.dualityCup, Cards.dualityCoin)
     (levelToExperience 5)
 
 eyeRune :: Rune

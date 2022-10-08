@@ -47,13 +47,13 @@ data Suit
   deriving (Eq, Generic, NFData, Ord, Show)
 
 data Aspect
-  = Sky
+  = Angel
   | Water
   | Fire
   | Shroom
   | Gold
   | Mirror
-  | Dual
+  | Duality
   | Blood
   | Clay
   | Plastic
@@ -106,13 +106,13 @@ cardImgUrl aspect suit =
 
 allAspects :: [Aspect]
 allAspects =
-  [ Sky,
+  [ Angel,
     Water,
     Fire,
     Shroom,
     Gold,
     Mirror,
-    Dual,
+    Duality,
     Blood,
     Clay,
     Plastic,

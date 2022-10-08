@@ -99,39 +99,39 @@ waterCoin =
     $ \_ -> do
       discardStack (\i _ -> (i > 0) && (i < 4))
 
--- SKY
-skySword :: Card
-skySword =
+-- ANGEL
+angelSword :: Card
+angelSword =
   newCard
-    Sky
+    Angel
     Sword
     "Hurt for 8"
     $ \w -> hurt 8 (other w) Slash
 
-skyWand :: Card
-skyWand =
+angelWand :: Card
+angelWand =
   newCard
-    Sky
+    Angel
     Wand
     "Hurt for 4 for each other card\non the wheel"
     $ \w -> do
       len <- diasporaLength <$> getStack
       hurt (len * 4) (other w) Slash
 
-skyCup :: Card
-skyCup =
+angelCup :: Card
+angelCup =
   newCard
-    Sky
+    Angel
     Cup
     "Heal for 2, return this card\nto hand"
     $ \w -> do
       heal 2 w
       bounce (\i _ -> i == 0) (TimeModifierOutQuad 0.4)
 
-skyCoin :: Card
-skyCoin =
+angelCoin :: Card
+angelCoin =
   newCard
-    Sky
+    Angel
     Coin
     "Return all of your cards on the\nwheel to hand"
     $ \w -> bounce (\i (StackCard o _) -> i > 0 && w == o) (TimeModifierOutQuint 1)
@@ -187,19 +187,19 @@ voidCoin =
     "Discard all cards on the wheel"
     $ \_ -> discardStack (\i _ -> i > 0)
 
--- DUAL
-dualSword :: Card
-dualSword =
+-- DUALITY
+dualitySword :: Card
+dualitySword =
   newCard
-    Dual
+    Duality
     Sword
     "Hurt for 9"
     $ \w -> hurt 9 (other w) Slash
 
-dualWand :: Card
-dualWand =
+dualityWand :: Card
+dualityWand =
   newCard
-    Dual
+    Duality
     Wand
     "Hurt weakest player for 15"
     $ \w -> do
@@ -210,10 +210,10 @@ dualWand =
       when (paLife > pbLife) (hurt dmg (other w) Curse)
       when (paLife == pbLife) Beta.null
 
-dualCup :: Card
-dualCup =
+dualityCup :: Card
+dualityCup =
   newCard
-    Dual
+    Duality
     Cup
     "Heal weakest player for 15"
     $ \w -> do
@@ -224,10 +224,10 @@ dualCup =
       when (paLife > pbLife) (heal mag (other w))
       when (paLife == pbLife) Beta.null
 
-dualCoin :: Card
-dualCoin =
+dualityCoin :: Card
+dualityCoin =
   newCard
-    Dual
+    Duality
     Coin
     "Change next card's owner\nto weakest player"
     $ \w -> do
@@ -738,11 +738,11 @@ strangeSnag =
 swords :: [Card]
 swords =
   [ fireSword,
-    skySword,
+    angelSword,
     shroomSword,
     bloodSword,
     mirrorSword,
-    dualSword,
+    dualitySword,
     goldSword,
     claySword,
     waterSword,
@@ -756,11 +756,11 @@ swords =
 wands :: [Card]
 wands =
   [ fireWand,
-    skyWand,
+    angelWand,
     shroomWand,
     bloodWand,
     mirrorWand,
-    dualWand,
+    dualityWand,
     goldWand,
     clayWand,
     waterWand,
@@ -774,11 +774,11 @@ wands =
 cups :: [Card]
 cups =
   [ fireCup,
-    skyCup,
+    angelCup,
     shroomCup,
     bloodCup,
     mirrorCup,
-    dualCup,
+    dualityCup,
     goldCup,
     clayCup,
     waterCup,
@@ -792,11 +792,11 @@ cups =
 coins :: [Card]
 coins =
   [ fireCoin,
-    skyCoin,
+    angelCoin,
     shroomCoin,
     bloodCoin,
     mirrorCoin,
-    dualCoin,
+    dualityCoin,
     goldCoin,
     clayCoin,
     waterCoin,

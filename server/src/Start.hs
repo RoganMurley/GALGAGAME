@@ -6,7 +6,7 @@ import Control.Monad (replicateM_)
 import qualified DSL.Alpha as Alpha
 import qualified DSL.Beta as Beta
 import Data.Text (Text)
-import DeckBuilding (Character (..), characterCards, fireRune, mirrorRune, shroomRune, skyRune, waterRune)
+import DeckBuilding (Character (..), angelRune, characterCards, fireRune, mirrorRune, shroomRune, waterRune)
 import Model (Turn, maxHandLength, setForceWin)
 import Player (WhichPlayer (..), other)
 import Util (shuffle, split)
@@ -35,7 +35,7 @@ tutorial0Program _ = do
     Alpha.setDeck PlayerA deckA
     Alpha.setMaxLife PlayerA 20
     Alpha.setLife PlayerA 20
-    let deckB = makeDeck [Cards.skySword, Cards.skyCup, Cards.skySword, Cards.skySword, Cards.skyWand]
+    let deckB = makeDeck [Cards.angelSword, Cards.angelCup, Cards.angelSword, Cards.angelSword, Cards.angelWand]
     Alpha.setDeck PlayerB deckB
     Alpha.setMaxLife PlayerB 20
     Alpha.setLife PlayerB 20
@@ -44,9 +44,9 @@ tutorial1Program :: Maybe (Text, Text) -> Beta.Program ()
 tutorial1Program _ = do
   (ga, gb) <- split <$> Beta.getGen
   Beta.raw $ do
-    let deckA = shuffle ga $ characterCards (Character (Left (fireRune, skyRune, shroomRune)) 50)
+    let deckA = shuffle ga $ characterCards (Character (Left (fireRune, angelRune, shroomRune)) 50)
     Alpha.setDeck PlayerA deckA
-    let deckB = shuffle gb $ characterCards (Character (Left (skyRune, mirrorRune, waterRune)) 50)
+    let deckB = shuffle gb $ characterCards (Character (Left (angelRune, mirrorRune, waterRune)) 50)
     Alpha.setDeck PlayerB deckB
   replicateM_ 6 (Beta.draw PlayerA PlayerA (TimeModifierOutQuint 0.25))
   replicateM_ 5 (Beta.draw PlayerB PlayerB (TimeModifierOutQuint 0.25))
@@ -55,7 +55,7 @@ tutorial1Program _ = do
 -- tutorial2Program _ = do
 --   Beta.raw $ do
 --     let makeDeck = take 25 . cycle
---     let deckA = makeDeck [Cards.waterCoin, Cards.skySword, Cards.waterSword, Cards.skyCup, Cards.skyWand, Cards.waterWand, Cards.skyCoin, Cards.skySword]
+--     let deckA = makeDeck [Cards.waterCoin, Cards.angelSword, Cards.waterSword, Cards.angelCup, Cards.angelWand, Cards.waterWand, Cards.angelCoin, Cards.angelSword]
 --     Alpha.setDeck PlayerA deckA
 --     Alpha.setMaxLife PlayerA 50
 --     Alpha.setLife PlayerA 50
