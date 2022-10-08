@@ -220,36 +220,40 @@ focusTextView originVec focus ({ w, h, anim, model, radius, tick } as ctx) =
                 FocusCard { stackCard } ->
                     let
                         relatedEntities =
-                            case stackCard.card.related of
-                                rel :: _ ->
-                                    let
-                                        x =
-                                            origin.x + 0.5 * w + shake
+                            if ctx.resolving then
+                                []
 
-                                        y =
-                                            origin.y + 0.7 * h
-                                    in
-                                    Render.Primitives.quad Render.Shaders.matte
-                                        { rotation = makeRotate pi (vec3 0 0 1)
-                                        , scale = makeScale3 (radius * 0.5) (radius * 0.05) 1
-                                        , color = vec3 (244 / 255) (241 / 255) (94 / 255)
-                                        , alpha = 1
-                                        , pos = vec3 x y 0
-                                        , perspective = ctx.ortho
-                                        , camera = ctx.camera2d
-                                        }
-                                        :: Font.view "Futura"
-                                            (rel.name ++ ": " ++ rel.desc)
-                                            { x = x
-                                            , y = y
-                                            , scaleX = 0.0001 * radius
-                                            , scaleY = 0.0001 * radius
-                                            , color = vec3 (0 / 255) (0 / 255) (80 / 255)
+                            else
+                                case stackCard.card.related of
+                                    rel :: _ ->
+                                        let
+                                            x =
+                                                origin.x + 0.5 * w + shake
+
+                                            y =
+                                                origin.y + 0.7 * h
+                                        in
+                                        Render.Primitives.quad Render.Shaders.matte
+                                            { rotation = makeRotate pi (vec3 0 0 1)
+                                            , scale = makeScale3 (radius * 0.5) (radius * 0.05) 1
+                                            , color = vec3 (244 / 255) (241 / 255) (94 / 255)
+                                            , alpha = 1
+                                            , pos = vec3 x y 0
+                                            , perspective = ctx.ortho
+                                            , camera = ctx.camera2d
                                             }
-                                            ctx
+                                            :: Font.view "Futura"
+                                                (rel.name ++ ": " ++ rel.desc)
+                                                { x = x
+                                                , y = y
+                                                , scaleX = 0.0001 * radius
+                                                , scaleY = 0.0001 * radius
+                                                , color = vec3 (0 / 255) (0 / 255) (80 / 255)
+                                                }
+                                                ctx
 
-                                _ ->
-                                    []
+                                    _ ->
+                                        []
                     in
                     List.concat
                         [ Font.view "Futura"
