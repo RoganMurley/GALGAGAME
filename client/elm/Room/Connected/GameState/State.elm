@@ -104,7 +104,7 @@ mouseDown : Position -> GameState -> Flags -> Mode -> GameType -> Players -> Ass
 mouseDown mousePos state flags mode gameType players assets =
     case state of
         Waiting waiting ->
-            ( Waiting <| Waiting.mouseDown mousePos waiting, Cmd.none )
+            ( Waiting <| Waiting.mouseDown flags assets mousePos waiting, Cmd.none )
 
         Selecting selecting ->
             let

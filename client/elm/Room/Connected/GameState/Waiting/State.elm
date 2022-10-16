@@ -1,6 +1,9 @@
 module Waiting.State exposing (init, mouseDown, tick)
 
-import Mouse exposing (Position)
+import Assets.Types as Assets
+import Game.State exposing (bareContextInit)
+import Main.Types exposing (Flags)
+import Mouse exposing (MouseState(..), Position)
 import Waiting.Types exposing (Model, WaitType(..))
 
 
@@ -21,6 +24,10 @@ tick dt model =
     }
 
 
-mouseDown : Position -> Model -> Model
-mouseDown mousePos model =
-    { model | bulge = model.bulge + 30 }
+mouseDown : Flags -> Assets.Model -> Position -> Model -> Model
+mouseDown flags assets mousePos model =
+    let
+        ctx =
+            bareContextInit flags.dimensions assets NoMouse
+    in
+    { model | bulge = model.bulge + ctx.radius * 0.05 }
