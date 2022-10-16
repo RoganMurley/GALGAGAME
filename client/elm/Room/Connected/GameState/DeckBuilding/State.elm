@@ -308,69 +308,89 @@ characterButtons { radius, w, h, mouse } dt chat { ready, buttons, character } =
         triangleSide =
             radius * 0.27
     in
-    if ready then
-        Buttons.empty
+    Buttons.fromList <|
+        List.map (\f -> f dt mouse buttons) <|
+            [ Buttons.entity
+                "ready"
+                { x = 0.5 * w
+                , y = 0.8 * h
+                , width = 0.25 * radius
+                , height = 0.1 * radius
+                , btn =
+                    TextButton
+                        { font = "Futura"
+                        , text = "Ready?"
+                        , textColor =
+                            if ready then
+                                vec3 (0 / 255) (0 / 255) (0 / 255)
 
-    else
-        Buttons.fromList <|
-            List.map (\f -> f dt mouse buttons) <|
-                [ Buttons.entity
-                    "ready"
-                    { x = 0.5 * w
-                    , y = 0.8 * h
-                    , width = 0.25 * radius
-                    , height = 0.1 * radius
-                    , btn =
-                        TextButton
-                            { font = "Futura"
-                            , text = "Ready?"
-                            , textColor = vec3 (0 / 255) (0 / 255) (80 / 255)
-                            , bgColor = vec3 (244 / 255) (241 / 255) (94 / 255)
-                            , options = [ Buttons.HoverText "Ready!" ]
-                            }
-                    , disabled = False
-                    }
-                , Buttons.entity "toggleChat"
-                    { x = w * 0.5 - 0.5 * radius
-                    , y = 0.8 * h
-                    , width = 0.12 * radius
-                    , height = 0.12 * radius
-                    , btn =
-                        TextButton
-                            { font = "Futura"
-                            , text =
-                                if chat.visible then
-                                    "chatClose"
+                            else
+                                vec3 (0 / 255) (0 / 255) (80 / 255)
+                        , bgColor =
+                            if ready then
+                                vec3 (70 / 255) (70 / 255) (70 / 255)
 
-                                else
-                                    "chat"
-                            , textColor = vec3 (0 / 255) (0 / 255) (80 / 255)
-                            , bgColor = vec3 (244 / 255) (241 / 255) (94 / 255)
-                            , options = [ Buttons.Circular, Buttons.IsIcon, Buttons.TextScale 0.65 ]
-                            }
-                    , disabled = False
-                    }
-                , Buttons.entity "random"
-                    { x = w * 0.5 + 0.5 * radius
-                    , y = 0.8 * h
-                    , width = 0.12 * radius
-                    , height = 0.12 * radius
-                    , btn =
-                        TextButton
-                            { font = "Futura"
-                            , text = "dice"
-                            , textColor = vec3 (0 / 255) (0 / 255) (80 / 255)
-                            , bgColor = vec3 (244 / 255) (241 / 255) (94 / 255)
-                            , options = [ Buttons.Circular, Buttons.IsIcon, Buttons.TextScale 1.2 ]
-                            }
-                    , disabled = False
-                    }
-                ]
-                    ++ (case Maybe.map .choice character |> Maybe.join of
-                            Nothing ->
+                            else
+                                vec3 (244 / 255) (241 / 255) (94 / 255)
+                        , options = [ Buttons.HoverText "Ready!" ]
+                        }
+                , disabled = ready
+                }
+            , Buttons.entity "toggleChat"
+                { x = w * 0.5 - 0.5 * radius
+                , y = 0.8 * h
+                , width = 0.12 * radius
+                , height = 0.12 * radius
+                , btn =
+                    TextButton
+                        { font = "Futura"
+                        , text =
+                            if chat.visible then
+                                "chatClose"
+
+                            else
+                                "chat"
+                        , textColor = vec3 (0 / 255) (0 / 255) (80 / 255)
+                        , bgColor = vec3 (244 / 255) (241 / 255) (94 / 255)
+                        , options = [ Buttons.Circular, Buttons.IsIcon, Buttons.TextScale 0.65 ]
+                        }
+                , disabled = False
+                }
+            , Buttons.entity "random"
+                { x = w * 0.5 + 0.5 * radius
+                , y = 0.8 * h
+                , width = 0.12 * radius
+                , height = 0.12 * radius
+                , btn =
+                    TextButton
+                        { font = "Futura"
+                        , text = "dice"
+                        , textColor =
+                            if ready then
+                                vec3 (0 / 255) (0 / 255) (0 / 255)
+
+                            else
+                                vec3 (0 / 255) (0 / 255) (80 / 255)
+                        , bgColor =
+                            if ready then
+                                vec3 (70 / 255) (70 / 255) (70 / 255)
+
+                            else
+                                vec3 (244 / 255) (241 / 255) (94 / 255)
+                        , options = [ Buttons.Circular, Buttons.IsIcon, Buttons.TextScale 1.2 ]
+                        }
+                , disabled = ready
+                }
+            ]
+                ++ (case Maybe.map .choice character |> Maybe.join of
+                        Nothing ->
+                            []
+
+                        Just choice ->
+                            if ready then
                                 []
 
-                            Just choice ->
+                            else
                                 [ Buttons.entity
                                     "runeA"
                                     { x = 0.5 * w
@@ -411,7 +431,7 @@ characterButtons { radius, w, h, mouse } dt chat { ready, buttons, character } =
                                     , disabled = False
                                     }
                                 ]
-                       )
+                   )
 
 
 getRuneFromCursor : RuneCursor -> Character -> Maybe Rune
