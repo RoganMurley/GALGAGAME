@@ -45,10 +45,10 @@ initialProgress = mempty {progress_unlocks = unlocks}
     unlocks =
       Set.fromList $
         catMaybes
-          [ getRuneByName "HEAVEN",
-            getRuneByName "TIDE",
+          [ getRuneByName "ANGEL",
+            getRuneByName "WATER",
             getRuneByName "SHROOM",
-            getRuneByName "BLAZE"
+            getRuneByName "FIRE"
           ]
 
 getXp :: Progress -> Experience
