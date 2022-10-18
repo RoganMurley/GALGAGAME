@@ -724,7 +724,7 @@ strangeSnag :: Card
 strangeSnag =
   newCard
     Strange
-    (OtherSuit "GLITCH")
+    (OtherSuit "SNAG")
     "You feel like something\nis missing..."
     $ \w -> do
       Beta.null
