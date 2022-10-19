@@ -591,7 +591,7 @@ glassSword =
     newCard
       Glass
       Sword
-      "Hurt for 9.\nThis card is fragile."
+      "Hurt for 9.\nThis card starts fragile."
       $ \w -> hurt 9 (other w) Slash
 
 glassWand :: Card
@@ -600,7 +600,7 @@ glassWand =
     newCard
       Glass
       Wand
-      "Hurt for 7 for each fragile\ncard on the wheel.\nThis card is fragile."
+      "Hurt for 7 for each fragile\ncard on the wheel.\nThis card starts fragile."
       $ \w -> do
         diaspora <- diasporaFromStack <$> getStack
         let len = length $ filter (\(_, c) -> hasStatus StatusFragile (stackcard_card c)) diaspora
@@ -612,7 +612,7 @@ glassCup =
     newCard
       Glass
       Cup
-      "All other cards on the wheel\nbecome fragile. This card\nis fragile."
+      "All other cards on the wheel\nbecome fragile. This card\nstarts fragile."
       $ \_ ->
         transmute
           ( \i sc ->
@@ -627,7 +627,7 @@ glassCoin =
     newCard
       Glass
       Coin
-      "Discard all their cards on the wheel.\nThis card is fragile."
+      "Discard all their cards on the wheel.\nThis card starts fragile."
       $ \w ->
         discardStack (\i sc -> (i > 0) && isOwner (other w) sc)
 
