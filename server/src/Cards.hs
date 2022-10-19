@@ -681,7 +681,9 @@ plasticCoin =
         Just nextStackCard ->
           transmute $
             \i stackCard ->
-              if i > 0 then Just $ Transmutation stackCard (nextStackCard {stackcard_owner = stackcard_owner stackCard}) else Nothing
+              if i > 0
+                then Just $ Transmutation stackCard (transmuteToCard (stackcard_card nextStackCard) stackCard)
+                else Nothing
         Nothing ->
           return ()
 
