@@ -1,7 +1,7 @@
 module Login.View exposing (loginoutView, view)
 
 import Form exposing (FormFieldClass, FormFieldType(..), ValidationResult, formInputView)
-import Html exposing (Attribute, Html, a, button, div, text)
+import Html exposing (Attribute, Html, a, button, div, h1, text)
 import Html.Attributes exposing (autofocus, class, disabled, href, target)
 import Html.Events exposing (onClick)
 import Login.Messages exposing (Msg(..))
@@ -36,16 +36,17 @@ view model =
         inputView =
             formInputView formFieldClass validations
     in
-    div []
-        [ div [ class "login-box" ]
-            [ inputView Username
+    div [ class "login-box" ]
+        [ div [ class "login" ]
+            [ h1 [] [ text "LOG IN TO GALGA" ]
+            , inputView Username
             , inputView Password
             , button
                 [ onClick Submit
                 , disabled submitDisabled
-                , class "menu-button"
+                , class "button"
                 ]
-                [ text "LOGIN" ]
+                [ text "LOG IN" ]
             , a [ class "signup-link", href "/signup" ] [ text "No account? Signup!" ]
             , div [ class "error" ] [ text model.error ]
             ]

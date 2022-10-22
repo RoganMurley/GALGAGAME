@@ -1,23 +1,45 @@
+@import "theme";
+
+
 .login-box {
   height: 100vh;
-
   display: flex;
   justify-content: center;
   align-items: center;
   flex-direction: column;
 
-  font-family: sans-serif;
+  .login {
+    font-family: sans-serif;
+    background-color: $yellow;
+    color: $navy;
+    padding: 12px;
+    border-radius: 25px;
+
+    width: 20vw;
+
+    @media (max-width: 1279px) {
+      width: 95vw;
+    }
+
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+  }
 
   .form-good {
     color: inherit;
     border-color: inherit;
   }
 
+  .form-input {
+    width: 100%;
+  }
+
   input {
     font-weight: 600;
 
     border-radius: 5px;
-    width: 190px;
+    width: 100%;
     height: 26px;
 
     margin-bottom: 8px;
@@ -29,14 +51,42 @@
     font-family: sans-serif;
     display: block;
     color: #ff3232;
-    font-size: 30px;
+    font-size: 24px;
     font-weight: 600;
     text-align: center;
     margin-top: 20px;
-    height: 40px;
   }
 
   .signup-link {
-    color: #f4f15e;
+    color: $navy;
+  }
+
+  .button {
+    margin: 5px;
+
+    color: $navy;
+
+    font-size: 14px;
+    font-weight: 900;
+    font-family: sans-serif;
+
+    background-color: rgba(0, 0, 0, 0);
+
+    border-color: $navy;
+    border-radius: 5px;
+    border-width: 3px;
+    border-style: solid;
+    width: 100%;
+    text-decoration: none;
+    text-align: center;
+
+    padding: 5px;
+
+    &:hover {
+      color: #f5f25e;
+      background-color: $navy;
+      cursor: pointer;
+      cursor: hand;
+    }
   }
 }
