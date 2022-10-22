@@ -1,7 +1,7 @@
 module Signup.View exposing (view)
 
 import Form exposing (Error(..), FormFieldClass, FormFieldType(..), ValidationResult, formInputView)
-import Html exposing (Attribute, Html, button, div, text)
+import Html exposing (Attribute, Html, button, div, h1, text)
 import Html.Attributes exposing (autofocus, class, disabled)
 import Html.Events exposing (onClick)
 import Signup.Messages exposing (Msg(..))
@@ -34,18 +34,19 @@ view model =
         inputView =
             formInputView formFieldClass validations
     in
-    div []
-        [ div [ class "signup-box" ]
-            [ inputView Email
+    div [ class "signup-box" ]
+        [ div [ class "signup" ]
+            [ h1 [] [ text "SIGN UP FOR GALGA" ]
+            , inputView Email
             , inputView Username
             , inputView Password
             , inputView Contactable
             , button
                 [ onClick Submit
                 , disabled submitDisabled
-                , class "menu-button"
+                , class "button"
                 ]
-                [ text "SIGNUP" ]
+                [ text "SIGN UP" ]
             , div [ class "error" ] [ text model.error ]
             ]
         ]
