@@ -25,7 +25,7 @@ tick dt model =
 
 
 mouseDown : Flags -> Assets.Model -> Position -> Model -> Model
-mouseDown flags assets mousePos model =
+mouseDown flags assets _ model =
     let
         ctx =
             bareContextInit flags.dimensions assets NoMouse
