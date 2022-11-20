@@ -20,6 +20,7 @@ import Hand.View as Hand
 import Holding.Types exposing (Holding(..))
 import Holding.View as Holding
 import Hover exposing (Hover(..), HoverDamage(..), HoverSelf)
+import Icon.View as Icon
 import Math.Matrix4 exposing (makeRotate, makeScale3)
 import Math.Vector2 exposing (Vec2, vec2)
 import Math.Vector3 exposing (Vec3, vec3)
@@ -417,7 +418,7 @@ damageView hover holding ({ w, h, radius, resolving, animDamage, tick, anim } as
 turnView : Focus -> Bool -> Tutorial.Model -> Bool -> Maybe Float -> Context -> List WebGL.Entity
 turnView focus passed tutorial passive timeLeft ctx =
     let
-        { anim, model, tick, w, h, radius } =
+        { anim, model, tick, w, h, radius, textures, camera2d, ortho } =
             ctx
 
         size =
@@ -526,24 +527,26 @@ turnView focus passed tutorial passive timeLeft ctx =
                                 ]
 
         ( Pass PlayerB, _, _ ) ->
+            let
+                scale =
+                    0.00018
+            in
             List.concat
-                [ Font.view
-                    "Futura"
-                    "PASS"
+                [ Icon.view
+                    "pass"
                     { x = w * 0.5 - 0.003 * size
-                    , y = h * 0.5
-                    , scaleX = 0.0001 * size + 0.003 * sin (tick * 0.005)
-                    , scaleY = 0.0001 * size + 0.003 * sin (tick * 0.007)
+                    , y = h * 0.5 + tick * 0.005
+                    , scaleX = scale * size + 0.003 * sin (tick * 0.005)
+                    , scaleY = -scale * size + 0.003 * sin (tick * 0.007)
                     , color = vec3 (20 / 255) (20 / 255) (20 / 255)
                     }
                     ctx
-                , Font.view
-                    "Futura"
-                    "PASS"
+                , Icon.view
+                    "pass"
                     { x = w * 0.5
                     , y = h * 0.5
-                    , scaleX = 0.0001 * size + 0.003 * sin (tick * 0.005)
-                    , scaleY = 0.0001 * size + 0.003 * sin (tick * 0.007)
+                    , scaleX = scale * size + 0.003 * sin (tick * 0.005)
+                    , scaleY = -scale * size + 0.003 * sin (tick * 0.007)
                     , color = vec3 (244 / 255) (241 / 255) (94 / 255)
                     }
                     ctx
