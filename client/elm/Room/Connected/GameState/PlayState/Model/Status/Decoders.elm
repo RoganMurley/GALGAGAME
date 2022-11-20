@@ -19,7 +19,11 @@ decoder =
                 "StatusFragile" ->
                     Json.succeed StatusFragile
 
+                "StatusBonusDamage" ->
+                    Json.map StatusBonusDamage <|
+                        Json.field "contents" Json.int
+
                 _ ->
                     Json.fail <| "Unknown status " ++ str
     in
-    string |> Json.andThen getDecoder
+    Json.field "tag" string |> Json.andThen getDecoder

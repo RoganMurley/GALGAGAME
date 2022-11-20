@@ -6,6 +6,7 @@ import Control.Monad (replicateM_, when)
 import qualified DSL.Alpha as Alpha
 import DSL.Beta
 import qualified DSL.Beta as Beta
+import qualified Data.List as List
 import Data.Map (Map)
 import qualified Data.Map as Map
 import Data.Maybe (fromMaybe)
@@ -687,6 +688,54 @@ plasticCoin =
         Nothing ->
           return ()
 
+-- DEMON
+demonSword :: Card
+demonSword =
+  newCard
+    Demon
+    Sword
+    "Hurt for 4, then hurt for 4 again"
+    $ \w -> do
+      hurt 4 (other w) Slash
+      hurt 4 (other w) Slash
+
+demonWand :: Card
+demonWand =
+  newCard
+    Demon
+    Wand
+    "Hurt for 3 one time for each\nother card on the wheel"
+    $ \w -> do
+      len <- diasporaLength <$> getStack
+      many len (hurt 3 (other w) Slash)
+
+demonCup :: Card
+demonCup =
+  newCard
+    Demon
+    Cup
+    "All other cards on the wheel get +5 damage"
+    $ \_ ->
+      transmute
+        ( \i sc ->
+            if i > 0
+              then Just (Transmutation sc (cardMap (addStatus (StatusBonusDamage 5)) sc))
+              else Nothing
+        )
+
+demonCoin :: Card
+demonCoin =
+  newCard
+    Demon
+    Coin
+    "Card in next socket becomes a SWORD"
+    $ \_ ->
+      transmuteHead $
+        \stackCard ->
+          let aspect = card_aspect . stackcard_card $ stackCard :: Aspect
+              targetCard = getCard aspect Sword :: Card
+           in transmuteToCard targetCard stackCard
+
 -- Other cards
 getEndCard :: Int -> Card
 getEndCard noDraws
@@ -835,3 +884,11 @@ cardsBySuit = Map.fromListWith (++) $ fmap (\card -> (card_suit card, [card])) a
 
 getSuitCards :: Suit -> [Card]
 getSuitCards suit = fromMaybe [] $ Map.lookup suit cardsBySuit
+
+getCard :: Aspect -> Suit -> Card
+getCard aspect suit = fromMaybe strangeSnag mCard
+  where
+    mCard :: Maybe Card
+    mCard = List.find (\Card {card_suit} -> card_suit == suit) aspectCards
+    aspectCards :: [Card]
+    aspectCards = fromMaybe [] $ Map.lookup aspect cardsByAspect

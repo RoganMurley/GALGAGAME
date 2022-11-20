@@ -61,6 +61,7 @@ data Aspect
   | Void
   | Glass
   | Eye
+  | Demon
   | Strange
   | OtherAspect Text
   deriving (Eq, Generic, NFData, Ord, Show)
@@ -120,10 +121,15 @@ allAspects =
     Void,
     Glass,
     Eye,
-    Strange
+    Strange,
+    Demon
   ]
 
-data Status = StatusEcho | StatusBlighted | StatusFragile
+data Status
+  = StatusEcho
+  | StatusBlighted
+  | StatusFragile
+  | StatusBonusDamage Int
   deriving (Eq, Generic, NFData, Ord, Show)
 
 instance ToJSON Status where

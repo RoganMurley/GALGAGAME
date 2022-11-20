@@ -25,7 +25,12 @@ statusEff :: Status -> (Beta.Program () -> Beta.Program ())
 statusEff StatusEcho = \eff -> eff >> eff
 statusEff StatusBlighted = reinterpret blightedRewrite
 statusEff StatusFragile = id
+statusEff (StatusBonusDamage d) = reinterpret (bonusDamageRewrite d)
 
 blightedRewrite :: Beta.DSL a -> Beta.Program a
 blightedRewrite (Heal l w) = send $ Hurt l w Curse
-blightedRewrite dsl = send $ dsl
+blightedRewrite dsl = send dsl
+
+bonusDamageRewrite :: Int -> Beta.DSL a -> Beta.Program a
+bonusDamageRewrite bonus (Hurt d w h) = send $ Hurt (d + bonus) w h
+bonusDamageRewrite _ dsl = send dsl

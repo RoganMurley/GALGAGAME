@@ -168,8 +168,11 @@ hasFragileStatus sc = hasStatus StatusFragile $ stackcard_card sc
 
 lifesteal :: Life -> WhichPlayer -> Program ()
 lifesteal d w = do
+  initial <- getLife w
   hurt d w Slash
-  heal d (other w)
+  final <- getLife w
+  let h = initial - final
+  heal h (other w)
 
 refreshGen :: Program ()
 refreshGen =

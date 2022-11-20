@@ -144,6 +144,9 @@ statusView ctx entity i status =
                         }
                     ]
 
+        _ ->
+            []
+
 
 revealedView : Context -> Card.Entity { a | revealed : Bool } -> List WebGL.Entity
 revealedView ctx entity =

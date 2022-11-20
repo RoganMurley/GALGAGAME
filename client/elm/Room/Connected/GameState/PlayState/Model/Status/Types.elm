@@ -5,3 +5,4 @@ type Status
     = StatusEcho
     | StatusBlighted
     | StatusFragile
+    | StatusBonusDamage Int
