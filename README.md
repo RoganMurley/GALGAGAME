@@ -5,7 +5,7 @@ GALGA is a browser-based multiplayer digital card game written in the purely fun
 
 Try it out at https://www.galgagame.com.
 
-Watch the trailer on [YouTube](https://youtu.be/W_OH2loa1nc)
+Watch the trailer on [YouTube](https://youtu.be/W_OH2loa1nc).
 
 Join the [discord](https://discord.gg/SVXXej4).
 
