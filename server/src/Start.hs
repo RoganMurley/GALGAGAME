@@ -7,7 +7,7 @@ import qualified DSL.Alpha as Alpha
 import qualified DSL.Beta as Beta
 import Data.Text (Text)
 import DeckBuilding (Character (..), angelRune, characterCards, fireRune, mirrorRune, shroomRune, waterRune)
-import Model (Turn, maxHandLength, setForceWin)
+import Model (Passes (OnePass), Turn, maxHandLength, setForceWin)
 import Player (WhichPlayer (..), other)
 import Util (shuffle, split)
 
@@ -32,6 +32,7 @@ tutorial0Program _ = do
   Beta.raw $ do
     let makeDeck = take 25 . cycle
     let deckA = makeDeck [Cards.fireSword, Cards.fireCup, Cards.fireWand, Cards.fireSword]
+    Alpha.setPasses OnePass
     Alpha.setDeck PlayerA deckA
     Alpha.setMaxLife PlayerA 20
     Alpha.setLife PlayerA 20
