@@ -418,7 +418,7 @@ damageView hover holding ({ w, h, radius, resolving, animDamage, tick, anim } as
 turnView : Focus -> Bool -> Tutorial.Model -> Bool -> Maybe Float -> Context -> List WebGL.Entity
 turnView focus passed tutorial passive timeLeft ctx =
     let
-        { anim, model, tick, w, h, radius, textures, camera2d, ortho } =
+        { anim, model, tick, w, h, radius } =
             ctx
 
         size =
