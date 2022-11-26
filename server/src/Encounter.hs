@@ -68,7 +68,7 @@ tutorial1Scenario scenario@Scenario {scenario_progressWin, scenario_progressLoss
       scenario_characterPa = Right . ChosenCharacter $ Nothing,
       scenario_characterPb = Right . ChosenCharacter $ Nothing,
       scenario_timeLimit = noTimeLimit,
-      scenario_tags = ["tutorial-1", "save-only"],
+      scenario_tags = ["tutorial-1"],
       scenario_progressWin =
         scenario_progressWin
           { progress_events = Set.fromList ["tutorial-1"],

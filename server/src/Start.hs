@@ -6,7 +6,7 @@ import Control.Monad (replicateM_)
 import qualified DSL.Alpha as Alpha
 import qualified DSL.Beta as Beta
 import Data.Text (Text)
-import DeckBuilding (Character (..), angelRune, characterCards, fireRune, mirrorRune, shroomRune, waterRune)
+import DeckBuilding (Character (..), angelRune, characterCards, fireRune, goldRune, mirrorRune, shroomRune, waterRune)
 import Model (Passes (OnePass), Turn, maxHandLength, setForceWin)
 import Player (WhichPlayer (..), other)
 import Util (shuffle, split)
@@ -47,7 +47,7 @@ tutorial1Program _ = do
   Beta.raw $ do
     let deckA = shuffle ga $ characterCards (Character (Left (fireRune, angelRune, shroomRune)) 50)
     Alpha.setDeck PlayerA deckA
-    let deckB = shuffle gb $ characterCards (Character (Left (angelRune, mirrorRune, waterRune)) 50)
+    let deckB = shuffle gb $ characterCards (Character (Left (goldRune, mirrorRune, waterRune)) 50)
     Alpha.setDeck PlayerB deckB
   replicateM_ 6 (Beta.draw PlayerA PlayerA (TimeModifierOutQuint 0.25))
   replicateM_ 5 (Beta.draw PlayerB PlayerB (TimeModifierOutQuint 0.25))
