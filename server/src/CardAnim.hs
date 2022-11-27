@@ -36,6 +36,7 @@ data CardAnim
   | Timeout
   | Announce Text TimeModifier
   | GetGen
+  | UnknownDamage
   deriving (Show, Eq, Generic, NFData)
 
 instance ToJSON CardAnim where
@@ -136,6 +137,11 @@ instance ToJSON CardAnim where
       [ "name" .= ("getGen" :: Text),
         "player" .= PlayerA
       ]
+  toJSON UnknownDamage =
+    object
+      [ "name" .= ("unknownDamage" :: Text),
+        "player" .= PlayerA
+      ]
   toJSON Timeout =
     object
       [ "name" .= ("timeout" :: Text),
@@ -166,6 +172,7 @@ instance Mirror CardAnim where
   mirror (MoveStack m t) = MoveStack m t
   mirror (Pass w) = Pass (other w)
   mirror GetGen = GetGen
+  mirror UnknownDamage = UnknownDamage
   mirror Timeout = Timeout
   mirror (Announce a t) = Announce a t
 
@@ -250,9 +257,7 @@ cardAnimDamage anim =
           wrap w h
         Hurt w d _ ->
           wrap w (- d)
-        -- Temporarily disabled. Replace with a specific uncertainty anim.
-        -- GetGen ->
-        --     ( DamageUncertain 0, DamageUncertain 0)
-
+        UnknownDamage ->
+          (DamageUncertain 0, DamageUncertain 0)
         _ ->
           (DamageCertain 0, DamageCertain 0)

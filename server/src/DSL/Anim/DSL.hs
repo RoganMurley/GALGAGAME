@@ -34,6 +34,7 @@ data DSL n where
   MoveStack :: Wheel (Maybe Int) -> TimeModifier -> DSL ()
   Pass :: WhichPlayer -> DSL ()
   GetGen :: DSL ()
+  UnknownDamage :: DSL ()
   Announce :: Text -> TimeModifier -> DSL ()
 
 type Program = Eff '[DSL]

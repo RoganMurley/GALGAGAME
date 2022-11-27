@@ -26,6 +26,7 @@ animate (Reveal w r) = Just $ CardAnim.Reveal w r
 animate (Pass w) = Just $ CardAnim.Pass w
 animate (Announce a t) = Just $ CardAnim.Announce a t
 animate GetGen = Just CardAnim.GetGen
+animate UnknownDamage = Just CardAnim.UnknownDamage
 
 next :: DSL a -> a
 next Null = ()
@@ -47,3 +48,4 @@ next Reveal {} = ()
 next Pass {} = ()
 next Announce {} = ()
 next GetGen = ()
+next UnknownDamage = ()

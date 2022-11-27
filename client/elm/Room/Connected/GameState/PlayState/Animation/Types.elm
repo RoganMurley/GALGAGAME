@@ -28,6 +28,7 @@ type Anim
     | HandFullPass
     | Finding
     | GetGen
+    | UnknownDamage
     | Timeout
     | Announce String TimingModifier
 

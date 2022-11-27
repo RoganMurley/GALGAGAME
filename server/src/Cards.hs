@@ -19,7 +19,7 @@ import Stack (diasporaFromStack, diasporaLength)
 import qualified Stack
 import StackCard (StackCard (..), cardMap, changeOwner, isOwner)
 import Transmutation (Transmutation (..), transmuteToCard)
-import Util (many, shuffle)
+import Util (many, randomBetween, shuffle)
 
 -- FIRE
 fireSword :: Card
@@ -704,17 +704,19 @@ demonWand =
   newCard
     Demon
     Wand
-    "Hurt for 3 one time for each\nother card on the wheel"
+    "Hurt for 3 up to 4 times"
     $ \w -> do
-      len <- diasporaLength <$> getStack
-      many len (hurt 3 (other w) Slash)
+      gen <- getGen
+      let times = randomBetween gen 1 4
+      unknownDamage
+      many times (hurt 3 (other w) Slash)
 
 demonCup :: Card
 demonCup =
   newCard
     Demon
     Cup
-    "All other cards on the wheel get +5 damage"
+    "All other cards on the wheel\nget +5 damage"
     $ \_ ->
       transmute
         ( \i sc ->
@@ -728,12 +730,12 @@ demonCoin =
   newCard
     Demon
     Coin
-    "Card in next socket becomes a SWORD"
+    "Card in next socket becomes a WAND"
     $ \_ ->
       transmuteHead $
         \stackCard ->
           let aspect = card_aspect . stackcard_card $ stackCard :: Aspect
-              targetCard = getCard aspect Sword :: Card
+              targetCard = getCard aspect Wand :: Card
            in transmuteToCard targetCard stackCard
 
 -- Other cards
@@ -801,7 +803,8 @@ swords =
     voidSword,
     eyeSword,
     glassSword,
-    plasticSword
+    plasticSword,
+    demonSword
   ]
 
 wands :: [Card]
@@ -819,7 +822,8 @@ wands =
     voidWand,
     eyeWand,
     glassWand,
-    plasticWand
+    plasticWand,
+    demonWand
   ]
 
 cups :: [Card]
@@ -837,7 +841,8 @@ cups =
     voidCup,
     eyeCup,
     glassCup,
-    plasticCup
+    plasticCup,
+    demonWand
   ]
 
 coins :: [Card]
@@ -855,7 +860,8 @@ coins =
     voidCoin,
     eyeCoin,
     glassCoin,
-    plasticCoin
+    plasticCoin,
+    demonCoin
   ]
 
 others :: [Card]

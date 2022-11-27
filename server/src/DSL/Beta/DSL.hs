@@ -43,6 +43,7 @@ data DSL n where
   GetHold :: DSL Bool
   GetModel :: DSL Model
   RawAnim :: CardAnim -> DSL ()
+  UnknownDamage :: DSL ()
   Null :: DSL ()
 
 type Program = Eff '[DSL]

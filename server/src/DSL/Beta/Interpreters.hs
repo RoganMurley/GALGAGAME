@@ -55,6 +55,7 @@ alphaI GetStack = Alpha.getStack
 alphaI GetHold = Alpha.getHold
 alphaI GetModel = Alpha.getModel
 alphaI (RawAnim _) = return ()
+alphaI UnknownDamage = return ()
 alphaI Null = return ()
 
 data ExecDSL n where
@@ -72,6 +73,7 @@ animI Rotate = basicAnim Anim.Rotate
 animI Windup = basicAnim Anim.Windup
 animI (RawAnim r) = basicAnim $ Anim.Raw r
 animI GetGen = basicAnim Anim.GetGen
+animI UnknownDamage = basicAnim Anim.UnknownDamage
 animI (Hurt d w h) = damageAnim d w h
 animI (Heal _ w) = healAnim w
 animI (AddToHand w c) = addToHandAnim w c

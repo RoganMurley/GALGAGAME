@@ -67,6 +67,9 @@ decoder =
                 "getGen" ->
                     succeed GetGen
 
+                "unknownDamage" ->
+                    succeed UnknownDamage
+
                 "timeout" ->
                     succeed Timeout
 
