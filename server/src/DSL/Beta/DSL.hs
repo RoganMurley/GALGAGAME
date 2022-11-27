@@ -20,6 +20,7 @@ import Wheel (Wheel)
 data DSL n where
   Raw :: Alpha.Program () -> DSL ()
   Hurt :: Life -> WhichPlayer -> Hurt -> DSL ()
+  PayLife :: Life -> WhichPlayer -> DSL ()
   Heal :: Life -> WhichPlayer -> DSL ()
   Draw' :: WhichPlayer -> WhichPlayer -> TimeModifier -> DSL ()
   AddToHand :: WhichPlayer -> HandCard -> DSL ()

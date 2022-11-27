@@ -293,7 +293,7 @@ bloodSword =
     Sword
     "Pay 4 life to hurt for 12"
     $ \w -> do
-      hurt 4 w Curse
+      payLife 4 w
       hurt 12 (other w) Slash
 
 bloodWand :: Card
@@ -305,7 +305,7 @@ bloodWand =
     $ \w -> do
       l <- getLife w
       let dmg = l `quot` 2
-      hurt dmg w Curse
+      payLife dmg w
       hurt dmg (other w) Slash
 
 bloodCup :: Card
@@ -315,7 +315,7 @@ bloodCup =
     Cup
     "Pay 4 life to draw 2"
     $ \w -> do
-      hurt 4 w Curse
+      payLife 4 w
       draw w w (TimeModifierOutQuint 1)
       draw w w (TimeModifierOutQuint 1)
 
@@ -327,7 +327,7 @@ bloodCoin =
     "Pay half your life to move card\nin next socket to your hand"
     $ \w -> do
       l <- getLife w
-      hurt (l `quot` 2) w Curse
+      payLife (l `quot` 2) w
       transmuteHead (\(StackCard _ c) -> StackCard w c)
       bounce (\i _ -> i == 1) (TimeModifierOutQuad 0.4)
 

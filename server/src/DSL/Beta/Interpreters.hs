@@ -28,10 +28,12 @@ import Transmutation (Transmutation (..))
 import Util (xor)
 import Wheel (Wheel (..))
 import qualified Wheel
+import qualified CardAnim
 
 alphaI :: DSL a -> Alpha.Program a
 alphaI (Raw p) = p
 alphaI (Hurt d w _) = Alpha.hurt d w
+alphaI (PayLife d w) = Alpha.hurt d w
 alphaI (Heal h w) = Alpha.heal h w
 alphaI (Draw' w d _) = Alpha.draw w d
 alphaI (AddToHand w c) = Alpha.addToHand w c
@@ -75,6 +77,7 @@ animI (RawAnim r) = basicAnim $ Anim.Raw r
 animI GetGen = basicAnim Anim.GetGen
 animI UnknownDamage = basicAnim Anim.UnknownDamage
 animI (Hurt d w h) = damageAnim d w h
+animI (PayLife d w) = damageAnim d w CardAnim.Curse
 animI (Heal _ w) = healAnim w
 animI (AddToHand w c) = addToHandAnim w c
 animI (Draw' w d t) = drawAnim w d t
