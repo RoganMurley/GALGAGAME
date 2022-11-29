@@ -199,7 +199,7 @@ mainRunes =
   ]
 
 superRunes :: [Rune]
-superRunes = mainRunes ++ [demonRune]
+superRunes = mainRunes ++ [devilRune]
 
 allRunes :: [Rune]
 allRunes = superRunes
@@ -316,12 +316,12 @@ plasticRune =
     (Cards.plasticSword, Cards.plasticWand, Cards.plasticCup, Cards.plasticCoin)
     (levelToExperience 11)
 
-demonRune :: Rune
-demonRune =
+devilRune :: Rune
+devilRune =
   Rune
-    "DEMON"
-    "cards/demon/coin.png"
-    (Cards.demonSword, Cards.demonWand, Cards.demonCup, Cards.demonCoin)
+    "DEVIL"
+    "cards/devil/coin.png"
+    (Cards.devilSword, Cards.devilWand, Cards.devilCup, Cards.devilCoin)
     (levelToExperience 12)
 
 characterCards :: Character -> Deck

@@ -688,55 +688,66 @@ plasticCoin =
         Nothing ->
           return ()
 
--- DEMON
-demonSword :: Card
-demonSword =
+-- Devil
+devilSword :: Card
+devilSword =
   newCard
-    Demon
+    Devil
     Sword
     "Hurt for 4, then hurt for 4 again"
     $ \w -> do
       hurt 4 (other w) Slash
       hurt 4 (other w) Slash
 
-demonWand :: Card
-demonWand =
+devilWand :: Card
+devilWand =
   newCard
-    Demon
+    Devil
     Wand
-    "Hurt for 3 up to 4 times"
+    "Hurt for 3 up to 5 times"
     $ \w -> do
       gen <- getGen
-      let times = randomBetween gen 1 4
+      let times = randomBetween gen 1 5
       unknownDamage
       many times (hurt 3 (other w) Slash)
 
-demonCup :: Card
-demonCup =
+devilCup :: Card
+devilCup =
   newCard
-    Demon
+    Devil
     Cup
-    "All other cards on the wheel\nget +5 damage"
+    "All other cards on the wheel\nget +4 damage"
     $ \_ ->
       transmute
         ( \i sc ->
             if i > 0
-              then Just (Transmutation sc (cardMap (addStatus (StatusBonusDamage 5)) sc))
+              then Just (Transmutation sc (cardMap (addStatus (StatusBonusDamage 4)) sc))
               else Nothing
         )
 
-demonCoin :: Card
-demonCoin =
+devilCoin :: Card
+devilCoin =
   newCard
-    Demon
+    Devil
     Coin
-    "Card in next socket becomes a WAND"
+    "Move card in next socket\nto previous socket"
     $ \_ ->
-      transmuteHead $
-        \stackCard ->
-          let aspect = card_aspect . stackcard_card $ stackCard :: Aspect
-              targetCard = getCard aspect Wand :: Card
-           in transmuteToCard targetCard stackCard
+      moveStack
+        (\i _ -> if i == 1 then Just (-1) else Nothing)
+        (TimeModifierOutQuint 500)
+
+-- devilCoin :: Card
+-- devilCoin =
+--   newCard
+--     Devil
+--     Coin
+--     "Card in next socket becomes a WAND"
+--     $ \_ ->
+--       transmuteHead $
+--         \stackCard ->
+--           let aspect = card_aspect . stackcard_card $ stackCard :: Aspect
+--               targetCard = getCard aspect Wand :: Card
+--            in transmuteToCard targetCard stackCard
 
 -- Other cards
 getEndCard :: Int -> Card
@@ -804,7 +815,7 @@ swords =
     eyeSword,
     glassSword,
     plasticSword,
-    demonSword
+    devilSword
   ]
 
 wands :: [Card]
@@ -823,7 +834,7 @@ wands =
     eyeWand,
     glassWand,
     plasticWand,
-    demonWand
+    devilWand
   ]
 
 cups :: [Card]
@@ -842,7 +853,7 @@ cups =
     eyeCup,
     glassCup,
     plasticCup,
-    demonWand
+    devilWand
   ]
 
 coins :: [Card]
@@ -861,7 +872,7 @@ coins =
     eyeCoin,
     glassCoin,
     plasticCoin,
-    demonCoin
+    devilCoin
   ]
 
 others :: [Card]

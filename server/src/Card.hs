@@ -61,7 +61,7 @@ data Aspect
   | Void
   | Glass
   | Eye
-  | Demon
+  | Devil
   | Strange
   | OtherAspect Text
   deriving (Eq, Generic, NFData, Ord, Show)
@@ -122,7 +122,7 @@ allAspects =
     Glass,
     Eye,
     Strange,
-    Demon
+    Devil
   ]
 
 data Status
