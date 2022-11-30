@@ -704,10 +704,10 @@ devilWand =
   newCard
     Devil
     Wand
-    "Hurt for 3 up to 5 times"
+    "Hurt for 3 up to 4 times"
     $ \w -> do
       gen <- getGen
-      let times = randomBetween gen 1 5
+      let times = randomBetween gen 1 4
       unknownDamage
       many times (hurt 3 (other w) Slash)
 
@@ -716,12 +716,12 @@ devilCup =
   newCard
     Devil
     Cup
-    "All other cards on the wheel\nget +4 damage"
+    "All other cards on the wheel\nget +5 damage"
     $ \_ ->
       transmute
         ( \i sc ->
             if i > 0
-              then Just (Transmutation sc (cardMap (addStatus (StatusBonusDamage 4)) sc))
+              then Just (Transmutation sc (cardMap (addStatus (StatusBonusDamage 5)) sc))
               else Nothing
         )
 
