@@ -13,6 +13,7 @@ import Data.Maybe (fromMaybe)
 import Data.String.Conversions (cs)
 import Data.Text (Text)
 import HandCard (HandCard (..), anyCard, isRevealed)
+import Model (Misc (..))
 import Player (other)
 import Safe (headMay)
 import Stack (diasporaFromStack, diasporaLength)
@@ -778,6 +779,7 @@ strangeStart =
         ( do
             Alpha.setDeck w deckA
             Alpha.setDeck (other w) deckB
+            Alpha.modMisc (\misc -> misc {misc_noDrawsPa = 0, misc_noDrawsPb = 0})
         )
       discardHand w (\_ _ -> True)
       discardHand (other w) (\_ _ -> True)
