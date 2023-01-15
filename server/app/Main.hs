@@ -47,7 +47,7 @@ import Outcome (Outcome)
 import Player (WhichPlayer (..), other)
 import Room (Room)
 import qualified Room
-import Scenario (Scenario (..))
+import Scenario (Scenario (..), applyCustomSettings)
 import Server (addComputerClient, addPlayerClient, addSpecClient)
 import qualified Server
 import Start (roundEndProgram, startProgram)
@@ -149,7 +149,7 @@ begin conn request user state = do
   let username = getUsername user :: Text
   Log.info $ printf "<%s>: New connection" username
   case Negotiation.parseRequest request of
-    Right (RoomRequest roomName) -> do
+    Right (RoomRequest roomName mCustomSettings) -> do
       Metrics.incr "request.room"
       Log.info $ printf "<%s>: Requesting room [%s]" username roomName
       msg <- liftIO $ WS.receiveData conn
@@ -161,7 +161,7 @@ begin conn request user state = do
           gen <- liftIO getGen
           guid <- liftIO GUID.genText
           let client = Client user (PlayerConnection conn) guid
-          let scenario = makeScenario gen prefix
+          let scenario = applyCustomSettings mCustomSettings $ makeScenario gen prefix
           roomVar <- liftIO . atomically $ Server.getOrCreateRoom roomName (prefixWaitType prefix) gen scenario state
           prefixMetric prefix
           beginPrefix prefix state client roomVar

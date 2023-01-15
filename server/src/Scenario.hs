@@ -22,3 +22,23 @@ data Scenario = Scenario
 instance Show Scenario where
   show (Scenario characterPa characterPb turn _ _ progressWin progressLoss timeLimit tags) =
     "Scenario: " ++ show (characterPa, characterPb, turn, progressWin, progressLoss, timeLimit, tags)
+
+data CustomSettings = CustomSettings
+  { customsettings_name :: Text,
+    customsettings_allowSpectators :: Bool,
+    customsettings_startingLife :: Int
+  }
+
+parseCustomSettings :: Text -> Either Text CustomSettings
+parseCustomSettings _ =
+  Right $
+    CustomSettings
+      { customsettings_name = "abc",
+        customsettings_allowSpectators = True,
+        customsettings_startingLife = 50
+      }
+
+applyCustomSettings :: Maybe CustomSettings -> Scenario -> Scenario
+applyCustomSettings Nothing scenario = scenario
+applyCustomSettings (Just CustomSettings {customsettings_allowSpectators, customsettings_startingLife}) scenario =
+  scenario
