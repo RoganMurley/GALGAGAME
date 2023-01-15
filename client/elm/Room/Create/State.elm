@@ -9,17 +9,18 @@ import Main.Types exposing (Flags)
 
 init : Model
 init =
-    { allowSpectators = True
+    { allowSpectators = initFormField
     , startingLife = initFormField
     , error = ""
+    , submitting = False
     }
 
 
 update : Model -> Msg -> Flags -> ( Model, Cmd Main.Msg )
 update model msg flags =
     case msg of
-        SetAllowSpectators allowSpectators ->
-            ( { model | allowSpectators = allowSpectators }
+        Input AllowSpectators allowSpectators ->
+            ( { model | startingLife = updateFormField allowSpectators model.allowSpectators }
             , Cmd.none
             )
 
@@ -27,6 +28,9 @@ update model msg flags =
             ( { model | startingLife = updateFormField startingLife model.startingLife }
             , Cmd.none
             )
+
+        Submit ->
+            ( model, Cmd.none )
 
 
 startingLifeValidator : Validator Model Field

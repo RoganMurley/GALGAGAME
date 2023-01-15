@@ -4,11 +4,13 @@ import Form exposing (FormField)
 
 
 type alias Model =
-    { allowSpectators : Bool
+    { allowSpectators : FormField
     , startingLife : FormField
     , error : String
+    , submitting : Bool
     }
 
 
 type Field
-    = StartingLife
+    = AllowSpectators
+    | StartingLife

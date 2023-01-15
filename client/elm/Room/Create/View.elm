@@ -4,8 +4,9 @@ import Create.Messages exposing (Msg(..))
 import Create.State exposing (validator)
 import Create.Types exposing (Field(..), Model)
 import Form exposing (FormFieldClass, FormFieldType(..), ValidationResult, formInputView)
-import Html exposing (Attribute, Html, div, h1, text)
-import Html.Attributes exposing (class)
+import Html exposing (Attribute, Html, button, div, h1, text)
+import Html.Attributes exposing (class, disabled)
+import Html.Events exposing (onClick)
 import Main.Messages as Main
 
 
@@ -16,10 +17,14 @@ view model =
         validations =
             validator model
 
+        submitDisabled : Bool
+        submitDisabled =
+            List.length validations > 0 || model.submitting
+
         formFieldClass : FormFieldClass Field Msg
         formFieldClass =
             { getFieldPlaceholder = getFieldPlaceholder
-            , getFieldLabel = \_ -> Nothing
+            , getFieldLabel = getFieldLabel
             , getFormFieldType = getFormFieldType
             , getExtraAttrs = getExtraAttrs
             , getInputMsg = Input
@@ -33,7 +38,14 @@ view model =
     div [ class "create-box" ]
         [ div [ class "create" ]
             [ h1 [] [ text "CREATE CUSTOM GAME" ]
+            , inputView AllowSpectators
             , inputView StartingLife
+            , button
+                [ onClick Submit
+                , disabled submitDisabled
+                , class "button"
+                ]
+                [ text "CREATE" ]
             , div [ class "error" ] [ text model.error ]
             ]
         ]
@@ -45,12 +57,28 @@ getFieldPlaceholder field =
         StartingLife ->
             "Starting Life"
 
+        AllowSpectators ->
+            ""
+
+
+getFieldLabel : Field -> Maybe String
+getFieldLabel field =
+    case field of
+        StartingLife ->
+            Nothing
+
+        AllowSpectators ->
+            Just "Allow spectators"
+
 
 getFormFieldType : Field -> FormFieldType
 getFormFieldType field =
     case field of
         StartingLife ->
             TextType
+
+        AllowSpectators ->
+            CheckboxType
 
 
 getExtraAttrs : Field -> List (Attribute Msg)
@@ -59,9 +87,15 @@ getExtraAttrs field =
         StartingLife ->
             []
 
+        AllowSpectators ->
+            []
+
 
 getIdentifier : Field -> String
 getIdentifier field =
     case field of
         StartingLife ->
             "starting-life"
+
+        AllowSpectators ->
+            "allow-spectators"

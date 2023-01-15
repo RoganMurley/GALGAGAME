@@ -4,5 +4,5 @@ import Create.Types exposing (Field)
 
 
 type Msg
-    = SetAllowSpectators Bool
-    | Input Field String
+    = Input Field String
+    | Submit
