@@ -69,7 +69,8 @@ view model settings notifications flags assets =
                     Profile.view profile
 
                 Create create ->
-                    Create.view create
+                    Html.map (Main.RoomMsg << CreateMsg) <|
+                        Create.view create
     in
     div []
         [ Html.map Main.NotificationsMsg <| Notifications.view notifications

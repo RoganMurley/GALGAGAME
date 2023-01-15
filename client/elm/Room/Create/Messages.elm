@@ -1,6 +1,8 @@
 module Create.Messages exposing (Msg(..))
 
+import Create.Types exposing (Field)
+
 
 type Msg
     = SetAllowSpectators Bool
-    | SetStartingLife Int
+    | Input Field String

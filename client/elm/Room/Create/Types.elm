@@ -1,7 +1,14 @@
-module Create.Types exposing (Model)
+module Create.Types exposing (Field(..), Model)
+
+import Form exposing (FormField)
 
 
 type alias Model =
     { allowSpectators : Bool
-    , startingLife : Int
+    , startingLife : FormField
+    , error : String
     }
+
+
+type Field
+    = StartingLife
