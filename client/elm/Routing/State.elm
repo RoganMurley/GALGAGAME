@@ -21,6 +21,7 @@ route =
         , map League leagueRoute
         , map Leaderboard leaderboardRoute
         , map Profile profileRoute
+        , map Create createRoute
         ]
 
 
@@ -75,3 +76,8 @@ leaderboardRoute =
 profileRoute : Parser (String -> a) a
 profileRoute =
     s "profile" </> string
+
+
+createRoute : Parser a a
+createRoute =
+    s "create"

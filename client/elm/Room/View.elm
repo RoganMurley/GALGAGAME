@@ -4,6 +4,7 @@ import Animation.Types exposing (Anim(..))
 import Assets.Types as Assets
 import Background.View as Background
 import Connected.View as Connected
+import Create.View as Create
 import Feedback.View as Feedback
 import GameState.View as GameState
 import Html as Html exposing (Html, div)
@@ -66,6 +67,9 @@ view model settings notifications flags assets =
 
                 Profile profile ->
                     Profile.view profile
+
+                Create create ->
+                    Create.view create
     in
     div []
         [ Html.map Main.NotificationsMsg <| Notifications.view notifications

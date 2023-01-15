@@ -1,6 +1,7 @@
 module Room.Types exposing (Model(..))
 
 import Connected.Types as Connected
+import Create.Types as Create
 import Feedback.Types as Feedback
 import Leaderboard.Types as Leaderboard
 import League.Types as League
@@ -22,3 +23,4 @@ type Model
     | League League.Model
     | Leaderboard Leaderboard.Model
     | Profile Profile.Model
+    | Create Create.Model

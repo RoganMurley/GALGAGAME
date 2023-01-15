@@ -8,6 +8,7 @@ import Browser.Events exposing (Visibility(..))
 import Browser.Navigation
 import Connected.Messages as Connected
 import Connected.State as Connected
+import Create.State as Create
 import DeckBuilding.Messages as DeckBuilding
 import Feedback.State as Feedback
 import GameState.Messages as GameState
@@ -547,6 +548,15 @@ locationUpdate model url =
                         Profile.init
               }
             , message <| Main.RoomMsg <| Room.ProfileMsg <| Profile.Load username
+            )
+
+        Routing.Create ->
+            ( { model
+                | room =
+                    Room.Create <|
+                        Create.init
+              }
+            , Cmd.none
             )
 
 

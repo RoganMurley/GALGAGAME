@@ -4,6 +4,7 @@ import Assets.Types as Assets
 import Browser.Events exposing (Visibility)
 import Browser.Navigation
 import Connected.State as Connected
+import Create.State as Create
 import Feedback.State as Feedback
 import GameType exposing (GameType(..))
 import Leaderboard.State as Leaderboard
@@ -147,6 +148,18 @@ update model msg assets flags =
                 _ ->
                     ( model, Cmd.none )
 
+        CreateMsg createMsg ->
+            case model of
+                Create create ->
+                    let
+                        ( newCreate, cmd ) =
+                            Create.update create createMsg flags
+                    in
+                    ( Create newCreate, cmd )
+
+                _ ->
+                    ( model, Cmd.none )
+
         StartGame mode messageRoomID ->
             case model of
                 Lobby lobby ->
@@ -220,6 +233,9 @@ receive flags assets str model =
         Profile profile ->
             ( Profile profile, Cmd.none )
 
+        Create create ->
+            ( Create create, Cmd.none )
+
 
 tick : Flags -> Model -> Float -> ( Model, Cmd Msg )
 tick flags room dt =
@@ -257,6 +273,9 @@ tick flags room dt =
 
         Profile profile ->
             ( Profile profile, Cmd.none )
+
+        Create create ->
+            ( Create create, Cmd.none )
 
 
 mouseUp : Flags -> Assets.Model -> Model -> Mouse.Position -> ( Model, Cmd Main.Msg )

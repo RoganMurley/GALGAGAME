@@ -1,6 +1,7 @@
 module Room.Messages exposing (Msg(..))
 
 import Connected.Messages as Connected
+import Create.Messages as Create
 import Feedback.Messages as Feedback
 import Leaderboard.Messages as Leaderboard
 import League.Messages as League
@@ -24,4 +25,5 @@ type Msg
     | LeagueMsg League.Msg
     | LeaderboardMsg Leaderboard.Msg
     | ProfileMsg Profile.Msg
+    | CreateMsg Create.Msg
     | StartGame Mode (Maybe String)
