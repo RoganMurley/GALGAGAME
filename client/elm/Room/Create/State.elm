@@ -19,7 +19,7 @@ init =
 
 
 update : Model -> Msg -> Flags -> ( Model, Cmd Main.Msg )
-update model msg flags =
+update model msg _ =
     case msg of
         Input AllowSpectators allowSpectators ->
             ( { model | startingLife = updateFormField allowSpectators model.allowSpectators }

@@ -11,26 +11,16 @@ import Model (Passes (OnePass), Turn, maxHandLength, setForceWin)
 import Player (WhichPlayer (..), other)
 import Util (shuffle, split)
 
-initHandLength :: Int
-initHandLength = maxHandLength
-  -- | which == first = maxHandLength
-  -- | otherwise = maxHandLength - 1
-
--- initHandLength :: WhichPlayer -> Turn -> Int
--- initHandLength which first =
-  -- | which == first = maxHandLength
-  -- | otherwise = maxHandLength - 1
-
-startProgram :: Turn -> Maybe (Text, Text) -> Beta.Program ()
-startProgram turn mUsernames = do
+startProgram :: Maybe (Text, Text) -> Beta.Program ()
+startProgram mUsernames = do
   case mUsernames of
     Just (usernamePa, usernamePb) -> do
       let announcement = usernamePa <> " vs " <> usernamePb
       Beta.rawAnim $ Announce announcement (TimeModifierLinear 3)
     Nothing ->
       return ()
-  replicateM_ initHandLength (Beta.draw PlayerA PlayerA (TimeModifierOutQuint 0.25))
-  replicateM_ initHandLength (Beta.draw PlayerB PlayerB (TimeModifierOutQuint 0.25))
+  replicateM_ maxHandLength (Beta.draw PlayerA PlayerA (TimeModifierOutQuint 0.25))
+  replicateM_ maxHandLength (Beta.draw PlayerB PlayerB (TimeModifierOutQuint 0.25))
 
 tutorial0Program :: Maybe (Text, Text) -> Beta.Program ()
 tutorial0Program _ = do

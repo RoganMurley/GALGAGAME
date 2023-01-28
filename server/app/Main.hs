@@ -232,7 +232,7 @@ makeScenario _ prefix =
         _ ->
           PlayerA
     prog :: Maybe (Text, Text) -> Beta.Program ()
-    prog = startProgram turn
+    prog = startProgram
     roundEndProg :: Beta.Program ()
     roundEndProg = roundEndProgram
     progressWin :: Progress
