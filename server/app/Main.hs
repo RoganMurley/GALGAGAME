@@ -161,7 +161,7 @@ begin conn request user state = do
           gen <- liftIO getGen
           guid <- liftIO GUID.genText
           let client = Client user (PlayerConnection conn) guid
-          let scenario = applyCustomSettings mCustomSettings $ makeScenario gen prefix
+          let scenario = applyCustomSettings mCustomSettings $ makeScenario gen
           roomVar <- liftIO . atomically $ Server.getOrCreateRoom roomName (prefixWaitType prefix) gen scenario state
           prefixMetric prefix
           beginPrefix prefix state client roomVar
@@ -206,8 +206,8 @@ prefixWaitType :: Prefix -> WaitType
 prefixWaitType PrefixQueue = WaitQuickplay
 prefixWaitType _ = WaitCustom
 
-makeScenario :: Gen -> Prefix -> Scenario
-makeScenario _ prefix =
+makeScenario :: Gen -> Scenario
+makeScenario _ =
   Scenario
     { scenario_turn = turn,
       scenario_characterPa = characterPa,
@@ -224,13 +224,8 @@ makeScenario _ prefix =
     characterPa = Left $ UnchosenCharacter Nothing
     characterPb :: Either UnchosenCharacter ChosenCharacter
     characterPb = Left $ UnchosenCharacter Nothing
-    turn :: Turn
-    turn =
-      case prefix of
-        PrefixCpu ->
-          PlayerB
-        _ ->
-          PlayerA
+    turn :: Maybe Turn
+    turn = Nothing
     prog :: Maybe (Text, Text) -> Beta.Program ()
     prog = startProgram
     roundEndProg :: Beta.Program ()
@@ -325,7 +320,7 @@ beginQueue state client roomVar = do
     )
   gen <- liftIO getGen
   guid <- liftIO GUID.genText
-  let scenario = makeScenario gen PrefixQueue
+  let scenario = makeScenario gen
   let roomName = Text.take 8 guid
   newRoomVar <- liftIO . atomically $ Server.getOrCreateRoom roomName WaitQuickplay gen scenario state
   beginQueue state client newRoomVar

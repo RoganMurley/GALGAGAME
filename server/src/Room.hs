@@ -16,7 +16,7 @@ import Outcome (Outcome (..))
 import Player (WhichPlayer (..), other)
 import Scenario (Scenario (..))
 import User (GameUser (..), User (..), isCpu, isHuman, isSuperuser, usersToGameUsers)
-import Util (Gen)
+import Util (Gen, randomChoice)
 
 type Name = Text
 
@@ -118,7 +118,12 @@ roomSetup room =
                     (superPa, superPb)
                     (scenario_characterPa scenario)
                     (scenario_characterPb scenario)
-                turn = scenario_turn scenario
+                turn =
+                  case scenario_turn scenario of
+                    Just t ->
+                      t
+                    Nothing ->
+                      randomChoice gen [PlayerA, PlayerB]
                 startProgram = scenario_prog scenario
                 timeLimit = scenario_timeLimit scenario
                 users = Room.getUsers room
