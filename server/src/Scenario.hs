@@ -40,5 +40,5 @@ parseCustomSettings _ =
 
 applyCustomSettings :: Maybe CustomSettings -> Scenario -> Scenario
 applyCustomSettings Nothing scenario = scenario
-applyCustomSettings (Just CustomSettings {customsettings_allowSpectators, customsettings_startingLife}) scenario =
+applyCustomSettings (Just CustomSettings {}) scenario =
   scenario

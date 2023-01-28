@@ -7,7 +7,7 @@ import qualified DSL.Alpha as Alpha
 import qualified DSL.Beta as Beta
 import Data.Text (Text)
 import DeckBuilding (Character (..), angelRune, characterCards, fireRune, goldRune, mirrorRune, shroomRune, waterRune)
-import Model (Passes (OnePass), Turn, maxHandLength, setForceWin)
+import Model (Passes (OnePass), maxHandLength, setForceWin)
 import Player (WhichPlayer (..), other)
 import Util (shuffle, split)
 
