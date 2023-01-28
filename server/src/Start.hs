@@ -12,9 +12,9 @@ import Player (WhichPlayer (..), other)
 import Util (shuffle, split)
 
 initHandLength :: WhichPlayer -> Turn -> Int
-initHandLength which first
-  | which == first = maxHandLength
-  | otherwise = maxHandLength - 1
+initHandLength which first = maxHandLength
+  -- | which == first = maxHandLength
+  -- | otherwise = maxHandLength - 1
 
 startProgram :: Turn -> Maybe (Text, Text) -> Beta.Program ()
 startProgram turn mUsernames = do
