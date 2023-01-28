@@ -3,11 +3,11 @@ module Create.View exposing (view)
 import Create.Messages exposing (Msg(..))
 import Create.State exposing (validator)
 import Create.Types exposing (Field(..), Model)
+import Debug exposing (toString)
 import Form exposing (FormFieldClass, FormFieldType(..), ValidationResult, formInputView)
 import Html exposing (Attribute, Html, button, div, h1, text)
 import Html.Attributes exposing (class, disabled)
 import Html.Events exposing (onClick)
-import Main.Messages as Main
 
 
 view : Model -> Html Msg
@@ -46,6 +46,7 @@ view model =
                 , class "button"
                 ]
                 [ text "CREATE" ]
+            , div [] [ text (String.fromInt (List.length validations)) ]
             , div [ class "error" ] [ text model.error ]
             ]
         ]

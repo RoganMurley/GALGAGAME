@@ -1,4 +1,4 @@
-module Form exposing (Error(..), FormField, FormFieldClass, FormFieldType(..), ValidationResult, Validator, batchValidators, formInputView, initFormField, updateFormField)
+module Form exposing (Error(..), FormField, FormFieldClass, FormFieldType(..), ValidationResult, Validator, batchValidators, formInputView, initFormField, toBool, updateFormField)
 
 import Html exposing (Attribute, Html, div, input, label, text, textarea)
 import Html.Attributes exposing (attribute, class, for, id, placeholder, type_)
@@ -166,3 +166,8 @@ formInputView formFieldClass validations field =
         , fieldLabel
         , div [ class "form-error-message" ] [ text errorMessage ]
         ]
+
+
+toBool : FormField -> Bool
+toBool { value } =
+    value == "on"

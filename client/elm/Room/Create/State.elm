@@ -3,8 +3,10 @@ module Create.State exposing (init, update, validator)
 import Create.Messages exposing (Msg(..))
 import Create.Types exposing (Field(..), Model)
 import Form exposing (Error(..), ValidationResult, Validator, batchValidators, initFormField, updateFormField)
+import Json.Encode as Json
 import Main.Messages as Main
 import Main.Types exposing (Flags)
+import Util exposing (message)
 
 
 init : Model
@@ -30,7 +32,25 @@ update model msg flags =
             )
 
         Submit ->
-            ( model, Cmd.none )
+            let
+                name =
+                    "foo"
+
+                encoded =
+                    Json.encode 0
+                        (Json.object
+                            [ ( "allowSpectators", Json.bool <| Form.toBool model.allowSpectators )
+                            , ( "startingLife", Json.string model.startingLife.value )
+                            , ( "name", Json.string name )
+                            ]
+                        )
+            in
+            ( { model | submitting = True }
+            , Cmd.batch
+                [ message <| Main.Send <| "play"
+                , message <| Main.Send <| "createCustomRoom:" ++ encoded
+                ]
+            )
 
 
 startingLifeValidator : Validator Model Field
