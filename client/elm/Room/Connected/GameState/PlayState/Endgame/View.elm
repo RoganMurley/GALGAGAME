@@ -343,25 +343,28 @@ unlockView ctx _ rune =
 
 
 questView : Context -> Float -> Quest -> List WebGL.Entity
-questView ctx _ quest =
+questView ctx tick quest =
     let
         { w, h, radius } =
             ctx
 
         headline =
-            "QUEST COMPLETE"
+            "QUEST COMPLETE!"
 
         byline =
             quest.name ++ ": " ++ quest.desc
+
+        progress =
+            Ease.outExpo <| min 1 (tick / 1000)
     in
     List.concat
         [ Font.view
             "Futura"
             headline
             { x = w * 0.5
-            , y = h * 0.45
-            , scaleX = 0.0004 * radius
-            , scaleY = 0.0004 * radius
+            , y = h * 0.4
+            , scaleX = progress * 0.00044 * radius
+            , scaleY = progress * 0.00044 * radius
             , color =
                 vec3 (40 / 255) (20 / 255) (20 / 255)
             }
@@ -370,9 +373,9 @@ questView ctx _ quest =
             "Futura"
             headline
             { x = (w * 0.5) - (0.008 * radius)
-            , y = h * 0.45
-            , scaleX = 0.0004 * radius
-            , scaleY = 0.0004 * radius
+            , y = h * 0.4
+            , scaleX = (progress * progress) * 0.00044 * radius
+            , scaleY = (progress * progress) * 0.00044 * radius
             , color = Colour.yellow
             }
             ctx
@@ -381,8 +384,8 @@ questView ctx _ quest =
             byline
             { x = w * 0.5
             , y = h * 0.55
-            , scaleX = 0.00035 * radius
-            , scaleY = 0.00035 * radius
+            , scaleX = progress * 0.00035 * radius
+            , scaleY = progress * 0.00035 * radius
             , color =
                 vec3 (40 / 255) (20 / 255) (20 / 255)
             }
@@ -392,8 +395,8 @@ questView ctx _ quest =
             byline
             { x = (w * 0.5) - (0.008 * radius)
             , y = h * 0.55
-            , scaleX = 0.00035 * radius
-            , scaleY = 0.00035 * radius
+            , scaleX = (progress * progress) * 0.00035 * radius
+            , scaleY = (progress * progress) * 0.00035 * radius
             , color = Colour.white
             }
             ctx
