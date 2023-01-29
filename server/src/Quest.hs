@@ -52,7 +52,7 @@ bigDamageQuest =
     { quest_id = "50dmg",
       quest_name = "THE BIG ONE",
       quest_desc = "Do exactly 50 damage",
-      quest_xp = 1000,
+      quest_xp = 2000,
       quest_pattern = \_ res ->
         any
           ( \case
@@ -96,7 +96,7 @@ winAspect aspect =
     { quest_id = "win" <> aspectText aspect,
       quest_name = aspectText aspect <> "PROPHECY",
       quest_desc = "Win with " <> toUpper (aspectText aspect),
-      quest_xp = 100,
+      quest_xp = 500,
       quest_pattern = \initial res ->
         let
           isAspect =
@@ -119,8 +119,7 @@ didWin =
   )
 
 allQuests :: [Quest]
-allQuests = --[bigDamageQuest--, loseQuest, winQuest] ++
-            aspectQuests
+allQuests = [bigDamageQuest, winQuest] ++ filter (\Quest{quest_id} -> (quest_id /= "winDevil") && (quest_id /= "winStrange")) aspectQuests
 
 questsById :: Map Text Quest
 questsById = Map.fromList $ fmap (\quest -> (quest_id quest, quest)) allQuests

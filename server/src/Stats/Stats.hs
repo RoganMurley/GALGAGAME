@@ -17,12 +17,20 @@ import Stats.Experience (Experience)
 import Stats.Progress (Progress (..), fromPartial, initialProgress)
 import qualified Stats.Schema
 import Replay.Final (Replay, getRes, getInitial)
+import Control.Monad.IO.Class (liftIO)
 import Quest (Quest)
 import qualified Quest
 import {-# SOURCE #-} User (User (..))
+import Data.Time (getCurrentTime, UTCTime)
+import Data.Time.Clock (NominalDiffTime, diffUTCTime)
+import Util (Gen, getGen, randomChoice)
+import qualified Log
+import Text.Printf (printf)
 
 load :: User -> App Progress
-load (User user _) = do
+load u@(User user _) = do
+  time <- liftIO getCurrentTime
+  gen <- liftIO getGen
   let userId = Auth.Schema.userId user :: Int64
   result <-
     runBeam $
@@ -40,7 +48,9 @@ load (User user _) = do
                           >>= decode
                    in fromPartial <$> partial <*> Just xp
               )
-  return $ fromMaybe initialProgress progress
+  finalProgress <- refreshQuests gen time $ fromMaybe initialProgress progress
+  updateProgress u finalProgress
+  return finalProgress
 load (GuestUser cid _) = loadByCid $ Just cid
 load _ = return initialProgress
 
@@ -64,6 +74,21 @@ loadByCid (Just cid) = do
               )
   return $ fromMaybe initialProgress progress
 loadByCid Nothing = return initialProgress
+
+refreshQuests :: Gen -> UTCTime -> Progress -> App Progress
+refreshQuests gen currentTime progress =
+  case progress_questupdate progress of
+    Nothing -> do
+      Log.info $ printf "No quest refresh"
+      return $ newQuests gen currentTime progress 
+    Just updatedAt ->
+      let
+        delta = diffUTCTime currentTime updatedAt :: NominalDiffTime
+        hour = 60 * minute
+        minute = 60
+      in do
+      Log.info $ printf "quest delta: %s" (show delta)
+      if delta > hour then return $ newQuests gen currentTime progress else return progress
 
 updateProgress :: User -> Progress -> App ()
 updateProgress (User user _) progress = do
@@ -168,3 +193,8 @@ isChange StatChange {statChange_initialExperience, statChange_finalExperience, s
   (statChange_initialExperience /= statChange_finalExperience) ||
   not (Set.null statChange_newUnlocks) ||
   not (Set.null statChange_questChange)
+
+newQuests :: Gen -> UTCTime -> Progress -> Progress
+newQuests gen updatedAt progress = progress { progress_questupdate = Just updatedAt, progress_quests = quests }
+  where
+    quests = Set.singleton $ randomChoice gen Quest.allQuests
