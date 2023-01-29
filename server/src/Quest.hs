@@ -7,6 +7,8 @@ import Data.String.Conversions (cs)
 import Data.Text (Text)
 import Player (WhichPlayer (..))
 import ResolveData (ResolveData (..))
+import qualified Data.Map as Map
+import Data.Map (Map)
 
 data Quest = Quest
   { quest_name :: Text,
@@ -16,6 +18,12 @@ data Quest = Quest
 
 instance Show Quest where
   show quest = cs $ quest_name quest
+
+instance Eq Quest where
+  (==) a b = quest_name a == quest_name b
+
+instance Ord Quest where
+  a `compare` b = quest_name a `compare` quest_name b
 
 test :: [Quest] -> [ResolveData] -> [Quest]
 test quests res = filter (\Quest {quest_pattern} -> quest_pattern res) quests
@@ -53,3 +61,9 @@ winQuest =
 
 allQuests :: [Quest]
 allQuests = [bigDamageQuest, winQuest]
+
+questsByName :: Map Text Quest
+questsByName = Map.fromList $ fmap (\quest -> (quest_name quest, quest)) allQuests
+
+getByName :: Text -> Maybe Quest
+getByName name = Map.lookup name questsByName
