@@ -349,10 +349,10 @@ questView ctx tick quest =
             ctx
 
         headline =
-            "QUEST COMPLETE!"
+            "QUEST COMPLETE"
 
         byline =
-            quest.name ++ ": " ++ quest.desc
+            quest.desc
 
         progress =
             Ease.outExpo <| min 1 (tick / 1000)

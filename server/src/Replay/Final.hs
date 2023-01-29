@@ -10,6 +10,7 @@ import Database.Beam (all_, default_, filter_, insert, insertExpressions, runSel
 import Database.Beam.Backend.SQL.BeamExtensions (runInsertReturningList)
 import GameState (PlayState)
 import Mirror (Mirror (..))
+import Model (Model)
 import Player (WhichPlayer (..))
 import qualified Replay.Active as Active
 import qualified Replay.Schema
@@ -76,3 +77,6 @@ load replayId = do
 
 getRes :: Replay -> [ResolveData]
 getRes (Replay (Active.Replay _ res _ _) _) = res
+
+getInitial :: Replay -> Model
+getInitial (Replay (Active.Replay initial _ _ _) _) = initial

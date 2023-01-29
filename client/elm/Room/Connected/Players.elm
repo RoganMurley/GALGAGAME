@@ -14,6 +14,7 @@ type alias Player =
     { name : String
     , xp : Int
     , unlocks : Set String
+    , quests : List String
     }
 
 
@@ -43,11 +44,12 @@ decoder =
 playerDecoder : Decoder Player
 playerDecoder =
     let
-        makePlayer : String -> Int -> List String -> Player
-        makePlayer name xp unlocks =
-            Player name xp (Set.fromList unlocks)
+        makePlayer : String -> Int -> List String -> List String -> Player
+        makePlayer name xp unlocks quests =
+            Player name xp (Set.fromList unlocks) quests
     in
-    Json.map3 makePlayer
+    Json.map4 makePlayer
         (field "name" string)
         (field "xp" int)
         (field "unlocks" <| list string)
+        (field "quests" <| list string)

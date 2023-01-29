@@ -3,6 +3,7 @@ module DeckBuilding.View exposing (webglView)
 import Assets.Types as Assets
 import Background.View exposing (radialView)
 import Buttons.View as Buttons
+import Colour
 import DeckBuilding.Messages exposing (Msg(..))
 import DeckBuilding.Types exposing (Model)
 import Font.Types as Font
@@ -11,6 +12,7 @@ import Game.State exposing (bareContextInit)
 import Game.Types exposing (Context)
 import Math.Vector3 exposing (vec3)
 import Mouse exposing (MouseState(..))
+import Players exposing (Player, Players)
 import Render.Types as Render
 import RuneSelect.Types as RuneSelect exposing (RuneCursor(..))
 import RuneSelect.View as RuneSelect
@@ -19,8 +21,8 @@ import WebGL.Texture as WebGL
 import WhichPlayer.Types exposing (WhichPlayer(..))
 
 
-webglView : Render.Params -> Model -> Assets.Model -> List WebGL.Entity
-webglView { w, h } model assets =
+webglView : Render.Params -> Model -> Players -> Assets.Model -> List WebGL.Entity
+webglView { w, h } model players assets =
     let
         ctx =
             bareContextInit ( w, h ) assets NoMouse
@@ -46,6 +48,7 @@ webglView { w, h } model assets =
                     [ radialView model.vfx
                     , subview model.vfx.depth
                     , Buttons.view model.buttons
+                    , questView players.pa
                     ]
 
 
@@ -89,3 +92,38 @@ waitingView tick ctx =
         , color = vec3 (244 / 255) (241 / 255) (94 / 255)
         }
         ctx
+
+
+questView : Maybe Player -> Context -> List WebGL.Entity
+questView mPlayer ctx =
+    let
+        { tick } =
+            ctx
+    in
+    case mPlayer of
+        Just { quests } ->
+            case List.head quests of
+                Just quest ->
+                    let
+                        { w, h, radius } =
+                            ctx
+
+                        size =
+                            3 * radius
+                    in
+                    Font.view
+                        "Futura"
+                        ("QUEST: " ++ quest)
+                        { x = w * 0.5 - 0.003 * size
+                        , y = h * 0.9
+                        , scaleX = 0.00006 * size + 0.003 * sin (tick * 0.005)
+                        , scaleY = 0.00006 * size + 0.003 * sin (tick * 0.007)
+                        , color = Colour.white
+                        }
+                        ctx
+
+                Nothing ->
+                    []
+
+        Nothing ->
+            []

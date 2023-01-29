@@ -15,7 +15,7 @@ import Data.Traversable (forM)
 import Database.Beam (all_, filter_, runSelectReturningOne, select, val_, (==.))
 import Player (WhichPlayer (..))
 import Schema (GalgagameDb (..), galgagameDb)
-import Stats.Progress (Progress (..), initialProgress, unlockNames)
+import Stats.Progress (Progress (..), initialProgress, unlockNames, questDescs)
 import qualified Stats.Stats as Stats
 
 data User
@@ -130,7 +130,8 @@ instance ToJSON GameUser where
     object
       [ "name" .= getUsername gameuser_user,
         "xp" .= progress_xp gameuser_progress,
-        "unlocks" .= unlockNames gameuser_progress
+        "unlocks" .= unlockNames gameuser_progress,
+        "quests" .= questDescs gameuser_progress
       ]
 
 toGameUser :: User -> STM GameUser

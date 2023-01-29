@@ -31,12 +31,14 @@ htmlView { replay, error } =
                         { name = usernamePa
                         , xp = 0
                         , unlocks = Set.empty
+                        , quests = []
                         }
                 , pb =
                     Just
                         { name = usernamePb
                         , xp = 0
                         , unlocks = Set.empty
+                        , quests = []
                         }
                 }
 
@@ -47,10 +49,25 @@ htmlView { replay, error } =
 webglView : Model -> Flags -> Assets.Model -> List WebGL.Entity
 webglView { replay, started } flags assets =
     case replay of
-        Just { state } ->
+        Just { state, usernamePa, usernamePb } ->
             if started then
                 GameState.webglView
                     (Started state)
+                    { pa =
+                        Just
+                            { name = usernamePa
+                            , xp = 0
+                            , unlocks = Set.empty
+                            , quests = []
+                            }
+                    , pb =
+                        Just
+                            { name = usernamePb
+                            , xp = 0
+                            , unlocks = Set.empty
+                            , quests = []
+                            }
+                    }
                     Chat.init
                     (GameState.paramsFromFlags flags)
                     assets

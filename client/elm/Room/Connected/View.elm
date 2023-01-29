@@ -32,13 +32,13 @@ htmlView { chat, game, roomID, players, errored, connectionLost } flags =
 
 
 webglView : Model -> Flags -> Assets.Model -> List WebGL.Entity
-webglView { chat, game, ripples } flags assets =
+webglView { chat, game, ripples, players } flags assets =
     let
         params =
             GameState.paramsFromFlags flags
     in
     List.concat
-        [ GameState.webglView game chat params assets False
+        [ GameState.webglView game players chat params assets False
         , Ripple.view ripples params assets
         ]
 

@@ -16,7 +16,7 @@ import Schema (GalgagameDb (..), galgagameDb)
 import Stats.Experience (Experience)
 import Stats.Progress (Progress (..), fromPartial, initialProgress)
 import qualified Stats.Schema
-import Replay.Final (Replay, getRes)
+import Replay.Final (Replay, getRes, getInitial)
 import Quest (Quest)
 import qualified Quest
 import {-# SOURCE #-} User (User (..))
@@ -158,7 +158,8 @@ updateQuests replay progress = progress { progress_quests = finalQuests, progres
     quests = progress_quests progress
     xp = progress_xp progress
     res = getRes replay
-    finalQuests = Quest.test quests res
+    initial = getInitial replay
+    finalQuests = Quest.test quests initial res
     questChanges = Set.difference quests finalQuests
     xpDelta = Set.fold (\q x -> x + Quest.quest_xp q) 0 questChanges
 

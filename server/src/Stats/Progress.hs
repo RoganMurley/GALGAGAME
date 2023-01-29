@@ -66,6 +66,9 @@ isUnlocked rune progress =
 unlockNames :: Progress -> [Text]
 unlockNames Progress {progress_unlocks} = getRuneName <$> Set.toList progress_unlocks
 
+questDescs :: Progress -> [Text]
+questDescs Progress {progress_quests} = Quest.quest_desc <$> Set.toList progress_quests
+
 isTutorialProgress :: Progress -> Bool
 isTutorialProgress Progress {progress_events} =
   not $ Set.member "tutorial-complete" progress_events

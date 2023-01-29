@@ -11,6 +11,7 @@ import Main.Messages as Main
 import Main.Types exposing (Flags)
 import Mouse exposing (MouseState(..))
 import PlayState.View as PlayState
+import Players exposing (Players)
 import Render.Types as Render
 import Waiting.View as Waiting
 import WebGL
@@ -29,14 +30,14 @@ htmlView state roomID flags =
             PlayState.htmlView started flags
 
 
-webglView : GameState -> Chat.Model -> Render.Params -> Assets.Model -> Bool -> List WebGL.Entity
-webglView state chat params assets isReplay =
+webglView : GameState -> Players -> Chat.Model -> Render.Params -> Assets.Model -> Bool -> List WebGL.Entity
+webglView state players chat params assets isReplay =
     case state of
         Waiting waiting ->
             Waiting.webglView waiting params assets
 
         Selecting selecting ->
-            DeckBuilding.webglView params selecting assets
+            DeckBuilding.webglView params selecting players assets
 
         Started started ->
             PlayState.webglView started chat params assets isReplay
