@@ -16,6 +16,9 @@ import Schema (GalgagameDb (..), galgagameDb)
 import Stats.Experience (Experience)
 import Stats.Progress (Progress (..), fromPartial, initialProgress)
 import qualified Stats.Schema
+import Replay.Final (Replay, getRes)
+import Quest (Quest)
+import qualified Quest
 import {-# SOURCE #-} User (User (..))
 
 load :: User -> App Progress
@@ -100,7 +103,8 @@ updateProgress _ _ = return ()
 data StatChange = StatChange
   { statChange_initialExperience :: Experience,
     statChange_finalExperience :: Experience,
-    statChange_newUnlocks :: Set Rune
+    statChange_newUnlocks :: Set Rune,
+    statChange_questChange :: Set Quest
   }
   deriving (Show, Eq)
 
@@ -109,23 +113,31 @@ instance ToJSON StatChange where
     StatChange
       { statChange_initialExperience,
         statChange_finalExperience,
-        statChange_newUnlocks
+        statChange_newUnlocks,
+        statChange_questChange
       } =
       object
         [ "initialExperience" .= statChange_initialExperience,
           "finalExperience" .= statChange_finalExperience,
-          "unlocks" .= statChange_newUnlocks
+          "unlocks" .= statChange_newUnlocks,
+          "quests" .= statChange_questChange
         ]
 
 statChange :: Progress -> Progress -> StatChange
 statChange initial final =
-  let initialUnlocks = progress_unlocks initial
+  let --Unlocks
+      initialUnlocks = progress_unlocks initial
       finalUnlocks = progress_unlocks final
       newUnlocks = Set.difference finalUnlocks initialUnlocks
+      -- Quests
+      initialQuests = progress_quests initial
+      finalQuests = progress_quests final
+      questChanges = Set.difference initialQuests finalQuests
    in StatChange
         { statChange_initialExperience = progress_xp initial,
           statChange_finalExperience = progress_xp final,
-          statChange_newUnlocks = newUnlocks
+          statChange_newUnlocks = newUnlocks,
+          statChange_questChange = questChanges
         }
 
 hydrateUnlocks :: Progress -> Progress
@@ -140,6 +152,14 @@ hydrateUnlocks progress =
           (\rune -> xp >= rune_xp rune)
           mainRunes
 
-isXpChange :: StatChange -> Bool
-isXpChange StatChange {statChange_initialExperience, statChange_finalExperience} =
-  statChange_initialExperience /= statChange_finalExperience
+updateQuests :: Replay -> Progress -> Progress
+updateQuests replay progress = progress { progress_quests = Quest.test quests res }
+  where
+    quests = progress_quests progress
+    res = getRes replay
+
+isChange :: StatChange -> Bool
+isChange StatChange {statChange_initialExperience, statChange_finalExperience, statChange_newUnlocks, statChange_questChange} =
+  (statChange_initialExperience /= statChange_finalExperience) ||
+  not (Set.null statChange_newUnlocks) ||
+  not (Set.null statChange_questChange)

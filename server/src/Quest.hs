@@ -4,15 +4,20 @@ module Quest where
 
 import CardAnim (CardAnim (..))
 import Data.String.Conversions (cs)
+import Data.Aeson (ToJSON (..), object, (.=))
 import Data.Text (Text)
 import Player (WhichPlayer (..))
 import ResolveData (ResolveData (..))
 import qualified Data.Map as Map
 import Data.Map (Map)
+import qualified Data.Set as Set
+import Data.Set (Set)
+import Stats.Experience (Experience)
 
 data Quest = Quest
   { quest_name :: Text,
     quest_desc :: Text,
+    quest_xp :: Experience,
     quest_pattern :: [ResolveData] -> Bool
   }
 
@@ -25,15 +30,23 @@ instance Eq Quest where
 instance Ord Quest where
   a `compare` b = quest_name a `compare` quest_name b
 
-test :: [Quest] -> [ResolveData] -> [Quest]
-test quests res = filter (\Quest {quest_pattern} -> quest_pattern res) quests
+instance ToJSON Quest where
+  toJSON Quest {quest_name, quest_desc, quest_xp} =
+    object
+      [ "name" .= quest_name,
+        "desc" .= quest_desc,
+        "xp" .= quest_xp
+      ]
 
+test :: Set Quest -> [ResolveData] -> Set Quest
+test quests res = Set.filter (\Quest {quest_pattern} -> quest_pattern res) quests
 
 bigDamageQuest :: Quest
 bigDamageQuest =
   Quest
     { quest_name = "THE BIG ONE",
       quest_desc = "Do exactly 50 damage",
+      quest_xp = 1000,
       quest_pattern =
         any
           ( \case
@@ -49,6 +62,7 @@ winQuest =
   Quest
     { quest_name = "VICTORIOUS",
       quest_desc = "Win a game",
+      quest_xp = 100,
       quest_pattern =
         any
           ( \case

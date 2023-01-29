@@ -22,8 +22,8 @@ import Model (Model)
 import Outcome (Outcome)
 import qualified Outcome
 import Player (WhichPlayer (..), other)
-import qualified Quest
 import qualified Replay.Final
+import Replay.Final (Replay)
 import ResolveData (ResolveData (..))
 import Room (Room)
 import qualified Room
@@ -137,8 +137,8 @@ resolveRoomClients res initial final exclude room = do
     mirrorOutcome :: Outcome.Encodable
     mirrorOutcome = Outcome.Resolve (mirror <$> res) (mirror initial) (mirror final) (other <$> exclude)
 
-handleProgress :: WhichPlayer -> Maybe WhichPlayer -> Room -> App ()
-handleProgress which winner room = do
+handleProgress :: WhichPlayer -> Maybe WhichPlayer -> Replay -> Room -> App ()
+handleProgress which winner replay room = do
   -- Change this to be a transaction!
   let scenario = Room.getScenario room
   let mUser = Client.user <$> Room.getPlayerClient which room :: Maybe User
@@ -149,12 +149,12 @@ handleProgress which winner room = do
             if Just which == winner
               then scenario_progressWin scenario
               else scenario_progressLoss scenario
-      let finalProgress = Stats.hydrateUnlocks (progress <> progressUpdate)
+      let finalProgress = Stats.updateQuests replay . Stats.hydrateUnlocks $ progress <> progressUpdate
       let statChange = Stats.statChange progress finalProgress
       Stats.updateProgress user finalProgress
       Log.info $ printf "Xp change for %s: %s" (getUsername user) (show statChange)
       when
-        (Stats.isXpChange statChange)
+        (Stats.isChange statChange)
         ( Room.sendToPlayer which (("xp:" <>) . cs . encode $ statChange) room
         )
       liftIO . atomically $ setProgress finalProgress user
@@ -194,19 +194,6 @@ handleLeaderboard room = do
     Nothing ->
       return ()
 
-handleQuest :: WhichPlayer -> Replay.Final.Replay -> Room -> App ()
-handleQuest which replay room = do
-  let mUser = Client.user <$> Room.getPlayerClient which room :: Maybe User
-  case mUser of
-    Just user -> do
-      let res = Replay.Final.getRes replay
-      let quests = Quest.allQuests
-      let completed = Quest.test quests res
-      -- Log.debug $ show $ fmap resolveData_anim res
-      Log.info $ printf "Handling quests for %s: %s" (getUsername user) (show completed)
-    Nothing ->
-      return ()
-
 actOutcome :: Room -> Outcome -> App ()
 actOutcome room Outcome.Sync =
   syncRoomClients room
@@ -224,10 +211,7 @@ actOutcome room (Outcome.SaveReplay replay) = do
   replayId <- Replay.Final.save replay
   Log.info $ printf "<%s>: Replay saved with ID %d" (Room.getName room) replayId
   Room.broadcast ("replaySaved:" <> (cs . show $ replayId)) room
-actOutcome room (Outcome.HandleProgress winner) = do
-  handleProgress PlayerA winner room
-  handleProgress PlayerB winner room
+actOutcome room (Outcome.HandleProgress winner replay) = do
+  handleProgress PlayerA winner replay room
+  handleProgress PlayerB winner (mirror replay) room
   handleLeaderboard room
-actOutcome room (Outcome.HandleQuests replay) = do
-  handleQuest PlayerA replay room
-  handleQuest PlayerB (mirror replay) room

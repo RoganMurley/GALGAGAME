@@ -14,8 +14,7 @@ import ResolveData (ResolveData)
 data Outcome
   = Sync
   | SaveReplay Final.Replay
-  | HandleProgress (Maybe WhichPlayer)
-  | HandleQuests Final.Replay
+  | HandleProgress (Maybe WhichPlayer) Final.Replay
   | Encodable Encodable
   deriving (Eq, Show)
 
