@@ -103,7 +103,7 @@ toPartial Progress {progress_unlocks, progress_events, progress_quests} =
   PartialProgress
     { partialprogress_unlocks = getRuneName <$> Set.toList progress_unlocks,
       partialprogress_events = Set.toList progress_events,
-      partialprogress_quests = Quest.quest_name <$> Set.toList progress_quests
+      partialprogress_quests = Quest.quest_id <$> Set.toList progress_quests
     }
 
 fromPartial :: PartialProgress -> Experience -> Progress
@@ -117,4 +117,4 @@ fromPartial PartialProgress {partialprogress_unlocks, partialprogress_events, pa
   where
     unlocks = Set.fromList $ catMaybes $ getRuneByName . cs <$> partialprogress_unlocks
     events = Set.fromList partialprogress_events
-    quests = Set.fromList $ Quest.setup $ catMaybes $ Quest.getByName . cs <$> partialprogress_quests
+    quests = Set.fromList $ Quest.setup $ catMaybes $ Quest.getById . cs <$> partialprogress_quests

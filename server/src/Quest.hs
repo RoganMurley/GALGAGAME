@@ -15,25 +15,27 @@ import Data.Set (Set)
 import Stats.Experience (Experience)
 
 data Quest = Quest
-  { quest_name :: Text,
+  { quest_id :: Text,
+    quest_name :: Text,
     quest_desc :: Text,
     quest_xp :: Experience,
     quest_pattern :: [ResolveData] -> Bool
   }
 
 instance Show Quest where
-  show quest = cs $ quest_name quest
+  show quest = cs $ quest_id quest
 
 instance Eq Quest where
-  (==) a b = quest_name a == quest_name b
+  (==) a b = quest_id a == quest_id b
 
 instance Ord Quest where
-  a `compare` b = quest_name a `compare` quest_name b
+  a `compare` b = quest_id a `compare` quest_id b
 
 instance ToJSON Quest where
-  toJSON Quest {quest_name, quest_desc, quest_xp} =
+  toJSON Quest {quest_id, quest_name, quest_desc, quest_xp} =
     object
-      [ "name" .= quest_name,
+      [ "id" .= quest_id,
+        "name" .= quest_name,
         "desc" .= quest_desc,
         "xp" .= quest_xp
       ]
@@ -44,7 +46,8 @@ test quests res = Set.filter (\Quest {quest_pattern} -> not $ quest_pattern res)
 bigDamageQuest :: Quest
 bigDamageQuest =
   Quest
-    { quest_name = "THE BIG ONE",
+    { quest_id = "50dmg",
+      quest_name = "THE BIG ONE",
       quest_desc = "Do exactly 50 damage",
       quest_xp = 1000,
       quest_pattern =
@@ -60,7 +63,8 @@ bigDamageQuest =
 winQuest :: Quest
 winQuest =
   Quest
-    { quest_name = "VICTORIOUS",
+    { quest_id = "win",
+      quest_name = "VICTORIOUS",
       quest_desc = "Win a game",
       quest_xp = 100,
       quest_pattern =
@@ -76,7 +80,8 @@ winQuest =
 loseQuest :: Quest
 loseQuest =
   Quest
-    { quest_name = "LOSER",
+    { quest_id = "lose",
+      quest_name = "LOSER",
       quest_desc = "Lose a game",
       quest_xp = 100,
       quest_pattern =
@@ -92,12 +97,13 @@ loseQuest =
 allQuests :: [Quest]
 allQuests = [bigDamageQuest, winQuest, loseQuest]
 
-questsByName :: Map Text Quest
-questsByName = Map.fromList $ fmap (\quest -> (quest_name quest, quest)) allQuests
+questsById :: Map Text Quest
+questsById = Map.fromList $ fmap (\quest -> (quest_id quest, quest)) allQuests
 
-getByName :: Text -> Maybe Quest
-getByName name = Map.lookup name questsByName
+getById :: Text -> Maybe Quest
+getById qid = Map.lookup qid questsById
 
 setup :: [Quest] -> [Quest]
-setup [] = allQuests
-setup quests = quests
+-- setup [] = allQuests
+-- setup quests = quests
+setup _ = allQuests

@@ -42,6 +42,9 @@ maxTick aftermath =
         Aftermath.Unlock _ ->
             999999999999999999
 
+        Aftermath.QuestComplete _ ->
+            999999999999999999
+
 
 tick : Float -> Model -> ( Model, Cmd PlayState.Msg )
 tick dt model =
@@ -107,11 +110,12 @@ fromStatChange stats =
     in
     { tick = 0
     , aftermath =
-        [ Winner
-        , Aftermath.StatChange initialStats 500
-        , Aftermath.StatChange midStats 1000
-        , Aftermath.StatChange finalStats 1500
-        ]
+        Winner
+            :: List.map Aftermath.QuestComplete stats.quests
+            ++ [ Aftermath.StatChange initialStats 500
+               , Aftermath.StatChange midStats 1000
+               , Aftermath.StatChange finalStats 1500
+               ]
             ++ List.map Aftermath.Unlock stats.unlocks
     , autoRematched = False
     }

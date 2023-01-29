@@ -152,6 +152,13 @@ aftermathListen sounds playstate =
                     else
                         Cmd.none
 
+                Just (Aftermath.QuestComplete _) ->
+                    if aftermath.tick == 0 then
+                        play "unlock.mp3"
+
+                    else
+                        Cmd.none
+
                 _ ->
                     Cmd.none
 

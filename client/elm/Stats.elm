@@ -1,6 +1,8 @@
 module Stats exposing (Experience, Level, StatChange, decodeStatChange, levelAt, levelFromExperience, levelToExperience, nextLevelAt)
 
 import Json.Decode as Json exposing (Decoder, field, float, list)
+import Quest.Decoders as Quest
+import Quest.Types exposing (Quest)
 import RuneSelect.Decoders
 import RuneSelect.Types exposing (Rune)
 
@@ -17,6 +19,7 @@ type alias StatChange =
     { initialXp : Experience
     , finalXp : Experience
     , unlocks : List Rune
+    , quests : List Quest
     }
 
 
@@ -55,9 +58,10 @@ decodeStatChange msg =
     let
         decoder : Decoder StatChange
         decoder =
-            Json.map3 StatChange
+            Json.map4 StatChange
                 (field "initialExperience" float)
                 (field "finalExperience" float)
                 (field "unlocks" (list RuneSelect.Decoders.rune))
+                (field "quests" (list Quest.decoder))
     in
     Json.decodeString decoder msg
