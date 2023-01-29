@@ -151,6 +151,8 @@ handleProgress which winner replay room = do
               else scenario_progressLoss scenario
       let finalProgress = Stats.updateQuests replay . Stats.hydrateUnlocks $ progress <> progressUpdate
       let statChange = Stats.statChange progress finalProgress
+      Log.debug $ printf "inital %s" (show $ progress_quests progress)
+      Log.debug $ printf "final %s" (show $ progress_quests finalProgress)
       Stats.updateProgress user finalProgress
       Log.info $ printf "Xp change for %s: %s" (getUsername user) (show statChange)
       when

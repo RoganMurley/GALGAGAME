@@ -39,7 +39,7 @@ instance ToJSON Quest where
       ]
 
 test :: Set Quest -> [ResolveData] -> Set Quest
-test quests res = Set.filter (\Quest {quest_pattern} -> quest_pattern res) quests
+test quests res = Set.filter (\Quest {quest_pattern} -> not $ quest_pattern res) quests
 
 bigDamageQuest :: Quest
 bigDamageQuest =
@@ -73,11 +73,31 @@ winQuest =
           )
     }
 
+loseQuest :: Quest
+loseQuest =
+  Quest
+    { quest_name = "LOSER",
+      quest_desc = "Lose a game",
+      quest_xp = 100,
+      quest_pattern =
+        any
+          ( \case
+              ResolveData {resolveData_anim = Just (GameEnd (Just PlayerB))} ->
+                True
+              _ ->
+                False
+          )
+    }
+
 allQuests :: [Quest]
-allQuests = [bigDamageQuest, winQuest]
+allQuests = [bigDamageQuest, winQuest, loseQuest]
 
 questsByName :: Map Text Quest
 questsByName = Map.fromList $ fmap (\quest -> (quest_name quest, quest)) allQuests
 
 getByName :: Text -> Maybe Quest
 getByName name = Map.lookup name questsByName
+
+setup :: [Quest] -> [Quest]
+setup [] = allQuests
+setup quests = quests

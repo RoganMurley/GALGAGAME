@@ -125,7 +125,7 @@ instance ToJSON StatChange where
 
 statChange :: Progress -> Progress -> StatChange
 statChange initial final =
-  let --Unlocks
+  let -- Unlocks
       initialUnlocks = progress_unlocks initial
       finalUnlocks = progress_unlocks final
       newUnlocks = Set.difference finalUnlocks initialUnlocks

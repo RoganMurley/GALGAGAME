@@ -117,4 +117,4 @@ fromPartial PartialProgress {partialprogress_unlocks, partialprogress_events, pa
   where
     unlocks = Set.fromList $ catMaybes $ getRuneByName . cs <$> partialprogress_unlocks
     events = Set.fromList partialprogress_events
-    quests = Set.fromList $ catMaybes $ Quest.getByName . cs <$> partialprogress_quests
+    quests = Set.fromList $ Quest.setup $ catMaybes $ Quest.getByName . cs <$> partialprogress_quests
