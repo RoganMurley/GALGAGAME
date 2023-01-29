@@ -22,6 +22,7 @@ import Model (Model)
 import Outcome (Outcome)
 import qualified Outcome
 import Player (WhichPlayer (..), other)
+import qualified Quest
 import qualified Replay.Final
 import ResolveData (ResolveData (..))
 import Room (Room)
@@ -193,6 +194,19 @@ handleLeaderboard room = do
     Nothing ->
       return ()
 
+handleQuest :: WhichPlayer -> Replay.Final.Replay -> Room -> App ()
+handleQuest which replay room = do
+  let mUser = Client.user <$> Room.getPlayerClient which room :: Maybe User
+  case mUser of
+    Just user -> do
+      let res = Replay.Final.getRes replay
+      let quests = Quest.allQuests
+      let completed = Quest.test quests res
+      -- Log.debug $ show $ fmap resolveData_anim res
+      Log.info $ printf "Handling quests for %s: %s" (getUsername user) (show completed)
+    Nothing ->
+      return ()
+
 actOutcome :: Room -> Outcome -> App ()
 actOutcome room Outcome.Sync =
   syncRoomClients room
@@ -214,3 +228,6 @@ actOutcome room (Outcome.HandleProgress winner) = do
   handleProgress PlayerA winner room
   handleProgress PlayerB winner room
   handleLeaderboard room
+actOutcome room (Outcome.HandleQuests replay) = do
+  handleQuest PlayerA replay room
+  handleQuest PlayerB (mirror replay) room

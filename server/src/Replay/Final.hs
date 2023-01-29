@@ -13,6 +13,7 @@ import Mirror (Mirror (..))
 import Player (WhichPlayer (..))
 import qualified Replay.Active as Active
 import qualified Replay.Schema
+import ResolveData (ResolveData (..))
 import Schema (GalgagameDb (..), galgagameDb)
 
 data Replay = Replay Active.Replay PlayState
@@ -72,3 +73,6 @@ load replayId = do
           filter_ (\row -> Replay.Schema.replayId row ==. val_ replayId) $
             all_ $ replays galgagameDb
   return $ Replay.Schema.replayReplay <$> result
+
+getRes :: Replay -> [ResolveData]
+getRes (Replay (Active.Replay _ res _ _) _) = res

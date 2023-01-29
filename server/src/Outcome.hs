@@ -15,6 +15,7 @@ data Outcome
   = Sync
   | SaveReplay Final.Replay
   | HandleProgress (Maybe WhichPlayer)
+  | HandleQuests Final.Replay
   | Encodable Encodable
   deriving (Eq, Show)
 

@@ -59,6 +59,7 @@ library
                      , Player
                      , Profile.Apps
                      , Profile.Views
+                     , Quest
                      , Replay.Active
                      , Replay.Final
                      , Replay.Views
