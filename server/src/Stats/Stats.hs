@@ -153,10 +153,14 @@ hydrateUnlocks progress =
           mainRunes
 
 updateQuests :: Replay -> Progress -> Progress
-updateQuests replay progress = progress { progress_quests = Quest.test quests res }
+updateQuests replay progress = progress { progress_quests = finalQuests, progress_xp = xp + xpDelta }
   where
     quests = progress_quests progress
+    xp = progress_xp progress
     res = getRes replay
+    finalQuests = Quest.test quests res
+    questChanges = Set.difference quests finalQuests
+    xpDelta = Set.fold (\q x -> x + Quest.quest_xp q) 0 questChanges
 
 isChange :: StatChange -> Bool
 isChange StatChange {statChange_initialExperience, statChange_finalExperience, statChange_newUnlocks, statChange_questChange} =

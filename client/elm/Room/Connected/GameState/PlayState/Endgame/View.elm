@@ -349,7 +349,10 @@ questView ctx _ quest =
             ctx
 
         headline =
-            quest.name
+            "QUEST COMPLETE"
+
+        byline =
+            quest.name ++ ": " ++ quest.desc
     in
     List.concat
         [ Font.view
@@ -375,7 +378,7 @@ questView ctx _ quest =
             ctx
         , Font.view
             "Futura"
-            quest.desc
+            byline
             { x = w * 0.5
             , y = h * 0.55
             , scaleX = 0.00035 * radius
@@ -386,7 +389,7 @@ questView ctx _ quest =
             ctx
         , Font.view
             "Futura"
-            quest.desc
+            byline
             { x = (w * 0.5) - (0.008 * radius)
             , y = h * 0.55
             , scaleX = 0.00035 * radius
