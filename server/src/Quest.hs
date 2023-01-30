@@ -16,12 +16,14 @@ import Stats.Experience (Experience)
 import Model (Model(..))
 import Card (Aspect(..), Card(..), aspectText, allAspects)
 import qualified DSL.Alpha as Alpha
+import {-# SOURCE #-} DeckBuilding (Rune, getRuneAspect)
 
 data Quest = Quest
   { quest_id :: Text,
     quest_name :: Text,
     quest_desc :: Text,
     quest_xp :: Experience,
+    quest_eligible :: Set Rune -> Bool,
     quest_pattern :: Model -> [ResolveData] -> Bool
   }
 
@@ -52,7 +54,8 @@ bigDamageQuest =
     { quest_id = "50dmg",
       quest_name = "THE BIG ONE",
       quest_desc = "Do exactly 50 damage",
-      quest_xp = 2000,
+      quest_xp = 500,
+      quest_eligible = const True,
       quest_pattern = \_ res ->
         any
           ( \case
@@ -70,6 +73,7 @@ winQuest =
       quest_name = "VICTORIOUS",
       quest_desc = "Win a game",
       quest_xp = 100,
+      quest_eligible = const True,
       quest_pattern = \_ res -> didWin res
     }
 
@@ -80,6 +84,7 @@ loseQuest =
       quest_name = "LOSER",
       quest_desc = "Lose a game",
       quest_xp = 100,
+      quest_eligible = const True,
       quest_pattern = \_ res ->
         any
           ( \case
@@ -96,7 +101,8 @@ winAspect aspect =
     { quest_id = "win" <> aspectText aspect,
       quest_name = aspectText aspect <> "PROPHECY",
       quest_desc = "Win with " <> toUpper (aspectText aspect),
-      quest_xp = 500,
+      quest_xp = 350,
+      quest_eligible = any (\rune -> getRuneAspect rune == aspect), 
       quest_pattern = \initial res ->
         let
           isAspect =
@@ -107,7 +113,7 @@ winAspect aspect =
     }
 
 aspectQuests :: [Quest]
-aspectQuests = fmap winAspect allAspects
+aspectQuests = winAspect <$> filter (\aspect -> aspect `notElem` [Strange]) allAspects
 
 didWin :: [ResolveData] -> Bool
 didWin =
@@ -119,7 +125,10 @@ didWin =
   )
 
 allQuests :: [Quest]
-allQuests = [bigDamageQuest, winQuest] ++ filter (\Quest{quest_id} -> (quest_id /= "winDevil") && (quest_id /= "winStrange")) aspectQuests
+allQuests = [bigDamageQuest, winQuest] ++ aspectQuests
+
+eligibleQuests :: Set Rune -> [Quest]
+eligibleQuests unlocks = filter (\Quest{ quest_eligible } -> quest_eligible unlocks) allQuests
 
 questsById :: Map Text Quest
 questsById = Map.fromList $ fmap (\quest -> (quest_id quest, quest)) allQuests

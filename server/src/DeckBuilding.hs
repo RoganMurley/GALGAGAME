@@ -1,6 +1,6 @@
 module DeckBuilding where
 
-import Card (Card (..))
+import Card (Aspect(..), Card (..))
 import qualified Cards
 import Data.Aeson (FromJSON (..), ToJSON (..), object, withObject, (.:), (.=))
 import Data.Either (isRight)
@@ -19,6 +19,7 @@ import Stats.Progress (Progress (..), isUnlocked)
 -- Rune
 data Rune = Rune
   { rune_name :: Text,
+    rune_aspect :: Aspect,
     rune_img :: Text,
     rune_cards :: RuneCards,
     rune_xp :: Experience
@@ -40,7 +41,10 @@ instance ToJSON Rune where
 type RuneCards = (Card, Card, Card, Card)
 
 getRuneName :: Rune -> Text
-getRuneName Rune {rune_name} = rune_name
+getRuneName = rune_name
+
+getRuneAspect :: Rune -> Aspect
+getRuneAspect = rune_aspect
 
 -- Character
 data Character = Character
@@ -208,6 +212,7 @@ waterRune :: Rune
 waterRune =
   Rune
     "WATER"
+    Water
     "cards/water/coin.png"
     (Cards.waterSword, Cards.waterWand, Cards.waterCup, Cards.waterCoin)
     (levelToExperience 1)
@@ -216,6 +221,7 @@ fireRune :: Rune
 fireRune =
   Rune
     "FIRE"
+    Fire
     "cards/fire/coin.png"
     (Cards.fireSword, Cards.fireWand, Cards.fireCup, Cards.fireCoin)
     (levelToExperience 1)
@@ -224,6 +230,7 @@ angelRune :: Rune
 angelRune =
   Rune
     "ANGEL"
+    Angel
     "cards/angel/coin.png"
     (Cards.angelSword, Cards.angelWand, Cards.angelCup, Cards.angelCoin)
     (levelToExperience 1)
@@ -232,6 +239,7 @@ shroomRune :: Rune
 shroomRune =
   Rune
     "SHROOM"
+    Shroom
     "cards/shroom/coin.png"
     (Cards.shroomSword, Cards.shroomWand, Cards.shroomCup, Cards.shroomCoin)
     (levelToExperience 1)
@@ -240,6 +248,7 @@ mirrorRune :: Rune
 mirrorRune =
   Rune
     "MIRROR"
+    Mirror
     "cards/mirror/coin.png"
     (Cards.mirrorSword, Cards.mirrorWand, Cards.mirrorCup, Cards.mirrorCoin)
     (levelToExperience 2)
@@ -248,6 +257,7 @@ goldRune :: Rune
 goldRune =
   Rune
     "GOLD"
+    Gold
     "cards/gold/coin.png"
     (Cards.goldSword, Cards.goldWand, Cards.goldCup, Cards.goldCoin)
     (levelToExperience 3)
@@ -256,6 +266,7 @@ voidRune :: Rune
 voidRune =
   Rune
     "VOID"
+    Void
     "cards/void/coin.png"
     (Cards.voidSword, Cards.voidWand, Cards.voidCup, Cards.voidCoin)
     (levelToExperience 4)
@@ -264,6 +275,7 @@ dualityRune :: Rune
 dualityRune =
   Rune
     "DUALITY"
+    Duality
     "cards/duality/coin.png"
     (Cards.dualitySword, Cards.dualityWand, Cards.dualityCup, Cards.dualityCoin)
     (levelToExperience 5)
@@ -272,6 +284,7 @@ eyeRune :: Rune
 eyeRune =
   Rune
     "EYE"
+    Eye
     "cards/eye/coin.png"
     (Cards.eyeSword, Cards.eyeWand, Cards.eyeCup, Cards.eyeCoin)
     (levelToExperience 6)
@@ -280,6 +293,7 @@ feverRune :: Rune
 feverRune =
   Rune
     "FEVER"
+    Fever
     "cards/fever/coin.png"
     (Cards.feverSword, Cards.feverWand, Cards.feverCup, Cards.feverCoin)
     (levelToExperience 7)
@@ -288,6 +302,7 @@ clayRune :: Rune
 clayRune =
   Rune
     "CLAY"
+    Clay
     "cards/clay/coin.png"
     (Cards.claySword, Cards.clayWand, Cards.clayCup, Cards.clayCoin)
     (levelToExperience 8)
@@ -296,6 +311,7 @@ bloodRune :: Rune
 bloodRune =
   Rune
     "BLOOD"
+    Blood
     "cards/blood/coin.png"
     (Cards.bloodSword, Cards.bloodWand, Cards.bloodCup, Cards.bloodCoin)
     (levelToExperience 9)
@@ -304,6 +320,7 @@ glassRune :: Rune
 glassRune =
   Rune
     "GLASS"
+    Glass
     "cards/glass/coin.png"
     (Cards.glassSword, Cards.glassWand, Cards.glassCup, Cards.glassCoin)
     (levelToExperience 10)
@@ -312,6 +329,7 @@ plasticRune :: Rune
 plasticRune =
   Rune
     "PLASTIC"
+    Plastic
     "cards/plastic/coin.png"
     (Cards.plasticSword, Cards.plasticWand, Cards.plasticCup, Cards.plasticCoin)
     (levelToExperience 11)
@@ -320,6 +338,7 @@ devilRune :: Rune
 devilRune =
   Rune
     "DEVIL"
+    Devil
     "cards/devil/coin.png"
     (Cards.devilSword, Cards.devilWand, Cards.devilCup, Cards.devilCoin)
     (levelToExperience 12)
