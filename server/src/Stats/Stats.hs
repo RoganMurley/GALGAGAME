@@ -13,7 +13,7 @@ import Database.Beam (all_, filter_, insertValues, primaryKey, runInsert, runSel
 import qualified Database.Beam.Postgres.Full as Postgres
 import DeckBuilding (Rune (..), mainRunes)
 import Schema (GalgagameDb (..), galgagameDb)
-import Stats.Experience (Experience)
+import Stats.Experience (Experience, levelToExperience)
 import Stats.Progress (Progress (..), fromPartial, initialProgress)
 import qualified Stats.Schema
 import Replay.Final (Replay, getRes, getInitial)
@@ -77,18 +77,21 @@ loadByCid Nothing = return initialProgress
 
 refreshQuests :: Gen -> UTCTime -> Progress -> App Progress
 refreshQuests gen currentTime progress =
-  case progress_questupdate progress of
-    Nothing -> do
-      Log.info $ printf "No quest refresh"
-      return $ newQuests gen currentTime progress 
-    Just updatedAt ->
-      let
-        delta = diffUTCTime currentTime updatedAt :: NominalDiffTime
-        hour = 60 * minute
-        minute = 60
-      in do
-      Log.info $ printf "quest delta: %s" (show delta)
-      if delta > hour then return $ newQuests gen currentTime progress else return progress
+  if progress_xp progress < levelToExperience 5 then -- Only at level 5 do quests become a thing.
+    return progress
+      else 
+        (case progress_questupdate progress of
+          Nothing -> do
+            return $ newQuests gen currentTime progress 
+          Just updatedAt ->
+            let
+              delta = diffUTCTime currentTime updatedAt :: NominalDiffTime
+              hour = 60 * minute
+              minute = 60
+            in do
+            Log.info $ printf "quest delta: %s" (show delta)
+            if delta > hour then return $ newQuests gen currentTime progress else return progress
+        )
 
 updateProgress :: User -> Progress -> App ()
 updateProgress (User user _) progress = do
