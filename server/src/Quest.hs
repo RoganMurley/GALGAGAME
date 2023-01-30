@@ -14,9 +14,13 @@ import qualified Data.Set as Set
 import Data.Set (Set)
 import Stats.Experience (Experience)
 import Model (Model(..))
-import Card (Aspect(..), Card(..), aspectText, allAspects)
+import Card (Aspect(..), Card(..), Suit(..), aspectText, allAspects, cardName)
+import qualified Cards
+import StackCard (StackCard(..))
 import qualified DSL.Alpha as Alpha
 import {-# SOURCE #-} DeckBuilding (Rune, getRuneAspect)
+import qualified ModelDiff
+import Wheel (Wheel(..))
 
 data Quest = Quest
   { quest_id :: Text,
@@ -48,6 +52,21 @@ instance ToJSON Quest where
 test :: Set Quest -> Model -> [ResolveData] -> Set Quest
 test quests initial res = Set.filter (\Quest {quest_pattern} -> not $ quest_pattern initial res) quests
 
+resZip :: Model -> [ResolveData] -> [(Model, ResolveData)]
+resZip _ [] = []
+resZip model (r:rs) = (newModel, r) : resZip newModel rs
+  where
+    newModel :: Model
+    newModel = ModelDiff.update model (resolveData_diff r)
+
+cardActive :: Model -> Card -> Bool
+cardActive model card =
+  case model of
+    Model { model_stack = Wheel { wheel_0 = Just StackCard { stackcard_card = activeCard } } } ->
+      activeCard == card
+    _ ->
+      False
+
 bigDamageQuest :: Quest
 bigDamageQuest =
   Quest
@@ -66,33 +85,26 @@ bigDamageQuest =
           ) res
     }
 
-winQuest :: Quest
-winQuest =
+cardWinQuest :: Suit -> Aspect -> Quest
+cardWinQuest suit aspect =
+  let
+    card = Cards.getCard aspect suit
+    name = cardName aspect suit
+  in
   Quest
-    { quest_id = "win",
-      quest_name = "VICTORIOUS",
-      quest_desc = "Win a game",
-      quest_xp = 100,
-      quest_eligible = const True,
-      quest_pattern = \_ res -> didWin res
-    }
-
-loseQuest :: Quest
-loseQuest =
-  Quest
-    { quest_id = "lose",
-      quest_name = "LOSER",
-      quest_desc = "Lose a game",
-      quest_xp = 100,
-      quest_eligible = const True,
-      quest_pattern = \_ res ->
+    { quest_id = name <> "Win",
+      quest_name = name <> "PROPHECY",
+      quest_desc = "Win with damage from " <> name,
+      quest_xp = 500,
+      quest_eligible = any (\rune -> getRuneAspect rune == aspect),
+      quest_pattern = \initial res ->
         any
           ( \case
-              ResolveData {resolveData_anim = Just (GameEnd (Just PlayerB))} ->
-                True
+              (model, ResolveData {resolveData_anim = Just (GameEnd (Just PlayerA))}) ->
+                cardActive model card
               _ ->
                 False
-          ) res
+          ) (resZip initial res)
     }
 
 winAspect :: Aspect -> Quest
@@ -101,7 +113,7 @@ winAspect aspect =
     { quest_id = "win" <> aspectText aspect,
       quest_name = aspectText aspect <> "PROPHECY",
       quest_desc = "Win with " <> toUpper (aspectText aspect),
-      quest_xp = 350,
+      quest_xp = 250,
       quest_eligible = any (\rune -> getRuneAspect rune == aspect), 
       quest_pattern = \initial res ->
         let
@@ -113,7 +125,13 @@ winAspect aspect =
     }
 
 aspectQuests :: [Quest]
-aspectQuests = winAspect <$> filter (\aspect -> aspect `notElem` [Strange]) allAspects
+aspectQuests = winAspect <$> allAspects
+
+swordQuests :: [Quest]
+swordQuests = cardWinQuest Sword <$> allAspects
+
+wandQuests :: [Quest]
+wandQuests = cardWinQuest Wand <$> allAspects
 
 didWin :: [ResolveData] -> Bool
 didWin =
@@ -125,7 +143,7 @@ didWin =
   )
 
 allQuests :: [Quest]
-allQuests = [bigDamageQuest, winQuest] ++ aspectQuests
+allQuests = [bigDamageQuest] ++ aspectQuests ++ swordQuests ++ wandQuests
 
 eligibleQuests :: Set Rune -> [Quest]
 eligibleQuests unlocks = filter (\Quest{ quest_eligible } -> quest_eligible unlocks) allQuests
@@ -140,3 +158,4 @@ setup :: [Quest] -> [Quest]
 -- setup [] = allQuests
 -- setup quests = quests
 setup = id
+-- setup = const swordQuests
