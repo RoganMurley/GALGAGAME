@@ -200,4 +200,4 @@ isChange StatChange {statChange_initialExperience, statChange_finalExperience, s
 newQuests :: Gen -> UTCTime -> Progress -> Progress
 newQuests gen updatedAt progress = progress { progress_questupdate = Just updatedAt, progress_quests = quests }
   where
-    quests = Set.singleton $ randomChoice gen Quest.allQuests
+    quests = Set.singleton . randomChoice gen . Quest.eligibleQuests $ progress_unlocks progress
