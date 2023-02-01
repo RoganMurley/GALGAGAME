@@ -73,7 +73,7 @@ bigDamageQuest =
     { quest_id = "50dmg",
       quest_name = "THE BIG ONE",
       quest_desc = "Do exactly 50 damage",
-      quest_xp = 500,
+      quest_xp = 250,
       quest_eligible = const True,
       quest_pattern = \_ res ->
         any
@@ -95,7 +95,7 @@ cardWinQuest suit aspect =
     { quest_id = name <> "Win",
       quest_name = name <> "PROPHECY",
       quest_desc = "Win with damage from " <> name,
-      quest_xp = 500,
+      quest_xp = 250,
       quest_eligible = any (\rune -> getRuneAspect rune == aspect),
       quest_pattern = \initial res ->
         any
