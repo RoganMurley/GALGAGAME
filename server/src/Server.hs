@@ -9,9 +9,9 @@ import Data.Text (Text)
 import GameState (WaitType (..))
 import Outcome (Outcome)
 import Player (WhichPlayer (..))
-import Room (Room)
+import Room (Room (..))
 import qualified Room
-import Scenario (Scenario (..))
+import Scenario (Scenario (..), markCpu)
 import Stats.Progress (Progress)
 import Util (Gen, modReadTVar, modReturnTVar, modTVar)
 import Prelude hiding (lookup, putStrLn)
@@ -107,8 +107,8 @@ addComputerClient name guid progress room =
   modReturnTVar room $ \r ->
     if Room.noCpus r
       then case Room.addPlayer client r of
-        Just (r', outcomes, _) ->
-          (r', Just (client, outcomes))
+        Just (newRoom, outcomes, _) ->
+          (newRoom {room_scenario = markCpu $ room_scenario newRoom}, Just (client, outcomes))
         Nothing ->
           (r, Nothing)
       else (r, Nothing)

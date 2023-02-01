@@ -2,25 +2,25 @@
 
 module Quest where
 
+import Card (Aspect (..), Card (..), Suit (..), allAspects, aspectText, cardName)
 import CardAnim (CardAnim (..))
-import Data.String.Conversions (cs)
+import qualified Cards
+import qualified DSL.Alpha as Alpha
 import Data.Aeson (ToJSON (..), object, (.=))
+import Data.Map (Map)
+import qualified Data.Map as Map
+import Data.Set (Set)
+import qualified Data.Set as Set
+import Data.String.Conversions (cs)
 import Data.Text (Text, toUpper)
+import {-# SOURCE #-} DeckBuilding (Rune, getRuneAspect)
+import Model (Model (..))
+import qualified ModelDiff
 import Player (WhichPlayer (..))
 import ResolveData (ResolveData (..))
-import qualified Data.Map as Map
-import Data.Map (Map)
-import qualified Data.Set as Set
-import Data.Set (Set)
+import StackCard (StackCard (..))
 import Stats.Experience (Experience)
-import Model (Model(..))
-import Card (Aspect(..), Card(..), Suit(..), aspectText, allAspects, cardName)
-import qualified Cards
-import StackCard (StackCard(..))
-import qualified DSL.Alpha as Alpha
-import {-# SOURCE #-} DeckBuilding (Rune, getRuneAspect)
-import qualified ModelDiff
-import Wheel (Wheel(..))
+import Wheel (Wheel (..))
 
 data Quest = Quest
   { quest_id :: Text,
@@ -54,7 +54,7 @@ test tags quests initial res = Set.filter (\Quest {quest_pattern} -> not $ quest
 
 resZip :: Model -> [ResolveData] -> [(Model, ResolveData)]
 resZip _ [] = []
-resZip model (r:rs) = (newModel, r) : resZip newModel rs
+resZip model (r : rs) = (newModel, r) : resZip newModel rs
   where
     newModel :: Model
     newModel = ModelDiff.update model (resolveData_diff r)
@@ -62,7 +62,7 @@ resZip model (r:rs) = (newModel, r) : resZip newModel rs
 cardActive :: Model -> Card -> Bool
 cardActive model card =
   case model of
-    Model { model_stack = Wheel { wheel_0 = Just StackCard { stackcard_card = activeCard } } } ->
+    Model {model_stack = Wheel {wheel_0 = Just StackCard {stackcard_card = activeCard}}} ->
       activeCard == card
     _ ->
       False
@@ -82,30 +82,30 @@ bigDamageQuest =
                 True
               _ ->
                 False
-          ) res
+          )
+          res
     }
 
 cardWinQuest :: Suit -> Aspect -> Quest
 cardWinQuest suit aspect =
-  let
-    card = Cards.getCard aspect suit
-    name = cardName aspect suit
-  in
-  Quest
-    { quest_id = name <> "Win",
-      quest_name = name <> "PROPHECY",
-      quest_desc = "Win with damage from " <> name,
-      quest_xp = 250,
-      quest_eligible = any (\rune -> getRuneAspect rune == aspect),
-      quest_pattern = \_ initial res ->
-        any
-          ( \case
-              (model, ResolveData {resolveData_anim = Just (GameEnd (Just PlayerA))}) ->
-                cardActive model card
-              _ ->
-                False
-          ) (resZip initial res)
-    }
+  let card = Cards.getCard aspect suit
+      name = cardName aspect suit
+   in Quest
+        { quest_id = name <> "Win",
+          quest_name = name <> "PROPHECY",
+          quest_desc = "Win with damage from " <> name,
+          quest_xp = 250,
+          quest_eligible = any (\rune -> getRuneAspect rune == aspect),
+          quest_pattern = \_ initial res ->
+            any
+              ( \case
+                  (model, ResolveData {resolveData_anim = Just (GameEnd (Just PlayerA))}) ->
+                    cardActive model card
+                  _ ->
+                    False
+              )
+              (resZip initial res)
+        }
 
 winAspect :: Aspect -> Quest
 winAspect aspect =
@@ -114,14 +114,13 @@ winAspect aspect =
       quest_name = aspectText aspect <> "PROPHECY",
       quest_desc = "Win with " <> toUpper (aspectText aspect),
       quest_xp = 250,
-      quest_eligible = any (\rune -> getRuneAspect rune == aspect), 
+      quest_eligible = any (\rune -> getRuneAspect rune == aspect),
       quest_pattern = \_ initial res ->
-        let
-          isAspect =
-            Alpha.evalI initial $ do
-              deck <- Alpha.getDeck PlayerA
-              return (any (\Card{card_aspect} -> card_aspect == aspect) deck)
-        in didWin res && isAspect
+        let isAspect =
+              Alpha.evalI initial $ do
+                deck <- Alpha.getDeck PlayerA
+                return (any (\Card {card_aspect} -> card_aspect == aspect) deck)
+         in didWin res && isAspect
     }
 
 humanQuest :: Quest
@@ -146,18 +145,19 @@ wandQuests = cardWinQuest Wand <$> allAspects
 
 didWin :: [ResolveData] -> Bool
 didWin =
-  any (\case
-      ResolveData {resolveData_anim = Just (GameEnd (Just PlayerA))} ->
-        True
-      _ ->
-        False
-  )
+  any
+    ( \case
+        ResolveData {resolveData_anim = Just (GameEnd (Just PlayerA))} ->
+          True
+        _ ->
+          False
+    )
 
 allQuests :: [Quest]
 allQuests = [bigDamageQuest, humanQuest] ++ aspectQuests ++ swordQuests ++ wandQuests
 
 eligibleQuests :: Set Rune -> [Quest]
-eligibleQuests unlocks = filter (\Quest{ quest_eligible } -> quest_eligible unlocks) allQuests
+eligibleQuests unlocks = filter (\Quest {quest_eligible} -> quest_eligible unlocks) allQuests
 
 questsById :: Map Text Quest
 questsById = Map.fromList $ fmap (\quest -> (quest_id quest, quest)) allQuests
@@ -168,5 +168,6 @@ getById qid = Map.lookup qid questsById
 setup :: [Quest] -> [Quest]
 -- setup [] = allQuests
 -- setup quests = quests
--- setup = id
-setup = const [humanQuest]
+setup = id
+
+-- setup = const [humanQuest]

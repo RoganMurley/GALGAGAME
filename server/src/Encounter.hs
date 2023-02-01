@@ -7,7 +7,7 @@ import Data.String.Conversions (cs)
 import Data.Time (NominalDiffTime)
 import DeckBuilding (ChosenCharacter (..), angelRune)
 import Room (Room (..))
-import Scenario (Scenario (..))
+import Scenario (Scenario (..), markCpu)
 import qualified Start
 import Stats.Experience (levelToExperience)
 import Stats.Progress (Progress (..))
@@ -114,11 +114,6 @@ turboScenario scenario =
     { scenario_timeLimit = 10,
       scenario_tags = ["turbo"]
     }
-
-markCpu :: Scenario -> Scenario
-markCpu scenario@Scenario {scenario_tags} =
-  scenario
-    { scenario_tags = "cpu" : scenario_tags}
 
 noTimeLimit :: NominalDiffTime
 noTimeLimit = 9999999999999999999

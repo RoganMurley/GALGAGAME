@@ -42,3 +42,9 @@ applyCustomSettings :: Maybe CustomSettings -> Scenario -> Scenario
 applyCustomSettings Nothing scenario = scenario
 applyCustomSettings (Just CustomSettings {}) scenario =
   scenario
+
+markCpu :: Scenario -> Scenario
+markCpu scenario@Scenario {scenario_tags} =
+  scenario
+    { scenario_tags = "cpu" : scenario_tags
+    }
