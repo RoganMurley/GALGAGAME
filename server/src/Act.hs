@@ -25,7 +25,7 @@ import Player (WhichPlayer (..), other)
 import qualified Replay.Final
 import Replay.Final (Replay)
 import ResolveData (ResolveData (..))
-import Room (Room)
+import Room (Room, getScenario)
 import qualified Room
 import Scenario (Scenario (..))
 import Stats.Experience (levelToExperience)
@@ -149,7 +149,8 @@ handleProgress which winner replay room = do
             if Just which == winner
               then scenario_progressWin scenario
               else scenario_progressLoss scenario
-      let finalProgress = Stats.updateQuests replay . Stats.hydrateUnlocks $ progress <> progressUpdate
+      let tags = scenario_tags . getScenario $ room
+      let finalProgress = Stats.updateQuests replay tags . Stats.hydrateUnlocks $ progress <> progressUpdate
       let statChange = Stats.statChange progress finalProgress
       Log.debug $ printf "inital %s" (show $ progress_quests progress)
       Log.debug $ printf "final %s" (show $ progress_quests finalProgress)

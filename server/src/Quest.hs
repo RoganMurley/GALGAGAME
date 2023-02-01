@@ -28,7 +28,7 @@ data Quest = Quest
     quest_desc :: Text,
     quest_xp :: Experience,
     quest_eligible :: Set Rune -> Bool,
-    quest_pattern :: Model -> [ResolveData] -> Bool
+    quest_pattern :: [Text] -> Model -> [ResolveData] -> Bool
   }
 
 instance Show Quest where
@@ -49,8 +49,8 @@ instance ToJSON Quest where
         "xp" .= quest_xp
       ]
 
-test :: Set Quest -> Model -> [ResolveData] -> Set Quest
-test quests initial res = Set.filter (\Quest {quest_pattern} -> not $ quest_pattern initial res) quests
+test :: [Text] -> Set Quest -> Model -> [ResolveData] -> Set Quest
+test tags quests initial res = Set.filter (\Quest {quest_pattern} -> not $ quest_pattern tags initial res) quests
 
 resZip :: Model -> [ResolveData] -> [(Model, ResolveData)]
 resZip _ [] = []
@@ -75,7 +75,7 @@ bigDamageQuest =
       quest_desc = "Do exactly 50 damage",
       quest_xp = 250,
       quest_eligible = const True,
-      quest_pattern = \_ res ->
+      quest_pattern = \_ _ res ->
         any
           ( \case
               ResolveData {resolveData_anim = Just (Hurt PlayerB 50 _)} ->
@@ -97,7 +97,7 @@ cardWinQuest suit aspect =
       quest_desc = "Win with damage from " <> name,
       quest_xp = 250,
       quest_eligible = any (\rune -> getRuneAspect rune == aspect),
-      quest_pattern = \initial res ->
+      quest_pattern = \_ initial res ->
         any
           ( \case
               (model, ResolveData {resolveData_anim = Just (GameEnd (Just PlayerA))}) ->
@@ -115,13 +115,24 @@ winAspect aspect =
       quest_desc = "Win with " <> toUpper (aspectText aspect),
       quest_xp = 250,
       quest_eligible = any (\rune -> getRuneAspect rune == aspect), 
-      quest_pattern = \initial res ->
+      quest_pattern = \_ initial res ->
         let
           isAspect =
             Alpha.evalI initial $ do
               deck <- Alpha.getDeck PlayerA
               return (any (\Card{card_aspect} -> card_aspect == aspect) deck)
         in didWin res && isAspect
+    }
+
+humanQuest :: Quest
+humanQuest =
+  Quest
+    { quest_id = "winHuman",
+      quest_name = "HUMANS LIKE US",
+      quest_desc = "Win against another human",
+      quest_xp = 250,
+      quest_eligible = const True,
+      quest_pattern = \tags _ res -> ("cpu" `notElem` tags) && didWin res
     }
 
 aspectQuests :: [Quest]
@@ -143,7 +154,7 @@ didWin =
   )
 
 allQuests :: [Quest]
-allQuests = [bigDamageQuest] ++ aspectQuests ++ swordQuests ++ wandQuests
+allQuests = [bigDamageQuest, humanQuest] ++ aspectQuests ++ swordQuests ++ wandQuests
 
 eligibleQuests :: Set Rune -> [Quest]
 eligibleQuests unlocks = filter (\Quest{ quest_eligible } -> quest_eligible unlocks) allQuests
@@ -157,5 +168,5 @@ getById qid = Map.lookup qid questsById
 setup :: [Quest] -> [Quest]
 -- setup [] = allQuests
 -- setup quests = quests
-setup = id
--- setup = const swordQuests
+-- setup = id
+setup = const [humanQuest]

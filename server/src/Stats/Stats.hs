@@ -180,14 +180,14 @@ hydrateUnlocks progress =
           (\rune -> xp >= rune_xp rune)
           mainRunes
 
-updateQuests :: Replay -> Progress -> Progress
-updateQuests replay progress = progress { progress_quests = finalQuests, progress_xp = xp + xpDelta }
+updateQuests :: Replay -> [Text] -> Progress -> Progress
+updateQuests replay tags progress = progress { progress_quests = finalQuests, progress_xp = xp + xpDelta }
   where
     quests = progress_quests progress
     xp = progress_xp progress
     res = getRes replay
     initial = getInitial replay
-    finalQuests = Quest.test quests initial res
+    finalQuests = Quest.test tags quests initial res
     questChanges = Set.difference quests finalQuests
     xpDelta = Set.fold (\q x -> x + Quest.quest_xp q) 0 questChanges
 
