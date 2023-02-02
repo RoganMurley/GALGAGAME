@@ -15,6 +15,7 @@ import PlayState.Types exposing (PlayState(..))
 import Replay.Decoders exposing (replayDecoder)
 import Replay.Messages exposing (Msg(..))
 import Replay.Types as Replay exposing (Replay)
+import Resolvable.State as Resolvable
 import Room.Messages as Room
 import Tuple
 import Util exposing (apiLocation)
@@ -49,7 +50,7 @@ update model msg flags =
             )
 
         LoadCallback frame (Ok replay) ->
-            ( { model | replay = Just <| accelerate frame replay, frame = frame }, Cmd.none )
+            ( { model | replay = Just <| goto frame replay, frame = frame }, Cmd.none )
 
         LoadCallback _ (Err err) ->
             let
@@ -189,6 +190,10 @@ mouseUp _ model =
     }
 
 
-accelerate : Float -> Replay -> Replay
-accelerate frame replay =
-    replay
+goto : Float -> Replay -> Replay
+goto frame replay =
+    let
+        f =
+            \game -> { game | res = Resolvable.goto frame game.res }
+    in
+    { replay | state = PlayState.map f replay.state }

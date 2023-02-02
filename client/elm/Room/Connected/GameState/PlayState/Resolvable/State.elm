@@ -1,5 +1,6 @@
-module Resolvable.State exposing (activeAnim, activeAnimDamage, activeModel, init, isPremovable, merge, resDiffToData, resolveStep, resolving, tick, tickEnd, tickStart)
+module Resolvable.State exposing (activeAnim, activeAnimDamage, activeModel, goto, init, isPremovable, merge, resDiffToData, resolveStep, resolving, tick, tickEnd, tickStart)
 
+import Aftermath.State exposing (active)
 import Animation.State as Animation
 import Animation.Types exposing (Anim(..))
 import List.Extra as List
@@ -143,3 +144,19 @@ isPremovable { resList } =
                     False
     in
     List.all f resList
+
+
+goto : Float -> Resolvable.Model -> Resolvable.Model
+goto frame res =
+    let
+        maxTick =
+            Animation.animMaxTick <| activeAnim res
+
+        newFrame =
+            frame - maxTick
+    in
+    if newFrame >= 0 then
+        goto newFrame <| resolveStep res
+
+    else
+        { res | tick = frame }
