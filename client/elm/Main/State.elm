@@ -488,12 +488,16 @@ locationUpdate model url =
             , Lobby.skipLobbyCmd model.flags.username
             )
 
-        Routing.Replay replayId ->
+        Routing.Replay replayId rawFrame ->
+            let
+                frame =
+                    toFloat <| Maybe.withDefault 0 rawFrame
+            in
             ( { model
                 | room =
-                    Room.Replay Replay.init
+                    Room.Replay <| Replay.init <| frame
               }
-            , message <| Main.RoomMsg <| Room.ReplayMsg <| Replay.Load replayId
+            , message <| Main.RoomMsg <| Room.ReplayMsg <| Replay.Load replayId frame
             )
 
         Routing.Login ->

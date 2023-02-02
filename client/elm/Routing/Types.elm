@@ -4,7 +4,7 @@ module Routing.Types exposing (PlayRoute(..), Route(..))
 type Route
     = Play PlayRoute
     | Spec String
-    | Replay String
+    | Replay String (Maybe Int)
     | Login
     | Signup
     | Feedback

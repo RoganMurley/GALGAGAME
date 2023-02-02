@@ -1,6 +1,7 @@
 module Replay.State exposing (init, mouseDown, mouseUp, tick, update)
 
 import Assets.Types as Assets
+import Browser.Navigation
 import Chat.State as Chat
 import GameType exposing (GameType(..))
 import Http
@@ -13,20 +14,20 @@ import PlayState.State as PlayState
 import PlayState.Types exposing (PlayState(..))
 import Replay.Decoders exposing (replayDecoder)
 import Replay.Messages exposing (Msg(..))
-import Replay.Types as Replay
+import Replay.Types as Replay exposing (Replay)
 import Room.Messages as Room
 import Tuple
 import Util exposing (apiLocation)
 
 
-init : Replay.Model
-init =
+init : Float -> Replay.Model
+init frame =
     { replay = Nothing
     , started = False
     , error = ""
     , playing = False
     , speed = 1
-    , frame = 0
+    , frame = frame
     , pos = { x = 0, y = 0 }
     , drag = Nothing
     }
@@ -35,21 +36,21 @@ init =
 update : Replay.Model -> Msg -> Flags -> ( Replay.Model, Cmd Main.Msg )
 update model msg flags =
     case msg of
-        Load replayId ->
+        Load replayId frame ->
             ( model
             , Http.get
                 { url = apiLocation flags ++ "/replay/" ++ replayId
                 , expect =
                     Http.expectJson
-                        (Main.RoomMsg << Room.ReplayMsg << LoadCallback)
+                        (Main.RoomMsg << Room.ReplayMsg << LoadCallback frame)
                         replayDecoder
                 }
             )
 
-        LoadCallback (Ok replay) ->
-            ( { model | replay = Just replay }, Cmd.none )
+        LoadCallback frame (Ok replay) ->
+            ( { model | replay = Just <| accelerate frame replay, frame = frame }, Cmd.none )
 
-        LoadCallback (Err err) ->
+        LoadCallback _ (Err err) ->
             let
                 error =
                     case err of
@@ -68,6 +69,7 @@ update model msg flags =
 
         SetPlaying playing ->
             ( { model | playing = playing }
+              -- , Browser.Navigation.replaceUrl flags.key <| "/replay/1127?t=432"
             , Cmd.none
             )
 
@@ -176,3 +178,8 @@ mouseUp _ model =
     { model
         | drag = Nothing
     }
+
+
+accelerate : Float -> Replay -> Replay
+accelerate frame replay =
+    replay

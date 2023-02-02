@@ -1,7 +1,8 @@
 module Routing.State exposing (default, loginRoute, playRoute, replayRoute, route, specRoute)
 
 import Routing.Types exposing (PlayRoute(..), Route(..))
-import Url.Parser exposing ((</>), Parser, map, oneOf, s, string)
+import Url.Parser exposing ((</>), (<?>), Parser, map, oneOf, s, string)
+import Url.Parser.Query as Query
 
 
 default : Route
@@ -53,9 +54,9 @@ signupRoute =
     s "signup"
 
 
-replayRoute : Parser (String -> a) a
+replayRoute : Parser (String -> Maybe Int -> a) a
 replayRoute =
-    s "replay" </> string
+    s "replay" </> string <?> Query.int "t"
 
 
 feedbackRoute : Parser a a

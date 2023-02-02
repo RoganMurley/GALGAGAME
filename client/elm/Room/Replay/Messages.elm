@@ -6,8 +6,8 @@ import Replay.Types exposing (Replay)
 
 
 type Msg
-    = Load String
-    | LoadCallback (Result Http.Error Replay)
+    = Load String Float
+    | LoadCallback Float (Result Http.Error Replay)
     | SetPlaying Bool
     | SpeedUp
     | SlowDown
