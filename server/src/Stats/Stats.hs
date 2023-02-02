@@ -2,6 +2,7 @@ module Stats.Stats where
 
 import qualified Auth.Schema
 import Config (App, runBeam)
+import Control.Monad.IO.Class (liftIO)
 import Data.Aeson (ToJSON (..), decode, encode, object, (.=))
 import Data.Int (Int64)
 import Data.Maybe (fromMaybe)
@@ -9,23 +10,22 @@ import Data.Set (Set)
 import qualified Data.Set as Set
 import Data.String.Conversions (cs)
 import Data.Text (Text)
+import Data.Time (UTCTime, getCurrentTime)
+import Data.Time.Clock (NominalDiffTime, diffUTCTime)
 import Database.Beam (all_, filter_, insertValues, primaryKey, runInsert, runSelectReturningOne, runUpdate, select, update, val_, (<-.), (==.))
 import qualified Database.Beam.Postgres.Full as Postgres
 import DeckBuilding (Rune (..), mainRunes)
+import qualified Log
+import Quest (Quest)
+import qualified Quest
+import Replay.Final (Replay, getInitial, getRes)
 import Schema (GalgagameDb (..), galgagameDb)
 import Stats.Experience (Experience, levelToExperience)
 import Stats.Progress (Progress (..), fromPartial, initialProgress)
 import qualified Stats.Schema
-import Replay.Final (Replay, getRes, getInitial)
-import Control.Monad.IO.Class (liftIO)
-import Quest (Quest)
-import qualified Quest
-import {-# SOURCE #-} User (User (..))
-import Data.Time (getCurrentTime, UTCTime)
-import Data.Time.Clock (NominalDiffTime, diffUTCTime)
-import Util (Gen, getGen, randomChoice)
-import qualified Log
 import Text.Printf (printf)
+import {-# SOURCE #-} User (User (..))
+import Util (Gen, getGen)
 
 load :: User -> App Progress
 load u@(User user _) = do
@@ -77,21 +77,20 @@ loadByCid Nothing = return initialProgress
 
 refreshQuests :: Gen -> UTCTime -> Progress -> App Progress
 refreshQuests gen currentTime progress =
-  if progress_xp progress < levelToExperience 5 then -- Only at level 5 do quests become a thing.
-    return progress
-      else 
-        (case progress_questupdate progress of
+  if progress_xp progress < levelToExperience 5 -- Only at level 5 do quests become a thing.
+    then return progress
+    else
+      ( case progress_questupdate progress of
           Nothing -> do
-            return $ newQuests gen currentTime progress 
+            return $ newQuests gen currentTime progress
           Just updatedAt ->
-            let
-              delta = diffUTCTime currentTime updatedAt :: NominalDiffTime
-              hour = 60 * minute
-              minute = 60
-            in do
-            Log.info $ printf "quest delta: %s" (show delta)
-            if delta > hour then return $ newQuests gen currentTime progress else return progress
-        )
+            let delta = diffUTCTime currentTime updatedAt :: NominalDiffTime
+                hour = 60 * minute
+                minute = 60
+             in do
+                  Log.info $ printf "quest delta: %s" (show delta)
+                  if delta > hour then return $ newQuests gen currentTime progress else return progress
+      )
 
 updateProgress :: User -> Progress -> App ()
 updateProgress (User user _) progress = do
@@ -181,7 +180,7 @@ hydrateUnlocks progress =
           mainRunes
 
 updateQuests :: Replay -> [Text] -> Progress -> Progress
-updateQuests replay tags progress = progress { progress_quests = finalQuests, progress_xp = xp + xpDelta }
+updateQuests replay tags progress = progress {progress_quests = finalQuests, progress_xp = xp + xpDelta}
   where
     quests = progress_quests progress
     xp = progress_xp progress
@@ -193,11 +192,13 @@ updateQuests replay tags progress = progress { progress_quests = finalQuests, pr
 
 isChange :: StatChange -> Bool
 isChange StatChange {statChange_initialExperience, statChange_finalExperience, statChange_newUnlocks, statChange_questChange} =
-  (statChange_initialExperience /= statChange_finalExperience) ||
-  not (Set.null statChange_newUnlocks) ||
-  not (Set.null statChange_questChange)
+  (statChange_initialExperience /= statChange_finalExperience)
+    || not (Set.null statChange_newUnlocks)
+    || not (Set.null statChange_questChange)
 
 newQuests :: Gen -> UTCTime -> Progress -> Progress
-newQuests gen updatedAt progress = progress { progress_questupdate = Just updatedAt, progress_quests = quests }
-  where
-    quests = Set.singleton . randomChoice gen . Quest.eligibleQuests $ progress_unlocks progress
+newQuests gen updatedAt progress =
+  progress
+    { progress_questupdate = Just updatedAt,
+      progress_quests = Quest.choose gen $ progress_unlocks progress
+    }

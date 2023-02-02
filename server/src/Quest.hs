@@ -20,6 +20,7 @@ import Player (WhichPlayer (..))
 import ResolveData (ResolveData (..))
 import StackCard (StackCard (..))
 import Stats.Experience (Experience)
+import Util (Gen, randomChoice)
 import Wheel (Wheel (..))
 
 data Quest = Quest
@@ -166,8 +167,7 @@ getById :: Text -> Maybe Quest
 getById qid = Map.lookup qid questsById
 
 setup :: [Quest] -> [Quest]
--- setup [] = allQuests
--- setup quests = quests
-setup = id
+setup = id -- for testing, change this
 
--- setup = const [humanQuest]
+choose :: Gen -> Set Rune -> Set Quest
+choose gen = Set.singleton . randomChoice gen . Quest.eligibleQuests
