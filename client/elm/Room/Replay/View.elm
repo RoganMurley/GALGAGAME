@@ -9,41 +9,83 @@ import Font.View as Font
 import Game.State exposing (bareContextInit)
 import GameState.Types exposing (GameState(..))
 import GameState.View as GameState
-import Html exposing (Html, div, text)
-import Html.Attributes exposing (class)
-import Main.Messages as Main
+import Html exposing (Html, button, div, text)
+import Html.Attributes exposing (class, classList, style)
+import Html.Events exposing (on, onClick)
 import Main.Types exposing (Flags)
 import Math.Vector3 exposing (vec3)
 import Mouse
 import Render.Types as Render
+import Replay.Decoders exposing (dragEventDecoder)
+import Replay.Messages exposing (Msg(..))
 import Replay.Types exposing (Model)
 import Set
+import Util exposing (px)
 import WebGL
 
 
-htmlView : Model -> Html Main.Msg
-htmlView { replay, error } =
-    case replay of
+htmlView : Model -> Html Msg
+htmlView model =
+    case model.replay of
         Just { usernamePa, usernamePb } ->
-            playersView
-                { pa =
-                    Just
-                        { name = usernamePa
-                        , xp = 0
-                        , unlocks = Set.empty
-                        , quests = []
-                        }
-                , pb =
-                    Just
-                        { name = usernamePb
-                        , xp = 0
-                        , unlocks = Set.empty
-                        , quests = []
-                        }
-                }
+            div []
+                [ playersView
+                    { pa =
+                        Just
+                            { name = usernamePa
+                            , xp = 0
+                            , unlocks = Set.empty
+                            , quests = []
+                            }
+                    , pb =
+                        Just
+                            { name = usernamePb
+                            , xp = 0
+                            , unlocks = Set.empty
+                            , quests = []
+                            }
+                    }
+                , controlsView model
+                ]
 
         Nothing ->
-            div [ class "error" ] [ text error ]
+            div [ class "error" ] [ text model.error ]
+
+
+controlsView : Model -> Html Msg
+controlsView model =
+    let
+        { playing } =
+            model
+
+        slowDown =
+            button [ onClick SlowDown ] [ text "🐢" ]
+
+        playingToggle =
+            if playing then
+                button [ onClick <| SetPlaying False ] [ text "⏸️" ]
+
+            else
+                button [ onClick <| SetPlaying True ] [ text "▶️" ]
+
+        speedUp =
+            button [ onClick SpeedUp ] [ text "🐇" ]
+    in
+    div
+        [ classList
+            [ ( "replay-controls", True )
+            , ( "replay-controls--drag", model.drag /= Nothing )
+            ]
+        , style "top" (toFloat model.pos.y |> px)
+        , style "left" (toFloat model.pos.x |> px)
+        , on "mousedown" dragEventDecoder
+        ]
+        [ div [ class "buttons" ]
+            [ slowDown
+            , playingToggle
+            , speedUp
+            ]
+        ]
 
 
 webglView : Model -> Flags -> Assets.Model -> List WebGL.Entity

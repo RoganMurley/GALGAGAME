@@ -43,7 +43,7 @@ webglView { chat, game, ripples, players } flags assets =
         ]
 
 
-playersView : Players -> Html Msg
+playersView : Players -> Html a
 playersView { pa, pb } =
     let
         playerView : Maybe Player -> Bool -> Html msg

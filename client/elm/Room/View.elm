@@ -44,7 +44,8 @@ view model settings notifications flags assets =
                     Connected.htmlView connected flags
 
                 Replay replay ->
-                    Replay.htmlView replay
+                    Html.map (Main.RoomMsg << ReplayMsg) <|
+                        Replay.htmlView replay
 
                 Login login ->
                     Html.map (Main.RoomMsg << LoginMsg) <|

@@ -1,10 +1,12 @@
-module Replay.Decoders exposing (replayDecoder)
+module Replay.Decoders exposing (dragEventDecoder, replayDecoder)
 
+import Drag exposing (Drag(..))
 import Json.Decode as Json exposing (Decoder)
 import Model.Types exposing (Model)
 import PlayState.Decoders exposing (resolveOutcomeInputDecoder)
 import PlayState.State as PlayState
 import PlayState.Types exposing (PlayState, ResolveOutcomeInput)
+import Replay.Messages exposing (Msg(..))
 import Replay.Types exposing (Replay)
 import Resolvable.State as Resolvable
 import Resolvable.Types as Resolvable
@@ -46,3 +48,18 @@ replayDecoder =
         (Json.field "pa" Json.string)
         (Json.field "pb" Json.string)
         (Json.succeed 0)
+
+
+dragEventDecoder : Decoder Msg
+dragEventDecoder =
+    let
+        toMsg : Drag -> Msg
+        toMsg drag =
+            case drag of
+                Drag pos ->
+                    DragStart pos
+
+                NoDrag ->
+                    NoOp
+    in
+    Json.map toMsg Drag.decoder

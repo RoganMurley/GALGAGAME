@@ -288,6 +288,9 @@ mouseUp flags assets model pos =
             in
             ( Connected newConnected, cmd )
 
+        Replay replay ->
+            ( Replay <| Replay.mouseUp flags replay, Cmd.none )
+
         _ ->
             ( model, Cmd.none )
 

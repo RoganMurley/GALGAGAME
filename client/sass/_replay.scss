@@ -1,0 +1,45 @@
+.replay-controls {
+    align-items: center;
+    background: #f5f25e;
+    border-radius: 5px;
+    color: $navy;
+    cursor: grab;
+    display: flex;
+    font-family: "futura-pt", sans-serif;
+    min-height: 36px;
+    opacity: 0.95;
+    overflow: auto;
+    padding: 5px;
+    position: absolute;
+    width: 180px;
+    height: 72px;
+
+    &--drag {
+        cursor: grabbing;
+    }
+
+    @media (max-width: 600px) {
+        margin: -5px;
+        cursor: default;
+        top: 0 !important;
+        left: 0 !important;
+        width: inherit;
+        height: inherit;
+        padding: 0;
+
+        &__input {
+            margin: 4px;
+        }
+    }
+
+    .buttons {
+        margin: auto;
+        text-align: center;
+
+        button {
+            font-size: 21px;
+            width: 42px;
+            height: 42px;
+        }
+    }
+}
