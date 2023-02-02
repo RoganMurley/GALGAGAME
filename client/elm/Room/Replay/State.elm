@@ -24,7 +24,7 @@ import Util exposing (apiLocation)
 init : String -> Float -> Replay.Model
 init id frame =
     { replay = Nothing
-    , started = False
+    , started = frame > 0
     , error = ""
     , playing = False
     , speed = 1
@@ -77,7 +77,7 @@ update model msg flags =
                         "/replay/"
                             ++ model.id
                             ++ "?t="
-                            ++ String.fromFloat model.frame
+                            ++ String.fromInt (floor model.frame)
                     )
 
                 Nothing ->
@@ -140,10 +140,14 @@ tick flags model dtRaw =
     if model.started then
         let
             dt =
-                dtRaw * model.speed
+                if model.playing then
+                    dtRaw * model.speed
+
+                else
+                    0
 
             replay =
-                if model.playing then
+                if model.started then
                     Maybe.map
                         (\r ->
                             { r
