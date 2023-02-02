@@ -13,6 +13,7 @@ type alias Model =
     , frame : Float
     , pos : Mouse.Position
     , drag : Maybe Mouse.Position
+    , id : String
     }
 
 

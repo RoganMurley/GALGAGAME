@@ -20,8 +20,8 @@ import Tuple
 import Util exposing (apiLocation)
 
 
-init : Float -> Replay.Model
-init frame =
+init : String -> Float -> Replay.Model
+init id frame =
     { replay = Nothing
     , started = False
     , error = ""
@@ -30,6 +30,7 @@ init frame =
     , frame = frame
     , pos = { x = 0, y = 0 }
     , drag = Nothing
+    , id = id
     }
 
 
@@ -68,10 +69,18 @@ update model msg flags =
             )
 
         SetPlaying playing ->
-            ( { model | playing = playing }
-              -- , Browser.Navigation.replaceUrl flags.key <| "/replay/1127?t=432"
-            , Cmd.none
-            )
+            case model.replay of
+                Just _ ->
+                    ( { model | playing = playing }
+                    , Browser.Navigation.replaceUrl flags.key <|
+                        "/replay/"
+                            ++ model.id
+                            ++ "?t="
+                            ++ String.fromFloat model.frame
+                    )
+
+                Nothing ->
+                    ( model, Cmd.none )
 
         SpeedUp ->
             if model.speed < 16 then

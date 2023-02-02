@@ -493,12 +493,17 @@ locationUpdate model url =
                 frame =
                     toFloat <| Maybe.withDefault 0 rawFrame
             in
-            ( { model
-                | room =
-                    Room.Replay <| Replay.init <| frame
-              }
-            , message <| Main.RoomMsg <| Room.ReplayMsg <| Replay.Load replayId frame
-            )
+            case model.room of
+                Room.Replay _ ->
+                    ( model, Cmd.none )
+
+                _ ->
+                    ( { model
+                        | room =
+                            Room.Replay <| Replay.init replayId frame
+                      }
+                    , message <| Main.RoomMsg <| Room.ReplayMsg <| Replay.Load replayId frame
+                    )
 
         Routing.Login ->
             ( { model
