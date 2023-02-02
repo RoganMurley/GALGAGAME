@@ -89,9 +89,13 @@ controlsView model =
 
 
 webglView : Model -> Flags -> Assets.Model -> List WebGL.Entity
-webglView { replay, started } flags assets =
+webglView { replay, started, frame } flags assets =
     case replay of
         Just { state, usernamePa, usernamePb } ->
+            let
+                params =
+                    GameState.paramsFromFlags flags
+            in
             if started then
                 GameState.webglView
                     (Started state)
@@ -111,12 +115,12 @@ webglView { replay, started } flags assets =
                             }
                     }
                     Chat.init
-                    (GameState.paramsFromFlags flags)
+                    params
                     assets
                     True
 
             else
-                notStartedView (GameState.paramsFromFlags flags) assets
+                notStartedView params assets
 
         Nothing ->
             []

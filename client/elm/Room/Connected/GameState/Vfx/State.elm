@@ -27,7 +27,7 @@ tick dt model timeLeft ctx =
             Maybe.withDefault 0 (Maybe.map (TimeLimit.progress 20) timeLeft)
 
         depth =
-            model.depth + 10 + 100 * dt * Ease.inSine risk
+            model.depth + dt * 0.6 + 100 * dt * Ease.inSine risk
 
         boogie =
             model.boogie + dt + dt * Ease.inSine risk
