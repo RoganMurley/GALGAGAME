@@ -28,6 +28,7 @@ data Quest = Quest
     quest_name :: Text,
     quest_desc :: Text,
     quest_xp :: Experience,
+    quest_rarity :: Rarity,
     quest_eligible :: Set Rune -> Bool,
     quest_pattern :: [Text] -> Model -> [ResolveData] -> Bool
   }
@@ -49,6 +50,9 @@ instance ToJSON Quest where
         "desc" .= quest_desc,
         "xp" .= quest_xp
       ]
+
+data Rarity = Common | Rare
+  deriving (Eq, Show)
 
 test :: [Text] -> Set Quest -> Model -> [ResolveData] -> Set Quest
 test tags quests initial res = Set.filter (\Quest {quest_pattern} -> not $ quest_pattern tags initial res) quests
@@ -75,6 +79,7 @@ bigDamageQuest =
       quest_name = "THE BIG ONE",
       quest_desc = "Do exactly 50 damage",
       quest_xp = 250,
+      quest_rarity = Rare,
       quest_eligible = const True,
       quest_pattern = \_ _ res ->
         any
@@ -96,6 +101,7 @@ cardWinQuest suit aspect =
           quest_name = name <> "PROPHECY",
           quest_desc = "Win with damage from " <> name,
           quest_xp = 250,
+          quest_rarity = Rare,
           quest_eligible = any (\rune -> getRuneAspect rune == aspect),
           quest_pattern = \_ initial res ->
             any
@@ -115,6 +121,7 @@ winAspect aspect =
       quest_name = aspectText aspect <> "PROPHECY",
       quest_desc = "Win with " <> toUpper (aspectText aspect),
       quest_xp = 250,
+      quest_rarity = Rare,
       quest_eligible = any (\rune -> getRuneAspect rune == aspect),
       quest_pattern = \_ initial res ->
         let isAspect =
@@ -131,6 +138,7 @@ humanQuest =
       quest_name = "HUMANS LIKE US",
       quest_desc = "Win against another human",
       quest_xp = 250,
+      quest_rarity = Common,
       quest_eligible = const True,
       quest_pattern = \tags _ res -> ("cpu" `notElem` tags) && didWin res
     }
@@ -170,4 +178,9 @@ setup :: [Quest] -> [Quest]
 setup = id -- for testing, change this
 
 choose :: Gen -> Set Rune -> Set Quest
-choose gen = Set.singleton . randomChoice gen . Quest.eligibleQuests
+choose gen unlocks = Set.singleton . randomChoice gen $ rarityQuests
+  where
+    quests = Quest.eligibleQuests unlocks
+    commonQuests = filter (\Quest {quest_rarity} -> quest_rarity == Common) quests
+    rareQuests = filter (\Quest {quest_rarity} -> quest_rarity == Rare) quests
+    rarityQuests = randomChoice gen [commonQuests, rareQuests]
