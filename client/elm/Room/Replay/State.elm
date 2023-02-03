@@ -74,11 +74,7 @@ update model msg flags =
             case model.replay of
                 Just _ ->
                     ( { model | playing = playing }
-                    , Browser.Navigation.replaceUrl flags.key <|
-                        "/replay/"
-                            ++ model.id
-                            ++ "?t="
-                            ++ String.fromInt (floor model.frame)
+                    , updateUrl flags model
                     )
 
                 Nothing ->
@@ -95,7 +91,9 @@ update model msg flags =
             )
 
         SetReverse reverse ->
-            ( { model | reverse = reverse }, Cmd.none )
+            ( { model | reverse = reverse }
+            , updateUrl flags model
+            )
 
         DragStart pos ->
             ( { model
@@ -110,6 +108,15 @@ update model msg flags =
 
         NoOp ->
             ( model, Cmd.none )
+
+
+updateUrl : Flags -> Replay.Model -> Cmd Main.Msg
+updateUrl flags model =
+    Browser.Navigation.replaceUrl flags.key <|
+        "/replay/"
+            ++ model.id
+            ++ "?t="
+            ++ String.fromInt (floor model.frame)
 
 
 tick : Flags -> Replay.Model -> Float -> Replay.Model
