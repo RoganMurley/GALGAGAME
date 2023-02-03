@@ -11,7 +11,7 @@ import GameState.Types exposing (GameState(..))
 import GameState.View as GameState
 import Html exposing (Html, button, div, text)
 import Html.Attributes exposing (class, classList, style)
-import Html.Events exposing (on, onClick)
+import Html.Events exposing (on, onClick, onMouseDown, onMouseLeave, onMouseUp)
 import Main.Types exposing (Flags)
 import Math.Vector3 exposing (vec3)
 import Mouse
@@ -58,6 +58,14 @@ controlsView model =
         { playing } =
             model
 
+        rewind =
+            button
+                [ onMouseDown (SetReverse True)
+                , onMouseUp (SetReverse False)
+                , onMouseLeave (SetReverse False)
+                ]
+                [ text "⏪" ]
+
         slowDown =
             button [ onClick SlowDown ] [ text "🐢" ]
 
@@ -81,7 +89,8 @@ controlsView model =
         , on "mousedown" dragEventDecoder
         ]
         [ div [ class "buttons" ]
-            [ slowDown
+            [ rewind
+            , slowDown
             , playingToggle
             , speedUp
             ]

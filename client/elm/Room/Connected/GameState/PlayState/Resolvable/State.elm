@@ -16,6 +16,7 @@ init model resList =
     { tick = 0
     , final = model
     , resList = resList
+    , history = []
     }
 
 
@@ -58,6 +59,9 @@ tick dt model =
     if tickEnd model.tick (activeAnim model) then
         resolveStep model
 
+    else if model.tick + dt < 0 then
+        resolveReverseStep model dt
+
     else
         { model
             | tick =
@@ -73,10 +77,30 @@ tickEnd tickValue anim =
 resolveStep : Resolvable.Model -> Resolvable.Model
 resolveStep model =
     case model.resList of
-        _ :: rs ->
+        r :: rs ->
             { model
                 | resList = rs
                 , tick = 0
+                , history = r :: model.history
+            }
+
+        _ ->
+            { model | tick = 0 }
+
+
+resolveReverseStep : Resolvable.Model -> Float -> Resolvable.Model
+resolveReverseStep model dt =
+    case model.history of
+        h :: hs ->
+            let
+                newModel =
+                    { model
+                        | resList = h :: model.resList
+                        , history = hs
+                    }
+            in
+            { newModel
+                | tick = Animation.animMaxTick (activeAnim newModel) + model.tick + dt
             }
 
         _ ->

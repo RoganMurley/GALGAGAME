@@ -32,6 +32,7 @@ init id frame =
     , pos = { x = 0, y = 0 }
     , drag = Nothing
     , id = id
+    , reverse = False
     }
 
 
@@ -84,22 +85,17 @@ update model msg flags =
                     ( model, Cmd.none )
 
         SpeedUp ->
-            if model.speed < 16 then
-                ( { model | speed = model.speed * 1.1 }
-                , Cmd.none
-                )
-
-            else
-                ( model, Cmd.none )
+            ( { model | speed = model.speed * 1.1 }
+            , Cmd.none
+            )
 
         SlowDown ->
-            if model.speed > 0.626 then
-                ( { model | speed = model.speed / 1.1 }
-                , Cmd.none
-                )
+            ( { model | speed = model.speed / 1.1 }
+            , Cmd.none
+            )
 
-            else
-                ( model, Cmd.none )
+        SetReverse reverse ->
+            ( { model | reverse = reverse }, Cmd.none )
 
         DragStart pos ->
             ( { model
@@ -140,7 +136,10 @@ tick flags model dtRaw =
     if model.started then
         let
             dt =
-                if model.playing then
+                if model.reverse then
+                    -dtRaw * model.speed
+
+                else if model.playing then
                     dtRaw * model.speed
 
                 else
@@ -164,7 +163,7 @@ tick flags model dtRaw =
         { model
             | replay = replay
             , frame =
-                if model.playing then
+                if model.playing || model.reverse then
                     model.frame + dt
 
                 else

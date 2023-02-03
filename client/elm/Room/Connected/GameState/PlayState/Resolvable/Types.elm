@@ -9,6 +9,7 @@ type alias Model =
     { tick : Float
     , final : Model.Model
     , resList : List ResolveData
+    , history : List ResolveData
     }
 
 

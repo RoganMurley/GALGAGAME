@@ -544,18 +544,18 @@ resolveOutcome mState { initial, resDiffList, finalState } =
                 (Playing { game = Game.gameInit Model.init })
                 mState
 
-        oldResList : List Resolvable.ResolveData
-        oldResList =
-            get (.res >> .resList) state
+        old : Resolvable.Model
+        old =
+            get .res state
 
         oldTick : Float
         oldTick =
-            case oldResList of
+            case old.resList of
                 [] ->
                     0
 
                 _ ->
-                    get (.res >> .tick) state
+                    old.tick
 
         resList : List Resolvable.ResolveData
         resList =
@@ -570,7 +570,8 @@ resolveOutcome mState { initial, resDiffList, finalState } =
         res =
             { tick = oldTick
             , final = model
-            , resList = oldResList ++ resList
+            , resList = old.resList ++ resList
+            , history = old.history
             }
 
         newState : PlayState

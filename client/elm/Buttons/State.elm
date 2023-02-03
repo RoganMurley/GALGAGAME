@@ -57,11 +57,15 @@ entity key { x, y, width, height, btn, disabled } dt mouseState buttons =
 
         hover : Float
         hover =
-            if isHit then
-                min (previousHover + dt) 300
+            if dt < 0 then
+                previousHover
 
             else
-                max (previousHover - 4 * dt) 0
+                if isHit then
+                    min (previousHover + dt) 300
+
+                else
+                    max (previousHover - 4 * dt) 0
     in
     ( key
     , { x = x

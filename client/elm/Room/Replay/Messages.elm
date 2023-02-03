@@ -13,3 +13,4 @@ type Msg
     | SlowDown
     | NoOp
     | DragStart Mouse.Position
+    | SetReverse Bool

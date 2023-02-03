@@ -31,6 +31,7 @@ replayDecoder =
                     { tick = 0
                     , final = model
                     , resList = resList
+                    , history = []
                     }
             in
             PlayState.map (\game -> { game | res = res }) finalState
