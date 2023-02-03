@@ -1,6 +1,5 @@
 module Resolvable.State exposing (activeAnim, activeAnimDamage, activeModel, goto, init, isPremovable, merge, resDiffToData, resolveStep, resolving, tick, tickEnd, tickStart)
 
-import Aftermath.State exposing (active)
 import Animation.State as Animation
 import Animation.Types exposing (Anim(..))
 import List.Extra as List

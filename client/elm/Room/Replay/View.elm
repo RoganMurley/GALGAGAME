@@ -98,7 +98,7 @@ controlsView model =
 
 
 webglView : Model -> Flags -> Assets.Model -> List WebGL.Entity
-webglView { replay, started, frame } flags assets =
+webglView { replay, started } flags assets =
     case replay of
         Just { state, usernamePa, usernamePb } ->
             let
