@@ -131,14 +131,26 @@ winAspect aspect =
          in didWin res && isAspect
     }
 
-humanQuest :: Quest
-humanQuest =
+playHuman :: Quest
+playHuman =
   Quest
-    { quest_id = "winHuman",
+    { quest_id = "playHuman",
       quest_name = "HUMANS LIKE US",
-      quest_desc = "Win against another human",
+      quest_desc = "Play against another human",
       quest_xp = 250,
       quest_rarity = Common,
+      quest_eligible = const True,
+      quest_pattern = \tags _ _ -> "cpu" `notElem` tags
+    }
+
+winHuman :: Quest
+winHuman =
+  Quest
+    { quest_id = "winHuman",
+      quest_name = "THE BETTER MAN",
+      quest_desc = "Win against another human",
+      quest_xp = 250,
+      quest_rarity = Rare,
       quest_eligible = const True,
       quest_pattern = \tags _ res -> ("cpu" `notElem` tags) && didWin res
     }
@@ -163,7 +175,7 @@ didWin =
     )
 
 allQuests :: [Quest]
-allQuests = [bigDamageQuest, humanQuest] ++ aspectQuests ++ swordQuests ++ wandQuests
+allQuests = [bigDamageQuest, winHuman, playHuman] ++ aspectQuests ++ swordQuests ++ wandQuests
 
 eligibleQuests :: Set Rune -> [Quest]
 eligibleQuests unlocks = filter (\Quest {quest_eligible} -> quest_eligible unlocks) allQuests
