@@ -1,6 +1,6 @@
 module GameCommand where
 
-import Card (Card (..))
+import Card (Card (..), getFakeEffOrEff)
 import CardAnim (CardAnim (..))
 import Control.Monad (when)
 import Control.Monad.Trans.Writer (Writer, runWriter, tell)
@@ -461,7 +461,7 @@ hoverCard (HoverHand i) which playing =
             newModel = Alpha.modI model $ do
               Alpha.modHand which (deleteIndex i)
               Alpha.modStack (\s -> (Stack.windup s) {wheel_0 = Just $ StackCard which card})
-            damage = Beta.damageNumbersI newModel $ card_eff (applyStatuses card) which
+            damage = Beta.damageNumbersI newModel $ getFakeEffOrEff (applyStatuses card) which
             hoverDamage = tupleMap2 Outcome.damageToHoverDamage damage
         Nothing ->
           ignore
@@ -475,7 +475,7 @@ hoverCard (HoverOtherHand i) which playing =
             newModel = Alpha.modI model $ do
               Alpha.modHand (other which) (deleteIndex i)
               Alpha.modStack (\s -> (Stack.windup s) {wheel_0 = Just $ StackCard (other which) card})
-            damage = Beta.damageNumbersI newModel $ card_eff (applyStatuses card) (other which)
+            damage = Beta.damageNumbersI newModel $ getFakeEffOrEff (applyStatuses card) (other which)
             hoverDamage = tupleMap2 Outcome.damageToHoverDamage damage
         _ ->
           ignore
@@ -489,7 +489,7 @@ hoverCard (HoverStack i) which playing =
             newModel = Alpha.modI model $ do
               Alpha.modStack $ times i (\s -> Stack.rotate (s {wheel_0 = Nothing}))
               Alpha.modRot ((-) i)
-            damage = Beta.damageNumbersI newModel $ card_eff (applyStatuses card) owner
+            damage = Beta.damageNumbersI newModel $ getFakeEffOrEff (applyStatuses card) owner
             hoverDamage = tupleMap2 Outcome.damageToHoverDamage damage
         _ ->
           ignore

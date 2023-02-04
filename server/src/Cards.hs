@@ -736,6 +736,7 @@ trickDisguised aspect suit card = disguisedCard
     disguisedCard = card {card_desc = desc, card_playEff = playEff}
     targetCard = getCard aspect suit
     desc = "Draw a card. On play, disguise\nas " <> cardName aspect suit <> "."
+    fakeEff = Just $ card_eff targetCard
     playEff :: Card -> WhichPlayer -> Beta.Program Card
     playEff _ _ =
       return $
@@ -747,8 +748,9 @@ trickDisguised aspect suit card = disguisedCard
                     case Stack.get stack 0 of
                       Just selfCard ->
                         do
-                          Beta.rawAnim $ Announce "TRICK!" (TimeModifierOutQuint 1)
                           transmuteActive (\_ -> Just $ transmuteToCard disguisedCard selfCard)
+                          Beta.rawAnim $ Announce "TRICK!" (TimeModifierOutQuint 3)
+                          Beta.null
                           Beta.null
                           Beta.null
                           Beta.null
@@ -756,7 +758,8 @@ trickDisguised aspect suit card = disguisedCard
                           Beta.null
                           Beta.null
                       Nothing -> return ()
-                )
+                ),
+            card_fakeEff = fakeEff
           }
 
 trickInit :: Card -> WhichPlayer -> Alpha.Program Card
