@@ -696,7 +696,7 @@ trickSword =
     newCard
       Trick
       Sword
-      "Draw a card. On play, disguise\nas a SWORD"
+      "Draw a card. On play, disguise\nas a SWORD."
       $ \w -> do
         draw w w (TimeModifierOutQuint 1)
 
@@ -706,7 +706,7 @@ trickWand =
     newCard
       Trick
       Wand
-      "Draw a card. On play, disguise\nas a WAND"
+      "Draw a card. On play, disguise\nas a WAND."
       $ \w -> do
         draw w w (TimeModifierOutQuint 1)
 
@@ -716,7 +716,7 @@ trickCup =
     newCard
       Trick
       Cup
-      "Draw a card. On play, disguise\nas a CUP"
+      "Draw a card. On play, disguise\nas a CUP."
       $ \w -> do
         draw w w (TimeModifierOutQuint 1)
 
@@ -726,15 +726,16 @@ trickCoin =
     newCard
       Trick
       Coin
-      "Draw a card. On play, disguise\nas a COIN"
+      "Draw a card. On play, disguise\nas a COIN."
       $ \w -> do
         draw w w (TimeModifierOutQuint 1)
 
 trickDisguised :: Aspect -> Suit -> Card -> Card
-trickDisguised aspect suit card = card {card_desc = desc, card_playEff = playEff}
+trickDisguised aspect suit card = disguisedCard
   where
+    disguisedCard = card {card_desc = desc, card_playEff = playEff}
     targetCard = getCard aspect suit
-    desc = "Draw a card. On play, disguise\nas " <> cardName aspect suit
+    desc = "Draw a card. On play, disguise\nas " <> cardName aspect suit <> "."
     playEff :: Card -> WhichPlayer -> Beta.Program Card
     playEff _ _ =
       return $
@@ -747,7 +748,12 @@ trickDisguised aspect suit card = card {card_desc = desc, card_playEff = playEff
                       Just selfCard ->
                         do
                           Beta.rawAnim $ Announce "TRICK!" (TimeModifierOutQuint 1)
-                          transmuteActive (\_ -> Just $ transmuteToCard targetCard selfCard)
+                          transmuteActive (\_ -> Just $ transmuteToCard disguisedCard selfCard)
+                          Beta.null
+                          Beta.null
+                          Beta.null
+                          Beta.null
+                          Beta.null
                           Beta.null
                       Nothing -> return ()
                 )

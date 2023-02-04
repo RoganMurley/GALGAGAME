@@ -46,3 +46,7 @@ hide (KnownHandCard c) = HandCard c
 isRevealed :: HandCard -> Bool
 isRevealed (HandCard _) = False
 isRevealed (KnownHandCard _) = True
+
+cardMap :: (Card -> Card) -> HandCard -> HandCard
+cardMap f (HandCard c) = HandCard (f c)
+cardMap f (KnownHandCard c) = KnownHandCard (f c)

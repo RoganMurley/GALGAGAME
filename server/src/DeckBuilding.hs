@@ -347,7 +347,7 @@ devilRune =
 trickRune :: Rune
 trickRune =
   Rune
-    "Trick"
+    "TRICK"
     Trick
     "cards/trick/coin.png"
     (Cards.trickSword, Cards.trickWand, Cards.trickCup, Cards.trickCoin)

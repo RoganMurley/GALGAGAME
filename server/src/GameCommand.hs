@@ -16,6 +16,7 @@ import DeckBuilding (CharacterChoice, ChosenCharacter (..), DeckBuilding (..), c
 import GameState (GameState (..), PlayState (..), PlayingR (..), initModel)
 import qualified GodMode
 import HandCard (HandCard (..), anyCard)
+import qualified HandCard
 import Model (Hand, Misc (..), Model (..), Passes (..), Turn)
 import Outcome (HoverState (..), Outcome)
 import qualified Outcome
@@ -252,7 +253,11 @@ playCard index which playing scenario time
       Just c ->
         let program :: Beta.Program ()
             program = do
-              Beta.play which c index
+              let innerCard = HandCard.anyCard c
+              let playEff = card_playEff innerCard
+              transformedCard <- playEff innerCard which
+              let transformedHandCard = HandCard.cardMap (const transformedCard) c
+              Beta.play which transformedHandCard index
               Beta.windup
               Beta.raw $ Alpha.setHold True
             (modelA, resA) = Beta.execute model $ Beta.betaI program
