@@ -1,6 +1,6 @@
 module DeckBuilding where
 
-import Card (Aspect(..), Card (..))
+import Card (Aspect (..), Card (..))
 import qualified Cards
 import Data.Aeson (FromJSON (..), ToJSON (..), object, withObject, (.:), (.=))
 import Data.Either (isRight)
@@ -199,7 +199,8 @@ mainRunes =
     voidRune,
     bloodRune,
     glassRune,
-    plasticRune
+    plasticRune,
+    trickRune
   ]
 
 superRunes :: [Rune]
@@ -341,6 +342,15 @@ devilRune =
     Devil
     "cards/devil/coin.png"
     (Cards.devilSword, Cards.devilWand, Cards.devilCup, Cards.devilCoin)
+    (levelToExperience 12)
+
+trickRune :: Rune
+trickRune =
+  Rune
+    "Trick"
+    Trick
+    "cards/trick/coin.png"
+    (Cards.trickSword, Cards.trickWand, Cards.trickCup, Cards.trickCoin)
     (levelToExperience 12)
 
 characterCards :: Character -> Deck

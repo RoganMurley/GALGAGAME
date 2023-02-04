@@ -10,10 +10,11 @@ import Data.String.Conversions (cs)
 import Data.Text (Text, toLower, toUpper)
 import GHC.Generics (Generic)
 import Player (WhichPlayer (..))
+import Prelude hiding (init)
 
 instance Eq Card where
-  (Card a1 s1 _ _ st1 r1) == (Card a2 s2 _ _ st2 r2) =
-    a1 == a2 && s1 == s2 && st1 == st2 && r1 == r2
+  a == b =
+    (card_aspect a == card_aspect b) && (card_suit a == card_suit b) && (card_statuses a == card_statuses b)
 
 instance Show Card where
   show card = cs $ cardName (card_aspect card) (card_suit card)
@@ -33,6 +34,8 @@ data Card = Card
     card_suit :: Suit,
     card_desc :: Text,
     card_eff :: WhichPlayer -> Beta.Program (),
+    card_playEff :: Card -> WhichPlayer -> Beta.Program Card,
+    card_init :: Card -> WhichPlayer -> Beta.Program Card,
     card_statuses :: [Status],
     card_related :: [Related]
   }
@@ -62,6 +65,8 @@ data Aspect
   | Glass
   | Eye
   | Devil
+  | Trick
+  | TrickDisguised Aspect
   | Strange
   | OtherAspect Text
   deriving (Eq, Generic, NFData, Ord, Show)
@@ -121,8 +126,9 @@ allAspects =
     Void,
     Glass,
     Eye,
-    Strange,
-    Devil
+    Devil,
+    Trick,
+    Strange
   ]
 
 data Status
@@ -136,7 +142,17 @@ instance ToJSON Status where
   toEncoding = genericToEncoding defaultOptions
 
 newCard :: Aspect -> Suit -> Text -> (WhichPlayer -> Beta.Program ()) -> Card
-newCard aspect suit desc eff = Card aspect suit desc eff [] []
+newCard aspect suit desc eff =
+  Card
+    { card_aspect = aspect,
+      card_suit = suit,
+      card_desc = desc,
+      card_eff = eff,
+      card_playEff = \card _ -> return card,
+      card_init = \card _ -> return card,
+      card_statuses = [],
+      card_related = []
+    }
 
 addStatus :: Status -> Card -> Card
 addStatus status card =
@@ -156,6 +172,12 @@ addRelated relatedCard card =
           related_suit = card_suit relatedCard,
           related_desc = card_desc relatedCard
         }
+
+addPlayEff :: (Card -> WhichPlayer -> Beta.Program Card) -> Card -> Card
+addPlayEff playEff card = card {card_playEff = playEff}
+
+addInit :: (Card -> WhichPlayer -> Beta.Program Card) -> Card -> Card
+addInit init card = card {card_init = init}
 
 removeStatus :: Status -> Card -> Card
 removeStatus status card = card {card_statuses = filter (status /=) (card_statuses card)}

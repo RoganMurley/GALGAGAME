@@ -1,7 +1,7 @@
 module Cards where
 
-import Card (Aspect (..), Card (..), Status (..), Suit (..), addRelated, addStatus, cardName, hasStatus, newCard)
-import CardAnim (Hurt (..), TimeModifier (..))
+import Card (Aspect (..), Card (..), Status (..), Suit (..), addInit, addRelated, addStatus, cardName, hasStatus, newCard)
+import CardAnim (CardAnim (Announce), Hurt (..), TimeModifier (..))
 import Control.Monad (replicateM_, when)
 import qualified DSL.Alpha as Alpha
 import DSL.Beta
@@ -14,13 +14,13 @@ import Data.String.Conversions (cs)
 import Data.Text (Text)
 import HandCard (HandCard (..), anyCard, isRevealed)
 import Model (Misc (..))
-import Player (other)
+import Player (WhichPlayer (..), other)
 import Safe (headMay)
 import Stack (diasporaFromStack, diasporaLength)
 import qualified Stack
 import StackCard (StackCard (..), cardMap, changeOwner, isOwner)
 import Transmutation (Transmutation (..), transmuteToCard)
-import Util (many, randomBetween, shuffle)
+import Util (many, randomBetween, randomChoice, shuffle)
 
 -- FIRE
 fireSword :: Card
@@ -689,6 +689,80 @@ plasticCoin =
         Nothing ->
           return ()
 
+-- Trick
+trickSword :: Card
+trickSword =
+  addInit trickInit $
+    newCard
+      Trick
+      Sword
+      "Draw a card."
+      $ \w -> do
+        draw w w (TimeModifierOutQuint 1)
+
+trickWand :: Card
+trickWand =
+  addInit trickInit $
+    newCard
+      Trick
+      Wand
+      "Draw a card."
+      $ \w -> do
+        draw w w (TimeModifierOutQuint 1)
+
+trickCup :: Card
+trickCup =
+  addInit trickInit $
+    newCard
+      Trick
+      Cup
+      "Draw a card."
+      $ \w -> do
+        draw w w (TimeModifierOutQuint 1)
+
+trickCoin :: Card
+trickCoin =
+  addInit trickInit $
+    newCard
+      Trick
+      Coin
+      "Draw a card."
+      $ \w -> do
+        draw w w (TimeModifierOutQuint 1)
+
+trickDisguised :: Aspect -> Suit -> Card -> Card
+trickDisguised aspect suit card = card {card_desc = desc, card_playEff = playEff}
+  where
+    targetCard = getCard aspect suit
+    desc = "Draw a card. On play, disguise\nas " <> cardName aspect suit
+    playEff :: Card -> WhichPlayer -> Beta.Program Card
+    playEff _ _ =
+      return $
+        targetCard
+          { card_eff =
+              const
+                ( do
+                    stack <- getStack
+                    case Stack.get stack 0 of
+                      Just selfCard ->
+                        do
+                          Beta.rawAnim $ Announce "TRICK!" (TimeModifierOutQuint 1)
+                          transmuteActive (\_ -> Just $ transmuteToCard targetCard selfCard)
+                          Beta.null
+                      Nothing -> return ()
+                )
+          }
+
+trickInit :: Card -> WhichPlayer -> Beta.Program Card
+trickInit card w = do
+  gen <- getGen
+  deck <- getDeck w
+  let cardsWithoutTrick = filter (\Card {card_aspect} -> card_aspect /= Trick) deck
+  let suit = card_suit card
+  let suitCards = filter (\Card {card_suit} -> card_suit == suit) cardsWithoutTrick
+  let aspect = card_aspect $ randomChoice gen suitCards
+  return $ trickDisguised aspect suit card
+
 -- Devil
 devilSword :: Card
 devilSword =
@@ -817,7 +891,8 @@ swords =
     eyeSword,
     glassSword,
     plasticSword,
-    devilSword
+    devilSword,
+    trickSword
   ]
 
 wands :: [Card]
@@ -836,7 +911,8 @@ wands =
     eyeWand,
     glassWand,
     plasticWand,
-    devilWand
+    devilWand,
+    trickWand
   ]
 
 cups :: [Card]
@@ -855,7 +931,8 @@ cups =
     eyeCup,
     glassCup,
     plasticCup,
-    devilWand
+    devilCup,
+    trickCup
   ]
 
 coins :: [Card]
@@ -874,7 +951,8 @@ coins =
     eyeCoin,
     glassCoin,
     plasticCoin,
-    devilCoin
+    devilCoin,
+    trickCoin
   ]
 
 others :: [Card]
