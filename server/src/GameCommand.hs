@@ -28,6 +28,7 @@ import Scenario (Scenario (..))
 import Stack (Stack)
 import qualified Stack
 import StackCard (StackCard (..))
+import Start (initProgram)
 import Stats.Progress (initialProgress)
 import StatusEff (applyStatuses)
 import User (GameUser (..), User (..), gameusersToUsers, getUser, getUserId, getUsername, isSuperuser, usersToUsernames)
@@ -209,7 +210,10 @@ nextSelectState deckModel turn startProgram gen (mUserPa, mUserPb) time timeLimi
                 replayUserPa = (displayUsernamePa, userIdPa)
                 replayUserPb = (displayUsernamePb, userIdPb)
                 replay = Active.init model replayUserPa replayUserPb :: Active.Replay
-                (newModel, res) = Beta.execute model $ Beta.betaI startProgram
+                (newModel, res) = Beta.execute model $
+                  Beta.betaI $ do
+                    initProgram
+                    startProgram
                 playstate :: PlayState
                 playstate =
                   Playing $

@@ -696,7 +696,7 @@ trickSword =
     newCard
       Trick
       Sword
-      "Draw a card."
+      "Draw a card. On play, disguise\nas a SWORD"
       $ \w -> do
         draw w w (TimeModifierOutQuint 1)
 
@@ -706,7 +706,7 @@ trickWand =
     newCard
       Trick
       Wand
-      "Draw a card."
+      "Draw a card. On play, disguise\nas a WAND"
       $ \w -> do
         draw w w (TimeModifierOutQuint 1)
 
@@ -716,7 +716,7 @@ trickCup =
     newCard
       Trick
       Cup
-      "Draw a card."
+      "Draw a card. On play, disguise\nas a CUP"
       $ \w -> do
         draw w w (TimeModifierOutQuint 1)
 
@@ -726,7 +726,7 @@ trickCoin =
     newCard
       Trick
       Coin
-      "Draw a card."
+      "Draw a card. On play, disguise\nas a COIN"
       $ \w -> do
         draw w w (TimeModifierOutQuint 1)
 
@@ -753,10 +753,10 @@ trickDisguised aspect suit card = card {card_desc = desc, card_playEff = playEff
                 )
           }
 
-trickInit :: Card -> WhichPlayer -> Beta.Program Card
+trickInit :: Card -> WhichPlayer -> Alpha.Program Card
 trickInit card w = do
-  gen <- getGen
-  deck <- getDeck w
+  gen <- Alpha.getGen
+  deck <- Alpha.getDeck w
   let cardsWithoutTrick = filter (\Card {card_aspect} -> card_aspect /= Trick) deck
   let suit = card_suit card
   let suitCards = filter (\Card {card_suit} -> card_suit == suit) cardsWithoutTrick

@@ -1,5 +1,6 @@
 module Start where
 
+import Card (Card (..))
 import CardAnim (CardAnim (..), TimeModifier (..))
 import qualified Cards
 import Control.Monad (replicateM_)
@@ -10,6 +11,19 @@ import DeckBuilding (Character (..), angelRune, characterCards, fireRune, goldRu
 import Model (Passes (OnePass), maxHandLength, setForceWin)
 import Player (WhichPlayer (..), other)
 import Util (shuffle, split)
+import Prelude hiding (init)
+
+initDeck :: WhichPlayer -> Beta.Program ()
+initDeck w =
+  Beta.raw $ do
+    deck <- Alpha.getDeck w
+    newDeck <- mapM (\card -> let init = card_init card in init card w) deck
+    Alpha.setDeck w newDeck
+
+initProgram :: Beta.Program ()
+initProgram = do
+  initDeck PlayerA
+  initDeck PlayerB
 
 startProgram :: Maybe (Text, Text) -> Beta.Program ()
 startProgram mUsernames = do

@@ -4,6 +4,7 @@
 module Card where
 
 import Control.DeepSeq (NFData (..))
+import {-# SOURCE #-} qualified DSL.Alpha.DSL as Alpha
 import {-# SOURCE #-} qualified DSL.Beta.DSL as Beta
 import Data.Aeson (ToJSON (..), defaultOptions, genericToEncoding, object, (.=))
 import Data.String.Conversions (cs)
@@ -35,7 +36,7 @@ data Card = Card
     card_desc :: Text,
     card_eff :: WhichPlayer -> Beta.Program (),
     card_playEff :: Card -> WhichPlayer -> Beta.Program Card,
-    card_init :: Card -> WhichPlayer -> Beta.Program Card,
+    card_init :: Card -> WhichPlayer -> Alpha.Program Card,
     card_statuses :: [Status],
     card_related :: [Related]
   }
@@ -176,7 +177,7 @@ addRelated relatedCard card =
 addPlayEff :: (Card -> WhichPlayer -> Beta.Program Card) -> Card -> Card
 addPlayEff playEff card = card {card_playEff = playEff}
 
-addInit :: (Card -> WhichPlayer -> Beta.Program Card) -> Card -> Card
+addInit :: (Card -> WhichPlayer -> Alpha.Program Card) -> Card -> Card
 addInit init card = card {card_init = init}
 
 removeStatus :: Status -> Card -> Card
