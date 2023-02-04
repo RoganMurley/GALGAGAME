@@ -121,7 +121,7 @@ winAspect aspect =
       quest_name = aspectText aspect <> "PROPHECY",
       quest_desc = "Win with " <> toUpper (aspectText aspect),
       quest_xp = 250,
-      quest_rarity = Rare,
+      quest_rarity = Common,
       quest_eligible = any (\rune -> getRuneAspect rune == aspect),
       quest_pattern = \_ initial res ->
         let isAspect =
