@@ -12,6 +12,7 @@ import GameState.View as GameState
 import Html exposing (Html, button, div, text)
 import Html.Attributes exposing (class, classList, style)
 import Html.Events exposing (on, onClick, onMouseDown, onMouseLeave, onMouseUp)
+import Json.Decode
 import Main.Types exposing (Flags)
 import Math.Vector3 exposing (vec3)
 import Mouse
@@ -60,9 +61,13 @@ controlsView model =
 
         rewind =
             button
-                [ onMouseDown (SetReverse True)
-                , onMouseUp (SetReverse False)
-                , onMouseLeave (SetReverse False)
+                [ onMouseDown <| SetReverse True
+                , on "touchstart" <| Json.Decode.succeed <| SetReverse True
+                , onMouseUp <| SetReverse False
+
+                -- , on "touchend" <| Json.Decode.succeed <| SetReverse False
+                , on "touchcancel" <| Json.Decode.succeed <| SetReverse False
+                , onMouseLeave <| SetReverse False
                 ]
                 [ text "⏪" ]
 
