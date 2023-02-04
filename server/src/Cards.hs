@@ -749,14 +749,6 @@ trickDisguised aspect suit card = disguisedCard
                       Just selfCard ->
                         do
                           transmuteActive (\_ -> Just $ transmuteToCard disguisedCard selfCard)
-                          Beta.rawAnim $ Announce "TRICK!" (TimeModifierOutQuint 3)
-                          Beta.null
-                          Beta.null
-                          Beta.null
-                          Beta.null
-                          Beta.null
-                          Beta.null
-                          Beta.null
                       Nothing -> return ()
                 ),
             card_fakeEff = fakeEff

@@ -1,5 +1,6 @@
 module ArtificialIntelligence where
 
+import qualified Card
 import qualified Cards
 import Control.Monad.Freer (reinterpret)
 import Control.Monad.Trans.Writer (runWriter)
@@ -13,11 +14,14 @@ import Data.Time.Clock.POSIX (posixSecondsToUTCTime)
 import GameCommand (GameCommand (..), resolveAll, update)
 import GameState
 import HandCard (HandCard (..))
+import qualified HandCard
 import Mirror (mirror)
 import Model
 import Player (WhichPlayer (..), other)
 import Scenario (Scenario (..))
 import qualified Stack
+import StackCard (StackCard)
+import qualified StackCard
 import Util (Err, Gen, maybeToEither)
 
 type Weight = Int
@@ -94,12 +98,14 @@ postulateAction which model gen scenario action =
         >>= Right . mapModelPlayState (`modI` reinterpret alphaI (scenario_roundEndProg scenario)) -- Account for the draw from the start of the next round.
 
 chooseAction :: Gen -> WhichPlayer -> Model -> Scenario -> Maybe Action
-chooseAction gen which model scenario
+chooseAction gen which rawModel scenario
   | turn /= which = Nothing
   | "passive" `elem` scenario_tags scenario = chooseActionPassive which model
   | winningEnd which model = Just EndAction
   | otherwise = Just $ maximumBy comparison $ possibleActions which model
   where
+    model :: Model
+    model = getPerceived which rawModel
     turn :: Turn
     turn = evalI model getTurn
     weightPa :: Weightings
@@ -134,3 +140,25 @@ chooseActionPassive which model =
    in if length hand == maxHandLength
         then Just (PlayAction 0)
         else Just EndAction
+
+getPerceived :: WhichPlayer -> Model -> Model
+getPerceived w model =
+  model
+    { model_stack = fmap perceiveStackCard <$> model_stack model,
+      model_pa = perceivePlayerModel $ model_pa model,
+      model_pb = perceivePlayerModel $ model_pb model
+    }
+  where
+    -- If we own the stack card, we want to know its true effect.
+    -- If we don't own it, we perceive the fake effect if there is one.
+    -- This lets the computer get tricked by trick cards.
+    perceiveStackCard :: StackCard -> StackCard
+    perceiveStackCard sc = if StackCard.isOwner w sc then sc else StackCard.cardMap Card.realiseFakeEff sc
+    -- If a card is in our hand, we want to perceive it as a trick card.
+    -- This makes the CPU bluff a lot.
+    perceivePlayerModel :: PlayerModel -> PlayerModel
+    perceivePlayerModel pm =
+      pm
+        { pmodel_hand = HandCard.cardMap Card.realiseFakeEff <$> pmodel_hand pm,
+          pmodel_deck = Card.realiseFakeEff <$> pmodel_deck pm
+        }

@@ -197,3 +197,6 @@ sameCard a b = (card_aspect a == card_aspect b) && (card_suit a == card_suit b)
 
 getFakeEffOrEff :: Card -> (WhichPlayer -> Beta.Program ())
 getFakeEffOrEff Card {card_eff, card_fakeEff} = fromMaybe card_eff card_fakeEff
+
+realiseFakeEff :: Card -> Card
+realiseFakeEff card = card {card_eff = getFakeEffOrEff card, card_fakeEff = Nothing}

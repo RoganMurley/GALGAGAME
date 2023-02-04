@@ -465,7 +465,7 @@ chooseComputerCommand which room gen progress = do
     trans EndAction = EndTurnCommand
     trans (PlayAction index) = PlayCardCommand index
     elligibleRunes :: [Rune]
-    elligibleRunes = Set.toList $ progress_unlocks progress
+    elligibleRunes = [DeckBuilding.trickRune, DeckBuilding.fireRune, DeckBuilding.waterRune] --Set.toList $ progress_unlocks progress
     randomChoice :: DeckBuilding.CharacterChoice
     randomChoice = DeckBuilding.CharacterChoice a b c
     (a, b, c) = to3Tuple $ DeckBuilding.rune_name <$> shuffle gen elligibleRunes
