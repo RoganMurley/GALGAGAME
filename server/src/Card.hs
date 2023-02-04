@@ -165,3 +165,6 @@ removeStatuses card = card {card_statuses = []}
 
 hasStatus :: Status -> Card -> Bool
 hasStatus status card = elem status $ card_statuses card
+
+sameCard :: Card -> Card -> Bool
+sameCard a b = (card_aspect a == card_aspect b) && (card_suit a == card_suit b)

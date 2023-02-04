@@ -2,7 +2,7 @@
 
 module Quest where
 
-import Card (Aspect (..), Card (..), Suit (..), allAspects, aspectText, cardName)
+import Card (Aspect (..), Card (..), Suit (..), allAspects, aspectText, cardName, sameCard)
 import CardAnim (CardAnim (..))
 import qualified Cards
 import qualified DSL.Alpha as Alpha
@@ -68,7 +68,7 @@ cardActive :: Model -> Card -> Bool
 cardActive model card =
   case model of
     Model {model_stack = Wheel {wheel_0 = Just StackCard {stackcard_card = activeCard}}} ->
-      activeCard == card
+      sameCard activeCard card
     _ ->
       False
 
