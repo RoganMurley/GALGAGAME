@@ -15,6 +15,7 @@ type alias Model =
     , drag : Maybe Mouse.Position
     , id : String
     , reverse : Bool
+    , fastforward : Bool
     }
 
 

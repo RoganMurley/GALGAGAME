@@ -33,6 +33,7 @@ init id frame =
     , drag = Nothing
     , id = id
     , reverse = False
+    , fastforward = False
     }
 
 
@@ -95,6 +96,11 @@ update model msg flags =
             , updateUrl flags model
             )
 
+        SetFastforward fastforward ->
+            ( { model | fastforward = fastforward }
+            , updateUrl flags model
+            )
+
         DragStart pos ->
             ( { model
                 | drag =
@@ -146,6 +152,9 @@ tick flags model dtRaw =
                 if model.reverse then
                     -dtRaw * model.speed
 
+                else if model.fastforward then
+                    dtRaw * model.speed * 2
+
                 else if model.playing then
                     dtRaw * model.speed
 
@@ -170,7 +179,7 @@ tick flags model dtRaw =
         { model
             | replay = replay
             , frame =
-                if model.playing || model.reverse then
+                if model.playing || model.reverse || model.fastforward then
                     model.frame + dt
 
                 else

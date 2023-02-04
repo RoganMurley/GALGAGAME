@@ -83,6 +83,18 @@ controlsView model =
 
         speedUp =
             button [ onClick SpeedUp ] [ text "🐇" ]
+
+        fastforward =
+            button
+                [ onMouseDown <| SetFastforward True
+                , on "touchstart" <| Json.Decode.succeed <| SetFastforward True
+                , onMouseUp <| SetReverse False
+
+                -- , on "touchend" <| Json.Decode.succeed <| SetReverse False
+                , on "touchcancel" <| Json.Decode.succeed <| SetFastforward False
+                , onMouseLeave <| SetFastforward False
+                ]
+                [ text "⏩" ]
     in
     div
         [ classList
@@ -98,6 +110,7 @@ controlsView model =
             , slowDown
             , playingToggle
             , speedUp
+            , fastforward
             ]
         ]
 

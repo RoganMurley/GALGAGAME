@@ -14,3 +14,4 @@ type Msg
     | NoOp
     | DragStart Mouse.Position
     | SetReverse Bool
+    | SetFastforward Bool
