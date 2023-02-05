@@ -465,10 +465,10 @@ chooseComputerCommand which room gen progress = do
     trans EndAction = EndTurnCommand
     trans (PlayAction index) = PlayCardCommand index
     elligibleRunes :: [Rune]
-    elligibleRunes = [DeckBuilding.trickRune, DeckBuilding.fireRune, DeckBuilding.waterRune] --Set.toList $ progress_unlocks progress
+    elligibleRunes = Set.toList $ progress_unlocks progress
     randomChoice :: DeckBuilding.CharacterChoice
     randomChoice = DeckBuilding.CharacterChoice a b c
-    (a, b, c) = to3Tuple $ DeckBuilding.rune_name <$> shuffle gen elligibleRunes
+    (a, b, c) = to3Tuple $ DeckBuilding.rune_name <$> DeckBuilding.trickRune : shuffle gen elligibleRunes
 
 disconnect :: Client -> TVar Room -> TVar Server.State -> App Server.State
 disconnect client roomVar state = do

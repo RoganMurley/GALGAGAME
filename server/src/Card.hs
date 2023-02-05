@@ -69,7 +69,6 @@ data Aspect
   | Eye
   | Devil
   | Trick
-  | TrickDisguised Aspect
   | Strange
   | OtherAspect Text
   deriving (Eq, Generic, NFData, Ord, Show)

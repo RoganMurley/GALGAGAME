@@ -1,7 +1,7 @@
 module Cards where
 
-import Card (Aspect (..), Card (..), Status (..), Suit (..), addInit, addRelated, addStatus, cardName, hasStatus, newCard)
-import CardAnim (CardAnim (Announce), Hurt (..), TimeModifier (..))
+import Card (Aspect (..), Card (..), Status (..), Suit (..), addInit, addRelated, addStatus, cardName, hasStatus, newCard, suitText)
+import CardAnim (Hurt (..), TimeModifier (..))
 import Control.Monad (replicateM_, when)
 import qualified DSL.Alpha as Alpha
 import DSL.Beta
@@ -9,7 +9,7 @@ import qualified DSL.Beta as Beta
 import qualified Data.List as List
 import Data.Map (Map)
 import qualified Data.Map as Map
-import Data.Maybe (fromMaybe)
+import Data.Maybe (fromMaybe, isJust)
 import Data.String.Conversions (cs)
 import Data.Text (Text)
 import HandCard (HandCard (..), anyCard, isRevealed)
@@ -696,9 +696,8 @@ trickSword =
     newCard
       Trick
       Sword
-      "Draw a card. On play, disguise\nas a SWORD."
-      $ \w -> do
-        draw w w (TimeModifierOutQuint 1)
+      (trickDesc Sword Nothing)
+      trickEff
 
 trickWand :: Card
 trickWand =
@@ -706,9 +705,8 @@ trickWand =
     newCard
       Trick
       Wand
-      "Draw a card. On play, disguise\nas a WAND."
-      $ \w -> do
-        draw w w (TimeModifierOutQuint 1)
+      (trickDesc Wand Nothing)
+      trickEff
 
 trickCup :: Card
 trickCup =
@@ -716,9 +714,8 @@ trickCup =
     newCard
       Trick
       Cup
-      "Draw a card. On play, disguise\nas a CUP."
-      $ \w -> do
-        draw w w (TimeModifierOutQuint 1)
+      (trickDesc Cup Nothing)
+      trickEff
 
 trickCoin :: Card
 trickCoin =
@@ -726,16 +723,44 @@ trickCoin =
     newCard
       Trick
       Coin
-      "Draw a card. On play, disguise\nas a COIN."
-      $ \w -> do
-        draw w w (TimeModifierOutQuint 1)
+      (trickDesc Coin Nothing)
+      trickEff
+
+trickDesc :: Suit -> Maybe Aspect -> Text
+trickDesc suit mAspect =
+  let name = case mAspect of
+        Just aspect ->
+          cardName aspect suit
+        Nothing ->
+          "a " <> suitText suit
+   in case suit of
+        Sword ->
+          "On play disguise as " <> name <> ".\nDraw for each other disguised\ncard on the wheel."
+        Wand ->
+          "On play disguise as " <> name <> ".\nDraw for each other disguised\ncard on the wheel."
+        Cup ->
+          "On play disguise as " <> name <> ".\nDraw for each other disguised\ncard on the wheel."
+        Coin ->
+          "On play disguise as " <> name <> ".\nDraw for each other disguised\ncard on the wheel."
+        OtherSuit _ ->
+          "On play disguise as " <> name <> ".\nDraw for each other disguised\ncard on the wheel."
+
+trickEff :: WhichPlayer -> Beta.Program ()
+trickEff w = do
+  diaspora <- diasporaFromStack <$> getStack
+  let len =
+        length $
+          filter
+            (\(_, c) -> isJust $ card_fakeEff (stackcard_card c))
+            diaspora
+  many len (draw w w (TimeModifierOutQuint 1))
 
 trickDisguised :: Aspect -> Suit -> Card -> Card
 trickDisguised aspect suit card = disguisedCard
   where
     disguisedCard = card {card_desc = desc, card_playEff = playEff}
     targetCard = getCard aspect suit
-    desc = "Draw a card. On play, disguise\nas " <> cardName aspect suit <> "."
+    desc = trickDesc suit (Just aspect)
     fakeEff = Just $ card_eff targetCard
     playEff :: Card -> WhichPlayer -> Beta.Program Card
     playEff _ _ =

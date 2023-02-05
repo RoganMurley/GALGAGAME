@@ -17,7 +17,18 @@ initDeck :: WhichPlayer -> Beta.Program ()
 initDeck w =
   Beta.raw $ do
     deck <- Alpha.getDeck w
-    newDeck <- mapM (\card -> let init = card_init card in init card w) deck
+    newDeck <-
+      mapM
+        ( \card ->
+            let init = card_init card
+             in do
+                  newCard <- init card w
+                  gen <- Alpha.getGen
+                  let (newGen, _) = split gen
+                  Alpha.setGen newGen
+                  return newCard
+        )
+        deck
     Alpha.setDeck w newDeck
 
 initProgram :: Beta.Program ()
