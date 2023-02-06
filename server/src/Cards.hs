@@ -715,9 +715,12 @@ trickCup =
   newCard
     Trick
     Cup
-    "Draw 2 cards from their deck"
+    "Reveal a card in their deck, then\ndraw a copy of each revealed\ncard in their deck"
     $ \w -> do
-      many 2 $ draw w (other w) (TimeModifierOutQuint 1)
+      revealDeckCard (other w)
+      deck <- getDeck (other w)
+      let revealedCards = filter isRevealed deck
+      mapM_ (addToHand w) revealedCards
 
 disguisePlayEff :: Card -> WhichPlayer -> Beta.Program Card
 disguisePlayEff card w = do

@@ -30,6 +30,7 @@ data DSL n where
   Rotate :: DSL ()
   Windup :: DSL ()
   Bounce' :: Wheel (Maybe CardBounce) -> TimeModifier -> DSL ()
+  BounceDeck' :: Wheel Bool -> DSL ()
   DiscardStack' :: Wheel Bool -> DSL ()
   DiscardHand :: WhichPlayer -> (Int -> Card -> Bool) -> DSL ()
   MoveStack' :: Wheel (Maybe Int) -> TimeModifier -> DSL ()

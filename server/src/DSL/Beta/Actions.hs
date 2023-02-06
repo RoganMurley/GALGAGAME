@@ -18,8 +18,9 @@ import Data.Maybe (catMaybes, fromMaybe, isJust)
 import Data.Set (Set)
 import qualified Data.Set as Set
 import HandCard (HandCard, isRevealed)
+import qualified HandCard
 import Life (Life)
-import Model (Model (model_misc), getNoDraws, maxHandLength)
+import Model (Deck, Model (model_misc), getNoDraws, maxHandLength)
 import Player (WhichPlayer (..), other)
 import Safe (headDef, lastDef)
 import Stack (Stack)
@@ -233,3 +234,11 @@ revealRandomCard w = do
     g <- getGen
     let targetIndex = fst $ randomChoice g hidden
     reveal w (\i _ -> i == targetIndex)
+
+revealDeckCard :: WhichPlayer -> Program ()
+revealDeckCard w =
+  raw $ Alpha.modDeck w revealCard
+  where
+    revealCard :: Deck -> Deck
+    revealCard (card : deck) = if isRevealed card then card : revealCard deck else HandCard.reveal card : deck
+    revealCard deck = deck

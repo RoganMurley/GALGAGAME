@@ -159,6 +159,26 @@ bounce bounces = do
     playerBounce w (Just (BounceIndex _ _)) (Just sc) = if isOwner w sc then Just sc else Nothing
     playerBounce _ _ _ = Nothing
 
+bounceDeck :: Wheel Bool -> Program ()
+bounceDeck bounces = do
+  stack <- getStack
+  -- Remove bounced/discarded cards
+  setStack $ remove <$> bounces <*> stack
+  -- PlayerA
+  let paBounceCards = catMaybes . toList $ playerBounce PlayerA <$> bounces <*> stack
+  modDeck PlayerA $ \d -> (KnownHandCard . stackcard_card <$> paBounceCards) ++ d
+  -- PlayerB
+  let pbBounceCards = catMaybes . toList $ playerBounce PlayerB <$> bounces <*> stack
+  modDeck PlayerB $ \d -> (KnownHandCard . stackcard_card <$> pbBounceCards) ++ d
+  where
+    remove :: Bool -> Maybe StackCard -> Maybe StackCard
+    remove True _ = Nothing
+    remove False mStackCard = mStackCard
+
+    playerBounce :: WhichPlayer -> Bool -> Maybe StackCard -> Maybe StackCard
+    playerBounce w True (Just sc) = if isOwner w sc then Just sc else Nothing
+    playerBounce _ _ _ = Nothing
+
 moveStack :: Wheel (Maybe Int) -> Program ()
 moveStack moves =
   let -- Stack with moved cards at their targets.

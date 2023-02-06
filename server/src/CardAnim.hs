@@ -28,6 +28,7 @@ data CardAnim
   | Rotate
   | Windup
   | Bounce (Wheel (Maybe CardBounce)) TimeModifier
+  | BounceDeck (Wheel Bool)
   | DiscardStack (Wheel Bool)
   | DiscardHand WhichPlayer [CardDiscard]
   | MoveStack (Wheel (Maybe Int)) TimeModifier
@@ -102,6 +103,12 @@ instance ToJSON CardAnim where
         "bounce" .= b,
         "timeModifier" .= t
       ]
+  toJSON (BounceDeck b) =
+    object
+      [ "name" .= ("bounceDeck" :: Text),
+        "player" .= PlayerA,
+        "bounce" .= b
+      ]
   toJSON (DiscardStack d) =
     object
       [ "name" .= ("discardStack" :: Text),
@@ -166,6 +173,7 @@ instance Mirror CardAnim where
   mirror Rotate = Rotate
   mirror Windup = Windup
   mirror (Bounce b t) = Bounce b t
+  mirror (BounceDeck b) = BounceDeck b
   mirror (DiscardStack d) = DiscardStack d
   mirror (DiscardHand w d) = DiscardHand (other w) d
   mirror (Reveal w r) = Reveal (other w) r
