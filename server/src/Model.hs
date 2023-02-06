@@ -37,7 +37,7 @@ data PlayerModel = PlayerModel
 
 type Hand = [HandCard]
 
-type Deck = [Card]
+type Deck = [HandCard]
 
 type Turn = WhichPlayer
 

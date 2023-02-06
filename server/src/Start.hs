@@ -8,6 +8,7 @@ import qualified DSL.Alpha as Alpha
 import qualified DSL.Beta as Beta
 import Data.Text (Text)
 import DeckBuilding (Character (..), angelRune, characterCards, fireRune, goldRune, mirrorRune, shroomRune, waterRune)
+import HandCard (HandCard (..), anyCard)
 import Model (Passes (OnePass), maxHandLength, setForceWin)
 import Player (WhichPlayer (..), other)
 import Util (shuffle, split)
@@ -19,8 +20,9 @@ initDeck w =
     deck <- Alpha.getDeck w
     newDeck <-
       mapM
-        ( \card ->
-            let init = card_init card
+        ( \handCard ->
+            let card = anyCard handCard
+                init = card_init card
              in do
                   newCard <- init card w
                   gen <- Alpha.getGen
@@ -29,7 +31,7 @@ initDeck w =
                   return newCard
         )
         deck
-    Alpha.setDeck w newDeck
+    Alpha.setDeck w (HandCard <$> newDeck)
 
 initProgram :: Beta.Program ()
 initProgram = do
@@ -50,7 +52,7 @@ startProgram mUsernames = do
 tutorial0Program :: Maybe (Text, Text) -> Beta.Program ()
 tutorial0Program _ = do
   Beta.raw $ do
-    let makeDeck = take 25 . cycle
+    let makeDeck = take 25 . cycle . fmap HandCard
     let deckA = makeDeck [Cards.fireSword, Cards.fireCup, Cards.fireWand, Cards.fireSword]
     Alpha.setPasses OnePass
     Alpha.setDeck PlayerA deckA
@@ -129,7 +131,7 @@ tutorial1Program _ = do
 puzzle :: Maybe (Text, Text) -> Beta.Program ()
 puzzle _ = do
   Beta.raw $ do
-    let deckA = take 5 $ cycle [Cards.claySword, Cards.clayWand, Cards.clayCoin, Cards.clayCup]
+    let deckA = take 5 . cycle $ HandCard <$> [Cards.claySword, Cards.clayWand, Cards.clayCoin, Cards.clayCup]
     let deckB = []
     Alpha.setDeck PlayerA deckA
     Alpha.setDeck PlayerB deckB

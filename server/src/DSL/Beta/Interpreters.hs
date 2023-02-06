@@ -121,7 +121,7 @@ drawAnim w d t alpha = do
   final <- alpha
   if handLength < maxHandLength
     then execAnim $ Anim.draw w t
-    else execAnim $ Anim.mill w (fromMaybe (getEndCard noDraws) nextCard) (TimeModifierOutQuint 1)
+    else execAnim $ Anim.mill w (fromMaybe (getEndCard noDraws) (anyCard <$> nextCard)) (TimeModifierOutQuint 1)
   return final
 
 millAnim :: WhichPlayer -> TimeModifier -> Eff '[ExecDSL] a -> Eff '[ExecDSL] a
@@ -129,7 +129,7 @@ millAnim w t alpha = do
   nextCard <- execAlpha $ headMay <$> Alpha.getDeck w
   noDraws <- execAlpha $ getNoDraws w <$> Alpha.getMisc
   final <- alpha
-  execAnim $ Anim.mill w (fromMaybe (getEndCard noDraws) nextCard) t
+  execAnim $ Anim.mill w (fromMaybe (getEndCard noDraws) (anyCard <$> nextCard)) t
   return final
 
 addToHandAnim :: WhichPlayer -> HandCard -> Eff '[ExecDSL] a -> Eff '[ExecDSL] a

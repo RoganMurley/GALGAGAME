@@ -14,6 +14,7 @@ import qualified Data.Set as Set
 import Data.String.Conversions (cs)
 import Data.Text (Text, toUpper)
 import {-# SOURCE #-} DeckBuilding (Rune, getRuneAspect)
+import HandCard (anyCard)
 import Model (Model (..))
 import qualified ModelDiff
 import Player (WhichPlayer (..))
@@ -127,7 +128,7 @@ winAspect aspect =
         let isAspect =
               Alpha.evalI initial $ do
                 deck <- Alpha.getDeck PlayerA
-                return (any (\Card {card_aspect} -> card_aspect == aspect) deck)
+                return (any (\Card {card_aspect} -> card_aspect == aspect) (anyCard <$> deck))
          in didWin res && isAspect
     }
 

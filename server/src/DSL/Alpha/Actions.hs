@@ -119,7 +119,7 @@ draw w d = do
   case headMay deck of
     Just card -> do
       modDeck d tailSafe
-      addToHand w (HandCard card)
+      addToHand w card
     Nothing -> do
       noDraws <- getNoDraws w <$> getMisc
       addToHand w (KnownHandCard (getEndCard noDraws))

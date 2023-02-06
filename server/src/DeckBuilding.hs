@@ -9,6 +9,7 @@ import Data.Map (Map)
 import qualified Data.Map as Map
 import Data.Set as Set
 import Data.Text (Text)
+import HandCard (HandCard (..))
 import Life (Life, initMaxLife)
 import Mirror (Mirror (..))
 import Model (Deck)
@@ -357,9 +358,11 @@ characterCards :: Character -> Deck
 characterCards Character {character_choice} =
   case character_choice of
     Left (runeA, runeB, runeC) ->
-      concat $
-        (\(p, q, r, s) -> [p, q, r, s])
-          <$> [rune_cards runeA, rune_cards runeB, rune_cards runeC] >>= replicate 3
+      HandCard
+        <$> ( concat $
+                (\(p, q, r, s) -> [p, q, r, s])
+                  <$> [rune_cards runeA, rune_cards runeB, rune_cards runeC] >>= replicate 3
+            )
     Right deck ->
       deck
 

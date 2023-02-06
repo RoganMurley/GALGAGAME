@@ -160,5 +160,5 @@ getPerceived w model =
     perceivePlayerModel pm =
       pm
         { pmodel_hand = HandCard.cardMap Card.realiseFakeEff <$> pmodel_hand pm,
-          pmodel_deck = Card.realiseFakeEff <$> pmodel_deck pm
+          pmodel_deck = HandCard.cardMap Card.realiseFakeEff <$> pmodel_deck pm
         }
