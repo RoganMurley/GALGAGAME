@@ -1,6 +1,6 @@
 module Cards where
 
-import Card (Aspect (..), Card (..), Status (..), Suit (..), addInit, addRelated, addStatus, cardName, hasStatus, newCard, suitText)
+import Card (Aspect (..), Card (..), Status (..), Suit (..), addPlayEff, addRelated, addStatus, cardName, hasStatus, newCard, suitText)
 import CardAnim (Hurt (..), TimeModifier (..))
 import Control.Monad (replicateM_, when)
 import qualified DSL.Alpha as Alpha
@@ -21,6 +21,7 @@ import qualified Stack
 import StackCard (StackCard (..), cardMap, changeOwner, isOwner)
 import Transmutation (Transmutation (..), transmuteToCard)
 import Util (many, randomBetween, randomChoice, shuffle)
+import qualified Wheel
 
 -- FIRE
 fireSword :: Card
@@ -692,78 +693,43 @@ plasticCoin =
 -- Trick
 trickSword :: Card
 trickSword =
-  addInit trickInit $
-    newCard
-      Trick
-      Sword
-      (trickDesc Sword Nothing)
-      trickEff
+  newCard
+    Trick
+    Sword
+    "Hurt for 4, then discard 4\nfrom their deck"
+    $ \w -> do
+      hurt 4 (other w) Slash
+      many 4 $ mill (other w) (TimeModifierOutQuint 1)
 
 trickWand :: Card
 trickWand =
-  addInit trickInit $
+  addPlayEff disguisePlayEff $
     newCard
       Trick
       Wand
-      (trickDesc Wand Nothing)
-      trickEff
+      "On play: disguise as another\nWAND in your deck"
+      $ \_ -> return ()
 
 trickCup :: Card
 trickCup =
-  addInit trickInit $
-    newCard
-      Trick
-      Cup
-      (trickDesc Cup Nothing)
-      trickEff
+  newCard
+    Trick
+    Cup
+    "Draw 2 cards from their deck"
+    $ \w -> do
+      many 2 $ draw w (other w) (TimeModifierOutQuint 1)
 
-trickCoin :: Card
-trickCoin =
-  addInit trickInit $
-    newCard
-      Trick
-      Coin
-      (trickDesc Coin Nothing)
-      trickEff
-
-trickDesc :: Suit -> Maybe Aspect -> Text
-trickDesc suit mAspect =
-  let name = case mAspect of
-        Just aspect ->
-          cardName aspect suit
-        Nothing ->
-          "a " <> suitText suit
-   in case suit of
-        Sword ->
-          "On play disguise as " <> name <> ".\nDraw for each other disguised\ncard on the wheel."
-        Wand ->
-          "On play disguise as " <> name <> ".\nDraw for each other disguised\ncard on the wheel."
-        Cup ->
-          "On play disguise as " <> name <> ".\nDraw for each other disguised\ncard on the wheel."
-        Coin ->
-          "On play disguise as " <> name <> ".\nDraw for each other disguised\ncard on the wheel."
-        OtherSuit _ ->
-          "On play disguise as " <> name <> ".\nDraw for each other disguised\ncard on the wheel."
-
-trickEff :: WhichPlayer -> Beta.Program ()
-trickEff w = do
-  diaspora <- diasporaFromStack <$> getStack
-  let len =
-        length $
-          filter
-            (\(_, c) -> isJust $ card_fakeEff (stackcard_card c))
-            diaspora
-  many len (draw w w (TimeModifierOutQuint 1))
-
-trickDisguised :: Aspect -> Suit -> Card -> Card
-trickDisguised aspect suit card = disguisedCard
-  where
-    disguisedCard = card {card_desc = desc, card_playEff = playEff}
-    targetCard = getCard aspect suit
-    desc = trickDesc suit (Just aspect)
-    fakeEff = Just $ card_eff targetCard
-    playEff :: Card -> WhichPlayer -> Beta.Program Card
-    playEff _ _ =
+disguisePlayEff :: Card -> WhichPlayer -> Beta.Program Card
+disguisePlayEff card w = do
+  deck <- getDeck w
+  let suit = card_suit card
+  let candidates = filter (\c -> (card_suit c == suit) && (card_aspect c /= Trick)) deck
+  gen <- getGen
+  case candidates of
+    [] ->
+      return strangeSnag
+    _ -> do
+      let targetCard = randomChoice gen candidates
       return $
         targetCard
           { card_eff =
@@ -773,21 +739,126 @@ trickDisguised aspect suit card = disguisedCard
                     case Stack.get stack 0 of
                       Just selfCard ->
                         do
-                          transmuteActive (\_ -> Just $ transmuteToCard disguisedCard selfCard)
+                          transmuteActive (\_ -> Just $ transmuteToCard card selfCard)
                       Nothing -> return ()
                 ),
-            card_fakeEff = fakeEff
+            card_fakeEff = Just $ card_eff targetCard
           }
 
-trickInit :: Card -> WhichPlayer -> Alpha.Program Card
-trickInit card w = do
-  gen <- Alpha.getGen
-  deck <- Alpha.getDeck w
-  let cardsWithoutTrick = filter (\Card {card_aspect} -> card_aspect /= Trick) deck
-  let suit = card_suit card
-  let suitCards = filter (\Card {card_suit} -> card_suit == suit) cardsWithoutTrick
-  let aspect = card_aspect $ randomChoice gen suitCards
-  return $ trickDisguised aspect suit card
+trickCoin :: Card
+trickCoin =
+  newCard
+    Trick
+    Coin
+    "Move all cards on the wheel to\nthe top of their deck"
+    $ \w -> do
+      diaspora <- diasporaFromStack <$> getStack
+      let bounds i = (i > 0) && (i < 13)
+      let cards = stackcard_card . snd <$> filter (\(i, _) -> bounds i) diaspora
+      Beta.raw $ do
+        -- Alpha.modDeck w (cards ++)
+        Alpha.modDeck (other w) (cards ++)
+        Alpha.modStack (Wheel.indexedMap (\i sc -> if bounds i then Nothing else sc))
+      Beta.null
+
+-- trickSword :: Card
+-- trickSword =
+--   addInit trickInit $
+--     newCard
+--       Trick
+--       Sword
+--       (trickDesc Sword Nothing)
+--       trickEff
+
+-- trickWand :: Card
+-- trickWand =
+--   addInit trickInit $
+--     newCard
+--       Trick
+--       Wand
+--       (trickDesc Wand Nothing)
+--       trickEff
+
+-- trickCup :: Card
+-- trickCup =
+--   addInit trickInit $
+--     newCard
+--       Trick
+--       Cup
+--       (trickDesc Cup Nothing)
+--       trickEff
+
+-- trickCoin :: Card
+-- trickCoin =
+--   addInit trickInit $
+--     newCard
+--       Trick
+--       Coin
+--       (trickDesc Coin Nothing)
+--       trickEff
+
+-- trickDesc :: Suit -> Maybe Aspect -> Text
+-- trickDesc suit mAspect =
+--   let name = case mAspect of
+--         Just aspect ->
+--           cardName aspect suit
+--         Nothing ->
+--           "a " <> suitText suit
+--    in case suit of
+--         Sword ->
+--           "On play disguise as " <> name <> ".\nDraw for each other disguised\ncard on the wheel."
+--         Wand ->
+--           "On play disguise as " <> name <> ".\nDraw for each other disguised\ncard on the wheel."
+--         Cup ->
+--           "On play disguise as " <> name <> ".\nDraw for each other disguised\ncard on the wheel."
+--         Coin ->
+--           "On play disguise as " <> name <> ".\nDraw for each other disguised\ncard on the wheel."
+--         OtherSuit _ ->
+--           "On play disguise as " <> name <> ".\nDraw for each other disguised\ncard on the wheel."
+
+-- trickEff :: WhichPlayer -> Beta.Program ()
+-- trickEff w = do
+--   diaspora <- diasporaFromStack <$> getStack
+--   let len =
+--         length $
+--           filter
+--             (\(_, c) -> isJust $ card_fakeEff (stackcard_card c))
+--             diaspora
+--   many len (draw w w (TimeModifierOutQuint 1))
+
+-- trickDisguised :: Aspect -> Suit -> Card -> Card
+-- trickDisguised aspect suit card = disguisedCard
+--   where
+--     disguisedCard = card {card_desc = desc, card_playEff = playEff}
+--     targetCard = getCard aspect suit
+--     desc = trickDesc suit (Just aspect)
+--     fakeEff = Just $ card_eff targetCard
+--     playEff :: Card -> WhichPlayer -> Beta.Program Card
+--     playEff _ _ =
+--       return $
+--         targetCard
+--           { card_eff =
+--               const
+--                 ( do
+--                     stack <- getStack
+--                     case Stack.get stack 0 of
+--                       Just selfCard ->
+--                         do
+--                           transmuteActive (\_ -> Just $ transmuteToCard disguisedCard selfCard)
+--                       Nothing -> return ()
+--                 ),
+--             card_fakeEff = fakeEff
+--           }
+
+-- trickInit :: Card -> WhichPlayer -> Alpha.Program Card
+-- trickInit card w = do
+--   gen <- Alpha.getGen
+--   deck <- Alpha.getDeck w
+--   let cardsWithoutTrick = filter (\Card {card_aspect} -> card_aspect /= Trick) deck
+--   let suit = card_suit card
+--   let suitCards = filter (\Card {card_suit} -> card_suit == suit) cardsWithoutTrick
+--   let aspect = card_aspect $ randomChoice gen suitCards
+--   return $ trickDisguised aspect suit card
 
 -- Devil
 devilSword :: Card

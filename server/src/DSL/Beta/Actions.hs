@@ -59,7 +59,7 @@ transmuteActive f = do
 
 draw :: WhichPlayer -> WhichPlayer -> TimeModifier -> Program ()
 draw w wd t = do
-  noDraws <- getNoDraws w . model_misc <$> getModel
+  noDraws <- getNoDraws wd . model_misc <$> getModel
   when (noDraws > 10) (discardHand w (\_ _ -> True))
   draw' w wd t
 
