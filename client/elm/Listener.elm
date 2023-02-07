@@ -109,6 +109,9 @@ animSfx anim =
         Bounce _ _ ->
             Just "bounce.mp3"
 
+        BounceDeck _ _ ->
+            Just "bounce.mp3"
+
         Rotate _ ->
             Just "rotate.mp3"
 

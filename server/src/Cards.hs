@@ -759,7 +759,7 @@ trickCoin =
           if i > 0
             then Just $ Transmutation stackCard (stackCard {stackcard_owner = other w})
             else Nothing
-      bounceDeck (\i _ -> i > 0) (TimeModifierOutQuint 1)
+      bounceDeck (\i _ -> i > 0) (TimeModifierLinear 1)
 
 -- Devil
 devilSword :: Card

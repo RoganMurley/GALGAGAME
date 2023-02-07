@@ -288,7 +288,7 @@ entities hover holding ({ anim, model, progress } as ctx) =
                             , position =
                                 interp progress
                                     stackEntity.position
-                                    (vec3 -1 -1 -1)
+                                    (vec3 -1 -(1 + 0.1 * toFloat stackIndex) -1)
                             , rotation =
                                 Quaternion.lerp
                                     progress
@@ -553,12 +553,12 @@ otherEntities hoverSelf hoverOther ({ anim, model, progress } as ctx) =
                             , position =
                                 interp progress
                                     stackEntity.position
-                                    (vec3 -1 1 -1)
+                                    (vec3 -(1 + 0.1 * toFloat stackIndex) 1 -1)
                             , rotation =
                                 Quaternion.lerp
                                     progress
                                     stackEntity.rotation
-                                    Quaternion.identity
+                                    (Quaternion.zRotation pi)
                             , scale = Card.scale
                             , discarding = False
                             , mCard = Just card

@@ -55,8 +55,8 @@ animMaxTick anim =
             Bounce _ timeModifier ->
                 timeModifier.mod * 750.0
 
-            BounceDeck _ _ ->
-                750.0
+            BounceDeck _ timeModifier ->
+                timeModifier.mod * 750.0
 
             DiscardStack _ ->
                 750.0
@@ -104,7 +104,7 @@ progress anim tick =
                     timeModifier.ease
 
                 BounceDeck _ timeModifier ->
-                    timeModifier.ease
+                    Ease.outQuad << timeModifier.ease
 
                 Hurt _ _ _ ->
                     Ease.outQuint
