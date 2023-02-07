@@ -43,7 +43,7 @@ alphaI (TransmuteActive' t) = Alpha.transmuteActive t
 alphaI Rotate = Alpha.rotate
 alphaI Windup = Alpha.windup
 alphaI (Bounce' b _) = Alpha.bounce b
-alphaI (BounceDeck' b) = Alpha.bounceDeck b
+alphaI (BounceDeck' b _) = Alpha.bounceDeck b
 alphaI (DiscardStack' f) = Alpha.discardStack f
 alphaI (DiscardHand w f) = Alpha.discardHand w f
 alphaI (MoveStack' f _) = Alpha.moveStack f
@@ -86,7 +86,7 @@ animI (Play w c i) = playAnim w c i
 animI (Transmute' t) = transmuteAnim t
 animI (TransmuteActive' t) = transmuteActiveAnim t
 animI (Bounce' b t) = bounceAnim b t
-animI (BounceDeck' b) = bounceDeckAnim b
+animI (BounceDeck' b t) = bounceDeckAnim b t
 animI (DiscardStack' d) = discardStackAnim d
 animI (DiscardHand w f) = discardHandAnim w f
 animI (MoveStack' m t) = moveStackAnim m t
@@ -172,10 +172,10 @@ bounceAnim bounces t alpha = do
   when activity (execAnim Anim.null)
   return final
 
-bounceDeckAnim :: Wheel Bool -> Eff '[ExecDSL] a -> Eff '[ExecDSL] a
-bounceDeckAnim bounces alpha = do
+bounceDeckAnim :: Wheel Bool -> TimeModifier -> Eff '[ExecDSL] a -> Eff '[ExecDSL] a
+bounceDeckAnim bounces t alpha = do
   let activity = any id bounces
-  when activity (execAnim $ Anim.bounceDeck bounces)
+  when activity (execAnim $ Anim.bounceDeck bounces t)
   final <- alpha
   when activity (execAnim Anim.null)
   return final

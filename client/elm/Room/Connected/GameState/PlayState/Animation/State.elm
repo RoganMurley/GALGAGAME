@@ -1,6 +1,7 @@
-module Animation.State exposing (animMaxTick, animShake, getPlayerBounceCards, progress)
+module Animation.State exposing (animMaxTick, animShake, getPlayerBounceCards, getPlayerBounceDeckCards, progress)
 
-import Animation.Types exposing (Anim(..), Bounce(..), HandBounce)
+import Animation.Types exposing (Anim(..), Bounce(..), DeckBounce, HandBounce)
+import Card.Types exposing (Card)
 import Ease
 import Stack.Types exposing (Stack, StackCard)
 import Wheel.State as Wheel
@@ -54,6 +55,9 @@ animMaxTick anim =
             Bounce _ timeModifier ->
                 timeModifier.mod * 750.0
 
+            BounceDeck _ _ ->
+                750.0
+
             DiscardStack _ ->
                 750.0
 
@@ -97,6 +101,9 @@ progress anim tick =
                     timeModifier.ease
 
                 Bounce _ timeModifier ->
+                    timeModifier.ease
+
+                BounceDeck _ timeModifier ->
                     timeModifier.ease
 
                 Hurt _ _ _ ->
@@ -157,3 +164,32 @@ getPlayerBounceCards w bounces stack =
                 Wheel.apply
                     (Wheel.map (\x y -> ( x, y )) bounces)
                     stack
+
+
+getPlayerBounceDeckCards : WhichPlayer -> Wheel Bool -> Stack -> List DeckBounce
+getPlayerBounceDeckCards w bounces stack =
+    let
+        makeBounce : ( Bool, Maybe StackCard ) -> Maybe Card
+        makeBounce input =
+            case input of
+                ( True, Just { owner, card } ) ->
+                    if owner == w then
+                        Just card
+
+                    else
+                        Nothing
+
+                _ ->
+                    Nothing
+
+        addStackIndex : Int -> Maybe Card -> Maybe DeckBounce
+        addStackIndex i =
+            Maybe.map (\card -> { card = card, stackIndex = i })
+    in
+    List.filterMap identity <|
+        Wheel.toList <|
+            Wheel.indexedMap addStackIndex <|
+                Wheel.map makeBounce <|
+                    Wheel.apply
+                        (Wheel.map (\x y -> ( x, y )) bounces)
+                        stack

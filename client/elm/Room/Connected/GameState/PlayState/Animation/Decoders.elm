@@ -49,6 +49,9 @@ decoder =
                 "bounce" ->
                     bounceDecoder
 
+                "bounceDeck" ->
+                    bounceDeckDecoder
+
                 "discardStack" ->
                     discardStackDecoder
 
@@ -205,6 +208,16 @@ bounceDecoder =
             Wheel.decoder <|
                 maybe <|
                     oneOf [ bounceDiscardDecoder, bounceIndexDecoder ]
+        )
+        (field "timeModifier" timingModifierDecoder)
+
+
+bounceDeckDecoder : Decoder Anim
+bounceDeckDecoder =
+    Json.map2 BounceDeck
+        (field "bounce" <|
+            Wheel.decoder <|
+                bool
         )
         (field "timeModifier" timingModifierDecoder)
 

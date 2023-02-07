@@ -1,4 +1,4 @@
-module Animation.Types exposing (Anim(..), Bounce(..), CardDiscard(..), HandBounce, Hurt(..), TimingModifier, Transmutation(..))
+module Animation.Types exposing (Anim(..), Bounce(..), CardDiscard(..), DeckBounce, HandBounce, Hurt(..), TimingModifier, Transmutation(..))
 
 import Card.Types exposing (Card, KnowableCard)
 import Math.Vector3 exposing (Vec3)
@@ -20,6 +20,7 @@ type Anim
     | Rotate WhichPlayer
     | Windup WhichPlayer
     | Bounce (Wheel (Maybe Bounce)) TimingModifier
+    | BounceDeck (Wheel Bool) TimingModifier
     | DiscardStack (Wheel Bool)
     | DiscardHand WhichPlayer (List CardDiscard)
     | MoveStack (Wheel (Maybe Int)) TimingModifier
@@ -62,5 +63,11 @@ type alias TimingModifier =
 type alias HandBounce =
     { handIndex : Int
     , stackIndex : Int
+    , card : Card
+    }
+
+
+type alias DeckBounce =
+    { stackIndex : Int
     , card : Card
     }

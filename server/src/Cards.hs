@@ -21,7 +21,6 @@ import qualified Stack
 import StackCard (StackCard (..), cardMap, changeOwner, isOwner)
 import Transmutation (Transmutation (..), transmuteToCard)
 import Util (many, randomBetween, randomChoice, shuffle)
-import qualified Wheel
 
 -- FIRE
 fireSword :: Card
@@ -760,13 +759,7 @@ trickCoin =
           if i > 0
             then Just $ Transmutation stackCard (stackCard {stackcard_owner = other w})
             else Nothing
-      diaspora <- diasporaFromStack <$> getStack
-      let bounds i = i > 0
-      let cards = stackcard_card . snd <$> filter (\(i, _) -> bounds i) diaspora
-      Beta.raw $ do
-        Alpha.modDeck (other w) (\d -> (KnownHandCard <$> cards) ++ d)
-        Alpha.modStack (Wheel.indexedMap (\i sc -> if bounds i then Nothing else sc))
-      Beta.null
+      bounceDeck (\i _ -> i > 0) (TimeModifierOutQuint 1)
 
 -- Devil
 devilSword :: Card

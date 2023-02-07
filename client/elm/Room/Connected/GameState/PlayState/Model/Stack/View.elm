@@ -38,6 +38,14 @@ view entities ctx =
                         _ ->
                             Card.view ctx entity
 
+                BounceDeck bounces _ ->
+                    case Wheel.get entity.index bounces of
+                        Just True ->
+                            []
+
+                        _ ->
+                            Card.view ctx entity
+
                 DiscardStack discards ->
                     case Wheel.get entity.index discards of
                         Just True ->

@@ -1,4 +1,4 @@
-module Wheel.State exposing (apply, fwrd, get, indexed, init, map, toList)
+module Wheel.State exposing (apply, fwrd, get, indexed, indexedMap, init, map, toList)
 
 import Wheel.Types exposing (Wheel)
 
@@ -134,3 +134,8 @@ get i wheel =
 
         _ ->
             Nothing
+
+
+indexedMap : (Int -> a -> b) -> Wheel a -> Wheel b
+indexedMap f =
+    apply (map f indexed)

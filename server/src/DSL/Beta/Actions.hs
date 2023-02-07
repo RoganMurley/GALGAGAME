@@ -130,6 +130,17 @@ getBounces f = do
                   )
           else state
 
+bounceDeck :: (Int -> StackCard -> Bool) -> TimeModifier -> Program ()
+bounceDeck f t = do
+  bounces <- getDeckBounces f
+  bounceDeck' bounces t
+
+getDeckBounces :: (Int -> StackCard -> Bool) -> Program (Wheel Bool)
+getDeckBounces f = do
+  stack <- getStack
+  let intermediate = Wheel.indexedMap (fmap . f) stack :: Wheel (Maybe Bool)
+  return $ fromMaybe False <$> intermediate
+
 discardStack :: (Int -> StackCard -> Bool) -> Program ()
 discardStack f = do
   discards <- getStackDiscards f

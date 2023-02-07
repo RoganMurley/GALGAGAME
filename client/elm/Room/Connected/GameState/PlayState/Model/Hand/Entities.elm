@@ -1,7 +1,7 @@
 module Hand.Entities exposing (applyHoverVector, entities, handCardPosition, handCardRotation, handOrigin, otherEntities, playPosition)
 
 import Animation.State as Animation
-import Animation.Types exposing (Anim(..), CardDiscard(..), HandBounce)
+import Animation.Types exposing (Anim(..), CardDiscard(..), DeckBounce, HandBounce)
 import Card.State as Card exposing (getCard, isRevealed)
 import Card.Types exposing (Card, KnowableCard(..))
 import Dict
@@ -270,6 +270,38 @@ entities hover holding ({ anim, model, progress } as ctx) =
                     in
                     List.map makeBounceEntity playerBounces
 
+                BounceDeck bounces _ ->
+                    let
+                        playerBounces : List DeckBounce
+                        playerBounces =
+                            Animation.getPlayerBounceDeckCards PlayerA bounces model.stack
+
+                        makeBounceEntity : DeckBounce -> HandEntity
+                        makeBounceEntity { stackIndex, card } =
+                            let
+                                stackEntity =
+                                    Stack.Entities.stackEntity ctx stackIndex
+                            in
+                            { owner = PlayerA
+                            , card = card
+                            , index = 0 -- ignore
+                            , position =
+                                interp progress
+                                    stackEntity.position
+                                    (vec3 -1 -1 -1)
+                            , rotation =
+                                Quaternion.lerp
+                                    progress
+                                    stackEntity.rotation
+                                    (Quaternion.xRotation (-0.35 * pi))
+                            , scale = Card.scale
+                            , revealed = True
+                            , discarding = False
+                            , hoverVector = vec3 0 0 0
+                            }
+                    in
+                    List.map makeBounceEntity playerBounces
+
                 DiscardHand PlayerA discards ->
                     let
                         cardDiscards =
@@ -501,6 +533,35 @@ otherEntities hoverSelf hoverOther ({ anim, model, progress } as ctx) =
                             , discarding = False
                             , mCard = Just card
                             , index = handIndex
+                            }
+                    in
+                    List.map makeBounceEntity playerBounces
+
+                BounceDeck bounces _ ->
+                    let
+                        playerBounces : List DeckBounce
+                        playerBounces =
+                            Animation.getPlayerBounceDeckCards PlayerB bounces model.stack
+
+                        makeBounceEntity : DeckBounce -> OtherHandEntity
+                        makeBounceEntity { stackIndex, card } =
+                            let
+                                stackEntity =
+                                    Stack.Entities.stackEntity ctx stackIndex
+                            in
+                            { index = 0 -- ignore
+                            , position =
+                                interp progress
+                                    stackEntity.position
+                                    (vec3 -1 1 -1)
+                            , rotation =
+                                Quaternion.lerp
+                                    progress
+                                    stackEntity.rotation
+                                    Quaternion.identity
+                            , scale = Card.scale
+                            , discarding = False
+                            , mCard = Just card
                             }
                     in
                     List.map makeBounceEntity playerBounces
