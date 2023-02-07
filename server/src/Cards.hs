@@ -1,6 +1,6 @@
 module Cards where
 
-import Card (Aspect (..), Card (..), Status (..), Suit (..), addPlayEff, addRelated, addStatus, cardName, hasStatus, newCard)
+import Card (Aspect (..), Card (..), Disguise (..), Status (..), Suit (..), addPlayEff, addRelated, addStatus, cardName, hasStatus, newCard)
 import CardAnim (Hurt (..), TimeModifier (..))
 import Control.Monad (replicateM_, when)
 import qualified DSL.Alpha as Alpha
@@ -744,7 +744,12 @@ disguisePlayEff card w = do
                           transmuteActive (\_ -> Just $ transmuteToCard card selfCard)
                       Nothing -> return ()
                 ),
-            card_fakeEff = Just $ card_eff targetCard
+            card_disguise =
+              Just $
+                Disguise
+                  { disguise_eff = card_eff targetCard,
+                    disguise_owner = w
+                  }
           }
 
 trickCoin :: Card

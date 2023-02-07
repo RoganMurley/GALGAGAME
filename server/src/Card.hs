@@ -4,10 +4,8 @@
 module Card where
 
 import Control.DeepSeq (NFData (..))
-import {-# SOURCE #-} qualified DSL.Alpha.DSL as Alpha
 import {-# SOURCE #-} qualified DSL.Beta.DSL as Beta
 import Data.Aeson (ToJSON (..), defaultOptions, genericToEncoding, object, (.=))
-import Data.Maybe (fromMaybe)
 import Data.String.Conversions (cs)
 import Data.Text (Text, toLower, toUpper)
 import GHC.Generics (Generic)
@@ -36,9 +34,8 @@ data Card = Card
     card_suit :: Suit,
     card_desc :: Text,
     card_eff :: WhichPlayer -> Beta.Program (),
-    card_fakeEff :: Maybe (WhichPlayer -> Beta.Program ()),
     card_playEff :: Card -> WhichPlayer -> Beta.Program Card,
-    card_init :: Card -> WhichPlayer -> Alpha.Program Card,
+    card_disguise :: Maybe Disguise,
     card_statuses :: [Status],
     card_related :: [Related]
   }
@@ -87,6 +84,12 @@ data Related = Related
     related_desc :: Text
   }
   deriving (Eq, Show, Generic, NFData)
+
+data Disguise = Disguise
+  { disguise_eff :: WhichPlayer -> Beta.Program (),
+    disguise_owner :: WhichPlayer
+  }
+  deriving (Generic, NFData)
 
 suitText :: Suit -> Text
 suitText suit =
@@ -150,9 +153,8 @@ newCard aspect suit desc eff =
       card_suit = suit,
       card_desc = desc,
       card_eff = eff,
-      card_fakeEff = Nothing,
       card_playEff = \card _ -> return card,
-      card_init = \card _ -> return card,
+      card_disguise = Nothing,
       card_statuses = [],
       card_related = []
     }
@@ -179,9 +181,6 @@ addRelated relatedCard card =
 addPlayEff :: (Card -> WhichPlayer -> Beta.Program Card) -> Card -> Card
 addPlayEff playEff card = card {card_playEff = playEff}
 
-addInit :: (Card -> WhichPlayer -> Alpha.Program Card) -> Card -> Card
-addInit init card = card {card_init = init}
-
 removeStatus :: Status -> Card -> Card
 removeStatus status card = card {card_statuses = filter (status /=) (card_statuses card)}
 
@@ -194,8 +193,12 @@ hasStatus status card = elem status $ card_statuses card
 sameCard :: Card -> Card -> Bool
 sameCard a b = (card_aspect a == card_aspect b) && (card_suit a == card_suit b)
 
-getFakeEffOrEff :: Card -> (WhichPlayer -> Beta.Program ())
-getFakeEffOrEff Card {card_eff, card_fakeEff} = fromMaybe card_eff card_fakeEff
+getEffOrDisguiseEff :: Card -> (WhichPlayer -> Beta.Program ())
+getEffOrDisguiseEff Card {card_eff, card_disguise} = maybe card_eff disguise_eff card_disguise
 
-realiseFakeEff :: Card -> Card
-realiseFakeEff card = card {card_eff = getFakeEffOrEff card, card_fakeEff = Nothing}
+assumeDisguise :: Card -> Card
+assumeDisguise card = card {card_eff = getEffOrDisguiseEff card, card_disguise = Nothing}
+
+isDisguisedBy :: WhichPlayer -> Card -> Bool
+isDisguisedBy w Card {card_disguise = Just disguise} = disguise_owner disguise == w
+isDisguisedBy _ _ = False

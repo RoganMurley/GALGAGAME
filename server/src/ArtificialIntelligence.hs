@@ -20,7 +20,7 @@ import Model
 import Player (WhichPlayer (..), other)
 import Scenario (Scenario (..))
 import qualified Stack
-import StackCard (StackCard)
+import StackCard (StackCard (..))
 import qualified StackCard
 import Util (Err, Gen, maybeToEither)
 
@@ -153,12 +153,15 @@ getPerceived w model =
     -- If we don't own it, we perceive the fake effect if there is one.
     -- This lets the computer get tricked by trick cards.
     perceiveStackCard :: StackCard -> StackCard
-    perceiveStackCard sc = if StackCard.isOwner w sc then sc else StackCard.cardMap Card.realiseFakeEff sc
+    perceiveStackCard sc =
+      if Card.isDisguisedBy w (stackcard_card sc)
+        then sc
+        else StackCard.cardMap Card.assumeDisguise sc
     -- If a card is in our hand, we want to perceive it as a trick card.
     -- This makes the CPU bluff a lot.
     perceivePlayerModel :: PlayerModel -> PlayerModel
     perceivePlayerModel pm =
       pm
-        { pmodel_hand = HandCard.cardMap Card.realiseFakeEff <$> pmodel_hand pm,
-          pmodel_deck = HandCard.cardMap Card.realiseFakeEff <$> pmodel_deck pm
+        { pmodel_hand = HandCard.cardMap Card.assumeDisguise <$> pmodel_hand pm,
+          pmodel_deck = HandCard.cardMap Card.assumeDisguise <$> pmodel_deck pm
         }

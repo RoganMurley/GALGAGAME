@@ -3,7 +3,6 @@
 
 module Model where
 
-import Card (Card (..))
 import Control.DeepSeq (NFData (..))
 import Data.Aeson (ToJSON (..), object, (.=))
 import GHC.Generics (Generic)

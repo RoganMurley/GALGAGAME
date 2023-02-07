@@ -1,6 +1,5 @@
 module Start where
 
-import Card (Card (..))
 import CardAnim (CardAnim (..), TimeModifier (..))
 import qualified Cards
 import Control.Monad (replicateM_)
@@ -8,35 +7,11 @@ import qualified DSL.Alpha as Alpha
 import qualified DSL.Beta as Beta
 import Data.Text (Text)
 import DeckBuilding (Character (..), angelRune, characterCards, fireRune, goldRune, mirrorRune, shroomRune, waterRune)
-import HandCard (HandCard (..), anyCard)
+import HandCard (HandCard (..))
 import Model (Passes (OnePass), maxHandLength, setForceWin)
 import Player (WhichPlayer (..), other)
 import Util (shuffle, split)
 import Prelude hiding (init)
-
-initDeck :: WhichPlayer -> Beta.Program ()
-initDeck w =
-  Beta.raw $ do
-    deck <- Alpha.getDeck w
-    newDeck <-
-      mapM
-        ( \handCard ->
-            let card = anyCard handCard
-                init = card_init card
-             in do
-                  newCard <- init card w
-                  gen <- Alpha.getGen
-                  let (newGen, _) = split gen
-                  Alpha.setGen newGen
-                  return newCard
-        )
-        deck
-    Alpha.setDeck w (HandCard <$> newDeck)
-
-initProgram :: Beta.Program ()
-initProgram = do
-  initDeck PlayerA
-  initDeck PlayerB
 
 startProgram :: Maybe (Text, Text) -> Beta.Program ()
 startProgram mUsernames = do
