@@ -36,6 +36,7 @@ data DSL n where
   MoveStack' :: Wheel (Maybe Int) -> TimeModifier -> DSL ()
   Mill :: WhichPlayer -> TimeModifier -> DSL ()
   Reveal :: WhichPlayer -> (Int -> Card -> Bool) -> DSL ()
+  RevealDeck :: WhichPlayer -> DSL ()
   GetDeck :: WhichPlayer -> DSL Deck
   GetHand :: WhichPlayer -> DSL Hand
   GetLife :: WhichPlayer -> DSL Life

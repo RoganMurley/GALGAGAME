@@ -9,7 +9,8 @@ import Data.Aeson (ToJSON (..), defaultOptions, genericToEncoding, object, (.=))
 import Data.String.Conversions (cs)
 import Data.Text (Text, toLower, toUpper)
 import GHC.Generics (Generic)
-import Player (WhichPlayer (..))
+import Mirror (Mirror (..))
+import Player (WhichPlayer (..), other)
 import Prelude hiding (init)
 
 instance Eq Card where
@@ -28,6 +29,9 @@ instance ToJSON Card where
         "statuses" .= card_statuses card,
         "related" .= card_related card
       ]
+
+instance Mirror Card where
+  mirror c = c {card_disguise = mirror <$> card_disguise c}
 
 data Card = Card
   { card_aspect :: Aspect,
@@ -90,6 +94,9 @@ data Disguise = Disguise
     disguise_owner :: WhichPlayer
   }
   deriving (Generic, NFData)
+
+instance Mirror Disguise where
+  mirror d = d {disguise_owner = other $ disguise_owner d}
 
 suitText :: Suit -> Text
 suitText suit =

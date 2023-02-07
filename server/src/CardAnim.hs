@@ -34,6 +34,7 @@ data CardAnim
   | MoveStack (Wheel (Maybe Int)) TimeModifier
   | Pass WhichPlayer
   | Reveal WhichPlayer [Bool]
+  | RevealDeck WhichPlayer
   | Timeout
   | Announce Text TimeModifier
   | GetGen
@@ -140,6 +141,11 @@ instance ToJSON CardAnim where
         "player" .= w,
         "reveal" .= r
       ]
+  toJSON (RevealDeck w) =
+    object
+      [ "name" .= ("revealDeck" :: Text),
+        "player" .= w
+      ]
   toJSON GetGen =
     object
       [ "name" .= ("getGen" :: Text),
@@ -178,6 +184,7 @@ instance Mirror CardAnim where
   mirror (DiscardStack d) = DiscardStack d
   mirror (DiscardHand w d) = DiscardHand (other w) d
   mirror (Reveal w r) = Reveal (other w) r
+  mirror (RevealDeck w) = RevealDeck (other w)
   mirror (MoveStack m t) = MoveStack m t
   mirror (Pass w) = Pass (other w)
   mirror GetGen = GetGen

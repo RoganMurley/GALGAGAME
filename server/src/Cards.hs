@@ -716,7 +716,7 @@ trickCup =
     Cup
     "Reveal a card in their deck, then\ndraw a copy of each revealed\ncard in their deck"
     $ \w -> do
-      revealDeckCard (other w)
+      revealDeck (other w)
       deck <- getDeck (other w)
       let revealedCards = filter isRevealed deck
       mapM_ (addToHand w) revealedCards

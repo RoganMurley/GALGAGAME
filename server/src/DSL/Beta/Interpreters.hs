@@ -49,6 +49,7 @@ alphaI (DiscardHand w f) = Alpha.discardHand w f
 alphaI (MoveStack' f _) = Alpha.moveStack f
 alphaI (Mill w _) = Alpha.mill w
 alphaI (Reveal w f) = Alpha.reveal w f
+alphaI (RevealDeck w) = Alpha.revealDeck w
 alphaI GetGen = Alpha.getGen
 alphaI GetRot = Alpha.getRot
 alphaI (GetLife w) = Alpha.getLife w
@@ -92,6 +93,7 @@ animI (DiscardHand w f) = discardHandAnim w f
 animI (MoveStack' m t) = moveStackAnim m t
 animI (Mill w t) = millAnim w t
 animI (Reveal w f) = revealAnim w f
+animI (RevealDeck w) = revealDeckAnim w
 animI _ = id
 
 execAnim :: Anim.Program a -> Eff '[ExecDSL] a
@@ -224,6 +226,15 @@ revealAnim w f alpha = do
   final <- alpha
   let activity = any id $ uncurry xor <$> zip initialReveals reveals :: Bool
   when activity (execAnim $ Anim.reveal w reveals)
+  return final
+
+revealDeckAnim :: WhichPlayer -> Eff '[ExecDSL] a -> Eff '[ExecDSL] a
+revealDeckAnim w alpha = do
+  deck <- execAlpha $ Alpha.getDeck w
+  let unrevealed = filter (not . isRevealed) deck
+  final <- alpha
+  let activity = not . null $ unrevealed  :: Bool
+  when activity (execAnim $ Anim.revealDeck w)
   return final
 
 betaI :: ∀ a . Program a -> Eff '[ExecDSL] a

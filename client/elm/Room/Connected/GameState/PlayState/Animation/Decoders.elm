@@ -67,6 +67,9 @@ decoder =
                 "reveal" ->
                     revealDecoder
 
+                "revealDeck" ->
+                    revealDeckDecoder
+
                 "getGen" ->
                     succeed GetGen
 
@@ -263,6 +266,12 @@ revealDecoder =
     Json.map2 Reveal
         (field "player" WhichPlayer.decoder)
         (field "reveal" <| list bool)
+
+
+revealDeckDecoder : Decoder Anim
+revealDeckDecoder =
+    Json.map RevealDeck
+        (field "player" WhichPlayer.decoder)
 
 
 moveStackDecoder : Decoder Anim

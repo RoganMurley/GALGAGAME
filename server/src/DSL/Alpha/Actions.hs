@@ -12,7 +12,8 @@ import Control.Monad.Freer.TH (makeEffect)
 import DSL.Alpha.DSL (DSL, Program)
 import Data.Foldable (toList)
 import Data.Maybe (catMaybes)
-import HandCard (HandCard (..), anyCard)
+import HandCard (HandCard (..))
+import qualified HandCard
 import Life (Life)
 import Model (Deck, Hand, Misc (..), Passes (..), Turn, getNoDraws, incrNoDraws, maxHandLength)
 import Player (WhichPlayer (..), other)
@@ -208,7 +209,7 @@ discardStack discards =
 -- modStack $ Stack.diasporaFilter (\i c -> not $ f i c)
 
 discardHand :: WhichPlayer -> (Int -> Card -> Bool) -> Program ()
-discardHand w f = modHand w $ indexedFilter (\i c -> not $ f i (anyCard c))
+discardHand w f = modHand w $ indexedFilter (\i c -> not $ f i (HandCard.anyCard c))
 
 reveal :: WhichPlayer -> (Int -> Card -> Bool) -> Program ()
 reveal w f = modHand w $ \h -> fmap revealer $ zip [0 ..] h
@@ -216,6 +217,16 @@ reveal w f = modHand w $ \h -> fmap revealer $ zip [0 ..] h
     revealer :: (Int, HandCard) -> HandCard
     revealer (i, HandCard c) = if f i c then KnownHandCard c else HandCard c
     revealer (_, KnownHandCard c) = KnownHandCard c
+
+revealDeck :: WhichPlayer -> Program ()
+revealDeck w = modDeck w revealCard
+  where
+    revealCard :: Deck -> Deck
+    revealCard (card : deck) =
+      if HandCard.isRevealed card
+        then card : revealCard deck
+        else HandCard.reveal card : deck
+    revealCard deck = deck
 
 rotate :: Program ()
 rotate = do

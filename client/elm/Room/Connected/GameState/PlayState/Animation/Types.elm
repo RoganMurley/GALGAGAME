@@ -25,6 +25,7 @@ type Anim
     | DiscardHand WhichPlayer (List CardDiscard)
     | MoveStack (Wheel (Maybe Int)) TimingModifier
     | Reveal WhichPlayer (List Bool)
+    | RevealDeck WhichPlayer
     | Pass WhichPlayer
     | HandFullPass
     | Finding

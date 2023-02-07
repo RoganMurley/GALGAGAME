@@ -24,7 +24,7 @@ instance ToJSON StackCard where
       ]
 
 instance Mirror StackCard where
-  mirror (StackCard p c) = StackCard (other p) c
+  mirror (StackCard p c) = StackCard (other p) (mirror c)
 
 changeOwner :: StackCard -> StackCard
 changeOwner = mirror

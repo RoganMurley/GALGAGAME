@@ -32,6 +32,7 @@ data DSL n where
   DiscardStack :: Wheel Bool -> DSL ()
   DiscardHand :: WhichPlayer -> [CardDiscard] -> DSL ()
   Reveal :: WhichPlayer -> [Bool] -> DSL ()
+  RevealDeck :: WhichPlayer -> DSL ()
   MoveStack :: Wheel (Maybe Int) -> TimeModifier -> DSL ()
   Pass :: WhichPlayer -> DSL ()
   GetGen :: DSL ()
