@@ -6,18 +6,19 @@ module DSL.Beta.Actions where
 
 import Bounce (BounceState (..), CardBounce (..))
 import Card (Status (..), hasStatus)
-import CardAnim (Hurt (..), TimeModifier (..))
+import CardAnim (CardAnim (..), Hurt (..), TimeModifier (..))
 import Control.Monad (forM_, when)
 import Control.Monad.Freer.TH (makeEffect)
 import qualified DSL.Alpha as Alpha
 import DSL.Beta.DSL (DSL, Program)
 import Data.Foldable (foldl', toList)
+import Data.List (partition)
 import Data.Map (Map)
 import qualified Data.Map as Map
 import Data.Maybe (catMaybes, fromMaybe, isJust)
 import Data.Set (Set)
 import qualified Data.Set as Set
-import HandCard (HandCard, isRevealed)
+import HandCard (HandCard, anyCard, isRevealed)
 import Life (Life)
 import Model (Model (model_misc), getNoDraws, maxHandLength)
 import Player (WhichPlayer (..), other)
@@ -131,8 +132,23 @@ getBounces f = do
 
 bounceDeck :: (Int -> StackCard -> Bool) -> TimeModifier -> Program ()
 bounceDeck f t = do
+  stack <- getStack
   bounces <- getDeckBounces f
   bounceDeck' bounces t
+  let paBounceCount = length $ filter id $ toList $ playerBounce PlayerA <$> bounces <*> stack
+  discardDeck
+    PlayerA
+    (\i c -> (i < paBounceCount) && hasStatus StatusFragile (anyCard c))
+    (TimeModifierOutQuint 1)
+  let pbBounceCount = length $ filter id $ toList $ playerBounce PlayerB <$> bounces <*> stack
+  discardDeck
+    PlayerB
+    (\i c -> (i < pbBounceCount) && hasStatus StatusFragile (anyCard c))
+    (TimeModifierOutQuint 1)
+  where
+    playerBounce :: WhichPlayer -> Bool -> Maybe StackCard -> Bool
+    playerBounce w True (Just sc) = isOwner w sc
+    playerBounce _ _ _ = False
 
 getDeckBounces :: (Int -> StackCard -> Bool) -> Program (Wheel Bool)
 getDeckBounces f = do
@@ -150,6 +166,13 @@ getStackDiscards f = do
   stack <- getStack
   let discarder = \i c -> Just $ f i c
   return $ fromMaybe False <$> Stack.diasporaMap discarder stack
+
+discardDeck :: WhichPlayer -> (Int -> HandCard -> Bool) -> TimeModifier -> Program ()
+discardDeck w f t = do
+  deck <- getDeck w
+  let (discarding, keeping) = partition (uncurry f) $ zip [0 ..] deck
+  raw $ Alpha.setDeck w $ map snd keeping
+  mapM_ (\card -> rawAnim $ CardAnim.Mill w (anyCard card) t) (snd <$> discarding)
 
 moveStack :: (Int -> StackCard -> Maybe Int) -> TimeModifier -> Program ()
 moveStack f t = do
