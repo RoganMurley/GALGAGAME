@@ -34,7 +34,6 @@ type Anim
     | Timeout
     | Announce String TimingModifier
     | Tricked
-    | Vibrate
 
 
 type Hurt

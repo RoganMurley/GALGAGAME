@@ -82,9 +82,6 @@ decoder =
                 "announce" ->
                     announceDecoder
 
-                "vibrate" ->
-                    vibrateDecoder
-
                 "tricked" ->
                     trickedDecoder
 
@@ -322,11 +319,6 @@ announceDecoder =
     Json.map2 Announce
         (field "text" string)
         (field "time" timingModifierDecoder)
-
-
-vibrateDecoder : Decoder Anim
-vibrateDecoder =
-    Json.succeed Vibrate
 
 
 trickedDecoder : Decoder Anim

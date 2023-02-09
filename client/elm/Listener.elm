@@ -127,9 +127,6 @@ animSfx anim =
         Tricked ->
             Just "tricked.mp3"
 
-        Vibrate ->
-            Just "vibrate.mp3"
-
         MoveStack _ _ ->
             Just "moveStack.mp3"
 

@@ -38,7 +38,6 @@ data CardAnim
   | Timeout
   | Announce Text TimeModifier
   | Tricked
-  | Vibrate
   | GetGen
   | UnknownDamage
   deriving (Show, Eq, Generic, NFData)
@@ -176,11 +175,6 @@ instance ToJSON CardAnim where
       [ "name" .= ("tricked" :: Text),
         "player" .= PlayerA
       ]
-  toJSON Vibrate =
-    object
-      [ "name" .= ("vibrate" :: Text),
-        "player" .= PlayerA
-      ]
 
 instance Mirror CardAnim where
   mirror (Hurt w d h) = Hurt (other w) d h
@@ -205,7 +199,6 @@ instance Mirror CardAnim where
   mirror Timeout = Timeout
   mirror (Announce a t) = Announce a t
   mirror Tricked = Tricked
-  mirror Vibrate = Vibrate
 
 data Hurt
   = Slash

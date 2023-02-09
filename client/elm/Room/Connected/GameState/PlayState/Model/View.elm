@@ -61,6 +61,7 @@ view { w, h } game chat assets =
             , Hand.view entities.hand
             , Hand.otherView entities.otherHand
             , Hand.millView
+            , Hand.revealDeckView
             , damageView hover holding
             , turnView focus passed tutorial passive timeLeft
             , focusTextView (vec2 0 0) focus
@@ -79,6 +80,9 @@ focusImageView : Vec3 -> Focus -> Context -> List WebGL.Entity
 focusImageView originVec focus ({ anim, tick } as ctx) =
     case anim of
         Mill _ _ _ ->
+            []
+
+        RevealDeck _ _ ->
             []
 
         Announce _ _ ->
@@ -195,6 +199,9 @@ focusTextView : Vec2 -> Focus -> Context -> List WebGL.Entity
 focusTextView originVec focus ({ w, h, anim, model, radius, tick } as ctx) =
     case anim of
         Mill _ _ _ ->
+            []
+
+        RevealDeck _ _ ->
             []
 
         Announce _ _ ->
@@ -429,6 +436,9 @@ turnView focus passed tutorial passive timeLeft ctx =
     in
     case ( anim, focus, passed ) of
         ( Mill _ _ _, _, _ ) ->
+            []
+
+        ( RevealDeck _ _, _, _ ) ->
             []
 
         ( Announce _ _, _, _ ) ->

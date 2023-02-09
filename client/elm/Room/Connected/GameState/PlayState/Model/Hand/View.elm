@@ -1,4 +1,4 @@
-module Hand.View exposing (millView, otherView, view)
+module Hand.View exposing (millView, otherView, revealDeckView, view)
 
 import Animation.State as Animation
 import Animation.Types exposing (Anim(..), CardDiscard(..))
@@ -143,6 +143,97 @@ millView ({ progress, tick, anim } as ctx) =
                         Ease.inQuint (tick / Animation.animMaxTick anim)
                 }
                 entity
+
+        _ ->
+            []
+
+
+revealDeckView : Context -> List WebGL.Entity
+revealDeckView ({ tick, anim } as ctx) =
+    case anim of
+        RevealDeck owner card ->
+            let
+                sign =
+                    case owner of
+                        PlayerA ->
+                            1
+
+                        PlayerB ->
+                            -1
+            in
+            if ctx.progress <= 0.5 then
+                let
+                    progress =
+                        Ease.outQuint <|
+                            ctx.progress
+                                * 2
+
+                    startPos =
+                        case owner of
+                            PlayerA ->
+                                vec3 -1 0 0
+
+                            PlayerB ->
+                                vec3 -1 1 0
+
+                    entity =
+                        { owner = owner
+                        , card = card
+                        , position =
+                            interp
+                                progress
+                                startPos
+                                (vec3 0 0 -1)
+                        , rotation =
+                            Quaternion.lerp
+                                progress
+                                Quaternion.identity
+                                (Quaternion.zRotation (-sign * 0.05 * pi))
+                        , scale = Card.scale
+                        , revealed = True
+                        }
+                in
+                List.concat
+                    [ Card.view ctx entity
+                    , Card.revealedView ctx entity
+                    ]
+
+            else
+                let
+                    progress =
+                        Ease.inQuint <|
+                            (ctx.progress - 0.5)
+                                * 2
+
+                    startPos =
+                        case owner of
+                            PlayerA ->
+                                vec3 -1 0 0
+
+                            PlayerB ->
+                                vec3 -1 1 0
+
+                    entity =
+                        { owner = owner
+                        , card = card
+                        , position =
+                            interp
+                                progress
+                                (vec3 0 0 -1)
+                                startPos
+                        , rotation =
+                            Quaternion.lerp
+                                progress
+                                (Quaternion.zRotation (-sign * 0.05 * pi))
+                                Quaternion.identity
+                        , scale = Card.scale
+                        , revealed = True
+                        }
+                in
+                List.concat
+                    [ Card.view ctx entity
+                    , Card.revealedView ctx entity
+                    ]
 
         _ ->
             []

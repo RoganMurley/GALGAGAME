@@ -729,7 +729,7 @@ disguisePlayEff card w = do
   gen <- getGen
   case candidates of
     [] ->
-      return card {card_eff = \_ -> rawAnim Vibrate}
+      return card
     _ -> do
       let targetCard = randomChoice gen candidates
       return $

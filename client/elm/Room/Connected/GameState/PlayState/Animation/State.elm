@@ -43,6 +43,9 @@ animMaxTick anim =
             Mill _ _ timeModifier ->
                 timeModifier.mod * 500.0
 
+            RevealDeck _ _ ->
+                750
+
             GameEnd _ ->
                 1250.0
 
@@ -117,6 +120,9 @@ progress anim tick =
 
                 Mill _ _ timingModifier ->
                     timingModifier.ease
+
+                RevealDeck _ _ ->
+                    Ease.linear
 
                 MoveStack _ timeModifier ->
                     timeModifier.ease
