@@ -34,9 +34,11 @@ data CardAnim
   | MoveStack (Wheel (Maybe Int)) TimeModifier
   | Pass WhichPlayer
   | Reveal WhichPlayer [Bool]
-  | RevealDeck WhichPlayer
+  | RevealDeck WhichPlayer Card
   | Timeout
   | Announce Text TimeModifier
+  | Tricked
+  | Vibrate
   | GetGen
   | UnknownDamage
   deriving (Show, Eq, Generic, NFData)
@@ -141,9 +143,10 @@ instance ToJSON CardAnim where
         "player" .= w,
         "reveal" .= r
       ]
-  toJSON (RevealDeck w) =
+  toJSON (RevealDeck w c) =
     object
       [ "name" .= ("revealDeck" :: Text),
+        "card" .= c,
         "player" .= w
       ]
   toJSON GetGen =
@@ -168,6 +171,16 @@ instance ToJSON CardAnim where
         "time" .= t,
         "player" .= PlayerA
       ]
+  toJSON Tricked =
+    object
+      [ "name" .= ("tricked" :: Text),
+        "player" .= PlayerA
+      ]
+  toJSON Vibrate =
+    object
+      [ "name" .= ("vibrate" :: Text),
+        "player" .= PlayerA
+      ]
 
 instance Mirror CardAnim where
   mirror (Hurt w d h) = Hurt (other w) d h
@@ -184,13 +197,15 @@ instance Mirror CardAnim where
   mirror (DiscardStack d) = DiscardStack d
   mirror (DiscardHand w d) = DiscardHand (other w) d
   mirror (Reveal w r) = Reveal (other w) r
-  mirror (RevealDeck w) = RevealDeck (other w)
+  mirror (RevealDeck w c) = RevealDeck (other w) (mirror c)
   mirror (MoveStack m t) = MoveStack m t
   mirror (Pass w) = Pass (other w)
   mirror GetGen = GetGen
   mirror UnknownDamage = UnknownDamage
   mirror Timeout = Timeout
   mirror (Announce a t) = Announce a t
+  mirror Tricked = Tricked
+  mirror Vibrate = Vibrate
 
 data Hurt
   = Slash

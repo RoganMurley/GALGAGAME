@@ -1,7 +1,7 @@
 module Cards where
 
 import Card (Aspect (..), Card (..), Disguise (..), Status (..), Suit (..), addPlayEff, addRelated, addStatus, cardName, hasStatus, newCard)
-import CardAnim (Hurt (..), TimeModifier (..))
+import CardAnim (CardAnim (..), Hurt (..), TimeModifier (..))
 import Control.Monad (replicateM_, when)
 import qualified DSL.Alpha as Alpha
 import DSL.Beta
@@ -729,7 +729,7 @@ disguisePlayEff card w = do
   gen <- getGen
   case candidates of
     [] ->
-      return card
+      return card {card_eff = \_ -> rawAnim Vibrate}
     _ -> do
       let targetCard = randomChoice gen candidates
       return $
@@ -742,6 +742,8 @@ disguisePlayEff card w = do
                       Just selfCard ->
                         do
                           transmuteActive (\_ -> Just $ transmuteToCard card selfCard)
+                          Beta.null
+                          rawAnim Tricked
                       Nothing -> return ()
                 ),
             card_disguise =

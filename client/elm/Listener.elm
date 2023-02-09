@@ -118,11 +118,17 @@ animSfx anim =
         Reveal _ _ ->
             Just "reveal.mp3"
 
-        RevealDeck _ ->
+        RevealDeck _ _ ->
             Just "reveal.mp3"
 
         Windup _ ->
             Just "windup.mp3"
+
+        Tricked ->
+            Just "tricked.mp3"
+
+        Vibrate ->
+            Just "vibrate.mp3"
 
         MoveStack _ _ ->
             Just "moveStack.mp3"

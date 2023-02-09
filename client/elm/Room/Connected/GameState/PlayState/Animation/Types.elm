@@ -25,7 +25,7 @@ type Anim
     | DiscardHand WhichPlayer (List CardDiscard)
     | MoveStack (Wheel (Maybe Int)) TimingModifier
     | Reveal WhichPlayer (List Bool)
-    | RevealDeck WhichPlayer
+    | RevealDeck WhichPlayer Card
     | Pass WhichPlayer
     | HandFullPass
     | Finding
@@ -33,6 +33,8 @@ type Anim
     | UnknownDamage
     | Timeout
     | Announce String TimingModifier
+    | Tricked
+    | Vibrate
 
 
 type Hurt

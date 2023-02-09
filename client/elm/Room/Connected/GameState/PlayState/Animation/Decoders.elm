@@ -82,6 +82,12 @@ decoder =
                 "announce" ->
                     announceDecoder
 
+                "vibrate" ->
+                    vibrateDecoder
+
+                "tricked" ->
+                    trickedDecoder
+
                 _ ->
                     Json.fail <| "Unknown anim name " ++ animName
     in
@@ -270,8 +276,9 @@ revealDecoder =
 
 revealDeckDecoder : Decoder Anim
 revealDeckDecoder =
-    Json.map RevealDeck
+    Json.map2 RevealDeck
         (field "player" WhichPlayer.decoder)
+        (field "card" Card.decoder)
 
 
 moveStackDecoder : Decoder Anim
@@ -315,3 +322,13 @@ announceDecoder =
     Json.map2 Announce
         (field "text" string)
         (field "time" timingModifierDecoder)
+
+
+vibrateDecoder : Decoder Anim
+vibrateDecoder =
+    Json.succeed Vibrate
+
+
+trickedDecoder : Decoder Anim
+trickedDecoder =
+    Json.succeed Tricked

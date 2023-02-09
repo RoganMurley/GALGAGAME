@@ -82,6 +82,9 @@ animMaxTick anim =
             Announce _ timeModifier ->
                 timeModifier.mod * 400
 
+            Tricked ->
+                2000
+
             _ ->
                 400.0
           )

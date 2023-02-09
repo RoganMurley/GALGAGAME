@@ -230,11 +230,13 @@ revealAnim w f alpha = do
 
 revealDeckAnim :: WhichPlayer -> Eff '[ExecDSL] a -> Eff '[ExecDSL] a
 revealDeckAnim w alpha = do
-  deck <- execAlpha $ Alpha.getDeck w
-  let unrevealed = filter (not . isRevealed) deck
+  initialDeck <- execAlpha $ Alpha.getDeck w
+  let initialRevealed = filter isRevealed initialDeck
   final <- alpha
-  let activity = not . null $ unrevealed  :: Bool
-  when activity (execAnim $ Anim.revealDeck w)
+  finalDeck <- execAlpha $ Alpha.getDeck w
+  let finalRevealed = filter isRevealed finalDeck
+  let newlyRevealed = drop (length initialRevealed) finalRevealed
+  mapM_ (\c -> execAnim $ Anim.revealDeck w (anyCard c)) newlyRevealed
   return final
 
 betaI :: ∀ a . Program a -> Eff '[ExecDSL] a
