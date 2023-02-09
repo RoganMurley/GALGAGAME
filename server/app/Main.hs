@@ -468,7 +468,7 @@ chooseComputerCommand which room gen progress = do
     elligibleRunes = Set.toList $ progress_unlocks progress
     randomChoice :: DeckBuilding.CharacterChoice
     randomChoice = DeckBuilding.CharacterChoice a b c
-    (a, b, c) = to3Tuple $ DeckBuilding.rune_name <$> DeckBuilding.trickRune : shuffle gen elligibleRunes
+    (a, b, c) = to3Tuple $ DeckBuilding.rune_name <$> shuffle gen elligibleRunes
 
 disconnect :: Client -> TVar Room -> TVar Server.State -> App Server.State
 disconnect client roomVar state = do

@@ -352,7 +352,7 @@ trickRune =
     Trick
     "cards/trick/coin.png"
     (Cards.trickSword, Cards.trickWand, Cards.trickCup, Cards.trickCoin)
-    (levelToExperience 12)
+    (levelToExperience 13)
 
 characterCards :: Character -> Deck
 characterCards Character {character_choice} =
