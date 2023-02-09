@@ -443,18 +443,18 @@ goldCup =
 
 goldCoin :: Card
 goldCoin =
-  addRelated strangeSubstance $
+  addRelated strangeSphere $
     newCard
       Gold
       Coin
-      "Change card in next socket\nto STRANGE SUBSTANCE"
-      $ \_ -> transmuteHead (transmuteToCard strangeSubstance)
+      "Change card in next socket\nto STRANGE SPHERE"
+      $ \_ -> transmuteHead (transmuteToCard strangeSphere)
 
-strangeSubstance :: Card
-strangeSubstance =
+strangeSphere :: Card
+strangeSphere =
   newCard
     Strange
-    (OtherSuit "SUBSTANCE")
+    (OtherSuit "SPHERE")
     "Draw 2"
     $ \w -> do
       draw w w (TimeModifierOutQuint 1)
@@ -964,7 +964,7 @@ others :: [Card]
 others =
   [ strangeSpore,
     strangeStart,
-    strangeSubstance,
+    strangeSphere,
     strangeSleep,
     strangeSnag
   ]
