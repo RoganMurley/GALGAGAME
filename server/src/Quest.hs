@@ -163,7 +163,7 @@ swordQuests :: [Quest]
 swordQuests = cardWinQuest Sword <$> allAspects
 
 wandQuests :: [Quest]
-wandQuests = cardWinQuest Wand <$> allAspects
+wandQuests = cardWinQuest Wand <$> filter (/= Trick) allAspects
 
 didWin :: [ResolveData] -> Bool
 didWin =
