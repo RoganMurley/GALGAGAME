@@ -63,14 +63,14 @@ getAllRooms state = elems . state_rooms <$> readTVar state
 type MatchingQueue = [(Text, TVar Room)]
 
 queue :: Text -> TVar Room -> TVar State -> STM (Maybe (TVar Room))
-queue queueId roomVar state = do
+queue newQueueId roomVar state = do
   matching <- state_matching <$> readTVar state
   case matching of
-    (_, existingRoomVar) : _ -> do
-      dequeue queueId state
+    (existingQueueId, existingRoomVar) : _ -> do
+      dequeue existingQueueId state
       return $ Just existingRoomVar
     _ -> do
-      _ <- modTVar state (\s -> s {state_matching = (queueId, roomVar) : matching})
+      _ <- modTVar state (\s -> s {state_matching = (newQueueId, roomVar) : matching})
       return Nothing
 
 dequeue :: Text -> TVar State -> STM ()
