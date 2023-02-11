@@ -38,7 +38,7 @@ data Card = Card
     card_suit :: Suit,
     card_desc :: Text,
     card_eff :: WhichPlayer -> Beta.Program (),
-    card_playEff :: Card -> WhichPlayer -> Beta.Program Card,
+    card_playEff :: Card -> WhichPlayer -> Bool -> Beta.Program Card,
     card_disguise :: Maybe Disguise,
     card_statuses :: [Status],
     card_related :: [Related]
@@ -160,7 +160,7 @@ newCard aspect suit desc eff =
       card_suit = suit,
       card_desc = desc,
       card_eff = eff,
-      card_playEff = \card _ -> return card,
+      card_playEff = \card _ _ -> return card,
       card_disguise = Nothing,
       card_statuses = [],
       card_related = []
@@ -185,7 +185,7 @@ addRelated relatedCard card =
           related_desc = card_desc relatedCard
         }
 
-addPlayEff :: (Card -> WhichPlayer -> Beta.Program Card) -> Card -> Card
+addPlayEff :: (Card -> WhichPlayer -> Bool -> Beta.Program Card) -> Card -> Card
 addPlayEff playEff card = card {card_playEff = playEff}
 
 removeStatus :: Status -> Card -> Card

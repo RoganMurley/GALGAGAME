@@ -253,7 +253,7 @@ playCard index which playing scenario time
             program = do
               let innerCard = HandCard.anyCard c
               let playEff = card_playEff innerCard
-              transformedCard <- playEff innerCard which
+              transformedCard <- playEff innerCard which (HandCard.isRevealed c)
               let transformedHandCard = HandCard.cardMap (const transformedCard) c
               Beta.play which transformedHandCard index
               Beta.windup

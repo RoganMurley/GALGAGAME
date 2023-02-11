@@ -714,45 +714,48 @@ trickCup =
   newCard
     Trick
     Cup
-    "Reveal a card in their deck, then\ndraw a copy of each revealed\ncard in their deck"
+    "Draw 2 from their deck, then\ndiscard 2 from their deck"
     $ \w -> do
-      revealDeck (other w)
-      deck <- getDeck (other w)
-      let revealedCards = filter isRevealed deck
-      mapM_ (addToHand w) revealedCards
+      many 2 $ draw w (other w) (TimeModifierOutQuint 1)
+      many 2 $ mill (other w) (TimeModifierOutQuint 1)
 
-disguisePlayEff :: Card -> WhichPlayer -> Beta.Program Card
-disguisePlayEff card w = do
-  deck <- getDeck w
-  let suit = card_suit card
-  let candidates = filter (\c -> (card_suit c == suit) && (card_aspect c /= Trick)) (anyCard <$> deck)
-  gen <- getGen
-  case candidates of
-    [] ->
-      return card
-    _ -> do
-      let targetCard = randomChoice gen candidates
-      return $
-        targetCard
-          { card_eff =
-              const
-                ( do
-                    stack <- getStack
-                    case Stack.get stack 0 of
-                      Just selfCard ->
-                        do
-                          transmuteActive (\_ -> Just $ transmuteToCard card selfCard)
-                          Beta.null
-                          rawAnim Tricked
-                      Nothing -> return ()
-                ),
-            card_disguise =
-              Just $
-                Disguise
-                  { disguise_eff = card_eff targetCard,
-                    disguise_owner = w
+disguisePlayEff :: Card -> WhichPlayer -> Bool -> Beta.Program Card
+disguisePlayEff card w revealed =
+  if revealed
+    then return card
+    else
+      ( do
+          deck <- getDeck w
+          let suit = card_suit card
+          let candidates = filter (\c -> (card_suit c == suit) && (card_aspect c /= Trick)) (anyCard <$> deck)
+          gen <- getGen
+          case candidates of
+            [] ->
+              return card
+            _ -> do
+              let targetCard = randomChoice gen candidates
+              return $
+                targetCard
+                  { card_eff =
+                      const
+                        ( do
+                            stack <- getStack
+                            case Stack.get stack 0 of
+                              Just selfCard ->
+                                do
+                                  transmuteActive (\_ -> Just $ transmuteToCard card selfCard)
+                                  Beta.null
+                                  rawAnim Tricked
+                              Nothing -> return ()
+                        ),
+                    card_disguise =
+                      Just $
+                        Disguise
+                          { disguise_eff = card_eff targetCard,
+                            disguise_owner = w
+                          }
                   }
-          }
+      )
 
 trickCoin :: Card
 trickCoin =
