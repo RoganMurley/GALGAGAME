@@ -45,13 +45,11 @@
   }
 
   &__messages {
-    // display: flex;
-    // flex: 1;
-    // flex-direction: column-reverse;
-    height: 100%;
+    display: flex;
+    flex: 1;
+    flex-direction: column-reverse;
     margin: 4px;
     overflow-y: scroll;
-    -webkit-overflow-scrolling: touch;
   }
 
   &__username {
