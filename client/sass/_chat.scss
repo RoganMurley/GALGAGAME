@@ -50,6 +50,7 @@
     flex-direction: column-reverse;
     margin: 4px;
     overflow-y: scroll;
+    -webkit-overflow-scrolling: touch;
   }
 
   &__username {
