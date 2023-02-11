@@ -45,9 +45,10 @@
   }
 
   &__messages {
-    display: flex;
-    flex: 1;
-    flex-direction: column-reverse;
+    // display: flex;
+    // flex: 1;
+    // flex-direction: column-reverse;
+    height: 100%;
     margin: 4px;
     overflow-y: scroll;
     -webkit-overflow-scrolling: touch;
