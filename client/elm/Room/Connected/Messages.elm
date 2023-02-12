@@ -8,3 +8,4 @@ type Msg
     = Concede
     | ChatMsg Chat.Msg
     | GameStateMsg GameState.Msg
+    | Reconnect

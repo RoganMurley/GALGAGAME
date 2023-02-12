@@ -82,11 +82,25 @@ update flags assets msg ({ chat, game, mode, gameType, players } as model) =
                 ]
             )
 
+        Reconnect ->
+            ( { model | connectionLost = False }
+            , Cmd.batch
+                [ websocketSend "play:"
+                , websocketSend <| "room:" ++ model.roomID
+                ]
+            )
+
 
 tick : Flags -> Model -> Float -> ( Model, Cmd Msg )
 tick flags model dt =
     if model.connectionLost then
-        ( model, Cmd.none )
+        case model.game of
+            Waiting _ ->
+                -- If we're waiting, we can try to reconnect gracefully.
+                ( model, message <| Reconnect )
+
+            _ ->
+                ( model, Cmd.none )
 
     else
         let
@@ -99,9 +113,19 @@ tick flags model dt =
             newTick =
                 model.tick + dt
 
+            heartbeatInterval =
+                case model.game of
+                    Waiting _ ->
+                        500
+
+                    _ ->
+                        model.heartbeatInterval
+
             ( heartbeatTick, heartbeatCmds ) =
                 if model.heartbeatTick <= 0 then
-                    ( model.heartbeatInterval, [ Ports.websocketSend "heartbeat:" ] )
+                    ( heartbeatInterval
+                    , [ Ports.websocketSend "heartbeat:" ]
+                    )
 
                 else
                     ( model.heartbeatTick - dt, [] )
