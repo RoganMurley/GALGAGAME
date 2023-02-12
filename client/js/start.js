@@ -265,3 +265,17 @@ app.ports.websocketReconnect.subscribe(function () {
 window.onbeforeunload = function () {
   socket.close()
 };
+
+setInterval(function () {
+  // iOS is annoying, it won't let us do some things without
+  // a direct user interaction which doesn't play well with Elm.
+  // So we semi-regularly poll the DOM and set up JS event handlers.
+  {
+    var chatButton = document.getElementById('ios-chat-button-hack');
+    if (chatButton) {
+      chatButton.onclick = function (e) {
+        document.getElementById('chat-input').focus();
+      };
+    }
+  }
+}, 500);

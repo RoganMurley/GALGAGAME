@@ -2,7 +2,6 @@ module Chat.State exposing (init, keyPress, mouseUp, tick, update)
 
 import Assets.Types as Assets
 import Audio.State exposing (playSound)
-import Browser.Dom
 import Chat.Messages exposing (Msg(..))
 import Chat.Types exposing (Model)
 import Connected.Messages as Connected
@@ -15,7 +14,6 @@ import Mouse
 import Ports
 import Room.Messages as Room
 import String
-import Task
 import Util exposing (message)
 
 
@@ -126,25 +124,13 @@ update msg model { audio } =
             let
                 visible =
                     not model.visible
-
-                cmd =
-                    if visible then
-                        Task.attempt
-                            (\_ -> Main.NoOp)
-                            (Browser.Dom.focus "chat-input")
-
-                    else
-                        Cmd.none
             in
             ( { model
                 | visible = visible
                 , notify = False
                 , pos = { x = 0, y = 0 }
               }
-            , Cmd.batch
-                [ playSound audio "sfx/click.mp3"
-                , cmd
-                ]
+            , playSound audio "sfx/click.mp3"
             )
 
         SetInput input ->

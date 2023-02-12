@@ -19,15 +19,15 @@ import Room.Messages as Room
 import WebGL
 
 
-htmlView : Model -> Flags -> Html Msg
-htmlView { chat, game, roomID, players, errored, connectionLost } flags =
+htmlView : Model -> Flags -> Assets.Model -> Html Msg
+htmlView { chat, game, roomID, players, errored, connectionLost } flags assets =
     div []
         [ playersView players
         , GameState.htmlView game roomID flags
         , errorView errored connectionLost
         , Html.map
             (RoomMsg << Room.ConnectedMsg << Connected.ChatMsg)
-            (Chat.htmlView flags chat)
+            (Chat.htmlView flags assets chat)
         ]
 
 

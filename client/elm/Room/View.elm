@@ -41,7 +41,7 @@ view model settings notifications flags assets =
                     Lobby.view flags lobby
 
                 Connected connected ->
-                    Connected.htmlView connected flags
+                    Connected.htmlView connected flags assets
 
                 Replay replay ->
                     Html.map (Main.RoomMsg << ReplayMsg) <|
