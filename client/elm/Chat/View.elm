@@ -9,6 +9,7 @@ import Dict
 import Ease
 import Game.State exposing (bareContextInit)
 import Game.Types exposing (Context)
+import GameState.Types exposing (GameState(..))
 import Html exposing (Html, a, div, input, span, text)
 import Html.Attributes exposing (class, classList, href, id, style, target, value)
 import Html.Events exposing (on, onClick, onInput, onMouseDown)
@@ -25,8 +26,8 @@ import Util exposing (px)
 import WebGL
 
 
-htmlView : Flags -> Assets.Model -> Model -> Html Msg
-htmlView flags assets model =
+htmlView : Flags -> Assets.Model -> Model -> GameState -> Html Msg
+htmlView flags assets model gameState =
     let
         promos : List (Html Msg)
         promos =
@@ -58,11 +59,17 @@ htmlView flags assets model =
         height =
             0.12 * radius * 2
 
-        left =
-            w * 0.5 - 0.5 * radius - width * 0.5
+        ( left, top ) =
+            case gameState of
+                Selecting _ ->
+                    ( w * 0.5 - 0.5 * radius - width * 0.5
+                    , 0.8 * h - height * 0.5
+                    )
 
-        top =
-            0.8 * h - height * 0.5
+                _ ->
+                    ( w * 0.5 - 0.65 * radius - width * 0.5
+                    , h * 0.5 + 0.8 * radius - height * 0.5
+                    )
     in
     div []
         [ div

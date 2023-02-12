@@ -27,7 +27,7 @@ htmlView { chat, game, roomID, players, errored, connectionLost } flags assets =
         , errorView errored connectionLost
         , Html.map
             (RoomMsg << Room.ConnectedMsg << Connected.ChatMsg)
-            (Chat.htmlView flags assets chat)
+            (Chat.htmlView flags assets chat game)
         ]
 
 
