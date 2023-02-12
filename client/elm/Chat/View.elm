@@ -73,12 +73,12 @@ htmlView flags assets model gameState =
     in
     div []
         [ div
-            [ style "visibility" <|
+            [ style "transform" <|
                 if model.visible then
-                    "visible"
+                    "none"
 
                 else
-                    "hidden"
+                    "translateY(-9999px)"
             ]
             [ div
                 [ class "chatbox-close-mobile"
