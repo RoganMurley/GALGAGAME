@@ -2,7 +2,7 @@ module Login.View exposing (loginoutView, view)
 
 import Form exposing (FormFieldClass, FormFieldType(..), ValidationResult, formInputView)
 import Html exposing (Attribute, Html, a, button, div, h1, text)
-import Html.Attributes exposing (autofocus, class, disabled, href, target)
+import Html.Attributes exposing (autofocus, class, disabled, href, id, target)
 import Html.Events exposing (onClick)
 import Login.Messages exposing (Msg(..))
 import Login.State exposing (validator)
@@ -64,6 +64,12 @@ loginoutView { username } =
                 , href <| "/profile/" ++ u
                 ]
                 [ text "VIEW PROFILE" ]
+            , button
+                [ class "settings-button"
+                , target "#"
+                , id "fullscreen-button"
+                ]
+                [ text "TOGGLE FULLSCREEN" ]
             , button
                 [ class "settings-button"
                 , onClick Main.Logout

@@ -266,6 +266,14 @@ window.onbeforeunload = function () {
   socket.close()
 };
 
+function toggleFullScreen() {
+  if (!document.fullscreenElement) {
+    document.documentElement.requestFullscreen();
+  } else if (document.exitFullscreen) {
+    document.exitFullscreen();
+  }
+}
+
 setInterval(function () {
   // iOS is annoying, it won't let us do some things without
   // a direct user interaction which doesn't play well with Elm.
@@ -275,6 +283,14 @@ setInterval(function () {
     if (chatButton) {
       chatButton.onclick = function (e) {
         document.getElementById('chat-input').focus();
+      };
+    }
+  }
+  {
+    var fullscreenButton = document.getElementById('fullscreen-button');
+    if (fullscreenButton) {
+      fullscreenButton.onclick = function (e) {
+        toggleFullScreen();
       };
     }
   }
