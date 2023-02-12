@@ -50,6 +50,12 @@
     flex-direction: column-reverse;
     margin: 4px;
     overflow-y: scroll;
+
+    @media (max-width: 600px) {
+      // iOS doesn't update the scroll position when
+      // new messages are added, so just don't scroll.
+      overflow-y: hidden;
+    }
   }
 
   &__username {
