@@ -78,7 +78,7 @@ htmlView { seed } model =
                                         , span [ class "chatbox__message" ] [ text message ]
                                         ]
                                 )
-                                (List.reverse model.messages)
+                                model.messages
                 , input [ class "chatbox__input", id "chat-input", autofocus True, onInput SetInput, value model.input ] []
                 , div [ class "chatbox__close", onClick ToggleVisibility ]
                     [ text "x"
