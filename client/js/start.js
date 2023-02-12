@@ -283,6 +283,7 @@ setInterval(function () {
     if (chatButton) {
       chatButton.onclick = function (e) {
         document.getElementById('chat-input').focus();
+        e.preventDefault();
       };
     }
   }
