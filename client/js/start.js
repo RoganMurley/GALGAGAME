@@ -285,6 +285,7 @@ setInterval(function () {
         document.getElementById('chat-input').focus();
         e.preventDefault();
       };
+      chatButton.ontouchstart = chatButton.onclick;
     }
   }
   {
@@ -293,6 +294,7 @@ setInterval(function () {
       fullscreenButton.onclick = function (e) {
         toggleFullScreen();
       };
+      fullscreenButton.ontouchstart = fullscreenButton.onclick;
     }
   }
 }, 500);
