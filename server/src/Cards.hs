@@ -762,14 +762,14 @@ trickCoin =
   newCard
     Trick
     Coin
-    "Move all other cards on the wheel to\nthe top of their deck"
+    "Move cards in the next 4 sockets\nto the top of their deck"
     $ \w -> do
       transmute $
         \i stackCard ->
-          if i > 0
+          if i > 0 && i <= 4
             then Just $ Transmutation stackCard (stackCard {stackcard_owner = other w})
             else Nothing
-      bounceDeck (\i _ -> i > 0) (TimeModifierLinear 1)
+      bounceDeck (\i _ -> i > 0 && i <= 4) (TimeModifierLinear 1)
 
 -- Devil
 devilSword :: Card
