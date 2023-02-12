@@ -1,4 +1,4 @@
-module Connected.View exposing (concedeView, htmlView, playersView, specMenuView, titleView, webglView)
+module Connected.View exposing (concedeView, htmlView, playersView, settingsHeaderView, specMenuView, titleView, webglView)
 
 import Assets.Types as Assets
 import Browser.Events exposing (Visibility(..))
@@ -126,3 +126,9 @@ errorView errored connectionLost =
 
         _ ->
             text ""
+
+
+settingsHeaderView : Flags -> Model -> List (Html Msg)
+settingsHeaderView flags model =
+    [ h1 [ class "settings-header" ] [ text <| titleView flags model ]
+    ]

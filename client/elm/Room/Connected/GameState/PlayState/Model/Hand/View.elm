@@ -149,7 +149,7 @@ millView ({ progress, tick, anim } as ctx) =
 
 
 revealDeckView : Context -> List WebGL.Entity
-revealDeckView ({ tick, anim } as ctx) =
+revealDeckView ({ anim } as ctx) =
     case anim of
         RevealDeck owner card ->
             let

@@ -72,33 +72,38 @@ view model settings notifications flags assets =
                 Create create ->
                     Html.map (Main.RoomMsg << CreateMsg) <|
                         Create.view create
+
+        ( settingsHeader, settingsButtons ) =
+            settingsView model flags
     in
     div []
         [ Html.map Main.NotificationsMsg <| Notifications.view notifications
-        , Settings.view settings flags (settingsView model flags)
+        , Settings.view settings flags settingsHeader settingsButtons
         , roomView
         , webglView model flags assets
         ]
 
 
-settingsView : Model -> Flags -> List (Html Main.Msg)
+settingsView : Model -> Flags -> ( List (Html Main.Msg), List (Html Main.Msg) )
 settingsView model flags =
     let
-        baseViews : List (Html Main.Msg)
-        baseViews =
+        baseButtons : List (Html Main.Msg)
+        baseButtons =
             Login.loginoutView flags
     in
     case model of
         Connected connected ->
-            List.concat
-                [ baseViews
+            ( Connected.settingsHeaderView flags connected
+            , List.concat
+                [ baseButtons
                 , List.map (Html.map (Main.RoomMsg << ConnectedMsg)) <|
                     Connected.concedeView connected.game
                 , Connected.specMenuView flags connected
                 ]
+            )
 
         _ ->
-            baseViews
+            ( [], baseButtons )
 
 
 titleView : Flags -> Model -> String
