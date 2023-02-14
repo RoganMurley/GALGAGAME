@@ -11,7 +11,7 @@ import Card.State exposing (getCard)
 import Card.Types exposing (KnowableCard(..))
 import Chat.Messages as Chat
 import Chat.Types as Chat
-import Collision exposing (hitTest3d)
+import Collision exposing (hitTest3d, hitTest3dTri)
 import Connected.Messages as Connected
 import Endgame.View as Endgame
 import Game.State as Game
@@ -26,7 +26,7 @@ import List.Extra as List
 import Main.Messages as Main
 import Main.Types exposing (Flags)
 import Math.Vector2 exposing (vec2)
-import Math.Vector3
+import Math.Vector3 exposing (vec3)
 import Maybe.Extra as Maybe
 import Mode exposing (Mode)
 import Model.Decoders as Model
@@ -38,7 +38,7 @@ import PlayState.Decoders as PlayState
 import PlayState.Messages as PlayState exposing (Msg(..), PlayingOnly(..), TurnOnly(..))
 import PlayState.Types as PlayState exposing (PlayState(..), ResolveOutcomeInput)
 import Players exposing (Players)
-import Ports exposing (websocketSend)
+import Ports exposing (log, websocketSend)
 import Resolvable.State as Resolvable exposing (resolving)
 import Resolvable.Types as Resolvable
 import Result
@@ -649,6 +649,25 @@ mouseDown { dimensions, mouse } assets _ mode players { x, y } state =
                         List.find (hitTest3d ray 0.1) <| List.reverse game.entities.wheel
                     )
 
+        debugHit =
+            case ctx.mouseRay of
+                Just ray ->
+                    hitTest3dTri
+                        ray
+                        (vec3 -1 1 0)
+                        (vec3 1 1 0)
+                        (vec3 -1 -1 0)
+
+                _ ->
+                    False
+
+        debugMsg =
+            if debugHit then
+                log "hit"
+
+            else
+                log "miss"
+
         -- Endgame
         playMsg =
             message
@@ -745,6 +764,7 @@ mouseDown { dimensions, mouse } assets _ mode players { x, y } state =
         [ newMsg
         , buttonMsg
         , endstateMsg
+        , debugMsg
         ]
     )
 
