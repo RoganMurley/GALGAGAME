@@ -659,7 +659,7 @@ mouseDown { dimensions, mouse } assets _ mode players { x, y } state =
                             toTriangles
                                 { position = vec3 0 0 0
                                 , rotation = Quaternion.identity
-                                , scale = vec3 1 1 1
+                                , scale = vec3 0.1 0.1 0.1
                                 }
                     in
                     List.any (\( a, b, c ) -> hitTest3dTri ray a b c) triangles
