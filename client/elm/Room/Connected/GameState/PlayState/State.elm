@@ -13,6 +13,7 @@ import Chat.Messages as Chat
 import Chat.Types as Chat
 import Collision exposing (hitTest3d, hitTest3dTri)
 import Connected.Messages as Connected
+import Debug3D
 import Endgame.View as Endgame
 import Game.Entity exposing (toTriangles)
 import Game.State as Game
@@ -40,7 +41,6 @@ import PlayState.Messages as PlayState exposing (Msg(..), PlayingOnly(..), TurnO
 import PlayState.Types as PlayState exposing (PlayState(..), ResolveOutcomeInput)
 import Players exposing (Players)
 import Ports exposing (log, websocketSend)
-import Quaternion
 import Resolvable.State as Resolvable exposing (resolving)
 import Resolvable.Types as Resolvable
 import Result
@@ -656,11 +656,7 @@ mouseDown { dimensions, mouse } assets _ mode players { x, y } state =
                 Just ray ->
                     let
                         triangles =
-                            toTriangles
-                                { position = vec3 0 0 0
-                                , rotation = Quaternion.identity
-                                , scale = vec3 0.1 0.1 0.1
-                                }
+                            List.concat <| List.map toTriangles Debug3D.entities
                     in
                     List.any (\( a, b, c ) -> hitTest3dTri ray a b c) triangles
 
