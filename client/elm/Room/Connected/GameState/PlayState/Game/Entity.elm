@@ -25,15 +25,28 @@ type alias Entity3D a =
 toTriangles : Entity3D a -> List ( Vec3, Vec3, Vec3 )
 toTriangles { position, rotation, scale } =
     let
-        transform : Mat4
-        transform =
-            Matrix4.identity
-                |> Matrix4.scale scale
-                |> Matrix4.mul (Quaternion.makeRotate rotation)
-                |> Matrix4.translate position
+        transformMat : Mat4
+        transformMat =
+            Matrix4.scale scale <|
+                Matrix4.mul (Quaternion.makeRotate rotation) <|
+                    Matrix4.translate position <|
+                        Matrix4.identity
+
+        transformPoint : ( Vec3, Vec3, Vec3 ) -> ( Vec3, Vec3, Vec3 )
+        transformPoint ( a, b, c ) =
+            ( Matrix4.transform transformMat a
+            , Matrix4.transform transformMat b
+            , Matrix4.transform transformMat c
+            )
     in
-    [ ( Matrix4.transform transform <| vec3 -1 1 0
-      , Matrix4.transform transform <| vec3 1 1 0
-      , Matrix4.transform transform <| vec3 -1 -1 0
-      )
+    [ transformPoint
+        ( vec3 -1 1 0
+        , vec3 1 1 0
+        , vec3 -1 -1 0
+        )
+    , transformPoint
+        ( vec3 -1 -1 0
+        , vec3 1 1 0
+        , vec3 1 -1 0
+        )
     ]

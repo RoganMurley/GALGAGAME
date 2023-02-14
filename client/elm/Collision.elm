@@ -1,5 +1,6 @@
-module Collision exposing (AABB, Ray, hitAABB, hitTest, hitTest3d, hitTest3dTri)
+module Collision exposing (AABB, Ray, hitAABB, hitTest, hitTest3d, hitTest3dTri, hitTestQuad)
 
+import Game.Entity exposing (Entity3D, toTriangles)
 import Math.Vector2 exposing (Vec2)
 import Math.Vector3 as Vector3 exposing (Vec3)
 
@@ -13,6 +14,15 @@ type alias Ray =
     { origin : Vec3
     , direction : Vec3
     }
+
+
+hitTestQuad : Ray -> Entity3D a -> Bool
+hitTestQuad ray entity =
+    let
+        triangles =
+            toTriangles entity
+    in
+    List.any (\( a, b, c ) -> hitTest3dTri ray a b c) triangles
 
 
 hitTest3d : Ray -> Float -> { a | position : Vec3 } -> Bool

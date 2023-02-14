@@ -13,9 +13,9 @@ import WebGL
 
 entities : List (Entity3D {})
 entities =
-    [ { position = vec3 0 0 0
-      , rotation = Quaternion.identity
-      , scale = vec3 0.1 1 1
+    [ { position = vec3 1 0 0
+      , rotation = Quaternion.zRotation <| 0
+      , scale = vec3 0.03 0.16 0.1
       }
     ]
 
@@ -28,7 +28,7 @@ debugView ctx =
     in
     List.map
         (\entity ->
-            Render.Primitives.triangle Render.Shaders.matte <|
+            Render.Primitives.quad Render.Shaders.matte <|
                 { rotation = Quaternion.makeRotate entity.rotation
                 , scale = makeScale entity.scale
                 , color = vec3 1 1 1
