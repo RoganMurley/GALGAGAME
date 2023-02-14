@@ -18,7 +18,7 @@ debugView ctx =
     in
     [ Render.Primitives.triangle Render.Shaders.matte <|
         { rotation = Quaternion.makeRotate Quaternion.identity
-        , scale = makeScale3 1 1 1
+        , scale = makeScale3 0.1 0.1 0.1
         , color = vec3 1 1 1
         , pos = vec3 0 0 0
         , perspective = perspective
