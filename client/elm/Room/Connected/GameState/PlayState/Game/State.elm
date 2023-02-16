@@ -350,7 +350,7 @@ getHoverHand { entities } mRay =
         |> Maybe.andThen
             (\ray ->
                 List.find
-                    (hitTest3d ray 0.1)
+                    (hitTest3d ray)
                 <|
                     List.reverse entities.hand
             )
@@ -362,7 +362,7 @@ getHoverOtherHand { entities } mRay =
         |> Maybe.andThen
             (\ray ->
                 List.find
-                    (hitTest3d ray 0.1)
+                    (hitTest3d ray)
                 <|
                     List.reverse entities.otherHand
             )
@@ -376,7 +376,7 @@ getHoverStack { entities } mRay =
         |> Maybe.andThen
             (\ray ->
                 List.find
-                    (hitTest3d ray 0.18)
+                    (hitTest3d ray)
                     entities.stack
             )
 

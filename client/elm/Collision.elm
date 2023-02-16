@@ -1,8 +1,8 @@
-module Collision exposing (AABB, Ray, hitAABB, hitTest, hitTest3d, hitTest3dTri, hitTestQuad)
+module Collision exposing (AABB, Ray, hitAABB, hitTest, hitTest3d, hitTest3dSphere, hitTest3dTri, hitTestQuad)
 
 import Game.Entity exposing (Entity3D, toTriangles)
 import Math.Vector2 exposing (Vec2)
-import Math.Vector3 as Vector3 exposing (Vec3)
+import Math.Vector3 as Vector3 exposing (Vec3, vec3)
 
 
 hitTest : Vec2 -> Float -> { a | position : Vec2 } -> Bool
@@ -25,8 +25,20 @@ hitTestQuad ray entity =
     List.any (\( a, b, c ) -> hitTest3dTri ray a b c) triangles
 
 
-hitTest3d : Ray -> Float -> { a | position : Vec3 } -> Bool
-hitTest3d { origin, direction } radius { position } =
+hitTest3d : Ray -> Entity3D a -> Bool
+hitTest3d ray entity =
+    let
+        toCollider : Entity3D a -> Entity3D a
+        toCollider e =
+            { e | scale = Vector3.sub (vec3 0.03 0 0) e.scale }
+    in
+    List.any (\( a, b, c ) -> hitTest3dTri ray a b c) <|
+        toTriangles <|
+            toCollider entity
+
+
+hitTest3dSphere : Ray -> Float -> { a | position : Vec3 } -> Bool
+hitTest3dSphere { origin, direction } radius { position } =
     -- Adapted from scratchapixel
     let
         oc =

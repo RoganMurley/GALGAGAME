@@ -61,7 +61,7 @@ tick ctx dt model =
                 |> Maybe.andThen
                     (\ray ->
                         List.find
-                            (Collision.hitTest3d ray 0.18)
+                            (Collision.hitTest3d ray)
                             newEntities
                     )
 

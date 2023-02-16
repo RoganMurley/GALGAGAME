@@ -641,14 +641,14 @@ mouseDown { dimensions, mouse, time } assets _ mode players { x, y } state =
             ctx.mouseRay
                 |> Maybe.andThen
                     (\ray ->
-                        List.find (hitTest3d ray 0.1) <| List.reverse game.entities.hand
+                        List.find (hitTest3d ray) <| List.reverse game.entities.hand
                     )
 
         mWheelEntity =
             ctx.mouseRay
                 |> Maybe.andThen
                     (\ray ->
-                        List.find (hitTest3d ray 0.1) <| List.reverse game.entities.wheel
+                        List.find (hitTest3d ray) <| List.reverse game.entities.wheel
                     )
 
         debugHit =

@@ -9,7 +9,6 @@ import Card.View as Card
 import Chat.Types as Chat
 import Chat.View as Chat
 import Colour
-import Debug3D exposing (debugView)
 import Ease
 import Endgame.View as Endgame
 import Font.State as Font
@@ -74,7 +73,6 @@ view { w, h, time } game chat assets =
             , Endgame.animView
             , Holding.view holding
             , announceView
-            , debugView time
             ]
 
 

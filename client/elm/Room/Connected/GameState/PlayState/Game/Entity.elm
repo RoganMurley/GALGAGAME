@@ -33,6 +33,7 @@ toTriangles { position, rotation, scale } =
 
         transformPoint : ( Vec3, Vec3, Vec3 ) -> ( Vec3, Vec3, Vec3 )
         transformPoint ( a, b, c ) =
+            -- Not sure why the translation didn't work inside the transform matrix?
             ( Vector3.add position <| Matrix4.transform transformMat a
             , Vector3.add position <| Matrix4.transform transformMat b
             , Vector3.add position <| Matrix4.transform transformMat c
