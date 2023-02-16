@@ -8,34 +8,49 @@ import Math.Vector3 exposing (Vec3, vec3)
 import Quaternion
 import Render.Primitives
 import Render.Shaders
+import Texture.State as Texture
 import WebGL
 
 
-entities : List (Entity3D {})
-entities =
-    [ { position = vec3 1 0 0
-      , rotation = Quaternion.zRotation <| 0
-      , scale = vec3 0.03 0.16 0.1
+entities : Float -> List (Entity3D {})
+entities time =
+    [ { position = vec3 0.2 0 0
+      , rotation = Quaternion.zRotation <| (0.0001 * time)
+      , scale = vec3 0.1 0.1 0.1
       }
     ]
 
 
-debugView : Context -> List WebGL.Entity
-debugView ctx =
+debugView : Float -> Context -> List WebGL.Entity
+debugView time ctx =
     let
-        { camera3d, perspective } =
+        { camera3d, perspective, textures } =
             ctx
     in
-    List.map
-        (\entity ->
-            Render.Primitives.quad Render.Shaders.matte <|
-                { rotation = Quaternion.makeRotate entity.rotation
-                , scale = makeScale entity.scale
-                , color = vec3 1 1 1
-                , pos = entity.position
-                , perspective = perspective
-                , camera = camera3d
-                , alpha = 1
-                }
-        )
-        entities
+    Texture.with textures "cardBack.png" <|
+        \texture ->
+            List.concat <|
+                List.map
+                    (\entity ->
+                        [ Render.Primitives.quad Render.Shaders.matte <|
+                            { rotation = Quaternion.makeRotate entity.rotation
+                            , scale = makeScale entity.scale
+                            , color = vec3 1 1 1
+                            , pos = entity.position
+                            , perspective = perspective
+                            , camera = camera3d
+                            , alpha = 1
+                            }
+                        , Render.Primitives.quad Render.Shaders.fragment <|
+                            { rotation = Quaternion.makeRotate entity.rotation
+                            , scale = makeScale entity.scale
+                            , color = vec3 1 1 1
+                            , pos = entity.position
+                            , perspective = perspective
+                            , camera = camera3d
+                            , texture = texture
+                            }
+                        ]
+                    )
+                <|
+                    entities time

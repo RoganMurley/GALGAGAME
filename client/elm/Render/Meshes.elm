@@ -1,4 +1,4 @@
-module Render.Meshes exposing (quad, triangle)
+module Render.Meshes exposing (bottomLeft, bottomRight, quad, topLeft, topRight, triangle)
 
 import Math.Vector2 exposing (Vec2, vec2)
 import Math.Vector3 exposing (Vec3, vec3)

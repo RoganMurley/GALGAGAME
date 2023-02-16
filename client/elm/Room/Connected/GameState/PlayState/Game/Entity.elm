@@ -2,8 +2,9 @@ module Game.Entity exposing (Entity, Entity3D, toTriangles)
 
 import Math.Matrix4 as Matrix4 exposing (Mat4)
 import Math.Vector2 exposing (Vec2)
-import Math.Vector3 exposing (Vec3, vec3)
+import Math.Vector3 as Vector3 exposing (Vec3, vec3)
 import Quaternion exposing (Quaternion)
+import Render.Meshes
 
 
 type alias Entity a =
@@ -27,26 +28,24 @@ toTriangles { position, rotation, scale } =
     let
         transformMat : Mat4
         transformMat =
-            Matrix4.scale scale <|
-                Matrix4.mul (Quaternion.makeRotate rotation) <|
-                    Matrix4.translate position <|
-                        Matrix4.identity
+            Matrix4.mul (Quaternion.makeRotate rotation) <|
+                Matrix4.makeScale scale
 
         transformPoint : ( Vec3, Vec3, Vec3 ) -> ( Vec3, Vec3, Vec3 )
         transformPoint ( a, b, c ) =
-            ( Matrix4.transform transformMat a
-            , Matrix4.transform transformMat b
-            , Matrix4.transform transformMat c
+            ( Vector3.add position <| Matrix4.transform transformMat a
+            , Vector3.add position <| Matrix4.transform transformMat b
+            , Vector3.add position <| Matrix4.transform transformMat c
             )
     in
     [ transformPoint
-        ( vec3 -1 1 0
-        , vec3 1 1 0
-        , vec3 -1 -1 0
+        ( Render.Meshes.topLeft.position
+        , Render.Meshes.topRight.position
+        , Render.Meshes.bottomLeft.position
         )
     , transformPoint
-        ( vec3 -1 -1 0
-        , vec3 1 1 0
-        , vec3 1 -1 0
+        ( Render.Meshes.bottomLeft.position
+        , Render.Meshes.topRight.position
+        , Render.Meshes.bottomRight.position
         )
     ]

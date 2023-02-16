@@ -605,7 +605,7 @@ resolveOutcome mState { initial, resDiffList, finalState } =
 
 
 mouseDown : Flags -> Assets.Model -> GameType -> Mode -> Players -> Position -> PlayState -> ( PlayState, Cmd Main.Msg )
-mouseDown { dimensions, mouse } assets _ mode players { x, y } state =
+mouseDown { dimensions, mouse, time } assets _ mode players { x, y } state =
     let
         pos =
             vec2 (toFloat x) (toFloat y)
@@ -656,7 +656,7 @@ mouseDown { dimensions, mouse } assets _ mode players { x, y } state =
                 Just ray ->
                     let
                         triangles =
-                            List.concat <| List.map toTriangles Debug3D.entities
+                            List.concat <| List.map toTriangles <| Debug3D.entities time
                     in
                     List.any (\( a, b, c ) -> hitTest3dTri ray a b c) triangles
 
