@@ -15,7 +15,10 @@ import Prelude hiding (init)
 
 instance Eq Card where
   a == b =
-    (card_aspect a == card_aspect b) && (card_suit a == card_suit b) && (card_statuses a == card_statuses b)
+    (card_aspect a == card_aspect b)
+      && (card_suit a == card_suit b)
+      && (card_statuses a == card_statuses b)
+      && (card_disguise a == card_disguise b)
 
 instance Show Card where
   show card = cs $ cardName (card_aspect card) (card_suit card)
