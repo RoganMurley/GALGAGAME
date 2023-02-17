@@ -2,7 +2,7 @@ module Game.Entity exposing (Entity, Entity3D, toTriangles)
 
 import Math.Matrix4 as Matrix4 exposing (Mat4)
 import Math.Vector2 exposing (Vec2)
-import Math.Vector3 as Vector3 exposing (Vec3, vec3)
+import Math.Vector3 as Vector3 exposing (Vec3)
 import Quaternion exposing (Quaternion)
 import Render.Meshes
 

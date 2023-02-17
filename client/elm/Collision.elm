@@ -139,8 +139,4 @@ hitTest3dTri { origin, direction } v0 v1 v2 =
                 -- If t is too large, the intersection is further away than the maximum
                 -- distance the ray can travel
                 -- NOTE: I removed the behind the origin code here!
-                if t < 1000000.0 then
-                    True
-
-                else
-                    False
+                t < 1000000.0

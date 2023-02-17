@@ -2,9 +2,8 @@ module Debug3D exposing (debugView, entities)
 
 import Game.Entity exposing (Entity3D)
 import Game.Types as Game exposing (Context)
-import Math.Matrix4 exposing (makeRotate, makeScale)
-import Math.Vector2 exposing (Vec2, vec2)
-import Math.Vector3 as Vector3 exposing (Vec3, vec3)
+import Math.Matrix4 exposing (makeScale)
+import Math.Vector3 as Vector3 exposing (vec3)
 import Quaternion
 import Render.Primitives
 import Render.Shaders

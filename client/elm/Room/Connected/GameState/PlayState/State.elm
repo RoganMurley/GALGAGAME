@@ -28,7 +28,7 @@ import List.Extra as List
 import Main.Messages as Main
 import Main.Types exposing (Flags)
 import Math.Vector2 exposing (vec2)
-import Math.Vector3 exposing (vec3)
+import Math.Vector3
 import Maybe.Extra as Maybe
 import Mode exposing (Mode)
 import Model.Decoders as Model
