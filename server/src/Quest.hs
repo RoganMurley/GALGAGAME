@@ -177,6 +177,27 @@ winOneLife =
           (resZip initial res)
     }
 
+winFiveOrLessLife :: Quest
+winFiveOrLessLife =
+  Quest
+    { quest_id = "winFiveOrLessLife",
+      quest_name = "CLOSE BUT NO CIGAR",
+      quest_desc = "Win with 5 or less life left",
+      quest_xp = 250,
+      quest_rarity = Rare,
+      quest_eligible = const True,
+      quest_pattern = \_ initial res ->
+        any
+          ( \case
+              (model, ResolveData {resolveData_anim = Just (GameEnd (Just PlayerA))}) ->
+                let life = Alpha.evalI model (Alpha.getLife PlayerA)
+                 in life <= 5
+              _ ->
+                False
+          )
+          (resZip initial res)
+    }
+
 aspectQuests :: [Quest]
 aspectQuests = winAspect <$> allAspects
 
@@ -209,7 +230,7 @@ debugQuest =
     }
 
 allQuests :: [Quest]
-allQuests = [bigDamageQuest, winHuman, playHuman, winOneLife] ++ aspectQuests ++ swordQuests ++ wandQuests
+allQuests = [bigDamageQuest, winHuman, playHuman, winOneLife, winFiveOrLessLife] ++ aspectQuests ++ swordQuests ++ wandQuests
 
 eligibleQuests :: Set Rune -> [Quest]
 eligibleQuests unlocks = filter (\Quest {quest_eligible} -> quest_eligible unlocks) allQuests

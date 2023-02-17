@@ -695,9 +695,9 @@ trickSword =
   newCard
     Trick
     Sword
-    "Hurt for 4, then discard 4\nfrom their deck"
+    "Hurt for 8, then discard 4\nfrom their deck"
     $ \w -> do
-      hurt 4 (other w) Slash
+      hurt 8 (other w) Slash
       many 4 $ mill (other w) (TimeModifierOutQuint 1)
 
 trickWand :: Card

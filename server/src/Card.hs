@@ -98,6 +98,9 @@ data Disguise = Disguise
   }
   deriving (Generic, NFData)
 
+instance Eq Disguise where
+  a == b = disguise_owner a == disguise_owner b
+
 instance Mirror Disguise where
   mirror d = d {disguise_owner = other $ disguise_owner d}
 
