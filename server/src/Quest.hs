@@ -156,6 +156,27 @@ winHuman =
       quest_pattern = \tags _ res -> ("cpu" `notElem` tags) && didWin res
     }
 
+winOneLife :: Quest
+winOneLife =
+  Quest
+    { quest_id = "winOneLife",
+      quest_name = "THRILLSEEKER",
+      quest_desc = "Win with 1 life left",
+      quest_xp = 250,
+      quest_rarity = Rare,
+      quest_eligible = const True,
+      quest_pattern = \_ initial res ->
+        any
+          ( \case
+              (model, ResolveData {resolveData_anim = Just (GameEnd (Just PlayerA))}) ->
+                let life = Alpha.evalI model (Alpha.getLife PlayerA)
+                 in life == 1
+              _ ->
+                False
+          )
+          (resZip initial res)
+    }
+
 aspectQuests :: [Quest]
 aspectQuests = winAspect <$> allAspects
 
@@ -188,7 +209,7 @@ debugQuest =
     }
 
 allQuests :: [Quest]
-allQuests = [bigDamageQuest, winHuman, playHuman] ++ aspectQuests ++ swordQuests ++ wandQuests
+allQuests = [bigDamageQuest, winHuman, playHuman, winOneLife] ++ aspectQuests ++ swordQuests ++ wandQuests
 
 eligibleQuests :: Set Rune -> [Quest]
 eligibleQuests unlocks = filter (\Quest {quest_eligible} -> quest_eligible unlocks) allQuests
