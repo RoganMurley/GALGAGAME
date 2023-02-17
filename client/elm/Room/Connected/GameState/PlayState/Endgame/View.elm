@@ -356,6 +356,13 @@ questView ctx tick quest =
 
         progress =
             Ease.outExpo <| min 1 (tick / 1000)
+
+        size =
+            if w > h then
+                0.00044 * radius
+
+            else
+                0.00038 * radius
     in
     List.concat
         [ Font.view
@@ -363,8 +370,8 @@ questView ctx tick quest =
             headline
             { x = w * 0.5
             , y = h * 0.4
-            , scaleX = progress * 0.00044 * radius
-            , scaleY = progress * 0.00044 * radius
+            , scaleX = progress * size
+            , scaleY = progress * size
             , color =
                 vec3 (40 / 255) (20 / 255) (20 / 255)
             }
@@ -374,8 +381,8 @@ questView ctx tick quest =
             headline
             { x = (w * 0.5) - (0.008 * radius)
             , y = h * 0.4
-            , scaleX = (progress * progress) * 0.00044 * radius
-            , scaleY = (progress * progress) * 0.00044 * radius
+            , scaleX = (progress * progress) * size
+            , scaleY = (progress * progress) * size
             , color = Colour.yellow
             }
             ctx
@@ -384,8 +391,8 @@ questView ctx tick quest =
             byline
             { x = w * 0.5
             , y = h * 0.55
-            , scaleX = progress * 0.00035 * radius
-            , scaleY = progress * 0.00035 * radius
+            , scaleX = progress * 0.8 * size
+            , scaleY = progress * 0.8 * size
             , color =
                 vec3 (40 / 255) (20 / 255) (20 / 255)
             }
@@ -395,8 +402,8 @@ questView ctx tick quest =
             byline
             { x = (w * 0.5) - (0.008 * radius)
             , y = h * 0.55
-            , scaleX = (progress * progress) * 0.00035 * radius
-            , scaleY = (progress * progress) * 0.00035 * radius
+            , scaleX = (progress * progress) * 0.8 * size
+            , scaleY = (progress * progress) * 0.8 * size
             , color = Colour.white
             }
             ctx

@@ -175,6 +175,18 @@ didWin =
           False
     )
 
+debugQuest :: Quest
+debugQuest =
+  Quest
+    { quest_id = "debug",
+      quest_name = "DEBUG",
+      quest_desc = "Don't look at this",
+      quest_xp = 0,
+      quest_rarity = Rare,
+      quest_eligible = const True,
+      quest_pattern = \_ _ res -> not $ didWin res
+    }
+
 allQuests :: [Quest]
 allQuests = [bigDamageQuest, winHuman, playHuman] ++ aspectQuests ++ swordQuests ++ wandQuests
 
