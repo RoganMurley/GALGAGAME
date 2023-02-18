@@ -3,9 +3,10 @@
 
 module Transmutation where
 
-import Card (Card (..))
+import Card (Card (..), Status (..))
 import Control.DeepSeq (NFData (..))
 import Data.Aeson (ToJSON (..), object, (.=))
+import Data.List (nubBy)
 import GHC.Generics (Generic)
 import Mirror (Mirror (..))
 import StackCard (StackCard (..))
@@ -27,8 +28,21 @@ transmuteToCard :: Card -> StackCard -> StackCard
 transmuteToCard targetCard stackCard =
   StackCard
     { stackcard_owner = stackcard_owner stackCard,
-      stackcard_card = targetCard {card_statuses = card_statuses . stackcard_card $ stackCard}
+      stackcard_card =
+        targetCard
+          { card_statuses =
+              mergeStatuses
+                (card_statuses . stackcard_card $ stackCard)
+                (card_statuses targetCard)
+          }
     }
+
+mergeStatuses :: [Status] -> [Status] -> [Status]
+mergeStatuses xs ys =
+  -- Remove duplicate fragile statuses
+  nubBy
+    (\x y -> x == y && x == StatusFragile)
+    $ xs ++ ys
 
 removeTransmuteToSelf :: Maybe Transmutation -> Maybe Transmutation
 removeTransmuteToSelf (Just (Transmutation ca cb)) =

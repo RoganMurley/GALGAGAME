@@ -11,11 +11,9 @@ import Card.State exposing (getCard)
 import Card.Types exposing (KnowableCard(..))
 import Chat.Messages as Chat
 import Chat.Types as Chat
-import Collision exposing (hitTest3d, hitTest3dTri)
+import Collision exposing (hitTest3d)
 import Connected.Messages as Connected
-import Debug3D
 import Endgame.View as Endgame
-import Game.Entity exposing (toTriangles)
 import Game.State as Game
 import Game.Types as Game
 import GameState.Messages as GameState
@@ -651,25 +649,6 @@ mouseDown { dimensions, mouse, time } assets _ mode players { x, y } state =
                         List.find (hitTest3d ray) <| List.reverse game.entities.wheel
                     )
 
-        debugHit =
-            case ctx.mouseRay of
-                Just ray ->
-                    let
-                        triangles =
-                            List.concat <| List.map toTriangles <| Debug3D.entities time
-                    in
-                    List.any (\( a, b, c ) -> hitTest3dTri ray a b c) triangles
-
-                _ ->
-                    False
-
-        debugMsg =
-            if debugHit then
-                log "hit"
-
-            else
-                log "miss"
-
         -- Endgame
         playMsg =
             message
@@ -766,7 +745,6 @@ mouseDown { dimensions, mouse, time } assets _ mode players { x, y } state =
         [ newMsg
         , buttonMsg
         , endstateMsg
-        , debugMsg
         ]
     )
 
