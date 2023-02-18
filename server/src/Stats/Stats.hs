@@ -15,7 +15,6 @@ import Data.Time.Clock (NominalDiffTime, diffUTCTime)
 import Database.Beam (all_, filter_, insertValues, primaryKey, runInsert, runSelectReturningOne, runUpdate, select, update, val_, (<-.), (==.))
 import qualified Database.Beam.Postgres.Full as Postgres
 import DeckBuilding (Rune (..), mainRunes)
-import qualified Log
 import Quest (Quest)
 import qualified Quest
 import Replay.Final (Replay, getInitial, getRes)
@@ -23,7 +22,6 @@ import Schema (GalgagameDb (..), galgagameDb)
 import Stats.Experience (Experience, levelToExperience)
 import Stats.Progress (Progress (..), fromPartial, initialProgress)
 import qualified Stats.Schema
-import Text.Printf (printf)
 import User.User (User (..))
 import Util (Gen, getGen)
 
@@ -87,9 +85,7 @@ refreshQuests gen currentTime progress =
             let delta = diffUTCTime currentTime updatedAt :: NominalDiffTime
                 hour = 60 * minute
                 minute = 60
-             in do
-                  Log.info $ printf "quest delta: %s" (show delta)
-                  if delta > hour then return $ newQuests gen currentTime progress else return progress
+             in if delta > hour then return $ newQuests gen currentTime progress else return progress
       )
 
 updateProgress :: User -> Progress -> App ()

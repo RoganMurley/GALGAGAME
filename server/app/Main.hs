@@ -56,7 +56,7 @@ import Stats.Progress (Progress (..), isTutorialProgress)
 import System.Environment (lookupEnv)
 import Text.Printf (printf)
 import User.Apps (getUserFromCookies)
-import User.User (User (..), getUsername)
+import User.User (getUsername)
 import qualified User.User as User
 import Util (Gen, forkDelay, getGen, shuffle, to3Tuple)
 
@@ -126,15 +126,16 @@ wsApp :: TVar Server.State -> ConnectInfoConfig -> WS.ServerApp
 wsApp state connectInfoConfig pending = do
   let cookies = Auth.getCookies pending
   (acceptReq, cid) <- customAcceptRequest cookies
-  connection <- WS.acceptRequestWith pending acceptReq
+  conn <- WS.acceptRequestWith pending acceptReq
   WS.withPingThread
-    connection
+    conn
     30
     (return ())
     ( runApp connectInfoConfig $ do
-        msg <- liftIO $ WS.receiveData connection
         user <- getUserFromCookies cookies cid
-        begin connection msg user state
+        guid <- liftIO GUID.genText
+        let client = Client user (PlayerConnection conn) guid
+        begin client state
     )
 
 customAcceptRequest :: Auth.Cookies -> IO (WS.AcceptRequest, Text)
@@ -145,28 +146,28 @@ customAcceptRequest cookies = do
   let acceptReq = WS.defaultAcceptRequest {WS.acceptHeaders = headers}
   return (acceptReq, cs cid)
 
-connectionFail :: WS.Connection -> String -> App ()
-connectionFail conn str = do
+connectionFail :: Client -> String -> App ()
+connectionFail client str = do
   Log.warning str
-  liftIO $ WS.sendTextData conn . Command.toChat . ErrorCommand $ cs str
+  liftIO $ Client.send (Command.toChat . ErrorCommand $ cs str) client
 
-begin :: WS.Connection -> Text -> User -> TVar Server.State -> App ()
-begin conn request user state = do
+begin :: Client -> TVar Server.State -> App ()
+begin client state = do
+  let user = Client.user client
   let username = getUsername user :: Text
   Log.info $ printf "<%s>: New connection" username
+  request <- liftIO $ Client.receive client
   case Negotiation.parseRequest request of
     Right (RoomRequest roomName mCustomSettings) -> do
       Metrics.incr "request.room"
       Log.info $ printf "<%s>: Requesting room [%s]" username roomName
-      msg <- liftIO $ WS.receiveData conn
+      msg <- liftIO $ Client.receive client
       case Negotiation.parsePrefix msg of
         Nothing ->
-          connectionFail conn $ printf "<%s>: Connection protocol failure" msg
+          connectionFail client $ printf "<%s>: Connection protocol failure" msg
         Just prefix -> do
           Log.info $ printf "<%s>: %s" username (show prefix)
           gen <- liftIO getGen
-          guid <- liftIO GUID.genText
-          let client = Client user (PlayerConnection conn) guid
           let scenario = applyCustomSettings mCustomSettings $ makeScenario gen
           roomVar <- liftIO . atomically $ Server.getOrCreateRoom roomName (prefixWaitType prefix) gen scenario state
           prefixMetric prefix
@@ -179,17 +180,17 @@ begin conn request user state = do
               Log.info $ printf ("System message received: " <> cs systemMessage)
               rooms <- liftIO . atomically $ Server.getAllRooms state
               forM_ rooms (fork . Room.broadcast ("systemMessage:" <> systemMessage))
-              liftIO $ WS.sendTextData conn ("systemMessageSuccess:" :: Text)
+              liftIO $ Client.send "systemMessageSuccess:" client
               Log.info $ printf "System message success"
           )
         else Log.error $ printf "Illegal system message"
     Left Negotiation.ConnectionLostError -> do
       Metrics.incr "error.connectionLost"
       Log.warning $ printf "<%s>: Connection was lost, informing client" username
-      liftIO $ WS.sendTextData conn ("connectionLost:" :: Text)
+      liftIO $ Client.send "connectionLost:" client
     Left (Negotiation.UnknownError err) -> do
       Metrics.incr "error.unknown"
-      connectionFail conn $ printf "<%s>: %s" username err
+      connectionFail client $ printf "<%s>: %s" username err
 
 beginPrefix :: Prefix -> TVar Server.State -> Client -> TVar Room -> App ()
 beginPrefix PrefixPlay s c r = beginPlay s c r
