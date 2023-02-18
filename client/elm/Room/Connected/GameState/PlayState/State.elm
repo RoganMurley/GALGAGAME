@@ -38,7 +38,7 @@ import PlayState.Decoders as PlayState
 import PlayState.Messages as PlayState exposing (Msg(..), PlayingOnly(..), TurnOnly(..))
 import PlayState.Types as PlayState exposing (PlayState(..), ResolveOutcomeInput)
 import Players exposing (Players)
-import Ports exposing (log, websocketSend)
+import Ports exposing (websocketSend)
 import Resolvable.State as Resolvable exposing (resolving)
 import Resolvable.Types as Resolvable
 import Result
@@ -603,7 +603,7 @@ resolveOutcome mState { initial, resDiffList, finalState } =
 
 
 mouseDown : Flags -> Assets.Model -> GameType -> Mode -> Players -> Position -> PlayState -> ( PlayState, Cmd Main.Msg )
-mouseDown { dimensions, mouse, time } assets _ mode players { x, y } state =
+mouseDown { dimensions, mouse } assets _ mode players { x, y } state =
     let
         pos =
             vec2 (toFloat x) (toFloat y)
