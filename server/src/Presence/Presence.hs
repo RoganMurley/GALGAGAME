@@ -2,6 +2,7 @@ module Presence.Presence where
 
 import qualified Auth.Schema as Auth
 import Client (Client (..))
+import qualified Client
 import Control.Concurrent.STM.TVar (TVar, newTVar)
 import Control.Monad.STM (STM)
 import Data.Aeson (ToJSON (..), object, (.=))
@@ -30,3 +31,9 @@ instance ToJSON Presence where
      in object
           [ "online" .= usernames
           ]
+
+addClient :: Client -> Presence -> Presence
+addClient client (Presence presence) = Presence $ Map.insert (Client.guid client) client presence
+
+removeClient :: Client -> Presence -> Presence
+removeClient client (Presence presence) = Presence $ Map.delete (Client.guid client) presence

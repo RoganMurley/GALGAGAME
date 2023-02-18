@@ -45,6 +45,7 @@ import Network.Wai.Handler.WebSockets
 import qualified Network.WebSockets as WS
 import Outcome (Outcome)
 import Player (WhichPlayer (..), other)
+import Presence.Apps as Presence
 import qualified Presence.Presence as Presence
 import Room (Room)
 import qualified Room
@@ -135,7 +136,12 @@ wsApp state connectInfoConfig pending = do
         user <- getUserFromCookies cookies cid
         guid <- liftIO GUID.genText
         let client = Client user (PlayerConnection conn) guid
-        begin client state
+        finally
+          ( do
+              Presence.add client
+              begin client state
+          )
+          (Presence.remove client)
     )
 
 customAcceptRequest :: Auth.Cookies -> IO (WS.AcceptRequest, Text)

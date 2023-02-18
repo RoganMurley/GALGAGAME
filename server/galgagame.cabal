@@ -57,6 +57,7 @@ library
                      , Negotiation
                      , Outcome
                      , Player
+                     , Presence.Apps
                      , Presence.Presence
                      , Presence.Views
                      , Profile.Apps
