@@ -12,6 +12,7 @@ type alias Profile =
     , xp : Float
     , level : Int
     , replays : List ProfileReplay
+    , online : Bool
     }
 
 

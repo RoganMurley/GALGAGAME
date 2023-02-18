@@ -12,9 +12,9 @@ view model =
         case model.error of
             "" ->
                 let
-                    { nameHtml, levelHtml, replaysHtmlList } =
+                    { nameHtml, onlineHtml, levelHtml, replaysHtmlList } =
                         case model.profile of
-                            Just { name, level, xp, replays } ->
+                            Just { name, level, xp, replays, online } ->
                                 { nameHtml = text name
                                 , levelHtml =
                                     text <|
@@ -24,16 +24,23 @@ view model =
                                             ++ String.fromFloat xp
                                             ++ " XP"
                                 , replaysHtmlList = List.map profileReplayView <| maybeListToListMaybe 10 (Just replays)
+                                , onlineHtml =
+                                    if online then
+                                        span [ class "online-dot" ] []
+
+                                    else
+                                        span [] []
                                 }
 
                             Nothing ->
                                 { nameHtml = text ""
                                 , levelHtml = text ""
                                 , replaysHtmlList = List.map profileReplayView <| maybeListToListMaybe 10 Nothing
+                                , onlineHtml = text ""
                                 }
                 in
                 [ div [ class "profile" ] <|
-                    [ h1 [ class "username" ] [ nameHtml ]
+                    [ h1 [ class "username" ] [ onlineHtml, nameHtml ]
                     , h2 [ class "level" ] [ levelHtml ]
                     , table [ class "replays" ] replaysHtmlList
                     , div [ class "view-leaderboard-spacer" ] []

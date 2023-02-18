@@ -86,4 +86,14 @@
     .view-leaderboard-spacer {
         height: 12px;
     }
+
+    .online-dot {
+        display: inline-block;
+        margin-right: 10px;
+        width: 21px;
+        height: 21px;
+        border-radius: 50%;
+        background-color: #5bd262;
+        border: #000 solid 2px;
+    }
 }

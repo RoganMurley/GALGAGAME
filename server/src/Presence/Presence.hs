@@ -12,14 +12,14 @@ import Data.Maybe (catMaybes)
 import Data.Text (Text)
 import qualified User.User as User
 
-newtype Presence = Presence (Map Int64 Client)
+newtype Presence = Presence (Map Int64 (Client, Int))
   deriving (Eq, Show)
 
 new :: STM (TVar Presence)
 new = newTVar $ Presence Map.empty
 
 allClients :: Presence -> [Client]
-allClients (Presence presence) = elems presence
+allClients (Presence presence) = fst <$> elems presence
 
 instance ToJSON Presence where
   toJSON presence =
@@ -38,7 +38,11 @@ addClient client (Presence presence) =
   let mUserId = User.getUserId $ Client.user client
    in case mUserId of
         Just userId ->
-          Presence $ Map.insert userId client presence
+          case Map.lookup userId presence of
+            Just (_, n) ->
+              Presence $ Map.insert userId (client, n + 1) presence
+            Nothing ->
+              Presence $ Map.insert userId (client, 1) presence
         Nothing ->
           Presence presence
 
@@ -47,7 +51,13 @@ removeClient client (Presence presence) =
   let mUserId = User.getUserId $ Client.user client
    in case mUserId of
         Just userId ->
-          Presence $ Map.delete userId presence
+          case Map.lookup userId presence of
+            Just (_, n) ->
+              if n <= 1
+                then Presence $ Map.delete userId presence
+                else Presence $ Map.insert userId (client, n -1) presence
+            Nothing ->
+              Presence presence
         Nothing ->
           Presence presence
 

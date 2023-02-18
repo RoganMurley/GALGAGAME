@@ -1,6 +1,6 @@
 module Profile.Decoders exposing (decoder)
 
-import Json.Decode as Json exposing (Decoder, field, float, int, list, maybe, string)
+import Json.Decode as Json exposing (Decoder, bool, field, float, int, list, maybe, string)
 import Profile.Types exposing (Profile, ProfileReplay)
 import Stats exposing (levelFromExperience)
 
@@ -8,18 +8,20 @@ import Stats exposing (levelFromExperience)
 decoder : Decoder Profile
 decoder =
     let
-        makeProfile : String -> Float -> List ProfileReplay -> Profile
-        makeProfile name xp replays =
+        makeProfile : String -> Float -> List ProfileReplay -> Bool -> Profile
+        makeProfile name xp replays online =
             { name = name
             , xp = xp
             , level = levelFromExperience xp
             , replays = replays
+            , online = online
             }
     in
-    Json.map3 makeProfile
+    Json.map4 makeProfile
         (field "name" string)
         (field "xp" float)
         (field "replays" <| list profileReplayDecoder)
+        (field "online" bool)
 
 
 profileReplayDecoder : Decoder ProfileReplay
