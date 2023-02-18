@@ -6,12 +6,13 @@ import qualified Client
 import Control.Concurrent.STM.TVar (TVar, newTVar)
 import Control.Monad.STM (STM)
 import Data.Aeson (ToJSON (..), object, (.=))
+import Data.Int (Int64)
 import Data.Map as Map
 import Data.Maybe (catMaybes)
 import Data.Text (Text)
 import qualified User.User as User
 
-newtype Presence = Presence (Map Text Client)
+newtype Presence = Presence (Map Int64 Client)
   deriving (Eq, Show)
 
 new :: STM (TVar Presence)
@@ -33,7 +34,22 @@ instance ToJSON Presence where
           ]
 
 addClient :: Client -> Presence -> Presence
-addClient client (Presence presence) = Presence $ Map.insert (Client.guid client) client presence
+addClient client (Presence presence) =
+  let mUserId = User.getUserId $ Client.user client
+   in case mUserId of
+        Just userId ->
+          Presence $ Map.insert userId client presence
+        Nothing ->
+          Presence presence
 
 removeClient :: Client -> Presence -> Presence
-removeClient client (Presence presence) = Presence $ Map.delete (Client.guid client) presence
+removeClient client (Presence presence) =
+  let mUserId = User.getUserId $ Client.user client
+   in case mUserId of
+        Just userId ->
+          Presence $ Map.delete userId presence
+        Nothing ->
+          Presence presence
+
+isUserIdOnline :: Int64 -> Presence -> Bool
+isUserIdOnline userId (Presence presence) = Map.member userId presence

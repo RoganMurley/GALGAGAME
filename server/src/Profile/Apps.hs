@@ -7,6 +7,7 @@ import Data.Int (Int64)
 import Data.Text (Text)
 import Data.Time (LocalTime)
 import Database.Beam (all_, desc_, filter_, leftJoin_, limit_, orderBy_, references_, runSelectReturningList, runSelectReturningOne, select, val_, (==.), (||.))
+import qualified Presence.Apps as Presence
 import Replay.Schema (ReplayT (..))
 import Schema (GalgagameDb (..), galgagameDb)
 import Stats.Experience (Experience)
@@ -24,10 +25,12 @@ loadProfile username = do
   case mUserStats of
     Just (user, Just stats) -> do
       replaysResult <- loadProfileReplays (userId user)
+      isOnline <- Presence.isOnline (userId user)
       return $
         Just $
-          hydrateReplays replaysResult $
-            profileFromStats (userUsername user) (statsExperience stats)
+          hydrateOnline isOnline $
+            hydrateReplays replaysResult $
+              profileFromStats (userUsername user) (statsExperience stats)
     _ ->
       return Nothing
 
@@ -65,16 +68,18 @@ loadProfileReplays userId = do
 data Profile = Profile
   { profile_name :: Text,
     profile_xp :: Experience,
-    profile_replays :: [ProfileReplay]
+    profile_replays :: [ProfileReplay],
+    profile_online :: Bool
   }
   deriving (Eq, Show)
 
 instance ToJSON Profile where
-  toJSON Profile {profile_name, profile_xp, profile_replays} =
+  toJSON Profile {profile_name, profile_xp, profile_replays, profile_online} =
     object
       [ "name" .= profile_name,
         "xp" .= profile_xp,
-        "replays" .= profile_replays
+        "replays" .= profile_replays,
+        "online" .= profile_online
       ]
 
 profileFromStats :: Text -> Experience -> Profile
@@ -82,7 +87,8 @@ profileFromStats username xp =
   Profile
     { profile_name = username,
       profile_xp = xp,
-      profile_replays = []
+      profile_replays = [],
+      profile_online = False
     }
 
 -- ProfileReplay
@@ -117,3 +123,6 @@ profileReplayFromReplay (replayId, _, _, _, displayUsernamePa, displayUsernamePb
 hydrateReplays :: [ProfileReplay] -> Profile -> Profile
 hydrateReplays replays profile =
   profile {profile_replays = replays}
+
+hydrateOnline :: Bool -> Profile -> Profile
+hydrateOnline isOnline profile = profile {profile_online = isOnline}
