@@ -77,6 +77,10 @@ isCpu (User _ _) = False
 isCpu (CpuUser _ _) = True
 isCpu (GuestUser _ _) = False
 
+getAuthUser :: User -> Maybe Auth.User
+getAuthUser (User authUser _) = Just authUser
+getAuthUser _ = Nothing
+
 -- GameUser
 data GameUser = GameUser
   { gameuser_progress :: Progress,

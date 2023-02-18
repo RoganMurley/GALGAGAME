@@ -45,7 +45,7 @@ import Network.Wai.Handler.WebSockets
 import qualified Network.WebSockets as WS
 import Outcome (Outcome)
 import Player (WhichPlayer (..), other)
-import qualified Presence
+import qualified Presence.Presence as Presence
 import Room (Room)
 import qualified Room
 import Scenario (Scenario (..), applyCustomSettings)
@@ -88,7 +88,7 @@ main = do
         datadogKey <- lookupEnv "DD_API_KEY"
         datadogAppKey <- lookupEnv "DD_APP_KEY"
 
-        presence <- atomically Presence.new
+        presenceVar <- atomically Presence.new
 
         let connectInfoConfig =
               ConnectInfoConfig
@@ -97,7 +97,7 @@ main = do
                   connectInfoConfig_loggerChan = loggerChan,
                   connectInfoConfig_apiKey = apiKey,
                   connectInfoConfig_datadog = (cs <$> datadogAppKey, cs <$> datadogKey),
-                  connectInfoConfig_presence = presence
+                  connectInfoConfig_presenceVar = presenceVar
                 }
 
         authApp <- runApp connectInfoConfig $ Auth.app connectInfoConfig
@@ -499,7 +499,7 @@ runRepl :: App a -> IO a
 runRepl app = do
   Log.setup
   loggerChan <- newChan
-  presence <- atomically Presence.new
+  presenceVar <- atomically Presence.new
   let connectInfoConfig =
         ConnectInfoConfig
           { connectInfoConfig_redis = redisConnectInfo (Nothing, Nothing, Nothing),
@@ -507,6 +507,6 @@ runRepl app = do
             connectInfoConfig_loggerChan = loggerChan,
             connectInfoConfig_apiKey = "fake-api-key",
             connectInfoConfig_datadog = (Nothing, Nothing),
-            connectInfoConfig_presence = presence
+            connectInfoConfig_presenceVar = presenceVar
           }
   runApp connectInfoConfig app

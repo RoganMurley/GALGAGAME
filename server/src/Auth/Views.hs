@@ -18,6 +18,7 @@ import Leaderboard.Views (leaderboardView)
 import League.Views (leagueCheckView, leagueView)
 import Network.HTTP.Types.Status
 import Network.Wai (Application)
+import qualified Presence.Views as Presence
 import Profile.Views (profileView)
 import Replay.Views (replayView)
 import System.Log.Logger (Priority (DEBUG), debugM, infoM, setLevel, updateGlobalLogger)
@@ -41,6 +42,7 @@ app config = do
       get "/api/leaderboard" $ leaderboardView config
       get "/api/profile/:username" $ profileView config
       get "/api/replay/:replayId" $ replayView config
+      get "/api/presence" $ Presence.view config
 
 meView :: ConnectInfoConfig -> ActionM ()
 meView config = do

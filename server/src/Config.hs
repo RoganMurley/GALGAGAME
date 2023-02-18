@@ -13,7 +13,7 @@ import qualified Database.PostgreSQL.Simple.Errors as Postgres
 import qualified Database.Redis as Redis
 import qualified Network.Datadog as DD
 import qualified Network.Datadog.Types as DD
-import Presence (Presence)
+import Presence.Presence (Presence)
 import System.Log.Logger (Priority)
 
 type App = ReaderT Config IO
@@ -24,7 +24,7 @@ data ConnectInfoConfig = ConnectInfoConfig
     connectInfoConfig_loggerChan :: Chan (Priority, String),
     connectInfoConfig_apiKey :: Text,
     connectInfoConfig_datadog :: (Maybe Text, Maybe Text),
-    connectInfoConfig_presence :: TVar Presence
+    connectInfoConfig_presenceVar :: TVar Presence
   }
 
 data Config = Config
@@ -33,7 +33,7 @@ data Config = Config
     loggerChan :: Chan (Priority, String),
     datadogCreds :: Maybe DD.ReadWrite,
     apiKey :: Text,
-    presence :: TVar Presence
+    presenceVar :: TVar Presence
   }
 
 runApp :: ConnectInfoConfig -> App a -> IO a
@@ -44,7 +44,7 @@ runApp config app =
     let loggerChan = connectInfoConfig_loggerChan config
     let ddCredInput = connectInfoConfig_datadog config
     let apiKey = connectInfoConfig_apiKey config
-    let presence = connectInfoConfig_presence config
+    let presence = connectInfoConfig_presenceVar config
 
     redisConn <- Redis.connect redisInfo
     postgresPool <- createPool (connectPostgres postgresInfo) Postgres.close 1 0.5 10
@@ -115,3 +115,6 @@ getDatadogCreds = asks datadogCreds
 
 getApiKey :: App Text
 getApiKey = asks apiKey
+
+getPresence :: App (TVar Presence)
+getPresence = asks presenceVar
