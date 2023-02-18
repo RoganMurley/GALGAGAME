@@ -56,8 +56,13 @@ deleteRoom :: Room.Name -> TVar State -> STM State
 deleteRoom name state =
   modReadTVar state $ \(State s qs) -> State (delete name s) qs
 
-getAllRooms :: TVar State -> STM [TVar Room]
-getAllRooms state = elems . state_rooms <$> readTVar state
+getAllRoomVars :: TVar State -> STM [TVar Room]
+getAllRoomVars state = elems . state_rooms <$> readTVar state
+
+getAllRooms :: TVar State -> STM [Room]
+getAllRooms state = do
+  roomVars <- getAllRoomVars state
+  mapM readTVar roomVars
 
 -- QUEUEING
 type MatchingQueue = [(Text, TVar Room)]

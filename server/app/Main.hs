@@ -171,13 +171,8 @@ begin conn request user state = do
         then
           ( do
               Log.info $ printf ("System message received: " <> cs systemMessage)
-              roomVars <- liftIO . atomically $ Server.getAllRooms state
-              forM_
-                roomVars
-                ( \roomVar -> do
-                    room <- liftIO $ readTVarIO roomVar
-                    fork $ Room.broadcast ("systemMessage:" <> systemMessage) room
-                )
+              rooms <- liftIO . atomically $ Server.getAllRooms state
+              forM_ rooms (fork . Room.broadcast ("systemMessage:" <> systemMessage))
               liftIO $ WS.sendTextData conn ("systemMessageSuccess:" :: Text)
               Log.info $ printf "System message success"
           )
