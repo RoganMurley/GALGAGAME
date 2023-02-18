@@ -1,22 +1,15 @@
-module User where
+module User.User where
 
-import qualified Auth.Apps as Auth
 import qualified Auth.Schema as Auth
-import Config (App, getApiKey, runBeam)
-import Control.Concurrent.STM (atomically, newTVarIO, readTVar)
+import Control.Concurrent.STM (readTVar)
 import Control.Concurrent.STM.TVar (TVar, writeTVar)
-import Control.Monad.IO.Class (liftIO)
 import Control.Monad.STM (STM)
 import Data.Aeson (ToJSON (..), object, (.=))
 import Data.Int (Int64)
-import qualified Data.Map as Map
 import Data.Text (Text, toUpper)
 import Data.Traversable (forM)
-import Database.Beam (all_, filter_, runSelectReturningOne, select, val_, (==.))
 import Player (WhichPlayer (..))
-import Schema (GalgagameDb (..), galgagameDb)
-import Stats.Progress (Progress (..), initialProgress, unlockNames, questDescs)
-import qualified Stats.Stats as Stats
+import Stats.Progress (Progress (..), initialProgress, questDescs, unlockNames)
 
 data User
   = User Auth.User (TVar Progress)
@@ -65,40 +58,6 @@ setProgress :: Progress -> User -> STM ()
 setProgress progress (User _ progressVar) = writeTVar progressVar progress
 setProgress progress (GuestUser _ progressVar) = writeTVar progressVar progress
 setProgress _ _ = return ()
-
-getUserFromCookies :: Auth.Cookies -> Text -> App User
-getUserFromCookies cookies cid = do
-  let mLoginToken = Map.lookup Auth.sessionCookieName cookies
-  mUsername <- Auth.checkAuth mLoginToken
-  progressVar <- liftIO $ newTVarIO initialProgress
-  case mUsername of
-    Nothing -> do
-      let mApiToken = Map.lookup "api-key" cookies
-      apiKey <- getApiKey
-      if Just apiKey == mApiToken
-        then return ServiceUser
-        else
-          ( do
-              let user = GuestUser cid progressVar
-              progress <- Stats.load user
-              liftIO . atomically $ writeTVar progressVar progress
-              return user
-          )
-    Just username -> do
-      mAuthUser <-
-        runBeam $
-          runSelectReturningOne $
-            select $
-              filter_ (\row -> Auth.userUsername row ==. val_ username) $
-                all_ $ users galgagameDb
-      case mAuthUser of
-        Just authUser -> do
-          let user = User authUser progressVar
-          progress <- Stats.load user
-          liftIO . atomically $ writeTVar progressVar progress
-          return user
-        Nothing ->
-          return $ GuestUser cid progressVar
 
 isSuperuser :: User -> Bool
 isSuperuser ServiceUser = True

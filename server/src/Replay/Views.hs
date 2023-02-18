@@ -7,9 +7,10 @@ import Data.String.Conversions (cs)
 import qualified Log
 import qualified Metrics
 import Network.HTTP.Types.Status (notFound404, ok200)
-import qualified Replay.Final as Replay
+import qualified Replay.Apps as Replay
 import Text.Printf (printf)
-import qualified User
+import qualified User.Apps as User
+import qualified User.User as User
 import Web.Scotty (ActionM, json, param, raw, setHeader, status)
 import Web.Scotty.Cookie (getCookies)
 

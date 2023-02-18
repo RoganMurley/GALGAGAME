@@ -11,7 +11,7 @@ import Leaderboard.Leaderboard (Leaderboard (..))
 import qualified Leaderboard.Leaderboard as Leaderboard
 import Schema (GalgagameDb (..), galgagameDb)
 import Stats.Schema (StatsT (..))
-import qualified User
+import qualified User.User as User
 
 type Rank = Int32
 

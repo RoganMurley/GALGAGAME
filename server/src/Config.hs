@@ -1,6 +1,7 @@
 module Config where
 
 import Control.Concurrent.Chan (Chan)
+import Control.Concurrent.STM.TVar (TVar)
 import Control.Exception (catchJust)
 import Control.Monad.IO.Class (liftIO)
 import Control.Monad.Trans.Reader (ReaderT, asks, runReaderT)
@@ -12,6 +13,7 @@ import qualified Database.PostgreSQL.Simple.Errors as Postgres
 import qualified Database.Redis as Redis
 import qualified Network.Datadog as DD
 import qualified Network.Datadog.Types as DD
+import Presence (Presence)
 import System.Log.Logger (Priority)
 
 type App = ReaderT Config IO
@@ -21,7 +23,8 @@ data ConnectInfoConfig = ConnectInfoConfig
     connectInfoConfig_postgres :: Postgres.ConnectInfo,
     connectInfoConfig_loggerChan :: Chan (Priority, String),
     connectInfoConfig_apiKey :: Text,
-    connectInfoConfig_datadog :: (Maybe Text, Maybe Text)
+    connectInfoConfig_datadog :: (Maybe Text, Maybe Text),
+    connectInfoConfig_presence :: TVar Presence
   }
 
 data Config = Config
@@ -29,7 +32,8 @@ data Config = Config
     postgresPool :: Pool Postgres.Connection,
     loggerChan :: Chan (Priority, String),
     datadogCreds :: Maybe DD.ReadWrite,
-    apiKey :: Text
+    apiKey :: Text,
+    presence :: TVar Presence
   }
 
 runApp :: ConnectInfoConfig -> App a -> IO a
@@ -40,6 +44,7 @@ runApp config app =
     let loggerChan = connectInfoConfig_loggerChan config
     let ddCredInput = connectInfoConfig_datadog config
     let apiKey = connectInfoConfig_apiKey config
+    let presence = connectInfoConfig_presence config
 
     redisConn <- Redis.connect redisInfo
     postgresPool <- createPool (connectPostgres postgresInfo) Postgres.close 1 0.5 10
@@ -57,6 +62,7 @@ runApp config app =
         loggerChan
         (uncurry DD.readWriteCredentials <$> ddCreds)
         apiKey
+        presence
 
 connectPostgres :: Postgres.ConnectInfo -> IO Postgres.Connection
 connectPostgres = Postgres.connectPostgreSQL . Postgres.postgreSQLConnectionString

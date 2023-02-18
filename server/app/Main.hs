@@ -45,6 +45,7 @@ import Network.Wai.Handler.WebSockets
 import qualified Network.WebSockets as WS
 import Outcome (Outcome)
 import Player (WhichPlayer (..), other)
+import qualified Presence
 import Room (Room)
 import qualified Room
 import Scenario (Scenario (..), applyCustomSettings)
@@ -54,7 +55,9 @@ import Start (roundEndProgram, startProgram)
 import Stats.Progress (Progress (..), isTutorialProgress)
 import System.Environment (lookupEnv)
 import Text.Printf (printf)
-import User (User (..), getUserFromCookies, getUsername, isSuperuser)
+import User.Apps (getUserFromCookies)
+import User.User (User (..), getUsername)
+import qualified User.User as User
 import Util (Gen, forkDelay, getGen, shuffle, to3Tuple)
 
 main :: IO ()
@@ -85,13 +88,16 @@ main = do
         datadogKey <- lookupEnv "DD_API_KEY"
         datadogAppKey <- lookupEnv "DD_APP_KEY"
 
+        presence <- atomically Presence.new
+
         let connectInfoConfig =
               ConnectInfoConfig
                 { connectInfoConfig_redis = redisConnectInfo redisVars,
                   connectInfoConfig_postgres = postgresConnectInfo postgresVars,
                   connectInfoConfig_loggerChan = loggerChan,
                   connectInfoConfig_apiKey = apiKey,
-                  connectInfoConfig_datadog = (cs <$> datadogAppKey, cs <$> datadogKey)
+                  connectInfoConfig_datadog = (cs <$> datadogAppKey, cs <$> datadogKey),
+                  connectInfoConfig_presence = presence
                 }
 
         authApp <- runApp connectInfoConfig $ Auth.app connectInfoConfig
@@ -493,12 +499,14 @@ runRepl :: App a -> IO a
 runRepl app = do
   Log.setup
   loggerChan <- newChan
+  presence <- atomically Presence.new
   let connectInfoConfig =
         ConnectInfoConfig
           { connectInfoConfig_redis = redisConnectInfo (Nothing, Nothing, Nothing),
             connectInfoConfig_postgres = postgresConnectInfo (Nothing, Nothing, Nothing, Nothing, Nothing),
             connectInfoConfig_loggerChan = loggerChan,
             connectInfoConfig_apiKey = "fake-api-key",
-            connectInfoConfig_datadog = (Nothing, Nothing)
+            connectInfoConfig_datadog = (Nothing, Nothing),
+            connectInfoConfig_presence = presence
           }
   runApp connectInfoConfig app

@@ -24,7 +24,7 @@ import Stats.Experience (Experience, levelToExperience)
 import Stats.Progress (Progress (..), fromPartial, initialProgress)
 import qualified Stats.Schema
 import Text.Printf (printf)
-import {-# SOURCE #-} User (User (..))
+import User.User (User (..))
 import Util (Gen, getGen)
 
 load :: User -> App Progress

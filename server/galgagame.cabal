@@ -61,6 +61,7 @@ library
                      , Profile.Views
                      , Quest
                      , Replay.Active
+                     , Replay.Apps
                      , Replay.Final
                      , Replay.Views
                      , Replay.Schema
@@ -79,7 +80,8 @@ library
                      , StatusEff
                      , Transmutation
                      , Wheel
-                     , User
+                     , User.Apps
+                     , User.User
                      , Util
   other-modules:       DSL.Alpha.Actions
                      , DSL.Alpha.DSL

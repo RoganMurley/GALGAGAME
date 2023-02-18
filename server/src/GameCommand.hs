@@ -31,7 +31,7 @@ import qualified Stack
 import StackCard (StackCard (..))
 import Stats.Progress (initialProgress)
 import StatusEff (applyStatuses)
-import User (GameUser (..), User (..), gameusersToUsers, getUser, getUserId, getUsername, isSuperuser, usersToUsernames)
+import User.User (GameUser (..), User (..), gameusersToUsers, getUser, getUserId, getUsername, isSuperuser, usersToUsernames)
 import Util (Err, Gen, deleteIndex, split, times, tupleMap2)
 import Wheel (Wheel (..))
 

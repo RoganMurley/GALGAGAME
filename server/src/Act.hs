@@ -22,7 +22,7 @@ import Model (Model)
 import Outcome (Outcome)
 import qualified Outcome
 import Player (WhichPlayer (..), other)
-import qualified Replay.Final
+import qualified Replay.Apps as Replay
 import Replay.Final (Replay)
 import ResolveData (ResolveData (..))
 import Room (Room, getScenario)
@@ -32,7 +32,7 @@ import Stats.Experience (levelToExperience)
 import Stats.Progress (Progress (..))
 import qualified Stats.Stats as Stats
 import Text.Printf (printf)
-import User (GameUser (..), User (..), getUsername, setProgress, usersToGameUsers)
+import User.User (GameUser (..), User (..), getUsername, setProgress, usersToGameUsers)
 import Util (Err)
 
 roomUpdate :: GameCommand -> WhichPlayer -> UTCTime -> TVar Room -> STM (Room, Either Err [Outcome])
@@ -211,7 +211,7 @@ actOutcome room (Outcome.Encodable (Outcome.Resolve models initial final exclude
 actOutcome room (Outcome.Encodable (Outcome.Heartbeat timeLeft)) =
   Room.broadcast ("timeLeft:" <> cs (show (1000 * realToFrac timeLeft :: Float))) room
 actOutcome room (Outcome.SaveReplay replay) = do
-  replayId <- Replay.Final.save replay
+  replayId <- Replay.save replay
   Log.info $ printf "<%s>: Replay saved with ID %d" (Room.getName room) replayId
   Room.broadcast ("replaySaved:" <> (cs . show $ replayId)) room
 actOutcome room (Outcome.HandleProgress winner replay) = do

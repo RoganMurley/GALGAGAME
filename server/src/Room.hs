@@ -15,7 +15,7 @@ import GameState (GameState (..), WaitType (..), initState)
 import Outcome (Outcome (..))
 import Player (WhichPlayer (..), other)
 import Scenario (Scenario (..))
-import User (GameUser (..), User (..), isCpu, isHuman, isSuperuser, usersToGameUsers)
+import User.User (GameUser (..), User (..), isCpu, isHuman, isSuperuser, usersToGameUsers)
 import Util (Gen, randomChoice)
 
 type Name = Text

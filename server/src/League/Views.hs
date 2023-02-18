@@ -6,7 +6,8 @@ import Control.Monad.IO.Class (liftIO)
 import Data.Aeson (object)
 import League.Apps (checkLeague, saveLeague)
 import Network.HTTP.Types.Status (created201, notFound404, ok200, unauthorized401)
-import qualified User
+import qualified User.Apps as User
+import qualified User.User as User
 import Web.Scotty (ActionM, json, status)
 import Web.Scotty.Cookie (getCookies)
 
