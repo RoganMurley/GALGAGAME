@@ -1,6 +1,6 @@
 module Presence.View exposing (view)
 
-import Html exposing (Html, div, text)
+import Html exposing (Html, div, h1, text)
 import Html.Attributes exposing (class)
 import Presence.Types exposing (Model)
 
@@ -12,7 +12,14 @@ view model =
             "" ->
                 case model.presence of
                     Just usernames ->
-                        List.map text usernames
+                        [ div [ class "presence" ]
+                            [ h1 [] [ text "CHALLENGERS" ]
+                            , div [ class "presence-users" ] <|
+                                List.map
+                                    (\username -> div [ class "presence-user" ] [ text username ])
+                                    (List.take 4 usernames ++ [ "CPU" ])
+                            ]
+                        ]
 
                     Nothing ->
                         []

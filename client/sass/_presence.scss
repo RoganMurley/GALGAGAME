@@ -1,0 +1,47 @@
+@import "theme";
+
+.presence-box {
+    height: 100vh;
+    display: flex;
+    font-family: 'Futura', sans-serif;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    text-align: center;
+}
+
+.presence {
+    border-radius: 25px;
+    padding: 12px;
+    background-color: $yellow;
+
+    width: 60vw;
+
+    @media (max-width: 1279px) {
+        width: 95vw;
+    }
+}
+
+.presence-users {
+    margin: auto;
+    width: 80%;
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+}
+
+.presence-user {
+    font-size: 28px;
+    text-transform: uppercase;
+    padding: 8px;
+    width: 100%;
+    color: $navy;
+
+    &:nth-child(even) {
+        background: $yellow;
+    }
+
+    &:nth-child(odd) {
+        background: #e3e04f;
+    }
+}
