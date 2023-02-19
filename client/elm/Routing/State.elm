@@ -22,6 +22,7 @@ route =
         , map League leagueRoute
         , map Leaderboard leaderboardRoute
         , map Profile profileRoute
+        , map Presence presenceRoute
         , map Create createRoute
         ]
 
@@ -72,6 +73,11 @@ leagueRoute =
 leaderboardRoute : Parser a a
 leaderboardRoute =
     s "leaderboard"
+
+
+presenceRoute : Parser a a
+presenceRoute =
+    s "presence"
 
 
 profileRoute : Parser (String -> a) a

@@ -9,6 +9,7 @@ import Lobby.Messages as Lobby
 import Login.Messages as Login
 import Menu.Messages as Menu
 import Mode exposing (Mode)
+import Presence.Messages as Presence
 import Profile.Messages as Profile
 import Replay.Messages as Replay
 import Signup.Messages as Signup
@@ -25,5 +26,6 @@ type Msg
     | LeagueMsg League.Msg
     | LeaderboardMsg Leaderboard.Msg
     | ProfileMsg Profile.Msg
+    | PresenceMsg Presence.Msg
     | CreateMsg Create.Msg
     | StartGame Mode (Maybe String)

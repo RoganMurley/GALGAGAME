@@ -16,6 +16,7 @@ import Main.Types exposing (Flags)
 import Menu.State as Menu
 import Mode exposing (Mode(..))
 import Mouse
+import Presence.State as Presence
 import Profile.State as Profile
 import Replay.State as Replay
 import Room.Messages exposing (Msg(..))
@@ -148,6 +149,18 @@ update model msg assets flags =
                 _ ->
                     ( model, Cmd.none )
 
+        PresenceMsg presenceMsg ->
+            case model of
+                Presence presence ->
+                    let
+                        ( newPresence, cmd ) =
+                            Presence.update presence presenceMsg flags
+                    in
+                    ( Presence newPresence, cmd )
+
+                _ ->
+                    ( model, Cmd.none )
+
         CreateMsg createMsg ->
             case model of
                 Create create ->
@@ -233,6 +246,9 @@ receive flags assets str model =
         Profile profile ->
             ( Profile profile, Cmd.none )
 
+        Presence presence ->
+            ( Presence presence, Cmd.none )
+
         Create create ->
             ( Create create, Cmd.none )
 
@@ -273,6 +289,9 @@ tick flags room dt =
 
         Profile profile ->
             ( Profile profile, Cmd.none )
+
+        Presence presence ->
+            ( Presence presence, Cmd.none )
 
         Create create ->
             ( Create create, Cmd.none )

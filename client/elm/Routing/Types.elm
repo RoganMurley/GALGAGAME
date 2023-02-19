@@ -11,6 +11,7 @@ type Route
     | League
     | Leaderboard
     | Profile String
+    | Presence
     | Create
 
 

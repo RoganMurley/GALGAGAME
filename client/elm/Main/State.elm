@@ -34,6 +34,8 @@ import Mode exposing (Mode(..))
 import Mouse exposing (MouseState(..))
 import Notifications.State as Notifications
 import Ports exposing (analytics, copyInput, godModeCommand, loadSavedCharacter, log, mouseDown, mouseMove, mouseUp, reload, selectAllInput, touch, websocketListen, websocketSend)
+import Presence.Messages as Presence
+import Presence.State as Presence
 import Profile.Messages as Profile
 import Profile.State as Profile
 import Replay.Messages as Replay
@@ -557,6 +559,15 @@ locationUpdate model url =
                         Profile.init
               }
             , message <| Main.RoomMsg <| Room.ProfileMsg <| Profile.Load username
+            )
+
+        Routing.Presence ->
+            ( { model
+                | room =
+                    Room.Presence <|
+                        Presence.init
+              }
+            , message <| Main.RoomMsg <| Room.PresenceMsg <| Presence.Load
             )
 
         Routing.Create ->

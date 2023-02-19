@@ -18,6 +18,7 @@ import Main.Types exposing (Flags)
 import Menu.View as Menu
 import Notifications.Types as Notifications
 import Notifications.View as Notifications
+import Presence.View as Presence
 import Profile.View as Profile
 import Replay.View as Replay
 import Room.Messages exposing (Msg(..))
@@ -68,6 +69,9 @@ view model settings notifications flags assets =
 
                 Profile profile ->
                     Profile.view profile
+
+                Presence presence ->
+                    Presence.view presence
 
                 Create create ->
                     Html.map (Main.RoomMsg << CreateMsg) <|
