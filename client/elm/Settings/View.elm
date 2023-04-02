@@ -1,7 +1,7 @@
 module Settings.View exposing (view)
 
 import Html exposing (Html, button, div, img, input, label, text)
-import Html.Attributes as H exposing (class, src, style, type_, value)
+import Html.Attributes as H exposing (checked, class, src, style, type_, value)
 import Html.Events exposing (onClick, onInput)
 import Main.Messages as Main
 import Main.Types exposing (Flags)
@@ -10,7 +10,7 @@ import Settings.Types exposing (ModalState(..), Model, VolumeType(..))
 
 
 view : Model -> Flags -> List (Html Main.Msg) -> List (Html Main.Msg) -> Html Main.Msg
-view { modalState, musicVolume, sfxVolume } { scaling } headerView buttonsView =
+view { modalState, musicVolume, sfxVolume } { backgroundEnabled, scaling } headerView buttonsView =
     let
         menuStyle =
             case modalState of
@@ -98,6 +98,16 @@ view { modalState, musicVolume, sfxVolume } { scaling } headerView buttonsView =
                             , value <| String.fromFloat scaling
                             , onInput
                                 (\s -> Main.SetScaling <| Maybe.withDefault 1 (String.toFloat s))
+                            ]
+                            []
+                        ]
+                   , label [ class "settings-label" ]
+                        [ text <| "Dynamic Background"
+                        , input
+                            [ class "settings-checkbox"
+                            , type_ "checkbox"
+                            , checked backgroundEnabled
+                            , onClick <| Main.ToggleBackground <| not backgroundEnabled
                             ]
                             []
                         ]

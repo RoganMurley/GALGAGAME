@@ -242,6 +242,15 @@ update msg ({ assets, room, notifications, settings, flags } as model) =
             , setVolume volumeType newVolume
             )
 
+        ToggleBackground isEnabled ->
+            let
+                newFlags =
+                    { flags | backgroundEnabled = isEnabled }
+            in
+            ( { model | flags = newFlags }
+            , Ports.backgroundEnabled isEnabled
+            )
+
         Logout ->
             ( model
             , Http.post

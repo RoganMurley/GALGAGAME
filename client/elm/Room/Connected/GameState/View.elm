@@ -44,7 +44,7 @@ webglView state players chat params assets isReplay =
 
 
 paramsFromFlags : Flags -> Render.Params
-paramsFromFlags { dimensions, pixelRatio, time, scaling } =
+paramsFromFlags { backgroundEnabled, dimensions, pixelRatio, time, scaling } =
     let
         ( w, h ) =
             dimensions
@@ -54,4 +54,5 @@ paramsFromFlags { dimensions, pixelRatio, time, scaling } =
     , pixelRatio = pixelRatio
     , time = time
     , scaling = scaling
+    , backgroundEnabled = backgroundEnabled
     }

@@ -42,6 +42,7 @@ initFull inputFlags url key =
             , username = inputFlags.username
             , pixelRatio = inputFlags.pixelRatio
             , scaling = inputFlags.initialScaling
+            , backgroundEnabled = inputFlags.initialBackgroundEnabled
             , visits = inputFlags.visits
             , key = key
             , mouse = NoMouse

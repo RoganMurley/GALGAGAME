@@ -35,6 +35,7 @@ type Msg
     | SetScaling Float
     | SetUsername String
     | SetVolume VolumeType Int
+    | ToggleBackground Bool
     | TouchPosition (Maybe Mouse.Position)
     | UrlChange Url
     | UrlRequest UrlRequest

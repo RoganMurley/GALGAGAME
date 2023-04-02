@@ -10,6 +10,7 @@ type alias Params =
     , h : Int
     , pixelRatio : Float
     , scaling : Float
+    , backgroundEnabled : Bool
     }
 
 

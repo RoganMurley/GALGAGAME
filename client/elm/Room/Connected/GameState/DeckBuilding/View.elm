@@ -22,7 +22,7 @@ import WhichPlayer.Types exposing (WhichPlayer(..))
 
 
 webglView : Render.Params -> Model -> Players -> Assets.Model -> List WebGL.Entity
-webglView { w, h } model players assets =
+webglView { w, h, backgroundEnabled } model players assets =
     let
         ctx =
             bareContextInit ( w, h ) assets NoMouse
@@ -31,7 +31,7 @@ webglView { w, h } model players assets =
         List.map ((|>) ctx) <|
             case model.runeSelect of
                 Just runeSelect ->
-                    [ radialView model.vfx
+                    [ radialView model.vfx backgroundEnabled
                     , RuneSelect.view runeSelect
                     , Buttons.view model.buttons
                     ]
@@ -45,7 +45,7 @@ webglView { w, h } model players assets =
                             else
                                 titleView
                     in
-                    [ radialView model.vfx
+                    [ radialView model.vfx backgroundEnabled
                     , subview model.vfx.depth
                     , Buttons.view model.buttons
                     , questView players.pa

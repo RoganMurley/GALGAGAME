@@ -454,6 +454,7 @@ tick flags state chat gameType dt =
                     , h = h
                     , pixelRatio = flags.pixelRatio
                     , scaling = flags.scaling
+                    , backgroundEnabled = flags.backgroundEnabled
                     }
 
                 newButtons =

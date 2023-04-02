@@ -33,6 +33,13 @@ if (visits === null) {
 }
 localStorage.setItem('visits', visits);
 
+var initialBackgroundEnabled = localStorage.getItem("backgroundEnabled");
+if (initialBackgroundEnabled === null) {
+  initialBackgroundEnabled = true;
+}
+var backgroundEnabled;
+setBackgroundEnabled(initialBackgroundEnabled);
+
 var cookies = document.cookie.split('; ');
 var userCookie = cookies.find(function (row) { return row.startsWith('user='); });
 var username = userCookie ? userCookie.split('=')[1] : null;
@@ -49,6 +56,7 @@ var app = Elm.Main.init({
     initialMusicVolume: parseFloat(musicVolume, 10),
     initialVolume: parseFloat(initialVolume, 10),
     initialScaling: parseFloat(initialScaling, 10),
+    initialBackgroundEnabled: backgroundEnabled == "true",
     visits: visits,
   },
 });
@@ -99,6 +107,15 @@ function setSfxVolume(v) {
 app.ports.volume.subscribe(function (input) {
   setSfxVolume(input);
   localStorage.setItem('volume', input);
+});
+
+function setBackgroundEnabled(enabled) {
+  backgroundEnabled = enabled;
+};
+
+app.ports.backgroundEnabled.subscribe(function (input) {
+  setBackgroundEnabled(input);
+  localStorage.setItem('backgroundEnabled', input);
 });
 
 function setMusicVolume(v) {

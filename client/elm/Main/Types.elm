@@ -29,6 +29,7 @@ type alias InputFlags =
     , initialMusicVolume : Int
     , initialVolume : Int
     , initialScaling : Float
+    , initialBackgroundEnabled : Bool
     , visits : Int
     }
 
@@ -40,6 +41,7 @@ type alias Flags =
     , time : Float
     , dimensions : ( Int, Int )
     , username : Maybe String
+    , backgroundEnabled : Bool
     , mouse : MouseState
     , key : Browser.Navigation.Key
     , pixelRatio : Float
