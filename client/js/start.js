@@ -35,7 +35,7 @@ localStorage.setItem('visits', visits);
 
 var initialBackgroundEnabled = localStorage.getItem("backgroundEnabled");
 if (initialBackgroundEnabled === null) {
-  initialBackgroundEnabled = true;
+  initialBackgroundEnabled = "true";
 }
 var backgroundEnabled;
 setBackgroundEnabled(initialBackgroundEnabled);
