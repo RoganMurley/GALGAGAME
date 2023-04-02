@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 pushd client
 if elm-analyse
 then
@@ -6,4 +6,4 @@ then
 else
   exit 1
 fi
-popd client
+popd

@@ -71,7 +71,8 @@ view model settings notifications flags assets =
                     Profile.view profile
 
                 Presence presence ->
-                    Presence.view presence
+                    Html.map (Main.RoomMsg << PresenceMsg) <|
+                        Presence.view presence
 
                 Create create ->
                     Html.map (Main.RoomMsg << CreateMsg) <|

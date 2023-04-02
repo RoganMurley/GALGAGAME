@@ -3,9 +3,11 @@ module Presence.State exposing (init, update)
 import Http
 import Main.Messages as Main
 import Main.Types exposing (Flags)
+import Ports exposing (websocketSend)
 import Presence.Decoders as Presence
 import Presence.Messages exposing (Msg(..))
 import Presence.Types exposing (Model)
+import Room.Generators exposing (generate)
 import Room.Messages as Room
 import Util exposing (apiLocation)
 
@@ -47,3 +49,10 @@ update model msg flags =
             ( { model | error = "Error connecting to server" ++ statusStr }
             , Cmd.none
             )
+
+        Challenge username ->
+            let
+                roomId =
+                    generate Room.Generators.roomID flags.seed
+            in
+            ( model, websocketSend <| "challenge:" ++ username ++ "," ++ roomId )
