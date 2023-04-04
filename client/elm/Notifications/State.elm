@@ -1,5 +1,6 @@
 module Notifications.State exposing (init, receive, tick, update)
 
+import Main.Messages exposing (Msg(..))
 import Notifications.Messages exposing (Msg(..))
 import Notifications.Types exposing (Model, Notification)
 import Util exposing (splitOnColon, splitOnComma)
@@ -20,17 +21,23 @@ receive msg model =
         "systemMessage" ->
             { model
                 | notifications =
-                    notif content Nothing :: model.notifications
+                    notif content :: model.notifications
             }
 
         "challengedBy" ->
             let
                 ( opponentName, roomId ) =
                     splitOnComma content
+
+                newNotification =
+                    { text = "Challenged by " ++ opponentName ++ "! Tap to fight!"
+                    , timer = Just 50000
+                    , callback = Just <| GotoCustomGame (Just roomId)
+                    }
             in
             { model
                 | notifications =
-                    notif ("Challenged by " ++ opponentName ++ "! Tap to fight!") (Just 50000) :: model.notifications
+                    newNotification :: model.notifications
             }
 
         _ ->
@@ -66,6 +73,6 @@ update model msg =
             }
 
 
-notif : String -> Maybe Float -> Notification
-notif str timer =
-    { text = str, timer = timer }
+notif : String -> Notification
+notif str =
+    { text = str, timer = Nothing, callback = Nothing }

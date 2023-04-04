@@ -82,7 +82,7 @@ view model settings notifications flags assets =
             settingsView model flags
     in
     div []
-        [ Html.map Main.NotificationsMsg <| Notifications.view notifications
+        [ Notifications.view notifications
         , Settings.view settings flags settingsHeader settingsButtons
         , roomView
         , webglView model flags assets
