@@ -192,7 +192,7 @@ begin client state = do
           gen <- liftIO getGen
           let scenario = makeScenario gen
           let prefix = PrefixPlay
-          roomVar <- liftIO . atomically $ Server.getOrCreateRoom roomName (prefixWaitType prefix) gen scenario state
+          roomVar <- liftIO . atomically $ Server.getOrCreateRoom roomName WaitChallenge gen scenario state
           prefixMetric prefix
           beginPrefix prefix state client roomVar
         Nothing ->

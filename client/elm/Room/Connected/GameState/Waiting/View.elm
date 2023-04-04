@@ -22,48 +22,55 @@ import WebGL
 
 htmlView : Model -> Flags -> String -> Html Main.Msg
 htmlView { waitType } { httpPort, hostname } roomID =
-    let
-        portProtocol =
-            if httpPort /= "" then
-                ":" ++ httpPort
-
-            else
-                ""
-
-        challengeLink =
-            "https://" ++ hostname ++ portProtocol ++ "/play/custom/" ++ roomID
-
-        myID =
-            "challenge-link"
-
-        waitingPrompt =
-            "Give this link to your opponent"
-
-        waitingInfo : Html Main.Msg
-        waitingInfo =
-            div [ class "input-group" ]
-                [ input
-                    [ value challengeLink
-                    , type_ "text"
-                    , readonly True
-                    , id myID
-                    , onClick <| Main.SelectAllInput myID
-                    ]
-                    []
-                , button
-                    [ onClick <| Main.CopyInput myID, class "menu-button" ]
-                    [ text "COPY" ]
-                ]
-    in
     case waitType of
         WaitQuickplay ->
             text ""
 
         WaitCustom ->
+            let
+                portProtocol =
+                    if httpPort /= "" then
+                        ":" ++ httpPort
+
+                    else
+                        ""
+
+                challengeLink =
+                    "https://" ++ hostname ++ portProtocol ++ "/play/custom/" ++ roomID
+
+                myID =
+                    "challenge-link"
+
+                waitingPrompt =
+                    "Give this link to your opponent"
+
+                waitingInfo : Html Main.Msg
+                waitingInfo =
+                    div [ class "input-group" ]
+                        [ input
+                            [ value challengeLink
+                            , type_ "text"
+                            , readonly True
+                            , id myID
+                            , onClick <| Main.SelectAllInput myID
+                            ]
+                            []
+                        , button
+                            [ onClick <| Main.CopyInput myID, class "menu-button" ]
+                            [ text "COPY" ]
+                        ]
+            in
             div [ class "waiting" ]
                 [ div [ class "waiting-prompt" ]
                     [ text waitingPrompt ]
                 , waitingInfo
+                ]
+
+        WaitChallenge ->
+            div [ class "waiting" ]
+                [ div [ class "waiting-prompt" ]
+                    [ text "CHALLENGING..."
+                    ]
                 ]
 
 

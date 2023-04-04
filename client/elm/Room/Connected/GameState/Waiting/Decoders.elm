@@ -20,5 +20,8 @@ waitTypeDecoder s =
         "custom" ->
             succeed WaitCustom
 
+        "challenge" ->
+            succeed WaitChallenge
+
         _ ->
             fail <| "Invalid WaitType " ++ s

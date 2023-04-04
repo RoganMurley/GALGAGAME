@@ -37,6 +37,8 @@ playRoute =
                 , map (CustomPlay Nothing) <| s "custom"
                 , map (QuickPlay << Just) <| s "quickplay" </> string
                 , map (QuickPlay Nothing) <| s "quickplay"
+                , map (ChallengePlay << Just) <| s "challenge" </> string
+                , map (ChallengePlay Nothing) <| s "challenge"
                 ]
 
 

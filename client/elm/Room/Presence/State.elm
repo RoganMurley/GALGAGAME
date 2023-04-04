@@ -71,7 +71,7 @@ receive msg =
     in
     case command of
         "challengeRoom" ->
-            message <| Main.GotoCustomGame (Just content)
+            message <| Main.GotoChallengeGame (Just content)
 
         _ ->
             log <| "Error decoding message from server: " ++ msg

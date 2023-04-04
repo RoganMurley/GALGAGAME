@@ -401,6 +401,17 @@ update msg ({ assets, room, notifications, settings, flags } as model) =
                         "/play/custom"
             )
 
+        GotoChallengeGame mRoomId ->
+            ( { model | settings = Settings.close settings }
+            , Browser.Navigation.load <|
+                case mRoomId of
+                    Just roomId ->
+                        "/play/challenge/" ++ roomId
+
+                    Nothing ->
+                        "/play/challenge"
+            )
+
         GotoComputerGame ->
             ( { model | settings = Settings.close settings }
             , Browser.Navigation.load <| "/play/computer"
@@ -428,6 +439,9 @@ locationUpdate model url =
 
                                 GameType.QuickplayGame ->
                                     Just <| "/play/quickplay/" ++ roomID
+
+                                GameType.ChallengeGame ->
+                                    Just <| "/play/challenge/" ++ roomID
 
                         Spectating ->
                             Just <| "/spec/" ++ roomID
@@ -497,6 +511,9 @@ locationUpdate model url =
 
                         Routing.QuickPlay mRoomID ->
                             makeModel mRoomID GameType.QuickplayGame
+
+                        Routing.ChallengePlay mRoomID ->
+                            makeModel mRoomID GameType.ChallengeGame
             in
             ( newModel, Lobby.skipLobbyCmd username )
 

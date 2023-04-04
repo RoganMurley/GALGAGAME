@@ -14,3 +14,4 @@ type alias Model =
 type WaitType
     = WaitQuickplay
     | WaitCustom
+    | WaitChallenge

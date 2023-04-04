@@ -5,3 +5,4 @@ type GameType
     = CustomGame
     | ComputerGame
     | QuickplayGame
+    | ChallengeGame

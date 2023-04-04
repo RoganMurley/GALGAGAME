@@ -30,11 +30,13 @@ instance ToJSON GameState where
 data WaitType
   = WaitCustom
   | WaitQuickplay
+  | WaitChallenge
   deriving (Eq, Show)
 
 instance ToJSON WaitType where
   toJSON WaitCustom = "custom"
   toJSON WaitQuickplay = "quickplay"
+  toJSON WaitChallenge = "challenge"
 
 getStateGen :: GameState -> Gen
 getStateGen (Waiting _ gen) = gen

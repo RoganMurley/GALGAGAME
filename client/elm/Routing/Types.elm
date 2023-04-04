@@ -19,3 +19,4 @@ type PlayRoute
     = CustomPlay (Maybe String)
     | ComputerPlay (Maybe String)
     | QuickPlay (Maybe String)
+    | ChallengePlay (Maybe String)

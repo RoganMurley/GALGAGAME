@@ -47,6 +47,9 @@ update ({ gameType, mode, joinAttempts } as model) msg flags =
                                 QuickplayGame ->
                                     "queue:"
 
+                                ChallengeGame ->
+                                    "play:"
+
                         Spectating ->
                             "spectate:"
 
@@ -137,6 +140,9 @@ gameTypeToString gameType =
 
         QuickplayGame ->
             "GALGA"
+
+        ChallengeGame ->
+            "CHALLENGE"
 
 
 skipLobbyCmd : Maybe String -> Cmd Main.Msg

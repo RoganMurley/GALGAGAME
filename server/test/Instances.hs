@@ -50,7 +50,7 @@ instance Arbitrary PlayerModel where
   arbitrary = PlayerModel <$> arbitrary <*> arbitrary <*> arbitrary
 
 instance Arbitrary WaitType where
-  arbitrary = elements [WaitCustom, WaitQuickplay]
+  arbitrary = elements [WaitCustom, WaitQuickplay, WaitChallenge]
 
 instance Arbitrary Passes where
   arbitrary = elements [NoPass, OnePass]
