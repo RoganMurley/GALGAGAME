@@ -1,4 +1,4 @@
-module Util exposing (apiLocation, curry, foldlWithPrev, httpErrorToString, interp, interp2D, interpFloat, maybeListToListMaybe, message, portProtocol, px, splitOnColon, to3d, uncurry, zip)
+module Util exposing (apiLocation, curry, foldlWithPrev, httpErrorToString, interp, interp2D, interpFloat, maybeListToListMaybe, message, portProtocol, px, splitOnColon, splitOnComma, to3d, uncurry, zip)
 
 import Http
 import Main.Types exposing (Flags)
@@ -41,6 +41,21 @@ apiLocation flags =
 splitOnColon : String -> ( String, String )
 splitOnColon str =
     case Regex.fromString ":" of
+        Just regex ->
+            case Regex.splitAtMost 1 regex str of
+                [ x, xs ] ->
+                    ( x, xs )
+
+                _ ->
+                    ( "", str )
+
+        Nothing ->
+            ( "", str )
+
+
+splitOnComma : String -> ( String, String )
+splitOnComma str =
+    case Regex.fromString "," of
         Just regex ->
             case Regex.splitAtMost 1 regex str of
                 [ x, xs ] ->

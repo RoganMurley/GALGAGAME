@@ -7,4 +7,6 @@ type alias Model =
 
 
 type alias Notification =
-    { text : String }
+    { text : String
+    , timer : Maybe Float
+    }

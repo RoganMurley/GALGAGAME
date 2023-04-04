@@ -6,7 +6,6 @@ import Control.Concurrent.STM (readTVarIO)
 import Control.Monad.IO.Class (liftIO)
 import Control.Monad.STM (atomically)
 import Data.Int (Int64)
-import qualified Log
 import Presence.Presence (Presence, addClient, getClient, isUserIdOnline, removeClient)
 import Util (modTVar)
 

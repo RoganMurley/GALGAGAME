@@ -184,7 +184,7 @@ begin client state = do
       case mOpponentClient of
         Just opponentClient -> do
           -- Challenge opponent.
-          liftIO $ Client.send ("challengedBy:" <> "username" <> "," <> roomName) opponentClient
+          liftIO $ Client.send ("challengedBy:" <> username <> "," <> roomName) opponentClient
           Log.info $ printf "<%s>: Challenged <id:%d>@[%s]" username opponentId roomName
           -- Setup game.
           liftIO $ Client.send ("challengeRoom:" <> roomName) client

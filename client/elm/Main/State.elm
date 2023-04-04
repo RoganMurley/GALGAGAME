@@ -92,6 +92,9 @@ update msg ({ assets, room, notifications, settings, flags } as model) =
                 ( newRoom, tickMsg ) =
                     Room.tick newFlags room dt
 
+                newNotifications =
+                    Notifications.tick notifications dt
+
                 newMsg =
                     case room of
                         Room.Connected { game, tick } ->
@@ -108,7 +111,7 @@ update msg ({ assets, room, notifications, settings, flags } as model) =
                         _ ->
                             Cmd.none
             in
-            ( { model | flags = newFlags, room = newRoom }
+            ( { model | flags = newFlags, room = newRoom, notifications = newNotifications }
             , Cmd.batch [ newMsg, Cmd.map RoomMsg tickMsg ]
             )
 
