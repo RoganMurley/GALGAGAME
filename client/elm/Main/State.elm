@@ -387,9 +387,20 @@ update msg ({ assets, room, notifications, settings, flags } as model) =
             , Browser.Navigation.pushUrl flags.key "/signup"
             )
 
-        GotoCustomGame ->
+        GotoCustomGame mRoomId ->
             ( { model | settings = Settings.close settings }
-            , Browser.Navigation.load "/play/custom"
+            , Browser.Navigation.load <|
+                case mRoomId of
+                    Just roomId ->
+                        "/play/custom/" ++ roomId
+
+                    Nothing ->
+                        "/play/custom"
+            )
+
+        GotoComputerGame ->
+            ( { model | settings = Settings.close settings }
+            , Browser.Navigation.load <| "/play/computer"
             )
 
         NoOp ->

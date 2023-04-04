@@ -91,9 +91,6 @@ update msg state mode players assets =
                 _ ->
                     ( state, Cmd.none )
 
-        GotoComputerGame ->
-            ( state, Browser.Navigation.load <| "/play/computer" )
-
         GotoReplay replayId ->
             ( state, Browser.Navigation.load <| "/replay/" ++ replayId )
 

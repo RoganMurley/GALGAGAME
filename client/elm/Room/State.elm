@@ -247,7 +247,7 @@ receive flags assets str model =
             ( Profile profile, Cmd.none )
 
         Presence presence ->
-            ( Presence presence, Cmd.none )
+            ( Presence presence, Presence.receive str )
 
         Create create ->
             ( Create create, Cmd.none )

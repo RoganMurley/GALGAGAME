@@ -45,7 +45,7 @@ import Network.Wai.Handler.WebSockets
 import qualified Network.WebSockets as WS
 import Outcome (Outcome)
 import Player (WhichPlayer (..), other)
-import Presence.Apps as Presence
+import qualified Presence.Apps as Presence
 import qualified Presence.Presence as Presence
 import Room (Room)
 import qualified Room
@@ -178,6 +178,25 @@ begin client state = do
           roomVar <- liftIO . atomically $ Server.getOrCreateRoom roomName (prefixWaitType prefix) gen scenario state
           prefixMetric prefix
           beginPrefix prefix state client roomVar
+    Right (ChallengeRequest opponentId roomName) -> do
+      Log.info $ printf "<%s>: Challenging <id:%d>@[%s]" username opponentId roomName
+      mOpponentClient <- Presence.get opponentId
+      case mOpponentClient of
+        Just opponentClient -> do
+          -- Challenge opponent.
+          liftIO $ Client.send ("challengedBy:" <> "username" <> "," <> roomName) opponentClient
+          Log.info $ printf "<%s>: Challenged <id:%d>@[%s]" username opponentId roomName
+          -- Setup game.
+          liftIO $ Client.send ("challengeRoom:" <> roomName) client
+          Metrics.incr "request.challenge"
+          gen <- liftIO getGen
+          let scenario = makeScenario gen
+          let prefix = PrefixPlay
+          roomVar <- liftIO . atomically $ Server.getOrCreateRoom roomName (prefixWaitType prefix) gen scenario state
+          prefixMetric prefix
+          beginPrefix prefix state client roomVar
+        Nothing ->
+          Log.error $ printf "<%s>: Cannot find opponent <id:%d>" username opponentId
     Right (SystemMessageRequest systemMessage) -> do
       Metrics.incr "request.systemMessage"
       if User.isSuperuser user

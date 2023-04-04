@@ -7,15 +7,13 @@ import Control.Monad.IO.Class (liftIO)
 import Control.Monad.STM (atomically)
 import Data.Int (Int64)
 import qualified Log
-import Presence.Presence (Presence, addClient, isUserIdOnline, removeClient)
+import Presence.Presence (Presence, addClient, getClient, isUserIdOnline, removeClient)
 import Util (modTVar)
 
 load :: App Presence
 load = do
   presenceVar <- getPresence
-  presence <- liftIO $ readTVarIO presenceVar
-  Log.debug $ show presence
-  return presence
+  liftIO $ readTVarIO presenceVar
 
 add :: Client -> App ()
 add client = do
@@ -29,3 +27,6 @@ remove client = do
 
 isOnline :: Int64 -> App Bool
 isOnline userId = isUserIdOnline userId <$> load
+
+get :: Int64 -> App (Maybe Client)
+get userId = getClient userId <$> load

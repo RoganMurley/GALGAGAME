@@ -13,13 +13,14 @@ view model =
         case model.error of
             "" ->
                 case model.presence of
-                    Just usernames ->
+                    Just users ->
                         [ div [ class "presence" ]
                             [ h1 [] [ text "CHALLENGERS" ]
                             , div [ class "presence-users" ] <|
                                 List.map
-                                    (\username -> div [ class "presence-user", onClick <| Challenge username ] [ text username ])
-                                    (List.take 4 usernames ++ [ "CPU" ])
+                                    (\{ name, id } -> div [ class "presence-user", onClick <| Challenge id ] [ text name ])
+                                    (List.take 4 users)
+                                    ++ [ div [ class "presence-user", onClick <| ChallengeCPU ] [ text "CPU" ] ]
                             ]
                         ]
 

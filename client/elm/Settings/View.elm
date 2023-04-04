@@ -113,7 +113,7 @@ view { modalState, musicVolume, sfxVolume } { backgroundEnabled, scaling } heade
                         ]
                    , button
                         [ class "settings-button"
-                        , onClick Main.GotoCustomGame
+                        , onClick <| Main.GotoCustomGame Nothing
                         ]
                         [ text "PLAY WITH A FRIEND" ]
                    ]

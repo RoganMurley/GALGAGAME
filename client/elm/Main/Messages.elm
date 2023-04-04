@@ -43,5 +43,6 @@ type Msg
     | VisibilityChange Visibility
     | GotoLogin
     | GotoSignup
-    | GotoCustomGame
+    | GotoCustomGame (Maybe String)
+    | GotoComputerGame
     | NoOp

@@ -6,6 +6,7 @@ import qualified Client
 import Control.Concurrent.STM.TVar (TVar, newTVar)
 import Control.Monad.STM (STM)
 import Data.Aeson (ToJSON (..), object, (.=))
+import Data.Bifunctor (second)
 import Data.Int (Int64)
 import Data.Map as Map
 import Data.Maybe (catMaybes)
@@ -18,19 +19,30 @@ newtype Presence = Presence (Map Int64 (Client, Int))
 new :: STM (TVar Presence)
 new = newTVar $ Presence Map.empty
 
-allClients :: Presence -> [Client]
-allClients (Presence presence) = fst <$> elems presence
+allClients :: Presence -> [(Int64, Client)]
+allClients (Presence presence) = (\(a, (b, _)) -> (a, b)) <$> assocs presence
 
 instance ToJSON Presence where
   toJSON presence =
-    let users :: [User.User]
-        users = client_user <$> allClients presence
-        authUsers :: [Auth.User]
-        authUsers = catMaybes $ User.getAuthUser <$> users
-        usernames :: [Text]
-        usernames = Auth.userUsername <$> authUsers
+    let users :: [(Int64, User.User)]
+        users = second client_user <$> allClients presence
+        authUsers :: [(Int64, Auth.User)]
+        authUsers =
+          catMaybes $
+            ( \(uid, user) -> case User.getAuthUser user of
+                Just authUser ->
+                  Just (uid, authUser)
+                Nothing ->
+                  Nothing
+            )
+              <$> users
+        usernames :: [(Int64, Text)]
+        usernames = second Auth.userUsername <$> authUsers
      in object
-          [ "online" .= usernames
+          [ "online"
+              .= fmap
+                (\(uid, username) -> object ["id" .= uid, "username" .= username])
+                usernames
           ]
 
 addClient :: Client -> Presence -> Presence
@@ -60,6 +72,9 @@ removeClient client (Presence presence) =
               Presence presence
         Nothing ->
           Presence presence
+
+getClient :: Int64 -> Presence -> Maybe Client
+getClient userId (Presence presence) = fst <$> Map.lookup userId presence
 
 isUserIdOnline :: Int64 -> Presence -> Bool
 isUserIdOnline userId (Presence presence) = Map.member userId presence

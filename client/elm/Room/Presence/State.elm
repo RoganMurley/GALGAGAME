@@ -1,15 +1,15 @@
-module Presence.State exposing (init, update)
+module Presence.State exposing (init, receive, update)
 
 import Http
 import Main.Messages as Main
 import Main.Types exposing (Flags)
-import Ports exposing (websocketSend)
+import Ports exposing (log, websocketSend)
 import Presence.Decoders as Presence
 import Presence.Messages exposing (Msg(..))
 import Presence.Types exposing (Model)
 import Room.Generators exposing (generate)
 import Room.Messages as Room
-import Util exposing (apiLocation)
+import Util exposing (apiLocation, message, splitOnColon)
 
 
 init : Model
@@ -50,9 +50,28 @@ update model msg flags =
             , Cmd.none
             )
 
-        Challenge username ->
+        Challenge uid ->
             let
                 roomId =
                     generate Room.Generators.roomID flags.seed
             in
-            ( model, websocketSend <| "challenge:" ++ username ++ "," ++ roomId )
+            ( model
+            , websocketSend <| "challenge:" ++ String.fromInt uid ++ "," ++ roomId
+            )
+
+        ChallengeCPU ->
+            ( model, message Main.GotoComputerGame )
+
+
+receive : String -> Cmd Main.Msg
+receive msg =
+    let
+        ( command, content ) =
+            splitOnColon msg
+    in
+    case command of
+        "challengeRoom" ->
+            message <| Main.GotoCustomGame (Just content)
+
+        _ ->
+            log <| "Error decoding message from server: " ++ msg
