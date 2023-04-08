@@ -1,4 +1,4 @@
-module Entrypoint.State exposing (init, receive, update)
+module Entrypoint.State exposing (init, receive, tick, update)
 
 import Entrypoint.Decoders as Entrypoint
 import Entrypoint.Messages exposing (Msg(..))
@@ -12,10 +12,16 @@ import Room.Messages as Room
 import Util exposing (apiLocation, message, splitOnColon)
 
 
+maxTimer : Float
+maxTimer =
+    6000
+
+
 init : Model
 init =
     { error = ""
     , presence = Nothing
+    , timer = maxTimer
     }
 
 
@@ -75,3 +81,16 @@ receive msg =
 
         _ ->
             log <| "Error decoding message from server: " ++ msg
+
+
+tick : Float -> Model -> ( Model, Cmd Msg )
+tick dt model =
+    if model.timer - dt < 0 then
+        ( { model | timer = maxTimer }
+        , message Load
+        )
+
+    else
+        ( { model | timer = model.timer - dt }
+        , Cmd.none
+        )

@@ -276,7 +276,11 @@ tick flags room dt =
             ( Profile profile, Cmd.none )
 
         Entrypoint entrypoint ->
-            ( Entrypoint entrypoint, Cmd.none )
+            let
+                ( newEntrypoint, msg ) =
+                    Entrypoint.tick dt entrypoint
+            in
+            ( Entrypoint newEntrypoint, Cmd.map EntrypointMsg msg )
 
         Create create ->
             ( Create create, Cmd.none )
