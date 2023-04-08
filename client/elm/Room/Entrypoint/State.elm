@@ -40,7 +40,15 @@ update model msg flags =
             )
 
         LoadCallback (Ok presence) ->
-            ( { model | presence = Just presence }, Cmd.none )
+            ( { model
+                | presence =
+                    Just <|
+                        List.filter
+                            (\{ name } -> flags.username /= Just name)
+                            presence
+              }
+            , Cmd.none
+            )
 
         LoadCallback (Err err) ->
             let
