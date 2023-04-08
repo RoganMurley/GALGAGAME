@@ -1,4 +1,4 @@
-module Entrypoint.State exposing (init, receive, tick, update)
+module Entrypoint.State exposing (init, initialMessage, receive, tick, update)
 
 import Entrypoint.Decoders as Entrypoint
 import Entrypoint.Messages exposing (Msg(..))
@@ -97,3 +97,14 @@ tick dt model =
         ( { model | timer = model.timer - dt }
         , Cmd.none
         )
+
+
+initialMessage : Maybe String -> Main.Msg
+initialMessage mUsername =
+    case mUsername of
+        Just _ ->
+            -- If logged in, load the entrypoints.
+            Main.RoomMsg <| Room.EntrypointMsg <| Load
+
+        Nothing ->
+            Main.GotoQuickplayGame

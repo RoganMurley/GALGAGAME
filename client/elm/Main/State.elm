@@ -612,12 +612,17 @@ locationUpdate model url =
             )
 
         Routing.Entrypoint ->
+            let
+                username : Maybe String
+                username =
+                    model.flags.username
+            in
             ( { model
                 | room =
                     Room.Entrypoint <|
                         Entrypoint.init
               }
-            , message <| Main.RoomMsg <| Room.EntrypointMsg <| Entrypoint.Load
+            , message <| Entrypoint.initialMessage username
             )
 
         Routing.Create ->
