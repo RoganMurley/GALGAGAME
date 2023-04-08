@@ -32,7 +32,7 @@ receive msg model =
                 newNotification =
                     { text = "Challenged by " ++ opponentName ++ "! Tap to fight!"
                     , timer = Just 50000
-                    , callback = Just <| GotoCustomGame (Just roomId)
+                    , callback = Just <| GotoChallengeGame (Just roomId)
                     }
             in
             { model
