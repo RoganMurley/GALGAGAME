@@ -456,6 +456,9 @@ locationUpdate model url =
                         Spectating ->
                             Just <| "/spec/" ++ roomID
 
+                Room.Entrypoint _ ->
+                    Just "/play"
+
                 _ ->
                     Nothing
 
@@ -622,7 +625,7 @@ locationUpdate model url =
                     Room.Entrypoint <|
                         Entrypoint.init
               }
-            , message <| Entrypoint.initialMessage username
+            , Entrypoint.initialMessage username
             )
 
         Routing.Create ->

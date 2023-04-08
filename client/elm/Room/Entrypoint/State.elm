@@ -99,12 +99,12 @@ tick dt model =
         )
 
 
-initialMessage : Maybe String -> Main.Msg
+initialMessage : Maybe String -> Cmd Main.Msg
 initialMessage mUsername =
     case mUsername of
         Just _ ->
             -- If logged in, load the entrypoints.
-            Main.RoomMsg <| Room.EntrypointMsg <| Load
+            message <| Main.RoomMsg <| Room.EntrypointMsg <| Load
 
         Nothing ->
-            Main.GotoQuickplayGame
+            message <| Main.GotoQuickplayGame

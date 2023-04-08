@@ -12,35 +12,34 @@ view model =
     div [ class "presence-box" ] <|
         case model.error of
             "" ->
-                case model.presence of
-                    Just users ->
-                        [ div [ class "presence" ] <|
-                            [ div [ class "presence-users" ] <|
-                                (List.map
-                                    (\{ name, id } ->
-                                        button
-                                            [ class "presence-button", onClick <| Challenge id ]
-                                            [ text <| "CHALLENGE " ++ name ]
-                                    )
-                                 <|
-                                    List.take 4 users
-                                )
-                                    ++ [ button
-                                            [ class "presence-button"
-                                            , onClick Quickplay
-                                            ]
-                                            [ text "QUICKPLAY" ]
-                                       , button
-                                            [ class "presence-button"
-                                            , onClick CustomGame
-                                            ]
-                                            [ text "CUSTOM GAME" ]
-                                       ]
-                            ]
-                        ]
-
-                    Nothing ->
-                        []
+                let
+                    users =
+                        Maybe.withDefault [] model.presence
+                in
+                [ div [ class "presence" ] <|
+                    [ div [ class "presence-users" ] <|
+                        (List.map
+                            (\{ name, id } ->
+                                button
+                                    [ class "presence-button", onClick <| Challenge id ]
+                                    [ text <| "CHALLENGE " ++ name ]
+                            )
+                         <|
+                            List.take 4 users
+                        )
+                            ++ [ button
+                                    [ class "presence-button"
+                                    , onClick Quickplay
+                                    ]
+                                    [ text "QUICKPLAY" ]
+                               , button
+                                    [ class "presence-button"
+                                    , onClick CustomGame
+                                    ]
+                                    [ text "CUSTOM GAME" ]
+                               ]
+                    ]
+                ]
 
             _ ->
                 [ div [ class "error" ] [ text model.error ] ]
