@@ -5,6 +5,7 @@ import Assets.Types as Assets
 import Background.View as Background
 import Connected.View as Connected
 import Create.View as Create
+import Entrypoint.View as Entrypoint
 import Feedback.View as Feedback
 import GameState.View as GameState
 import Html as Html exposing (Html, div)
@@ -17,7 +18,6 @@ import Main.Messages as Main
 import Main.Types exposing (Flags)
 import Notifications.Types as Notifications
 import Notifications.View as Notifications
-import Presence.View as Presence
 import Profile.View as Profile
 import Replay.View as Replay
 import Room.Messages exposing (Msg(..))
@@ -65,9 +65,9 @@ view model settings notifications flags assets =
                 Profile profile ->
                     Profile.view profile
 
-                Presence presence ->
-                    Html.map (Main.RoomMsg << PresenceMsg) <|
-                        Presence.view presence
+                Entrypoint entrypoint ->
+                    Html.map (Main.RoomMsg << EntrypointMsg) <|
+                        Entrypoint.view entrypoint
 
                 Create create ->
                     Html.map (Main.RoomMsg << CreateMsg) <|

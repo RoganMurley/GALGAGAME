@@ -7,7 +7,7 @@ import Url.Parser.Query as Query
 
 default : Route
 default =
-    Presence
+    Entrypoint
 
 
 route : Parser (Route -> a) a
@@ -22,7 +22,7 @@ route =
         , map League leagueRoute
         , map Leaderboard leaderboardRoute
         , map Profile profileRoute
-        , map Presence presenceRoute
+        , map Entrypoint presenceRoute
         , map Create createRoute
         ]
 

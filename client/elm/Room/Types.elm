@@ -2,12 +2,12 @@ module Room.Types exposing (Model(..))
 
 import Connected.Types as Connected
 import Create.Types as Create
+import Entrypoint.Types as Entrypoint
 import Feedback.Types as Feedback
 import Leaderboard.Types as Leaderboard
 import League.Types as League
 import Lobby.Types as Lobby
 import Login.Types as Login
-import Presence.Types as Presence
 import Profile.Types as Profile
 import Replay.Types as Replay
 import Signup.Types as Signup
@@ -23,5 +23,5 @@ type Model
     | League League.Model
     | Leaderboard Leaderboard.Model
     | Profile Profile.Model
-    | Presence Presence.Model
+    | Entrypoint Entrypoint.Model
     | Create Create.Model

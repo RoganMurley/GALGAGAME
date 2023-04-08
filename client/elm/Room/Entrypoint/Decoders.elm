@@ -1,7 +1,7 @@
-module Presence.Decoders exposing (decoder)
+module Entrypoint.Decoders exposing (decoder)
 
+import Entrypoint.Types exposing (User)
 import Json.Decode as Json exposing (Decoder, field, int, list, string)
-import Presence.Types exposing (User)
 
 
 decoder : Decoder (List User)

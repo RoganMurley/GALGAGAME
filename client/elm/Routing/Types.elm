@@ -11,8 +11,8 @@ type Route
     | League
     | Leaderboard
     | Profile String
-    | Presence
     | Create
+    | Entrypoint
 
 
 type PlayRoute

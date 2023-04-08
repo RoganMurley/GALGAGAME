@@ -1,4 +1,4 @@
-module Presence.Types exposing (Model, User)
+module Entrypoint.Types exposing (Model, User)
 
 
 type alias Model =

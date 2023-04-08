@@ -1,12 +1,12 @@
-module Presence.State exposing (init, receive, update)
+module Entrypoint.State exposing (init, receive, update)
 
+import Entrypoint.Decoders as Entrypoint
+import Entrypoint.Messages exposing (Msg(..))
+import Entrypoint.Types exposing (Model)
 import Http
 import Main.Messages as Main
 import Main.Types exposing (Flags)
 import Ports exposing (log, websocketSend)
-import Presence.Decoders as Presence
-import Presence.Messages exposing (Msg(..))
-import Presence.Types exposing (Model)
 import Room.Generators exposing (generate)
 import Room.Messages as Room
 import Util exposing (apiLocation, message, splitOnColon)
@@ -28,8 +28,8 @@ update model msg flags =
                 { url = apiLocation flags ++ "/presence"
                 , expect =
                     Http.expectJson
-                        (Main.RoomMsg << Room.PresenceMsg << LoadCallback)
-                        Presence.decoder
+                        (Main.RoomMsg << Room.EntrypointMsg << LoadCallback)
+                        Entrypoint.decoder
                 }
             )
 

@@ -10,6 +10,8 @@ import Connected.Messages as Connected
 import Connected.State as Connected
 import Create.State as Create
 import DeckBuilding.Messages as DeckBuilding
+import Entrypoint.Messages as Entrypoint
+import Entrypoint.State as Entrypoint
 import Feedback.State as Feedback
 import GameState.Messages as GameState
 import GameState.Types exposing (GameState(..))
@@ -34,8 +36,6 @@ import Mode exposing (Mode(..))
 import Mouse exposing (MouseState(..))
 import Notifications.State as Notifications
 import Ports exposing (analytics, copyInput, godModeCommand, loadSavedCharacter, log, mouseDown, mouseMove, mouseUp, reload, selectAllInput, touch, websocketListen, websocketSend)
-import Presence.Messages as Presence
-import Presence.State as Presence
 import Profile.Messages as Profile
 import Profile.State as Profile
 import Replay.Messages as Replay
@@ -601,13 +601,13 @@ locationUpdate model url =
             , message <| Main.RoomMsg <| Room.ProfileMsg <| Profile.Load username
             )
 
-        Routing.Presence ->
+        Routing.Entrypoint ->
             ( { model
                 | room =
-                    Room.Presence <|
-                        Presence.init
+                    Room.Entrypoint <|
+                        Entrypoint.init
               }
-            , message <| Main.RoomMsg <| Room.PresenceMsg <| Presence.Load
+            , message <| Main.RoomMsg <| Room.EntrypointMsg <| Entrypoint.Load
             )
 
         Routing.Create ->

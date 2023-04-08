@@ -5,6 +5,7 @@ import Browser.Events exposing (Visibility)
 import Browser.Navigation
 import Connected.State as Connected
 import Create.State as Create
+import Entrypoint.State as Entrypoint
 import Feedback.State as Feedback
 import GameType exposing (GameType(..))
 import Leaderboard.State as Leaderboard
@@ -15,7 +16,6 @@ import Main.Messages as Main
 import Main.Types exposing (Flags)
 import Mode exposing (Mode(..))
 import Mouse
-import Presence.State as Presence
 import Profile.State as Profile
 import Replay.State as Replay
 import Room.Messages exposing (Msg(..))
@@ -26,7 +26,7 @@ import Util exposing (message)
 
 init : Model
 init =
-    Presence <| Presence.init
+    Entrypoint <| Entrypoint.init
 
 
 update : Model -> Msg -> Assets.Model -> Flags -> ( Model, Cmd Main.Msg )
@@ -140,14 +140,14 @@ update model msg assets flags =
                 _ ->
                     ( model, Cmd.none )
 
-        PresenceMsg presenceMsg ->
+        EntrypointMsg entrypointMsg ->
             case model of
-                Presence presence ->
+                Entrypoint entrypoint ->
                     let
-                        ( newPresence, cmd ) =
-                            Presence.update presence presenceMsg flags
+                        ( newEntrypoint, cmd ) =
+                            Entrypoint.update entrypoint entrypointMsg flags
                     in
-                    ( Presence newPresence, cmd )
+                    ( Entrypoint newEntrypoint, cmd )
 
                 _ ->
                     ( model, Cmd.none )
@@ -234,8 +234,8 @@ receive flags assets str model =
         Profile profile ->
             ( Profile profile, Cmd.none )
 
-        Presence presence ->
-            ( Presence presence, Presence.receive str )
+        Entrypoint entrypoint ->
+            ( Entrypoint entrypoint, Entrypoint.receive str )
 
         Create create ->
             ( Create create, Cmd.none )
@@ -275,8 +275,8 @@ tick flags room dt =
         Profile profile ->
             ( Profile profile, Cmd.none )
 
-        Presence presence ->
-            ( Presence presence, Cmd.none )
+        Entrypoint entrypoint ->
+            ( Entrypoint entrypoint, Cmd.none )
 
         Create create ->
             ( Create create, Cmd.none )

@@ -1,7 +1,7 @@
-module Presence.Messages exposing (..)
+module Entrypoint.Messages exposing (..)
 
+import Entrypoint.Types exposing (User)
 import Http
-import Presence.Types exposing (User)
 
 
 type Msg

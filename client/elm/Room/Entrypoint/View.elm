@@ -1,10 +1,10 @@
-module Presence.View exposing (view)
+module Entrypoint.View exposing (view)
 
+import Entrypoint.Messages exposing (Msg(..))
+import Entrypoint.Types exposing (Model)
 import Html exposing (Html, div, h1, text)
 import Html.Attributes exposing (class)
 import Html.Events exposing (onClick)
-import Presence.Messages exposing (Msg(..))
-import Presence.Types exposing (Model)
 
 
 view : Model -> Html Msg

@@ -2,13 +2,13 @@ module Room.Messages exposing (Msg(..))
 
 import Connected.Messages as Connected
 import Create.Messages as Create
+import Entrypoint.Messages as Entrypoint
 import Feedback.Messages as Feedback
 import Leaderboard.Messages as Leaderboard
 import League.Messages as League
 import Lobby.Messages as Lobby
 import Login.Messages as Login
 import Mode exposing (Mode)
-import Presence.Messages as Presence
 import Profile.Messages as Profile
 import Replay.Messages as Replay
 import Signup.Messages as Signup
@@ -24,6 +24,6 @@ type Msg
     | LeagueMsg League.Msg
     | LeaderboardMsg Leaderboard.Msg
     | ProfileMsg Profile.Msg
-    | PresenceMsg Presence.Msg
+    | EntrypointMsg Entrypoint.Msg
     | CreateMsg Create.Msg
     | StartGame Mode (Maybe String)
