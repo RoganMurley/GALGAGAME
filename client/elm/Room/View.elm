@@ -66,8 +66,7 @@ view model settings notifications flags assets =
                     Profile.view profile
 
                 Entrypoint entrypoint ->
-                    Html.map (Main.RoomMsg << EntrypointMsg) <|
-                        Entrypoint.view entrypoint
+                    Entrypoint.view entrypoint
 
                 Create create ->
                     Html.map (Main.RoomMsg << CreateMsg) <|

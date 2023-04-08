@@ -8,17 +8,20 @@ import Stats exposing (levelFromExperience)
 decoder : Decoder Profile
 decoder =
     let
-        makeProfile : String -> Float -> List ProfileReplay -> Bool -> Profile
-        makeProfile name xp replays online =
+        makeProfile : String -> Int -> Float -> List ProfileReplay -> Bool -> Profile
+        makeProfile name id xp replays online =
             { name = name
+            , id = id
             , xp = xp
             , level = levelFromExperience xp
             , replays = replays
             , online = online
+            , isMe = False
             }
     in
-    Json.map4 makeProfile
+    Json.map5 makeProfile
         (field "name" string)
+        (field "id" int)
         (field "xp" float)
         (field "replays" <| list profileReplayDecoder)
         (field "online" bool)

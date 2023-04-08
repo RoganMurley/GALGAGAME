@@ -9,10 +9,12 @@ type alias Model =
 
 type alias Profile =
     { name : String
+    , id : Int
     , xp : Float
     , level : Int
     , replays : List ProfileReplay
     , online : Bool
+    , isMe : Bool
     }
 
 

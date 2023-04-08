@@ -6,8 +6,7 @@ import Entrypoint.Types exposing (Model)
 import Http
 import Main.Messages as Main
 import Main.Types exposing (Flags)
-import Ports exposing (log, websocketSend)
-import Room.Generators exposing (generate)
+import Ports exposing (log)
 import Room.Messages as Room
 import Util exposing (apiLocation, message, splitOnColon)
 
@@ -63,21 +62,6 @@ update model msg flags =
             ( { model | error = "Error connecting to server" ++ statusStr }
             , Cmd.none
             )
-
-        Challenge uid ->
-            let
-                roomId =
-                    generate Room.Generators.roomID flags.seed
-            in
-            ( model
-            , websocketSend <| "challenge:" ++ String.fromInt uid ++ "," ++ roomId
-            )
-
-        Quickplay ->
-            ( model, message Main.GotoQuickplayGame )
-
-        CustomGame ->
-            ( model, message <| Main.GotoCustomGame Nothing )
 
 
 receive : String -> Cmd Main.Msg

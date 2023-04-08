@@ -30,7 +30,7 @@ loadProfile username = do
         Just $
           hydrateOnline isOnline $
             hydrateReplays replaysResult $
-              profileFromStats (userUsername user) (statsExperience stats)
+              profileFromStats (userUsername user) (userId user) (statsExperience stats)
     _ ->
       return Nothing
 
@@ -67,6 +67,7 @@ loadProfileReplays userId = do
 -- Profile
 data Profile = Profile
   { profile_name :: Text,
+    profile_id :: Int64,
     profile_xp :: Experience,
     profile_replays :: [ProfileReplay],
     profile_online :: Bool
@@ -74,18 +75,20 @@ data Profile = Profile
   deriving (Eq, Show)
 
 instance ToJSON Profile where
-  toJSON Profile {profile_name, profile_xp, profile_replays, profile_online} =
+  toJSON Profile {profile_name, profile_id, profile_xp, profile_replays, profile_online} =
     object
       [ "name" .= profile_name,
+        "id" .= profile_id,
         "xp" .= profile_xp,
         "replays" .= profile_replays,
         "online" .= profile_online
       ]
 
-profileFromStats :: Text -> Experience -> Profile
-profileFromStats username xp =
+profileFromStats :: Text -> Int64 -> Experience -> Profile
+profileFromStats username uid xp =
   Profile
     { profile_name = username,
+      profile_id = uid,
       profile_xp = xp,
       profile_replays = [],
       profile_online = False

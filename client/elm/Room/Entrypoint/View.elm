@@ -1,13 +1,13 @@
 module Entrypoint.View exposing (view)
 
-import Entrypoint.Messages exposing (Msg(..))
 import Entrypoint.Types exposing (Model)
 import Html exposing (Html, button, div, text)
 import Html.Attributes exposing (class)
 import Html.Events exposing (onClick)
+import Main.Messages as Main
 
 
-view : Model -> Html Msg
+view : Model -> Html Main.Msg
 view model =
     div [ class "presence-box" ] <|
         case model.error of
@@ -21,7 +21,7 @@ view model =
                         (List.map
                             (\{ name, id } ->
                                 button
-                                    [ class "presence-button", onClick <| Challenge id ]
+                                    [ class "presence-button", onClick <| Main.Challenge id ]
                                     [ text <| "CHALLENGE " ++ name ]
                             )
                          <|
@@ -29,12 +29,12 @@ view model =
                         )
                             ++ [ button
                                     [ class "presence-button"
-                                    , onClick Quickplay
+                                    , onClick Main.GotoQuickplayGame
                                     ]
                                     [ text "QUICKPLAY" ]
                                , button
                                     [ class "presence-button"
-                                    , onClick CustomGame
+                                    , onClick <| Main.GotoCustomGame Nothing
                                     ]
                                     [ text "CUSTOM GAME" ]
                                ]

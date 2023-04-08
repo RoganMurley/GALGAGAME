@@ -232,7 +232,7 @@ receive flags assets str model =
             ( Leaderboard league, Cmd.none )
 
         Profile profile ->
-            ( Profile profile, Cmd.none )
+            ( Profile profile, Profile.receive str )
 
         Entrypoint entrypoint ->
             ( Entrypoint entrypoint, Entrypoint.receive str )

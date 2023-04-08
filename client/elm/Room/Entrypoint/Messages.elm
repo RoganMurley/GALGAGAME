@@ -7,6 +7,3 @@ import Http
 type Msg
     = Load
     | LoadCallback (Result Http.Error (List User))
-    | Challenge Int
-    | Quickplay
-    | CustomGame

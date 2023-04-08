@@ -48,4 +48,5 @@ type Msg
     | GotoComputerGame
     | GotoQuickplayGame
     | GotoCreateGame
+    | Challenge Int
     | NoOp

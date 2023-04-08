@@ -32,6 +32,7 @@
     }
 
     .button {
+        display: block;
         margin: 5px;
 
         color: $navy;
@@ -46,7 +47,6 @@
         border-radius: 5px;
         border-width: 3px;
         border-style: solid;
-        width: 100%;
         text-decoration: none;
         text-align: center;
 
@@ -58,6 +58,10 @@
             cursor: pointer;
             cursor: hand;
         }
+    }
+
+    .challenge {
+        margin-bottom: 12px;
     }
 
     .replay {

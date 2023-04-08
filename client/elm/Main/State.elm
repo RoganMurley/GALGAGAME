@@ -427,6 +427,15 @@ update msg ({ assets, room, notifications, settings, flags } as model) =
             , Browser.Navigation.load <| "/create"
             )
 
+        Challenge uid ->
+            let
+                roomId =
+                    generate Room.Generators.roomID flags.seed
+            in
+            ( model
+            , websocketSend <| "challenge:" ++ String.fromInt uid ++ "," ++ roomId
+            )
+
         NoOp ->
             ( model, Cmd.none )
 
