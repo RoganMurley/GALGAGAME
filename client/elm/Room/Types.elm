@@ -14,8 +14,7 @@ import Signup.Types as Signup
 
 
 type Model
-    = MainMenu
-    | Lobby Lobby.Model
+    = Lobby Lobby.Model
     | Connected Connected.Model
     | Replay Replay.Model
     | Login Login.Model

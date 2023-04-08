@@ -7,7 +7,6 @@ import Leaderboard.Messages as Leaderboard
 import League.Messages as League
 import Lobby.Messages as Lobby
 import Login.Messages as Login
-import Menu.Messages as Menu
 import Mode exposing (Mode)
 import Presence.Messages as Presence
 import Profile.Messages as Profile
@@ -19,7 +18,6 @@ type Msg
     = ConnectedMsg Connected.Msg
     | LobbyMsg Lobby.Msg
     | LoginMsg Login.Msg
-    | MenuMsg Menu.Msg
     | ReplayMsg Replay.Msg
     | SignupMsg Signup.Msg
     | FeedbackMsg Feedback.Msg

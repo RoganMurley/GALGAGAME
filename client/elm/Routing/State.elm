@@ -7,7 +7,7 @@ import Url.Parser.Query as Query
 
 default : Route
 default =
-    Play <| QuickPlay Nothing
+    Presence
 
 
 route : Parser (Route -> a) a

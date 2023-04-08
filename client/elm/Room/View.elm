@@ -15,7 +15,6 @@ import Lobby.View as Lobby
 import Login.View as Login
 import Main.Messages as Main
 import Main.Types exposing (Flags)
-import Menu.View as Menu
 import Notifications.Types as Notifications
 import Notifications.View as Notifications
 import Presence.View as Presence
@@ -34,10 +33,6 @@ view model settings notifications flags assets =
     let
         roomView =
             case model of
-                MainMenu ->
-                    Html.map (Main.RoomMsg << MenuMsg) <|
-                        Menu.view
-
                 Lobby lobby ->
                     Lobby.view flags lobby
 

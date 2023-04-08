@@ -13,7 +13,6 @@ import Lobby.State as Lobby
 import Login.State as Login
 import Main.Messages as Main
 import Main.Types exposing (Flags)
-import Menu.State as Menu
 import Mode exposing (Mode(..))
 import Mouse
 import Presence.State as Presence
@@ -27,20 +26,12 @@ import Util exposing (message)
 
 init : Model
 init =
-    MainMenu
+    Presence <| Presence.init
 
 
 update : Model -> Msg -> Assets.Model -> Flags -> ( Model, Cmd Main.Msg )
 update model msg assets flags =
     case msg of
-        MenuMsg menuMsg ->
-            case model of
-                MainMenu ->
-                    ( model, Menu.update menuMsg flags )
-
-                _ ->
-                    ( model, Cmd.none )
-
         LobbyMsg lobbyMsg ->
             case model of
                 Lobby lobby ->
@@ -212,9 +203,6 @@ update model msg assets flags =
 receive : Flags -> Assets.Model -> String -> Model -> ( Model, Cmd Main.Msg )
 receive flags assets str model =
     case model of
-        MainMenu ->
-            ( MainMenu, Cmd.none )
-
         Lobby lobby ->
             ( Lobby lobby, Lobby.receive str )
 
@@ -256,9 +244,6 @@ receive flags assets str model =
 tick : Flags -> Model -> Float -> ( Model, Cmd Msg )
 tick flags room dt =
     case room of
-        MainMenu ->
-            ( MainMenu, Cmd.none )
-
         Lobby lobby ->
             ( Lobby lobby, Cmd.none )
 

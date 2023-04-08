@@ -19,8 +19,8 @@ view model =
                             , div [ class "presence-users" ] <|
                                 List.map
                                     (\{ name, id } -> div [ class "presence-user", onClick <| Challenge id ] [ text name ])
-                                    (List.take 4 users)
-                                    ++ [ div [ class "presence-user", onClick <| ChallengeCPU ] [ text "CPU" ] ]
+                                <|
+                                    List.take 4 users
                             ]
                         ]
 

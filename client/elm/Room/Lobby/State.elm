@@ -139,7 +139,7 @@ gameTypeToString gameType =
             "CPU ROOM"
 
         QuickplayGame ->
-            "GALGA"
+            "QUICKPLAY"
 
         ChallengeGame ->
             "CHALLENGE"
