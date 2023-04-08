@@ -9,3 +9,4 @@ type Msg
     | LoadCallback (Result Http.Error (List User))
     | Challenge Int
     | Quickplay
+    | CustomGame

@@ -422,6 +422,11 @@ update msg ({ assets, room, notifications, settings, flags } as model) =
             , Browser.Navigation.load <| "/play/quickplay"
             )
 
+        GotoCreateGame ->
+            ( { model | settings = Settings.close settings }
+            , Browser.Navigation.load <| "/create"
+            )
+
         NoOp ->
             ( model, Cmd.none )
 

@@ -68,6 +68,9 @@ update model msg flags =
         Quickplay ->
             ( model, message Main.GotoQuickplayGame )
 
+        CustomGame ->
+            ( model, message <| Main.GotoCustomGame Nothing )
+
 
 receive : String -> Cmd Main.Msg
 receive msg =

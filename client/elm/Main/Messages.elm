@@ -47,4 +47,5 @@ type Msg
     | GotoChallengeGame (Maybe String)
     | GotoComputerGame
     | GotoQuickplayGame
+    | GotoCreateGame
     | NoOp

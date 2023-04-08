@@ -38,14 +38,14 @@ view model =
         [ div [ class "create" ]
             [ h1 [] [ text "CREATE CUSTOM GAME" ]
             , inputView AllowSpectators
-            , inputView StartingLife
+
+            -- , inputView StartingLife
             , button
                 [ onClick Submit
                 , disabled submitDisabled
                 , class "button"
                 ]
                 [ text "CREATE" ]
-            , div [] [ text (String.fromInt (List.length validations)) ]
             , div [ class "error" ] [ text model.error ]
             ]
         ]

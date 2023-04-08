@@ -14,21 +14,28 @@ view model =
             "" ->
                 case model.presence of
                     Just users ->
-                        [ div [ class "presence" ]
+                        [ div [ class "presence" ] <|
                             [ div [ class "presence-users" ] <|
-                                List.map
+                                (List.map
                                     (\{ name, id } ->
                                         button
                                             [ class "presence-button", onClick <| Challenge id ]
                                             [ text <| "CHALLENGE " ++ name ]
                                     )
-                                <|
+                                 <|
                                     List.take 4 users
-                            , button
-                                [ class "presence-button"
-                                , onClick Quickplay
-                                ]
-                                [ text "QUICKPLAY" ]
+                                )
+                                    ++ [ button
+                                            [ class "presence-button"
+                                            , onClick Quickplay
+                                            ]
+                                            [ text "QUICKPLAY" ]
+                                       , button
+                                            [ class "presence-button"
+                                            , onClick CustomGame
+                                            ]
+                                            [ text "CUSTOM GAME" ]
+                                       ]
                             ]
                         ]
 
