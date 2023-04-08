@@ -23,10 +23,7 @@ import WebGL
 htmlView : Model -> Flags -> String -> Html Main.Msg
 htmlView { waitType } { httpPort, hostname } roomID =
     case waitType of
-        WaitQuickplay ->
-            text ""
-
-        WaitCustom ->
+        Just WaitCustom ->
             let
                 portProtocol =
                     if httpPort /= "" then
@@ -66,12 +63,15 @@ htmlView { waitType } { httpPort, hostname } roomID =
                 , waitingInfo
                 ]
 
-        WaitChallenge ->
+        Just WaitChallenge ->
             div [ class "waiting" ]
                 [ div [ class "waiting-prompt" ]
-                    [ text "CHALLENGING..."
+                    [ text "WAITING FOR OPPONENT TO JOIN..."
                     ]
                 ]
+
+        _ ->
+            text ""
 
 
 webglView : Model -> Render.Params -> Assets.Model -> List WebGL.Entity
@@ -99,7 +99,7 @@ webglView { bounceTick, bulge, waitType } params assets =
         [ Background.webglView params assets Finding
         ]
         ++ (case waitType of
-                WaitQuickplay ->
+                Just WaitQuickplay ->
                     [ Render.Primitives.quad Render.Shaders.donutFragment <|
                         { rotation = Quaternion.makeRotate <| Quaternion.zRotation 0
                         , scale = makeScale3 size size 1

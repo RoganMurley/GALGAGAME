@@ -221,6 +221,7 @@ beginPrefix :: Prefix -> TVar Server.State -> Client -> TVar Room -> App ()
 beginPrefix PrefixPlay s c r = beginPlay s c r
 beginPrefix PrefixSpec s c r = beginSpec s c r
 beginPrefix PrefixQueue s c r = beginQueue s c r
+beginPrefix PrefixChallenge s c r = beginPlay s c r
 beginPrefix PrefixCpu s c r = beginComputer "CPU" s c r >> return ()
 
 prefixMetric :: Prefix -> App ()
@@ -228,9 +229,11 @@ prefixMetric PrefixPlay = Metrics.incr "begin.play"
 prefixMetric PrefixSpec = Metrics.incr "begin.spec"
 prefixMetric PrefixQueue = Metrics.incr "begin.queue"
 prefixMetric PrefixCpu = Metrics.incr "begin.cpu"
+prefixMetric PrefixChallenge = Metrics.incr "begin.challenge"
 
 prefixWaitType :: Prefix -> WaitType
 prefixWaitType PrefixQueue = WaitQuickplay
+prefixWaitType PrefixChallenge = WaitChallenge
 prefixWaitType _ = WaitCustom
 
 makeScenario :: Gen -> Scenario

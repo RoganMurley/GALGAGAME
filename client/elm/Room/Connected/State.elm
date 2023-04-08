@@ -34,7 +34,7 @@ import Waiting.Types exposing (WaitType(..))
 
 init : Mode -> GameType -> String -> Model
 init mode gameType roomID =
-    { game = Waiting <| Waiting.init WaitQuickplay
+    { game = Waiting <| Waiting.init Nothing
     , gameType = gameType
     , mode = mode
     , roomID = roomID

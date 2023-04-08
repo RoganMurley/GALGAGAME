@@ -11,17 +11,17 @@ decoder =
         (field "waiting" (string |> Json.andThen waitTypeDecoder))
 
 
-waitTypeDecoder : String -> Decoder WaitType
+waitTypeDecoder : String -> Decoder (Maybe WaitType)
 waitTypeDecoder s =
     case s of
         "quickplay" ->
-            succeed WaitQuickplay
+            succeed <| Just WaitQuickplay
 
         "custom" ->
-            succeed WaitCustom
+            succeed <| Just WaitCustom
 
         "challenge" ->
-            succeed WaitChallenge
+            succeed <| Just WaitChallenge
 
         _ ->
             fail <| "Invalid WaitType " ++ s

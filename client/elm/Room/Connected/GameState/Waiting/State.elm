@@ -7,9 +7,9 @@ import Mouse exposing (MouseState(..), Position)
 import Waiting.Types exposing (Model, WaitType(..))
 
 
-init : WaitType -> Model
-init waitType =
-    { waitType = waitType
+init : Maybe WaitType -> Model
+init mWaitType =
+    { waitType = mWaitType
     , bounceTick = 0
     , seed = Nothing
     , bulge = 0

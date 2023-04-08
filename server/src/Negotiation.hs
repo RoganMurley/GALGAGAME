@@ -54,6 +54,7 @@ parsePrefix msg =
     ("spectate", _) -> Just PrefixSpec
     ("play", _) -> Just PrefixPlay
     ("playComputer", _) -> Just PrefixCpu
+    ("playChallenge", _) -> Just PrefixChallenge
     ("queue", _) -> Just PrefixQueue
     _ -> Nothing
 
@@ -61,5 +62,6 @@ data Prefix
   = PrefixSpec
   | PrefixPlay
   | PrefixCpu
+  | PrefixChallenge
   | PrefixQueue
   deriving (Show)

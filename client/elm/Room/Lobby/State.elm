@@ -48,7 +48,7 @@ update ({ gameType, mode, joinAttempts } as model) msg flags =
                                     "queue:"
 
                                 ChallengeGame ->
-                                    "play:"
+                                    "playChallenge:"
 
                         Spectating ->
                             "spectate:"

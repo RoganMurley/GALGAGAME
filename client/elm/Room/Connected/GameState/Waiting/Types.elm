@@ -4,7 +4,7 @@ import Random exposing (Seed)
 
 
 type alias Model =
-    { waitType : WaitType
+    { waitType : Maybe WaitType
     , bounceTick : Float
     , seed : Maybe Seed
     , bulge : Float
