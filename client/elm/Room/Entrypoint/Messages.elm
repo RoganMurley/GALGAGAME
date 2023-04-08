@@ -8,4 +8,4 @@ type Msg
     = Load
     | LoadCallback (Result Http.Error (List User))
     | Challenge Int
-    | ChallengeCPU
+    | Quickplay

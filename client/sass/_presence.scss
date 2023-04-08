@@ -30,26 +30,32 @@
     flex-direction: column;
 }
 
-.presence-user {
-    font-size: 28px;
-    text-transform: uppercase;
-    padding: 8px;
-    width: 100%;
+.presence-button {
+    margin: 16px;
+
     color: $navy;
-    border-radius: 10px;
+
+    font-size: 28px;
     font-weight: 900;
+    font-family: sans-serif;
 
-    &:nth-child(even) {
-        background-color: $yellow;
-    }
+    background-color: rgba(0, 0, 0, 0);
 
-    &:nth-child(odd) {
-        background-color: #e3e04f;
-    }
+    border-color: $navy;
+    border-radius: 5px;
+    border-width: 3px;
+    border-style: solid;
+    width: 400px;
+    text-decoration: none;
+    text-align: center;
+    text-transform: uppercase;
+
+    padding: 5px;
 
     &:hover {
+        color: #f5f25e;
         background-color: $navy;
-        color: $yellow;
         cursor: pointer;
+        cursor: hand;
     }
 }

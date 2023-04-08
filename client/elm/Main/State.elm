@@ -417,6 +417,11 @@ update msg ({ assets, room, notifications, settings, flags } as model) =
             , Browser.Navigation.load <| "/play/computer"
             )
 
+        GotoQuickplayGame ->
+            ( { model | settings = Settings.close settings }
+            , Browser.Navigation.load <| "/play/quickplay"
+            )
+
         NoOp ->
             ( model, Cmd.none )
 

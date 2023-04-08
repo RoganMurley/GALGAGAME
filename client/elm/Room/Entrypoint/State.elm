@@ -59,8 +59,8 @@ update model msg flags =
             , websocketSend <| "challenge:" ++ String.fromInt uid ++ "," ++ roomId
             )
 
-        ChallengeCPU ->
-            ( model, message Main.GotoComputerGame )
+        Quickplay ->
+            ( model, message Main.GotoQuickplayGame )
 
 
 receive : String -> Cmd Main.Msg
