@@ -36,12 +36,20 @@
     padding: 8px;
     width: 100%;
     color: $navy;
+    border-radius: 10px;
+    font-weight: 900;
 
     &:nth-child(even) {
-        background: $yellow;
+        background-color: $yellow;
     }
 
     &:nth-child(odd) {
-        background: #e3e04f;
+        background-color: #e3e04f;
+    }
+
+    &:hover {
+        background-color: $navy;
+        color: $yellow;
+        cursor: pointer;
     }
 }
