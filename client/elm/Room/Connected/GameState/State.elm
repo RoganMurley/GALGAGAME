@@ -5,6 +5,7 @@ import Assets.Types as Assets
 import Audio.State exposing (playSound)
 import Browser.Events exposing (Visibility(..))
 import Chat.Types as Chat
+import Connected.Messages as Connected
 import DeckBuilding.State as DeckBuilding
 import Game.State exposing (bareContextInit)
 import Game.Types as Game
@@ -22,6 +23,7 @@ import PlayState.Types exposing (PlayState(..))
 import Players exposing (Players)
 import Ports exposing (log)
 import Random
+import Room.Messages as Room
 import Tutorial
 import Waiting.State as Waiting
 
@@ -174,11 +176,15 @@ carry old new =
             new
 
 
-tick : Flags -> GameState -> Chat.Model -> GameType -> Float -> ( GameState, Cmd Msg )
+tick : Flags -> GameState -> Chat.Model -> GameType -> Float -> ( GameState, Cmd Main.Msg )
 tick flags state chat gameType dt =
     case state of
         Waiting waiting ->
-            ( Waiting <| Waiting.tick dt waiting, Cmd.none )
+            let
+                ( newWaiting, msg ) =
+                    Waiting.tick dt waiting
+            in
+            ( Waiting newWaiting, msg )
 
         Selecting selecting ->
             let
@@ -188,14 +194,14 @@ tick flags state chat gameType dt =
                 ( newSelecting, cmd ) =
                     DeckBuilding.tick ctx dt chat selecting
             in
-            ( Selecting newSelecting, Cmd.map SelectingMsg cmd )
+            ( Selecting newSelecting, Cmd.map (Main.RoomMsg << Room.ConnectedMsg << Connected.GameStateMsg << SelectingMsg) cmd )
 
         Started playState ->
             let
                 ( newState, cmd ) =
                     PlayState.tick flags playState chat gameType dt
             in
-            ( Started newState, Cmd.map PlayStateMsg cmd )
+            ( Started newState, Cmd.map (Main.RoomMsg << Room.ConnectedMsg << Connected.GameStateMsg << PlayStateMsg) cmd )
 
 
 applyTags : List String -> GameState -> GameState

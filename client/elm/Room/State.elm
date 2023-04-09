@@ -241,7 +241,7 @@ receive flags assets str model =
             ( Create create, Cmd.none )
 
 
-tick : Flags -> Model -> Float -> ( Model, Cmd Msg )
+tick : Flags -> Model -> Float -> ( Model, Cmd Main.Msg )
 tick flags room dt =
     case room of
         Lobby lobby ->
@@ -255,7 +255,7 @@ tick flags room dt =
                 ( newConnected, msg ) =
                     Connected.tick flags connected dt
             in
-            ( Connected newConnected, Cmd.map ConnectedMsg msg )
+            ( Connected newConnected, msg )
 
         Replay replay ->
             ( Replay <| Replay.tick flags replay dt, Cmd.none )
@@ -280,7 +280,7 @@ tick flags room dt =
                 ( newEntrypoint, msg ) =
                     Entrypoint.tick dt entrypoint
             in
-            ( Entrypoint newEntrypoint, Cmd.map EntrypointMsg msg )
+            ( Entrypoint newEntrypoint, Cmd.map (Main.RoomMsg << EntrypointMsg) msg )
 
         Create create ->
             ( Create create, Cmd.none )

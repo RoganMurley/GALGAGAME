@@ -49,4 +49,6 @@ type Msg
     | GotoQuickplayGame
     | GotoCreateGame
     | Challenge Int
+    | EndChallenge
+    | GoHome
     | NoOp

@@ -35,6 +35,7 @@ import Math.Vector2 exposing (vec2)
 import Mode exposing (Mode(..))
 import Mouse exposing (MouseState(..))
 import Notifications.State as Notifications
+import Notifications.Types exposing (Notification)
 import Ports exposing (analytics, copyInput, godModeCommand, loadSavedCharacter, log, mouseDown, mouseMove, mouseUp, reload, selectAllInput, touch, websocketListen, websocketSend)
 import Profile.Messages as Profile
 import Profile.State as Profile
@@ -112,7 +113,7 @@ update msg ({ assets, room, notifications, settings, flags } as model) =
                             Cmd.none
             in
             ( { model | flags = newFlags, room = newRoom, notifications = newNotifications }
-            , Cmd.batch [ newMsg, Cmd.map RoomMsg tickMsg ]
+            , Cmd.batch [ newMsg, tickMsg ]
             )
 
         KeyPress key ->
@@ -427,6 +428,11 @@ update msg ({ assets, room, notifications, settings, flags } as model) =
             , Browser.Navigation.load <| "/create"
             )
 
+        GoHome ->
+            ( model
+            , Browser.Navigation.load <| "/play"
+            )
+
         Challenge uid ->
             let
                 roomId =
@@ -434,6 +440,22 @@ update msg ({ assets, room, notifications, settings, flags } as model) =
             in
             ( model
             , websocketSend <| "challenge:" ++ String.fromInt uid ++ "," ++ roomId
+            )
+
+        EndChallenge ->
+            let
+                notif : Notification
+                notif =
+                    { text = "Your challenge was rejected"
+                    , options = [ { cta = "GO HOME", msg = GoHome } ]
+                    , timer = 0
+                    }
+
+                newNotifications =
+                    { notifications | notifications = notif :: notifications.notifications }
+            in
+            ( { model | notifications = newNotifications }
+            , Cmd.none
             )
 
         NoOp ->

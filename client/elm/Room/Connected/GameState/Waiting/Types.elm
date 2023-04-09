@@ -14,7 +14,7 @@ type alias Model =
 type WaitType
     = WaitQuickplay
     | WaitCustom
-    | WaitChallenge WaitTime
+    | WaitChallenge WaitTime Bool
 
 
 type alias WaitTime =

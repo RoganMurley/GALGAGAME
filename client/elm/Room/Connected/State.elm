@@ -25,6 +25,7 @@ import PlayState.Messages as PlayState
 import Players exposing (Players)
 import Ports exposing (log, websocketSend)
 import Ripple.State as Ripple
+import Room.Messages as Room
 import Settings.Messages as Settings
 import Stats exposing (decodeStatChange)
 import Util exposing (message, splitOnColon)
@@ -91,13 +92,13 @@ update flags assets msg ({ chat, game, mode, gameType, players } as model) =
             )
 
 
-tick : Flags -> Model -> Float -> ( Model, Cmd Msg )
+tick : Flags -> Model -> Float -> ( Model, Cmd Main.Msg )
 tick flags model dt =
     if model.connectionLost then
         case model.game of
             Waiting _ ->
                 -- If we're waiting, we can try to reconnect gracefully.
-                ( model, message <| Reconnect )
+                ( model, message <| Main.RoomMsg <| Room.ConnectedMsg <| Reconnect )
 
             _ ->
                 ( model, Cmd.none )
@@ -134,7 +135,7 @@ tick flags model dt =
                 Ripple.tick model.ripples dt
 
             cmd =
-                Cmd.batch (Cmd.map GameStateMsg msg :: heartbeatCmds)
+                Cmd.batch (msg :: heartbeatCmds)
         in
         ( { model
             | chat = chat

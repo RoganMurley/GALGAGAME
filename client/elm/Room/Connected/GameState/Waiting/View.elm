@@ -138,7 +138,7 @@ webglView { bounceTick, bulge, waitType } params assets =
                 Just WaitQuickplay ->
                     loadingSpinner
 
-                Just (WaitChallenge _) ->
+                Just (WaitChallenge _ _) ->
                     loadingSpinner
 
                 _ ->
