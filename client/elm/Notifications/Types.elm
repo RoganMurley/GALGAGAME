@@ -11,5 +11,11 @@ type alias Model =
 type alias Notification =
     { text : String
     , timer : Float
-    , callback : Maybe Main.Msg
+    , options : List Option
+    }
+
+
+type alias Option =
+    { msg : Main.Msg
+    , cta : String
     }

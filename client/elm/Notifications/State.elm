@@ -33,7 +33,10 @@ receive msg model =
                 newNotification =
                     { text = "Challenged by " ++ toUpper opponentName
                     , timer = 0
-                    , callback = Just <| GotoChallengeGame (Just roomId)
+                    , options =
+                        [ { cta = "ACCEPT", msg = GotoChallengeGame (Just roomId) }
+                        , { cta = "DECLINE", msg = NotificationsMsg Dismiss }
+                        ]
                     }
             in
             { model
@@ -70,4 +73,4 @@ update model msg =
 
 notif : String -> Notification
 notif str =
-    { text = str, timer = 0, callback = Nothing }
+    { text = str, timer = 0, options = [] }

@@ -14,28 +14,25 @@ view { notifications } =
         Just notification ->
             let
                 buttons =
-                    case notification.callback of
-                        Just callback ->
+                    case notification.options of
+                        [] ->
                             [ button
                                 [ class "menu-button notification-button"
-                                , onClick callback
                                 , onClick <| Main.NotificationsMsg Dismiss
                                 ]
-                                [ text "ACCEPT" ]
-                            , button
-                                [ class "menu-button notification-button"
-                                , onClick <| Main.NotificationsMsg Dismiss
-                                ]
-                                [ text "DECLINE" ]
+                                [ text "OK" ]
                             ]
 
-                        Nothing ->
-                            [ button
-                                [ class "menu-button notification-button"
-                                , onClick <| Main.NotificationsMsg Dismiss
-                                ]
-                                [ text "OKAY" ]
-                            ]
+                        _ ->
+                            List.map
+                                (\option ->
+                                    button
+                                        [ class "menu-button notification-button"
+                                        , onClick option.msg
+                                        ]
+                                        [ text option.cta ]
+                                )
+                                notification.options
             in
             div [ class "notification-background" ]
                 [ div
