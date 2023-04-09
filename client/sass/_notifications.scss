@@ -1,11 +1,65 @@
+@import "theme";
+
 .notification {
-  background-color: #f5f25e;
-  font-family: monospace;
+  color: $navy;
+  background-color: $yellow;
   font-weight: 900;
   padding: 8px;
   text-align: center;
+  height: 200px;
+  border-radius: 25px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  width: 60vw;
+
+  @media (max-width: 1279px) {
+    width: 95vw;
+  }
+}
+
+.notification-background {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba($color: #000000, $alpha: 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.notification-buttons {
+  display: flex;
+  justify-content: center;
+}
+
+.notification-button {
+  display: block;
+  margin: 5px;
+
+  color: $navy;
+
+  font-size: 14px;
+  font-weight: 900;
+  font-family: sans-serif;
+
+  background-color: rgba(0, 0, 0, 0);
+
+  border-color: $navy;
+  border-radius: 5px;
+  border-width: 3px;
+  border-style: solid;
+  text-decoration: none;
+  text-align: center;
+
+  padding: 5px;
 
   &:hover {
+    color: #f5f25e;
+    background-color: $navy;
     cursor: pointer;
+    cursor: hand;
   }
 }

@@ -1,6 +1,6 @@
 module Notifications.View exposing (view)
 
-import Html exposing (Html, div, text)
+import Html exposing (Html, button, div, h1, text)
 import Html.Attributes exposing (class)
 import Html.Events exposing (onClick)
 import Main.Messages as Main
@@ -13,17 +13,37 @@ view { notifications } =
     case List.head notifications of
         Just notification ->
             let
-                clickHandler =
-                    onClick (Main.NotificationsMsg Dismiss)
-                        :: (case notification.callback of
-                                Just callback ->
-                                    [ onClick callback ]
+                buttons =
+                    case notification.callback of
+                        Just callback ->
+                            [ button
+                                [ class "menu-button notification-button"
+                                , onClick callback
+                                , onClick <| Main.NotificationsMsg Dismiss
+                                ]
+                                [ text "ACCEPT" ]
+                            , button
+                                [ class "menu-button notification-button"
+                                , onClick <| Main.NotificationsMsg Dismiss
+                                ]
+                                [ text "DECLINE" ]
+                            ]
 
-                                Nothing ->
-                                    []
-                           )
+                        Nothing ->
+                            [ button
+                                [ class "menu-button notification-button"
+                                , onClick <| Main.NotificationsMsg Dismiss
+                                ]
+                                [ text "OKAY" ]
+                            ]
             in
-            div (class "notification" :: clickHandler) [ text notification.text ]
+            div [ class "notification-background" ]
+                [ div
+                    [ class "notification" ]
+                    [ h1 [] [ text notification.text ]
+                    , div [ class "notification-buttons" ] buttons
+                    ]
+                ]
 
         Nothing ->
             text ""

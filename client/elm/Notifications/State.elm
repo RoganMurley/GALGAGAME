@@ -3,6 +3,7 @@ module Notifications.State exposing (init, receive, tick, update)
 import Main.Messages exposing (Msg(..))
 import Notifications.Messages exposing (Msg(..))
 import Notifications.Types exposing (Model, Notification)
+import String exposing (toUpper)
 import Util exposing (splitOnColon, splitOnComma)
 
 
@@ -30,8 +31,8 @@ receive msg model =
                     splitOnComma content
 
                 newNotification =
-                    { text = "Challenged by " ++ opponentName ++ "! Tap to fight!"
-                    , timer = Just 50000
+                    { text = "Challenged by " ++ toUpper opponentName
+                    , timer = 0
                     , callback = Just <| GotoChallengeGame (Just roomId)
                     }
             in
@@ -46,22 +47,16 @@ receive msg model =
 
 tick : Model -> Float -> Model
 tick model dt =
-    case model.notifications of
-        n :: ns ->
-            case n.timer of
-                Nothing ->
-                    model
+    let
+        newNotifications =
+            case model.notifications of
+                n :: ns ->
+                    { n | timer = n.timer + dt } :: ns
 
-                Just t ->
-                    if t - dt < 0 then
-                        -- Expired
-                        { model | notifications = ns }
-
-                    else
-                        { model | notifications = { n | timer = Just <| t - dt } :: ns }
-
-        _ ->
-            model
+                [] ->
+                    []
+    in
+    { model | notifications = newNotifications }
 
 
 update : Model -> Msg -> Model
@@ -75,4 +70,4 @@ update model msg =
 
 notif : String -> Notification
 notif str =
-    { text = str, timer = Nothing, callback = Nothing }
+    { text = str, timer = 0, callback = Nothing }
