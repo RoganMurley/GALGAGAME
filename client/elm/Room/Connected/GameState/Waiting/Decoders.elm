@@ -21,7 +21,7 @@ waitTypeDecoder s =
             succeed <| Just WaitCustom
 
         "challenge" ->
-            succeed <| Just WaitChallenge
+            succeed <| Just <| WaitChallenge 0
 
         _ ->
             fail <| "Invalid WaitType " ++ s

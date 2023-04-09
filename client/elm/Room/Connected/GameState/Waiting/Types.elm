@@ -1,4 +1,4 @@
-module Waiting.Types exposing (Model, WaitType(..))
+module Waiting.Types exposing (Model, WaitTime, WaitType(..))
 
 import Random exposing (Seed)
 
@@ -14,4 +14,8 @@ type alias Model =
 type WaitType
     = WaitQuickplay
     | WaitCustom
-    | WaitChallenge
+    | WaitChallenge WaitTime
+
+
+type alias WaitTime =
+    Float

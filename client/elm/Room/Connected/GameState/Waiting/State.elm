@@ -21,6 +21,17 @@ tick dt model =
     { model
         | bounceTick = model.bounceTick + dt
         , bulge = model.bulge * 0.95
+        , waitType =
+            Maybe.map
+                (\waitType ->
+                    case waitType of
+                        WaitChallenge t ->
+                            WaitChallenge <| t + dt
+
+                        _ ->
+                            waitType
+                )
+                model.waitType
     }
 
 

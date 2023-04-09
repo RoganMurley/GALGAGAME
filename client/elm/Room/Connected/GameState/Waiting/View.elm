@@ -63,13 +63,6 @@ htmlView { waitType } { httpPort, hostname } roomID =
                 , waitingInfo
                 ]
 
-        Just WaitChallenge ->
-            div [ class "waiting" ]
-                [ div [ class "waiting-prompt" ]
-                    [ text "WAITING FOR OPPONENT TO JOIN..."
-                    ]
-                ]
-
         _ ->
             text ""
 
@@ -94,53 +87,59 @@ webglView { bounceTick, bulge, waitType } params assets =
                 + (0.18
                     * sin (bounceTick * 0.002)
                   )
+
+        loadingSpinner =
+            [ Render.Primitives.quad Render.Shaders.donutFragment <|
+                { rotation = Quaternion.makeRotate <| Quaternion.zRotation 0
+                , scale = makeScale3 size size 1
+                , color = vec3 (70 / 255) (70 / 255) (200 / 255)
+                , pos = vec3 (w * 0.5) (h * 0.5) 0
+                , perspective = ortho
+                , camera = camera2d
+                , mag = 0
+                , thickness = 0.2
+                }
+            , Render.Primitives.quad Render.Shaders.donutFragment <|
+                { rotation = Quaternion.makeRotate <| Quaternion.zRotation pi
+                , scale = makeScale3 size size 1
+                , color = vec3 (70 / 255) (70 / 255) (200 / 255)
+                , pos = vec3 (w * 0.5) (h * 0.5) 0
+                , perspective = ortho
+                , camera = camera2d
+                , mag = 0
+                , thickness = 0.2
+                }
+            , Render.Primitives.quad Render.Shaders.donutFragment <|
+                { rotation = Quaternion.makeRotate <| Quaternion.zRotation rot
+                , scale = makeScale3 size size 1
+                , color = vec3 (244 / 255) (241 / 255) (94 / 255)
+                , pos = vec3 (w * 0.5) (h * 0.5) 0
+                , perspective = ortho
+                , camera = camera2d
+                , mag = mag
+                , thickness = 0.2
+                }
+            , Render.Primitives.quad Render.Shaders.donutFragment <|
+                { rotation = Quaternion.makeRotate <| Quaternion.zRotation (rot + pi)
+                , scale = makeScale3 size size 1
+                , color = vec3 (244 / 255) (241 / 255) (94 / 255)
+                , pos = vec3 (w * 0.5) (h * 0.5) 0
+                , perspective = ortho
+                , camera = camera2d
+                , mag = mag
+                , thickness = 0.2
+                }
+            ]
     in
     List.concat
         [ Background.webglView params assets Finding
         ]
         ++ (case waitType of
                 Just WaitQuickplay ->
-                    [ Render.Primitives.quad Render.Shaders.donutFragment <|
-                        { rotation = Quaternion.makeRotate <| Quaternion.zRotation 0
-                        , scale = makeScale3 size size 1
-                        , color = vec3 (70 / 255) (70 / 255) (200 / 255)
-                        , pos = vec3 (w * 0.5) (h * 0.5) 0
-                        , perspective = ortho
-                        , camera = camera2d
-                        , mag = 0
-                        , thickness = 0.2
-                        }
-                    , Render.Primitives.quad Render.Shaders.donutFragment <|
-                        { rotation = Quaternion.makeRotate <| Quaternion.zRotation pi
-                        , scale = makeScale3 size size 1
-                        , color = vec3 (70 / 255) (70 / 255) (200 / 255)
-                        , pos = vec3 (w * 0.5) (h * 0.5) 0
-                        , perspective = ortho
-                        , camera = camera2d
-                        , mag = 0
-                        , thickness = 0.2
-                        }
-                    , Render.Primitives.quad Render.Shaders.donutFragment <|
-                        { rotation = Quaternion.makeRotate <| Quaternion.zRotation rot
-                        , scale = makeScale3 size size 1
-                        , color = vec3 (244 / 255) (241 / 255) (94 / 255)
-                        , pos = vec3 (w * 0.5) (h * 0.5) 0
-                        , perspective = ortho
-                        , camera = camera2d
-                        , mag = mag
-                        , thickness = 0.2
-                        }
-                    , Render.Primitives.quad Render.Shaders.donutFragment <|
-                        { rotation = Quaternion.makeRotate <| Quaternion.zRotation (rot + pi)
-                        , scale = makeScale3 size size 1
-                        , color = vec3 (244 / 255) (241 / 255) (94 / 255)
-                        , pos = vec3 (w * 0.5) (h * 0.5) 0
-                        , perspective = ortho
-                        , camera = camera2d
-                        , mag = mag
-                        , thickness = 0.2
-                        }
-                    ]
+                    loadingSpinner
+
+                Just (WaitChallenge _) ->
+                    loadingSpinner
 
                 _ ->
                     []
