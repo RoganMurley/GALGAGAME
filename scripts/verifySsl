@@ -1,0 +1,4 @@
+#!/bin/bash
+echo "hashes should match"
+openssl x509 -noout -modulus -in client/ssl/www.galgagame.com.ca-bundle | openssl md5
+openssl rsa -noout -modulus -in client/ssl/www.galgagame.com.key | openssl md5
