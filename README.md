@@ -16,27 +16,32 @@ Join the [discord](https://discord.gg/SVXXej4).
 
 
 ## Dependencies:
-* [npm](https://www.npmjs.com/get-npm)
+* [nvm](https://github.com/nvm-sh/nvm)
 * [gulp](https://www.npmjs.com/package/gulp)
-* [Elm](https://guide.elm-lang.org/install.html)
+* [Elm](https://guide.elm-lang.org/install/elm.html)
 * [Haskell Tool Stack](https://docs.haskellstack.org/en/stable/README/)
 * [Docker](https://docs.docker.com/engine/installation/)
 
-![DYet another GALGA gif](https://user-images.githubusercontent.com/3668870/145656874-6f0223d8-d918-4043-9001-e3a3844c65fc.gif)
+![Yet another GALGA gif](https://user-images.githubusercontent.com/3668870/145656874-6f0223d8-d918-4043-9001-e3a3844c65fc.gif)
 
 ## Dev setup
 
 ### Build client
 * `cd client`
+* `nvm use`
 * `npm install`
-* `elm-package install`
+* `elm make`
+* `npm install -g gulp`
 * `gulp build`
 
-## Build server
+## Build Images
 * `./scripts/makeFakeCertificates`
 * `docker-compose build`
 
 ## Run locally
 * `docker-compose up`
+* `docker exec -it $(docker ps --filter "ancestor=galga-game" --format "{{.ID}}") /bin/bash`
+* `cd opt/build`
+* `stack repl`
 
 App will be served at https://localhost:4430.

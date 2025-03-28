@@ -1,3 +1,3 @@
-FROM fpco/stack-build:lts-14.0
+FROM haskell:8.10.7
 RUN mkdir /opt/build
 CMD tail -f /dev/null
