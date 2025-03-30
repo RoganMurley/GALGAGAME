@@ -1,7 +1,12 @@
 #!/bin/bash
-echo $DIGITALOCEAN_ACCESS_TOKEN
-name=$1
+# Run with `sudo -E ./scripts/deploy` to preserve environment variables
 set -e
+name=$1
+
+if [ -z "$DIGITALOCEAN_ACCESS_TOKEN" ]; then
+  echo "Error: DIGITALOCEAN_ACCESS_TOKEN is not set"
+  exit 1
+fi
 
 if [ $# -eq 0 ]; then
     hash=$(git rev-parse HEAD)
@@ -9,6 +14,17 @@ if [ $# -eq 0 ]; then
     timestamp=$(date +%s)
     name="$shorthash-$timestamp"
 fi
+
+echo "Setting up virtual environments..."
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+
+pushd client
+export NVM_DIR=$HOME/.nvm;
+source $NVM_DIR/nvm.sh;
+nvm use
+popd
 
 echo "Building client..."
 pushd client
