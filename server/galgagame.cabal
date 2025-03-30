@@ -1,13 +1,13 @@
 name:                galgagame
 version:             0.1.0.0
-synopsis:            Initial project template from stack
+synopsis:            GALGA
 description:         Please see README.md
 homepage:            https://github.com/RoganMurley/GALGAGAME
 license:             MIT
 license-file:        LICENSE
 author:              Rogan Murley
 maintainer:          rogan@roganmurley.com
-copyright:           2022 Rogan Murley
+copyright:           2025 Rogan Murley
 category:            Game
 build-type:          Simple
 -- extra-source-files:
@@ -140,6 +140,7 @@ library
                      , TypeOperators
                      , DeriveGeneric
                      , DeriveAnyClass
+                     , ImportQualifiedPost
 
 executable galgagame
   hs-source-dirs:      app
