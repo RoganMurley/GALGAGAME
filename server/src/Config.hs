@@ -5,7 +5,7 @@ import Control.Concurrent.STM.TVar (TVar)
 import Control.Exception (catchJust)
 import Control.Monad.IO.Class (liftIO)
 import Control.Monad.Trans.Reader (ReaderT, asks, runReaderT)
-import Data.Pool (Pool, createPool, withResource)
+import Data.Pool (Pool, defaultPoolConfig, newPool, withResource)
 import Data.Text (Text)
 import Database.Beam.Postgres (Pg, runBeamPostgres)
 import Database.PostgreSQL.Simple qualified as Postgres
@@ -47,7 +47,13 @@ runApp config app =
     let presence = connectInfoConfig_presenceVar config
 
     redisConn <- Redis.connect redisInfo
-    postgresPool <- createPool (connectPostgres postgresInfo) Postgres.close 1 0.5 10
+    postgresPool <-
+      newPool $
+        defaultPoolConfig
+          (connectPostgres postgresInfo)
+          Postgres.close
+          0.5
+          10
 
     let ddCreds = case ddCredInput of
           (Just a, Just b) ->
@@ -70,34 +76,34 @@ connectPostgres = Postgres.connectPostgreSQL . Postgres.postgreSQLConnectionStri
 runBeam :: Pg a -> App a
 runBeam beam = do
   pool <- asks postgresPool
-  withResource pool $ \conn -> liftIO $ runBeamPostgres conn beam
+  liftIO $ withResource pool $ \conn -> runBeamPostgres conn beam
 
 runBeamTransaction :: Pg a -> App a
 runBeamTransaction beam = do
   pool <- asks postgresPool
-  withResource pool $
-    \conn ->
-      ( do
-          liftIO $ Postgres.begin conn
-          result <- liftIO $ runBeamPostgres conn beam
-          liftIO $ Postgres.commit conn
-          return result
-      )
+  liftIO $
+    withResource pool $
+      \conn ->
+        ( do
+            liftIO $ Postgres.begin conn
+            result <- liftIO $ runBeamPostgres conn beam
+            liftIO $ Postgres.commit conn
+            return result
+        )
 
 runBeamIntegrity :: Pg a -> App (Either Postgres.ConstraintViolation a)
 runBeamIntegrity beam = do
   pool <- asks postgresPool
-  withResource pool $ \conn ->
-    liftIO $
-      catchJust
-        Postgres.constraintViolation
-        ( do
-            liftIO $ Postgres.begin conn
-            result <- runBeamPostgres conn beam
-            liftIO $ Postgres.commit conn
-            return . Right $ result
-        )
-        (return . Left)
+  liftIO $ withResource pool $ \conn ->
+    catchJust
+      Postgres.constraintViolation
+      ( do
+          liftIO $ Postgres.begin conn
+          result <- runBeamPostgres conn beam
+          liftIO $ Postgres.commit conn
+          return . Right $ result
+      )
+      (return . Left)
 
 runRedis :: Redis.Redis a -> App a
 runRedis redis = do

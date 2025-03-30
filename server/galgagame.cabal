@@ -119,7 +119,6 @@ library
                      , resource-pool
                      , safe
                      , scotty
-                     , scotty-cookie
                      , semigroups
                      , stm
                      , string-conversions

@@ -4,6 +4,7 @@ import Auth.Schema (UserT (..))
 import Config (ConnectInfoConfig, runApp)
 import Control.Monad.IO.Class (liftIO)
 import Data.Aeson (object)
+import Data.Map qualified as Map
 import League.Apps (checkLeague, saveLeague)
 import Network.HTTP.Types.Status (created201, notFound404, ok200, unauthorized401)
 import User.Apps qualified as User
@@ -13,7 +14,7 @@ import Web.Scotty.Cookie (getCookies)
 
 leagueView :: ConnectInfoConfig -> ActionM ()
 leagueView config = do
-  cookies <- getCookies
+  cookies <- Map.fromList <$> getCookies
   user <- liftIO $ runApp config $ User.getUserFromCookies cookies ""
   case user of
     User.User u _ -> do
@@ -25,7 +26,7 @@ leagueView config = do
 
 leagueCheckView :: ConnectInfoConfig -> ActionM ()
 leagueCheckView config = do
-  cookies <- getCookies
+  cookies <- Map.fromList <$> getCookies
   user <- liftIO $ runApp config $ User.getUserFromCookies cookies ""
   case user of
     User.User u _ -> do

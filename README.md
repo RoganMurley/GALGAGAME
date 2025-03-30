@@ -36,12 +36,13 @@ Join the [discord](https://discord.gg/SVXXej4).
 
 ## Build Images
 * `./scripts/makeFakeCertificates`
-* `docker-compose build`
+* `docker compose build`
 
 ## Run locally
-* `docker-compose up`
-* `docker exec -it $(docker ps --filter "ancestor=galga-game" --format "{{.ID}}") /bin/bash`
+* `docker compose up`
+* `ssh dev`
 * `cd opt/build`
 * `stack repl`
+* `main`
 
 App will be served at https://localhost:4430.

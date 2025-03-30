@@ -1,0 +1,2 @@
+#!/bin/bash
+docker exec -it $(docker ps --filter "ancestor=galga-game" --format "{{.ID}}") /bin/bash

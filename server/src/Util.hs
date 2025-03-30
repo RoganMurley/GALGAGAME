@@ -9,8 +9,8 @@ import Control.DeepSeq (NFData (..))
 import Control.Monad (replicateM_, when)
 import Control.Monad.Trans.Control (MonadBaseControl)
 import Data.Text (Text)
-import qualified Data.Text as T
-import qualified System.Random as R
+import Data.Text qualified as T
+import System.Random qualified as R
 import System.Random.Shuffle (shuffle')
 
 type Err = Text
@@ -20,10 +20,10 @@ times :: Int -> (a -> a) -> a -> a
 times n f x = (iterate f x) !! n
 
 -- Perform a monadic action n times
-many :: Monad m => Int -> m a -> m ()
+many :: (Monad m) => Int -> m a -> m ()
 many = replicateM_
 
-manyIndexed :: Monad m => Int -> (Int -> m a) -> m ()
+manyIndexed :: (Monad m) => Int -> (Int -> m a) -> m ()
 manyIndexed i f = when (i > 0) $ f i >> manyIndexed (i - 1) f
 
 shuffle :: Gen -> [a] -> [a]
@@ -31,14 +31,17 @@ shuffle _ [] = []
 shuffle (Gen g) xs = shuffle' xs (length xs) g
 
 randomChoice :: Gen -> [a] -> a
-randomChoice gen xs = head $ shuffle gen xs
+randomChoice gen xs =
+  case shuffle gen xs of
+    (y : _) -> y
+    [] -> error "randomChoice: empty list"
 
 randomBetween :: Gen -> Int -> Int -> Int
 randomBetween (Gen g) low high = fst $ R.randomR (low, high) g
 
 deleteIndex :: Int -> [a] -> [a]
 deleteIndex n xs =
-  ys ++ tail zs
+  ys ++ drop 1 zs
   where
     (ys, zs) = splitAt n xs
 
@@ -124,7 +127,7 @@ maybeToEither :: a -> Maybe b -> Either a b
 maybeToEither _ (Just b) = Right b
 maybeToEither a Nothing = Left a
 
-forkDelay :: MonadBaseControl IO m => Int -> m () -> m ()
+forkDelay :: (MonadBaseControl IO m) => Int -> m () -> m ()
 forkDelay delay action = do
   _ <- fork $ do
     threadDelay delay

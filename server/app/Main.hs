@@ -2,12 +2,12 @@ module Main where
 
 import Act (actOutcome, actPlay, actSpec, syncClient, syncRoomMetadata)
 import ArtificialIntelligence (Action (..), chooseAction)
-import qualified Auth.Apps as Auth
-import qualified Auth.Views as Auth
+import Auth.Apps qualified as Auth
+import Auth.Views qualified as Auth
 import Client (Client (..), ClientConnection (..))
-import qualified Client
+import Client qualified
 import Command (Command (..))
-import qualified Command
+import Command qualified
 import Config (App, ConnectInfoConfig (..), runApp)
 import Control.Concurrent.Chan (newChan)
 import Control.Concurrent.Lifted (fork, killThread, threadDelay)
@@ -19,46 +19,46 @@ import Control.Monad.STM (STM, atomically)
 import Control.Monad.Trans.Class (lift)
 import Control.Monad.Trans.Maybe (MaybeT, runMaybeT)
 import Control.Monad.Trans.State (StateT, get, modify', put, runStateT)
-import qualified DSL.Beta as Beta
-import qualified Data.GUID as GUID
-import qualified Data.Map as Map
+import DSL.Beta qualified as Beta
+import Data.GUID qualified as GUID
+import Data.Map qualified as Map
 import Data.Maybe (fromMaybe)
-import qualified Data.Set as Set
+import Data.Set qualified as Set
 import Data.String.Conversions (cs)
 import Data.Text (Text)
-import qualified Data.Text as Text
+import Data.Text qualified as Text
 import Data.Time.Clock (NominalDiffTime)
 import Database (postgresConnectInfo, redisConnectInfo)
 import DeckBuilding (ChosenCharacter (..), Rune (..), UnchosenCharacter (..))
-import qualified DeckBuilding
+import DeckBuilding qualified
 import Encounter (updateRoomEncounter)
 import GHC.Conc (setUncaughtExceptionHandler)
 import GameState (GameState (..), PlayState (..), PlayingR (..), WaitType (..), isWinner)
-import qualified Log
-import qualified Metrics
+import Log qualified
+import Metrics qualified
 import Model (Turn)
 import Negotiation (Prefix (..), Request (..))
-import qualified Negotiation
+import Negotiation qualified
 import Network.Wai (Application)
-import qualified Network.Wai.Handler.Warp as Warp
+import Network.Wai.Handler.Warp qualified as Warp
 import Network.Wai.Handler.WebSockets
-import qualified Network.WebSockets as WS
+import Network.WebSockets qualified as WS
 import Outcome (Outcome)
 import Player (WhichPlayer (..), other)
-import qualified Presence.Apps as Presence
-import qualified Presence.Presence as Presence
+import Presence.Apps qualified as Presence
+import Presence.Presence qualified as Presence
 import Room (Room)
-import qualified Room
+import Room qualified
 import Scenario (Scenario (..), applyCustomSettings)
 import Server (addComputerClient, addPlayerClient, addSpecClient)
-import qualified Server
+import Server qualified
 import Start (roundEndProgram, startProgram)
 import Stats.Progress (Progress (..), isTutorialProgress)
 import System.Environment (lookupEnv)
 import Text.Printf (printf)
 import User.Apps (getUserFromCookies)
 import User.User (getUsername)
-import qualified User.User as User
+import User.User qualified as User
 import Util (Gen, forkDelay, getGen, shuffle, to3Tuple)
 
 main :: IO ()
@@ -444,7 +444,7 @@ play which client roomVar outcomes = do
 
 computerPlay :: WhichPlayer -> TVar Room -> TVar Server.State -> Client -> [Outcome] -> App ()
 computerPlay which roomVar state client outcomes = do
-  room <- liftIO $readTVarIO roomVar
+  room <- liftIO $ readTVarIO roomVar
   let roomName = Room.getName room
   progress <- liftIO $ atomically $ Client.progress client
   forM_ outcomes (actOutcome room)

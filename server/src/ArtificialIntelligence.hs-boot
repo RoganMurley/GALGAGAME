@@ -5,4 +5,9 @@ import Player (WhichPlayer)
 
 type Weight = Int
 
-evalState :: WhichPlayer -> PlayState -> Weight
+data Weightings = Weightings
+  { weightings_life :: Weight,
+    weightings_hand :: Weight
+  }
+
+evalState :: WhichPlayer -> Weightings -> Weightings -> PlayState -> Weight

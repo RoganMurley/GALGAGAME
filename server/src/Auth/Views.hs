@@ -2,15 +2,14 @@ module Auth.Views where
 
 import Auth.Apps (checkAuth, checkPassword, cidCookieName, deleteToken, legalName, legalPassword, saveSession, saveUser, sessionCookieName)
 import Config (App, ConnectInfoConfig (..), runApp)
-import Control.Monad.IO.Class (liftIO)
 import Control.Monad.Trans.Class (lift)
 import Crypto.BCrypt (hashPasswordUsingPolicy, slowerBcryptHashingPolicy)
 import Data.Aeson (object, (.=))
 import Data.ByteString (ByteString)
-import qualified Data.GUID as GUID
+import Data.GUID qualified as GUID
 import Data.String.Conversions (cs)
 import Data.Text (Text)
-import qualified Data.Text as T
+import Data.Text qualified as T
 import Data.Time.Clock (secondsToDiffTime)
 import Data.Time.Clock.POSIX (posixSecondsToUTCTime)
 import Feedback.Views (feedbackView)
@@ -18,7 +17,7 @@ import Leaderboard.Views (leaderboardView)
 import League.Views (leagueCheckView, leagueView)
 import Network.HTTP.Types.Status
 import Network.Wai (Application)
-import qualified Presence.Views as Presence
+import Presence.Views qualified as Presence
 import Profile.Views (profileView)
 import Replay.Views (replayView)
 import System.Log.Logger (Priority (DEBUG), debugM, infoM, setLevel, updateGlobalLogger)
@@ -57,8 +56,8 @@ meView config = do
 
 loginView :: ConnectInfoConfig -> ActionM ()
 loginView config = do
-  username <- cs . T.toLower <$> param "username"
-  password <- param "password"
+  username <- cs . T.toLower <$> formParam "username"
+  password <- formParam "password"
   result <- lift $ runApp config $ checkPassword username password
   if result
     then
@@ -92,10 +91,10 @@ logoutView config = do
 registerView :: ConnectInfoConfig -> ActionM ()
 registerView config =
   do
-    email <- param "email"
-    usernameRaw <- param "username"
-    password <- param "password"
-    contactableRaw <- param "contactable"
+    email <- formParam "email"
+    usernameRaw <- formParam "username"
+    password <- formParam "password"
+    contactableRaw <- formParam "contactable"
     let username = cs . T.toLower $ usernameRaw :: ByteString
     let contactable = parseContactable contactableRaw :: Bool
     createUser config email username password contactable

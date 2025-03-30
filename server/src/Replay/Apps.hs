@@ -11,6 +11,7 @@ import Database.Beam.Backend.SQL.BeamExtensions (runInsertReturningList)
 import Player (WhichPlayer (..))
 import Replay.Final (Replay, getReplayUser)
 import Replay.Schema qualified
+import Safe (headMay)
 import Schema (GalgagameDb (..), galgagameDb)
 
 save :: Replay -> App Int64
@@ -31,7 +32,11 @@ save replay = do
                 (val_ $ Just displayUsernamePa)
                 (val_ $ Just displayUsernamePb)
             ]
-  return $ head $ Replay.Schema.replayId <$> result
+  case headMay result of
+    Just r ->
+      return $ Replay.Schema.replayId r
+    Nothing ->
+      error "Failed to save replay"
 
 load :: Int64 -> App (Maybe Text)
 load replayId = do

@@ -5,11 +5,11 @@ import Control.Monad.Trans.Class (lift)
 import Data.Aeson (object)
 import Network.HTTP.Types.Status (notFound404, ok200)
 import Profile.Apps (loadProfile)
-import Web.Scotty (ActionM, json, param, status)
+import Web.Scotty (ActionM, json, pathParam, status)
 
 profileView :: ConnectInfoConfig -> ActionM ()
 profileView config = do
-  username <- param "username"
+  username <- pathParam "username"
   mProfile <- lift . runApp config $ loadProfile username
   case mProfile of
     Just profile -> do

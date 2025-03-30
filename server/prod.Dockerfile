@@ -1,4 +1,4 @@
-FROM fpco/stack-build:lts-14.0 as build
+FROM haskell:9.8.4-bullseye as build
 RUN mkdir /opt/build
 COPY galgagame.cabal stack.yaml /opt/build/
 RUN cd /opt/build && stack install --only-dependencies --system-ghc
