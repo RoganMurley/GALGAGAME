@@ -1,27 +1,27 @@
 module Stats.Stats where
 
-import qualified Auth.Schema
+import Auth.Schema qualified
 import Config (App, runBeam)
 import Control.Monad.IO.Class (liftIO)
 import Data.Aeson (ToJSON (..), decode, encode, object, (.=))
 import Data.Int (Int64)
 import Data.Maybe (fromMaybe)
 import Data.Set (Set)
-import qualified Data.Set as Set
+import Data.Set qualified as Set
 import Data.String.Conversions (cs)
 import Data.Text (Text)
 import Data.Time (UTCTime, getCurrentTime)
 import Data.Time.Clock (NominalDiffTime, diffUTCTime)
 import Database.Beam (all_, filter_, insertValues, primaryKey, runInsert, runSelectReturningOne, runUpdate, select, update, val_, (<-.), (==.))
-import qualified Database.Beam.Postgres.Full as Postgres
+import Database.Beam.Postgres.Full qualified as Postgres
 import DeckBuilding (Rune (..), mainRunes)
 import Quest (Quest)
-import qualified Quest
+import Quest qualified
 import Replay.Final (Replay, getInitial, getRes)
 import Schema (GalgagameDb (..), galgagameDb)
 import Stats.Experience (Experience, levelToExperience)
 import Stats.Progress (Progress (..), fromPartial, initialProgress)
-import qualified Stats.Schema
+import Stats.Schema qualified
 import User.User (User (..))
 import Util (Gen, getGen)
 
@@ -35,7 +35,8 @@ load u@(User user _) = do
       runSelectReturningOne $
         select $
           filter_ (\row -> Stats.Schema.statsUser row ==. val_ (Auth.Schema.UserId userId)) $
-            all_ $ stats galgagameDb
+            all_ $
+              stats galgagameDb
   let progress =
         result
           >>= ( \r ->
@@ -59,7 +60,8 @@ loadByCid (Just cid) = do
       runSelectReturningOne $
         select $
           filter_ (\row -> Stats.Schema.statsguestCid row ==. val_ cid) $
-            all_ $ statsguest galgagameDb
+            all_ $
+              statsguest galgagameDb
   let progress =
         result
           >>= ( \r ->

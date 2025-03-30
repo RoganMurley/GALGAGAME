@@ -1,6 +1,6 @@
 module Feedback.Apps where
 
-import qualified Auth.Schema
+import Auth.Schema qualified
 import Config (App, runBeam)
 import Data.ByteString (ByteString)
 import Data.Int (Int64)

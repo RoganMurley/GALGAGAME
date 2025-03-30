@@ -173,6 +173,7 @@ executable galgagame
   default-extensions:  OverloadedStrings
                      , RecordWildCards
                      , NamedFieldPuns
+                     , ImportQualifiedPost
 
 test-suite galgagame-test
   type:                exitcode-stdio-1.0
@@ -190,6 +191,7 @@ test-suite galgagame-test
   default-language:    Haskell2010
   default-extensions:  OverloadedStrings
                      , RecordWildCards
+                     , ImportQualifiedPost
 
 source-repository head
   type:     git

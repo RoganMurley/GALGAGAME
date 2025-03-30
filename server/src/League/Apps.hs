@@ -1,6 +1,6 @@
 module League.Apps where
 
-import qualified Auth.Schema
+import Auth.Schema qualified
 import Config (App, runBeam)
 import Data.Int (Int64)
 import Data.Maybe (isJust)
@@ -26,5 +26,6 @@ checkLeague userId = do
       runSelectReturningOne $
         select $
           filter_ (\row -> League.Schema.leagueUser row ==. val_ (Auth.Schema.UserId (Just userId))) $
-            all_ $ league galgagameDb
+            all_ $
+              league galgagameDb
   return $ isJust result

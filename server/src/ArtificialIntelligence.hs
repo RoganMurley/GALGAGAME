@@ -1,7 +1,7 @@
 module ArtificialIntelligence where
 
-import qualified Card
-import qualified Cards
+import Card qualified
+import Cards qualified
 import Control.Monad.Freer (reinterpret)
 import Control.Monad.Trans.Writer (runWriter)
 import DSL.Alpha
@@ -14,14 +14,14 @@ import Data.Time.Clock.POSIX (posixSecondsToUTCTime)
 import GameCommand (GameCommand (..), resolveAll, update)
 import GameState
 import HandCard (HandCard (..))
-import qualified HandCard
+import HandCard qualified
 import Mirror (mirror)
 import Model
 import Player (WhichPlayer (..), other)
 import Scenario (Scenario (..))
-import qualified Stack
+import Stack qualified
 import StackCard (StackCard (..))
-import qualified StackCard
+import StackCard qualified
 import Util (Err, Gen, maybeToEither)
 
 type Weight = Int
@@ -49,9 +49,9 @@ evalState w weightPa weightPb (Playing playing) = evalModel model
     evalModel :: Model -> Weight
     evalModel m
       | isJust . (`Stack.get` 1) $ evalI m getStack =
-        evalState w weightPa weightPb . fst . runWriter $ resolveAll $ playingFromModel m
+          evalState w weightPa weightPb . fst . runWriter $ resolveAll $ playingFromModel m
       | otherwise =
-        evalPlayer w m - evalPlayer (other w) m
+          evalPlayer w m - evalPlayer (other w) m
     evalPlayer :: WhichPlayer -> Model -> Weight
     evalPlayer which m =
       evalI m $ do
@@ -122,11 +122,11 @@ winningEnd :: WhichPlayer -> Model -> Bool
 winningEnd which model
   | evalI model $ handFull which = False
   | otherwise =
-    -- If ending the turn now would win, do it! We don't care about heuristics
-    -- when we have a sure bet :)
-    case fst . runWriter $ resolveAll (playingFromModel model) of
-      Ended (Just winner) _ _ _ -> winner == which
-      _ -> False
+      -- If ending the turn now would win, do it! We don't care about heuristics
+      -- when we have a sure bet :)
+      case fst . runWriter $ resolveAll (playingFromModel model) of
+        Ended (Just winner) _ _ _ -> winner == which
+        _ -> False
 
 -- Some cards entail soft advantages/disadvantages that the AI can't handle.
 -- We manually set biases for these cards.

@@ -7,7 +7,7 @@ import Data.List (sortBy)
 import Data.Text (Text)
 import Stats.Experience (Experience)
 import Stats.Schema (Stats, StatsT (..))
-import qualified User.User as User
+import User.User qualified as User
 
 newtype Leaderboard = Leaderboard [Entry]
   deriving (Eq, Show)

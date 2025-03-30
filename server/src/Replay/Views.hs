@@ -4,13 +4,13 @@ import Config (ConnectInfoConfig, runApp)
 import Control.Monad.Trans.Class (lift)
 import Data.Aeson (object)
 import Data.String.Conversions (cs)
-import qualified Log
-import qualified Metrics
+import Log qualified
+import Metrics qualified
 import Network.HTTP.Types.Status (notFound404, ok200)
-import qualified Replay.Apps as Replay
+import Replay.Apps qualified as Replay
 import Text.Printf (printf)
-import qualified User.Apps as User
-import qualified User.User as User
+import User.Apps qualified as User
+import User.User qualified as User
 import Web.Scotty (ActionM, json, param, raw, setHeader, status)
 import Web.Scotty.Cookie (getCookies)
 

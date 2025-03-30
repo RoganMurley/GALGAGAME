@@ -1,6 +1,6 @@
 module User.User where
 
-import qualified Auth.Schema as Auth
+import Auth.Schema qualified as Auth
 import Control.Concurrent.STM (readTVar)
 import Control.Concurrent.STM.TVar (TVar, writeTVar)
 import Control.Monad.STM (STM)

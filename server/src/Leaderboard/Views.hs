@@ -2,9 +2,9 @@ module Leaderboard.Views where
 
 import Config (ConnectInfoConfig, runApp)
 import Control.Monad.Trans.Class (lift)
-import qualified Leaderboard.Apps as Leaderboard
+import Leaderboard.Apps qualified as Leaderboard
 import Network.HTTP.Types.Status (ok200)
-import qualified User.Apps as User
+import User.Apps qualified as User
 import Web.Scotty (ActionM, json, status)
 import Web.Scotty.Cookie (getCookies)
 

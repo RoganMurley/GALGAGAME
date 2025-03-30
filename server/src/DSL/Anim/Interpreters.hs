@@ -3,7 +3,7 @@
 module DSL.Anim.Interpreters where
 
 import CardAnim (CardAnim)
-import qualified CardAnim
+import CardAnim qualified
 import DSL.Anim.DSL (DSL (..))
 
 animate :: DSL a -> Maybe CardAnim

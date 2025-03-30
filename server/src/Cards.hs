@@ -3,12 +3,12 @@ module Cards where
 import Card (Aspect (..), Card (..), Disguise (..), Status (..), Suit (..), addPlayEff, addRelated, addStatus, cardName, hasStatus, newCard)
 import CardAnim (CardAnim (..), Hurt (..), TimeModifier (..))
 import Control.Monad (replicateM_, when)
-import qualified DSL.Alpha as Alpha
+import DSL.Alpha qualified as Alpha
 import DSL.Beta
-import qualified DSL.Beta as Beta
-import qualified Data.List as List
+import DSL.Beta qualified as Beta
+import Data.List qualified as List
 import Data.Map (Map)
-import qualified Data.Map as Map
+import Data.Map qualified as Map
 import Data.Maybe (fromMaybe)
 import Data.String.Conversions (cs)
 import Data.Text (Text)
@@ -17,7 +17,7 @@ import Model (Misc (..))
 import Player (WhichPlayer (..), other)
 import Safe (headMay)
 import Stack (diasporaFromStack, diasporaLength)
-import qualified Stack
+import Stack qualified
 import StackCard (StackCard (..), cardMap, changeOwner, isOwner)
 import Transmutation (Transmutation (..), transmuteToCard)
 import Util (many, randomBetween, randomChoice, shuffle)
@@ -260,14 +260,14 @@ shroomWand =
 
 shroomCup :: Card
 shroomCup =
-  addRelated strangeSpore $
-    newCard
+  addRelated strangeSpore
+    $ newCard
       Shroom
       Cup
       "Give them 2 STRANGE SPOREs"
-      $ \w -> do
-        addToHand (other w) (KnownHandCard strangeSpore)
-        addToHand (other w) (KnownHandCard strangeSpore)
+    $ \w -> do
+      addToHand (other w) (KnownHandCard strangeSpore)
+      addToHand (other w) (KnownHandCard strangeSpore)
 
 strangeSpore :: Card
 strangeSpore =
@@ -443,12 +443,12 @@ goldCup =
 
 goldCoin :: Card
 goldCoin =
-  addRelated strangeSphere $
-    newCard
+  addRelated strangeSphere
+    $ newCard
       Gold
       Coin
       "Change card in next socket\nto STRANGE SPHERE"
-      $ \_ -> transmuteHead (transmuteToCard strangeSphere)
+    $ \_ -> transmuteHead (transmuteToCard strangeSphere)
 
 strangeSphere :: Card
 strangeSphere =
@@ -569,13 +569,13 @@ feverCup =
 
 feverCoin :: Card
 feverCoin =
-  addRelated strangeSleep $
-    newCard
+  addRelated strangeSleep
+    $ newCard
       Fever
       Coin
       "Change card in next socket to\nSTRANGE SLEEP"
-      $ \_ ->
-        transmuteHead (transmuteToCard strangeSleep)
+    $ \_ ->
+      transmuteHead (transmuteToCard strangeSleep)
 
 strangeSleep :: Card
 strangeSleep =
@@ -589,49 +589,49 @@ strangeSleep =
 -- GLASS
 glassSword :: Card
 glassSword =
-  addStatus StatusFragile $
-    newCard
+  addStatus StatusFragile
+    $ newCard
       Glass
       Sword
       "Hurt for 9.\nThis card is fragile."
-      $ \w -> hurt 9 (other w) Slash
+    $ \w -> hurt 9 (other w) Slash
 
 glassWand :: Card
 glassWand =
-  addStatus StatusFragile $
-    newCard
+  addStatus StatusFragile
+    $ newCard
       Glass
       Wand
       "Hurt for 7 for each fragile\ncard on the wheel.\nThis card is fragile."
-      $ \w -> do
-        diaspora <- diasporaFromStack <$> getStack
-        let len = length $ filter (\(_, c) -> hasStatus StatusFragile (stackcard_card c)) diaspora
-        hurt (len * 7) (other w) Slash
+    $ \w -> do
+      diaspora <- diasporaFromStack <$> getStack
+      let len = length $ filter (\(_, c) -> hasStatus StatusFragile (stackcard_card c)) diaspora
+      hurt (len * 7) (other w) Slash
 
 glassCup :: Card
 glassCup =
-  addStatus StatusFragile $
-    newCard
+  addStatus StatusFragile
+    $ newCard
       Glass
       Cup
       "All other cards on the wheel\nbecome fragile. This card\nstarts fragile."
-      $ \_ ->
-        transmute
-          ( \i sc ->
-              if i > 0 && not (hasStatus StatusFragile $ stackcard_card sc)
-                then Just (Transmutation sc (cardMap (addStatus StatusFragile) sc))
-                else Nothing
-          )
+    $ \_ ->
+      transmute
+        ( \i sc ->
+            if i > 0 && not (hasStatus StatusFragile $ stackcard_card sc)
+              then Just (Transmutation sc (cardMap (addStatus StatusFragile) sc))
+              else Nothing
+        )
 
 glassCoin :: Card
 glassCoin =
-  addStatus StatusFragile $
-    newCard
+  addStatus StatusFragile
+    $ newCard
       Glass
       Coin
       "Discard all their cards on the wheel.\nThis card is fragile."
-      $ \w ->
-        discardStack (\i sc -> (i > 0) && isOwner (other w) sc)
+    $ \w ->
+      discardStack (\i sc -> (i > 0) && isOwner (other w) sc)
 
 -- PLASTIC
 plasticSword :: Card
@@ -702,12 +702,12 @@ trickSword =
 
 trickWand :: Card
 trickWand =
-  addPlayEff disguisePlayEff $
-    newCard
+  addPlayEff disguisePlayEff
+    $ newCard
       Trick
       Wand
       "On play: disguise as another\nWAND in your deck"
-      $ \_ -> return ()
+    $ \_ -> return ()
 
 trickCup :: Card
 trickCup =

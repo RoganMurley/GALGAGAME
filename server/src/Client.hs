@@ -40,11 +40,11 @@ guid = client_guid
 queryUsername :: Client -> Maybe Text
 queryUsername = getQueryUsername . client_user
 
-send :: MonadIO m => Text -> Client -> m () -- App (), but more generic to avoid import cycle
+send :: (MonadIO m) => Text -> Client -> m () -- App (), but more generic to avoid import cycle
 send message (Client _ (PlayerConnection conn) _) = liftIO $ sendTextData conn message
 send _ _ = return ()
 
-receive :: MonadIO m => Client -> m Text -- App (), but more generic to avoid import cycle
+receive :: (MonadIO m) => Client -> m Text -- App (), but more generic to avoid import cycle
 receive (Client _ (PlayerConnection conn) _) = liftIO $ receiveData conn
 receive _ = return ""
 

@@ -5,14 +5,14 @@ module Stats.Progress where
 import Data.Aeson (FromJSON (..), ToJSON (..), object, withObject, (.:), (.:?), (.=))
 import Data.Maybe (catMaybes, fromMaybe)
 import Data.Set (Set)
-import qualified Data.Set as Set
+import Data.Set qualified as Set
 import Data.String.Conversions (cs)
 import Data.Text (Text)
-import {-# SOURCE #-} DeckBuilding (Rune, getRuneByName, getRuneName)
-import Stats.Experience (Experience)
-import qualified Quest
-import Quest (Quest)
 import Data.Time (UTCTime)
+import {-# SOURCE #-} DeckBuilding (Rune, getRuneByName, getRuneName)
+import Quest (Quest)
+import Quest qualified
+import Stats.Experience (Experience)
 
 -- Progress
 data Progress = Progress

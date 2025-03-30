@@ -1,17 +1,17 @@
 module User.Apps where
 
-import qualified Auth.Apps as Auth
-import qualified Auth.Schema as Auth
+import Auth.Apps qualified as Auth
+import Auth.Schema qualified as Auth
 import Config (App, getApiKey, runBeam)
 import Control.Concurrent.STM.TVar (newTVarIO, writeTVar)
 import Control.Monad.IO.Class (liftIO)
 import Control.Monad.STM (atomically)
-import qualified Data.Map as Map
+import Data.Map qualified as Map
 import Data.Text (Text)
 import Database.Beam (all_, filter_, runSelectReturningOne, select, val_, (==.))
 import Schema (GalgagameDb (..), galgagameDb)
 import Stats.Progress (initialProgress)
-import qualified Stats.Stats as Stats
+import Stats.Stats qualified as Stats
 import User.User (User (..))
 
 getUserFromCookies :: Auth.Cookies -> Text -> App User
@@ -38,7 +38,8 @@ getUserFromCookies cookies cid = do
           runSelectReturningOne $
             select $
               filter_ (\row -> Auth.userUsername row ==. val_ username) $
-                all_ $ users galgagameDb
+                all_ $
+                  users galgagameDb
       case mAuthUser of
         Just authUser -> do
           let user = User authUser progressVar

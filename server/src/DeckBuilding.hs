@@ -1,12 +1,12 @@
 module DeckBuilding where
 
 import Card (Aspect (..), Card (..))
-import qualified Cards
+import Cards qualified
 import Data.Aeson (FromJSON (..), ToJSON (..), object, withObject, (.:), (.=))
 import Data.Either (isRight)
 import Data.List (find)
 import Data.Map (Map)
-import qualified Data.Map as Map
+import Data.Map qualified as Map
 import Data.Set as Set
 import Data.Text (Text)
 import HandCard (HandCard (..))
@@ -361,7 +361,8 @@ characterCards Character {character_choice} =
       HandCard
         <$> ( concat $
                 (\(p, q, r, s) -> [p, q, r, s])
-                  <$> [rune_cards runeA, rune_cards runeB, rune_cards runeC] >>= replicate 3
+                  <$> [rune_cards runeA, rune_cards runeB, rune_cards runeC]
+                  >>= replicate 3
             )
     Right deck ->
       deck

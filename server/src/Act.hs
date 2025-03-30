@@ -1,9 +1,9 @@
 module Act where
 
 import Client (Client (..))
-import qualified Client
+import Client qualified
 import Command (Command (..))
-import qualified Command
+import Command qualified
 import Config (App)
 import Control.Concurrent.STM.TVar (TVar, readTVar, writeTVar)
 import Control.Monad (forM_, when)
@@ -15,22 +15,22 @@ import Data.Text (Text)
 import Data.Time.Clock (UTCTime, getCurrentTime)
 import GameCommand (GameCommand (..), update)
 import GameState (GameState (..), PlayState)
-import qualified Leaderboard.Apps as Leaderboard
-import qualified Log
+import Leaderboard.Apps qualified as Leaderboard
+import Log qualified
 import Mirror (mirror)
 import Model (Model)
 import Outcome (Outcome)
-import qualified Outcome
+import Outcome qualified
 import Player (WhichPlayer (..), other)
-import qualified Replay.Apps as Replay
+import Replay.Apps qualified as Replay
 import Replay.Final (Replay)
 import ResolveData (ResolveData (..))
 import Room (Room, getScenario)
-import qualified Room
+import Room qualified
 import Scenario (Scenario (..))
 import Stats.Experience (levelToExperience)
 import Stats.Progress (Progress (..))
-import qualified Stats.Stats as Stats
+import Stats.Stats qualified as Stats
 import Text.Printf (printf)
 import User.User (GameUser (..), User (..), getUsername, setProgress, usersToGameUsers)
 import Util (Err)

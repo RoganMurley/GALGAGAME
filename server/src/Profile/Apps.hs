@@ -7,7 +7,7 @@ import Data.Int (Int64)
 import Data.Text (Text)
 import Data.Time (LocalTime)
 import Database.Beam (all_, desc_, filter_, leftJoin_, limit_, orderBy_, references_, runSelectReturningList, runSelectReturningOne, select, val_, (==.), (||.))
-import qualified Presence.Apps as Presence
+import Presence.Apps qualified as Presence
 import Replay.Schema (ReplayT (..))
 import Schema (GalgagameDb (..), galgagameDb)
 import Stats.Experience (Experience)
@@ -51,17 +51,19 @@ loadProfileReplays userId = do
   let getPlayerA = \(_, _, x, _, _, _) -> x
   let getPlayerB = \(_, _, _, x, _, _) -> x
   result <-
-    runBeam $
-      runSelectReturningList $
-        select $
-          limit_ 10 $
-            orderBy_ (desc_ . getCreated) $
-              filter_
-                ( \row ->
-                    (getPlayerA row ==. val_ (Auth.Schema.UserId (Just userId)))
-                      ||. (getPlayerB row ==. val_ (Auth.Schema.UserId (Just userId)))
-                )
-                $ columnSubset $ all_ $ replays galgagameDb
+    runBeam
+      $ runSelectReturningList
+      $ select
+      $ limit_ 10
+      $ orderBy_ (desc_ . getCreated)
+      $ filter_
+        ( \row ->
+            (getPlayerA row ==. val_ (Auth.Schema.UserId (Just userId)))
+              ||. (getPlayerB row ==. val_ (Auth.Schema.UserId (Just userId)))
+        )
+      $ columnSubset
+      $ all_
+      $ replays galgagameDb
   return $ profileReplayFromReplay <$> result
 
 -- Profile

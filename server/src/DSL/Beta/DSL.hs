@@ -7,7 +7,7 @@ import Bounce (CardBounce)
 import Card (Card)
 import CardAnim (CardAnim, Hurt, TimeModifier)
 import Control.Monad.Freer (Eff)
-import qualified DSL.Alpha.DSL as Alpha
+import DSL.Alpha.DSL qualified as Alpha
 import HandCard (HandCard)
 import Life (Life)
 import Model (Deck, Hand, Model)

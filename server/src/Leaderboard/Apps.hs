@@ -2,16 +2,16 @@
 
 module Leaderboard.Apps where
 
-import qualified Auth.Schema
+import Auth.Schema qualified
 import Config (App, runBeam)
 import Data.Int (Int32)
 import Data.Maybe (catMaybes)
 import Database.Beam (QExpr, all_, as_, desc_, filter_, frame_, leftJoin_, limit_, noBounds_, noPartition_, orderBy_, orderPartitionBy_, over_, rank_, references_, runSelectReturningList, runSelectReturningOne, select, val_, withWindow_, (==.))
 import Leaderboard.Leaderboard (Leaderboard (..))
-import qualified Leaderboard.Leaderboard as Leaderboard
+import Leaderboard.Leaderboard qualified as Leaderboard
 import Schema (GalgagameDb (..), galgagameDb)
 import Stats.Schema (StatsT (..))
-import qualified User.User as User
+import User.User qualified as User
 
 type Rank = Int32
 

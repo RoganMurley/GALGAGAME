@@ -9,20 +9,20 @@ import Data.Aeson (encode)
 import Data.ByteString (ByteString, length)
 import Data.List (find)
 import Data.Map (Map)
-import qualified Data.Map as Map
+import Data.Map qualified as Map
 import Data.String.Conversions (cs)
 import Data.Text (Text)
-import qualified Data.Text as T
-import qualified Data.Text.Encoding as T
+import Data.Text qualified as T
+import Data.Text.Encoding qualified as T
 import Database.Beam (all_, default_, delete, filter_, insert, insertExpressions, insertValues, runDelete, runInsert, runSelectReturningOne, select, val_, (==.))
 import Database.Beam.Backend.SQL.BeamExtensions (runInsertReturningList)
 import Database.PostgreSQL.Simple.Errors (ConstraintViolation (..))
-import qualified Database.Redis as R
-import qualified Network.WebSockets as WS
+import Database.Redis qualified as R
+import Network.WebSockets qualified as WS
 import Schema (GalgagameDb (..), galgagameDb)
 import Stats.Progress (Progress (..))
 import Stats.Schema as Schema
-import qualified Stats.Stats as Stats
+import Stats.Stats qualified as Stats
 import System.Log.Logger (errorM)
 import Text.Printf (printf)
 import Web.Cookie (parseCookiesText)
@@ -99,7 +99,8 @@ checkPassword username password = do
       runSelectReturningOne $
         select $
           filter_ (\row -> Schema.userUsername row ==. val_ (cs username)) $
-            all_ $ users galgagameDb
+            all_ $
+              users galgagameDb
   return $
     case Schema.userPasshash <$> user of
       Just hashedPassword ->

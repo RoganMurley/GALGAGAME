@@ -1,8 +1,8 @@
 module Presence.Presence where
 
-import qualified Auth.Schema as Auth
+import Auth.Schema qualified as Auth
 import Client (Client (..))
-import qualified Client
+import Client qualified
 import Control.Concurrent.STM.TVar (TVar, newTVar)
 import Control.Monad.STM (STM)
 import Data.Aeson (ToJSON (..), object, (.=))
@@ -11,7 +11,7 @@ import Data.Int (Int64)
 import Data.Map as Map
 import Data.Maybe (catMaybes)
 import Data.Text (Text)
-import qualified User.User as User
+import User.User qualified as User
 
 newtype Presence = Presence (Map Int64 (Client, Int))
   deriving (Eq, Show)
@@ -67,7 +67,7 @@ removeClient client (Presence presence) =
             Just (_, n) ->
               if n <= 1
                 then Presence $ Map.delete userId presence
-                else Presence $ Map.insert userId (client, n -1) presence
+                else Presence $ Map.insert userId (client, n - 1) presence
             Nothing ->
               Presence presence
         Nothing ->

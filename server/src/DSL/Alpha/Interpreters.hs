@@ -9,7 +9,7 @@ import DSL.Alpha.DSL (DSL (..), Program)
 import Life (Life)
 import Model (Hand, Model (..), PlayerModel (..), getPmodel, maxHandLength)
 import ModelDiff (ModelDiff (..), PlayerModelDiff (..), modPmodelDiff)
-import qualified ModelDiff
+import ModelDiff qualified
 
 effI :: Model -> Program a -> (Model, a)
 effI initialModel prog =

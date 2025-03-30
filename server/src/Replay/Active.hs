@@ -12,7 +12,7 @@ import Mirror (Mirror (..))
 import Model (Model (Model), Passes (NoPass), PlayerModel (PlayerModel), miscInit)
 import Player (WhichPlayer (PlayerA))
 import ResolveData (ResolveData (..))
-import qualified Stack
+import Stack qualified
 import Util (mkGen)
 
 data Replay = Replay

@@ -7,28 +7,28 @@ module DSL.Beta.Interpreters where
 import Bounce (CardBounce (..))
 import Card (Card)
 import CardAnim (Damage, Hurt, TimeModifier (..), cardAnimDamage)
+import CardAnim qualified
 import {-# SOURCE #-} Cards (getEndCard)
 import Control.Monad (when)
 import Control.Monad.Freer (Eff, Member, reinterpret, run, send)
 import Control.Monad.Freer.State as S
-import qualified DSL.Alpha as Alpha
-import qualified DSL.Anim as Anim
+import DSL.Alpha qualified as Alpha
+import DSL.Anim qualified as Anim
 import DSL.Beta.DSL
 import Data.Maybe (fromMaybe, isJust)
 import Discard (CardDiscard (..), isDiscard)
 import HandCard (HandCard (..), anyCard, isRevealed, knownCard)
 import Life (Life)
-import Model (Model, getNoDraws, gameover, maxHandLength)
+import Model (Model, gameover, getNoDraws, maxHandLength)
 import ModelDiff (ModelDiff)
-import qualified ModelDiff
+import ModelDiff qualified
 import Player (WhichPlayer (..))
 import ResolveData (ResolveData (..))
 import Safe (headMay)
 import Transmutation (Transmutation (..))
 import Util (xor)
 import Wheel (Wheel (..))
-import qualified Wheel
-import qualified CardAnim
+import Wheel qualified
 
 alphaI :: DSL a -> Alpha.Program a
 alphaI (Raw p) = p
@@ -239,13 +239,13 @@ revealDeckAnim w alpha = do
   mapM_ (\c -> execAnim $ Anim.revealDeck w (anyCard c)) newlyRevealed
   return final
 
-betaI :: ∀ a . Program a -> Eff '[ExecDSL] a
+betaI :: forall a. Program a -> Eff '[ExecDSL] a
 betaI = reinterpret (\x -> animI x $ execAlpha $ alphaI x)
 
-execute :: ∀ a . Model -> Eff '[ExecDSL] a -> (Model, [ResolveData])
+execute :: forall a. Model -> Eff '[ExecDSL] a -> (Model, [ResolveData])
 execute initialModel prog =
-    (\(finalModel, _, finalResReversed, _)-> (finalModel, reverse finalResReversed)) result
-    where
+  (\(finalModel, _, finalResReversed, _) -> (finalModel, reverse finalResReversed)) result
+  where
     initialState :: (Model, ModelDiff, [ResolveData], Bool)
     initialState = (initialModel, mempty, [], False)
     part_a :: Eff '[S.State (Model, ModelDiff, [ResolveData], Bool)] a
@@ -254,7 +254,7 @@ execute initialModel prog =
     part_b = execState initialState part_a
     result :: (Model, ModelDiff, [ResolveData], Bool)
     result = run part_b
-    go :: (Member (S.State (Model, ModelDiff, [ResolveData], Bool)) effs) => ∀ b . ExecDSL b -> Eff effs b
+    go :: (Member (S.State (Model, ModelDiff, [ResolveData], Bool)) effs) => forall b. ExecDSL b -> Eff effs b
     go (ExecAlpha alpha) = do
       (model, diff, res :: [ResolveData], terminated) <- S.get
       let (newDiff, next) = Alpha.alphaEffI model alpha
@@ -269,13 +269,10 @@ execute initialModel prog =
       when (not terminated) (S.put (model :: Model, mempty :: ModelDiff, newRes :: [ResolveData], terminated || gameover model))
       return $ Anim.next anim
 
-
 damageNumbersI :: Model -> Program () -> (Damage, Damage)
 damageNumbersI model program =
-  let
-    (_, resolveData) = execute model $ betaI program
-    damage = resolveData_animDamage <$> resolveData :: [(Damage, Damage)]
-    damagePa = sum $ fst <$> damage :: Damage
-    damagePb = sum $ snd <$> damage :: Damage
-  in
-    (damagePa, damagePb)
+  let (_, resolveData) = execute model $ betaI program
+      damage = resolveData_animDamage <$> resolveData :: [(Damage, Damage)]
+      damagePa = sum $ fst <$> damage :: Damage
+      damagePb = sum $ snd <$> damage :: Damage
+   in (damagePa, damagePb)

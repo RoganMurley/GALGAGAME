@@ -13,13 +13,13 @@ import DSL.Alpha.DSL (DSL, Program)
 import Data.Foldable (toList)
 import Data.Maybe (catMaybes)
 import HandCard (HandCard (..))
-import qualified HandCard
+import HandCard qualified
 import Life (Life)
 import Model (Deck, Hand, Misc (..), Passes (..), Turn, getNoDraws, incrNoDraws, maxHandLength)
 import Player (WhichPlayer (..), other)
 import Safe (headMay, tailSafe)
 import Stack (Stack)
-import qualified Stack
+import Stack qualified
 import StackCard (StackCard (..), isOwner)
 import Transmutation (Transmutation (..))
 import Util (deleteIndex, indexedFilter)
@@ -75,7 +75,7 @@ modStackHead f = do
       return ()
 
 hurt :: Life -> WhichPlayer -> Program ()
-hurt dmg w = modLife w (- dmg +)
+hurt dmg w = modLife w (-dmg +)
 
 heal :: Life -> WhichPlayer -> Program ()
 heal mag w = do

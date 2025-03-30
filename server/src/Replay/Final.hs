@@ -5,7 +5,7 @@ import GameState (PlayState)
 import Mirror (Mirror (..))
 import Model (Model)
 import Player (WhichPlayer (..))
-import qualified Replay.Active as Active
+import Replay.Active qualified as Active
 import ResolveData (ResolveData (..))
 
 data Replay = Replay Active.Replay PlayState

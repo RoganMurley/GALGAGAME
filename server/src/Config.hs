@@ -8,11 +8,11 @@ import Control.Monad.Trans.Reader (ReaderT, asks, runReaderT)
 import Data.Pool (Pool, createPool, withResource)
 import Data.Text (Text)
 import Database.Beam.Postgres (Pg, runBeamPostgres)
-import qualified Database.PostgreSQL.Simple as Postgres
-import qualified Database.PostgreSQL.Simple.Errors as Postgres
-import qualified Database.Redis as Redis
-import qualified Network.Datadog as DD
-import qualified Network.Datadog.Types as DD
+import Database.PostgreSQL.Simple qualified as Postgres
+import Database.PostgreSQL.Simple.Errors qualified as Postgres
+import Database.Redis qualified as Redis
+import Network.Datadog qualified as DD
+import Network.Datadog.Types qualified as DD
 import Presence.Presence (Presence)
 import System.Log.Logger (Priority)
 

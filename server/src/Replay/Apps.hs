@@ -1,6 +1,6 @@
 module Replay.Apps where
 
-import qualified Auth.Schema
+import Auth.Schema qualified
 import Config (App, runBeam)
 import Data.Aeson (encode)
 import Data.Int (Int64)
@@ -10,7 +10,7 @@ import Database.Beam (all_, default_, filter_, insert, insertExpressions, runSel
 import Database.Beam.Backend.SQL.BeamExtensions (runInsertReturningList)
 import Player (WhichPlayer (..))
 import Replay.Final (Replay, getReplayUser)
-import qualified Replay.Schema
+import Replay.Schema qualified
 import Schema (GalgagameDb (..), galgagameDb)
 
 save :: Replay -> App Int64
@@ -40,5 +40,6 @@ load replayId = do
       runSelectReturningOne $
         select $
           filter_ (\row -> Replay.Schema.replayId row ==. val_ replayId) $
-            all_ $ replays galgagameDb
+            all_ $
+              replays galgagameDb
   return $ Replay.Schema.replayReplay <$> result

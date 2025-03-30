@@ -9,27 +9,27 @@ import Card (Status (..), hasStatus)
 import CardAnim (CardAnim (..), Hurt (..), TimeModifier (..))
 import Control.Monad (forM_, when)
 import Control.Monad.Freer.TH (makeEffect)
-import qualified DSL.Alpha as Alpha
+import DSL.Alpha qualified as Alpha
 import DSL.Beta.DSL (DSL, Program)
 import Data.Foldable (foldl', toList)
 import Data.List (partition)
 import Data.Map (Map)
-import qualified Data.Map as Map
+import Data.Map qualified as Map
 import Data.Maybe (catMaybes, fromMaybe, isJust)
 import Data.Set (Set)
-import qualified Data.Set as Set
+import Data.Set qualified as Set
 import HandCard (HandCard, anyCard, isRevealed)
 import Life (Life)
 import Model (Model (model_misc), getNoDraws, maxHandLength)
 import Player (WhichPlayer (..), other)
 import Safe (headDef, lastDef)
 import Stack (Stack)
-import qualified Stack
+import Stack qualified
 import StackCard (StackCard (..), isOwner)
 import Transmutation (Transmutation (..), removeTransmuteToSelf)
 import Util (randomChoice, shuffle, split)
 import Wheel (Wheel (..), indexWheel)
-import qualified Wheel
+import Wheel qualified
 import Prelude hiding (null)
 
 makeEffect ''DSL
@@ -247,7 +247,7 @@ confound = do
             then shuffleMovingEveryCard
             else moveStack (\i _ -> Map.lookup i diasporaMap) (TimeModifierOutQuad $ fromIntegral time)
     -- Check if any list elements are at the same position
-    anyElemsSame :: Eq a => [a] -> [a] -> Bool
+    anyElemsSame :: (Eq a) => [a] -> [a] -> Bool
     anyElemsSame xs ys = foldr (\(x, y) prev -> x == y || prev) False $ zip xs ys
 
 reversal :: Program ()

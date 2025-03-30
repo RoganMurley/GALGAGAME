@@ -3,8 +3,8 @@ module Database where
 import Data.Maybe (fromMaybe)
 import Data.String.Conversions (cs)
 import Data.Word (Word16)
-import qualified Database.PostgreSQL.Simple as Postgres
-import qualified Database.Redis as Redis
+import Database.PostgreSQL.Simple qualified as Postgres
+import Database.Redis qualified as Redis
 import Safe (readMay)
 
 redisConnectInfo :: (Maybe String, Maybe String, Maybe String) -> Redis.ConnectInfo

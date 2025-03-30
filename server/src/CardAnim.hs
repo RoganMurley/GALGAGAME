@@ -280,7 +280,7 @@ cardAnimDamage anim =
         Heal w h ->
           wrap w h
         Hurt w d _ ->
-          wrap w (- d)
+          wrap w (-d)
         UnknownDamage ->
           (DamageUncertain 0, DamageUncertain 0)
         _ ->
