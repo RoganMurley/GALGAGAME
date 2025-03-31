@@ -3,30 +3,12 @@
 set -e
 name=$1
 
-if [ -z "$DIGITALOCEAN_ACCESS_TOKEN" ]; then
-  echo "Error: DIGITALOCEAN_ACCESS_TOKEN is not set"
-  exit 1
-fi
-
 if [ $# -eq 0 ]; then
     hash=$(git rev-parse HEAD)
     shorthash=${hash:0:8}
     timestamp=$(date +%s)
     name="$shorthash-$timestamp"
 fi
-
-# echo "Setting up virtual environments..."
-# python3 -m venv .venv
-# source .venv/bin/activate
-# pip install -r requirements.txt
-
-# pushd client
-# export NVM_DIR=$HOME/.nvm;
-# source $NVM_DIR/nvm.sh;
-# nvm use
-# npm install
-# npm install -g gulp@4.00
-# popd
 
 echo "Building client..."
 pushd client
@@ -35,32 +17,58 @@ popd
 
 echo "Building server..."
 pushd server
-docker build . -f=prod.Dockerfile --tag=game-galgagame
+docker buildx build --platform linux/amd64 -f=prod.Dockerfile --tag=game-galgagame  --output type=docker,dest=../.images/game-galgagame .
 popd
-docker save -o .images/game-galgagame game-galgagame
 
-echo "Provisioning instance..."
-docker-machine create --driver=digitalocean --digitalocean-access-token="$DIGITALOCEAN_ACCESS_TOKEN" --digitalocean-region=sfo2 --digitalocean-image=ubuntu-20-04-x64 --digitalocean-tags=ring-of-worlds --engine-install-url "https://releases.rancher.com/install-docker/19.03.9.sh" "$name"
-eval "$(docker-machine env "$name")"
+echo "Provisioning droplet '$name'..."
+droplet_info=$(doctl compute droplet create "$name" \
+  --region "sfo2" \
+  --image "ubuntu-22-04-x64" \
+  --size "s-1vcpu-2gb" \
+  --ssh-keys "46507233" \
+  --tag-names "ring-of-worlds" \
+  --format PublicIPv4 \
+  --wait \
+  --no-header)
 
-echo "Copying image to server..."
-docker-machine scp .images/game-galgagame "$name":game-galgagame
-docker load -i .images/game-galgagame
+IP=$(echo "$droplet_info" | head -n1 | awk '{print $1}')
+echo "Provisioned droplet at $IP"
 
-echo "Building server..."
-# Need to export COMPOSE_TLS_VERSION=TLSv1_2
+echo "Installing Docker on remote..."
+until ssh -o StrictHostKeyChecking=no -o ConnectTimeout=5 root@$IP "echo SSH ready" 2>/dev/null; do
+  echo "Waiting for SSH..."
+  sleep 5
+done
+
+ssh root@$IP << 'EOF'
+  echo "Installing Docker..."
+  curl -fsSL https://get.docker.com | sh
+
+  echo "Installing docker-compose-plugin..."
+  apt-get update
+  apt-get install -y docker-compose-plugin
+EOF
+
+echo "Creating Docker context..."
+CONTEXT_NAME="do-$name"
+docker context create "$CONTEXT_NAME" --docker "host=ssh://root@$IP"
+docker context use "$CONTEXT_NAME"
+
+echo "Loading Docker image on server..."
+scp .images/game-galgagame root@$IP:/home/game-galgagame
+ssh root@$IP 'docker load -i /home/game-galgagame'
+
+echo "Running docker compose"
 docker compose -f docker-compose.prod.yml build
-
-echo "Booting compose..."
 docker compose -f docker-compose.prod.yml up -d
 
 echo "Notifying users..."
 ./scripts/systemMessage "🔔 Server restarting for update, you may lose connection 🔔" || true
 
 echo "Flipping floating IP..."
-./scripts/flip "$name"
+python3 scripts/flip.py "$name"
 
 echo "Purging other droplets"
-./scripts/purgeOtherDroplets "$name"
+python3 scripts/purgeOtherDroplets.py "$name"
 
 echo "SUCCESS!"
