@@ -14,7 +14,7 @@ jobs:
           name: Restore Cached Elm Dependencies
           keys:
             - elm-0.19.1-{{ checksum "client/elm.json" }}-1
-      - add_ssh_keys
+      - add_ssh_keys:
           fingerprints:
             - SHA256:DYnIiySnMFdletjgBWTvmp6R0+dzAhUZSO/H8TlhIc8
       - run:
