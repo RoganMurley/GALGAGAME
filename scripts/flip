@@ -1,53 +1,23 @@
-#!/usr/bin/python3
-import os
-import sys
+#!/bin/bash
 
-import requests
+# Usage: ./flip <droplet-name>
+# Requires: doctl to be authenticated (run `doctl auth init` beforehand)
 
-FLOATING_IP = '157.230.72.108'
-API_URL = 'https://api.digitalocean.com/v2/floating_ips/{}/actions'.format(FLOATING_IP)
+FLOATING_IP="157.230.72.108"
+DROPLET_NAME="$1"
 
+if [ -z "$DROPLET_NAME" ]; then
+  echo "Usage: $0 <droplet-name>"
+  exit 1
+fi
 
-def get_droplets(token):
-    req = requests.get(
-        'https://api.digitalocean.com/v2/droplets',
-        headers={'Authorization': 'Bearer {}'.format(token)},
-    )
-    return req.json()['droplets']
+# Get droplet ID by name
+DROPLET_ID=$(doctl compute droplet list --format ID,Name --no-header | awk -v name="$DROPLET_NAME" '$2 == name {print $1}')
 
+if [ -z "$DROPLET_ID" ]; then
+  echo "Droplet '$DROPLET_NAME' not found."
+  exit 1
+fi
 
-def flip_ip(token, droplet_id):
-    req = requests.post(
-        API_URL,
-        headers={'Authorization': 'Bearer {}'.format(token)},
-        json={
-            'type': 'assign',
-            'droplet_id': droplet_id,
-        },
-    )
-    return req
-
-
-def get_droplet_by_name(droplets, name):
-    for droplet in droplets:
-        if droplet['name'] == name:
-            return droplet
-
-
-def main():
-    token = os.environ.get('DIGITALOCEAN_ACCESS_TOKEN')
-    name = sys.argv[1]
-
-    droplets = get_droplets(token)
-    droplet = get_droplet_by_name(droplets, name)
-
-    if droplet is None:
-        print('Droplet {} not found'.format(name))
-    else:
-        droplet_id = droplet['id']
-        response = flip_ip(token, droplet_id)
-        print(response.text)
-
-
-if __name__ == '__main__':
-    main()
+# Assign the floating IP to the droplet
+doctl compute floating-ip-action assign "$FLOATING_IP" "$DROPLET_ID"

@@ -89,9 +89,9 @@ echo "Notifying users..."
 ./scripts/systemMessage "🔔 Server restarting for update, you may lose connection 🔔" || true
 
 echo "Flipping floating IP..."
-python3 scripts/flip "$name"
+./scripts/flip $name
 
 echo "Purging other droplets"
-python3 scripts/purgeOtherDroplets "$name"
+./scripts/purgeOtherDroplets $name
 
 echo "SUCCESS!"

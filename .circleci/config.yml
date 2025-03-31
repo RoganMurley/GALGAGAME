@@ -34,11 +34,6 @@ jobs:
           command: cd server &&
                    docker build . -f=prod.Dockerfile --tag=game-galgagame
       - run:
-          name: Setup Python
-          command: sudo apt-get update &&
-                   sudo apt-get install python3-pip &&
-                   sudo /usr/bin/python3 -m pip install requests==2.18.4
-      - run:
           name: Install doctl
           command: |
             curl -sL https://github.com/digitalocean/doctl/releases/latest/download/doctl-$(uname -s)-$(uname -m) -o doctl

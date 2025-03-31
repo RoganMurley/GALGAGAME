@@ -1,34 +1,22 @@
-#!/usr/bin/python3
-import os
-import sys
+#!/bin/bash
 
-import requests
+# Usage: ./purgeOtherDroplets <droplet-name-to-keep>
+# Requires: doctl to be authenticated (run `doctl auth init`)
 
+DROPLET_NAME_TO_KEEP="$1"
 
-def get_droplets(token):
-    req = requests.get(
-        'https://api.digitalocean.com/v2/droplets?tag_name=ring-of-worlds',
-        headers={'Authorization': 'Bearer {}'.format(token)},
-    )
-    return req.json()['droplets']
+if [ -z "$DROPLET_NAME_TO_KEEP" ]; then
+  echo "Usage: $0 <droplet-name-to-keep>"
+  exit 1
+fi
 
-
-def delete_droplet(token, droplet):
-    req = requests.delete(
-        'https://api.digitalocean.com/v2/droplets/{}'.format(droplet['id']),
-        headers={'Authorization': 'Bearer {}'.format(token)},
-    )
-    return req
-
-
-def main():
-    token = os.environ.get('DIGITALOCEAN_ACCESS_TOKEN')
-    name = sys.argv[1]
-
-    for droplet in get_droplets(token):
-        if droplet['name'] != name:
-            delete_droplet(token, droplet)
-
-
-if __name__ == "__main__":
-    main()
+# Get list of droplet IDs and names tagged with 'ring-of-worlds'
+doctl compute droplet list --tag-name ring-of-worlds --format ID,Name --no-header |
+while read -r DROPLET_ID DROPLET_NAME; do
+  if [ "$DROPLET_NAME" != "$DROPLET_NAME_TO_KEEP" ]; then
+    echo "Deleting droplet: $DROPLET_NAME (ID: $DROPLET_ID)"
+    doctl compute droplet delete "$DROPLET_ID" --force
+  else
+    echo "Keeping droplet: $DROPLET_NAME"
+  fi
+done
