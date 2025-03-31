@@ -20,6 +20,8 @@ for cmd in doctl docker ssh scp git; do
   fi
 done
 
+docker context use default
+
 echo "Building client..."
 pushd client
 gulp build --production
@@ -66,11 +68,8 @@ fi
 
 ssh root@$IP << 'EOF'
   echo "Installing Docker..."
-  curl -fsSL https://get.docker.com | sh
-
-  echo "Installing docker-compose-plugin..."
   apt-get update
-  apt-get install -y docker-compose-plugin
+  curl -fsSL https://get.docker.com | sh
 EOF
 
 echo "Creating Docker context..."
@@ -90,9 +89,9 @@ echo "Notifying users..."
 ./scripts/systemMessage "🔔 Server restarting for update, you may lose connection 🔔" || true
 
 echo "Flipping floating IP..."
-python3 scripts/flip.py "$name"
+python3 scripts/flip "$name"
 
 echo "Purging other droplets"
-python3 scripts/purgeOtherDroplets.py "$name"
+python3 scripts/purgeOtherDroplets "$name"
 
 echo "SUCCESS!"
