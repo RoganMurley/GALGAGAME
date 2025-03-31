@@ -1,14 +1,24 @@
 #!/bin/bash
-# Run with `sudo -E ./scripts/deploy` to preserve environment variables
-set -e
-name=$1
+# Usage: sudo -E ./scripts/deploy [name]
+# If no name is provided, the script auto-generates one using git hash and timestamp.
+
+set -euxo pipefail
 
 if [ $# -eq 0 ]; then
     hash=$(git rev-parse HEAD)
     shorthash=${hash:0:8}
     timestamp=$(date +%s)
     name="$shorthash-$timestamp"
+else
+    name="$1"
 fi
+
+for cmd in doctl docker ssh scp git; do
+  if ! command -v $cmd &> /dev/null; then
+    echo "Missing required command: $cmd"
+    exit 1
+  fi
+done
 
 echo "Building client..."
 pushd client
@@ -32,13 +42,27 @@ droplet_info=$(doctl compute droplet create "$name" \
   --no-header)
 
 IP=$(echo "$droplet_info" | head -n1 | awk '{print $1}')
-echo "Provisioned droplet at $IP"
 
-echo "Installing Docker on remote..."
-until ssh -o StrictHostKeyChecking=no -o ConnectTimeout=5 root@$IP "echo SSH ready" 2>/dev/null; do
-  echo "Waiting for SSH..."
+if [[ -z "$IP" ]]; then
+  echo "Failed to retrieve droplet IP"
+  exit 1
+else
+  echo "Provisioned droplet at $IP"
+fi
+
+echo "Waiting for SSH..."
+for i in {1..30}; do
+  if ssh -o StrictHostKeyChecking=no -o ConnectTimeout=5 root@$IP "echo SSH ready" &>/dev/null; then
+    break
+  fi
+  echo "Retry $i..."
   sleep 5
 done
+
+if [ $i -eq 30 ]; then
+  echo "SSH timed out"
+  exit 1
+fi
 
 ssh root@$IP << 'EOF'
   echo "Installing Docker..."
