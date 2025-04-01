@@ -771,21 +771,21 @@ trickCoin =
             else Nothing
       bounceDeck (\i _ -> i > 0 && i <= 4) (TimeModifierLinear 1)
 
--- Devil
-devilSword :: Card
-devilSword =
+-- War
+warSword :: Card
+warSword =
   newCard
-    Devil
+    War
     Sword
     "Hurt for 4, then hurt for 4 again"
     $ \w -> do
       hurt 4 (other w) Slash
       hurt 4 (other w) Slash
 
-devilWand :: Card
-devilWand =
+warWand :: Card
+warWand =
   newCard
-    Devil
+    War
     Wand
     "Hurt for 3 up to 4 times"
     $ \w -> do
@@ -794,10 +794,10 @@ devilWand =
       unknownDamage
       many times (hurt 3 (other w) Slash)
 
-devilCup :: Card
-devilCup =
+warCup :: Card
+warCup =
   newCard
-    Devil
+    War
     Cup
     "All other cards on the wheel\nget +5 damage"
     $ \_ ->
@@ -808,29 +808,16 @@ devilCup =
               else Nothing
         )
 
-devilCoin :: Card
-devilCoin =
+warCoin :: Card
+warCoin =
   newCard
-    Devil
+    War
     Coin
     "Move card in next socket\nto previous socket"
     $ \_ ->
       moveStack
         (\i _ -> if i == 1 then Just (-1) else Nothing)
         (TimeModifierOutQuint 500)
-
--- devilCoin :: Card
--- devilCoin =
---   newCard
---     Devil
---     Coin
---     "Card in next socket becomes a WAND"
---     $ \_ ->
---       transmuteHead $
---         \stackCard ->
---           let aspect = card_aspect . stackcard_card $ stackCard :: Aspect
---               targetCard = getCard aspect Wand :: Card
---            in transmuteToCard targetCard stackCard
 
 -- Other cards
 getEndCard :: Int -> Card
@@ -899,7 +886,7 @@ swords =
     eyeSword,
     glassSword,
     plasticSword,
-    devilSword,
+    warSword,
     trickSword
   ]
 
@@ -919,7 +906,7 @@ wands =
     eyeWand,
     glassWand,
     plasticWand,
-    devilWand,
+    warWand,
     trickWand
   ]
 
@@ -939,7 +926,7 @@ cups =
     eyeCup,
     glassCup,
     plasticCup,
-    devilCup,
+    warCup,
     trickCup
   ]
 
@@ -959,7 +946,7 @@ coins =
     eyeCoin,
     glassCoin,
     plasticCoin,
-    devilCoin,
+    warCoin,
     trickCoin
   ]
 
