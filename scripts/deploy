@@ -66,11 +66,8 @@ if [ $i -eq 30 ]; then
   exit 1
 fi
 
-ssh root@$IP << 'EOF'
-  echo "Installing Docker..."
-  apt-get update
-  curl -fsSL https://get.docker.com | sh
-EOF
+echo "Installing Docker..."
+ssh root@$IP 'curl -fsSL https://get.docker.com | sh'
 
 echo "Creating Docker context..."
 CONTEXT_NAME="do-$name"
