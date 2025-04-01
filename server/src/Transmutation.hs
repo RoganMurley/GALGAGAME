@@ -39,9 +39,9 @@ transmuteToCard targetCard stackCard =
 
 mergeStatuses :: [Status] -> [Status] -> [Status]
 mergeStatuses xs ys =
-  -- Remove duplicate fragile statuses
+  -- Remove duplicate fragile or non-lethal statuses
   nubBy
-    (\x y -> x == y && x == StatusFragile)
+    (\x y -> x == y && (x == StatusFragile || x == StatusNonLethal))
     $ xs ++ ys
 
 removeTransmuteToSelf :: Maybe Transmutation -> Maybe Transmutation

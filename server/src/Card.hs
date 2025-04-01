@@ -74,6 +74,7 @@ data Aspect
   | War
   | Trick
   | Strange
+  | Peace
   | OtherAspect Text
   deriving (Eq, Generic, NFData, Ord, Show)
 
@@ -144,8 +145,9 @@ allAspects =
     Void,
     Glass,
     Eye,
-    War,
     Trick,
+    War,
+    Peace,
     Strange
   ]
 
@@ -154,6 +156,7 @@ data Status
   | StatusBlighted
   | StatusFragile
   | StatusBonusDamage Int
+  | StatusNonLethal
   deriving (Eq, Generic, NFData, Ord, Show)
 
 instance ToJSON Status where

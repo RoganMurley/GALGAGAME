@@ -205,7 +205,7 @@ mainRunes =
   ]
 
 superRunes :: [Rune]
-superRunes = mainRunes ++ [warRune]
+superRunes = mainRunes ++ [warRune, peaceRune]
 
 allRunes :: [Rune]
 allRunes = superRunes
@@ -353,6 +353,15 @@ trickRune =
     "cards/trick/coin.png"
     (Cards.trickSword, Cards.trickWand, Cards.trickCup, Cards.trickCoin)
     (levelToExperience 13)
+
+peaceRune :: Rune
+peaceRune =
+  Rune
+    "PEACE"
+    Peace
+    "cards/peace/coin.png"
+    (Cards.peaceSword, Cards.peaceWand, Cards.peaceCup, Cards.peaceCoin)
+    (levelToExperience 14)
 
 characterCards :: Character -> Deck
 characterCards Character {character_choice} =

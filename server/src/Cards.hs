@@ -13,6 +13,7 @@ import Data.Maybe (fromMaybe)
 import Data.String.Conversions (cs)
 import Data.Text (Text)
 import HandCard (HandCard (..), anyCard, isRevealed)
+import HandCard qualified
 import Model (Misc (..))
 import Player (WhichPlayer (..), other)
 import Safe (headMay)
@@ -614,7 +615,7 @@ glassCup =
     $ newCard
       Glass
       Cup
-      "All other cards on the wheel\nbecome fragile. This card\nstarts fragile."
+      "All other cards on the wheel\nbecome fragile. This card\nis fragile."
     $ \_ ->
       transmute
         ( \i sc ->
@@ -819,6 +820,57 @@ warCoin =
         (\i _ -> if i == 1 then Just (-1) else Nothing)
         (TimeModifierOutQuint 500)
 
+-- Peace
+peaceSword :: Card
+peaceSword =
+  addStatus StatusNonLethal
+    $ newCard
+      Peace
+      Sword
+      "Hurt for 10. This card\nis non-lethal."
+    $ \w ->
+      hurt 10 (other w) Slash
+
+peaceWand :: Card
+peaceWand =
+  addStatus StatusNonLethal
+    $ newCard
+      Peace
+      Wand
+      "Hurt for 5 for each other card\non the wheel. This card\nis non-lethal."
+    $ \w -> do
+      diaspora <- diasporaFromStack <$> getStack
+      hurt (5 * length diaspora) (other w) Slash
+
+peaceCup :: Card
+peaceCup =
+  newCard
+    Peace
+    Cup
+    "Draw a card. The top card\nof their deck becomes\nnon-lethal."
+    $ \w -> do
+      draw w w (TimeModifierOutQuint 1)
+      deck <- getDeck (other w)
+      let n = 1
+      let toDraw = take n deck
+      let rest = drop n deck
+      let toDrawWithStatus = map (HandCard.cardMap (addStatus StatusNonLethal)) toDraw
+      raw $ Alpha.setDeck (other w) $ toDrawWithStatus ++ rest
+
+peaceCoin :: Card
+peaceCoin =
+  newCard
+    Peace
+    Coin
+    "All cards on the wheel\nbecome non-lethal."
+    $ \_ ->
+      transmute
+        ( \i sc ->
+            if i > 0
+              then Just (Transmutation sc (cardMap (addStatus StatusNonLethal) sc))
+              else Nothing
+        )
+
 -- Other cards
 getEndCard :: Int -> Card
 getEndCard noDraws
@@ -887,7 +939,8 @@ swords =
     glassSword,
     plasticSword,
     warSword,
-    trickSword
+    trickSword,
+    peaceSword
   ]
 
 wands :: [Card]
@@ -907,7 +960,8 @@ wands =
     glassWand,
     plasticWand,
     warWand,
-    trickWand
+    trickWand,
+    peaceWand
   ]
 
 cups :: [Card]
@@ -927,7 +981,8 @@ cups =
     glassCup,
     plasticCup,
     warCup,
-    trickCup
+    trickCup,
+    peaceCup
   ]
 
 coins :: [Card]
@@ -947,7 +1002,8 @@ coins =
     glassCoin,
     plasticCoin,
     warCoin,
-    trickCoin
+    trickCoin,
+    peaceCoin
   ]
 
 others :: [Card]

@@ -158,6 +158,20 @@ statusView ctx entity i status =
                         }
                     ]
 
+        StatusNonLethal ->
+            Texture.with textures "bonusDamage.png" <|
+                \texture ->
+                    [ Render.Primitives.quad Render.Shaders.fragment <|
+                        { rotation = Quaternion.makeRotate rotation
+                        , scale = makeScale <| Vector3.scale 0.27 scale
+                        , color = vec3 1 1 1
+                        , pos = Vector3.add position offset
+                        , perspective = perspective
+                        , camera = camera3d
+                        , texture = texture
+                        }
+                    ]
+
 
 revealedView : Context -> Card.Entity { a | revealed : Bool } -> List WebGL.Entity
 revealedView ctx entity =

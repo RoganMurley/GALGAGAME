@@ -23,6 +23,9 @@ decoder =
                     Json.map StatusBonusDamage <|
                         Json.field "contents" Json.int
 
+                "StatusNonLethal" ->
+                    Json.succeed StatusNonLethal
+
                 _ ->
                     Json.fail <| "Unknown status " ++ str
     in
