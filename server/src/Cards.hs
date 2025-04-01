@@ -847,15 +847,15 @@ peaceCup =
   newCard
     Peace
     Cup
-    "Draw a card. The top card\nof their deck becomes\nnon-lethal."
+    "Draw 2 cards, but they\n become non-lethal."
     $ \w -> do
-      draw w w (TimeModifierOutQuint 1)
-      deck <- getDeck (other w)
-      let n = 1
+      deck <- getDeck w
+      let n = 2
       let toDraw = take n deck
       let rest = drop n deck
       let toDrawWithStatus = map (HandCard.cardMap (addStatus StatusNonLethal)) toDraw
-      raw $ Alpha.setDeck (other w) $ toDrawWithStatus ++ rest
+      raw $ Alpha.setDeck w $ toDrawWithStatus ++ rest
+      replicateM_ 2 $ draw w w (TimeModifierOutQuint 1)
 
 peaceCoin :: Card
 peaceCoin =
