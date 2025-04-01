@@ -840,7 +840,7 @@ peaceWand =
       "Hurt for 5 for each other card\non the wheel. This card\nis non-lethal."
     $ \w -> do
       diaspora <- diasporaFromStack <$> getStack
-      hurt (5 * length diaspora) (other w) Slash
+      hurt (5 * (length diaspora - 1)) (other w) Slash
 
 peaceCup :: Card
 peaceCup =
