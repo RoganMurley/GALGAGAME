@@ -66,11 +66,11 @@ if [ $i -eq 15 ]; then
   exit 1
 fi
 
+echo "Waiting for cloud-init to finish..."
+ssh root@$IP 'while [ ! -f /var/lib/cloud/instance/boot-finished ]; do sleep 1; done'
+
 echo "Installing Docker..."
-ssh root@$IP '
-  sleep 30
-  curl -fsSL https://get.docker.com | sh
-'
+ssh root@$IP 'curl -fsSL https://get.docker.com | sh'
 
 echo "Creating Docker context..."
 CONTEXT_NAME="do-$name"
