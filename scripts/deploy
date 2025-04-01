@@ -2,7 +2,7 @@
 # Usage: sudo -E ./scripts/deploy [name]
 # If no name is provided, the script auto-generates one using git hash and timestamp.
 
-set -euxo pipefail
+set -euo pipefail
 
 if [ $# -eq 0 ]; then
     hash=$(git rev-parse HEAD)
