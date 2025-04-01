@@ -336,15 +336,6 @@ plasticRune =
     (Cards.plasticSword, Cards.plasticWand, Cards.plasticCup, Cards.plasticCoin)
     (levelToExperience 11)
 
-warRune :: Rune
-warRune =
-  Rune
-    "WAR"
-    War
-    "cards/war/coin.png"
-    (Cards.warSword, Cards.warWand, Cards.warCup, Cards.warCoin)
-    (levelToExperience 12)
-
 trickRune :: Rune
 trickRune =
   Rune
@@ -352,6 +343,15 @@ trickRune =
     Trick
     "cards/trick/coin.png"
     (Cards.trickSword, Cards.trickWand, Cards.trickCup, Cards.trickCoin)
+    (levelToExperience 12)
+
+warRune :: Rune
+warRune =
+  Rune
+    "WAR"
+    War
+    "cards/war/coin.png"
+    (Cards.warSword, Cards.warWand, Cards.warCup, Cards.warCoin)
     (levelToExperience 13)
 
 peaceRune :: Rune
