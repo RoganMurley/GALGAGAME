@@ -61,13 +61,18 @@ for i in {1..15}; do
   sleep 5
 done
 
-if [ $i -eq 30 ]; then
+if [ $i -eq 15 ]; then
   echo "SSH timed out"
   exit 1
 fi
 
-echo "Installing Docker..."
-ssh root@$IP 'curl -fsSL https://get.docker.com | sh'
+echo "Installing Docker..."ssh root@$IP '
+  while fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1; do
+    echo "Waiting for dpkg lock..."
+    sleep 3
+  done
+  curl -fsSL https://get.docker.com | sh
+'
 
 echo "Creating Docker context..."
 CONTEXT_NAME="do-$name"
