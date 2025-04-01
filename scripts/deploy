@@ -67,10 +67,7 @@ if [ $i -eq 15 ]; then
 fi
 
 echo "Installing Docker..."ssh root@$IP '
-  while fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1; do
-    echo "Waiting for dpkg lock..."
-    sleep 3
-  done
+  sleep 30
   curl -fsSL https://get.docker.com | sh
 '
 
