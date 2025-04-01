@@ -37,7 +37,7 @@ droplet_info=$(doctl compute droplet create "$name" \
   --region "sfo2" \
   --image "ubuntu-22-04-x64" \
   --size "s-1vcpu-2gb" \
-  --ssh-keys "46507233" \
+  --ssh-keys "circleci-deploy" \
   --tag-names "ring-of-worlds" \
   --format PublicIPv4 \
   --wait \
@@ -53,7 +53,7 @@ else
 fi
 
 echo "Waiting for SSH..."
-for i in {1..30}; do
+for i in {1..15}; do
   if ssh -o StrictHostKeyChecking=no -o ConnectTimeout=5 root@$IP "echo SSH ready" &>/dev/null; then
     break
   fi
