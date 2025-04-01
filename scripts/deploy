@@ -37,7 +37,7 @@ droplet_info=$(doctl compute droplet create "$name" \
   --region "sfo2" \
   --image "ubuntu-22-04-x64" \
   --size "s-1vcpu-2gb" \
-  --ssh-keys "circleci-deploy" \
+  --ssh-keys "46528274" \
   --tag-names "ring-of-worlds" \
   --format PublicIPv4 \
   --wait \
