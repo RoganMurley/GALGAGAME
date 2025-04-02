@@ -660,7 +660,7 @@ plasticCup =
   newCard
     Plastic
     Cup
-    "Draw 2 copies of card in next socket "
+    "Draw 2 copies of card in next socket"
     $ \w -> do
       stack <- getStack
       let mNextStackCard = Stack.get stack 1
@@ -814,11 +814,15 @@ warCoin =
   newCard
     War
     Coin
-    "Move card in next socket\nto previous socket"
+    "Cards in next 2 wheel sockets\nbecome swords"
     $ \_ ->
-      moveStack
-        (\i _ -> if i == 1 then Just (-1) else Nothing)
-        (TimeModifierOutQuint 500)
+      transmute $
+        \i stackCard ->
+          let aspect = card_aspect . stackcard_card $ stackCard
+              targetCard = getCard aspect Sword
+           in if i > 0 && i <= 2
+                then Just $ Transmutation stackCard (transmuteToCard targetCard stackCard)
+                else Nothing
 
 -- Peace
 peaceSword :: Card
@@ -827,7 +831,7 @@ peaceSword =
     $ newCard
       Peace
       Sword
-      "Hurt for 10. This card\nis non-lethal."
+      "Hurt for 10. This card\nis non-lethal"
     $ \w ->
       hurt 10 (other w) Slash
 
@@ -837,17 +841,17 @@ peaceWand =
     $ newCard
       Peace
       Wand
-      "Hurt for 5 for each other card\non the wheel. This card\nis non-lethal."
+      "Hurt for 4 for each other card\non the wheel. This card\nis non-lethal."
     $ \w -> do
       diaspora <- diasporaFromStack <$> getStack
-      hurt (5 * (length diaspora - 1)) (other w) Slash
+      hurt (4 * (length diaspora - 1)) (other w) Slash
 
 peaceCup :: Card
 peaceCup =
   newCard
     Peace
     Cup
-    "Draw 2 cards, but they\n become non-lethal."
+    "Draw 2 cards, but they\n become non-lethal"
     $ \w -> do
       deck <- getDeck w
       let n = 2
@@ -862,7 +866,7 @@ peaceCoin =
   newCard
     Peace
     Coin
-    "All cards on the wheel\nbecome non-lethal."
+    "All cards on the wheel\nbecome non-lethal"
     $ \_ ->
       transmute
         ( \i sc ->
