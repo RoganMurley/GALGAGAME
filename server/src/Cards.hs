@@ -814,13 +814,13 @@ warCoin =
   newCard
     War
     Coin
-    "Cards in next 2 wheel sockets\nbecome swords"
+    "All other cards on the wheel\nbecome swords"
     $ \_ ->
       transmute $
         \i stackCard ->
           let aspect = card_aspect . stackcard_card $ stackCard
               targetCard = getCard aspect Sword
-           in if i > 0 && i <= 2
+           in if i > 0
                 then Just $ Transmutation stackCard (transmuteToCard targetCard stackCard)
                 else Nothing
 
