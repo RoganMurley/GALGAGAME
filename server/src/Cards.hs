@@ -772,21 +772,21 @@ trickCoin =
             else Nothing
       bounceDeck (\i _ -> i > 0 && i <= 4) (TimeModifierLinear 1)
 
--- War
-warSword :: Card
-warSword =
+-- Devil
+devilSword :: Card
+devilSword =
   newCard
-    War
+    Devil
     Sword
     "Hurt for 4, then hurt for 4 again"
     $ \w -> do
       hurt 4 (other w) Slash
       hurt 4 (other w) Slash
 
-warWand :: Card
-warWand =
+devilWand :: Card
+devilWand =
   newCard
-    War
+    Devil
     Wand
     "Hurt for 3 up to 4 times"
     $ \w -> do
@@ -795,10 +795,10 @@ warWand =
       unknownDamage
       many times (hurt 3 (other w) Slash)
 
-warCup :: Card
-warCup =
+devilCup :: Card
+devilCup =
   newCard
-    War
+    Devil
     Cup
     "All other cards on the wheel\nget +5 damage"
     $ \_ ->
@@ -809,20 +809,16 @@ warCup =
               else Nothing
         )
 
-warCoin :: Card
-warCoin =
+devilCoin :: Card
+devilCoin =
   newCard
-    War
+    Devil
     Coin
-    "All other cards on the wheel\nbecome swords"
+    "Move card in next socket\nto previous socket"
     $ \_ ->
-      transmute $
-        \i stackCard ->
-          let aspect = card_aspect . stackcard_card $ stackCard
-              targetCard = getCard aspect Sword
-           in if i > 0
-                then Just $ Transmutation stackCard (transmuteToCard targetCard stackCard)
-                else Nothing
+      moveStack
+        (\i _ -> if i == 1 then Just (-1) else Nothing)
+        (TimeModifierOutQuint 500)
 
 -- Peace
 peaceSword :: Card
@@ -942,7 +938,7 @@ swords =
     eyeSword,
     glassSword,
     plasticSword,
-    warSword,
+    devilSword,
     trickSword,
     peaceSword
   ]
@@ -963,7 +959,7 @@ wands =
     eyeWand,
     glassWand,
     plasticWand,
-    warWand,
+    devilWand,
     trickWand,
     peaceWand
   ]
@@ -984,7 +980,7 @@ cups =
     eyeCup,
     glassCup,
     plasticCup,
-    warCup,
+    devilCup,
     trickCup,
     peaceCup
   ]
@@ -1005,7 +1001,7 @@ coins =
     eyeCoin,
     glassCoin,
     plasticCoin,
-    warCoin,
+    devilCoin,
     trickCoin,
     peaceCoin
   ]

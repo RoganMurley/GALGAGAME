@@ -71,7 +71,7 @@ data Aspect
   | Void
   | Glass
   | Eye
-  | War
+  | Devil
   | Trick
   | Strange
   | Peace
@@ -146,7 +146,7 @@ allAspects =
     Glass,
     Eye,
     Trick,
-    War,
+    Devil,
     Peace,
     Strange
   ]

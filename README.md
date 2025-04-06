@@ -40,7 +40,7 @@ Join the [discord](https://discord.gg/SVXXej4).
 
 ## Run locally
 * `docker compose up`
-* `ssh dev`
+* `./scripts/sshDev`
 * `cd opt/build`
 * `stack repl`
 * `main`
