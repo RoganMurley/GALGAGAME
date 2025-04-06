@@ -800,13 +800,14 @@ devilCup =
   newCard
     Devil
     Cup
-    "All other cards on the wheel\nget +5 damage"
+    "SWORDs and WANDs\non the wheel get +5\nbonus damage"
     $ \_ ->
       transmute
-        ( \i sc ->
-            if i > 0
-              then Just (Transmutation sc (cardMap (addStatus (StatusBonusDamage 5)) sc))
-              else Nothing
+        ( \_ sc ->
+            let suit = card_suit . stackcard_card $ sc
+             in if suit == Sword || suit == Wand
+                  then Just (Transmutation sc (cardMap (addStatus (StatusBonusDamage 5)) sc))
+                  else Nothing
         )
 
 devilCoin :: Card
