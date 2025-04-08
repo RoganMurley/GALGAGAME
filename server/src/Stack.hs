@@ -4,7 +4,7 @@ import Data.Foldable (toList)
 import Data.Maybe (catMaybes, fromMaybe)
 import StackCard (StackCard (..))
 import Wheel (Wheel (..), indexWheel)
-import qualified Wheel
+import Wheel qualified
 
 type Stack = Wheel (Maybe StackCard)
 

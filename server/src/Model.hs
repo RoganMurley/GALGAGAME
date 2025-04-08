@@ -3,6 +3,7 @@
 
 module Model where
 
+import Card (Aspect (..), Card (..), Suit (..))
 import Control.DeepSeq (NFData (..))
 import Data.Aeson (ToJSON (..), object, (.=))
 import GHC.Generics (Generic)
@@ -10,7 +11,8 @@ import HandCard (HandCard, knownCard)
 import Life (Life)
 import Mirror (Mirror (..))
 import Player (WhichPlayer (..), other)
-import Stack (Stack)
+import Stack (Stack, diasporaFromStack)
+import StackCard (StackCard (..))
 import Util (Gen)
 
 data Model = Model
@@ -93,10 +95,23 @@ modPmodel :: (PlayerModel -> PlayerModel) -> WhichPlayer -> Model -> Model
 modPmodel f p m = setPmodel (f (getPmodel p m)) p m
 
 gameover :: Model -> Bool
-gameover model = lifePA <= 0 || lifePB <= 0
+gameover model = (lifePA <= 0 && not invinciblePA) || (lifePB <= 0 && not invinciblePB)
   where
     lifePA = pmodel_life $ model_pa model :: Life
     lifePB = pmodel_life $ model_pb model :: Life
+    invinciblePA = isInvincible PlayerA model
+    invinciblePB = isInvincible PlayerB model
+
+isInvincible :: WhichPlayer -> Model -> Bool
+isInvincible w model =
+  let stack = model_stack model
+   in any
+        ( \(_, StackCard {stackcard_card, stackcard_owner}) ->
+            stackcard_owner == w
+              && card_suit stackcard_card == Cup
+              && card_aspect stackcard_card == Platinum
+        )
+        (diasporaFromStack stack)
 
 -- Misc
 data Misc = Misc

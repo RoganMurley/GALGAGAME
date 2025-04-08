@@ -270,9 +270,18 @@ revealRandomCard w = do
 
 scatter :: Program ()
 scatter = do
-  gen <- getGen
-  let sources = [1 .. 11] :: [Int]
-  let targets = shuffle gen sources :: [Int]
-  let shuffleMap = Map.fromList $ zip sources targets :: Map Int Int
-  refreshGen
-  moveStack (\i _ -> Map.lookup i shuffleMap) (TimeModifierOutQuad 400)
+  initialGen <- getGen
+  let n = randomChoice initialGen [2 .. 5] :: Int
+  forM_ [0 .. n] $ const scatterCards
+  where
+    scatterCards :: Program ()
+    scatterCards = do
+      stack <- getStack
+      let len = length $ Stack.diasporaFromStack stack
+      when (len > 0) $ do
+        gen <- getGen
+        let sources = [1 .. 11] :: [Int]
+        let targets = shuffle gen sources :: [Int]
+        let shuffleMap = Map.fromList $ zip sources targets :: Map Int Int
+        moveStack (\i _ -> Map.lookup i shuffleMap) (TimeModifierOutQuad 150)
+        refreshGen

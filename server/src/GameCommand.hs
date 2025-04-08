@@ -4,8 +4,8 @@ import Card (Card (..), getEffOrDisguiseEff)
 import CardAnim (CardAnim (..))
 import Control.Monad (when)
 import Control.Monad.Trans.Writer (Writer, runWriter, tell)
-import qualified DSL.Alpha as Alpha
-import qualified DSL.Beta as Beta
+import DSL.Alpha qualified as Alpha
+import DSL.Beta qualified as Beta
 import Data.Foldable (toList)
 import Data.Int (Int64)
 import Data.Maybe (fromMaybe, isJust)
@@ -14,20 +14,20 @@ import Data.Text (Text)
 import Data.Time.Clock (NominalDiffTime, UTCTime, diffUTCTime)
 import DeckBuilding (CharacterChoice, ChosenCharacter (..), DeckBuilding (..), choiceToCharacter, getSelectableRunes, initDeckBuilding, selectCharacter)
 import GameState (GameState (..), PlayState (..), PlayingR (..), initModel)
-import qualified GodMode
+import GodMode qualified
 import HandCard (HandCard (..), anyCard)
-import qualified HandCard
-import Model (Hand, Misc (..), Model (..), Passes (..), Turn)
+import HandCard qualified
+import Model (Hand, Misc (..), Model (..), Passes (..), Turn, gameover)
 import Outcome (HoverState (..), Outcome)
-import qualified Outcome
+import Outcome qualified
 import Player (WhichPlayer (..), other)
-import qualified Replay.Active as Active
-import qualified Replay.Final as Final
+import Replay.Active qualified as Active
+import Replay.Final qualified as Final
 import ResolveData (ResolveData (..), resolveAnim)
 import Safe (atMay)
 import Scenario (Scenario (..))
 import Stack (Stack)
-import qualified Stack
+import Stack qualified
 import StackCard (StackCard (..))
 import Stats.Progress (initialProgress)
 import StatusEff (applyStatuses)
@@ -245,65 +245,65 @@ playCard :: Int -> WhichPlayer -> PlayingR -> Scenario -> UTCTime -> Either Err 
 playCard index which playing scenario time
   | turn /= which = Left "You can't play a card when it's not your turn"
   | otherwise =
-    case card of
-      Nothing ->
-        Left . cs $ "You can't play a card you don't have in your hand (" ++ show index ++ "," ++ show which ++ ")"
-      Just c ->
-        let program :: Beta.Program ()
-            program = do
-              let innerCard = HandCard.anyCard c
-              let playEff = card_playEff innerCard
-              transformedCard <- playEff innerCard which (HandCard.isRevealed c)
-              let transformedHandCard = HandCard.cardMap (const transformedCard) c
-              Beta.play which transformedHandCard index
-              Beta.windup
-              Beta.raw $ Alpha.setHold True
-            (modelA, resA) = Beta.execute model $ Beta.betaI program
-            (result, resB) =
-              runWriter $
-                resolveAll
-                  playing
-                    { playing_model = modelA,
-                      playing_replay = replay `Active.add` resA
-                    }
-            isWheelFull :: Bool
-            isWheelFull = Alpha.evalI modelA $ do
-              stack <- Alpha.getStack
-              let activeCard = Stack.get stack 0
-              return $ isJust activeCard
-         in case result of
-              Playing newPlaying ->
-                let modelB = playing_model newPlaying
-                    -- If the wheel is full, end the round.
-                    postProgram = when isWheelFull (scenario_roundEndProg scenario)
-                    (modelC, resC) = Beta.execute modelB $ Beta.betaI postProgram
-                    newPlayState :: PlayState
-                    newPlayState =
-                      checkWin $
-                        newPlaying
-                          { playing_model = modelC,
-                            playing_replay = playing_replay newPlaying `Active.add` resC,
-                            playing_utc = Just time
-                          }
-                 in -- The player who played the card does that animation clientside, so don't send resA.
-                    Right
-                      ( Just . Started $ newPlayState,
-                        [ Outcome.Encodable $ Outcome.Resolve (resA ++ resB ++ resC) model newPlayState (Just which),
-                          Outcome.Encodable $ Outcome.Resolve (resB ++ resC) modelA newPlayState (Just (other which))
-                        ]
-                      )
-              Ended w m newReplay g ->
-                let newPlayState = Ended w m newReplay g :: PlayState
-                    newState = Started newPlayState :: GameState
-                    finalReplay = Final.finalise newReplay newPlayState :: Final.Replay
-                 in Right
-                      ( Just newState,
-                        [ Outcome.Encodable $ Outcome.Resolve (resA ++ resB) model newPlayState (Just which),
-                          Outcome.Encodable $ Outcome.Resolve resB modelA newPlayState (Just (other which)),
-                          Outcome.HandleProgress w finalReplay,
-                          Outcome.SaveReplay finalReplay
-                        ]
-                      )
+      case card of
+        Nothing ->
+          Left . cs $ "You can't play a card you don't have in your hand (" ++ show index ++ "," ++ show which ++ ")"
+        Just c ->
+          let program :: Beta.Program ()
+              program = do
+                let innerCard = HandCard.anyCard c
+                let playEff = card_playEff innerCard
+                transformedCard <- playEff innerCard which (HandCard.isRevealed c)
+                let transformedHandCard = HandCard.cardMap (const transformedCard) c
+                Beta.play which transformedHandCard index
+                Beta.windup
+                Beta.raw $ Alpha.setHold True
+              (modelA, resA) = Beta.execute model $ Beta.betaI program
+              (result, resB) =
+                runWriter $
+                  resolveAll
+                    playing
+                      { playing_model = modelA,
+                        playing_replay = replay `Active.add` resA
+                      }
+              isWheelFull :: Bool
+              isWheelFull = Alpha.evalI modelA $ do
+                stack <- Alpha.getStack
+                let activeCard = Stack.get stack 0
+                return $ isJust activeCard
+           in case result of
+                Playing newPlaying ->
+                  let modelB = playing_model newPlaying
+                      -- If the wheel is full, end the round.
+                      postProgram = when isWheelFull (scenario_roundEndProg scenario)
+                      (modelC, resC) = Beta.execute modelB $ Beta.betaI postProgram
+                      newPlayState :: PlayState
+                      newPlayState =
+                        checkWin $
+                          newPlaying
+                            { playing_model = modelC,
+                              playing_replay = playing_replay newPlaying `Active.add` resC,
+                              playing_utc = Just time
+                            }
+                   in -- The player who played the card does that animation clientside, so don't send resA.
+                      Right
+                        ( Just . Started $ newPlayState,
+                          [ Outcome.Encodable $ Outcome.Resolve (resA ++ resB ++ resC) model newPlayState (Just which),
+                            Outcome.Encodable $ Outcome.Resolve (resB ++ resC) modelA newPlayState (Just (other which))
+                          ]
+                        )
+                Ended w m newReplay g ->
+                  let newPlayState = Ended w m newReplay g :: PlayState
+                      newState = Started newPlayState :: GameState
+                      finalReplay = Final.finalise newReplay newPlayState :: Final.Replay
+                   in Right
+                        ( Just newState,
+                          [ Outcome.Encodable $ Outcome.Resolve (resA ++ resB) model newPlayState (Just which),
+                            Outcome.Encodable $ Outcome.Resolve resB modelA newPlayState (Just (other which)),
+                            Outcome.HandleProgress w finalReplay,
+                            Outcome.SaveReplay finalReplay
+                          ]
+                        )
   where
     model = playing_model playing :: Model
     replay = playing_replay playing :: Active.Replay
@@ -319,53 +319,53 @@ endTurn which playing scenario time
   | turn /= which = Left "You can't end the turn when it's not your turn"
   | full = Left "You can't end the turn when your hand is full"
   | otherwise =
-    case passes of
-      OnePass ->
-        case runWriter $ resolveAll playing of
-          (Playing newPlaying, res) ->
-            let (newModel, endRes) = Beta.execute (playing_model newPlaying) $ Beta.betaI (scenario_roundEndProg scenario)
-                newPlayState :: PlayState
-                newPlayState =
-                  checkWin $
-                    newPlaying
-                      { playing_model = newModel,
-                        playing_replay = replay `Active.add` res `Active.add` endRes,
-                        playing_utc = Just time
-                      }
-                newState = Started newPlayState :: GameState
-             in Right
-                  ( Just newState,
-                    [Outcome.Encodable $ Outcome.Resolve (res ++ endRes) model newPlayState Nothing]
-                  )
-          (Ended w m newReplay g, res) ->
-            let newPlayState = Ended w m newReplay g :: PlayState
-                newState = Started newPlayState :: GameState
-                finalReplay = Final.finalise newReplay newPlayState :: Final.Replay
-             in Right
-                  ( Just newState,
-                    [ Outcome.Encodable $ Outcome.Resolve res model newPlayState Nothing,
-                      Outcome.HandleProgress w finalReplay,
-                      Outcome.SaveReplay finalReplay
-                    ]
-                  )
-      NoPass ->
-        let endTurnProgram :: Beta.Program ()
-            endTurnProgram = do
-              Beta.raw Alpha.swapTurn
-              Beta.rawAnim $ Pass which
-            (newModel, res) = Beta.execute model $ Beta.betaI endTurnProgram
-            newPlayState :: PlayState
-            newPlayState =
-              Playing $
-                playing
-                  { playing_model = newModel,
-                    playing_replay = replay `Active.add` res,
-                    playing_utc = Just time
-                  }
-         in Right
-              ( Just . Started $ newPlayState,
-                [Outcome.Encodable $ Outcome.Resolve res model newPlayState Nothing]
-              )
+      case passes of
+        OnePass ->
+          case runWriter $ resolveAll playing of
+            (Playing newPlaying, res) ->
+              let (newModel, endRes) = Beta.execute (playing_model newPlaying) $ Beta.betaI (scenario_roundEndProg scenario)
+                  newPlayState :: PlayState
+                  newPlayState =
+                    checkWin $
+                      newPlaying
+                        { playing_model = newModel,
+                          playing_replay = replay `Active.add` res `Active.add` endRes,
+                          playing_utc = Just time
+                        }
+                  newState = Started newPlayState :: GameState
+               in Right
+                    ( Just newState,
+                      [Outcome.Encodable $ Outcome.Resolve (res ++ endRes) model newPlayState Nothing]
+                    )
+            (Ended w m newReplay g, res) ->
+              let newPlayState = Ended w m newReplay g :: PlayState
+                  newState = Started newPlayState :: GameState
+                  finalReplay = Final.finalise newReplay newPlayState :: Final.Replay
+               in Right
+                    ( Just newState,
+                      [ Outcome.Encodable $ Outcome.Resolve res model newPlayState Nothing,
+                        Outcome.HandleProgress w finalReplay,
+                        Outcome.SaveReplay finalReplay
+                      ]
+                    )
+        NoPass ->
+          let endTurnProgram :: Beta.Program ()
+              endTurnProgram = do
+                Beta.raw Alpha.swapTurn
+                Beta.rawAnim $ Pass which
+              (newModel, res) = Beta.execute model $ Beta.betaI endTurnProgram
+              newPlayState :: PlayState
+              newPlayState =
+                Playing $
+                  playing
+                    { playing_model = newModel,
+                      playing_replay = replay `Active.add` res,
+                      playing_utc = Just time
+                    }
+           in Right
+                ( Just . Started $ newPlayState,
+                  [Outcome.Encodable $ Outcome.Resolve res model newPlayState Nothing]
+                )
   where
     model = playing_model playing :: Model
     replay = playing_replay playing :: Active.Replay
@@ -427,15 +427,17 @@ resolveAll' playing resolutionCount rewrite = do
 checkWin :: PlayingR -> PlayState
 checkWin playing
   | isJust forceWin =
-    Ended forceWin model replay gen
+      Ended forceWin model replay gen
+  | not (gameover model) =
+      Playing playing
   | lifePA <= 0 && lifePB <= 0 =
-    Ended Nothing model replay gen
+      Ended Nothing model replay gen
   | lifePB <= 0 =
-    Ended (Just PlayerA) model replay gen
+      Ended (Just PlayerA) model replay gen
   | lifePA <= 0 =
-    Ended (Just PlayerB) model replay gen
+      Ended (Just PlayerB) model replay gen
   | otherwise =
-    Playing playing
+      Playing playing
   where
     model = playing_model playing :: Model
     replay = playing_replay playing :: Active.Replay

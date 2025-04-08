@@ -2,9 +2,9 @@ module GodMode where
 
 import CardAnim (Hurt (..), TimeModifier (..))
 import Cards (cardsByName)
-import qualified DSL.Alpha as Alpha
-import qualified DSL.Beta as Beta
-import qualified Data.Map as Map
+import DSL.Alpha qualified as Alpha
+import DSL.Beta qualified as Beta
+import Data.Map qualified as Map
 import Data.String.Conversions (cs)
 import Data.Text (Text)
 import HandCard (HandCard (..), hide)
@@ -75,5 +75,7 @@ parse which msg =
               ParsedProgram $ Beta.discardHand PlayerB (\i _ -> i == index)
             Nothing ->
               ParseError ("Cannot parse " <> content <> " to int" :: Err)
+        "scatter" ->
+          ParsedProgram Beta.scatter
         _ ->
           ParseError ("Unknown commandment: " <> command :: Err)
