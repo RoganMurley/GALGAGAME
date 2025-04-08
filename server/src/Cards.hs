@@ -872,6 +872,44 @@ peaceCoin =
               else Nothing
         )
 
+-- Platinum
+platinumSword :: Card
+platinumSword =
+  newCard
+    Platinum
+    Sword
+    "Hurt for 6"
+    $ \w -> do
+      hurt 6 (other w) Slash
+
+platinumWand :: Card
+platinumWand =
+  newCard
+    Platinum
+    Wand
+    "Hurt for 3 for each other\ncard on the wheel"
+    $ \w -> do
+      len <- diasporaLength <$> getStack
+      hurt (len * 3) (other w) Slash
+
+platinumCup :: Card
+platinumCup =
+  newCard
+    Platinum
+    Cup
+    "While this card is on the wheel\nyou cannot lose the game"
+    $ \_ -> Beta.null
+
+platinumCoin :: Card
+platinumCoin =
+  newCard
+    Platinum
+    Coin
+    "Scatter all other cards on the wheel"
+    $ \_ -> do
+      scatter
+      Beta.null
+
 -- Other cards
 getEndCard :: Int -> Card
 getEndCard noDraws
@@ -941,7 +979,8 @@ swords =
     plasticSword,
     devilSword,
     trickSword,
-    peaceSword
+    peaceSword,
+    platinumSword
   ]
 
 wands :: [Card]
@@ -962,7 +1001,8 @@ wands =
     plasticWand,
     devilWand,
     trickWand,
-    peaceWand
+    peaceWand,
+    platinumWand
   ]
 
 cups :: [Card]
@@ -983,7 +1023,8 @@ cups =
     plasticCup,
     devilCup,
     trickCup,
-    peaceCup
+    peaceCup,
+    platinumCup
   ]
 
 coins :: [Card]
@@ -1004,7 +1045,8 @@ coins =
     plasticCoin,
     devilCoin,
     trickCoin,
-    peaceCoin
+    peaceCoin,
+    platinumCoin
   ]
 
 others :: [Card]

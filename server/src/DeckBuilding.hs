@@ -202,7 +202,8 @@ mainRunes =
     glassRune,
     plasticRune,
     trickRune,
-    devilRune
+    devilRune,
+    platinumRune
   ]
 
 superRunes :: [Rune]
@@ -363,6 +364,15 @@ peaceRune =
     "cards/peace/coin.png"
     (Cards.peaceSword, Cards.peaceWand, Cards.peaceCup, Cards.peaceCoin)
     (levelToExperience 14)
+
+platinumRune :: Rune
+platinumRune =
+  Rune
+    "PLATINUM"
+    Platinum
+    "cards/platinum/coin.png"
+    (Cards.platinumSword, Cards.platinumWand, Cards.platinumCup, Cards.platinumCoin)
+    (levelToExperience 15)
 
 characterCards :: Character -> Deck
 characterCards Character {character_choice} =

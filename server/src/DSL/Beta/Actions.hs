@@ -267,3 +267,12 @@ revealRandomCard w = do
     g <- getGen
     let targetIndex = fst $ randomChoice g hidden
     reveal w (\i _ -> i == targetIndex)
+
+scatter :: Program ()
+scatter = do
+  gen <- getGen
+  let sources = [1 .. 11] :: [Int]
+  let targets = shuffle gen sources :: [Int]
+  let shuffleMap = Map.fromList $ zip sources targets :: Map Int Int
+  refreshGen
+  moveStack (\i _ -> Map.lookup i shuffleMap) (TimeModifierOutQuad 400)
