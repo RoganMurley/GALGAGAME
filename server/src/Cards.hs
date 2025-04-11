@@ -13,7 +13,6 @@ import Data.Maybe (fromMaybe)
 import Data.String.Conversions (cs)
 import Data.Text (Text)
 import HandCard (HandCard (..), anyCard, isRevealed)
-import HandCard qualified
 import Model (Misc (..))
 import Player (WhichPlayer (..), other)
 import Safe (headMay)
@@ -856,10 +855,14 @@ mercyCoin =
   newCard
     Mercy
     Coin
-    "Scatter all other cards on the wheel"
-    $ \_ -> do
-      scatter
-      Beta.null
+    "All other cards on the wheel\nbecome non-lethal"
+    $ \_ ->
+      transmute
+        ( \i sc ->
+            if i > 0
+              then Just (Transmutation sc (cardMap (addStatus StatusNonLethal) sc))
+              else Nothing
+        )
 
 -- Other cards
 getEndCard :: Int -> Card

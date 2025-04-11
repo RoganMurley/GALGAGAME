@@ -159,7 +159,7 @@ statusView ctx entity i status =
                     ]
 
         StatusNonLethal ->
-            Texture.with textures "bonusDamage.png" <|
+            Texture.with textures "nonlethal.png" <|
                 \texture ->
                     [ Render.Primitives.quad Render.Shaders.fragment <|
                         { rotation = Quaternion.makeRotate rotation
