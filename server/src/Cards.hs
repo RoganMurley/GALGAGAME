@@ -302,12 +302,12 @@ bloodWand =
   newCard
     Blood
     Wand
-    "Pay half your life to hurt for\nhalf your life"
+    "Pay half your life to hurt for\nhalf their life"
     $ \w -> do
-      l <- getLife w
-      let dmg = l `quot` 2
-      payLife dmg w
-      hurt dmg (other w) Slash
+      la <- getLife w
+      payLife (la `quot` 2) w
+      lb <- getLife (other w)
+      hurt (lb `quot` 2) (other w) Slash
 
 bloodCup :: Card
 bloodCup =
