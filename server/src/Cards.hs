@@ -821,89 +821,40 @@ devilCoin =
         (\i _ -> if i == 1 then Just (-1) else Nothing)
         (TimeModifierOutQuint 500)
 
--- Peace
-peaceSword :: Card
-peaceSword =
+-- Mercy
+mercySword :: Card
+mercySword =
   addStatus StatusNonLethal
     $ newCard
-      Peace
+      Mercy
       Sword
       "Hurt for 10. This card\nis non-lethal"
     $ \w ->
       hurt 10 (other w) Slash
 
-peaceWand :: Card
-peaceWand =
+mercyWand :: Card
+mercyWand =
   addStatus StatusNonLethal
     $ newCard
-      Peace
+      Mercy
       Wand
-      "Hurt for 4 for each other card\non the wheel. This card\nis non-lethal."
+      "Hurt for 5 for each other card\non the wheel. This card\nis non-lethal."
     $ \w -> do
       diaspora <- diasporaFromStack <$> getStack
-      hurt (4 * (length diaspora - 1)) (other w) Slash
+      hurt (5 * (length diaspora - 1)) (other w) Slash
 
-peaceCup :: Card
-peaceCup =
+mercyCup :: Card
+mercyCup =
   newCard
-    Peace
-    Cup
-    "Draw 2 cards, but they\n become non-lethal"
-    $ \w -> do
-      deck <- getDeck w
-      let n = 2
-      let toDraw = take n deck
-      let rest = drop n deck
-      let toDrawWithStatus = map (HandCard.cardMap (addStatus StatusNonLethal)) toDraw
-      raw $ Alpha.setDeck w $ toDrawWithStatus ++ rest
-      replicateM_ 2 $ draw w w (TimeModifierOutQuint 1)
-
-peaceCoin :: Card
-peaceCoin =
-  newCard
-    Peace
-    Coin
-    "All cards on the wheel\nbecome non-lethal"
-    $ \_ ->
-      transmute
-        ( \i sc ->
-            if i > 0
-              then Just (Transmutation sc (cardMap (addStatus StatusNonLethal) sc))
-              else Nothing
-        )
-
--- Platinum
-platinumSword :: Card
-platinumSword =
-  newCard
-    Platinum
-    Sword
-    "Hurt for 6"
-    $ \w -> do
-      hurt 6 (other w) Slash
-
-platinumWand :: Card
-platinumWand =
-  newCard
-    Platinum
-    Wand
-    "Hurt for 3 for each other\ncard on the wheel"
-    $ \w -> do
-      len <- diasporaLength <$> getStack
-      hurt (len * 3) (other w) Slash
-
-platinumCup :: Card
-platinumCup =
-  newCard
-    Platinum
+    Mercy
     Cup
     "While this card is on the wheel\nyou cannot lose the game"
     $ \_ -> Beta.null
 
-platinumCoin :: Card
-platinumCoin =
+mercyCoin :: Card
+mercyCoin =
   newCard
-    Platinum
+    Mercy
     Coin
     "Scatter all other cards on the wheel"
     $ \_ -> do
@@ -979,8 +930,7 @@ swords =
     plasticSword,
     devilSword,
     trickSword,
-    peaceSword,
-    platinumSword
+    mercySword
   ]
 
 wands :: [Card]
@@ -1001,8 +951,7 @@ wands =
     plasticWand,
     devilWand,
     trickWand,
-    peaceWand,
-    platinumWand
+    mercyWand
   ]
 
 cups :: [Card]
@@ -1023,8 +972,7 @@ cups =
     plasticCup,
     devilCup,
     trickCup,
-    peaceCup,
-    platinumCup
+    mercyCup
   ]
 
 coins :: [Card]
@@ -1045,8 +993,7 @@ coins =
     plasticCoin,
     devilCoin,
     trickCoin,
-    peaceCoin,
-    platinumCoin
+    mercyCoin
   ]
 
 others :: [Card]

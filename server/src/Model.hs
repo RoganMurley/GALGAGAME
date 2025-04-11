@@ -109,7 +109,7 @@ isInvincible w model =
         ( \(_, StackCard {stackcard_card, stackcard_owner}) ->
             stackcard_owner == w
               && card_suit stackcard_card == Cup
-              && card_aspect stackcard_card == Platinum
+              && card_aspect stackcard_card == Mercy
         )
         (diasporaFromStack stack)
 

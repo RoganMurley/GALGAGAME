@@ -203,11 +203,11 @@ mainRunes =
     plasticRune,
     trickRune,
     devilRune,
-    platinumRune
+    mercyRune
   ]
 
 superRunes :: [Rune]
-superRunes = mainRunes ++ [peaceRune]
+superRunes = mainRunes
 
 allRunes :: [Rune]
 allRunes = superRunes
@@ -356,23 +356,14 @@ devilRune =
     (Cards.devilSword, Cards.devilWand, Cards.devilCup, Cards.devilCoin)
     (levelToExperience 13)
 
-peaceRune :: Rune
-peaceRune =
+mercyRune :: Rune
+mercyRune =
   Rune
-    "PEACE"
-    Peace
-    "cards/peace/coin.png"
-    (Cards.peaceSword, Cards.peaceWand, Cards.peaceCup, Cards.peaceCoin)
+    "MERCY"
+    Mercy
+    "cards/mercy/coin.png"
+    (Cards.mercySword, Cards.mercyWand, Cards.mercyCup, Cards.mercyCoin)
     (levelToExperience 14)
-
-platinumRune :: Rune
-platinumRune =
-  Rune
-    "PLATINUM"
-    Platinum
-    "cards/platinum/coin.png"
-    (Cards.platinumSword, Cards.platinumWand, Cards.platinumCup, Cards.platinumCoin)
-    (levelToExperience 15)
 
 characterCards :: Character -> Deck
 characterCards Character {character_choice} =
