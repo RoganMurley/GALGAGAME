@@ -28,7 +28,7 @@ transmuteToCard targetCard stackCard =
   StackCard
     { stackcard_owner = stackcard_owner stackCard,
       stackcard_card =
-        foldr addStatus (stackcard_card stackCard) (card_statuses targetCard)
+        foldr addStatus targetCard (card_statuses (stackcard_card stackCard))
     }
 
 removeTransmuteToSelf :: Maybe Transmutation -> Maybe Transmutation
