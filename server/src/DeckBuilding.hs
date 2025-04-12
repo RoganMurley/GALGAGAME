@@ -202,11 +202,12 @@ mainRunes =
     glassRune,
     plasticRune,
     trickRune,
-    devilRune
+    devilRune,
+    mercyRune
   ]
 
 superRunes :: [Rune]
-superRunes = mainRunes ++ [mercyRune]
+superRunes = mainRunes
 
 allRunes :: [Rune]
 allRunes = superRunes
