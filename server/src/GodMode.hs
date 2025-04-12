@@ -39,6 +39,12 @@ parse which msg =
               ParsedProgram $ Beta.heal h which
             Nothing ->
               ParseError ("Cannot parse " <> content <> " to int" :: Err)
+        "healThem" ->
+          case readMay $ cs content of
+            Just h ->
+              ParsedProgram $ Beta.heal h (other which)
+            Nothing ->
+              ParseError ("Cannot parse " <> content <> " to int" :: Err)
         "draw" ->
           ParsedProgram $ Beta.draw which which (TimeModifierOutQuint 0.1)
         "card" ->

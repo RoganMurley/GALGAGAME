@@ -6,6 +6,7 @@ module Card where
 import Control.DeepSeq (NFData (..))
 import {-# SOURCE #-} DSL.Beta.DSL qualified as Beta
 import Data.Aeson (ToJSON (..), defaultOptions, genericToEncoding, object, (.=))
+import Data.List (sort)
 import Data.String.Conversions (cs)
 import Data.Text (Text, toLower, toUpper)
 import GHC.Generics (Generic)
@@ -29,7 +30,7 @@ instance ToJSON Card where
       [ "name" .= cardName (card_aspect card) (card_suit card),
         "desc" .= card_desc card,
         "imageURL" .= cardImgUrl (card_aspect card) (card_suit card),
-        "statuses" .= card_statuses card,
+        "statuses" .= reverse (card_statuses card),
         "related" .= card_related card
       ]
 
@@ -151,13 +152,14 @@ allAspects =
     Strange
   ]
 
+-- Definition order is important here as it's used for Ord typeclass deriviation
 data Status
-  = StatusEcho
+  = StatusFragile
+  | StatusEcho
   | StatusBlighted
-  | StatusFragile
   | StatusBonusDamage Int
   | StatusNonLethal
-  deriving (Eq, Generic, NFData, Ord, Show)
+  deriving (Eq, Generic, NFData, Show, Ord)
 
 instance ToJSON Status where
   toEncoding = genericToEncoding defaultOptions
@@ -175,12 +177,19 @@ newCard aspect suit desc eff =
       card_related = []
     }
 
+-- algorithmically expensive but n is small
 addStatus :: Status -> Card -> Card
 addStatus status card =
   let statuses = card_statuses card
-   in if length statuses < 6
-        then card {card_statuses = status : statuses}
+      shouldAdd = length statuses < 6 || (not (statusIsSingleton status) && elem status statuses)
+   in if shouldAdd
+        then card {card_statuses = sort $ status : statuses}
         else card
+
+statusIsSingleton :: Status -> Bool
+statusIsSingleton StatusEcho = False
+statusIsSingleton (StatusBonusDamage _) = False
+statusIsSingleton _ = True
 
 addRelated :: Card -> Card -> Card
 addRelated relatedCard card =
