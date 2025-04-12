@@ -827,7 +827,7 @@ mercySword =
     $ newCard
       Mercy
       Sword
-      "Hurt for 10. This card\nis non-lethal"
+      "Hurt for 10. This card\nis merciful"
     $ \w ->
       hurt 10 (other w) Slash
 
@@ -837,7 +837,7 @@ mercyWand =
     $ newCard
       Mercy
       Wand
-      "Hurt for 5 for each other card\non the wheel. This card\nis non-lethal."
+      "Hurt for 5 for each other card\non the wheel. This card\nis merciful."
     $ \w -> do
       diaspora <- diasporaFromStack <$> getStack
       hurt (5 * (length diaspora - 1)) (other w) Slash
@@ -855,7 +855,7 @@ mercyCoin =
   newCard
     Mercy
     Coin
-    "All other cards on the wheel\nbecome non-lethal"
+    "All other cards on the wheel\nbecome merciful"
     $ \_ ->
       transmute
         ( \i sc ->

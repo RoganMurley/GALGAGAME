@@ -34,8 +34,8 @@ receive msg model =
                     { text = "Challenged by " ++ toUpper opponentName
                     , timer = 0
                     , options =
-                        [ { cta = "ACCEPT", msg = GotoChallengeGame (Just roomId) }
-                        , { cta = "DECLINE", msg = NotificationsMsg Dismiss }
+                        [ { cta = "DECLINE", msg = NotificationsMsg Dismiss }
+                        , { cta = "ACCEPT", msg = GotoChallengeGame (Just roomId) }
                         ]
                     }
             in

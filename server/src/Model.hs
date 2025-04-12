@@ -6,6 +6,7 @@ module Model where
 import Card (Aspect (..), Card (..), Suit (..))
 import Control.DeepSeq (NFData (..))
 import Data.Aeson (ToJSON (..), object, (.=))
+import Data.Maybe (isJust)
 import GHC.Generics (Generic)
 import HandCard (HandCard, knownCard)
 import Life (Life)
@@ -41,6 +42,11 @@ type Hand = [HandCard]
 type Deck = [HandCard]
 
 type Turn = WhichPlayer
+
+data Winner
+  = Winner WhichPlayer
+  | WinnerDraw
+  deriving (Eq, Generic, NFData, Show)
 
 data Passes = NoPass | OnePass
   deriving (Eq, Generic, NFData, Show)
@@ -95,8 +101,22 @@ modPmodel :: (PlayerModel -> PlayerModel) -> WhichPlayer -> Model -> Model
 modPmodel f p m = setPmodel (f (getPmodel p m)) p m
 
 gameover :: Model -> Bool
-gameover model = (lifePA <= 0 && not invinciblePA) || (lifePB <= 0 && not invinciblePB)
+gameover model = isJust $ checkWinner model
+
+checkWinner :: Model -> Maybe Winner
+checkWinner model
+  | isJust forceWin =
+      forceWin
+  | lifePA <= 0 && lifePB <= 0 && not invinciblePA && not invinciblePB =
+      Just WinnerDraw
+  | lifePB <= 0 && not invinciblePB =
+      Just (Winner PlayerA)
+  | lifePA <= 0 && not invinciblePA =
+      Just (Winner PlayerB)
+  | otherwise =
+      Nothing
   where
+    forceWin = misc_forceWin $ model_misc model :: Maybe Winner
     lifePA = pmodel_life $ model_pa model :: Life
     lifePB = pmodel_life $ model_pb model :: Life
     invinciblePA = isInvincible PlayerA model
@@ -117,7 +137,7 @@ isInvincible w model =
 data Misc = Misc
   { misc_noDrawsPa :: Int,
     misc_noDrawsPb :: Int,
-    misc_forceWin :: Maybe WhichPlayer
+    misc_forceWin :: Maybe Winner
   }
   deriving (Eq, Generic, NFData, Show)
 
@@ -138,4 +158,4 @@ incrNoDraws PlayerA misc = misc {misc_noDrawsPa = misc_noDrawsPa misc + 1}
 incrNoDraws PlayerB misc = misc {misc_noDrawsPb = misc_noDrawsPb misc + 1}
 
 setForceWin :: WhichPlayer -> Misc -> Misc
-setForceWin w misc = misc {misc_forceWin = Just w}
+setForceWin w misc = misc {misc_forceWin = Just $ Winner w}

@@ -17,7 +17,7 @@ import GameState (GameState (..), PlayState (..), PlayingR (..), initModel)
 import GodMode qualified
 import HandCard (HandCard (..), anyCard)
 import HandCard qualified
-import Model (Hand, Misc (..), Model (..), Passes (..), Turn, gameover)
+import Model (Hand, Model (..), Passes (..), Turn, Winner (..), checkWinner)
 import Outcome (HoverState (..), Outcome)
 import Outcome qualified
 import Player (WhichPlayer (..), other)
@@ -279,7 +279,7 @@ playCard index which playing scenario time
                       (modelC, resC) = Beta.execute modelB $ Beta.betaI postProgram
                       newPlayState :: PlayState
                       newPlayState =
-                        checkWin $
+                        checkPlayingWinner $
                           newPlaying
                             { playing_model = modelC,
                               playing_replay = playing_replay newPlaying `Active.add` resC,
@@ -326,7 +326,7 @@ endTurn which playing scenario time
               let (newModel, endRes) = Beta.execute (playing_model newPlaying) $ Beta.betaI (scenario_roundEndProg scenario)
                   newPlayState :: PlayState
                   newPlayState =
-                    checkWin $
+                    checkPlayingWinner $
                       newPlaying
                         { playing_model = newModel,
                           playing_replay = replay `Active.add` res `Active.add` endRes,
@@ -391,7 +391,7 @@ resolveAll' playing resolutionCount rewrite = do
       let (modelB, resB) = Beta.execute modelA (cardProgram stackCard) :: (Model, [ResolveData])
       tell resB
       let newReplay = replay `Active.add` resA `Active.add` resB
-      case checkWin (playing {playing_model = modelB, playing_replay = newReplay}) of
+      case checkPlayingWinner (playing {playing_model = modelB, playing_replay = newReplay}) of
         Playing newPlaying ->
           resolveAll' newPlaying nextResolutionCount rewrite
         Ended w m finalReplay gen -> do
@@ -424,30 +424,26 @@ resolveAll' playing resolutionCount rewrite = do
         holding <- Beta.getHold
         when (not holding) $ Beta.raw $ Alpha.modStack (\wheel -> wheel {wheel_0 = Nothing})
 
-checkWin :: PlayingR -> PlayState
-checkWin playing
-  | isJust forceWin =
-      Ended forceWin model replay gen
-  | not (gameover model) =
+checkPlayingWinner :: PlayingR -> PlayState
+checkPlayingWinner playing =
+  case checkWinner model of
+    Nothing ->
       Playing playing
-  | lifePA <= 0 && lifePB <= 0 =
-      Ended Nothing model replay gen
-  | lifePB <= 0 =
-      Ended (Just PlayerA) model replay gen
-  | lifePA <= 0 =
-      Ended (Just PlayerB) model replay gen
-  | otherwise =
-      Playing playing
+    Just winner ->
+      Ended
+        ( case winner of
+            Winner w ->
+              Just w
+            WinnerDraw ->
+              Nothing
+        )
+        model
+        replay
+        gen
   where
     model = playing_model playing :: Model
     replay = playing_replay playing :: Active.Replay
-    (gen, lifePA, lifePB, forceWin) =
-      Alpha.evalI model $ do
-        g <- Alpha.getGen
-        la <- Alpha.getLife PlayerA
-        lb <- Alpha.getLife PlayerB
-        fw <- misc_forceWin <$> Alpha.getMisc
-        return (g, la, lb, fw)
+    gen = model_gen model :: Gen
 
 hoverCard :: HoverState -> WhichPlayer -> PlayingR -> Either Err (Maybe GameState, [Outcome])
 hoverCard (HoverHand i) which playing =
@@ -509,7 +505,7 @@ godMode mUser str which time playing =
             let program = Beta.betaI betaProgram :: Beta.ExecProgram ()
                 (m, res) = Beta.execute model program :: (Model, [ResolveData])
                 newPlayState =
-                  checkWin $
+                  checkPlayingWinner $
                     playing
                       { playing_model = m,
                         playing_replay = replay `Active.add` res
