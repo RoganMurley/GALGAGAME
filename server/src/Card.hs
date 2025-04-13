@@ -181,10 +181,10 @@ newCard aspect suit desc eff =
 addStatus :: Status -> Card -> Card
 addStatus status card =
   let statuses = card_statuses card
-      shouldAdd = length statuses < 6 || (not (statusIsSingleton status) && elem status statuses)
-   in if shouldAdd
-        then card {card_statuses = sort $ status : statuses}
-        else card
+      shouldNotAdd = length statuses >= 6 || (statusIsSingleton status && elem status statuses)
+   in if shouldNotAdd
+        then card
+        else card {card_statuses = sort $ status : statuses}
 
 statusIsSingleton :: Status -> Bool
 statusIsSingleton StatusEcho = False
