@@ -131,7 +131,12 @@ winningEnd which model
 -- Some cards entail soft advantages/disadvantages that the AI can't handle.
 -- We manually set biases for these cards.
 biasHand :: HandCard -> Weight
-biasHand (HandCard c) = if c == Cards.strangeSpore then -7 else 0
+biasHand (HandCard c)
+  | c == Cards.strangeSpore =
+      -7
+  | c == Cards.giftSword =
+      -12
+  | otherwise = 0
 biasHand (KnownHandCard c) = biasHand (HandCard c) - 2
 
 chooseActionPassive :: WhichPlayer -> Model -> Maybe Action

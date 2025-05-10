@@ -203,7 +203,8 @@ mainRunes =
     plasticRune,
     trickRune,
     devilRune,
-    mercyRune
+    mercyRune,
+    giftRune
   ]
 
 superRunes :: [Rune]
@@ -364,6 +365,15 @@ mercyRune =
     "cards/mercy/coin.png"
     (Cards.mercySword, Cards.mercyWand, Cards.mercyCup, Cards.mercyCoin)
     (levelToExperience 14)
+
+giftRune :: Rune
+giftRune =
+  Rune
+    "GIFT"
+    Gift
+    "cards/gift/coin.png"
+    (Cards.giftSword, Cards.giftWand, Cards.giftCup, Cards.giftCoin)
+    (levelToExperience 15)
 
 characterCards :: Character -> Deck
 characterCards Character {character_choice} =

@@ -2,7 +2,7 @@ module Cards where
 
 import Card (Aspect (..), Card (..), Disguise (..), Status (..), Suit (..), addPlayEff, addRelated, addStatus, cardName, hasStatus, newCard)
 import CardAnim (CardAnim (..), Hurt (..), TimeModifier (..))
-import Control.Monad (replicateM_, when)
+import Control.Monad (forM_, replicateM_, when)
 import DSL.Alpha qualified as Alpha
 import DSL.Beta
 import DSL.Beta qualified as Beta
@@ -186,7 +186,7 @@ voidCoin =
   newCard
     Void
     Coin
-    "Discard all cards on the wheel"
+    "Discard all other cards on the wheel"
     $ \_ -> discardStack (\i _ -> i > 0)
 
 -- DUALITY
@@ -231,7 +231,7 @@ dualityCoin =
   newCard
     Duality
     Coin
-    "Change next card's owner\nto weakest player"
+    "Change card in next socket's\nowner to weakest player"
     $ \w -> do
       paLife <- getLife w
       pbLife <- getLife (other w)
@@ -338,7 +338,7 @@ eyeSword =
   newCard
     Eye
     Sword
-    "Hurt for 6 and reveal\na card in their hand"
+    "Hurt for 6, then reveal\na card in their hand"
     $ \w -> do
       hurt 6 (other w) Slash
       revealRandomCard (other w)
@@ -351,8 +351,7 @@ eyeWand =
     "Reveal a card in their hand, then\nhurt for 7 for each revealed\ncard in their hand"
     $ \w -> do
       revealRandomCard (other w)
-      hand <- getHand (other w)
-      let count = length $ filter isRevealed hand
+      count <- getRevealedCount (other w)
       hurt (count * 7) (other w) Slash
 
 eyeCup :: Card
@@ -363,8 +362,7 @@ eyeCup =
     "Reveal a card in their hand, then\ndraw for each revealed\ncard in their hand"
     $ \w -> do
       revealRandomCard (other w)
-      hand <- getHand (other w)
-      let count = length $ filter isRevealed hand
+      count <- getRevealedCount (other w)
       many count $ draw w w (TimeModifierOutQuint 1)
 
 eyeCoin :: Card
@@ -409,7 +407,7 @@ mirrorCoin =
   newCard
     Mirror
     Coin
-    "Change the owner of all cards\non the wheel"
+    "Change the owner of all other cards\non the wheel"
     $ \_ ->
       transmute $
         \i stackCard -> if i > 0 then Just $ Transmutation stackCard (changeOwner stackCard) else Nothing
@@ -482,7 +480,7 @@ clayWand =
   newCard
     Clay
     Wand
-    "Hurt for 3 for each card on the wheel,\nthen all CLAY cards on the wheel\nbecome WANDs"
+    "Hurt for 3 for each other card on the wheel,\nthen all CLAY cards on the wheel\nbecome WANDs"
     $ \w -> do
       len <- diasporaLength <$> getStack
       hurt (len * 3) (other w) Slash
@@ -864,6 +862,61 @@ mercyCoin =
               else Nothing
         )
 
+-- Gift
+makeGiftSword :: Int -> Card
+makeGiftSword n =
+  newCard
+    Gift
+    Sword
+    ("Hurt yourself for " <> cs (show n) <> ", then give\nthem a copy of this card\nwith double damage")
+    $ \w -> do
+      hurt n w Curse
+      stack <- getStack
+      case Stack.get stack 0 of
+        Just stackCard -> do
+          let statuses = card_statuses $ stackcard_card stackCard
+          let copiedCard = (makeGiftSword (n * 2)) {card_statuses = statuses}
+          addToHand (other w) $ KnownHandCard copiedCard
+        Nothing ->
+          return ()
+
+giftSword :: Card
+giftSword = makeGiftSword 5
+
+giftWand :: Card
+giftWand =
+  newCard
+    Gift
+    Wand
+    "Hurt for 13, then they\ndraw 2"
+    $ \w -> do
+      hurt 13 (other w) Slash
+      replicateM_ 2 $ draw (other w) (other w) (TimeModifierOutQuint 1)
+
+giftCup :: Card
+giftCup =
+  newCard
+    Gift
+    Cup
+    "Reveal your hand, then\ndraw a copy of it"
+    $ \w -> do
+      revealHand w
+      cards <- getHand w
+      forM_ cards (addToHand w)
+
+giftCoin :: Card
+giftCoin =
+  newCard
+    Gift
+    Coin
+    "Give all other cards on\nthe wheel to them"
+    $ \w ->
+      transmute $
+        \i stackCard ->
+          if i > 0
+            then Just $ Transmutation stackCard (stackCard {stackcard_owner = other w})
+            else Nothing
+
 -- Other cards
 getEndCard :: Int -> Card
 getEndCard noDraws
@@ -933,7 +986,8 @@ swords =
     plasticSword,
     devilSword,
     trickSword,
-    mercySword
+    mercySword,
+    giftSword
   ]
 
 wands :: [Card]
@@ -954,7 +1008,8 @@ wands =
     plasticWand,
     devilWand,
     trickWand,
-    mercyWand
+    mercyWand,
+    giftWand
   ]
 
 cups :: [Card]
@@ -975,7 +1030,8 @@ cups =
     plasticCup,
     devilCup,
     trickCup,
-    mercyCup
+    mercyCup,
+    giftCup
   ]
 
 coins :: [Card]
@@ -996,7 +1052,8 @@ coins =
     plasticCoin,
     devilCoin,
     trickCoin,
-    mercyCoin
+    mercyCoin,
+    giftCoin
   ]
 
 others :: [Card]

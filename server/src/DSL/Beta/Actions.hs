@@ -268,6 +268,12 @@ revealRandomCard w = do
     let targetIndex = fst $ randomChoice g hidden
     reveal w (\i _ -> i == targetIndex)
 
+revealHand :: WhichPlayer -> Program ()
+revealHand w = do
+  hand <- getHand w
+  forM_ hand $ \c -> do
+    reveal w (\_ _ -> True)
+
 scatter :: Program ()
 scatter = do
   initialGen <- getGen
@@ -285,3 +291,6 @@ scatter = do
         let shuffleMap = Map.fromList $ zip sources targets :: Map Int Int
         moveStack (\i _ -> Map.lookup i shuffleMap) (TimeModifierOutQuad 150)
         refreshGen
+
+getRevealedCount :: WhichPlayer -> Program Int
+getRevealedCount w = length . filter isRevealed <$> getHand w
