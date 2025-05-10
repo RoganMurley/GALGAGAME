@@ -271,7 +271,7 @@ revealRandomCard w = do
 revealHand :: WhichPlayer -> Program ()
 revealHand w = do
   hand <- getHand w
-  forM_ hand $ \c -> do
+  forM_ hand $ \_ -> do
     reveal w (\_ _ -> True)
 
 scatter :: Program ()
