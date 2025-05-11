@@ -888,10 +888,10 @@ giftWand =
   newCard
     Gift
     Wand
-    "Hurt for 13, then they\ndraw 2"
+    "Hurt for 13, then they\ndraw 3"
     $ \w -> do
       hurt 13 (other w) Slash
-      replicateM_ 2 $ draw (other w) (other w) (TimeModifierOutQuint 1)
+      replicateM_ 3 $ draw (other w) (other w) (TimeModifierOutQuint 1)
 
 giftCup :: Card
 giftCup =
