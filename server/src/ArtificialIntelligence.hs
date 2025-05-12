@@ -134,7 +134,7 @@ biasHand :: HandCard -> Weight
 biasHand (HandCard c)
   | c == Cards.strangeSpore =
       -7
-  | c == Cards.giftSword =
+  | c == Cards.giftWand =
       -12
   | otherwise = 0
 biasHand (KnownHandCard c) = biasHand (HandCard c) - 2
