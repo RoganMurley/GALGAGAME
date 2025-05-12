@@ -863,53 +863,55 @@ mercyCoin =
         )
 
 -- Gift
-makeGiftSword :: Int -> Card
-makeGiftSword n =
+giftSword :: Card
+giftSword = newCard
+  Gift
+  Sword
+  "Hurt for 8, then they draw\na copy of each revealed\ncard in their hand"
+  $ \w -> do
+    hurt 8 (other w) Slash
+    cards <- getHand (other w)
+    let revealedCards = filter isRevealed cards
+    forM_ revealedCards (addToHand (other w))
+
+makeGiftWand :: Int -> Card
+makeGiftWand n =
   newCard
     Gift
-    Sword
-    ("Hurt yourself for " <> cs (show n) <> ", then give\nthem a copy of this card\nwith double damage")
+    Wand
+    ("Hurt yourself for " <> cs (show n) <> ", then they\ndraw a copy of this card\nwith double damage")
     $ \w -> do
       hurt n w Curse
       stack <- getStack
       case Stack.get stack 0 of
         Just stackCard -> do
           let statuses = card_statuses $ stackcard_card stackCard
-          let copiedCard = (makeGiftSword (n * 2)) {card_statuses = statuses}
+          let copiedCard = (makeGiftWand (n * 2)) {card_statuses = statuses}
           addToHand (other w) $ KnownHandCard copiedCard
         Nothing ->
           return ()
 
-giftSword :: Card
-giftSword = makeGiftSword 5
-
 giftWand :: Card
-giftWand =
-  newCard
-    Gift
-    Wand
-    "Hurt for 13, then they\ndraw 3"
-    $ \w -> do
-      hurt 13 (other w) Slash
-      replicateM_ 3 $ draw (other w) (other w) (TimeModifierOutQuint 1)
+giftWand = makeGiftWand 5
 
 giftCup :: Card
 giftCup =
   newCard
     Gift
     Cup
-    "Reveal your hand, then\ndraw a copy of it"
+    "Reveal a card in your hand, then\ndraw a copy of each revealed\ncard in your hand"
     $ \w -> do
-      revealHand w
+      revealRandomCard w
       cards <- getHand w
-      forM_ cards (addToHand w)
+      let revealedCards = filter isRevealed cards
+      forM_ revealedCards (addToHand w)
 
 giftCoin :: Card
 giftCoin =
   newCard
     Gift
     Coin
-    "Give all other cards on\nthe wheel to them"
+    "All your other cards on the\nwheel change owner"
     $ \w ->
       transmute $
         \i stackCard ->
