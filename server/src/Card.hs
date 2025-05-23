@@ -76,6 +76,7 @@ data Aspect
   | Trick
   | Mercy
   | Gift
+  | Dark
   | Strange
   | OtherAspect Text
   deriving (Eq, Generic, NFData, Ord, Show)
@@ -150,6 +151,8 @@ allAspects =
     Trick,
     Devil,
     Mercy,
+    Gift,
+    Dark,
     Strange
   ]
 

@@ -919,6 +919,87 @@ giftCoin =
             then Just $ Transmutation stackCard (stackCard {stackcard_owner = other w})
             else Nothing
 
+-- DARK
+strangeShadow :: Card
+strangeShadow =
+  newCard
+    Strange
+    (OtherSuit "SHROUD")
+    "This card is hidden."
+    $ const Beta.null
+
+fakeShadowEff :: WhichPlayer -> Beta.Program ()
+fakeShadowEff w = do
+  get <- getGen
+  let card = randomChoice get [darkSword, darkWand, darkCup, darkCoin]
+  card_eff card w
+
+stealthPlayEff :: Card -> WhichPlayer -> Bool -> Beta.Program Card
+stealthPlayEff card w revealed =
+  if revealed
+    then return card
+    else
+      return $
+        strangeShadow
+          { card_eff =
+              const
+                ( do
+                    stack <- getStack
+                    case Stack.get stack 0 of
+                      Just selfCard ->
+                        do
+                          transmuteActive (\_ -> Just $ transmuteToCard card selfCard)
+                          Beta.null
+                      Nothing -> return ()
+                ),
+            card_disguise =
+              Just $
+                Disguise
+                  { disguise_eff = fakeShadowEff,
+                    disguise_owner = w
+                  }
+          }
+
+darkSword :: Card
+darkSword =
+  addPlayEff stealthPlayEff
+    $ newCard
+      Dark
+      Sword
+      "Hurt for 7. On play: hide this card."
+    $ \w -> hurt 7 (other w) Slash
+
+darkWand :: Card
+darkWand =
+  addPlayEff stealthPlayEff
+    $ newCard
+      Dark
+      Wand
+      "Hurt for 4 for each other card\non the wheel. On play: hide\nthis card."
+    $ \w -> do
+      len <- diasporaLength <$> getStack
+      hurt (len * 4) (other w) Slash
+
+darkCup :: Card
+darkCup =
+  addPlayEff stealthPlayEff
+    $ newCard
+      Dark
+      Cup
+      "Draw a card. On play: hide'nthis card."
+    $ \w -> do
+      draw w w (TimeModifierOutQuint 1)
+
+darkCoin :: Card
+darkCoin =
+  addPlayEff stealthPlayEff
+    $ newCard
+      Dark
+      Coin
+      "Discard cards in the\nnext 2 wheel sockets.\nOn play: hide this card."
+    $ \_ -> do
+      discardStack (\i _ -> (i > 0) && (i < 3))
+
 -- Other cards
 getEndCard :: Int -> Card
 getEndCard noDraws
@@ -989,7 +1070,8 @@ swords =
     devilSword,
     trickSword,
     mercySword,
-    giftSword
+    giftSword,
+    darkSword
   ]
 
 wands :: [Card]
@@ -1011,7 +1093,8 @@ wands =
     devilWand,
     trickWand,
     mercyWand,
-    giftWand
+    giftWand,
+    darkWand
   ]
 
 cups :: [Card]
@@ -1033,7 +1116,8 @@ cups =
     devilCup,
     trickCup,
     mercyCup,
-    giftCup
+    giftCup,
+    darkCup
   ]
 
 coins :: [Card]
@@ -1055,7 +1139,8 @@ coins =
     devilCoin,
     trickCoin,
     mercyCoin,
-    giftCoin
+    giftCoin,
+    darkCoin
   ]
 
 others :: [Card]

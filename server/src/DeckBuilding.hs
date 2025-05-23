@@ -204,7 +204,8 @@ mainRunes =
     trickRune,
     devilRune,
     mercyRune,
-    giftRune
+    giftRune,
+    darkRune
   ]
 
 superRunes :: [Rune]
@@ -374,6 +375,15 @@ giftRune =
     "cards/gift/coin.png"
     (Cards.giftSword, Cards.giftWand, Cards.giftCup, Cards.giftCoin)
     (levelToExperience 15)
+
+darkRune :: Rune
+darkRune =
+  Rune
+    "DARK"
+    Dark
+    "cards/dark/coin.png"
+    (Cards.darkSword, Cards.darkWand, Cards.darkCup, Cards.darkCoin)
+    (levelToExperience 16)
 
 characterCards :: Character -> Deck
 characterCards Character {character_choice} =
