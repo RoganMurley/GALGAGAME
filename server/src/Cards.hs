@@ -967,8 +967,8 @@ darkSword =
     $ newCard
       Dark
       Sword
-      "Hurt for 5. On play: hide this card."
-    $ \w -> hurt 5 (other w) Slash
+      "Hurt for 8. On play: hide this card."
+    $ \w -> hurt 8 (other w) Slash
 
 darkWand :: Card
 darkWand =
@@ -976,10 +976,10 @@ darkWand =
     $ newCard
       Dark
       Wand
-      "Hurt for 3 for each other card\non the wheel. On play: hide\nthis card."
+      "Hurt for 4 for each other card\non the wheel. On play: hide\nthis card."
     $ \w -> do
       len <- diasporaLength <$> getStack
-      hurt (len * 3) (other w) Slash
+      hurt (len * 4) (other w) Slash
 
 darkCup :: Card
 darkCup =
@@ -987,7 +987,7 @@ darkCup =
     $ newCard
       Dark
       Cup
-      "Draw a card. On play: hide'nthis card."
+      "Draw a card. On play: hide\nthis card."
     $ \w -> do
       draw w w (TimeModifierOutQuint 1)
 
