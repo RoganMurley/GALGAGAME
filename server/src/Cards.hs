@@ -931,6 +931,7 @@ strangeShadow =
 fakeShadowEff :: WhichPlayer -> Beta.Program ()
 fakeShadowEff w = do
   get <- getGen
+  unknownDamage
   let card = randomChoice get [darkSword, darkWand, darkCup, darkCoin]
   card_eff card w
 
@@ -978,7 +979,7 @@ darkWand =
       "Hurt for 3 for each other card\non the wheel. On play: hide\nthis card."
     $ \w -> do
       len <- diasporaLength <$> getStack
-      hurt (len * 5) (other w) Slash
+      hurt (len * 3) (other w) Slash
 
 darkCup :: Card
 darkCup =
