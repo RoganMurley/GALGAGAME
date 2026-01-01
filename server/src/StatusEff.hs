@@ -39,5 +39,5 @@ bonusDamageRewrite _ dsl = send dsl
 nonLethalRewrite :: Beta.DSL a -> Beta.Program a
 nonLethalRewrite (Hurt d w h) = do
   life <- getLife w
-  send $ Hurt (min d (life - 1)) w h
+  send $ Hurt (min d (max 0 (life - 1))) w h
 nonLethalRewrite dsl = send dsl
