@@ -85,6 +85,32 @@ echo "Running docker compose"
 docker compose -f docker-compose.prod.yml build
 docker compose -f docker-compose.prod.yml up -d
 
+# Verify the new droplet actually serves before sending traffic to it.
+# `docker compose up -d` returns when containers START, not when they serve, and
+# the next steps flip the floating IP and then delete the old droplet -- so an
+# unverified flip loses the site and the rollback target together.
+# No -k: this validates the certificate chain too, which is what an expired cert
+# would have failed on.
+echo "Verifying new droplet is serving..."
+healthy=0
+for i in $(seq 1 45); do
+  if curl -fsS --max-time 5 --resolve "www.galgagame.com:443:$IP" \
+       https://www.galgagame.com/ -o /dev/null; then
+    healthy=1
+    break
+  fi
+  sleep 2
+done
+
+if [ "$healthy" -ne 1 ]; then
+  echo "ABORT: new droplet $name ($IP) is not serving valid HTTPS."
+  echo "Traffic was NOT flipped and nothing was purged; the live site is untouched."
+  echo "Inspect with: ssh root@$IP 'docker ps -a && docker logs project-static-1'"
+  echo "Delete it with: doctl compute droplet delete $name"
+  exit 1
+fi
+echo "New droplet verified serving valid HTTPS."
+
 echo "Notifying users..."
 ./scripts/systemMessage "🔔 Server restarting for update, you may lose connection 🔔" || true
 
