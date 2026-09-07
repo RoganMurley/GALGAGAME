@@ -1,9 +1,29 @@
 #!/bin/bash
+# Generates self-signed certificates for local dev.
+#
+# This OVERWRITES client/ssl/, including real CA-issued production certs if
+# they're currently decrypted there. Running it on Jan 1 2026 is how a 30-day
+# fake cert ended up deployed to production. Abort if a real cert is present;
+# pass --force to overwrite anyway.
+for cert in client/ssl/www.galgagame.com.ca-bundle client/ssl/www.ringofworlds.com.ca-bundle; do
+  if [ -f "$cert" ] && [ "$1" != "--force" ]; then
+    issuer=$(openssl x509 -noout -issuer -in "$cert" 2>/dev/null)
+    subject=$(openssl x509 -noout -subject -in "$cert" 2>/dev/null)
+    if [ -n "$issuer" ] && [ "${issuer#issuer=}" != "${subject#subject=}" ]; then
+      echo "Refusing to overwrite $cert: CA-issued, not self-signed."
+      echo "  $issuer"
+      echo "Re-run with --force if you really mean it."
+      exit 1
+    fi
+  fi
+done
+
+# -days 3650 so dev certs don't silently expire; openssl defaults to just 30.
 openssl req -x509 -out client/ssl/www.galgagame.com.ca-bundle -keyout client/ssl/www.galgagame.com.key \
-  -newkey rsa:2048 -nodes -sha256 \
+  -newkey rsa:2048 -nodes -sha256 -days 3650 \
   -subj '/CN=www.galgagame.com' -extensions EXT -config <( \
    printf "[dn]\nCN=www.galgagame.com\n[req]\ndistinguished_name = dn\n[EXT]\nsubjectAltName=DNS:www.galgagame.com\nkeyUsage=digitalSignature\nextendedKeyUsage=serverAuth")
 openssl req -x509 -out client/ssl/www.ringofworlds.com.ca-bundle -keyout client/ssl/www.ringofworlds.com.key \
-  -newkey rsa:2048 -nodes -sha256 \
+  -newkey rsa:2048 -nodes -sha256 -days 3650 \
   -subj '/CN=www.ringofworlds.com' -extensions EXT -config <( \
    printf "[dn]\nCN=www.ringofworlds.com\n[req]\ndistinguished_name = dn\n[EXT]\nsubjectAltName=DNS:www.ringofworlds.com\nkeyUsage=digitalSignature\nextendedKeyUsage=serverAuth")
